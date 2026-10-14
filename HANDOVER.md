@@ -110,6 +110,12 @@ from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separ
 
 ## c5 inputs and stopping rule (13 Oct 2026, 22:00 UTC; proposals for your decision before launch)
 
+Final c5 inputs (your decisions, 14 Oct, second message): tracking on (PVTRK=1); carbon central 'kept2030' (TODO 14eb);
+coal on IRP 2025 Figure 3's 50-year line (COAL_DATES=coal_dates_irp2025.json), with Meridian's ME IRP 2024 dates (UC_FLEET,
+c4's, no COAL_DATES) and the 60-year line (coal_dates_irp2025_60y.json) as sensitivities; wind 2.5 GW a year to 2030 and
+3.5 GW from 2031 (WIND_CAP=3500 WIND_CAP_FROM=2031); lithium capex decline 3% a year (BATT_DECL=0.03, as s_battdecl), with the
+model's 5% as a sensitivity. Launch on your 'go'. Settings line and tests: RESULTS 'c5 inputs, final'.
+
 Update 14 Oct (your decisions, TODO 14dx): #32, #33, #35 and #36 merged (main 7135caf); #34 closed. c5's own branch is
 claude/c5, from main: the imports end year (5d5dc10, 14c), 14dr (a89df58, 14d), c4-irp3's three off-by-default pathway
 settings including ROOF_MW (191e7cc, 0ec290f, 66d9fb7; carried whole, the commits bundle ROOF_MW with GAS_LIFT, GASFLOOR_VINT,

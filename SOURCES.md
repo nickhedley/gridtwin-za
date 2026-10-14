@@ -924,6 +924,15 @@ Decisions are the user's (7 Oct 2026).
   a year to 75% in 2030) predates this (TODO 14eb). Section 14 caps allowances at 95%. The generation levy is replaced by the
   carbon tax from 1 Jan 2026, with a floor on a generator's liability of R0.035/kWh after the renewable-premium deduction
   (s6(2) as substituted by the Taxation Laws Amendment Act 5 of 2026, GG 54448, 1 Apr 2026; Acts Online).
+- c5 central carbon path (user decision, 14 Oct 2026; index.html carbonTaxAt, carbonAllowancePath 'kept2030', build 14h): the
+  February 2025 Budget documents as reported by Engineering News, 19 Feb 2025: 'maintenance of the basic tax-free allowance
+  until December 31, 2030, rather than reducing it from 2027' (the user's citation; not re-read here). The model holds its
+  2026 net share (R46 of R308) to 2030 on the rates in law and holds the 2030 value after. Caveat: electricity price
+  neutrality is also extended to 31 Dec 2030 and may lower generators' net cost further; not modelled.
+- Nominal to 2026 rands: South Africa's inflation target, 3% with a 1-point band, announced by National Treasury and the SARB on
+  12 Nov 2025 (MTBPS), https://www.treasury.gov.za/comm_media/press/2025/2025111201%20Announcement%20of%20the%20new%20inflation%20target%20for%20South%20Africa.pdf
+  (PDF, not read; via SAnews, https://www.sanews.gov.za/node/78213, and Polity, 13 Nov 2025). CARBON_CPI_PA = 0.03 deflates the
+  rates in law for 2027-2030 in 'kept2030' and carbonTaxFull; 'cut2027' stays nominal as c4 ran it.
 - Carbon budgets: R640/t on emissions above an allocated budget, s5(5) and s6(6) inserted by the 2026 Act; in force only from a
   date the Minister of Finance sets by Gazette notice (none seen).
 - IRP 2025 (GG 53596, 28 Oct 2025): no emissions constraint found. Search extracts of the gazette and the user-friendly IRP
