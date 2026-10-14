@@ -3143,7 +3143,48 @@ bring to 130-170 against 348.
 Effect on c5b and the sensitivities: any change to the reserve rule moves 2026 adequacy and cost (T2: R5.6bn and a failing
 2026), so a rule change means c5b and every sensitivity rerun. They stay provisional (message 83 (3)). Nothing changed.
 
-### Known limitation: the engine lets open-cycle plant and pumped storage cover the operating reserve, so coal holds none back, and it has no rule for Eskom's reserve-restoring interruptible product (user, 14 Oct 2026, message 84; no change to the base rule before the note; TODO 14eg closed)
+### ASTR reserve rule: proposal by product (NTCSA ASTR 2026/27-2030/31) and its test on c5b's 2026; for the user's approval before any rerun (user, 14 Oct 2026, message 85)
+
+Source: NTCSA Ancillary Services Technical Requirements for 2026/27-2030/31, Revision 1, 12 January 2026, pp. 6-12, as read by
+the user (the PDF is on ntcsa.co.za, which neither the web reader nor a direct download reaches from this session; Firecrawl is
+not used on long PDFs). The 2,200 MW operating reserve is three products: instantaneous 650 MW peak / 850 off-peak (within 10 s,
+sustained 10 min); regulating 830 MW each way in 2026/27, rising to 1,140 by 2030/31; ten-minute 720 peak / 520 off-peak in
+2026/27, falling to 410 / 210 by 2030/31 (offline quick-start such as pumped storage, and dispatchable demand). Open-cycle gas
+turbines appear only under emergency reserve (1,200 MW, with interruptible load), outside the 2,200 MW.
+
+Proposed rule (engine, reserveRule 'astr'; branch claude/reserve-rule, off by default until approved):
+- Quantities: calendar year y takes financial year y/y+1; 2027-2029 interpolated linearly between the document's 2026/27 and
+  2030/31 values; years after 2030/31 hold 2030/31's quantities (2,200 MW, the document's last year; no basis to extrapolate).
+  The variable-generation term the engine added above 2,000 MW of wind and solar is dropped: the ASTR's regulating schedule
+  carries that growth to 2030/31. From 2031 the requirement no longer grows with wind and solar, which understates it in the
+  high-renewable years; an alternative is to keep a variable-generation term above 2030's level.
+- Instantaneous and regulating from online headroom: coal headroom; batteries then pumped storage only up to the energy that
+  sustains the product (10 minutes for instantaneous, reserveRegHours for regulating).
+- Ten-minute: pumped storage with energy (reserveTenHours), then batteries, then quick-start hydro headroom (hydro capacity x
+  (1 - hydroCF)); dispatchable demand none (the model has none separate from interruptible load); coal headroom for the balance.
+- Open-cycle plant and interruptible load: emergency reserve only, never counted toward the 2,200 MW; called when coal and storage
+  cannot both serve load and hold the operating reserve, interruptible load first (R4,000/MWh, below diesel's R6,170), then
+  open-cycle plant.
+- Assumptions to confirm from pp. 6-12: peak hours 06:00-22:00 every day; regulating sustained for 1 hour; ten-minute for 2 hours.
+- Optimiser: its reserve row today counts headroom on coal, gas, diesel and lithium; with the rule approved it would drop diesel
+  and open-cycle gas headroom and use the same product quantities, so the optimiser and engine hold the same reserve. Not built yet.
+
+Test on c5b's 2026 (engine only; c5b's 2026 state, the engine check's 120 runs; the 14eg probe, January-August):
+
+```
+January-August 2026, mean (p10 / p90)   open-cycle GWh       hours > 500 MW   scarcity hours      interruptible hours    2026 shed GWh / target   2026 cost
+Eskom                                   88 (own turbines)    -                -                   348                    -                        -
+legacy rule (c5b as run)                10.3 (1.8 / 20.5)    7.3 (1 / 15)     95.7 (47 / 134)     0.1                    0.011 / 1.96             R213.7bn
+ASTR rule                               21.7 (7.8 / 37.6)    8.2 (1 / 17)     526 (366 / 605)     248 (126 / 307)        0.084 / 1.96             R214.6bn
+```
+
+Full year 2026 under the ASTR rule: open-cycle 32.7 GWh, interruptible load in 444 hours, CO2 155.1 Mt (155.8 legacy). With the
+rule off, the engine reproduces c5b exactly (shed 0.010999 GWh, CO2 155.756 Mt). Interruptible hours come close to Eskom's
+(248 against 348 in January-August); open-cycle output rises but stays a quarter of Eskom's own turbines (21.7 against 88 GWh),
+because interruptible load, called first, covers most shortfalls. 2026 stays adequate. Not yet run beyond 2026, and the
+optimiser side is not built; nothing reruns until the user approves.
+
+### The engine lets open-cycle plant and pumped storage cover the operating reserve, so coal holds none back, and it has no rule for Eskom's reserve-restoring interruptible product (recorded as a limitation under message 84; message 85 replaces that: the base rule is to be fixed by product, proposal and 2026 test in 'ASTR reserve rule' above)
 
 The engine withholds operating reserve from coal only beyond what fast-start plant can cover, and it counts every fast-start
 megawatt at full power: open-cycle 3,400 MW (Avon and Dedisa included), pumped storage 2,724 MW whatever it holds, batteries,
@@ -3157,9 +3198,11 @@ average) reads as reserve restoration, which the engine has no rule for.
 Bounds (RESULTS '14eg steps 2-4', scratch tests on c5b's 2026): with coal carrying the whole reserve the engine overshoots
 (715 GWh of open-cycle in January-August, 1,203 scarcity hours) and 2026 fails the adequacy test; Eskom sits between the two
 rules. Direction: the base rule understates open-cycle running and its cost in the early years and flatters early-year
-adequacy. The middle rule (pumped storage counts only up to the energy it holds; open-cycle plant does not count) is to be
-added as a switch, off by default, and run as one sensitivity, s_reserve_c5b, to bound the effect for the note; c5b stays
-the base.
+adequacy. Message 84's plan (a middle-rule switch and one sensitivity, s_reserve_c5b) was replaced by message 85 before any run: the
+note moves past Wed 21 and the base rule is to be fixed by product. A test of the middle rule on c5b's 2026 (pumped storage
+counted only up to its stored energy over one hour, open-cycle plant not counted; optimiser LP unchanged, key 458f2a9e13 with
+it on or off): open-cycle 296.5 GWh in January-August, 226 hours above 500 MW, 577 scarcity hours, 2026 shed 0.142 GWh against
+1.96, cost +R2.6bn; with it off, identical to c5b.
 
 ### Known limitation: Avon and Dedisa's running is not in the model; about R6.6bn a year at the model's own diesel price on 2026's pace (R9.0-9.3bn in 2024-25), the same in every scenario until their contracts end in 2030-31 (user, 14 Oct 2026, message 83; no engine change before the note)
 
@@ -3223,7 +3266,7 @@ hours (none in January, February or July). Monthly open-cycle output is 86-124 G
 when availability was highest. So the 2026 under-run is not explained by coal availability; it points to the dispatch rule,
 step 2. The model's open-cycle diesel fleet (ocgtDieselMW 3,400) is held as emergency reserve as one block.
 
-### c5b sensitivities launched, 21 runs from c5b's windows, up to 3 passes each (user, 14 Oct 2026, message 82); provisional label lifted 14 Oct (message 84: 14eg closed with the reserve-rule gap recorded as a limitation and no change to the base rule)
+### PROVISIONAL until the rerun on the ASTR reserve rule (user, 14 Oct 2026, message 85, which replaces message 84): c5b sensitivities launched, 21 runs from c5b's windows, up to 3 passes each (message 82); if the rule is approved, c5b and all 21 rerun on it
 
 Launched 13:53-13:55 UTC on GitHub, workflow 'Optimiser long run', ref main, code_sha babb78d (build 2026-10-14l) in every job,
 seed_run 38566438283 (c5b's second job), seed_name c5b. Each run's settings = c5b's line with MAXP=3 and
