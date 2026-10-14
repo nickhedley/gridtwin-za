@@ -3056,7 +3056,7 @@ window (days 8-21) in 2037-2040 (1.50-1.91); none in 2030-33 or 2035. Worst 2.03
 14 days of the year's runs exceed one cargo every year from 2031 (1.18) and reach 4.02 in 2040. So from 2034 the plan
 assumes LNG is resupplied within a two-week stress event.
 
-### c5 sensitivities: 18 runs, one change each from c5, rule A from c5's windows; 17 pass the engine check in every year with no top-up; s_nogas4strict fails 2034-40; full carbon rate +R376bn, IRP gas plan +R124bn, low wind cost -R60bn, 14 Oct 2026
+### c5 sensitivities: 18 runs, one change each from c5, rule A from c5's windows; 17 pass the engine check in every year with no top-up; s_nogas4strict fails 2034-40 and needs 3,250 MW of the diesel open-cycle it excludes; full carbon rate +R376bn, IRP gas plan +R124bn, low wind cost -R60bn, 14 Oct 2026
 
 User, 14 Oct: start the c5 sensitivities pinned to a74d581; drop any that now duplicate c5; one setting each from c5's line,
 confirmed from the run's settings record; then for each the engine check, a top-up if needed with its cap flags, and both
@@ -3085,7 +3085,9 @@ run              change from c5's line               settings record differs   l
 s_be7            NUC_FORCE 2036:1250, 37:1250,        nuclearAdd                adequate       pass (2031, 49%)         2,330 +29   2,015 -4   1,422.0 -57.5 (a)
                  38:1350, 39:1350
 s_nogas4strict   GAS_CAP=0, OCGD 1->0,                 ocgt.diesel, liCap        fails 7 yrs    FAILS 2034-40            2,330 +29   1,453      1,573.4 +93.9
-                 LI_CAP 3000->4000 (b)               (GAS_CAP not recorded)                   (2038, 484%)             as solved   -566       top-up: below
+                 LI_CAP 3000->4000 (b)               (GAS_CAP not recorded)                   (2038, 484%); topped     as solved;  -566       as solved
+                                                                                                up 3,250 MW (g)          2,345 +44
+                                                                                                                         topped up
 s_coal60         COAL_DATES 60-year line              none recorded; coal       adequate       pass (2031, 49%)         2,285 -16   2,115 +96  1,447.5 -32.0
                                                      schedule 2036-40 (c)
 s_irpgas         IRP gas plan (d)                     gasForce, gasMin,          adequate       pass (2028, 10%)         2,425 +124  2,154 +135 1,591.5 +112.0
@@ -3121,6 +3123,16 @@ c4. Its schedule is c5's; the optimiser retires 711 MW of coal early from 2026 (
 and the run's own check job priced wind at the central cost (R2,290bn); the figures shown are the re-check with
 WIND_CASE=low (run 38543323301, claude/recheck-14d, engine_env), every year passing, worst 2031 at 50%. (f) At the run's
 own discount rate, so not comparable with c5's objective.
+
+(g) Top-up (run 38544252050, claude/recheck-14d, topup.js, new diesel open-cycle in 250 MW steps until each year is at or
+below target): 250 MW in 2034, 500 in 2035, 500 in 2036, 1,250 in 2037, 500 in 2038, none in 2039, 250 in 2040; 3,250 MW by
+2040. Topped-up shed / target, GWh: 2034 1.95 / 2.30, 2035 2.15 / 2.35, 2036 2.33 / 2.40, 2037 1.95 / 2.46, 2038 2.33 /
+2.53, 2039 2.56 / 2.60, 2040 2.57 / 2.66. Engine PV R2,330bn as solved, R2,345bn with the top-up (capex 12.7, fixed O&M 2.5,
+fuel 0.1, other -0.4); CO2 1,453 Mt either way. Cap flags: every year that adds capacity (2034-38 and 2040) breaks the run's
+own build caps, 'new diesel open-cycle not allowed in this run' (OCGD=0); no turbine-cap flag. So s_nogas4strict is not
+adequate within its own rules: on c5's windows it needs 3.25 GW of the peaking plant it excludes. On c4's windows the same
+scenario was adequate (rule B, RESULTS 's_nogas4strict'); rule A from c5's windows is one pass, so this may be a window gap
+rather than a build gap.
 
 Report runs: s_be6 38542239520; s_committed 38543732435; s_gasprem 38543039300; s_coal60 38544549236; s_windlow 38543319593;
 s_batt5 38543326572; s_carbonfull 38543542521; s_be7 38543545849; s_roof2 38543573243; s_li8h 38543677201; s_pvirp
