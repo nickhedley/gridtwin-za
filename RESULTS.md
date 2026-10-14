@@ -2948,6 +2948,65 @@ Caveats: the engine check is the note's cost measure, with its storage-dispatch 
 nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
 differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
 
+### Smelter block sized, 2030 test against 255 passes with no uniform factor, and Mozal in the export line (user, 14 Oct, message 71), 14 Oct 2026
+
+User decisions (message 71): September-December 2025 scaled at 0.9766; returning smelter load as a flat block, not a factor,
+held flat after Glencore-Merafe's agreement ends (May 2029) in c5b, with a sensitivity ending it in 2029; target 255 TWh in
+2030 (Gazette 53596: key outcomes '255 TWh in 2030'; plan p.34, gazette p.45, '255 TWh by 2029', tied to Cabinet's June 2025
+decision to restore the ferrochrome industry); Figure 2 (plan p.11, no data labels) to be read by the user; the third-party
+digitisation is not used; if c5's corrected path lands within 2 TWh of 255, no uniform factor.
+
+Block. Contracted smelter demand 12.8 TWh a year = 1.461 GW; 80% take-or-pay = 1.169 GW. The '0.5 GW already back' is the
+June-August 2026 night-time level (01:00-04:00 deficit against the same months of 2024: -1.80 GW over September-December 2025,
+-1.34 GW over June-August 2026). The 2026 base holds less than that on a yearly average: its January-August months are the
+2026 actuals (average deficit -1.45 GW, so 0.35 GW above the trough) and its September-December months are September-December
+2025 times 0.9766 (the trough, none back), so 0.35 x 8/12 = 0.24 GW. Block at 80%: 1.17 - 0.24 = 0.93 GW (0.67 GW if netted
+of the full 0.5). Cato Ridge: Assmang's ferromanganese smelter is not under the ferrochrome agreements, so it has no share of
+the 12.8 TWh and the block is unchanged; its loss stays out through the measured base. Caveats: the night-time measure has no
+trend correction (a non-smelter decline of t GW a year would raise the share already back by about t); Stats SA's smelter
+provinces were flat year on year in August 2026 (North West -2.4%, Limpopo +2.9%, against an August 2025 when GMCV was
+already off), so little more than Lion is visible by then. Start: 2027 (Boshoek and Wonderkop restart announced June 2026;
+Samancor to resume within six months); 2026 left as measured.
+
+Glencore-Merafe's share, for the 2029 sensitivity: not published. Two weak measures agree on about 47%: GMCV's 2024 output,
+301 kt attributable to Merafe at 20.5% (Mining Weekly, 20 Jan 2026), so about 1,468 kt, against South Africa's 3.0-3.3 Mt
+(Fastmarkets, 15 Oct 2025), assuming the same electricity per tonne; and furnace counts, 22 Glencore against 24 Samancor
+(Miningmx, 15 Sep 2025). Sensitivity: block 0.93 GW to May 2029, then 0.49 GW (2029 average 0.68).
+
+2030 test (domestic like for like: the IRP's 255 less its 11.0 TWh of exports and 12.39 of other onsite = 231.59):
+
+```
+2030, TWh                                                  domestic+rooftop   with IRP exports and onsite   gap to 255
+c5 as built                                                220.96             244.4                         -10.6
+September-December at 0.9766, plus Castle wind 0.31        223.92             247.3                         -7.7
+plus block 0.93 GW (central)                               232.07             255.5                         +0.5
+plus block 0.67 GW (netted of the full 0.5)                229.79             253.2                         -1.8
+block ending with GMCV's agreement (0.49 GW in 2030)       228.21             251.6                         -3.4
+```
+
+The central lands within 2 TWh of 255 (+0.5), and so does the 0.67 GW case (-1.8): no uniform factor. With the measured
+exports (745 MW, 6.53 TWh) in place of the IRP's 11.0, the totals are 4.5 TWh lower; see Mozal below.
+
+Mozal (message 70 and 71 (4)). In ESK19679 Mozal's supply is inside International Exports: monthly mean exports 1,687 MW in
+January 2026 and 1,703 in February, 987 in March, then 684, 600, 652, 722 and 822 from April to August, a step of about
+1,000 MW in March 2026 (reported load about 950 MW; index.html exportsMW note). Calendar exports: 11.25 TWh in 2023, 13.53 in
+2024, 14.94 in 2025, as non-Mozal exports grew (pre-exit about 1,284 MW in 2023 and 1,705 in 2025, less about 1,000 for Mozal,
+leaves about 0.3 GW in 2023 and 0.7 GW in 2025). The IRP's 11.0 TWh is ESRG's line: 11.25 in 2023, equal to Eskom's 2023
+exports, then 11.02 flat; so it keeps Mozal (about 8.3-8.8 TWh) and about 2.2-2.7 TWh of other exports at 2023 levels.
+Measured after the exit, other exports alone run at about 700 MW (6.1-6.5 TWh a year), well above the IRP's implied 2.2-2.7.
+Imports (Cahora Bassa) did not stop with Mozal: 1,005 MW on average January-August 2026, 1,065 MW April-August, against
+750 MW in 2025 and 1,240 MW in 2023; the IRP's section 3.1 ties Mozal's removal to no Cahora Bassa supply, which the data so
+far does not show. c5 holds imports at 1,150 MW with no end year (s_noimp ends them in 2030). Effect on c5b's export line:
+with Mozal out, exports at the measured 745 MW (6.53 TWh) rather than the IRP's 11.0; the 255 test above is made on domestic
+demand so it does not depend on that choice.
+
+Peak (message 71 (5)). The plan's only peak figure is the Transmission Development Plan 2024's 43 GW by 2034 (moderate-high),
+cited as the TDP's, not the IRP's. c5b's grid peak (rooftop removed at c5's 900 MW a year, a June evening): 32.7 GW in 2030
+and 36.5 GW in 2034 with the 0.93 GW block (37.3 GW with 745 MW of exports, 37.8 with the IRP's 1,258 MW); the TDP's basis is
+not stated in the plan's sentence as read by the user.
+
+Settings: as the entry 'Demand checks before rebasing'; ESRG index 2034 1.2365; nothing re-run.
+
 ### Demand checks before rebasing: Eskom's domestic demand fell in a step of about 1.9 GW (1.6 GW at night) between mid-July and mid-September 2025, matched by coal output, so not a counting change; the 2026 scaling counts the step twice for September-December (2.4 TWh); 0.9519 traced; most of the 10.6 TWh domestic gap to the IRP is suspended ferrochrome load contracted to return from mid-2026; with it c5's measured path reaches about 254-256 TWh in 2030 on the IRP's basis, 14 Oct 2026
 
 User, 14 Oct, messages 65 (1), 67 and 69: before rebasing, check, with no runs, (i) 2024, 2025 and 2026 side by side on one
@@ -3100,7 +3159,9 @@ in 2040. Against it the workbook (Mode 1 total) is +0.7 TWh in 2024, +4.6 in 202
 8.3 TWh step from 2029 to 2030 is in domestic grid demand (+7.4); exports are flat. Reading: Table 1 was built on the plan's
 moderate forecast, a later ESRG revision about 5-8 TWh below the workbook from 2027, not on the workbook's 268.6. The plan's
 moderate forecast is about 254-255 TWh in 2029 and about 261 in 2030; '255 TWh in 2030' in the key outcomes looks like the
-2029 figure. Not settled: the two sentences and Figure 2 need checking against the plan itself, with pages. IRP 2025 peak
+2029 figure. Superseded by the user, 14 Oct (message 71): the target is 255 TWh in 2030 (Gazette 53596, key outcomes; plan p.34,
+gazette p.45, 'by 2029', tied to Cabinet's June 2025 ferrochrome decision); the third-party digitisation is not used; Figure 2
+(plan p.11) to be read by the user. IRP 2025 peak
 demand for 2030: not found. Comparator (not the IRP): NTCSA's Medium-Term System Adequacy Outlook 2026-2030, moderate base
 case, 243 TWh in 2024 to 264 TWh in 2030 (Daily Maverick, C. Yelland, 3 Nov 2025).
 

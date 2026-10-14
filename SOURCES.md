@@ -1129,7 +1129,7 @@ first-hand; wording from search summaries, pages not known; to confirm against t
   30 Oct 2024, v5 26 Feb 2025 (figshare public API, read): HourlyDemandModel_v10_IRP_v02_wExports.xlsm has the same checksum
   in all five, so it dates from September 2024; no v6.
 - SBG.EARTH (F. Spencer), 'Every plan forecast growth but (shock) demand fell.', data.sbg.earth/irp-demand, 2026, undated
-  (read): IRP 2025 Figure 2 digitised, stated error 1-1.5 TWh; moderate: 2024 238.5, 2027 246.0, 2028 250.5, 2029 254.0, 2030
+  (read): not used (user, 14 Oct); IRP 2025 Figure 2 digitised, stated error 1-1.5 TWh; moderate: 2024 238.5, 2027 246.0, 2028 250.5, 2029 254.0, 2030
   261.0, 2031 269.0, 2035 299.0, 2040 340.0 TWh. Third-party reading, not an IRP figure.
 - Daily Maverick, C. Yelland, 'Risks identified in Eskom's 2026-30 system adequacy outlook ...', 3 Nov 2025 (read): NTCSA
   MTSAO 2026-2030 moderate base case, 243 TWh in 2024 to 264 TWh in 2030.
@@ -1160,3 +1160,7 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
 7 Jan 2026, 29 Jan 2026, 25 May 2026, 26 Jun 2026, 31 Aug 2026; Fastmarkets, 15 Oct 2025; NERSA media statement, 29 May
 2026 (p.1-2); AMSA SENS, 2 Sep 2025; IOL, 6 Nov 2025 and 31 Jul 2025; Business Report, 4 Jul 2025 (Cato Ridge); Miningmx, 15 Sep 2025; Engineering News, 17 Feb 2026; Mining Weekly, 1 Apr 2025; Stats SA P4141
 (preliminary) September 2025, December 2025 and August 2026 releases, printed p.3, p.5 and p.6.
+- IRP 2025, Gazette 53596 (user's copy, 14 Oct 2026): key outcomes, '255 TWh in 2030'; plan p.34, gazette p.45, '255 TWh by
+  2029', tied to Cabinet's June 2025 decision to restore the ferrochrome industry; Figure 2, plan p.11, no data labels;
+  section 3.1, Mozal's removal linked to no Cahora Bassa supply; Figure 2's separate 'Moderate_MozalOut' case. Peak: the plan
+  quotes the Transmission Development Plan 2024's 43 GW by 2034 (moderate-high); cite as the TDP's.
