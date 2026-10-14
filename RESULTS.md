@@ -2872,6 +2872,85 @@ factor 47.5 -> 47.6%. Suite 720/727, audit 87/87, eng5 6/6; against 14c: iron-ai
 two new failures from the changed draw, neither check changed: 'high-season off-peak is the cheapest block modelled'
 (low-season off-peak now cheapest) and the response baseline (11 cells).
 
+### 14de re-check: on the fixed engine s_coalavail's plan passes the engine check in every year (2040 at 15% of target), R171bn below c4 on the engine and 303 Mt more CO2; on c4's engine it failed 11 years, 14 Oct 2026
+
+User, 14 Oct (TODO 14dx (4)): re-check s_coalavail's plan (built with the stress-window coal limit at the engine's available
+coal, COAL_AVAIL=1) on 14a; if it passes the engine check, propose c5 on available coal before launch. Run 38523346361, ref
+claude/recheck-14a (fda2387: build 14a as merged in step 3, plus the top-up workflow), mode check, source run 38382908890 /
+s_coalavail; pathcheck.js COMMIT=1 PSE=1 TF=0.5, adaptive draws (10 a weather year, 120 runs a year, every year inside the
++/-20% interval at the first batch); 7 minutes. No re-solve: the plan is s_coalavail's as solved on c4's engine (build 12e).
+Engine PV is the sum of each year's engine cost at 8% real from 2026, as for c4's R2,525.8bn on 14a.
+
+```
+                                   s_coalavail on 14a    c4 on 14a          s_coalavail on 12e (c4's engine)
+engine PV at 8% real               R2,354.9bn            R2,525.8bn         R2,399bn
+CO2 2026-40                        1,768 Mt              1,465 Mt           1,864 Mt
+years failing the engine check     0                     0                  11 (2030-40)
+worst year, mean shed / target     2040, 0.39 / 2.60     2040, 0.01 / 2.60  2040, 2,816%
+                                   GWh (15%)             GWh (0.5%)
+gas burnt 2026-40                  28.2 TWh              18.1 TWh           -
+diesel burnt 2026-40               1.34 TWh              0.41 TWh           -
+```
+
+s_coalavail's mean shed by year on 14a, GWh (target): 2030 0.04 (2.06); 2033 0.20 (2.21); 2037 0.21 (2.41); 2039 0.34
+(2.54); 2040 0.39 (2.60); every other year below 0.15. The old engine caused the failure: the same plan passes on 14a.
+
+### Checks after engine (B) and 14dr, as decided on 14 Oct: pumped storage's 2025 output now checked against Eskom (model 3.8 TWh, Eskom 4.49); iron-air in July restated; the peaker ratio and tariff-block checks left failing with their causes, 14 Oct 2026
+
+Branch claude/c5 (from main after #36), 63a2722, build 2026-10-14e; measured first on claude/c5-imports, whose app is identical
+apart from the stamp. Suite (ESK19679.csv present): 722/728 node checks, audit 87/87 (809/815), eng5 6/6. Six failures, no
+check or band changed: EDMSA Scenario A CO2 2035; wind capture at 110 GW; iron-air with gas in July; the preset curtailment
+band; and the two in items 4 and 5.
+
+1. Pumped storage output, new check (validate_benchmarks, psTWh). Source: Eskom hourly data, ESK19679 (obtained on request;
+   Eskom credited; the analysis is ours, not Eskom's), calendar 2025, 'Pumped Water Generation' summed: 4.49 TWh (pumping
+   6.00 TWh; 2023 4.29 TWh, 2024 4.63 TWh). Band +/-25%, as for hydro: 3.37-5.62 TWh. Model, 2025 benchmark run: 3.8 TWh on
+   14a and 14d (2.73 TWh on 13h, which would have failed). Passes.
+
+2. Iron-air in July (validate_findings, 'iron-air changes July gas by essentially nothing'; Seriti Green: 20 GW wind, 25 GW
+   solar, 32 GW coal retired, 25 GW gas, 20 GW/10 h lithium, EAF 70%; July gas with and without 20 GW of 100-hour iron-air).
+   Tolerance kept at 1%; the figures in the check's comment updated.
+
+```
+                                     14a                 14d / 14e
+July gas without -> with, GWh        1,312 -> 1,295      1,641 -> 1,636
+change                               1.3%, fails         0.3%, passes
+iron-air output in July, GWh         16.6 in 3 hours     4.0 in 1 hour
+July coal, with less without, GWh    +65.0               +43.3
+July storage charging, GWh           +69.9               +41.5
+iron-air state of charge, 1 July     0                   0
+iron-air over the year, GWh          1,574 in, 708 out   1,439 in, 648 out
+```
+
+   Cause: iron-air enters July empty on both builds; the July change is coal moved into gas hours through storage, not
+   summer surplus carried into winter. The finding stands: iron-air does not cover a winter wind drought in this scenario.
+
+3. Mark (2), recorded as decided (no change): the remaining shortfalls against the 24 h rolling PyPSA check (14a: 3 of 15
+   weeks, 0.15-1.00 GWh; 14d: 6 of 15, 0.24-4.79 GWh) fall in a week's last hour with the stores empty, while the engine
+   holds 2.2-2.5 GW of coal as operating reserve. The PyPSA check does not model operating reserve.
+
+4. Mark (3), the 2025 peaker season ratio: fails at 9.3x against 2.15-8.6x on 14a and 14d; band not widened. Cause: engine
+   (B) runs the peakers far less in July-September 2025 (42 GWh against 108 on 13h) as pumped storage takes the evening peaks
+   (3.8 TWh a year against 2.7). The cause is noted beside the check.
+
+5. Tariff block, 'high-season off-peak is the cheapest block modelled' (validate_consistency): fails from 14d (14dr), left
+   failing to investigate after the note. At the check's 2025 settings (demand +4.6%, coal EAF 58%, imports 858 MW, exports
+   1,705 MW, Koeberg 62%), mean marginal price by block, R/MWh:
+
+```
+                 high peak  high std  high off-peak  low peak  low std  low off-peak  weekend   shed GWh
+14a                  1,890     1,306            778     1,768    1,808           868      946       12.4
+14d                  3,683     2,696            914     1,324    1,230           792      952       37.3
+```
+
+   Medians 743-750 on both builds; by median, low-season off-peak is the cheapest block on both (743-744 against 746). The
+   cheapest block by mean moves with where a few shed hours fall: with 14dr more of them fall in the high season. Caveat:
+   this check guards a claim in the NERSA correction note (Megaflex charges high-season off-peak above low-season off-peak
+   while it is the cheapest block modelled). On 14d that claim no longer holds on means, and on medians it held on neither
+   build.
+
+6. Response baseline regenerated on this engine: 87/87.
+
 ### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 
 Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on

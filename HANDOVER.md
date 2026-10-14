@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 22:00 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
 
 ## Note date and plan to Fri 23 Oct (user, 13 Oct: note moved to Fri 23 Oct so the engine is fixed first; plan is a draft for approval)
 
@@ -108,6 +108,13 @@ from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separ
    and generated MW and percentages of different ratings; Indian results are short tests; costs differ in year and currency.
 
 ## c5 inputs and stopping rule (13 Oct 2026, 22:00 UTC; proposals for your decision before launch)
+
+Update 14 Oct (your decisions, TODO 14dx): #32, #33, #35 and #36 merged (main 7135caf); #34 closed. c5's own branch is
+claude/c5, from main: the imports end year (5d5dc10, 14c), 14dr (a89df58, 14d), c4-irp3's three off-by-default pathway
+settings including ROOF_MW (191e7cc, 0ec290f, 66d9fb7; carried whole, the commits bundle ROOF_MW with GAS_LIFT, GASFLOOR_VINT,
+PV_CAP_YR, TCAP_YR and COAL_AVAIL, all off unless set), the check changes (63a2722, 14e) and the stall stop (b86fc7c, 14f;
+STALL=0.1 STALL_FROM=4 with MAXP=6; the verdict records adequate, stall stop or pass limit reached). Top-up and check mode
+after c5: claude/recheck-14d (claude/topup merged onto claude/c5; never merged). claude/c5-imports is superseded by claude/c5.
 
 - Imports after 2030 (TODO 14dv (6)): IRP 2025 does not say, as far as the sources reachable here show. Table 1 carries hydro at
   1,600 MW from end 2025 with no additions to 2042, but it lists new capacity only; two web searches (13 Oct) found the
