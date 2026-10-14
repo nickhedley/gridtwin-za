@@ -909,6 +909,26 @@ Decisions are the user's (7 Oct 2026).
   (index.html WIND_NEW_CORR; user decision, 7 Oct 2026), fitted to developer-stated annual output: Impofu 330 MW,
   1,260 GWh (Enel) and San Kraal 140 MW, 616 GWh (EDF), check_wind_farms.py, weather years 2016, 2019, 2021, 2023.
 
+## Single-axis tracking share of South African utility solar (TODO 14aw; read 14 Oct 2026, research helper, HTML pages only)
+
+- REIPPPP BW1-BW4, PPA contracted MW by mounting: Minister of Energy, reply to parliamentary question NW368 (question dated
+  15 Mar 2019), PMG, https://pmg.org.za/committee-question/11216/ (read directly). Single-axis / fixed MW: BW1 162.9 / 427.9
+  (plus 36 MW dual-axis CPV), BW2 240.4 / 176.7, BW3 75.0 / 360.0, BW4 812.9 / 0; BW1-4 together 1,291.2 / 964.7, 56% single-axis.
+  The totals match the published window totals (627, 417, 435, 813 MW). Caveat: a 2019 listing of contracted plants, not as built;
+  two plants of about 33 MW may use azimuth rather than horizontal single-axis trackers (search snippet only).
+- "By BW4 all the projects had adopted tracker solutions": T. Creamer, Engineering News, 5 Oct 2020, as republished by Array
+  Technologies, https://arraytechinc.com/press-release/spanish-solar-tracking-group-establishes-formal-presence-in-south-africa/
+- BW6: preferred bidders single-axis tracking, capacity factor 30.1% (IPP Office REIPPPP historical data note, 7 Nov 2025, as
+  uploaded by the user; build costs section below).
+- Later plants confirmed on trackers (operating): Scatec Grootfontein, BW5, 225 MWac (TGS Prediktor release, 12 Jun 2026); SOLA
+  Lichtenburg wheeling plants, 126 and 130 MW (pv magazine, 17 Jul 2024; Engineering News, 2 Aug 2024); Envusa Mooi Plaats 240
+  MWac (Green Building Africa, 19 Mar 2026). Tracker orders: GameChange about 500 MW for southern Africa (PV Tech, 26 Apr 2024);
+  FTC Solar about 840 MW with Lubanzi-Inala (GlobeNewswire, 23 Feb 2026). No fixed-tilt utility plant after BW3 found.
+- Estimate (ours): of the model's 3,271 MW of operating utility solar, about 965 MW is fixed-tilt (BW1-3), so about 70%
+  single-axis if every later plant tracks; 62% confirmed project by project (2,012 MW). Pipeline about 95-100% single-axis,
+  resting on BW4 and BW6 being all tracking, the confirmed later plants and the tracker orders; most BW5-7 projects are not
+  confirmed one by one. Not read (PDFs): IPP Office 'Focus on solar PV' reports, DMRE and DBSA bidder lists, GreenCape reports.
+
 ## International benchmarks for central build costs (RULES, 7 Oct 2026)
 
 - IRENA, Renewable Power Generation Costs in 2024 (July 2025): global weighted average total installed cost,
