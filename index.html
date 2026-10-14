@@ -7321,6 +7321,9 @@ function simulate(u, prof, outPath, _soc0){
   // maintenance included. Read by the adequacy loop to give the build LP a failing draw's own
   // outage path. 5 Oct 2026.
   const coalAvailFrac=new Float32Array(HOURS);
+  // Available coal as a share of standing coal, after outages, committed or not (14 Oct 2026): what COAL_AVAIL's stress
+  // windows read, recorded from the same run as coalAvailFrac so the two always describe one draw.
+  const coalAvailOnlyFrac=new Float32Array(HOURS);
 
   // Pre-pass: net load (residual before coal/storage) is purely a function of demand and
   // weather/baseload - no dependency on storage state - so it can be computed once upfront to
@@ -7873,6 +7876,7 @@ function simulate(u, prof, outPath, _soc0){
       : ucCommitted;
     coalAvailFrac[h] = coalInstRem > 0 ? cAvailRaw / coalInstRem : 0;
     coalAvailableArr[h] = (availFrac != null) ? coalInstRem * availFrac : coalAvail;
+    coalAvailOnlyFrac[h] = coalInstRem > 0 ? Math.max(coalAvailFrac[h], coalAvailableArr[h] / coalInstRem) : 0;
     if (_dslTankOn) _dslStock = Math.min(_dslTankCap, _dslStock + Math.max(0, p.dslRefillMW));
     for (const t of battTiers) if (tierSoc[t.k]) tierSoc[t.k][h] = t.soc;
     // operating RESERVE: capacity that is committed but must NOT be dispatched,
@@ -9159,7 +9163,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -11039,7 +11043,7 @@ function bldAdequacyTest(st, draws){
     const _cust = (st.bldAdequacyBasis ?? FIXED.bldAdequacyBasis) !== 'withCharging';
     let served = 0; for (let h = 0; h < r.loadS.length; h++) served += r.loadS[h] - (_cust ? (r.chargePsMW[h] || 0) + (r.chargeBattMW[h] || 0) : 0);
     const row = { year: y, k, gwh, seed: stk.outageSeed };
-    if (gwh > 0.01){ row.start = bldWorstWindow(r); row.coalFrac = r.coalAvailFrac; }
+    if (gwh > 0.01){ row.start = bldWorstWindow(r); row.coalFrac = r.coalAvailFrac; row.availFrac = r.coalAvailOnlyFrac; }
     rows.push(row);
     if (!worst || gwh > worst.gwh) worst = { year: y, gwh, r, demandGWh: served / 1000 };
   }
@@ -11193,7 +11197,8 @@ async function bldStressLoopPerYear(opts, onProgress){
         const PERY = !!((opts.state || {}).bldWindowsPerYear ?? FIXED.bldWindowsPerYear);
         if (same) { if (PERY && same.years) { if (!same.years.includes(f.y)) same.years.push(f.y); } else same.fromYear = Math.min(same.fromYear ?? BLD_YEARS[0], from); }
         else bldStressPeriods.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, fromYear: from, ...(PERY ? { years: [f.y] } : {}),
-          coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)) });
+          coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)),
+          ...(pick.availFrac ? { availFrac: Array.from(pick.availFrac.slice(st0 * 24, (st0 + SD) * 24)) } : {}) });
         entry.added.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, forModelYear: f.y, fromYear: from, rebound: !!same, shedGWh: +pick.gwh.toFixed(2) });
       }
     }
@@ -18929,7 +18934,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14h';
+const BUILD_STAMP = '2026-10-14i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

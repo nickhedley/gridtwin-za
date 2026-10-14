@@ -198,6 +198,23 @@ function check(label, ok, detail) {
           + `cut2027 against c4's formula, worst gap ${ctf.cutErr.toExponential(1)}; LP kept vs cut2027: ${ctf.kc.carbon} carbon terms, `
           + `${ctf.kc.nonCarbon} others, ${ctf.kc.y2026} in 2026, rows ${ctf.kc.rowsSame ? 'same' : 'DIFFER'}; kept vs full: ${ctf.kf.carbon} carbon, `
           + `${ctf.kf.nonCarbon} others, rows ${ctf.kf.rowsSame ? 'same' : 'DIFFER'}` : JSON.stringify(ctf));
+  // ── STRESS WINDOWS CARRY THEIR OWN AVAILABLE COAL (availFrac) ───────────
+  // Added 14 Oct 2026. COAL_AVAIL used to re-derive a window's available coal on the 2026 state; with the outage draw over
+  // the units still standing (14dr) a later year draws differently, and a run stopped on available below recorded. Each
+  // shedding run now records availFrac beside coalFrac from the same engine run: at least coalFrac in every hour, at most 1,
+  // and above it in some hours (coal available but not switched on).
+  const avf = await runProbe(w, `
+    const st = { ...FIXED, ...state, coalEAFPct: 45, demandGrowthPct: 25 };
+    const t = bldAdequacyTest(st, 1), rows = t.rows.filter(r => r.coalFrac);
+    let below = 0, above1 = 0, higher = 0, n = 0;
+    for (const r of rows){ if (!r.availFrac || r.availFrac.length !== r.coalFrac.length) return { error: 'row without availFrac' };
+      for (let i = 0; i < r.coalFrac.length; i++){ n++; const a = r.availFrac[i], c = r.coalFrac[i];
+        if (a < c - 1e-6) below++; if (a > 1 + 1e-6) above1++; if (a > c + 1e-6) higher++; } }
+    return { rows: rows.length, n, below, above1, higher };`);
+  check('stress windows carry their own available coal, never below what was committed',
+        avf && !avf.error && avf.rows > 0 && avf.below === 0 && avf.above1 === 0 && avf.higher > 0,
+        avf && !avf.error ? `${avf.rows} shedding runs, ${avf.n} hours: available below committed in ${avf.below}, above 1 in ${avf.above1}, `
+          + `above committed in ${avf.higher}` : JSON.stringify(avf));
   // ── THE LOOP'S STALL STOP (opts.stallFrac, STALL) ─────────────────────────
   // Added 14 Oct 2026 (user, c5's stopping rule): from pass stallFrom on, the loop stops when a pass cuts the worst
   // year's shed above target by less than stallFrac of the pass before, and says so in the verdict. The loop is run

@@ -260,8 +260,14 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
      return cache[key]; };
    const _bc = bldBuildLP; bldBuildLP = function(o){ const keep = bldStressPeriods, sum = [];
      bldStressPeriods = keep.map(p => { if (!p.coalFrac || p.seed === undefined) return p;
-       const A = availOf(p), cf = new Array(p.coalFrac.length); let eq = 0, mr = 1, ma = 1, sr = 0, sa = 0;
-       for (let i = 0; i < cf.length; i++){ const a = A[p.start * 24 + i], c = p.coalFrac[i];
+       // A window made from build 14i on carries availFrac, recorded by the same engine run as coalFrac. Without it the
+       // available coal is re-derived on the base state, which matches the recorded draw only when outages are drawn over
+       // all units in every year: with outageStandingUnits on (14dr) a later year draws over its own standing units, so
+       // the re-derivation is refused (14 Oct 2026: it stopped a run when available came out below recorded).
+       const OSU = !!(state.outageStandingUnits ?? FIXED.outageStandingUnits);
+       if (!p.availFrac && OSU) throw new Error('COAL_AVAIL: window ' + p.year + ' day ' + p.start + ' has no availFrac and outageStandingUnits is on; windows must come from build 14i or later');
+       const A = p.availFrac ? null : availOf(p), cf = new Array(p.coalFrac.length); let eq = 0, mr = 1, ma = 1, sr = 0, sa = 0;
+       for (let i = 0; i < cf.length; i++){ const a = p.availFrac ? p.availFrac[i] : A[p.start * 24 + i], c = p.coalFrac[i];
          if (!(a >= c - 1e-6)) throw new Error('COAL_AVAIL: available below recorded, window ' + p.year + ' day ' + p.start + ' seed ' + p.seed + ' hour ' + i + ': ' + a + ' < ' + c);
          cf[i] = a; if (Math.abs(a - c) < 1e-6) eq++; mr = Math.min(mr, c); ma = Math.min(ma, a); sr += c; sa += a; }
        sum.push([p.year, p.start, p.n, p.seed, sr / cf.length, mr, sa / cf.length, ma, eq, cf.length]);
