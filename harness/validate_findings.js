@@ -156,10 +156,15 @@ setTimeout(()=>{
       // generation on 23 Sep. The knee is twice the mean requirement, so about 4.5 GW, and the
       // existing 3.5 GW fleet is just below it. The check now pins the knee's LOCATION relative
       // to the fleet rather than the claim, so either direction registers as a change.
+      // RE-PINNED 14 Oct 2026, build 2026-10-14l (user decision, message 80). The knee did not move (flat to 4 GW, falling
+      // from 6 GW, identical on build 14j and 14l); the existing fleet did, 3,524 -> 2,792 MW, when the batteries were
+      // corrected from 800 MW to Eskom's 68 MW operating (pumped storage 2,724 MW unchanged). The ratio moved 1.70 -> 2.15.
+      // The band 0.8-2.0 x 3.52 GW held the knee point between 2.8 and 7.0 GW; the same knee range over 2.79 GW is
+      // 1.0-2.5, so the band now reads 1.0-2.5 and still registers a knee that moves, in either direction.
       const knee=r.pts.find(p=>p.anc < first*0.999);
       const ratio = knee ? knee.mw / r.nowMW : null;
       check('the ancillary knee sits close to the existing fleet',
-            !!knee && ratio > 0.8 && ratio < 2.0,
+            !!knee && ratio > 1.0 && ratio < 2.5,
             knee ? `knee between ${((knee.mw - 2000)/1000).toFixed(1)} and `
                    + `${(knee.mw/1000).toFixed(1)} GW against an existing fleet of `
                    + `${(r.nowMW/1000).toFixed(1)} GW - approaching, not past`
