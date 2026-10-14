@@ -37,6 +37,14 @@ public_data/anu_phes_za_summary.csv  ANU pumped hydro sites by supply area and c
                             harness/ext/anu_summary.py).
 public_data/anu_phes_shortlist_za.csv  the ANU South Africa shortlist, CC BY 4.0 (confirmed 7 Oct 2026);
                             first line is the attribution, skip it when reading.
+build_open_profiles.py      open-data candidate for profiles.json (ESRG demand; ERA5 wind, solar, CSP), same format;
+                            writes only the path it is given, never profiles.json (12 Oct 2026).
+era5_band.py                reads South Africa's band of ERA5 daily fields from the Google Cloud copy by byte range
+                            into a local cache, for build_open_profiles.py and 14bw.
+compare_profiles.py         compares two profiles.json-format files: capacity factors, peaks, diurnal shapes.
+public_data/ember_za.json   Ember's South Africa rows (monthly and yearly bulk files, CC BY 4.0, attribute
+                            Ember), with each file's release date; read by validate_benchmarks. Written by
+                            fetch_ember.py; re-run it for a new Ember release (12 Oct 2026).
 build_capacity.py           the generator. Runs from the root and reads nodal/...
                             relative to cwd. Has step 1b (the supply-area split) and
                             the eskom bucket.
@@ -67,6 +75,7 @@ inputs to build_capacity.py, not fetched by the page
   supply_area_split_draft.json
   pfl_private_h1_2026.json
   pfl_cod_h1_2026.json      read by validate_capacity
+  phes_sites_region.json    read by harness/ext/grid_distances.py (anu_summary.py)
 
 fetched by the page
   bq_queue.json                    coal_availability_trace.json
@@ -82,6 +91,9 @@ fetched by the page
   sa_solar_grid.json               substation_bands.json
   substations_compact.json         tdp_projects.json
   transmission_lines.geojson
+  profiles_solar_tracking.json     new utility solar, tracking option (build_solar_tracking.py)
+  profiles_wind_modern.json        new wind, modern-turbine profile, uncorrected (build_wind_modern.py)
+  profiles_wind_modern_map.json    its national 50-bin map, loaded at start-up (build_wind_modern.py)
 
 private_pending_h2_2026.json   six named private projects, deliberately not loaded.
                                Reconcile against the PFL H2 monitor, Feb 2027.

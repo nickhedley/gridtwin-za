@@ -1,0 +1,420 @@
+{
+ "meta": {
+  "what": "LNG price delivered at the South African coast (USD/MMBtu, January 2026 dollars) and the fuel cost the model uses (R/MWh of electricity at 52% HHV, January 2026 rands, R16.50/USD). Cases with terminal=true add USD 0.25/MMBtu variable regasification to the fuel cost and carry the LNG terminal as a separate fixed charge per kW of new gas (GAS_FOM_ADD, R354-707/kW-yr on the send-out basis); the IRP case does not.",
+  "conversions": {
+   "US CPI 2024 avg to Jan 2026": 1.0369,
+   "US CPI 2018 avg to Jan 2026": 1.2953,
+   "SA CPI Jan 2024 to Jan 2026": 1.0681,
+   "R per USD": 16.5
+  },
+  "least_sourced": "Shipping: a 2018 charter breakeven (OIES Insight 27) adjusted with US CPI and a waypoint distance estimate; charter rates have likely risen since the Hormuz disruption (Fearnleys: one-year charter about USD 100,000/day in March 2026).",
+  "built_by": "build_gas_cases.py, 9 Oct 2026"
+ },
+ "cases": {
+  "low": {
+   "label": "Low: US LNG, 115% of Henry Hub plus USD 3, shipped to Richards Bay",
+   "terminal": true,
+   "years": {
+    "2026": {
+     "coast_usd_mmbtu": 7.8044,
+     "fuel_r_mwh": 872.05,
+     "how": "HH 2.957 (2024$) x 1.0369 = 3.066; x 1.15 + 3.00 = 6.526 FOB; + shipping 1.279 (8,600 nm)"
+    },
+    "2027": {
+     "coast_usd_mmbtu": 7.9004,
+     "fuel_r_mwh": 882.44,
+     "how": "HH 3.034 (2024$) x 1.0369 = 3.145; x 1.15 + 3.00 = 6.617 FOB; + shipping 1.283 (8,600 nm)"
+    },
+    "2028": {
+     "coast_usd_mmbtu": 7.9963,
+     "fuel_r_mwh": 892.83,
+     "how": "HH 3.110 (2024$) x 1.0369 = 3.225; x 1.15 + 3.00 = 6.709 FOB; + shipping 1.288 (8,600 nm)"
+    },
+    "2029": {
+     "coast_usd_mmbtu": 8.0923,
+     "fuel_r_mwh": 903.22,
+     "how": "HH 3.187 (2024$) x 1.0369 = 3.305; x 1.15 + 3.00 = 6.800 FOB; + shipping 1.292 (8,600 nm)"
+    },
+    "2030": {
+     "coast_usd_mmbtu": 8.1883,
+     "fuel_r_mwh": 913.61,
+     "how": "HH 3.264 (2024$) x 1.0369 = 3.384; x 1.15 + 3.00 = 6.892 FOB; + shipping 1.296 (8,600 nm)"
+    },
+    "2031": {
+     "coast_usd_mmbtu": 8.2842,
+     "fuel_r_mwh": 924.0,
+     "how": "HH 3.341 (2024$) x 1.0369 = 3.464; x 1.15 + 3.00 = 6.984 FOB; + shipping 1.301 (8,600 nm)"
+    },
+    "2032": {
+     "coast_usd_mmbtu": 8.3802,
+     "fuel_r_mwh": 934.39,
+     "how": "HH 3.418 (2024$) x 1.0369 = 3.544; x 1.15 + 3.00 = 7.075 FOB; + shipping 1.305 (8,600 nm)"
+    },
+    "2033": {
+     "coast_usd_mmbtu": 8.4761,
+     "fuel_r_mwh": 944.77,
+     "how": "HH 3.494 (2024$) x 1.0369 = 3.623; x 1.15 + 3.00 = 7.167 FOB; + shipping 1.309 (8,600 nm)"
+    },
+    "2034": {
+     "coast_usd_mmbtu": 8.5721,
+     "fuel_r_mwh": 955.16,
+     "how": "HH 3.571 (2024$) x 1.0369 = 3.703; x 1.15 + 3.00 = 7.258 FOB; + shipping 1.314 (8,600 nm)"
+    },
+    "2035": {
+     "coast_usd_mmbtu": 8.668,
+     "fuel_r_mwh": 965.55,
+     "how": "HH 3.648 (2024$) x 1.0369 = 3.782; x 1.15 + 3.00 = 7.350 FOB; + shipping 1.318 (8,600 nm)"
+    },
+    "2036": {
+     "coast_usd_mmbtu": 8.764,
+     "fuel_r_mwh": 975.94,
+     "how": "HH 3.725 (2024$) x 1.0369 = 3.862; x 1.15 + 3.00 = 7.441 FOB; + shipping 1.323 (8,600 nm)"
+    },
+    "2037": {
+     "coast_usd_mmbtu": 8.8599,
+     "fuel_r_mwh": 986.33,
+     "how": "HH 3.802 (2024$) x 1.0369 = 3.942; x 1.15 + 3.00 = 7.533 FOB; + shipping 1.327 (8,600 nm)"
+    },
+    "2038": {
+     "coast_usd_mmbtu": 8.9559,
+     "fuel_r_mwh": 996.72,
+     "how": "HH 3.878 (2024$) x 1.0369 = 4.021; x 1.15 + 3.00 = 7.625 FOB; + shipping 1.331 (8,600 nm)"
+    },
+    "2039": {
+     "coast_usd_mmbtu": 9.0518,
+     "fuel_r_mwh": 1007.11,
+     "how": "HH 3.955 (2024$) x 1.0369 = 4.101; x 1.15 + 3.00 = 7.716 FOB; + shipping 1.336 (8,600 nm)"
+    },
+    "2040": {
+     "coast_usd_mmbtu": 9.1478,
+     "fuel_r_mwh": 1017.5,
+     "how": "HH 4.032 (2024$) x 1.0369 = 4.181; x 1.15 + 3.00 = 7.808 FOB; + shipping 1.340 (8,600 nm)"
+    }
+   }
+  },
+  "central": {
+   "label": "Central: 13.25% of Brent at USD 80 (IEA WEO 2025 STEPS, 2024 dollars)",
+   "terminal": true,
+   "years": {
+    "2026": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2027": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2028": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2029": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2030": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2031": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2032": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2033": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2034": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2035": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2036": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2037": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2038": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2039": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    },
+    "2040": {
+     "coast_usd_mmbtu": 11.7425,
+     "fuel_r_mwh": 1298.42,
+     "how": "Brent 80 (2024$) x 1.0369 = 82.949; x 13.25% = 10.991 FOB; + shipping 0.752 (4,200 nm)"
+    }
+   }
+  },
+  "brent100": {
+   "label": "Central slope at Brent USD 100 (2026 dollars)",
+   "terminal": true,
+   "years": {
+    "2026": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2027": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2028": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2029": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2030": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2031": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2032": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2033": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2034": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2035": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2036": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2037": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2038": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2039": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    },
+    "2040": {
+     "coast_usd_mmbtu": 14.0548,
+     "fuel_r_mwh": 1548.78,
+     "how": "Brent 100 (2026$); x 13.25% = 13.250 FOB; + shipping 0.805 (4,200 nm)"
+    }
+   }
+  },
+  "high": {
+   "label": "High: JKM 2026 full-year estimate, delivered (no shipping added)",
+   "terminal": true,
+   "years": {
+    "2026": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2027": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2028": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2029": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2030": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2031": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2032": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2033": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2034": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2035": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2036": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2037": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2038": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2039": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    },
+    "2040": {
+     "coast_usd_mmbtu": 19.8,
+     "fuel_r_mwh": 2170.81,
+     "how": "JKM 2026 full-year estimate USD 19.80 (Jan-Sep average 17.76 with Oct-Dec at 25.8), DES, nominal 2026 dollars"
+    }
+   }
+  },
+  "irp": {
+   "label": "IRP 2025 as published: R260.89/GJ, January 2024 rands, flat real, no terminal or adder",
+   "terminal": false,
+   "years": {
+    "2026": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2027": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2028": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2029": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2030": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2031": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2032": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2033": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2034": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2035": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2036": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2037": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2038": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2039": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    },
+    "2040": {
+     "coast_usd_mmbtu": 17.8182,
+     "fuel_r_mwh": 1929.17,
+     "how": "R260.8866/GJ (IRP 2025 workbook, New Tech Properties) x 1.0681 = R278.66/GJ"
+    }
+   }
+  }
+ }
+}

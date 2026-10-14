@@ -356,12 +356,15 @@ function probe(w, src) {
     // Without this the term is plumbed and untested, which is how avgCost drifted 2.8%
     // through fifteen green harnesses in the first place.
     check('curtailFuelCost is non-zero in the coal-curtailment scenario',
+      // UPDATED 7 Oct 2026, 13.9 -> 16.7, build 2026-10-07s: the scenario's 60 GW of new wind is now on the
+      // modern-turbine profile (bldWindModern, default 1; correction 1.064). Available wind 200.7 -> 247.3 TWh,
+      // curtailment 373.4 -> 433.4 TWh. Measured: 07o, 07p, 07q and 07s with bldWindModern 0 all give 14.10.
       // UPDATED 23 Sep 2026, 14.642 -> 13.9: Koeberg's factor moved to the latest rolling year
       // (0.70 -> 0.66), so coal carries a little more and curtails a little less. Measured.
       // UPDATED 22 Sep 2026, 6.342 -> 14.642: demand re-anchored to 2026 and exports removed
       // from the series (build_demand_2026.py); the lower base leaves more forced coal with
       // nowhere to go. Deliberate, not drift.
-      cost.spill.curtailFuelCost / 1e9, 13.9, 0.7,
+      cost.spill.curtailFuelCost / 1e9, 16.7, 0.7,
       'R bn. If this reads zero the scenario has stopped producing coal curtailment and the identity below is no longer exercising the term - fix the scenario, not the check'
       + 'identity below is no longer exercising the term - fix the scenario, not the check',
       'R bn');
@@ -506,8 +509,12 @@ function probe(w, src) {
   // an SRMC of 6206 until 14 Aug 2026 - impossible, and nothing was watching.
   // SRMC here is fuel + VOM + carbon at the model's own default carbon price.
   {
-    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-    const num = (k) => { const m = html.match(new RegExp('\\b' + k + '\\s*:\\s*([0-9.]+)')); return m ? parseFloat(m[1]) : null; };
+    // Read the LIVE values (FIXED after the page has loaded), not the first 'key: number' in the source text: from
+    // 11 Oct 2026 lcoeCcgt is derived at load from BLD_DISC and BLD_LIFE, so the source holds null for it and the text
+    // match fell through to a preset's lcoeCcgt:2500. Same check, now on the value the model uses.
+    const live = await probe(w, 'return { ' + ['carbonTaxRPerT','lcoeCoalNew','costCoal','vomCoal','emisCoal','lcoeCcgt','costCcgt','vomCcgt','emisCcgt','lcoeDiesel','costDiesel','vomDiesel','emisDiesel','lcoeNuclear','costNuclear','vomNuclear'].map(k => k + ': FIXED.' + k).join(', ') + ' };');
+    if (live.error) throw new Error('LCOE probe failed: ' + live.error);
+    const num = (k) => (typeof live[k] === 'number') ? live[k] : null;
     const carbon = num('carbonTaxRPerT');
     const pairs = [
       ['Coal',   num('lcoeCoalNew'), num('costCoal')   + num('vomCoal')    + carbon * num('emisCoal')],

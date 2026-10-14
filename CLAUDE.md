@@ -17,7 +17,14 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
   `node pathway/pathway_half.js`), with `testroot` as the root argument.
 - Install harness dependencies in harness/: `npm install jsdom highs eslint`.
 - ESK19679.csv is Eskom data obtained on request, all rights reserved. It is not in this
-  repository and must never be committed. Keep ESK*.csv in .gitignore. Without it the suite shows
+  repository and must never be committed. Keep ESK*.csv in .gitignore. Terms (user, 12 Oct 2026):
+  ESK19679 and ESK19243 carry no licence of their own, so Eskom's website terms and the Data Portal
+  disclaimer apply (personal, educational or non-commercial use; no reproduction, distribution or
+  publication without written consent; clause 2.10, no automated collection from the website).
+  Consent has been requested. Until it is given: keep ESK files local; derived results and single
+  calibration constants may be published, with Eskom credited and a note that the analysis is ours,
+  not Eskom's; never publish raw or per-unit hourly series; no scripted fetches from eskom.co.za
+  beyond one-off checks. Without it the suite shows
   one failing and three skipped checks in validate_weather and validate_benchmarks; say so when
   reporting counts.
 
@@ -33,7 +40,10 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected with ESK19679.csv present: 805/806, the one failure EDMSA Scenario A CO2 2035; eng5 6/6.
+Expected (12 Oct 2026): 808/812 with ESK19679.csv present, 804/809 without it; eng5 6/6. The four known failures:
+EDMSA Scenario A CO2 2035 (validate_external); wind capture at 110 GW, iron-air in July, and the preset curtailment
+band (validate_findings). The last three wait on #22. Without the file, validate_weather adds a fifth failure (the
+missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind check.
 
 ## Rules that matter most (RULES.md has the full set)
 
@@ -49,6 +59,11 @@ Expected with ESK19679.csv present: 805/806, the one failure EDMSA Scenario A CO
 
 Never push to main. Make each change on a new branch and open a pull request, with a short
 description of what changed and the suite counts. Nick reviews and merges.
+
+## Render checks
+
+Render checks on a fresh page load use the Playwright tools (the 'playwright' MCP server in .mcp.json) when they are
+available; otherwise a Playwright script against /opt/pw-browsers/chromium.
 
 ## Writing and reporting
 

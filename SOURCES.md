@@ -25,7 +25,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Eskom weekly system status | weekly | drift detector only | `validate_capacity.js` |
 | NERSA renewable energy monitoring report | half-yearly | 2025, issue 27, March 2026 | curtailment: R402m deemed energy to 67 plants, low demand at night, about 1.0-1.6% of 17,808 GWh (no GWh published; derived from tariffs). Sets the 1.3% stopgap. H1 2024 was 19.9 GWh, 0.2% |
 | NTCSA Weekly System Status Report, "Estimated Rooftop PV" monthly rows | weekly | 2026 w3 and w16; the 2025 rows agree in both | Backcast 2025 `rooftopMW` 6,532: the 2025 annual mean of the twelve monthly rows, 6,830.2, less 298.3 MW of wheeled solar the preset already carries in `pvUtilityMW` (2,600 less ESK19679's 2025 mean of 2,301.7). Basis: annual mean, calendar 2025 |
-| Eskom hourly dataset ESK19679 | on request | Apr 2022 - Aug 2026, 38,736 h | curtailment estimate. Separates Wind, PV, CSP, Other RE with installed capacity per technology. Wind installed peaks at 4,143 MW, matching the REIPPPP-only fleet - it EXCLUDES wheeled plant |
+| Eskom hourly dataset ESK19679 | on request | Apr 2022 - Aug 2026, 38,736 h | profiles.json (2025 hourly demand, wind_pu, solar_pu, csp_pu: build_demand_2026.py, rebuild_national_profiles.py), wind bias correction (bias_correct_wind.py), the coal availability trace (row below), the imports constant in nodal_engine.js, night thermal and pumping comparisons, and the validators (validate_weather, validate_benchmarks). No curtailment estimate has been made from it (corrected 12 Oct 2026, 14bw; the row said it fed one): the 2025 curtailment benchmark comes from NERSA's deemed-energy payments. Separates Wind, PV, CSP, Other RE with installed capacity per technology. Wind installed peaks at 4,143 MW, matching the REIPPPP-only fleet - it EXCLUDES wheeled plant |
 | Eskom hourly dataset ESK19243 | on request | calendar 2025 | OCGT seasonality. Superseded for most purposes by ESK19679 |
 | SAPVIA NERSA Registered Plants Dashboard | rolling | Q1 2026/27, as at 24 Aug 2026 | `nersa_registrations.json` — the cumulative series |
 | NERSA media statements | quarterly | Q1 2026/27 | the quarterly figures in the same file — a different source for a different scope |
@@ -36,13 +36,13 @@ superseded queue entries. Never add the delta. See rules.md.
 | NERSA Wholesale Electricity Pricing Methodology | consultation | May 2026 | independent cross-check on the price-component mapping; names balancing costs, which GridTwin lacks |
 | Energy Council of South Africa, Electricity Wholesale Tariff Series, ch. 1-3 | one-off, 2026 (UK PACT-funded) | flip-book at energycouncil.org.za/insights/analysis/; PDFs held by the user | retail stack and the planned SAWEM transition basis (TODO 14af-14ai); no constant reads it yet |
 | NERSA Trading Rules | consultation, v3 | June 2026; comments extended to 28 Sep 2026 (dashboard Issue 04) | governs wheeling and trading - see calendar |
-| Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted, bias-corrected 0.848 |
+| Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted; wind bias-corrected x1.0753 in the file (6 Sep 2026: fleet-weighted mean matched to Eskom's observed 2022-2023 output; the earlier 0.848 factor in weatherYearNational is retired, WIND_BIAS = 1.0) |
 | Form Energy / Google / Xcel transaction | one-off | 30 GWh, ~usd 77/kWh pre-incentive | `acapIronAir` 12,940 R/kW-yr |
 | Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, jet plan | `acapPs` 2,360 R/kW-yr |
 | Eskom Ingula pumped storage | one-off | R26.8bn reported, 1,332 MW / 21 GWh, built 2006-2017 (Engineering News, 2016) | cross-check on `bldPhesCostBasis` 'tubatse'; no constant reads it |
 | DFFE REEA, Red Cap / Impofu | rolling | as at last ingest | the Impofu and Koruson connector endpoints in `transmission_lines.geojson` |
 
-| SolarAfrica SunCentral | one-off | 114 MW of a 342 MW phase 1 energised 26 Aug 2026, not yet at commercial operation | pipeline, not capacity. Corrected 23 Sep 2026: an earlier entry here said 342 MW energised, which was wrong on the figure and the status |
+| SolarAfrica SunCentral | one-off | SunCentral 1, 114 MW: commercial operation September 2026 (user, 12 Oct 2026). SunCentral 2 nearing completion. 342 MW is phase one's planned total (SunCentral 1 to 3), not energised capacity: only 114 MW is confirmed | SunCentral 1 belongs in the private capacity at the next rebuild; 2 and 3 stay pipeline. Corrected 23 Sep 2026 (342 MW energised was wrong) and 12 Oct 2026 (commercial operation in September, not pending) |
 | Aurora Energy Research | occasional | 2060 outlook, Aug 2026 | independent corroboration of the no-gas frontier: >120 GW new capacity |
 | AEMO Engineering Roadmap / Transition Plan for System Security | annual | FY26 roadmap, Sep 2026 | the syncon and grid-forming findings in results.md; the roadmap merges into the TPSS from Dec 2026 |
 | NTCSA MYPD 6 revenue application, Table 10 | three-yearly | FY2026-FY2028, Aug 2024 | what the System Operator pays for ancillary services: reserves R1,445m, demand response R521m, reactive power R468m, system restoration R376m in FY2026. Behind asReserveRMWh and asVoltagePotRm |
@@ -172,7 +172,7 @@ from arithmetic rather than a provenance, and the repo history is still what wou
 
 **The private-project queue.** Six named projects observed from trade press now sit in
 `nodal/private_pending_h2_2026.json`, deliberately NOT loaded: SunCentral 1 (114 MW, commercial
-operation Oct 2026), Selemela (200 MW AC, Apr 2024), Damlaagte (97.5 MW, Aug 2025), Thakadu
+operation September 2026), Selemela (200 MW AC, Apr 2024), Damlaagte (97.5 MW, Aug 2025), Thakadu
 (255 MW, 2027), Paarde Valley PV2 (120 MW, end 2026) and Discovery Green's 740 MW portfolio,
 which is an aggregate rather than a plant and is there as a scale check only. 1,526 MW in total.
 The file says what to do when the February 2027 monitor lands: replace `by_source.private` from
@@ -216,7 +216,7 @@ file at the next rebuild:
 
 ```
 SunCentral 1, between Hanover and De Aar, Northern Cape   114 MW
-   COMMERCIAL OPERATION reached, reported 1 Oct 2026. Energised with its transmission
+   COMMERCIAL OPERATION reached in September 2026 (user, 12 Oct), first reported 1 Oct 2026. Energised with its transmission
    infrastructure in August; financial close Feb 2025, R1.8bn, Investec and RMB. SolarAfrica,
    backed by African Infrastructure Investment Managers and Helios. 548,856 modules.
    ONE-TO-MANY WHEELING: the plant is allocated across multiple commercial and industrial
@@ -540,6 +540,19 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     either in that fuel price or left out (the workbook does not say);
   - 2x1 9F.05 CCGT: heat rate 6,900 kJ/kWh (52.2%), overnight R18,653/kW, fixed O&M R501/kW-yr,
     variable O&M R61/MWh, 30 years, availability 97.5%;
+  - Open-cycle central capex (user decision 12 Oct 2026; build 2026-10-12b): EIA AEO2023 Cost and Performance
+    Characteristics of New Generating Technologies, 2022 dollars: frame combustion turbine USD 867/kW, multi-shaft
+    combined cycle USD 1,176/kW; ratio 0.737 applied to the model's CCGT capex, R34,965/kW x 0.737 = R25,778/kW in 2026,
+    same real escalation as CCGT. The IRP's R12,981/kW stays the low case. NREL ATB 2025 not used (atb.nlr.gov blocked).
+  - Basis of the CCGT capex R34,965/kW (BLD_COST.ccgt): USD 2,119/kW at R16.50, rising 2% a year real; matched on
+    23 Sep 2026 to GridLab's September 2025 study (recent combined-cycle projects routinely at USD 2,000/kW or more,
+    against USD 1,116-1,427 for plants completing 2026-27 and the ATB's USD 1,638 for 2030). The constant predates that
+    sourcing and its dollar year is not recorded; GridLab's figures are nominal 2025 dollars, so treat it as about 2025
+    dollars converted at R16.50, without a CPI step to 2026.
+  - 9F.05 OCGT (user's figures, 11 Oct 2026; build 2026-10-11f): heat rate 10,624 kJ/kWh (33.9% on the basis on which
+    the CCGT's 6,900 gives 52.2%, the efficiency costCcgt and emisCcgt use), overnight R12,981/kW (the low capex case),
+    fixed O&M R423.89/kW-yr, variable O&M R80.19/MWh; all x SA CPI 1.032 x 1.035 to January 2026. Life taken as the
+    CCGT's 30 years. The central capex (NREL ATB 2025) is still to be supplied; atb.nlr.gov is blocked here.
   - gas energy content 53.37 MJ/kg, used for the LNG storage check.
 - Derived (not sourced):
   - Regas fuel and boil-off: USD 0.25/MMBtu.
@@ -550,6 +563,159 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
   - costCcgt R1,813/MWh: the R2,003 default's USD 18.50 delivered becomes USD 16.75. The flat
     USD 2/MMBtu adder is replaced, not added to.
   - New CCGT fixed O&M raised by R260/kW-yr.
+
+## Committed procurement: section 34 determination, 7 Oct 2026 (user, 12 Oct 2026)
+
+- Ministerial determination under section 34 of the Electricity Regulation Act, 7 Oct 2026 (user's reading): 5,000 MW of
+  gas-to-power and 4,600 MW of battery storage, procured by the IPP Office. No commercial operation dates, battery
+  duration or gas capacity factor are published.
+- Battery procured so far: 1,744 MW / 6,976 MWh (4 hours); used as the assumed duration of the 4,600 MW (judgement).
+- Unclear whether the first gas round (closed 29 May 2026) sits inside the 5,000 MW, so 5 GW is treated as a minimum.
+- Use: the pre-decided set for TODO 14be step 5 (replacing IRP Table 1's gas by year), run as 'committed procurement'
+  against the new central: at least 5 GW of new gas at the 1.2 GW a year cap from 2030 (GAS_MIN), technology not stated
+  in the determination, modelled as CCGT (judgement).
+
+## Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)
+
+User decision 12 Oct 2026: Eskom-derived constants stay for now; the open question is the hourly series only. Both
+datasets were obtained on request, all rights reserved. Terms checked (user, 12 Oct 2026): they came through the Data
+Portal's five-year request with no licence of their own, so Eskom's website terms and the portal disclaimer apply:
+personal, educational or non-commercial use only; no reproduction, distribution or publication without written
+consent; no automated collection from the website without written consent (clause 2.10). Consent requested. Until
+it is given: ESK files stay local; derived results and single calibration constants (as listed below) may be
+published, with Eskom credited and a note that the analysis is GridTwin ZA's, not Eskom's; no raw or per-unit hourly
+series; no scripted fetches from eskom.co.za beyond one-off checks (the gridtwin-data weekly fetch is disabled).
+The hourly series below are to be replaced in the public repository by open versions, after their effect on c4 is
+reported (history not purged). Each constant below is a summary figure (a mean, a ratio or a
+calibrated parameter); its basis is in the comment beside it in the file named.
+
+Constants (kept):
+
+| Value | Where | Basis |
+|---|---|---|
+| coalEAFPct 65 | index.html FIXED | coal-only availability, Jan-Aug 2026 (65.3): fleet availability less nuclear at its output and the other 5,758 MW at 90%; 2023 49.7, 2025 58.4, FY2026 61.4 |
+| IMPORTS_CF 0.88 (read by importsCF) | nodal/nodal_engine.js | International Imports, Jan-Aug 2026 mean 1,012 MW on the 1,150 MW contract |
+| firm exports 745 MW | index.html FIXED | International Exports, mean since March 2026 (monthly means 684-822 MW after Mozal stopped) |
+| nuclearCF 0.66 | index.html FIXED | Koeberg sent-out on 1,880 MW, rolling twelve months to August 2026 (calendar 2022-2025: 0.631, 0.493, 0.472, 0.620) |
+| outageForcedSharePct 61 | index.html FIXED | UCLF / (PCLF + UCLF + OCLF), Jan-Aug 2026 |
+| outagePlannedSeason (12 monthly factors) | index.html FIXED | monthly PCLF over its annual mean, average of 2023-2025 |
+| outageMttrH 480 | index.html FIXED | calibrated to the persistence of 2025 unplanned capability loss (autocorrelation 0.91 at a day, 0.70 at a week) |
+| outageCmPerStationYr 5, outageCmMttrH 36, outageCmUnitShare 0.5 | index.html FIXED | calibrated to 2023-2025: 14 days a year losing over 8% of coal in 24 hours (measured 9, 16, 16), largest 6-hour fall 0.154 of mean (measured 0.136-0.152) |
+| dieselBudgetTWh spread evenly by month | index.html FIXED | 2023 OCGT output flat across the year (a shape choice, not a number) |
+| coal availability conversion, measured pairs | index.html (coal-only function) and validate_findings.js | fleet against coal-only availability 2023, 2025 and 2026 to August, with that year's nuclear factor |
+| '2025, as modelled' preset: coal availability 58.4%, exports 1,705 MW, imports 0.652, hydro 0.339, wind 3,900 and solar 2,600 MW Eskom-visible plus private, 2,301.7 MW 2025 mean Eskom-visible solar (rooftop 6,532 derivation) | index.html presets | calendar 2025 means |
+| TAIL_COAL_FACTOR 0.76 | index.html bldBuildLP (every pathway run) | coal on stress-window tail days derated to the worst measured 168-hour window over its annual mean (2024; 2023 0.87, 2025 0.83), read from nodal/coal_availability_trace.json |
+| weather-year wind scaling 1.0753 | nodal/profiles_regional_multiyear.json (bias_correct_wind.py) | scales the MERRA-2 regional wind so its capacity-weighted national mean matches Eskom-measured 2022-23 |
+| benchmark bands: 2025 imports, peaker seasonality 2.15-8.6, 2025 trade, coal EAF 58% with Koeberg 62% | harness/validate_benchmarks.js, validate_consistency.js, validate_outputs.js | calendar 2025 figures; validate_weather and validate_benchmarks also read ESK19679.csv at run time when it is present |
+
+Hourly series (the open question; terms under review, not CC BY):
+
+- profiles.json: demand and demand_2025 (RSA Contracted Demand less International Exports, calendar 2025, plus
+  rooftop added back; demand scaled 0.9519 to 2026), wind_pu, solar_pu, csp_pu (calendar 2025 output over that hour's
+  installed capacity). Copies: nodal/profiles.json, profiles_rebuilt.json.
+- profiles_OLD_backup.json: an older ESK19243 hourly set.
+- nodal/coal_availability_trace.json: coal-only availability by hour, 2023-2025, each year divided by its mean
+  (outageTraceYear).
+
+## Eskom Green targets (user, 12 Oct 2026)
+
+Eskom Green: 21 GW by 2035 and 32 GW by 2040; first batteries 1 GW / 4 GWh. As given by the user; primary source
+(Eskom statement or report, with date and page) still to be recorded before any figure is used in a scenario.
+
+## Grid delivery pace, 2025/26 (TODO 14bj addition, user, 12 Oct 2026)
+
+Chris Yelland newsletter, October 2026: 270.8 km of transmission line delivered in 2025/26 against a 423 km target;
+1,230 of 1,657 MW reached commercial operation on time in 2025/26.
+
+## Ember bulk data for validate_benchmarks (user, 12 Oct 2026)
+
+Ember, Electricity Data Explorer, bulk data files, CC BY 4.0: attribute Ember. South Africa's rows are in
+public_data/ember_za.json (fetch_ember.py), with each file's URL, release date (Last-Modified) and SHA-256. In use:
+monthly file released 2026-07-07 (latest month March 2026), yearly file released 2026-06-23. validate_benchmarks
+takes coal, nuclear, wind and power-sector CO2 from the monthly file and prints the release date. The Ember API was
+tried first and dropped: the proxy answered 'injection failed ("Ember")', HTTP 502, with the key as a network secret
+(body parameter api_key), and again with api_key=placeholder in the URL.
+
+Which Ember file (user, 12 Oct 2026). Ember's methodology (Ember Electricity Data Methodology, May 2024, South
+Africa section): yearly generation is the Energy Institute's annual series; monthly generation is Eskom's data,
+with coal topped up from Stats SA load data because Eskom's data undercounts coal; the latest year is the previous
+annual value moved by the change in the monthly data (so summed months need not equal the yearly figure). The two
+files agree within 2% to 2021; the coal gap opens in 2022 (3.2 TWh), 2023 (8.9), 2024 (12.0), and 2025 carries
+2024's 12.0 exactly (197.5 against 185.6 TWh; CO2 169.7 against 160.3 Mt, the same 6.4%). A steady block of captive
+plant, such as Sasol's own stations, would show in every year, so the gap is a divergence between the two source
+series since 2022, not an identified coverage item; the Energy Institute's coverage of autoproducers is not stated.
+Choice: the MONTHLY file, which follows the Eskom-connected system the model covers. validate_benchmarks prints the
+yearly figures beside it.
+
+Wind benchmark basis (user, 12 Oct 2026). The model sat 21.5% above Ember (12 months to March 2026) inside a 25%
+band. Cause: capacity. The model runs its 4,612 MW all year (wheeled private plant Ember does not count, about
+470 MW, and plants commissioned through 2025 and early 2026 counted from 1 January); the Eskom-metered fleet
+averaged about 3,652 MW in 2025: Ember's end-2024 3.44 GW (IRENA) and the REIPPPP fleet at end-2025, 3,763 MW
+(Engineering News, 9 Jan 2026, citing the IPP Office), plus Eskom's Sere, 100 MW. Capacity alone gives x1.263; the
+model reads x1.246 on calendar 2025. The benchmark is now calendar 2025 (the profile's year, so weather drops out),
+scaled to the model's fleet, with a 5% band (was 25%); the model reads -1.4%.
+
+Figures that moved with the switch (2025 unless stated): coal gross 185.6 TWh (was 177.7, not reproducible from
+the current files; the yearly file says 197.5, which includes generation outside Eskom's metering), nuclear 10.21 TWh
+(was 11.5), wind 11.64 TWh for the 12 months to March 2026 (was 11.60 to May 2026), CO2 160.3 Mt (was 175; yearly
+169.7). Utility-scale solar stays at 6.5 TWh from Ember's website: the bulk files carry solar only in total.
+
+## ERA5 reanalysis, Google Cloud copy (ARCO-ERA5): licence and attribution (user, 12 Oct 2026)
+
+Use: the open replacement for profiles.json's wind and solar (user, 12 Oct 2026) and the 14bw curtailment
+back-estimate. User decision 12 Oct 2026: take ERA5 from the Google Cloud copy, not the Copernicus Climate Data Store
+(cds.climate.copernicus.eu is refused here, and the Cloud copy needs no account).
+
+- Data: ERA5 hourly data on single levels, ECMWF for the Copernicus Climate Change Service (C3S), 0.25 deg. Dataset
+  DOI 10.24381/cds.adbb2d47; reference Hersbach, H. et al. (2020), The ERA5 global reanalysis, Q. J. R. Meteorol. Soc.
+  146, 1999-2049, doi:10.1002/qj.3803.
+- Copy used: Google Cloud public dataset gs://gcp-public-data-arco-era5 (ARCO-ERA5, google-research/arco-era5; the
+  copy's code is Apache-2.0, the data stays under the Copernicus licence). Raw daily NetCDF per variable under
+  raw/date-variable-single_level/YYYY/MM/DD/<variable>/surface.nc (NetCDF classic, uncompressed, so a latitude band
+  can be read by byte range). Coverage checked 12 Oct 2026 from the store's metadata: final ERA5 1940-01-01 to
+  2026-06-30, preliminary ERA5T to 2026-10-03, last updated 2026-10-12. (Google's dataset page in translation still
+  says the copy stops in May 2023; the bucket shows otherwise.)
+- Licence: CC BY 4.0. Search extracts (ECMWF forum, "CC-BY licence to replace Licence to use Copernicus Products on
+  02 July 2025"; the page itself is blocked here) state that from 2 July 2025 Copernicus products from the Climate,
+  Atmosphere and Early Warning data stores are under CC BY 4.0 in place of the Licence to use Copernicus Products.
+  Verify on the ECMWF page when it can be read.
+- Attribution wording (Copernicus; the ARCO-ERA5 README repeats it): for unmodified data, "Generated using Copernicus
+  Climate Change Service information [year]"; for modified data, as here (regridded, converted to per-unit output),
+  "Contains modified Copernicus Climate Change Service information [year]"; and "Neither the European Commission nor
+  ECMWF is responsible for any use that may be made of the Copernicus information or data it contains." Name ECMWF as
+  originator, the dataset, the Google Cloud copy as access route, the licence (CC BY 4.0, with a link) and that the
+  data were modified.
+
+## Gas price cases (TODO 14bo, build 09f, 9 Oct 2026)
+
+All quotes are search extracts (the source hosts are blocked from this environment). Computed by build_gas_cases.py
+into public_data/gas_price_cases.json; conversions there (US CPI-U 2024 average to January 2026 1.0369, 2018 average
+to January 2026 1.2953; SA CPI January 2024 to January 2026 1.0681; R16.50/USD).
+- Low: EIA AEO2025 reference Henry Hub, real 2024 USD, 2.88 in 2025 and 4.80 in 2050 (EIA Today in Energy), linear
+  between (user confirmed); US LNG at 115% of Henry Hub plus a USD 3.00 tolling fee (Argus, 5 Dec 2025; OIES Quarterly
+  Gas Review 32, Apr 2026); shipped 8,600 nm to Richards Bay.
+- Central: 13.25% of Brent (range 12.5-14%), a free-on-board slope (S&P Global, 7 May 2024: 13.2% FOB against 14.2%
+  delivered), at Brent USD 80 in 2024 dollars (IEA WEO 2025 STEPS, via an IISD explainer; dollar year probably 2024),
+  shipped about 4,200 nm from Ras Laffan (waypoint estimate; no published distance found). Brent USD 100 run as well.
+- High: JKM 2026 full-year estimate USD 19.80, delivered North Asia, taken as the delivered price at the South
+  African coast with no shipping added (Jan-Sep average 17.76 from EIA, IEA Gas Market Report Q3-2026 and
+  Reuters/LSEG monthly figures, with Oct-Dec at the early October front month of about 25.8).
+- IRP 2025 as published: R260.89/GJ, January 2024 rands, flat real, no terminal or adder (assumptions workbook, New
+  Tech Properties). No terminal charge is added in this case, matching the IRP.
+- Shipping, the least-sourced input: a 165,000 m3 carrier, 17 knots, 3 days in port, boil-off 0.12%/day laden, heel
+  0.09%/day; charter USD 60,000/day, a 2018 breakeven (OIES Insight 27), adjusted with US CPI. Charter rates have
+  likely risen since the Hormuz disruption (Fearnleys: one-year charter about USD 100,000/day in March 2026).
+- Variable regasification USD 0.25/MMBtu (derived, 14ak section above) is added to every case but the IRP's.
+- LNG terminal as a fixed cost per kW of new gas on the send-out basis, R354-707/kW-yr (Ngqura about R22bn plus R2bn
+  for the berth, 3.6 Mt/yr; Richards Bay R7bn for 2 mtpa; Standard Bank, ENN 23 Jul 2026, USD 1.5bn for two
+  terminals; computed at 8% over 25 years, 53.37 GJ/t, 6,900 kJ/kWh), applied with GAS_FOM_ADD to new gas in the
+  optimiser and the cost readout alike.
+
+## Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)
+
+- US EPA, GHG Emission Factors Hub: natural gas, 53.06 kg CO2 per MMBtu on a higher heating value basis.
+- emisCcgt = 53.06 / 1000 / 0.293071 MWh per MMBtu / 0.52 = 0.348 t/MWh, at the 52% (HHV) efficiency costCcgt
+  uses. The previous 0.37 implied 48.9%. IRP 2025 OCGT units at the same factor: 9F.05 0.534, 9HA.02 0.475 t/MWh.
 
 ## ANU RE100 pumped hydro atlas, South Africa shortlist (TODO 14z, 7 Oct 2026)
 
@@ -604,3 +770,95 @@ logistics, operating profile); the statement does not mention the IRP's 51% mini
 Bearing on the model: the engine's annual gas floor (51% on 6 GW, 2030-2040) rests on IRP 2025, not on
 this determination. Nothing changes until the gazetted determination and NERSA's concurrence are read.
 Not loaded; feeds the first-determination scenario (TODO 14au) once it is built.
+
+## Optimiser grid cost (TODO 14ar, build 07g, 7 Oct 2026)
+
+Decisions are the user's (7 Oct 2026). Constants in BLD_GRID, index.html; distances regenerated by
+harness/ext/grid_distances.py.
+
+- Central line cost: Independent Transmission Projects Phase I, USD 1bn for 1,164 km, about R15.5m/km
+  including substations, so no separate bays. South African, unverified.
+- High: MISO Transmission Cost Estimation Guide, 345 kV class as the 400 kV equivalent, R37m/km (central of
+  R34-44m) and R76m per bay (USD 4.4m, middle of the MTEP24 range). US labour and land; probably high for
+  South Africa.
+- 132 kV: the 400 kV figure times 0.607, NREL reV's MISO cost of a 205 MW-class (138 kV) line, USD 1,446,469
+  per mile, over a 400 kV line interpolated by voltage between its 400 MW (230 kV, 1,694,747) and 1,500 MW
+  (500 kV, 2,787,303) classes (2019 USD, reV code on GitHub). A ratio only, not a level.
+- Circuit ratings: 132 kV 205 MW (the reV class); 400 kV 1,000 MW (MISO 345 kV 750 MW scaled by voltage squared).
+- Storage bay: the high-case 132 kV bay (R76m x 0.607) per 90 MW scheme, the BESIPPPP BW1 preferred bidders'
+  mean (IPP Office REIPPPP historical data note, 7 Nov 2025).
+- Integration: txRPerKWyr, R402/kW-yr (TDP 2024 Table 4, generation integration share).
+- Distances, straight line to the nearest substation: wind 37.7 km and solar 21.9 km, MW-weighted over 254
+  and 1,161 approved DFFE REEA projects (nodal/reea_projects.json); beyond 18 km, 22.0 and 9.7. Pumped hydro
+  73.4 km to 275 kV or more, GWh-weighted over the ANU AAA and AA class medians (beyond 18 km, 55.4). Gas
+  7.5 km: Richards Bay 11.9 km to Athene, Coega 3.1 km to Dedisa (port coordinates approximate). The median
+  over all 2,392 approved projects is 16.6 km; the 18 km threshold is the user's earlier figure.
+- Wind and solar capex boundary: BLD_COST wind R21,000 and PV R12,000/kW have no recorded source, so whether
+  they include connection is unclear; charge from zero is central and beyond-18-km the sensitivity. Under
+  REIPPPP the developer funds the dedicated connection (Eskom budget quote and cost estimate letter;
+  self-build or Eskom build), so bid-derived capex probably includes it.
+
+## Existing diesel peakers: dates and life extension (TODO 14as, build 07h, 7 Oct 2026)
+
+- IRP 2025, section 3.2.1.2.2, p.13 (Gazette 53596 p.24): Port Rex and Acacia, 314 MW, end of life
+  2025-2026; Ankerlig and Gourikwa mid-2040s; Avon and Dedisa, procured on 15-year contracts, expire
+  2030-2031. Section 3.2.1.1.3, same page: coal 50-year end of life, 8 GW reduction 2029-2030, a further
+  15 GW 2034-2042. Page references supplied by the user.
+- About 30 years (user's default): PyPSA-RSA fleet_by_region_v2.csv decommissioning dates, Ankerlig 2039 and
+  Gourikwa 2038; Eskom heritage page: Gourikwa phase 1 in commercial operation 2007, phase 2 and Ankerlig
+  phase 2 started August 2007.
+- Fleet in the model: 3,400 MW (Ankerlig 1,338, Gourikwa 746, Acacia and Port Rex, Avon 670, Dedisa 335).
+  The fleet file has Acacia and Port Rex at 342 MW; the IRP's 314 MW is what retires.
+- Life extension: R1,500/kW, a labelled placeholder. UK Capacity Market, government response (2025): the
+  capex threshold for a refurbishing unit's three-year agreement lowered to GBP 65/kW (proposed GBP 50/kW,
+  after a Baringa study), a policy threshold set for CCGTs, not a measured cost. Sensitivity R4,000/kW.
+  No South African figure found.
+- Fixed O&M: fomDiesel R360/kW-yr on every MW online, Avon and Dedisa included after their contracts.
+- Running hours on the half-standard pathway (pathway_v_half_c1_p1.json, build 07c, twelve weather years x
+  two outage draws): 94 h a year in 2026, 3 in 2028, zero from 2030 (worst draw at most 4 h).
+
+## Build costs from South African bid data (TODO 14av, 14aw, 14ax; builds 07j and 07k, 7 Oct 2026)
+
+Decisions are the user's (7 Oct 2026).
+
+- IPP Office, South African REIPPPP historical data note, 7 Nov 2025 (uploaded by the user), January 2024
+  terms: BW6 solar preferred bidders R15,715/kW (single-axis tracking, capacity factor 30.1%), BW6 solar
+  compliant R19,756, BW6 wind compliant R26,647 (no wind was awarded), BESS BW1 preferred R27,888/kW at 4 h
+  (including 6% augmentation). Fixed O&M R269 (solar), R367 (wind), R678 (BESS) per kW-yr. Bid ranges: solar
+  R14,000-23,000, wind R19,000-36,000, storage R23,000-43,000. What the overnight cost includes is not defined;
+  under REIPPPP the developer funds the dedicated connection, so it probably includes it.
+- SA CPI, January 2024 to January 2026: 1.032 x 1.035 = 1.068 (Stats SA headline, 3.2% y/y January 2025 and
+  3.5% y/y January 2026, as reported; the Stats SA site is not reachable from the cloud environment).
+- IRP 2025 assumptions workbook (uploaded by the user), Learning Rates sheet, base case: onshore wind (BW6)
+  R25,695/kW in 2026 (January 2024 rands), x 1.068 = R27,446/kW. The user's choice for the wind default once
+  the IRP cost-set pathway run reports.
+- BESIPPPP bid window 3, preferred bidders 30 May 2025: 616 MW / 2,464 MWh at five NTCSA substations in the
+  Free State, R9.5bn (DEE media statement; SAnews; Engineering News). R3,856/kWh; one year at CPI 3.5% gives
+  R3,990/kWh, R15,962/kW at 4 h: BLD_COST.batt from build 07j, INCLUSIONS NOT STATED. Bid window 2 (Dec 2024):
+  615 MW / 2,460 MWh, R12.8bn, 31% local content. BW3's average evaluation price was 40% below BW1 and 8% below BW2.
+- BNEF Energy Storage System Cost Survey 2025: turnkey (battery racks, PCS, EMS; excluding EPC and grid
+  connection) USD 117/kWh global, 73 China, 177 Europe, 219 US; 2024 USD 165, 40% below 2023 (via
+  Energy-Storage.news). BNEF battery price survey 2025: stationary-storage packs USD 70/kWh, 45% below 2024;
+  lowest LFP cells USD 36/kWh. The old BLD_COST.batt (R8,105/kW, R2,026/kWh, no recorded source) sits at the
+  global turnkey level and is the low case.
+- Solar tracking profile: PVGIS (EC JRC) v5_3, PVGIS-SARAH3, single horizontal axis north-south, 10% system
+  loss, at the ten fixed-tilt points (build_solar_tracking.py; nodal/profiles_solar_tracking.json). The user
+  asked for Renewables.ninja's tracking option; it is not reachable from the cloud environment, so PVGIS was
+  used, which is the source of the existing fixed-tilt solar too. SARAH3 covers 2005-2023; 2024 and 2025 use
+  the PVGIS tracking/fixed ratio by region, month and hour.
+- Modern-turbine wind profile (new wind, bldWindModern): Renewables.ninja MERRA-2 (CC BY-NC 4.0), Vestas V162 5600
+  at 120 m, at the 98 sites of profile_sites.json, sample year 2019, mapped onto every year of the existing file in
+  50 bins per region (build_wind_modern.py; nodal/profiles_wind_modern.json and the national map
+  nodal/profiles_wind_modern_map.json). Stored uncorrected. Correction for new wind 1.064 central, 1.00 low
+  (index.html WIND_NEW_CORR; user decision, 7 Oct 2026), fitted to developer-stated annual output: Impofu 330 MW,
+  1,260 GWh (Enel) and San Kraal 140 MW, 616 GWh (EDF), check_wind_farms.py, weather years 2016, 2019, 2021, 2023.
+
+## International benchmarks for central build costs (RULES, 7 Oct 2026)
+
+- IRENA, Renewable Power Generation Costs in 2024 (July 2025): global weighted average total installed cost,
+  onshore wind USD 1,041/kW (R17,180 at R16.50), utility-scale solar USD 691/kW (R11,400); India 525 and China 591
+  for solar. South African BW6 bids sit about 66% (wind) and 47% (tracking solar) above these.
+- Wind central from build 07q: BW6 compliant bids R26,647/kW (January 2024) x 1.068 = R28,463/kW. IRP 2025's BW6
+  base case (R27,446/kW, 2026) is a cross-check only.
+- Lithium central from build 07p: BW3 aged to January 2026 (equipment share at BNEF's 2025 turnkey decline),
+  R3,425/kWh; BNEF turnkey 2024 USD 165/kWh, 2025 USD 117/kWh.
