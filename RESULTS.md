@@ -2696,6 +2696,34 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### Re-pin round on build 2026-10-14r: wind capture as a range with an asymmetry check, the response baseline and the average cost (user, 14 Oct 2026, messages 95 and 102)
+
+One round, on the build c5b_14r runs on (6045387). Each move is traced by switching the week's changes back one at a time at
+defaults: interruptible load before diesel at 1,200 MW (message 86 settings), then the Avon and Dedisa must-run off, then the
+legacy reserve rule. With all three back, both the response matrix (87/87) and the average cost (R1,075.31) match main's pins
+exactly, so nothing else moved them.
+
+- Wind capture at 110 GW (validate_findings 3): the check 'wind holds its capture rate' (wind above 85%) is replaced by 'wind
+  captures far more than solar at 110 GW of build, inside its recorded range': wind minus solar above 50 points, wind 81-86%.
+  Why: the finding's claim is the asymmetry, and wind's level swung 81.5-85.1% this week with a few scarcity hours (entry 14r).
+  On 14r: wind 81.5%, solar 4.0%.
+- Average cost at defaults (validate_outputs): R1,075.3 -> R1,101.0 R/MWh, tolerance unchanged. Avon and Dedisa must-run +25.45;
+  ASTR reserve rule +0.30; interruptible load last at 1,000 MW -0.04.
+- Response matrix (validate_response, response_matrix.json rewritten): 7 cells, each with the change that moved it.
+
+| Control -> output | Main baseline | 14r | Cause |
+|---|---|---|---|
+| dieselDecomMW -> loleHrs | responsive | inert | ASTR reserve rule |
+| newCcgtMW -> coalTWh | responsive | inert | ASTR reserve rule |
+| newCcgtMW -> co2 | responsive | inert | ASTR reserve rule |
+| battHours -> replAvg | responsive | inert | Avon and Dedisa must-run |
+| coalFlexPct -> coalTWh | responsive | inert | Avon and Dedisa must-run |
+| newBattHours -> replAvg | inert | responsive | Avon and Dedisa must-run |
+| nuclearCF -> rePct | responsive | inert | interruptible load last at 1,000 MW |
+
+Base values at defaults, main -> 14r: coal 148.305 -> 147.405 TWh; CO2 157.65 -> 157.509 Mt; average cost 1,075.31 -> 1,101.02
+R/MWh; replacement cost 1,507.98 -> 1,542.2 R/MWh; average price 762.05 -> 757.8 R/MWh.
+
 ### Interruptible load cap tried and withdrawn (build 2026-10-14r, branch claude/reserve-rule; user, 14 Oct 2026, message 101)
 
 Rule: interruptible load 1,000 MW with no annual energy cap (drInterruptAnnualMWh 0; a positive value still caps it, for
@@ -5862,6 +5890,9 @@ modern-turbine profile at 1.064, build 07s, against the current-turbine profile,
   Avon and Dedisa must-run as well (build 14p); cause and scenario year in 'Every check moved by the reserve rule and the must-run'.
   Updated 14 Oct 2026 (user, message 101): 81.5% on builds 14q and 14r, traced to the interruptible order and size. Quote as a range,
   about 81-85% this week (85.1, 83.7, 85.1, 81.5), not a point: it swings with a few scarcity hours (RESULTS 14r).
+  Re-pinned 14 Oct 2026 (user, message 102), build 14r: wind 81.5%, solar 4.0%. The check now tests the claim, the asymmetry:
+  wind captures more than 50 points above solar, with wind inside 81-86% (the week's readings rounded outward to whole points).
+  Traced cause of the move from 85.1%: interruptible load called last, 2.85 points; 1,000 MW in place of 1,200, 0.72 points.
 - With gas, 100-hour iron-air barely moves July (validate_findings, LDES scope; RESULTS "Long-duration storage in a
   system that has gas"). Scenario: Seriti build (20 GW wind, 25 GW solar, 20 GW lithium at 10 h, 32 GW coal retired,
   EAF 70%) plus 25 GW new CCGT, then 20 GW of 100-hour iron-air. July gas 846 -> 832 GWh (-1.7%) becomes 425 -> 0 GWh

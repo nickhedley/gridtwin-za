@@ -127,8 +127,14 @@ setTimeout(()=>{
       return {wind:cap(x.stack.wind), solar:cap(x.stack.pv)};`);
     if(r.error) check('capture asymmetry finding runs', false, r.error);
     else {
-      check('wind holds its capture rate at 110 GW of build',
-            r.wind > 85 && r.wind < 115, `wind capture ${r.wind.toFixed(1)}%`);
+      // REWRITTEN 14 Oct 2026 (user, message 102). Was 'wind holds its capture rate' with wind above 85%. That pinned a point
+      // the engine cannot hold: it read 85.1, 83.7, 85.1 and 81.5% in one week (builds main, 14n, 14p, 14q/14r) as a few
+      // scarcity hours changed which plant sets the price (RESULTS 14r: interruptible load called last, 2.85 points; 1,000 MW
+      // in place of 1,200, 0.72). The finding's claim is the asymmetry, so the check now tests that wind captures far more
+      // than solar, with wind inside the recorded range: 81 to 86%, the week's readings rounded outward to whole points.
+      check('wind captures far more than solar at 110 GW of build, inside its recorded range',
+            r.wind - r.solar > 50 && r.wind >= 81 && r.wind <= 86,
+            `wind capture ${r.wind.toFixed(1)}% against solar ${r.solar.toFixed(1)}% (range 81-86%, gap above 50 points)`);
       check('solar capture collapses at 110 GW of build',
             r.solar < 10, `solar capture ${r.solar.toFixed(1)}% - the asymmetry IS the finding`);
       console.log(`  capture        wind ${r.wind.toFixed(0)}% · solar ${r.solar.toFixed(1)}% (no storage)`);
