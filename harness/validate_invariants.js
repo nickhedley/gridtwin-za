@@ -534,26 +534,31 @@ const SCENARIOS = {
   // ── MUST-RUN GAS ENERGY GOES SOMEWHERE ─────────────────────────────────────
   // Added 22 Sep 2026. With ccgtForceLoad on, forced output was added to generation and the
   // residual clamped at zero, so unneeded gas was burned and emitted against nothing: 27.3 TWh
-  // of it on an IRP-style 2035 build. Grid generation must now balance what is served, exported
-  // and charged, to within storage losses.
+  // of it on an IRP-style 2035 build.
+  // REWRITTEN AS THE EXACT BALANCE, 14 Oct 2026 (user, TODO 14dp (6)). The first version compared generation with the
+  // demand line less charging less firm exports, within a quarter of charging plus 1 TWh. But the demand line (loadS)
+  // already carries both charging and firm exports, so its gap was charging less firm exports, not phantom gas, and it
+  // failed whenever charging passed about 10 TWh a year (engine fix (a) took IRP path 2035 from 8.5 to 14.6 TWh; build 14a
+  // 22.5). The balance itself closes to 1e-12 TWh: generation plus shed equals the demand line plus surplus exports.
+  // Gas burned against nothing would break it, so the check now asks for that, within 0.01 TWh.
   {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__gas = (function(){ try {
       const r = simulate({ ...state, ...PRESETS['IRP path 2035'] }, PROFILES);
-      let load = 0, chg = 0;
-      for (let h = 0; h < 8760; h++){ load += r.loadS[h]; chg += r.chargeMW[h] || 0; }
+      let load = 0;
+      for (let h = 0; h < 8760; h++) load += r.loadS[h];
       const E = r.E;
       const gen = E.wind + E.pv + E.csp + (E.hybrid || 0) + E.nuclear + E.hydro + E.imports
                 + E.coal + E.ps + E.batt + E.ccgt + E.diesel;
-      return { gapTWh: (gen - (load - chg) - (E.exportedFirm || 0)) / 1e6,
-               chargeTWh: chg / 1e6, unmetTWh: (r.ccgtFloorUnmetMWh || 0) / 1e6 };
+      return { gapTWh: (gen + E.unserved - load - (E.exported || 0)) / 1e6, genTWh: gen / 1e6,
+               unmetTWh: (r.ccgtFloorUnmetMWh || 0) / 1e6 };
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const G = w.__gas;
     if (!G || G.err) check('must-run gas energy goes somewhere', false, G ? G.err : 'no result');
-    else check('must-run gas energy goes somewhere', G.gapTWh < 0.25 * G.chargeTWh + 1,
-               `generation exceeds served, exported and charged energy by ${G.gapTWh.toFixed(1)} TWh `
-               + `against ${G.chargeTWh.toFixed(1)} TWh charged; the IRP gas floor went unmet by `
+    else check('must-run gas energy goes somewhere', Math.abs(G.gapTWh) < 0.01,
+               `generation plus shed less the demand line (charging and firm exports included) and surplus exports: `
+               + `${G.gapTWh.toFixed(4)} TWh on ${G.genTWh.toFixed(1)} TWh generated; the IRP gas floor went unmet by `
                + `${G.unmetTWh.toFixed(1)} TWh`);
   }
 

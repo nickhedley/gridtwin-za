@@ -96,11 +96,15 @@ setTimeout(()=>{
     if(r.error) check('demand response finding runs', false, r.error);
     else {
       const [z,opt,hi]=r;
-      check('modest demand shifting lowers system cost', opt.sys < z.sys,
+      // RESTATED 14 Oct 2026 (user, TODO 14dp). Until engine fix (a) a 7.5% shift cut system cost and a 30% shift raised
+      // both cost and the peak (the rebound). With storage planning 24-48 hours ahead the stores already do that shifting:
+      // a 7.5% shift moves system cost by 0.04% (R210.38bn against R210.30bn at zero, build 14a) and the rebound peak no
+      // longer appears (29,589 MW against 29,628), but a large shift still costs more, through the 6% lost on shifted load.
+      check('modest demand shifting moves system cost by under 0.1% once storage plans ahead', Math.abs(opt.sys - z.sys) < 0.001 * z.sys,
             `7.5% shift gives R${opt.sys.toFixed(2)}bn against R${z.sys.toFixed(2)}bn at zero`);
-      check('demand response reverses at high shift', hi.sys > z.sys && hi.peak > z.peak,
+      check('demand response reverses at high shift: a 30% shift raises system cost', hi.sys > z.sys,
             `30% shift gives R${hi.sys.toFixed(2)}bn and a ${Math.round(hi.peak)} MW peak against `
-            + `R${z.sys.toFixed(2)}bn and ${Math.round(z.peak)} MW at zero - the rebound peak is the finding`);
+            + `R${z.sys.toFixed(2)}bn and ${Math.round(z.peak)} MW at zero`);
       console.log(`  demand resp.   R${z.sys.toFixed(1)}bn at 0% · R${opt.sys.toFixed(1)}bn at 7.5% · R${hi.sys.toFixed(1)}bn at 30%`);
     }
   }
@@ -273,47 +277,37 @@ setTimeout(()=>{
   }
 
 
-  // ── 7. THE INSTANT HEURISTIC DISPATCHES AT THE AVERAGE PRICE ──────────────
-  // SCENARIO: the model's own battery fleet against its own hourly prices, default build.
-  // METRIC: revenue-weighted average price ACHIEVED on discharge, against the median
-  // market price. The published claim is that the heuristic is not targeting peaks -
-  // which is a statement about TIMING and needs no revenue comparison to hold.
-  //
-  // Deliberately NOT asserting the revenue gap. Against perfect foresight it reads 89%,
-  // and almost all of that sits in hours a 1,800 MW battery would itself price away by
-  // discharging into them. That number is not defensible and is not pinned.
+  // ── 7. STORAGE DISCHARGES AT A HIGHER PRICE THAN IT CHARGES ─────────────
+  // REPLACED 14 Oct 2026 (user, TODO 14dp (3)). The check it replaces asserted that the instant heuristic discharged near
+  // the median price, not the peak (ratio under 1.5). Engine fix (a) planned storage 24 hours ahead, which is meant to
+  // target the expensive hours, so that claim no longer described the engine (ratio 2.56 on 13h, 2.05 on 14a). The test
+  // is now what the look-ahead should do: each fleet's volume-weighted price when it discharges is above its price when it
+  // charges, on the default build with 1 GW / 4 h of new batteries (the old probe) and on IRP path 2035, where storage is
+  // large. Build 14a: new batteries R1,531 against R747/MWh; IRP path 2035 batteries R2,054 against R1,886, pumped storage
+  // R2,052 against R1,821. Prices are the hourly marginal price (marginalP).
   {
     const r = probe(`
-      // SNAPSHOT AND RESTORE. Probes in this harness share one window and earlier ones
-      // mutate the scenario object - the oversupply check leaves 46 GW of wind behind.
-      // Inheriting that gave R1,141/MWh against R754 measured in isolation, and I nearly
-      // recorded the polluted figure as a finding.
-      //
-      // Rebuilding from FIXED does not work either: it lacks the slider keys simulate
-      // needs, so the run throws and a guard silently skips the check - which is how this
-      // one disappeared without failing. Restore the defaults instead.
+      // SNAPSHOT AND RESTORE: earlier probes mutate the shared scenario (see the oversupply check).
       const saved = JSON.parse(JSON.stringify(state));
       for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
-      const x = simulate({ ...state, newBattMW: 1000, newBattHours: 4 }, PROFILES);
-      const p = x.marginalP, dis = x.stack.batt;
-      let rev = 0, mwh = 0;
-      for (let h = 0; h < 8760; h++){ const d = dis[h] || 0; rev += d * p[h]; mwh += d; }
-      const srt = Array.from(p).sort((a, b) => a - b);
+      const wavg = (s, p) => { let a = 0, m = 0; for (let h = 0; h < 8760; h++){ const d = (s && s[h]) || 0; a += d * p[h]; m += d; } return { px: m > 0 ? a / m : 0, mwh: m }; };
+      const one = (ex) => { const x = simulate({ ...state, ...ex }, PROFILES); const p = x.marginalP;
+        return { bD: wavg(x.stack.batt, p), bC: wavg(x.chargeBattMW, p), pD: wavg(x.stack.ps, p), pC: wavg(x.chargePsMW, p) }; };
+      const a = one({ newBattMW: 1000, newBattHours: 4 }), b = one(PRESETS['IRP path 2035']);
       Object.assign(state, saved);
-      return { achieved: mwh > 0 ? rev / mwh : 0, median: srt[4380], mwh };
+      return { a, b };
     `);
-    check('the storage timing probe returns a result',
-          !!(r && !r.error && r.mwh > 0),
-          r && r.error ? String(r.error).slice(0, 90) : 'probe returned no discharge');
-    if (r && !r.error && r.mwh > 0){
-      const ratio = r.achieved / r.median;
-      check('the instant heuristic discharges near the median price, not the peak',
-            ratio < 1.5,
-            `achieves R${r.achieved.toFixed(0)}/MWh against a median of R${r.median.toFixed(0)} `
-            + `- a ratio of ${ratio.toFixed(2)}. If this rises above 1.5 the heuristic has `
-            + `started targeting peaks and the published claim needs revisiting`);
-      console.log(`  storage timing R${r.achieved.toFixed(0)}/MWh achieved \u00b7 `
-        + `median R${r.median.toFixed(0)} \u00b7 ratio ${ratio.toFixed(2)}`);
+    check('the storage price probe returns a result',
+          !!(r && !r.error && r.a.bD.mwh > 0 && r.b.bD.mwh > 0 && r.b.pD.mwh > 0),
+          r && r.error ? String(r.error).slice(0, 90) : 'a probe returned no discharge');
+    if (r && !r.error && r.a.bD.mwh > 0 && r.b.bD.mwh > 0 && r.b.pD.mwh > 0){
+      const f = (d, c) => `R${d.px.toFixed(0)} against R${c.px.toFixed(0)}/MWh`;
+      check('storage discharges at a higher average price than it charges',
+            r.a.bD.px > r.a.bC.px && r.b.bD.px > r.b.bC.px && r.b.pD.px > r.b.pC.px,
+            `discharge against charge: default + 1 GW batteries ${f(r.a.bD, r.a.bC)}; IRP path 2035 batteries `
+            + `${f(r.b.bD, r.b.bC)}, pumped storage ${f(r.b.pD, r.b.pC)}`);
+      console.log(`  storage prices default+1GW batteries ${f(r.a.bD, r.a.bC)} \u00b7 IRP 2035 batteries ${f(r.b.bD, r.b.bC)} `
+        + `\u00b7 pumped storage ${f(r.b.pD, r.b.pC)}`);
     }
   }
 
