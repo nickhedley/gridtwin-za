@@ -2872,6 +2872,29 @@ factor 47.5 -> 47.6%. Suite 720/727, audit 87/87, eng5 6/6; against 14c: iron-ai
 two new failures from the changed draw, neither check changed: 'high-season off-peak is the cheapest block modelled'
 (low-season off-peak now cheapest) and the response baseline (11 cells).
 
+### c5 inputs, final (14 Oct 2026): settings line, and the exact line run locally to adequacy in two passes
+
+Decisions (user, 14 Oct): tracking on; carbon central 'kept2030'; coal on IRP 2025 Figure 3's 50-year line, with Meridian's ME
+IRP 2024 dates (UC_FLEET, c4's) and the 60-year line as sensitivities; wind 2.5 GW a year to 2030 and 3.5 GW from 2031; lithium
+capex decline 3% a year (as s_battdecl), with 5% as a sensitivity. Branch claude/c5 at a74d581 (build 2026-10-14i), pull request
+#37. Suite 725/731 node checks plus audit 87/87 (812/818), eng5 6/6, the six known failures.
+
+Settings line (workflow 'Optimiser long run', ref claude/c5, name c5, one pass per job; SOLVER=native set by the workflow):
+COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5 STRESS_TARGET=1 GRID=1
+ROOF_MW=900 COAL_AVAIL=1 PVTRK=1 COAL_DATES=coal_dates_irp2025.json BATT_DECL=0.03 WIND_CAP=3500 WIND_CAP_FROM=2031 MAXP=6
+STALL=0.1 STALL_FROM=4
+
+The exact line run locally before launch (user, 14 Oct): pathway_perfail.js at a74d581, SOLVER=native TL=7200 RESUME=1
+JOB_PASSES=2, 08:10-08:25 UTC, exit 0, 867 s; output kept in the scratchpad only. Coal standing from COAL_DATES within 250 MW of
+Figure 3 in every year (2030 32,433 MW, 2040 17,890). Pass 1 solved Optimal; the loop's test failed one year, 2030 (mean shed
+2.12 against a limit of 2.08 GWh; excess 0.039 GWh), and added three 14-day windows for 2030: weather 2021 seed 36369844 days
+87-100 (shed 49.8 GWh), weather 2020 seed 36361925 days 1-14 (0.59 GWh; the window that stopped the 14h test), weather 2023
+seed 36385682 days 8-21 (0.40 GWh). Each window's available coal is at least its committed coal in all 336 hours (committed
+mean 0.447 / 0.537 / 0.552 of standing coal, available 0.449 / 0.550 / 0.559). Pass 2 solved Optimal; no year failed (worst
+2030 at 88% of its limit); verdict 'adequate'. Recorded in the output: pvTracking 1, carbonPath kept2030, carbonFull 0,
+battDecl 0.03, coalAvail 1, roofMW 900, stall 0.1 from pass 4. New wind is first built in 2032 and peaks at 2,308 MW in
+2039, so the 3,500 MW cap does not bind on this run. Caveat: a local run; the GitHub run is c5 of record and re-solves.
+
 ### COAL_AVAIL stopped a c5 test run under 14dr; fixed (windows carry their own available coal); s_coalavail's results unchanged, 14 Oct 2026
 
 Found testing c5's settings on claude/c5 (build 14h; local, JS solver, no files kept): with COAL_DATES on, pass 1 failed the
