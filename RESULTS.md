@@ -2964,6 +2964,9 @@ iron-air over the year, GWh          1,574 in, 708 out   1,439 in, 648 out
    this check guards a claim in the NERSA correction note (Megaflex charges high-season off-peak above low-season off-peak
    while it is the cheapest block modelled). On 14d that claim no longer holds on means, and on medians it held on neither
    build.
+   Decided 14 Oct (user): the correction note is closed and not public; no clarification. After the note (TODO 14dy) the
+   check is replaced by a guard on what still holds, that in a typical hour the blocks barely differ in price (medians
+   743-750 R/MWh on 14a and 14d); the ordering by average depends on a few shortage hours.
 
 6. Response baseline regenerated on this engine: 87/87.
 
