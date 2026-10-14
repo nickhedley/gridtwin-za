@@ -1,6 +1,8 @@
 const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');
 // Effective carbon tax by year on the legislated Phase 2 path (matches CARBON_AT in bldBuildLP); CFLAT overrides.
-const CTAX = y => process.env.CFLAT ? +process.env.CFLAT : (y <= 2026 ? 46 : (y >= 2030 ? 462 : 308*Math.pow(462/308,(y-2026)/4)) * (1 - Math.max(0.75, 0.85 - 0.025*Math.min(4, y-2026))));
+// CFULL is set below when the pathway recorded carbonFull (the statutory rate with no allowances, CARBON_TAX_LAW).
+let CFULL = null;
+const CTAX = y => CFULL ? CFULL(y) : process.env.CFLAT ? +process.env.CFLAT : (y <= 2026 ? 46 : (y >= 2030 ? 462 : 308*Math.pow(462/308,(y-2026)/4)) * (1 - Math.max(0.75, 0.85 - 0.025*Math.min(4, y-2026))));
 // Gas output (TWh), running hours (hours above 1 MW) and capacity factor, mean over runs (6 Oct 2026).
 // SEED_BASE: outage draws independent of the loop's own test (index.html bldAdequacyTest uses 20260816
 // + k*104729 + y*7919); SEED_BASE=20260816 reproduces the 5 Oct 2026 runs, which reused the loop's draws.
@@ -63,6 +65,12 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (process.env.GAS_CAPEX) w.eval(`if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`);
  // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
  if (P.importsEndYear) w.eval(`state.importsEndYear=${+P.importsEndYear};`);
+ // Full statutory carbon rate (user, 14 Oct 2026, s_carbonfull): the pathway's own setting, read from the app's table so
+ // optimiser and engine price carbon alike. CFLAT cannot be given with it.
+ if (P.carbonFull){
+   if (process.env.CFLAT) throw new Error('CFLAT with a run made at the full statutory carbon rate (carbonFull)');
+   w.eval(`if(typeof carbonTaxHeadline!=='function') throw new Error('carbonTaxHeadline missing'); state.carbonTaxFull=1;`);
+   CFULL = y => +w.eval(`carbonTaxHeadline(${y})`); console.log('carbon at the full statutory rate:', [2026,2030,2040].map(y=>y+' R'+CTAX(y)).join(', ')); }
  // Tracking solar (TODO 14aw; 14 Oct 2026): the pathway's own setting, so new utility solar runs on the profile the
  // optimiser built it on. A PVTRK given here as well must agree. Runs made before 14 Oct record none: PVTRK alone, as before.
  if (P.pvTracking != null){

@@ -5538,6 +5538,10 @@ const FIXED = {
   bldPvRateGrowthPct:7,
   // Build optimiser prices carbon on the legislated Phase 2 path (CARBON_AT in bldBuildLP). 5 Oct 2026.
   carbonTaxPathOn:1,
+  // carbonTaxFull 1 (user, 14 Oct 2026, c5 sensitivity s_carbonfull): the build optimiser and the engine check price carbon
+  // at the full statutory rate with no tax-free allowances (CARBON_TAX_LAW), held at the 2030 rate after 2030 because no
+  // later rate is in law. 0: the allowance path above.
+  carbonTaxFull:0,
   // Pumped hydro as a build option (bldBuildLP, 5 Oct 2026). Off by default until reviewed.
   // FOM R297/kW-yr: NREL ATB 2022 pumped storage, USD 18/kW-yr, at R16.50/USD (no South African
   // figure published).
@@ -9404,6 +9408,12 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 // to numbers near the lcoe* reference anchors at typical capacity factors.
 // BESIPPPP bid window 3 as bid (R9.5bn for 2,464 MWh, May 2025) and its equipment share at the bid date: BNEF global
 // turnkey (USD 165/kWh, 2024 survey; 117, 2025) interpolated to May 2025, at the pinned R16.50/USD. See BLD_COST.batt.
+// CARBON TAX RATE IN LAW, R per tonne CO2e before allowances: Carbon Tax Act 15 of 2019, s5(2A)-(2C) as amended by the
+// Taxation Laws Amendment Act 20 of 2022 (GG 47826, 5 Jan 2023), read on Acts Online's consolidated text, 14 Oct 2026.
+// After 2030 s5(3) raises the rate by amounts the Minister announces in each Budget; none is in law, so the table ends at
+// 2030. The 2022 Budget's intent (at least US$30 by 2030, higher by 2035 and 2040, US$120 beyond 2050) is not legislated.
+const CARBON_TAX_LAW = { 2026: 308, 2027: 347, 2028: 385, 2029: 424, 2030: 462 };
+function carbonTaxHeadline(y){ return CARBON_TAX_LAW[Math.min(2030, Math.max(2026, y))]; }
 const BATT_BW3_BID = 9.5e9 / 2464e3;
 const BATT_EQUIP_BID = 165 * Math.pow(117/165, 5/12) * 16.5;
 const BLD_COST = {
@@ -10288,9 +10298,13 @@ function bldBuildLP(opts){
   // (2022 Budget, Phase 2), tax-free allowances cut 2.5 points a year from 2027 to 2030 (Treasury
   // Phase 2 paper), so the effective rate goes from carbonTaxRPerT in 2026 to 462 x 0.25 =
   // R115.5/t in 2030, flat after. carbonTaxPathOn 0 holds carbonTaxRPerT flat.
+  // carbonTaxFull: the statutory rate with no allowances (CARBON_TAX_LAW), 14 Oct 2026. The allowance path keeps its
+  // 2026 and 2030 headline rates from the same table and its geometric interpolation between them, as before.
+  const LAW0 = CARBON_TAX_LAW[2026], LAW1 = CARBON_TAX_LAW[2030];
   const CARBON_AT = y => {
+    if (S.carbonTaxFull) return carbonTaxHeadline(y);
     if (!S.carbonTaxPathOn || y <= 2026) return CARBON;
-    const head = y >= 2030 ? 462 : 308 * Math.pow(462 / 308, (y - 2026) / 4);
+    const head = y >= 2030 ? LAW1 : LAW0 * Math.pow(LAW1 / LAW0, (y - 2026) / 4);
     return head * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
   };
   const CAP_ON = !!(S.carbonCapEnabled), CAP_MT = S.carbonCapMt ?? 140;
@@ -18896,7 +18910,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14f';
+const BUILD_STAMP = '2026-10-14g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
