@@ -1776,7 +1776,8 @@ GWh, sent out     domestic grid   exports   distributed PV   other onsite   Mode
 
 Reconciliation, 2024, against Eskom contracted demand including exports, 219.7 TWh (ESK19679, entry "IRP demand verified
 against the IRP", 22 Sep): the IRP's domestic grid demand is 4.2 TWh above actual and its exports 3.9 TWh below, so the
-two offset and leave 0.26 TWh unexplained. The 1.3 TWh first reported was a rounding artefact. 2026 on one basis: the
+two offset and leave 0.26 TWh unexplained. (Corrected 14 Oct, entry 'Demand checks before rebasing': 2.8 TWh above and
+2.5 below, calendar 2024; the net 0.3 stands.) The 1.3 TWh first reported was a rounding artefact. 2026 on one basis: the
 IRP's 246.0 TWh against 219.5 TWh measured (the model's 2026 profile, 200.62 TWh gross of rooftop, plus exports 6.53
 and other onsite generation 12.39) = +12.1%. The 218.9 TWh in the user's note was an earlier estimate with a smaller
 onsite figure. Like-for-like ratios, IRP level to the model's basis: IRP 1.089, NTCSA MTSAO 1.106; the 1.187 used
@@ -2947,6 +2948,209 @@ Caveats: the engine check is the note's cost measure, with its storage-dispatch 
 nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
 differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
 
+### Demand checks before rebasing: Eskom's domestic demand fell in a step of about 1.9 GW (1.6 GW at night) between mid-July and mid-September 2025, matched by coal output, so not a counting change; the 2026 scaling counts the step twice for September-December (2.4 TWh); 0.9519 traced; most of the 10.6 TWh domestic gap to the IRP is suspended ferrochrome load contracted to return from mid-2026; with it c5's measured path reaches about 254-256 TWh in 2030 on the IRP's basis, 14 Oct 2026
+
+User, 14 Oct, messages 65 (1), 67 and 69: before rebasing, check, with no runs, (i) 2024, 2025 and 2026 side by side on one
+basis, and the January-August annualisation tested on 2024 and 2025; (ii) whether the ESRG series is the IRP's reference
+forecast and which demand Table 1 was built on; (iii) the source of 0.9519 and what it multiplies; wheeled plant month by
+month in both years; whether the 2025 fall is real or a change in how Eskom counts; its causes, each classed as closed,
+suspended or moved to own or wheeled supply; then the 2030 gap and the rebase factor.
+
+Data and settings. Eskom hourly data, ESK19679 (obtained on request; kept local; only monthly and annual totals shown here;
+the analysis is ours, not Eskom's). Domestic demand = RSA Contracted Demand less International Exports, as in
+build_demand_2026.py. profiles.json as built 22 Sep (build 2026-09-22h), unchanged; engine a74d581 (build 2026-10-14i);
+ESRG series from public_data/esrg_irp_demand_ref.json. Scripts in the session scratchpad (demand65, c5sens); nothing run on
+GitHub.
+
+(iii) 0.9519. build_demand_2026.py: (domestic January-August 2026 + wheeled output January-August 2026) / domestic
+January-August 2025 = (126.259 + 1.025) / 133.717 = 0.9519 (0.9442 without the wheeled output). It multiplies calendar
+2025's hourly domestic demand, 194.62 TWh, giving 185.27 TWh for 2026; rooftop is then added back with the engine's own
+formula (8,942.1 MW x 0.78 x the solar profile, 15.35 TWh), giving the profile's 200.62 TWh.
+
+Eskom's series are unconstrained: Residual Demand equals Dispatchable Generation plus manual load reduction, interruptible
+load and other interruptible supply in every hour (to the MW), and RSA Contracted Demand equals Residual Demand plus Total RE
+(within 146 MW). Load shed is therefore counted as demand (16.8 TWh in 2023, 2.6 in 2024, 0.6 in 2025, 0.03 in January-August
+2026), so the end of load shedding is not behind the fall.
+
+(i) One basis, sent out, unconstrained, TWh:
+
+```
+                                           2023      2024      2025      2026 as built   2026, Sep-Dec fixed (below)
+Eskom domestic (contracted less exports)   214.62    206.12    194.62    185.27          187.67
+Eskom exports                              11.25     13.53     14.94     6.53 (a)
+Eskom contracted demand incl. exports      225.87    219.65    209.55    191.80
+ESRG domestic grid demand                  208.97    208.90    210.17    213.86
+ESRG exports                               11.25     11.06     11.02     11.02
+ESRG domestic grid plus exports            220.22    219.96    221.19    224.88
+ESRG less Eskom, domestic                  -5.65     +2.78     +15.55    +28.59 (+15.4%)   +26.19
+ESRG less Eskom, including exports         -5.65     +0.30     +11.63    +33.08
+```
+
+(a) The model's export setting, 745 MW (the post-Mozal mean, April-August 2026), as used for c5. 2026 includes the wheeled
+output added back (model basis). The 2024 match (0.3 TWh) is a crossing, not a calibration: ESRG's domestic grid demand is
+flat at about 209-210 TWh from 2023 to 2025, while Eskom's fell 214.6, 206.1, 194.6. Corrections to the entry 'c5 demand
+against IRP 2025' and the 9 Oct entry: in 2024 ESRG's domestic is 2.8 TWh above Eskom's and its exports 2.5 below (not 4.2
+and 3.9; the net 0.3 stands); ESRG's 2026 (domestic grid plus distributed PV, 222.6) is 11% above the model's 200.6, so the
+model's 2026 is 9.9% below ESRG's, and on the grid basis alone ESRG is 15.4% above.
+
+Annualisation test (domestic). The model's method, calendar year before times the January-August ratio, is the same as
+dividing January-August by the year before's January-August share:
+
+```
+year   January-August   full year   January-August share   annualised from the year before's share   error
+2023   144.89           214.62      0.6751
+2024   138.92           206.12      0.6740                 205.77                                    -0.2%
+2025   133.72           194.62      0.6871                 198.40                                    +1.9%
+2026   126.26           -           -                      183.76 (185.27 with wheeled output)
+```
+
+The step. Domestic demand by month, year on year: 2025 against 2024, 0.969, 0.923, 0.972, 0.973, 1.001, 0.970, 0.952, 0.940,
+then 0.910, 0.904, 0.903, 0.908 (September-December); 2026 against 2025, 0.913, 0.926, 0.942, 0.938, 0.947, 0.952, 0.956,
+0.977 (January-August). Weekly, 2025 against 2024: about 0.97 in late June, 0.945 mid-July, 0.925 late August, 0.89-0.91 from
+mid-September to December. Against May-June's year-on-year change (-353 MW), mid-September to mid-December 2025 is -2,238
+MW, a step of -1,884 MW: -1,643 MW at night (01:00-04:00), -2,001 at midday (10:00-14:00), -1,824 in the evening (17:00-20:00).
+The step is round-the-clock, so it is not rooftop or other solar self-supply.
+
+Counting change ruled out (message 69 (1)). The same windows, year on year, step in MW: RSA Contracted Demand -2,315,
+International Exports -431, International Imports +197, Thermal Generation -2,225, Nuclear +501, Eskom OCGT -296, Hydro -140,
+Dispatchable IPP OCGT -53, Total RE -309, Non Comm Sentout +5, load reductions about 0. No series rose by anything like the
+step; exports fell. Generation (Dispatchable Generation plus Total RE) fell 2,329 MW, the same as contracted demand, and coal
+carried it. Eskom's own day-ahead forecast (RSA Contracted Forecast) stepped down by 2,343 MW in the same weeks.
+
+The annualisation fault. 0.9519 compares January-August 2026 (after the step) with January-August 2025 (before it, apart
+from part of July and August), and is applied to every month of calendar 2025, including September-December, which were
+already after the step. Those four months take the step twice: about 2.4 TWh. The monthly 2026/2025 ratios rise towards
+1 as the 2025 month nears the step (0.977 in August).
+
+Wheeled plant, month by month (message 67). Wheeled output added back, GWh, 2025 and 2026: January 0 and 35, February 0 and
+27, March 0 and 69, April 0 and 101, May 0 and 175, June 0 and 211, July 0 and 216, August 0 and 193; total 0 and 1,025.
+The seven H1 2026 wheeled plants (958 MW, PFL H1 2026) are added from their start month; none ran in 2025. Eskom's
+installed wind and PV leave them out in both years: 3,443 and 2,287 MW through March 2025, 3,723 and 2,285 from July 2025
+(BW5 wind), 4,143 and 2,780 by June 2026, which is 469 and 491 MW below the model's fleet, matching the 470 and 488 MW
+wheeled. Pre-2026 private solar (Selemela 200 MW, April 2024; Damlaagte 97.5 MW, August 2025) is in the model's rooftop
+bucket (NTCSA's privately procured PV series) and added back at its 2026 level. One plant in neither: Castle wind, 89 MW,
+reported operating from the end of March 2025 (research helper, to confirm), about 0.07 TWh in the ratio. So wheeled plant
+is counted the same way in both years, within 0.1%.
+
+Causes, each classed (message 69 (2); research helper, web search, HTML pages through the page reader, two 11-page Stats SA
+releases, one 2-page NERSA statement, nothing from eskom.co.za; notes in the session scratchpad, demandfall):
+- Ferrochrome smelters, Glencore-Merafe Chrome Venture (GMCV) and Samancor: suspended, returning. GMCV suspended Boshoek
+  from 1 May 2025 and Wonderkop from 31 May 2025 (Merafe SENS, 13 Jun 2025), and Lion for maintenance and rebuilds from June
+  2025 (same SENS; Business Report, 30 Jul 2025); its third-quarter 2025 output was 709 t against about 111 kt in the first
+  half (Engineering News, 28 Oct 2025). NERSA waived the smelters' 70% take-or-pay for six months 'effective August 2025'
+  (Engineering News, 7 Jan 2026, reporting NERSA; Fastmarkets, 15 Oct 2025: 'starting from August 1'), which matches the
+  step's timing; Samancor's own curtailment dates not found. Eskom's FY2026 (April 2025-March 2026) industrial sales fell 9.7
+  TWh (22.5%), attributed 'largely to a fall in demand from the country's remaining ferrochrome smelters' (Engineering News,
+  31 Aug 2026). The smelters' contracted demand is 12.8 TWh a year, about 1.46 GW (Eskom at NERSA's hearing, Engineering News,
+  25 May 2026). Return: an interim 87.74c/kWh tariff from February 2026 with 40% of furnace capacity back (Engineering News, 8 Dec
+  2025 and 29 Jan 2026; Lion restarted at half capacity, February 2026, search summary); NERSA approved 62c/kWh negotiated
+  pricing agreements effective 1 June 2026, Samancor for five years and GMCV for three (NERSA media statement, 29 May 2026,
+  p.1-2), with minimum 80% take-or-pay (Engineering News, 25 May 2026); GMCV announced Boshoek and Wonderkop will restart, and
+  Samancor that it intends to resume all its smelters within six months (Engineering News, 26 Jun 2026). GMCV's agreement ends
+  31 May 2029, before 2030.
+- ArcelorMittal South Africa long steel (Newcastle): suspended, reopening uncertain. Blast furnace into 'temporary care and
+  maintenance' after funding beyond 30 September 2025 was not found (AMSA SENS, 2 Sep 2025); 'production has ceased' (IOL, 6
+  Nov 2025, quoting SENS). Load in MW not found; IDC talks on reopening reported (search summary, February 2026).
+- Moved to own or wheeled supply: small, and mostly daytime. Castle wind, 89 MW, wheeled to Sibanye-Stillwater from about
+  the end of March 2025, about 309 GWh a year (Mining Weekly, 1 Apr 2025); in neither the model's fleet nor its demand, so
+  0.31 TWh a year of IRP-basis demand is missing. Springbok solar, about 150 MWac, wheeled from October 2025, over 430 GWh a
+  year (Engineering News, 31 Oct 2025); solar, so in the model's rooftop bucket if NTCSA's private PV series counts it (not
+  confirmed). Rooftop: 7,464 MW in December 2025 (Eskom weekly reports via Engineering News, 23 Jan 2026), 8.3 GW by June
+  2026 (NTCSA via Engineering News, 19 Jun 2026); daytime only, so not the night step.
+- Weather: not a cause. Winter 2025 'normal and slightly warmer' (SAWS via IOL, 31 Jul 2025); the step persists from
+  September to December and at night.
+- Counting change: none found. NTCSA's weekly reports carry the same series definitions in 2025 as in 2021-2023 (search
+  summary). Independent check, Stats SA P4141 (preliminary, each release printed p.3 and p.6): electricity distributed fell
+  7.9% year on year in September 2025, North West -23.7% and Limpopo -19.8% (the smelter provinces), 7.1% in December 2025,
+  4.2% in calendar 2025; 1.1% in August 2026, January-August 2026 -3.4%.
+
+What is back already. Night-time domestic load (01:00-04:00, which rooftop cannot touch) against the same month of 2024:
+-1.5 to -2.0 GW from September to December 2025, -1.3 to -1.4 GW in June to August 2026, so about 0.5 GW has returned by mid-2026,
+consistent with Lion and the 40% restart. The remaining smelter load, about 0.7-1.0 GW at the agreements' 80% to full
+contracted demand, is contracted to return from mid-2026, on top of the measured base.
+
+(ii) Is the ESRG workbook the IRP's reference forecast, and which demand is Table 1 built on? Partly found; research helper,
+web search only, no IRP page read first-hand (DEE hosts blocked here; the plan is a long PDF). The IRP's forecast is ESRG's
+work: IRP 2025 (user-friendly version, DEE, Oct 2025, page not known, search wording): 'The electricity demand forecast
+developed by ESRG ...'; ESRG, 'High Spatial and Temporal Resolution End-use Electricity Demand Projection Model' (UCT web page,
+undated, read directly): 'The results of these efforts have already been directly used to provide the electricity demand
+projection scenarios used in the latest national Draft IRP 2024 and 2025.' But the workbook the model uses is not the final
+forecast: ZivaHub record doi:10.25375/uct.26942134 (figshare API, read directly) has five versions, v1 9 Sep 2024 to v5 26 Feb
+2025, and HourlyDemandModel_v10_IRP_v02_wExports.xlsm has the same checksum in all five, so it dates from September 2024,
+before the November 2024 draft and the October 2025 plan; there is no v6, and no source names IRPDemandREF as the plan's
+moderate forecast. The plan gives 255 TWh twice with different years (search wording, pages not known): key outcomes, '...
+meet the energy demand forecast of 255 TWh in 2030'; assumptions, 'electricity energy demand forecast of 255 TWh by 2029'
+(also TaiyangNews, 22 Oct 2025, on the Minister's briefing: '... to rise to 255 TWh by 2029'). The November 2024 draft deck
+puts the Reference Case on the Moderate forecast (search summary). A third-party digitisation of the plan's Figure 2
+(SBG.EARTH, 'Every plan forecast growth but (shock) demand fell.', 2026, stated reading error 1-1.5 TWh) reads the moderate
+curve at 238.5 TWh in 2024, 246.0 in 2027, 250.5 in 2028, 254.0 in 2029, 261.0 in 2030, 269.0 in 2031, 299.0 in 2035 and 340.0
+in 2040. Against it the workbook (Mode 1 total) is +0.7 TWh in 2024, +4.6 in 2027 and 2028, +6.3 in 2029, +7.6 in 2030 and 2031,
++6.6 in 2035 and +8.2 in 2040, with nearly the same growth year to year (2030 to 2040: +79.6 against +79.0). The workbook's
+8.3 TWh step from 2029 to 2030 is in domestic grid demand (+7.4); exports are flat. Reading: Table 1 was built on the plan's
+moderate forecast, a later ESRG revision about 5-8 TWh below the workbook from 2027, not on the workbook's 268.6. The plan's
+moderate forecast is about 254-255 TWh in 2029 and about 261 in 2030; '255 TWh in 2030' in the key outcomes looks like the
+2029 figure. Not settled: the two sentences and Figure 2 need checking against the plan itself, with pages. IRP 2025 peak
+demand for 2030: not found. Comparator (not the IRP): NTCSA's Medium-Term System Adequacy Outlook 2026-2030, moderate base
+case, 243 TWh in 2024 to 264 TWh in 2030 (Daily Maverick, C. Yelland, 3 Nov 2025).
+
+Gap and rebase factor (message 69 (3)):
+
+```
+2030, TWh, IRP basis                                      domestic+rooftop  total   gap to 255, factor   gap to 261, factor
+c5 as built (0.9519 on every month), nothing back         220.96            244.4   +10.6  1.0481        +16.6  1.0753
+September-December fixed at 0.9766 (a)                    223.61            247.0   +8.0   1.0357        +14.0  1.0625
+fixed, plus Castle wind (0.31 TWh)                        223.92            247.3   +7.7   1.0343        +13.7  1.0611
+fixed, Castle, smelters back 0.7 GW (80% take-or-pay)     230.05            253.5   +1.5   1.0067        +7.5   1.0328
+fixed, Castle, smelters back 1.0 GW (full contract)       232.68            256.1   -1.1   0.9953        +4.9   1.0211
+```
+
+Totals add the IRP's 11.0 TWh of exports and ESRG's 12.39 TWh of other onsite generation. (a) September-December 2025 at
+the August 2026 year-on-year ratio (0.9766) plus the full H1 2026 wheeled fleet's September-December output (0.91 TWh):
+2026 domestic 187.67 TWh (from 185.27), profile 203.02 (from 200.62). Held at 1.000 instead: 189.10, gap to 255 +6.4,
+factor 1.0285. Returning smelter load is a flat block (not grown with the index): the remaining contracted load, 12.8 TWh a
+year (1.46 GW), less about 0.5 GW already back by mid-2026, at 80% take-or-pay (0.7 GW) or in full (1.0 GW). GMCV's agreement
+ends May 2029, so part of the block is not contracted in 2030. AMSA long steel, if it reopens, would add to it (MW not found).
+
+Peak (message 65 (2)). The 2026 profile's grid peak, rooftop removed, falls on a June evening; with c5's rooftop in 2030
+(12,542 MW: 8,942 plus 900 a year from 2027) the 2030 grid peak is 31.7 GW for c5, 33.2 GW at factor 1.048 (34.0 GW with
+c5's 745 MW of exports, 34.5 GW with the IRP's 1,258 MW average); the September-December fix leaves the winter peak
+unchanged, and a flat 0.7-1.0 GW smelter block gives 32.4-32.7 GW. IRP 2025's peak forecast: not found (research helper).
+
+Settings for the figures: c5's line (RESULTS 'c5 inputs, final'), DEMAND=irp_esrg, index 1.101384 for 2030; rooftopDerate
+0.78; nothing re-run. Decisions for the user (TODO 14ec): the September-December fix; whether returning smelter load enters
+as a block or through a factor; the 2030 target (255 or about 261).
+
+
+### Carbon in c5's optimiser: priced on c5's path ('kept2030', build 2026-10-14h) in every year; the cost-split tool now reads each run's own path and checks its carbon line by year, 14 Oct 2026
+
+User, 14 Oct (message 66, item 1): confirm the optimiser used c5's carbon path when it chose c5's build, say which path the
+split tool uses; if the old path, stop; otherwise update the split tool to read each run's path and check its carbon line
+equals CO2 x rate in every year.
+
+The optimiser: c5's settings line sets no CARBON_PATH, so the run took FIXED.carbonAllowancePath, 'kept2030' (build
+2026-10-14h, commit 0554d11; 14g, 87cf91b, added only the full-rate switch carbonTaxFull, off in c5); both are in a74d581,
+c5's commit. Read from the LP itself: c5's pass-2 LP rebuilt locally at a74d581 from c5's line and windows has key
+619b507795, the key of the LP c5 solved on GitHub (RESULTS 'c5 result'), so it is that LP. The carbon in its objective,
+from every coal (gc_) and diesel (gd_) term (coefficient over the day weight, less fuel and variable cost, over the
+emission factor): R46.00/t in 2026, 50.32, 54.20, 57.95, 61.31 from 2030 to 2040, within R0.03/t in every term. That is
+carbonTaxAt on 'kept2030' (46.00, 50.32, 54.20, 57.95, 61.31 held). 'cut2027' would be 46.00, 59.65, 75.44, 93.93, 115.50.
+
+The split tool: costsplit_lp.py (TODO 14cv, branch claude/costsplit) carried its own copy of the 5 Oct formula, which is
+'cut2027'. No c5 figure used it: the c5 sensitivities used costsplit_tsl.py (penalty only, no carbon), and c5's cost
+without carbon tax came from the engine (entry below). Changed on claude/recheck-14d, commit 2f8828d: costsplit_consts.js
+takes the run's pathway json and writes the rate by year from the app's carbonTaxAt on the run's recorded carbonPath and
+carbonFull (a record without them is refused); costsplit_lp.py refuses constants made for another record and fails unless,
+in every year, (1) its carbon line equals the year's CO2 from the solution times the run's rate, and (2) the carbon the LP
+itself priced (each fuel term's coefficient less its fuel and variable cost, from the LP text, so independent of the rate)
+equals the same product (tolerance 1e-5 relative, for the LP's R0.001 coefficient rounding).
+
+Tests, c5's LP (619b507795) and cached solution: passes in every year, largest relative gap 9e-7. Carbon PV at 8% R74.83bn
+(the engine's R74.9bn), objective without carbon R1,404.72bn (with it R1,479.55bn). CO2 in the LP's dispatch: 156.5 Mt in
+2026, 155.4 in 2030, 90.7 in 2040. Told 'cut2027' against the same LP: fails 2027-2040 (its carbon line would have been
+R123.82bn). Constants made for another path, or a record without carbonPath: refused. carbonFull=1: R308.00, 336.89 ...
+410.48/t, as the app. Not yet in the workflow's report job, which would need a step rebuilding each run's final LP (DUMP_LP
+from the run's line and windows, about 20 s); to add before c5b.
+
 ### c5 demand against IRP 2025: on the IRP's basis c5's 2030 demand is about 240 TWh against the IRP's 255, 15 TWh (6%) lower; more than accounting (a lower domestic level and a lower export assumption); decision with the user, 14 Oct 2026
 
 User, 14 Oct (item 1): reconcile c5's 210 TWh in 2030 with IRP 2025's 255 TWh; if the gap is more than accounting, stop
@@ -2971,7 +3175,7 @@ be about 220 without them.
 ```
 2030, TWh                                                   c5 on the IRP's basis   IRP 2025   ESRG workbook (Mode 1)
 domestic demand plus rooftop added back (sent-out)          220.96                             245.18
-exports                                                     6.53 (measured)                    11.02
+exports                                                     6.53 (745 MW, the model's)         11.02
 other onsite generation (not in the model)                  12.39 (ESRG)                       12.39
 total                                                       239.9                   255        268.6
 gap to IRP 2025                                             -15.1 (-5.9%)
@@ -2979,8 +3183,10 @@ gap to IRP 2025                                             -15.1 (-5.9%)
 
 The bases agree on losses, pumping and own use (2024: ESRG's sent-out domestic grid demand within 0.3 TWh of Eskom's
 contracted demand including exports). The gap is not accounting: 4.5 TWh is the export assumption (the IRP holds 11.0 TWh
-of cross-border sales against 6.5 measured) and 10.6 TWh is a lower domestic level, because c5 starts from measured 2026
-demand, 11% below the IRP's forecast for 2026 on the same basis (200.6 against 222.6 TWh), and follows the IRP's growth.
+of cross-border sales against the model's 6.5, its 745 MW export setting, the post-Mozal mean of April-August 2026) and 10.6
+TWh is a lower domestic level, because c5 starts from measured 2026 demand, 9.9% below the IRP's forecast for 2026 on the
+same basis (200.6 against 222.6 TWh; the forecast is 11% above), and follows the IRP's growth. Superseded in part by the
+entry 'Demand checks before rebasing' above (14 Oct): the 2026 scaling counts the 2025 step twice for September-December.
 Separately, the IRP's 255 is 13.6 TWh below the ESRG workbook's 268.6 for 2030, while the two agree within about 5 TWh in
 2024, 2035 and 2040 (Figure 2 read visually). Options put to the user: (a) keep the measured base and state the gap;
 (b) a sensitivity at the IRP's level (domestic demand x 1.048, so 2030 reaches 255 on the IRP's basis with its 11.0 TWh

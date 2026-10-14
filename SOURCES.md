@@ -1111,3 +1111,52 @@ REIPPPP onshore wind tariffs:
   17 May 2022, read).
 - Converting BW5 to January 2026 rands (approximate, ours): x 1.059 (the IPP Office's own BW5-to-BW6 restatement) then the
   January CPI rates in BLD_COST's wind_high note (6.9%, 5.3%, 3.2%, 3.5%), about x 1.27 in all: about R620-630/MWh.
+
+## IRP 2025 demand forecast and the Cape wind curtailment allowance (user messages 65, 67-69, 14 Oct 2026)
+
+IRP 2025 demand (research helper: web search; DEE hosts blocked here, and the plan is a long PDF, so no IRP page was read
+first-hand; wording from search summaries, pages not known; to confirm against the plan):
+- IRP 2025 key outcomes: '... meet the energy demand forecast of 255 TWh in 2030' (with the 168 Mt). Assumptions section:
+  'electricity energy demand forecast of 255 TWh by 2029'. 'The electricity demand forecast developed by ESRG ...'.
+- TaiyangNews, A. Bhambhani, 'South Africa Targets 25 GW Solar PV By 2039 Under IRP 2025', 22 Oct 2025: 'Government
+  estimates show the country's electricity demand to rise to 255 TWh by 2029.'
+- DEE, Draft IRP stakeholder workshops deck, November 2024 (search summary): Reference Case 'based on the Moderate forecast',
+  which 'includes the impact of Mozal smelter'.
+- ESRG, UCT, 'High Spatial and Temporal Resolution End-use Electricity Demand Projection Model', web page, undated (read):
+  'The results of these efforts have already been directly used to provide the electricity demand projection scenarios used
+  in the latest national Draft IRP 2024 and 2025.'
+- ZivaHub (UCT figshare), B. Merven, doi:10.25375/uct.26942134, versions v1 9 Sep 2024, v2 22 Oct 2024, v3 23 Oct 2024, v4
+  30 Oct 2024, v5 26 Feb 2025 (figshare public API, read): HourlyDemandModel_v10_IRP_v02_wExports.xlsm has the same checksum
+  in all five, so it dates from September 2024; no v6.
+- SBG.EARTH (F. Spencer), 'Every plan forecast growth but (shock) demand fell.', data.sbg.earth/irp-demand, 2026, undated
+  (read): IRP 2025 Figure 2 digitised, stated error 1-1.5 TWh; moderate: 2024 238.5, 2027 246.0, 2028 250.5, 2029 254.0, 2030
+  261.0, 2031 269.0, 2035 299.0, 2040 340.0 TWh. Third-party reading, not an IRP figure.
+- Daily Maverick, C. Yelland, 'Risks identified in Eskom's 2026-30 system adequacy outlook ...', 3 Nov 2025 (read): NTCSA
+  MTSAO 2026-2030 moderate base case, 243 TWh in 2024 to 264 TWh in 2030.
+
+Cape wind connectable under the congestion curtailment allowance (message 68; both pages read through Firecrawl's page
+reader, the web reader failing on DNS; nothing fetched from eskom.co.za; no substation figures used):
+- Pinsent Masons, Out-Law analysis, 'NERSA decision unlocks wind generation in Eastern and Western Cape', 1 Jul 2025: NERSA
+  'approved an application by the National Transmission Company of South Africa (NTCSA) on 29 April for a congestion
+  curtailment framework to be classified as a constrained generation ancillary service.' 'The approval, effective from
+  1 April 2025 to 31 March 2028, is presently limited to unlocking additional wind capacity in the Eastern and Western Cape.'
+  Curtailed generators 'will be compensated on a limited basis' under MYPD6; REIPPPP bid window 7 replaced earlier regimes
+  'by an allowance of 10% curtailment'; the framework applies to 'both REIPPP and private sector projects, including existing
+  and future projects'. It gives no MW (it predates the GCCA update).
+- Cliffe Dekker Hofmeyr, Projects and Energy Alert, 'NTCSA releases practice note and updated GCCA on congestion
+  curtailment', 3 Dec 2025: 'Congestion curtailment as an ancillary service is limited to a 4% cap and may only be used in the
+  Western Cape and Eastern Cape. This translates into 1,580 MW of additional grid capacity across the Western Cape (1,180 MW)
+  and Eastern Cape (400 MW).' 'The Approval's validity period runs from 1 April 2025 to 31 March 2028, subject to review upon
+  expiry of this period.' The GCCA 2025 Addendum (January 2024) 'considered implementation of a 10% curtailment from 2026
+  onwards ... to open 3,470 MW'. 'The updated GCCA (31 October 2025) formalises the shift ... to a NERSA aligned 4%
+  curtailment cap for the pilot period'. The Practice Note (October 2025) ties allocation to the CEL/BQ and IGCAR processes;
+  projects with valid or effective budget quotes are generally excluded. Risk: 'after expiry of the initial term, the
+  frequency and depth of curtailment could rise above the intended ~4% envelope'. CDH dates the approval to 'early May 2025'
+  (NERSA's decision was 29 April; its media statement 9 May). The alert names substations; none is used in the model until
+  NTCSA consent is settled (user, 14 Oct).
+
+Causes of the 2025 demand step (message 69; research helper; full quotes and dates in RESULTS 'Demand checks before
+rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; Engineering News, 28 Oct 2025, 8 Dec 2025,
+7 Jan 2026, 29 Jan 2026, 25 May 2026, 26 Jun 2026, 31 Aug 2026; Fastmarkets, 15 Oct 2025; NERSA media statement, 29 May
+2026 (p.1-2); AMSA SENS, 2 Sep 2025; IOL, 6 Nov 2025 and 31 Jul 2025; Mining Weekly, 1 Apr 2025; Stats SA P4141
+(preliminary) September 2025, December 2025 and August 2026 releases, printed p.3, p.5 and p.6.
