@@ -164,6 +164,36 @@ function check(label, ok, detail) {
         imp && imp.early === 0 && imp.late > 0 && imp.imp2031 === 0 && imp.imp2030 > 0 && Math.abs(imp.imp2030 - imp.impOff) < 1e-9,
         imp ? `LP lines changed: ${imp.early} up to 2030, ${imp.late} after; engine imports ${imp.imp2030.toFixed(2)} TWh in 2030, `
               + `${imp.imp2031.toFixed(2)} in 2031 (${imp.impOff.toFixed(2)} with no end year)` : 'no result');
+  // ── THE LOOP'S STALL STOP (opts.stallFrac, STALL) ─────────────────────────
+  // Added 14 Oct 2026 (user, c5's stopping rule): from pass stallFrom on, the loop stops when a pass cuts the worst
+  // year's shed above target by less than stallFrac of the pass before, and says so in the verdict. The loop is run
+  // with the solve and the engine test replaced by a scripted excess per pass, so the rule itself is what is tested.
+  const stall = await runProbe(w, `
+    const keep = { b: window.bldBuildLP, s: window.bldSolveLP, a: window.bldAdequacyTest, f: window.bldStateForYear, l: window.loadWeatherYears };
+    const last = BLD_YEARS[BLD_YEARS.length - 1], D = 2 / (BLD_STRESS_STANDARD * 0.5);   // target 2 GWh in the last year
+    const run = async (ex, o) => { let n = 0;
+      window.bldBuildLP = () => { n++; return { lp: '' }; };
+      window.bldSolveLP = async () => ({ Columns: {}, Rows: [] });
+      window.bldStateForYear = (res, y) => ({ y });
+      window.bldAdequacyTest = (st) => { const g = st.y === last ? 2 + ex[Math.min(n, ex.length) - 1] : 0;
+        return g > 0 ? { rows: [{ gwh: g, year: 2016, seed: 1, start: 0 }], worst: { demandGWh: D, year: 2016, gwh: g } } : { rows: [], worst: null }; };
+      window.loadWeatherYears = async () => {};
+      const out = await bldStressLoopPerYear({ targetFrac: 0.5, maxPasses: 6, ...o });
+      return { verdict: out.verdict, passes: out.log.length }; };
+    try {
+      return {
+        stops:   await run([10, 8, 6, 5.5, 5, 4], { stallFrac: 0.1, stallFrom: 4 }),        // pass 4 cuts 8%
+        early:   await run([10, 9.5, 9.4, 5, 4.9, 4], { stallFrac: 0.1, stallFrom: 4 }),     // small cuts at 2-3 ignored; pass 5 cuts 2%
+        cap:     await run([10, 8, 6, 5, 4, 3], { stallFrac: 0.1, stallFrom: 4 }),           // every cut 10% or more
+        adequate: await run([10, 8, -1], { stallFrac: 0.1, stallFrom: 4 }),                  // pass 3 within target
+        unset:   await run([10, 8, 6, 5.5, 5.4, 5.3], {}) };                                 // no stall setting: as before
+    } finally { window.bldBuildLP = keep.b; window.bldSolveLP = keep.s; window.bldAdequacyTest = keep.a;
+                window.bldStateForYear = keep.f; window.loadWeatherYears = keep.l; bldStressLog = []; bldStressPeriods = []; }`);
+  const sv = (r, v, p) => r && r.verdict === v && r.passes === p;
+  check('the loop stops on a stalled pass from pass 4, and says why',
+        stall && !stall.error && sv(stall.stops, 'stall stop', 4) && sv(stall.early, 'stall stop', 5) && sv(stall.cap, 'pass limit reached', 6)
+          && sv(stall.adequate, 'adequate', 3) && sv(stall.unset, 'pass limit reached', 6),
+        stall && !stall.error ? Object.entries(stall).map(([k, r]) => `${k} ${r.verdict} after ${r.passes}`).join('; ') : JSON.stringify(stall));
   check('bldBuildRegionalLP is reachable', avail.regional === true);
   check('Where To Build defaults to the regional LP', avail.defaultRegional === '1',
         `bldRegional = ${avail.defaultRegional}`);

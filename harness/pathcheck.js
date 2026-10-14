@@ -61,9 +61,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (P.ocgt && P.ocgt.costCase) w.eval(`state.bldOcgtCostCase=${JSON.stringify(P.ocgt.costCase)};`);
  // GAS_CAPEX (7 Oct 2026): CCGT capex at 2026, R/kW, for the IRP-capex sensitivity; read by engine and optimiser alike.
  if (process.env.GAS_CAPEX) w.eval(`if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`);
-  // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
+ // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
  if (P.importsEndYear) w.eval(`state.importsEndYear=${+P.importsEndYear};`);
-const rows=[];
+ const rows=[];
  for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0;
    // YEARS=2036,2037 (8 Oct 2026, TODO 14bk): check only these years; builds of the skipped years still accumulate.
    if (process.env.YEARS && !process.env.YEARS.split(',').map(Number).includes(y)) continue;
