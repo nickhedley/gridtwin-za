@@ -5767,7 +5767,13 @@ const FIXED = {
   // After 2030/31 the requirement grows by reserveVrePct of wind and solar output above the 2030 fleet's (reserveVreRefWindMW,
   // reserveVreRefPvMW, set by the pathway from its own 2030 build; null: today's fleet), so there is no step at 2031.
   // 'legacy' keeps the rule before 14 Oct 2026 for comparison.
-  reserveRule:'astr', reserveRegHours:1, reserveTenHours:3, reserveVreRefWindMW:null, reserveVreRefPvMW:null,
+  // Storage reserve (user, message 97): decided together with dispatch, not set aside first. Each hour pumped storage and batteries
+  // hold at most their unused output plus any pumping or charging load that could be dropped, and at most their stored energy over
+  // the product's sustain time. Sustain times: instantaneous 10 minutes (ASTR p.6); regulating 60 minutes and ten-minute 30
+  // minutes, borrowed from CAISO's continuous-energy rules for regulation and for spinning and non-spinning reserve (CAISO,
+  // Non-Generator Resources, revised draft final proposal, 10 February 2010), the ASTR stating none; cited assumptions.
+  // Superseded: regulating 1 hour and ten-minute 3 hours (message 86; the 3 hours came from the ASTR's usage cap, p.9).
+  reserveRule:'astr', reserveRegHours:1, reserveTenHours:0.5, reserveVreRefWindMW:null, reserveVreRefPvMW:null,
   // Eligibility (user, message 90): the ASTR allows generating capacity for instantaneous and regulating reserve, so the spare
   // headroom of any online plant counts - coal, hydro, and a combined-cycle, open-cycle or diesel turbine while it is running;
   // offline open-cycle plant stays emergency reserve. A running gas or diesel group of output g holds at most g x (1 - m) / m above
@@ -5775,6 +5781,10 @@ const FIXED = {
   // Function Specification sets continuous stable operation at 50% of module MCR (35% for its gas turbines in open cycle); the
   // author's assumption for all gas and diesel turbines here, not a South African figure. The optimiser uses the same rule.
   reserveGasMinStableFrac:0.5,
+  // Interruptible load's annual energy (user, message 98): 177 GWh, Eskom's 2025 use of its two interruptible products (ILS and
+  // IOS, Eskom data ESK19679, aggregate) - a calibration to observed use, not a sourced contract limit. Restoring reserve beyond it
+  // falls to open-cycle plant. 0 lifts the cap.
+  drInterruptAnnualMWh:177000,
   // AVON AND DEDISA MUST-RUN (user, message 88). Both IPP peakers ran every day in 2025-26 on their contracts, not on merit:
   // 1.460 TWh in 2025, 0.715 TWh January-August 2026 (Eskom data, ESK19679, 'Dispatchable IPP OCGT'; the analysis is ours, not
   // Eskom's). Modelled as a daytime level (hours beginning 05-16) and an evening-peak level (17-20) by month, MW: January-August
@@ -5903,15 +5913,19 @@ const FIXED = {
   // Eskom can drop in a shortage - historically the aluminium smelters and other
   // energy-intensive users, through Demand Market Participation and instantaneous
   // interruptible load contracts. It is real and already exists, so it defaults
-  // ON at 1,200 MW. It is not free: the customer is compensated, at a rate far
-  // below the cost of unserved energy but well above diesel, which is exactly why
-  // it sits between them in the merit order.
+  // ON (1,000 MW since 14 Oct 2026, below). It is not free: the customer is compensated, at a rate far
+  // below the cost of unserved energy and below diesel (R4,000 against about R6,200/MWh), which is why
+  // it is called before diesel (message 86).
   //
   // shiftable load (drShiftPct). Load moved within a day rather than dropped -
   // water heating, pumping, irrigation, EV charging. Energy-neutral over 24
   // hours. At meaningful scale this barely exists in South Africa yet, so it
   // defaults to zero and is a scenario lever rather than a description of today.
-  drInterruptMW:1200, drInterruptCostR:4000, drShiftPct:0,
+  // 1,000 MW (user, message 95): NREL, Demand Response at the Grid Edge (FY24, data to about 2022), Eskom's certified
+  // instantaneous demand response 1,014 MW. Was 1,200 MW, unsourced, and equal to the ASTR's whole emergency reserve (p.10:
+  // interruptible load, EL1 and gas turbines together). No cap on hours or energy (user): in 2025 the engine calls 416 GWh against
+  // Eskom's 177 GWh of ILS and IOS, a recorded limitation (RESULTS).
+  drInterruptMW:1000, drInterruptCostR:4000, drShiftPct:0,
   // Shifting load is NOT free. A geyser reheated six hours later has lost standing heat; a
   // pre-cooled building cools space that did not need it. Until 19 Sep 2026 the shift was
   // energy-neutral, which made demand response a lossless store in the dispatch - an
@@ -7633,6 +7647,10 @@ function simulate(u, prof, outPath, _soc0){
     return Math.max(0, rest - Math.max(0, onlineMW || 0));
   };
   const _gasMSF = p.reserveGasMinStableFrac ?? FIXED.reserveGasMinStableFrac;
+  // Storage power free for reserve after dispatch this hour: unused output plus the charging load that could be dropped (message 97).
+  const _stFreeB = h => Math.max(0, battPower - (stack.batt[h] || 0) + (chargeBattMW[h] || 0));
+  const _stFreeP = h => Math.max(0, psPowerTot - (stack.ps[h] || 0) + (chargePsMW[h] || 0));
+  let _restoreDrMWh = 0, _restoreDslMWh = 0;
   // Largest c (at most cMax) that coal can take over from a running turbine group of output gen and capacity cap while the reserve
   // still holds: coal headroom W less c, plus the group's online headroom at gen - c, plus otherMW, covers need.
   const _astrSwap = (gen, cap, W, need, otherMW, cMax) => {
@@ -7729,8 +7747,11 @@ function simulate(u, prof, outPath, _soc0){
   let coalFuelMWh=0;   // coal output x part-load multiplier = fuel-equivalent MWh
   // Interruptible load actually called each hour, and its contracted size.
   const drMW=new Float64Array(HOURS);
-  const DR_INT  = Math.max(0, p.drInterruptMW ?? 1200);
+  const DR_INT  = Math.max(0, p.drInterruptMW ?? FIXED.drInterruptMW);
   const DR_COST = Math.max(0, p.drInterruptCostR ?? 4000);
+  // Annual energy cap (message 98): what is left of drInterruptAnnualMWh this year; 0 lifts it.
+  const DR_CAP = Math.max(0, p.drInterruptAnnualMWh ?? FIXED.drInterruptAnnualMWh);
+  const _drLeft = () => DR_CAP > 0 ? Math.max(0, DR_CAP - E.dr) : Infinity;
   let drCostR = 0;   // total compensation paid to interruptible customers
   // Minimum stable level floor for hour h, used when clamping the reserve
   // withholding so coal is never pushed below what committed units can do.
@@ -8293,6 +8314,8 @@ function simulate(u, prof, outPath, _soc0){
         // left after its own share; gas already running this hour (must-run and early gas) holds its online headroom.
         const _cv = _astr ? _astrCover(h, battPower, Math.max(0, battSoc), psPowerTot, Math.max(0, psSoc),
           astrOnlineHeadroom(_mustAt(h) + _gasEarly, ccgtCap, _gasMSF) + astrOnlineHeadroom(_mdAt(h), dieselAvailMW(p), _gasMSF)) : null;
+        // Joint (message 97): the most coal and storage may serve this hour while what is left of them still covers the reserve;
+        // which store serves, and so which holds the reserve, is decided by dispatch.
         const _allow = _astr ? Math.max(0, Math.max(0, coalCeiling - coalGen) - _cv.coal) + _cv.left
           : Math.max(0, _spin - reserveMWAt(h));
         if (residual > _allow){ _resShed = residual - _allow; residual = _allow; }
@@ -8429,7 +8452,7 @@ function simulate(u, prof, outPath, _soc0){
       let g=Math.min(residual,Math.max(0,ccgtCap-ccgtMustRun-_gasEarly))+_gasEarly; residual-=g-_gasEarly;
       // ASTR (message 90): running gas holds online headroom, so coal held for reserve takes over what the gas headroom then covers.
       if (_astr && RESERVE.on && g > 1e-6){
-        const _need = _astrCoalNeed(h, Math.max(0, battPower - (stack.batt[h] || 0)), Math.max(0, battSoc), Math.max(0, psPowerTot - (stack.ps[h] || 0)), Math.max(0, psSoc), 0);
+        const _need = _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc), _stFreeP(h), Math.max(0, psSoc), 0);
         const _c = _astrSwap(ccgtMustRun + g, ccgtCap, Math.max(0, coalCeiling - coalGen), _need, 0, g);
         if (_c > 0){ g -= _c; coalGen += _c; }
       }
@@ -8451,13 +8474,14 @@ function simulate(u, prof, outPath, _soc0){
       // Independent peakers first, then Eskom's own from the tank, so the tank is conserved.
       const _dslAll = dieselAvailMW(p), _dslEsk = Math.min(_dslAll, Math.max(0, p.dslTankMW));
       const _dslLim = Math.max(0, (_dslTankOn ? (_dslAll - _dslEsk) + Math.min(_dslEsk, _dslStock) : _dslAll) - _mdGenH);   // less Avon and Dedisa's must-run
-      // ASTR (reserveRule 'astr'): emergency reserve restores the operating reserve, interruptible load first (R4,000/MWh, below
-      // diesel), then open-cycle plant. Compensation is booked here; the later interruptible block takes only what is left.
-      if (_astr && residual > 1 && DR_INT > 0){ const _drE = Math.min(residual, DR_INT); drMW[h] = _drE; E.dr += _drE; residual -= _drE; drCostR += _drE * DR_COST; }
+      // Interruptible load is called after open-cycle plant and before shedding (user, message 100: its annual energy is capped, so it
+      // is kept for the hours customers would otherwise be cut; the ASTR sets no order, p.10). p._drFirst restores the order of
+      // message 86, interruptible before diesel (measurement only).
+      if (_astr && p._drFirst && residual > 1 && DR_INT > 0){ const _drE = Math.min(residual, DR_INT, _drLeft()); drMW[h] = _drE; E.dr += _drE; residual -= _drE; drCostR += _drE * DR_COST; }
       let dsl=Math.max(0, Math.min(residual,_dslLim, _dslMonthCap - _dslUsed[_mo]));
       // ASTR (message 90): a running diesel turbine holds online headroom too, so coal held for reserve takes over what it covers.
       if (_astr && RESERVE.on && dsl > 1e-6){
-        const _need = _astrCoalNeed(h, Math.max(0, battPower - (stack.batt[h] || 0)), Math.max(0, battSoc), Math.max(0, psPowerTot - (stack.ps[h] || 0)), Math.max(0, psSoc), 0);
+        const _need = _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc), _stFreeP(h), Math.max(0, psSoc), 0);
         const _gH = astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF);
         const _c = _astrSwap(_mdGenH + dsl, _dslAll, Math.max(0, coalCeiling - coalGen), _need, _gH, dsl);
         if (_c > 0){ dsl -= _c; coalGen += _c; residual -= _c; }
@@ -8564,7 +8588,7 @@ function simulate(u, prof, outPath, _soc0){
       // both reliability and its cost.
       const _drPre = _astr ? (drMW[h] || 0) : 0;   // legacy: nothing called earlier this hour
       if (residual > 1 && DR_INT - _drPre > 0){
-        const drUse = Math.min(residual, DR_INT - _drPre);
+        const drUse = Math.min(residual, DR_INT - _drPre, _drLeft());
         drMW[h] = _drPre + drUse; E.dr += drUse; residual -= drUse;
         // Interruptible load is a demand reduction, not a generator. It is taken
         // off the demand line where that line is built, further down - writing it
@@ -8597,6 +8621,27 @@ function simulate(u, prof, outPath, _soc0){
       if (_laPsOn && p._laNoPsFirst && residual > 1e-6) _psGive(psSoc);
       // ASTR (message 92): customers are cut only after emergency and operating reserve are used, as for c5 and c5b. The coal
       // headroom held for reserve is released last; the reserve shortfall it leaves is recorded below, apart from unserved energy.
+      // RESTORE (user, messages 96 and 100): with load served but operating reserve short, emergency reserve restores it - open-cycle
+      // diesel first, then interruptible load only once open-cycle is exhausted (the ASTR sets no order, p.10; interruptible load's
+      // annual energy is capped, message 98, and is kept for energy shortfalls). Each megawatt lets coal back down one, which
+      // reopens coal headroom.
+      if (_astr && RESERVE.on && residual <= 1e-6 && !p._noRestore){
+        const _onR = astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF) + astrOnlineHeadroom(stack.diesel[h] || 0, _dslAll, _gasMSF);
+        let _short = _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc), _stFreeP(h), Math.max(0, psSoc), _onR) - Math.max(0, coalCeiling - coalGen);
+        if (_short > 1){
+          const d = Math.min(_short, Math.max(0, _dslLim - dsl), Math.max(0, _dslMonthCap - _dslUsed[_mo]), Math.max(0, coalGen - coalFloorBase));
+          if (d > 0){
+            const _ipp = Math.max(0, _dslAll - _dslEsk - _mdGenH);
+            if (_dslTankOn) _dslStock -= Math.max(0, dsl + d - _ipp) - Math.max(0, dsl - _ipp);
+            _dslUsed[_mo] += d; E.diesel += d; stack.diesel[h] = (stack.diesel[h] || 0) + d; fuelCost += d * (p.costDiesel + p.vomDiesel); carbonCost += d * cD;
+            coalGen -= d; dsl += d; _short -= d; _restoreDslMWh += d;
+          }
+        }
+        if (_short > 1){
+          const x = Math.min(_short, Math.max(0, DR_INT - (drMW[h] || 0)), _drLeft(), Math.max(0, coalGen - coalFloorBase));
+          if (x > 0){ drMW[h] = (drMW[h] || 0) + x; E.dr += x; drCostR += x * DR_COST; coalGen -= x; _short -= x; _restoreDrMWh += x; }
+        }
+      }
       if (_astr && residual > 1e-6){ const _rel = Math.min(residual, Math.max(0, coalCeiling - coalGen)); coalGen += _rel; residual -= _rel; }
       if(residual>0){
         E.unserved+=residual; shedMWh+=residual;
@@ -8681,8 +8726,8 @@ function simulate(u, prof, outPath, _soc0){
     // Reserve shortfall (ASTR, message 92): what the hour's eligible providers, after dispatch, leave uncovered. Reported apart
     // from unserved energy; charging is not counted, as in the optimiser.
     if (_astr && RESERVE.on){
-      const _sh = Math.max(0, _astrCoalNeed(h, Math.max(0, battPower - (stack.batt[h] || 0)), Math.max(0, battSoc),
-          Math.max(0, psPowerTot - (stack.ps[h] || 0)), Math.max(0, psSoc),
+      const _sh = Math.max(0, _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc),
+          _stFreeP(h), Math.max(0, psSoc),
           astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF) + astrOnlineHeadroom(stack.diesel[h] || 0, dieselAvailMW(p), _gasMSF))
         - Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen));
       _resShortMWh += _sh; if (_sh > 1) _resShortH++;
@@ -9327,7 +9372,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -10878,7 +10923,8 @@ function bldBuildLP(opts){
         const _hold = r.tail ? Math.max(_holdA, S.bldMarginHoldHours) : _holdA;
         const _cmax = r.tail ? Math.min(1, Math.max(0, S.bldMarginCreditMax)) : 1;
         const _eNow = 'e_batt_' + y + '_' + r.d, _ePrev = (r.prevD !== undefined) ? 'e_batt_' + y + '_' + r.prevD : null;
-        L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + ' - ' + cum('batt',y).map(v => _cmax.toFixed(4) + ' ' + v).join(' - ') + ' <= ' + (_cmax * EX.batt).toFixed(1));
+        // Free power (message 97 under ASTR): unused output plus the charging load that could be dropped.
+        L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + (ASTR_ON ? ' - bchg_' + k : '') + ' - ' + cum('batt',y).map(v => _cmax.toFixed(4) + ' ' + v).join(' - ') + ' <= ' + (_cmax * EX.batt).toFixed(1));
         if (HS_T && r.tail){
           // Stress day, hourly level: reserve held this hour is limited by the level at its start and at its end.
           L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + hsLevel('batt', y, r, h) + ' <= 0');
@@ -10903,7 +10949,26 @@ function bldBuildLP(opts){
           L.push(' rd1_' + k + ': rd_' + k + _gK + ' gd_' + k + ' <= 0');
           L.push(' rd2_' + k + ': rd_' + k + ' + gd_' + k + LEV(y).map(v => ' - ' + v).join('') + (OCGD_ON ? ' - ' + cum('ocgd',y).join(' - ') : '') + ' <= ' + DSL(y));
         }
-        if (ASTR_ON) L.push(' resv_' + k + ': gc_' + k + ' - rgo_' + k + ' - rd_' + k + ' - rb_' + k + ' - rsl_' + k
+        // Pumped storage (message 97): rp_ is at most its unused output plus the pumping load that could be dropped, and at most its
+        // stored energy over the product-weighted sustain time, at the start and the end of the hour - the engine's rule and the
+        // batteries' rows, on the LP's own levels.
+        const _rpOn = ASTR_ON && PS_ON;
+        if (_rpOn){
+          const _ePs = 'e_ps_' + y + '_' + r.d, _ePsPrev = (r.prevD !== undefined) ? 'e_ps_' + y + '_' + r.prevD : null;
+          L.push(' rpp_' + k + ': rp_' + k + ' + pdis_' + k + ' - pchg_' + k + ' <= ' + EX.ps.toFixed(1));
+          if (HS_T && r.tail){
+            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + hsLevel('ps', y, r, h) + ' <= 0');
+            L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + (h > 0 ? hsLevel('ps', y, r, h - 1) : hsStart('ps', y, r)) + ' <= 0');
+          } else if (HS_C && !r.tail){
+            const c = 'c_ps_' + k, c23 = 'c_ps_' + y + '_' + r.d + '_23';
+            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + c + (_ePsPrev ? ' - ' + _ePsPrev + ' <= 0' : ' <= ' + (EX.ps * STORE.find(q => q.t === 'ps').hours * 0.5).toFixed(1)));
+            L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + _ePs + ' + ' + c23 + ' - ' + c + ' <= 0');
+          } else {
+            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + _ePs + ' <= 0');
+            if (_ePsPrev) L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + _ePsPrev + ' <= 0');
+          }
+        }
+        if (ASTR_ON) L.push(' resv_' + k + ': gc_' + k + ' - rgo_' + k + ' - rd_' + k + ' - rb_' + k + ' - rsl_' + k + (_rpOn ? ' - rp_' + k : '')
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + (y > ASTR_RESERVE.y1 && RES_VRE > 0 ? astrGrowTerms(y, RES_VRE * wpN, RES_VRE * spN) : '')
           + ' <= ' + rhs.toFixed(1));
@@ -19224,7 +19289,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14p';
+const BUILD_STAMP = '2026-10-14q';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -202,11 +202,15 @@ const check = (name, ok, detail) => {
         const o = Math.max(0, rgo - w.astrOnlineHeadroom(gas, gasCap, m)) + Math.max(0, rd - w.astrOnlineHeadroom(gd, dslCap[k], m));
         ag.n++; if (o > 1) ag.over++; ag.worst = Math.max(ag.worst, o); if (gas > 1) ag.gasOn++; if (gd > 1) ag.dslOn++;
       }
+      // Pumped storage (message 97): its reserve is at most its unused output plus the pumping it could drop, as in the engine.
+      const psCap = {}; for (const mm of lpA.matchAll(/ rpp_(\S+): .*<= ([0-9.eE+-]+)/g)) psCap[mm[1]] = +mm[2];
+      ag.ps = 0; ag.psOver = 0;
+      for (const k of Object.keys(psCap)) { ag.ps++; if (v('rp_' + k) - (psCap[k] - v('pdis_' + k) + v('pchg_' + k)) > 1) ag.psOver++; }
     } catch (e) { ag = { error: String(e).slice(0, 160) }; }
     check('engine and optimiser count the same online headroom as reserve',
-      ag && !ag.error && ag.n > 0 && ag.over === 0,
+      ag && !ag.error && ag.n > 0 && ag.over === 0 && ag.ps > 0 && ag.psOver === 0,
       ag && ag.error ? ag.error : `${ag.over} of ${ag.n} hours where the LP credits more than the engine (worst ${ag.worst.toFixed(1)} MW); `
-        + `gas running in ${ag.gasOn}, diesel in ${ag.dslOn}`);
+        + `gas running in ${ag.gasOn}, diesel in ${ag.dslOn}; pumped storage over its unused power in ${ag.psOver} of ${ag.ps}`);
   }
 
   if (res.Status !== EXPECT.status) { report(); return; }

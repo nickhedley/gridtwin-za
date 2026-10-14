@@ -844,7 +844,21 @@ harness/ext/grid_distances.py.
   harness/derive_avon_dedisa.py from the local file, 24 monthly figures published with Eskom credited, the analysis ours, not
   Eskom's; no hourly series.
 
-## Interruptible load: contracted size (user, message 94; 14 Oct 2026; not yet applied)
+## Storage sustain times for operating reserve (user, message 97; build 2026-10-14q)
+
+- Instantaneous 10 minutes: NTCSA ASTR 2026/27-2030/31 (January 2026), p.6.
+- Regulating 60 minutes and ten-minute 30 minutes: CAISO, Non-Generator Resources, revised draft final proposal (10 February
+  2010), continuous-energy rules for regulation (60 minutes) and for spinning and non-spinning reserve (30 minutes). Citation
+  supplied by the user; the document was not opened from this session. Borrowed because the ASTR states no sustain time for
+  either product; cited assumptions. Superseded: regulating 1 hour and ten-minute 3 hours (message 86).
+
+## Interruptible load: annual energy (user, message 98; build 2026-10-14q)
+
+- 177 GWh a year: Eskom data ESK19679, 2025, the two interruptible products together (ILS 69.5 GWh, IOS 107.8 GWh), aggregate
+  only, Eskom credited, the analysis ours. A calibration to observed use, not a sourced contract limit. Manual load reduction
+  (390 GWh in 2025) is a separate, instructed product and is not counted.
+
+## Interruptible load: contracted size (user, message 94; 14 Oct 2026; applied as 1,000 MW in build 2026-10-14q, message 95)
 
 - NREL, Demand Response at the Grid Edge (FY24; data to about 2022), https://docs.nrel.gov/docs/fy24osti/88042.pdf: Eskom's
   certified instantaneous demand response 1,014 MW; supplemental 346 MW; critical peak day 62 MW.

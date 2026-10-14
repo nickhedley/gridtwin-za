@@ -414,16 +414,23 @@ const SCENARIOS = {
       // that was enough to invert the first two: 7.7 / 5.0 / 227.3 on the base seed.
       const base = { ...state, coalEAFPct: 55 };
       const seeds = [20260816, 20260816 + 7919, 20260816 + 15838];
-      return [0, 2200, 6000].map(f => seeds
-        .map(sd => simulate({ ...base, reserveOperatingMW: f, outageSeed: sd }, PROFILES).E.unserved || 0)
-        .reduce((x, y) => x + y, 0) / seeds.length);
+      return [0, 2200, 6000].map(f => { const rs = seeds.map(sd => simulate({ ...base, reserveOperatingMW: f, outageSeed: sd }, PROFILES));
+        const m = k => rs.map(k).reduce((x, y) => x + y, 0) / rs.length;
+        return { uns: m(r => r.E.unserved || 0), short: m(r => r.reserveShortMWh || 0) }; });
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const F = w.__flr;
-    const ok = Array.isArray(F) && F[0] <= F[1] + 1 && F[1] <= F[2] + 1 && F[2] > F[0] + 1;
-    check('[Today 2026, 55% EAF] unserved energy rises with the reserve requirement', ok,
-          Array.isArray(F) ? `requirement 0 / 2,200 / 6,000 MW: ${F.map(x => (x/1000).toFixed(1)).join(' / ')} GWh`
-                           : (F ? F.err : 'no result'));
+    // REPLACED 14 Oct 2026 (user, message 96). This asserted that unserved energy rises with the requirement. Since message 92
+    // customers are cut only after emergency and operating reserve are used, so a larger requirement no longer cuts customers:
+    // it calls interruptible load and open-cycle plant to restore reserve and shows as reserve shortfall. The requirement must
+    // still bind, now on reserve shortfall; and the design change is guarded: unserved energy never rises as the requirement rises.
+    const S = Array.isArray(F) ? F.map(x => x.short) : null, U = Array.isArray(F) ? F.map(x => x.uns) : null;
+    check('[Today 2026, 55% EAF] reserve shortfall rises with the reserve requirement',
+          !!S && S[0] <= S[1] + 1 && S[1] <= S[2] + 1 && S[2] > S[0] + 1,
+          S ? `requirement 0 / 2,200 / 6,000 MW: ${S.map(x => (x/1000).toFixed(1)).join(' / ')} GWh short` : (F ? F.err : 'no result'));
+    check('[Today 2026, 55% EAF] unserved energy never rises as the reserve requirement rises',
+          !!U && U[1] <= U[0] + 1 && U[2] <= U[1] + 1,
+          U ? `requirement 0 / 2,200 / 6,000 MW: ${U.map(x => (x/1000).toFixed(2)).join(' / ')} GWh unserved` : (F ? F.err : 'no result'));
   }
 
   // ── system cost carries the cost of energy shed ─────────────────────────

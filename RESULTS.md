@@ -2696,6 +2696,97 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### Storage reserve decided with dispatch, the restore step, interruptible load capped and called last, and pumped storage at 3.35 TWh as a known miss (build 2026-10-14q, branch claude/reserve-rule; user, 14 Oct 2026, messages 95-100)
+
+Rules (all in engine and optimiser alike where both apply):
+- Interruptible load 1,000 MW (NREL, Demand Response at the Grid Edge, FY24: Eskom's certified instantaneous demand response
+  1,014 MW), with its annual energy capped at 177 GWh, Eskom's 2025 use of ILS and IOS (Eskom data, aggregate): a calibration to
+  observed use, not a sourced contract limit. Called after open-cycle plant and before shedding (message 100; the ASTR sets no
+  order, p.10). Superseded: 1,200 MW unsourced and uncapped, called before diesel (message 86).
+- Storage reserve (message 97): decided together with dispatch, not set aside first. Each hour pumped storage and batteries hold
+  at most their unused output plus any pumping or charging load that could be dropped, and at most their stored energy over the
+  product's sustain time: instantaneous 10 minutes (ASTR p.6); regulating 60 minutes and ten-minute 30 minutes, borrowed from
+  CAISO's continuous-energy rules (Non-Generator Resources, revised draft final proposal, 10 February 2010; citation supplied by the
+  user), cited assumptions. Superseded: ten-minute 3 hours (message 86).
+- Restore step (messages 96 and 100): with load served but operating reserve short, open-cycle diesel restores it first, then
+  interruptible load once open-cycle is exhausted; each megawatt lets coal back down one, reopening coal headroom.
+- Checks: 'reserve shortfall rises with the reserve requirement' and 'unserved energy never rises as the reserve requirement
+  rises' replace 'unserved energy rises with the reserve requirement' (message 96), because since message 92 a larger requirement
+  is met by emergency reserve and shows as shortfall, not as customers cut. validate_solve's agreement check now covers pumped
+  storage's reserve too.
+
+2025 benchmark (validate_benchmarks scenario: Today 2026 with demand +4.6%, EAF 58%, imports 858 MW, exports 1,705 MW, nuclear CF
+0.62; default profiles), build 14q:
+
+| 2025 | Eskom | Restore off | Interruptible before diesel (restore on) | Interruptible last (adopted) |
+|---|---|---|---|---|
+| Unserved energy, GWh | - | 85.3 | 85.3 | 41.8 |
+| Reserve shortfall | - | 596 GWh, 731 h | 141 GWh, 140 h | 99 GWh, 120 h |
+| Interruptible load, GWh | 177 (ILS and IOS) | 177 (cap) | 177 (cap) | 89 |
+| Restored by open-cycle / interruptible, GWh | - | 0 / 0 | 454 / 0 | 418 / 13 |
+| Open-cycle output beyond the must-run, GWh | 1,909 (Eskom's own) | 635 | 1,087 | 1,181 |
+| Open-cycle output including the must-run, GWh | 3,369 (with Avon and Dedisa 1,460) | 1,534 | 1,986 | 2,080 |
+| Pumped storage, TWh | 4.50 | 3.350 | 3.348 | 3.335 |
+| Cost, R bn | - | 219.99 | 222.52 | 222.36 |
+
+Eskom's 1,909 GWh is its own turbines only (Ankerlig, Gourikwa, Acacia, Port Rex and its gas unit), Avon and Dedisa excluded.
+Before the restore step, 1,356 hours are short of reserve (median 644 MW; one in ten above 1,538 MW); diesel was free in 1,292 of
+them, coal could back down in 1,320, interruptible load (once capped) in 320.
+
+Pumped storage, a known miss (message 100): 3.335 TWh on the adopted rules against the benchmark's 3.37-5.62 TWh band (Eskom
+4.50); the benchmark is left failing and the band unchanged. Change by change on the same scenario, by commit:
+
+| Change | Build | Pumped storage, TWh | Step |
+|---|---|---|---|
+| Before this week's changes | 14j (e00e430) | 3.757 | |
+| c5b demand profile | 14k (53ecdea) | 3.701 | -0.056 |
+| Existing batteries 800 to 68 MW (sourced fleet) | 14l (94e04af) | 3.497 | -0.204 |
+| ASTR reserve rule | 14m (c9c22a3) | 3.473 | -0.024 |
+| Reserve fix | 14n (ee5d840) | 3.439 | -0.034 |
+| Avon and Dedisa must-run (first levels; then 2026 levels and the two bug fixes) | 14o, 14p | 3.320, 3.346 | -0.093 net |
+| Interruptible 1,000 MW; storage reserve with dispatch; restore; interruptible last | 14q | 3.335 | -0.011 |
+
+The battery step was confirmed by restoring 800 MW on 14l (3.701). Engine B's pumped-storage hold (message 99) is not double
+counting reserve: halved, pumped storage 3.858 TWh but unserved 110.6 GWh against 90.3 (measured with interruptible before diesel);
+off (engine B's earlier order), 1.401 TWh and 170.0 GWh. Engine B unchanged; a lighter hold, tested against the PyPSA comparison
+weeks, is TODO 14ei for after the note.
+
+2026 replay on 14q (Today 2026, 120 draws over the weather years, the 2026 replay settings of the must-run entry above):
+
+| 2026, mean of 120 draws | Must-run on | Must-run off | Eskom |
+|---|---|---|---|
+| Open-cycle output Jan-Aug, GWh | 686 | 8.6 | 803 |
+| Open-cycle output full year, GWh | 902 | 10.3 | - |
+| Pumped storage, TWh | 3.91 | 3.91 | - |
+| Reserve shortfall | 0.06 GWh, 0.11 h | 0.07 GWh, 0.12 h | - |
+| Restored by open-cycle / interruptible, GWh | 3.1 / 0.01 | 5.0 / 0.01 | - |
+| Interruptible load, GWh a year | 0.04 | 0.07 | - |
+| Unserved energy, GWh | 0 | 0 | - |
+| Cost, R bn | 218.68 | 213.70 | - |
+| CO2, Mt | 155.62 | 155.76 | - |
+
+Suite on 14q (ESK19679.csv present): 808/820, against 810/819 on 14p. What moved, with causes, measured by switching one rule
+back at a time on 14q:
+- 'unserved energy never rises as the reserve requirement rises' (new) fails: Today 2026 at 55% EAF, requirement 0 / 2,200 /
+  6,000 MW gives 0.80 / 0.59 / 4.94 GWh. Cause: the 177 GWh interruptible cap is used up by restoring reserve at 6,000 MW, so
+  less is left for the hours customers would be cut. Without the cap 0.80 / 0.59 / 0.35 (passes); without the restore step's
+  interruptible use, still 4.70; with interruptible called after the coal reserve release instead, 3.40 / 1.63 / 0.44 (fails at
+  the first step), and the 2025 benchmark worsens (unserved 54.4 GWh, shortfall 140 GWh in 143 hours). Real, from the cap; the
+  check is not relaxed, the resolution waits on the user.
+- NTCSA MTSAO 2030 risk-adjusted, two drift ceilings (validate_external): unserved 8.1 TWh against a 3-8 TWh band (14p 4.6) and
+  open-cycle utilisation 58.2% against 35-58% (14p 47.1%). Cap lifted: 5.1 TWh and 57.3%. Interruptible before diesel: 8.2 TWh and
+  58.0%. Both: 5.1 TWh and 49.2%. So the unserved move is the cap (it adds 3 TWh: without it, interruptible load covers that energy in a
+  short 2030, about seventeen times Eskom's 2025 use), and the utilisation move is calling interruptible load after open-cycle. Both are
+  consequences of the adopted rules; the MTSAO's own figures are "more than 4 TWh" and "about 45%". Ceilings not moved.
+- 'wind holds its capture rate at 110 GW of build' fails: 81.5% against the pass mark of 85 (14p 85.06%). Interruptible before
+  diesel gives 84.3%, so 2.8 points come from the new order; the cap, the restore step and the 1,000 MW size each change it by
+  less than 0.01 points; the remaining 0.7 points are not separated (the storage-reserve rule is the other engine change). Real. Supersedes 83.7% (14m) and 85.1% (14p).
+  Pass mark not moved.
+- Response matrix (7 cells) and the average-cost pin (R1,101/MWh): to be re-pinned once on the final build, each with its cause
+  (message 95).
+- Unchanged failures: pumped storage (known miss above), peaker season ratio 1.8x, iron-air in July, the preset curtailment band,
+  the Megaflex block, EDMSA Scenario A CO2 2035.
+
 ### c5b, reserve rule only (build 2026-10-14n): adequate after two passes; the engine check passes every year with no top-up; R2,362.9bn engine PV (c5b R2,365.4bn, -R2.5bn), 1,998 Mt CO2 2026-40 (c5b 2,003, -4.8 Mt); provisional (user, 14 Oct 2026, messages 89, 93, 94)
 
 Run: workflow 'Optimiser long run', name c5b_res, code ee5d840 (build 2026-10-14n: ASTR reserve rule with the fix of messages 90
