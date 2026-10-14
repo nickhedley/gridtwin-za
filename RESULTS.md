@@ -3485,6 +3485,276 @@ operable is neither charged for them nor flagged.
 Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
 the no-gas case most. TODO 14ed (after the note).
 
+### TODO 14eg steps 2-4 on what remains after Avon and Dedisa: Eskom's own turbines (88 GWh in January-August 2026) and the interruptible hours (348); four scratch tests on c5b's 2026, nothing changed in the model (user, 14 Oct 2026, message 83)
+
+Method: c5b's 2026 state through the engine as the engine check runs it (120 runs: twelve weather years x ten draws; more
+draws where the check's rule asks for them), the 14eg probe (January-August, hours 1-5,832), each test one change on a scratch
+copy of babb78d (t14eg; the model, main and every run are unchanged). The model's open-cycle output is its whole 3,400 MW fleet,
+which includes Avon and Dedisa; Eskom's own turbines are the comparator now (Avon and Dedisa: the limitation above).
+
+```
+January-August 2026, mean (p90)            open-cycle GWh   hours > 500 MW   scarcity hours   interruptible hours   2026 shed GWh / target
+Eskom: own turbines; interruptible         88               -                348 (calls)      ILS 32, other 341      -
+base (c5b as run)                          10.3 (20.5)      7.3 (15)         95.7 (134)       0.1                    0.011 / 1.96
+T1 Eskom's 2026 monthly availability       17.6 (26.3)      12.6 (19)        129.9 (162)      0.1                    0.005 / 1.96
+T2 coal carries the reserve (a)            715 (867)        518 (599)        1,203 (1,323)    9.0                    2.06 / 1.96 FAILS
+T3a reserve requirement 1,800 MW (b)       5.3 (11.0)       4.0 (8)          55.2 (88)        0.1                    0.004 / 1.96
+T3b reserve requirement 2,600 MW (b)       20.8 (40.7)      14.7 (30)        170.1 (233)      0.1                    0.021 / 1.96
+```
+
+(a) T2: only batteries count as fast-start reserve standing in for coal (open-cycle and pumped storage no longer excuse coal
+from holding the reserve); 480 runs, as the check's rule required. Its 2026 cost is R5.6bn higher (R219.3bn against R213.7bn)
+and its open-cycle output 1.20 TWh a year. (b) reserveOperatingMW, base 2,200 (the ASTR's), other reserve terms unchanged.
+
+T1 (step 1's shape) Eskom's 2026 monthly coal availability (outageMonthlyAvail from ESK19679 January-August, the engine's own
+months for September-December): open-cycle output up by 70% and scarcity hours by 36%, so the April trough explains part of the
+gap, not most of it.
+
+Step 2, the dispatch rule (T2). The engine lets every fast-start megawatt stand in for reserve on coal: open-cycle 3,400 MW
+plus pumped storage 2,724 MW plus batteries, against a requirement of about 2.2 GW, so coal never holds reserve back and
+open-cycle plant runs only when nothing else meets load. Pumped storage alone covers the requirement, so dropping only the
+open-cycle plant from that sum would change almost nothing (reasoned from the rule, not run). At the other extreme, coal
+holding the whole reserve (T2) overshoots: open-cycle output 8 times Eskom's own turbines, scarcity hours 3.5 times Eskom's
+interruptible hours, and 2026 fails the adequacy test. Eskom's operation sits between the two; which rule fits it is not
+established from these tests.
+
+Step 3, reserve size (T3). Scarcity hours move strongly with the requirement (55, 96, 170 hours at 1.8, 2.2, 2.6 GW) and
+open-cycle output weakly (5, 10, 21 GWh). A larger requirement alone does not reach Eskom's 88 GWh within a plausible range.
+
+Step 4, interruptible load. The engine calls its 1,200 MW of interruptible load (R4,000/MWh, below diesel) only to meet an
+energy shortfall: 0.1 hours in the base, 9 hours even under T2. Eskom called interruptible supply in 348 hours, 341 of them the
+'other interruptible supply' product at about 65 MW on average (22.3 GWh), which reads as reserve restoration rather than
+energy shortfall. The engine has no rule that calls interruptible load for reserve, so its interruptible hours cannot match
+Eskom's under any of these tests; the comparison that can is scarcity hours (reserve short of requirement), which T1 and T3b
+bring to 130-170 against 348.
+
+Effect on c5b and the sensitivities: any change to the reserve rule moves 2026 adequacy and cost (T2: R5.6bn and a failing
+2026), so a rule change means c5b and every sensitivity rerun. They stay provisional (message 83 (3)). Nothing changed.
+
+### ASTR reserve rule: proposal by product (NTCSA ASTR 2026/27-2030/31) and its test on c5b's 2026; for the user's approval before any rerun (user, 14 Oct 2026, message 85)
+
+Source: NTCSA Ancillary Services Technical Requirements for 2026/27-2030/31, Revision 1, 12 January 2026, pp. 6-12, as read by
+the user (the PDF is on ntcsa.co.za, which neither the web reader nor a direct download reaches from this session; Firecrawl is
+not used on long PDFs). The 2,200 MW operating reserve is three products: instantaneous 650 MW peak / 850 off-peak (within 10 s,
+sustained 10 min); regulating 830 MW each way in 2026/27, rising to 1,140 by 2030/31; ten-minute 720 peak / 520 off-peak in
+2026/27, falling to 410 / 210 by 2030/31 (offline quick-start such as pumped storage, and dispatchable demand). Open-cycle gas
+turbines appear only under emergency reserve (1,200 MW, with interruptible load), outside the 2,200 MW.
+
+Proposed rule (engine, reserveRule 'astr'; branch claude/reserve-rule, off by default until approved):
+- Quantities: calendar year y takes financial year y/y+1; 2027-2029 interpolated linearly between the document's 2026/27 and
+  2030/31 values; years after 2030/31 hold 2030/31's quantities (2,200 MW, the document's last year; no basis to extrapolate).
+  The variable-generation term the engine added above 2,000 MW of wind and solar is dropped: the ASTR's regulating schedule
+  carries that growth to 2030/31. From 2031 the requirement no longer grows with wind and solar, which understates it in the
+  high-renewable years; an alternative is to keep a variable-generation term above 2030's level.
+- Instantaneous and regulating from online headroom: coal headroom; batteries then pumped storage only up to the energy that
+  sustains the product (10 minutes for instantaneous, reserveRegHours for regulating).
+- Ten-minute: pumped storage with energy (reserveTenHours), then batteries, then quick-start hydro headroom (hydro capacity x
+  (1 - hydroCF)); dispatchable demand none (the model has none separate from interruptible load); coal headroom for the balance.
+- Open-cycle plant and interruptible load: emergency reserve only, never counted toward the 2,200 MW; called when coal and storage
+  cannot both serve load and hold the operating reserve, interruptible load first (R4,000/MWh, below diesel's R6,170), then
+  open-cycle plant.
+- Assumptions to confirm from pp. 6-12: peak hours 06:00-22:00 every day; regulating sustained for 1 hour; ten-minute for 2 hours.
+- Optimiser: its reserve row today counts headroom on coal, gas, diesel and lithium; with the rule approved it would drop diesel
+  and open-cycle gas headroom and use the same product quantities, so the optimiser and engine hold the same reserve. Not built yet.
+
+Test on c5b's 2026 (engine only; c5b's 2026 state, the engine check's 120 runs; the 14eg probe, January-August):
+
+```
+January-August 2026, mean (p10 / p90)   open-cycle GWh       hours > 500 MW   scarcity hours      interruptible hours    2026 shed GWh / target   2026 cost
+Eskom                                   88 (own turbines)    -                -                   348                    -                        -
+legacy rule (c5b as run)                10.3 (1.8 / 20.5)    7.3 (1 / 15)     95.7 (47 / 134)     0.1                    0.011 / 1.96             R213.7bn
+ASTR rule                               21.7 (7.8 / 37.6)    8.2 (1 / 17)     526 (366 / 605)     248 (126 / 307)        0.084 / 1.96             R214.6bn
+```
+
+Full year 2026 under the ASTR rule: open-cycle 32.7 GWh, interruptible load in 444 hours, CO2 155.1 Mt (155.8 legacy). With the
+rule off, the engine reproduces c5b exactly (shed 0.010999 GWh, CO2 155.756 Mt). Interruptible hours come close to Eskom's
+(248 against 348 in January-August); open-cycle output rises but stays a quarter of Eskom's own turbines (21.7 against 88 GWh),
+because interruptible load, called first, covers most shortfalls. 2026 stays adequate. Not yet run beyond 2026, and the
+optimiser side is not built; nothing reruns until the user approves.
+
+### The engine lets open-cycle plant and pumped storage cover the operating reserve, so coal holds none back, and it has no rule for Eskom's reserve-restoring interruptible product (recorded as a limitation under message 84; message 85 replaces that: the base rule is to be fixed by product, proposal and 2026 test in 'ASTR reserve rule' above)
+
+The engine withholds operating reserve from coal only beyond what fast-start plant can cover, and it counts every fast-start
+megawatt at full power: open-cycle 3,400 MW (Avon and Dedisa included), pumped storage 2,724 MW whatever it holds, batteries,
+CCGT and open-cycle gas, against a requirement of about 2.2 GW (the ASTR's, plus a variable-generation term). So in 2026 coal
+holds no reserve back and open-cycle plant runs only when nothing else meets load: c5b's 2026 engine runs open-cycle plant for
+10 GWh in January-August against 88 GWh from Eskom's own turbines (Avon and Dedisa apart, limitation below), with scarcity in
+96 hours against Eskom's 348 hours of interruptible supply. The engine also calls its 1,200 MW of interruptible load only to
+meet an energy shortfall (0.1 hours in 2026); Eskom's 'other interruptible supply' (341 of the 348 hours, about 65 MW on
+average) reads as reserve restoration, which the engine has no rule for.
+
+Bounds (RESULTS '14eg steps 2-4', scratch tests on c5b's 2026): with coal carrying the whole reserve the engine overshoots
+(715 GWh of open-cycle in January-August, 1,203 scarcity hours) and 2026 fails the adequacy test; Eskom sits between the two
+rules. Direction: the base rule understates open-cycle running and its cost in the early years and flatters early-year
+adequacy. Message 84's plan (a middle-rule switch and one sensitivity, s_reserve_c5b) was replaced by message 85 before any run: the
+note moves past Wed 21 and the base rule is to be fixed by product. A test of the middle rule on c5b's 2026 (pumped storage
+counted only up to its stored energy over one hour, open-cycle plant not counted; optimiser LP unchanged, key 458f2a9e13 with
+it on or off): open-cycle 296.5 GWh in January-August, 226 hours above 500 MW, 577 scarcity hours, 2026 shed 0.142 GWh against
+1.96, cost +R2.6bn; with it off, identical to c5b.
+
+### Known limitation: Avon and Dedisa's running is not in the model; about R6.6bn a year at the model's own diesel price on 2026's pace (R9.0-9.3bn in 2024-25), the same in every scenario until their contracts end in 2030-31 (user, 14 Oct 2026, message 83; no engine change before the note)
+
+What runs: the dispatchable IPP open-cycle plant in ESK19679 (Avon 670 MW and Dedisa 335 MW, the DoE peakers) produced
+1.507 TWh in 2024 (above 1 MW in 6,406 hours), 1.460 TWh in 2025 (6,331 hours) and 0.715 TWh in January-August 2026 (4,568
+of 5,832 hours; 1.074 TWh a year at that pace), about 150-190 MW through the day and 430 MW at the evening peak, in every
+month whatever the coal availability (RESULTS '14eg step 1'). Aggregates only, author's analysis, Eskom data credited. The
+user reads it as contract-driven; the data shows the pattern, not its cause, and no source here states the dispatch terms.
+
+What the model does: the two plants are inside the 3,400 MW open-cycle fleet (ocgtDieselMW, Eskom's 2,380 plus 1,005), held
+as fast-start reserve and dispatched only when nothing else meets load; c5b's 2026 engine runs the whole fleet for 0.014 TWh
+a year. Their capacity charge is in the model (otherIppCostR, DoE peakers R2,174m a year to 2030); their energy is not.
+
+Cost at the model's own prices (costDiesel R6,100 + vomDiesel R70 = R6,170/MWh; carbon 0.78 t/MWh at R46.0/t in 2026, R35.9/MWh):
+
+```
+volume basis                      TWh     fuel and running   carbon   CO2 Mt   net of the coal it displaces (R674/MWh)
+2024 actual                       1.507   R9.30bn            R0.05bn  1.18     R8.34bn
+2025 actual                       1.460   R9.01bn            R0.05bn  1.14     R8.08bn
+2026 pace (Jan-Aug x 8760/5832)   1.074   R6.63bn            R0.04bn  0.84     R5.94bn
+```
+
+At the 2026 pace to the contract ends (Dedisa to end-2030, Avon to about July 2031, Avon's share of output assumed in
+proportion to MW): PV at 8% real 2026-31 R30.4bn gross, R27.1bn net of displaced coal; R35.8bn undiscounted.
+
+Same in every scenario: yes for the running itself, while it is set by the contracts rather than by the system: no scenario
+changes the 2026-31 fleet that drives it, so the fuel, carbon and CO2 above are common to c5b and every sensitivity and cancel
+in every difference between runs. The net figure would differ slightly where a scenario changes what it displaces, which in
+2026-31 is coal in all of them. It does shift every run's absolute cost (about R30bn of PV) and its 2026-31 CO2 (about 0.8-1.2
+Mt a year, about 5 Mt to 2031), which matters when c5b is set beside the IRP's totals or Eskom's actuals.
+
+Contract dates: both on 15-year PPAs with Eskom, awarded by the DoE on a build, own and operate basis; Dedisa commissioned at
+the end of 2015, Avon in full commercial operation on 20 July 2016 (Avon Peaking Power press release, POWER Magazine, 25 July
+2016). IRP 2025 section 3.2.1.2.2 (p.13, gazette p.24) gives the contracts as expiring in 2030-31. End dates by 15 years from
+each start: Dedisa about end-2030, Avon about July 2031; the exact contractual dates are not published in the sources found.
+
+### TODO 14eg step 1: the engine's 2026 coal availability matches Eskom's January-August 2026 in level (65.5% against 64.5% coal-only) but not in shape (Eskom's April trough is 9 points deeper); Eskom's open-cycle output is 89% IPP turbines running in most hours, not tracking availability, 14 Oct 2026
+
+User, 14 Oct (message 82 (2)): first of four tests, no run. Engine: c5b's 2026 state (coalEAFPct 65, coal-only; 39,692 MW
+standing; unit-level outage draw over the standing units with the planned-outage season outagePlannedSeason, forced share 61%,
+480-hour repair, common-mode trips), the engine check's 120 seeds, availability from genUnitOutagePath alone (no dispatch).
+Eskom: ESK19679, January-August 2026, energy-weighted (sum of installed less PCLF, UCLF and OCLF over sum of installed, hourly),
+aggregates only, author's analysis, Eskom data credited; converted to coal-only with the app's coalEafFromFleet (nuclear 1,880 MW
+at the app's 0.66, hydro, pumped storage and open-cycle at 90%).
+
+```
+January-August 2026             engine (120 draws)                 Eskom
+coal-only availability          65.5% (p10 63.2, p90 67.3)         64.5% (63.4-65.3% for nuclear 0.9-0.5)
+fleet EAF                       -                                  68.1% (PCLF 12.3, UCLF 19.4, OCLF 0.3% of 47,270 MW)
+by month, coal-only, %          Jan 61.5  Feb 62.7  Mar 64.2  Apr 63.3  May 67.5  Jun 68.6  Jul 68.8  Aug 66.8
+                                Jan 68.0  Feb 64.7  Mar 62.6  Apr 54.5  May 61.4  Jun 62.8  Jul 73.6  Aug 68.3   (Eskom)
+full year (engine only)         65.0%
+```
+
+Level: the engine is about 1 point above Eskom on January-August, inside its own run spread. Shape: the engine's monthly
+pattern is the 2023-25 average planned-outage season; 2026's April trough (54.5%) and high July (73.6%) are not in it.
+
+Open-cycle composition (same data): of Eskom's 0.803 TWh, 0.715 TWh (89%) is dispatchable IPP open-cycle, above 1 MW in 4,568
+of 5,832 hours, averaging about 145-190 MW through the day and 430 MW at 18:00-19:00; Eskom's own open-cycle 0.088 TWh in 228
+hours (none in January, February or July). Monthly open-cycle output is 86-124 GWh in every month, including January and July,
+when availability was highest. So the 2026 under-run is not explained by coal availability; it points to the dispatch rule,
+step 2. The model's open-cycle diesel fleet (ocgtDieselMW 3,400) is held as emergency reserve as one block.
+
+### PROVISIONAL until the rerun on the ASTR reserve rule (user, 14 Oct 2026, message 85, which replaces message 84): c5b sensitivities launched, 21 runs from c5b's windows, up to 3 passes each (message 82); if the rule is approved, c5b and all 21 rerun on it
+
+Launched 13:53-13:55 UTC on GitHub, workflow 'Optimiser long run', ref main, code_sha babb78d (build 2026-10-14l) in every job,
+seed_run 38566438283 (c5b's second job), seed_name c5b. Each run's settings = c5b's line with MAXP=3 and
+WIN_FROM=seed/out/pathway_c5b_lp2040.json, plus its one change (KEY=VALUE replaces or adds, -KEY removes):
+
+```
+run                 change from c5b's line                                          GitHub run    pass-1 LP key   LP rows changed
+s_be7_c5b           NUC_FORCE 2036:1250,2037:1250,2038:1350,2039:1350               38575629148   be48edd177      balance rows 2036-39
+s_nogas4strict_c5b  GAS_CAP=0, OCGD 1->0, LI_CAP 3000->4000                          38575637663   6addb787c2      gas, open-cycle, lithium bounds
+s_coal60_c5b        COAL_DATES=coal_dates_irp2025_60y.json                          38575646908   2b5bced1c3      coal rows 2036-40
+s_irpgas_c5b        IRP gas plan (as s_irpgas_c5)                                   38575655575   1b8e7f75bd      gas rows; gasfloor, gmin added
+s_pvirp_c5b         PV_CAP_YR (Table 1 solar)                                       38575664128   8f26028fd6      solar bounds
+s_windlow_c5b       WIND_CASE=low                                                   38575672886   f5cc633c98      wind objective terms
+s_roof2_c5b         ROOF_MW 900->2000                                               38575681163   a8b45da648      rooftop bounds
+s_li8h_c5b          LI_EH=8                                                         38575689927   32f300244e      lithium energy bounds
+s_be4_c5b           GASFLOOR=1                                                      38575699011   dbc4941be8      gasfloor rows added
+s_be6_c5b           LI_CAP 3000->550, CAP_FROM=2026                                 38575708428   3c25b7ac54      lithium bounds
+s_committed_c5b     GAS_MIN 2030-2033:1200,2034:200; LI_MIN adds 2030:4600:18400    38575717527   7385f99cb3      gmin, limin, lemin rows added
+                    to c5b's own (2026:360:1440, 2027:666:2664; the floors are cumulative)
+s_gasprem_c5b       GAS_PREM=0.015                                                  38575727701   6baa6901a3      gas objective terms
+s_disc10_c5b        DISC=0.10                                                       38575737436   856dab5785      objective terms
+s_disc113_c5b       DISC=0.113                                                      38575746740   fb05f30cd1      objective terms
+s_noimp_c5b         IMP_END=2030                                                    38575756619   dfcd71a381      balance rows 2031-40
+s_carbonfull_c5b    CTAX_FULL=1                                                     38575766326   7c8cd03420      generation cost terms
+s_coalme_c5b        COAL_DATES removed (c4's dates)                                 38575775895   e2d4c03bc0      coal rows 2027-40
+s_batt5_c5b         BATT_DECL removed (5% a year)                                   38575785177   5fa5b3cbf1      lithium objective terms
+s_gmcv2029_c5b      DEM_BLOCK 2027:930 -> 2027:930,2029:675,2030:493                38575795879   f43601f73b      balance rows 2029-40
+s_measured_c5b      DEM_BLOCK removed (no smelter block)                            38575805161   aeb769e937      balance rows 2027-40
+s_cape10_c5b        CAPE_WIND 1580:4 -> 3470:10                                     38575815405   0f3c7eaac1      balance rows, Cape pool
+```
+
+Before launch each run's first LP was built locally at babb78d (DUMP_LP, solves nothing): with no change the seeded LP is
+c5b's own final LP (key 458f2a9e13, the pass-2 solution), and each change alters only its own rows, bounds or objective
+terms. Dropped as duplicates of c5b, as for c5: s_coalirp and s_battdecl (c5b carries both), s_wind35 (c5b builds at most
+1,745 MW of wind a year before 2031 and 2,917 MW after, so a 3,500 MW cap from 2028 cannot bind). Results, engine checks,
+top-ups and both cost measures against c5b follow when the runs finish; pass mark 5 (TODO 14dt) is judged then.
+
+### c5b beside IRP 2025 Table 1 (every technology, open-cycle gas and diesel included; CO2 in 2030 and 2035); cost without carbon tax R2,290.7bn; optimiser objective R1,566.3bn with no stress-target penalty, 14 Oct 2026
+
+User, 14 Oct (message 82 (3)), as for c5 ('c5 for the write-up'). Build from the local reproduction of c5b at babb78d
+(identical to GitHub's run 38566438283 on the 2026 engine check); CO2 from GitHub's engine check. IRP 2025 Table 1 from
+public_data/irp2025_extract.csv (IRP p.31, gazette p.42); IRP coal standing is Figure 3's 50-year line as read by Nick (plan
+p.12, gazette p.23); IRP CO2 168 Mt (2030) and 142 Mt (2035), SOURCES 'IRP 2025 emissions'.
+
+```
+A. Renewables and storage, new MW a year (c5b / IRP 2025 Table 1)
+year   wind c5b / IRP    solar c5b / IRP  rooftop c5b / IRP DG  lithium c5b GW, GWh   IRP storage   PHES c5b / IRP   iron-air c5b
+2026     696 /   964      354 /  3553       - /   900       0.36    1.4           144         - /     -        -
+2027     190 /  2847      255 /  2886     900 /   900       0.31    1.2           150         - /     -        -
+2028       - /   770      240 /  1760     900 /   900       0.18    0.4           615         - /     -        -
+2029       - /   760     2925 /  1314     900 /   900       2.12    8.8          2615         - /     -        -
+2030    1745 /  2000     3277 /   800     900 /   900       2.56   10.3           200         - /     -        -
+2031       - /  2500     3506 /  1000     900 /   900       1.21    4.8           200         - /     -        -
+2032       - /  2600     3752 /  1200     900 /   900       1.01    4.0           200         - /     -        -
+2033    2528 /  2600     1560 /  1400     900 /   900       1.69    6.7           200         - /     -        -
+2034    1264 /  3000     1398 /  1600     900 /   900       1.30    5.2           200         - /     -        -
+2035     742 /  3000      787 /  2000     900 /   900       0.80    3.2           200         - /     -        -
+2036     351 /  2000     1442 /  1600     900 /     -       0.74    3.0           500         - /     -        -
+2037    2917 /  3000     4384 /  1600     900 /     -       2.27    9.1           500         - /  1332        -
+2038    2442 /  3000     3920 /  1600     900 /     -       1.60   12.0           500         - /     -        -
+2039    2254 /  3500     4920 /  1600     900 /     -       2.18   12.0           500         - /     -        -
+2040    1384 /  3500     4197 /  1600     900 /     -       1.67   12.0           500         - /     -        -
+total  16513 / 36041    36917 / 25513   12600 /  9000      20.00   94.2          7224         - /  1332        -
+
+B. Firm capacity, coal and CO2 (c5b / IRP 2025)
+year   CCGT  OCGT-LNG  OCGT-diesel | IRP gas  IRP nuclear | coal standing c5b / IRP Fig 3  early ret c5b | CO2 Mt c5b (engine) / IRP
+2026      -         -            - |       -            - |  39692 /  39692                       -      |  155.8 / -
+2027      -         -            - |       -            - |  39692 /  39692                       -      |  165.7 / -
+2028      -         -            - |       -            - |  39692 /  39692                       -      |  167.8 / -
+2029      -         -            - |    3000            - |  37027 /  37064                       -      |  163.4 / -
+2030    603       597          446 |    3000            - |  32433 /  32388                       -      |  153.2 / 168
+2031    993         -            - |       -            - |  30876 /  30839                       -      |  149.3 / -
+2032   1010         -            - |    1250            - |  29223 /  29324                       -      |  143.1 / -
+2033    108         -            - |    1250            - |  28121 /  27886                       -      |  134.7 / -
+2034    986         -            - |    1250            - |  26467 /  26403                       -      |  130.3 / -
+2035    569         -            - |    1000            - |  25916 /  26029                       -      |  129.2 / 142
+2036    709         -            - |    1250         1250 |  25348 /  25350                       -      |  127.8 / -
+2037    100         -            - |    1500         1250 |  23658 /  23415                       -      |  112.8 / -
+2038    852         -            - |    1250         1350 |  21969 /  21819                       -      |  101.3 / -
+2039    647         -            - |    1250         1350 |  19661 /  19825                       -      |   88.5 / -
+2040    720         -            - |    1250            - |  17890 /  17958                       -      |   80.3 / -
+total  7297       597          446 |   17250         5200 | CO2 2026-40 c5b 2003 Mt
+```
+
+CO2: c5b 153.2 Mt in 2030 against the IRP's 168 (-14.8 Mt), 129.2 Mt in 2035 against 142 (-12.8 Mt). c5b's 2026-31 CO2 leaves out
+Avon and Dedisa's contract-driven running, 0.8-1.2 Mt a year (limitation 'Avon and Dedisa's running is not in the model'); with it
+2030 would read about 154-154.4 Mt, still about 14 Mt under the IRP's 168. Caveats as for c5: the
+IRP's 2026-28 rows include build under construction that c5b holds only as the committed floors (wind 886 MW, solar 849 MW,
+lithium 666 MW / 2.66 GWh by 2027-28); Table 1 gives storage in MW only; Table 1's gas is not split by cycle; the IRP's
+168 Mt goes with 255 TWh, c5b's 2030 check serves 220.6 TWh of customer demand.
+
+Cost without carbon tax (method as 'c5's cost without carbon tax payments'; rate = carbonTaxAt on the kept2030 path,
+R46.0/t in 2026 to R61.3/t from 2030, read by costsplit_consts.js from c5b's record): carbon payments R7.2bn in 2026,
+R9.4bn in 2030, R4.9bn in 2040; R116.9bn undiscounted 2026-40; PV at 8% real R74.7bn. Engine PV without carbon tax
+R2,290.7bn (with it R2,365.4bn). c5: R2,225.6bn (R2,300.6bn), so +R65.1bn without carbon tax, +R64.8bn with it.
+
+Optimiser objective (costsplit_tsl.py on c5b's cached pass-2 solution 458f2a9e13): R1,566.3bn at 8% real; stress-target
+penalty R0.0bn, so R1,566.3bn without it. c5: R1,479.5bn. Both measures put c5b above c5 (engine +R64.8bn, objective
++R86.8bn), the same direction, which is what pass mark 5 (TODO 14dt) asks of each sensitivity against its base.
+
 ### TODO 14eg: c5b's 2026 in the pathway engine runs open-cycle plant far less than Eskom did in January-August 2026, and prices scarcity in about a quarter of the hours Eskom called on interruptible supply; NTCSA's 2030 case points the other way; cause not established, 14 Oct 2026
 
 Method: c5b's 2026 state (local reproduction at babb78d, identical to GitHub's on the 2026 check) through the engine as the
