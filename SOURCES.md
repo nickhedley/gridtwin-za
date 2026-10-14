@@ -1085,10 +1085,9 @@ IRP 2025 emissions:
 - Gazette: Government Gazette 53596, notice 6767, 28 October 2025, https://www.gov.za/sites/default/files/gcis_document/202510/53596gon6767.pdf
   (link seen on UCT Libraries, 30 Oct 2025; PDF not opened). Acts Online (29 Oct 2025): the version gazetted after hours on
   28 Oct was withdrawn and replaced by a revised version on 29 Oct, so page numbers may differ between versions.
-- Figure 19 'CO2 Emissions Trajectory (Mt)', page 30, and the sentence 'The IRP 2025 proposes CO2 emissions for the
-  electricity sector reduction from 168 Mt in 2030 to 142 Mt in 2035, or a 22% reduction': search extracts of the
-  department-hosted plan and user-friendly PDFs only; whether 30 is the plan's or the gazette's numbering is not known
-  (Table 1 is plan p.31, gazette p.42, so plan p.30 would be gazette p.41). To confirm against the full plan.
+- Figure 19 'CO2 Emissions Trajectory (Mt)', plan p.30, section 4.7.3 (user, 14 Oct 2026, from the full plan): 168 Mt in
+  2030 and 142 Mt in 2035 for the electricity sector. Cite the Mt only (user): the plan's '22% reduction' does not match
+  its own numbers (15.5%), and SAnews's 160 Mt is not used.
 - 168 Mt goes with 255 TWh in 2030 and is '39.9%' of the NDC (extracts). No other year found; Figure 19's values not seen.
 - 168 to 142 Mt is 15.5%, not 22%; the base of the 22% is not stated. SAnews, 19 Oct 2025 (read): 'approximately 160
   million tonnes of carbon dioxide (CO2) equivalent by 2030, declining to 142 million tonnes by 2035'. Cliffe Dekker

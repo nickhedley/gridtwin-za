@@ -2947,6 +2947,56 @@ Caveats: the engine check is the note's cost measure, with its storage-dispatch 
 nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
 differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
 
+### c5 demand against IRP 2025: on the IRP's basis c5's 2030 demand is about 240 TWh against the IRP's 255, 15 TWh (6%) lower; more than accounting (a lower domestic level and a lower export assumption); decision with the user, 14 Oct 2026
+
+User, 14 Oct (item 1): reconcile c5's 210 TWh in 2030 with IRP 2025's 255 TWh; if the gap is more than accounting, stop
+and tell the user before anything else. Stopped and reported the same day; decision pending.
+
+The 210 TWh (209.8, c5's engine check, servedTWh) is the engine's gridServed: utility-side generation less rooftop, pumped
+storage and battery discharge. It includes the energy behind exports and storage losses, so it is not a demand figure.
+
+DEMAND=irp_esrg (RESULTS 'On one basis, the IRP's demand forecast put 2026 about 12% above measured demand'): the growth of
+UCT ESRG's IRP reference forecast (HourlyDemandModel_v10_IRP_v02_wExports, IRPDemandREF, the forecast behind IRP 2025),
+domestic grid demand plus distributed PV, applied to the measured 2026 base: Eskom RSA contracted demand less exports,
+calendar 2025 scaled 0.9519 to 2026 (January-August 2026 against the same months of 2025, wheeled plant added), rooftop
+added back, 200.62 TWh. Sent-out basis: includes network losses; excludes pumping, battery charging and station own use.
+2030: 200.62 x 1.101384 = 220.96 TWh.
+
+IRP 2025's 255 TWh (executive summary; IRP p.11 and p.34 as extracted in public_data/irp2025_extract.csv): system demand
+including network losses, excluding pumping, battery charging and station auxiliaries, including deemed cross-border
+sales. Embedded generation is not stated; inferred included, because the IRP's 2024 value (about 238 TWh, Figure 2, read
+visually) matches ESRG's total that counts demand met by distributed PV and other onsite generation (239.2 TWh), and would
+be about 220 without them.
+
+```
+2030, TWh                                                   c5 on the IRP's basis   IRP 2025   ESRG workbook (Mode 1)
+domestic demand plus rooftop added back (sent-out)          220.96                             245.18
+exports                                                     6.53 (measured)                    11.02
+other onsite generation (not in the model)                  12.39 (ESRG)                       12.39
+total                                                       239.9                   255        268.6
+gap to IRP 2025                                             -15.1 (-5.9%)
+```
+
+The bases agree on losses, pumping and own use (2024: ESRG's sent-out domestic grid demand within 0.3 TWh of Eskom's
+contracted demand including exports). The gap is not accounting: 4.5 TWh is the export assumption (the IRP holds 11.0 TWh
+of cross-border sales against 6.5 measured) and 10.6 TWh is a lower domestic level, because c5 starts from measured 2026
+demand, 11% below the IRP's forecast for 2026 on the same basis (200.6 against 222.6 TWh), and follows the IRP's growth.
+Separately, the IRP's 255 is 13.6 TWh below the ESRG workbook's 268.6 for 2030, while the two agree within about 5 TWh in
+2024, 2035 and 2040 (Figure 2 read visually). Options put to the user: (a) keep the measured base and state the gap;
+(b) a sensitivity at the IRP's level (domestic demand x 1.048, so 2030 reaches 255 on the IRP's basis with its 11.0 TWh
+exports); (c) rebase c5b on the IRP's level.
+
+### c5's cost without carbon tax payments: R2,225.6bn engine PV (R74.9bn of carbon tax in R2,300.6bn), 14 Oct 2026
+
+User, 14 Oct (item 4): a cost column excluding carbon tax payments for every run. The engine's system cost includes
+carbonCost, which is the year's carbon rate times the CO2 the engine reports, on the same generation (coal at fuel
+equivalent, gas including OCGT and storage charging, diesel; index.html simulate, carbonCost and co2). So carbon payments
+by year = CO2 x rate, the rate from the app's carbonTaxAt (kept2030, 2026 rands): R46.0, 50.3, 54.2, 58.0, 61.3/t to 2030,
+held after (CTAX_FULL: R308.0, 336.9, 362.9, 388.0, 410.5/t). c5: carbon payments R7.2bn in 2026, R9.5bn in 2030, R5.2bn
+in 2040; R117.9bn undiscounted 2026-40; PV at 8% real R74.9bn. Engine PV without carbon tax R2,225.6bn (with it R2,300.6bn).
+The c5b runs will record carbonCost from the engine directly; the optimiser objective without carbon needs the cost-split
+tool's carbon rate updated to carbonTaxAt (it predates the kept2030 path).
+
 ### c5 for the write-up: build and CO2 by year beside IRP 2025; what wind costs and where each part comes from; the LNG caveat, 14 Oct 2026
 
 User, 14 Oct (for the c5 write-up). Build from run 38536463416's own output (report run 38541954800 on claude/recheck-14d,
@@ -2998,11 +3048,11 @@ Caveats on the comparison. (a) The IRP's 2026-28 rows include plants under const
 coming online; c5 holds no committed pipeline, and its 2026 fleet (wind 4,612 MW, utility solar 3,271 MW, the app's
 'Today 2026') is already below the IRP's end-2025 base (5,344 and 3,646 MW). So c5's zeros in 2026-28 are optimiser
 choices on a smaller base, not the same quantity as Table 1. (b) Table 1 gives storage in MW only; c5's lithium is 4-hour.
-(c) Table 1's gas is not split into combined and open cycle. (d) CO2: IRP 2025 reports 168 Mt in 2030 and 142 Mt in 2035
-for the electricity sector (Figure 19 'CO2 Emissions Trajectory (Mt)', page 30 by search extracts of the department's
-PDFs, numbering not confirmed; SOURCES 'IRP 2025 emissions'); no other year found. Its 168 Mt goes with 255 TWh of
-demand; c5's engine serves 209.8 TWh of customer demand in 2030, so the bases differ. The IRP's '22% reduction' does not
-follow from 168 to 142 Mt (15.5%); SAnews (19 Oct 2025) gives 160 Mt for 2030.
+(c) Table 1's gas is not split into combined and open cycle. (d) CO2: IRP 2025 gives 168 Mt in 2030 and 142 Mt in 2035
+for the electricity sector (Figure 19, plan p.30; section 4.7.3; page and section from the user, 14 Oct). Cite the Mt only
+(user, 14 Oct): the plan's '22%' does not match its own numbers (15.5%), and SAnews's 160 Mt is not used. No other year
+found. Its 168 Mt goes with 255 TWh of demand; c5's 2030 demand on the IRP's basis is about 240 TWh (entry 'c5 demand
+against IRP 2025' below), so the CO2 bases differ.
 
 What wind costs in c5 (build 14i, bldWindModern 1, case central, GRID=1), and the source of each part:
 
@@ -3056,7 +3106,10 @@ window (days 8-21) in 2037-2040 (1.50-1.91); none in 2030-33 or 2035. Worst 2.03
 14 days of the year's runs exceed one cargo every year from 2031 (1.18) and reach 4.02 in 2040. So from 2034 the plan
 assumes LNG is resupplied within a two-week stress event.
 
-### c5 sensitivities: 18 runs, one change each from c5, rule A from c5's windows; 17 pass the engine check in every year with no top-up; s_nogas4strict fails 2034-40 and needs 3,250 MW of the diesel open-cycle it excludes; full carbon rate +R376bn, IRP gas plan +R124bn, low wind cost -R60bn, 14 Oct 2026
+### Not to be quoted (user, 14 Oct; to be rerun against c5b): c5 sensitivities: 18 runs, one change each from c5, rule A from c5's windows; 17 pass the engine check in every year with no top-up; s_nogas4strict fails 2034-40 and needs 3,250 MW of the diesel open-cycle it excludes; full carbon rate +R376bn, IRP gas plan +R124bn, low wind cost -R60bn, 14 Oct 2026
+
+Status (user, 14 Oct, item 7): none of these results is to be quoted. Once c5b is settled, all 18 are rerun against it,
+s_nogas4strict with up to 3 passes as on c4 (renamed 'no new gas or diesel, lithium up to 4 GW a year').
 
 User, 14 Oct: start the c5 sensitivities pinned to a74d581; drop any that now duplicate c5; one setting each from c5's line,
 confirmed from the run's settings record; then for each the engine check, a top-up if needed with its cap flags, and both
