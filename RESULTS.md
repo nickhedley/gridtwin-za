@@ -3056,6 +3056,82 @@ window (days 8-21) in 2037-2040 (1.50-1.91); none in 2030-33 or 2035. Worst 2.03
 14 days of the year's runs exceed one cargo every year from 2031 (1.18) and reach 4.02 in 2040. So from 2034 the plan
 assumes LNG is resupplied within a two-week stress event.
 
+### c5 sensitivities: 18 runs, one change each from c5, rule A from c5's windows; 17 pass the engine check in every year with no top-up; s_nogas4strict fails 2034-40; full carbon rate +R376bn, IRP gas plan +R124bn, low wind cost -R60bn, 14 Oct 2026
+
+User, 14 Oct: start the c5 sensitivities pinned to a74d581; drop any that now duplicate c5; one setting each from c5's line,
+confirmed from the run's settings record; then for each the engine check, a top-up if needed with its cap flags, and both
+cost measures against c5.
+
+Dropped as duplicates of c5: s_coalirp (c5 runs on the IRP Figure 3 coal dates), s_battdecl (c5 takes 3% a year) and s_wind35
+(c5 builds no wind before 2032 and at most 2,308 MW a year, so neither its 2,500 nor its 3,500 MW cap binds, and 3,500 MW
+from 2028 cannot change the solution).
+
+Method: workflow 'Optimiser long run' on ref claude/c5, code_sha a74d581 (build 2026-10-14i) in every job, runs 38540590710
+to 38540744007 (#130-#147), dispatched 09:12-09:13 UTC. Each run's settings = c5's line with MAXP=1 (rule A: one pass) and
+WIN_FROM=seed/out/pathway_c5_lp2040.json (seed_run 38536463416, seed_name c5), plus its one change; STALL is in the line but
+cannot act in one pass. Before launch, each run's first LP was built locally at a74d581 (DUMP_LP, solves nothing): with no
+change the seeded LP is c5's own final LP (key 619b507795), and each change alters only its own rows, bounds or objective
+terms. Engine check: the run's own check job (pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1). Settings record and both measures:
+report runs on claude/recheck-14d (recordcmp.js against c5's record; costsplit_tsl.py on each run's cached solution;
+print_state.py), commits 4a48389 to 6290def, engine and harness as a74d581. Engine PV at 8% real from 2026 (the note's
+measure); the objective is the optimiser's, at the run's own discount rate, shown without its stress-target penalty (no run
+carries one).
+
+c5: engine PV R2,300.6bn, CO2 2,019 Mt, objective R1,479.5bn. Differences against c5 (engine PV rounded to R1bn):
+
+```
+run              change from c5's line               settings record differs   loop, pass 1   engine check             engine PV   CO2 Mt     objective
+                                                     from c5 in                               (worst year, % target)   R bn        2026-40    R bn
+s_be7            NUC_FORCE 2036:1250, 37:1250,        nuclearAdd                adequate       pass (2031, 49%)         2,330 +29   2,015 -4   1,422.0 -57.5 (a)
+                 38:1350, 39:1350
+s_nogas4strict   GAS_CAP=0, OCGD 1->0,                 ocgt.diesel, liCap        fails 7 yrs    FAILS 2034-40            2,330 +29   1,453      1,573.4 +93.9
+                 LI_CAP 3000->4000 (b)               (GAS_CAP not recorded)                   (2038, 484%)             as solved   -566       top-up: below
+s_coal60         COAL_DATES 60-year line              none recorded; coal       adequate       pass (2031, 49%)         2,285 -16   2,115 +96  1,447.5 -32.0
+                                                     schedule 2036-40 (c)
+s_irpgas         IRP gas plan (d)                     gasForce, gasMin,          adequate       pass (2028, 10%)         2,425 +124  2,154 +135 1,591.5 +112.0
+                                                     gasMinCovers, gasLift,
+                                                     tcapYr, gasFloor,
+                                                     gasFloorVint
+s_pvirp          PV_CAP_YR (Table 1 solar)            pvCapYr                   adequate       pass (2031, 48%)         2,310 +9    2,032 +13  1,496.8 +17.3
+s_windlow        WIND_CASE=low                        none (not recorded)       fails 2030     pass (2031, 50%) (e)     2,240 -60   1,863 -156 1,443.4 -36.1
+s_roof2          ROOF_MW 900->2000                    roofMW                    adequate       pass (2038, 59%)         2,336 +35   2,002 -17  1,506.0 +26.5
+s_li8h           LI_EH=8                              liEnergyHours             adequate       pass (2031, 49%)         2,301 0     2,019 0    1,479.5 0.0
+s_be4            GASFLOOR=1                           gasFloor                  adequate       pass (2031, 49%)         2,325 +24   2,016 -3   1,485.5 +6.0
+s_be6            LI_CAP 3000->550, CAP_FROM=2026      liCap, liCapFrom          adequate       pass (2030, 31%)         2,353 +52   2,147 +128 1,526.5 +47.0
+s_committed      GAS_MIN 2030-33:1200, 2034:200;      gasMin, gasMinCovers,     adequate       pass (2038, 47%)         2,302 +1    2,027 +8   1,482.1 +2.6
+                 LI_MIN 2030:4600:18400              liMin
+s_gasprem        GAS_PREM=0.015                       gasFinPremium             adequate       pass (2031, 49%)         2,308 +7    1,998 -21  1,489.3 +9.8
+s_disc10         DISC=0.10                            disc                      fails 2030     pass (2031, 54%)         2,372 +71   2,072 +53  1,359.4 at 10% (f)
+s_disc113        DISC=0.113                           disc                      fails 2030     pass (2031, 60%)         2,421 +120  2,116 +97  1,288.5 at 11.3% (f)
+s_noimp          IMP_END=2030                         importsEndYear            adequate       pass (2031, 52%)         2,334 +33   2,030 +11  1,543.8 +64.3
+s_carbonfull     CTAX_FULL=1                          carbonFull                adequate       pass (2037, 53%)         2,677 +376  1,726 -293 1,880.9 +401.4
+s_coalme         COAL_DATES removed (c4's dates)      none recorded; coal       adequate       pass (2037, 59%)         2,317 +16   1,947 -72  1,515.3 +35.8
+                                                     schedule 2027-40 (c)
+s_batt5          BATT_DECL removed (5% a year)        battDecl                  adequate       pass (2031, 49%)         2,292 -9    2,002 -17  1,468.6 -10.9
+```
+
+(a) Forced nuclear's cost is not in the objective (the LP-key test showed the objective unchanged; only the balance rows
+move), so the objective falls by the energy nuclear displaces; the engine check, which carries it, puts s_be7 R29bn above
+c5. The only run where the two measures disagree on direction. (b) One scenario, three values, as on c4 (s_nogas4strict).
+(c) COAL_DATES is not a recorded field; the schedule is read from the record as coalMW + earlyRetMW: s_coal60 holds
+25,916 MW from 2035 (c5 falls to 17,890 by 2040); s_coalme follows c4's dates (lower in 2027-38, 20,848 MW in 2039-40).
+Neither retires coal early. (d) GAS_FORCE 2029:3000, 2030:3000; GAS_MIN 2032-34:1250, 2035:1000, 2036:1250, 2037:1500,
+2038-40:1250; GAS_LIFT=1; GASFLOOR=1; GASFLOOR_VINT=2029-2030; TCAP_YR 2029:4000, 2030:4000: one scenario, six values, as on
+c4. Its schedule is c5's; the optimiser retires 711 MW of coal early from 2026 (a result). (e) WIND_CASE is not recorded
+and the run's own check job priced wind at the central cost (R2,290bn); the figures shown are the re-check with
+WIND_CASE=low (run 38543323301, claude/recheck-14d, engine_env), every year passing, worst 2031 at 50%. (f) At the run's
+own discount rate, so not comparable with c5's objective.
+
+Report runs: s_be6 38542239520; s_committed 38543732435; s_gasprem 38543039300; s_coal60 38544549236; s_windlow 38543319593;
+s_batt5 38543326572; s_carbonfull 38543542521; s_be7 38543545849; s_roof2 38543573243; s_li8h 38543677201; s_pvirp
+38543680572; s_noimp 38543714777; s_nogas4strict 38544072490; s_disc10 38544086738; s_disc113 38544089651; s_coalme
+38544553077; s_irpgas 38544545159; s_be4 38544447005. Every report shows the run's dispatch line and its cached solution.
+
+Loop against engine: s_windlow, s_disc10 and s_disc113 fail the loop's own one-pass test in 2030 (131%, 105%, 122%) but pass
+the engine check in every year, as rule A expects; s_nogas4strict fails both. s_li8h is within R0.03bn of c5 on the objective
+and equal on the engine check: lithium energy at 8 hours of the power cap instead of 4 changes almost nothing (c5 reaches
+the 4-hour energy cap, 12,000 MWh a year, only in 2038-40).
+
 ### COAL_AVAIL stopped a c5 test run under 14dr; fixed (windows carry their own available coal); s_coalavail's results unchanged, 14 Oct 2026
 
 Found testing c5's settings on claude/c5 (build 14h; local, JS solver, no files kept): with COAL_DATES on, pass 1 failed the

@@ -24,7 +24,10 @@ GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs
    days, one rule in the optimiser and the engine): code, LP tests, suite.
 4. c5 central run from scratch (Thu 15 - Sat 17): c4's settings with the fixed engine and the 14de rule; passes 1.5-4 h each;
    c4 needed 9; estimate 1-2 days to a pass cap or adequacy (stopping rule to agree before launch).
-5. Sensitivities on c5, seeded from its windows, rule A, all at once (Sat 17 - Sun 18, 3-4 h wall clock for one wave of up to
+5. DONE 14 Oct (RESULTS 'c5 sensitivities'): 18 runs (#130-#147) pinned to a74d581, rule A from c5's windows; s_coalirp,
+   s_battdecl and s_wind35 dropped as duplicates of c5; 17 pass the engine check in every year; s_nogas4strict fails 2034-40,
+   top-up running (claude/recheck-14d). c5 itself: adequate after 2 passes, engine check passes, R2,300.6bn, 2,019 Mt.
+   Was: Sensitivities on c5, seeded from its windows, rule A, all at once (Sat 17 - Sun 18, 3-4 h wall clock for one wave of up to
    20): proposed, for you to cut: s_be7, s_nogas4strict_bd with s_battdecl, s_coalirp, s_coal60, s_irpgas, s_pvirp, s_windlow,
    s_roof2, s_li8h, s_be4, s_be6, s_committed, s_gasprem, s_disc10, s_disc113, s_wind35 (17 runs); then print, top-up and tsl
    for each (about 30 min). Added 14 Oct (user): s_noimp (IMP_END=2030), s_carbonfull (CTAX_FULL=1, the statutory carbon rate
