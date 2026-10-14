@@ -2696,6 +2696,45 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### c5b on build 2026-10-14r, the final base: adequate after five passes; the engine check passes every year; R2,393.5bn engine PV (+R7.9bn on c5b_mr2), 1,991.9 Mt CO2 2026-40 (-9.1 Mt); the CO2 drop is the build, not the code (user, 14 Oct 2026, messages 100 and 105)
+
+Run: workflow 'Optimiser long run', name c5b_14r, code 6045387 (build 2026-10-14r), five jobs ending with run 38628612316 ('done
+adequate', and the engine check). Settings: the c5b line, unchanged (MAXP=6). Build and objective from a local reproduction at
+6045387 (SOLVER=native) whose five solves have GitHub's cache keys (b210ae6924, 39bc3c87c6, 3ae47675d9, 9ae6092b91, then a cold
+solve) and whose 2035 engine check matches GitHub's to every printed digit (R274.5393bn, 128.6012 Mt, 0.498016 GWh).
+
+Why five passes: 2030 failed the pathway's adequacy test in passes 1-4. Pass 1 added two windows (weather years 2021 and 2020);
+after that every failing run was already held, so the tail-day stress margin rose by 1,000 MW a pass to 3,000 MW, and pass 5 was
+adequate. c5b_mr2 passed at pass 2 with no margin.
+
+| Year | Cost c5b_mr2, R bn | Cost c5b_14r | Change | CO2 change, Mt | Gas c5b_mr2 / c5b_14r, TWh | Mean unserved / target, GWh |
+|---|---|---|---|---|---|---|
+| 2026 | 218.7 | 219.4 | +0.73 | +0.01 | 0 / 0 | 0.000 / 1.96 |
+| 2028 | 238.3 | 241.4 | +3.03 | +0.03 | 0 / 0 | 0.000 / 2.10 |
+| 2029 | 235.1 | 236.7 | +1.60 | -0.78 | 0 / 0 | 0.088 / 2.13 |
+| 2030 | 249.1 | 250.0 | +0.96 | -2.66 | 0.64 / 0.56 | 0.413 / 2.19 |
+| 2031 | 255.4 | 255.4 | +0.05 | -2.53 | 1.71 / 1.46 | 1.137 / 2.25 |
+| 2032 | 263.7 | 263.5 | -0.19 | -2.34 | 3.56 / 3.04 | 0.526 / 2.30 |
+| 2034 | 272.5 | 272.6 | +0.05 | -0.03 | 6.45 / 6.33 | 0.405 / 2.41 |
+| 2036 | 283.8 | 284.4 | +0.59 | +0.86 | 10.35 / 10.74 | 1.232 / 2.51 |
+| 2038 | 297.7 | 297.9 | +0.17 | +0.05 | 11.63 / 11.62 | 1.354 / 2.65 |
+| 2040 | 318.8 | 317.6 | -1.13 | -2.60 | 15.01 / 13.48 | 1.572 / 2.78 |
+
+Every year's mean unserved energy is below its target; the closest is 2037 (1.825 against 2.578). Optimiser objective R1,598.1bn,
+no stress-target penalty (c5b_mr2 R1,589.3bn).
+
+Build 2026-40, MW (lithium MWh), c5b_mr2 then c5b_14r: wind 16,112 / 16,993 (+881); utility PV 36,494 / 36,912 (+418); rooftop
+12,600 / 12,600; lithium 19,817 / 20,203 MW (+386) and 94,351 / 93,920 MWh; CCGT 7,540 / 7,152 (-388); open-cycle on LNG 616 /
+673 (+57); open-cycle on diesel 364 / 309 (-55). Lithium comes earlier: 2,705 MW in 2026-28 against 666 (+2,039), and 4,337
+against 6,146 in 2029-31 (-1,809). Wind +499 MW in 2030 and +715 in 2040; PV +328 in 2029 and +436 in 2040.
+
+Cause of the CO2 drop, tested: c5b_mr2's build through the 14r engine (pathcheck at 6045387, years 2029-2032 and 2040) gives
+163.94, 152.84, 149.13, 142.96 and 81.93 Mt, within 0.07 Mt of what it gave on 14p. The code changes since 14p (interruptible
+load 1,000 MW called after open-cycle plant, the storage reserve limits, the restore step) move CO2 by under 0.1 Mt a year on
+the same build; c5b_14r's own build accounts for the drop in those years (-0.80, -2.67, -2.57, -2.41, -2.67 Mt against
+c5b_mr2's build on 14r): the earlier wind and PV displace coal in 2029-32, and the 2040 wind and PV displace coal and gas. The
+same test puts the code's cost effect at +R0.1-0.5bn a year in those years.
+
 ### Wind capture across the twelve weather years: wind 70.7-78.7% on the market price, 72.8-78.8% on the engine price, solar 4.6-7.8%, wind above solar by at least 65.6 points in every year; build 2026-10-14r (user, messages 103 and 105, 14 Oct 2026)
 
 Scenario (validate_findings 3, unchanged): 50 GW wind and 60 GW utility solar in total, no new storage, Today 2026 otherwise,
