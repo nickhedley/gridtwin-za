@@ -3097,6 +3097,39 @@ operable is neither charged for them nor flagged.
 Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
 the no-gas case most. TODO 14ed (after the note).
 
+### c5b result: adequate after two passes (stop reason: no year failing the loop's test); the engine check passes every year with no top-up; 2,003 Mt CO2 2026-40 (c5: 2,019), 14 Oct 2026
+
+Run: workflow 'Optimiser long run', name c5b, code babb78d (build 2026-10-14l), jobs 38565675653 (pass 1, 6 min) and
+38566438283 (pass 2 and the engine check; pathway 'done adequate' after 396 s of solving, check 17 min). Settings: the c5b line in
+'c5b build'. The carbon path read by the check: kept2030 (R46.0 in 2026, R61.3 from 2030). Imports 1,150 MW x 0.927.
+
+Engine check (pathcheck.js, all twelve weather years and the outage draws; 120 runs a year, 240 or 480 where the first draws
+were close), from the job log; the results artifact cannot be downloaded from this session (the artifact host is blocked by
+the session's network), so the engine PV and build table come from a local reproduction at babb78d (running):
+
+```
+year  mean GWh  target GWh  runs   worst GWh   CO2 Mt   open-cycle diesel TWh   gas TWh   served TWh   avg cost R/MWh
+2026     0.011       1.959   120        1.03    155.8                   0.014      0.00        197.2          1084.0
+2027     0.047       2.069   120        2.17    165.7                   0.027      0.00        208.2          1090.5
+2028     0.053       2.096   120        1.81    167.8                   0.033      0.00        210.8          1098.5
+2029     0.198       2.129   120       11.97    163.4                   0.051      0.00        214.2          1061.5
+2030     0.381       2.191   120       20.59    153.2                   0.114      0.75        220.6          1089.7
+2031     0.956       2.251   480      123.55    149.3                   0.139      1.90        226.9          1095.0
+2032     0.469       2.296   240       29.61    143.1                   0.177      3.78        231.9          1111.5
+2033     0.394       2.349   480       63.52    134.7                   0.159      3.71        237.5          1117.8
+2034     0.489       2.410   240       46.43    130.3                   0.230      6.76        244.1          1084.2
+2035     0.405       2.459   120       21.40    129.2                   0.242      8.72        249.2          1065.9
+2036     0.980       2.513   480      106.30    127.8                   0.280     11.69        254.8          1078.5
+2037     1.463       2.578   480       66.31    112.8                   0.346     11.44        261.8          1048.8
+2038     1.012       2.648   480       80.95    101.3                   0.282     11.99        269.4          1061.0
+2039     0.819       2.716   480      103.43     88.5                   0.375     13.12        277.0          1059.3
+2040     1.100       2.779   480       72.90     80.3                   0.410     14.26        284.0          1070.0
+```
+
+Every year's mean unserved energy is below its target. Open-cycle output in 2026 (diesel, mean of 120 runs, full year): 0.014 TWh;
+Eskom's January-August 2026 was 0.803 TWh (TODO 14eg). Not quoted for the note until the local reproduction gives the engine
+PV and the build, and the sensitivities are rerun against c5b.
+
 ### c5b launched on the branch commit; the stress suite on #39 stops loading before its checks run (a harness gap, not a result); moved checks settled or proposed (user, 14 Oct 2026, messages 78-79)
 
 c5b runs on the branch commit before #39 merges (user, message 79 (1)). Workflow 'Optimiser long run', ref claude/c5b-demand,
