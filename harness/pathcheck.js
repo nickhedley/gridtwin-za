@@ -57,6 +57,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (P.gasFinPremium) w.eval(`if(!('bldGasFinPremium' in FIXED)) throw new Error('bldGasFinPremium missing'); state.bldGasFinPremium=${+P.gasFinPremium};`);
  // The 51% gas floor (TODO 14be step 4): if the pathway ran with it, the engine check applies it too.
  if (P.gasFloor && P.gasFloor.engine) w.eval(`if(!('ccgtForceLoad' in FIXED)) throw new Error('ccgtForceLoad missing'); state.ccgtForceLoad=1;`);
+ // Its size (GASFLOOR_MW, message 104): the pathway records the MW of new CCGT its engine floored; older runs recorded the default.
+ if (P.gasFloor && P.gasFloor.engine && P.gasFloor.mw > 0) w.eval(`state.ccgtForceLoadMW=${+P.gasFloor.mw};`);
  const PG=P.gas||null;
  if (PG && (process.env.GAS_FUEL_R || process.env.GAS_FOM_ADD)) throw new Error('the pathway recorded its gas settings (P.gas); do not pass GAS_FUEL_R or GAS_FOM_ADD');
  const GFR=PG ? PG.fuelRFlat : (process.env.GAS_FUEL_R ? +process.env.GAS_FUEL_R : null), GFA=PG ? PG.fomAdd : +(process.env.GAS_FOM_ADD||0);
