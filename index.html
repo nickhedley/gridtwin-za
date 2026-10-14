@@ -5539,9 +5539,16 @@ const FIXED = {
   // Build optimiser prices carbon on the legislated Phase 2 path (CARBON_AT in bldBuildLP). 5 Oct 2026.
   carbonTaxPathOn:1,
   // carbonTaxFull 1 (user, 14 Oct 2026, c5 sensitivity s_carbonfull): the build optimiser and the engine check price carbon
-  // at the full statutory rate with no tax-free allowances (CARBON_TAX_LAW), held at the 2030 rate after 2030 because no
-  // later rate is in law. 0: the allowance path above.
+  // at the full statutory rate with no tax-free allowances (CARBON_TAX_LAW, in 2026 rands), held at the 2030 rate after 2030
+  // because no later rate is in law. 0: the allowance path below.
   carbonTaxFull:0,
+  // Allowance path (carbonTaxAt), user 14 Oct 2026. 'kept2030', central from c5: the tax-free allowance kept at its 2026
+  // share to 31 Dec 2030 (February 2025 Budget, as reported by Engineering News, 19 Feb 2025: 'maintenance of the basic
+  // tax-free allowance until December 31, 2030, rather than reducing it from 2027') on the rates in law, in 2026 rands, held
+  // after 2030. 'cut2027': c4 and every run before 14 Oct 2026 (allowances cut 2.5 points a year 2027-2030, nominal rates
+  // interpolated between 2026 and 2030). Caveat: electricity price neutrality is also extended to 31 Dec 2030 and may lower
+  // generators' net cost further; not modelled.
+  carbonAllowancePath:'kept2030',
   // Pumped hydro as a build option (bldBuildLP, 5 Oct 2026). Off by default until reviewed.
   // FOM R297/kW-yr: NREL ATB 2022 pumped storage, USD 18/kW-yr, at R16.50/USD (no South African
   // figure published).
@@ -7314,6 +7321,9 @@ function simulate(u, prof, outPath, _soc0){
   // maintenance included. Read by the adequacy loop to give the build LP a failing draw's own
   // outage path. 5 Oct 2026.
   const coalAvailFrac=new Float32Array(HOURS);
+  // Available coal as a share of standing coal, after outages, committed or not (14 Oct 2026): what COAL_AVAIL's stress
+  // windows read, recorded from the same run as coalAvailFrac so the two always describe one draw.
+  const coalAvailOnlyFrac=new Float32Array(HOURS);
 
   // Pre-pass: net load (residual before coal/storage) is purely a function of demand and
   // weather/baseload - no dependency on storage state - so it can be computed once upfront to
@@ -7866,6 +7876,7 @@ function simulate(u, prof, outPath, _soc0){
       : ucCommitted;
     coalAvailFrac[h] = coalInstRem > 0 ? cAvailRaw / coalInstRem : 0;
     coalAvailableArr[h] = (availFrac != null) ? coalInstRem * availFrac : coalAvail;
+    coalAvailOnlyFrac[h] = coalInstRem > 0 ? Math.max(coalAvailFrac[h], coalAvailableArr[h] / coalInstRem) : 0;
     if (_dslTankOn) _dslStock = Math.min(_dslTankCap, _dslStock + Math.max(0, p.dslRefillMW));
     for (const t of battTiers) if (tierSoc[t.k]) tierSoc[t.k][h] = t.soc;
     // operating RESERVE: capacity that is committed but must NOT be dispatched,
@@ -9152,7 +9163,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -9414,6 +9425,24 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 // 2030. The 2022 Budget's intent (at least US$30 by 2030, higher by 2035 and 2040, US$120 beyond 2050) is not legislated.
 const CARBON_TAX_LAW = { 2026: 308, 2027: 347, 2028: 385, 2029: 424, 2030: 462 };
 function carbonTaxHeadline(y){ return CARBON_TAX_LAW[Math.min(2030, Math.max(2026, y))]; }
+// The rates in law are nominal. South Africa's inflation target, 3% from 12 Nov 2025 (National Treasury and SARB joint
+// announcement), states them in 2026 rands like every other cost in the model. Used by 'kept2030' and carbonTaxFull only.
+const CARBON_CPI_PA = 0.03;
+// Effective carbon price for year y, R/t in 2026 rands, as the build optimiser (CARBON_AT) and the engine check
+// (pathcheck.js) both read it. S: FIXED overlaid with the scenario state.
+function carbonTaxAt(y, S){
+  const real = v => v / Math.pow(1 + CARBON_CPI_PA, Math.min(2030, Math.max(2026, y)) - 2026);
+  if (S.carbonTaxFull) return real(carbonTaxHeadline(y));
+  if (!S.carbonTaxPathOn || y <= 2026) return S.carbonTaxRPerT;
+  if ((S.carbonAllowancePath ?? 'kept2030') === 'cut2027'){
+    const L0 = CARBON_TAX_LAW[2026], L1 = CARBON_TAX_LAW[2030];
+    const head = y >= 2030 ? L1 : L0 * Math.pow(L1 / L0, (y - 2026) / 4);
+    return head * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
+  }
+  if (S.carbonAllowancePath !== 'kept2030') throw new Error('carbonAllowancePath must be kept2030 or cut2027: ' + S.carbonAllowancePath);
+  // The 2026 net share (carbonTaxRPerT over the 2026 rate in law) held to 2030 and after.
+  return real(carbonTaxHeadline(y)) * S.carbonTaxRPerT / CARBON_TAX_LAW[2026];
+}
 const BATT_BW3_BID = 9.5e9 / 2464e3;
 const BATT_EQUIP_BID = 165 * Math.pow(117/165, 5/12) * 16.5;
 const BLD_COST = {
@@ -10294,19 +10323,13 @@ function bldBuildLP(opts){
   // planning than the dispatch engine prices them in operations. One number.
   const VOLL = S.voll ?? 87000, CARBON = S.carbonTaxRPerT;
   const RES_HOLD_H = Math.max(0.25, S.asHoldHours);   // the engine's _asHoldH
-  // Legislated carbon tax path, 5 Oct 2026: headline R308/t in 2026 rising to R462/t in 2030
-  // (2022 Budget, Phase 2), tax-free allowances cut 2.5 points a year from 2027 to 2030 (Treasury
-  // Phase 2 paper), so the effective rate goes from carbonTaxRPerT in 2026 to 462 x 0.25 =
-  // R115.5/t in 2030, flat after. carbonTaxPathOn 0 holds carbonTaxRPerT flat.
-  // carbonTaxFull: the statutory rate with no allowances (CARBON_TAX_LAW), 14 Oct 2026. The allowance path keeps its
-  // 2026 and 2030 headline rates from the same table and its geometric interpolation between them, as before.
-  const LAW0 = CARBON_TAX_LAW[2026], LAW1 = CARBON_TAX_LAW[2030];
-  const CARBON_AT = y => {
-    if (S.carbonTaxFull) return carbonTaxHeadline(y);
-    if (!S.carbonTaxPathOn || y <= 2026) return CARBON;
-    const head = y >= 2030 ? LAW1 : LAW0 * Math.pow(LAW1 / LAW0, (y - 2026) / 4);
-    return head * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
-  };
+  // Legislated carbon tax path, 5 Oct 2026, now carbonAllowancePath 'cut2027': headline R308/t in 2026 rising to R462/t
+  // in 2030 (2022 Budget, Phase 2), tax-free allowances cut 2.5 points a year from 2027 to 2030 (Treasury Phase 2 paper),
+  // so the effective rate goes from carbonTaxRPerT in 2026 to 462 x 0.25 = R115.5/t in 2030, flat after. Superseded as
+  // central on 14 Oct 2026 by 'kept2030' (the 2025 Budget kept the allowance to 2030). carbonTaxPathOn 0 holds
+  // carbonTaxRPerT flat.
+  // carbonTaxAt (14 Oct 2026): one function for the optimiser and the engine check; see carbonAllowancePath.
+  const CARBON_AT = y => carbonTaxAt(y, S);
   const CAP_ON = !!(S.carbonCapEnabled), CAP_MT = S.carbonCapMt ?? 140;
   const MC = { coal: S.costCoal + S.vomCoal, diesel: S.costDiesel + S.vomDiesel };   // gas: bldGasFuelR, by year
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:dieselAvailMW(S),
@@ -11020,7 +11043,7 @@ function bldAdequacyTest(st, draws){
     const _cust = (st.bldAdequacyBasis ?? FIXED.bldAdequacyBasis) !== 'withCharging';
     let served = 0; for (let h = 0; h < r.loadS.length; h++) served += r.loadS[h] - (_cust ? (r.chargePsMW[h] || 0) + (r.chargeBattMW[h] || 0) : 0);
     const row = { year: y, k, gwh, seed: stk.outageSeed };
-    if (gwh > 0.01){ row.start = bldWorstWindow(r); row.coalFrac = r.coalAvailFrac; }
+    if (gwh > 0.01){ row.start = bldWorstWindow(r); row.coalFrac = r.coalAvailFrac; row.availFrac = r.coalAvailOnlyFrac; }
     rows.push(row);
     if (!worst || gwh > worst.gwh) worst = { year: y, gwh, r, demandGWh: served / 1000 };
   }
@@ -11174,7 +11197,8 @@ async function bldStressLoopPerYear(opts, onProgress){
         const PERY = !!((opts.state || {}).bldWindowsPerYear ?? FIXED.bldWindowsPerYear);
         if (same) { if (PERY && same.years) { if (!same.years.includes(f.y)) same.years.push(f.y); } else same.fromYear = Math.min(same.fromYear ?? BLD_YEARS[0], from); }
         else bldStressPeriods.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, fromYear: from, ...(PERY ? { years: [f.y] } : {}),
-          coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)) });
+          coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)),
+          ...(pick.availFrac ? { availFrac: Array.from(pick.availFrac.slice(st0 * 24, (st0 + SD) * 24)) } : {}) });
         entry.added.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, forModelYear: f.y, fromYear: from, rebound: !!same, shedGWh: +pick.gwh.toFixed(2) });
       }
     }
@@ -18910,7 +18934,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14g';
+const BUILD_STAMP = '2026-10-14i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

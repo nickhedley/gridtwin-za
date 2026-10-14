@@ -188,9 +188,12 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
  // basis, so it does not include connection). Read by engine and optimiser alike.
  if (process.env.BATT_CAPEX) w.eval(`if(!('batt' in BLD_COST)) throw new Error('BLD_COST.batt missing'); BLD_COST.batt.c2026=${+process.env.BATT_CAPEX}; BLD_COST.batt.connIncl=false;`);
  // CTAX_FULL=1 (user, 14 Oct 2026, s_carbonfull): carbon at the full statutory rate with no allowances (carbonTaxFull,
- // CARBON_TAX_LAW: R308/t in 2026 to R462/t in 2030, held after). Recorded in the output (carbonFull); pathcheck.js applies it.
+ // CARBON_TAX_LAW: R308/t in 2026 to R462/t in 2030 in law, stated in 2026 rands, held after). Recorded in the output (carbonFull); pathcheck.js applies it.
  if (process.env.CTAX_FULL!==undefined && !['0','1'].includes(process.env.CTAX_FULL)) throw new Error('CTAX_FULL must be 0 or 1');
  w.eval(`if(!('carbonTaxFull' in FIXED)) throw new Error('carbonTaxFull missing');`+(process.env.CTAX_FULL!==undefined?` state.carbonTaxFull=${+process.env.CTAX_FULL};`:''));
+ // CARBON_PATH (14 Oct 2026): the allowance path, kept2030 (default, central from c5) or cut2027 (c4's); recorded as carbonPath.
+ if (process.env.CARBON_PATH!==undefined && !['kept2030','cut2027'].includes(process.env.CARBON_PATH)) throw new Error('CARBON_PATH must be kept2030 or cut2027');
+ w.eval(`if(!('carbonAllowancePath' in FIXED)) throw new Error('carbonAllowancePath missing');`+(process.env.CARBON_PATH!==undefined?` state.carbonAllowancePath=${JSON.stringify(process.env.CARBON_PATH)};`:''));
  // PVTRK (7 Oct 2026, TODO 14aw): new utility solar on the tracking profile at tracker capex.
  w.eval(`if(!('bldPvTracking' in FIXED)) throw new Error('bldPvTracking missing');`+(process.env.PVTRK!==undefined?` state.bldPvTracking=${+process.env.PVTRK};`:''));
  // BATT_CASE (7 Oct 2026): lithium cost case, central (BW3 aged to January 2026), high (BW3 as bid) or low (global turnkey).
@@ -257,8 +260,14 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
      return cache[key]; };
    const _bc = bldBuildLP; bldBuildLP = function(o){ const keep = bldStressPeriods, sum = [];
      bldStressPeriods = keep.map(p => { if (!p.coalFrac || p.seed === undefined) return p;
-       const A = availOf(p), cf = new Array(p.coalFrac.length); let eq = 0, mr = 1, ma = 1, sr = 0, sa = 0;
-       for (let i = 0; i < cf.length; i++){ const a = A[p.start * 24 + i], c = p.coalFrac[i];
+       // A window made from build 14i on carries availFrac, recorded by the same engine run as coalFrac. Without it the
+       // available coal is re-derived on the base state, which matches the recorded draw only when outages are drawn over
+       // all units in every year: with outageStandingUnits on (14dr) a later year draws over its own standing units, so
+       // the re-derivation is refused (14 Oct 2026: it stopped a run when available came out below recorded).
+       const OSU = !!(state.outageStandingUnits ?? FIXED.outageStandingUnits);
+       if (!p.availFrac && OSU) throw new Error('COAL_AVAIL: window ' + p.year + ' day ' + p.start + ' has no availFrac and outageStandingUnits is on; windows must come from build 14i or later');
+       const A = p.availFrac ? null : availOf(p), cf = new Array(p.coalFrac.length); let eq = 0, mr = 1, ma = 1, sr = 0, sa = 0;
+       for (let i = 0; i < cf.length; i++){ const a = p.availFrac ? p.availFrac[i] : A[p.start * 24 + i], c = p.coalFrac[i];
          if (!(a >= c - 1e-6)) throw new Error('COAL_AVAIL: available below recorded, window ' + p.year + ' day ' + p.start + ' seed ' + p.seed + ' hour ' + i + ': ' + a + ' < ' + c);
          cf[i] = a; if (Math.abs(a - c) < 1e-6) eq++; mr = Math.min(mr, c); ma = Math.min(ma, a); sr += c; sa += a; }
        sum.push([p.year, p.start, p.n, p.seed, sr / cf.length, mr, sa / cf.length, ma, eq, cf.length]);
@@ -281,6 +290,26 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    return lp.slice(0, i + 8) + kept.concat(add).join('\n') + lp.slice(j); }
  // COSTSET (7 Oct 2026): a whole cost set, e.g. COSTSET=irp2025; see costset.js.
  require('./costset.js')(w, process.env.COSTSET);
+ // BATT_DECL (13 Oct 2026, user: battery cost decline sensitivity s_battdecl): annual real decline of lithium capex from 2026,
+ // on BLD_COST.batt and its high and low cases (lithium fixed O&M, 2.5% of capex, follows), for the optimiser and, through the
+ // recorded battDecl, the engine check. Unset: the engine's own rate (0.05), the LP unchanged. Refused with COSTSET, whose
+ // table replaces the decline.
+ if (process.env.BATT_DECL!==undefined) { if (process.env.COSTSET) throw new Error('BATT_DECL with COSTSET: the cost set replaces the decline'); const d=+process.env.BATT_DECL; if (!(d>-0.5 && d<0.5)) throw new Error('BATT_DECL out of range: '+d); w.eval(`for (const k of ['batt','batt_high','batt_low']){ if(!BLD_COST[k] || !('decl' in BLD_COST[k])) throw new Error('BLD_COST.'+k+'.decl missing'); BLD_COST[k].decl=${d}; }`); }
+ // COAL_DATES=<file under harness/> (12 Oct 2026, TODO 14cr): per-unit coal decommissioning years for a sensitivity, e.g. the
+ // IRP 2025 timing (coal_dates_irp2025.json). A listed unit is gone from the start of its year; groups not listed keep
+ // UC_FLEET's date. Only the build LP's coal standing changes (bldCoalRawMW, and through it bldCoalMW and the coalMW
+ // written by year); the engine check reads coalMW from this run's output. Unset, nothing here runs and the LP is unchanged.
+ if (process.env.COAL_DATES){ const CD=JSON.parse(fs.readFileSync(process.env.COAL_DATES,'utf8')).units;
+   w.eval(`{ const CD = ${JSON.stringify(CD)};
+     for (const [k, v] of Object.entries(CD)){ const g = UC_FLEET.find(q => q.name === k);
+       if (!g) throw new Error('COAL_DATES: no fleet group ' + k);
+       if (!Array.isArray(v) || v.length !== Math.max(1, g.n || 1) || v.some(y => !(y > 2000))) throw new Error('COAL_DATES: ' + k + ' needs ' + (g.n || 1) + ' unit years'); }
+     bldCoalRawMW = function(year){ let cap = 0;
+       for (const g of UC_FLEET){ const d = CD[g.name];
+         if (d){ const per = g.cap / d.length; for (const y of d) if (y > year) cap += per; }
+         else { const dy = (g.decom === 'beyond 2050') ? 9999 : parseInt(g.decom, 10); if (dy > year) cap += g.cap; } }
+       return cap; }; }`);
+   console.log('coal dates from', process.env.COAL_DATES, JSON.stringify(Object.fromEntries([2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040].map(y=>[y, Math.round(+w.eval('bldCoalMW('+y+')'))])))); }
  await w.eval('loadWeatherYears()');
  // DEMAND (9 Oct 2026, user decision): central demand follows the IRP 2025 reference path year by year on the
  // measured 2026 base. 'irp_esrg' (default): public_data/esrg_irp_demand_ref.json (ESRG, CC BY 4.0), its
@@ -326,6 +355,6 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    fs.writeFileSync(OUT.replace(/\.json$/,'')+'_lp'+DY+'.json', JSON.stringify({year:DY, periods, lpv})); }
  const peakerExt=Object.fromEntries(Object.entries(cols).filter(([c])=>c.startsWith('le_')).map(([c,v])=>[c.slice(3),Math.round(v.Primal||0)]));   // TODO 14as
  const build=Object.fromEntries(Object.entries(cols).filter(([n])=>/^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_20\d\d$/.test(n)).map(([n,c])=>[n,c.Primal]));   // exact, for FIX_FROM
- fs.writeFileSync(OUT, JSON.stringify({importsEndYear:+w.eval('state.importsEndYear ?? FIXED.importsEndYear')||null, pvTracking:+w.eval('state.bldPvTracking ?? FIXED.bldPvTracking')||0, carbonFull:+w.eval('state.carbonTaxFull ?? FIXED.carbonTaxFull')||0, demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, gasLift:GAS_LIFT?[...LIFTED]:null, tcapYr:TCAPSET.size?[...TCAPSET]:null, gasFloorVint:GF_VINT, pvCapYr:Object.keys(PV_CAP_YR).length?PV_CAP_YR:null, roofMW:process.env.ROOF_MW!==undefined?+process.env.ROOF_MW:null, coalAvail:process.env.COAL_AVAIL==='1'?1:null, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, disc:+w.eval('BLD_DISC'), liEnergyHours:+w.eval('state.bldLiEnergyHours ?? FIXED.bldLiEnergyHours ?? 12'), adequacyBasis:w.eval('state.bldAdequacyBasis ?? FIXED.bldAdequacyBasis ?? "withCharging"'), nuclearAdd:JSON.parse(w.eval('JSON.stringify(state.bldNuclearAdd||null)')), gasForce:Object.keys(GAS_FORCE).length?GAS_FORCE:null, gasMin:Object.keys(GAS_MIN).length?GAS_MIN:null, gasMinCovers:Object.keys(GAS_MIN).length?(Object.keys(cols).some(c=>c.startsWith('b_ocgt_'))?'ccgt+ocgt':'ccgt'):null, liMin:LI_MIN.length?LI_MIN:null, ocgt:JSON.parse(w.eval(`JSON.stringify((()=>{ const S={...FIXED,...state}; return {lng:S.bldOcgtOn|0, diesel:S.bldOcgdOn|0, dieselRateMW:S.bldOcgdRateMW, dieselFrom:S.bldOcgdFromYear, turbineCapMW:S.bldTurbineCapMW, costCase:S.bldOcgtCostCase}; })())`)), gasFinPremium:+(+w.eval('bldAnnuityRate("ccgt")-BLD_DISC')).toFixed(6), liCap:LI_CAP, windCap:WIND_CAP||null, windCapFrom:WIND_CAP?WIND_CAP_FROM:null, liCapFrom:CAP_FROM, gasFloor:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+(S.bldGasFloorOn||0), engine:+(S.ccgtForceLoad||0), pct:S.ccgtForceLoadPct, mw:S.ccgtForceLoadMW, from:S.ccgtForceFromYear, to:S.ccgtForceToYear}); })()`)), phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, stall:STALL>0?{frac:STALL, from:STALL_FROM}:null, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
+ fs.writeFileSync(OUT, JSON.stringify({importsEndYear:+w.eval('state.importsEndYear ?? FIXED.importsEndYear')||null, pvTracking:+w.eval('state.bldPvTracking ?? FIXED.bldPvTracking')||0, carbonFull:+w.eval('state.carbonTaxFull ?? FIXED.carbonTaxFull')||0, carbonPath:w.eval('state.carbonAllowancePath ?? FIXED.carbonAllowancePath'), demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, battDecl:process.env.BATT_DECL!==undefined?+process.env.BATT_DECL:null, gasLift:GAS_LIFT?[...LIFTED]:null, tcapYr:TCAPSET.size?[...TCAPSET]:null, gasFloorVint:GF_VINT, pvCapYr:Object.keys(PV_CAP_YR).length?PV_CAP_YR:null, roofMW:process.env.ROOF_MW!==undefined?+process.env.ROOF_MW:null, coalAvail:process.env.COAL_AVAIL==='1'?1:null, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, disc:+w.eval('BLD_DISC'), liEnergyHours:+w.eval('state.bldLiEnergyHours ?? FIXED.bldLiEnergyHours ?? 12'), adequacyBasis:w.eval('state.bldAdequacyBasis ?? FIXED.bldAdequacyBasis ?? "withCharging"'), nuclearAdd:JSON.parse(w.eval('JSON.stringify(state.bldNuclearAdd||null)')), gasForce:Object.keys(GAS_FORCE).length?GAS_FORCE:null, gasMin:Object.keys(GAS_MIN).length?GAS_MIN:null, gasMinCovers:Object.keys(GAS_MIN).length?(Object.keys(cols).some(c=>c.startsWith('b_ocgt_'))?'ccgt+ocgt':'ccgt'):null, liMin:LI_MIN.length?LI_MIN:null, ocgt:JSON.parse(w.eval(`JSON.stringify((()=>{ const S={...FIXED,...state}; return {lng:S.bldOcgtOn|0, diesel:S.bldOcgdOn|0, dieselRateMW:S.bldOcgdRateMW, dieselFrom:S.bldOcgdFromYear, turbineCapMW:S.bldTurbineCapMW, costCase:S.bldOcgtCostCase}; })())`)), gasFinPremium:+(+w.eval('bldAnnuityRate("ccgt")-BLD_DISC')).toFixed(6), liCap:LI_CAP, windCap:WIND_CAP||null, windCapFrom:WIND_CAP?WIND_CAP_FROM:null, liCapFrom:CAP_FROM, gasFloor:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+(S.bldGasFloorOn||0), engine:+(S.ccgtForceLoad||0), pct:S.ccgtForceLoadPct, mw:S.ccgtForceLoadMW, from:S.ccgtForceFromYear, to:S.ccgtForceToYear}); })()`)), phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, stall:STALL>0?{frac:STALL, from:STALL_FROM}:null, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
  console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
 })();
