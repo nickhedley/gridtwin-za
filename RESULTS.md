@@ -2696,6 +2696,45 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### Wind capture across the twelve weather years: wind 70.7-78.7% on the market price, 72.8-78.8% on the engine price, solar 4.6-7.8%, wind above solar by at least 65.6 points in every year; build 2026-10-14r (user, messages 103 and 105, 14 Oct 2026)
+
+Scenario (validate_findings 3, unchanged): 50 GW wind and 60 GW utility solar in total, no new storage, Today 2026 otherwise,
+scenario year 2026; each of the twelve weather years 2014-2025 (capacity-weighted national wind and solar, the 2026 demand
+profile). A fixed 110 GW build, not a least-cost one; prices are energy-only. Capture = output-weighted price over the
+time-weighted mean price, on two bases: the engine price (marginalP, the running cost of the marginal unit, VoLL in shed
+hours) and the market price (marketPriceSeries: the engine price plus the operating-reserve demand-curve adder, the scarcity
+term). Probe: harness check 3b in validate_findings (this commit).
+
+| Weather year | Wind, market | Solar, market | Wind, engine | Solar, engine | Shed hours | Scarcity hours |
+|---|---|---|---|---|---|---|
+| 2014 | 74.7 | 7.8 | 74.7 | 7.8 | 0 | 165 |
+| 2015 | 76.1 | 5.3 | 76.1 | 5.4 | 0 | 181 |
+| 2016 | 73.3 | 6.6 | 73.3 | 6.6 | 0 | 183 |
+| 2017 | 77.9 | 4.6 | 77.9 | 4.6 | 0 | 163 |
+| 2018 | 70.7 | 5.0 | 72.8 | 5.5 | 1 | 162 |
+| 2019 | 75.6 | 4.8 | 75.6 | 4.9 | 0 | 157 |
+| 2020 | 76.5 | 4.8 | 76.5 | 4.9 | 0 | 182 |
+| 2021 | 74.5 | 5.7 | 74.5 | 5.7 | 0 | 179 |
+| 2022 | 76.6 | 7.2 | 76.6 | 7.2 | 1 | 186 |
+| 2023 | 74.9 | 6.0 | 74.9 | 6.0 | 0 | 158 |
+| 2024 | 72.9 | 5.2 | 72.9 | 5.2 | 0 | 152 |
+| 2025 | 78.7 | 5.3 | 78.8 | 5.3 | 0 | 172 |
+
+- The scarcity term barely moves capture here: in 2016 it adds R0.29 to a mean price of R103.1/MWh (183 hours, at most
+  R93/MWh in an hour). The two bases differ only in the two years with a shed hour.
+- The default profile (not one of the twelve years) gives wind 81.5%, solar 4.0%, above every weather year; the finding is
+  now quoted on the twelve years.
+- Traced cause of this week's move, on the default profile: interruptible load called last, 2.85 points; 1,000 MW in place of
+  1,200, 0.72 points (entry 14r). Across the twelve years (engine price, mean wind capture): 76.71% with both reverted, 76.28%
+  with interruptible before diesel at 1,000 MW, 75.38% on 14r, so 0.90 and 0.43 points.
+- Check rewritten (validate_findings 3b): wind's capture more than 50 points above solar's in every weather year, on both
+  prices; it no longer pins wind's level. The solar half ('solar capture collapses', below 10%) stays on the default profile.
+  Why: the claim is the asymmetry, and the level moves with a few scarcity hours. 40/42 findings hold, as before.
+
+Decision for the user (message 105 (4)): the finding is stated on this fixed 110 GW build, as recommended (option a). Option
+b, the capture of c5b_14r's own least-cost 2040 build, would answer a different question; it can be measured on the same
+twelve years once c5b_14r is in and recorded beside this, without changing the check.
+
 ### Re-pin round on build 2026-10-14r: wind capture as a range with an asymmetry check, the response baseline and the average cost (user, 14 Oct 2026, messages 95 and 102)
 
 One round, on the build c5b_14r runs on (6045387). Each move is traced by switching the week's changes back one at a time at
@@ -2703,10 +2742,9 @@ defaults: interruptible load before diesel at 1,200 MW (message 86 settings), th
 legacy reserve rule. With all three back, both the response matrix (87/87) and the average cost (R1,075.31) match main's pins
 exactly, so nothing else moved them.
 
-- Wind capture at 110 GW (validate_findings 3): the check 'wind holds its capture rate' (wind above 85%) is replaced by 'wind
-  captures far more than solar at 110 GW of build, inside its recorded range': wind minus solar above 50 points, wind 81-86%.
-  Why: the finding's claim is the asymmetry, and wind's level swung 81.5-85.1% this week with a few scarcity hours (entry 14r).
-  On 14r: wind 81.5%, solar 4.0%.
+- Wind capture at 110 GW (validate_findings 3): superseded the same evening by message 103 (entry 'Wind capture across the
+  twelve weather years'). This round replaced 'wind holds its capture rate' (wind above 85%) with wind minus solar above 50
+  points and wind in 81-86% on the default profile.
 - Average cost at defaults (validate_outputs): R1,075.3 -> R1,101.0 R/MWh, tolerance unchanged. Avon and Dedisa must-run +25.45;
   ASTR reserve rule +0.30; interruptible load last at 1,000 MW -0.04.
 - Response matrix (validate_response, response_matrix.json rewritten): 7 cells, each with the change that moved it.
@@ -6183,9 +6221,13 @@ modern-turbine profile at 1.064, build 07s, against the current-turbine profile,
   Avon and Dedisa must-run as well (build 14p); cause and scenario year in 'Every check moved by the reserve rule and the must-run'.
   Updated 14 Oct 2026 (user, message 101): 81.5% on builds 14q and 14r, traced to the interruptible order and size. Quote as a range,
   about 81-85% this week (85.1, 83.7, 85.1, 81.5), not a point: it swings with a few scarcity hours (RESULTS 14r).
-  Re-pinned 14 Oct 2026 (user, message 102), build 14r: wind 81.5%, solar 4.0%. The check now tests the claim, the asymmetry:
-  wind captures more than 50 points above solar, with wind inside 81-86% (the week's readings rounded outward to whole points).
-  Traced cause of the move from 85.1%: interruptible load called last, 2.85 points; 1,000 MW in place of 1,200, 0.72 points.
+  Re-pinned 14 Oct 2026 (user, message 103, replacing message 102's single-profile range), build 14r, as twelve-weather-year
+  ranges: wind 70.7-78.7% on the market price and 72.8-78.8% on the engine price without the scarcity term; solar 4.6-7.8% on
+  both. A fixed 110 GW build (50 GW wind, 60 GW solar, no storage), not a least-cost one, with energy-only prices. The check
+  now tests the claim: wind's capture more than 50 points above solar's in every weather year, on both prices (smallest gap
+  65.6 points, 2018). Traced cause of the week's move: interruptible load called last, 2.85 points; 1,000 MW in place of
+  1,200, 0.72 points (default profile); across the twelve years 0.90 and 0.43 points of mean wind capture (RESULTS 'Wind
+  capture across the twelve weather years').
 - With gas, 100-hour iron-air barely moves July (validate_findings, LDES scope; RESULTS "Long-duration storage in a
   system that has gas"). Scenario: Seriti build (20 GW wind, 25 GW solar, 20 GW lithium at 10 h, 32 GW coal retired,
   EAF 70%) plus 25 GW new CCGT, then 20 GW of 100-hour iron-air. July gas 846 -> 832 GWh (-1.7%) becomes 425 -> 0 GWh
