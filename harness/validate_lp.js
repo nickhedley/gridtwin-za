@@ -164,27 +164,40 @@ function check(label, ok, detail) {
         imp && imp.early === 0 && imp.late > 0 && imp.imp2031 === 0 && imp.imp2030 > 0 && Math.abs(imp.imp2030 - imp.impOff) < 1e-9,
         imp ? `LP lines changed: ${imp.early} up to 2030, ${imp.late} after; engine imports ${imp.imp2030.toFixed(2)} TWh in 2030, `
               + `${imp.imp2031.toFixed(2)} in 2031 (${imp.impOff.toFixed(2)} with no end year)` : 'no result');
-  // ── CARBON AT THE FULL STATUTORY RATE (carbonTaxFull, CTAX_FULL) ─────────
-  // Added 14 Oct 2026 (user, c5 sensitivity s_carbonfull): the rate in law with no allowances, R308/t in 2026 to R462/t in
-  // 2030, held after. Switched on it may change only the objective, and in 2030 coal's cost per MWh moves from the
-  // allowance path's R115.5/t to R462/t; switched off the LP is as before.
+  // ── CARBON PATHS (carbonTaxAt: carbonAllowancePath, carbonTaxFull) ───────
+  // Added 14 Oct 2026 (user). Central from c5, 'kept2030': the allowance kept at its 2026 share to 2030 on the rates in law
+  // (R308/t 2026, 347, 385, 424, R462/t 2030) in 2026 rands at the 3% inflation target, held after 2030. 'cut2027' must
+  // reproduce c4's path exactly. carbonTaxFull: the rates in law, no allowances, in 2026 rands. LP-KEY TEST: between any two
+  // paths only the carbon terms may change, the objective coefficients of fossil output (gc_, gg_, gd_, go_) and no row.
   const ctf = await runProbe(w, `
     const H0 = BLD_YEARS[BLD_YEARS.length - 1]; bldSetHorizon(2031);
     const lp = (ex) => bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: { ...state, ...ex } }).lp;
-    const a = lp({}), z = lp({ carbonTaxFull: 0 }), b = lp({ carbonTaxFull: 1 }); bldSetHorizon(H0);
-    const al = a.split(String.fromCharCode(10)), bl = b.split(String.fromCharCode(10)), st = al.indexOf('Subject To');
-    let objDiff = 0, rowDiff = 0;
-    for (let i = 0; i < Math.max(al.length, bl.length); i++) if (al[i] !== bl[i]) { if (i < st) objDiff++; else rowDiff++; }
-    const co = (L, y) => { const m = L.match(new RegExp('([0-9.]+) gc_' + y + '_0_12( |$)')); return m ? +m[1] : null; };
-    const S = { ...FIXED, ...state }, mc = S.costCoal + S.vomCoal;
-    return { law: [2026, 2027, 2028, 2029, 2030, 2031].map(carbonTaxHeadline), same: a === z, objDiff, rowDiff,
-             ratio: co(b, 2030) / co(a, 2030), want: (mc + 462 * S.emisCoal) / (mc + 115.5 * S.emisCoal),
-             ratio26: co(b, 2026) / co(a, 2026), want26: (mc + 308 * S.emisCoal) / (mc + S.carbonTaxRPerT * S.emisCoal) };`);
-  check('carbon at the full statutory rate changes only the objective, at the rates in law',
-        ctf && !ctf.error && ctf.law.join() === '308,347,385,424,462,462' && ctf.same && ctf.objDiff > 0 && ctf.rowDiff === 0
-          && Math.abs(ctf.ratio / ctf.want - 1) < 0.002 && Math.abs(ctf.ratio26 / ctf.want26 - 1) < 0.002,
-        ctf && !ctf.error ? `rates ${ctf.law.join(', ')}; off as before: ${ctf.same}; lines changed: ${ctf.objDiff} objective, ${ctf.rowDiff} rows; `
-          + `coal 2030 cost ratio ${ctf.ratio.toFixed(4)} against ${ctf.want.toFixed(4)}, 2026 ${ctf.ratio26.toFixed(4)} against ${ctf.want26.toFixed(4)}` : JSON.stringify(ctf));
+    const terms = L => { const o = L.split(String.fromCharCode(10)), st = o.indexOf('Subject To'), m = new Map();
+      for (const ln of o.slice(0, st)) for (const t of ln.split(' + ')) { const q = t.trim().match(/^(-?[0-9.e+-]+) ([A-Za-z0-9_]+)$/); if (q) m.set(q[2], +q[1]); }
+      return { m, rows: o.slice(st).join(String.fromCharCode(10)) }; };
+    const cmp = (A, B) => { const a = terms(A), b = terms(B); let nonCarbon = 0, carbon = 0, y2026 = 0, keys = a.m.size === b.m.size;
+      for (const [k, v] of a.m){ if (!b.m.has(k)) { keys = false; continue; } if (b.m.get(k) !== v){
+        if (/^(gc|gg|gd|go)_/.test(k)) { carbon++; if (/_2026_/.test(k)) y2026++; } else nonCarbon++; } }
+      return { keys, carbon, nonCarbon, y2026, rowsSame: a.rows === b.rows }; };
+    const kept = lp({}), cut = lp({ carbonAllowancePath: 'cut2027' }), full = lp({ carbonTaxFull: 1 }); bldSetHorizon(H0);
+    const S = { ...FIXED, ...state }, at = (y, ex) => carbonTaxAt(y, { ...S, ...ex });
+    const old = y => y <= 2026 ? S.carbonTaxRPerT : (y >= 2030 ? 462 : 308 * Math.pow(462 / 308, (y - 2026) / 4)) * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
+    const Y = [2026, 2027, 2028, 2029, 2030, 2031, 2040];
+    return { law: [2026, 2027, 2028, 2029, 2030].map(carbonTaxHeadline), def: S.carbonAllowancePath,
+             kept: Y.map(y => +at(y, {}).toFixed(2)), full: Y.map(y => +at(y, { carbonTaxFull: 1 }).toFixed(2)),
+             cutErr: Math.max(...Y.map(y => Math.abs(at(y, { carbonAllowancePath: 'cut2027' }) - old(y)))),
+             kc: cmp(kept, cut), kf: cmp(kept, full) };`);
+  const wantK = [46, 347, 385, 424, 462, 462, 462].map((v, i) => +(i ? v / Math.pow(1.03, Math.min(4, [0,1,2,3,4,5,14][i])) * 46 / 308 : 46).toFixed(2));
+  const wantF = [308, 347, 385, 424, 462, 462, 462].map((v, i) => +(v / Math.pow(1.03, Math.min(4, [0,1,2,3,4,5,14][i]))).toFixed(2));
+  const lpk = c => c && c.keys && c.rowsSame && c.nonCarbon === 0 && c.carbon > 0;
+  check('carbon paths: kept2030 central, cut2027 as c4, full rate; between paths only carbon terms change in the LP',
+        ctf && !ctf.error && ctf.law.join() === '308,347,385,424,462' && ctf.def === 'kept2030'
+          && ctf.kept.join() === wantK.join() && ctf.full.join() === wantF.join() && ctf.cutErr < 1e-9
+          && lpk(ctf.kc) && ctf.kc.y2026 === 0 && lpk(ctf.kf),
+        ctf && !ctf.error ? `default ${ctf.def}; kept2030 R/t 2026-31, 2040: ${ctf.kept.join(', ')}; full: ${ctf.full.join(', ')}; `
+          + `cut2027 against c4's formula, worst gap ${ctf.cutErr.toExponential(1)}; LP kept vs cut2027: ${ctf.kc.carbon} carbon terms, `
+          + `${ctf.kc.nonCarbon} others, ${ctf.kc.y2026} in 2026, rows ${ctf.kc.rowsSame ? 'same' : 'DIFFER'}; kept vs full: ${ctf.kf.carbon} carbon, `
+          + `${ctf.kf.nonCarbon} others, rows ${ctf.kf.rowsSame ? 'same' : 'DIFFER'}` : JSON.stringify(ctf));
   // ── THE LOOP'S STALL STOP (opts.stallFrac, STALL) ─────────────────────────
   // Added 14 Oct 2026 (user, c5's stopping rule): from pass stallFrom on, the loop stops when a pass cuts the worst
   // year's shed above target by less than stallFrac of the pass before, and says so in the verdict. The loop is run
