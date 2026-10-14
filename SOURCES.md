@@ -1078,3 +1078,37 @@ Majuba**, Matimba*, Matimba**, Medupi*, Medupi**. Every other value of those row
 made before this repository's history begins (1 Oct 2026), with no source or note found. c4 uses it (unit commitment in the
 engine and the optimiser's coal minimums). Not changed; to source (TODO 14dj).
 
+
+## IRP 2025 emissions and REIPPPP wind tariffs (c5 write-up, 14 Oct 2026; research helper, HTML pages and search extracts, no PDFs)
+
+IRP 2025 emissions:
+- Gazette: Government Gazette 53596, notice 6767, 28 October 2025, https://www.gov.za/sites/default/files/gcis_document/202510/53596gon6767.pdf
+  (link seen on UCT Libraries, 30 Oct 2025; PDF not opened). Acts Online (29 Oct 2025): the version gazetted after hours on
+  28 Oct was withdrawn and replaced by a revised version on 29 Oct, so page numbers may differ between versions.
+- Figure 19 'CO2 Emissions Trajectory (Mt)', page 30, and the sentence 'The IRP 2025 proposes CO2 emissions for the
+  electricity sector reduction from 168 Mt in 2030 to 142 Mt in 2035, or a 22% reduction': search extracts of the
+  department-hosted plan and user-friendly PDFs only; whether 30 is the plan's or the gazette's numbering is not known
+  (Table 1 is plan p.31, gazette p.42, so plan p.30 would be gazette p.41). To confirm against the full plan.
+- 168 Mt goes with 255 TWh in 2030 and is '39.9%' of the NDC (extracts). No other year found; Figure 19's values not seen.
+- 168 to 142 Mt is 15.5%, not 22%; the base of the 22% is not stated. SAnews, 19 Oct 2025 (read): 'approximately 160
+  million tonnes of carbon dioxide (CO2) equivalent by 2030, declining to 142 million tonnes by 2035'. Cliffe Dekker
+  Hofmeyr, 19 Nov 2025 (read): 168 Mt is about 40% of the 420 Mt CO2-eq NDC target. The plan labels the figures CO2;
+  secondary sources call them CO2-eq; nothing read says whether other gases are included.
+
+REIPPPP onshore wind tariffs:
+- BW5 (preferred bidders 28 Oct 2021): 1,608 MW in 12 wind projects (gov.za statement, 8 Dec 2022, read). Weighted average
+  wind R495/MWh fully indexed (R495.22; Crown Publications 4 Nov 2021 and Engineering News 28 Oct 2021, read; DMRE statement
+  28 Oct 2021, extract), lowest R344.25/MWh (TaiyangNews, 29 Oct 2021, read). Price base: about April 2021 (RFP released
+  12 April 2021); not confirmed. The 8 Dec 2022 statement restates BW5 solar R428.79 as R454.23 (x 1.059) at BW6's base.
+  Only 784 MW of BW5 wind had signed agreements by 8 Dec 2022.
+- BW6 (8 Dec 2022): no wind awarded; 4,116 MW of wind bids, all in the Eastern and Western Cape supply areas, with no grid
+  capacity confirmed by Eskom (gov.za statement, 8 Dec 2022, read).
+- BW7 (23 Dec 2024; further awards July and Dec 2025): no wind awarded; 8 wind bids, 4 compliant (gov.za, 23 Dec 2024, read);
+  the minister said the wind tariffs were too high (Green Building Africa, 23 Dec 2024, read); after value-for-money
+  negotiations with four wind bidders, only solar was appointed (Engineering News, 15 Dec 2025, read). No wind tariff
+  published.
+- BW4 (16 Apr 2015): onshore wind R619/MWh fully indexed, April 2014 rands (Engineering News, read).
+- Indexation: BW5 bidders submitted partial and full CPI-indexed prices; the 'fully indexed' price is quoted (White & Case,
+  17 May 2022, read).
+- Converting BW5 to January 2026 rands (approximate, ours): x 1.059 (the IPP Office's own BW5-to-BW6 restatement) then the
+  January CPI rates in BLD_COST's wind_high note (6.9%, 5.3%, 3.2%, 3.5%), about x 1.27 in all: about R620-630/MWh.

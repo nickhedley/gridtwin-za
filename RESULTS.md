@@ -2941,13 +2941,120 @@ cumulative): wind 12.9 GW (none before 2032; at most 2,308 MW a year, so neither
 (2030), diesel open-cycle 0.77 GW (2030); no pumped hydro, vanadium, iron-air, offshore wind or early coal retirement. Coal
 standing as Figure 3's 50-year line (17,890 MW in 2040).
 
-LNG (engine check, LNG=1): from 2034 one or two of the three stress windows burn more than one floating storage unit's
-cargo in 14 days (worst 2.03 cargoes, 2038, the 2021 window); the worst 14 days of the year's runs rise to 4.0 cargoes in
-2040. The plan assumes resupply within a two-week event from 2034.
+LNG: see the caveat in 'c5 for the write-up' below (10 of 33 stress-window years above one cargo, all in 2034-40).
 
 Caveats: the engine check is the note's cost measure, with its storage-dispatch caveat (RESULTS '24-hour dispatch sheds
 nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
 differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
+
+### c5 for the write-up: build and CO2 by year beside IRP 2025; what wind costs and where each part comes from; the LNG caveat, 14 Oct 2026
+
+User, 14 Oct (for the c5 write-up). Build from run 38536463416's own output (report run 38541954800 on claude/recheck-14d,
+print_state.py; the same as the local solve, cell for cell); CO2 from its engine check. IRP 2025 Table 1 from
+public_data/irp2025_extract.csv (IRP p.31, gazette p.42; the values used for s_pvirp and s_irpgas); IRP coal standing is
+Figure 3's 50-year line as read by Nick (plan p.12, gazette p.23), scaled to 39,692 MW, about +/-250 MW.
+
+```
+A. Renewables and storage, new MW a year (c5 / IRP 2025 Table 1)
+year   wind c5 / IRP     solar c5 / IRP   rooftop c5 / IRP DG   lithium c5 GW, GWh   IRP storage   PHES c5 / IRP   iron-air c5
+2026      - /   964       - /  3553       - /   900      0.00    0.0           144           - /     -        -
+2027      - /  2847       - /  2886     900 /   900      0.00    0.0           150           - /     -        -
+2028      - /   770       - /  1760     900 /   900      0.00    0.0           615           - /     -        -
+2029      - /   760    2665 /  1314     900 /   900      1.27    5.1          2615           - /     -        -
+2030      - /  2000    3277 /   800     900 /   900      2.24    9.0           200           - /     -        -
+2031      - /  2500    3506 /  1000     900 /   900      1.24    4.9           200           - /     -        -
+2032    601 /  2600    3752 /  1200     900 /   900      1.25    5.0           200           - /     -        -
+2033   1102 /  2600    1256 /  1400     900 /   900      1.12    4.5           200           - /     -        -
+2034   1946 /  3000    1053 /  1600     900 /   900      1.53    6.1           200           - /     -        -
+2035   1385 /  3000     584 /  2000     900 /   900      1.03    4.1           200           - /     -        -
+2036   1028 /  2000    2023 /  1600     900 /     -      1.07    4.3           500           - /     -        -
+2037   1600 /  3000    4161 /  1600     900 /     -      1.76   10.2           500           - /  1332        -
+2038   1690 /  3000    4419 /  1600     900 /     -      1.84   12.0           500           - /     -        -
+2039   2308 /  3500    4048 /  1600     900 /     -      1.66   12.0           500           - /     -        -
+2040   1197 /  3500    4088 /  1600     900 /     -      1.59   12.0           500           - /     -        -
+total  12857 / 36041   34832 / 25513   12600 /  9000     17.60   89.2          7224           - /  1332        -
+
+B. Firm capacity, coal and CO2 (c5 / IRP 2025)
+year   CCGT  OCGT-LNG  OCGT-diesel | IRP gas  IRP nuclear | coal standing c5 / IRP Fig 3  early ret c5 | CO2 Mt c5 (engine) / IRP
+2026      -       -       -       |      -        -      |  39692 /  39692                      -      |  157.3 / -
+2027      -       -       -       |      -        -      |  39692 /  39692                      -      |  160.2 / -
+2028      -       -       -       |      -        -      |  39692 /  39692                      -      |  163.0 / -
+2029      -       -       -       |   3000        -      |  37027 /  37064                      -      |  159.2 / -
+2030    452     748     765       |   3000        -      |  32433 /  32388                      -      |  155.5 / 168
+2031    965       -       -       |      -        -      |  30876 /  30839                      -      |  151.4 / -
+2032    772       -       -       |   1250        -      |  29223 /  29324                      -      |  142.9 / -
+2033    670       -       -       |   1250        -      |  28121 /  27886                      -      |  139.8 / -
+2034    751       -       -       |   1250        -      |  26467 /  26403                      -      |  133.8 / -
+2035    341       -       -       |   1000        -      |  25916 /  26029                      -      |  131.1 / 142
+2036    386       -       -       |   1250     1250      |  25348 /  25350                      -      |  126.7 / -
+2037    611       -       -       |   1500     1250      |  23658 /  23415                      -      |  115.5 / -
+2038    613       -       -       |   1250     1350      |  21969 /  21819                      -      |  104.8 / -
+2039   1161       -       -       |   1250     1350      |  19661 /  19825                      -      |   92.8 / -
+2040    800       -       -       |   1250        -      |  17890 /  17958                      -      |   84.8 / -
+total   7522     748     765       |  17250     5200      | CO2 2026-40 c5 2019 Mt
+```
+
+Caveats on the comparison. (a) The IRP's 2026-28 rows include plants under construction and committed private build
+coming online; c5 holds no committed pipeline, and its 2026 fleet (wind 4,612 MW, utility solar 3,271 MW, the app's
+'Today 2026') is already below the IRP's end-2025 base (5,344 and 3,646 MW). So c5's zeros in 2026-28 are optimiser
+choices on a smaller base, not the same quantity as Table 1. (b) Table 1 gives storage in MW only; c5's lithium is 4-hour.
+(c) Table 1's gas is not split into combined and open cycle. (d) CO2: IRP 2025 reports 168 Mt in 2030 and 142 Mt in 2035
+for the electricity sector (Figure 19 'CO2 Emissions Trajectory (Mt)', page 30 by search extracts of the department's
+PDFs, numbering not confirmed; SOURCES 'IRP 2025 emissions'); no other year found. Its 168 Mt goes with 255 TWh of
+demand; c5's engine serves 209.8 TWh of customer demand in 2030, so the bases differ. The IRP's '22% reduction' does not
+follow from 168 to 142 Mt (15.5%); SAnews (19 Oct 2025) gives 160 Mt for 2030.
+
+What wind costs in c5 (build 14i, bldWindModern 1, case central, GRID=1), and the source of each part:
+
+```
+part                value                          source                                                     status
+capex 2026          R26,647/kW (January 2024)      IPP Office REIPPPP historical data note, 7 Nov 2025, BW6   sourced; bids from a window
+                                                   wind compliant bids                                        that awarded no wind
+two multipliers     x 1.032 x 1.035 = R28,462/kW   SA CPI January 2024-25 and 2025-26 (Stats SA headline,     sourced, second-hand
+                                                   as reported; Stats SA site not reachable)
+cost decline        2.86% a year real              'BNEF's 2035 forecasts' (-23% onshore wind by 2035),       partly: no title, edition
+                    (R25,343/kW in 2030)           BLD_COST comment                                           or date recorded
+fixed O&M           R693/kW-yr                     'from NREL ATB' (BLD_FOM comment; USD 42 at R16.50)         partly: no edition or value;
+                                                                                                              BW6 bids R367 (R392, 2026)
+life                25 years                       none recorded                                              unsourced
+discount rate       8% real                        IEA Cost of Capital Observatory 2025 and others            sourced
+grid: integration   R402/kW-yr                     Eskom TDP 2024 Table 4, generation integration share       sourced
+grid: spur          R1,010/kW once (R85/kW-yr      ITP Phase 1, USD 1bn for 1,164 km (South African,          partly: line cost unverified
+                    over 40 years)                 unverified) x reV 132/400 kV ratio 0.607; 22.0 km beyond
+                                                   18 km (DFFE REEA approvals); 205 MW circuit
+grid: freed coal    no grid cost on a connection   modelling choice (TODO 14ar, user, 7 Oct 2026)             unsourced; see the flag
+connections         freed by retired coal
+capacity factor     45.2% (2014-25 mean; 42.0-47.8% Renewables.ninja MERRA-2 V162 at 120 m, 98 sites;     sourced (developer-stated
+                    by weather year)               x 1.064 fitted to Impofu (Enel, 1,260 GWh) and San Kraal   output); existing fleet
+                                                   (EDF, 616 GWh) stated annual output                        profile 37.0%
+```
+
+Implied cost of new wind, R/MWh in 2026 rands (annuity at 8% over 25 years plus fixed O&M, over 45.2% x 8,760 h; no
+curtailment): 2026, R848 without the grid cost and R971 with it; 2030, R775 and R898. At the low profile correction (42.5%):
+R902 and R1,033 (2026). With BW6's bid fixed O&M (R392) in place of R693: R766 (2026) and R692 (2030).
+
+REIPPPP onshore wind (SOURCES 'REIPPPP wind tariffs'): BW5 (28 Oct 2021, 1,608 MW, 12 projects) weighted average R495/MWh
+fully indexed, lowest R344/MWh, price base about April 2021 (not confirmed); about R620-630/MWh in January 2026 rands
+(the IPP Office's own BW5-to-BW6 restatement, x 1.059, then January CPI 2023-26; approximate). BW6 (8 Dec 2022): none
+awarded, no grid capacity in the Eastern and Western Cape for 4,116 MW of bids. BW7 (Dec 2024 to Dec 2025): none awarded;
+the minister called the wind tariffs too high; no wind tariff published. BW4 (Apr 2015): R619/MWh in April 2014 rands.
+
+Finding: c5's 2026 wind cost is about 35% above BW5's average tariff in real terms without the grid cost (R848 against
+about R625) and about 55% above with it (R971). Its capex is BW6's compliant bids, from a window that awarded no wind, and
+BW7's wind bids were rejected as too dear, so recent South African bids sit above BW5's prices. Of the gap, fixed O&M
+explains about R76-82/MWh (R693 against BW6's R392 bid figure). Caveat: a tariff is a 20-year CPI-indexed price including
+the developer's return and the project's own capacity factor, so it is close to, not the same as, a real levelised cost.
+
+Flag: 12,268 of c5's 12,857 MW of new wind (95%) sits on connections freed by retired coal and pays no grid cost; wind is
+built only from 2032, after utility solar has taken the freed connections of 2029-31 (none are freed before 2029). The
+single-node model has no geography, so this lets wind at a Cape capacity factor connect where Mpumalanga coal retired.
+
+Caveat (LNG), c5's engine check (LNG=1): one cargo is one floating storage unit, 170,000 m3 x 0.45 t/m3 x 53.37 GJ/t =
+4.08 PJ, no heel. Of the three 2030 stress windows, re-run in each year 2030-40 (33 window-years), 10 burn more than one
+cargo in 14 days, all from 2034: the 2021 window (days 87-100) in 2034 and 2036-2040 (1.16-2.03 cargoes) and the 2023
+window (days 8-21) in 2037-2040 (1.50-1.91); none in 2030-33 or 2035. Worst 2.03 cargoes (2038, 2021 window). The worst
+14 days of the year's runs exceed one cargo every year from 2031 (1.18) and reach 4.02 in 2040. So from 2034 the plan
+assumes LNG is resupplied within a two-week stress event.
 
 ### COAL_AVAIL stopped a c5 test run under 14dr; fixed (windows carry their own available coal); s_coalavail's results unchanged, 14 Oct 2026
 
