@@ -1,8 +1,9 @@
 // SETTINGS RECORD COMPARISON (user, 14 Oct 2026: c5's sensitivities; branch claude/recheck-14d, never merged; solves
 // nothing). Reads two pathway outputs (pathway_<name>.json) and prints every recorded setting that differs between them,
 // so a sensitivity can be confirmed to change only its one setting from the central. The run's results (build, sched,
-// log, objective and the like) are left out, except coal standing by year: COAL_DATES is not a recorded field, so the
-// input schedule is read from sched[y].coalMW. Settings with no recorded field (WIND_CASE, GAS_CAP) cannot be confirmed
+// log, objective and the like) are left out, except the coal schedule by year: COAL_DATES is not a recorded field, so the
+// input schedule is read as sched[y].coalMW + sched[y].earlyRetMW (coalMW is net of the optimiser's early retirement,
+// which is a result and is printed separately). Settings with no recorded field (WIND_CASE, GAS_CAP) cannot be confirmed
 // here; the dispatch line in the run's log is their record.
 // Usage, from harness/: node recordcmp.js <central pathway json> <sensitivity pathway json>
 const fs = require('fs');
@@ -15,6 +16,9 @@ const show = v => { const s = JSON.stringify(v); return s.length > 300 ? s.slice
 console.log(`settings recorded: ${keys.length} fields; differing: ${diff.length ? diff.join(', ') : 'none'}`);
 for (const k of diff) console.log(`  ${k}: ${show(A[k])} -> ${show(B[k])}`);
 if (missing.length) console.log(`  in one record only: ${missing.join(', ')}`);
-const coal = r => Object.fromEntries(Object.entries(r.sched || {}).map(([y, s]) => [y, s.coalMW]));
-const ca = coal(A), cb = coal(B), cy = Object.keys(ca).filter(y => ca[y] !== cb[y]);
-console.log(`coal standing by year (input schedule, sched.coalMW): ${cy.length ? 'differs in ' + cy.map(y => `${y} ${ca[y]} -> ${cb[y]}`).join(', ') : 'same in every year'}`);
+const coal = (r, f) => Object.fromEntries(Object.entries(r.sched || {}).map(([y, s]) => [y, f(s)]));
+const sch = s => (s.coalMW || 0) + (s.earlyRetMW || 0), ret = s => s.earlyRetMW || 0;
+for (const [label, f] of [['coal schedule by year (input: coalMW + earlyRetMW)', sch], ['early coal retirement by year (a result, not a setting)', ret]]) {
+  const ca = coal(A, f), cb = coal(B, f), cy = [...new Set([...Object.keys(ca), ...Object.keys(cb)])].filter(y => ca[y] !== cb[y]);
+  console.log(`${label}: ${cy.length ? 'differs in ' + cy.map(y => `${y} ${ca[y]} -> ${cb[y]}`).join(', ') : 'same in every year'}`);
+}
