@@ -3116,6 +3116,17 @@ same context before index.html, as the browser does, instead of the hand copy; 2
 changes stress_suite.js only, so c5b is unaffected. Side effect: the suite's single-node section then uses IMPORTS_CF 0.88, not
 the stale 0.85.
 
+Update, message 80 (user, 14 Oct 2026). Stress-suite fix applied (commit 4d4c5d1, approved on condition that it changes only
+how the harness loads files): stress_suite.js, one line replaced and two comment lines added; the hand copy 'const IMPORTS_CF
+= 0.85' becomes nodal_engine.js itself, run before index.html's script. No assertion, limit or pass rule is touched. One input
+changes: the suite's single-node scenarios now use the engine's IMPORTS_CF 0.88. Stress suite on the branch: before (babb78d,
+7b15f13) it stops while loading, after the first four nodal suites, with no count; after (4d4c5d1) 290/290. Main, before and
+with the same change: 290/290. Ancillary knee re-pinned (commit f14d684; the published finding below carries the fleet change).
+Full suite (ESK19679.csv present): 7b15f13 812/818 (node checks 725/731, audit 87/87), eng5 6/6; with the knee re-pin
+validate_findings 40/42, so 813/818. Remaining failures: the Megaflex tariff block, EDMSA Scenario A CO2 2035, iron-air in July
+and the preset curtailment band (all four also fail on main), and the market-price invariant (split proposed, not applied).
+Main is 812/818. Pushed to #39: 7b15f13, 4d4c5d1, f14d684; none changes engine or optimiser code, so c5b (babb78d) stands.
+
 Moved checks (message 79 (3)), on branch claude/c5b-demand, commit 7b15f13, no tolerance changed:
 - (a) lcoeBatt: tested on c5's 2030 lithium fleet, { newBattMW: 2240, newBattHours: 4, scenarioYear: 2030 }, pass rule
   unchanged; passes. Reason: the existing fleet is 68 MW / 292 MWh and no new batteries are in the base scenario, so the cost
@@ -10066,6 +10077,13 @@ ancillary rate; that point passed some time ago.
 > claimed. What matters for policy is that the knee is close - one procurement round of storage
 > reaches it - so pricing ancillary services is worth settling before the fleet crosses it rather
 > than after.
+>
+> UPDATED 14 Oct 2026, build 2026-10-14l (user decision, message 80). The existing fleet is 2.79 GW, not 3.52: pumped storage
+> 2,724 MW plus Eskom's batteries operating at mid-2026, 68 MW / 292 MWh (Hex, Pongola, Elandskop), not 800 MW. The knee did
+> not move: revenue is flat to 4 GW and falls from 6 GW, identical on builds 14j and 14l. South Africa is still approaching
+> the knee, not past it, and a battery built today still earns the full ancillary rate. The distance grows from about 1 GW to
+> about 1.7 GW of new storage, so "one procurement round of storage reaches it" is superseded. The check's band was re-pinned
+> to the new fleet (0.8-2.0 -> 1.0-2.5 times the fleet, the same 2.8-7.0 GW range for the knee).
 
 This points the same way as the old finding but harder. The case for pricing
 ancillary services is more urgent, not less, because the saturation is already
