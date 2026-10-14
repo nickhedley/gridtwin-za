@@ -284,6 +284,7 @@ Inputs
 14. Imports continue after 2030 because the IRP is silent. The IRP ties Mozal's exit to an end of Cahora Bassa supply, which the 2026 data does not show.
 15. Carbon. Allowances rest on second-hand reporting, and price neutrality is not modelled.
 16. Licences. PyPSA-RSA data is AGPL v3 but listed as MIT in the project's licence file. Use of NTCSA's GCCA data is not clearly permitted. Both are pending (SOURCES 'PyPSA-RSA: licence'; 'NTCSA GCCA 2025 data').
+17. Avon and Dedisa's running is left out. These two IPP open-cycle plants (1,005 MW, on 15-year contracts to 2030-31) ran in about 6,300 hours a year in 2024-25 and produced 1.46-1.51 TWh a year; 1.07 TWh a year on the pace of January-August 2026. The model holds them as reserve and runs its whole open-cycle fleet for 0.014 TWh in 2026. At the model's own diesel price this is about R6.6bn a year (R9.0-9.3bn on 2024-25 volumes) and 0.8-1.2 Mt of CO2. It is common to every scenario, so it cancels in every comparison between runs, but every run's absolute cost and 2026-31 CO2 is understated by it (about R30bn of present value to 2031). No change before the note (RESULTS 'Known limitation: Avon and Dedisa's running is not in the model').
 
 ---
 
