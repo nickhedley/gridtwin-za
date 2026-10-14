@@ -1,11 +1,11 @@
 {
  "base": {
-  "coalTWh": 145.906,
-  "co2": 155.161,
-  "avgCost": 1089.11,
-  "replAvg": 1507.31,
-  "avgPrice": 749.2,
-  "rePct": 21.443,
+  "coalTWh": 148.305,
+  "co2": 157.65,
+  "avgCost": 1075.31,
+  "replAvg": 1507.98,
+  "avgPrice": 762.05,
+  "rePct": 21.187,
   "curtTWh": 0,
   "loleHrs": 0
  },
@@ -101,10 +101,10 @@
    "loleHrs": true
   },
   "outageUnitLevel": {
-   "coalTWh": false,
+   "coalTWh": true,
    "co2": true,
-   "avgCost": false,
-   "replAvg": false,
+   "avgCost": true,
+   "replAvg": true,
    "avgPrice": true,
    "rePct": false,
    "curtTWh": false,
@@ -156,7 +156,7 @@
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
-   "rePct": false,
+   "rePct": true,
    "curtTWh": false,
    "loleHrs": true
   },
@@ -181,7 +181,7 @@
    "loleHrs": true
   },
   "coalFlexPct": {
-   "coalTWh": false,
+   "coalTWh": true,
    "co2": false,
    "avgCost": true,
    "replAvg": true,
@@ -216,7 +216,7 @@
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
-   "rePct": false,
+   "rePct": true,
    "curtTWh": false,
    "loleHrs": false
   },
@@ -262,9 +262,9 @@
   },
   "newCcgtMW": {
    "coalTWh": true,
-   "co2": false,
+   "co2": true,
    "avgCost": true,
-   "replAvg": false,
+   "replAvg": true,
    "avgPrice": true,
    "rePct": false,
    "curtTWh": false,
@@ -281,7 +281,7 @@
    "loleHrs": false
   },
   "newCoalMW": {
-   "coalTWh": false,
+   "coalTWh": true,
    "co2": true,
    "avgCost": true,
    "replAvg": true,
@@ -434,8 +434,8 @@
    "coalTWh": true,
    "co2": true,
    "avgCost": true,
-   "replAvg": true,
-   "avgPrice": false,
+   "replAvg": false,
+   "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
    "loleHrs": false
@@ -454,7 +454,7 @@
    "coalTWh": true,
    "co2": true,
    "avgCost": true,
-   "replAvg": true,
+   "replAvg": false,
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
@@ -464,7 +464,7 @@
    "coalTWh": false,
    "co2": false,
    "avgCost": true,
-   "replAvg": false,
+   "replAvg": true,
    "avgPrice": true,
    "rePct": false,
    "curtTWh": false,
@@ -473,7 +473,7 @@
   "drInterruptMW": {
    "coalTWh": false,
    "co2": false,
-   "avgCost": false,
+   "avgCost": true,
    "replAvg": false,
    "avgPrice": true,
    "rePct": false,

@@ -135,6 +135,10 @@ const CONTEXT = {
   // 20 GW of wind it moves avgCost across its whole range.
   tdpConfidencePct: { newWindMW: 20000 },
   lcoeIronAir:      { newIronAirMW: 5000 },
+  // lcoeBatt, 14 Oct 2026 (build 14l, decision 14 Oct, message 79): the existing fleet is now Eskom's 68 MW / 292 MWh
+  // operating at mid-2026 (it was 800 MW), too little for its cost to move replacement cost past the threshold. Tested
+  // on c5's 2030 lithium fleet instead (2.24 GW / 9.0 GWh, RESULTS 'c5 results'); the pass rule is unchanged.
+  lcoeBatt:         { newBattMW: 2240, newBattHours: 4, scenarioYear: 2030 },
   lcoeCsp:          { },                  // CSP exists in the base fleet
   ccgtForceLoad:    { newCcgtMW: 4000, scenarioYear: 2030 },
   // Replaced 21 Sep 2026: the three component controls became one flat requirement.
