@@ -69,6 +69,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (process.env.GAS_CAPEX) w.eval(`if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`);
  // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
  if (P.importsEndYear) w.eval(`state.importsEndYear=${+P.importsEndYear};`);
+ // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
+ if (P.importsMW != null) w.eval(`state.importsMW=${+P.importsMW};`);
+ if (P.importsCF != null) w.eval(`state.importsCF=${+P.importsCF};`);
+ const BLK = (P.demand && P.demand.block) ? P.demand.block : null;
+ if (BLK) console.log('demand block from the pathway:', JSON.stringify(BLK));
  // Carbon path (user, 14 Oct 2026): the pathway's own (carbonPath; carbonFull for s_carbonfull). CFLAT cannot be given with
  // carbonFull.
  { const cPath = P.carbonPath ?? 'cut2027';
@@ -89,7 +94,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    const frac=(y-2026)/(2040-2026), dg=(P.demand && P.demand.index) ? (P.demand.index[y]-1)*100 : (Math.pow(1+DEM/100,frac)-1)*100;
    const over={...(PG && PG.fuelR ? {costCcgt:PG.fuelR[y]} : {}),newWindMW:cum.wind,newPvMW:cum.pv,newRooftopMW:cum.rooftop,newBattMW:cum.batt,newBattHours:cum.batt>0?Math.max(1,Math.min(20,cum.battMWh/cum.batt)):4,
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
-     demandGrowthPct:dg,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
+     demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
    // New pumped hydro built by the optimiser (6 Oct 2026): charge what the optimiser charged, not the engine's
    // fixed Tubatse 14-hour acapPs. PHES_BASIS names the basis (bldPhesCapexKW); PH the hours (bldPhesHours).

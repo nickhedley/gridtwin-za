@@ -5326,6 +5326,11 @@ const FIXED = {
   // For the no-imports-after-2030 sensitivity: the 1,150 MW Cahora Bassa contract ends on 31 Dec 2030 (Mozambique's
   // energy transition strategy; SOURCES), and IRP 2025, as far as the sources reachable show, does not say what follows.
   importsEndYear:0,
+  // FLAT DEMAND BLOCK (user, 14 Oct 2026, message 72): MW added to every hour's demand after growth, in the engine
+  // (simulate) and, by model year, in the build optimiser (opts.demandBlock, bldDemandBlockMW). For load that returns as
+  // a flat block rather than growing with the index: c5b's ferrochrome smelters, 930 MW from 2027 (80% take-or-pay on
+  // the 12.8 TWh contracted, less what the 2026 base already holds; RESULTS 'Smelter block sized'). 0: none.
+  demandBlockMW:0,
   // OUTAGES ON THE UNITS STILL STANDING (TODO 14dr, user 13 Oct 2026: in c5). 1: the unit outage draw runs over the coal
   // units ucUnitsStanding leaves for the year's coal installed; 0: over all 85 UC_FLEET units, as before 14 Oct 2026.
   outageStandingUnits:1,
@@ -6860,6 +6865,8 @@ function simulate(u, prof, outPath, _soc0){
   const demand = (p.demandYear === 2025 && prof.demand === PROFILES.demand && PROFILES.demand_2025)
     ? PROFILES.demand_2025 : prof.demand;
   const growth=1+p.demandGrowthPct/100;
+  // Flat demand block (FIXED.demandBlockMW): added to every hour after growth, before rooftop and exports.
+  const demBlock=Math.max(0, +(p.demandBlockMW ?? 0) || 0);
   // Retire nameplate, add nameplate, then take the capture penalty off whatever
   // fleet is left - existing and new alike. A new station with capture loses the
   // same fraction of its output to the capture plant as a retrofitted one.
@@ -7363,7 +7370,7 @@ function simulate(u, prof, outPath, _soc0){
       const idx = [];
       for (let k = 0; k < 24; k++){
         const h = h0+k;
-        idx.push({ h, net: demand[h]*growth - ((_wModOn ? windCap*windU[h] + offshoreCap*wind[h] : vreCap.w*wind[h]) + vreCap.p*solarU[h]) });
+        idx.push({ h, net: demand[h]*growth + demBlock - ((_wModOn ? windCap*windU[h] + offshoreCap*wind[h] : vreCap.w*wind[h]) + vreCap.p*solarU[h]) });
       }
       idx.sort((a,b) => b.net - a.net);
       const nMove = 6;                                  // out of the top six hours; back into up to twelve
@@ -7439,7 +7446,7 @@ function simulate(u, prof, outPath, _soc0){
 
   const netLoadPre=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
-    const rawDemand=demandDR[h]*growth;
+    const rawDemand=demandDR[h]*growth + demBlock;
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
     // Offshore on its OWN shape where the profile loaded, onshore's where it did not.
@@ -7894,7 +7901,7 @@ function simulate(u, prof, outPath, _soc0){
     // Clamped to cAvail after the reserve withholding, so a committed fleet is
     // never asked to sit below its own minimum stable level.
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
-    const rawDemand=demandDR[h]*growth;   // same shaped series the UC saw
+    const rawDemand=demandDR[h]*growth + demBlock;   // same shaped series the UC saw
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
     // FIRM EXPORT VOLUME, booked 15 Sep 2026. expAt(h) had been added to the load line
@@ -10287,6 +10294,13 @@ function bldDemandIndex(opts, y){
   if (ix && ix[y] != null) return +ix[y];
   return Math.pow(1 + ((opts && opts.growth) || 0), y - 2026);
 }
+// Flat demand block in model year y, MW (FIXED.demandBlockMW): opts.demandBlock maps a start year to MW, each value
+// holding until the next year given (e.g. {2027: 930} or {2027: 930, 2029: 675, 2030: 493}); none before the first.
+function bldDemandBlockMW(opts, y){
+  const b = opts && opts.demandBlock; if (!b) return 0;
+  let mw = 0; for (const yy of Object.keys(b).map(Number).sort((a, c) => a - c)) if (yy <= y) mw = +b[yy];
+  return Math.max(0, mw);
+}
 // New nuclear decided in advance and standing by year y (bldNuclearAdd, TODO 14be step 7), MW.
 function bldNuclearAddedMW(S, y){
   const a = S && S.bldNuclearAdd; if (!a) return 0;
@@ -10579,14 +10593,14 @@ function bldBuildLP(opts){
   const RES_VRE_BASE = S.reserveVreBaseMW || 0;
   const COMMIT_ON = !!S.bldCoalCommit, COMMIT_MIN = Math.max(0, Math.min(1, S.bldCoalMinFrac)), COMMIT_H = Math.max(1, S.bldCoalCommitHours);
   for (const y of Y){
-    const dg = bldDemandIndex(opts, y);
+    const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
     const coalCapMean = bldCoalMW(y) * eaf;
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
       const coalCap = r.coalFrac ? bldCoalMW(y) * r.coalFrac[h] : (r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean);
       const i = (r.dem !== undefined ? r.dem : r.d)*24 + h, k = y + '_' + r.d + '_' + h;
-      const dem = PROFILES.demand[i]*dg + expAtLP(i);
+      const dem = PROFILES.demand[i]*dg + dBlk + expAtLP(i);
       if (ST_ON && !r.tail) ST_DEM[y] = (ST_DEM[y] || 0) + r.weight * dem;
       // A tail day from another weather year carries its own shapes; a calendar day reads the
       // default profile. Same index arithmetic for demand either way.
@@ -10829,7 +10843,7 @@ function bldBuildLP(opts){
     // hourly balance and shed price, and counting their demand here too raised the firm requirement
     // pass by pass until a year whose builds are capped could not meet it (Kerwin part 2 loop, 2026:
     // 2,427 MW needed against 2,000 MW of lithium allowed, infeasible).
-    for (const r of rdY(y)) if (!r.stress) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg);
+    for (const r of rdY(y)) if (!r.stress) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg + dBlk);
     // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
     // an hourly matter and lives in cmax_ and resv_ above.
     const firm = coalCapMean + NUC(y)*AV_NUC + EX.hydro*AV_HYD + IMP(y)*AV_IMP
@@ -11087,7 +11101,7 @@ function bldStateForYear(res, y, opts){
       ? ((tot.phes || 0) * ((opts.state.bldPhesHours ?? FIXED.bldPhesHours)) + (tot.phel || 0) * (opts.state.bldPhesHours2 || 0)) / ((tot.phes || 0) + (tot.phel || 0))
       : (opts.state.bldPhesHours ?? FIXED.bldPhesHours),
     coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
-    demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, scenarioYear: y,
+    demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, demandBlockMW: bldDemandBlockMW(opts, y), scenarioYear: y,
     ...(opts.gasFuelR ? { costCcgt: bldGasFuelR(opts, y, { ...FIXED, ...opts.state }) } : {}),
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
         ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}) };
@@ -18939,7 +18953,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14j';
+const BUILD_STAMP = '2026-10-14k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
