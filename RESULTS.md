@@ -3171,6 +3171,11 @@ Update, message 81 (user, 14 Oct 2026).
   mean scarcity adder R0.079 against R0.028/kWh, market price R0.841 against engine R0.762/kWh (10.3%, limit 5%); without the
   adder the two agree within 0.03%. Eskom's 348 interruptible-supply hours in January-August 2026 against the model's 78 go
   to TODO 14eg, after c5b.
+- After #39 and #41 merged (main 0c8a761, build 2026-10-14l): the live site gridtwinza.org serves BUILD_STAMP '2026-10-14l'
+  (read 13:21 UTC; the Cloudflare Workers build and the GitHub Pages deploy for 0c8a761 both succeeded; github.io cannot be read
+  from this session). Suite on main, ESK19679.csv present: 813/818 (node checks 726/731, audit 87/87), eng5 6/6, stress suite
+  290/290. The five failures: Megaflex tariff block, EDMSA Scenario A CO2 2035, iron-air in July, preset curtailment band
+  (TODO 14ef) and the market-price invariant (cause recorded above).
 
 Moved checks (message 79 (3)), on branch claude/c5b-demand, commit 7b15f13, no tolerance changed:
 - (a) lcoeBatt: tested on c5's 2030 lithium fleet, { newBattMW: 2240, newBattHours: 4, scenarioYear: 2030 }, pass rule
