@@ -32,14 +32,21 @@ terms.
 
 Data sources incorporated in this repository carry their own licences:
 
-- Eskom hourly system data (2025): Eskom Data Portal — public operational data
+- Eskom hourly data (ESK19679 and ESK19243, obtained from the Eskom Data Portal on request; and Eskom's 2021 CSP profile,
+  via PyPSA-RSA): no licence of their own, so Eskom's website terms and the Data Portal disclaimer apply: personal,
+  educational or non-commercial use only; no reproduction, distribution or publication without Eskom's written consent,
+  which has been requested. The raw files are not in this repository; profiles.json and nodal/coal_availability_trace.json
+  hold series derived from them, to be replaced with open versions.
 - UCT ESRG Single Node Hourly Demand Model (Bruno Merven, ZivaHub):
   https://doi.org/10.25375/uct.24137877 — CC BY 4.0
-- PyPSA-RSA network topology and fleet data (Meridian Economics):
-  https://github.com/MeridianEconomics/pypsa-rsa — MIT
+- PyPSA-RSA network topology and fleet data (Meridian Economics): https://github.com/MeridianEconomics/pypsa-rsa;
+  AGPL-3.0-or-later. Its own data-licence table puts its supply-region boundaries under the GCCA's terms (BY-NC-SA). The
+  terms for our use are being confirmed with Meridian. The PyPSA library used in validation/ is MIT.
 - PVGIS SARAH2 solar profiles: European Commission JRC — open access
 - Renewables.ninja wind profiles: Pfenninger & Staffell — CC BY-NC 4.0
-- REIPPPP project data: DMRE / IPP Office — public domain
+- REIPPPP project data (IPP Office, DMRE): no open licence. The IPP Office website terms (May 2016) reserve copyright in
+  the site's contents (clause 7.1) and prohibit their unauthorised use (clause 7.2). Used here: project facts (name,
+  capacity, technology, location, dates) and figures cited from IPP Office reports, credited.
 - GCCA 2025 connection capacity data and supply-area boundaries (NTCSA): NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 
 Users are responsible for complying with the terms of each upstream data source.
