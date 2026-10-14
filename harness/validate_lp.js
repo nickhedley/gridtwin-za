@@ -147,6 +147,104 @@ function check(label, ok, detail) {
               + `same rule for every store ${dur.creditAll ? 'yes' : 'NO - the long-duration tiers are still on fixed multiples'}`
             : `no energy variable in the LP: lithium is still one build decision at a fixed duration`);
   }
+  // ── IMPORTS END YEAR (importsEndYear) ─────────────────────────────────────
+  // Added 14 Oct 2026 (user, 13 Oct, TODO 14dv (6)): the no-imports-after-2030 sensitivity sets importsEndYear; the build LP
+  // and the engine must drop imports in the same years and no others. On a 2026-2032 horizon the LP may change only in
+  // 2031-2032, and simulate() must carry imports in 2030 and none in 2031.
+  const imp = await runProbe(w, `
+    const H0 = BLD_YEARS[BLD_YEARS.length - 1]; bldSetHorizon(2032);
+    const lp = (ex) => bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: { ...state, ...ex } }).lp.split(String.fromCharCode(10));
+    const a = lp({}), b = lp({ importsEndYear: 2030 }); bldSetHorizon(H0);
+    let early = 0, late = 0;
+    for (let i = 0; i < Math.max(a.length, b.length); i++) if (a[i] !== b[i]){
+      const m = (a[i] || b[i] || '').match(/_(20[0-9][0-9])/); if (m && +m[1] > 2030) late++; else early++; }
+    const e = (y, end) => simulate({ ...state, scenarioYear: y, importsEndYear: end }, PROFILES).E.imports / 1e6;
+    return { early, late, imp2030: e(2030, 2030), imp2031: e(2031, 2030), impOff: e(2031, 0) };`);
+  check('importsEndYear drops imports after its year in the build LP and the engine, and nowhere else',
+        imp && imp.early === 0 && imp.late > 0 && imp.imp2031 === 0 && imp.imp2030 > 0 && Math.abs(imp.imp2030 - imp.impOff) < 1e-9,
+        imp ? `LP lines changed: ${imp.early} up to 2030, ${imp.late} after; engine imports ${imp.imp2030.toFixed(2)} TWh in 2030, `
+              + `${imp.imp2031.toFixed(2)} in 2031 (${imp.impOff.toFixed(2)} with no end year)` : 'no result');
+  // ── CARBON PATHS (carbonTaxAt: carbonAllowancePath, carbonTaxFull) ───────
+  // Added 14 Oct 2026 (user). Central from c5, 'kept2030': the allowance kept at its 2026 share to 2030 on the rates in law
+  // (R308/t 2026, 347, 385, 424, R462/t 2030) in 2026 rands at the 3% inflation target, held after 2030. 'cut2027' must
+  // reproduce c4's path exactly. carbonTaxFull: the rates in law, no allowances, in 2026 rands. LP-KEY TEST: between any two
+  // paths only the carbon terms may change, the objective coefficients of fossil output (gc_, gg_, gd_, go_) and no row.
+  const ctf = await runProbe(w, `
+    const H0 = BLD_YEARS[BLD_YEARS.length - 1]; bldSetHorizon(2031);
+    const lp = (ex) => bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: { ...state, ...ex } }).lp;
+    const terms = L => { const o = L.split(String.fromCharCode(10)), st = o.indexOf('Subject To'), m = new Map();
+      for (const ln of o.slice(0, st)) for (const t of ln.split(' + ')) { const q = t.trim().match(/^(-?[0-9.e+-]+) ([A-Za-z0-9_]+)$/); if (q) m.set(q[2], +q[1]); }
+      return { m, rows: o.slice(st).join(String.fromCharCode(10)) }; };
+    const cmp = (A, B) => { const a = terms(A), b = terms(B); let nonCarbon = 0, carbon = 0, y2026 = 0, keys = a.m.size === b.m.size;
+      for (const [k, v] of a.m){ if (!b.m.has(k)) { keys = false; continue; } if (b.m.get(k) !== v){
+        if (/^(gc|gg|gd|go)_/.test(k)) { carbon++; if (/_2026_/.test(k)) y2026++; } else nonCarbon++; } }
+      return { keys, carbon, nonCarbon, y2026, rowsSame: a.rows === b.rows }; };
+    const kept = lp({}), cut = lp({ carbonAllowancePath: 'cut2027' }), full = lp({ carbonTaxFull: 1 }); bldSetHorizon(H0);
+    const S = { ...FIXED, ...state }, at = (y, ex) => carbonTaxAt(y, { ...S, ...ex });
+    const old = y => y <= 2026 ? S.carbonTaxRPerT : (y >= 2030 ? 462 : 308 * Math.pow(462 / 308, (y - 2026) / 4)) * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
+    const Y = [2026, 2027, 2028, 2029, 2030, 2031, 2040];
+    return { law: [2026, 2027, 2028, 2029, 2030].map(carbonTaxHeadline), def: S.carbonAllowancePath,
+             kept: Y.map(y => +at(y, {}).toFixed(2)), full: Y.map(y => +at(y, { carbonTaxFull: 1 }).toFixed(2)),
+             cutErr: Math.max(...Y.map(y => Math.abs(at(y, { carbonAllowancePath: 'cut2027' }) - old(y)))),
+             kc: cmp(kept, cut), kf: cmp(kept, full) };`);
+  const wantK = [46, 347, 385, 424, 462, 462, 462].map((v, i) => +(i ? v / Math.pow(1.03, Math.min(4, [0,1,2,3,4,5,14][i])) * 46 / 308 : 46).toFixed(2));
+  const wantF = [308, 347, 385, 424, 462, 462, 462].map((v, i) => +(v / Math.pow(1.03, Math.min(4, [0,1,2,3,4,5,14][i]))).toFixed(2));
+  const lpk = c => c && c.keys && c.rowsSame && c.nonCarbon === 0 && c.carbon > 0;
+  check('carbon paths: kept2030 central, cut2027 as c4, full rate; between paths only carbon terms change in the LP',
+        ctf && !ctf.error && ctf.law.join() === '308,347,385,424,462' && ctf.def === 'kept2030'
+          && ctf.kept.join() === wantK.join() && ctf.full.join() === wantF.join() && ctf.cutErr < 1e-9
+          && lpk(ctf.kc) && ctf.kc.y2026 === 0 && lpk(ctf.kf),
+        ctf && !ctf.error ? `default ${ctf.def}; kept2030 R/t 2026-31, 2040: ${ctf.kept.join(', ')}; full: ${ctf.full.join(', ')}; `
+          + `cut2027 against c4's formula, worst gap ${ctf.cutErr.toExponential(1)}; LP kept vs cut2027: ${ctf.kc.carbon} carbon terms, `
+          + `${ctf.kc.nonCarbon} others, ${ctf.kc.y2026} in 2026, rows ${ctf.kc.rowsSame ? 'same' : 'DIFFER'}; kept vs full: ${ctf.kf.carbon} carbon, `
+          + `${ctf.kf.nonCarbon} others, rows ${ctf.kf.rowsSame ? 'same' : 'DIFFER'}` : JSON.stringify(ctf));
+  // ── STRESS WINDOWS CARRY THEIR OWN AVAILABLE COAL (availFrac) ───────────
+  // Added 14 Oct 2026. COAL_AVAIL used to re-derive a window's available coal on the 2026 state; with the outage draw over
+  // the units still standing (14dr) a later year draws differently, and a run stopped on available below recorded. Each
+  // shedding run now records availFrac beside coalFrac from the same engine run: at least coalFrac in every hour, at most 1,
+  // and above it in some hours (coal available but not switched on).
+  const avf = await runProbe(w, `
+    const st = { ...FIXED, ...state, coalEAFPct: 45, demandGrowthPct: 25 };
+    const t = bldAdequacyTest(st, 1), rows = t.rows.filter(r => r.coalFrac);
+    let below = 0, above1 = 0, higher = 0, n = 0;
+    for (const r of rows){ if (!r.availFrac || r.availFrac.length !== r.coalFrac.length) return { error: 'row without availFrac' };
+      for (let i = 0; i < r.coalFrac.length; i++){ n++; const a = r.availFrac[i], c = r.coalFrac[i];
+        if (a < c - 1e-6) below++; if (a > 1 + 1e-6) above1++; if (a > c + 1e-6) higher++; } }
+    return { rows: rows.length, n, below, above1, higher };`);
+  check('stress windows carry their own available coal, never below what was committed',
+        avf && !avf.error && avf.rows > 0 && avf.below === 0 && avf.above1 === 0 && avf.higher > 0,
+        avf && !avf.error ? `${avf.rows} shedding runs, ${avf.n} hours: available below committed in ${avf.below}, above 1 in ${avf.above1}, `
+          + `above committed in ${avf.higher}` : JSON.stringify(avf));
+  // ── THE LOOP'S STALL STOP (opts.stallFrac, STALL) ─────────────────────────
+  // Added 14 Oct 2026 (user, c5's stopping rule): from pass stallFrom on, the loop stops when a pass cuts the worst
+  // year's shed above target by less than stallFrac of the pass before, and says so in the verdict. The loop is run
+  // with the solve and the engine test replaced by a scripted excess per pass, so the rule itself is what is tested.
+  const stall = await runProbe(w, `
+    const keep = { b: window.bldBuildLP, s: window.bldSolveLP, a: window.bldAdequacyTest, f: window.bldStateForYear, l: window.loadWeatherYears };
+    const last = BLD_YEARS[BLD_YEARS.length - 1], D = 2 / (BLD_STRESS_STANDARD * 0.5);   // target 2 GWh in the last year
+    const run = async (ex, o) => { let n = 0;
+      window.bldBuildLP = () => { n++; return { lp: '' }; };
+      window.bldSolveLP = async () => ({ Columns: {}, Rows: [] });
+      window.bldStateForYear = (res, y) => ({ y });
+      window.bldAdequacyTest = (st) => { const g = st.y === last ? 2 + ex[Math.min(n, ex.length) - 1] : 0;
+        return g > 0 ? { rows: [{ gwh: g, year: 2016, seed: 1, start: 0 }], worst: { demandGWh: D, year: 2016, gwh: g } } : { rows: [], worst: null }; };
+      window.loadWeatherYears = async () => {};
+      const out = await bldStressLoopPerYear({ targetFrac: 0.5, maxPasses: 6, ...o });
+      return { verdict: out.verdict, passes: out.log.length }; };
+    try {
+      return {
+        stops:   await run([10, 8, 6, 5.5, 5, 4], { stallFrac: 0.1, stallFrom: 4 }),        // pass 4 cuts 8%
+        early:   await run([10, 9.5, 9.4, 5, 4.9, 4], { stallFrac: 0.1, stallFrom: 4 }),     // small cuts at 2-3 ignored; pass 5 cuts 2%
+        cap:     await run([10, 8, 6, 5, 4, 3], { stallFrac: 0.1, stallFrom: 4 }),           // every cut 10% or more
+        adequate: await run([10, 8, -1], { stallFrac: 0.1, stallFrom: 4 }),                  // pass 3 within target
+        unset:   await run([10, 8, 6, 5.5, 5.4, 5.3], {}) };                                 // no stall setting: as before
+    } finally { window.bldBuildLP = keep.b; window.bldSolveLP = keep.s; window.bldAdequacyTest = keep.a;
+                window.bldStateForYear = keep.f; window.loadWeatherYears = keep.l; bldStressLog = []; bldStressPeriods = []; }`);
+  const sv = (r, v, p) => r && r.verdict === v && r.passes === p;
+  check('the loop stops on a stalled pass from pass 4, and says why',
+        stall && !stall.error && sv(stall.stops, 'stall stop', 4) && sv(stall.early, 'stall stop', 5) && sv(stall.cap, 'pass limit reached', 6)
+          && sv(stall.adequate, 'adequate', 3) && sv(stall.unset, 'pass limit reached', 6),
+        stall && !stall.error ? Object.entries(stall).map(([k, r]) => `${k} ${r.verdict} after ${r.passes}`).join('; ') : JSON.stringify(stall));
   check('bldBuildRegionalLP is reachable', avail.regional === true);
   check('Where To Build defaults to the regional LP', avail.defaultRegional === '1',
         `bldRegional = ${avail.defaultRegional}`);
