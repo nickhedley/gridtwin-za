@@ -177,6 +177,9 @@ jobs:
           grep -h "settings:" ../dl/state/out/pathway_${SRC_NAME}.log | head -1 || true
           node costsplit_consts.js 2>/dev/null | tail -1 > out/consts.json
           cat out/consts.json
+          echo "== cached solutions (sha256; identical files mean identical solutions)"
+          sha256sum ../dl/state/lpcache/*.json ../dl/base_state/lpcache/*.json | grep -v basis || true
+          python3 -I print_state.py "$SRC_NAME" ../dl/state ../dl/results | tee "out/print_${SRC_NAME}.txt"
           echo "== $SRC_NAME"
           python3 -I costsplit_tsl.py ../dl/state/lpcache "$P" out/consts.json "out/tsl_${SRC_NAME}.json" | tee "out/tsl_${SRC_NAME}.txt"
           echo "== $BASE_NAME"
