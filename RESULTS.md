@@ -3048,15 +3048,26 @@ releases, one 2-page NERSA statement, nothing from eskom.co.za; notes in the ses
   p.1-2), with minimum 80% take-or-pay (Engineering News, 25 May 2026); GMCV announced Boshoek and Wonderkop will restart, and
   Samancor that it intends to resume all its smelters within six months (Engineering News, 26 Jun 2026). GMCV's agreement ends
   31 May 2029, before 2030.
+- Assmang Cato Ridge ferromanganese (KwaZulu-Natal): closed for good. 'The closure will take effect on August 31, 2025'; the
+  site is to be redeveloped (Business Report, 4 Jul 2025). Load in MW not published. Within the step's weeks, and it will
+  not return.
+- Furnace count in the step's weeks: 'none of Glencore's 22 furnaces currently running and only three of Samancor's 24
+  facilities remaining active'; the smelters 'consume roughly 7% of state utility Eskom's total output' (Miningmx, relaying
+  Bloomberg, 15 Sep 2025). Lion: 50% of capacity recommissioned, first tap 16 Feb 2026, full capacity expected by the end of
+  March 2026 (Engineering News, 17 Feb 2026).
 - ArcelorMittal South Africa long steel (Newcastle): suspended, reopening uncertain. Blast furnace into 'temporary care and
   maintenance' after funding beyond 30 September 2025 was not found (AMSA SENS, 2 Sep 2025); 'production has ceased' (IOL, 6
-  Nov 2025, quoting SENS). Load in MW not found; IDC talks on reopening reported (search summary, February 2026).
+  Nov 2025, quoting SENS). Load: about 73 MW at Newcastle in 2011 (1,752 MWh a day, a 2012 AMSA presentation seen only as a
+  search snippet); Vereeniging not found. IDC talks on reopening at an 'advanced stage' (Business Day, 28 Aug 2026, search
+  snippet only); NERSA did not approve a reduced tariff for AMSA (IOL/The Mercury, 7 Sep 2025).
 - Moved to own or wheeled supply: small, and mostly daytime. Castle wind, 89 MW, wheeled to Sibanye-Stillwater from about
   the end of March 2025, about 309 GWh a year (Mining Weekly, 1 Apr 2025); in neither the model's fleet nor its demand, so
   0.31 TWh a year of IRP-basis demand is missing. Springbok solar, about 150 MWac, wheeled from October 2025, over 430 GWh a
   year (Engineering News, 31 Oct 2025); solar, so in the model's rooftop bucket if NTCSA's private PV series counts it (not
   confirmed). Rooftop: 7,464 MW in December 2025 (Eskom weekly reports via Engineering News, 23 Jan 2026), 8.3 GW by June
   2026 (NTCSA via Engineering News, 19 Jun 2026); daytime only, so not the night step.
+- Research method note: the helper read three 11-page Stats SA releases and a 2-page NERSA statement through the page
+  reader (the web reader failed on DNS); it judged an 11-page release not a long PDF. Flagged for the user.
 - Weather: not a cause. Winter 2025 'normal and slightly warmer' (SAWS via IOL, 31 Jul 2025); the step persists from
   September to December and at night.
 - Counting change: none found. NTCSA's weekly reports carry the same series definitions in 2025 as in 2021-2023 (search

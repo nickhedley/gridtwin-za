@@ -1158,5 +1158,5 @@ reader, the web reader failing on DNS; nothing fetched from eskom.co.za; no subs
 Causes of the 2025 demand step (message 69; research helper; full quotes and dates in RESULTS 'Demand checks before
 rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; Engineering News, 28 Oct 2025, 8 Dec 2025,
 7 Jan 2026, 29 Jan 2026, 25 May 2026, 26 Jun 2026, 31 Aug 2026; Fastmarkets, 15 Oct 2025; NERSA media statement, 29 May
-2026 (p.1-2); AMSA SENS, 2 Sep 2025; IOL, 6 Nov 2025 and 31 Jul 2025; Mining Weekly, 1 Apr 2025; Stats SA P4141
+2026 (p.1-2); AMSA SENS, 2 Sep 2025; IOL, 6 Nov 2025 and 31 Jul 2025; Business Report, 4 Jul 2025 (Cato Ridge); Miningmx, 15 Sep 2025; Engineering News, 17 Feb 2026; Mining Weekly, 1 Apr 2025; Stats SA P4141
 (preliminary) September 2025, December 2025 and August 2026 releases, printed p.3, p.5 and p.6.
