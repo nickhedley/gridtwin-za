@@ -27,9 +27,14 @@ and no regional optimiser result is to be published until it is fixed with 14bj 
 finding is an optimiser output carry "pending the storage fix" in the heading and stay as written until re-run.
 Engine-only results (dispatch, adequacy checks of a fixed build, preset searches scored on the engine) are unaffected.
 
-CAVEAT ON EVERYTHING BELOW: all of it is ONE synthetic-normal weather year. The
-ten-year run is outstanding and will move these, probably outward, because a bad
-wind year is exactly what sets a capacity requirement.
+WEATHER YEARS (corrected 14 Oct 2026, user; this caveat used to say all of it was one synthetic-normal year).
+One year of hourly shapes, the default profile set (profiles.json): the app's single runs, every preset figure, and the
+suite's findings, invariants, consistency, response and outputs checks; the build optimiser's representative days also come
+from it. Twelve weather years (2014-2025, with outage draws): the pathway engine check (pathcheck.js) behind every c-run's
+adequacy verdict and engine PV, the build loop's per-year adequacy test and the stress windows it adds, the weather and
+benchmark checks that say so, and the MTSAO external check. Entries before 8 Oct 2026 mostly rest on the one year; each
+entry's own settings say which. A bad wind year is what sets a capacity requirement, so one-year results are the ones
+to read as optimistic.
 
 ---
 
@@ -1776,7 +1781,8 @@ GWh, sent out     domestic grid   exports   distributed PV   other onsite   Mode
 
 Reconciliation, 2024, against Eskom contracted demand including exports, 219.7 TWh (ESK19679, entry "IRP demand verified
 against the IRP", 22 Sep): the IRP's domestic grid demand is 4.2 TWh above actual and its exports 3.9 TWh below, so the
-two offset and leave 0.26 TWh unexplained. The 1.3 TWh first reported was a rounding artefact. 2026 on one basis: the
+two offset and leave 0.26 TWh unexplained. (Corrected 14 Oct, entry 'Demand checks before rebasing': 2.8 TWh above and
+2.5 below, calendar 2024; the net 0.3 stands.) The 1.3 TWh first reported was a rounding artefact. 2026 on one basis: the
 IRP's 246.0 TWh against 219.5 TWh measured (the model's 2026 profile, 200.62 TWh gross of rooftop, plus exports 6.53
 and other onsite generation 12.39) = +12.1%. The 218.9 TWh in the user's note was an earlier estimate with a smaller
 onsite figure. Like-for-like ratios, IRP level to the model's basis: IRP 1.089, NTCSA MTSAO 1.106; the 1.187 used
@@ -1919,6 +1925,2613 @@ series is what matters. ESRG's level is 15% above the model's measured base (the
 would be a change of demand basis, not of data source; the build would have to be re-optimised. Caveats: ESRG's hourly year is a modelled year, not 2025's weather; the rooftop add-back runs
 on each file's own solar shape, so the shape-only case serves 1.2% more energy; the CSP model and the 60% tracker
 share are judgement; the wind anchor is a public annual figure with a REIPPPP capacity from a news report.
+
+### Demand-shape sensitivity: at the same annual energy the open (ESRG) demand shape halves c3's 2026-40 shed; the single peak matches, the hours near it do not, 12 Oct 2026
+
+Run: as in the entry above (c3's build, pathway_v_half_c1_p1_11b_central.json; pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1,
+adaptive; engine build 2026-10-12d), demand shape only, scaled to the measured 185.3 TWh grid level in 2026, wind,
+solar and CSP unchanged. Mean shed in GWh, target half of 0.002% of customer demand.
+
+```
+c3's build       2026  2027  2028  2033  2034  2035  2036  2037  2038  2039  2040   sum 2026-40
+profiles.json    0.04  0.03  0.01  0.01  0.09  0.09  0.85  0.70  1.60  2.40  2.61   8.43
+  % of target      2%    2%    1%    0%    4%    4%   36%   29%   65%   95%  100%
+open shape       0.01  0.02  0.02  0.00  0.02  0.05  0.59  0.56  1.20  1.10  0.85   4.41
+  % of target      1%    1%    1%    0%    1%    2%   25%   23%   48%   43%   32%
+(2029-2032: 0.00 in both)
+```
+
+On the grid basis the engine dispatches (after rooftop, before exports), 2026 series, profiles.json against the open
+candidate (open_final.json): peak 28.80 against 28.95 GW; load factor 73.4% against 73.1%; hours above 27 GW 113
+against 48; mean of the top 100 hours 27.83 against 27.12 GW, top 500 26.35 against 25.90 GW; June-August 17:00-20:00
+mean 25.76 against 25.18 GW. The entry above compared peaks and load factors with rooftop added back (30.6 against
+28.9 GW, 75% against 79%); on that basis profiles.json peaks at 10:00 in July, which the engine never dispatches, so
+that comparison overstated the difference in the peak and understated it in the hours near the peak.
+
+Finding: the demand shape is a first-order input for adequacy. At the same annual energy and almost the same single
+peak, the open shape's thinner tail of near-peak hours halves the shed, so taking it unadjusted would understate
+adequacy needs. Matching annual energy and the single peak (two constants) would not close the gap, since the peaks
+already match. Decision (user, 12 Oct): keep the current profiles for c4 and its seeded set; afterwards test the open
+shape quantile-mapped to the measured load-duration curve (a small set of derived constants) and propose the public
+swap only if it reproduces c3's shed within about 10%. Eskom data credited (Eskom Holdings SOC Ltd, ESK19679); the
+statistics are GridTwin ZA's analysis, not Eskom's; no hourly series is reproduced. Caveats: one build (c3); ESRG's
+hourly year is a modelled year; the shape-only case serves 1.2% more energy (rooftop add-back on its own solar shape).
+
+### c4 frozen as the central, 12 Oct 2026
+
+User, 12 Oct 2026: until the IRP comparison is drafted, c4 is the frozen central and the engine is not changed. c4 is
+c4-target (the method test favoured the stress-target method): COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1
+OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5 STRESS_TARGET=1, SOLVER=native; code at 86bfea4 (engine build 2026-10-12e,
+lithium energy 4 hours of power), profiles.json and the weather-year file as committed there. Run on GitHub
+(optimiser-long-run.yml, run 38255689961 and its chain, each job pinned to that commit); its pass 1 reproduced the local
+run's next LP (key a9e5c71dc2). Penalty c4, the same without STRESS_TARGET (run 38255695323), is the method check. The
+seeded set (TODO 14co) runs on claude/c4-frozen, whose engine and harness are identical to 86bfea4. Results to follow.
+
+### c4 final (c4-target stopped after pass 9): R2,598bn PV and 1,605 Mt, R83bn cheaper and 126 Mt more CO2 than penalty c4; 2040 fails the engine check (161%) and needs 1,000 MW of diesel open-cycle to pass, 13 Oct 2026
+
+Run: c4-target (COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5
+STRESS_TARGET=1, SOLVER=native, code 86bfea4, build 2026-10-12e), stopped after pass 9 (user, 13 Oct): final run
+38359856512 (MAXP=9 replay of the cached passes; pass 9 solved in run 38338261578). Engine check pathcheck.js COMMIT=1 PSE=1
+TF=0.5 LNG=1, adaptive draws; top-up harness/topup.js (branch claude/topup, run 38362504364). Penalty c4: the same without
+STRESS_TARGET (entry below, run 38257824027). Gas = new CCGT plus OCGT on LNG; MW built to date.
+
+```
+                                 c4 as solved          c4 with top-up        penalty c4
+cost 2026-40, PV at 8% real      R2,598bn              R2,599bn              R2,681bn
+CO2 2026-40                      1,605 Mt              1,605 Mt              1,479 Mt
+gas GW 2030 / 2035 / 2040        1.2 / 3.5 / 5.1       1.2 / 3.5 / 5.1       1.2 / 3.5 / 5.4
+  of which OCGT on LNG           1.2 / 1.4 / 1.4       same                  0
+diesel open-cycle GW             2.8 / 2.8 / 3.6       2.8 / 2.8 / 4.6       2.8 / 2.8 / 2.8
+lithium GW                       6.6 / 11.2 / 21.7     same                  7.4 / 9.1 / 17.3
+gas burnt 2026-40                68.8 TWh              68.8 TWh              17.9 TWh
+loop passes, own-test verdict    9, 2039-40 failing    -                     2, adequate
+```
+
+Shed by year, engine check, mean against target on customer demand (half of 0.002%), GWh: c4 / penalty c4. 2026 0.05 /
+0.02 (target 1.94); 2027 0.04 / 0.02 (1.96); 2028-2033 0.00 / 0.00; 2034 0.12 / 0.01 (2.26); 2035 0.26 / 0.01 (2.31); 2036
+0.19 / 0.05 (2.35); 2037 0.69 / 0.08 (2.41); 2038 1.22 / 0.45 (2.48); 2039 2.08 / 0.87 (2.54); 2040 4.18 / 1.17 (2.60). c4's
+2040 is 161% of target (2.59 with the top-up); 2039 passes the engine check (82%) but fails the loop's own test (3.04 against
+2.54, pass 9), as does 2040 (5.32 against 2.60). Top-up: 1,000 MW in 2040 (four 250 MW steps), R2.71bn that year (capex
+2.29, fixed O&M 0.45, fuel 0.05, other -0.09); within the run's caps (1,000 MW a year of diesel open-cycle).
+
+Against c3 (the previous central, build 2026-10-11b, its build re-checked on c4's engine): c3 R2,861bn PV (R4,862bn
+undiscounted), 1,418 Mt, gas 1.2 / 3.4 / 5.6 GW, lithium 30.8 GW at 6.2 hours, wind and solar built 28.8 and 62.8 GW,
+no open-cycle, gas burnt 4.7 TWh, worst year 2040 at 100% of target. c4: R2,598bn PV (R4,416bn undiscounted), 1,605 Mt,
+lithium 21.7 GW at 5.8 hours, wind and solar 13.5 and 52.5 GW, iron-air 0.6 GW, pumped hydro 1.35 GW, diesel open-cycle
+3.6 GW, 588 MW of coal retired early from 2026, worst year 2040 at 161%. Settings differ beyond the method (c4: open-cycle
+options, 4-hour lithium energy, flat CCGT capex, customer-demand standard), so c3 to c4 is not the method's effect;
+penalty c4 to c4 is.
+
+Caveats: c4 ended at a pass cap, not adequacy; penalty c4 and c4 end on different window sets. Coal schedule in both is
+c4's (UC_FLEET, PyPSA-RSA dates): it retires Tutuka in 2030-31, against 2035-40 at 50-year life in IRP 2025 (plan p.24,
+GEM start years), with no primary source for the earlier date (SOURCES, fleet row). Kelvin (not Eskom) is not in Eskom's
+39,692 MW, but the fleet file is scaled to that total with Kelvin in it, so it is modelled as 153 MW; c4 closes it from 2027
+(PyPSA-RSA fleet file, unsourced); s_coalirp's 2030 date comes from its closure rule; GEM lists planned retirement 2026; no
+primary source dates its closure.
+
+### Both measures for every run: without its stress-target penalty the optimiser's objective agrees with the engine check on direction for every run but s_be6; c4 2040 curtails in 613 hours with lithium below 90% full; the optimiser's 2030 stress windows cap coal at what the engine had committed, not what was available, 13 Oct 2026
+
+Measure (user, 13 Oct): the engine check is the note's cost measure, with its storage caveat each time; every run also reports
+the optimiser objective without the stress-target penalty, and the note says where the two disagree on direction. Analysis only;
+nothing solved, no engine change. Engine build 2026-10-12e (c4's, commit 86bfea4).
+
+1. Objective without the penalty. Branch claude/costsplit (4b1fb49), mode tsl (harness/costsplit_tsl.py): penalty = sum over
+years of VoLL 87,000 x 365 x tsl_y / (1+r)^(y-2026), from each run's cached final solution (key shown in each job log), r the
+run's own rate. Runs 38380018380 (s_nogas3), 38380021594 (s_nogas4), 38380025241 (s_nogas4strict), 38380029484
+(s_nogas4strict_bd), 38380032393 (s_wind35), 38380035524 (s_disc10), 38380038346 (s_disc113), 38380041963 (s_coalirp); c4,
+s_be6 and s_committed from the lpsplit runs (entry 'TODO 14cv' below). Engine PV at 8% real, with the top-up where one was run.
+R bn.
+
+```
+                     engine PV  top-up  years over   objective   penalty   objective    gap to c4: engine |   direction                          li GWh 2040
+                     (top-up)   MW      the cap     as solved             without it   objective w/o penalty                                     (s: >10% from c4)
+c4                   2,599      1,000   -           1,727.7       12.2    1,715.5         -   |    -                                             126.1
+s_wind35 (h)         2,526 LB   3,000   2038        1,661.5        0.0    1,661.5       -73   |  -54.0      agree                                122.4 (-3%)
+s_be6                2,550          0   -           1,816.2       90.3    1,725.9       -49   |  +10.4      disagree                             33.0 (-74%) s
+s_committed          2,562          0   -           1,736.6       43.6    1,693.0       -37   |  -22.5      agree (disagreed with the penalty)   115.8 (-8%)
+s_coalirp            2,592 LB   3,250   2039, 2040  1,686.2        0.0    1,686.2        -7   |  -29.3      agree                                128.6 (+2%)
+s_coal60 (j)         2,578          0   -           1,667.7        0.0    1,667.7       -21   |  -47.8      agree                                123.4 (-2%)
+s_pvirp_c4 (k)       2,525          0   -           1,829.3      128.6    1,700.7       -74   |  -14.8      agree                                76.1 (-40%) s
+s_windlow (l)        2,441          0   -           1,618.5       22.7    1,595.8      -158   | -119.7      agree                                100.5 (-20%) s
+s_roof2_c4 (m)       2,604 LB   2,250   2040        1,719.1        0.0    1,719.1        +5   |   +3.6      agree                                130.0 (+3%)
+s_irpgas_c4 (n)      2,573          0   -           1,696.7        0.0    1,696.7       -26   |  -18.8      agree                                72.8 (-42%) s
+s_gasprem            2,617 LB   1,750   2040        1,734.4       11.3    1,723.0       +18   |   +7.5      agree                                132.7 (+5%)
+s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.1       +15   |   (c)       not comparable                       107.4 (-15%) s
+s_li8h               2,614      3,000   -           1,702.9        0.0    1,702.9       +15   |  -12.6      disagree (e)                         149.0 (+18%) s
+s_be4                2,618        750   -           1,731.5       10.8    1,720.6       +19   |   +5.1      agree                                133.0 (+5%)
+s_battdecl           2,590          0   -           1,740.6       11.6    1,729.0        -9   |  +13.5      disagree (g)                         103.3 (-18%) s
+s_coalavail (i)      2,458 LB   8,000   2033, 2038  1,514.3        0.0    1,514.3      -141   | -201.2      agree (i)                            131.5 (+4%)
+s_nogas3             2,606 LB   4,250   2036        1,905.2      186.7    1,718.5        +7   |   +3.0      agree                                152.0 (+21%) s
+s_nogas4             2,612 LB   4,750   2036, 2038  1,887.8      163.2    1,724.6       +13   |   +9.1      agree                                166.0 (+32%) s
+s_nogas4strict       2,838      rule B  -           3,762.3    1,838.6    1,923.7      +239   | +208.2      agree                                176.0 (+40%) s
+s_nogas4strict_bd    2,862      rule B  -           3,786.6    1,838.6    1,948.0      +263   | +232.5      agree                                171.0 (+36%) s
+s_disc10             2,688        500   -           1,636.6       37.0    1,599.5       +89   |   at 10%, not comparable                         120.0 (-5%)
+s_disc113            2,763 (b)    250   -           1,582.0       35.3    1,546.7      +164   |   at 11.3%, not comparable                       117.5 (-7%)
+li GWh 2040: new lithium energy built 2026-40 (sum of battMWh in each run's print; prints listed in the subagent check of 13 Oct,
+e.g. c4 38362500776, s_be6 38369358547, s_be7 38380838044). s: more than 10% from c4's 126.1 GWh, so the engine figure is
+storage-affected (user, 13 Oct): above c4 the engine overstates the plan's operating cost against c4's, below c4 it understates
+it (entry 'c4 2040, three weeks': the engine runs 30-48% above a 24-hour rolling optimum on c4's 2040 build). s_be6 caps lithium
+at 550 MW a year at 4 hours (2,200 MWh a year, 33 GWh by 2040): the storage-light end, which fits the one disagreement in
+direction. Rows with s: s_be6, s_be7, s_li8h, s_battdecl, s_nogas3, s_nogas4, s_nogas4strict, s_nogas4strict_bd, s_pvirp_c4, s_windlow.
+LB: the top-up breaks the diesel open-cycle build cap (1,000 MW a year; s_coalirp also the 2,000 MW turbine cap) in the years
+shown, all in 2036-40, so the cost is a lower bound (user, 13 Oct): the plan as costed cannot be built within the caps, and a
+fix within them costs at least as much if diesel open-cycle is the cheapest firm capacity, which the top-up assumes. Rule B
+runs get no top-up (both adequate). (a) s_coalirp R2,588bn as solved, 2039-40 failing (183%, 439%); top-up 38379712300.
+(b) top-up 38377995864: 250 MW in 2040, R2,763bn, CO2 1,641 Mt. (c) the optimiser objective leaves out the capital of s_be7's
+fixed 5.2 GW of nuclear (2036-39; a constant to the LP, index.html ~6501), which the engine check charges. (d) understated:
+the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' below). (e) s_li8h is the storage-heavy plan
+(8-hour lithium): its engine cost is an upper bound, the direction of the disagreement. (g) s_battdecl is storage-light
+(17.6 GW and 103 GWh of lithium in 2040 against c4's 21.7 GW and 126 GWh), which the engine favours. tsl runs: s_battdecl 38389692464, s_gasprem 38380834231,
+s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436. (h) s_wind35: wind limit 3,500 MW a year from 2028 (front-loaded); fails the engine check in 2037-40 as
+solved; lower bound; not in the note's headline findings (user, 13 Oct). (i) s_coalavail as solved: fails the engine check
+in every year 2030-40 (2040 at 2,816% of target); R2,399bn as solved; top-up 38394240062 (8,000 MW, over the caps in 2033 and
+2038). Not the central (user, 13 Oct): reported as a finding only. (j) s_coal60: IRP Figure 3's 60-year coal line; adequate after
+one pass, no top-up (38403003928, 0 MW); tsl 38403007199; entry 's_coal60' below. (k) s_pvirp_c4: IRP 2025's solar path;
+adequate after one pass, no top-up; penalty R128.6bn, all 2030; storage-light (76 GWh of lithium in 2040), which the engine
+favours. (l) s_windlow: low wind cost case with 3,500 MW a year from 2031, so against c4 it mixes the plan and the cost
+assumption. (m) s_roof2_c4: rooftop 2,000 MW a year; fails the engine check in 2039-40 as solved (R2,601bn); top-up
+38415714043: 2,250 MW (750 in 2039, 1,500 in 2040, over the 1,000 MW cap in 2040). (n) s_irpgas_c4: IRP 2025's gas plan
+(6 GW of CCGT by 2030 under the 51% floor, then 1,000-1,500 MW of new gas a year); adequate after one pass, no top-up; tsl
+38417456261. Entries below.
+```
+
+Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
+identical in both). With the penalty taken out, s_be6 is the one run whose direction differs: R10bn dearer than c4 on the
+objective, R49bn cheaper on the engine check. Most of what remains is gas dispatch (objective: s_be6 R76bn of gas against
+c4's R44bn; engine: R35bn against R43bn; entry below). Caveat for every engine figure: the engine's storage dispatch is the weaker of the two (point 2).
+
+2. c4 2040, engine check (diagnostic only). Local, engine identical to c4's (86bfea4), c4's build, pathcheck.js with a
+per-run recorder (scratchpad, not committed), the check's own draws (SEED_BASE 71830529, 40 draws x 12 weather years = 480
+runs, COMMIT=1 PSE=1 TF=0.5), reproducing the 2040 check (shed 4.18 GWh, cost R369.9bn). Means a year over the 480 runs.
+Lithium in 2040: 22,510 MW, 129,339 MWh, round-trip 0.88.
+
+```
+curtailment (hours above 1 MW)                                     2,290 h      41.9 TWh
+  of which lithium below 90% full at the start of the hour           613 h (27%)
+  MWh lithium could have absorbed in those hours, upper bound                    4.7 TWh (11% of curtailment)
+lithium discharged                       engine 15.4 TWh      optimiser 48.3 TWh (47.0 on representative days, 1.3 on stress days)
+full cycles a year (discharge / 129,339 MWh)   engine 119     optimiser 374 (3.1 times)
+```
+
+Upper bound: each hour taken on its own (not chained), limited by the curtailment, lithium's spare charging power (22,510 MW
+less all battery charging that hour, iron-air included, so conservative on power) and the room to 90% full divided by 0.88.
+
+For the note (user, 13 Oct): in 73% of curtailed hours (1,677 of 2,290) lithium is at least 90% full at the start of the
+hour, and it cycles 119 times a year in the engine against 374 in the optimiser. The note states engine costs for
+storage-heavy plans as an upper bound: the engine's dispatch is one feasible operation of the plan, so a better storage
+dispatch could only lower its cost. The bias runs against storage-heavy plans, the direction of s_be6's disagreement
+(s_be6 is the storage-light plan; the engine check favours it).
+
+3. c4's 2030 stress windows and the capacity each side sees (report only). Optimiser: c4's pass-9 window file
+(pathway_c4t_lp2040.json, 32 windows), from the lpsplit run 38380045109 (claude/costsplit 4b1fb49). Engine: same local setup,
+2030, 120 runs (10 draws x 12 years), plus the three windows replayed on their weather year and seed with c4's final build.
+Day numbers count from 0 at 1 January of the weather year.
+
+```
+2030 windows (each 14 days, weight 1/24 a day; all added in pass 1)
+  weather year 2015, days 80-93  (22 Mar - 4 Apr),  draw seed 36322330, pass-1 engine shed 23.2 GWh
+  weather year 2017, days 178-191 (28 Jun - 11 Jul), draw seed 36338168, pass-1 engine shed 31.1 GWh
+  weather year 2023, days 24-37  (25 Jan - 7 Feb),  draw seed 36280953, pass-1 engine shed 16.0 GWh
+  plus the built-in 7-day tail week at a flat coal derate: 49 stress days in 2030
+
+2030 capacity, MW                         optimiser                       engine check
+coal standing                             29,708 (588 MW retired early)   29,708
+coal, representative days / all hours     19,310 every hour (65% EAF)     available after outages: mean 19,267, lowest hour 12,066
+                                                                          committed by its unit commitment: mean 14,798
+coal, stress-window days                  mean 15,670, lowest hour 576    replay of the three windows on c4's build:
+                                                                          available mean 16,730-17,105, lowest 12,579
+                                                                          committed mean 14,218-15,811, lowest 544-6,225
+                                                                          shed 0 GWh in all three
+diesel open-cycle                         6,200 (3,400 + 2,800 new)       6,200 (3,400 + 2,800 new)
+```
+
+Finding: on stress-window days the optimiser's coal cap is the engine draw's committed coal (coalAvailFrac, the lower of
+committed and available), not its available coal; the 2023 window's lowest hour, 576 MW, matches the engine's committed
+minimum in the replay. Available coal never falls below 12.6 GW in those windows. The optimiser's 2030 shed above target
+(523 MWh expected, R12.2bn) arises on these days; the engine finds none. Not tested; no change before the note (TODO 14cx).
+
+### s_gasprem (gas capital at a 1.5-point finance premium) and s_be7 (IRP nuclear, 5.2 GW 2036-39), rule A, 13 Oct 2026
+
+Seeded from c4 (38359856512 / c4t, WIN_FROM), MAXP=1, claude/c4-frozen, c4's settings plus GAS_PREM=0.015 (s_gasprem, run
+38361289574) or NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350 (s_be7, run 38361331510). Prints 38380827566 and
+38380838044; top-ups 38380830885 and 38380841342; tsl 38380834231 and 38380844927. Engine PV at 8% real. Against c4:
+engine R2,599bn with its top-up, 1,605 Mt; objective R1,727.7bn, R1,715.5bn without the stress-target penalty.
+
+```
+                               s_gasprem                       s_be7                     c4
+verdict                        pass limit (2038-40 fail loop)  adequate after one pass
+engine PV, as solved           R2,616bn                        R2,614bn                  R2,598bn
+  with the top-up              R2,617bn (1,750 MW: 250 in      R2,614bn (0 MW)           R2,599bn
+                               2039, 1,500 in 2040, over cap)
+objective / without penalty    R1,734.4 / 1,723.0bn            R1,679.5 / 1,667.1bn (c)  R1,727.7 / 1,715.5bn
+CO2 2026-40                    1,609 Mt                        1,576 Mt                  1,605 Mt
+gas GW 2030/35/40              1.0 / 2.9 / 4.3                 1.2 / 3.5 / 4.7           1.2 / 3.5 / 5.1
+new diesel open-cycle GW       3.0 / 3.1 / 3.9 (+1.75 top-up)  2.8 / 2.8 / 2.9           2.8 / 2.8 / 3.6
+lithium GW                     6.5 / 12.2 / 22.8               6.6 / 11.4 / 18.5         6.6 / 11.2 / 21.7
+worst year, engine check       2040 207% as solved             2040 29%                  2040 161%
+```
+
+s_gasprem: R18bn dearer than c4 on the engine check, R7.5bn on the objective without the penalty; agree. It builds less
+gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the engine check; its objective (c) leaves out
+the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
+top-up and emits 29 Mt less than c4.
+
+### s_coalavail (stress-window coal at the engine's available coal): with the stress-day coal limit lifted, the plan drops the 2.8 GW of diesel open-cycle c4 builds by 2030 and fails the engine check in every year from 2030 (2040 at 2,816%); c4 stays the central, 13 Oct 2026
+
+Run 38382908890 (ref claude/c4-coalavail, 1143a98; engine build 2026-10-12e, c4's): c4's settings plus COAL_AVAIL=1,
+WIN_FROM=seed/out/pathway_c4t_lp2040.json, MAXP=1 (rule A), seed 38359856512 / c4t. Pass 10:22-11:26 UTC (solved Optimal,
+3,791 s, 'done pass limit reached'), engine check to 11:40. Print 38394235656, tsl 38394244895 (solution 8e94741415), top-up
+38394240062 (running). The switch applied to all 32 of c4's windows: recorded coal (committed) mean 0.51-0.62 of standing coal,
+lowest hour 0.003-0.33; available mean 0.53-0.74, lowest hour 0.42-0.71; equal in 0-303 of each window's 336 hours.
+
+```
+                                     s_coalavail as solved      c4 as solved (with top-up)
+engine PV at 8% real                 R2,399bn                   R2,598bn (R2,599bn)
+objective / without penalty          R1,514.3 / 1,514.3bn       R1,727.7 / 1,715.5bn
+stress-target penalty                R0.0bn (none in any year)  R12.2bn (523 MWh in 2030)
+CO2 2026-40                          1,864 Mt                   1,605 Mt
+gas GW 2030/35/40                    1.2 / 3.1 / 5.2            1.2 / 3.5 / 5.1
+new diesel open-cycle GW             0.05 / 0.05 / 0.05         2.8 / 2.8 / 3.6 (4.6)
+lithium GW                           5.6 / 13.1 / 22.6          6.6 / 11.2 / 21.7
+lithium GWh 2040                     131.5                      126.1
+coal retired early                   0                          588 MW from 2026
+years failing, engine check          11 (2030-40)               1 (2040, 161%)
+years failing, loop's own test       11 (2030-40)               2 (2039-40)
+```
+
+Wind and solar built, MW a year, s_coalavail / c4:
+
+```
+        2026  2027  2028  2029  2030  2031  2032  2033  2034  2035  2036  2037  2038  2039  2040   total
+wind s     0     0     0     0  2500   613  2500  1783   957   554   702  1145   799   919  1203  13,675
+wind c4 2500  2500  2500  2500  2500     0     0     0     0     0   448     0     0   539     0  13,487
+pv s       0  1667  2862  3063  3277  3506  3752  3813  4256  3996  3769  3583  3857  3571  3605  48,577
+pv c4   2500  2675  2862  3063  3277  1596  3752  1615  4296  2597  4918  3759  5631  6025  3907  52,473
+```
+
+Shed by year, engine check, mean against target on customer demand, GWh: 2026-29 0.23-0.66 (within target); 2030 2.84 /
+2.06 (137%); 2031 3.88 / 2.12; 2032 8.16 / 2.16; 2033 16.55 / 2.21; 2034 30.48 / 2.26; 2035 34.26 / 2.31; 2036 49.73 / 2.35;
+2037 57.02 / 2.41; 2038 79.00 / 2.48; 2039 78.54 / 2.54; 2040 73.17 / 2.60 (2,816%). The loop's own test after pass 1: worst
+2039, 84.96 against 2.55 GWh.
+
+Rule (user, 13 Oct 11:42): the thresholds are crossed on every test that is in: 2030 new diesel open-cycle -2.75 GW, 2030
+lithium -1.0 GW, objective without the penalty -R201bn, engine as solved -R199bn. Decision (user, 13 Oct 12:25): c4 stays the
+note's central; s_coalavail is not used as a seed (its plan fails the engine check every year from 2030); no rule B run of it
+before the note; the s_be7 arithmetic stands against c4.
+
+Top-up (38394240062, claude/topup 047f9e9, finished 12:49 UTC): 8,000 MW of new diesel open-cycle in 250 MW steps, by year 2030
+500, 2031 250, 2032 1,000, 2033 1,250, 2034 1,000, 2035 500, 2036 750, 2037 750, 2038 1,000, 2039 500, 2040 500. Over the build
+caps in 2033 (diesel open-cycle 1,250 MW against 1,000 a year) and 2038 (turbines 2,020 MW against 2,000), so a lower bound.
+Engine PV R2,458bn with the top-up (R2,399bn as solved; top-up capex 49.0, fixed O&M 9.7, fuel 1.8, other -1.8), against c4's
+R2,599bn: R141bn below c4, lower bound. CO2 1,862 Mt (1,864 as solved) against 1,605. 2040 with the top-up: R358.8bn, 99.4 Mt.
+
+Finding (user, 13 Oct): with the stress-day coal limit lifted, the plan drops the 2.8 GW of diesel open-cycle c4 builds by
+2030 (1,000 MW in each of 2028 and 2029, 800 in 2030) and fails the engine check in every year from 2030 (2040 at 2,816% of
+target). The top-up restores 2030 with 500 MW of diesel open-cycle (750 MW by 2031), against the 2.8 GW c4 builds by 2030;
+the larger shortfall comes in 2032-38 (7.25 GW of the 8 GW top-up). Caveat: s_coalavail keeps the 588 MW of coal c4 retires
+early, builds 1.0 GW less lithium by 2030 (and no wind before 2030), and the top-up adds diesel only. The 12:25 decision (c4
+stays the central) predates the top-up, which finished at 12:49. One coal rule for stress days, shared by the optimiser and the
+engine, is TODO 14de (c5). Update 13 Oct: a 24-hour dispatch sheds nothing in s_coalavail's worst 2030 week as solved (24.66 GWh in the engine), so this finding rests on the engine's storage rule (entry '24-hour dispatch sheds nothing where the engine sheds').
+
+Launched 12:10-12:11 UTC and cancelled 12:26 (user decision (a)): the eight runs seeded from s_coalavail (_ca) and, because
+their names could not be read while running, also the three _c4 runs started with them (38395398203-38395424726, 38395481991-
+38395502406). The three _c4 runs were relaunched 12:27 on claude/c4-irp3 (0488f54), seed c4t: s_irpgas_c4 38397386689,
+s_pvirp_c4 38397404456, s_roof2_c4 38397420439.
+
+### s_coal60 (IRP 2025 Figure 3's 60-year, delayed-shutdown coal line): adequate after one pass with no top-up; R21bn below c4 on the engine check and R47.8bn on the objective without the penalty; 34 Mt more CO2; the optimiser retires 2.7 GW of coal early from 2026, 13 Oct 2026
+
+Run 38379671167 (ref claude/c4-coalirp, 53e9ba8; index.html as c4's 86bfea4, build 2026-10-12e): c4's settings plus
+COAL_DATES=coal_dates_irp2025_60y.json (SOURCES, 'IRP 2025 Figure 3, 60-year line'), WIN_FROM=seed/out/pathway_c4t_lp2040.json,
+MAXP=1 (rule A), seed 38359856512 / c4t. Pass solved Optimal (9,953 s), verdict adequate after pass 1 (loop's own test, worst
+2040: 1.53 against 2.60 GWh, 59%); finished 12:50 UTC. Print 38403000256, top-up 38403003928 (claude/topup 27337aa), tsl
+38403007199 (solution bf44ada914). Engine PV at 8% real.
+
+```
+                                     s_coal60                   c4 as solved (with top-up)
+engine PV                            R2,578bn, no top-up        R2,598bn (R2,599bn, 1,000 MW)
+objective / without penalty          R1,667.7 / 1,667.7bn       R1,727.7 / 1,715.5bn
+stress-target penalty                R0.0bn                     R12.2bn (2030)
+CO2 2026-40                          1,639 Mt                   1,605 Mt
+coal on schedule MW 2030/35/40       32,433 / 25,916 / 25,916   30,296 / 24,206 / 20,848
+coal retired early (rc)              2,700 MW from 2026         588 MW from 2026
+coal standing MW 2030/35/40          29,733 / 23,216 / 23,216   29,708 in 2030
+gas GW 2030/35/40                    1.2 / 3.4 / 5.1            1.2 / 3.5 / 5.1
+new diesel open-cycle GW             2.8 / 2.8 / 3.4            2.8 / 2.8 / 3.6 (4.6)
+lithium GW                           6.5 / 11.5 / 21.5          6.6 / 11.2 / 21.7
+lithium GWh 2040                     123.4                      126.1
+wind / solar built 2026-40 GW        12.6 / 50.4                13.5 / 52.5
+pumped hydro GW 2040                 1.5 (2038-39)              1.35
+worst year, engine check             2040 at 29%                2040 at 161% (100% with top-up)
+2040, engine check                   R366.9bn, 110.4 Mt         R372.6bn, 101.3 Mt (with top-up)
+```
+
+Shed by year, engine check, mean against target on customer demand, GWh: 2026 0.20 / 1.94; 2027 0.04 / 1.96; 2028-31 0.00;
+2032 0.00; 2033 0.01; 2034 0.16 / 2.26; 2035 0.53 / 2.31; 2036 0.05; 2037 0.23; 2038 0.21; 2039 0.39 / 2.54; 2040 0.74 / 2.60.
+Coal on schedule: bldCoalMW on each run's dates (s_coal60 from the print, standing plus rc; c4 from UC_FLEET scaled to
+39,692 MW). rc is one cumulative MW figure a year (rcmono), not named units, so which stations go early is not defined.
+
+Finding: on the 60-year line the plan needs no top-up (2040 at 29% of target against c4's 161%) and costs R21bn less on the
+engine check and R47.8bn less on the objective without the penalty (directions agree), with 34 Mt more CO2 over 2026-40 and
+9.1 Mt more in 2040. Cost per tonne against c4, both engine figures (c4 with its top-up): R21bn less for 34 Mt more over
+2026-40, about R620/t saved per extra tonne (R618/t; cost is PV at 8% real, tonnes undiscounted). The optimiser takes 2.7 GW of the line's extra coal off from 2026 for its fixed O&M; standing coal is
+level with c4 in 2030 and 2.4 GW above c4's schedule in 2040 (before c4's own early retirement). Caveats: rule A (one pass on c4's windows); the line is
+digitised to about +-250 MW; lithium 2% below c4's, so not storage-heavy; against s_coalirp (50-year line, R2,592bn lower
+bound, objective R1,686.2bn) both measures are lower here.
+
+### s_pvirp_c4, s_windlow and s_roof2_c4 (rule A, seeded from c4): IRP solar path R74bn below c4 on the engine and R14.8bn on the objective; low-cost wind R158bn and R119.7bn below; rooftop at 2,000 MW a year fails the engine check in 2039-40 as solved, 13 Oct 2026
+
+Settings: c4's plus WIN_FROM=seed/out/pathway_c4t_lp2040.json, MAXP=1, seed 38359856512 / c4t, engine build 2026-10-12e (c4's).
+s_pvirp_c4 run 38397404456 and s_roof2_c4 run 38397420439 on claude/c4-irp3 (0488f54); s_windlow run 38392619799 on
+claude/c4-windlow (71d076e: WIND_CASE=low WIND_CAP=3500 WIND_CAP_FROM=2031, windCase recorded and applied in the check).
+Follow-ups dispatched 14:42 UTC: prints 38415696483, 38415710231, 38415723703; top-ups (claude/topup 27337aa) 38415701161,
+38415714043 (s_roof2_c4, running at 14:48), 38415727726; tsl 38415705805, 38415719885, 38415731996. Figures from the job logs.
+
+```
+                               s_pvirp_c4            s_windlow             s_roof2_c4 (as solved)   c4 (with top-up)
+loop verdict                   adequate, pass 1      adequate, pass 1      pass limit (2038-40)     pass limit (2039-40)
+engine PV at 8% real           R2,525bn, 0 MW top-up R2,441bn, 0 MW        R2,601bn, top-up running R2,599bn, 1,000 MW
+objective / without penalty    1,829.3 / 1,700.7     1,618.5 / 1,595.8     1,719.1 / 1,719.1        1,727.7 / 1,715.5
+stress-target penalty          R128.6bn (2030)       R22.7bn (2030)        R0.0bn                   R12.2bn (2030)
+CO2 2026-40                    1,594 Mt              1,477 Mt              1,583 Mt                 1,605 Mt
+worst year, engine check       2039 at 13%           2040 at 46%           2040 at 286%             2040 at 161% (100%)
+2040, engine                   R340.4bn, 91.5 Mt     R329.8bn, 82.6 Mt     R377.6bn, 99.3 Mt        R372.6bn, 101.3 Mt
+wind / solar 2026-40, GW       25.0 / 25.5           27.9 / 36.3           13.2 / 45.4              13.5 / 52.5
+gas GW 2030/35/40              1.2 / 5.2 / 8.3       1.2 / 4.1 / 6.2       1.2 / 3.8 / 5.3          1.2 / 3.5 / 5.1
+new diesel open-cycle GW       2.8 / 3.1 / 3.5       2.8 / 2.8 / 2.8       2.8 / 2.8 / 3.3          2.8 / 2.8 / 3.6 (4.6)
+lithium GW / GWh 2040          13.5 / 76.1           16.7 / 100.5          22.4 / 130.0             21.7 / 126.1
+pumped hydro GW 2040           0.16                  0.38                  1.47                     1.35
+coal retired early             0                     0                     1,332 MW from 2026       588 MW from 2026
+rooftop                        1,200 MW a year       1,200 MW a year       2,000 MW a year          1,200 MW a year
+```
+
+Wind and solar built, MW a year:
+
+```
+            2026  2027  2028  2029  2030  2031  2032  2033  2034  2035  2036  2037  2038  2039  2040    total
+wind c4     2500  2500  2500  2500  2500     0     0     0     0     0   448     0     0   539     0   13,487
+wind pvirp  2500  2500  2500  2500  2500     0  2335   848     0     0  2500     0  2500  2500  1791   24,974
+wind windlow  2500  2500  2500  2500  2500   916  3500  2513     0   453  3500     0  2609  1775    93   27,859
+wind roof2  2500  2500  2500  2500  2500     0     0     0     0     0   308     0     0   398     0   13,206
+pv c4       2500  2675  2862  3063  3277  1596  3752  1615  4296  2597  4918  3759  5631  6025  3907   52,473
+pv pvirp    3553  2886  1760  1314   800  1000  1200  1400  1600  2000  1600  1600  1600  1600  1600   25,513
+pv windlow  2500  2675  2862  3063  3277     0  2239   170   371   909  4298  1549  5631  3220  3507   36,271
+pv roof2    2500  2675  2862  3063  3277     0  1949  1647  2773  2231  4918  2772  5631  6025  3085   45,408
+```
+
+s_roof2_c4, both measures (user, 12:25), as solved; rooftop arithmetic from the entry below (2,000 MW a year from 2027): total
+measure R2,601bn, of which rooftop R190.1bn (7.3%; c4 R114.1bn, 4.4%); grid measure R2,482.1bn (R118.9bn of rooftop removed),
+of which rooftop kept R71.2bn (2.9%; c4 R42.7bn, 1.7%). Against c4 as solved: total +R3bn, grid measure -R44.2bn. With its
+top-up (38415714043: 750 MW in 2039, 1,500 MW in 2040, over the 1,000 MW cap in 2040, so a lower bound): total R2,604bn (rooftop
+7.3%) against c4's R2,599bn (4.4%), +R5bn; grid measure R2,485.1bn (rooftop kept 2.9%) against c4's R2,527.6bn (1.7%), -R42.5bn.
+2040 with the top-up: R383.7bn and 99.3 Mt against c4's R372.6bn and 101.3 Mt.
+
+Findings. s_pvirp_c4: on IRP 2025's solar path the plan builds 11.5 GW more wind and 3.2 GW more gas by 2040 and 40% less
+lithium; both measures put it below c4 (engine -R74bn, objective without the penalty -R14.8bn) with 11 Mt less CO2. Caveat: it
+is storage-light, which the engine favours (entry 'c4 2040, three weeks' above), so the engine's R74bn overstates the saving; its
+2030 stress-target penalty is R128.6bn, against c4's R12.2bn. s_windlow: R158bn below c4 on the engine and R119.7bn on the
+objective, 128 Mt less CO2; the low wind cost case is an assumption change, so this mixes plan and cost. s_roof2_c4: as solved it
+is level with c4 on the total measure (+R2bn against c4 with its top-up) and on the objective (+R3.6bn), and R44bn below on the
+grid measure; with its 2,250 MW top-up (over the cap in 2040) it is R5bn above c4 on the total measure and R42.5bn below on the grid measure; it retires 1,332 MW of coal early. s_irpgas_c4: entry below.
+
+### s_irpgas_c4 (IRP 2025's gas plan on c4's settings): adequate after one pass with no top-up; R26bn below c4 on the engine and R18.8bn on the objective, but 177 Mt more CO2 over 2026-40; 17.3 GW of gas by 2040 against c4's 5.1, 13 Oct 2026
+
+Run 38397386689 on claude/c4-irp3 (0488f54): c4's settings plus WIN_FROM=seed/out/pathway_c4t_lp2040.json, MAXP=1 (rule A), seed
+38359856512 / c4t, the IRP gas plan (6 GW of new CCGT by 2030 under the 51% floor, engine floor on, gasFloor {on 1, engine 1, 51%,
+6,000 MW, 2030-40}; gasMin 1,000-1,500 MW of new gas a year 2032-40, met exactly by new CCGT plus OCGT on LNG each year) and
+TCAP_YR=2029:4000,2030:4000 (top-up log: turbine caps by year {2029: 4000, 2030: 4000}). Engine build 2026-10-12e. Print 38417448014,
+top-up 38417452363 (0 MW, within the caps), tsl 38417456261 (solution 1e2030c4fd). Figures from the job logs.
+
+```
+                                     s_irpgas_c4                 c4 (with top-up)
+engine PV at 8% real                 R2,573bn, 0 MW top-up       R2,599bn, 1,000 MW
+objective / without penalty          R1,696.7 / 1,696.7bn        R1,727.7 / 1,715.5bn
+CO2 2026-40                          1,782 Mt                    1,605 Mt
+worst year, engine check             2027 at 20%                 2040 at 161% (100% with top-up)
+2040, engine                         R372.6bn, 94.6 Mt           R372.6bn, 101.3 Mt
+gas GW 2030/35/40 (new CCGT + OCGT)  6.0 / 10.75 / 17.25         1.2 / 3.5 / 5.1
+gas burnt, engine check, TWh         2030 26.4; 2035 28.9; 2040 29.5   (c4 68.8 TWh over 2026-40)
+new diesel open-cycle MW, 2029 / 2030   0 / 1,000 (1,559 by 2030)    1,000 / 800 (2,800 by 2030)
+lithium GW / GWh 2040                12.0 / 72.8                 21.7 / 126.1
+coal retired early                   1,735 MW from 2026, 3,097 from 2029   588 MW from 2026
+wind / solar 2026-40, GW             17.4 / 34.0                 13.5 / 52.5
+```
+
+Wind and solar built, MW a year:
+
+```
+            2026  2027  2028  2029  2030  2031  2032  2033  2034  2035  2036  2037  2038  2039  2040    total
+wind irpg      0     0     0  2500  2500     0     0   156     0  1244  2500  2500  2500  2500  1043   17,443
+wind c4     2500  2500  2500  2500  2500     0     0     0     0     0   448     0     0   539     0   13,487
+pv irpg     2500  2675  2862  3063  3277   577  2852  2037     0     0  3425   690  4295  2999  2742   33,994
+pv c4       2500  2675  2862  3063  3277  1596  3752  1615  4296  2597  4918  3759  5631  6025  3907   52,473
+```
+
+Floored and unfloored gas (user): not in the job logs. The print does not show pathcheck's gasFloorTWh and the top-up's gas step
+was skipped; the results artifact cannot be downloaded from this environment. The engine check's total gas is 26.4 TWh in 2030
+against a floor of 51% x 6,000 MW x 8,760 h = 26.8 TWh, and 29.5 TWh in 2040, so in 2040 at most about 2.7 TWh is above the floor.
+
+Findings: the IRP gas plan costs R26bn less than c4 on the engine and R18.8bn less on the objective (directions agree), but emits
+177 Mt more over 2026-40 (no wind before 2029; more coal in 2026-28) and 6.7 Mt less in 2040 at the same 2040 cost. Its 2029-30
+diesel open-cycle is 1,000 MW against c4's 1,800 MW. Caveat: storage-light (73 GWh of lithium in 2040, 42% below c4), which the
+engine favours (entry 'c4 2040, three weeks'), so its engine saving is overstated against c4's.
+
+### Rooftop in the two cost measures (for s_roof2): the grid measure removes R1,150/kW-yr of rooftop, not its full R1,701-2,056, so a third or more of rooftop's cost stays in it, 13 Oct 2026
+
+Arithmetic only, from the engine's own functions (engine build 2026-10-12e; jsdom script in the scratchpad, harness/node_modules).
+The engine check's cost is systemCostR, which includes new rooftop at acapAt('rooftop'): the annuity of BLD_COST.rooftop
+(R17,000/kW in 2026, -3.89% a year, 25 years at 8%) at the midpoint vintage plus R495/kW-yr fixed O&M, times the cumulative new
+rooftop MW (index.html ~8411). Its grid cost (pathcheck: systemCostR - btmCapexR) subtracts btmCapexR = new rooftop MW x
+acapRooftop, a flat R1,150/kW-yr (index.html ~6349, ~8441). R/kW-yr charged in the check year, total / removed / left in the
+grid measure: 2027 2,056 / 1,150 / 906; 2030 1,966 / 1,150 / 816; 2035 1,827 / 1,150 / 677; 2040 1,701 / 1,150 / 551.
+
+c4 (1,200 MW a year from 2027; its engine check, 480 runs): rooftop R114.1bn of R2,597.7bn PV (4.4%) in the total measure; the
+grid measure removes R71.4bn (R2,526.3bn) and keeps R42.7bn of rooftop (1.7%). 2040: R28.6bn total, R19.3bn removed, R9.3bn kept.
+At 2,000 MW a year (s_roof2's build, same arithmetic): R190.1bn total, R118.9bn removed, R71.2bn kept; 2040 R47.6 / 32.2 /
+15.4bn. Caveat: the two figures are one constant held twice (acapRooftop and BLD_COST.rooftop); no engine change before the
+note (TODO 14dc). s_roof2's shares will be given in both measures as asked.
+
+### Single-node engine (the note's) against a single-node PyPSA unit-commitment optimum, same inputs, baseline week: 2.2% above the optimum on a linear coal cost, 4.1% with the engine's part-load penalty, 13 Oct 2026
+
+Engine: index.html simulate(), c4's code (claude/c4-frozen fa7d8af, engine build 2026-10-12e), run from a scratch copy with a
+read-only hook that records each hour (no engine change; scratchpad sn_run.js). Today 2026 preset, default profiles, outageSeed
+12345, hours 3264-3431. PyPSA 1.4.0, one bus, HiGHS 1.15.1, MIP gap 0.1% (scratchpad sn_pypsa.py).
+
+Same inputs on both sides: load (grid demand net of rooftop, firm exports included); wind, solar, CSP and RMIPPPP hybrid
+availability; nuclear 1,240.8, hydro 331.1 and imports 1,012 MW must-take; coal available each hour as the engine had it (its
+reserve withholding included, which is none this week: fast-start 6,924 MW against a 2,200-2,343 MW need); the 84 UC_FLEET units
+standing in 2026, scaled to 39,692 MW (39,692/41,530, as the engine's commitment pre-pass), with their minimum stable levels
+(the 16 rows at 0.5 included) and minimum up and down times; the engine's starting commitment (34.9 of 39.6 GW online); coal ramp
+6,192 MW an hour on the fleet; diesel 3,400 MW; pumped storage 2,724 MW and 60 GWh at 76%, batteries 800 MW and 3.2 GWh at 88%,
+both starting at the engine's level (1,656 and 422 MWh) and ending at least there; unserved energy at R9,530/MWh. Costs: coal
+R673.84/MWh (fuel 546, O&M 80, carbon 47.84) at full load; start-ups at the engine's two charges (UC_FLEET start cost per unit
+times the availability factor, plus R224.52/MW).
+
+```
+                                                   R million   detail
+engine, linear coal cost (part-load factor 1)        2,210.6   coal 2,040.7, nuclear 42.7, hydro 1.7, imports 93.5, diesel 3.0,
+                                                               start-ups 29.1 (10.5 per unit + 18.5 per MW); coal 3,028.5 GWh
+engine as it reports (part-load factor applied)      2,252.1   part-load adds 41.5
+PyPSA MIP, engine's starting commitment              2,162.9   start-ups 0.8; coal 3,004.0 GWh; storage discharge 2.3 GWh; no diesel
+PyPSA MIP, all units online at the start             2,161.8   LP without commitment: 2,161.8
+engine (linear) minus MIP                              +47.8   +2.2%; engine as it reports against the MIP +4.1%
+```
+
+Correction (13 Oct, found in the 2040 run): the engine's commitment pre-pass keeps all 85 UC_FLEET units, Komati
+(decommissioned 2022) included, each scaled by coal standing / 41,530; the PyPSA side here had 84. Available coal matched hour by
+hour, so the difference is one 109 MW unit's granularity, not capacity.
+
+The engine comes out above the optimum, as it should. Where the R47.8m sits: coal start-ups R28.3m, storage cycling R16.5m (the
+engine charges 113.5 GWh and discharges 88.1 GWh; PyPSA discharges 2.3 GWh) and diesel R3.0m. Constraints that still differ:
+the part-load heat rate (the engine's cost function only; compared here on the linear basis); the engine's outage draw is per
+unit, PyPSA spreads the available coal evenly over units; the diesel budget is not modelled (PyPSA uses no diesel). PyPSA's
+optimum sees the week in advance, so the gap is an upper bound on the engine's inefficiency. One week, one draw, the 2026
+system: not yet c4's 2040 build (TODO 14df step 9).
+
+Finding to check: the engine charges coal start-ups twice, per unit in its commitment pre-pass (ucStartCost, inside fuelCost)
+and per MW of newly committed capacity (startUpCostR, R224.52/MW, added to totalCost): R10.5m and R18.5m this week (TODO 14dl).
+
+### c4 2040, three weeks: the single-node engine is 31-50% above a single-node PyPSA unit-commitment optimum on the same inputs (2.2% in the 2026 baseline week), and 30-48% above a 24-hour rolling optimum; the gap is the engine's storage rule, not foresight; PyPSA sheds nothing in the stress week against the engine's 37.3 GWh, 13 Oct 2026
+
+TODO 14df step 9 (user, 13 Oct 14:20; three-hour limit, the baseline week's rules). Engine: index.html simulate() at c4's
+code (86bfea4, build 2026-10-12e) in a scratch copy with a read-only hourly hook; c4's 2040 state as pathcheck builds it, plus
+the 1,000 MW top-up (newOcgdMW 4,579); weather from weatherYearNational, outage seed = 71830529 + weather year x 7919 (the
+check's first draw). PyPSA 1.4.0, HiGHS 1.15.1, mip_rel_gap 0.1%, all solved to optimality. Same inputs on both sides: load
+(less the engine's demand response), nuclear, hydro and imports fixed; wind and solar available = the engine's output plus its
+curtailment; CSP available as the engine's; hybrid plants fixed at the engine's output; coal available per hour; the UC
+pre-pass fleet (all 85 UC_FLEET units scaled to 20,260 MW, as buildUCSchedule does in every year) with minimum stable levels and
+up/down times; fleet ramp limit 3,161 MW/h; the engine's starting commitment; CCGT 3,656 MW at R1,298 + 35 + carbon; OCGT on
+LNG 1,449 MW at the engine's heat-rate multiple (10,624/3,600 x 0.52) and R85.65 O&M; diesel 7,979 MW; pumped storage
+4,078 MW / 79.0 GWh; lithium 22,510 MW / 129.3 GWh at 0.88; iron-air 600 MW / 60 GWh at 0.45; each store starting at the
+engine's state of charge and ending at least at it; shed at R9,530/MWh. The engine's cost was decomposed from the hook and
+closes to its own fuel, carbon and start-up totals with no residual in all three weeks.
+
+Weeks: two ordinary weeks on weather year 2025 (no shed in 2040), hours 3264-3431 (mid-May) and 7848-8015 (late November); and
+the worst 168 hours of shed across the 12 weather years' first draws, weather year 2016, hours 6807-6974 (early October,
+37.3 GWh shed in the engine).
+
+```
+R million a week                    May (2025)          November (2025)       stress (2016)
+engine as reported                   2,170.7              1,493.2               3,206.6
+engine, coal at full-load cost       2,165.6              1,485.0               3,202.5
+PyPSA LP                             1,629.7                961.1               2,161.9
+PyPSA unit commitment                1,655.2                990.7               2,191.5
+gap, engine (flat coal) over UC        +30.8%               +49.9%                +46.1%
+of which (engine less UC)
+  coal                                +188.4               +381.2                +337.8
+  gas and OCGT on LNG                 +311.4               +110.0                +438.9
+  diesel                                 0.0                  0.0                 -118.3
+  shed                                   0.0                  0.0                 +355.4
+  start-ups                            +10.5                 +3.1                  -2.8
+energy, GWh: coal                1,828 / 1,576        1,610 / 1,099          1,753 / 1,301
+  gas incl. OCGT on LNG            412 / 201              84 / 5               540 / 189
+  diesel                             0 / 0                0 / 0                 85 / 104
+  shed                               0 / 0                0 / 0               37.3 / 0
+  curtailment                      458 / 4              623 / 31             1,062 / 250
+  lithium discharge                272 / 706            327 / 799              209 / 750
+  pumped-storage discharge         213 / 67             281 / 65              215 / 146
+  iron-air discharge                 0 / 1                0 / 3                 22 / 28
+lithium full cycles in the week    2.10 / 5.45          2.53 / 6.18           1.62 / 5.80
+start-up charges, engine:
+  pre-pass unit starts (ucStartCost)  11.2                 13.7                  10.4
+  per MW committed (R224.52/MW)       13.2                 14.6                  11.0
+start-up charges, PyPSA:
+  unit start cost x availability       3.9                  7.1                   6.8
+  R224.52 x MW started                 9.9                 18.1                  17.3
+```
+
+Energy pairs are engine / PyPSA unit commitment. Lithium cycles: discharge over 129,339 MWh.
+
+Why: the engine discharges storage only in each day's top quartile of hours or against a forecast shortfall (simulate(),
+index.html ~7665 and the charge targets after it), so lithium sits near full: in the May week it holds 53-129 GWh at 06:00 each day
+and 23 of 31 curtailed hours begin with lithium at least 90% full; PyPSA empties it overnight and refills it from the
+midday surplus. Coal and gas fall by what the extra 0.4-0.5 TWh of lithium discharge displaces.
+
+For 14dl (user): the engine charges coal start-ups twice, once per unit start in the UC pre-pass and once per MW of the main
+loop's aggregate commitment rising. In 2040 the second charge is R11.0-14.6m a week, 0.3-1.0% of the week's engine cost; at
+that rate about R0.6-0.8bn a year against c4's R372.6bn in 2040 (rough scale, three weeks only).
+
+24-hour rolling optimum (user, 13 Oct 15:00; scripts validation/single_node/sn_pypsa40_roll.py on branch claude/sn-crosscheck):
+the same model and inputs, but each day is optimised seeing that day and the next 24 hours (a 48-hour window, the last one 48
+hours to the week's end); the first 24 hours are kept and the window moves on a day, carrying each unit's status and hours in
+it, each store's state of charge and the coal ramp. A store's energy left at a window's end has no value to the optimiser, so a
+rule is needed: 'fe' holds iron-air (100 hours) at least at its level at the window's start; 'all' does that for every store.
+The last window keeps the engine's end-of-week levels. HiGHS, mip_rel_gap 0.1%, every window optimal.
+
+```
+R million a week                    May           November        stress
+engine, coal at full-load cost      2,165.6        1,485.0         3,202.5
+rolling 24 h, 'fe'                  1,744.8        1,001.7         2,347.8
+rolling 24 h, 'all'                 1,664.7        1,000.4         2,192.0
+full-week optimum                   1,655.2          990.7         2,191.5
+engine over rolling 'all'           +30.1%         +48.4%          +46.1%
+rolling over full week     'fe' +5.4%, 'all' +0.6%   +1.1%, +1.0%    +7.1%, +0.0%
+shed, GWh: engine / rolling 'fe' / 'all' / full week      0 / 0 / 0 / 0     0 / 0 / 0 / 0     37.3 / 0 / 0 / 0
+lithium cycles: engine / 'fe' / 'all' / full    2.10 / 5.44 / 5.51 / 5.45   2.53 / 6.02 / 6.11 / 6.18   1.62 / 5.71 / 5.79 / 5.80
+start-ups, 'all': unit / per MW      4.1 / 10.3     6.7 / 17.2      6.8 / 16.9
+```
+
+Finding (user, 13 Oct): with 24 hours of sight PyPSA lands within 0.0-1.0% of the full-week optimum (rule 'all') or 1.1-7.1%
+('fe'), and the engine stays 30-48% above it, so the gap is the engine's storage rule, not foresight. In the stress week PyPSA
+sheds nothing, with the full week's sight and with 24 hours, against the engine's 37.3 GWh on the same build (c4 with its 1,000
+MW top-up), the same weather and the same outage draw. So the engine check's 2040 shortfalls, and the top-ups sized to them,
+are partly the engine's storage scheduling rule (which discharges only in each day's top-quarter hours or against a forecast
+shortfall), not only a lack of capacity. One week of one draw; the share of the 2040 top-up this explains is not measured.
+
+Operating share, for sizing (user, 13 Oct; c4's engine check, the 480-run local re-run of 13 Oct, scratchpad engsplit): fuel
+(variable O&M and the pre-pass start-ups included), carbon, the per-MW start-ups and shed are R826.8bn of c4's R2,597.7bn PV
+2026-40 at 8% (31.8%), R760.3bn (29.3%) without nuclear, hydro and imports; coal fuel R611.6bn, gas R42.2bn, diesel R1.7bn,
+nuclear, hydro and imports R66.5bn, carbon R95.2bn, per-MW start-ups R9.6bn, shed R0.03bn. The rest: new capital R1,024.1bn,
+fixed O&M R460.2bn, IPP contracts R367.5bn, less export earnings R80.8bn. In 2040 operating cost is R102.9bn of R369.9bn
+(27.8%). If the three weeks' gap against the rolling optimum (23-33% of the engine's operating cost) held across 2040, c4's
+2040 engine cost would be overstated by R24-34bn (6-9%); earlier years carry less storage (2026 baseline week 2.2%), so the
+2026-40 overstatement is smaller than 31.8% x 23-33%; not measured.
+
+Caveats: three weeks, not a year; one outage draw each. Single node, as the engine. Three weeks, not a year. Both sides use the engine's
+2040 coal representation: all 85 units at 49% of their size, not the units still standing (a question for 14df). PyPSA's
+per-MW start charge applies to scaled nominal MW where the engine's applies to committed available MW, so if anything PyPSA's
+start-ups are overcharged. The 2026 baseline week (2.2%) has 0.8 GW of lithium and no curtailment; this build has 22.5 GW.
+For the note: the engine check overstates 2040 operating cost for storage-heavy builds by far more than the baseline week
+suggested, which strengthens the storage caveat already attached to every engine figure. Scripts: validation/single_node/ on branch claude/sn-crosscheck (pull request, user 13 Oct).
+
+### 24-hour dispatch sheds nothing where the engine sheds: c4 2039, s_coalavail 2030 as solved, c4 2040; so the engine check's adequacy verdicts, the top-ups and the 2030 peaker finding rest on the engine's storage rule, 13 Oct 2026
+
+User, 13 Oct. Same scripts and rules as entry 'c4 2040, three weeks' (validation/single_node/, branch claude/sn-crosscheck), engine
+build 2026-10-12e. States as the engine check builds them: c4's 2030 and 2039 from its pathway (P_c4t, the method checked against
+c4's 2030 state, identical on all 19 keys), s_coalavail's 2030 from its print's build table (run 38394235656), as solved, no
+top-up. Weeks: each state's worst 168 hours of engine shed over the loop's own adequacy draws (two per weather year, seeds
+20260816 + k x 104729 + year x 7919, 24 runs); c4's 2030 has no shed in any of the 24 runs, so it is run on the week the loop added
+as a 2030 window in pass 1 (weather 2017, hours 4425-4592, seed 36338168), the same week as s_coalavail's worst. The scan
+reproduces the loop's own test: c4 2039 mean 3.04 GWh against 2.54 (pass 9).
+
+```
+R million a week, shed GWh              engine (flat coal)   24 h 'all'   24 h 'fe'   full week   engine over 24 h 'all'
+c4 2030, weather 2017, hours 4425+         1,502.3 / 0.00    1,361.7 / 0   1,539.6 / 0   1,353.5 / 0      +10.3%
+c4 2039, weather 2016, hours 6807+         3,092.7 / 36.73   2,200.9 / 0   2,272.8 / 0   2,197.5 / 0      +40.5%
+s_coalavail 2030, weather 2017, 4425+      2,928.1 / 24.66   2,628.2 / 0   2,788.9 / 0   2,624.8 / 0      +11.4%
+c4 2040 with top-up, weather 2016, 6807+   3,202.5 / 37.29   2,192.0 / 0   2,347.8 / 0   2,191.5 / 0      +46.1%
+```
+
+Lithium cycles in the week, engine / 24 h 'all': c4 2030 1.71 / 3.15; c4 2039 1.72 / 5.79; s_coalavail 2030 3.02 / 6.78.
+Diesel, GWh, engine / 24 h 'all': c4 2030 3.4 / 0; c4 2039 88.3 / 110.6; s_coalavail 2030 77.9 / 72.1.
+
+Finding (user, 13 Oct): in every week where the engine sheds (c4 2039, s_coalavail 2030 as solved, c4 2040), a dispatch that
+sees 24 hours ahead sheds nothing on the same build, weather and outage draw. So the engine check's adequacy verdicts, the top-ups
+sized to them (c4's 1,000 MW in 2040 and every top-up in the tables above) and the 2030 peaker finding (entry 's_coalavail': the
+2.8 GW of diesel open-cycle c4 builds by 2030 is what the engine needs) rest on the engine's storage rule, which discharges only in
+each day's top-quarter hours or against a forecast shortfall. The loop's stress windows are also picked with that rule (the
+adequacy test runs simulate(), two draws per weather year), so the optimiser's builds respond to it too. Caveats: one week and
+one outage draw per case; single node; 24-hour sight is still perfect within the day. How much of each top-up would remain under
+a 24-hour dispatch is not measured; the engine fix (TODO 14df, step 'first') answers it on c4's build.
+
+### Engine fixes (builds 2026-10-13f to 13h, branch claude/engine-fix): the single-node engine is 1-12% above the 24-hour rolling optimum on the four cross-check weeks (was 2-48%) and sheds nothing in c4's 2040 stress week (was 37.3 GWh); c4's 2040 costs 8.4% less to run, 13 Oct 2026
+
+User, 13 Oct: three fixes on claude/engine-fix (from claude/c4-frozen fa7d8af, engine 2026-10-12e), one commit each, full suite
+before and after each, the single-node cross-check after each (validation/single_node/; updated scripts on claude/sn-crosscheck-2).
+- (b) 20729cc, build 13f, TODO 14dl: coal start-ups charged once. The per-MW charge (R224.52/MW of commitment added) priced the
+  same starts as the commitment pre-pass's unit start costs (R224.52 = UC_FLEET's R152.58 per installed MW / 0.68); only the
+  pre-pass charges now. Dispatch identical hour by hour.
+- (c) 99b5b92, build 13g, TODO 14dn: the commitment pre-pass keeps the units still standing (nearest published date retires
+  first, whole units, sized to the coal installed), instead of all 85 units at coal installed / 41,530 (49% each in c4's 2040).
+  2026: 84 units at 95.8% of nameplate; c4's 2040: 32 units at 95.8%.
+- (a) d388ceb, build 13h, TODO 14do: short-duration storage looks storageLookaheadH = 24 hours ahead. Each hour lithium and
+  vanadium discharge ahead of coal what the window's surplus will put back; charge from coal only to the window's need beyond
+  coal (from gas, beyond coal and gas); after coal they hold what later hours need beyond gas, release it ahead of diesel down
+  to what later hours need beyond diesel, and the rest against the hour's own shed. The ramp-aware coal floor counts what the
+  stores can deliver. Pumped storage keeps its place; stores of 100 hours or more keep their week rule (charged from coal only
+  against the forecast shortfall). storageLookaheadH 0 restores 13g exactly (checked hour by hour).
+
+Cross-check, R million a week (engine at full-load coal cost) against the 24-hour rolling PyPSA unit-commitment optimum (rule
+'all'), each engine's own week (inputs, starting commitment and the end-of-week storage floor from that engine's run; PyPSA
+charges the same start-ups and uses the same coal units as the engine it is compared with). Weeks and seeds as entry 'c4 2040,
+three weeks'; baseline: Today 2026, default profiles, hours 3264-3431, seed 12345.
+
+```
+                         c4 engine (12e)        + (b) 13f              + (c) 13g              + (a) 13h
+2026 baseline            2,210.6 / 2,163.2 +2.2%   2,192.1 / 2,162.6 +1.4%   2,191.0 / 2,162.3 +1.3%   2,189.8 / 2,162.3 +1.3%
+c4 2040 May              2,165.6 / 1,664.7 +30.1%  2,152.4 / 1,657.2 +29.9%  2,186.8 / 1,615.5 +35.4%  1,651.5 / 1,539.2 +7.3%
+c4 2040 November         1,485.0 / 1,000.4 +48.4%  1,470.3 /   982.2 +49.7%  1,545.6 /   974.5 +58.6%  1,081.6 /   962.1 +12.4%
+c4 2040 stress           3,202.5 / 2,192.0 +46.1%  3,191.5 / 2,174.9 +46.7%  3,221.2 / 2,175.6 +48.1%  2,343.1 / 2,198.6 +6.6%
+stress-week shed, GWh    37.3 / 0                  37.3 / 0                  37.3 / 0                  0 / 0
+```
+
+13h, engine / optimum: lithium cycles a week May 4.07 / 5.25, November 5.96 / 6.17, stress 5.26 / 5.71 (c4 engine 1.6-2.5);
+curtailment GWh May 7 / 5, November 127 / 31, stress 427 / 246 (c4 engine 458-1,062). (c) alone raises the engine's 2040 weeks
+1-5% (fewer, full-size units: a higher midday coal floor) while the optimum on the same units falls; (a) then removes most of
+the gap. What is left in November is mainly coal committed for net load before storage (the pre-pass does not see storage):
+the engine spills 127 GWh against 31.
+
+c4's 2040 with its 1,000 MW top-up, 12 weather years x 2 draws (seeds 71830529 + k x 104729 + year x 7919): mean shed 4.07 GWh
+(12e), 4.07 (13f), 3.66 (13g), 0 (13h; no draw sheds); system cost R369.8bn, 369.1, 372.1, 341.0 a year.
+
+2026 under (a) (Today 2026, a year): lithium discharges 18 GWh against 744 (the old rule cycled it daily from coal into
+coal-served peaks), diesel 25.9 GWh against 61.5, system cost R210.39bn against R210.67bn.
+
+Run time (same machine, two passes in alternating order): one engine-check year (c4's 2040, 24 simulated years) and one
+live-app recompute (Today 2026, run()):
+```
+                                      12e      13f      13g      13h
+one simulated year, ms (mean of 48)   318      304      272      381
+live-app recompute, ms (mean of 10)   1,443    1,444    1,436    1,842
+```
+(a) adds 20% per simulated year against the c4 engine (40% against 13g) and 0.4 s (28%) to each slider change. The engine
+check's total time falls where years are clearly adequate: c4's check stopped every year at the first 120 runs (2% of its
+target or less), where the old engine needed more draws in its marginal years.
+
+Suite (ESK19679.csv present; audit 87/87 and eng5 6/6 throughout): fa7d8af 720/725 (stale stamp); 13f 721/725; 13g 721/725;
+13h 715/725. The four failures before (a): EDMSA Scenario A CO2 2035; wind capture at 110 GW, iron-air in July, preset
+curtailment band. Six new with (a), causes established, no check changed (user to decide each):
+1. 'modest demand shifting lowers system cost': 7.5% shift R210.46bn against R210.39bn at zero.
+2. 'demand response reverses at high shift': at 30% the peak is 29,589 MW against 29,628 at zero.
+3. 'the instant heuristic discharges near the median price': now R1,912/MWh against a median of R747 (ratio 2.56, limit 1.5).
+4. 'response matrix matches baseline': 17 cells changed.
+5. 'lcoeIronAir moves at least one dispatch output': its probe (Today 2026 with 5 GW of iron-air) now dispatches 2 GWh of
+   iron-air a year against 1.5 TWh, because diesel is already zero; the control only scales that energy.
+6. 'must-run gas energy goes somewhere' (IRP path 2035): the check's gap equals charging less firm exports (the hourly
+   balance closes to 1e-11 MW), so it fails whenever charging passes about 10 TWh a year; (a) takes charging from 8.5 to 14.6 TWh.
+Findings 1-3 describe the old storage rule; 4 is a baseline; 5 and 6 are how the checks are built.
+
+Caveats: one bus; four weeks and one outage draw each; the optimum has no operating reserve (the engine holds 2,200 MW; with
+reserve off the engine's May week costs 1.1% more, so the reserve is not what separates them); the look-ahead has perfect sight of load, weather and outages for 24 hours, as the
+optimum has; the commitment pre-pass is still storage-blind; (a) changes 2026 battery use as above, which the live app shows.
+
+### c4's build through the fixed engine (build 2026-10-13h), no re-solve: no year fails, so no top-up; engine cost R2,540bn PV against R2,598bn, CO2 1,480 Mt against 1,605, 13 Oct 2026
+
+User, 13 Oct. c4's pathway as solved (P_c4t, run 38359856512), engine check as its own job ran it (pathcheck.js, COMMIT=1 PSE=1
+TF=0.5 LNG=1, adaptive draws, seeds 71830529 + k x 104729 + year x 7919), engine claude/engine-fix d388ceb against c4's own
+check (engine 86bfea4, identical to fa7d8af). No top-up applied on either side.
+
+```
+mean shed against target (GWh), engine cost (R bn)    c4 engine (12e)          fixed engine (13h)
+2026                                                   0.055 / 1.94   218.0     0.038 / 1.94   216.9
+2034                                                   0.118 / 2.26   296.4     0      / 2.26   290.1
+2037                                                   0.694 / 2.41   323.5     0      / 2.41   309.7
+2038                                                   1.225 / 2.48   343.1     0      / 2.48   323.8
+2039                                                   2.082 / 2.54   356.9     0.009 / 2.54   332.1
+2040                                                   4.185 / 2.60   369.9     0.016 / 2.60   341.0
+years over target                                      2040 (161%)              none (worst 2026, 2%)
+top-up                                                 1,000 MW in 2040         none
+engine cost 2026-40, PV at 8% / undiscounted           R2,597.7bn / R4,415.6bn  R2,540.2bn / R4,286.7bn
+CO2 2026-40                                            1,605 Mt                 1,480 Mt
+```
+
+Both measures: the optimiser's objective is unchanged (no re-solve): R1,727.7bn as solved, R1,715.5bn without its stress-target
+penalty. The engine measure falls R57.5bn PV (2.2%), all of it operating cost: c4's engine operating share was R826.8bn PV
+(entry 'c4 2040, three weeks'), so the fixed engine's operating cost is about 7% lower. Every engine-check figure recorded
+before today (verdicts, top-ups, engine PVs, CO2 by the engine) is on the old engine and would move the same way; the
+optimiser's figures do not change.
+
+Caveats: c4's build was optimised against windows the old engine picked (the loop's adequacy test runs simulate()); a re-solve
+on the fixed engine (c5) can build less. One weather-year draw set; the engine check's own convergence rule.
+
+### Engine fix (a) against its pass marks (TODO 14dt, set 13 Oct 17:00 UTC): marks (1) and (2) fail, (3) passes, (4) proposed; reported, not moved, 13 Oct 2026
+
+User, 13 Oct: marks written into TODO 14dt before (a) lands. Engine: claude/engine-fix d388ceb (build 13h). Cross-check:
+validation/single_node/ (scripts as #33), 24-hour rolling PyPSA unit-commitment optimum, rule 'all', each engine version on
+its own week.
+
+(1) Engine within 5% of the 24-hour rolling PyPSA cost on the 2026 baseline week and the three c4 2040 weeks: fails on three
+of four. Baseline +1.3% (pass); May +7.3%, November +12.4%, stress +6.6% (fail). Figures in entry 'Engine fixes'.
+
+(2) Engine shed in the stress weeks no more than the 24-hour rolling PyPSA's: fails on two of six. Stress weeks: the four
+from entries 'c4 2040, three weeks' and '24-hour dispatch sheds nothing' (the old engine's worst weeks), plus each state's
+worst week on the fixed engine (scan: 12 weather years x 2 draws; the loop's draws, seeds 20260816 + k x 104729 + year x
+7919, and for c4 2040 also the engine check's, 71830529 + ...).
+
+```
+R million a week, shed GWh                                engine (13h)        24 h rolling     gap     mark (2)
+c4 2030, weather 2017, hours 4425+ (old worst)            1,394.5 / 0         1,381.7 / 0      +0.9%   pass
+c4 2039, weather 2016, hours 6807+ (old worst)            2,366.0 / 0         2,216.1 / 0      +6.8%   pass
+s_coalavail 2030, weather 2017, 4425+ (old worst)         2,765.7 / 0         2,606.1 / 0      +6.1%   pass
+c4 2040 with top-up, weather 2016, 6807+ (old worst)      2,343.1 / 0         2,198.6 / 0      +6.6%   pass
+s_coalavail 2030, weather 2023, hours 728+ (new worst)    2,888.6 / 5.66      2,661.0 / 0      +8.6%   fail
+c4 2040 without top-up, weather 2021, 897+ (new worst)    2,663.6 / 0.45      2,191.6 / 0      +21.5%  fail
+```
+
+Whole-year shed on the fixed engine, 24 draws (loop's): c4 2030 none; c4 2039 none (old engine: 11 draws, mean 3.04 GWh);
+s_coalavail 2030 one draw, mean 0.24 GWh (old: 11 draws, 4.49); c4 2040 with top-up none; without top-up none on the loop's
+draws and one on the engine check's (mean 0.019 GWh).
+
+(3) The 2025 benchmarks still pass: pass. validate_benchmarks 28/28 on the c4 engine (12e) and on 13h. Values, 12e -> 13h
+(band): coal 164.24 -> 164.59 TWh (Ember 171.26, +/-6%); CO2 173.98 -> 174.06 Mt (160.30, +/-12%); nuclear 10.21, wind
+14.14, utility solar 7.11, hydro 2.90, imports 6.61 TWh unchanged; peaker season ratio 3.2 -> 4.4 (2.15-8.6); grid
+generation 212.8 -> 212.9 TWh (190-222); coal capacity factor 47.2 -> 47.3% (35-60); wind 35.0%, residual RE share 12.0%,
+surplus 1.5 and 5.9 GW, solar 24.8%, rooftop 19.6%, nuclear 62.0% unchanged.
+
+(4) Run time, proposed limits for your decision (proposed after measuring 13h, so not a bar set in advance):
+- Engine check: the worst case (15 years, each at the 480-run cap, 7,200 simulated years) finishes within 60 minutes on
+  GitHub, half the check job's 120-minute timeout. Measured: c4's check (12e) took 11 min 38 s on GitHub for 2,760 simulated
+  years (0.25 s each, run 38359856512, job 'check'); per simulated year here 318 ms (12e) and 381 ms (13h). Estimate at the
+  cap: 30 min (12e), 36 min (13h); c4's build on 13h about 9 min (1,800 simulated years: every year stopped at 120 runs).
+  Pass on the estimate; c5's first check job measures it.
+- Live app: a slider change recomputes on average no more than 25% slower than on the c4 engine, in Chromium on the same
+  machine (the app as served, charts drawn; Today 2026, 24 recomputes each, two engines interleaved). Measured: 12e 2.18 s
+  (fastest 1.21), 13h 3.19 s (fastest 1.51), +46%: fail. (Model only, jsdom: 1.44 against 1.84 s, +28%.) The look-ahead's
+  forecast terms are recomputed in every call (TODO 14ds); caching them gives identical results, estimate 2-3 h.
+
+Diagnostic, not a change: a 48-hour look-ahead (storageLookaheadH 48) on the same six weeks moves the gaps little:
+baseline 1.3%, May 7.3%, November 11.7%, c4 2040 stress 6.6%, s_coalavail 2030 new worst 7.5% (shed 0), c4 2040 without
+top-up 16.9% (shed still 0.45 GWh). Sight is not what is missing; nor is charging from coal
+against a 72-hour window (experiment, not committed: every gap within 0.6 points of 13h, shed unchanged). In the c4 2040 week without top-up the engine burns 91.5 GWh
+of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening and morning peaks diesel runs at 2.9-7.0 GW
+while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
+GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
+
+### Engine fix (B) against the same pass marks (build 2026-10-14a): (1) passes; (2) fails on 3 of 15 weeks, by 0.15-1.00 GWh; (3) fails on one benchmark (peaker season ratio); (4) engine check passes, live app fails; reported, not moved, 14 Oct 2026
+
+User, 13 Oct (TODO 14dv (1)): option (B), capped at Wed 14, on the hold on battery energy and on coal committed before storage
+(14dq), judged against 14dt's marks. Engine: claude/engine-fix 016bb49 (build 2026-10-14a), on 13h (d388ceb). Cross-check as
+for (a): validation/single_node/ scripts (as #33), 24-hour rolling PyPSA unit commitment (48-hour window, 24 kept), rule 'all',
+each engine version on its own week.
+
+What changed in simulate(), each measured on the cross-check weeks before it was kept:
+- Commitment (14dq): the pre-pass commits coal for net load less what the short stores and pumped storage can give from the
+  surplus run before it (water-filled, at 90% of their energy, power and round trip). A run with no surplus before it is not
+  shaved, so 2026 commits as before.
+- Surplus hours: once the surplus is taken, coal tops the short stores up towards the window's need beyond coal.
+- Pumped storage joins the look-ahead. It used to give first in every expensive hour and next after coal otherwise, with lithium
+  held back; the optimum ran lithium daily and kept pumped storage back. Now, ahead of coal: pumped storage gives what the
+  window's surplus would spill, the short stores what the surplus will put back, and in the day's expensive hours pumped storage
+  what it holds above the window's need beyond coal. After coal: the short stores, then pumped storage, above their holds.
+  Before diesel and before shed, pumped storage gives first. Its coal and gas charging targets net the coming refill.
+- Look-ahead 24 to 48 hours (storageLookaheadH): the rolling optimum sees 24-48 hours ahead.
+
+```
+gap to the 24 h rolling optimum, %          baseline   May    Nov   stress   worst shed found, GWh (optimum 0)
+13h                                            1.3      7.3   12.4    6.6     5.66 (s_coalavail 2030)
+B1  commitment, surplus charging, refill       1.3      3.5    4.4    7.1     2.68
+B3  + lithium before pumped storage            0.5      2.4    4.2    4.4     1.34 (rescan)
+B6  + pumped storage peak rule, spill first    1.2      2.2    4.0    4.7     6.81 (two weeks without top-up)
+B7  = B6 at 48 hours (build 14a)               1.2      1.7    4.0    2.7     1.00
+```
+
+B3 left pumped storage idle in four suite scenarios (0.0-0.3 cycles a year; check > 5; the optimum's 2026 week also leaves it
+idle, 0.1-0.2 GWh, but Eskom's schemes cycle daily), so B6 added the peak rule. At 24 hours B6 spent pumped storage and lithium
+in the run-up to peaks 30-40 hours away where the optimum burned diesel early, and eng5's 'storage cuts unserved' fell to a 6.1%
+cut (needs 10%); at 48 hours both weeks shed none and eng5 cuts 17.5%.
+
+(1) Within 5% on the 2026 baseline week and the three c4 2040 weeks: pass. Baseline +1.2%, May +1.7%, November +4.0%, stress
++2.7% (R million a week, engine against optimum: 2,188.2 / 2,162.5; 1,589.6 / 1,562.7; 992.0 / 953.6; 2,289.6 / 2,228.4).
+
+(2) Engine shed no more than the optimum's in the stress weeks: fails on 3 of 15. Weeks: the six of 13h's judgement, three
+more from 13h's table, the four worst from a rescan on B3 and two new from a rescan on 14a (12 weather years x 2 draws, five
+states, the loop's and the engine check's seeds).
+
+```
+R million a week / shed GWh                               engine (14a)       24 h rolling     gap     mark (2)
+c4 2030, weather 2017, 4425+                              1,405.6 / 0        1,431.7 / 0      -1.8%   pass
+c4 2039, weather 2016, 6807+                              2,327.3 / 0        2,276.0 / 0      +2.3%   pass
+c4 2039, weather 2019, 3273+ (seed 36249277)              1,969.5 / 0        1,889.9 / 0      +4.2%   pass
+c4 2039, weather 2019, 3273+ (seed 36354006)              1,973.7 / 0.15     1,976.1 / 0      -0.1%   fail
+s_coalavail 2030, weather 2017, 4425+                     2,951.1 / 0        2,640.5 / 0     +11.8%   pass
+s_coalavail 2030, weather 2023, 728+                      2,891.5 / 0        2,766.8 / 0      +4.5%   pass
+s_coalavail 2030, weather 2016, 1256+ (seed 87899962)     2,478.3 / 1.00     2,340.6 / 0      +5.9%   fail
+s_coalavail 2030, weather 2016, 392+ (seed 36330249)      2,609.8 / 0.50     2,534.3 / 0      +3.0%   fail
+c4 2040 with top-up, weather 2016, 6807+                  2,289.6 / 0        2,228.4 / 0      +2.7%   pass
+c4 2040 without top-up, weather 2021, 897+                2,509.4 / 0        2,324.3 / 0      +8.0%   pass
+c4 2040 without top-up, weather 2016, 6807+ (check draw)  2,395.8 / 0        2,362.1 / 0      +1.4%   pass
+c4 2040 without top-up, weather 2016, 6807+ (loop draw)   2,517.6 / 0        2,450.7 / 0      +2.7%   pass
+c4 2040 with top-up, May and November                     see (1), no shed on either side             pass
+2026 baseline                                             see (1)                                     pass
+```
+
+The three: each shed falls in the week's last hour, with the stores empty and coal held 2.2-2.5 GW below what is available as
+operating reserve, which the PyPSA check does not hold; in the 1.00 GWh week pumped storage ran empty from about hour 130 where
+the optimum kept 21 GWh. Rescan on 14a: worst week in any state 1.00 GWh (13h 5.66), mean shed at most 0.05 GWh a year.
+
+(3) The 2025 benchmarks still pass: fails, 27/28. peakerSeasonRatio 9.3x against a band of 2.15-8.6x (Eskom 2025 4.3x; 13h
+4.4x). The new engine burns 42 GWh of peaker fuel in Jul-Sep 2025 against 108 (13h) and 387 in Jan-Mar against 473; pumped
+storage delivers 3.83 TWh a year against 2.73 (the invariant check cites 3-4 TWh for the real fleet); the 2025 run sheds 4.6
+GWh against 5.7. Not tuned back: the check itself warns against fitting peaker output. Other values 13h -> 14a: coal 164.59 ->
+165.22 TWh; CO2 174.06 -> 174.41 Mt; residual RE share 12.0 -> 11.9%; grid generation 212.9 -> 214.2 TWh; coal capacity
+factor 47.3 -> 47.5%; nuclear, wind, utility solar, hydro, imports and the rest unchanged. B6 at 24 hours reads 6.1x (pass),
+with marks (1)-(2) and eng5 worse.
+
+(4) Run time, limits set by the user on 13 Oct (TODO 14dv (2)):
+- Engine check within 60 minutes worst case on GitHub: pass on the estimate. Mean simulate() on c4's 2040 state (jsdom, 24
+  simulated years): 346 ms (13h), 346 ms (B6 at 24 hours), 398 ms (14a). Scaling 13h's 36-minute estimate: about 41 minutes.
+- Live app within 2.5 s per recompute in Chromium: fail, as expected until 14ds (after the note). Today 2026, 24 recomputes
+  each, interleaved: 13h 3.02 s, 14a 4.37 s (+45%). jsdom run(): 1.71 -> 1.98 s.
+
+Suite on 14a (ESK19679.csv present): 715/726 node checks, audit 87/87 (802/813); eng5 6/6. 13h: 715/725, 802/812. Failures:
+- Already on c4-frozen: EDMSA Scenario A CO2 2035; wind capture at 110 GW (83.7%); iron-air with gas in July (437 -> 202
+  GWh, 53.8%); preset curtailment band (Fossil-free 2040 124.4 against 96.3 +/-15%; Deep decarbonisation 2035 back in band).
+- From (a), TODO 14dp, new figures: demand shifting (7.5% shift R210.38bn against R210.30bn at zero); demand-response rebound
+  (30% shift R211.89bn); instant heuristic (ratio 2.05, was 2.56); response matrix (29 cells, was 17); must-run gas
+  (generation exceeds served, exported and charged energy by 15.9 TWh against 22.5 TWh charged, was 8.1 against 14.6; the
+  formula's gap equals charging less firm exports, as before). 14dp's lcoeIronAir dead control now passes.
+- New from (B): iron-air July gas, no gas cap (1,312 -> 1,295 GWh with 20 GW of iron-air, 1.3% against a 1% limit); the
+  peaker season ratio (mark (3)).
+
+c4's build through 14a, no re-solve (P_c4t, pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, seeds as before): no year fails (worst
+2038, 0.044 GWh against 2.48), no top-up; engine cost R2,525.8bn PV against R2,540.2bn on 13h and R2,597.7bn on c4's own engine
+(12e); CO2 1,465 Mt against 1,480 and 1,605. 1,800 simulated years took 11 min 20 s here (0.38 s each; the 7,200-year worst
+case would take 45 min at this rate). The optimiser's figures do not change.
+
+Each part switched off in turn on 14a (gap to the optimum, %, shed GWh where any; the optimum sheds none in these weeks):
+
+```
+                                  baseline   May    Nov   stress   s_coalavail 2030   c4 2040 no top-up, wy 2016
+                                                                   wy 2016, 1256+     check draw   loop draw
+14a                                  1.2      1.7    4.0    2.7     5.9 / 1.00          1.4          2.7
+_laNoUC      commitment             1.2      1.8    4.1    5.5     5.9 / 1.00          3.8          4.8
+_laNoSurCoal surplus-hour charging  1.2      3.3    3.7    2.9     5.9 / 1.00          1.6          2.9
+_laNoPs      pumped storage refill  1.2      7.2   14.0    5.8     3.7                 5.2          4.9
+_laNoPsHold  old pumped order       1.3      2.3    4.3    7.1     5.8 / 1.00          6.2          6.5
+_laNoPsFirst pumped not first       1.2      1.7    4.0    2.7     4.5                 1.4          2.1
+_laNoPsPeak  no daily peak rule     0.5      2.6    4.1    1.7     5.9 / 1.00          1.2          1.2
+```
+
+The refill rule carries May and November; the commitment and the new order carry the stress weeks. Without the daily peak
+rule the engine is closer to the optimum on cost, but pumped storage sits idle in 2026 (the invariant check, above). Without
+'pumped storage first' the s_coalavail 1256+ week sheds none, but on all 15 weeks two fail instead of three and the worst rises
+to 2.62 GWh (s_coalavail 2030, weather 2017, 4425+), so 14a keeps it. Scratch scripts not committed: runweeks.py,
+cmp_hourly.py, scanall.sh, marks_table.py; outputs in the session scratchpad.
+
+### TODO 14dp settled on build 14a: two findings restated, one check replaced, the response baseline regenerated, the gas balance made exact; no limit widened, 14 Oct 2026
+
+User, 13 Oct (TODO 14dv (3)): checks 1, 2, 4, 5 and 6 as proposed, each new figure and its cause here; check 3 not widened
+but replaced by a test of what the look-ahead should do. Engine build 14a (claude/engine-fix 016bb49); harness changes on the
+same branch (8b6d41d). Suite after: 720/726 node checks, audit 87/87 (807/813), eng5 6/6.
+
+1. Restated finding: demand shifting no longer lowers system cost. On the dashboard default, a 7.5% shift gives R210.38bn
+   against R210.30bn at zero (+0.04%; 13h +0.03%, 12e lower than zero). The stores, planning 24-48 hours ahead, already move
+   energy from the midday surplus to the evening, which is what shifting did. Check: a 7.5% shift moves system cost by under
+   0.1% (was: lowers it).
+2. Restated finding: a large shift still costs more, but the rebound peak has gone. 30% gives R211.89bn (+R1.59bn, the 6%
+   lost on shifted load) and a 29,589 MW peak against 29,628 at zero. Check: a 30% shift raises system cost (the peak test
+   dropped, since storage now absorbs the rebound).
+3. Replaced: 'the instant heuristic discharges near the median price, not the peak' (ratio under 1.5) described the rule
+   before the look-ahead (13h 2.56, 14a 2.05). New check: each fleet discharges at a higher volume-weighted marginal price
+   than it charges. Default build with 1 GW / 4 h of new batteries: R1,531 against R747/MWh. IRP path 2035: batteries R2,054
+   against R1,886, pumped storage R2,052 against R1,821. (13h: R1,912 against R747; R2,054 against R1,925; R2,051 against
+   R1,949.)
+4. Response baseline regenerated (response_matrix.json) on 14a: 29 cells changed against the old baseline. 25 went from
+   responsive to inert, 4 the other way. The main group: in the default 2026 scenario new batteries, vanadium and iron-air
+   no longer move coal output, CO2, replAvg or the renewable share (newBattMW 4 cells, newBattHours 2, newVrfbMW 2,
+   newIronAirMW 4). 2026
+   has no midday surplus and no shortfall beyond coal, so the look-ahead leaves new storage nearly idle (the 24-hour rolling
+   optimum's 2026 week cycles lithium 0.5-0.7 times a week). The others are small effects that fell under or rose over the
+   matrix's threshold: battHours, outageUnitLevel, dieselDecomMW, dieselBudgetTWh, coalFlexPct, nuclearCF, newCcgtMW,
+   newCoalMW, newNuclearMW, drInterruptMW, reserveEnabled, importsMW (one or two cells each).
+5. 'lcoeIronAir moves at least one dispatch output' passes on 14a with no change: its probe dispatches iron-air again.
+6. 'must-run gas energy goes somewhere' rewritten as the exact balance: generation plus shed equals the demand line (which
+   carries charging and firm exports) plus surplus exports, within 0.01 TWh. Measured on IRP path 2035: 1.6e-12 TWh on 208.9
+   TWh generated (default 6e-14). The old formula took charging off a line that already includes it, so its gap was
+   charging less firm exports: 15.9 TWh against 22.5 TWh charged on 14a. The IRP gas floor still goes unmet by 5.5 TWh
+   (13h 11.6), which the check reports.
+
+Still failing, your decision: 'iron-air changes July gas by essentially nothing' (no gas cap; 1,312 -> 1,295 GWh, 1.3%
+against a 1% limit) and the 2025 peaker season ratio (9.3x, mark (3) in TODO 14dt). Neither check changed.
+
+### c5 inputs: the imports end year (no-imports-after-2030 sensitivity) and 14dr (outage draw over the standing units); 14dr makes mark (2) worse, your decision, 14 Oct 2026
+
+Branch claude/c5-imports, from step 3 (#36, build 14b); two commits, each with the full suite (ESK19679.csv present).
+
+1. Imports end year, f0d5dc8 (build 14c; TODO 14dv (6)). IRP 2025 does not say what follows the Cahora Bassa contract as far as
+   the sources reachable here show (HANDOVER 'c5 inputs'), so 1,150 MW is kept and a no-imports-after-2030 sensitivity
+   added: FIXED importsEndYear (0, imports every year) and pathway setting IMP_END. Imports are zero after that year in
+   simulate() (through scenarioYear, so in the optimiser's stress loop and the engine check alike) and in the build LP's
+   hourly balance and firm-capacity rows; the pathway records it and the engine check applies it. New check (validate_lp):
+   on a 2026-2032 horizon the LP changes only after 2030 (914 lines), and the engine carries 8.87 TWh of imports in 2030 and
+   none in 2031. Suite 721/727 node checks (the new one passes), audit 87/87, eng5 6/6; the same six failures as step 3.
+
+2. TODO 14dr, 835b618 (build 14d; user, 13 Oct: in c5 if under two hours, with the cross-check weeks and the 2025
+   benchmarks re-run). The unit outage draw now runs over the units ucUnitsStanding leaves for the year's coal installed,
+   not all 85 (outageStandingUnits 1; 0 restores the old draw). About 1.5 hours with the re-runs. Every seeded draw
+   changes, 2026 slightly.
+
+```
+gap to the 24 h rolling optimum, %, shed GWh          14a (B)               14d (14dr)
+2026 baseline / May / Nov / stress (mark 1)            1.2 / 1.7 / 4.0 / 2.7  1.2 / 3.3 / 4.1 / 2.3
+weeks of 15 where the engine sheds and the optimum     3 (0.15-1.00)          6 (0.24-4.79)
+  does not (mark 2)
+rescan, worst week in any state                        1.00                   4.79 (c4 2039-40, weather 2016, 6807+)
+rescan, mean shed a year, c4 2039 / 2040               0.01 / 0.00            0.27 / 0.41 (target about 2.5)
+```
+
+Every shortfall above falls in the week's last hour, with lithium and pumped storage empty and diesel at its limit; the
+optimum on the same week sheds none. With all units drawn the draw averaged out; over the 32 units still standing in 2039-40
+availability swings more, as 14dr intended, and the engine's end-of-week shortfall against the optimum shows more often.
+2025 benchmarks: 27/28 as on 14a (peaker season ratio 9.3x unchanged); coal 165.22 -> 165.57 TWh, CO2 174.41 -> 174.63 Mt,
+surplus 1.5 -> 2.4 GW (band 1.2-4), 2026 surplus 5.9 -> 5.0 GW (4-8), grid generation 214.2 -> 214.4 TWh, coal capacity
+factor 47.5 -> 47.6%. Suite 720/727, audit 87/87, eng5 6/6; against 14c: iron-air July gas without a gas cap now passes;
+two new failures from the changed draw, neither check changed: 'high-season off-peak is the cheapest block modelled'
+(low-season off-peak now cheapest) and the response baseline (11 cells).
+
+### c5 inputs, final (14 Oct 2026): settings line, and the exact line run locally to adequacy in two passes
+
+Decisions (user, 14 Oct): tracking on; carbon central 'kept2030'; coal on IRP 2025 Figure 3's 50-year line, with Meridian's ME
+IRP 2024 dates (UC_FLEET, c4's) and the 60-year line as sensitivities; wind 2.5 GW a year to 2030 and 3.5 GW from 2031; lithium
+capex decline 3% a year (as s_battdecl), with 5% as a sensitivity. Branch claude/c5 at a74d581 (build 2026-10-14i), pull request
+#37. Suite 725/731 node checks plus audit 87/87 (812/818), eng5 6/6, the six known failures.
+
+Settings line (workflow 'Optimiser long run', ref claude/c5, name c5, one pass per job; SOLVER=native set by the workflow):
+COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5 STRESS_TARGET=1 GRID=1
+ROOF_MW=900 COAL_AVAIL=1 PVTRK=1 COAL_DATES=coal_dates_irp2025.json BATT_DECL=0.03 WIND_CAP=3500 WIND_CAP_FROM=2031 MAXP=6
+STALL=0.1 STALL_FROM=4
+
+The exact line run locally before launch (user, 14 Oct): pathway_perfail.js at a74d581, SOLVER=native TL=7200 RESUME=1
+JOB_PASSES=2, 08:10-08:25 UTC, exit 0, 867 s; output kept in the scratchpad only. Coal standing from COAL_DATES within 250 MW of
+Figure 3 in every year (2030 32,433 MW, 2040 17,890). Pass 1 solved Optimal; the loop's test failed one year, 2030 (mean shed
+2.12 against a limit of 2.08 GWh; excess 0.039 GWh), and added three 14-day windows for 2030: weather 2021 seed 36369844 days
+87-100 (shed 49.8 GWh), weather 2020 seed 36361925 days 1-14 (0.59 GWh; the window that stopped the 14h test), weather 2023
+seed 36385682 days 8-21 (0.40 GWh). Each window's available coal is at least its committed coal in all 336 hours (committed
+mean 0.447 / 0.537 / 0.552 of standing coal, available 0.449 / 0.550 / 0.559). Pass 2 solved Optimal; no year failed (worst
+2030 at 88% of its limit); verdict 'adequate'. Recorded in the output: pvTracking 1, carbonPath kept2030, carbonFull 0,
+battDecl 0.03, coalAvail 1, roofMW 900, stall 0.1 from pass 4. New wind is first built in 2032 and peaks at 2,308 MW in
+2039, so the 3,500 MW cap does not bind on this run. Caveat: a local run; the GitHub run is c5 of record and re-solves.
+
+Launched 14 Oct 2026, 08:31:50 UTC (user: 'Go'): run 38535760468 (Optimiser long run #128), ref claude/c5, commit a74d581
+(a74d5816fd0273a5e07fb731e3e8c7a88766c9fa, build 2026-10-14i), pinned through code_sha so every job checks out that commit; name
+c5, one pass per job, max_jobs 30, no seed, the settings line above. Results in the next entry.
+
+### c5 result: adequate after two passes (stop reason: no year failing the loop's test); the engine check passes every year with no top-up; R2,300.6bn engine PV, 2,019 Mt CO2 2026-40, 14 Oct 2026
+
+Run 38535760468 (job 1, pass 1, 08:31-08:37 UTC) and 38536463416 (job 2: pass 1 replayed from the cache, pass 2 solved;
+check job 08:46-09:01), commit a74d581 (build 2026-10-14i) in every job, settings as in 'c5 inputs, final'. The GitHub
+solves are the same LPs as the local run before launch (pass 1 key 8e2860a0c8, pass 2 key 619b507795), so the pass verdicts,
+windows and build are those recorded there: pass 1 failed 2030 only (2.12 against 2.08 GWh) and added three 2030 windows;
+pass 2 had no failing year (worst 2030, 1.83 against 2.08 GWh, 88%); log 'done adequate'. Stop reason: adequacy, so neither
+the pass cap (MAXP=6) nor the stall stop (STALL=0.1 from pass 4) applied. Solve times 3.6 and 4.2 min. Not shown in the
+GitHub log: the per-window available-coal table (printed once, at the first solve, before any window existed); the run's
+own check would have stopped it had available coal been below committed coal in any window hour.
+
+Engine check (pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive draws, 120-480 runs a year, 15 min). Mean shed against
+target on customer demand, GWh, with the upper end of the 95% interval as a share of target:
+
+```
+year  runs  mean / target   share  upper   worst run   cost Rbn   CO2 Mt   gas TWh   diesel TWh
+2026   120   0.01 / 1.94       0%     1%       0.5       211.5     157.3     0.00      0.011
+2027   120   0.03 / 1.96       2%     3%       2.1       219.3     160.2     0.00      0.015
+2028   120   0.04 / 1.99       2%     4%       1.6       224.5     163.0     0.00      0.021
+2029   120   0.13 / 2.02       7%    13%       8.0       220.3     159.2     0.00      0.037
+2030   120   0.29 / 2.08      14%    32%      23.4       233.7     155.5     0.90      0.143
+2031   480   1.04 / 2.14      49%    81%     128.4       243.3     151.4     2.30      0.182
+2032   360   0.53 / 2.19      24%    42%      39.8       254.5     142.9     3.92      0.219
+2033   240   0.25 / 2.24      11%    24%      34.4       265.2     139.8     5.31      0.204
+2034   360   0.38 / 2.30      17%    33%      59.8       266.1     133.8     7.90      0.260
+2035   240   0.55 / 2.35      23%    40%      29.3       268.0     131.1     8.96      0.272
+2036   480   0.83 / 2.40      34%    58%     113.8       277.5     126.7    10.32      0.307
+2037   480   1.11 / 2.46      45%    67%      60.2       282.2     115.5    12.50      0.336
+2038   480   1.21 / 2.53      48%    74%      79.2       295.7     104.8    14.00      0.363
+2039   120   0.03 / 2.60       1%     2%       1.3       306.4      92.8    15.58      0.334
+2040   240   0.57 / 2.66      21%    38%      34.3       319.1      84.8    17.07      0.387
+2026-40, PV at 8% real from 2026: R2,300.6bn; CO2 2,019 Mt; gas 98.8 TWh; diesel 3.09 TWh
+```
+
+No year fails, so no top-up. 2031 and 2036-2038 ran the full 40 draws without the interval narrowing to +/-20% of target;
+their upper ends stay below target (2031 the highest, 81%). Optimiser objective R1,479.5bn at 8% real with no stress-target
+penalty (costsplit_tsl.py on the local cache of the same pass-2 LP; the GitHub report run confirms it). Build by 2040 (new,
+cumulative): wind 12.9 GW (none before 2032; at most 2,308 MW a year, so neither wind cap binds), utility solar 34.8 GW
+(single-axis tracking), rooftop 12.6 GW (900 MW a year, fixed), lithium 17.6 GW / 89.2 GWh, CCGT 7.5 GW, OCGT on LNG 0.75 GW
+(2030), diesel open-cycle 0.77 GW (2030); no pumped hydro, vanadium, iron-air, offshore wind or early coal retirement. Coal
+standing as Figure 3's 50-year line (17,890 MW in 2040).
+
+LNG: see the caveat in 'c5 for the write-up' below (10 of 33 stress-window years above one cargo, all in 2034-40).
+
+Caveats: the engine check is the note's cost measure, with its storage-dispatch caveat (RESULTS '24-hour dispatch sheds
+nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
+differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
+
+### PR #22 closed unmerged: all its code is on main; the three findings 'waiting on #22' fail for the reasons recorded on 7 Oct, and what #22 still had to do was never done; its documents are not on main (user, 14 Oct 2026, message 76)
+
+User, 14 Oct (message 76): #22 was closed unmerged at 06:37 UTC today; check whether its changes are on main; if so, why the
+three findings still fail (wind capture at 110 GW, iron-air in July, the preset curtailment band), without touching the checks;
+if not, what is missing.
+
+On main or not: #22's head (claude/build-costs at c1f8c70, base claude/peakers) has 77 commits that are not ancestors of main
+(e00e430). Every one of them changes documents only (174 .md file changes; no index.html, harness, data or workflow file). So
+all of #22's code reached main by other merges. What is not on main: those documents (RESULTS, TODO, HANDOVER, SOURCES and
+others on claude/build-costs, including every entry written since; the branch has had no open pull request since #22 closed).
+
+Why the three still fail, from the record (RESULTS 'New wind on the modern-turbine profile at 1.064', build 07s, 7 Oct):
+- Wind capture at 110 GW (check 85-115%): new wind on the modern-turbine profile at 1.064 lowered it from 86% to 79% (07s);
+  83.7% on main today. Decided 7 Oct: 'recorded as updated, not re-pinned'. On the c5b branch it passes (the battery fleet
+  correction alone gives the same; RESULTS 'c5b build').
+- Iron-air in July (check: under 2% change): on the modern profile July gas halves before iron-air and iron-air removes the
+  rest, so 'the finding reverses in this scenario' (07s: 425 -> 0 GWh); main today 600 -> 475 GWh, 20.9%. Recorded as updated,
+  not re-pinned.
+- Preset curtailment band (Fossil-free 2040 124.4 TWh against 96.3 +/-15%): to be 're-pinned after the re-search' (07s). The
+  re-search (TODO 14ay) and the re-pin were among #22's open items ('Still to come before this leaves draft': the preset updates
+  and the preset curtailment re-pin; TODO 14ck) and were never done.
+So: the code is on main; the three are known effects of the modern-turbine profile, two of them findings the user chose to
+record rather than re-pin, and one a pin waiting on a preset re-search that no branch now carries. No check was touched.
+
+### c5b build (build 2026-10-14l, branch claude/c5b-demand): Cape allowance, freed connections without wind, committed builds, existing batteries 68 MW / 292 MWh, BW6 O&M; suite 807/818 against main's 812/818, every moved check traced; one benchmark moved (peaker seasonal ratio 9.3x -> 4.6x, now passing); c5b's first pass solves; 14 Oct 2026
+
+User, 14 Oct (message 74): freed coal connections take gas as well as solar and storage, within the coal retired (Kriel's
+1,000 MW: Eskom's repowering plan, Engineering News, 17 Jun 2025); solar fixed O&M to BW6 (R287/kW-yr, 2026 rands), as wind;
+De Aar 2 and Paarde Valley PV2 left out of the forced builds; correct the existing battery fleet in the app and c5b from a 2026
+source; suite before and after; one PR; then the c5b settings line.
+
+Existing batteries, checked against 2026 sources: Eskom's phase 1 is eight sites, 199.0 MW (Hex 20, Pongola 40, Elandskop 8,
+Skaapvlei 80, Paleisheuwel 9.5, Graafwater 5, Melkhout 35, Rietfontein 1.5). Operating at mid-2026 and at end-2026: Hex,
+Pongola and Elandskop, 68 MW / 292 MWh. Skaapvlei 90%, Paleisheuwel 40%, Graafwater 70% complete and 'no megawatts will be
+added to the grid in FY27 from the three BESS sites' (Minister's reply NW4150, PMG, 21 Sep 2026; FY27 is 1 April 2026 to 31
+March 2027). Hex in commercial operation since 27 Oct 2023 (AfDB web page, 2 Mar 2026); Pongola and Elandskop commissioned
+November 2024, 'Total BESS installed to date is 68MW' (AfDB IPR, 1 Jul 2025, PDF p.2 and p.4); three Eskom battery facilities
+(Green Building Africa, 12 Oct 2026, photo caption, search summary). Melkhout and Rietfontein at contracting (AfDB, 1 Jul 2025;
+no later source found). No stand-alone BESIPPPP, municipal or private battery operating by mid-2026 (RESULTS 'c5b proposal').
+
+Changes (commits 94e04af and babb78d on 53ecdea; all settings off by default):
+- CAPE_WIND=MW[:pct] (FIXED.bldCapeWindMW, bldCapeCurtPct): cw_<y> in the build LP, at most that year's wind build, in total
+  at most the allowance, credited the integration charge from then on, and its output cut by the share in the balance rows;
+  the engine cuts the same share of that wind (windCapeMW) and pathcheck takes the integration charge off it. Recorded as
+  capeWind; each year's MW as sched[y].cw.
+- RP_EXCL=wind (FIXED.bldRpExclude): technologies barred from freed coal connections; solar, storage and gas keep them within
+  the coal retired so far (rppool rows, unchanged). Recorded as rpExclude.
+- MIN_BUILD=tech:year:MW, floors on new wind and solar by year (mbmin_ rows), as LI_MIN is for lithium. Recorded as minBuild.
+- Existing batteries: ESKOM_BESS_OPERATING (nodal_engine.js) sets EXISTING_BATT_MW 68, EXISTING_BATT_MWH 292 and the regional
+  shares (Western Cape 20, KwaZulu-Natal 48); FIXED.battPowerMW and battHours read them; '2025, as modelled' reads FIXED
+  (the same three sites ran all of 2025); BLD_EX_BATT and the nodal engine follow. Was 800 MW x 4 h, no source.
+- BLD_FOM wind 367 and solar 269 x CPI_JAN24_TO_JAN26 (1.032 x 1.035, now one constant for every January 2024 restatement):
+  R392.0 and R287.3/kW-yr. Was 693 and 396.
+- validate_lint: EXISTING_BATT_MW, EXISTING_BATT_MWH and BATT_SHARE_BY_REGION declared as nodal_engine.js globals, as IMPORTS_CF
+  is (the first branch run failed lint 2/3 on them; 3/3 after).
+
+LP checks (c5's line, pass-1 LP, no solve): each setting alone changes only its own rows: CAPE_WIND adds cw_ to the objective
+(15), the balance rows and rpb_wind, and one cwpool row; RP_EXCL removes rp_wind (objective, rpb_wind_Y, rppool_Y); MIN_BUILD
+adds five floor rows. The constant changes touch only the battery rows (bcmax, bdmax, cua, cla, cub, ecap, dur, rbe, rbp, res,
+soc, send, shc) and the wind and solar cost coefficients: per MW built in 2026, wind R35.55m -> R32.77m and solar R22.26m ->
+R21.25m, exactly the O&M change over 2026-40 at 8%.
+
+Local first pass of the c5b line (MAXP=1, 445 s): status Optimal, objective R1,565.3bn. Forced builds met exactly (2026 wind
+696, solar 354, lithium 360 MW / 1,440 MWh; 2027 wind 190, solar 255, lithium 306 / 1,224; 2028 solar 240); the Cape allowance
+is used in full, 696 MW in 2026, 190 in 2027 and 694 in 2030. The loop's test fails 2030 only (2.51 against 2.19 GWh), as c5's
+first pass did; later passes add windows.
+
+Suite (ESK19679.csv present), main e00e430 (build 14j) before, branch babb78d (build 14l) after:
+
+```
+script                 main       branch     moved by (each change applied alone to main)
+validate_lint          3/3        3/3        -
+validate_findings      39/42      39/42      same count, different checks (below)
+validate_invariants    176/176    175/176    battery fleet: Today 2026 market price R0.841 against engine R0.762/kWh (limit 5%)
+validate_response      87/87      85/87      battery fleet: lcoeBatt inert in its sweep; response matrix 15 cells changed
+validate_consistency   79/80      78/80      O&M and profile: new-build capital, Deep decarbonisation 2035, R1.118 against pinned R1.205/kWh
+validate_benchmarks    28/29      29/29      battery and demand profile: peaker seasonal ratio 9.3x -> 4.6x (band 2.15-8.6x)
+validate_external      7/8        6/8        demand profile: MTSAO 2030 OCGT utilisation 59.5% against about 45%
+validate_outputs       42/42      41/42      O&M and demand profile (corrected 14 Oct, entry above): avgCost 1,075.3 R/MWh, a pin
+other 7 scripts        same       same
+node checks            725/731    720/731
+audit                  87/87      87/87
+total                  812/818    807/818    eng5 6/6 both
+```
+
+Findings: wind capture at 110 GW now passes on the branch (the battery fleet alone gives the same), and 'the ancillary knee sits
+close to the existing fleet' now fails (knee 4.0-6.0 GW against an existing fleet of 2.8 GW, the battery fleet alone gives the
+same); iron-air in July and the preset curtailment band fail on both. No check, pin or tolerance was changed.
+
+The benchmark that moved (message 77 (3)): peakerSeasonRatio, the modelled 2025 ratio of January-March to July-September peaker
+output: main 9.3x (failing), battery fleet alone 5.2x, demand profile alone 8.3x, O&M alone 9.3x, branch 4.6x, against Eskom's
+4.3x in 2025 (ESK19679, author's analysis) and the band 2.15-8.6x. No other 2025 benchmark left its band.
+
+Market-price invariant (message 77 (2)). The engine's price (marginalP) is the running cost of the marginal unit each hour and
+has no scarcity term. The market price (marketPriceSeries) adds, in every hour without shed, an operating-reserve demand curve
+adder: the loss-of-load probability from the reserve available against the requirement (ordcLolp) times VoLL, R87,000/MWh.
+Available reserve includes battery headroom, so with 68 MW instead of 800 MW the evening reserve is thinner and the adder fires
+more often: Today 2026, 46 scarcity hours on main against 100 on the branch (main with the battery change alone: 91), mean adder
+R0.028 against R0.079/kWh. Against Eskom's actual 2026 to date (ESK19679, January-August 2026, aggregates only, author's
+analysis): open-cycle output (Eskom OCGT plus dispatchable IPP OCGT) 0.803 TWh, in 149 hours above 500 MW; hours with load
+reduction (manual load reduction, interruptible load, other interruptible supply) 348, 0.030 TWh. The model's Today 2026,
+January-August: open-cycle output 0.004 TWh in 7 hours on main, 0.011 TWh in 18 hours on the branch; scarcity hours 45 on main,
+78 on the branch. Both are far below 2026's actual open-cycle use; the branch is nearer on both. Nothing proposed yet (user).
+
+MTSAO OCGT utilisation: the check reaches the MTSAO's 222.4 TWh on this model's basis with demandGrowthPct 18 on the profile; the
+profile is now 2.4 TWh larger, so 18% lands about 2.9 TWh higher and open-cycle plant runs more (59.3% with the profile alone).
+The check's own note says the target is the TWh, not the percentage; the mapping is the user's call.
+
+Response checks (message 77 (1)), proposed, not applied: give lcoeBatt a context with a material battery fleet, as newBattHours
+already has (newBattMW 20000): lcoeBatt { newBattMW: 2240, newBattHours: 4, scenarioYear: 2030 }, c5's 2030 lithium (2.24 GW /
+9.0 GWh); same pass rule (moves at least one dispatch output). Trial on a scratch copy of the branch: 'lcoeBatt moves at least one
+dispatch output' passes; 'response matrix matches baseline' still reports 14 changed cells, which needs the baseline rewritten
+(--write-baseline) once the user accepts the battery fleet's effect on the matrix. Reason: the check exists to prove the battery
+cost slider moves results; at 292 MWh of existing batteries and no new ones in its base scenario it no longer can.
+
+Proposed c5b settings line (build 14l; awaiting the user's go): c5's line with DEM_BLOCK=2027:930 IMP_AVG_MW=1066
+CAPE_WIND=1580:4 RP_EXCL=wind MIN_BUILD=wind:2026:696,wind:2027:886,pv:2026:354,pv:2027:609,pv:2028:849
+LI_MIN=2026:360:1440,2027:666:2664.
+
+### Known limitation: no inertia or system-strength requirement in the build; the engine's 6 GW synchronous floor charges nothing when coal is gone (user, 14 Oct 2026, message 75; no change to c5b)
+
+User, 14 Oct (message 75): synchronous condensers, no change to c5b; record the limitation; say whether the model has any
+minimum synchronous generation rule today; add a TODO item for after the note.
+
+The limitation: the build optimiser (bldBuildLP) has no inertia, system-strength or minimum-synchronous constraint, so a
+high-renewable build pays nothing for synchronous condensers or grid-forming batteries. That flatters the renewable-heavy
+results, the no-gas case (s_nogas4strict) most, since it removes the synchronous gas plant as well as coal.
+
+In short (user, message 77 (4)): the engine enforces a 6 GW synchronous minimum; the optimiser does not.
+
+What the model has today (engine only, index.html at build 2026-10-14l): a minimum synchronous generation floor in the dispatch
+engine, SYNC_MIN_MW 6,000 MW (slider syncMinMW, on by default), described as about 15% of peak and 'consistent with Eskom's
+historical operating practice', with no source recorded. Counted towards it: nuclear, hydro, imports at IMPORTS_CF (0.88, not
+the run's importsCF), the grid-forming share of battery power (SYNC_GFM_SHARE 30%, at no extra cost) and synchronous
+condensers (SYNC_CONDENSER_MW 0, none in service in the model). Gas plant is not counted. When the rest falls short, the
+engine raises coal output to cover the gap, which costs coal fuel; when no coal is available, the shortfall is only counted
+(syncUnmetH, hours the floor could not be met) and costs nothing; the engine check does not report it. Inertia pricing exists
+as an off-by-default toggle (asInertiaOn) for revenue panels, not as a requirement. So in c5's later years and in the no-gas
+case the floor binds less as coal retires, and a build that would need condensers or grid-forming inverters to be
+operable is neither charged for them nor flagged.
+
+Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
+the no-gas case most. TODO 14ed (after the note).
+
+### c5b launched on the branch commit; the stress suite on #39 stops loading before its checks run (a harness gap, not a result); moved checks settled or proposed (user, 14 Oct 2026, messages 78-79)
+
+c5b runs on the branch commit before #39 merges (user, message 79 (1)). Workflow 'Optimiser long run', ref claude/c5b-demand,
+code_sha babb78d4f3b03b91b29b826527a3f0c325fa9e4e (build 2026-10-14l) passed explicitly so every job checks out that commit,
+name c5b, one pass per job, max_jobs 30, no seed, first run 38565675653 (12:40 UTC). Settings: the c5b line in 'c5b build'
+above. If any engine or optimiser code changes on the branch before #39 merges (index.html, nodal/, harness/pathway/,
+harness/pathcheck.js), c5b is rerun. Branch commits since babb78d: 7b15f13 (harness checks and response_matrix.json only).
+
+Stress suite on #39 (message 78). GitHub run 38562782391 on babb78d fails; main passes (290/290). It is not one of the checks
+the battery correction moved: no stress check fails. The suite stops while loading the single-node engine, after its first four
+nodal suites. stress_suite.js runs index.html's script outside a browser and supplies by hand the one constant that file reads
+from nodal_engine.js (IMPORTS_CF, copied there as 0.85; the engine's is 0.88). Build 14l's FIXED also reads EXISTING_BATT_MW
+from nodal_engine.js, which the suite does not supply, so the script stops at FIXED; WIND_MOD_MAP is never initialised and the
+next step fails with "Cannot access 'WIND_MOD_MAP' before initialization", the error GitHub shows. Same class as the lint
+failure fixed in babb78d. Fix trialled on scratch copies, not applied (message 78: report first): run nodal_engine.js in the
+same context before index.html, as the browser does, instead of the hand copy; 290/290 on the branch and 290/290 on main. It
+changes stress_suite.js only, so c5b is unaffected. Side effect: the suite's single-node section then uses IMPORTS_CF 0.88, not
+the stale 0.85.
+
+Moved checks (message 79 (3)), on branch claude/c5b-demand, commit 7b15f13, no tolerance changed:
+- (a) lcoeBatt: tested on c5's 2030 lithium fleet, { newBattMW: 2240, newBattHours: 4, scenarioYear: 2030 }, pass rule
+  unchanged; passes. Reason: the existing fleet is 68 MW / 292 MWh and no new batteries are in the base scenario, so the cost
+  slider has nothing to price. Response baseline rewritten (--write-baseline). Base row: coal 145.906 -> 148.305 TWh, CO2
+  155.161 -> 157.650 Mt, avgCost 1,089.11 -> 1,075.31, replAvg 1,507.31 -> 1,507.98, avgPrice 749.20 -> 762.05 R/MWh, RE share
+  21.443 -> 21.187%. Fourteen response cells changed: now responding, outageUnitLevel (coal, avgCost, replAvg),
+  dieselDecomMW (RE share), coalFlexPct (coal), nuclearCF (RE share), newCcgtMW (CO2, replAvg), newCoalMW (coal),
+  newBattHours (avgPrice), newIronAirMW (replAvg), drInterruptMW (avgCost); no longer responding, newBattHours (replAvg),
+  newVrfbMW (replAvg). Cause: the 14l inputs (battery fleet, O&M, demand profile), traced in 'c5b build'.
+- (b) NTCSA MTSAO 2030: the growth is now solved each run so that served demand (the profile times growth, plus the flat block,
+  less rooftop) equals the 222.4 TWh target in each weather year, instead of a fixed 18%. Mean derived growth +17.2%; served
+  222.4 TWh; unserved energy 4.4 TWh (MTSAO: more than 4); OCGT utilisation 57.4% against the MTSAO's about 45%, which
+  passes the 35-58% band by 0.6 points (59.5% at the fixed 18%). The check passes narrowly; the model's open-cycle use in this
+  case sits well above the MTSAO's. validate_external's notes print these figures each run.
+- (d) Pins re-pinned, each with the input that moved it (each change applied alone to main e00e430, build 14j):
+  new-build capital, Deep decarbonisation 2035: R1.205 -> R1.118/kWh (O&M alone R1.134, -0.071; demand profile alone R1.188,
+  -0.016, a larger sales base; batteries alone R1.205, no change). avgCost at defaults: R1,090.0 pin, R1,089.1 measured on
+  main -> R1,075.3 (O&M alone R1,080.1, -9.0; demand profile alone R1,083.9, -5.2; batteries alone R1,089.3, +0.2).
+  Correction to the 'c5b build' table, which attributed avgCost to the battery fleet and demand profile and the capital pin
+  to O&M alone: avgCost moved with O&M and the demand profile, the batteries move it by +0.2; the capital pin moved with
+  O&M (-0.071) and the demand profile (-0.016).
+- (e) Ancillary knee (published finding 'Battery saturation in South Africa', corrected 23 Sep 2026): not re-pinned; reported
+  for the user's decision. The saturation curve is identical on main and the branch (reserve price R52/MWh, defaults:
+  R68,328/MW-yr flat from 0.5 to 4 GW, R50,950 at 6 GW, R38,213 at 8 GW, R30,570 at 10 GW), so the knee is unchanged,
+  between 4 and 6 GW (about 4.5 GW, twice the mean requirement). The existing fleet moves 3,524 -> 2,792 MW (pumped storage
+  2,724 MW plus batteries 800 -> 68 MW). The check's ratio (upper knee point over fleet) moves 1.70 -> 2.15, outside its
+  0.8-2.0 band. The conclusion holds: South Africa is approaching the knee, not past it, and a battery built today still
+  earns the full ancillary rate. What changes is the distance: about 1.7 GW of new storage reaches the knee, not about 1 GW,
+  so the finding's "one procurement round of storage reaches it" needs restating. Proposed: mark that sentence superseded,
+  restate the distance as about 1.7 GW against a 2.8 GW fleet, and re-pin the check's band on the ratio to the new fleet.
+- (f) Preset curtailment band: stays failing until the preset re-search (TODO 14ay), after the note (TODO 14ef).
+- (c) Market-price invariant: proposal below, not applied.
+
+Market-price invariant, split proposed (message 79 (3c)); not applied until the user agrees. Measured on Today 2026 (branch,
+build 14l; main 14j in brackets): engine price R0.7620/kWh (R0.7492); market price R0.8406 (R0.7768); market price less the
+scarcity adder R0.7618 (R0.7492); mean scarcity adder R0.0788 (R0.0276); scarcity hours 100 (46), of which January-August 78
+(45); no hours of load shed (vollHours 0). Two checks would replace the one:
+1. Engine price against market price without the scarcity adder (shed-hour pricing and the low cap kept), within 5% as now.
+   Caveat: in a year with no shed hours the two are equal by construction (gap 0.03%), so this half tests only shed-hour
+   pricing and the price cap. It would catch a change to those, not to the engine.
+2. The scarcity adder's hours against Eskom's. Comparator, ESK19679 January-August 2026 (aggregates only, author's analysis,
+   Eskom data credited): hours with interruptible supply above 1 MW, 348 (ILS usage 32 hours, other interruptible supply
+   341 hours, manual load reduction none; 360 hours above 0 MW; 0.030 TWh). The earlier entry listed manual load reduction
+   among the three; it was zero in 2026. Proposed band: a factor of two, as the peaker benchmark uses (174-696 hours). On
+   that band the check fails today: 78 hours on the branch, 45 on main, so the model prices scarcity in about a quarter of
+   the hours Eskom called on interruptible supply. Open-cycle use points the same way (Eskom 0.803 TWh in 149 hours above
+   500 MW; model 0.011 TWh in 18 hours). The cause is not established (candidates: the reserve requirement, the outage draw,
+   or a fleet the model holds more available than Eskom did).
+
+### c5b proposal for the user's approval (messages 64 (2)-(3), 68, 71 (7)); nothing launched, 14 Oct 2026
+
+Built already (entry below; branch claude/c5b-demand, build 2026-10-14k): demand with September-December at 0.9766, the 930
+MW smelter block from 2027, exports at the measured 745 MW, imports at the measured 1,066 MW flow. Proposed in addition:
+
+A. Committed projects forced as minimum builds (at financial close or in construction, named; research helper 14 Oct, notes
+in the session scratchpad 'committed'; dates are expected commercial operation):
+
+```
+year   wind (MW)                                         solar PV (MW)                       stand-alone batteries              hybrid
+2026   696: BW5 Eastern Cape 84 (construction);          354: Virginia 240 (BW6,             360 MW / 1,440 MWh: BESIPPPP       Oya 128, Hydra 75, Avondale 20
+       Castle 89 (operating since March 2025);           construction); SunCentral 1 114     BW1 Mogobe 103 and the Oasis
+       Hartebeesthoek 140, Umsinde Emoyeni 140,          (operating October 2026)            cluster 257 (late 2026)            (all due 2026; the model's
+       Khangela Emoyeni 140 (H2 2026, PFL);                                                                                     335.1 MW hybrid bucket
+       Witberg 103 (end 2026)                                                                                                   already holds them)
+2027   190: Chariot/Etana (mid-2027)                     255: Thakadu                        306 MW / 1,224 MWh: Red Sands      -
+                                                                                             153; BW2 Mercury 76 and
+                                                                                             Hartebeesfontein 77 (Q4 2027)
+2028   -                                                 240: Middelpunt (BW7, closed        -                                  -
+                                                         April 2026)
+gas    none committed for 2026-28
+```
+
+The 2026 wind and solar rows close the fleet gap to IRP Table 1's 2025 base (0.7 GW wind, 0.4 GW solar). Not forced
+(financial close not confirmed): De Aar 2 PV 120 and Paarde Valley PV2 110 (H2 2026), Overberg 230, Ishwati Emoyeni 140,
+Wind Garden 94.5. Provinces of the private wind plants are to be confirmed before the run, for the Cape allowance (C).
+
+B. Existing batteries: battPowerMW 800 has no source. Sourced figure for stand-alone grid batteries operating at 30 June 2026:
+68 MW / 292 MWh, Eskom phase 1 at Hex (20 MW / 100 MWh, commercial operation 27 Oct 2023), Pongola (40 / 160) and Elandskop
+(8 / 32), both commissioned November 2024 (AfDB, Implementation Progress and Results Report, Eskom Distributed Battery Energy
+Storage Programme, 1 Jul 2025, PDF p.2 and p.4: 'Total BESS installed to date is 68MW'; AfDB web page, 2 Mar 2026, for Hex's
+date). Skaapvlei, Paleisheuwel and Graafwater not commissioned (Minister's reply NW4150, PMG, 21 Sep 2026); no BESIPPPP,
+municipal or private stand-alone battery operating by mid-2026 (Scatec Q2 2026 call, 21 Aug 2026; TechCentral, 15 Jan 2026;
+Engineering News, 9 Oct 2026). Batteries inside the RMIPPPP hybrids are excluded (they sit in the hybrid bucket). Proposal:
+FIXED battPowerMW 800 -> 68 and its energy to 292 MWh, regional split Western Cape 20, KwaZulu-Natal 48; BW1 forced in A.
+This changes the app's 'Today 2026' fleet as well as c5b.
+
+C. Cape wind under the curtailment allowance (approved by the user, message 71 (7)): up to 1,580 MW of new wind (Western
+Cape 1,180, Eastern Cape 400) without the R402/kW-yr integration charge (the spur still paid), output cut 4%; committed Cape
+wind in A counts against it first; other new wind pays the full grid cost. Sensitivity: 3,470 MW at 10%. Provincial totals
+only, no substation figures.
+
+D. Freed coal connections (rp_): solar PV, storage and gas; wind excluded (the user's lean). Sources: Eskom's repowering
+pipeline at six stations, solar PV 3,184 MW, batteries 700, gas 1,000 (Kriel), wind 168 (Arnot) (Engineering News, 17 Jun
+2025); Komati's 70 MW of wind 'is not currently being pursued' (Minister's reply NW5134, PMG, 7 Oct 2026); World Bank
+P514521 (disclosed 9 Dec 2025): 'up to 1,572 MW of solar and wind' and 850 MW of batteries around five stations, no split;
+grid capacity allocation is first ready, first served, with nothing reserved for freed coal capacity (Approved Grid Capacity
+Allocation Rules, July 2025, search summary). In c5 the optimiser's credit for wind on freed connections was R9.95bn of the
+objective (costsplit, 14 Oct). Option: allow wind up to Arnot's 168 MW.
+
+E. Wind fixed O&M: BW6 compliant bids R367/kW-yr (January 2024 rands; IPP Office REIPPPP historical data note, 7 Nov 2025)
+x 1.068 = R392/kW-yr in 2026 rands, replacing R693 ('from NREL ATB', edition not recorded). It comes from the same bid set as
+wind's capex, which is a reason for it. Caveats: compliant bids from a window that awarded no wind; what the figure includes
+(insurance, land, community obligations) is not defined. Effect on wind's cost: about -R76/MWh at a 45.2% capacity factor.
+The same basis for solar would give R287 (BW6 R269) against the model's R396.
+
+F. Runs once approved: c5b (c5's rule: one pass a job, up to 6, stall stop from pass 4), then s_gmcv2029 (block 930 to May
+2029, 675 in 2029, 493 from 2030), s_measured (no block), s_cape10 (3,470 MW at 10%), and all 18 sensitivities against c5b
+(s_nogas4strict as 'no new gas or diesel, lithium up to 4 GW a year', up to 3 passes).
+
+Code still to build for A-E (each off by default, recorded in the run record, suite before and after): a minimum-build
+setting for wind and solar by year (lithium already has LI_MIN); the Cape tranche; a technology list for freed connections;
+wind fixed O&M; the battery fleet constants.
+
+### c5b demand inputs built (build 2026-10-14k, branch claude/c5b-demand): September-December at 0.9766, a flat 930 MW smelter block from 2027, imports at the measured April-August 2026 flow; LP and engine checks; 14 Oct 2026
+
+User, 14 Oct (message 72): smelter block 0.93 GW flat from 2027, with a sensitivity ending Glencore-Merafe's share in June 2029;
+exports at the measured 745 MW (Mozal out); Cahora Bassa imports at the measured April-August 2026 level; rebuild the demand
+profile with September-December at 0.9766 and add the flat block to the optimiser, the engine check and the run record, on a
+branch, with the suite before and after.
+
+What is visible so far (recorded at the user's request): only about 0.5 GW of the smelter load is back by June-August 2026
+(night-time load against 2024), and Stats SA shows the smelter provinces flat year on year in August 2026 (North West -2.4%,
+Limpopo +2.9%; P4141 August 2026, printed p.6). The 0.93 GW block is contracted (80% take-or-pay from 1 June 2026), not yet
+measured.
+
+Mozal (recorded at the user's request): the IRP's 11.0 TWh of exports is ESRG's line, 2023's exports (11.25 TWh, equal to
+Eskom's) held flat at 11.02; about 8.3-8.8 TWh of it is Mozal's. Mozal shut in March 2026: Eskom's exports stepped down by
+about 1,000 MW that month (monthly means 1,703 MW in February, 987 in March, 600-822 from April to August). c5b runs exports at
+the measured 745 MW (FIXED.exportsMW, unchanged).
+
+Changes (branch claude/c5b-demand, commit 53ecdea, on main e00e430, which holds c5's a74d581 and the slider change; build
+2026-10-14k):
+- build_demand_2026.py: January-August scaled by 0.9519 as before; September-December by RATIO_LATE, domestic August 2026
+  over August 2025 (0.9766, computed from ESK19679), plus the H1 2026 wheeled fleet's own September-December output (0.91
+  TWh). profiles.json demand 200.62 -> 203.03 TWh; domestic 185.27 -> 187.67 TWh; the first 5,832 hours and demand_2025
+  are unchanged byte for byte.
+- index.html: FIXED.demandBlockMW (default 0), added to every hour after growth in simulate; bldDemandBlockMW(opts, y) in the
+  build LP's balance rows and annual peak; bldBuildToState passes it to the loop's engine checks.
+- pathway_perfail.js: DEM_BLOCK=year:MW[,year:MW] (recorded as demand.block); IMP_AVG_MW, the average imported flow, sets
+  importsCF = IMP_AVG_MW / importsMW so the 1,150 MW contract stays (recorded as importsMW, importsCF). pathcheck.js applies
+  both from the run record.
+
+Imports: the app's importsCF is 0.88 (nodal_engine.js, 22 Sep: January-August 2026 mean 1,012 MW on the 1,150 MW contract),
+so c5 already ran 1,012 MW. IMP_AVG_MW=1066 (April-August 2026 mean 1,066.3 MW, 3,672 hours, ESK19679, local) adds 54 MW.
+
+Checks (local, no solves): with the old profile and neither setting, c5's line builds a pass-1 LP of key 8e2860a0c8, c5's own,
+so the code is neutral when off (checked again after rebasing onto main). New profile: 558101d9e4. DEM_BLOCK=2027:930: objective and bounds unchanged; the balance
+right-hand side rises exactly 930 MW in every hour of 2027-2040 and not in 2026 (for example 14,880.7 -> 15,810.7 MW, 2027 day 0
+hour 18), and the reserve and stress-target rows of those 14 years change with it (key a570bb13d8). IMP_AVG_MW=1066: balance
+and reserve rows of all 15 years, 54.0 MW less to supply (key fa74a059fc). Engine check (pathcheck.js, c5's build, 2030 only,
+K=1, 12 weather years): served energy 212.46 -> 220.68 TWh with the block and imports set (+8.22 TWh; 930 MW x 8,760 h =
+8.15); c5's build then sheds a mean 0.355 against 0.090 GWh, as expected for a build not sized for the block.
+
+c5b settings line (proposed; not launched): c5's line with DEM_BLOCK=2027:930 and IMP_AVG_MW=1066 on build 14k.
+Sensitivity s_gmcv2029: DEM_BLOCK=2027:930,2029:675,2030:493 (Glencore-Merafe's share, about 47%, 437 MW, ends 1 June 2029:
+2029 averages 930 - 437 x 7/12 = 675).
+
+### Smelter block sized, 2030 test against 255 passes with no uniform factor, and Mozal in the export line (user, 14 Oct, message 71), 14 Oct 2026
+
+User decisions (message 71): September-December 2025 scaled at 0.9766; returning smelter load as a flat block, not a factor,
+held flat after Glencore-Merafe's agreement ends (May 2029) in c5b, with a sensitivity ending it in 2029; target 255 TWh in
+2030 (Gazette 53596: key outcomes '255 TWh in 2030'; plan p.34, gazette p.45, '255 TWh by 2029', tied to Cabinet's June 2025
+decision to restore the ferrochrome industry); Figure 2 (plan p.11, no data labels) to be read by the user; the third-party
+digitisation is not used; if c5's corrected path lands within 2 TWh of 255, no uniform factor.
+
+Block. Contracted smelter demand 12.8 TWh a year = 1.461 GW; 80% take-or-pay = 1.169 GW. The '0.5 GW already back' is the
+June-August 2026 night-time level (01:00-04:00 deficit against the same months of 2024: -1.80 GW over September-December 2025,
+-1.34 GW over June-August 2026). The 2026 base holds less than that on a yearly average: its January-August months are the
+2026 actuals (average deficit -1.45 GW, so 0.35 GW above the trough) and its September-December months are September-December
+2025 times 0.9766 (the trough, none back), so 0.35 x 8/12 = 0.24 GW. Block at 80%: 1.17 - 0.24 = 0.93 GW (0.67 GW if netted
+of the full 0.5). Cato Ridge: Assmang's ferromanganese smelter is not under the ferrochrome agreements, so it has no share of
+the 12.8 TWh and the block is unchanged; its loss stays out through the measured base. Caveats: the night-time measure has no
+trend correction (a non-smelter decline of t GW a year would raise the share already back by about t); Stats SA's smelter
+provinces were flat year on year in August 2026 (North West -2.4%, Limpopo +2.9%, against an August 2025 when GMCV was
+already off), so little more than Lion is visible by then. Start: 2027 (Boshoek and Wonderkop restart announced June 2026;
+Samancor to resume within six months); 2026 left as measured.
+
+Glencore-Merafe's share, for the 2029 sensitivity: not published. Two weak measures agree on about 47%: GMCV's 2024 output,
+301 kt attributable to Merafe at 20.5% (Mining Weekly, 20 Jan 2026), so about 1,468 kt, against South Africa's 3.0-3.3 Mt
+(Fastmarkets, 15 Oct 2025), assuming the same electricity per tonne; and furnace counts, 22 Glencore against 24 Samancor
+(Miningmx, 15 Sep 2025). Sensitivity: block 0.93 GW to May 2029, then 0.49 GW (2029 average 0.68).
+
+2030 test (domestic like for like: the IRP's 255 less its 11.0 TWh of exports and 12.39 of other onsite = 231.59):
+
+```
+2030, TWh                                                  domestic+rooftop   with IRP exports and onsite   gap to 255
+c5 as built                                                220.96             244.4                         -10.6
+September-December at 0.9766, plus Castle wind 0.31        223.92             247.3                         -7.7
+plus block 0.93 GW (central)                               232.07             255.5                         +0.5
+plus block 0.67 GW (netted of the full 0.5)                229.79             253.2                         -1.8
+block ending with GMCV's agreement (0.49 GW in 2030)       228.21             251.6                         -3.4
+```
+
+The central lands within 2 TWh of 255 (+0.5), and so does the 0.67 GW case (-1.8): no uniform factor. With the measured
+exports (745 MW, 6.53 TWh) in place of the IRP's 11.0, the totals are 4.5 TWh lower; see Mozal below.
+
+Mozal (message 70 and 71 (4)). In ESK19679 Mozal's supply is inside International Exports: monthly mean exports 1,687 MW in
+January 2026 and 1,703 in February, 987 in March, then 684, 600, 652, 722 and 822 from April to August, a step of about
+1,000 MW in March 2026 (reported load about 950 MW; index.html exportsMW note). Calendar exports: 11.25 TWh in 2023, 13.53 in
+2024, 14.94 in 2025, as non-Mozal exports grew (pre-exit about 1,284 MW in 2023 and 1,705 in 2025, less about 1,000 for Mozal,
+leaves about 0.3 GW in 2023 and 0.7 GW in 2025). The IRP's 11.0 TWh is ESRG's line: 11.25 in 2023, equal to Eskom's 2023
+exports, then 11.02 flat; so it keeps Mozal (about 8.3-8.8 TWh) and about 2.2-2.7 TWh of other exports at 2023 levels.
+Measured after the exit, other exports alone run at about 700 MW (6.1-6.5 TWh a year), well above the IRP's implied 2.2-2.7.
+Imports (Cahora Bassa) did not stop with Mozal: 1,005 MW on average January-August 2026, 1,065 MW April-August, against
+750 MW in 2025 and 1,240 MW in 2023; the IRP's section 3.1 ties Mozal's removal to no Cahora Bassa supply, which the data so
+far does not show. c5 holds imports at 1,150 MW with no end year (s_noimp ends them in 2030). Effect on c5b's export line:
+with Mozal out, exports at the measured 745 MW (6.53 TWh) rather than the IRP's 11.0; the 255 test above is made on domestic
+demand so it does not depend on that choice.
+
+Peak (message 71 (5)). The plan's only peak figure is the Transmission Development Plan 2024's 43 GW by 2034 (moderate-high),
+cited as the TDP's, not the IRP's. c5b's grid peak (rooftop removed at c5's 900 MW a year, a June evening): 32.7 GW in 2030
+and 36.5 GW in 2034 with the 0.93 GW block (37.3 GW with 745 MW of exports, 37.8 with the IRP's 1,258 MW); the TDP's basis is
+not stated in the plan's sentence as read by the user.
+
+Settings: as the entry 'Demand checks before rebasing'; ESRG index 2034 1.2365; nothing re-run.
+
+### Demand checks before rebasing: Eskom's domestic demand fell in a step of about 1.9 GW (1.6 GW at night) between mid-July and mid-September 2025, matched by coal output, so not a counting change; the 2026 scaling counts the step twice for September-December (2.4 TWh); 0.9519 traced; most of the 10.6 TWh domestic gap to the IRP is suspended ferrochrome load contracted to return from mid-2026; with it c5's measured path reaches about 254-256 TWh in 2030 on the IRP's basis, 14 Oct 2026
+
+User, 14 Oct, messages 65 (1), 67 and 69: before rebasing, check, with no runs, (i) 2024, 2025 and 2026 side by side on one
+basis, and the January-August annualisation tested on 2024 and 2025; (ii) whether the ESRG series is the IRP's reference
+forecast and which demand Table 1 was built on; (iii) the source of 0.9519 and what it multiplies; wheeled plant month by
+month in both years; whether the 2025 fall is real or a change in how Eskom counts; its causes, each classed as closed,
+suspended or moved to own or wheeled supply; then the 2030 gap and the rebase factor.
+
+Data and settings. Eskom hourly data, ESK19679 (obtained on request; kept local; only monthly and annual totals shown here;
+the analysis is ours, not Eskom's). Domestic demand = RSA Contracted Demand less International Exports, as in
+build_demand_2026.py. profiles.json as built 22 Sep (build 2026-09-22h), unchanged; engine a74d581 (build 2026-10-14i);
+ESRG series from public_data/esrg_irp_demand_ref.json. Scripts in the session scratchpad (demand65, c5sens); nothing run on
+GitHub.
+
+(iii) 0.9519. build_demand_2026.py: (domestic January-August 2026 + wheeled output January-August 2026) / domestic
+January-August 2025 = (126.259 + 1.025) / 133.717 = 0.9519 (0.9442 without the wheeled output). It multiplies calendar
+2025's hourly domestic demand, 194.62 TWh, giving 185.27 TWh for 2026; rooftop is then added back with the engine's own
+formula (8,942.1 MW x 0.78 x the solar profile, 15.35 TWh), giving the profile's 200.62 TWh.
+
+Eskom's series are unconstrained: Residual Demand equals Dispatchable Generation plus manual load reduction, interruptible
+load and other interruptible supply in every hour (to the MW), and RSA Contracted Demand equals Residual Demand plus Total RE
+(within 146 MW). Load shed is therefore counted as demand (16.8 TWh in 2023, 2.6 in 2024, 0.6 in 2025, 0.03 in January-August
+2026), so the end of load shedding is not behind the fall.
+
+(i) One basis, sent out, unconstrained, TWh:
+
+```
+                                           2023      2024      2025      2026 as built   2026, Sep-Dec fixed (below)
+Eskom domestic (contracted less exports)   214.62    206.12    194.62    185.27          187.67
+Eskom exports                              11.25     13.53     14.94     6.53 (a)
+Eskom contracted demand incl. exports      225.87    219.65    209.55    191.80
+ESRG domestic grid demand                  208.97    208.90    210.17    213.86
+ESRG exports                               11.25     11.06     11.02     11.02
+ESRG domestic grid plus exports            220.22    219.96    221.19    224.88
+ESRG less Eskom, domestic                  -5.65     +2.78     +15.55    +28.59 (+15.4%)   +26.19
+ESRG less Eskom, including exports         -5.65     +0.30     +11.63    +33.08
+```
+
+(a) The model's export setting, 745 MW (the post-Mozal mean, April-August 2026), as used for c5. 2026 includes the wheeled
+output added back (model basis). The 2024 match (0.3 TWh) is a crossing, not a calibration: ESRG's domestic grid demand is
+flat at about 209-210 TWh from 2023 to 2025, while Eskom's fell 214.6, 206.1, 194.6. Corrections to the entry 'c5 demand
+against IRP 2025' and the 9 Oct entry: in 2024 ESRG's domestic is 2.8 TWh above Eskom's and its exports 2.5 below (not 4.2
+and 3.9; the net 0.3 stands); ESRG's 2026 (domestic grid plus distributed PV, 222.6) is 11% above the model's 200.6, so the
+model's 2026 is 9.9% below ESRG's, and on the grid basis alone ESRG is 15.4% above.
+
+Annualisation test (domestic). The model's method, calendar year before times the January-August ratio, is the same as
+dividing January-August by the year before's January-August share:
+
+```
+year   January-August   full year   January-August share   annualised from the year before's share   error
+2023   144.89           214.62      0.6751
+2024   138.92           206.12      0.6740                 205.77                                    -0.2%
+2025   133.72           194.62      0.6871                 198.40                                    +1.9%
+2026   126.26           -           -                      183.76 (185.27 with wheeled output)
+```
+
+The step. Domestic demand by month, year on year: 2025 against 2024, 0.969, 0.923, 0.972, 0.973, 1.001, 0.970, 0.952, 0.940,
+then 0.910, 0.904, 0.903, 0.908 (September-December); 2026 against 2025, 0.913, 0.926, 0.942, 0.938, 0.947, 0.952, 0.956,
+0.977 (January-August). Weekly, 2025 against 2024: about 0.97 in late June, 0.945 mid-July, 0.925 late August, 0.89-0.91 from
+mid-September to December. Against May-June's year-on-year change (-353 MW), mid-September to mid-December 2025 is -2,238
+MW, a step of -1,884 MW: -1,643 MW at night (01:00-04:00), -2,001 at midday (10:00-14:00), -1,824 in the evening (17:00-20:00).
+The step is round-the-clock, so it is not rooftop or other solar self-supply.
+
+Counting change ruled out (message 69 (1)). The same windows, year on year, step in MW: RSA Contracted Demand -2,315,
+International Exports -431, International Imports +197, Thermal Generation -2,225, Nuclear +501, Eskom OCGT -296, Hydro -140,
+Dispatchable IPP OCGT -53, Total RE -309, Non Comm Sentout +5, load reductions about 0. No series rose by anything like the
+step; exports fell. Generation (Dispatchable Generation plus Total RE) fell 2,329 MW, the same as contracted demand, and coal
+carried it. Eskom's own day-ahead forecast (RSA Contracted Forecast) stepped down by 2,343 MW in the same weeks.
+
+The annualisation fault. 0.9519 compares January-August 2026 (after the step) with January-August 2025 (before it, apart
+from part of July and August), and is applied to every month of calendar 2025, including September-December, which were
+already after the step. Those four months take the step twice: about 2.4 TWh. The monthly 2026/2025 ratios rise towards
+1 as the 2025 month nears the step (0.977 in August).
+
+Wheeled plant, month by month (message 67). Wheeled output added back, GWh, 2025 and 2026: January 0 and 35, February 0 and
+27, March 0 and 69, April 0 and 101, May 0 and 175, June 0 and 211, July 0 and 216, August 0 and 193; total 0 and 1,025.
+The seven H1 2026 wheeled plants (958 MW, PFL H1 2026) are added from their start month; none ran in 2025. Eskom's
+installed wind and PV leave them out in both years: 3,443 and 2,287 MW through March 2025, 3,723 and 2,285 from July 2025
+(BW5 wind), 4,143 and 2,780 by June 2026, which is 469 and 491 MW below the model's fleet, matching the 470 and 488 MW
+wheeled. Pre-2026 private solar (Selemela 200 MW, April 2024; Damlaagte 97.5 MW, August 2025) is in the model's rooftop
+bucket (NTCSA's privately procured PV series) and added back at its 2026 level. One plant in neither: Castle wind, 89 MW,
+reported operating from the end of March 2025 (research helper, to confirm), about 0.07 TWh in the ratio. So wheeled plant
+is counted the same way in both years, within 0.1%.
+
+Causes, each classed (message 69 (2); research helper, web search, HTML pages through the page reader, two 11-page Stats SA
+releases, one 2-page NERSA statement, nothing from eskom.co.za; notes in the session scratchpad, demandfall):
+- Ferrochrome smelters, Glencore-Merafe Chrome Venture (GMCV) and Samancor: suspended, returning. GMCV suspended Boshoek
+  from 1 May 2025 and Wonderkop from 31 May 2025 (Merafe SENS, 13 Jun 2025), and Lion for maintenance and rebuilds from June
+  2025 (same SENS; Business Report, 30 Jul 2025); its third-quarter 2025 output was 709 t against about 111 kt in the first
+  half (Engineering News, 28 Oct 2025). NERSA waived the smelters' 70% take-or-pay for six months 'effective August 2025'
+  (Engineering News, 7 Jan 2026, reporting NERSA; Fastmarkets, 15 Oct 2025: 'starting from August 1'), which matches the
+  step's timing; Samancor's own curtailment dates not found. Eskom's FY2026 (April 2025-March 2026) industrial sales fell 9.7
+  TWh (22.5%), attributed 'largely to a fall in demand from the country's remaining ferrochrome smelters' (Engineering News,
+  31 Aug 2026). The smelters' contracted demand is 12.8 TWh a year, about 1.46 GW (Eskom at NERSA's hearing, Engineering News,
+  25 May 2026). Return: an interim 87.74c/kWh tariff from February 2026 with 40% of furnace capacity back (Engineering News, 8 Dec
+  2025 and 29 Jan 2026; Lion restarted at half capacity, February 2026, search summary); NERSA approved 62c/kWh negotiated
+  pricing agreements effective 1 June 2026, Samancor for five years and GMCV for three (NERSA media statement, 29 May 2026,
+  p.1-2), with minimum 80% take-or-pay (Engineering News, 25 May 2026); GMCV announced Boshoek and Wonderkop will restart, and
+  Samancor that it intends to resume all its smelters within six months (Engineering News, 26 Jun 2026). GMCV's agreement ends
+  31 May 2029, before 2030.
+- Assmang Cato Ridge ferromanganese (KwaZulu-Natal): closed for good. 'The closure will take effect on August 31, 2025'; the
+  site is to be redeveloped (Business Report, 4 Jul 2025). Load in MW not published. Within the step's weeks, and it will
+  not return.
+- Furnace count in the step's weeks: 'none of Glencore's 22 furnaces currently running and only three of Samancor's 24
+  facilities remaining active'; the smelters 'consume roughly 7% of state utility Eskom's total output' (Miningmx, relaying
+  Bloomberg, 15 Sep 2025). Lion: 50% of capacity recommissioned, first tap 16 Feb 2026, full capacity expected by the end of
+  March 2026 (Engineering News, 17 Feb 2026).
+- ArcelorMittal South Africa long steel (Newcastle): suspended, reopening uncertain. Blast furnace into 'temporary care and
+  maintenance' after funding beyond 30 September 2025 was not found (AMSA SENS, 2 Sep 2025); 'production has ceased' (IOL, 6
+  Nov 2025, quoting SENS). Load: about 73 MW at Newcastle in 2011 (1,752 MWh a day, a 2012 AMSA presentation seen only as a
+  search snippet); Vereeniging not found. IDC talks on reopening at an 'advanced stage' (Business Day, 28 Aug 2026, search
+  snippet only); NERSA did not approve a reduced tariff for AMSA (IOL/The Mercury, 7 Sep 2025).
+- Moved to own or wheeled supply: small, and mostly daytime. Castle wind, 89 MW, wheeled to Sibanye-Stillwater from about
+  the end of March 2025, about 309 GWh a year (Mining Weekly, 1 Apr 2025); in neither the model's fleet nor its demand, so
+  0.31 TWh a year of IRP-basis demand is missing. Springbok solar, about 150 MWac, wheeled from October 2025, over 430 GWh a
+  year (Engineering News, 31 Oct 2025); solar, so in the model's rooftop bucket if NTCSA's private PV series counts it (not
+  confirmed). Rooftop: 7,464 MW in December 2025 (Eskom weekly reports via Engineering News, 23 Jan 2026), 8.3 GW by June
+  2026 (NTCSA via Engineering News, 19 Jun 2026); daytime only, so not the night step.
+- Research method note: the helper read three 11-page Stats SA releases and a 2-page NERSA statement through the page
+  reader (the web reader failed on DNS); it judged an 11-page release not a long PDF. Flagged for the user.
+- Weather: not a cause. Winter 2025 'normal and slightly warmer' (SAWS via IOL, 31 Jul 2025); the step persists from
+  September to December and at night.
+- Counting change: none found. NTCSA's weekly reports carry the same series definitions in 2025 as in 2021-2023 (search
+  summary). Independent check, Stats SA P4141 (preliminary, each release printed p.3 and p.6): electricity distributed fell
+  7.9% year on year in September 2025, North West -23.7% and Limpopo -19.8% (the smelter provinces), 7.1% in December 2025,
+  4.2% in calendar 2025; 1.1% in August 2026, January-August 2026 -3.4%.
+
+What is back already. Night-time domestic load (01:00-04:00, which rooftop cannot touch) against the same month of 2024:
+-1.5 to -2.0 GW from September to December 2025, -1.3 to -1.4 GW in June to August 2026, so about 0.5 GW has returned by mid-2026,
+consistent with Lion and the 40% restart. The remaining smelter load, about 0.7-1.0 GW at the agreements' 80% to full
+contracted demand, is contracted to return from mid-2026, on top of the measured base.
+
+(ii) Is the ESRG workbook the IRP's reference forecast, and which demand is Table 1 built on? Partly found; research helper,
+web search only, no IRP page read first-hand (DEE hosts blocked here; the plan is a long PDF). The IRP's forecast is ESRG's
+work: IRP 2025 (user-friendly version, DEE, Oct 2025, page not known, search wording): 'The electricity demand forecast
+developed by ESRG ...'; ESRG, 'High Spatial and Temporal Resolution End-use Electricity Demand Projection Model' (UCT web page,
+undated, read directly): 'The results of these efforts have already been directly used to provide the electricity demand
+projection scenarios used in the latest national Draft IRP 2024 and 2025.' But the workbook the model uses is not the final
+forecast: ZivaHub record doi:10.25375/uct.26942134 (figshare API, read directly) has five versions, v1 9 Sep 2024 to v5 26 Feb
+2025, and HourlyDemandModel_v10_IRP_v02_wExports.xlsm has the same checksum in all five, so it dates from September 2024,
+before the November 2024 draft and the October 2025 plan; there is no v6, and no source names IRPDemandREF as the plan's
+moderate forecast. The plan gives 255 TWh twice with different years (search wording, pages not known): key outcomes, '...
+meet the energy demand forecast of 255 TWh in 2030'; assumptions, 'electricity energy demand forecast of 255 TWh by 2029'
+(also TaiyangNews, 22 Oct 2025, on the Minister's briefing: '... to rise to 255 TWh by 2029'). The November 2024 draft deck
+puts the Reference Case on the Moderate forecast (search summary). A third-party digitisation of the plan's Figure 2
+(SBG.EARTH, 'Every plan forecast growth but (shock) demand fell.', 2026, stated reading error 1-1.5 TWh) reads the moderate
+curve at 238.5 TWh in 2024, 246.0 in 2027, 250.5 in 2028, 254.0 in 2029, 261.0 in 2030, 269.0 in 2031, 299.0 in 2035 and 340.0
+in 2040. Against it the workbook (Mode 1 total) is +0.7 TWh in 2024, +4.6 in 2027 and 2028, +6.3 in 2029, +7.6 in 2030 and 2031,
++6.6 in 2035 and +8.2 in 2040, with nearly the same growth year to year (2030 to 2040: +79.6 against +79.0). The workbook's
+8.3 TWh step from 2029 to 2030 is in domestic grid demand (+7.4); exports are flat. Reading: Table 1 was built on the plan's
+moderate forecast, a later ESRG revision about 5-8 TWh below the workbook from 2027, not on the workbook's 268.6. The plan's
+moderate forecast is about 254-255 TWh in 2029 and about 261 in 2030; '255 TWh in 2030' in the key outcomes looks like the
+2029 figure. Superseded by the user, 14 Oct (message 71): the target is 255 TWh in 2030 (Gazette 53596, key outcomes; plan p.34,
+gazette p.45, 'by 2029', tied to Cabinet's June 2025 ferrochrome decision); the third-party digitisation is not used; Figure 2
+(plan p.11) to be read by the user. IRP 2025 peak
+demand for 2030: not found. Comparator (not the IRP): NTCSA's Medium-Term System Adequacy Outlook 2026-2030, moderate base
+case, 243 TWh in 2024 to 264 TWh in 2030 (Daily Maverick, C. Yelland, 3 Nov 2025).
+
+Gap and rebase factor (message 69 (3)):
+
+```
+2030, TWh, IRP basis                                      domestic+rooftop  total   gap to 255, factor   gap to 261, factor
+c5 as built (0.9519 on every month), nothing back         220.96            244.4   +10.6  1.0481        +16.6  1.0753
+September-December fixed at 0.9766 (a)                    223.61            247.0   +8.0   1.0357        +14.0  1.0625
+fixed, plus Castle wind (0.31 TWh)                        223.92            247.3   +7.7   1.0343        +13.7  1.0611
+fixed, Castle, smelters back 0.7 GW (80% take-or-pay)     230.05            253.5   +1.5   1.0067        +7.5   1.0328
+fixed, Castle, smelters back 1.0 GW (full contract)       232.68            256.1   -1.1   0.9953        +4.9   1.0211
+```
+
+Totals add the IRP's 11.0 TWh of exports and ESRG's 12.39 TWh of other onsite generation. (a) September-December 2025 at
+the August 2026 year-on-year ratio (0.9766) plus the full H1 2026 wheeled fleet's September-December output (0.91 TWh):
+2026 domestic 187.67 TWh (from 185.27), profile 203.02 (from 200.62). Held at 1.000 instead: 189.10, gap to 255 +6.4,
+factor 1.0285. Returning smelter load is a flat block (not grown with the index): the remaining contracted load, 12.8 TWh a
+year (1.46 GW), less about 0.5 GW already back by mid-2026, at 80% take-or-pay (0.7 GW) or in full (1.0 GW). GMCV's agreement
+ends May 2029, so part of the block is not contracted in 2030. AMSA long steel, if it reopens, would add to it (MW not found).
+
+Peak (message 65 (2)). The 2026 profile's grid peak, rooftop removed, falls on a June evening; with c5's rooftop in 2030
+(12,542 MW: 8,942 plus 900 a year from 2027) the 2030 grid peak is 31.7 GW for c5, 33.2 GW at factor 1.048 (34.0 GW with
+c5's 745 MW of exports, 34.5 GW with the IRP's 1,258 MW average); the September-December fix leaves the winter peak
+unchanged, and a flat 0.7-1.0 GW smelter block gives 32.4-32.7 GW. IRP 2025's peak forecast: not found (research helper).
+
+Settings for the figures: c5's line (RESULTS 'c5 inputs, final'), DEMAND=irp_esrg, index 1.101384 for 2030; rooftopDerate
+0.78; nothing re-run. Decisions for the user (TODO 14ec): the September-December fix; whether returning smelter load enters
+as a block or through a factor; the 2030 target (255 or about 261).
+
+
+### Carbon in c5's optimiser: priced on c5's path ('kept2030', build 2026-10-14h) in every year; the cost-split tool now reads each run's own path and checks its carbon line by year, 14 Oct 2026
+
+User, 14 Oct (message 66, item 1): confirm the optimiser used c5's carbon path when it chose c5's build, say which path the
+split tool uses; if the old path, stop; otherwise update the split tool to read each run's path and check its carbon line
+equals CO2 x rate in every year.
+
+The optimiser: c5's settings line sets no CARBON_PATH, so the run took FIXED.carbonAllowancePath, 'kept2030' (build
+2026-10-14h, commit 0554d11; 14g, 87cf91b, added only the full-rate switch carbonTaxFull, off in c5); both are in a74d581,
+c5's commit. Read from the LP itself: c5's pass-2 LP rebuilt locally at a74d581 from c5's line and windows has key
+619b507795, the key of the LP c5 solved on GitHub (RESULTS 'c5 result'), so it is that LP. The carbon in its objective,
+from every coal (gc_) and diesel (gd_) term (coefficient over the day weight, less fuel and variable cost, over the
+emission factor): R46.00/t in 2026, 50.32, 54.20, 57.95, 61.31 from 2030 to 2040, within R0.03/t in every term. That is
+carbonTaxAt on 'kept2030' (46.00, 50.32, 54.20, 57.95, 61.31 held). 'cut2027' would be 46.00, 59.65, 75.44, 93.93, 115.50.
+
+The split tool: costsplit_lp.py (TODO 14cv, branch claude/costsplit) carried its own copy of the 5 Oct formula, which is
+'cut2027'. No c5 figure used it: the c5 sensitivities used costsplit_tsl.py (penalty only, no carbon), and c5's cost
+without carbon tax came from the engine (entry below). Changed on claude/recheck-14d, commit 2f8828d: costsplit_consts.js
+takes the run's pathway json and writes the rate by year from the app's carbonTaxAt on the run's recorded carbonPath and
+carbonFull (a record without them is refused); costsplit_lp.py refuses constants made for another record and fails unless,
+in every year, (1) its carbon line equals the year's CO2 from the solution times the run's rate, and (2) the carbon the LP
+itself priced (each fuel term's coefficient less its fuel and variable cost, from the LP text, so independent of the rate)
+equals the same product (tolerance 1e-5 relative, for the LP's R0.001 coefficient rounding).
+
+Tests, c5's LP (619b507795) and cached solution: passes in every year, largest relative gap 9e-7. Carbon PV at 8% R74.83bn
+(the engine's R74.9bn), objective without carbon R1,404.72bn (with it R1,479.55bn). CO2 in the LP's dispatch: 156.5 Mt in
+2026, 155.4 in 2030, 90.7 in 2040. Told 'cut2027' against the same LP: fails 2027-2040 (its carbon line would have been
+R123.82bn). Constants made for another path, or a record without carbonPath: refused. carbonFull=1: R308.00, 336.89 ...
+410.48/t, as the app. Not yet in the workflow's report job, which would need a step rebuilding each run's final LP (DUMP_LP
+from the run's line and windows, about 20 s); to add before c5b.
+
+### c5 demand against IRP 2025: on the IRP's basis c5's 2030 demand is about 240 TWh against the IRP's 255, 15 TWh (6%) lower; more than accounting (a lower domestic level and a lower export assumption); decision with the user, 14 Oct 2026
+
+User, 14 Oct (item 1): reconcile c5's 210 TWh in 2030 with IRP 2025's 255 TWh; if the gap is more than accounting, stop
+and tell the user before anything else. Stopped and reported the same day; decision pending.
+
+The 210 TWh (209.8, c5's engine check, servedTWh) is the engine's gridServed: utility-side generation less rooftop, pumped
+storage and battery discharge. It includes the energy behind exports and storage losses, so it is not a demand figure.
+
+DEMAND=irp_esrg (RESULTS 'On one basis, the IRP's demand forecast put 2026 about 12% above measured demand'): the growth of
+UCT ESRG's IRP reference forecast (HourlyDemandModel_v10_IRP_v02_wExports, IRPDemandREF, the forecast behind IRP 2025),
+domestic grid demand plus distributed PV, applied to the measured 2026 base: Eskom RSA contracted demand less exports,
+calendar 2025 scaled 0.9519 to 2026 (January-August 2026 against the same months of 2025, wheeled plant added), rooftop
+added back, 200.62 TWh. Sent-out basis: includes network losses; excludes pumping, battery charging and station own use.
+2030: 200.62 x 1.101384 = 220.96 TWh.
+
+IRP 2025's 255 TWh (executive summary; IRP p.11 and p.34 as extracted in public_data/irp2025_extract.csv): system demand
+including network losses, excluding pumping, battery charging and station auxiliaries, including deemed cross-border
+sales. Embedded generation is not stated; inferred included, because the IRP's 2024 value (about 238 TWh, Figure 2, read
+visually) matches ESRG's total that counts demand met by distributed PV and other onsite generation (239.2 TWh), and would
+be about 220 without them.
+
+```
+2030, TWh                                                   c5 on the IRP's basis   IRP 2025   ESRG workbook (Mode 1)
+domestic demand plus rooftop added back (sent-out)          220.96                             245.18
+exports                                                     6.53 (745 MW, the model's)         11.02
+other onsite generation (not in the model)                  12.39 (ESRG)                       12.39
+total                                                       239.9                   255        268.6
+gap to IRP 2025                                             -15.1 (-5.9%)
+```
+
+The bases agree on losses, pumping and own use (2024: ESRG's sent-out domestic grid demand within 0.3 TWh of Eskom's
+contracted demand including exports). The gap is not accounting: 4.5 TWh is the export assumption (the IRP holds 11.0 TWh
+of cross-border sales against the model's 6.5, its 745 MW export setting, the post-Mozal mean of April-August 2026) and 10.6
+TWh is a lower domestic level, because c5 starts from measured 2026 demand, 9.9% below the IRP's forecast for 2026 on the
+same basis (200.6 against 222.6 TWh; the forecast is 11% above), and follows the IRP's growth. Superseded in part by the
+entry 'Demand checks before rebasing' above (14 Oct): the 2026 scaling counts the 2025 step twice for September-December.
+Separately, the IRP's 255 is 13.6 TWh below the ESRG workbook's 268.6 for 2030, while the two agree within about 5 TWh in
+2024, 2035 and 2040 (Figure 2 read visually). Options put to the user: (a) keep the measured base and state the gap;
+(b) a sensitivity at the IRP's level (domestic demand x 1.048, so 2030 reaches 255 on the IRP's basis with its 11.0 TWh
+exports); (c) rebase c5b on the IRP's level.
+
+### c5's cost without carbon tax payments: R2,225.6bn engine PV (R74.9bn of carbon tax in R2,300.6bn), 14 Oct 2026
+
+User, 14 Oct (item 4): a cost column excluding carbon tax payments for every run. The engine's system cost includes
+carbonCost, which is the year's carbon rate times the CO2 the engine reports, on the same generation (coal at fuel
+equivalent, gas including OCGT and storage charging, diesel; index.html simulate, carbonCost and co2). So carbon payments
+by year = CO2 x rate, the rate from the app's carbonTaxAt (kept2030, 2026 rands): R46.0, 50.3, 54.2, 58.0, 61.3/t to 2030,
+held after (CTAX_FULL: R308.0, 336.9, 362.9, 388.0, 410.5/t). c5: carbon payments R7.2bn in 2026, R9.5bn in 2030, R5.2bn
+in 2040; R117.9bn undiscounted 2026-40; PV at 8% real R74.9bn. Engine PV without carbon tax R2,225.6bn (with it R2,300.6bn).
+The c5b runs will record carbonCost from the engine directly; the optimiser objective without carbon needs the cost-split
+tool's carbon rate updated to carbonTaxAt (it predates the kept2030 path).
+
+### c5 for the write-up: build and CO2 by year beside IRP 2025; what wind costs and where each part comes from; the LNG caveat, 14 Oct 2026
+
+User, 14 Oct (for the c5 write-up). Build from run 38536463416's own output (report run 38541954800 on claude/recheck-14d,
+print_state.py; the same as the local solve, cell for cell); CO2 from its engine check. IRP 2025 Table 1 from
+public_data/irp2025_extract.csv (IRP p.31, gazette p.42; the values used for s_pvirp and s_irpgas); IRP coal standing is
+Figure 3's 50-year line as read by Nick (plan p.12, gazette p.23), scaled to 39,692 MW, about +/-250 MW.
+
+```
+A. Renewables and storage, new MW a year (c5 / IRP 2025 Table 1)
+year   wind c5 / IRP     solar c5 / IRP   rooftop c5 / IRP DG   lithium c5 GW, GWh   IRP storage   PHES c5 / IRP   iron-air c5
+2026      - /   964       - /  3553       - /   900      0.00    0.0           144           - /     -        -
+2027      - /  2847       - /  2886     900 /   900      0.00    0.0           150           - /     -        -
+2028      - /   770       - /  1760     900 /   900      0.00    0.0           615           - /     -        -
+2029      - /   760    2665 /  1314     900 /   900      1.27    5.1          2615           - /     -        -
+2030      - /  2000    3277 /   800     900 /   900      2.24    9.0           200           - /     -        -
+2031      - /  2500    3506 /  1000     900 /   900      1.24    4.9           200           - /     -        -
+2032    601 /  2600    3752 /  1200     900 /   900      1.25    5.0           200           - /     -        -
+2033   1102 /  2600    1256 /  1400     900 /   900      1.12    4.5           200           - /     -        -
+2034   1946 /  3000    1053 /  1600     900 /   900      1.53    6.1           200           - /     -        -
+2035   1385 /  3000     584 /  2000     900 /   900      1.03    4.1           200           - /     -        -
+2036   1028 /  2000    2023 /  1600     900 /     -      1.07    4.3           500           - /     -        -
+2037   1600 /  3000    4161 /  1600     900 /     -      1.76   10.2           500           - /  1332        -
+2038   1690 /  3000    4419 /  1600     900 /     -      1.84   12.0           500           - /     -        -
+2039   2308 /  3500    4048 /  1600     900 /     -      1.66   12.0           500           - /     -        -
+2040   1197 /  3500    4088 /  1600     900 /     -      1.59   12.0           500           - /     -        -
+total  12857 / 36041   34832 / 25513   12600 /  9000     17.60   89.2          7224           - /  1332        -
+
+B. Firm capacity, coal and CO2 (c5 / IRP 2025)
+year   CCGT  OCGT-LNG  OCGT-diesel | IRP gas  IRP nuclear | coal standing c5 / IRP Fig 3  early ret c5 | CO2 Mt c5 (engine) / IRP
+2026      -       -       -       |      -        -      |  39692 /  39692                      -      |  157.3 / -
+2027      -       -       -       |      -        -      |  39692 /  39692                      -      |  160.2 / -
+2028      -       -       -       |      -        -      |  39692 /  39692                      -      |  163.0 / -
+2029      -       -       -       |   3000        -      |  37027 /  37064                      -      |  159.2 / -
+2030    452     748     765       |   3000        -      |  32433 /  32388                      -      |  155.5 / 168
+2031    965       -       -       |      -        -      |  30876 /  30839                      -      |  151.4 / -
+2032    772       -       -       |   1250        -      |  29223 /  29324                      -      |  142.9 / -
+2033    670       -       -       |   1250        -      |  28121 /  27886                      -      |  139.8 / -
+2034    751       -       -       |   1250        -      |  26467 /  26403                      -      |  133.8 / -
+2035    341       -       -       |   1000        -      |  25916 /  26029                      -      |  131.1 / 142
+2036    386       -       -       |   1250     1250      |  25348 /  25350                      -      |  126.7 / -
+2037    611       -       -       |   1500     1250      |  23658 /  23415                      -      |  115.5 / -
+2038    613       -       -       |   1250     1350      |  21969 /  21819                      -      |  104.8 / -
+2039   1161       -       -       |   1250     1350      |  19661 /  19825                      -      |   92.8 / -
+2040    800       -       -       |   1250        -      |  17890 /  17958                      -      |   84.8 / -
+total   7522     748     765       |  17250     5200      | CO2 2026-40 c5 2019 Mt
+```
+
+Caveats on the comparison. (a) The IRP's 2026-28 rows include plants under construction and committed private build
+coming online; c5 holds no committed pipeline, and its 2026 fleet (wind 4,612 MW, utility solar 3,271 MW, the app's
+'Today 2026') is already below the IRP's end-2025 base (5,344 and 3,646 MW). So c5's zeros in 2026-28 are optimiser
+choices on a smaller base, not the same quantity as Table 1. (b) Table 1 gives storage in MW only; c5's lithium is 4-hour.
+(c) Table 1's gas is not split into combined and open cycle. (d) CO2: IRP 2025 gives 168 Mt in 2030 and 142 Mt in 2035
+for the electricity sector (Figure 19, plan p.30; section 4.7.3; page and section from the user, 14 Oct). Cite the Mt only
+(user, 14 Oct): the plan's '22%' does not match its own numbers (15.5%), and SAnews's 160 Mt is not used. No other year
+found. Its 168 Mt goes with 255 TWh of demand; c5's 2030 demand on the IRP's basis is about 240 TWh (entry 'c5 demand
+against IRP 2025' below), so the CO2 bases differ.
+
+What wind costs in c5 (build 14i, bldWindModern 1, case central, GRID=1), and the source of each part:
+
+```
+part                value                          source                                                     status
+capex 2026          R26,647/kW (January 2024)      IPP Office REIPPPP historical data note, 7 Nov 2025, BW6   sourced; bids from a window
+                                                   wind compliant bids                                        that awarded no wind
+two multipliers     x 1.032 x 1.035 = R28,462/kW   SA CPI January 2024-25 and 2025-26 (Stats SA headline,     sourced, second-hand
+                                                   as reported; Stats SA site not reachable)
+cost decline        2.86% a year real              'BNEF's 2035 forecasts' (-23% onshore wind by 2035),       partly: no title, edition
+                    (R25,343/kW in 2030)           BLD_COST comment                                           or date recorded
+fixed O&M           R693/kW-yr                     'from NREL ATB' (BLD_FOM comment; USD 42 at R16.50)         partly: no edition or value;
+                                                                                                              BW6 bids R367 (R392, 2026)
+life                25 years                       none recorded                                              unsourced
+discount rate       8% real                        IEA Cost of Capital Observatory 2025 and others            sourced
+grid: integration   R402/kW-yr                     Eskom TDP 2024 Table 4, generation integration share       sourced
+grid: spur          R1,010/kW once (R85/kW-yr      ITP Phase 1, USD 1bn for 1,164 km (South African,          partly: line cost unverified
+                    over 40 years)                 unverified) x reV 132/400 kV ratio 0.607; 22.0 km beyond
+                                                   18 km (DFFE REEA approvals); 205 MW circuit
+grid: freed coal    no grid cost on a connection   modelling choice (TODO 14ar, user, 7 Oct 2026)             unsourced; see the flag
+connections         freed by retired coal
+capacity factor     45.2% (2014-25 mean; 42.0-47.8% Renewables.ninja MERRA-2 V162 at 120 m, 98 sites;     sourced (developer-stated
+                    by weather year)               x 1.064 fitted to Impofu (Enel, 1,260 GWh) and San Kraal   output); existing fleet
+                                                   (EDF, 616 GWh) stated annual output                        profile 37.0%
+```
+
+Implied cost of new wind, R/MWh in 2026 rands (annuity at 8% over 25 years plus fixed O&M, over 45.2% x 8,760 h; no
+curtailment): 2026, R848 without the grid cost and R971 with it; 2030, R775 and R898. At the low profile correction (42.5%):
+R902 and R1,033 (2026). With BW6's bid fixed O&M (R392) in place of R693: R766 (2026) and R692 (2030).
+
+REIPPPP onshore wind (SOURCES 'REIPPPP wind tariffs'): BW5 (28 Oct 2021, 1,608 MW, 12 projects) weighted average R495/MWh
+fully indexed, lowest R344/MWh, price base about April 2021 (not confirmed); about R620-630/MWh in January 2026 rands
+(the IPP Office's own BW5-to-BW6 restatement, x 1.059, then January CPI 2023-26; approximate). BW6 (8 Dec 2022): none
+awarded, no grid capacity in the Eastern and Western Cape for 4,116 MW of bids. BW7 (Dec 2024 to Dec 2025): none awarded;
+the minister called the wind tariffs too high; no wind tariff published. BW4 (Apr 2015): R619/MWh in April 2014 rands.
+
+Finding: c5's 2026 wind cost is about 35% above BW5's average tariff in real terms without the grid cost (R848 against
+about R625) and about 55% above with it (R971). Its capex is BW6's compliant bids, from a window that awarded no wind, and
+BW7's wind bids were rejected as too dear, so recent South African bids sit above BW5's prices. Of the gap, fixed O&M
+explains about R76-82/MWh (R693 against BW6's R392 bid figure). Caveat: a tariff is a 20-year CPI-indexed price including
+the developer's return and the project's own capacity factor, so it is close to, not the same as, a real levelised cost.
+
+Flag: 12,268 of c5's 12,857 MW of new wind (95%) sits on connections freed by retired coal and pays no grid cost; wind is
+built only from 2032, after utility solar has taken the freed connections of 2029-31 (none are freed before 2029). The
+single-node model has no geography, so this lets wind at a Cape capacity factor connect where Mpumalanga coal retired.
+
+Caveat (LNG), c5's engine check (LNG=1): one cargo is one floating storage unit, 170,000 m3 x 0.45 t/m3 x 53.37 GJ/t =
+4.08 PJ, no heel. Of the three 2030 stress windows, re-run in each year 2030-40 (33 window-years), 10 burn more than one
+cargo in 14 days, all from 2034: the 2021 window (days 87-100) in 2034 and 2036-2040 (1.16-2.03 cargoes) and the 2023
+window (days 8-21) in 2037-2040 (1.50-1.91); none in 2030-33 or 2035. Worst 2.03 cargoes (2038, 2021 window). The worst
+14 days of the year's runs exceed one cargo every year from 2031 (1.18) and reach 4.02 in 2040. So from 2034 the plan
+assumes LNG is resupplied within a two-week stress event.
+
+### Not to be quoted (user, 14 Oct; to be rerun against c5b): c5 sensitivities: 18 runs, one change each from c5, rule A from c5's windows; 17 pass the engine check in every year with no top-up; s_nogas4strict fails 2034-40 and needs 3,250 MW of the diesel open-cycle it excludes; full carbon rate +R376bn, IRP gas plan +R124bn, low wind cost -R60bn, 14 Oct 2026
+
+Status (user, 14 Oct, item 7): none of these results is to be quoted. Once c5b is settled, all 18 are rerun against it,
+s_nogas4strict with up to 3 passes as on c4 (renamed 'no new gas or diesel, lithium up to 4 GW a year').
+
+User, 14 Oct: start the c5 sensitivities pinned to a74d581; drop any that now duplicate c5; one setting each from c5's line,
+confirmed from the run's settings record; then for each the engine check, a top-up if needed with its cap flags, and both
+cost measures against c5.
+
+Dropped as duplicates of c5: s_coalirp (c5 runs on the IRP Figure 3 coal dates), s_battdecl (c5 takes 3% a year) and s_wind35
+(c5 builds no wind before 2032 and at most 2,308 MW a year, so neither its 2,500 nor its 3,500 MW cap binds, and 3,500 MW
+from 2028 cannot change the solution).
+
+Method: workflow 'Optimiser long run' on ref claude/c5, code_sha a74d581 (build 2026-10-14i) in every job, runs 38540590710
+to 38540744007 (#130-#147), dispatched 09:12-09:13 UTC. Each run's settings = c5's line with MAXP=1 (rule A: one pass) and
+WIN_FROM=seed/out/pathway_c5_lp2040.json (seed_run 38536463416, seed_name c5), plus its one change; STALL is in the line but
+cannot act in one pass. Before launch, each run's first LP was built locally at a74d581 (DUMP_LP, solves nothing): with no
+change the seeded LP is c5's own final LP (key 619b507795), and each change alters only its own rows, bounds or objective
+terms. Engine check: the run's own check job (pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1). Settings record and both measures:
+report runs on claude/recheck-14d (recordcmp.js against c5's record; costsplit_tsl.py on each run's cached solution;
+print_state.py), commits 4a48389 to 6290def, engine and harness as a74d581. Engine PV at 8% real from 2026 (the note's
+measure); the objective is the optimiser's, at the run's own discount rate, shown without its stress-target penalty (no run
+carries one).
+
+c5: engine PV R2,300.6bn, CO2 2,019 Mt, objective R1,479.5bn. Differences against c5 (engine PV rounded to R1bn):
+
+```
+run              change from c5's line               settings record differs   loop, pass 1   engine check             engine PV   CO2 Mt     objective
+                                                     from c5 in                               (worst year, % target)   R bn        2026-40    R bn
+s_be7            NUC_FORCE 2036:1250, 37:1250,        nuclearAdd                adequate       pass (2031, 49%)         2,330 +29   2,015 -4   1,422.0 -57.5 (a)
+                 38:1350, 39:1350
+s_nogas4strict   GAS_CAP=0, OCGD 1->0,                 ocgt.diesel, liCap        fails 7 yrs    FAILS 2034-40            2,330 +29   1,453      1,573.4 +93.9
+                 LI_CAP 3000->4000 (b)               (GAS_CAP not recorded)                   (2038, 484%); topped     as solved;  -566       as solved
+                                                                                                up 3,250 MW (g)          2,345 +44
+                                                                                                                         topped up
+s_coal60         COAL_DATES 60-year line              none recorded; coal       adequate       pass (2031, 49%)         2,285 -16   2,115 +96  1,447.5 -32.0
+                                                     schedule 2036-40 (c)
+s_irpgas         IRP gas plan (d)                     gasForce, gasMin,          adequate       pass (2028, 10%)         2,425 +124  2,154 +135 1,591.5 +112.0
+                                                     gasMinCovers, gasLift,
+                                                     tcapYr, gasFloor,
+                                                     gasFloorVint
+s_pvirp          PV_CAP_YR (Table 1 solar)            pvCapYr                   adequate       pass (2031, 48%)         2,310 +9    2,032 +13  1,496.8 +17.3
+s_windlow        WIND_CASE=low                        none (not recorded)       fails 2030     pass (2031, 50%) (e)     2,240 -60   1,863 -156 1,443.4 -36.1
+s_roof2          ROOF_MW 900->2000                    roofMW                    adequate       pass (2038, 59%)         2,336 +35   2,002 -17  1,506.0 +26.5
+s_li8h           LI_EH=8                              liEnergyHours             adequate       pass (2031, 49%)         2,301 0     2,019 0    1,479.5 0.0
+s_be4            GASFLOOR=1                           gasFloor                  adequate       pass (2031, 49%)         2,325 +24   2,016 -3   1,485.5 +6.0
+s_be6            LI_CAP 3000->550, CAP_FROM=2026      liCap, liCapFrom          adequate       pass (2030, 31%)         2,353 +52   2,147 +128 1,526.5 +47.0
+s_committed      GAS_MIN 2030-33:1200, 2034:200;      gasMin, gasMinCovers,     adequate       pass (2038, 47%)         2,302 +1    2,027 +8   1,482.1 +2.6
+                 LI_MIN 2030:4600:18400              liMin
+s_gasprem        GAS_PREM=0.015                       gasFinPremium             adequate       pass (2031, 49%)         2,308 +7    1,998 -21  1,489.3 +9.8
+s_disc10         DISC=0.10                            disc                      fails 2030     pass (2031, 54%)         2,372 +71   2,072 +53  1,359.4 at 10% (f)
+s_disc113        DISC=0.113                           disc                      fails 2030     pass (2031, 60%)         2,421 +120  2,116 +97  1,288.5 at 11.3% (f)
+s_noimp          IMP_END=2030                         importsEndYear            adequate       pass (2031, 52%)         2,334 +33   2,030 +11  1,543.8 +64.3
+s_carbonfull     CTAX_FULL=1                          carbonFull                adequate       pass (2037, 53%)         2,677 +376  1,726 -293 1,880.9 +401.4
+s_coalme         COAL_DATES removed (c4's dates)      none recorded; coal       adequate       pass (2037, 59%)         2,317 +16   1,947 -72  1,515.3 +35.8
+                                                     schedule 2027-40 (c)
+s_batt5          BATT_DECL removed (5% a year)        battDecl                  adequate       pass (2031, 49%)         2,292 -9    2,002 -17  1,468.6 -10.9
+```
+
+(a) Forced nuclear's cost is not in the objective (the LP-key test showed the objective unchanged; only the balance rows
+move), so the objective falls by the energy nuclear displaces; the engine check, which carries it, puts s_be7 R29bn above
+c5. The only run where the two measures disagree on direction. (b) One scenario, three values, as on c4 (s_nogas4strict).
+(c) COAL_DATES is not a recorded field; the schedule is read from the record as coalMW + earlyRetMW: s_coal60 holds
+25,916 MW from 2035 (c5 falls to 17,890 by 2040); s_coalme follows c4's dates (lower in 2027-38, 20,848 MW in 2039-40).
+Neither retires coal early. (d) GAS_FORCE 2029:3000, 2030:3000; GAS_MIN 2032-34:1250, 2035:1000, 2036:1250, 2037:1500,
+2038-40:1250; GAS_LIFT=1; GASFLOOR=1; GASFLOOR_VINT=2029-2030; TCAP_YR 2029:4000, 2030:4000: one scenario, six values, as on
+c4. Its schedule is c5's; the optimiser retires 711 MW of coal early from 2026 (a result). (e) WIND_CASE is not recorded
+and the run's own check job priced wind at the central cost (R2,290bn); the figures shown are the re-check with
+WIND_CASE=low (run 38543323301, claude/recheck-14d, engine_env), every year passing, worst 2031 at 50%. (f) At the run's
+own discount rate, so not comparable with c5's objective.
+
+(g) Top-up (run 38544252050, claude/recheck-14d, topup.js, new diesel open-cycle in 250 MW steps until each year is at or
+below target): 250 MW in 2034, 500 in 2035, 500 in 2036, 1,250 in 2037, 500 in 2038, none in 2039, 250 in 2040; 3,250 MW by
+2040. Topped-up shed / target, GWh: 2034 1.95 / 2.30, 2035 2.15 / 2.35, 2036 2.33 / 2.40, 2037 1.95 / 2.46, 2038 2.33 /
+2.53, 2039 2.56 / 2.60, 2040 2.57 / 2.66. Engine PV R2,330bn as solved, R2,345bn with the top-up (capex 12.7, fixed O&M 2.5,
+fuel 0.1, other -0.4); CO2 1,453 Mt either way. Cap flags: every year that adds capacity (2034-38 and 2040) breaks the run's
+own build caps, 'new diesel open-cycle not allowed in this run' (OCGD=0); no turbine-cap flag. So s_nogas4strict is not
+adequate within its own rules: on c5's windows it needs 3.25 GW of the peaking plant it excludes. On c4's windows the same
+scenario was adequate (rule B, RESULTS 's_nogas4strict'); rule A from c5's windows is one pass, so this may be a window gap
+rather than a build gap.
+
+Report runs: s_be6 38542239520; s_committed 38543732435; s_gasprem 38543039300; s_coal60 38544549236; s_windlow 38543319593;
+s_batt5 38543326572; s_carbonfull 38543542521; s_be7 38543545849; s_roof2 38543573243; s_li8h 38543677201; s_pvirp
+38543680572; s_noimp 38543714777; s_nogas4strict 38544072490; s_disc10 38544086738; s_disc113 38544089651; s_coalme
+38544553077; s_irpgas 38544545159; s_be4 38544447005. Every report shows the run's dispatch line and its cached solution.
+
+Loop against engine: s_windlow, s_disc10 and s_disc113 fail the loop's own one-pass test in 2030 (131%, 105%, 122%) but pass
+the engine check in every year, as rule A expects; s_nogas4strict fails both. s_li8h is within R0.03bn of c5 on the objective
+and equal on the engine check: lithium energy at 8 hours of the power cap instead of 4 changes almost nothing (c5 reaches
+the 4-hour energy cap, 12,000 MWh a year, only in 2038-40).
+
+### COAL_AVAIL stopped a c5 test run under 14dr; fixed (windows carry their own available coal); s_coalavail's results unchanged, 14 Oct 2026
+
+Found testing c5's settings on claude/c5 (build 14h; local, JS solver, no files kept): with COAL_DATES on, pass 1 failed the
+loop's test, windows were added, and building pass 2 stopped at COAL_AVAIL's own check: 'available below recorded, window
+2020 day 1 seed 36361925 hour 174: 0.5462 < 0.5511'. Without COAL_DATES pass 1 was adequate, so no window was built and the
+check never ran. Cause: COAL_AVAIL re-derived each window's available coal by re-running its outage draw on the 2026 state.
+That equals the recorded draw only while outages are drawn over all units in every year; since 14dr a later year draws over
+its own standing units. Fix (a74d581, build 14i): the engine returns coalAvailOnlyFrac from the same run as coalAvailFrac;
+each shedding row and each window carries it (availFrac); COAL_AVAIL reads it, and refuses the re-derivation when
+outageStandingUnits is on and a window has none. validate_lp 55/55 with a new check (12 shedding runs, 105,120 hours:
+available below committed in 0, above 1 in 0).
+
+```
+re-derived available coal against the recorded value       outages over all units     over the units standing (14dr)
+(a later-year state that sheds; 24 rows, 52,560 hours)     (c4's engine, s_coalavail)
+largest gap, share of standing coal                        3e-8                        0.32
+hours where the re-derived value is below committed        0                           19,104
+```
+
+s_coalavail (run 38382908890, c4's engine, outages over all units) is unchanged: there the re-derivation equals the recorded
+value to float precision, and windows without availFrac (c4's, through WIN_FROM) keep the old path with outageStandingUnits
+off. Its re-checks on 14a and 14d were engine checks only and did not use COAL_AVAIL.
+
+### 14de re-check: on the fixed engine s_coalavail's plan passes the engine check in every year (14a: 2040 at 15% of target; 14d, c5's engine: 2040 at 55%), on 14a R171bn below c4 on the engine and 303 Mt more CO2 (c4 not re-checked on 14d); on c4's engine it failed 11 years; c5 takes COAL_AVAIL=1, 14 Oct 2026
+
+User, 14 Oct (TODO 14dx (4)): re-check s_coalavail's plan (built with the stress-window coal limit at the engine's available
+coal, COAL_AVAIL=1) on 14a; if it passes the engine check, propose c5 on available coal before launch. Run 38523346361, ref
+claude/recheck-14a (fda2387: build 14a as merged in step 3, plus the top-up workflow), mode check, source run 38382908890 /
+s_coalavail; pathcheck.js COMMIT=1 PSE=1 TF=0.5, adaptive draws (10 a weather year, 120 runs a year, every year inside the
++/-20% interval at the first batch); 7 minutes. No re-solve: the plan is s_coalavail's as solved on c4's engine (build 12e).
+Engine PV is the sum of each year's engine cost at 8% real from 2026, as for c4's R2,525.8bn on 14a.
+
+```
+                                   s_coalavail on 14a    c4 on 14a          s_coalavail on 12e (c4's engine)
+engine PV at 8% real               R2,354.9bn            R2,525.8bn         R2,399bn
+CO2 2026-40                        1,768 Mt              1,465 Mt           1,864 Mt
+years failing the engine check     0                     0                  11 (2030-40)
+worst year, mean shed / target     2040, 0.39 / 2.60     2040, 0.01 / 2.60  2040, 2,816%
+                                   GWh (15%)             GWh (0.5%)
+gas burnt 2026-40                  28.2 TWh              18.1 TWh           -
+diesel burnt 2026-40               1.34 TWh              0.41 TWh           -
+```
+
+s_coalavail's mean shed by year on 14a, GWh (target): 2030 0.04 (2.06); 2033 0.20 (2.21); 2037 0.21 (2.41); 2039 0.34
+(2.54); 2040 0.39 (2.60); every other year below 0.15. The old engine caused the failure: the same plan passes on 14a.
+
+On c5's engine (build 14d: 14a with 14dr, the outage draw over the coal units still standing): run 38525055636, ref
+claude/recheck-14d (5d696ac: claude/c5 with the top-up workflow merged), same mode, source and settings; 17 minutes. Every
+year passes. Mean shed / target, GWh, with the upper end of the 95% interval: 2030 0.26 / 2.06 (13%, upper 23%); 2034 0.49
+/ 2.26 (21%, 37%); 2036 1.13 / 2.35 (48%, 78%); 2037 1.30 / 2.41 (54%, 87%); 2038 1.22 / 2.48 (49%, 81%); 2039 1.40 / 2.54
+(55%, 88%); 2040 1.43 / 2.60 (55%, 88%); all other years at most 10%. 2036-2040 ran the full 40 draws (480 runs) without the
+interval narrowing to +/-20% of target; the upper ends stay below target. Worst single run 133 GWh (2037). Engine PV
+R2,358.9bn (on 14a R2,354.9bn), CO2 1,765 Mt, gas 32.1 TWh (CCGT 23.1, OCGT on LNG 9.0), diesel 2.08 TWh. 14dr raises the
+mean shed of 2036-2040 about threefold against 14a, as it did on c4's build (RESULTS 'c5 inputs'), and moves no year
+over target.
+
+Decision (user, 14 Oct, TODO 14dx (4) and the follow-up): it passes on 14d as well, so COAL_AVAIL=1 goes into c5's
+settings. With available coal in the windows, the window's coal no longer depends on the previous pass's commitment, so
+the one-pass lag of 14de does not arise. Caveat: the engine still commits less coal than is available in stress hours
+(c4's 2030 windows: 14.0-15.8 GW against 16.7-17.1), so the optimiser plans on coal the engine holds back; the engine
+check is what catches that, and here it found no failing year.
+
+### Checks after engine (B) and 14dr, as decided on 14 Oct: pumped storage's 2025 output now checked against Eskom (model 3.8 TWh, Eskom 4.49); iron-air in July restated; the peaker ratio and tariff-block checks left failing with their causes, 14 Oct 2026
+
+Branch claude/c5 (from main after #36), 63a2722, build 2026-10-14e; measured first on claude/c5-imports, whose app is identical
+apart from the stamp. Suite (ESK19679.csv present): 722/728 node checks, audit 87/87 (809/815), eng5 6/6. Six failures, no
+check or band changed: EDMSA Scenario A CO2 2035; wind capture at 110 GW; iron-air with gas in July; the preset curtailment
+band; and the two in items 4 and 5.
+
+1. Pumped storage output, new check (validate_benchmarks, psTWh). Source: Eskom hourly data, ESK19679 (obtained on request;
+   Eskom credited; the analysis is ours, not Eskom's), calendar 2025, 'Pumped Water Generation' summed: 4.49 TWh (pumping
+   6.00 TWh; 2023 4.29 TWh, 2024 4.63 TWh). Band +/-25%, as for hydro: 3.37-5.62 TWh. Model, 2025 benchmark run: 3.8 TWh on
+   14a and 14d (2.73 TWh on 13h, which would have failed). Passes.
+
+2. Iron-air in July (validate_findings, 'iron-air changes July gas by essentially nothing'; Seriti Green: 20 GW wind, 25 GW
+   solar, 32 GW coal retired, 25 GW gas, 20 GW/10 h lithium, EAF 70%; July gas with and without 20 GW of 100-hour iron-air).
+   Tolerance kept at 1%; the figures in the check's comment updated.
+
+```
+                                     14a                 14d / 14e
+July gas without -> with, GWh        1,312 -> 1,295      1,641 -> 1,636
+change                               1.3%, fails         0.3%, passes
+iron-air output in July, GWh         16.6 in 3 hours     4.0 in 1 hour
+July coal, with less without, GWh    +65.0               +43.3
+July storage charging, GWh           +69.9               +41.5
+iron-air state of charge, 1 July     0                   0
+iron-air over the year, GWh          1,574 in, 708 out   1,439 in, 648 out
+```
+
+   Cause: iron-air enters July empty on both builds; the July change is coal moved into gas hours through storage, not
+   summer surplus carried into winter. The finding stands: iron-air does not cover a winter wind drought in this scenario.
+
+3. Mark (2), recorded as decided (no change): the remaining shortfalls against the 24 h rolling PyPSA check (14a: 3 of 15
+   weeks, 0.15-1.00 GWh; 14d: 6 of 15, 0.24-4.79 GWh) fall in a week's last hour with the stores empty, while the engine
+   holds 2.2-2.5 GW of coal as operating reserve. The PyPSA check does not model operating reserve.
+
+4. Mark (3), the 2025 peaker season ratio: fails at 9.3x against 2.15-8.6x on 14a and 14d; band not widened. Cause: engine
+   (B) runs the peakers far less in July-September 2025 (42 GWh against 108 on 13h) as pumped storage takes the evening peaks
+   (3.8 TWh a year against 2.7). The cause is noted beside the check.
+
+5. Tariff block, 'high-season off-peak is the cheapest block modelled' (validate_consistency): fails from 14d (14dr), left
+   failing to investigate after the note. At the check's 2025 settings (demand +4.6%, coal EAF 58%, imports 858 MW, exports
+   1,705 MW, Koeberg 62%), mean marginal price by block, R/MWh:
+
+```
+                 high peak  high std  high off-peak  low peak  low std  low off-peak  weekend   shed GWh
+14a                  1,890     1,306            778     1,768    1,808           868      946       12.4
+14d                  3,683     2,696            914     1,324    1,230           792      952       37.3
+```
+
+   Medians 743-750 on both builds; by median, low-season off-peak is the cheapest block on both (743-744 against 746). The
+   cheapest block by mean moves with where a few shed hours fall: with 14dr more of them fall in the high season. Caveat:
+   this check guards a claim in the NERSA correction note (Megaflex charges high-season off-peak above low-season off-peak
+   while it is the cheapest block modelled). On 14d that claim no longer holds on means, and on medians it held on neither
+   build.
+   Decided 14 Oct (user): the correction note is closed and not public; no clarification. After the note (TODO 14dy) the
+   check is replaced by a guard on what still holds, that in a typical hour the blocks barely differ in price (medians
+   743-750 R/MWh on 14a and 14d); the ordering by average depends on a few shortage hours.
+
+6. Response baseline regenerated on this engine: 87/87.
+
+### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
+
+Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on
+main (bc21fc2); PyPSA 1.4.0 (MIT, github.com/PyPSA/PyPSA), linopy 0.10.0, highspy 1.15.1, pandas 3.0.6; data nodal/ as committed.
+Week: hours 3264-3431 (winter), coal EAF 64%, no new build. The engine compared is the nodal (10-region) engine,
+nodal/nodal_engine.js, which these scripts were built against, not the national engine of the pathway check. Its week is
+priced on PyPSA's basis (fleet marginal cost, heat rate x fuel price + variable O&M, per MWh; imports R550/MWh; renewables and
+storage zero; plus start-up costs), after its own cyclic warm-up (scratchpad heur_week.js).
+
+```
+                                                          R million   notes
+nodal engine                                              2,321.7    energy 2,318.2, start-ups 3.5; diesel 5.5 GWh (R23.7m);
+                                                                     storage discharge 74.9 GWh; curtailment 16.9 GWh; shed 0
+PyPSA LP, crossval script, engine's storage at hour 3264  2,210.7    storage discharge 10.0 GWh; no diesel
+PyPSA LP / MIP, mip_solver as shipped                     2,191.8 / 2,204.4   storage 50% / 30% full at the start, imports 0.85
+PyPSA LP / MIP, mip_solver matched to the engine          2,213.7 / 2,228.0   engine's storage state, battery split and
+                                                                     pumped-storage energy, imports 0.88; MIP gap 0.11%
+engine against matched MIP                                +93.7      +4.2% (against matched LP +4.9%)
+```
+
+The agreement figure recorded in validation_README.md and mip_solver.py is not quoted until it is reproduced (user, 13 Oct):
+neither script computes the engine's side, its method and data predate this repository's history (1 Oct 2026), and the
+README's own example (engine 2,235, LP 2,264, MIP 2,275) has the engine 1.8% below the MIP, which an optimum should not allow.
+This harness runs the nodal engine (nodal/nodal_engine.js), not the single-node engine of c4's engine check (index.html
+simulate()); the single-node comparison follows (user, 13 Oct). Where the gap sits, against the crossval LP: diesel the LP never uses
+(R23.7m), 74.9 GWh of storage cycling against 10.0 GWh, and more Eskom coal (3,354.5 against 3,257.0 GWh) with less Sasol coal
+(78.3 against 122.3 GWh).
+
+Caveat (user, 13 Oct): PyPSA's optimum sees each week in advance (perfect foresight within the week, and no value on storage
+left at its end), so the gap is an upper bound on the engine's inefficiency. Other differences: PyPSA has no transmission
+losses (the engine's are 1.0 GWh) and no operating reserves. mip_solver.py runs only from the repository root (it looks for
+nodal/ beside itself; TODO 14dh).
+
+Step 2 (c4's 2040 build with its top-up, three weeks, against the national engine) stopped at the timebox: building a fair
+PyPSA counterpart of the national engine takes more than half a day; what is missing is listed in TODO 14df step 9.
+
+### c4's pumped hydro: 1,354 MW in 2038-39, under both limits; 163 cycles a year in the engine in 2040; s_li8h builds 126 MW, 13 Oct 2026
+
+From existing outputs only. c4: final run 38359856512 (pathway_c4t.json), 14-hour pumped hydro on the ANU 2026 cost basis
+(bldPhesHours 14, bldPhesCostBasis anu2026), cumulative cap 'central' (BLD_PHES_CAPS: 0 before 2038, 1,500 MW from 2038) and at
+most 1,500 MW a year (bldPhesRateMW). Engine: c4's 2040 build in the engine check, 480 runs (local, engine build 2026-10-12e,
+the cost-split run eng_c4t, entry 'TODO 14cv').
+
+- Build: 1,018 MW in 2038 and 336 MW in 2039; 1,354 MW by 2040; none before 2038 (the cap allows none) or in 2040.
+- Limits: neither binds. The cumulative cap is 1,500 MW and the yearly limit 1,500 MW; c4 stops at 1,354 MW. It builds in the
+  first year the cap allows, so the 2038 start may be what holds it back; the outputs carry no shadow prices to show it.
+- Region: none. c4's optimiser and engine are single-node, so new pumped hydro has no region; the regional siting on the ANU
+  shortlist is separate work (pumped hydro grid connection and regional siting tasks), not in c4.
+- Engine use: one pooled store in the engine (existing 2,724 MW and 60 GWh plus the new 1,354 MW at 14 hours, 19.0 GWh; 79.0
+  GWh in all). Discharge in 2040: 12.90 TWh, 163 full cycles a year on 79.0 GWh, capacity factor 36% on 4,078 MW. Before the new
+  build, 2037: 9.15 TWh, 153 cycles on 60 GWh; 2038 12.10 TWh (163 cycles), 2039 13.04 TWh (165). The new plant's own cycles
+  cannot be separated in a pooled store; 2040 discharge is 3.75 TWh above 2037.
+- s_li8h (8-hour lithium, run 38361303412, print 38383979621): builds 126 MW of pumped hydro, in 2038 only.
+
+### c4's wind build by year; c4's wind limit stays (user, 13 Oct 2026)
+
+New onshore wind, MW (c4t print; the optimiser's limit is 2,500 MW a year, bldRates, binding only in 2026-30):
+
+```
+2026  2027  2028  2029  2030  2031  2032  2033  2034  2035  2036  2037  2038  2039  2040    total
+2,500 2,500 2,500 2,500 2,500     0     0     0     0     0   448     0     0   539     0   13,487 MW (12,500 by 2030)
+```
+
+Decision (user, 13 Oct): keep c4's wind limit; c4 is not limit-bound on wind after 2030. s_wind35 is relabelled 'wind limit
+3,500 MW a year from 2028 (front-loaded)' and kept out of the note's headline findings.
+
+### 2040 against c4 with its top-up, for the note: annual cost gap, CO2 gap and their ratio; s_battdecl; the strict no-gas premium, 13 Oct 2026
+
+From existing outputs only (user, 13 Oct). Engine check, 2040, each run with its top-up (top-up runs' "2040" lines; rule B and
+zero-top-up runs as solved, prints or the local cost-split re-runs reproducing them). c4 with its 1,000 MW top-up: R372.6bn
+and 101.3 Mt in 2040 (run 38362504364). Ratio: cost gap divided by the CO2 avoided, R/t; where both gaps are negative the plan
+is cheaper and cleaner than c4 in 2040, shown as such. UB: storage-heavy (more than 10% above c4's 126 GWh of lithium in
+2040), engine cost an upper bound. LB: top-up over a build cap, cost a lower bound. A run marked both has no known direction
+of bias.
+
+```
+run                      2040 cost gap   CO2 gap 2040   R per tonne avoided            marks
+                         R bn a year     Mt
+s_nogas3                     +4.8           -10.7          446                         UB, LB (152 GWh; cap 2036)
+s_nogas4                     +9.5           -10.4          915                         UB, LB (166 GWh; cap 2036, 2038)
+s_nogas4strict              +54.6           -36.7        1,490                         UB (176 GWh)
+s_nogas4strict_bd           +62.2           -37.5        1,661                         UB (171 GWh); lithium -3% a year
+s_wind35 (h)                -14.1            -7.6        cheaper and cleaner           LB (cap 2038)
+s_li8h                      +13.7            -2.5        5,540                         UB (149 GWh)
+s_be4                        +6.1            +0.9        emits more                    (133 GWh, +6%)
+s_be6                       -26.6            -5.4        cheaper and cleaner
+s_be7, engine as run         +6.8            -7.8          868                         no new-nuclear fixed O&M or IDC
+s_be7, ours USD 7,500       +39.3            -7.8        5,034                         with IDC and IRP fixed O&M
+s_be7, EIA AEO2023          +57.6            -7.8        7,386                         with IDC and IRP fixed O&M
+s_be7, IRP 2025             +71.7            -7.8        9,186                         with IDC and IRP fixed O&M
+s_coalirp                   +16.0           -16.0        1,000                         LB (cap 2039, 2040)
+s_coal60                     -5.7            +9.1        emits more                    (123 GWh, -2%); no top-up
+s_pvirp_c4                  -32.2            -9.8        cheaper and cleaner           (76 GWh, -40%); no top-up
+s_windlow                   -42.8           -18.7        cheaper and cleaner           (101 GWh, -20%); low wind cost
+s_roof2_c4                  +11.1            -2.0        5,560                         LB (cap 2040); (130 GWh, +3%)
+s_irpgas_c4                   0.0            -6.7        cleaner at no extra cost      (73 GWh, -42%); no top-up
+s_battdecl                   -9.0            -2.6        cheaper and cleaner           (103 GWh); lithium -3% a year
+```
+
+Sources: top-ups 38368114518 (s_nogas3), 38369545953 (s_nogas4), 38374666197 (s_wind35), 38383982619 (s_li8h), 38383992755
+(s_be4), 38379712300 (s_coalirp), 38389689628 (s_battdecl, 0 MW), 38403003928 (s_coal60, 0 MW); prints 38366303884 and 38373115718 (strict runs, figures
+to 0.1); s_be6 and s_be7 local re-runs of their checks (120 runs each, reproducing them). s_nogas4strict_bd and s_battdecl
+price lithium at -3% a year against c4's -5%, so against c4 they mix the plan and the cost assumption; compare them with each
+other (below).
+(h) s_wind35: wind limit 3,500 MW a year from 2028 (front-loaded); fails the engine check in 2037-40 as solved; lower bound; not in the note's headline findings.
+
+s_battdecl (c4's settings, lithium capex -3% a year; run 38367769821, ref claude/c4-battdecl 1edd42b; print 38389685382, top-up
+38389689628, tsl 38389692464): adequate after one pass, no top-up; R2,590bn, 1,603 Mt; objective R1,740.6bn, R1,729.0bn without
+its R11.6bn 2030 penalty. Gas 1.2 / 4.3 / 6.3 GW (2030/35/40), new diesel open-cycle 2.8 / 2.8 / 3.3 GW, lithium 6.6 / 9.2 /
+17.6 GW (103 GWh in 2040); worst year 2040 at 28%. Against c4 it is R9bn cheaper on the engine check but R13.5bn dearer on the
+objective without the penalty: the measures disagree, the engine favouring the storage-light plan.
+
+Strict no-gas premium (user: quoted only as s_nogas4strict_bd against s_battdecl, both at -3% a year): engine check +R272bn
+(R2,862bn against R2,590bn; neither topped up), objective without the penalty +R219bn (R1,948.0bn against R1,729.0bn); CO2
+-275 Mt over 2026-40 (1,328 against 1,603); in 2040 +R71.3bn and -34.9 Mt, R2,041/t. The two measures agree on direction.
+Caveat: s_nogas4strict_bd holds 171 GWh of lithium against s_battdecl's 103, so the engine's storage bias widens the engine
+premium; the objective's R219bn is the lower of the two.
+
+### s_li8h (lithium with 8 hours of energy) and s_be4 (51% minimum capacity factor on new CCGT, 2030-40; 6 GW not forced), rule A, 13 Oct 2026
+
+Seeded from c4 (38359856512 / c4t, WIN_FROM), MAXP=1, claude/c4-frozen, c4's settings plus LI_EH=8 (s_li8h, run 38361303412)
+or GASFLOOR=1 (s_be4, run 38361321669; a floor on whatever new CCGT is built, in the optimiser and the engine; entry below). Prints 38383979621 and 38383989561; top-ups
+38383982619 and 38383992755; tsl 38383985895 and 38383995436. Engine PV at 8% real.
+
+```
+                               s_li8h                          s_be4                          c4
+verdict                        pass limit (2037-40 fail loop)  pass limit (2039-40 fail loop)
+engine PV, as solved           R2,608bn                        R2,617bn                       R2,598bn
+  with the top-up              R2,614bn (3,000 MW: 250 in      R2,618bn (750 MW in 2040,      R2,599bn
+                               2037, 750 2038, 1,000 in 2039   within the caps)
+                               and 2040; within the caps)
+objective / without penalty    R1,702.9 / 1,702.9bn            R1,731.5 / 1,720.6bn           R1,727.7 / 1,715.5bn
+CO2 2026-40                    1,577 Mt                        1,611 Mt                       1,605 Mt
+gas GW 2030/35/40              1.2 / 3.4 / 5.6                 1.0 / 2.9 / 4.3                1.2 / 3.5 / 5.1
+new diesel open-cycle GW       2.8 / 2.8 / 2.8 (+3.0 top-up)   3.0 / 3.0 / 3.7 (+0.75 top-up) 2.8 / 2.8 / 3.6
+lithium GW                     6.5 / 14.0 / 25.6               6.5 / 12.3 / 23.7              6.6 / 11.2 / 21.7
+early coal retirement          1,708 MW                        104 MW                         588 MW
+worst year, engine check       2040 345% as solved             2040 148% as solved            2040 161%
+2030 stress-target penalty     0                               R10.8bn (465 MWh)              R12.2bn (523 MWh)
+```
+
+s_li8h: R15bn dearer than c4 on the engine check but R12.6bn cheaper on the objective without the penalty; it is the
+storage-heavy plan (25.6 GW of 8-hour lithium by 2040), so its engine cost is an upper bound, and the disagreement runs the
+way the storage caveat predicts. It has no 2030 penalty. s_be4: R19bn dearer on the engine check and R5.1bn on the objective;
+agree.
+
+What s_be4's floor applies to (user, 13 Oct; from the code and the existing outputs). It does not force 6 GW to be built, and
+it is not the IRP's requirement (IRP 2025 reference case: 6 GW of CCGT at a minimum 51% annual capacity factor, 2030-40). In
+the optimiser (index.html, gasfloor_<y>, about line 10399) the floor is a row per year 2030-40: CCGT output on the
+representative days >= 51% x 8,760 h x the new CCGT the optimiser chooses to build; OCGT on LNG is not in it, and with no CCGT
+built it binds on nothing. In the engine (simulateGasAnnualFloor, about line 6736) it floors the first ccgtForceLoadMW
+(6,000 MW) of CCGT standing, existing plus new, at 51% a year; there is no existing CCGT. s_be4 built no CCGT until 2036 and
+built OCGT on LNG instead, so the floor covers 0 GW in 2030-35, 0.76 GW in 2036-37 and 0.99 GW in 2038-40.
+Note (user, 13 Oct): the engine counts toward the floor the first min(CCGT standing, 6,000 MW) of each hour's gas output from
+any gas plant, which includes OCGT on LNG and gas burnt to charge storage (index.html, stack.ccgt, about lines 8036-8114);
+the optimiser's floor counts CCGT output only.
+
+Gas capacity (new CCGT + new OCGT on LNG), engine gas output (CCGT and OCGT on LNG together) and capacity factor on that
+capacity, by year (prints 38383989561 and c4's; c4's output from its engine check):
+
+```
+2030  c4 0.00 + 1.20 = 1.20 GW   0.04 TWh   0.4%   |  s_be4 0.00 + 1.00 = 1.00 GW   0.04 TWh   0.5%   floored CCGT 0.00 GW needs 0.00 TWh
+2031  c4 0.00 + 1.20 = 1.20 GW   0.21 TWh   2.0%   |  s_be4 0.00 + 1.00 = 1.00 GW   0.18 TWh   2.1%   floored CCGT 0.00 GW needs 0.00 TWh
+2032  c4 0.73 + 1.45 = 2.18 GW   0.62 TWh   3.2%   |  s_be4 0.00 + 2.06 = 2.06 GW   0.51 TWh   2.8%   floored CCGT 0.00 GW needs 0.00 TWh
+2033  c4 1.90 + 1.45 = 3.35 GW   1.28 TWh   4.4%   |  s_be4 0.00 + 2.76 = 2.76 GW   1.06 TWh   4.4%   floored CCGT 0.00 GW needs 0.00 TWh
+2034  c4 2.02 + 1.45 = 3.47 GW   3.37 TWh  11.1%   |  s_be4 0.00 + 2.91 = 2.91 GW   2.84 TWh  11.1%   floored CCGT 0.00 GW needs 0.00 TWh
+2035  c4 2.02 + 1.45 = 3.47 GW   4.17 TWh  13.7%   |  s_be4 0.00 + 2.91 = 2.91 GW   3.59 TWh  14.1%   floored CCGT 0.00 GW needs 0.00 TWh
+2036  c4 3.22 + 1.45 = 4.67 GW   6.15 TWh  15.0%   |  s_be4 0.76 + 3.35 = 4.11 GW   6.93 TWh  19.3%   floored CCGT 0.76 GW needs 3.37 TWh
+2037  c4 3.22 + 1.45 = 4.67 GW   7.92 TWh  19.4%   |  s_be4 0.76 + 3.35 = 4.11 GW   8.07 TWh  22.4%   floored CCGT 0.76 GW needs 3.37 TWh
+2038  c4 3.66 + 1.45 = 5.11 GW  13.50 TWh  30.2%   |  s_be4 0.99 + 3.35 = 4.34 GW  12.76 TWh  33.6%   floored CCGT 0.99 GW needs 4.41 TWh
+2039  c4 3.66 + 1.45 = 5.11 GW  14.71 TWh  32.9%   |  s_be4 0.99 + 3.35 = 4.34 GW  13.63 TWh  35.9%   floored CCGT 0.99 GW needs 4.41 TWh
+2040  c4 3.66 + 1.45 = 5.11 GW  16.81 TWh  37.6%   |  s_be4 0.99 + 3.35 = 4.34 GW  14.87 TWh  39.1%   floored CCGT 0.99 GW needs 4.41 TWh
+```
+
+The printed outputs do not split s_be4's gas output between CCGT and OCGT on LNG, so the floored CCGT's own capacity factor is
+not shown; the engine check enforces it. Against c4, the floor moved new gas from CCGT to OCGT on LNG (c4: 3.66 GW CCGT and
+1.45 GW OCGT by 2040; s_be4: 0.99 and 3.35 GW) and left total gas output lower in 2038-40.
+
+### s_be7: nuclear cost basis, and its 2040 annual cost against c4 (+R6.8bn a year against c4 with its top-up); the engine charges new nuclear no fixed O&M, 13 Oct 2026
+
+Basis (index.html, FIXED.acapNuclear, about line 6406; build 2026-10-12e): R10,500/kW a year, a capital annuity only. Its
+comment derives it from USD 7,500/kW overnight, "mid of published USD 6,000-9,000/kW ranges" (no study named, no price year
+stated), at about R16.8/USD (R126,000/kW), over a 40-year life at about 8% (capital recovery factor 0.0839, R10,567). Flat
+across build years; no interest during construction. Fuel and variable O&M as Koeberg: costNuclear R160/MWh plus vomNuclear
+R45/MWh. Fixed O&M: none for new nuclear; fixedOMR charges fomNuclear (R4,260/kW a year) on the existing fleet only.
+
+The 2026-40 PV counts nuclear annuities for 2036-40 only: R72bn PV of nuclear capital (R13bn in 2036, R54.6bn a year from
+2039) of a 40-year stream. s_be7's +R15bn is the net of that and its savings elsewhere.
+
+2040, one year, R bn. Engine check on each build with the check's own draws and adaptive rule (local, pathcheck.js with a
+per-run cost recorder, scratchpad): s_be7 120 runs, R379.4bn, reproducing its check; c4 480 runs, R369.9bn as solved,
+R372.6bn with its 1,000 MW top-up (R2.71bn: capital 2.29, fixed O&M 0.45, fuel 0.05, other -0.09).
+
+```
+                                          s_be7 minus c4 as solved    s_be7 minus c4 with top-up
+capital annuities (engine newCapexR)              +20.3                        +18.0
+  of which new nuclear (5,200 MW)                 +54.6
+  of which everything else                        -34.3 (transmission -4.1)
+running costs                                     -10.8                        -11.2
+  fuel: gas -13.1, coal -2.6, diesel -0.3, nuclear, hydro and imports +6.2; carbon -0.9; fixed O&M -0.1; other 0.0
+total, 2040                                        +9.5                         +6.8
+not charged: new-nuclear fixed O&M at the engine's Koeberg figure (R4,260/kW a year x 5,200 MW)    +22.2 a year
+```
+
+Caveat: with fixed O&M at the Koeberg figure (which the code calls an upper bound for Koeberg) s_be7's 2040 gap would be about
++R29bn a year and its 2026-40 PV about R29bn higher (R44bn above c4). A 60-year life would cut the annuity 3% (R10,180/kW a
+year, -R1.7bn in 2040). The note should quote s_be7 only with this basis stated; sourcing it is TODO 14cz, after the note.
+
+Arithmetic at three capex levels (user, 13 Oct: before the note, arithmetic only; the nuclear is forced and its capital and
+running costs are outside the optimiser's objective, and the engine runs it at its capacity factor, so the rest of the build
+and dispatch do not depend on these numbers). Each case: capital with interest during construction over the IRP's 6-year
+single-unit schedule (15, 15, 25, 25, 10, 10% a year, mid-year spending, 8%: x1.2876), annuity over the engine's 40 years at 8%,
+plus new-nuclear fixed O&M at the IRP's figure (R3,146/kW a year, 2026 rands), replacing the engine's R10,500/kW a year.
+Applied to s_be7's standing nuclear (1,250 MW 2036, 2,500 2037, 3,850 2038, 5,200 2039-40). Against c4 with its top-up.
+
+```
+basis                                          overnight    with IDC     annuity+FOM   s_be7 2026-40 PV   2040 annual gap
+                                               R/kW 2026    R/kW         R/kW a year   (gap to c4)        to c4, R bn a year
+engine as run (USD 7,500, no IDC, no FOM)       126,000     -            10,500        R2,614bn (+15)        +6.8
+ours: USD 7,500/kW at R16.8                     126,000     162,239      16,751        R2,657bn (+58)       +39.3
+EIA AEO2023, large LWR, USD 7,777/kW (2022$)    158,679     204,316      20,280        R2,681bn (+82)       +57.6
+IRP 2025 workbook, EPRI large nuclear           183,678     236,506      22,979        R2,700bn (+101)      +71.7
+```
+
+2040 CO2 (engine check, same draws): s_be7 93.5 Mt against c4 101.3 Mt (101.27 as solved, 101.26 with its top-up; run
+38362504364): 7.8 Mt less in that year, the whole plan's difference (gas fuel -13.1 bn, coal -2.6 bn), not nuclear alone.
+Beside the 2040 annual gap, the implied cost of the 7.8 Mt (gap / 7.8 Mt, net of the carbon tax already in the engine cost):
+engine as run R870/t; ours R5,040/t; EIA R7,380/t; IRP R9,190/t.
+
+Bases, one line each:
+- Ours: USD 7,500/kW overnight (index.html acapNuclear comment, "mid of published USD 6,000-9,000/kW", no study, no price year) at R16.8/USD.
+- EIA: Annual Energy Outlook 2023, Cost and Performance Characteristics of New Generating Technologies, Table 1, nuclear light water
+  reactor 2,156 MW, total overnight USD 7,777/kW in 2022 dollars (base 7,406 x technological optimism 1.05; excludes interest; fixed
+  O&M USD 136.91/kW-yr; 6-year lead time); converted x1.041 (US CPI 2023) x R18.35/USD (both from the IRP workbook's Economic
+  Parameters) x 1.0681 (SA CPI Jan 2024 to Jan 2026, as the IRP cost set). A US estimate (Sargent and Lundy 2019, escalated).
+- IRP 2025 assumptions workbook, New Tech Properties, Large-Scale Nuclear (EPRI), "Plant cost estimates (2023)": total overnight
+  R167,264-176,885/kW across 1x1600 and 2x1600 MW AREVA, 1x1117 and 2x1117 MW AP1000 (mean R171,964), escalated x1.0681 as the
+  cost set does (it treats the workbook as January 2024 rands; the label says 2023, so a few percent more if mid-2023 rands).
+
+IRP workbook, the rest (same four columns): fixed O&M R2,627-3,337/kW a year (mean R2,945; R3,146 in 2026 rands); variable O&M
+R194.5-218.4/MWh; fuel R15.35/GJ at heat rates 10,000-11,250 kJ/kWh (R153-173/MWh); economic life 30 years; lead time 72, 84,
+72 and 96 months with expense schedules over 6 or 7 years; costs are overnight, so interest during construction is excluded
+(the expense schedule is given for computing it). Exchange rate R18.35/USD.
+
+Sensitivities, not in the range: the IRP's 30-year life adds R5.5-8.1bn to the PV and R4.2-6.1bn a year in 2040; the twin-unit
+7-year schedule (x1.3357) adds R3.5-5.1bn and R2.6-3.9bn a year; the IRP's variable O&M and fuel (R395/MWh in 2026 rands against
+the engine's R205) add R5.7bn in 2040 on s_be7's 30.1 TWh of new nuclear. A realised-cost benchmark (MIT CANES 2024, next
+AP1000s at Vogtle, USD 8,300-10,375/kW in 2024 dollars, as quoted in search results) could not be read at source here (the
+container's proxy blocks web.mit.edu), so it is not used.
+
+
+### Seeded set, rule A: s_wind35 (wind limit 3,500 MW a year from 2028 (front-loaded)), s_disc10 and s_disc113, both cost measures, 13 Oct 2026
+
+All seeded from c4 (seed 38359856512 / c4t, WIN_FROM), one pass (MAXP=1), claude/c4-frozen; engine check and top-up as for the
+other rule A runs. Engine cost PV at 8% real (the one cost basis) whatever the run's own discount rate. The optimiser objective
+is shown beside it (TODO 14cv: report both until the measure is agreed); for s_disc10 and s_disc113 it discounts at the run's
+own rate, so it is not comparable with c4's. c4: engine R2,598bn as solved, R2,599bn with its top-up; objective R1,728bn.
+
+```
+                           s_wind35 (limit 3.5 GW a yr  s_disc10 (10% real)      s_disc113 (11.3% real)
+                           from 2028, front-loaded)
+run                        38361299620                  38361281441              38361285970
+engine PV, as solved       R2,518bn                     R2,688bn                 R2,763bn
+  with the top-up          R2,526bn (3,000 MW;          R2,688bn (500 MW in      R2,763bn (250 MW in
+                           2038 over the cap)           2040; within the caps)   2040; within the caps)
+optimiser objective        R1,661bn (c4 R1,728bn)       R1,637bn at 10%          R1,582bn at 11.3%
+CO2 2026-40                1,522 Mt                     1,636 Mt                 1,641 Mt
+gas GW 2030/35/40          1.2 / 4.0 / 5.7              1.0 / 3.6 / 5.7          1.1 / 3.8 / 6.0
+diesel open-cycle GW       2.8 / 2.8 / 3.5              3.0 / 3.3 / 4.1          3.0 / 3.3 / 4.1
+lithium GW                 5.4 / 10.6 / 20.8            6.3 / 10.3 / 21.0        6.3 / 9.7 / 20.9
+worst year, engine check   2040 500% (2037-40 fail)     2040 112%                2040 109%
+```
+
+s_wind35 (wind limit 3,500 MW a year from 2028 (front-loaded); user, 13 Oct: label, adequacy failures and lower bound stated, kept out of the note's headline
+findings) builds 15.5 GW of wind, all by 2030 (3.5 GW a year in 2028-30), and none after; as solved it fails the engine check
+in 2037-40 (2040 at 500%), and its 3,000 MW top-up breaks the diesel build limit in 2038, so its cost is a lower bound; the two measures agree on its
+direction against c4 (engine -R73bn with top-ups, objective -R67bn). s_disc10 and s_disc113 cost more on the 8% basis because
+their higher capital charge buys a similar plan.
+
+### TODO 14cv: why the two cost measures rank plans in opposite order. The optimiser's objective carries a 2030 stress-target penalty for shed the engine check does not find, and its dispatch burns far more gas for low-storage plans than the engine does; the note should use the engine check, 13 Oct 2026
+
+Method (analysis only, nothing solved). Optimiser side: each run's last LP rebuilt from its settings and stress windows
+(pathway_perfail.js, DUMP_LP) on branch claude/costsplit (82a49d4, mode lpsplit, harness/costsplit_lp.py), keys identical to
+the solved LPs (c4 1e8b5aa62a = c4-target pass 9; s_be6 c9bc9b5f4b; s_committed 395b93b52a), coefficients times the cached
+solutions reproducing each recorded objective to the rand. Runs 38376701277, 38376691555, 38376697597. Engine side: the engine
+check (pathcheck.js, same draws, seeds and adaptive rule) re-run locally on each build with every cost term recorded per run,
+reproducing the official totals (R2,597.7bn, R2,550.4bn, R2,561.9bn); capital by technology from the engine's own functions
+(midpoint vintage), matching its new-build charge to R0.0bn once its own transmission charge (txCapexR) is used. PV at 8%
+real over 2026-40, R bn.
+
+```
+                                                     optimiser objective        engine check
+                                                     c4    s_be6  s_comm   |    c4    s_be6  s_comm
+new build capital and fixed O&M                     979.3  930.8  945.4    |  970.7  917.8  940.8
+transmission charge on new wind and solar             0.0    0.0    0.0    |   53.4   45.5   49.1
+coal: fuel, variable O&M, carbon                    683.9  709.4  687.1    |  705.5  718.0  705.4
+gas: fuel, variable O&M, carbon                      43.8   76.0   61.6    |   43.4   34.7   46.6
+diesel: fuel, variable O&M, carbon                    7.3    5.6    5.5    |    1.8    2.4    2.2
+shed and reserve shortfall                            1.1    1.2    0.9    |    0.0    0.0    0.0
+stress-target penalty (VoLL x 365, all in 2030)      12.2   90.3   43.6    |    0      0      0
+curtailment charge and storage wear                   6.4    3.0    5.5    |    0      0      0
+coal fixed O&M saved by early retirement             -6.3    0.0  -12.9    |   -6.3    0.0  -12.9
+existing fleet, PPAs, other IPPs, nuclear, hydro,
+  imports, start-up, exports (engine only)              0      0      0    |  829.2  832.0  830.8
+total                                              1727.7 1816.2 1736.6    | 2597.7 2550.4 2561.9
+
+gap, c4 minus the run                               c4-be6 (LP | engine)       c4-comm (LP | engine)
+new build                                            48.5 |  52.8             33.9 |  29.9
+transmission                                          0.0 |   7.9              0.0 |   4.3
+coal                                                -25.5 | -12.5             -3.2 |   0.1
+gas                                                 -32.2 |   8.7            -17.8 |  -3.1
+stress-target penalty                               -78.1 |   0.0            -31.4 |   0.0
+other                                                -1.2 |  -9.6              8.8 |   4.5
+total                                               -88.5 |  47.3             -8.9 |  35.7
+```
+
+The stress-target penalty falls on 2030 in all three: expected shed (and reserve shortfall, zero here) over the year in the
+optimiser's representation, against the 2030 target of 2,287 MWh: c4 2,809 MWh, s_committed 4,156, s_be6 6,154; the excess is
+charged at VoLL x 365 (R23m per MWh PV in 2030). The engine check finds 0.00 GWh of shed in 2030 for all three. Every other
+year sits at or below its target in the optimiser. Of the 136bn swing between the measures for c4 against s_be6, the penalty
+is 78bn, gas 41bn, coal 13bn, transmission 8bn; for c4 against s_committed (45bn), penalty 31bn, gas 15bn.
+
+Generation in 2040, c4, TWh (optimiser: representative days at their weight plus stress-window days at theirs; engine: mean
+of 480 runs): coal 78.6 against 90.4; CCGT 9.5 against 13.0; OCGT on LNG 1.2 against 3.8; diesel 0.7 against 0.06; lithium
+discharged 48.3 against 15.4; pumped storage discharged (existing and new) 12.3 against 12.9; iron-air 0.8 against under 0.01;
+curtailment 15.9 against 41.9; shed 0.003 against 0.004. New wind, solar and rooftop before curtailment in the optimiser 41.1,
+117.6 and 29.8 (existing fleet folded into its demand row); engine wind, solar and rooftop after curtailment, all fleets, 58.5,
+75.0 and 39.4. The optimiser's 2040 also carries 8.2 TWh of stress-window residual demand on top of a plain year's 242.9.
+
+Cause (one line): the optimiser's objective includes a 2030 stress-target penalty, R12bn for c4, R44bn for s_committed and
+R90bn for s_be6, for shed the engine check does not find, and its representative-day dispatch burns about twice the engine's gas
+for the low-storage plans while cycling lithium about three times as hard; these, not the build costs, reverse the ranking.
+Measure for the note: the engine check (a cost, not a planning objective; the same full-year simulation with outage draws for
+every plan; the measure adequacy is judged on). Caveats: its storage dispatch uses lithium a third as hard as the optimiser and
+curtails 2.6 times as much (c4, 2040), so it may overstate the cost of storage-heavy plans against gas-heavy ones; it carries a
+transmission charge the optimiser does not see (GRID off); it prices shed at R9,530/MWh against the optimiser's R87,000. Neither
+measure changed (user, 13 Oct).
+
+### High diesel price, bound for c4: at most R1.4bn undiscounted (R0.8bn PV), 0.03% of system cost; s_dieselhigh held, 13 Oct 2026
+
+c4 (final run 38359856512, engine check by fuel run 38365615522) produces 0.52 TWh from diesel over 2026-40 (0.05 TWh in
+2026, 0.06 in 2040; existing and new open-cycle). Priced at option (a), R8,887/MWh (R6,100 scaled by Brent in rand from the
+April 2025 to February 2026 average, $67.21 at R17.39/$, to the 12 Oct check, $103.3 at R16.49/$; SOURCES, 'Diesel fuel
+price') instead of R6,100, the same plan costs R1.44bn more undiscounted (R0.79bn PV at 8%), 0.03% of c4's R4,416bn
+undiscounted (R2,598bn PV). A re-optimised plan can only cost less than that, so this bounds the effect. s_dieselhigh is held
+(user, 13 Oct). Rule: if s_nogas3 or s_nogas4 produce more than 1 TWh from diesel in any year, run high-diesel versions of
+them at option (a) (DIESEL_R, branch claude/c4-diesel), labelled an upper bound.
+
+### Gas role and the method gap: c4 burns 68.8 TWh of gas output against penalty c4's 17.9; c4's extra 126 Mt is 105 Mt coal, 21 Mt gas, 0.1 Mt diesel, 13 Oct 2026
+
+Engine check re-run on each final build with gas, diesel and CO2 by fuel (harness/pathcheck.js plus gasrole.py, branch
+claude/topup 833852b, mode check; COMMIT=1 PSE=1 TF=0.5, adaptive draws; same draws and seeds as the engine check): c4 run
+38365615522 (source 38359856512, c4t), penalty c4 run 38365619101 (source 38257824027). Output is electricity generated
+(TWh); fuel is gas burnt, PJ at higher heating value (CCGT at 52% efficiency, open-cycle at 10,624 kJ/kWh); CF on the new MW
+built to date (no existing CCGT). Diesel is output of all diesel open-cycle units, existing and new. 2026-29: no gas in either.
+
+```
+c4         CCGT MW  out TWh  fuel PJ  CF    LNG-OCGT MW  out TWh  fuel PJ  CF    diesel TWh
+2030             0     0.00      0.0   0%         1200     0.04      0.5   0%    0.002
+2031             0     0.00      0.0   0%         1200     0.21      2.2   2%    0.011
+2032           730     0.24      1.6   4%         1449     0.39      4.1   3%    0.016
+2033          1899     0.96      6.6   6%         1449     0.32      3.4   3%    0.027
+2034          2017     2.49     17.2  14%         1449     0.89      9.4   7%    0.049
+2035          2017     3.04     21.1  17%         1449     1.13     12.0   9%    0.041
+2036          3217     4.94     34.2  18%         1449     1.20     12.8   9%    0.061
+2037          3217     6.24     43.2  22%         1449     1.69     17.9  13%    0.048
+2038          3656    10.64     73.7  33%         1449     2.86     30.3  23%    0.060
+2039          3656    11.55     80.0  36%         1449     3.16     33.6  25%    0.048
+2040          3656    13.00     90.0  41%         1449     3.81     40.5  30%    0.060
+2026-40                    53.1      368                       15.7      167          0.52
+
+penalty c4 CCGT MW  out TWh  fuel PJ  CF    (no LNG open-cycle)                    diesel TWh
+2030          1200     0.03      0.2   0%                                          0.001
+2031          1297     0.07      0.5   1%                                          0.001
+2032          1388     0.16      1.1   1%                                          0.002
+2033          2219     0.40      2.8   2%                                          0.005
+2034          3138     1.00      6.9   4%                                          0.018
+2035          3494     1.16      8.0   4%                                          0.027
+2036          4592     1.88     13.0   5%                                          0.051
+2037          4631     2.27     15.7   6%                                          0.050
+2038          5421     3.32     23.0   7%                                          0.074
+2039          5421     3.48     24.1   7%                                          0.058
+2040          5421     4.13     28.6   9%                                          0.048
+2026-40                    17.9      124                                           0.39
+```
+
+CO2 2026-40 by fuel (gas as the engine computes it; coal the remainder): c4 coal 1,578, gas 26.9, diesel 0.4, total 1,605 Mt;
+penalty c4 coal 1,472, gas 6.2, diesel 0.3, total 1,479 Mt. The 126 Mt gap: coal 105 Mt (none in 2026-30; 8.5 to 12.8 Mt a
+year in 2031-40), gas 21 Mt, diesel 0.1 Mt. Wind and solar built by 2040: c4 13.5 and 52.5 GW; penalty c4 24.9 and 43.5 GW.
+
+### s_committed (committed gas procurement): within target on the engine check every year, R2,562bn PV and 1,602 Mt, no top-up needed; again cheaper than c4 on the engine check (R36bn) but dearer on the optimiser's objective (R9bn), 13 Oct 2026
+
+Run: c4's settings plus the committed-procurement gas minimum (gasMin: 1,200 MW a year 2030-33, 200 MW in 2034), seeded from
+c4, rule A. Run 38361295036, claude/c4-frozen; pass 1 solved Optimal in 99 min from a cold start, 'pass limit reached'; loop
+test after pass 1: 2040 fails (3.20 against 2.60 GWh). Engine check: every year within target (2040 1.98 against 2.60, 76%;
+2039 32%). Print 38373527944; top-up 38373578065: 0 MW, R2,562bn.
+
+```
+                                 s_committed           c4 as solved
+cost 2026-40, PV at 8% real      R2,562bn              R2,598bn
+optimiser objective (LP)         R1,737bn              R1,728bn
+CO2 2026-40                      1,602 Mt              1,605 Mt
+gas GW 2030 / 2035 / 2040        1.2 / 5.0 / 6.2       1.2 / 3.5 / 5.1
+  of which OCGT on LNG           1.2 / 2.2 / 2.2       1.2 / 1.4 / 1.4
+diesel open-cycle GW (new)       2.8 / 2.8 / 2.8       2.8 / 2.8 / 3.6
+lithium GW                       6.2 / 9.2 / 19.9      6.6 / 11.2 / 21.7
+lithium GWh                      36 / 56 / 116
+onshore wind GW built            12.5 / 12.5 / 15.1    13.5 by 2040
+utility solar GW built           14.4 / 24.8 / 50.0    52.5 by 2040
+coal retired early               1,207 MW from 2026    588 MW from 2026
+gas output TWh, 2040             16.6                  16.8
+```
+
+Same flag as s_be6: the added gas minimum costs R9bn on the optimiser's objective, as a constraint should, while the engine
+check puts the plan R36bn below c4 (TODO 14cv). The loop's test fails 2040 (123%) where the engine check passes it (76%).
+
+### s_be6 (lithium 550 MW a year from 2026): adequate after one pass, R2,550bn PV and 1,629 Mt, no top-up needed; the engine check puts it R48bn below c4 while the optimiser's own objective puts it R88bn above, 13 Oct 2026
+
+Run: c4's settings plus LI_CAP=550 CAP_FROM=2026, seeded from c4 (WIN_FROM, seed 38359856512 / c4t), rule A (MAXP=1). Run
+38361326157, claude/c4-frozen; pass 1 solved Optimal in 67 min from a cold start; loop test after pass 1: no failing year
+(worst 2027, 0.04 against 1.96 GWh). Engine check within target every year (at most 2%). Print 38369358547; top-up 38369362473: 0 MW, R2,550bn with the top-up.
+
+```
+                                 s_be6                 c4 as solved
+cost 2026-40, PV at 8% real      R2,550bn              R2,598bn
+CO2 2026-40                      1,629 Mt              1,605 Mt
+gas GW 2030 / 2035 / 2040        1.2 / 6.4 / 9.7       1.2 / 3.5 / 5.1
+  of which OCGT on LNG           1.2 / 2.2 / 2.2       1.2 / 1.4 / 1.4
+diesel open-cycle GW (new)       2.8 / 3.5 / 3.6       2.8 / 2.8 / 3.6
+lithium GW                       2.7 / 5.4 / 8.0       6.6 / 11.2 / 21.7
+lithium GWh                      11 / 22 / 33
+onshore wind GW built            12.5 / 15.0 / 22.2    13.5 by 2040
+utility solar GW built           14.4 / 17.1 / 29.3    52.5 by 2040
+vanadium / iron-air GW           1.2 / 1.2 / 1.5  and  0.45
+gas output TWh, 2040             10.1                  16.8
+optimiser objective (LP)         R1,816bn              R1,728bn (pass 9)
+```
+
+Flag: s_be6's cap is tighter than c4's from 2028 (550 against 3,000 MW a year), and on the optimiser's own objective it
+costs R88bn more, as it should; the engine check puts it R48bn cheaper. The two measures rank these two plans differently,
+so engine-check cost gaps of this size between seeded runs are not the setting's effect alone (TODO 14cv). Not strictly
+nested: CAP_FROM=2026 also lets s_be6 build 461 and 550 MW of lithium in 2026-27, where c4 built 0 and 400, and c4 retires
+588 MW of coal early from 2026 where s_be6 retires none.
+
+### s_nogas4 (no new gas, diesel open-cycle allowed, lithium 4 GW a year): R2,597bn PV as solved, 2035-40 failing; with a 4,750 MW diesel open-cycle top-up R2,612bn and 1,553 Mt, 2036 and 2038 over the build cap, 13 Oct 2026
+
+Run: c4's settings plus LI_CAP=4000 GAS_CAP=0, seeded from c4, rule A. Run 38361312903, claude/c4-frozen; pass 1 solved
+Optimal in 58 min, 'pass limit reached'; loop test: 7 failing years, 2034-40, worst 2040 29.17 against 2.60 GWh. Print
+38369492358; optimiser objective R1,888bn. Built by 2030 / 2035 / 2040: diesel open-cycle 3.0 / 5.6 / 6.6 GW; lithium 6.4 /
+15.6 / 29.4 GW and 56 / 89 / 166 GWh; onshore wind 12.5 / 12.9 / 17.8 GW; utility solar 14.4 / 34.5 / 62.0 GW; no gas.
+Shed (engine check, GWh against target): 2034 1.65 / 2.26 (73%); 2035 2.65 / 2.31 (115%); 2036 3.87 / 2.35; 2037 7.12 / 2.41;
+2038 15.48 / 2.48; 2039 21.37 / 2.54; 2040 26.89 / 2.60 (1,035%); 2026-33 at most 7%. Diesel output at most 0.45 TWh a year
+(2038), under the 1 TWh rule as solved.
+
+Top-up (run 38369545953): 4,750 MW of new diesel open-cycle (250 MW in 2035, 500 in 2036, 750 in 2037, 1,500 in 2038, 1,000 in
+2039, 750 in 2040); every year then within target (2040 2.39 against 2.60). Cost with the top-up R2,612bn PV (capex 12.4,
+fixed O&M 2.4, fuel 0.3, other -0.3): R13bn more than c4 with its top-up, 52 Mt less CO2. Over the build caps in 2036 and 2038
+(1,500 MW in the year against 1,000). Diesel output with the top-up at most 0.48 TWh (2038): no high-diesel version.
+
+### s_nogas3 (no new gas, diesel open-cycle allowed, lithium 3 GW a year): R2,593bn PV as solved, 2036-40 failing; with a 4,250 MW diesel open-cycle top-up R2,606bn and 1,547 Mt, 2036 over the build cap, 13 Oct 2026
+
+Run: c4's settings plus GAS_CAP=0, seeded from c4's final run (WIN_FROM, seed 38359856512 / c4t), rule A (MAXP=1). Run
+38361308336, claude/c4-frozen; pass 1 solved Optimal in 43 min from a cold start, 'pass limit reached'; loop test after
+pass 1: 7 failing years, 2034-40, worst 2040 27.38 against 2.60 GWh. Engine check (adaptive draws) and print job 38368110683.
+
+```
+                                 s_nogas3 as solved    c4 as solved
+cost 2026-40, PV at 8% real      R2,593bn              R2,598bn
+CO2 2026-40                      1,547 Mt              1,605 Mt
+gas GW 2030 / 2035 / 2040        0 / 0 / 0             1.2 / 3.5 / 5.1
+diesel open-cycle GW (new)       3.0 / 5.5 / 6.5       2.8 / 2.8 / 3.6
+lithium GW                       6.2 / 15.8 / 27.1     6.6 / 11.2 / 21.7
+lithium GWh                      44 / 92 / 152
+onshore wind GW built            12.5 / 13.5 / 18.5    13.5 by 2040
+utility solar GW built           14.4 / 34.5 / 60.0    52.5 by 2040
+```
+
+Shed by year, engine check, mean against target (GWh): 2026-33 at most 0.13 (6%); 2034 1.55 / 2.26 (69%); 2035 2.05 / 2.31
+(89%); 2036 3.50 / 2.35 (149%); 2037 6.62 / 2.41 (274%); 2038 12.54 / 2.48 (506%); 2039 17.98 / 2.54 (707%); 2040 25.16 / 2.60
+(968%). Diesel output, all open-cycle units: at most 0.43 TWh a year (2038), so as solved it is under the 1 TWh rule for a
+high-diesel version (user, 13 Oct).
+
+Top-up (run 38368114518, claude/topup 89f3ed0): 4,250 MW of new diesel open-cycle, added 500 MW in 2036, 1,000 in each of
+2037-39 and 750 in 2040; every year then within target (2040 2.59 against 2.60). Cost with the top-up R2,606bn PV (capex
+10.5, fixed O&M 2.1, fuel 0.3, other -0.3), against c4 with its top-up R2,599bn: R7bn more, 58 Mt less CO2 (1,547 Mt). Over
+the build caps in 2036 (1,500 MW of diesel open-cycle in the year against the 1,000 MW cap). Diesel output with the top-up
+stays under 0.5 TWh a year, so no high-diesel version (user rule). Caveat: engine-check cost gaps of this size are inside
+the measurement question in TODO 14cv (see s_be6).
+
+### s_nogas4strict_bd (s_nogas4strict with lithium capex falling 3% a year): adequate after one pass, R2,862bn PV and 1,328 Mt, R24bn above s_nogas4strict; the no-gas premium waits on s_battdecl, 13 Oct 2026
+
+Run: s_nogas4strict's settings (LI_CAP=4000 OCGD=0 GAS_CAP=0) plus BATT_DECL=0.03, seeded from c4 (seed 38359856512 / c4t),
+rule B (MAXP=3, no top-up). Run 38367947315, ref claude/c4-battdecl (1edd42b); pass 1 solved Optimal in 37 min from a cold
+start; loop test after pass 1: no failing year (worst 2040, 0.44 against 2.60 GWh), so it stopped. Engine check within target
+every year (at most 9%, 2034 and 2040). Print 38373115718.
+
+```
+                                 s_nogas4strict_bd     s_nogas4strict (5% decline)
+cost 2026-40, PV at 8% real      R2,862bn              R2,838bn
+optimiser objective (LP)         R3,787bn              R3,762bn
+CO2 2026-40                      1,328 Mt              1,331 Mt
+lithium GW                       8.7 / 19.7 / 27.7     8.7 / 19.7 / 28.5
+lithium GWh                      64 / 144 / 171        64 / 144 / 176
+onshore wind GW built            12.5 / 25.0 / 31.9    12.5 / 25.0 / 31.4
+utility solar GW built           14.4 / 34.5 / 62.7    14.4 / 34.5 / 62.5
+offshore / iron-air GW, 2040     3.4 / 2.0             3.4 / 2.1
+```
+
+The slower lithium decline adds R24bn on both measures (engine check and optimiser objective agree here) and changes the build
+only after 2036. The no-gas premium is quoted as this run against s_battdecl (c4 with BATT_DECL=0.03), still running (user,
+13 Oct).
+
+### s_nogas4strict (no new gas or open-cycle, lithium 4 GW a year): adequate after one pass, R2,838bn PV and 1,331 Mt, R240bn dearer and 274 Mt less CO2 than c4, 13 Oct 2026
+
+Run: c4's settings with LI_CAP=4000 OCGD=0 GAS_CAP=0 (no new CCGT, OCGT or diesel open-cycle), seeded from c4's final run
+(seed_run 38359856512, seed_name c4t, WIN_FROM=seed/out/pathway_c4t_lp2040.json), rule B (MAXP=3, stop when no tested year
+fails; no top-up). Run 38361317217, branch claude/c4-frozen (engine identical to 86bfea4), pass 1 solved Optimal in 30 min
+from a cold start; loop test after pass 1: no failing year (worst 2040, 0.39 against 2.60 GWh), so it stopped. Engine check
+pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, 10 draws per weather year (120 runs) every year; print job 38366303884.
+
+```
+                                 s_nogas4strict        c4 as solved
+cost 2026-40, PV at 8% real      R2,838bn              R2,598bn
+CO2 2026-40                      1,331 Mt              1,605 Mt
+gas GW 2030 / 2035 / 2040        0 / 0 / 0             1.2 / 3.5 / 5.1
+diesel open-cycle GW (new)       0 / 0 / 0             2.8 / 2.8 / 3.6
+lithium GW                       8.7 / 19.7 / 28.5     6.6 / 11.2 / 21.7
+wind (onshore) GW built          12.5 / 25.0 / 31.4    13.5 by 2040
+solar PV GW built                14.4 / 34.5 / 62.5    52.5 by 2040
+offshore GW                      0 / 0.8 / 3.4
+iron-air GW                      0.8 / 1.5 / 2.1
+vanadium GW                      0.8 / 2.0 / 2.25
+pumped hydro GW                  1.5 from 2038
+coal retired early (standing)    1,589 MW by 2040      588 MW from 2026
+worst year, engine check         2040 and 2034, 9%     2040, 161%
+```
+
+Built by 2030 / 2035 / 2040 (from the run's schedule, cumulative): onshore wind 12.5 / 25.0 / 31.4 GW; utility solar 14.4 /
+34.5 / 62.5 GW (rooftop a further 4.8 / 10.8 / 16.8 GW); lithium 8.7 / 19.7 / 28.5 GW and 64 / 144 / 176 GWh (7.3 / 7.3 / 6.2
+hours); iron-air 0.75 / 1.5 / 2.1 GW; vanadium 0.75 / 2.0 / 2.25 GW.
+
+By year, engine check means: existing peakers' diesel output (GWh) and curtailment (TWh). 2026 49 / 0.0; 2027 25 / 0.1;
+2028 6.3 / 0.5; 2029 0.08 / 0.8; 2030 0.67 / 4.0; 2031 0.88 / 10.3; 2032 0.80 / 19.0; 2033 0.69 / 28.6; 2034 0.85 / 38.4;
+2035 0.54 / 50.0; 2036 0.39 / 63.7; 2037 0.33 / 73.5; 2038 0.28 / 88.9; 2039 0.42 / 95.4; 2040 0.84 / 102.1. For comparison,
+2040 curtailment: c4 41.9 TWh, penalty c4 47.0 TWh.
+
+Shed by year, engine check, mean against target (GWh): 2026 0.03 / 1.94; 2027 0.03 / 1.96; 2028-29 0.00; 2030 0.02 / 2.06;
+2031 0.04 / 2.12; 2032 0.08 / 2.16; 2033 0.11 / 2.21; 2034 0.20 / 2.26; 2035 0.08 / 2.31; 2036 0.03 / 2.35; 2037 0.05 / 2.41;
+2038 0.01 / 2.48; 2039 0.08 / 2.54; 2040 0.24 / 2.60. Existing diesel peakers burn 0.05 TWh in 2026 and under 0.01 TWh a year
+from 2028. Curtailment 4 TWh in 2030, 50 in 2035, 102 in 2040.
+
+The no-gas cost premium is not quotable until s_nogas4strict_bd (the same with BATT_DECL=0.03, against s_battdecl) is in
+(user, 13 Oct 2026): both sides here carry the engine's 5% a year lithium decline (TODO 14cw).
+
+Caveats: one pass on c4's windows, so the build is shaped by c4's stress weeks; c4 itself fails 2040 (R2,599bn with its
+top-up, so the gap to c4 topped up is R239bn, about R870 per tonne of CO2 avoided). The loop's own test again reads above
+the engine check (2040: 0.39 against 0.24; TODO 14cv).
+
+### Penalty c4 finished: adequate after 2 passes, every year within target, PV R2,681bn, 1,479 Mt, 12 Oct 2026
+
+Method check for c4 (TODO 14cn): COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central
+GAS_FOM_ADD=530.5 (no STRESS_TARGET), SOLVER=native, code 86bfea4 (build 2026-10-12e), GitHub runs 38255695323 (pass 1)
+and 38257824027 (pass 2, 4 h 25 min, 'done adequate'; engine check in the same run, artifact results-c4). Engine check
+(pathcheck.js, 12 weather years x 10 outage draws), mean shed against target on customer demand (half of 0.002%):
+
+```
+year  shed/target GWh   cost R bn  CO2 Mt     year  shed/target GWh   cost R bn  CO2 Mt
+2026  0.02 / 1.94       225.2      142.8      2034  0.01 / 2.26       310.0      90.9
+2027  0.02 / 1.96       243.2      130.4      2035  0.01 / 2.31       310.5      91.3
+2028  0.00 / 1.98       262.7      118.1      2036  0.05 / 2.35       323.1      88.6
+2029  0.00 / 2.01       272.2      105.5      2037  0.08 / 2.41       327.6      89.5
+2030  0.00 / 2.06       290.0       97.2      2038  0.45 / 2.48       342.4      84.9
+2031  0.00 / 2.12       295.8       91.8      2039  0.87 / 2.54       352.5      84.4
+2032  0.00 / 2.16       302.6       88.2      2040  1.17 / 2.60       363.2      85.6
+2033  0.00 / 2.21       312.3       89.9
+```
+
+Cost 2026-40 at 8% real (2026 base): R2,681bn; CO2 1,479 Mt. Caveat: c4 is c4-target, still running; the comparison
+of the two methods waits for it. After 4 passes c4-target's own stress loop still fails 2039-40 (2040 7.84 / 2.60 GWh).
+
+### Preset inventory at build 2026-10-12e: both transition presets are over-built at their +5% demand and far short at the central path's, 12 Oct 2026
+
+User, 12 Oct 2026 (TODO 14ay, now parked): each preset applied as the page applies it (applyState), twelve weather years
+x 20 outage draws (240 runs; seeds as pathcheck.js), profiles.json, build 2026-10-12e. Target half of 0.002% of
+customer demand (without storage charging). Central path: DEMAND=irp_esrg's index for the preset's year.
+
+```
+preset                        year  demand  central  customer   mean shed / target      cost       CO2
+                                    setting path     TWh        GWh                     R bn/yr    Mt
+Today 2026                    2026  +0%     +0%      193.5      0.26 / 1.94 (13%)       212.9      157.4
+IRP's 2030 targets            2030  +20%    +10.1%   226.7      0.00 / 2.27 (0%)        307.5      128.3
+IRP's 2030 targets, delayed   2030  +20%    +10.1%   226.7      0.11 / 2.27 (5%)        301.1      149.3
+IRP path 2035                 2035  +5%     +26.7%   189.8      0.00 / 1.90 (0%)        287.3       64.3
+Deep decarbonisation 2035     2035  +5%     +26.7%   187.0      0.02 / 1.87 (1%)        325.2       30.6
+Fossil-free 2040              2040  +5%     +45.9%   177.8      0.00 / 1.78 (0%)        386.5        0.0
+at the central path's demand
+IRP path 2035                 2035  +26.7%           233.4      0.00 / 2.33 (0%)        321.4       88.6
+Deep decarbonisation 2035     2035  +26.7%           230.5      381 / 2.31 (165x)       342.4       42.4
+Fossil-free 2040              2040  +45.9%           259.3      5,561 / 2.59 (2,145x)   445.2        0.0
+```
+
+2025, as modelled (page run, its own year): 28.3 GWh shed, coal 168.6 TWh, diesel 2.25 TWh, as its description and
+comments state. Claims that no longer hold at this build: Deep decarbonisation's 'mean shed about 2 GWh' (now 0.02) and
+Fossil-free's 1.77 GWh (now 0.00), and their quoted annual costs (R283.8bn and R338.3bn; now R325.2bn and R386.5bn, the
+battery cost change already recorded in TODO 14ay); both are sized to half the standard only in their descriptions'
+history, and the page text already says they are not shown to be the cheapest build. 'On the IRP's own demand growth'
+(IRP's 2030 targets): its +20% is the IRP's 2030 level less Mozal on a 2024 base, while the central path applies the
+IRP's growth to the measured 2026 base (+10.1% by 2030), so two IRP demand bases are in use. 'IRP path 2035 on the
+transition presets' +5%, so the three compare like for like' holds until those presets are re-searched. IRP path 2035's
+gas floor is still 13.5 of 26.8 TWh unmet, as recorded at build 06g. On the open profiles the table moves by at most
+0.2 GWh of shed and R1bn, except 2025 (page run 24.2 GWh). Caveats: one draw set; engine only; not a re-search.
 
 ### c3 checks: shed on customer demand, one cost basis, and what the 2026-30 lithium energy is for, 12 Oct 2026
 
@@ -3678,10 +6291,15 @@ scheduled date. Offshore wind is a build option on the engine's offshore profile
 medium path (none before 2032, 1 GW by 2035, 5 GW by 2040). Utility solar's build cap grows 7% a year
 from 2.5 GW (6.4 GW by 2040), an assumption for a scaling industry, not a sourced rate.
 
-Coal schedule corrected: Camden, Hendrina and Grootvlei now close in 2030, not 2024-2027. Their 17
-units run under an emissions exemption to 31 March 2030, and the IRP 2025 requires the five older
-stations, with Arnot and Kriel, to close by 2030. Coal the optimiser sees in 2026 went 38.5 to
-41.4 GW. Life extension beyond the schedule is not offered; Eskom attributed R8.4bn of the MYPD 6
+Coal schedule corrected: Camden, Hendrina and Grootvlei now close in 2030, not 2024-2027. Coal the
+optimiser sees in 2026 went 38.5 to 41.4 GW. CORRECTED 12 Oct 2026 (user): this entry said the 17 units
+run under an emissions exemption to 31 March 2030 and that IRP 2025 requires the five older stations,
+with Arnot and Kriel, to close by 2030. IRP 2025 has no station-by-station schedule. It retires 8 GW
+between 2029 and 2030 (plan p.13, gazette p.24), naming Camden, Hendrina, Grootvlei and Arnot 'by the
+financial year 2030' (plan p.40, gazette p.51); it does not name Kriel or link the closures to the
+emissions exemption. Eskom's Integrated Report 2026 (p.77): the exemption to March 2030 covers six
+unnamed stations, and Eskom has challenged it in court. The same wrong reasoning sits in a code comment
+above UC_FLEET in index.html; it is corrected at the next build after the IRP comparison (TODO 14cr). Life extension beyond the schedule is not offered; Eskom attributed R8.4bn of the MYPD 6
 maintenance increase to keeping those five stations running, and that is inside fomCoal.
 
 Re-run of the pathway before the schedule correction (Today 2026 to 2040, gas from 2030, rooftop at
@@ -6897,7 +9515,8 @@ storage: half of 100 hours is 50 hours of free energy.
 It also diverged from this project's own cross-validation. `validation_README` records
 the PyPSA comparison's initial state of charge as computed with CYCLIC INITIALISATION
 rather than hardcoded, so the browser model and the comparison were not starting from
-the same system, and the 0.42% agreement between them was measured across that difference.
+the same system, and the agreement recorded in validation_README.md (not quoted until reproduced, user 13 Oct 2026) was
+measured across that difference.
 
 ---
 

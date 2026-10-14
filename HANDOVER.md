@@ -1,3 +1,546 @@
+# GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
+
+## Note date and plan to Fri 23 Oct (user, 13 Oct: note moved to Fri 23 Oct so the engine is fixed first; plan is a draft for approval)
+
+No more c4-based runs (user, 13 Oct). Estimates use today's measured times: a rule A pass took 1.5-2.8 h on GitHub (LP solve
+5,300-10,000 s), the engine check 12-40 min, print, top-up and tsl 1-20 min; c4's own loop took 9 passes over about 3 days.
+GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs ran at once today without queueing.
+
+1. Engine (B) done (TODO 14dv (1); build 14a, claude/engine-fix 016bb49; RESULTS 'Engine fix (B) against the same pass marks'):
+   mark (1) passes (1.2, 1.7, 4.0, 2.7%); (2) fails on 3 of 15 weeks by 0.15-1.00 GWh (last hour of the week, stores empty,
+   coal held for operating reserve the PyPSA check does not hold); (3) fails on the 2025 peaker season ratio (9.3x against
+   2.15-8.6x); (4) engine check about 41-45 min worst case (pass), live app 4.37 s (fail, 14ds after the note). c4's build on
+   14a: no year fails, engine PV R2,525.8bn, CO2 1,465 Mt. Suite 715/726 plus audit 87/87, eng5 6/6. Proposed: c5 runs on 14a.
+   Earlier: pass marks set (TODO 14dt, 17:00): (1) and (2) fail, (3) passes, (4) proposed; reported, not moved; your decision on the
+   next step (RESULTS 'Engine fix (a) against its pass marks'). Done 13 Oct (RESULTS 'Engine fixes'): (b) 13f 20729cc, (c) 13g 99b5b92, (a) 13h d388ceb on claude/engine-fix; draft pull request
+   for review; the four cross-check weeks 1.3-12.4% above the 24-hour rolling optimum (were 2.2-48.4%); six suite failures wait on
+   your decisions (TODO 14dp). Was: Engine fixes, branch claude/engine-fix (Tue 13 - Wed 14): (b) start-up double count, about 1 h; (c) coal units standing in
+   later years, about 2 h; (a) 24-hour look-ahead storage dispatch, 6-10 h (design, code, tune against the cross-check). Each:
+   full suite before and after (7 min each), the four cross-check weeks (15 min), engine-check and app run times. Pull request
+   for review.
+2. Done 13 Oct (RESULTS 'c4's build through the fixed engine'): no year fails, no top-up; engine PV R2,540bn against R2,598bn;
+   CO2 1,480 Mt against 1,605; the optimiser's objective unchanged (no re-solve).
+3. Stress-day coal rule, 14de (Wed 14 - Thu 15, about 1 day, needs your choice of rule: committed or available coal on stress
+   days, one rule in the optimiser and the engine): code, LP tests, suite.
+4. c5 central run from scratch (Thu 15 - Sat 17): c4's settings with the fixed engine and the 14de rule; passes 1.5-4 h each;
+   c4 needed 9; estimate 1-2 days to a pass cap or adequacy (stopping rule to agree before launch).
+5. DONE 14 Oct (RESULTS 'c5 sensitivities'): 18 runs (#130-#147) pinned to a74d581, rule A from c5's windows; s_coalirp,
+   s_battdecl and s_wind35 dropped as duplicates of c5; 17 pass the engine check in every year; s_nogas4strict fails 2034-40,
+   top-up running (claude/recheck-14d). c5 itself: adequate after 2 passes, engine check passes, R2,300.6bn, 2,019 Mt.
+   Was: Sensitivities on c5, seeded from its windows, rule A, all at once (Sat 17 - Sun 18, 3-4 h wall clock for one wave of up to
+   20): proposed, for you to cut: s_be7, s_nogas4strict_bd with s_battdecl, s_coalirp, s_coal60, s_irpgas, s_pvirp, s_windlow,
+   s_roof2, s_li8h, s_be4, s_be6, s_committed, s_gasprem, s_disc10, s_disc113, s_wind35 (17 runs); then print, top-up and tsl
+   for each (about 30 min). Added 14 Oct (user): s_noimp (IMP_END=2030), s_carbonfull (CTAX_FULL=1, the statutory carbon rate
+   with no allowances); s_roof2 is ROOF_MW=2000. No IRP emissions-cap run: IRP 2025 sets no cap as far as found (TODO 14eb).
+6. Write-ups, both measures, cross-check of c5's 2040 weeks, note draft (Mon 19 - Thu 22); note Fri 23 Oct.
+Risks: (a) may take longer; 14de waits on your choice; c5's pass count is unknown.
+
+
+## c5 options: scope for the Thursday input freeze (13 Oct 2026; scope only, nothing built; your decision)
+
+Rule (user, 13 Oct): the least-cost run chooses among every option we can cost and size from a source. Today the national
+build LP chooses wind, utility solar, rooftop (pinned by the pathway at 1.2 GW a year), lithium power and energy, vanadium,
+iron-air, CCGT, offshore wind, pumped hydro and early coal retirement; open-cycle gas on LNG and on diesel (on in c4); peaker
+life extension and repurposed connections (off in c4). Hours are work plus tests (LP-key test, suite, cross-check), at today's
+pace. Held = in SOURCES.md already; new = found 13 Oct, to add. First-hand = read in the document; extract = search-engine
+text, to verify before use.
+
+| option | sourced cost | sourced ceiling | work, h | single node | recommendation |
+|---|---|---|---|---|---|
+| Coal flexibilisation | no: R223/kW-yr is one German lignite plant (Weisweiler, EUR 125m for 1,200 MW, no year or exchange rate); post-retrofit minimum load and ramp unsourced (the 100%/h is not IRENA's 3-6%/min) | no: the standing fleet only | 16-22 incl. 4-6 sourcing | yes | after the note (your call after the Meridian call) |
+| Virtual power plants | no SA cost (Brattle 2023, US only) | partly: IEA 2026, 600 MW from 1.2m households (held); LBNL/Wits 2024, 5.2m geysers, 6.6 GW winter peak (new, extract) | 10-12 | yes | after the note |
+| Demand response, interruptible | partly: availability R521m FY2026 (NTCSA MYPD 6, held), about R366/kW-yr derived over 1,422 MW; the R4,000/MWh call price is unsourced | yes for what is contracted: 1,014 + 346 + 62 MW (NREL/CSIR 2024, held, extract); 4 GW outer, unverified | 5-7 | yes | c5: the contracted MW as a dispatch choice in the LP (the engine already calls 1.2 GW the LP does not have); growth after the note |
+| Demand response, shiftable | partly: LBNL-2001576, R3.5m/MW (held, price year not stated) | partly: IEA 2026, about 1 TWh a year for industry (held); 4 GW outer, unverified | 12-14 | yes | after the note (the LP needs a shift formulation; two findings on it already fail after fix (a)) |
+| New nuclear | yes: IRP 2025 workbook, 1x1600 MW R176,885/kW, fixed O&M R2,837/kW-yr, 72 months, 30 years (held, first-hand); SMR 12x73 MW R153,378/kW, 48 months (new, first-hand) | yes, by policy: IRP 2025 Table 1, 5,200 MW in 2036-39 (held) | 8-11 | yes | c5: earliest 2036, cumulative cap 5,200 MW by 2039; the engine also needs new nuclear's fixed O&M (missing now) |
+| CSP, new | yes: IRP 2025 workbook, trough 0-12 h R83,198-195,045/kW, tower 3-12 h R106,475-158,985/kW, fixed O&M R1,228-1,663/kW-yr, capacity factor at Upington 0.26-0.70 (new, first-hand) | technical only: Fluri 2009, 548 GW (new, abstract); the binding limit is Northern Cape grid headroom (GCCA 2025: none), which a single node cannot see | 16-22 | partly | after the note |
+| New coal | no: no unabated coal row in the IRP 2025 workbook; the code's R5,000/kW-yr names no study; Kerwin et al. USD 3,297/kW (held) | 0 by policy (IRP 2025: no new coal) | 8-10 | yes | after the note; a sensitivity at most |
+| Carbon capture | partly: IRP 2025 workbook, new coal with 90% capture R149,567/kW (new, first-hand); no retrofit cost; the code's R38,000/kW and R260/MWh disagree | storage: Council for Geoscience atlas 2010, 150 Gt, 98% offshore (new, extract); nothing deployable before the mid-2030s | 12-16 | yes | after the note; first check a possible engine error (the share is not applied to the coal cost at ix:6815) |
+| Grid-enhancing technologies | no SA cost: one case, about R3m/km to reconductor a 275 kV line (Energize, Dec 2025, new, first-hand); the 20% uplift is assumed | no SA potential estimate | 6-10, regional LP only | no (no corridors) | after the note |
+| Transmission build | yes: TDP 2024 R440bn for 14,500 km, R402/kW-yr (held); the grid-cost switch bldGridCost exists, off in c4 | yes: GCCA 2025 headroom 19.94 GW; delivery 270.8 km a year (held) | 0-2 to switch the grid cost on, plus its run time to measure; corridors only in the regional LP | as the grid-cost adder | c5: decide whether new build pays the grid cost (an existing, sourced option); corridors after the note |
+| Imports | no: R550/MWh names no document; no Cahora Bassa tariff; SAPP day-ahead 12.3-17.6 USc/kWh (new, extract) | the 1,150 MW contract ends in 2030 and Mozambique plans to take the power (Engineering News, Feb 2024, new, extract); c4 holds it to 2040 | 4-8 | yes | c5 input, not an option: decide the post-2030 assumption; imports as a choice after the note |
+| Rooftop solar | partly: Kerwin et al. USD 1,406, 1,258, 1,110/kW for 2020/30/40 (held); BLD_COST's R17,000/kW unsourced (14ba) | uptake: IRP 2025, 0.9 GW a year (held); 1.2 GW a year unsourced; technical 72 GW (Senatla et al. 2020, new, abstract) | 1-2 | yes | keep as an input, at the sourced 0.9 GW a year: households decide it, and as a planner's choice the LP builds none (RESULTS: zero rooftop is the cost optimum, not a forecast) |
+
+Also offered by the app but not choosable (one line each): solar tracking (a global switch; fixed-tilt R12,000/kW unsourced);
+RMIPPPP hybrids (the LP leaves out the existing 335 MW); diesel peaker early retirement (not offered) and life extension (a
+R1,500/kW placeholder); coal life extension (not offered); coal availability improvement (no cost); synchronous condensers
+(14bc); surplus exports (14by); grid-forming battery share (fixed 0.30, no cost); electrolysers (hydrogen panel only); biomass,
+small hydro and compressed air (absent).
+
+Time: the c5 recommendations (interruptible demand response, new nuclear, the grid-cost decision, the import input, the
+rooftop basis) add up to 15-22 h with tests, about two working days. Building them after Thursday's freeze moves c5's launch
+from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separate decision before that.
+
+### Coal flexibilisation (user, 13 Oct)
+
+1. Confirmed in the code (build 13h): c4's build LP and engine check run with it off. The switch is a toggle, default off;
+   'Today 2026' leaves it off and both pipeline scripts start from that preset and never set it (pathway_perfail.js:128,
+   pathcheck.js:26). In the engine it changes the ramp rate only, from coalRampBasePct 24 to coalRampFlexPct 100 %/h
+   (ix:7173-7179), plus a capital charge (ix:8574). It does not change minimum stable level, commitment, start costs or
+   part-load. The build LP never reads it: its coal rows are a 0.65 minimum on committed coal and a commitment ramp of
+   available coal / 48 per hour (ix:10411, 10455-10463), with no output ramp. Faults found: the charge falls on all standing
+   coal, not a retrofitted share; the toggle's value 1 reaches the nodal engine as 1% of the way (nodal_engine.js:457); the
+   frontier caption reads it as 'not flexibilised' (ix:4242).
+2. Work to make it an optimiser choice, year by year: LP, flexibilised MW by year (cumulative, at most the standing fleet),
+   annualised retrofit cost in the objective, a lower minimum and faster commitment ramp for that share (6-8 h); engine, the
+   same share applied unit by unit in the commitment step (lower minimum stable level, faster ramp) and the charge on that
+   share only (6-8 h); pathway and engine check carry it by year (2 h); sourcing first (4-6 h). About 16-22 h in all.
+3. Sources for Eskom-type subcritical units (13 Oct; read = in the document, extract = search text only; not yet in SOURCES):
+   - Eskom RT&D, 'Gx Operational Flexibility', RES/TRR/21/1962944 (3 Nov 2023), in Eskom's public notice on its coal
+     flexibilisation studies (Oct 2025, an MES exemption condition), read pp. 1-25: procedure-only tests without oil support
+     reached about 44-62% of full load across eight stations, against design-data minimums of about 50-69%; mills (60-90% band,
+     at least three in service), oil support below 38% of boiler maximum steam flow and air-heater temperature bind first;
+     no ramp figures in the pages read; capital (Tier 2 and 3) work neither studied nor costed, targets for 2030-35; start-up
+     fuel oil 35-80 t a start. The best 'before' basis, and Eskom's own. Eskom's terms apply: cite and summarise, do not
+     reproduce its tables here.
+   - India, the closest analogue (500 MW drum subcritical units on high-ash coal): IGEF and vgbe pilots, 32-40% minimum and
+     1.5-3%/min (Andal read, others extract); CEA 2019 and 2023 (via Power Line summaries): 40% target, never below 35% on
+     high-ash coal, about 1.3%/min achieved with manual mills; capital Rs 60-70m a unit (up to Rs 300m for old units), Dadri
+     490 MW Rs 200m; CEA regulations 2023: 40% by 2030, 3%/min above 70% load (extract); NTPC: 7.6-8% heat-rate penalty at
+     55% load (extract).
+   - Agora Energiewende (2017), Flexibility in thermal power plants, read pp. 1-51: hard coal 25-40% minimum, 3-6%/min at the
+     state of the art; old South African plants no more than 1%/min; retrofit 100-500 EUR/kW case by case (citing NREL
+     60862); Weisweiler (lignite, not hard coal) about EUR 60m a unit. The current R223/kW-yr rests on Weisweiler alone.
+   - Kumar et al. (NREL and Intertek APTECH, 2012), Power Plant Cycling Costs, read: wear per start for large subcritical
+     units, USD 59 / 65 / 105 per MW (hot / warm / cold, 2011 USD, lower bounds).
+   - Also, extract only: IEA (2018) Advanced Power Plant Flexibility and its annexes; NREL (2013) Flexible Coal; Henderson
+     (2014, IEA Clean Coal Centre); Danish Energy Agency (2018); China (Ember 2026 citing the CEC, 500-1,500 CNY/kW).
+   - South African planning: CSIR (2020): no literature on how low the existing fleet can run; Meridian (2025): seasonal
+     shutdowns save more than a lower minimum; IRP 2025 publishes no coal minimum-generation assumption.
+   Best basis: before, Eskom's report; after, the Indian 500 MW pilots and CEA (about 40%, 35% floor; 1.5-3%/min set, about
+   1%/min achieved); cost, CEA's per-unit capital with Agora's 100-500 EUR/kW as the deep-retrofit bound, Kumar for wear per
+   start. Caveats: Eskom has done the procedure tier only and the mill backlog binds before design limits; sources mix sent-out
+   and generated MW and percentages of different ratings; Indian results are short tests; costs differ in year and currency.
+
+## c5 inputs and stopping rule (13 Oct 2026, 22:00 UTC; proposals for your decision before launch)
+
+Final c5 inputs (your decisions, 14 Oct, second message): tracking on (PVTRK=1); carbon central 'kept2030' (TODO 14eb);
+coal on IRP 2025 Figure 3's 50-year line (COAL_DATES=coal_dates_irp2025.json), with Meridian's ME IRP 2024 dates (UC_FLEET,
+c4's, no COAL_DATES) and the 60-year line (coal_dates_irp2025_60y.json) as sensitivities; wind 2.5 GW a year to 2030 and
+3.5 GW from 2031 (WIND_CAP=3500 WIND_CAP_FROM=2031); lithium capex decline 3% a year (BATT_DECL=0.03, as s_battdecl), with the
+model's 5% as a sensitivity. Launched 14 Oct 08:31 UTC: run 38535760468 (#128), claude/c5 at a74d581 (build 14i), pinned.
+Settings line and tests: RESULTS 'c5 inputs, final'. Next: its engine check (workflow), stop reason, top-up from claude/recheck-14d.
+
+Update 14 Oct (your decisions, TODO 14dx): #32, #33, #35 and #36 merged (main 7135caf); #34 closed. c5's own branch is
+claude/c5, from main: the imports end year (5d5dc10, 14c), 14dr (a89df58, 14d), c4-irp3's three off-by-default pathway
+settings including ROOF_MW (191e7cc, 0ec290f, 66d9fb7; carried whole, the commits bundle ROOF_MW with GAS_LIFT, GASFLOOR_VINT,
+PV_CAP_YR, TCAP_YR and COAL_AVAIL, all off unless set), the check changes (63a2722, 14e) and the stall stop (b86fc7c, 14f;
+STALL=0.1 STALL_FROM=4 with MAXP=6; the verdict records adequate, stall stop or pass limit reached). Top-up and check mode
+after c5: claude/recheck-14d (claude/topup merged onto claude/c5; never merged). claude/c5-imports is superseded by claude/c5.
+
+- Imports after 2030 (TODO 14dv (6)): IRP 2025 does not say, as far as the sources reachable here show. Table 1 carries hydro at
+  1,600 MW from end 2025 with no additions to 2042, but it lists new capacity only; two web searches (13 Oct) found the
+  contract's end (Mozambique's strategy: 31 Dec 2030, about 1,150 MW) and nothing on the IRP's assumption. The gazette's full
+  text was not read (long PDF). So, per your rule: 1,150 MW kept, plus a no-imports-after-2030 sensitivity. That needs a
+  year-by-year imports setting in the pathway LP and the engine check (none exists; about 1-2 h).
+- Built 14 Oct on claude/c5-imports (from step 3): the imports end year (IMP_END=2030 for s_noimp; f0d5dc8, build 14c) and 14dr
+  (835b618, build 14d, separate so it can be dropped; it makes mark (2) worse: RESULTS 'c5 inputs').
+- Rooftop 0.9 GW a year: the ROOF_MW setting exists on claude/c4-irp3 (merge step 6), not on main or c4-frozen; c5 needs it
+  merged or carried. Grid cost: GRID=1 exists on c4-frozen.
+- Stress-day coal, 14de (TODO 14dv (5)), evidence and proposal. On c4's three 2030 windows the fixed engine (14a) commits a mean
+  of 14.0-15.8 GW against 16.7-17.1 GW available; its lowest hours are 0.36-5.8 GW (midday, low net load); it sheds none.
+  The optimiser's stress-window coal (coalAvailFrac) is already the engine's own hourly ceiling, the commitment capped by
+  outages, so both sides use one rule on the draw. The gap is which build the draw was made on: the window carries the
+  commitment made for the previous pass's plan, and the low hours bind if the new plan has more net load there. Options:
+  (A) as now, on 14a (no code; c5 inherits the lag, which shrinks as passes converge); (B) after each solve, re-run each
+  window's draw on the plan just solved and re-solve if the commitment moved (one engine run per window per pass, about
+  3-4 h of code); (C) first, a GitHub engine-check job of s_coalavail's plan on 14a (about 1 h): if the plan that used
+  available coal now passes, the old engine was the cause of its failure. Recommended: C now, then A for c5 unless C
+  passes; B after the note.
+- Stopping rule (TODO 14dv (9)), proposed: the loop's own adequacy test as in c4 (stop when no year's mean shed is above its
+  target); a pass cap of 6 (MAXP=6); and a stall stop: from pass 4, stop when a pass cuts the worst year's shed above target by
+  less than 10% (c4's passes 4-7 cut 7-19% each). Whatever stops it: the engine check, then the top-up on any failing year,
+  both costs reported, and the stop reason recorded. Time: passes of 1.5-4 h, so at most about 10-20 h; on 14a c4's own build
+  already passes the engine check, so c5 may stop sooner.
+
+## Merge order to main by Wed 21 Oct (proposal, 13 Oct; you merge)
+
+Each step simulated in a scratch copy of main with the full suite (ESK19679.csv present; audit 87/87 and eng5 6/6 at every step).
+1. Pull request #32, licence lines (1 commit, on main). Suite 724/725 (EDMSA only).
+   Step 2 opened 13 Oct as pull request #35 (claude/merge-c4-frozen: #32 merged in, then c4-frozen; conflicts resolved): suite
+   808/812 with audit, eng5 6/6; the GitHub stress suite needed one fix (stress_suite.js loads the modern wind map), now green.
+   Step 3 opened 13 Oct 22:30 UTC as pull request #36 (claude/merge-engine-fix: engine fixes 13f-14a and 14dp on step 2; build
+   14b): suite 807/813 with audit, eng5 6/6, stress suite 290/290. Merge #35 first.
+2. The c4 engine, claude/c4-frozen (115 commits, build 12e): per-year stress windows, grid cost and peakers (#20, #21), the
+   build-costs code of #22 (BW3 batteries, modern wind, tracking option, hourly storage in the build LP), the 9-12 Oct engine
+   and optimiser work (gas and diesel options, coal dates, customer-demand standard, adequacy test) and the long-run workflow.
+   Two conflicts: BUILD_STAMP (new stamp) and the workflow file (c4-frozen's, a superset of main's). Suite 721/725 (EDMSA and the
+   three findings that wait on #22's preset re-search).
+3. Engine fixes, claude/engine-fix (3 commits, 13f-13h). Conflict: BUILD_STAMP only. Suite 715/725 (the six in TODO 14dp; 721 if
+   those are settled first). The live site (GitHub Pages, nickhedley.github.io/gridtwin-za) follows main from here.
+4. Docs, claude/build-costs's own 65 commits (RESULTS, TODO, HANDOVER, SOURCES, CLAUDE). Clean.
+5. Tools, claude/topup and claude/costsplit (topup.js, gasrole.py, costsplit scripts, pathcheck additions, the workflow's
+   top-up and tsl modes). Clean.
+6. Sensitivity switches: claude/c4-irp3 (contains c4-coalavail), c4-coalirp, c4-windlow, c4-battdecl, c4-diesel. Three conflicts
+   in pathcheck.js and pathway_perfail.js where two branches add a field to the same line; kept both. Best done as one branch
+   with the LP-key test.
+7. .github/print_state.py from claude/print-results (the script only; that branch's print-only workflow stays off main).
+   Suite after 4-7: 715/725, the same checks as after 3.
+Also any time: #33 (cross-check scripts). Close without merging: #22 (code in 2, docs in 4); claude/stress-per-year, grid-cost and
+peakers (inside 2). Hold: regional-phes-07u (regional pumped hydro, inconclusive; its build 08a is not in c4-frozen),
+kerwin-demand, gas-annual-flex-regroup (6 Oct notes), fleet-slim (paused). Timing: 1-3 by Thu 15 so c5 can launch from main;
+4-7 by Wed 21. For 2, 3 and 6 I would open merge branches with the conflicts resolved, once you approve the order.
+
+Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
+when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
+take over at any point from this block, CLAUDE.md and TODO.md (items 14cn, 14co, 14bz, 14ay and the FOCUS line).
+
+## Runs, 13 Oct 2026 07:20 UTC
+
+- c4 final: c4-target stopped after pass 9 (user). Pass 9 solved 02:59-06:58 UTC (job 38338261578, 4 h 14 min with the
+  replay); the automatic job 10 (38359803131) was cancelled before it started pass 10; replacement job 10 = run
+  38359856512 (same settings plus MAXP=9, prev_run 38338261578, code 86bfea4): replayed passes 1-9 from the cache (pass 9
+  key 1e8b5aa62a), 'done pass limit reached', exit 0, wrote pathway_c4t.json and pathway_c4t_lp2040.json; its check job
+  runs the engine check. This run is c4's final run and the seed of the set.
+- Seeded set launched 07:13 UTC (user rules, 13 Oct): rule A, MAXP=1 (one solve on c4's pass-9 windows, then engine
+  check, then top-up) for every run but s_nogas4strict; s_nogas4strict rule B, MAXP=3, no top-up. All seed_run
+  38359856512, seed_name c4t, settings c4t's plus WIN_FROM=seed/out/pathway_c4t_lp2040.json and MAXP. Run ids by
+  dispatch order (names to confirm from each job log's RUN_NAME):
+
+```
+s_disc10 38361281441      s_disc113 38361285970     s_gasprem 38361289574     s_committed 38361295036
+s_wind35 38361299620      s_li8h 38361303412        s_nogas3 38361308336      s_nogas4 38361312903
+s_nogas4strict 38361317217 (MAXP=3)                  s_be4 38361321669         s_be6 38361326157
+s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00, Figure 3 dates)
+```
+
+- s_nogas4strict finished 07:53 UTC (run 38361317217): rule B stopped after pass 1 (no failing year in the loop's test);
+  engine check within target every year (worst 9%); R2,838bn PV, 1,331 Mt; no gas or new open-cycle (RESULTS). Print job
+  38366303884. No top-up (rule B).
+- Gas role (user, 13 Oct, item 2): engine check re-run with gas, diesel and CO2 by fuel (claude/topup, mode check, 833852b):
+  c4 run 38365615522, penalty c4 run 38365619101, both done (RESULTS, 'Gas role and the method gap'): c4 gas output 68.8 TWh
+  (CCGT 53.1, LNG open-cycle 15.7; CF 41% and 30% in 2040), penalty c4 17.9 TWh (CCGT only, CF 9% in 2040); the 126 Mt gap
+  is coal 105, gas 21, diesel 0.1 Mt.
+- s_dieselhigh (user, 13 Oct): waits on the user's choice of diesel price basis (SOURCES, 'Diesel fuel price'; TODO 14cj).
+  Switch DIESEL_R on branch claude/c4-diesel (3cc075f, tested: LP unchanged when unset). Launch: ref claude/c4-diesel,
+  seed_run 38359856512, seed_name c4t, c4's settings plus WIN_FROM, MAXP=1 and DIESEL_R=<value>; then the top-up.
+- s_battdecl started 08:13 UTC (user, 13 Oct; TODO 14cw): run 38367769821, ref claude/c4-battdecl (1edd42b; c4-frozen plus
+  BATT_DECL, tested: off key e0b93ac712, on only the 28 lithium build cost coefficients change), c4's settings plus
+  WIN_FROM, MAXP=1 and BATT_DECL=0.03 (lithium capex -3% a year real, against the engine's 5%), seed 38359856512 / c4t,
+  rule A: then print and top-up (claude/topup applies battDecl from 89f3ed0).
+- s_nogas4strict_bd finished 08:58 UTC (run 38367947315, ref claude/c4-battdecl 1edd42b; s_nogas4strict plus BATT_DECL=0.03,
+  rule B): adequate after one pass, R2,862bn, 1,328 Mt (R24bn above s_nogas4strict). Print 38373115718. The no-gas premium
+  is quoted only as s_nogas4strict_bd against s_battdecl (still running).
+- s_dieselhigh held (user, 13 Oct): c4's diesel at option (a) adds at most R1.4bn undiscounted (RESULTS). If s_nogas3 or
+  s_nogas4 produce more than 1 TWh from diesel in any year (engine check, 'dieselTWh'), run high-diesel versions of them
+  at option (a), DIESEL_R=8887, ref claude/c4-diesel, rule A, seeded from c4, labelled an upper bound.
+- s_nogas3 finished 08:15 UTC (run 38361308336, name confirmed): as solved R2,593bn, 1,547 Mt, 2036-40 failing the engine
+  check (2040 968%). Top-up 38368114518: 4,250 MW, R2,606bn, 2036 over the cap; diesel under 0.5 TWh a year, so no
+  high-diesel version.
+- s_be6 finished 08:27 UTC (run 38361326157, name confirmed): adequate, R2,550bn, 1,629 Mt; top-up 0 MW (38369362473).
+  Flag: R48bn below c4 on the engine check but R88bn above on the optimiser's objective (RESULTS; TODO 14cv).
+- s_nogas4 finished 08:27 UTC (run 38361312903, name confirmed): as solved R2,597bn, 1,553 Mt, 2035-40 failing (2040 1,035%);
+  Top-up 38369545953: 4,750 MW, R2,612bn, 2036 and 2038 over the cap; diesel at most 0.48 TWh, so no high-diesel version.
+- s_committed finished 09:02 UTC (run 38361295036, name confirmed): engine check within target every year, R2,562bn,
+  1,602 Mt; top-up 0 MW (38373578065). Same flag as s_be6: R36bn below c4 on the engine check, R9bn above on the LP objective.
+- s_wind35 finished 09:11 UTC (run 38361299620, name confirmed): as solved R2,518bn, 1,522 Mt, LP objective R1,661bn;
+  2037-40 fail the engine check (2040 500%). Print 38374615434; top-up running (claude/topup, dispatched 09:13).
+- TODO 14cv (user, 13 Oct: now, before the note): cost split done for c4, s_be6, s_committed (RESULTS). Cause: the optimiser's
+  2030 stress-target penalty and dispatch differences; proposed measure for the note: the engine check. Until agreed, every
+  cross-run gap is reported on both measures (optimiser objective and engine check). Tools: branch claude/costsplit (mode lpsplit,
+  analysis only); the engine-side split ran locally (scratchpad, not committed).
+- s_wind35 top-up (38374666197): 3,000 MW, R2,526bn, 2038 over the cap. s_disc10 finished 09:25 (run 38361281441; engine PV at
+  8% R2,688bn as solved, 2040 at 112%; optimiser objective at its own 10% not comparable); print 38376204471, top-up 38376207996.
+- s_disc10 top-up (38376207996): 500 MW, R2,688bn. s_disc113 finished 09:34 (run 38361285970): engine R2,763bn at 8%, 2040
+  109%; print 38377992313; top-up running. Still running at 09:45: s_gasprem (check job), s_li8h, s_be4, s_be7, s_coalirp,
+  s_battdecl.
+- s_coal60 started 09:54 UTC (user, 13 Oct): run 38379671167, ref claude/c4-coalirp (53e9ba8), c4's settings plus WIN_FROM,
+  MAXP=1 and COAL_DATES=coal_dates_irp2025_60y.json (IRP Figure 3 60-year line; tests: off e0b93ac712, on d27891bfb8, right-hand
+  sides only), seed 38359856512 / c4t, rule A: then print and top-up.
+- s_coalirp finished 09:49 UTC (run 38361335715): pass limit after one pass, engine R2,588bn as solved, 2039 183% and 2040 439%
+  of target; print 38379708616; top-up 38379712300 running. Objective R1,686.2bn, no stress-target penalty.
+- s_disc113 top-up (38377995864): 250 MW in 2040, R2,763bn, within the caps.
+- s_gasprem finished 09:49 (run 38361289574) and s_be7 10:02 (run 38361331510): print, top-up and tsl dispatched 10:05
+  (claude/print-results, claude/topup, claude/costsplit mode tsl). Still running: s_li8h, s_be4, s_battdecl, s_coal60.
+- Three items (user, 13 Oct) done (RESULTS, 'Both measures for every run'): objective without the stress-target penalty for
+  every run (claude/costsplit mode tsl, runs 38380018380-38380041963): only s_be6 disagrees on direction with the engine
+  check (+R10bn against -R49bn); s_committed now agrees. c4 2040 (engine, 480 runs): curtailment in 2,290 h, 613 with lithium
+  below 90% full, at most 4.7 of 41.9 TWh absorbable; lithium 119 cycles a year in the engine, 374 in the optimiser. c4 2030
+  windows: 2015 22 Mar-4 Apr, 2017 28 Jun-11 Jul, 2023 25 Jan-7 Feb plus the tail week; diesel 6,200 MW both sides; the
+  optimiser caps stress-day coal at the engine's committed coal (lowest hour 576 MW) not available coal (never below
+  12.6 GW there): TODO 14cx, after the note. Every new run gets a tsl job (claude/costsplit, mode tsl) beside print and top-up.
+- s_coalavail started 10:22 UTC (user, 13 Oct: test TODO 14cx before the note, one run): run 38382908890, ref
+  claude/c4-coalavail (1143a98; c4-frozen plus COAL_AVAIL, tested: off and on-without-windows key e0b93ac712; on with windows
+  only the stress-window cmax and resv numbers change, ramp rows and objective identical), c4's settings plus WIN_FROM,
+  MAXP=1 and COAL_AVAIL=1, seed 38359856512 / c4t, rule A: then print, top-up and tsl. Report against c4: 2030 builds (diesel
+  open-cycle, lithium), the 2030 penalty, cost on both measures.
+- Check-in 10:31: s_coalavail passed its COAL_AVAIL check (still solving after 8 min). s_coalirp top-up 3,250 MW, R2,592bn
+  (2039-40 over the caps), still R7bn below c4 on the engine check and R29bn on the objective: agree. s_gasprem R2,617bn with a
+  1,750 MW top-up (2040 over the cap), objective without penalty R1,723.0bn: both above c4. s_be7 adequate, R2,614bn, 1,576 Mt;
+  its objective leaves out the fixed nuclear's capital, so not comparable. s_li8h (38361303412) and s_be4 (38361321669)
+  finished ~10:04; print, top-up and tsl dispatched 10:35. Running: s_battdecl, s_coal60, s_coalavail.
+- Decisions (user, 13 Oct, after 10:45): (1) s_coalavail's reserve row stays as built: stress days see the same coal as
+  ordinary days. (2) In the note's table every run shows its top-up MW and the years over the build cap in their own
+  columns; runs whose top-up breaks a cap (now s_nogas3, s_nogas4, s_wind35, s_gasprem, s_coalirp, all 2036-40) have their
+  cost called a lower bound (RESULTS table, 'LB'). (3) s_be7: nuclear basis R10,500/kW a year (USD 7,500/kW overnight, no
+  study or price year, 40 years, 8%), no fixed O&M charged for new nuclear; 2040 cost +R9.5bn a year against c4 as solved,
+  +R6.8bn against c4 with its top-up; R22bn a year of fixed O&M would be missing at Koeberg's figure (TODO 14cz).
+- s_be7 nuclear arithmetic (user, 13 Oct; RESULTS): with interest during construction and the IRP's fixed O&M, s_be7 is
+  R2,657bn (ours, USD 7,500), R2,681bn (EIA AEO2023) or R2,700bn (IRP 2025 workbook): +R58, +82 or +101bn against c4; 2040
+  gap +R39, +58 or +72bn a year; 2040 CO2 93.5 against c4's 101.3 Mt (-7.8 Mt; R5,040-9,190/t). Engine unchanged (TODO 14cz).
+- Check-in 11:21: s_li8h R2,614bn with a 3,000 MW top-up (within the caps), objective R1,702.9bn, no penalty: disagrees with
+  the engine on direction (storage-heavy, 8-hour lithium). s_be4 R2,618bn with 750 MW, objective without penalty R1,720.6bn:
+  agree. s_be4's floor (user, 13 Oct): 51% on whatever new CCGT is built, not 6 GW forced; it built CCGT only from 2036
+  (0.99 GW by 2040) and OCGT on LNG instead; not the IRP's requirement (RESULTS). s_battdecl finished 10:47 (run 38367769821); print, top-up and tsl dispatched 11:23. Running: s_coal60, s_coalavail.
+- s_battdecl in (11:40): adequate, no top-up, R2,590bn, 1,603 Mt, objective without penalty R1,729.0bn (engine -R9bn,
+  objective +R13.5bn against c4: disagree). Strict no-gas premium (s_nogas4strict_bd against s_battdecl): engine +R272bn,
+  objective +R219bn, -275 Mt; 2040 +R71bn and -35 Mt. The note's 2040 table (cost gap, CO2 gap, R/t, UB and LB marks) is in
+  RESULTS ('2040 against c4 with its top-up'). Still running: s_coal60, s_coalavail.
+- Decision (user, 13 Oct 11:42, replaces the 11:37 message): c4's wind limit unchanged (2,500 MW a year; c4 builds 12.5 GW in
+  2026-30, 0.45 GW in 2036, 0.54 GW in 2039). s_wind35 relabelled 'wind limit 3,500 MW a year from 2028 (front-loaded)', its
+  2037-40 failures and lower bound noted, out of the note's headline findings. When s_coalavail finishes: if its 2030 new
+  diesel open-cycle or lithium differs from c4's by more than 0.5 GW, or its cost by more than R10bn on either measure (engine
+  with top-up, or objective without penalty), the new central is c4 + COAL_AVAIL=1, which is s_coalavail itself (same
+  settings, rule A from c4, topped up); then rerun from it (ref claude/c4-coalavail, COAL_AVAIL=1, WIN_FROM = its windows):
+  s_nogas3, s_nogas4, s_nogas4strict (rule B), s_be6, s_committed and s_irpgas, plus the s_be7 arithmetic against it. If not, c4
+  stays the central and only s_irpgas runs, from c4. s_pvirp and s_roof2 go ahead. s_irpgas, s_pvirp and s_roof2 are not
+  defined in this session's record: settings asked of the user before any launch. Rooftop stays 1,200 MW a year until s_roof2.
+- s_windlow started 11:47 UTC (user, 13 Oct): run 38392619799, ref claude/c4-windlow (71d076e; c4-frozen plus windCase
+  recorded in the run and applied by pathcheck.js; the same on claude/topup, 047f9e9), c4's settings plus WIN_FROM, MAXP=1,
+  WIND_CASE=low (IRENA global USD 1,041/kW), WIND_CAP=3500 WIND_CAP_FROM=2031; seed 38359856512 / c4t; rule A: then print,
+  top-up (claude/topup applies windCase) and tsl. Report wind built by year beside c4's (RESULTS, c4's wind build). Tests:
+  off key e0b93ac712; on a9ce3eea84, only the 14 b_wind cost terms and the 2031-40 wind bounds change; check with a recorded
+  windCase equals WIND_CASE given directly.
+- TODO 14da (c5 wind limit 3,500 MW a year after 2030) and 14db (s_irpgas floor: the optimiser floors all new CCGT, not only
+  the 2029-30 6 GW; switch and reporting needed; settings asked of the user).
+- s_irpgas, s_pvirp, s_roof2 (user, 13 Oct, settings given 12:00): branch claude/c4-irp3 (0b08ca7; claude/c4-coalavail plus
+  GAS_LIFT, GASFLOOR_VINT, PV_CAP_YR, ROOF_MW, all off by default; pathcheck records gasFloorTWh). Rule A, seeded from the
+  central (c4, or s_coalavail if it crosses the thresholds; then add COAL_AVAIL=1 and seed from its run), with top-ups; report
+  wind and solar built by year beside the central's.
+  s_irpgas: GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1
+    GASFLOOR=1 GASFLOOR_VINT=2029-2030. Lifted: tcap 2029-30 2,000 to 3,000; gascap 2032-34 and 2036-40 to the minimum (2035
+    not); gascap 2029-30 set to 3,000 by GAS_FORCE. Report floored and unfloored gas output (check log, gasFloorTWh).
+  s_pvirp: PV_CAP_YR=2026:3553,2027:2886,2028:1760,2029:1314,2030:800,2031:1000,2032:1200,2033:1400,2034:1600,2035:2000,
+    2036-2040:1600.
+  s_roof2: ROOF_MW=2000 (rooftop fixed at 2,000 MW a year from 2027). Engine cost: new rooftop pays the BLD_COST.rooftop
+    annuity (R17,000/kW in 2026, -3.89% a year, 25 years, 8%) plus R495/kW-yr fixed O&M inside newCapexR, so in the engine's
+    system cost; btmCapexR (flat R1,150/kW-yr) only removes it from the grid-cost measure; the optimiser's objective has it
+    as a constant (fixed build).
+  Tests: off key e0b93ac712; s_irpgas 2a7e1ad4c8 (22d2267038 without the vintage switch); s_pvirp f45106c146 (only b_pv
+  bounds); s_roof2 f52ec8a659 (only b_rooftop bounds).
+- s_coalavail finished 11:40 (run 38382908890); print 38394235656, tsl 38394244895 done; top-up 38394240062 running
+  (dispatched 12:01). As solved: engine R2,399bn (c4 R2,598bn), objective R1,514.3bn with no penalty (c4 R1,715.5bn without
+  its R12.2bn), 1,864 Mt (c4 1,605); 2030 new diesel open-cycle 0.05 GW (c4 2.8), lithium 5.6 GW (c4 6.6); no wind until 2030
+  (c4 2,500 a year from 2026). Fails the engine check and the loop's own test in every year 2030-40 (2040 2,816% of target).
+  Rule crossed on every test in. Decision (user, 13 Oct 12:25): c4 stays the note's central; s_coalavail is a finding only
+  (it drops c4's 2.8 GW of diesel open-cycle by 2030 and fails the engine check every year from 2030; the 2030 peaking build
+  is what the engine needs, given how it commits coal); no rule B run of it before the note; the s_be7 arithmetic stands
+  against c4; its top-up runs to the end and is recorded (MW, cost, cap breaches). c5: one stress-day coal rule (TODO 14de).
+- Launched 12:10-12:11 UTC, all cancelled 12:26 (decision (a); the six on claude/c4-irp3 could not be told apart while
+  running, so the three _c4 ones were cancelled too and relaunched): _ca 38395398203, 38395403267, 38395407641, 38395481991,
+  38395489267, 38395492993, 38395498884, 38395502406; first _c4 38395416019, 38395420841, 38395424726.
+- Running from c4 (relaunched 12:27, ref claude/c4-irp3 0488f54, seed 38359856512 / c4t, c4's settings + WIN_FROM, MAXP=1,
+  rule A; then print, top-up on claude/topup 27337aa, tsl): s_irpgas_c4 38397386689, s_pvirp_c4 38397404456, s_roof2_c4
+  38397420439 (dispatched one at a time; ids confirmed by run number 108, 109, 110). Report wind and solar by year beside
+  c4's; s_irpgas floored and unfloored gas and its 2029-30 diesel open-cycle beside c4's 1.8 GW; s_roof2 both measures with
+  rooftop's share.
+- s_irpgas turbine cap (user, 13 Oct 12:20): TCAP_YR=2029:4000,2030:4000 (3,000 MW forced CCGT plus diesel open-cycle's usual
+  1,000 MW) so s_irpgas changes only the gas plan; key 9fb3b64f9d, only tcap_2029/2030 change (3,000 to 4,000). Report its
+  2029-30 diesel open-cycle beside c4's 1.8 GW (1,000 in 2029, 800 in 2030). In both s_irpgas runs' settings.
+- s_roof2 (user, 13 Oct 12:25): report both measures against the central, the engine's total system cost (rooftop capex and
+  O&M in) and the grid cost (pathcheck gridCost, flat R1,150/kW-yr of rooftop removed), with rooftop's share of each. The grid
+  measure keeps R551-906/kW-yr of rooftop (c4: R42.7bn PV, 1.7%; total measure R114.1bn, 4.4%); RESULTS 'Rooftop in the two
+  cost measures', TODO 14dc.
+- Check-in 13:25: _ca runs all cancelled. s_coalavail top-up done: 8,000 MW, R2,458bn with it (lower bound: over the caps in
+  2033 and 2038), 1,862 Mt; 500 MW restores 2030 (RESULTS). s_coal60 finished 12:50 (run 38379671167, name confirmed from
+  artifacts); print, top-up and tsl dispatched 13:25 (print-s_coal60, topup-s_coal60, tsl-s_coal60). Still running: s_windlow
+  (38392619799), s_irpgas_c4, s_pvirp_c4, s_roof2_c4. s_phestub held (TODO 14di).
+- Fleet table (user, 13 Oct): slim paused, no pull request; decision after the Meridian call. Branch claude/fleet-slim
+  (a6dc99c, tests in its commit message); full original on gridtwin-data branch claude/pypsa-rsa-fleet; TODO 14dh. Main
+  untouched (origin/main bc21fc2). SOURCES: the fleet file's origin (PyPSA-RSA ME IRP 2024 workbook; 16 coal minimum stable
+  levels differ) and NTCSA's GCCA terms (non-commercial, no redistribution without written consent) with our files' stated
+  licences. RESULTS: c4's pumped hydro.
+- GCCA licence labels (user, 13 Oct): pull request nickhedley/gridtwin-za#29 (branch claude/gcca-terms, 8f76e26) relabels
+  GCCA-derived data to NTCSA's website terms (June 2024, clauses 2.1, 2.2, 3.1); nothing removed; suite 724/725 against main's
+  723/725 (stamp check fixed; EDMSA remains). Copyright and 'commercial licensing' lines left for Nick. Nick merges.
+- Validation (user, 13 Oct): single-node engine (the note's) 2.2% above a single-node PyPSA unit-commitment optimum on the same
+  inputs, baseline week, linear coal cost (4.1% with part-load); nodal engine 4.2% above the matched 10-region MIP (RESULTS).
+  Pull request nickhedley/gridtwin-za#30 replaces the unreproduced figure in validation/ (not quoted until reproduced). c4 2040
+  comparison not done (TODO 14df step 9). Coal start-ups charged twice? (14dl). Coal dates are Meridian's ME IRP 2024 workbook (14cu);
+  UC_FLEET's 0.5 minimum stable level on 16 coal rows is ours, unsourced (14dj); stale build outputs (14dk); s_phestub held
+  (14di).
+- Check-in 14:05: s_coal60 recorded (RESULTS, both tables and its own entry): adequate after one pass, no top-up, engine
+  R2,578bn (-21 against c4), objective without the penalty R1,667.7bn (-47.8, agree), 1,639 Mt (+34); 2040 -R5.7bn, +9.1 Mt;
+  2.7 GW of coal retired early from 2026 (c4 588 MW). Artifact downloads are blocked by the network policy here; figures come
+  from the job logs. s_pvirp_c4 pass done 13:56, check running. Still running: s_windlow (pass since 11:47), s_irpgas_c4,
+  s_roof2_c4.
+- User, 13 Oct ~14:15: watch nickhedley/gridtwin-za#29 (subscribed); add 'nodal old/' relabel and a commercial-licensing line
+  that excludes third-party data (LICENSE, index.html header; suite and stamp); 0.42% lines to the measured 4.2% with 'no
+  optimiser cross-check yet' for the pathway engine; reconcile suite counts with CLAUDE.md; s_coalavail finding reworded
+  (RESULTS); TODO 14dm (LICENSE data lines); Tubatse statement read by the advisor, figures match (SOURCES).
+- User, 13 Oct ~14:20: c4 2040 three-week single-node comparison approved (TODO 14df step 9; three hours; lithium cycles, both
+  start-up charges), after the four scenario write-ups; s_coal60 about R620/t against c4 (RESULTS).
+- 13 Oct ~14:50: #29 extended (9c4670b: 'nodal old/' relabel; commercial-licensing line excludes third-party data in LICENSE and
+  the index.html header; BUILD_STAMP 2026-10-13c; suite 724/725 before and after, audit 87/87, eng5 6/6); subscribed to #29.
+  #30 reworded (4539704): measured 4.2%, pathway engine has no optimiser cross-check in the repository yet. Suite counts:
+  main 810/812 with audit (EDMSA, stale stamp); main's 805/806 line is stale (its 5 Oct commit run today has 815 checks);
+  CLAUDE.md on this branch updated. c4 2040 three weeks (RESULTS): engine 31-50% above the UC optimum, storage scheduling;
+  14dl sized; 14dn added. s_pvirp_c4, s_windlow, s_roof2_c4 recorded (RESULTS); s_roof2_c4 top-up 38415714043 running;
+  s_irpgas_c4 (38397386689) running.
+- 13 Oct ~15:25 (user's six items): 24-hour rolling optimum on the three 2040 weeks (RESULTS): within 0.0-1.0% of the
+  full-week optimum (rule 'all'), engine 30-48% above; stress week shed 0 against the engine's 37.3 GWh, recorded as partly the
+  storage rule; c5 TODO 14do. Operating share of c4's engine PV 31.8% (2040: 27.8%). Both-measures table has a 2040 lithium
+  column with 's' marks (>10% from c4's 126.1 GWh). Scripts on claude/sn-crosscheck, pull request nickhedley/gridtwin-za#31
+  (reproduction checked). #29 merged 15:01 (unsubscribed); follow-up branch claude/licence-terms (LICENSE three lines, TDP
+  labels, footer line, BUILD_STAMP 2026-10-13d), suite running. The 815 against 812: validate_response's three 'control ... still
+  exists' checks for reserveContingencyMW, reserveRegulatingPct and reserveVrePct, controls merged into reserveOperatingMW on
+  1 Oct (774dc8d); the stale baselines were regenerated on 6 Oct (9959106), which dropped the three checks.
+- TODO 14df (c5: building and running agree, with done-when tests) and 14dg (finer network, GCCA supply areas), both after
+  Friday's note (user, 13 Oct); nothing changes now.
+- Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
+  374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
+- Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
+  reports the optimiser objective without the stress-target penalty, and the note says where the two disagree on direction.
+  No engine changes before the note.
+- After each run: print job (claude/print-results, source_run = its last run) and, for rule A runs, the top-up
+  (claude/topup, same inputs). c4: report as solved and with the top-up beside penalty c4 (cost PV, CO2, gas, diesel
+  open-cycle and lithium GW in 2030/2035/2040, shed by year; 2039-40 marked failing the loop's own test; Tutuka flag).
+
+## Decisions, 13 Oct 2026 (user), in force
+
+1. c4-target stops after pass 9; no pass 10. Pass 9's solve is never cut (if it reaches the job limit it carries over). Method: when
+   pass 9's job ends, cancel the automatic next job and dispatch a replacement on ref claude/build-costs with the same inputs plus
+   MAXP=9 in settings (prev_run = the last c4t run, job_no = next, code_sha 86bfea4931d4b0823835c0f7f6ae147cb237b189). It replays
+   passes 1-9 from the cache, tests pass 9, writes pathway_c4t.json (verdict 'pass limit reached') and pathway_c4t_lp2040.json, and
+   its check job runs the engine check. Report c4 against c3 in the standard table (RESULTS, 'New central'), 2039-40 marked as
+   failing the loop's own test.
+2. The 12 seeded runs start from every window found through pass 9 (WIN_FROM, the windows pass 9 solved with). Before launch Nick is
+   told each run's pass cap and stopping rule; all runs use the same rule. Proposed 13 Oct: A, one pass (MAXP=1, all on c4's windows),
+   or B, c4's rule capped at 3 passes. Nick chose A for all but s_nogas4strict (B, no top-up; if it still fails after
+   3 passes, report shed against target by year and diesel burnt by the existing peakers).
+3. Adequacy top-up (TODO 14ct), branch claude/topup; run it on each finished run and report cost as solved and with the top-up.
+4. s_coalirp on IRP Figure 3 as digitised by Nick (ee92b00 on claude/c4-coalirp, tested); start it on its own with c4's final
+   windows and the set's rule; do not hold the set for it.
+6. Coal (user, 13 Oct): sourced schedule recorded in SOURCES for the next central (TODO 14cu); s_coalirp keeps ee92b00 (sourced
+   order moves at most one unit a year, Kelvin aside); the c4 report flags Tutuka 2030-31 in c4 against 2035-40 at 50-year life.
+5. Penalty c4 finished 12 Oct 18:12 UTC without a handover (pass 2 ended 75 minutes inside the job limit); the handover is untested.
+
+## Focus (user, 12 Oct 2026)
+
+Until the IRP comparison is drafted, the only goal is c4 as the frozen central, then the seeded set (TODO 14co) and
+the 14be comparison steps against it. Report to Nick only: runs started, runs finished or failed, and anything that
+changes c4's headline numbers. Local background runs do not survive the session going idle (user): long runs go to
+GitHub. The engine (index.html and harness) is not changed until the comparison is drafted.
+
+## c4, frozen (TODO 14cn; RESULTS, "c4 frozen as the central")
+
+- c4 is c4-target: `COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5
+  STRESS_TARGET=1`, SOLVER=native, commit 86bfea4 (engine build 2026-10-12e; lithium energy 4 hours of power), with
+  profiles.json and the weather-year file as committed there. Penalty c4 (the same without STRESS_TARGET) is the
+  method check.
+- Both run on GitHub with `.github/workflows/optimiser-long-run.yml`: one solve per job, each job under 6 hours, the
+  solve cache and basis passed on as artifact `state-<name>`, the next job started automatically, every job pinned
+  to the chain's first commit (86bfea4). The last job runs pathcheck.js (artifact `results-<name>`). GitHub's passes
+  reproduce the local LP keys (pass 2 a9e5c71dc2, pass 3 0d4fdcdd1e).
+- Status at 13 Oct 03:15 UTC: penalty c4 finished; c4-target running (pass 9):
+
+```
+c4-target (name c4t)   run 38255689961 pass 1, 5.4 min | 38256479696 pass 2, 25 min | 38259914914 pass 3, ~78 min
+                       | 38269533084 pass 4, ~112 min | 38282680097 pass 5, 118 min (17:13-19:11 UTC)
+                       | 38295943224 pass 6, 138 min (19:11-21:29 UTC) | 38310964088 pass 7, ~128 min (21:30-23:37 UTC)
+                       | 38323088802 pass 8, 186 min (23:37-02:43 UTC) | 38338261578 pass 9, started 02:43 UTC
+penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, 4 h 25 min (13:46-18:10 UTC, cold
+                       start, 75 min inside the job deadline, so no handover was needed), 'done adequate', engine
+                       check ran (artifact results-c4): every year within target (2040 1.17 / 2.60 GWh), cost PV
+                       R2,681bn at 8% real, CO2 1,479 Mt 2026-40 (RESULTS, 'Penalty c4 finished')
+```
+
+- To check: list the runs of optimiser-long-run.yml (GitHub MCP, actions_list). The list does not show run names;
+  a job log's env block shows RUN_NAME. A chain has finished when its newest run's pass job ended with status done
+  (exit 0, no "Start the next job") and its check job ran (not skipped). Test runs carry 'test' in the name (user).
+- Artifacts cannot be downloaded into the container (the blob host is blocked, and network settings are not to be
+  changed until c4 is done), so seeded runs fetch c4-target's state themselves (inputs seed_run and seed_name, on
+  branch claude/c4-frozen; tested with run 38257189156).
+- Dated estimates (SAST, 13 Oct 05:15): 2040 85.11, 37.37, 9.63, 7.84, 7.27, 6.36, 5.69 GWh against 2.60 after
+  passes 1-7 (cuts 56%, 74%, 19%, 7%, 12%, 11%); pass times 5, 25, 78, 112, 118, 138, ~128, 186 min. At about 10% a
+  pass it does not reach target by the 14-pass cap. Six more passes at about 3 hours: chain ends about 13 Oct 23:00
+  (range 21:00-02:00), still failing 2039-40 on its own test; the seeded set then takes about 4-6 hours. Penalty c4's
+  plan passes the engine check in every year (2040 1.17/2.60). Open question to Nick (12 Oct 23:45): run to the cap
+  (default), stop at a chosen pass, or seed the set from the windows so far.
+
+- c4-target's stress loop (its own test, worst year, mean shed / target in GWh): pass 1 2038 85.11/2.48 (11 years
+  failing); pass 2 2040 37.37/2.61 (5); pass 3 2040 9.63/2.60 (2: 2039, 2040); pass 4 2040 7.84/2.60 (2: 2039 4.59/2.54, 2040);
+  pass 5 2040 7.27/2.60 (2: 2039 3.71/2.54, 2040);
+  pass 6 2040 6.36/2.60 (2: 2039 3.27/2.54, 2040); pass 7 2040 5.69/2.60 (2: 2039 3.13/2.54, 2040; only 2 new windows
+  added, against 6 before). Each job tests the previous pass's plan, then solves the next, so
+  pass N's figure is in pass N+1's saved state. The windows each pass added (weather year, days) are printed by the
+  print job (run 38340311636 for passes 1-7; the windows added after pass 5 carried 1.1-4.9 GWh of shed each, after
+  pass 6 0.16-1.27 GWh). The loop stops when no year fails (half the standard) or at 14 passes (MAXP).
+- Reading results: artifacts cannot be downloaded here; use the print-only workflow on branch claude/print-results
+  (TODO 14cs): dispatch optimiser-long-run.yml on that ref with name, source_run, source_name. For the IRP note, run it
+  on c4-target's final run and on each seeded run's final run.
+- Inputs checked 12 Oct (user): combined-cycle capex flat real at 86bfea4 (SOURCES); coal schedule against IRP 2025
+  in TODO 14cr. IRP coal-timing run s_coalirp: rebuilt 12 Oct on branch claude/c4-coalirp (66819c2; the
+  first build, a hybrid leaving 14.4 GW in 2040, was held by Nick). The dates now track IRP 2025's total coal path
+  from the plan's text (Figure 3 could not be read here): 8 GW gone by the start of 2030, then 15 GW in 12 equal steps
+  from 2031 to 2042, scaled to 39,692 MW; the four named stations in 2030, then the oldest units first (GEM start
+  years). Coal standing 2030 31,978, 2034 27,018, 2040 19,661 MW (c4 30,296, 24,206, 20,848). Switch off, LP key
+  e0b93ac712 (unchanged); on, d41c0ccb76, coal-capacity right-hand sides only. Back in the launch check-in: started
+  with the set, alongside it, on ref claude/c4-coalirp, seed_run = c4t's final run, seed_name c4t, settings c4t's
+  plus WIN_FROM=seed/out/pathway_c4t_lp2040.json COAL_DATES=coal_dates_irp2025.json (TODO 14cr has the table). c4's
+  Tutuka, Kriel and Arnot dates are unsourced PyPSA-RSA dates (SOURCES fleet row).
+
+## Seeded set (TODO 14co): 12 runs, start in parallel as soon as c4-target's chain finishes
+
+Dispatch each on ref `claude/c4-frozen` (app and harness identical to 86bfea4; only the workflow differs) with
+inputs: name, settings, passes_per_job 1, max_jobs 30, prev_run empty, job_no 1, seed_run = the run id of c4-target's
+final job, seed_name c4t. Settings = c4-target's, plus `WIN_FROM=seed/out/pathway_c4t_lp2040.json`, with one change
+(a setting named in the change replaces the base's, e.g. LI_CAP, OCGD):
+
+```
+s_disc10         DISC=0.10
+s_disc113        DISC=0.113
+s_gasprem        GAS_PREM=0.015
+s_committed      GAS_MIN=2030-2033:1200,2034:200 LI_MIN=2030:4600:18400
+s_wind35         WIND_CAP=3500                     (wind limit 3,500 MW a year from 2028 (front-loaded); not a headline run)
+s_li8h           LI_EH=8
+s_nogas3         GAS_CAP=0                         (no new CCGT or OCGT on LNG; new diesel open-cycle allowed)
+s_nogas4         GAS_CAP=0 LI_CAP=4000
+s_nogas4strict   GAS_CAP=0 OCGD=0 LI_CAP=4000      (no new gas and no new diesel open-cycle)
+s_be4            GASFLOOR=1
+s_be6            LI_CAP=550 CAP_FROM=2026
+s_be7            NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350
+```
+
+No-gas decision (user, 12 Oct): the two main runs as above (3 and 4 GW of lithium a year), plus the strict run (existing
+peakers stay as in c4; OCGD=0 stops only new diesel open-cycle). In all three report by year: new diesel open-cycle GW
+(pathway output, ocgd), diesel burnt in TWh, existing and new (engine check; one fleet in the engine, so any split is
+by capacity share and labelled an estimate), shed against target on customer demand, cost (R bn, 2026 present value
+at 8% real, engine-checked) and CO2. A run added after the set has started goes in when a slot frees up; nothing
+running is restarted or changed. Nick asked to be told, once the set is running, that it is a good moment to start a new session; before
+saying so, cancel this session's pending check-ins (delete_trigger) so two sessions do not both act.
+
+## After the set
+
+c4 report against c3 (method test, standard table, three cost lines, lithium value split, shed by year on customer
+demand), the #22 merge plan (TODO 14ck), the diesel open-cycle condition (14cj), then the IRP comparison draft
+(14be steps, in the 14bd format). Then the profile test: keep the current profiles for c4 and the set; the plain open
+profile halves c3's shed (RESULTS, demand-shape sensitivity), so test the open shape quantile-mapped to the measured
+load-duration curve and propose the public swap only if it reproduces c3's shed within about 10% (14bz). The coal
+preset option (a) and the coal trace's removal from the public repository go with that swap.
+
+## Parked until the comparison is drafted
+
+14bw (the ERA5 download stopped at 28 Feb 2026; files from March are NetCDF4, 14cp), the preset re-search and the
++5% marks (14ay; inventory in RESULTS), Playwright render checks, EarthPV (14cl), new storage classes (14cm), exports
+(14by), panels and dashboards, Cloudflare build failures (14cq; the licence lines are live).
+
+## Open decisions and waiting on Nick
+
+- #26 (.mcp.json to main): Nick merges when convenient.
+- Eskom's written consent (requested; terms in CLAUDE.md). The weekly Eskom job in gridtwin-data stays disabled.
+- Later, with the parked preset work: whether IRP path 2035 keeps +5% or moves to the central path.
+
+## Git and suite
+
+- claude/build-costs is PR #22 (draft, base claude/peakers). Worktree /home/user/gtza-08d is a detached HEAD; push
+  with `git push origin HEAD:claude/build-costs`. claude/c4-frozen (worktree /home/user/gtza-c4f) holds the frozen
+  code for the set. Never push to main; Nick merges. Commit trailer per CLAUDE.md and the session reminder.
+- Suite at build 2026-10-12e (no app change since): 808/812 with ESK19679.csv, 804/809 without; eng5 6/6.
+  validate_docs.py (not in the counted suite): 13/20, seven failures that predate 12 Oct.
+- Check-ins are send_later triggers bound to the session that booked them; a new session books its own.
+
+---
+
 # GridTwin ZA - handover, 2 October 2026
 
 Build `2026-10-02a`. Suite 802/803 plus eng5 6/6, measured 2 Oct 2026 with `profiles.json` at

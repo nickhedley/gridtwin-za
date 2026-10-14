@@ -16,7 +16,14 @@ superseded queue entries. Never add the delta. See rules.md.
 | IPP Office, *An Overview - ipppp* | quarterly | Q4 2025/26, as at 31 Mar 2026, p.18 | `by_source.reipppp`, both identities |
 | Power Futures Lab, UCT GSB, IPP monitor | half-yearly | H1 2026 | `by_source.private`, `pfl_cod_h1_2026.json` |
 | Ember, South Africa electricity | monthly-ish | 2025 full year + 12m to May 2026 | `validate_benchmarks.js` |
-| PyPSA-RSA fleet (Meridian Economics), `fleet_by_region_v2.csv` | static | 51 BASE plants | per-unit UC parameters, GPS, heat rates. Capacity-weighted coal CO2 1.008 t/MWh against our 1.04. THERMAL ONLY - not the wind/solar plant list |
+| PyPSA-RSA fleet (Meridian Economics), `fleet_by_region_v2.csv` (licence and our use: section 'PyPSA-RSA: licence and what we take', to confirm with Meridian) | static | 51 BASE plants | per-unit UC parameters, GPS, heat rates. Capacity-weighted coal CO2 1.008 t/MWh against our 1.04. THERMAL ONLY - not the wind/solar plant list. DECOMMISSIONING DATES UNSOURCED (checked 12 Oct 2026): one year per half-station, no commissioning dates, no source column; in the repository unchanged since 1 Oct 2026 apart from Camden, Grootvlei and Hendrina moved to 2030 in UC_FLEET on 4 Oct. PyPSA-RSA's public repository (github.com/MeridianEconomics/pypsa-rsa, commit 89872c1, 8 Apr 2026) has a documentation plant table with other dates (Tutuka 2040/2042, Kriel 2024/2028, Arnot 2027/2030) and a Coal_Flexibilisation workbook (scenarios/.../phased_decommissioning.xlsx) with the same station capacities as our file, whose ESKOM_2035 scenario matches our Tutuka (2030 to 2031) and Arnot's first date (2027) but not Kriel (2026 to 2031); neither states a source. Our dates are therefore a PyPSA-RSA schedule of unknown basis (identified 13 Oct 2026: the decommissioning dates of the 'conventional' sheet of Meridian's ME IRP 2024 workbook, scenarios/ME IRP 2024/sub_scenarios/fixed_technologies.xlsx, BASE rows, commit 89872c1: Meridian's scenario assumption, not an Eskom plan; c4's standing coal is bldCoalMW, every UC_FLEET unit with a date after the year, scaled to 39,692 MW in 2026, so c4 retires Tutuka* in 2030 and Tutuka** in 2031 as that workbook does), not IRP 2025's 50-year life (IRP plan p.24: Tutuka's 50-year life falls in 2031-2042, user) |
+| Global Energy Monitor, Global Coal Plant Tracker (unit tables on gem.wiki) | one-off | read 12 Oct 2026 | Unit start years for the IRP-timing coal sensitivity (TODO 14cr; harness/coal_dates_irp2025.json on branch claude/c4-coalirp): Tutuka 1985, 1985, 1986, 1987, 1988, 1990; Lethabo 1985, 1986, 1987, 1987, 1989, 1990; Matimba 1987, 1987, 1988, 1989, 1990, 1991; Kendal 1988-1993; Majuba 1996-2001; Kriel 1976, 1976, 1977, 1978, 1979, 1979; Matla 1979, 1980, 1980, 1981, 1982, 1983; Duvha 1980, 1980, 1981 (unit 3, mothballed, not in our file), 1982, 1983, 1984; Kelvin operating Phase B units 1962-1969 (7 x 60 MW; our file has 2 units, 160 MW, given 1962 and 1964). Named stations' operating units by unit order: Arnot 1972, 1971, 1971, 1973, 1974, 1975; Camden 1968, 1967, 1967, 1967, 1967, 1968, 1969, 1969; Grootvlei 1973, 1970, 1969 (units 4-6 mothballed); Hendrina units 2, 4, 5, 6, 7, 10: 1971, 1970, 1971, 1973, 1974, 1977 (units 1, 3, 8, 9 mothballed). Used (rebuild, 12 Oct, commit 66819c2) to order units oldest first while the fleet tracks IRP 2025's total coal path from the plan's text (8 GW gone by the start of 2030, then 15 GW in equal steps at the starts of 2031-2042; Figure 3 could not be read here); the first build's start year + 50 for the five stations (plan p.24 gives only 2031-2042 for them as a group) is superseded. Nameplate of the four stations the IRP names for 2029-30: Arnot 2,352, Camden 1,600, Grootvlei 1,190 (590 mothballed), Hendrina 2,000 (800 mothballed), 7,142 MW with 1,390 mothballed, against 5,030 MW for the same stations in our file (5,249 before scaling to 39,692 MW). GEM's own 'planned retirement' column gives 2030 for Tutuka (all units, as c4 roughly does) and for the four named stations. LICENCE: gem.wiki content is CC BY-NC-SA 4.0 (attribution: Global Energy Monitor), share-alike; kept in its own file, out of CC BY files. Pages read through Firecrawl (gem.wiki and globalenergymonitor.org are not reachable from the container). IRP 2025 assumptions workbook checked first: no coal retirement input (sheets New Tech Properties, Economic Parameters, Learning Rates) |
+| IRP 2025 Figure 3, total coal capacity (plan p.12, gazette p.23), digitised by Nick Hedley | one-off | read 13 Oct 2026 | The IRP-timing coal path for s_coalirp (TODO 14cr; harness/coal_dates_irp2025.json on branch claude/c4-coalirp, ee92b00): 50-year-life annual averages read off the figure's gridlines (it has no data labels) and scaled to our 39,692 MW base, accuracy about +-250 MW: 2026-28 39,692; 2029 37,064; 2030 32,388; 2031 30,839; 2032 29,324; 2033 27,886; 2034 26,403; 2035 26,029; 2036 25,350; 2037 23,415; 2038 21,819; 2039 19,825; 2040 17,958 MW. Units retire to track it: Camden, Hendrina, Grootvlei and Arnot (plan p.40) first, then every other unit, oldest first by GEM start year (row below), within half a unit each year. Replaces the text-based path of 12 Oct (8 GW by 2030, then 15 GW in equal steps from 2031), which the reading supersedes |
+| IRP 2025 Figure 3, 60-year (delayed shutdown) line, digitised by Nick Hedley | one-off | read 13 Oct 2026 | The delayed-shutdown coal path for s_coal60 (harness/coal_dates_irp2025_60y.json on branch claude/c4-coalirp, 53e9ba8): annual averages scaled to our 39,692 MW base, accuracy about +-250 MW: as the 50-year line to 2035, then 2036 26,116; 2037-2040 26,069 MW. Same closure order and rule as the 50-year file; no unit retires in 2036-40 (fleet 25,916 MW) |
+| Lead to check (user, 13 Oct 2026): Exxaro's coal supply contract for Matla | to check | given 13 Oct 2026 | Mining Weekly, 2 April 2026, as given by the user (not read here): the contract runs to 30 November 2043, against Matla's 2034 end date from the environment department's emissions decision (sourced schedule, row below). Check before the next central (TODO 14cu) |
+| Lead to check (user, 13 Oct 2026): Eskom's coal-site repowering plans | to check | given 13 Oct 2026 | Oxpeckers #PowerTracker, April 2026, citing Eskom, as given by the user (not read here): repowering at coal sites, including 1,000 MW of gas at Kriel. Check before the next central (TODO 14cu) and against the gas build options |
+| Coal decommissioning, sourced schedule (user, 13 Oct 2026; for the next central, TODO 14cu, and s_coalirp's closure order) | occasional | given 13 Oct 2026 | (1) Arnot, Camden, Grootvlei, Hendrina and Kriel phased from 2029, none past 31 March 2030: 5.26 GW in 2029 and 3.14 GW more by March 2030 (NTCSA Medium-Term System Adequacy Outlook 2026-2030, pp.17-19). (2) Duvha by 21 February 2034 and Matla by 20 July 2034, both phased (environment department decision on Eskom's emissions applications, 31 March 2025; Transmission Development Plan 2024). (3) Tutuka, Lethabo, Matimba, Kendal and Majuba at 50-year life by unit, from GEM unit start years (IRP 2025 plan pp.12, 23, 24): Tutuka and Lethabo 2035-2040, Matimba 2037-2041, Kendal 2038-2043, Majuba 2046-2051. (4) Komati closed 2022. Page references as given by Nick; the documents were not read here. Capacity basis: (1) totals 8.40 GW, against 7,889 MW for the same five stations in our fleet file (7,561 MW scaled to 39,692) and 8,752 MW operating nameplate on GEM (10,142 MW with mothballed units) |
+| Kelvin power station (Ekurhuleni; not an Eskom station) | static | checked 13 Oct 2026 | In our fleet file (UC_FLEET, PyPSA-RSA fleet_by_region_v2.csv) as 2 units, 160 MW, decommissioned 2027 (no source given there). Eskom's 39,692 MW (integrated report FY2026, FIXED.coalInstalledMW) is Eskom's own fleet and excludes Kelvin, but the build LP scales the whole fleet file (41,416 MW in 2026, Kelvin included) to 39,692 MW, so Kelvin sits inside the modelled total as 153 MW in place of the same amount of Eskom plant. GEM lists 7 operating Phase B units (420 MW, 1962-1969) with planned retirement 2026. s_coalirp's 2030 date for Kelvin comes from its closure rule (oldest first after the named stations), not from a source; no primary source dates Kelvin's closure |
 | Renewables.ninja / MERRA-2 | static | 2014-2025, twelve weather years | `profiles_regional_multiyear.json` |
 | PVGIS SARAH2 v5.2 | static | 739-point grid, 0.5 deg | `sa_solar_grid.json` - orphan, unused |
 | Meridian Economics, *A Vital Ambition* and the CSIR technical report behind it | one-off | Jul 2020 | the least-cost capacity band check in `validate_external.js`, and the directional comparison on gas in results.md |
@@ -54,10 +61,10 @@ superseded queue entries. Never add the delta. See rules.md.
 | Deakin et al., *Comparing Generator Unavailability Models with Empirical Distributions* | one-off | 2022 | the published repair-time figures rejected for this fleet (40 h for coal, after Edwards 2017) and the persistence evidence behind `outageMttrH` 480 |
 | NREL, *Operating Reserves and Variable Generation* (TP-5500-51978) | one-off | 2011 | the 3+5 rule behind `reserveVrePct` 5: the regulating requirement scales at 5% of variable generation |
 | NREL, *Cost Projections for Utility-Scale Battery Storage* | annual | 2025 update (docs 93281) | the power and energy split behind `BATT_POWER_SHARE` 0.278: USD 241/kWh of energy and about USD 372/kW of power in 2024 |
-| GridLab / Energy Futures Group / Halcyon, gas turbine costs | one-off | Sep 2025 | `BLD_COST.ccgt` R34,965/kW = USD 2,119: recent combined-cycle projects routinely at USD 2,000/kW or more against USD 1,116-1,427 for 2026-27 completions |
+| GridLab / Energy Futures Group / Halcyon, gas turbine costs | one-off | Sep 2025 | `BLD_COST.ccgt` R34,965/kW = USD 2,119: recent combined-cycle projects routinely at USD 2,000/kW or more against USD 1,116-1,427 for 2026-27 completions. Flat in real terms (decl 0) from c4 (12 Oct 2026; commit 86bfea4). GridLab states no escalation rate: its 2% (p.5, footnotes 5-6) is general inflation, used to put EIA and NREL figures into nominal 2030 dollars. GridLab costs are nominal, in-service-year dollars, so R34,965/kW may sit a few percent above a 2026 real basis (user, 12 Oct 2026) |
 | South African storage procurement | rolling | as at Sep 2026 | the build-pace judgement: BESIPPPP three windows 1,744 MW/6,976 MWh, RMIPPPP hybrid 600 MW, Eskom's own 343 MW - about 0.6-0.7 GW a year against the 2 GW the default pace assumes |
 | Eskom hourly dataset ESK19679, coal availability trace | on request | 2023, 2024, 2025 | `nodal/coal_availability_trace.json`: measured coal-only availability by hour, divided by each year's mean, for `outageTraceYear` |
-| IRP 2025 | occasional | gazetted Oct 2025 | the `IRP path 2035` preset's build, interpolated between the published 2030 targets and the 2039 totals; and the emissions comparison, about 160 Mt for 2030 |
+| IRP 2025 | occasional | gazetted Oct 2025 | the `IRP path 2035` preset's build, interpolated between the published 2030 targets and the 2039 totals; and the emissions comparison, 168 Mt for 2030 (key outcomes; corrected 14 Oct 2026, user: not SAnews's 160) |
 | amaBhungane, Eskom station-by-station data | one-off | Feb 2026 | independent corroboration of the fleet-to-coal availability conversion: coal 58% in 2025 against the fleet's 62%, which implies non-coal availability of 89.9% against the 90% assumed |
 | Household consumption references | one-off | 2024 | the two reference households in the bill view: Eskom's own 30 kWh a day, and about 190 kWh a month for the average electrified household (Eskom residential demand over Statistics South Africa's household count, as MyBroadband calculated it) |
 | IEA, *Electrification* (special report) | one-off | 22 Sep 2026, CC BY 4.0 | the industrial electrification scenario: 40% of fossil low- and medium-temperature industrial heat is competitively electrifiable today, heat pumps deliver 3-5 units of heat per unit of electricity, global electrification rate 23% now to 35% by 2035 in the High Electrification Scenario |
@@ -80,13 +87,15 @@ superseded queue entries. Never add the delta. See rules.md.
 | SSEG registration rules | would replace estimated rooftop with measured | pending |
 | Seriti Green monthly simulation | independent SA grid model, published monthly since Jan 2026 | first read Aug 2026; differential test, not a validation set |
 | Oxpeckers | complementary project data | their data is a validation set |
-| #PowerTracker | primary source for wheeled commissioning | identified 17 Aug 2026 |
+| IRP 2025 assumptions workbook, New Tech Properties, Large-Scale Nuclear (EPRI) | new-nuclear cost basis for s_be7 (TODO 14cz) | read 13 Oct 2026 from the local copy (sha1 2317fad5): overnight R167,264-176,885/kW (2023 label), fixed O&M R2,627-3,337/kW-yr, variable O&M R194.5-218.4/MWh, fuel R15.35/GJ, life 30 years, lead time 72-96 months; overnight, so no interest during construction |
+| EIA, Annual Energy Outlook 2023, Cost and Performance Characteristics of New Generating Technologies, Table 1 | international benchmark for new-nuclear capex | read 13 Oct 2026 (eia.gov/outlooks/aeo/assumptions/pdf/elec_cost_perf.pdf, via Firecrawl because WebFetch could not resolve eia.gov): large LWR 2,156 MW, total overnight USD 7,777/kW (2022$), fixed O&M USD 136.91/kW-yr, lead time 6 years; excludes interest. Based on Sargent and Lundy (2019), escalated |
+| #PowerTracker | primary source for wheeled commissioning | identified 17 Aug 2026; CC BY-SA (user, 13 Oct 2026): a lead only, never cited or ingested; confirm and cite the original source (TODO 14cy) |
 | Independent Transmission Infrastructure Procurement Programme (ITIPP) | private capital funds, builds and transfers grid to the state; Impofu and Nuweveld are the working precedents | not yet tracked. Private transmission is a category the model does not represent - it assumes NTCSA builds the network |
 | NREL ATB | storage capex cross-check | checked 28 Aug 2026 and it cannot do the job: ATB covers lithium only, with no flow-battery or iron-air line. `acapVrfb` stays single-source |
 | NERSA Electricity Regulation Projects Dashboard | the consolidated view of every NERSA consultation - written-comment deadlines, hearing dates and target completions in one table | Issue 04, September 2026, last updated 15 Sep 2026 (read 22 Sep). Appears roughly monthly at `nersa.org.za/files/files/YYYY/MM/ELRStakeholderDashboard-RevN.png`. Reading it on 31 Aug corrected a Trading Rules date this project had wrong by a month, and surfaced four consultations not previously tracked. Check it every session. |
 | PFL IPP Knowledge Hub COD table | settles Mulilo's COD month | deep links 404; navigate Research > Knowledge Hub |
 | NERSA Trading Rules | governs how wheeling and trading clear | comment due 28 Sep 2026; the locational work is directly reusable |
-| #PowerTracker | primary source for wheeled commissioning | identified 17 Aug 2026, not yet ingested |
+| #PowerTracker | primary source for wheeled commissioning | identified 17 Aug 2026, not yet ingested; CC BY-SA (user, 13 Oct 2026): a lead only, never cited or ingested; confirm and cite the original source (TODO 14cy) |
 | Global Energy Monitor, Global Wind and Solar Power Trackers | project-level status - announced, pre-construction, construction, operating - with coordinates, capacity and owner, updated twice a year, free for research. The nearest thing to RenewMap with South African coverage | to try: the Hydra Central split and the 1,823 MW of unexplained solar are both named-project problems |
 | OpenStreetMap power plants | `plant:source=wind` or `solar` with output and construction tags, and geometry. Good for EXISTENCE and LOCATION, weak for status and dates: mappers follow imagery updates, and construction tags are often left behind after completion | to try, as geometry and corroboration alongside a structured source |
 | RenewMap | the tool this project wants - status, capacity, grid connections, approvals, milestone history, CSV export - but AUSTRALIA AND NEW ZEALAND ONLY. Recorded as the model of what a South African equivalent would look like | not applicable, checked 23 Sep 2026 |
@@ -544,11 +553,13 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     Characteristics of New Generating Technologies, 2022 dollars: frame combustion turbine USD 867/kW, multi-shaft
     combined cycle USD 1,176/kW; ratio 0.737 applied to the model's CCGT capex, R34,965/kW x 0.737 = R25,778/kW in 2026,
     same real escalation as CCGT. The IRP's R12,981/kW stays the low case. NREL ATB 2025 not used (atb.nlr.gov blocked).
-  - Basis of the CCGT capex R34,965/kW (BLD_COST.ccgt): USD 2,119/kW at R16.50, rising 2% a year real; matched on
+  - Basis of the CCGT capex R34,965/kW (BLD_COST.ccgt): USD 2,119/kW at R16.50, flat in real terms from c4 (12 Oct 2026;
+    the earlier 2% a year real rise had no source: GridLab's 2%, p.5 footnotes 5-6, is general inflation used to put EIA
+    and NREL figures into nominal 2030 dollars, not a real escalation); matched on
     23 Sep 2026 to GridLab's September 2025 study (recent combined-cycle projects routinely at USD 2,000/kW or more,
     against USD 1,116-1,427 for plants completing 2026-27 and the ATB's USD 1,638 for 2030). The constant predates that
-    sourcing and its dollar year is not recorded; GridLab's figures are nominal 2025 dollars, so treat it as about 2025
-    dollars converted at R16.50, without a CPI step to 2026.
+    sourcing and its dollar year is not recorded; GridLab's figures are nominal, in-service-year dollars, so R34,965/kW
+    may sit a few percent above a 2026 real basis (user, 12 Oct 2026); converted at R16.50, without a CPI step.
   - 9F.05 OCGT (user's figures, 11 Oct 2026; build 2026-10-11f): heat rate 10,624 kJ/kWh (33.9% on the basis on which
     the CCGT's 6,900 gives 52.2%, the efficiency costCcgt and emisCcgt use), overnight R12,981/kW (the low capex case),
     fixed O&M R423.89/kW-yr, variable O&M R80.19/MWh; all x SA CPI 1.032 x 1.035 to January 2026. Life taken as the
@@ -575,13 +586,25 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
   against the new central: at least 5 GW of new gas at the 1.2 GW a year cap from 2030 (GAS_MIN), technology not stated
   in the determination, modelled as CCGT (judgement).
 
+## IPP Office website terms (REIPPPP data): no open licence (read 13 Oct 2026)
+
+https://www.ipp-projects.co.za/WebsiteDisclaimer, 'Website terms and conditions', version May 2016, read 13 Oct 2026 through
+Firecrawl (the site does not resolve from this environment through WebFetch). Clause 7.1: the site's contents are protected by
+copyright and are the IPP Office's property unless stated otherwise; 7.2: any unauthorised use of its contents, information or
+materials is prohibited; 9.1: no link to the site without written permission; footer '(c) IPP Office May 2016. All rights remain
+reserved.' No open licence is published. So LICENSE's 'REIPPPP project data: DMRE / IPP Office - public domain' was wrong; the
+follow-up pull request to #29 corrects it (TODO 14dm). Our REIPPPP-derived files (regional_renewable_capacity.json,
+ipp_pipeline.json and others) hold project facts and figures cited from IPP Office reports, credited.
+
 ## Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)
 
 User decision 12 Oct 2026: Eskom-derived constants stay for now; the open question is the hourly series only. Both
 datasets were obtained on request, all rights reserved. Terms checked (user, 12 Oct 2026): they came through the Data
 Portal's five-year request with no licence of their own, so Eskom's website terms and the portal disclaimer apply:
 personal, educational or non-commercial use only; no reproduction, distribution or publication without written
-consent; no automated collection from the website without written consent (clause 2.10). Consent requested. Until
+consent; no automated collection from the website without written consent (clause 2.10). Consent requested: email
+'Permission request: Eskom Data Portal data in GridTwin ZA' from nick.hedley@gridtwinza.org to Eskom's Media Desk, 12 Oct 2026
+11:57 UTC; acknowledged by the Media Desk on 13 Oct 07:43 UTC ('attending to it'); no answer yet (checked 13 Oct). Until
 it is given: ESK files stay local; derived results and single calibration constants (as listed below) may be
 published, with Eskom credited and a note that the analysis is GridTwin ZA's, not Eskom's; no raw or per-unit hourly
 series; no scripted fetches from eskom.co.za beyond one-off checks (the gridtwin-data weekly fetch is disabled).
@@ -817,6 +840,39 @@ harness/ext/grid_distances.py.
 - Running hours on the half-standard pathway (pathway_v_half_c1_p1.json, build 07c, twelve weather years x
   two outage draws): 94 h a year in 2026, 3 in 2028, zero from 2030 (worst draw at most 4 h).
 
+## Diesel fuel price, costDiesel: basis (TODO 14cj, 13 Oct 2026)
+
+- Engine: FIXED.costDiesel R6,100/MWh of output, fuel only (vomDiesel R70 separate). Its note reads 'Eskom OCGT: recent
+  runs reported at ~R6,011/MWh (Mar 2026)': Eskom's realised diesel spend per MWh of open-cycle output for 2025/26 to
+  date. No Brent price, exchange rate or source document was recorded with it; R6,100 is 1.5% above R6,011, reason not
+  recorded (in the engine since the repository's first commit, 1 Oct 2026).
+- Parliamentary reply NW1243, Minister of Electricity and Energy, 7 May 2026 (pmg.org.za/committee-question/37559):
+  diesel consumed at Eskom's open-cycle stations, costs before rebates. 2024/25: 686,386,567 litres, R13,182,984,487
+  (R19.21/litre). April 2025 to February 2026: 258,389,725 litres, R4,750,701,063 (R18.39/litre). Purchases 2025/26:
+  270,017,374 litres, R4,818,471,905 (R17.85/litre). At R18.39/litre, R6,011/MWh is 327 litres per MWh (our division).
+- Reply NW1530, same date (committee-question/37553): 2025/26 diesel expenditure R6.4bn (Eskom weekly power alert,
+  3 Apr 2026), 62.46% below 2024/25.
+- Brent and rand over the consumption period, April 2025 to February 2026, means of monthly values: Brent $67.21/bbl
+  (EIA, FRED MCOILBRENTEU), R17.39/$ (Federal Reserve G.5, FRED EXSFUS), Brent in rand R1,169/bbl (mean of the monthly
+  products). 2024/25 (April 2024 to March 2025): R1,437/bbl. Dated basis: R6,100/MWh goes with Brent about $67 at R17.39/$.
+- Scaling to the 12 Oct weekly check (Brent $103.3, R16.49/$, R1,703/bbl, x1.457): R8,887/MWh if the whole price moves
+  with Brent in rand. Eskom's own price moved less: from 2024/25 to 2025/26 its cost per litre fell 4.3% while Brent in
+  rand fell 18.6% (about 0.23 of the move), consistent with fixed levies, margins and contract terms in the price. A
+  build-up holding levies fixed would fall in between; the levies are not yet sourced. Choice of basis for s_dieselhigh:
+  the user's.
+
+## Lithium capex decline: the engine's rate against its cited source (TODO 14cw, 13 Oct 2026)
+
+- Engine: BLD_COST.batt (and its high and low cases) decl 0.05, a 5% real fall a year from 2026: -37% by 2035, -51% by
+  2040. The BLD_COST comment cites BNEF's 2035 forecasts, -25% for storage, about 3.1% a year over 2026-35. Solar (decl
+  0.0389, -30% by 2035) and onshore wind (0.0286, -23%) match their cited rates; storage does not, and no source for 5%
+  is recorded.
+- Public forecasts, as given by the user (13 Oct 2026), not re-read here: NREL 2025 battery cost projections, mid case,
+  2024 dollars, about -23% over 2026-35 (2.9% a year); Wood Mackenzie, Middle East and Africa 4-hour storage cost, -33%
+  over 2026-35 (4.4% a year).
+- Sensitivity s_battdecl (BATT_DECL=0.03, -24% by 2035, -35% by 2040) on c4's settings measures the effect. The next
+  central uses a sourced decline rate (user, 13 Oct 2026).
+
 ## Build costs from South African bid data (TODO 14av, 14aw, 14ax; builds 07j and 07k, 7 Oct 2026)
 
 Decisions are the user's (7 Oct 2026).
@@ -853,6 +909,62 @@ Decisions are the user's (7 Oct 2026).
   (index.html WIND_NEW_CORR; user decision, 7 Oct 2026), fitted to developer-stated annual output: Impofu 330 MW,
   1,260 GWh (Enel) and San Kraal 140 MW, 616 GWh (EDF), check_wind_farms.py, weather years 2016, 2019, 2021, 2023.
 
+## Carbon tax in law and IRP 2025 on emissions (user, 14 Oct 2026; research helper, HTML pages and search extracts, no PDFs)
+
+- Rate before allowances, Carbon Tax Act 15 of 2019 s5, Acts Online consolidated text (unofficial), read 14 Oct 2026,
+  https://www.acts.co.za/carbon-tax-act-2019/5__rate_of_tax : 2024 R190 (s5(2)(b)); 2025 R236 (s5(2)(c)); 2026 R308 (s5(2A));
+  2027 R347, 2028 R385, 2029 R424 (s5(2B)(a)-(c)); 2030 R462 (s5(2C)); as amended by the Taxation Laws Amendment Act 20 of 2022
+  (GG 47826, 5 Jan 2023) and, for 2024, the Rates and Monetary Amounts Amendment Act 45 of 2024 (GG 51829, 24 Dec 2024). After
+  2030, s5(3): increased by amounts the Minister announces in each Budget; none in law. Index.html CARBON_TAX_LAW (build 14g).
+- Announced, not legislated: 2022 Budget Review, chapter 4 (page not seen): "at least US$30 by 2030, accelerating to higher
+  levels by 2035, 2040 and up to US$120 beyond 2050".
+- Allowances: 2025 Budget Review (May 2025), chapter 4, as reported in search extracts and law-firm notes (Cliffe Dekker
+  Hofmeyr), page not seen: the basic tax-free allowance is kept to 31 Dec 2030, with consultation on reductions from 1 Jan
+  2031; the earlier proposal to cut allowances from 2027 was dropped. The model's allowance path (85% in 2026 cut 2.5 points
+  a year to 75% in 2030) predates this (TODO 14eb). Section 14 caps allowances at 95%. The generation levy is replaced by the
+  carbon tax from 1 Jan 2026, with a floor on a generator's liability of R0.035/kWh after the renewable-premium deduction
+  (s6(2) as substituted by the Taxation Laws Amendment Act 5 of 2026, GG 54448, 1 Apr 2026; Acts Online).
+- c5 central carbon path (user decision, 14 Oct 2026; index.html carbonTaxAt, carbonAllowancePath 'kept2030', build 14h): the
+  February 2025 Budget documents as reported by Engineering News, 19 Feb 2025: 'maintenance of the basic tax-free allowance
+  until December 31, 2030, rather than reducing it from 2027' (the user's citation; not re-read here). The model holds its
+  2026 net share (R46 of R308) to 2030 on the rates in law and holds the 2030 value after. Caveat: electricity price
+  neutrality is also extended to 31 Dec 2030 and may lower generators' net cost further; not modelled.
+- Nominal to 2026 rands: South Africa's inflation target, 3% with a 1-point band, announced by National Treasury and the SARB on
+  12 Nov 2025 (MTBPS), https://www.treasury.gov.za/comm_media/press/2025/2025111201%20Announcement%20of%20the%20new%20inflation%20target%20for%20South%20Africa.pdf
+  (PDF, not read; via SAnews, https://www.sanews.gov.za/node/78213, and Polity, 13 Nov 2025). CARBON_CPI_PA = 0.03 deflates the
+  rates in law for 2027-2030 in 'kept2030' and carbonTaxFull; 'cut2027' stays nominal as c4 ran it.
+- Carbon budgets: R640/t on emissions above an allocated budget, s5(5) and s6(6) inserted by the 2026 Act; in force only from a
+  date the Minister of Finance sets by Gazette notice (none seen).
+- IRP 2025 (GG 53596, 28 Oct 2025): no emissions constraint found. Search extracts of the gazette and the user-friendly IRP
+  2025 (pages not seen): the sector emission targets are in draft, so "the application of the Carbon Tax Act ... is used as a
+  proxy in the IRP 2025"; emissions are a result: 168 Mt CO2 in 2030 (at 66-68% availability and 255 TWh), 142 Mt in 2035
+  ("a 22% reduction"), Figure 19 'CO2 Emissions Trajectory'; 168 Mt is said to sit within the NDC range of 350-420 Mt CO2-eq
+  for the economy. The IRP's carbon price assumption, US$50/t in 2040 and US$100/t in 2050 "based on the National Treasury
+  guidance", is also from an extract only. IRP 2019 (notice 1360 of 2019, s4.4, Acts Online) applied the peak-plateau-decline
+  trajectory as its primary assumption, with a carbon-budget scenario of 5,470 Mt cumulative.
+- Not reached (PDFs): the IRP 2025 gazette and user-friendly version (dmre.gov.za), Budget Reviews 2022, 2025 and 2026, Acts 5
+  of 2026 and 45 of 2024.
+
+## Single-axis tracking share of South African utility solar (TODO 14aw; read 14 Oct 2026, research helper, HTML pages only)
+
+- REIPPPP BW1-BW4, PPA contracted MW by mounting: Minister of Energy, reply to parliamentary question NW368 (question dated
+  15 Mar 2019), PMG, https://pmg.org.za/committee-question/11216/ (read directly). Single-axis / fixed MW: BW1 162.9 / 427.9
+  (plus 36 MW dual-axis CPV), BW2 240.4 / 176.7, BW3 75.0 / 360.0, BW4 812.9 / 0; BW1-4 together 1,291.2 / 964.7, 56% single-axis.
+  The totals match the published window totals (627, 417, 435, 813 MW). Caveat: a 2019 listing of contracted plants, not as built;
+  two plants of about 33 MW may use azimuth rather than horizontal single-axis trackers (search snippet only).
+- "By BW4 all the projects had adopted tracker solutions": T. Creamer, Engineering News, 5 Oct 2020, as republished by Array
+  Technologies, https://arraytechinc.com/press-release/spanish-solar-tracking-group-establishes-formal-presence-in-south-africa/
+- BW6: preferred bidders single-axis tracking, capacity factor 30.1% (IPP Office REIPPPP historical data note, 7 Nov 2025, as
+  uploaded by the user; build costs section below).
+- Later plants confirmed on trackers (operating): Scatec Grootfontein, BW5, 225 MWac (TGS Prediktor release, 12 Jun 2026); SOLA
+  Lichtenburg wheeling plants, 126 and 130 MW (pv magazine, 17 Jul 2024; Engineering News, 2 Aug 2024); Envusa Mooi Plaats 240
+  MWac (Green Building Africa, 19 Mar 2026). Tracker orders: GameChange about 500 MW for southern Africa (PV Tech, 26 Apr 2024);
+  FTC Solar about 840 MW with Lubanzi-Inala (GlobeNewswire, 23 Feb 2026). No fixed-tilt utility plant after BW3 found.
+- Estimate (ours): of the model's 3,271 MW of operating utility solar, about 965 MW is fixed-tilt (BW1-3), so about 70%
+  single-axis if every later plant tracks; 62% confirmed project by project (2,012 MW). Pipeline about 95-100% single-axis,
+  resting on BW4 and BW6 being all tracking, the confirmed later plants and the tracker orders; most BW5-7 projects are not
+  confirmed one by one. Not read (PDFs): IPP Office 'Focus on solar PV' reports, DMRE and DBSA bidder lists, GreenCape reports.
+
 ## International benchmarks for central build costs (RULES, 7 Oct 2026)
 
 - IRENA, Renewable Power Generation Costs in 2024 (July 2025): global weighted average total installed cost,
@@ -862,3 +974,193 @@ Decisions are the user's (7 Oct 2026).
   base case (R27,446/kW, 2026) is a cross-check only.
 - Lithium central from build 07p: BW3 aged to January 2026 (equipment share at BNEF's 2025 turnkey decline),
   R3,425/kWh; BNEF turnkey 2024 USD 165/kWh, 2025 USD 117/kWh.
+
+## PyPSA-RSA: licence and what we take (user, 13 Oct 2026)
+
+Licence (user, 13 Oct, per the GitHub page github.com/MeridianEconomics/pypsa-rsa): AGPL v3. Checked in our local clone at
+commit 89872c1 (8 Apr 2026): README.md carries SPDX-License-Identifier AGPL-3.0-or-later and the AGPL v3 badge, and
+licenses/ holds AGPL-3.0-or-later.txt. The same folder also holds CC-BY-4.0.txt and CC0-1.0.txt; the documentation files
+carry CC-BY-4.0 headers; a few scripts carry MIT or GPL-3.0-or-later headers. Its data-licence table
+(docs/configtables/licenses.csv) lists the supply-region shapefiles (supply_regions/11-supply.shp, RSA.shp; source Eskom GCCA)
+as BY, NC, SA with changes marked, so those boundaries carry the GCCA terms, not AGPL. The 10-supply resolution is built on the
+GCCA 2025 transmission supply regions (README).
+
+What we take from it (every file found, 13 Oct 2026; repository searched for PyPSA-RSA, Existing_Lines, reipppp_, fleet_by_region):
+- fleet_by_region_v2.csv (nodal/fleet_by_region_v2.csv, identical copies at the root and in 'nodal old/', and in 'nodal old.zip'):
+  the thermal fleet; UC_FLEET in index.html (unit sizes, ramp and minimum-load parameters, heat rates, GPS, decommissioning
+  dates) and the unit parameters in nodal/nodal_dispatch.js. Origin (checked 13 Oct 2026): the 51 BASE rows of the
+  'conventional' sheet of PyPSA-RSA's public workbook scenarios/ME IRP 2024/sub_scenarios/fixed_technologies.xlsx (commit
+  89872c1), equal in all 25 shared columns except Min Stable Level, which is 0.5 in ours and 0 in the workbook for 16 coal
+  rows (Camden*, Camden**, Hendrina*, Kendal*, Kendal**, Komati, Kusile*, Kusile**, Kusile***, Lethabo**, Majuba*, Majuba**,
+  Matimba*, Matimba**, Medupi*, Medupi**); plus five spatial-join columns (geometry, NAME_1, index_right, name, region) assigning
+  each plant to a GCCA supply region. Who made those two changes, and when, is not recorded: this repository's history starts
+  on 1 Oct 2026 (774dc8d), with the file already present, and no build script or note for it was found. Committed in our public
+  repository. A slimmed replacement (branch claude/fleet-slim) and a private copy of the full file (gridtwin-data, branch
+  claude/pypsa-rsa-fleet) are paused, user, 13 Oct: decision after the Meridian call.
+- Existing_Lines.shp: topology and transfer limits. The CORRIDORS tables (limit MW, length km) in nodal/nodal_engine.py,
+  nodal/nodal_engine.js, validation/pypsa_crossval_uc.py and validation/mip_solver.py were rebuilt from its line geometries
+  (nodal_engine.py header); two corridors (Free State-KwaZulu Natal, North West-Western Cape) keep an earlier estimate. The
+  corridor reactances in nodal/corridor_electrical.json come from nodal/transmission_lines.geojson, whose own metadata gives
+  Eskom TDP plus SAPP planning data, not PyPSA-RSA.
+- rsa_supply_regions.gpkg: the 10-region GCCA boundaries used to assign each line to its two regions (nodal_engine.py
+  header); PyPSA-RSA's naming, origin to confirm. PyPSA-RSA's licence table puts its supply-region files under the GCCA's
+  BY-NC-SA terms.
+- reipppp_wind_data.csv and reipppp_solar_data.csv: capacity-weighted centroids of REIPPPP plants, used as the coordinates for
+  the regional wind and solar profiles (nodal/profiles_regional.json meta 'coords'; fetch_real_regional_profiles.py). Not on
+  disk (build_profile_sites.py); the multi-site rebuild (profiles_regional_rebuilt.json) takes locations from REEA instead.
+- data/eskom_pu_profiles.csv: the CSP per-unit hourly profile (Eskom, calendar 2021) in profiles.json and nodal/profiles.json
+  (meta csp_source). Eskom data in origin; not in PyPSA-RSA's data-licence table.
+Our LICENSE file lists 'PyPSA-RSA network topology and fleet data (Meridian Economics) - MIT', which disagrees with the
+repository's own AGPL v3; to correct once Meridian has answered.
+
+Our use: to confirm with Meridian (user raising it on the 13 Oct call): the terms for the fleet file and the transfer limits,
+whether the NC-SA terms on the GCCA region boundaries reach our 10-region topology, and the attribution they want. TODO 14df
+step 8 and 14dg step 2 depend on the answer. The app's footer links PyPSA-RSA to
+github.com/PyPSA/pypsa-za (the earlier PyPSA-ZA repository), not MeridianEconomics/pypsa-rsa; fix with the next app change.
+
+## PyPSA, the library (validation/), not PyPSA-RSA (user, 13 Oct 2026)
+
+validation/pypsa_crossval_uc.py and validation/mip_solver.py import the PyPSA library (pypsa, github.com/PyPSA/PyPSA) and solve
+with HiGHS through linopy. Licence, from its own repository (checked 13 Oct 2026): MIT (LICENSE on master: 'MIT License,
+Copyright (c) 2015-2026 PyPSA contributors'; README SPDX-License-Identifier MIT). The scripts build their own network from
+GridTwin ZA's data files and do not run PyPSA-RSA's code; their CORRIDORS table is the Existing_Lines.shp-derived one above, so
+they use PyPSA-RSA data but not its code.
+
+## NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)
+
+We took the GCCA 2025 supply-area boundaries and headroom figures from NTCSA directly (ntcsa.co.za/gcca/: 'GCCA 2025 GIS files
+(zip)', 'GCCA 2025 Results (xlsx)', 'GCCA 2025 (pdf)'). Checked 13 Oct 2026 (ntcsa.co.za read through Firecrawl; the report
+PDF and the zip not opened):
+- No licence specific to the GCCA data on the GCCA page or found in the report; the report editions carry a liability
+  disclaimer ('provided "AS IS"', from search summaries, wording of the 2025 PDF not confirmed).
+- The site-wide Website Terms and Conditions (NTCSA, 'Last updated: June 2024', linked as 'Terms of use' from every page)
+  govern: 2.1 'The NTCSA licenses the user to view, download, and print the content of the NTCSA website, provided that such
+  content is used for private, personal, educational, and/or noncommercial purposes only.' 2.2 'Content from the NTCSA website
+  may not be used or exploited by users for any commercial and non-private purposes without the prior written consent of the
+  NTCSA.' 2.8 small, accurate quotations in inverted commas, acknowledged. 2.10 no crawlers or robots without consent. 3.1 all
+  intellectual property, including downloads and databases, is NTCSA's or licensed to it; other rights reserved. 3.1.2 no
+  unauthorised copying, reproduction, distribution, dissemination or publication. Page footer: '@2024 National Transmission
+  Company South Africa SOC Ltd ... All rights reserved'. Website enquiries: webmaster2@eskom.co.za; GCCA page: info@ntcsa.co.za.
+- So publishing GCCA-derived boundaries or headroom in a public repository is not clearly permitted without NTCSA's written
+  consent (not legal advice). Eskom's old GCCA page (eskom.co.za/eskom-divisions/tx/gcca/) returns 404.
+
+Our files built on it, and the licence each states now:
+- public_data/connection_headroom.csv: 'CC BY 4.0 - attribution required'; public_data/README.md: CC BY 4.0.
+- nodal/substation_bands.json, nodal/firm_headroom_lookup.json, nodal/region_headroom_lookup.json: CC BY 4.0.
+- nodal/substations_compact.json: CC BY 4.0 ('changed from CC BY-NC-ND on 6 Sep 2026'), copyright Nick Hedley.
+- nodal/headroom_summary.json, nodal/bq_queue.json: CC BY-NC-ND 4.0, copyright Nick Hedley.
+- nodal/supply_area_split_draft.json: CC BY-NC-ND 4.0 (licence said to cover the compilation).
+- Built on the 10 GCCA supply regions without naming GCCA: nodal/regional_renewable_capacity.json, nodal/profiles_regional.json,
+  nodal/rooftop_mw_by_region.json (CC BY 4.0 each); nodal/demand_2025_regional.csv (no licence line; ESRG regional demand);
+  the CORRIDORS limits in the nodal engines (via rsa_supply_regions.gpkg).
+- The repository LICENSE lists 'GCCA connection capacity data: NTCSA - public domain', which NTCSA's terms contradict.
+None of these self-assigned licences can grant more than NTCSA's terms allow for the underlying data. Nothing changed now.
+
+## Tubatse pumped storage: support for BLD_PHES_CAPS central and bldPhesHours 14 (user, 13 Oct 2026)
+
+- Eskom media statement, 13 Oct 2026 (as given by the user; read by the advisor on 13 Oct 2026, figures match; eskom.co.za cannot
+  be read from this environment):
+  request for qualification for Tubatse pumped storage, 1.5 GW, about 21 GWh, up to 14 hours, near Roossenekal, Limpopo, water
+  from De Hoop Dam; closes 30 Nov 2026; Eskom is seeking an IRP 2025 allocation and a section 34 determination.
+- Engineering News, 22 May 2026 (checked by the user, 9 Oct; already cited at BLD_PHES_CAPS in index.html): construction from
+  2028, operation about 2038.
+- Supports: BLD_PHES_CAPS central (Tubatse alone, 1,500 MW from 2038) and bldPhesHours 14 (21 GWh on 1.5 GW).
+- Cost: c4's optimiser prices new pumped hydro on the 'anu2026' basis, R21,384/kW at 14 hours ((USD 1,100/kW + USD 14/kWh x 14)
+  x 16.5); the 'tubatse' basis gives R29,264/kW ((1,226 + 11.4 x 14) x 1.28 x 16.5). The engine check already charges new pumped
+  hydro at acapPs, R2,360/kW-yr, from Tubatse (R35.9bn in 2022 rands, JET plan, escalated to about R29,200/kW, 60 years at 8%),
+  so c4's engine cost already prices its 1,354 MW at Tubatse's cost; only the optimiser's build decision uses the cheaper basis.
+
+## UC_FLEET minimum stable level 0.5 on 16 coal rows: our change to Meridian's data, unsourced (user, 13 Oct 2026)
+
+UC_FLEET in index.html (msl) and fleet_by_region_v2.csv (Min Stable Level) carry 0.5 for 16 coal rows where Meridian's ME IRP
+2024 workbook has 0: Camden*, Camden**, Hendrina*, Kendal*, Kendal**, Komati, Kusile*, Kusile**, Kusile***, Lethabo**, Majuba*,
+Majuba**, Matimba*, Matimba**, Medupi*, Medupi**. Every other value of those rows matches the workbook. The 0.5 is our change,
+made before this repository's history begins (1 Oct 2026), with no source or note found. c4 uses it (unit commitment in the
+engine and the optimiser's coal minimums). Not changed; to source (TODO 14dj).
+
+
+## IRP 2025 emissions and REIPPPP wind tariffs (c5 write-up, 14 Oct 2026; research helper, HTML pages and search extracts, no PDFs)
+
+IRP 2025 emissions:
+- Gazette: Government Gazette 53596, notice 6767, 28 October 2025, https://www.gov.za/sites/default/files/gcis_document/202510/53596gon6767.pdf
+  (link seen on UCT Libraries, 30 Oct 2025; PDF not opened). Acts Online (29 Oct 2025): the version gazetted after hours on
+  28 Oct was withdrawn and replaced by a revised version on 29 Oct, so page numbers may differ between versions.
+- Figure 19 'CO2 Emissions Trajectory (Mt)', plan p.30, section 4.7.3 (user, 14 Oct 2026, from the full plan): 168 Mt in
+  2030 and 142 Mt in 2035 for the electricity sector. Cite the Mt only (user): the plan's '22% reduction' does not match
+  its own numbers (15.5%), and SAnews's 160 Mt is not used.
+- 168 Mt goes with 255 TWh in 2030 and is '39.9%' of the NDC (extracts). No other year found; Figure 19's values not seen.
+- 168 to 142 Mt is 15.5%, not 22%; the base of the 22% is not stated. SAnews, 19 Oct 2025 (read): 'approximately 160
+  million tonnes of carbon dioxide (CO2) equivalent by 2030, declining to 142 million tonnes by 2035'. Cliffe Dekker
+  Hofmeyr, 19 Nov 2025 (read): 168 Mt is about 40% of the 420 Mt CO2-eq NDC target. The plan labels the figures CO2;
+  secondary sources call them CO2-eq; nothing read says whether other gases are included.
+
+REIPPPP onshore wind tariffs:
+- BW5 (preferred bidders 28 Oct 2021): 1,608 MW in 12 wind projects (gov.za statement, 8 Dec 2022, read). Weighted average
+  wind R495/MWh fully indexed (R495.22; Crown Publications 4 Nov 2021 and Engineering News 28 Oct 2021, read; DMRE statement
+  28 Oct 2021, extract), lowest R344.25/MWh (TaiyangNews, 29 Oct 2021, read). Price base: about April 2021 (RFP released
+  12 April 2021); not confirmed. The 8 Dec 2022 statement restates BW5 solar R428.79 as R454.23 (x 1.059) at BW6's base.
+  Only 784 MW of BW5 wind had signed agreements by 8 Dec 2022.
+- BW6 (8 Dec 2022): no wind awarded; 4,116 MW of wind bids, all in the Eastern and Western Cape supply areas, with no grid
+  capacity confirmed by Eskom (gov.za statement, 8 Dec 2022, read).
+- BW7 (23 Dec 2024; further awards July and Dec 2025): no wind awarded; 8 wind bids, 4 compliant (gov.za, 23 Dec 2024, read);
+  the minister said the wind tariffs were too high (Green Building Africa, 23 Dec 2024, read); after value-for-money
+  negotiations with four wind bidders, only solar was appointed (Engineering News, 15 Dec 2025, read). No wind tariff
+  published.
+- BW4 (16 Apr 2015): onshore wind R619/MWh fully indexed, April 2014 rands (Engineering News, read).
+- Indexation: BW5 bidders submitted partial and full CPI-indexed prices; the 'fully indexed' price is quoted (White & Case,
+  17 May 2022, read).
+- Converting BW5 to January 2026 rands (approximate, ours): x 1.059 (the IPP Office's own BW5-to-BW6 restatement) then the
+  January CPI rates in BLD_COST's wind_high note (6.9%, 5.3%, 3.2%, 3.5%), about x 1.27 in all: about R620-630/MWh.
+
+## IRP 2025 demand forecast and the Cape wind curtailment allowance (user messages 65, 67-69, 14 Oct 2026)
+
+IRP 2025 demand (research helper: web search; DEE hosts blocked here, and the plan is a long PDF, so no IRP page was read
+first-hand; wording from search summaries, pages not known; to confirm against the plan):
+- IRP 2025 key outcomes: '... meet the energy demand forecast of 255 TWh in 2030' (with the 168 Mt). Assumptions section:
+  'electricity energy demand forecast of 255 TWh by 2029'. 'The electricity demand forecast developed by ESRG ...'.
+- TaiyangNews, A. Bhambhani, 'South Africa Targets 25 GW Solar PV By 2039 Under IRP 2025', 22 Oct 2025: 'Government
+  estimates show the country's electricity demand to rise to 255 TWh by 2029.'
+- DEE, Draft IRP stakeholder workshops deck, November 2024 (search summary): Reference Case 'based on the Moderate forecast',
+  which 'includes the impact of Mozal smelter'.
+- ESRG, UCT, 'High Spatial and Temporal Resolution End-use Electricity Demand Projection Model', web page, undated (read):
+  'The results of these efforts have already been directly used to provide the electricity demand projection scenarios used
+  in the latest national Draft IRP 2024 and 2025.'
+- ZivaHub (UCT figshare), B. Merven, doi:10.25375/uct.26942134, versions v1 9 Sep 2024, v2 22 Oct 2024, v3 23 Oct 2024, v4
+  30 Oct 2024, v5 26 Feb 2025 (figshare public API, read): HourlyDemandModel_v10_IRP_v02_wExports.xlsm has the same checksum
+  in all five, so it dates from September 2024; no v6.
+- SBG.EARTH (F. Spencer), 'Every plan forecast growth but (shock) demand fell.', data.sbg.earth/irp-demand, 2026, undated
+  (read): not used (user, 14 Oct); IRP 2025 Figure 2 digitised, stated error 1-1.5 TWh; moderate: 2024 238.5, 2027 246.0, 2028 250.5, 2029 254.0, 2030
+  261.0, 2031 269.0, 2035 299.0, 2040 340.0 TWh. Third-party reading, not an IRP figure.
+- Daily Maverick, C. Yelland, 'Risks identified in Eskom's 2026-30 system adequacy outlook ...', 3 Nov 2025 (read): NTCSA
+  MTSAO 2026-2030 moderate base case, 243 TWh in 2024 to 264 TWh in 2030.
+
+Cape wind connectable under the congestion curtailment allowance (message 68; both pages read through Firecrawl's page
+reader, the web reader failing on DNS; nothing fetched from eskom.co.za; no substation figures used):
+- Pinsent Masons, Out-Law analysis, 'NERSA decision unlocks wind generation in Eastern and Western Cape', 1 Jul 2025: NERSA
+  'approved an application by the National Transmission Company of South Africa (NTCSA) on 29 April for a congestion
+  curtailment framework to be classified as a constrained generation ancillary service.' 'The approval, effective from
+  1 April 2025 to 31 March 2028, is presently limited to unlocking additional wind capacity in the Eastern and Western Cape.'
+  Curtailed generators 'will be compensated on a limited basis' under MYPD6; REIPPPP bid window 7 replaced earlier regimes
+  'by an allowance of 10% curtailment'; the framework applies to 'both REIPPP and private sector projects, including existing
+  and future projects'. It gives no MW (it predates the GCCA update).
+- Cliffe Dekker Hofmeyr, Projects and Energy Alert, 'NTCSA releases practice note and updated GCCA on congestion
+  curtailment', 3 Dec 2025: 'Congestion curtailment as an ancillary service is limited to a 4% cap and may only be used in the
+  Western Cape and Eastern Cape. This translates into 1,580 MW of additional grid capacity across the Western Cape (1,180 MW)
+  and Eastern Cape (400 MW).' 'The Approval's validity period runs from 1 April 2025 to 31 March 2028, subject to review upon
+  expiry of this period.' The GCCA 2025 Addendum (January 2024) 'considered implementation of a 10% curtailment from 2026
+  onwards ... to open 3,470 MW'. 'The updated GCCA (31 October 2025) formalises the shift ... to a NERSA aligned 4%
+  curtailment cap for the pilot period'. The Practice Note (October 2025) ties allocation to the CEL/BQ and IGCAR processes;
+  projects with valid or effective budget quotes are generally excluded. Risk: 'after expiry of the initial term, the
+  frequency and depth of curtailment could rise above the intended ~4% envelope'. CDH dates the approval to 'early May 2025'
+  (NERSA's decision was 29 April; its media statement 9 May). The alert names substations; none is used in the model until
+  NTCSA consent is settled (user, 14 Oct).
+
+Causes of the 2025 demand step (message 69; research helper; full quotes and dates in RESULTS 'Demand checks before
+rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; Engineering News, 28 Oct 2025, 8 Dec 2025,
+7 Jan 2026, 29 Jan 2026, 25 May 2026, 26 Jun 2026, 31 Aug 2026; Fastmarkets, 15 Oct 2025; NERSA media statement, 29 May
+2026 (p.1-2); AMSA SENS, 2 Sep 2025; IOL, 6 Nov 2025 and 31 Jul 2025; Business Report, 4 Jul 2025 (Cato Ridge); Miningmx, 15 Sep 2025; Engineering News, 17 Feb 2026; Mining Weekly, 1 Apr 2025; Stats SA P4141
+(preliminary) September 2025, December 2025 and August 2026 releases, printed p.3, p.5 and p.6.
+- IRP 2025, Gazette 53596 (user's copy, 14 Oct 2026): key outcomes, '255 TWh in 2030'; plan p.34, gazette p.45, '255 TWh by
+  2029', tied to Cabinet's June 2025 decision to restore the ferrochrome industry; Figure 2, plan p.11, no data labels;
+  section 3.1, Mozal's removal linked to no Cahora Bassa supply; Figure 2's separate 'Moderate_MozalOut' case. Peak: the plan
+  quotes the Transmission Development Plan 2024's 43 GW by 2034 (moderate-high); cite as the TDP's.
