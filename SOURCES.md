@@ -909,6 +909,33 @@ Decisions are the user's (7 Oct 2026).
   (index.html WIND_NEW_CORR; user decision, 7 Oct 2026), fitted to developer-stated annual output: Impofu 330 MW,
   1,260 GWh (Enel) and San Kraal 140 MW, 616 GWh (EDF), check_wind_farms.py, weather years 2016, 2019, 2021, 2023.
 
+## Carbon tax in law and IRP 2025 on emissions (user, 14 Oct 2026; research helper, HTML pages and search extracts, no PDFs)
+
+- Rate before allowances, Carbon Tax Act 15 of 2019 s5, Acts Online consolidated text (unofficial), read 14 Oct 2026,
+  https://www.acts.co.za/carbon-tax-act-2019/5__rate_of_tax : 2024 R190 (s5(2)(b)); 2025 R236 (s5(2)(c)); 2026 R308 (s5(2A));
+  2027 R347, 2028 R385, 2029 R424 (s5(2B)(a)-(c)); 2030 R462 (s5(2C)); as amended by the Taxation Laws Amendment Act 20 of 2022
+  (GG 47826, 5 Jan 2023) and, for 2024, the Rates and Monetary Amounts Amendment Act 45 of 2024 (GG 51829, 24 Dec 2024). After
+  2030, s5(3): increased by amounts the Minister announces in each Budget; none in law. Index.html CARBON_TAX_LAW (build 14g).
+- Announced, not legislated: 2022 Budget Review, chapter 4 (page not seen): "at least US$30 by 2030, accelerating to higher
+  levels by 2035, 2040 and up to US$120 beyond 2050".
+- Allowances: 2025 Budget Review (May 2025), chapter 4, as reported in search extracts and law-firm notes (Cliffe Dekker
+  Hofmeyr), page not seen: the basic tax-free allowance is kept to 31 Dec 2030, with consultation on reductions from 1 Jan
+  2031; the earlier proposal to cut allowances from 2027 was dropped. The model's allowance path (85% in 2026 cut 2.5 points
+  a year to 75% in 2030) predates this (TODO 14eb). Section 14 caps allowances at 95%. The generation levy is replaced by the
+  carbon tax from 1 Jan 2026, with a floor on a generator's liability of R0.035/kWh after the renewable-premium deduction
+  (s6(2) as substituted by the Taxation Laws Amendment Act 5 of 2026, GG 54448, 1 Apr 2026; Acts Online).
+- Carbon budgets: R640/t on emissions above an allocated budget, s5(5) and s6(6) inserted by the 2026 Act; in force only from a
+  date the Minister of Finance sets by Gazette notice (none seen).
+- IRP 2025 (GG 53596, 28 Oct 2025): no emissions constraint found. Search extracts of the gazette and the user-friendly IRP
+  2025 (pages not seen): the sector emission targets are in draft, so "the application of the Carbon Tax Act ... is used as a
+  proxy in the IRP 2025"; emissions are a result: 168 Mt CO2 in 2030 (at 66-68% availability and 255 TWh), 142 Mt in 2035
+  ("a 22% reduction"), Figure 19 'CO2 Emissions Trajectory'; 168 Mt is said to sit within the NDC range of 350-420 Mt CO2-eq
+  for the economy. The IRP's carbon price assumption, US$50/t in 2040 and US$100/t in 2050 "based on the National Treasury
+  guidance", is also from an extract only. IRP 2019 (notice 1360 of 2019, s4.4, Acts Online) applied the peak-plateau-decline
+  trajectory as its primary assumption, with a carbon-budget scenario of 5,470 Mt cumulative.
+- Not reached (PDFs): the IRP 2025 gazette and user-friendly version (dmre.gov.za), Budget Reviews 2022, 2025 and 2026, Acts 5
+  of 2026 and 45 of 2024.
+
 ## Single-axis tracking share of South African utility solar (TODO 14aw; read 14 Oct 2026, research helper, HTML pages only)
 
 - REIPPPP BW1-BW4, PPA contracted MW by mounting: Minister of Energy, reply to parliamentary question NW368 (question dated

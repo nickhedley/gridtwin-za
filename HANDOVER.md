@@ -27,7 +27,8 @@ GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs
 5. Sensitivities on c5, seeded from its windows, rule A, all at once (Sat 17 - Sun 18, 3-4 h wall clock for one wave of up to
    20): proposed, for you to cut: s_be7, s_nogas4strict_bd with s_battdecl, s_coalirp, s_coal60, s_irpgas, s_pvirp, s_windlow,
    s_roof2, s_li8h, s_be4, s_be6, s_committed, s_gasprem, s_disc10, s_disc113, s_wind35 (17 runs); then print, top-up and tsl
-   for each (about 30 min).
+   for each (about 30 min). Added 14 Oct (user): s_noimp (IMP_END=2030), s_carbonfull (CTAX_FULL=1, the statutory carbon rate
+   with no allowances); s_roof2 is ROOF_MW=2000. No IRP emissions-cap run: IRP 2025 sets no cap as far as found (TODO 14eb).
 6. Write-ups, both measures, cross-check of c5's 2040 weeks, note draft (Mon 19 - Thu 22); note Fri 23 Oct.
 Risks: (a) may take longer; 14de waits on your choice; c5's pass count is unknown.
 
