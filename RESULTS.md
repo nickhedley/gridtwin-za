@@ -3106,14 +3106,14 @@ Eskom: ESK19679, January-August 2026, energy-weighted (sum of installed less PCL
 aggregates only, author's analysis, Eskom data credited; converted to coal-only with the app's coalEafFromFleet (nuclear 1,880 MW
 at the app's 0.66, hydro, pumped storage and open-cycle at 90%).
 
-{F}
+```
 January-August 2026             engine (120 draws)                 Eskom
 coal-only availability          65.5% (p10 63.2, p90 67.3)         64.5% (63.4-65.3% for nuclear 0.9-0.5)
 fleet EAF                       -                                  68.1% (PCLF 12.3, UCLF 19.4, OCLF 0.3% of 47,270 MW)
 by month, coal-only, %          Jan 61.5  Feb 62.7  Mar 64.2  Apr 63.3  May 67.5  Jun 68.6  Jul 68.8  Aug 66.8
                                 Jan 68.0  Feb 64.7  Mar 62.6  Apr 54.5  May 61.4  Jun 62.8  Jul 73.6  Aug 68.3   (Eskom)
 full year (engine only)         65.0%
-{F}
+```
 
 Level: the engine is about 1 point above Eskom on January-August, inside its own run spread. Shape: the engine's monthly
 pattern is the 2023-25 average planned-outage season; 2026's April trough (54.5%) and high July (73.6%) are not in it.
@@ -3130,7 +3130,7 @@ Launched 13:53-13:55 UTC on GitHub, workflow 'Optimiser long run', ref main, cod
 seed_run 38566438283 (c5b's second job), seed_name c5b. Each run's settings = c5b's line with MAXP=3 and
 WIN_FROM=seed/out/pathway_c5b_lp2040.json, plus its one change (KEY=VALUE replaces or adds, -KEY removes):
 
-{F}
+```
 run                 change from c5b's line                                          GitHub run    pass-1 LP key   LP rows changed
 s_be7_c5b           NUC_FORCE 2036:1250,2037:1250,2038:1350,2039:1350               38575629148   be48edd177      balance rows 2036-39
 s_nogas4strict_c5b  GAS_CAP=0, OCGD 1->0, LI_CAP 3000->4000                          38575637663   6addb787c2      gas, open-cycle, lithium bounds
@@ -3154,7 +3154,7 @@ s_batt5_c5b         BATT_DECL removed (5% a year)                               
 s_gmcv2029_c5b      DEM_BLOCK 2027:930 -> 2027:930,2029:675,2030:493                38575795879   f43601f73b      balance rows 2029-40
 s_measured_c5b      DEM_BLOCK removed (no smelter block)                            38575805161   aeb769e937      balance rows 2027-40
 s_cape10_c5b        CAPE_WIND 1580:4 -> 3470:10                                     38575815405   0f3c7eaac1      balance rows, Cape pool
-{F}
+```
 
 Before launch each run's first LP was built locally at babb78d (DUMP_LP, solves nothing): with no change the seeded LP is
 c5b's own final LP (key 458f2a9e13, the pass-2 solution), and each change alters only its own rows, bounds or objective
