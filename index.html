@@ -17703,14 +17703,15 @@ SLIDERS.forEach(s=>{
     // hidden below the fold anyway. Native <details> gives keyboard support and
     // screen-reader semantics for free.
     //
-    // Prices and markets defaults closed because it is the least often touched; the build cost
-    // (LCOE) assumptions are a subgroup, closed like every subgroup. Regrouped 6 Oct 2026 into
-    // Demand; Supply and build; Storage and flexibility; Grid and connections; Prices and markets;
-    // Retail and household bill. Everything else stays open so the panel reads as a scenario.
-    const CLOSED_BY_DEFAULT = ['Prices'];
+    // EVERY GROUP STARTS CLOSED (user, 14 Oct 2026), each showing its "n settings" badge, so the
+    // panel opens as a short list of six headings: Demand; Supply and build; Storage and flexibility;
+    // Grid and connections; Prices and markets; Retail and household bill (regrouped 6 Oct 2026).
+    // Until 14 Oct only Prices and markets started closed (CLOSED_BY_DEFAULT). OPEN_BY_DEFAULT names
+    // any group that should start open again; a group added later starts closed like the rest.
+    const OPEN_BY_DEFAULT = [];
     const g=document.createElement('details');
     g.className='grp';
-    g.open = !CLOSED_BY_DEFAULT.some(k => s.grp.indexOf(k) === 0);
+    g.open = OPEN_BY_DEFAULT.some(k => s.grp.indexOf(k) === 0);
     g.innerHTML='<summary><h3>'+s.grp+'</h3><span class="grpcount"></span></summary>';
     controlsEl.appendChild(g);
     g.addEventListener('toggle', () => { try { updateGroupBadges(); } catch(e){} });
@@ -17794,6 +17795,10 @@ SLIDERS.forEach(s=>{
     setPresetActive(null); scheduleRun();
   });
 });
+// Fill the badges once the panel is built (14 Oct 2026). They were refreshed only by a group's
+// 'toggle' event and by applyState, so Prices' count on a fresh load came from the other groups
+// firing 'toggle' as they opened; with every group starting closed no 'toggle' fires at load.
+updateGroupBadges();
 // A collapsed group must declare ITSELF. Hiding controls is only safe if the
 // user can still see that something inside has been changed - otherwise a
 // scenario carries a setting nobody remembers making, which is a worse failure
@@ -18934,7 +18939,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14i';
+const BUILD_STAMP = '2026-10-14j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
