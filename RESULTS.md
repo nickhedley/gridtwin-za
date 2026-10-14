@@ -3097,6 +3097,52 @@ operable is neither charged for them nor flagged.
 Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
 the no-gas case most. TODO 14ed (after the note).
 
+### TODO 14eg steps 2-4 on what remains after Avon and Dedisa: Eskom's own turbines (88 GWh in January-August 2026) and the interruptible hours (348); four scratch tests on c5b's 2026, nothing changed in the model (user, 14 Oct 2026, message 83)
+
+Method: c5b's 2026 state through the engine as the engine check runs it (120 runs: twelve weather years x ten draws; more
+draws where the check's rule asks for them), the 14eg probe (January-August, hours 1-5,832), each test one change on a scratch
+copy of babb78d (t14eg; the model, main and every run are unchanged). The model's open-cycle output is its whole 3,400 MW fleet,
+which includes Avon and Dedisa; Eskom's own turbines are the comparator now (Avon and Dedisa: the limitation above).
+
+```
+January-August 2026, mean (p90)            open-cycle GWh   hours > 500 MW   scarcity hours   interruptible hours   2026 shed GWh / target
+Eskom: own turbines; interruptible         88               -                348 (calls)      ILS 32, other 341      -
+base (c5b as run)                          10.3 (20.5)      7.3 (15)         95.7 (134)       0.1                    0.011 / 1.96
+T1 Eskom's 2026 monthly availability       17.6 (26.3)      12.6 (19)        129.9 (162)      0.1                    0.005 / 1.96
+T2 coal carries the reserve (a)            715 (867)        518 (599)        1,203 (1,323)    9.0                    2.06 / 1.96 FAILS
+T3a reserve requirement 1,800 MW (b)       5.3 (11.0)       4.0 (8)          55.2 (88)        0.1                    0.004 / 1.96
+T3b reserve requirement 2,600 MW (b)       20.8 (40.7)      14.7 (30)        170.1 (233)      0.1                    0.021 / 1.96
+```
+
+(a) T2: only batteries count as fast-start reserve standing in for coal (open-cycle and pumped storage no longer excuse coal
+from holding the reserve); 480 runs, as the check's rule required. Its 2026 cost is R5.6bn higher (R219.3bn against R213.7bn)
+and its open-cycle output 1.20 TWh a year. (b) reserveOperatingMW, base 2,200 (the ASTR's), other reserve terms unchanged.
+
+T1 (step 1's shape) Eskom's 2026 monthly coal availability (outageMonthlyAvail from ESK19679 January-August, the engine's own
+months for September-December): open-cycle output up by 70% and scarcity hours by 36%, so the April trough explains part of the
+gap, not most of it.
+
+Step 2, the dispatch rule (T2). The engine lets every fast-start megawatt stand in for reserve on coal: open-cycle 3,400 MW
+plus pumped storage 2,724 MW plus batteries, against a requirement of about 2.2 GW, so coal never holds reserve back and
+open-cycle plant runs only when nothing else meets load. Pumped storage alone covers the requirement, so dropping only the
+open-cycle plant from that sum would change almost nothing (reasoned from the rule, not run). At the other extreme, coal
+holding the whole reserve (T2) overshoots: open-cycle output 8 times Eskom's own turbines, scarcity hours 3.5 times Eskom's
+interruptible hours, and 2026 fails the adequacy test. Eskom's operation sits between the two; which rule fits it is not
+established from these tests.
+
+Step 3, reserve size (T3). Scarcity hours move strongly with the requirement (55, 96, 170 hours at 1.8, 2.2, 2.6 GW) and
+open-cycle output weakly (5, 10, 21 GWh). A larger requirement alone does not reach Eskom's 88 GWh within a plausible range.
+
+Step 4, interruptible load. The engine calls its 1,200 MW of interruptible load (R4,000/MWh, below diesel) only to meet an
+energy shortfall: 0.1 hours in the base, 9 hours even under T2. Eskom called interruptible supply in 348 hours, 341 of them the
+'other interruptible supply' product at about 65 MW on average (22.3 GWh), which reads as reserve restoration rather than
+energy shortfall. The engine has no rule that calls interruptible load for reserve, so its interruptible hours cannot match
+Eskom's under any of these tests; the comparison that can is scarcity hours (reserve short of requirement), which T1 and T3b
+bring to 130-170 against 348.
+
+Effect on c5b and the sensitivities: any change to the reserve rule moves 2026 adequacy and cost (T2: R5.6bn and a failing
+2026), so a rule change means c5b and every sensitivity rerun. They stay provisional (message 83 (3)). Nothing changed.
+
 ### Known limitation: Avon and Dedisa's running is not in the model; about R6.6bn a year at the model's own diesel price on 2026's pace (R9.0-9.3bn in 2024-25), the same in every scenario until their contracts end in 2030-31 (user, 14 Oct 2026, message 83; no engine change before the note)
 
 What runs: the dispatchable IPP open-cycle plant in ESK19679 (Avon 670 MW and Dedisa 335 MW, the DoE peakers) produced
