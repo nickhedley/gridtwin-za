@@ -1248,3 +1248,29 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
 - End dates used: Dedisa about end-2030, Avon about July 2031, by 15 years from each start (inference; the contractual dates
   are not published in these sources).
 
+
+## Wind and solar costs, grid connection and the integration charge (message 117, 15 Oct 2026; research helper, HTML pages and short PDFs via Firecrawl because the web reader could not resolve any host; one rule breach noted below)
+
+- BW5 (DMRE media statement, 28 Oct 2021, read; DBSA preferred-bidder list, 28 Oct 2021, read): wind 1,608 MW in 12 projects,
+  weighted average fully indexed price R495.22/MWh, lowest R344.25 (Dwarsrug, 124 MW), highest R617.70 (Wolf Wind Farm, 84 MW);
+  solar 975 MW in 13 projects, R428.79 (R374.79-484.60); all projects R473.94. Price base not stated (RFP 12 April 2021, bids
+  closed 16 August 2021). No BW5 wind capacity factor found.
+- Grid connection under REIPPPP: Eberhard and Naude, 'The South African Renewable Energy IPP Procurement Programme: review and
+  lessons learned', Journal of Energy in Southern Africa 27(4), November 2016 (SciELO, read): 'In general, IPPs were responsible
+  for the costs of shallow connections (i.e. to the nearest substation), but not for deep connection costs (i.e. those related to
+  strengthening Eskom's transmission system).' Bidders priced connection from Eskom's cost estimate letter; a budget quote
+  followed appointment. The BW6 RFP clause and the IPP Office note's definition of total project cost were not found.
+- TDP 2024 Public Report Rev 1, December 2024 (NTCSA), Table 4, FY25-29, R million (search extract, PDF not read): capacity expansion
+  80,707, of which new generation integration 54,277 and network strengthening 26,430; total R112.5bn. Rev 2 (February 2025,
+  extract): upstream strengthening for IPPs is committed once they are preferred bidders. www.ntcsa.co.za is not reachable from
+  the cloud session; the PDF is to be read for the page and the GW the spend serves (message 120).
+- NERSA, Transmission Tariff Code version 10, August 2019 (extract): 'The connection charge is based on the cost of assets used for
+  the benefit of a single customer.' NERSA network charge rules for third-party wheeling, Government Gazette 52781, 2025 (extract):
+  connection charges 'shall contribute to the upfront cost of the connection ... including any network strengthening'.
+- IRP 2025's wind and solar fixed O&M, capacity factors, life and discount rate: the gazette's Figure 9 'New Technology Cost
+  Assumptions' (not read, long PDF). Draft IRP 2024 stakeholder deck, November 2024 (extract): 'starting costs for solar PV and wind
+  are based on real South African costs'. The assumptions workbook (user upload, 'Additional Data Assumptions', Learning Rates
+  sheet) gives capex by year only.
+- Unverified, not used: Meridian Economics, 'Comparative analysis of IRP 2023 cost assumptions', 2 February 2024, 42 pages; the
+  helper read pages 1-12 with Firecrawl, against the rule for long PDFs (it reported this). Its figures are listed in RESULTS
+  'Wind diagnostics on c5b_14r' and stay unverified until the full document is read; it is not to be re-fetched (user, message 120).

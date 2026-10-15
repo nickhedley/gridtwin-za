@@ -2851,6 +2851,136 @@ re-run. RESULTS entries of that period that change demand, coal or wind (demand 
 Sep; coal outages calibrated, 22 Sep) are candidates, not measured causes. 5 Oct to 14r: 88.4 -> 83.3 Mt with the engine changes of
 13-14 Oct, not traced.
 
+### Wind diagnostics on c5b_14r (engine and optimiser build 2026-10-14r; nothing changed): the optimiser's 12 calendar days give new wind a 33.9% capacity factor against 45.2% over the twelve weather years, and tracking solar 33.1% against 28.7%, so on the optimiser's own days new wind costs R1,094/MWh against solar's R714 in 2030, where over the twelve years the two are level (R821 and R823); s_windlow builds 23.6 GW of wind to 2040 against c5b_14r's 17.0 GW (user, 15 Oct 2026, message 117)
+
+Finding. The build optimiser (bldBuildLP) prices energy on 12 calendar days of the default profile year, each weighted 365/12
+(bldRepDays(12): the tightest net-load hour, the slackest day, the middle of the worst 3-day net load, the middle of the worst
+3-day wind lull, and evenly spaced days), plus stress windows that carry their own weather year's shapes at small weight. On those
+12 days new wind (modern-turbine profile x 1.064) runs at 33.9% and tracking solar at 33.1%. The same profiles average 44.3% and
+34.2% over the default year, and 45.2% (41.8-47.8%) and 28.7% (27.4-29.6%) over the twelve weather years the engine check
+uses. So the optimiser sees new wind about a quarter weaker and tracking solar about a seventh stronger than the engine does.
+The default profile's own fixed-tilt solar is 25.1% against 21.7-23.0% in every one of the twelve years (mean 22.4%), which
+is where solar's half of the gap comes from; for wind the gap is the choice of days (the default year's own new-wind mean is
+44.3%). This favours solar over wind in every c-run, by an amount not measured here.
+
+Caveat. Capacity factor is not the whole of value: the 12 days carry the adequacy-relevant hours on purpose, and the stress
+windows add the worst weeks. Whether the optimiser would build more wind on representative days that match the twelve-year
+energy is not tested (no new runs). The capacity factors above are per unit of the profiles the engine and optimiser use;
+BW6's preferred solar bids state 30.1% for tracking (IPP Office, 7 Nov 2025).
+
+Settings. Pathway files harness/out/pathway_c5b_14r.json and pathway_s_windlow_c5b14r.json (GitHub runs, code 6045387,
+build 2026-10-14r; s_windlow: WIND_CASE=low). Diagnostic: harness/pathcheck.js with a read-only capture mode (SN_W117; validation/w117/pathcheck_w117.patch,
+scripts and README there), run on each year's state as the engine check builds it, draw 0
+(seed 71830529 + weather year x 7919), years 2030, 2035, 2040, GRID=1; the LP's cost terms are read from the app's own
+functions (bldCapex, bldAnnuity, bldFom, bldGridCapexKW, bldGridAnn, txRPerKWyr). Curtailment: the engine's vreCurtailed
+over wind plus solar output plus vreCurtailed, mean of the twelve years. R/MWh: total R/kW-yr over (capacity factor x 8.76).
+
+(1) Wind and solar build by year, MW, from the two runs' pathway files (s_windlow_c5b14r is the c5b_14r sensitivity; the
+earlier s_windlow_c5b, on build 14l, is superseded and its pathway file is not held here):
+
+| Year | Wind c5b_14r | Wind s_windlow | of which freed-connection (cw) c5b_14r / s_windlow | Utility solar c5b_14r | Utility solar s_windlow | Rooftop c5b_14r / s_windlow |
+|---|---|---|---|---|---|---|
+| 2026 | 696 | 696 | 696 / 696 | 354 | 354 | 0 / 0 |
+| 2027 | 190 | 884 | 190 / 884 | 255 | 255 | 900 / 900 |
+| 2028 | 0 | 0 | 0 / 0 | 240 | 240 | 900 / 900 |
+| 2029 | 0 | 67 | 0 / 0 | 2,994 | 2,665 | 900 / 900 |
+| 2030 | 2,473 | 2,500 | 694 / 0 | 3,277 | 3,277 | 900 / 900 |
+| 2031 | 0 | 2,434 | 0 / 0 | 3,506 | 3,053 | 900 / 900 |
+| 2032 | 0 | 1,697 | 0 / 0 | 3,752 | 3,643 | 900 / 900 |
+| 2033 | 1,476 | 1,877 | 0 / 0 | 1,872 | 3,091 | 900 / 900 |
+| 2034 | 1,805 | 2,480 | 0 / 0 | 1,058 | 1,653 | 900 / 900 |
+| 2035 | 853 | 2,001 | 0 / 0 | 617 | 551 | 900 / 900 |
+| 2036 | 421 | 2,975 | 0 / 0 | 1,822 | 800 | 900 / 900 |
+| 2037 | 2,339 | 712 | 0 / 0 | 3,741 | 3,495 | 900 / 900 |
+| 2038 | 2,865 | 860 | 0 / 0 | 4,188 | 2,186 | 900 / 900 |
+| 2039 | 2,050 | 922 | 0 / 0 | 4,781 | 3,246 | 900 / 900 |
+| 2040 | 1,825 | 3,500 | 0 / 0 | 4,455 | 3,412 | 900 / 900 |
+| 2026-40 | 16,993 | 23,605 | 1,580 / 1,580 | 36,912 | 31,921 | 12,600 / 12,600 |
+
+(2) Cost per MWh of new wind and solar in c5b_14r, beside IRP 2025 and BW5:
+
+Table 2a. c5b_14r: new wind and new utility solar (tracking), R/kW and R/MWh, 2026 rands
+
+| Year | Tech | Capex | Capital, 25 y at 8% | Fixed O&M | Spur (annuity, 40 y) | Integration | Total R/kW-yr | CF: LP calendar days / default profile / 12-year mean | Curtailment, % | R/MWh on the LP days | R/MWh, 12-year CF after curtailment | of which R402 (12-year) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2030 | wind | 25,343 | 2,374 | 392 | 85 (1,010/kW) | 402 | 3,253 | 33.9 / 44.3 / 45.2% | 0.00 | 1,094 | 821 | 101 |
+| 2030 | solar | 14,322 | 1,342 | 287 | 37 (445/kW) | 402 | 2,068 | 33.1 / 34.2 / 28.7% | 0.00 | 714 | 823 | 160 |
+| 2035 | wind | 21,921 | 2,053 | 392 | 85 (1,010/kW) | 402 | 2,932 | 33.9 / 44.3 / 45.2% | 0.08 | 986 | 741 | 102 |
+| 2035 | solar | 11,745 | 1,100 | 287 | 37 (445/kW) | 402 | 1,827 | 33.1 / 34.2 / 28.7% | 0.08 | 631 | 728 | 160 |
+| 2040 | wind | 18,960 | 1,776 | 392 | 85 (1,010/kW) | 402 | 2,655 | 33.9 / 44.3 / 45.2% | 2.71 | 893 | 689 | 104 |
+| 2040 | solar | 9,632 | 902 | 287 | 37 (445/kW) | 402 | 1,629 | 33.1 / 34.2 / 28.7% | 2.71 | 562 | 667 | 164 |
+
+Table 2b. s_windlow_c5b14r (WIND_CASE=low: IRENA global average capex, connection not included, so the spur runs from zero), wind only
+
+| Year | Capex | Total R/kW-yr | R/MWh on the LP days | R/MWh, 12-year CF after curtailment |
+|---|---|---|---|---|
+| 2030 | 15,294 | 2,372 | 798 | 599 |
+| 2035 | 13,229 | 2,178 | 733 | 552 |
+| 2040 | 11,442 | 2,011 | 677 | 529 |
+
+Table 2c. Capex beside IRP 2025's own (assumptions workbook, Learning Rates sheet, base case, January 2024 rands x 1.068 to January 2026)
+
+| Year | Wind c5b_14r | Wind IRP 2025 (BW6 base) | Solar c5b_14r (tracking) | Solar IRP 2025 (BW6 preferred base) | Solar IRP 2025 (BW6 compliant base) |
+|---|---|---|---|---|---|
+| 2030 | 25,343 | 25,072 | 14,322 | 13,691 | 17,212 |
+| 2035 | 21,921 | 23,803 | 11,745 | 12,512 | 15,730 |
+| 2040 | 18,960 | 22,598 | 9,632 | 11,505 | 14,463 |
+
+BW5 awarded tariffs (DMRE 28 Oct 2021, fully indexed, price base not stated): wind R495.22/MWh weighted (R344.25-617.70), about R631 (R438-787) in 2026 rands on SOURCES' approximate x1.273; solar R428.79 (R374.79-484.60), about R546.
+
+Notes on (2). Fixed O&M is BW6's (R367 wind, R269 solar per kW-yr, January 2024 rands, x 1.068). The spur is the grid-cost option
+(GRID=1): for bid capex that includes connection, only the distance beyond the 18 km median (22.0 km for wind, 9.7 km for solar),
+on a 132 kV circuit at the ITP rate, over 40 years. Wind on the Cape allowance (cw) pays neither spur nor integration charge.
+IRP 2025's fixed O&M, capacity factors, life and discount rate for wind and solar are in the gazette's Figure 9 ('New Technology
+Cost Assumptions'), not read here (long PDF); the assumptions workbook gives capex only. The workbook says IRP 2025's wind and
+solar starting costs are BW6's, as ours are; ours decline faster (wind 2.86% a year against the workbook's base case, which
+reaches R22,598 in 2040 against our R18,960). BW5 tariffs are 20-year fully indexed prices, comparable in kind with a real
+levelised cost, but at the bidders' own cost of capital and resource; the conversion to 2026 rands is approximate (SOURCES
+'REIPPPP onshore wind tariffs'). On that basis c5b_14r's new wind in 2030 (R821/MWh over the twelve years, R720 without the
+integration charge) sits about 14-30% above BW5's weighted wind tariff (about R631), and its tracking solar (R823, R663
+without) above BW5's solar (about R546). BW6 awarded no wind; the BW6 bids are the capex basis here.
+
+(3) Do the BW6 wind capex and the R402/kW-yr integration charge cover the same network? On the sources found, no, in principle;
+the overlap risk sits elsewhere.
+- BW6 capex: the IPP Office note (7 Nov 2025) does not define what the overnight cost includes. Under REIPPPP the IPP pays the
+  shallow connection, to the nearest substation, and not the deep connection costs of strengthening the transmission system
+  (Eberhard and Naude, Journal of Energy in Southern Africa 27(4), 2016, read). Bidders price it from Eskom's cost estimate letter.
+  So BW6 capex most likely includes the dedicated connection and excludes upstream strengthening (connIncl in the code).
+- R402/kW-yr: our derivation from TDP 2024's generation-integration spend (SOURCES 'Sources used for constants': R225bn for
+  46.9 GW, R4,800/kW, 40 years at 8%). TDP 2024 Public Report Rev1 (December 2024), Table 4, FY25-29: capacity expansion R80.7bn,
+  of which new generation integration R54.3bn and network strengthening R26.4bn, total R112.5bn (search extract). Rev2 (February
+  2025): upstream works for IPPs are committed only once IPPs are preferred bidders (extract). NERSA's Transmission Tariff Code:
+  'The connection charge is based on the cost of assets used for the benefit of a single customer' (extract). So generation
+  integration is shared upstream network, recovered through use-of-system charges, not the IPP's dedicated assets.
+- Where overlap can occur in the model: the spur charge. Bid capex already carries a typical connection, so the LP charges only
+  the distance beyond the median; a project farther out than its bid assumed is charged twice for the excess only.
+- The R402 itself (message 120 (1)): it rests on RESULTS 'Transmission reconciled to what the TDP buys' (22 Sep 2026, build
+  2026-09-22ad), from TDP 2024 Rev 2, Table 4: new generation integration R54.3bn plus land and rights pro rata to capacity
+  expansion (R4.9bn x 54.3/80.7), 51.2% of the five-year R112.5bn; that share applied to the decade's R440bn (DBSA; NTCSA
+  CEO, August 2026) gives R225bn for 46.9 GW (56 GW less 9 GW of rooftop; 15.9 GW of it gas), R4,803/kW, and at
+  8% over 40 years (annuity factor 0.0839) R403/kW-yr from these rounded figures, against the code's R402 (the 22 Sep entry's
+  51.1%): a rounding difference, no change. The research helper's 48% (R54.3bn of R112.5bn) leaves out
+  the land share; the two agree. Two assumptions are ours: the five-year share applied to ten years, and land pro rata. Not
+  re-read from the primary document today: www.ntcsa.co.za is not reachable from this session and the report is too long for
+  the fallback reader; the page number, Rev 1's figures and the GW the spend serves stay to be read from the PDF (pending).
+- Flag on the rules: NERSA's wheeling network charge rules (Government Gazette 52781, 2025) let connection charges 'contribute to
+  the upfront cost of the connection ... including any network strengthening' (extract); if applied to new IPPs, part of the deep
+  cost would move into the generator's capex and the R402 would then double-count it.
+
+Not used, unverified (message 120 (2)): Meridian Economics, 'Comparative analysis of IRP 2023 cost assumptions', 2 February
+2024 (42 pages; the research helper read pages 1-12 only, with Firecrawl, against the rule for long PDFs). Figures drawn from
+those pages, none used in any table above or in the reviewer pack, each unverified until the full document is read: IRP 2023's
+wind capacity factor from CSIR/Fraunhofer profiles, 38.1% spatially averaged; EPRI's wind capacity factor 36.3%; IRP 2023's solar
+capacity factor not specified; EPRI's solar 26.5% (CdTe) and 29% (crystalline silicon); CSIR/Fraunhofer fixed-tilt solar 19.6%
+(16.8-22.6% by region); IRP 2023's wind and solar fixed O&M 'significantly higher' than other sources; IRP 2023's solar LCOE about
+double the average BW6 successful bid price.
+
+(4) Reduced cost of new wind in 2030, 2035 and 2040 from c5b_14r's own solution: not done. The run saves each solve's column
+duals in its LP cache, which GitHub keeps as the artifact state-c5b_14r (run 38628612316, expires 21 Oct 2026); this session's
+network policy does not allow the artifact host (productionresultssa3.blob.core.windows.net), and the local reproduction's cache
+was cleared. Pending the user's choice: allow the host, or re-solve the identical final LP locally (a reproduction, not a new
+scenario). Note c5b_14r ran five passes; the build is the fifth pass's solution, which is the one to read.
+
 ### Iron-air with gas in July (validate_findings): the check has failed since 07s; today's 607 -> 472 GWh comes from 14d's outage draw (600 -> 475) plus Avon and Dedisa's must-run diesel from 14p (user, 15 Oct 2026, message 113 (4))
 
 Check: 'with gas, 20 GW of 100-hour iron-air barely moves July' (validate_findings; Seriti Green: 20 GW wind, 25 GW solar, 20 GW /
