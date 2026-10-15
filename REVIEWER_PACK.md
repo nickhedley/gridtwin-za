@@ -241,7 +241,7 @@ Engine and optimiser (builds 14m–14r; section 1 and limitations 17–18): oper
 
 ### The sensitivities: provisional until you have read them
 
-Each run takes c5b_14r's settings, makes one change, and runs up to three passes from c5b_14r's stress windows. The reference is a null run made the same way with no change (R2,388.4bn engine PV, 1,996.7 Mt, objective R1,591.6bn), not c5b_14r itself, which needed a 3,000 MW stress margin that a seeded run starts without. Engine PV is at 8% real with any adequacy top-up. The objective is the optimiser's, without its stress-target penalty, which was zero in every run (RESULTS 'PROVISIONAL until the reviewer has read them: c5b_14r sensitivities').
+Each run takes c5b_14r's settings, makes one change, and runs up to three passes from c5b_14r's stress windows. The reference is a null run made the same way with no change (R2,388.4bn engine PV, 1,996.7 Mt, objective R1,591.6bn), not c5b_14r itself, which needed a 3,000 MW stress margin that a seeded run starts without. Engine PV is at 8% real with any adequacy top-up. The objective is the optimiser's, without its stress-target penalty, which was zero in every run. Every figure below is generated from the run outputs (RESULTS 'PROVISIONAL until the reviewer has read them: c5b_14r sensitivities').
 
 | Run | Change from c5b_14r | Engine PV vs null, R bn | CO2 2026–40 vs null, Mt | Objective vs null, R bn | Same direction |
 |---|---|---|---|---|---|
@@ -251,7 +251,7 @@ Each run takes c5b_14r's settings, makes one change, and runs up to three passes
 | s_disc10 | Discount rate 10% | +89.5 | +67.7 | not comparable (a) | not judged |
 | s_be6 | Lithium capped at 550 MW a year from 2026 | +71.0 | +117.4 | +69.0 | yes |
 | s_detgas | Determined gas: 3,000 MW by 2030 (IRP 2019 section 34) plus 5,000 MW in 2031–37 (GN 8021), additional on our reading | +38.8 | +69.5 | +16.0 | yes |
-| s_roof2 | Rooftop 2,000 MW a year (top-up 250 MW in 2038) | +34.8 | -22.5 | +25.3 | yes |
+| s_roof2 | Rooftop 2,000 MW a year (top-up 250 MW) | +34.8 | -22.5 | +25.3 | yes |
 | s_noimp | No imports after 2030 | +31.6 | +9.3 | +65.9 | yes |
 | s_be7 | IRP nuclear forced: 1,250 MW in 2036–37, 1,350 MW in 2038–39 | +31.2 | -0.9 | -55.6 | no (b) |
 | s_nogas4strict | No new gas or diesel open-cycle; lithium up to 4 GW a year | +27.9 (c) | -568.0 | +89.5 | yes |
@@ -270,14 +270,14 @@ Each run takes c5b_14r's settings, makes one change, and runs up to three passes
 
 (a) The objective is at the run's own discount rate, not comparable with the null's at 8%; engine PV, at 8%, is.
 (b) Forced nuclear's capital is not in the objective, so the objective falls by the energy the nuclear displaces; the engine, which carries the capital, puts s_be7 above the null. Structural.
-(c) With a top-up. Quoted as: does not meet the adequacy standard from 2034 without new peaking plant; the cheapest fix is 1,500 MW of diesel open-cycle by 2037, about +R28bn. The top-up itself is R8.7bn of that; diesel open-cycle is excluded in this run, so the top-up prices the gap rather than being a build the run allows.
-(d) No material effect: both measures within R0.5bn of the null, in opposite directions.
+(c) With a top-up of 1,500 MW of diesel open-cycle. Quoted as: does not meet the adequacy standard from 2034 without new peaking plant; the cheapest fix is 1,500 MW of diesel open-cycle by 2037, about +R28bn. The top-up itself is R8.7bn of that; diesel open-cycle is excluded in this run, so the top-up prices the gap rather than being a build the run allows.
+(d) No material effect: both measures within R0.5bn of the null (engine +0.4, objective -0.1), in opposite directions.
 
 What the author takes from the table (RESULTS, as above):
 
-- Pass mark 5, set before the runs: the two cost measures move the same way on 18 of the 20 comparable runs. The exceptions are s_be7 (structural, note b) and s_li8h (no material effect).
-- Determined gas costs +R16–39bn against least cost (objective +R16.0bn, engine +R38.8bn). The IRP's gas beyond the determinations accounts for about R90bn of s_irpgas's premium (engine R92.0bn, objective R88.5bn).
-- Every run's engine check is below target in every year except s_nogas4strict (2034–40) and s_roof2 (2038, by 0.0035 GWh, topped up).
+- Pass mark 5, set before the runs: the two cost measures move the same way on 18 of the 20 comparable runs. The exceptions are s_be7 and s_li8h (notes b and d).
+- Determined gas costs +R16–39bn against least cost (objective +R16.0bn, engine +R38.8bn). The IRP's gas beyond the determinations accounts for about R90bn of s_irpgas's premium (engine R91.9bn, objective R88.5bn).
+- Every run's engine check is below target in every year except s_nogas4strict (2034–40) and s_roof2 (2038, by 0.0036 GWh, topped up).
 
 ---
 

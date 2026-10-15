@@ -2861,7 +2861,7 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
 - Determined gas (s_detgas: the IRP 2019 section 34 determination's 3,000 MW by 2030 plus GN 8021's 5,000 MW for 2031-37,
   additional on our reading, message 108; SOURCES): +R16-39bn against least cost (objective +R16.0bn, engine
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
-  s_irpgas less s_detgas is R92.0bn on the engine (R130.8bn less R38.8bn) and R88.5bn on the objective (R104.5bn less R16.0bn).
+  s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
 ### c5b on build 2026-10-14r, the final base: adequate after five passes; the engine check passes every year; R2,393.5bn engine PV (+R7.9bn on c5b_mr2), 1,991.9 Mt CO2 2026-40 (-9.1 Mt); the CO2 drop is the build, not the code (user, 14 Oct 2026, messages 100 and 105)
 
@@ -3728,6 +3728,8 @@ renewable-heavy years and weeks. The PyPSA cross-check (validation/single_node, 
 has the same foresight, so it cannot detect this. The optimiser's representative windows are solved with full knowledge of
 each window too. Not changed. Measuring it needs forecast series with realistic error, which is what TODO 14ea's ten-day
 outlook would supply (ECMWF and GFS forecasts), so this links to 14ea. Reviewer pack: limitation 19.
+Re-checked 15 Oct 2026 on build 2026-10-15a (engine unchanged since 14r; user, message 115): the storage look-ahead (_laReq) still
+reads netLoadPre[k], the run's own demand less its own wind and solar, for every hour k up to storageLookaheadH (48) ahead.
 
 ### Known limitation: no inertia or system-strength requirement in the build; the engine's 6 GW synchronous floor charges nothing when coal is gone (user, 14 Oct 2026, message 75; no change to c5b)
 
