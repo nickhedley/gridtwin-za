@@ -223,7 +223,12 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 .presets button:hover{background:var(--panel2)}
 .presets button.active{background:var(--ink); color:var(--panel)}
 .preset-caption{font-size:10.5px; color:var(--ink2); line-height:1.45; margin:-6px 0 12px; min-height:4.4em}
-.calc-status{font-size:10.5px; color:var(--ink2); margin:-6px 0 8px}
+.calc-status{display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:#8A5A00; margin:-6px 0 8px}   /* dark amber, 5.6:1 on --panel (user, message 114) */
+.calc-status[hidden]{display:none}
+/* Spinner: a CSS animation on transform only, so the browser's compositor keeps it turning while the engine blocks the page
+   (user, message 114). No timer and no GIF: both stop when the main thread is busy. */
+.calc-spin{flex:none; width:11px; height:11px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; will-change:transform; animation:calc-spin .8s linear infinite}
+@keyframes calc-spin{to{transform:rotate(360deg)}}
 .presets.busy button{transition:none}  /* a fade started on click would freeze mid-way while the engine runs */
 
 /* KPI strip */
@@ -400,7 +405,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="pb">
       <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset, or move any slider.</p>
       <div class="presets" id="presets"></div>
-      <p class="calc-status" id="calcStatus" role="status" aria-live="polite" hidden>Calculating…</p>
+      <p class="calc-status" id="calcStatus" role="status" aria-live="polite" hidden><span class="calc-spin" aria-hidden="true"></span><span id="calcText">Calculating…</span></p>
       <p class="preset-caption" id="presetCaption"></p>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
       <button class="sharebtn" type="button" onclick="exportRunRecord()" title="A one-page record of this run: assumptions, outputs, and the data fingerprints it used, so the numbers can be reproduced and checked later" style="margin-top:6px">&darr; Export run record</button>
@@ -19297,7 +19302,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-15a';
+const BUILD_STAMP = '2026-10-15b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -19791,7 +19796,8 @@ function updateCalc(){
   const e = document.getElementById('calcStatus'); if (!e) return;
   const owed = Object.keys(calcOwed);
   e.hidden = !owed.length;
-  if (owed.length) e.textContent = calcOwed.run ? 'Calculating…' : 'Updating risk panels…';
+  // Only the text changes, never the spinner element, so its animation is not restarted between the two messages.
+  const t = document.getElementById('calcText'); if (owed.length && t) t.textContent = calcOwed.run ? 'Calculating…' : 'Updating risk panels…';
   presetsEl.classList.toggle('busy', !!owed.length);
 }
 function showCalc(){ calcOwed.run = ++calcGen; updateCalc(); }
