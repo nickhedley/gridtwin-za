@@ -2762,6 +2762,16 @@ click, the engine starting 22 ms after it), 'Updating risk panels…' once the r
 adequacy and Monte Carlo have finished. Measured: on load it hid 4 ms after the last long task (55.2 and 53.8 s); after a click on IRP's 2030 targets from a quiet page it hid when the last risk-panel run ended (149.7 s; main 154.5 s, the same calls in the same order); on four other presets it hid within 7 ms of the last long task.
 The preset buttons' 0.15 s colour fade is switched off while it shows (it froze half-way during the run). No engine code changed.
 
+Build 2026-10-15b (user, message 114): the line is dark amber (#8A5A00, 5.6:1 on the panel), bold, 11.5 px, with a spinner before
+the text: a CSS animation on transform only, which the compositor runs while the main thread is blocked. Measured in Chromium
+141.0.7390.37 (no other browser installed here), IRP path 2035 clicked after a 120 s start-up, CDP screencast at about 14 frames
+a second: the spinner moved in all 2,672 frame steps recorded inside long tasks (0.1-237 s after the click; mean 421 degrees a
+second against the design's 450, the shortfall from frame gaps up to 0.96 s; the suite was running alongside). Forced dark mode
+(--force-dark-mode, WebContentsForceDark), 30 s: moved in 393 of 397 steps; the other four are one repeated frame each followed
+by a double step (38-46 degrees), not a stall. The text inverts to light amber on dark, about 8:1. The site has no dark theme of
+its own, and its prefers-reduced-motion rule stops all animation, the spinner included. Suite: 814/820, eng5 6/6, every log
+identical to 15a's.
+
 Start-up (main, run(), the schedulers and the risk-panel runs wrapped from DOMContentLoaded): run() at 1.6 s (early results) and
 again at 5.4 s when every engine input has settled (by design, 22 Sep); the capture curve at 2.6 s and again at 11.3 s (about
 2.5 s of blocking spent on a curve that is redrawn); one Monte Carlo run (11.3-38.4 s) and one adequacy run (11.3-59.7 s). The
