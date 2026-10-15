@@ -2696,7 +2696,7 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
-### PROVISIONAL until the reviewer has read them: c5b_14r sensitivities, 21 runs and s_detgas from c5b_14r's windows, against a null run; pass mark 5 met on 17 of 19 (s_be7 structural, s_li8h immaterial); s_nogas4strict does not meet the adequacy standard from 2034 without new peaking plant; determined gas +R16-39bn against least cost (user, 14-15 Oct 2026, messages 82, 104, 105 and 107)
+### PROVISIONAL until the reviewer has read them: c5b_14r sensitivities, 21 runs and s_detgas from c5b_14r's windows, against a null run; pass mark 5 met on 18 of 20 comparable runs (s_be7 structural, s_li8h immaterial); s_nogas4strict does not meet the adequacy standard from 2034 without new peaking plant; determined gas +R16-39bn against least cost (user, 14-15 Oct 2026, messages 82, 104, 105 and 107)
 
 Runs: workflow 'Optimiser long run', ref claude/reserve-rule, code_sha 6045387 (build 2026-10-14r; s_detgas 2ed7225, the same
 engine plus GAS_CUM and GASFLOOR_MW), seed_run 38628612316 (c5b_14r's last job), seed_name c5b_14r; first jobs 223-244, started
@@ -2721,7 +2721,7 @@ copied out by a helper and spot-checked against the logs (s_be7, s_nogas4strict,
 | Run | Change from c5b_14r's line | Loop | Engine PV, R bn | vs null | CO2 2026-40, Mt | vs null | Objective, R bn | vs null | Same direction |
 |---|---|---|---|---|---|---|---|---|---|
 | null_c5b14r | (none) | pass limit | 2,388.4 | | 1,996.7 | | 1,591.6 | | |
-| s_be7 | NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350 | pass limit | 2,419.6 | +31.2 | 1,995.7 | -0.9 | 1,536.0 | -55.6 | not judged (a) |
+| s_be7 | NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350 | pass limit | 2,419.6 | +31.2 | 1,995.7 | -0.9 | 1,536.0 | -55.6 | no (a), structural |
 | s_nogas4strict | GAS_CAP=0 OCGD=0 LI_CAP=4000 | pass limit | 2,416.2 (top-up 1500 MW; 2,407.5 as solved) | +27.9 | 1,428.7 | -568.0 | 1,681.1 | +89.5 | yes |
 | s_coal60 | COAL_DATES=coal_dates_irp2025_60y.json | pass limit | 2,373.8 | -14.5 | 2,084.8 | +88.1 | 1,561.0 | -30.6 | yes |
 | s_irpgas | IRP gas plan (as s_irpgas_c5b) | adequate | 2,519.2 | +130.8 | 2,159.5 | +162.8 | 1,696.1 | +104.5 | yes |
@@ -2763,10 +2763,11 @@ Loop: ten runs ended 'adequate' within three passes, twelve at the pass limit (M
 except s_nogas4strict; as in the c5b round, the engine check, not the loop's own test, is the adequacy verdict.
 
 Decisions (user, 15 Oct 2026, message 107); every result in this entry is provisional until the reviewer has read it:
-- Pass mark 5 (TODO 14dt): met on 17 of 19, the mark unchanged. Counted: the 22 runs less s_disc10 and s_disc113 (objective at
-  their own rate) and s_nogas4strict (quoted as not meeting the standard, below; its two measures do move the same way, +R27.9bn
-  and +R89.5bn). Not met: s_be7, structural (forced nuclear's capital is outside the objective), and s_li8h, a recorded failure of
-  the mark with no material effect (+R0.4bn engine, -R0.1bn objective, both under R0.5bn); s_li8h is not quoted.
+- Pass mark 5 (TODO 14dt): met on 18 of 20 comparable runs, the mark unchanged (user, message 109, correcting message 107's
+  17 of 19). Comparable: the 22 runs less s_disc10 and s_disc113 (objective at their own rate); s_nogas4strict is counted (both
+  measures move the same way, +R27.9bn and +R89.5bn). The two exceptions: s_be7, structural (forced nuclear's capital is
+  outside the objective), and s_li8h, no material effect (+R0.4bn engine, -R0.1bn objective, both under R0.5bn); s_li8h is not
+  quoted.
 - s_nogas4strict is quoted as: does not meet the adequacy standard from 2034 without new peaking plant; the cheapest fix is
   1,500 MW of diesel open-cycle by 2037, about +R28bn (engine PV with the top-up, R2,416.2bn, against the null's R2,388.4bn; the
   top-up itself is R8.7bn of it).
