@@ -2696,6 +2696,135 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### Like-for-like cross-check on c5b_14r's weeks (engine build 2026-10-14r): with reserve, Avon and Dedisa must-run and interruptible load on the PyPSA side, the engine is 1.1-3.5% above the 24-hour optimum on the 2026 baseline, 2040 May and 2040 November, but 26.0% above on the 2040 stress week and 3.1-26.0% (median 8.6%) on c5b_14r's 15 worst stress weeks; the engine sheds 123.0 GWh across those 15 weeks and the optimum none, with the additions on or off (user, 15 Oct 2026, message 116)
+
+Finding. Mark (1) of TODO 14dt (within 5%) passes on the three ordinary weeks and fails on the 2040 stress week and on 13 of the 15
+stress weeks with all three additions on (12 of 15 with them off). Mark (2) (no more shed than the optimum) fails on all 15. The
+15 were chosen as the engine's worst shedding weeks, so the engine shedding in all of them is by construction; the finding is that
+the optimum sheds in none of them under any setting. The 14dx (2) reading of the remaining shortfalls (the engine holds coal as
+reserve that the optimum does not) does not hold on 14r: with the same reserve products on the PyPSA side, the optimum covers
+them in every hour of every week (shortfall 0.00 GWh, against the engine's 1.35-70.87 GWh a week) and still sheds nothing. In
+the three largest stress weeks and the 2040 stress week the optimum discharges 1.4-2.1 times the engine's lithium energy, runs
+more CCGT and less diesel. The must-run accounts for the 2026 baseline: 5.6% with it off, 1.2% with it on (14d: 1.2%). The
+reserve products add nothing measurable to the optimum's cost: in a single 168-hour window, reserve on and off differ by 0.2 R m
+or less, within the 0.1% MIP gap.
+
+Caveat. Between settings, the rolling optimum moves by up to 1.0% for reasons of the rolling windows, not the settings (an added
+constraint lowered the rolling cost on May, November and stress; the single-window solves show it does not lower the full-week
+cost). Read differences between settings below about 1% as noise. Both sides see the week's actual load, weather and outages
+(48 hours for the optimum, the engine's look-aheads as in 'Known limitation: the engine's look-aheads read the actual future').
+One bus, one outage draw per week. Provisional in the same sense as the c5b_14r sensitivities: for the reviewer.
+
+Settings. Engine: commit 6045387 (build 2026-10-14r, c5b_14r's code), read-only hook validation/single_node/engine_hook_14r.patch
+(cmp-identical to the run copy; the hooked engine check of 2035 equals c5b_14r's to every digit: cost 274.53930954131226, CO2
+128.60122335276498, mean 0.4980164465421398). State: c5b_14r's pathway file (harness/out/pathway_c5b_14r.json), each year as the
+engine check builds it, via harness/pathcheck.js plus validation/single_node/pathcheck_sn.patch. Weeks (validation/single_node/
+weeks_14r.json): 2026 baseline (default profiles, hour 3264, seed 12345); 2040 May and November (weather 2025, hours 3264 and
+7848, seed 87866504, the 14d weeks' definitions); 2040 stress (the worst 168 hours of 2040 in the scan: weather 2021, hour 897,
+seed 87939557, the same week as s14); the 14d stress week re-run on 14r (stress14d: weather 2016, hour 6807, seed 87795233; sheds
+nothing on 14r); 15 stress weeks s01-s15, the 15 largest worst-168-hour sheds in a scan of c5b_14r's 2026-2040 (12 weather years x
+K=2 draws, SEED_BASE 71830529, seed = SEED_BASE + k x 104729 + weather year x 7919; 360 runs, 16 with shed above 0.001 GWh; the 15th
+and 16th are the same week, 2039 weather 2020 hour 2600, under two seeds with equal shed, the first taken). No shed in any scan
+run before 2032. Optimum: validation/single_node/sn_pypsa40_roll_x.py, NEUTRAL=all, 48-hour windows keeping 24 hours, pypsa
+1.4.0, linopy 0.10.0, highspy 1.15.1 to a 0.1% gap, 700 window solves all optimal. Switches: X_RES (the engine's ASTR products by
+hour: storage limited by power and by stored energy over each product's sustain time, online gas and diesel headroom at
+reserveGasMinStableFrac, coal headroom within the ramp, hydro headroom as a constant; a shortfall allowed at a
+penalty midway between diesel's running cost and VoLL, reported apart, zero in every run); X_MR (the engine's delivered Avon and Dedisa must-run, fixed, at
+diesel's cost); X_IL (1,000 MW interruptible at R4,000/MWh as a resource called by cost, in place of taking the engine's
+interruptible MWh off load). Engine cost at full-load coal cost; with X_IL on, plus the engine's interruptible compensation
+(engineFlatILRm). The all-off script reproduces the 14d result: 15 of 15 14d optima identical to the digit. Tables from
+validation/single_node/table_14r.py on the run outputs.
+
+Table A. Engine cost above the optimum, %, by setting (named weeks)
+
+| Week | all off | reserve only | must-run only | interruptible only | all on |
+|---|---|---|---|---|---|
+| base (2026, default profiles, hour 3264) | +5.6 | +5.6 | +1.2 | +5.6 | +1.2 |
+| may (2040, weather 2025, hour 3264) | +1.0 | +1.3 | +1.0 | +1.1 | +1.1 |
+| nov (2040, weather 2025, hour 7848) | +3.3 | +3.8 | +3.3 | +3.5 | +3.5 |
+| stress (2040, weather 2021, hour 897) | +21.8 | +23.0 | +21.8 | +24.3 | +26.0 |
+| stress14d (2040, weather 2016, hour 6807) | +1.0 | +0.9 | +1.0 | +5.2 | +5.1 |
+
+Table B. 15 stress weeks: engine cost above the optimum, %, and shedding, GWh (engine / optimum)
+
+| Week | Engine shed | Gap off | Gap all on | Optimum shed off | Optimum shed all on | Engine reserve short GWh | Optimum reserve short GWh (all on) |
+|---|---|---|---|---|---|---|---|
+| s01 (2037, weather 2021, hour 897) | 42.90 | +12.5 | +14.8 | 0.00 | 0.00 | 19.83 | 0.00 |
+| s02 (2039, weather 2018, hour 3344) | 31.71 | +16.1 | +17.4 | 0.00 | 0.00 | 10.64 | 0.00 |
+| s03 (2036, weather 2022, hour 4041) | 27.73 | +6.6 | +10.2 | 0.00 | 0.00 | 70.87 | 0.00 |
+| s04 (2036, weather 2016, hour 3080) | 9.34 | +13.5 | +15.2 | 0.00 | 0.00 | 7.27 | 0.00 |
+| s05 (2037, weather 2022, hour 4041) | 5.56 | +5.5 | +8.6 | 0.00 | 0.00 | 7.98 | 0.00 |
+| s06 (2039, weather 2021, hour 897) | 1.32 | +8.0 | +8.1 | 0.00 | 0.00 | 2.24 | 0.00 |
+| s07 (2038, weather 2021, hour 897) | 0.94 | +6.5 | +6.3 | 0.00 | 0.00 | 2.18 | 0.00 |
+| s08 (2033, weather 2021, hour 897) | 0.82 | +7.8 | +7.9 | 0.00 | 0.00 | 2.79 | 0.00 |
+| s09 (2032, weather 2016, hour 391) | 0.55 | +2.2 | +6.3 | 0.00 | 0.00 | 3.18 | 0.00 |
+| s10 (2036, weather 2025, hour 2095) | 0.53 | +5.7 | +5.8 | 0.00 | 0.00 | 5.25 | 0.00 |
+| s11 (2037, weather 2019, hour 6823) | 0.52 | +2.9 | +3.1 | 0.00 | 0.00 | 1.35 | 0.00 |
+| s12 (2036, weather 2021, hour 897) | 0.39 | +4.4 | +4.5 | 0.00 | 0.00 | 1.60 | 0.00 |
+| s13 (2032, weather 2022, hour 1712) | 0.28 | +11.3 | +12.3 | 0.00 | 0.00 | 3.21 | 0.00 |
+| s14 (2040, weather 2021, hour 897) | 0.23 | +21.8 | +26.0 | 0.00 | 0.00 | 2.29 | 0.00 |
+| s15 (2039, weather 2020, hour 2600) | 0.21 | +14.6 | +18.2 | 0.00 | 0.00 | 2.73 | 0.00 |
+
+Summary by setting over the 15 stress weeks
+
+| Setting | Gap median, % | Gap range, % | Weeks the engine sheds | Weeks the optimum sheds | Engine shed GWh | Optimum shed GWh |
+|---|---|---|---|---|---|---|
+| all off | +7.8 | +2.2 to +21.8 | 15 | 0 | 123.0 | 0.0 |
+| reserve only | +8.0 | +2.5 to +23.0 | 15 | 0 | 123.0 | 0.0 |
+| must-run only | +7.8 | +2.2 to +21.8 | 15 | 0 | 123.0 | 0.0 |
+| interruptible only | +8.9 | +3.0 to +24.3 | 15 | 0 | 123.0 | 0.0 |
+| all on | +8.6 | +3.1 to +26.0 | 15 | 0 | 123.0 | 0.0 |
+
+Named weeks, detail (R m): engine figure, optimum objective, reserve penalty reported apart, optimum diesel and interruptible GWh
+
+| Week | Setting | Engine | Optimum | Penalty | Optimum diesel GWh | Engine diesel GWh | Optimum interruptible GWh | Engine interruptible GWh | Optimum shed | Engine shed |
+|---|---|---|---|---|---|---|---|---|---|---|
+| base | all off | 2,233.1 | 2,114.8 | 0.0 | 0.00 | 16.60 | 0.00 | 0.00 | 0.00 | 0.00 |
+| base | reserve only | 2,233.1 | 2,114.8 | 0.0 | 0.00 | 16.60 | 0.00 | 0.00 | 0.00 | 0.00 |
+| base | must-run only | 2,233.1 | 2,206.6 | 0.0 | 16.60 | 16.60 | 0.00 | 0.00 | 0.00 | 0.00 |
+| base | interruptible only | 2,233.1 | 2,114.8 | 0.0 | 0.00 | 16.60 | 0.00 | 0.00 | 0.00 | 0.00 |
+| base | all on | 2,233.1 | 2,206.7 | 0.0 | 16.60 | 16.60 | 0.00 | 0.00 | 0.00 | 0.00 |
+| may | all off | 1,912.0 | 1,892.4 | 0.0 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| may | reserve only | 1,912.0 | 1,888.0 | 0.0 | -0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| may | must-run only | 1,912.0 | 1,892.4 | 0.0 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| may | interruptible only | 1,912.0 | 1,890.2 | 0.0 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| may | all on | 1,912.0 | 1,890.9 | 0.0 | -0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| nov | all off | 975.4 | 944.6 | 0.0 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| nov | reserve only | 975.4 | 939.4 | 0.0 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| nov | must-run only | 975.4 | 944.6 | 0.0 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| nov | interruptible only | 975.4 | 942.6 | 0.0 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| nov | all on | 975.4 | 942.6 | 0.0 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| stress | all off | 3,053.5 | 2,506.3 | 0.0 | 30.87 | 140.85 | 0.00 | 22.00 | 0.00 | 0.23 |
+| stress | reserve only | 3,053.5 | 2,482.3 | 0.0 | 26.34 | 140.85 | 0.00 | 22.00 | 0.00 | 0.23 |
+| stress | must-run only | 3,053.5 | 2,506.3 | 0.0 | 30.87 | 140.85 | 0.00 | 22.00 | 0.00 | 0.23 |
+| stress | interruptible only | 3,141.5 | 2,528.0 | 0.0 | 3.71 | 140.85 | 44.11 | 22.00 | 0.00 | 0.23 |
+| stress | all on | 3,141.5 | 2,493.0 | 0.0 | 0.00 | 140.85 | 38.25 | 22.00 | 0.00 | 0.23 |
+
+Mark (1), within 5%, all off: named weeks over 5%: ['base', 'stress']; stress weeks over 5%: 12 of 15
+Mark (1), within 5%, all on: named weeks over 5%: ['stress']; stress weeks over 5%: 13 of 15
+
+Single 168-hour window (full-week sight), R m, against the rolling optimum
+
+| Week | Setting | Full-week optimum | Rolling optimum | Rolling above full week, % |
+|---|---|---|---|---|
+| may | all off | 1,886.8 | 1,892.4 | +0.3 |
+| may | reserve only | 1,886.6 | 1,888.0 | +0.1 |
+| nov | all off | 927.6 | 944.6 | +1.8 |
+| nov | reserve only | 927.6 | 939.4 | +1.3 |
+| stress | all off | 2,439.0 | 2,506.3 | +2.8 |
+| stress | reserve only | 2,438.9 | 2,482.3 | +1.8 |
+| stress | interruptible only | 2,459.5 | 2,528.0 | +2.8 |
+| stress | all on | 2,459.6 | 2,493.0 | +1.4 |
+
+Energy by source, GWh, engine / optimum all off / optimum all on
+
+| Week | Lithium discharge | CCGT and open-cycle LNG | Diesel | Shed | Interruptible |
+|---|---|---|---|---|---|
+| s01 | 195.7 / 361.5 / 359.0 | 845.5 / 948.7 / 954.9 | 261.9 / 230.1 / 186.8 | 42.9 / 0.0 / 0.0 | 60.5 / – / 96.5 |
+| s02 | 284.3 / 455.9 / 475.1 | 737.8 / 830.1 / 838.2 | 189.5 / 141.4 / 117.7 | 31.7 / 0.0 / 0.0 | 44.2 / – / 63.0 |
+| s03 | 100.8 / 208.6 / 227.3 | 819.1 / 861.3 / 860.6 | 207.1 / 194.1 / 118.3 | 27.7 / 0.0 / 0.0 | 37.7 / – / 117.5 |
+| stress | 438.7 / 599.8 / 614.7 | 739.1 / 869.6 / 885.9 | 140.8 / 30.9 / 0.0 | 0.2 / 0.0 / 0.0 | 22.0 / – / 38.3 |
+
 ### EDMSA Scenario A CO2 2035 (validate_external): already failing at the first build in the repository (2026-10-01a, 90.8 Mt, gap -33.2); the step past the band happened in September, before the repository's history, and is not traced; TODO 14bg is not its cause (user, 15 Oct 2026, message 116)
 
 Correction: on 15 Oct this log and the reviewer pack gave the 6 Sep wind-profile rebuild as the failure's 'recorded cause', and a
