@@ -177,6 +177,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      for (const p of pk) if (p.on){ const mw=(P.peakerExt||{})[p.id]||0; kept+=mw; e+=mw*1000*w.eval(`bldAnnuity(${R},${p.irp-p.eol})`); }
      r.peakerKeptMW=kept; r.peakerExtBn=e/1e9; r.dieselOnMW=+w.eval(`dieselAvailMW({...FIXED,...state,dieselDecomMW:${over.dieselDecomMW}})`);
    }
+   // COMPLY (15 Oct 2026): the coal emissions compliance charge the pathway run recorded for this year (on the in-scope coal it kept),
+   // reported beside the engine's cost; cost itself is unchanged. Only when the run carries one.
+   if (P.comply && P.comply.years && P.comply.years[y]){ r.complyBn=P.comply.years[y].keptChargeR/1e9; r.costComply=r.cost+r.complyBn; }
    rows.push({y,...over,...r}); console.log(y, JSON.stringify(r));
  }
  fs.writeFileSync(process.env.OUTC||'pathcheck.json', JSON.stringify(rows)); process.exit(0);

@@ -198,6 +198,29 @@ function check(label, ok, detail) {
           + `cut2027 against c4's formula, worst gap ${ctf.cutErr.toExponential(1)}; LP kept vs cut2027: ${ctf.kc.carbon} carbon terms, `
           + `${ctf.kc.nonCarbon} others, ${ctf.kc.y2026} in 2026, rows ${ctf.kc.rowsSame ? 'same' : 'DIFFER'}; kept vs full: ${ctf.kf.carbon} carbon, `
           + `${ctf.kf.nonCarbon} others, rows ${ctf.kf.rowsSame ? 'same' : 'DIFFER'}` : JSON.stringify(ctf));
+
+  // COAL EMISSIONS COMPLIANCE (COMPLY_MES, 15 Oct 2026, user messages 119 and 122 (4)). LP-KEY TEST: bldComply 'none' leaves the LP
+  // text as it was; 'compromise' and 'full' add only the in-scope early-retirement credit (rca_ terms in the objective, one rcain_ row
+  // and one bound per year from 2031). The capital allocated to the six stations sums to Eskom's figure in 2026 rands.
+  const cmpl = await runProbe(w, `
+    const H0 = BLD_YEARS[BLD_YEARS.length - 1]; bldSetHorizon(2032);
+    const lp = (ex) => bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: { ...state, ...ex } }).lp;
+    const base = lp({}), none = lp({ bldComply: 'none' }), full = lp({ bldComply: 'full' }), comp = lp({ bldComply: 'compromise' }); bldSetHorizon(H0);
+    const NL = String.fromCharCode(10);
+    const strip = L => L.replace(/ - [0-9.]+ rca_[0-9]+/g, '').split(NL).filter(l => !/^ rcain_/.test(l) && !/^ 0 <= rca_/.test(l)).join(NL);
+    const S = { ...FIXED, ...state }, F = { ...S, bldComply: 'full' }, C = { ...S, bldComply: 'compromise' };
+    return { def: FIXED.bldComply, noneSame: none === base, fullOnly: strip(full) === base, compOnly: strip(comp) === base,
+             nFull: (full.match(/rca_[0-9]+/g) || []).length, mwA: complyYear(F, 2031).mwA, rateFull: complyYear(F, 2031).rateR,
+             rateComp: complyYear(C, 2031).rateR, before: complyYear(F, 2030).chargeR,
+             capexFull: complyStations(F).reduce((a, x) => a + x.capexR, 0), want: 257e9 * COMPLY_MES.rand, n: complyStations(F).length };`);
+  check('coal compliance: none leaves the LP unchanged; compromise and full add only the in-scope retirement credit; capital sums to Eskom\'s',
+        cmpl && !cmpl.error && cmpl.def === 'none' && cmpl.noneSame && cmpl.fullOnly && cmpl.compOnly && cmpl.nFull === 6 && cmpl.n === 6
+          && cmpl.mwA > 0 && cmpl.rateFull > cmpl.rateComp && cmpl.rateComp > 0 && cmpl.before === 0
+          && Math.abs(cmpl.capexFull / cmpl.want - 1) < 1e-9,
+        cmpl && !cmpl.error ? `default ${cmpl.def}; none ${cmpl.noneSame ? 'identical' : 'DIFFERS'}; full and compromise add only rca terms: `
+          + `${cmpl.fullOnly}, ${cmpl.compOnly} (${cmpl.nFull} rca references to 2032); in scope ${Math.round(cmpl.mwA)} MW in 2031; `
+          + `charge per kW-yr in 2031 full R${(cmpl.rateFull / 1000).toFixed(0)}, compromise R${(cmpl.rateComp / 1000).toFixed(0)}; capital R${(cmpl.capexFull / 1e9).toFixed(1)}bn `
+          + `(R257bn in 2026 rands)` : JSON.stringify(cmpl));
   // ── STRESS WINDOWS CARRY THEIR OWN AVAILABLE COAL (availFrac) ───────────
   // Added 14 Oct 2026. COAL_AVAIL used to re-derive a window's available coal on the 2026 state; with the outage draw over
   // the units still standing (14dr) a later year draws differently, and a run stopped on available below recorded. Each
