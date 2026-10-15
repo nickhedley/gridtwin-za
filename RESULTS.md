@@ -2696,7 +2696,7 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
-### c5b_14r sensitivities: 21 runs and s_detgas from c5b_14r's windows, against a null run; both cost measures agree in direction on 18 of the 19 judged runs (s_li8h, by under R0.5bn, does not); s_nogas4strict needs 1,500 MW of diesel open-cycle by 2037, which that run excludes; s_roof2 2038 topped up with 250 MW (user, 14-15 Oct 2026, messages 82, 104 and 105)
+### PROVISIONAL until the reviewer has read them: c5b_14r sensitivities, 21 runs and s_detgas from c5b_14r's windows, against a null run; pass mark 5 met on 17 of 19 (s_be7 structural, s_li8h immaterial); s_nogas4strict does not meet the adequacy standard from 2034 without new peaking plant; determined gas +R16-39bn against least cost (user, 14-15 Oct 2026, messages 82, 104, 105 and 107)
 
 Runs: workflow 'Optimiser long run', ref claude/reserve-rule, code_sha 6045387 (build 2026-10-14r; s_detgas 2ed7225, the same
 engine plus GAS_CUM and GASFLOOR_MW), seed_run 38628612316 (c5b_14r's last job), seed_name c5b_14r; first jobs 223-244, started
@@ -2761,6 +2761,18 @@ the gap, it is not a build the run allows.
 
 Loop: ten runs ended 'adequate' within three passes, twelve at the pass limit (MAXP=3) with no year failing the engine check
 except s_nogas4strict; as in the c5b round, the engine check, not the loop's own test, is the adequacy verdict.
+
+Decisions (user, 15 Oct 2026, message 107); every result in this entry is provisional until the reviewer has read it:
+- Pass mark 5 (TODO 14dt): met on 17 of 19, the mark unchanged. Counted: the 22 runs less s_disc10 and s_disc113 (objective at
+  their own rate) and s_nogas4strict (quoted as not meeting the standard, below; its two measures do move the same way, +R27.9bn
+  and +R89.5bn). Not met: s_be7, structural (forced nuclear's capital is outside the objective), and s_li8h, a recorded failure of
+  the mark with no material effect (+R0.4bn engine, -R0.1bn objective, both under R0.5bn); s_li8h is not quoted.
+- s_nogas4strict is quoted as: does not meet the adequacy standard from 2034 without new peaking plant; the cheapest fix is
+  1,500 MW of diesel open-cycle by 2037, about +R28bn (engine PV with the top-up, R2,416.2bn, against the null's R2,388.4bn; the
+  top-up itself is R8.7bn of it).
+- Determined gas (s_detgas, GN 8021's gas on the GAS_CUM floor): +R16-39bn against least cost (objective +R16.0bn, engine
+  +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
+  s_irpgas less s_detgas is R92.0bn on the engine (R130.8bn less R38.8bn) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
 ### c5b on build 2026-10-14r, the final base: adequate after five passes; the engine check passes every year; R2,393.5bn engine PV (+R7.9bn on c5b_mr2), 1,991.9 Mt CO2 2026-40 (-9.1 Mt); the CO2 drop is the build, not the code (user, 14 Oct 2026, messages 100 and 105)
 
@@ -2836,9 +2848,11 @@ term). Probe: harness check 3b in validate_findings (this commit).
   prices; it no longer pins wind's level. The solar half ('solar capture collapses', below 10%) stays on the default profile.
   Why: the claim is the asymmetry, and the level moves with a few scarcity hours. 40/42 findings hold, as before.
 
-Decision for the user (message 105 (4)): the finding is stated on this fixed 110 GW build, as recommended (option a). Option
-b, the capture of c5b_14r's own least-cost 2040 build, would answer a different question; it can be measured on the same
-twelve years once c5b_14r is in and recorded beside this, without changing the check.
+Decided (user, 15 Oct 2026, message 107): option (a). The finding is quoted as the twelve-year ranges on both price bases, on
+this fixed 110 GW build with energy-only pricing; the check is wind more than 50 points above solar in each of the twelve years
+(validate_findings 3b, as above, unchanged); the twelve-year traced causes (0.90 and 0.43 points) stand beside the
+default-profile ones (2.85 and 0.72). c5b_14r's own wind capture is to be added later as a separate figure (TODO 14eh), not in
+place of this one.
 
 ### Re-pin round on build 2026-10-14r: wind capture as a range with an asymmetry check, the response baseline and the average cost (user, 14 Oct 2026, messages 95 and 102)
 
