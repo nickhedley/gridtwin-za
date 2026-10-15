@@ -582,6 +582,8 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
   duration or gas capacity factor are published.
 - Battery procured so far: 1,744 MW / 6,976 MWh (4 hours); used as the assumed duration of the 4,600 MW (judgement).
 - Unclear whether the first gas round (closed 29 May 2026) sits inside the 5,000 MW, so 5 GW is treated as a minimum.
+  Settled 15 Oct 2026 (user, message 108), as our reading: the 5,000 MW (GN 8021, gazetted 14 Oct 2026) covers Table 1's
+  2031-37 IPP gas only and is additional to the 3,000 MW determined under IRP 2019; see 'Gas-to-power 3,000 MW' below.
 - Use: the pre-decided set for TODO 14be step 5 (replacing IRP Table 1's gas by year), run as 'committed procurement'
   against the new central: at least 5 GW of new gas at the 1.2 GW a year cap from 2030 (GAS_MIN), technology not stated
   in the determination, modelled as CCGT (judgement).
@@ -802,10 +804,26 @@ this session. 9,600 MW to be procured from independent power producers, NTCSA as
 is specified. Deviations from the timetable are allowed for grid capacity (para 5). This is the gazetted form of the 7 Oct 2026
 media statement below.
 
-Use: sensitivity s_detgas (message 104), c5b_14r plus a cumulative floor on new IPP gas (pathway setting GAS_CUM): 3,000 MW by
-2030 (the Gas IPPPP determination; IRP 2025 p.12), CCGT with the IRP's 50% minimum load factor (plan pp.35-36), treated as in
-s_irpgas; then 3,833 (2032), 4,666 (2033), 5,499 (2034), 6,167 (2035), 7,000 (2036), 8,000 MW (2037), the 5,000 MW spread over
-Table 1's 2032-37 IPP gas years (7,500 MW) in proportion, CCGT and open-cycle on LNG together, the optimiser choosing the type.
+Our reading (user, 15 Oct 2026, message 108): the 5,000 MW covers Table 1's 2031-37 IPP gas only, so it is additional to the
+3,000 MW of IPP gas determined under IRP 2019 (next entry), 8,000 MW in all. The determination does not say so in words; this is
+our reading, not its text.
+
+Use: sensitivity s_detgas (message 104; sources corrected in message 108), c5b_14r plus a cumulative floor on new IPP gas
+(pathway setting GAS_CUM): 3,000 MW by 2030 (the IRP 2019 section 34 gas determination, next entry; IRP 2025 assumes all 3 GW on
+the grid by 2030), CCGT with the IRP's 50% minimum load factor (plan pp.35-36), treated as in s_irpgas; then 3,833 (2032), 4,666
+(2033), 5,499 (2034), 6,167 (2035), 7,000 (2036), 8,000 MW (2037), this determination's 5,000 MW spread over Table 1's 2032-37
+IPP gas years (7,500 MW) in proportion, CCGT and open-cycle on LNG together, the optimiser choosing the type. The run is
+unchanged; only its sources were corrected.
+
+## Gas-to-power 3,000 MW: section 34 determination under IRP 2019, and IRP 2025's assumption (user, 15 Oct 2026, message 108)
+
+- Ministerial determination under section 34 of the Electricity Regulation Act, made under IRP 2019: 3,000 MW of gas-to-power
+  for 2024-27; NERSA concurrence September 2020. Reported by Cliffe Dekker Hofmeyr, 14 Sep 2020 (citation supplied by the user,
+  not opened in this session).
+- IRP 2025, plan p.16 (gazette p.28): 'gazetted for 3 GW of capacity through the GAS IPPPP BW1; however, currently, 2 GW has
+  been offered to the market ... The IRP 2025 assumes all 3 GW will be available on the grid by 2030.' (Quoted by the user. This
+  replaces message 104's 'IRP 2025 p.12', which was wrong.)
+- Use: the 2030 3,000 MW step of s_detgas's GAS_CUM floor (entry above).
 
 ## Optimiser grid cost (TODO 14ar, build 07g, 7 Oct 2026)
 
