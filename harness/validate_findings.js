@@ -127,11 +127,10 @@ setTimeout(()=>{
       return {wind:cap(x.stack.wind), solar:cap(x.stack.pv)};`);
     if(r.error) check('capture asymmetry finding runs', false, r.error);
     else {
-      check('wind holds its capture rate at 110 GW of build',
-            r.wind > 85 && r.wind < 115, `wind capture ${r.wind.toFixed(1)}%`);
+      // The wind half of this finding is checked across the twelve weather years, below (async block; message 103).
       check('solar capture collapses at 110 GW of build',
             r.solar < 10, `solar capture ${r.solar.toFixed(1)}% - the asymmetry IS the finding`);
-      console.log(`  capture        wind ${r.wind.toFixed(0)}% · solar ${r.solar.toFixed(1)}% (no storage)`);
+      console.log(`  capture        default profile: wind ${r.wind.toFixed(1)}% · solar ${r.solar.toFixed(1)}% (no storage)`);
     }
   }
 
@@ -837,6 +836,38 @@ setTimeout(()=>{
     else check('every preset key reaches the model', false, k ? k.error : 'no result');
   }
   (async () => {
+    // ── 3b. WIND'S CAPTURE STAYS FAR ABOVE SOLAR'S IN EVERY WEATHER YEAR ─────
+    // REWRITTEN 14 Oct 2026 (user, messages 102 and 103). Was 'wind holds its capture rate' (wind above 85% on the default
+    // profile), a point the engine cannot hold: it read 85.1, 83.7, 85.1 and 81.5% in one week as a few scarcity hours
+    // changed which plant sets the price. The finding's claim is the asymmetry, so this tests it in each of the twelve
+    // weather years, on the engine price (marginalP) and on the market price (marketPriceSeries: the engine price plus the
+    // reserve-scarcity adder): wind's capture more than 50 points above solar's in every year, on both. Scenario as section
+    // 3: 50 GW wind, 60 GW solar, no storage; a fixed build, not least-cost, with energy-only prices. Build 14r: wind
+    // 70.7-78.7% (market) and 72.8-78.8% (engine), solar 4.6-7.8%, smallest gap 65.6 points (2018, market). RESULTS 'Wind
+    // capture across the twelve weather years'.
+    try {
+      await w.eval('loadWeatherYears()');
+      const c = probe(`
+        const ys = (bldWeatherYears && bldWeatherYears.meta && bldWeatherYears.meta.years) || [];
+        const st = { ...state, newWindMW: 50000 - FIXED.windMW, newPvMW: 60000 - FIXED.pvUtilityMW, newBattMW: 0 };
+        const cap = (g, P) => { let ps = 0, e = 0, rv = 0; for (let h = 0; h < HOURS; h++){ ps += P[h]; e += g[h]; rv += g[h] * P[h]; }
+          return e > 0 ? 100 * (rv / e) / (ps / HOURS) : null; };
+        return ys.map(y => { const nat = weatherYearNational(String(y));
+          const r = simulate(st, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+          const M = marketPriceSeries(r, { ...FIXED, ...st }).p.map(v => v * 1000);
+          return { y, eW: cap(r.stack.wind, r.marginalP), eS: cap(r.stack.pv, r.marginalP), mW: cap(r.stack.wind, M), mS: cap(r.stack.pv, M) }; });`);
+      if (c.error || !c.length) check('wind capture across the weather years runs', false, c.error || 'no weather years loaded');
+      else {
+        const gap = Math.min(...c.map(x => Math.min(x.eW - x.eS, x.mW - x.mS)));
+        const worst = c.find(x => Math.min(x.eW - x.eS, x.mW - x.mS) === gap);
+        const rng = k => `${Math.min(...c.map(x => x[k])).toFixed(1)}-${Math.max(...c.map(x => x[k])).toFixed(1)}%`;
+        check(`wind's capture stays far above solar's in every weather year at 110 GW of build (${c.length} years)`,
+              c.length === 12 && gap > 50,
+              `smallest gap ${gap.toFixed(1)} points (${worst.y}); wind ${rng('mW')} market, ${rng('eW')} engine; solar ${rng('mS')} market`);
+        console.log(`  capture 12 yr  wind ${rng('mW')} market, ${rng('eW')} engine · solar ${rng('mS')} market, ${rng('eS')} engine · gap >= ${gap.toFixed(1)} points`);
+      }
+    } catch (e) { check('wind capture across the weather years runs', false, String(e)); }
+
     // ── THE ADEQUACY LOOP'S STALLED BUILD IS ADEQUATE IN 2016 ───────────────
     // Added 2 Oct 2026. Fossil-free 2040 preset with the build the loop stalled on (21.8 GW coal
     // kept, 2.8 GW gas, 13.0 GW lithium at 5h). The engine shed 34.4 GWh in 2016 while 222 GWh

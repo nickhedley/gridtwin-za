@@ -57,6 +57,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (P.gasFinPremium) w.eval(`if(!('bldGasFinPremium' in FIXED)) throw new Error('bldGasFinPremium missing'); state.bldGasFinPremium=${+P.gasFinPremium};`);
  // The 51% gas floor (TODO 14be step 4): if the pathway ran with it, the engine check applies it too.
  if (P.gasFloor && P.gasFloor.engine) w.eval(`if(!('ccgtForceLoad' in FIXED)) throw new Error('ccgtForceLoad missing'); state.ccgtForceLoad=1;`);
+ // Its size (GASFLOOR_MW, message 104): the pathway records the MW of new CCGT its engine floored; older runs recorded the default.
+ if (P.gasFloor && P.gasFloor.engine && P.gasFloor.mw > 0) w.eval(`state.ccgtForceLoadMW=${+P.gasFloor.mw};`);
  const PG=P.gas||null;
  if (PG && (process.env.GAS_FUEL_R || process.env.GAS_FOM_ADD)) throw new Error('the pathway recorded its gas settings (P.gas); do not pass GAS_FUEL_R or GAS_FOM_ADD');
  const GFR=PG ? PG.fuelRFlat : (process.env.GAS_FUEL_R ? +process.env.GAS_FUEL_R : null), GFA=PG ? PG.fomAdd : +(process.env.GAS_FOM_ADD||0);
@@ -99,6 +101,10 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
+   // ASTR reserve after 2030/31 (user, message 86): the growth term is measured from this run's own 2030 wind and solar fleet,
+   // as the pathway's adequacy test measures it (index.html bldAstrVreRef).
+   if (y > 2030){ let w30=0, p30=0; for (const yy of Object.keys(P.sched)) if (+yy <= 2030){ w30 += +P.sched[yy].wind||0; p30 += +P.sched[yy].pv||0; }
+     over.reserveVreRefWindMW=Math.round(+w.eval('FIXED.windMW')+w30); over.reserveVreRefPvMW=Math.round(+w.eval('FIXED.pvUtilityMW')+p30); }
    // New pumped hydro built by the optimiser (6 Oct 2026): charge what the optimiser charged, not the engine's
    // fixed Tubatse 14-hour acapPs. PHES_BASIS names the basis (bldPhesCapexKW); PH the hours (bldPhesHours).
    // Two durations (PH and PH2): the engine has one new pumped-storage block, so power adds, energy adds (hours
