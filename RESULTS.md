@@ -2696,6 +2696,32 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### EDMSA Scenario A CO2 2035 (validate_external): already failing at the first build in the repository (2026-10-01a, 90.8 Mt, gap -33.2); the step past the band happened in September, before the repository's history, and is not traced; TODO 14bg is not its cause (user, 15 Oct 2026, message 116)
+
+Correction: on 15 Oct this log and the reviewer pack gave the 6 Sep wind-profile rebuild as the failure's 'recorded cause', and a
+reply that day put it under TODO 14bg. Neither holds. The check's own note (validate_external) records that the rebuild moved the
+figure from -0.2 Mt (1 Sep) to -14.1 Mt, inside the band as widened that day (12 to 22 Mt), so the check still passed then. TODO
+14bg cannot be the cause: since 7 Oct the EDMSA build runs on the current-turbine profile (bldWindModern 0), its own basis.
+
+Method: each build's own validate_external from build 05j, when the harness entered the repository (bcef99a, 5 Oct); for the
+three earlier builds, 05j's validate_external run against that build's app.
+
+| Build | Commit | EDMSA Scenario A CO2 2035, Mt | Gap to 124 | Harness |
+|---|---|---|---|---|
+| 01a | 774dc8d | 90.8 | -33.2 | 05j's |
+| 03a | aadf53b | 90.8 | -33.2 | 05j's |
+| 05a | a08cc0e | 88.4 | -35.6 | 05j's |
+| 05j | bcef99a | 88.4 | -35.6 | own |
+| 06b | ea11cb9 | 88.4 | -35.6 | own |
+| 07o | a0a0ec2 | 88.4 | -35.6 | own |
+| 07s | d5b6c4b | 76.8 | -47.2 | own (modern-turbine profile, before the 7 Oct decision) |
+| 14r | 6045387 | 83.3 | -40.7 | own (current-turbine profile) |
+
+So between 6 Sep (-14.1) and 1 Oct (-33.2) the figure fell about 19 Mt more, in builds that are not in the repository and cannot be
+re-run. RESULTS entries of that period that change demand, coal or wind (demand re-anchored to 2026 and exports counted once, 21-22
+Sep; coal outages calibrated, 22 Sep) are candidates, not measured causes. 5 Oct to 14r: 88.4 -> 83.3 Mt with the engine changes of
+13-14 Oct, not traced.
+
 ### Wind diagnostics on c5b_14r (engine and optimiser build 2026-10-14r; nothing changed): the optimiser's 12 calendar days give new wind a 33.9% capacity factor against 45.2% over the twelve weather years, and tracking solar 33.1% against 28.7%, so on the optimiser's own days new wind costs R1,094/MWh against solar's R714 in 2030, where over the twelve years the two are level (R821 and R823); s_windlow builds 23.6 GW of wind to 2040 against c5b_14r's 17.0 GW (user, 15 Oct 2026, message 117)
 
 Finding. The build optimiser (bldBuildLP) prices energy on 12 calendar days of the default profile year, each weighted 365/12
@@ -2825,32 +2851,6 @@ duals in its LP cache, which GitHub keeps as the artifact state-c5b_14r (run 386
 network policy does not allow the artifact host (productionresultssa3.blob.core.windows.net), and the local reproduction's cache
 was cleared. Pending the user's choice: allow the host, or re-solve the identical final LP locally (a reproduction, not a new
 scenario). Note c5b_14r ran five passes; the build is the fifth pass's solution, which is the one to read.
-
-### EDMSA Scenario A CO2 2035 (validate_external): already failing at the first build in the repository (2026-10-01a, 90.8 Mt, gap -33.2); the step past the band happened in September, before the repository's history, and is not traced; TODO 14bg is not its cause (user, 15 Oct 2026, message 116)
-
-Correction: on 15 Oct this log and the reviewer pack gave the 6 Sep wind-profile rebuild as the failure's 'recorded cause', and a
-reply that day put it under TODO 14bg. Neither holds. The check's own note (validate_external) records that the rebuild moved the
-figure from -0.2 Mt (1 Sep) to -14.1 Mt, inside the band as widened that day (12 to 22 Mt), so the check still passed then. TODO
-14bg cannot be the cause: since 7 Oct the EDMSA build runs on the current-turbine profile (bldWindModern 0), its own basis.
-
-Method: each build's own validate_external from build 05j, when the harness entered the repository (bcef99a, 5 Oct); for the
-three earlier builds, 05j's validate_external run against that build's app.
-
-| Build | Commit | EDMSA Scenario A CO2 2035, Mt | Gap to 124 | Harness |
-|---|---|---|---|---|
-| 01a | 774dc8d | 90.8 | -33.2 | 05j's |
-| 03a | aadf53b | 90.8 | -33.2 | 05j's |
-| 05a | a08cc0e | 88.4 | -35.6 | 05j's |
-| 05j | bcef99a | 88.4 | -35.6 | own |
-| 06b | ea11cb9 | 88.4 | -35.6 | own |
-| 07o | a0a0ec2 | 88.4 | -35.6 | own |
-| 07s | d5b6c4b | 76.8 | -47.2 | own (modern-turbine profile, before the 7 Oct decision) |
-| 14r | 6045387 | 83.3 | -40.7 | own (current-turbine profile) |
-
-So between 6 Sep (-14.1) and 1 Oct (-33.2) the figure fell about 19 Mt more, in builds that are not in the repository and cannot be
-re-run. RESULTS entries of that period that change demand, coal or wind (demand re-anchored to 2026 and exports counted once, 21-22
-Sep; coal outages calibrated, 22 Sep) are candidates, not measured causes. 5 Oct to 14r: 88.4 -> 83.3 Mt with the engine changes of
-13-14 Oct, not traced.
 
 ### Iron-air with gas in July (validate_findings): the check has failed since 07s; today's 607 -> 472 GWh comes from 14d's outage draw (600 -> 475) plus Avon and Dedisa's must-run diesel from 14p (user, 15 Oct 2026, message 113 (4))
 
