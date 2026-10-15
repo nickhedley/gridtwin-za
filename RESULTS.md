@@ -2696,6 +2696,52 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### Iron-air with gas in July (validate_findings): the check has failed since 07s; today's 607 -> 472 GWh comes from 14d's outage draw (600 -> 475) plus Avon and Dedisa's must-run diesel from 14p (user, 15 Oct 2026, message 113 (4))
+
+Check: 'with gas, 20 GW of 100-hour iron-air barely moves July' (validate_findings; Seriti Green: 20 GW wind, 25 GW solar, 20 GW /
+10 h lithium, 32 GW of coal retired, EAF 70%, 25 GW of new CCGT; July CCGT plus diesel output without and with 20 GW of 100-hour
+iron-air; pass if the change is under 2%). Method: the check's own probe run alone on each build (index.html and data extracted
+from the commit; jsdom; the harness's page load; scratchpad iron/ironprobe.js, table generated from its outputs by iron/table.py).
+On 15a the probe alone gives 606.9 -> 472.4 GWh, the suite's 607 -> 472. One build per stamp from 07s; the last commit of each.
+
+| Build | Commit | July gas without iron-air, GWh (CCGT + diesel) | With 20 GW of 100-hour iron-air | Change | Commit subject |
+|---|---|---|---|---|---|
+| 10-07s | d5b6c4b | 424.5 (424.5 + 0.0) | 0.0 | 100.0% | New wind correction 1.064 central, 1.00 low, from the farm check (build 2026-10-07s) |
+| 10-08c | 5bbe69c | 424.5 (424.5 + 0.0) | 0.0 | 100.0% | Hourly state of charge in the build LP (bldHourlySoc, build 2026-10-08c); earlier optimise |
+| 10-09f | beea54a | 424.5 (424.5 + 0.0) | 0.0 | 100.0% | Build 2026-10-09f: gas price cases as data and a per-year switch; gas methods notes |
+| 10-10a | 4db1c1a | 424.5 (424.5 + 0.0) | 0.0 | 100.0% | Build 2026-10-10a: new pumped hydro offered by default under the central cap |
+| 10-11g | b40ae98 | 424.5 (424.5 + 0.0) | 0.0 | 100.0% | Build 2026-10-11g: nuclear decided in advance (bldNuclearAdd, pathway NUC_FORCE) |
+| 10-12e | 0f1d9a2 | 424.5 (424.5 + 0.0) | 0.0 | 100.0% | Build 2026-10-12e: optional monthly availability on the outage draw; backcast without the  |
+| 10-13b | 8f76e26 | 845.7 (845.7 + 0.0) | 831.7 | 1.7% | GCCA-derived data: licence lines say NTCSA's website terms, not CC BY 4.0, CC BY-NC-ND or  |
+| 10-13c | 9c4670b | 845.7 (845.7 + 0.0) | 831.7 | 1.7% | GCCA terms: the same relabel in 'nodal old/'; the commercial-licensing line covers only th |
+| 10-13d | 05b829c | 845.7 (845.7 + 0.0) | 831.7 | 1.7% | Licence lines: PyPSA-RSA AGPL-3.0-or-later, Eskom and REIPPPP terms corrected; TDP-derived |
+| 10-13f | 20729cc | 424.5 (424.5 + 0.0) | 0.0 | 100.0% | Coal start-ups charged once (TODO 14dl, build 2026-10-13f) |
+| 10-13g | 99b5b92 | 382.6 (382.6 + 0.0) | 0.0 | 100.0% | Coal commitment keeps the units still standing (TODO 14dn, build 2026-10-13g) |
+| 10-13h | d388ceb | 475.1 (475.1 + 0.0) | 230.2 | 51.6% | Short-duration storage plans 24 hours ahead (TODO 14do, engine fix (a), build 2026-10-13h) |
+| 10-14a | 016bb49 | 436.5 (436.5 + 0.0) | 201.6 | 53.8% | Engine fix (B): storage-aware coal commitment, pumped storage in the look-ahead, 48-hour s |
+| 10-14b | 32df612 | 436.5 (436.5 + 0.0) | 201.6 | 53.8% | Merge claude/engine-fix (engine fixes 13f-14a and TODO 14dp) onto step 2: step 3 of the me |
+| 10-14c | 5d5dc10 | 436.5 (436.5 + 0.0) | 201.6 | 53.8% | Regional imports end year (importsEndYear, IMP_END) for the no-imports-after-2030 sensitiv |
+| 10-14d | a89df58 | 600.0 (600.0 + 0.0) | 474.6 | 20.9% | TODO 14dr: the unit outage draw over the coal units still standing (outageStandingUnits; b |
+| 10-14i | a74d581 | 600.0 (600.0 + 0.0) | 474.6 | 20.9% | COAL_AVAIL with the outage draw over the units still standing: windows carry their own ava |
+| 10-14l | a8638fc | 598.8 (598.8 + 0.0) | 473.3 | 21.0% | Reserve by product (NTCSA ASTR 2026/27-2030/31) as reserveRule 'astr', off by default ('le |
+| 10-14m | c9c22a3 | 2,412.5 (2,412.5 + 0.0) | 2,412.5 | 0.0% | Operating reserve by product (NTCSA ASTR 2026/27-2030/31) in the base, engine and optimise |
+| 10-14n | ee5d840 | 590.3 (590.3 + 0.0) | 467.4 | 20.8% | Reserve rule fix (messages 90 and 92): one reserve hold, online headroom eligibility, rese |
+| 10-14o | e98d02c | 625.2 (573.8 + 51.4) | 448.8 | 28.2% | Avon and Dedisa must-run to contract end (message 88); build 2026-10-14o |
+| 10-14p | 299ad1a | 606.7 (579.3 + 27.4) | 472.2 | 22.2% | Must-run on January-August 2026 levels; must-run never sets the price or charges storage;  |
+| 10-14q | 7ea6474 | 606.9 (579.3 + 27.6) | 472.4 | 22.2% | Reserve 14q: interruptible 1,000 MW capped and called last, storage reserve with dispatch, |
+| 10-14r | 6045387 | 606.9 (579.3 + 27.6) | 472.4 | 22.2% | Interruptible load cap tried and withdrawn (message 101); build 2026-10-14r |
+
+What moved it:
+- 07s to 12e: 424.5 -> 0 (100%): the modern-turbine profile for new wind (07s; RESULTS 'New wind on the modern-turbine profile'):
+  July gas halves before iron-air and iron-air removes the rest. Failing since then (TODO 14bg, your decision, still open).
+- 13h, engine fix (a), and 14a, engine fix (B): about 475 -> 230 and 437 -> 202 (52-54%), the engine's storage now cycling daily.
+- 14d, TODO 14dr (the outage draw over the coal units still standing): 600.0 -> 474.6 (20.9%). This sets today's level.
+- 14o-14p, Avon and Dedisa's must-run: July diesel on both sides (51.4 GWh on 14o's first levels, 27.4 on 14p's January-August
+  2026 levels); 14p reads 606.7 -> 472.2, 14q adds 0.2 GWh to each side, 14r is unchanged.
+Not traced: 13b-13d read 845.7 -> 831.7 (1.7%, a pass), the figure RESULTS gives for the current-turbine profile, though those
+builds have bldWindModern 1; and 14m reads 2,412.5 both ways, the first build of the reserve rule, whose double-held coal reserve
+was fixed in 14n ('Reserve rule fix').
+
 ### Scenario switch and load timing: a preset click blocks the page for 37 s to 3.2 minutes on this machine (risk panels 84% of the engine time); simulate() lost V8's optimising compiler between 14l and 14r, about three-quarters of 14r's 15% slowdown; status line added (build 2026-10-15a; user, 15 Oct 2026, messages 110-112)
 
 Machine: this session's cloud container (4 cores), Chromium 141.0.7390.37 headless, V8 14.1.146.11, Playwright; the app served
