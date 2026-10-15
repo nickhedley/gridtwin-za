@@ -2696,7 +2696,7 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
-### c5b_14r sensitivities: 21 runs and s_detgas from c5b_14r's windows, against a null run; both cost measures agree in direction on 17 of the 18 judged runs (s_li8h, by under R0.5bn, does not); s_nogas4strict fails adequacy 2034-40 (top-up pending), s_roof2 2038 topped up with 250 MW (user, 14-15 Oct 2026, messages 82, 104 and 105)
+### c5b_14r sensitivities: 21 runs and s_detgas from c5b_14r's windows, against a null run; both cost measures agree in direction on 18 of the 19 judged runs (s_li8h, by under R0.5bn, does not); s_nogas4strict needs 1,500 MW of diesel open-cycle by 2037, which that run excludes; s_roof2 2038 topped up with 250 MW (user, 14-15 Oct 2026, messages 82, 104 and 105)
 
 Runs: workflow 'Optimiser long run', ref claude/reserve-rule, code_sha 6045387 (build 2026-10-14r; s_detgas 2ed7225, the same
 engine plus GAS_CUM and GASFLOOR_MW), seed_run 38628612316 (c5b_14r's last job), seed_name c5b_14r; first jobs 223-244, started
@@ -2722,7 +2722,7 @@ copied out by a helper and spot-checked against the logs (s_be7, s_nogas4strict,
 |---|---|---|---|---|---|---|---|---|---|
 | null_c5b14r | (none) | pass limit | 2,388.4 | | 1,996.7 | | 1,591.6 | | |
 | s_be7 | NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350 | pass limit | 2,419.6 | +31.2 | 1,995.7 | -0.9 | 1,536.0 | -55.6 | not judged (a) |
-| s_nogas4strict | GAS_CAP=0 OCGD=0 LI_CAP=4000 | pass limit | 2,407.5 as solved; fails 2034-2040, top-up pending | +19.1 | 1,428.7 | -568.0 | pending | pending | pending |
+| s_nogas4strict | GAS_CAP=0 OCGD=0 LI_CAP=4000 | pass limit | 2,416.2 (top-up 1500 MW; 2,407.5 as solved) | +27.9 | 1,428.7 | -568.0 | 1,681.1 | +89.5 | yes |
 | s_coal60 | COAL_DATES=coal_dates_irp2025_60y.json | pass limit | 2,373.8 | -14.5 | 2,084.8 | +88.1 | 1,561.0 | -30.6 | yes |
 | s_irpgas | IRP gas plan (as s_irpgas_c5b) | adequate | 2,519.2 | +130.8 | 2,159.5 | +162.8 | 1,696.1 | +104.5 | yes |
 | s_pvirp | PV_CAP_YR (IRP Table 1 solar) | adequate | 2,401.0 | +12.7 | 2,038.5 | +41.8 | 1,608.9 | +17.3 | yes |
@@ -2752,8 +2752,12 @@ own rate, not comparable with the null's at 8%; their engine PV, at 8%, is. s_li
 Adequacy: every run's engine check is below target in every year except s_nogas4strict (2034-2040; worst 2039, 10.34 GWh against
 2.72) and s_roof2 (2038, 2.4495 against 2.4460 GWh). s_roof2's top-up (harness/topup.js from claude/topup 27337aa, with that
 branch's EXTRA_OCGD_MW line in pathcheck.js, local copy only): 250 MW of diesel open-cycle in 2038, inside the run's caps; R2,422.5bn
-to R2,423.2bn, CO2 unchanged. s_nogas4strict's top-up follows its local rerun. With no gas, open-cycle on diesel is also off in that
-run, so any top-up there is flagged as outside the run's own options.
+to R2,423.2bn, CO2 unchanged. s_nogas4strict's top-up (same tool; local rerun at
+6045387 matches GitHub's 2039 to every printed digit): 250 MW of diesel open-cycle in 2034, 250 in 2035, 750 in 2036 and 250 in
+2037, 1,500 MW in all, after which 2038-40 pass (2039 at 1.96 against 2.72 GWh); R2,407.5bn to R2,416.2bn (capex 7.5, fixed O&M
+1.5, fuel 0.1, other -0.3), CO2 unchanged (1,428.7 to 1,428.9 Mt). Every top-up year is flagged: diesel open-cycle is off in that
+run (OCGD=0), so with gas and diesel both excluded, the run's own options do not meet the standard from 2034; the top-up prices
+the gap, it is not a build the run allows.
 
 Loop: ten runs ended 'adequate' within three passes, twelve at the pass limit (MAXP=3) with no year failing the engine check
 except s_nogas4strict; as in the c5b round, the engine check, not the loop's own test, is the adequacy verdict.
