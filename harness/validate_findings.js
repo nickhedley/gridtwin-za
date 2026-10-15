@@ -65,6 +65,10 @@ setTimeout(()=>{
   // SCENARIO: Seriti Green - 20 GW wind, 25 GW solar, 32 GW coal retired, 25 GW gas,
   // 20 GW/10h lithium, EAF 70. METRIC: July gas energy, with and without 20 GW iron-air.
   // PUBLISHED: identical to the MWh. Survived a heuristic, an LP and a reserve-constrained LP.
+  // RESTATED 14 Oct 2026 (user), tolerance kept at 1%: build 14a 1,312 -> 1,295 GWh (1.3%, fails);
+  // build 14d 1,641 -> 1,636 GWh (0.3%). Iron-air starts July empty on both. The change is coal
+  // moved through storage: on 14a July coal +65 GWh, storage charging +70 GWh, iron-air gives
+  // 16.6 GWh in 3 hours. Not summer surplus carried into winter.
   {
     const r=probe(`
       const sc={newWindMW:20000-FIXED.windMW,newPvMW:25000-FIXED.pvUtilityMW,newNuclearMW:0,
@@ -96,11 +100,15 @@ setTimeout(()=>{
     if(r.error) check('demand response finding runs', false, r.error);
     else {
       const [z,opt,hi]=r;
-      check('modest demand shifting lowers system cost', opt.sys < z.sys,
+      // RESTATED 14 Oct 2026 (user, TODO 14dp). Until engine fix (a) a 7.5% shift cut system cost and a 30% shift raised
+      // both cost and the peak (the rebound). With storage planning 24-48 hours ahead the stores already do that shifting:
+      // a 7.5% shift moves system cost by 0.04% (R210.38bn against R210.30bn at zero, build 14a) and the rebound peak no
+      // longer appears (29,589 MW against 29,628), but a large shift still costs more, through the 6% lost on shifted load.
+      check('modest demand shifting moves system cost by under 0.1% once storage plans ahead', Math.abs(opt.sys - z.sys) < 0.001 * z.sys,
             `7.5% shift gives R${opt.sys.toFixed(2)}bn against R${z.sys.toFixed(2)}bn at zero`);
-      check('demand response reverses at high shift', hi.sys > z.sys && hi.peak > z.peak,
+      check('demand response reverses at high shift: a 30% shift raises system cost', hi.sys > z.sys,
             `30% shift gives R${hi.sys.toFixed(2)}bn and a ${Math.round(hi.peak)} MW peak against `
-            + `R${z.sys.toFixed(2)}bn and ${Math.round(z.peak)} MW at zero - the rebound peak is the finding`);
+            + `R${z.sys.toFixed(2)}bn and ${Math.round(z.peak)} MW at zero`);
       console.log(`  demand resp.   R${z.sys.toFixed(1)}bn at 0% · R${opt.sys.toFixed(1)}bn at 7.5% · R${hi.sys.toFixed(1)}bn at 30%`);
     }
   }
@@ -119,11 +127,10 @@ setTimeout(()=>{
       return {wind:cap(x.stack.wind), solar:cap(x.stack.pv)};`);
     if(r.error) check('capture asymmetry finding runs', false, r.error);
     else {
-      check('wind holds its capture rate at 110 GW of build',
-            r.wind > 85 && r.wind < 115, `wind capture ${r.wind.toFixed(1)}%`);
+      // The wind half of this finding is checked across the twelve weather years, below (async block; message 103).
       check('solar capture collapses at 110 GW of build',
             r.solar < 10, `solar capture ${r.solar.toFixed(1)}% - the asymmetry IS the finding`);
-      console.log(`  capture        wind ${r.wind.toFixed(0)}% · solar ${r.solar.toFixed(1)}% (no storage)`);
+      console.log(`  capture        default profile: wind ${r.wind.toFixed(1)}% · solar ${r.solar.toFixed(1)}% (no storage)`);
     }
   }
 
@@ -148,10 +155,15 @@ setTimeout(()=>{
       // generation on 23 Sep. The knee is twice the mean requirement, so about 4.5 GW, and the
       // existing 3.5 GW fleet is just below it. The check now pins the knee's LOCATION relative
       // to the fleet rather than the claim, so either direction registers as a change.
+      // RE-PINNED 14 Oct 2026, build 2026-10-14l (user decision, message 80). The knee did not move (flat to 4 GW, falling
+      // from 6 GW, identical on build 14j and 14l); the existing fleet did, 3,524 -> 2,792 MW, when the batteries were
+      // corrected from 800 MW to Eskom's 68 MW operating (pumped storage 2,724 MW unchanged). The ratio moved 1.70 -> 2.15.
+      // The band 0.8-2.0 x 3.52 GW held the knee point between 2.8 and 7.0 GW; the same knee range over 2.79 GW is
+      // 1.0-2.5, so the band now reads 1.0-2.5 and still registers a knee that moves, in either direction.
       const knee=r.pts.find(p=>p.anc < first*0.999);
       const ratio = knee ? knee.mw / r.nowMW : null;
       check('the ancillary knee sits close to the existing fleet',
-            !!knee && ratio > 0.8 && ratio < 2.0,
+            !!knee && ratio > 1.0 && ratio < 2.5,
             knee ? `knee between ${((knee.mw - 2000)/1000).toFixed(1)} and `
                    + `${(knee.mw/1000).toFixed(1)} GW against an existing fleet of `
                    + `${(r.nowMW/1000).toFixed(1)} GW - approaching, not past`
@@ -273,47 +285,37 @@ setTimeout(()=>{
   }
 
 
-  // ── 7. THE INSTANT HEURISTIC DISPATCHES AT THE AVERAGE PRICE ──────────────
-  // SCENARIO: the model's own battery fleet against its own hourly prices, default build.
-  // METRIC: revenue-weighted average price ACHIEVED on discharge, against the median
-  // market price. The published claim is that the heuristic is not targeting peaks -
-  // which is a statement about TIMING and needs no revenue comparison to hold.
-  //
-  // Deliberately NOT asserting the revenue gap. Against perfect foresight it reads 89%,
-  // and almost all of that sits in hours a 1,800 MW battery would itself price away by
-  // discharging into them. That number is not defensible and is not pinned.
+  // ── 7. STORAGE DISCHARGES AT A HIGHER PRICE THAN IT CHARGES ─────────────
+  // REPLACED 14 Oct 2026 (user, TODO 14dp (3)). The check it replaces asserted that the instant heuristic discharged near
+  // the median price, not the peak (ratio under 1.5). Engine fix (a) planned storage 24 hours ahead, which is meant to
+  // target the expensive hours, so that claim no longer described the engine (ratio 2.56 on 13h, 2.05 on 14a). The test
+  // is now what the look-ahead should do: each fleet's volume-weighted price when it discharges is above its price when it
+  // charges, on the default build with 1 GW / 4 h of new batteries (the old probe) and on IRP path 2035, where storage is
+  // large. Build 14a: new batteries R1,531 against R747/MWh; IRP path 2035 batteries R2,054 against R1,886, pumped storage
+  // R2,052 against R1,821. Prices are the hourly marginal price (marginalP).
   {
     const r = probe(`
-      // SNAPSHOT AND RESTORE. Probes in this harness share one window and earlier ones
-      // mutate the scenario object - the oversupply check leaves 46 GW of wind behind.
-      // Inheriting that gave R1,141/MWh against R754 measured in isolation, and I nearly
-      // recorded the polluted figure as a finding.
-      //
-      // Rebuilding from FIXED does not work either: it lacks the slider keys simulate
-      // needs, so the run throws and a guard silently skips the check - which is how this
-      // one disappeared without failing. Restore the defaults instead.
+      // SNAPSHOT AND RESTORE: earlier probes mutate the shared scenario (see the oversupply check).
       const saved = JSON.parse(JSON.stringify(state));
       for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
-      const x = simulate({ ...state, newBattMW: 1000, newBattHours: 4 }, PROFILES);
-      const p = x.marginalP, dis = x.stack.batt;
-      let rev = 0, mwh = 0;
-      for (let h = 0; h < 8760; h++){ const d = dis[h] || 0; rev += d * p[h]; mwh += d; }
-      const srt = Array.from(p).sort((a, b) => a - b);
+      const wavg = (s, p) => { let a = 0, m = 0; for (let h = 0; h < 8760; h++){ const d = (s && s[h]) || 0; a += d * p[h]; m += d; } return { px: m > 0 ? a / m : 0, mwh: m }; };
+      const one = (ex) => { const x = simulate({ ...state, ...ex }, PROFILES); const p = x.marginalP;
+        return { bD: wavg(x.stack.batt, p), bC: wavg(x.chargeBattMW, p), pD: wavg(x.stack.ps, p), pC: wavg(x.chargePsMW, p) }; };
+      const a = one({ newBattMW: 1000, newBattHours: 4 }), b = one(PRESETS['IRP path 2035']);
       Object.assign(state, saved);
-      return { achieved: mwh > 0 ? rev / mwh : 0, median: srt[4380], mwh };
+      return { a, b };
     `);
-    check('the storage timing probe returns a result',
-          !!(r && !r.error && r.mwh > 0),
-          r && r.error ? String(r.error).slice(0, 90) : 'probe returned no discharge');
-    if (r && !r.error && r.mwh > 0){
-      const ratio = r.achieved / r.median;
-      check('the instant heuristic discharges near the median price, not the peak',
-            ratio < 1.5,
-            `achieves R${r.achieved.toFixed(0)}/MWh against a median of R${r.median.toFixed(0)} `
-            + `- a ratio of ${ratio.toFixed(2)}. If this rises above 1.5 the heuristic has `
-            + `started targeting peaks and the published claim needs revisiting`);
-      console.log(`  storage timing R${r.achieved.toFixed(0)}/MWh achieved \u00b7 `
-        + `median R${r.median.toFixed(0)} \u00b7 ratio ${ratio.toFixed(2)}`);
+    check('the storage price probe returns a result',
+          !!(r && !r.error && r.a.bD.mwh > 0 && r.b.bD.mwh > 0 && r.b.pD.mwh > 0),
+          r && r.error ? String(r.error).slice(0, 90) : 'a probe returned no discharge');
+    if (r && !r.error && r.a.bD.mwh > 0 && r.b.bD.mwh > 0 && r.b.pD.mwh > 0){
+      const f = (d, c) => `R${d.px.toFixed(0)} against R${c.px.toFixed(0)}/MWh`;
+      check('storage discharges at a higher average price than it charges',
+            r.a.bD.px > r.a.bC.px && r.b.bD.px > r.b.bC.px && r.b.pD.px > r.b.pC.px,
+            `discharge against charge: default + 1 GW batteries ${f(r.a.bD, r.a.bC)}; IRP path 2035 batteries `
+            + `${f(r.b.bD, r.b.bC)}, pumped storage ${f(r.b.pD, r.b.pC)}`);
+      console.log(`  storage prices default+1GW batteries ${f(r.a.bD, r.a.bC)} \u00b7 IRP 2035 batteries ${f(r.b.bD, r.b.bC)} `
+        + `\u00b7 pumped storage ${f(r.b.pD, r.b.pC)}`);
     }
   }
 
@@ -834,6 +836,38 @@ setTimeout(()=>{
     else check('every preset key reaches the model', false, k ? k.error : 'no result');
   }
   (async () => {
+    // ── 3b. WIND'S CAPTURE STAYS FAR ABOVE SOLAR'S IN EVERY WEATHER YEAR ─────
+    // REWRITTEN 14 Oct 2026 (user, messages 102 and 103). Was 'wind holds its capture rate' (wind above 85% on the default
+    // profile), a point the engine cannot hold: it read 85.1, 83.7, 85.1 and 81.5% in one week as a few scarcity hours
+    // changed which plant sets the price. The finding's claim is the asymmetry, so this tests it in each of the twelve
+    // weather years, on the engine price (marginalP) and on the market price (marketPriceSeries: the engine price plus the
+    // reserve-scarcity adder): wind's capture more than 50 points above solar's in every year, on both. Scenario as section
+    // 3: 50 GW wind, 60 GW solar, no storage; a fixed build, not least-cost, with energy-only prices. Build 14r: wind
+    // 70.7-78.7% (market) and 72.8-78.8% (engine), solar 4.6-7.8%, smallest gap 65.6 points (2018, market). RESULTS 'Wind
+    // capture across the twelve weather years'.
+    try {
+      await w.eval('loadWeatherYears()');
+      const c = probe(`
+        const ys = (bldWeatherYears && bldWeatherYears.meta && bldWeatherYears.meta.years) || [];
+        const st = { ...state, newWindMW: 50000 - FIXED.windMW, newPvMW: 60000 - FIXED.pvUtilityMW, newBattMW: 0 };
+        const cap = (g, P) => { let ps = 0, e = 0, rv = 0; for (let h = 0; h < HOURS; h++){ ps += P[h]; e += g[h]; rv += g[h] * P[h]; }
+          return e > 0 ? 100 * (rv / e) / (ps / HOURS) : null; };
+        return ys.map(y => { const nat = weatherYearNational(String(y));
+          const r = simulate(st, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+          const M = marketPriceSeries(r, { ...FIXED, ...st }).p.map(v => v * 1000);
+          return { y, eW: cap(r.stack.wind, r.marginalP), eS: cap(r.stack.pv, r.marginalP), mW: cap(r.stack.wind, M), mS: cap(r.stack.pv, M) }; });`);
+      if (c.error || !c.length) check('wind capture across the weather years runs', false, c.error || 'no weather years loaded');
+      else {
+        const gap = Math.min(...c.map(x => Math.min(x.eW - x.eS, x.mW - x.mS)));
+        const worst = c.find(x => Math.min(x.eW - x.eS, x.mW - x.mS) === gap);
+        const rng = k => `${Math.min(...c.map(x => x[k])).toFixed(1)}-${Math.max(...c.map(x => x[k])).toFixed(1)}%`;
+        check(`wind's capture stays far above solar's in every weather year at 110 GW of build (${c.length} years)`,
+              c.length === 12 && gap > 50,
+              `smallest gap ${gap.toFixed(1)} points (${worst.y}); wind ${rng('mW')} market, ${rng('eW')} engine; solar ${rng('mS')} market`);
+        console.log(`  capture 12 yr  wind ${rng('mW')} market, ${rng('eW')} engine · solar ${rng('mS')} market, ${rng('eS')} engine · gap >= ${gap.toFixed(1)} points`);
+      }
+    } catch (e) { check('wind capture across the weather years runs', false, String(e)); }
+
     // ── THE ADEQUACY LOOP'S STALLED BUILD IS ADEQUATE IN 2016 ───────────────
     // Added 2 Oct 2026. Fossil-free 2040 preset with the build the loop stalled on (21.8 GW coal
     // kept, 2.8 GW gas, 13.0 GW lithium at 5h). The engine shed 34.4 GWh in 2016 while 222 GWh

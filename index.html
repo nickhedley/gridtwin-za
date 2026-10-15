@@ -13,7 +13,10 @@
     - distribute modified or derivative versions
     - incorporate this model, its code, or its calibration into another product
 
-  Commercial licensing and permissions: https://github.com/nickhedley/gridtwin-za
+  Commercial licensing and permissions for the original work:
+  https://github.com/nickhedley/gridtwin-za
+  These cannot cover third-party data, including NTCSA's GCCA data, which stays
+  under its own terms (see LICENSE).
 
   The model logic, calibration, cost assumptions and presentation are original
   work. Underlying public datasets (Eskom, NTCSA, NERSA, DMRE, PyPSA-RSA,
@@ -220,6 +223,8 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 .presets button:hover{background:var(--panel2)}
 .presets button.active{background:var(--ink); color:var(--panel)}
 .preset-caption{font-size:10.5px; color:var(--ink2); line-height:1.45; margin:-6px 0 12px; min-height:4.4em}
+.calc-status{font-size:10.5px; color:var(--ink2); margin:-6px 0 8px}
+.presets.busy button{transition:none}  /* a fade started on click would freeze mid-way while the engine runs */
 
 /* KPI strip */
 .kpis{display:grid; grid-template-columns:repeat(8,1fr); gap:12px; margin-bottom:0}
@@ -395,6 +400,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="pb">
       <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset, or move any slider.</p>
       <div class="presets" id="presets"></div>
+      <p class="calc-status" id="calcStatus" role="status" aria-live="polite" hidden>Calculating…</p>
       <p class="preset-caption" id="presetCaption"></p>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
       <button class="sharebtn" type="button" onclick="exportRunRecord()" title="A one-page record of this run: assumptions, outputs, and the data fingerprints it used, so the numbers can be reproduced and checked later" style="margin-top:6px">&darr; Export run record</button>
@@ -1298,7 +1304,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
 
 
-<script src="nodal/nodal_engine.js?v=24"></script>
+<script src="nodal/nodal_engine.js?v=25"></script>
       <script src="nodal/nodal_dispatch.js?v=28"></script>
       <script>
 
@@ -5079,14 +5085,15 @@ function printPrefeas() {
 
     <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
       &copy; 2026 Nick Hedley. GridTwin ZA &ndash; model, code, calibration and presentation.
-      <strong>The data files in nodal/ are CC BY 4.0</strong> &ndash; attribution only, reuse
-      and modification permitted. They are a compilation of uncopyrightable facts, and the
-      previous NC-ND terms blocked both reuse by researchers and the ingestion of BY-SA
-      sources. The model, code and presentation are licensed under
+      <strong>Each data file in nodal/ states its own licence.</strong> Our compilations of
+      uncopyrightable facts are CC BY 4.0 &ndash; attribution only, reuse and modification permitted.
+      Files derived from NTCSA, Eskom, PyPSA-RSA and other sources stay under those sources' terms
+      (see LICENSE). The model, code and presentation are licensed under
       <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
       you may share it with attribution, but not use it commercially or distribute modified versions.
       <strong>Commercial use, redistribution of derivatives, or incorporation into another product requires written permission.</strong>
       The underlying public datasets above remain under their own licences and are not covered by this notice.
+      Third-party data is under its own terms (see <a href="https://github.com/nickhedley/gridtwin-za/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">LICENSE</a>).
     </div>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.18);
                 font-size:11.5px;line-height:1.6">
@@ -5290,6 +5297,9 @@ function bldPhesCumCapMW(cap, y){
   for (const [yy, v] of steps) if (y >= yy) mw = v;
   return mw;
 }
+// SA CPI, January 2024 to January 2026: 3.2% (January 2025) and 3.5% (January 2026), Stats SA headline as reported
+// (SOURCES 'SA CPI, January 2024 to January 2026'). One constant for every January 2024 rand figure restated in 2026 rands.
+const CPI_JAN24_TO_JAN26 = 1.032 * 1.035;
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -5317,6 +5327,30 @@ const FIXED = {
   coalEAFPct:65,
   nuclearMW:1880, hydroMW:602,
   importsMW:1150,
+  // REGIONAL IMPORTS END YEAR (user, 13 Oct 2026, TODO 14dv (6)): 0 keeps importsMW in every year; a year Y sets imports to
+  // zero in every scenario year after Y, in the engine (simulate, through scenarioYear) and in the build optimiser alike.
+  // For the no-imports-after-2030 sensitivity: the 1,150 MW Cahora Bassa contract ends on 31 Dec 2030 (Mozambique's
+  // energy transition strategy; SOURCES), and IRP 2025, as far as the sources reachable show, does not say what follows.
+  importsEndYear:0,
+  // FLAT DEMAND BLOCK (user, 14 Oct 2026, message 72): MW added to every hour's demand after growth, in the engine
+  // (simulate) and, by model year, in the build optimiser (opts.demandBlock, bldDemandBlockMW). For load that returns as
+  // a flat block rather than growing with the index: c5b's ferrochrome smelters, 930 MW from 2027 (80% take-or-pay on
+  // the 12.8 TWh contracted, less what the 2026 base already holds; RESULTS 'Smelter block sized'). 0: none.
+  demandBlockMW:0,
+  // CAPE WIND UNDER THE CURTAILMENT ALLOWANCE (user, 14 Oct 2026, messages 68 and 71 (7)). NERSA approved NTCSA's congestion
+  // curtailment framework on 29 April 2025 (valid 1 April 2025 to 31 March 2028; Pinsent Masons, 1 Jul 2025), capped at 4% and
+  // limited to the Western and Eastern Cape, which opens 1,580 MW of extra connectable wind (Western Cape 1,180, Eastern Cape
+  // 400; NTCSA's updated GCCA of 31 Oct 2025, per Cliffe Dekker Hofmeyr, 3 Dec 2025; 3,470 MW at 10%). In the build LP, up to
+  // bldCapeWindMW of new wind (cw_) avoids the integration charge (txRPerKWyr) and loses bldCapeCurtPct of its output; the
+  // engine cuts the same share of that wind's output (windCapeMW). Provincial totals only; no substation figures. 0: off.
+  bldCapeWindMW:0, bldCapeCurtPct:4,
+  // FREED COAL CONNECTIONS BY TECHNOLOGY (user, 14 Oct 2026, message 74): technologies that may not take a connection freed
+  // by retired coal (rp_). c5b: ['wind'], so solar, storage and gas may (Eskom's repowering pipeline at six stations: solar PV
+  // 3,184 MW, batteries 700, gas 1,000 at Kriel, wind 168 at Arnot; Engineering News, 17 Jun 2025). Empty: all, as before.
+  bldRpExclude:[],
+  // OUTAGES ON THE UNITS STILL STANDING (TODO 14dr, user 13 Oct 2026: in c5). 1: the unit outage draw runs over the coal
+  // units ucUnitsStanding leaves for the year's coal installed; 0: over all 85 UC_FLEET units, as before 14 Oct 2026.
+  outageStandingUnits:1,
   // Import utilisation, added 31 Aug 2026 from Eskom's audited energy balance. Was the
   // literal 0.85 hardcoded at FOUR sites and duplicated as IMPORTS_CF in
   // nodal_engine.js - a rule 6 violation and a stale value at the same time.
@@ -5526,6 +5560,17 @@ const FIXED = {
   bldPvRateGrowthPct:7,
   // Build optimiser prices carbon on the legislated Phase 2 path (CARBON_AT in bldBuildLP). 5 Oct 2026.
   carbonTaxPathOn:1,
+  // carbonTaxFull 1 (user, 14 Oct 2026, c5 sensitivity s_carbonfull): the build optimiser and the engine check price carbon
+  // at the full statutory rate with no tax-free allowances (CARBON_TAX_LAW, in 2026 rands), held at the 2030 rate after 2030
+  // because no later rate is in law. 0: the allowance path below.
+  carbonTaxFull:0,
+  // Allowance path (carbonTaxAt), user 14 Oct 2026. 'kept2030', central from c5: the tax-free allowance kept at its 2026
+  // share to 31 Dec 2030 (February 2025 Budget, as reported by Engineering News, 19 Feb 2025: 'maintenance of the basic
+  // tax-free allowance until December 31, 2030, rather than reducing it from 2027') on the rates in law, in 2026 rands, held
+  // after 2030. 'cut2027': c4 and every run before 14 Oct 2026 (allowances cut 2.5 points a year 2027-2030, nominal rates
+  // interpolated between 2026 and 2030). Caveat: electricity price neutrality is also extended to 31 Dec 2030 and may lower
+  // generators' net cost further; not modelled.
+  carbonAllowancePath:'kept2030',
   // Pumped hydro as a build option (bldBuildLP, 5 Oct 2026). Off by default until reviewed.
   // FOM R297/kW-yr: NREL ATB 2022 pumped storage, USD 18/kW-yr, at R16.50/USD (no South African
   // figure published).
@@ -5713,6 +5758,50 @@ const FIXED = {
   // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
   // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
   reserveEnabled:1, reserveOperatingMW:2200,
+  // RESERVE BY PRODUCT (user, 14 Oct 2026, message 85; TODO 14eh). 'legacy': one 2,200 MW requirement that open-cycle plant and
+  // pumped storage at full power excuse coal from holding. 'astr': NTCSA Ancillary Services Technical Requirements 2026/27-2030/31
+  // (Jan 2026, pp. 6-12, as read by the user): instantaneous and regulating from online headroom (coal; pumped storage and batteries
+  // only while they hold enough energy to sustain the product), ten-minute from pumped storage with energy, quick-start hydro and
+  // dispatchable demand (none modelled), and coal for any balance; open-cycle plant and interruptible load are emergency reserve
+  // only, outside the 2,200 MW, called to restore it, interruptible first (ASTR p.10 sets no order; its cost rule, p.9, supports
+  // cheapest first). Quantities in ASTR_RESERVE, peak hours in astrPeakHour (p.29). Sustain times: instantaneous 10 minutes
+  // (p.6); regulating none stated (p.7), 1 hour is the author's assumption; ten-minute none stated, 3 hours from its use cap of
+  // 600 hours a year, 'assuming a usage over 50 weeks, 4 days, and 3 hours per day' (p.9). Approved by the user, message 86.
+  // After 2030/31 the requirement grows by reserveVrePct of wind and solar output above the 2030 fleet's (reserveVreRefWindMW,
+  // reserveVreRefPvMW, set by the pathway from its own 2030 build; null: today's fleet), so there is no step at 2031.
+  // 'legacy' keeps the rule before 14 Oct 2026 for comparison.
+  // Storage reserve (user, message 97): decided together with dispatch, not set aside first. Each hour pumped storage and batteries
+  // hold at most their unused output plus any pumping or charging load that could be dropped, and at most their stored energy over
+  // the product's sustain time. Sustain times: instantaneous 10 minutes (ASTR p.6); regulating 60 minutes and ten-minute 30
+  // minutes, borrowed from CAISO's continuous-energy rules for regulation and for spinning and non-spinning reserve (CAISO,
+  // Non-Generator Resources, revised draft final proposal, 10 February 2010), the ASTR stating none; cited assumptions.
+  // Superseded: regulating 1 hour and ten-minute 3 hours (message 86; the 3 hours came from the ASTR's usage cap, p.9).
+  reserveRule:'astr', reserveRegHours:1, reserveTenHours:0.5, reserveVreRefWindMW:null, reserveVreRefPvMW:null,
+  // Eligibility (user, message 90): the ASTR allows generating capacity for instantaneous and regulating reserve, so the spare
+  // headroom of any online plant counts - coal, hydro, and a combined-cycle, open-cycle or diesel turbine while it is running;
+  // offline open-cycle plant stays emergency reserve. A running gas or diesel group of output g holds at most g x (1 - m) / m above
+  // its units' minimum stable level m, and no more than its capacity less g (astrOnlineHeadroom). m = 0.5: SONI's CCGT Minimum
+  // Function Specification sets continuous stable operation at 50% of module MCR (35% for its gas turbines in open cycle); the
+  // author's assumption for all gas and diesel turbines here, not a South African figure. The optimiser uses the same rule.
+  reserveGasMinStableFrac:0.5,
+  // Interruptible load's annual energy cap: none (user, message 101). Tried and withdrawn: 177 GWh, Eskom's 2025 use of ILS and IOS
+  // (message 98), was observed use in a calm year, not a contract limit, and with interruptible load called after open-cycle plant
+  // (message 100) the overuse it was meant to stop no longer arises; RESULTS 14r. A positive value caps the year's energy (MWh).
+  drInterruptAnnualMWh:0,
+  // AVON AND DEDISA MUST-RUN (user, message 88). Both IPP peakers ran every day in 2025-26 on their contracts, not on merit:
+  // 1.460 TWh in 2025, 0.715 TWh January-August 2026 (Eskom data, ESK19679, 'Dispatchable IPP OCGT'; the analysis is ours, not
+  // Eskom's). Modelled as a daytime level (hours beginning 05-16) and an evening-peak level (17-20) by month, MW: January-August
+  // the 2026 month (user, message 93); September-December the 2025 month times 0.693, January-August 2026's energy over 2025's,
+  // so 2025's seasonal shape at 2026's level. Nights (21-04) zero, 4.5% of 2026's energy. January-August 683 GWh against 715
+  // measured; full year 899 GWh. Derived by harness/derive_avon_dedisa.py from the local file; recompute there, never edit here. Until each
+  // contract ends: Dedisa (335 MW) commissioned end-2015, Avon (670 MW) 20 July 2016, 15-year terms (POWER Magazine, 25 July
+  // 2016; IRP 2025 3.2.1.2.2, contracts expire 2030-31), so both through 2030 and Avon's two-thirds share to 20 July 2031.
+  // Then they revert to ordinary peakers. Fuel and CO2 counted at the diesel fleet's rates; the rest of their capacity stays
+  // in dispatch and emergency reserve; while running they hold online headroom (message 90). 0 turns it off.
+  avonDedisaMustRun:1,
+  avonDedisaDayMW:[175, 172, 168, 170, 144, 129, 152, 157, 90, 105, 110, 117],
+  avonDedisaEveMW:[186, 271, 222, 369, 161, 136, 201, 280, 96, 155, 125, 129],
+  avonMW:670, dedisaMW:335, dedisaEndYear:2030, avonEndYear:2031, avonEndDoy:200,
   // Regulating reserve grows with variable generation, and the ASTR figure above does not:
   // it is sized to 2030/31 on today's fleet. NREL's Operating Reserves and Variable Generation
   // (TP-5500-51978, 2011) sets out the 3+5 rule, 3% of load plus 5% of variable generation,
@@ -5805,6 +5894,7 @@ const FIXED = {
   // issue in profiles.json, listed in HANDOVER, not something to paper over with
   // a fabricated loss factor in the engine.
   chargeFromThermal:1,   // engine may charge storage from coal headroom when its forecast says stress is coming
+  storageLookaheadH:48,  // storage plans over the next 48 hours (14do 13 Oct, 24; engine fix (B) 14 Oct 2026, 48); 0 restores the earlier rule
   nuclearCF:0.66,
   // part-load heat RATE. A coal unit burns more fuel per MWh the further it is
   // backed off: auxiliaries, mill and fan power and boiler losses are largely
@@ -5826,15 +5916,19 @@ const FIXED = {
   // Eskom can drop in a shortage - historically the aluminium smelters and other
   // energy-intensive users, through Demand Market Participation and instantaneous
   // interruptible load contracts. It is real and already exists, so it defaults
-  // ON at 1,200 MW. It is not free: the customer is compensated, at a rate far
-  // below the cost of unserved energy but well above diesel, which is exactly why
-  // it sits between them in the merit order.
+  // ON (1,000 MW since 14 Oct 2026, below). It is not free: the customer is compensated, at a rate far
+  // below the cost of unserved energy and below diesel (R4,000 against about R6,200/MWh), which is why
+  // it is called before diesel (message 86).
   //
   // shiftable load (drShiftPct). Load moved within a day rather than dropped -
   // water heating, pumping, irrigation, EV charging. Energy-neutral over 24
   // hours. At meaningful scale this barely exists in South Africa yet, so it
   // defaults to zero and is a scenario lever rather than a description of today.
-  drInterruptMW:1200, drInterruptCostR:4000, drShiftPct:0,
+  // 1,000 MW (user, message 95): NREL, Demand Response at the Grid Edge (FY24, data to about 2022), Eskom's certified
+  // instantaneous demand response 1,014 MW. Was 1,200 MW, unsourced, and equal to the ASTR's whole emergency reserve (p.10:
+  // interruptible load, EL1 and gas turbines together). No cap on hours or energy (user, messages 95 and 101; a
+  // 177 GWh cap was tried and withdrawn). Called after open-cycle plant (message 100); 2025 use against Eskom's 177 GWh in RESULTS.
+  drInterruptMW:1000, drInterruptCostR:4000, drShiftPct:0,
   // Shifting load is NOT free. A geyser reheated six hours later has lost standing heat; a
   // pre-cooled building cools space that did not need it. Until 19 Sep 2026 the shift was
   // energy-neutral, which made demand response a lossless store in the dispatch - an
@@ -5969,7 +6063,12 @@ const FIXED = {
   // TOP of that band rather than outside it. First-of-a-kind in South Africa
   // would plausibly be higher still.
   ccsCapexRkW:38000, ccsWaccPct:null, ccsLifeYrs:20,   // ccsWaccPct derived after BLD_DISC (see there)
-  battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
+  // EXISTING GRID BATTERIES (user, 14 Oct 2026, message 74): Eskom's phase 1 sites operating at mid-2026 and end-2026, 68 MW /
+  // 292 MWh (ESKOM_BESS_OPERATING, nodal_engine.js). Was 800 MW / 4 h with no source. Of phase 1's eight sites (199 MW),
+  // Skaapvlei, Paleisheuwel and Graafwater add nothing before 31 March 2027 (Minister's reply NW4150, PMG, 21 Sep 2026),
+  // and Melkhout and Rietfontein were at contracting (AfDB, 1 Jul 2025). Batteries inside the RMIPPPP hybrids sit in
+  // hybridMW. BESIPPPP bid window 1 is a build, not fleet (LI_MIN in c5b).
+  battPowerMW:EXISTING_BATT_MW, battHours:EXISTING_BATT_MWH / EXISTING_BATT_MW, newBattHours:4, battEff:0.88, ccgtMW:0,
   // ── long-duration storage ────────────────────────────────────────────────
   // Four-hour lithium cannot ride out a multi-day wind lull however it is
   // scheduled, which is why the coal-retired scenario built almost none of it.
@@ -6486,7 +6585,7 @@ const FIXED = {
   // VOM R80.19/MWh and FOM R423.89/kW-yr in January 2024 rands, x SA CPI to January 2026 (1.032 x 1.035).
   // effCcgtHHV is the efficiency costCcgt, emisCcgt and public_data/gas_price_cases.json are built on, so a new OCGT on
   // LNG burns heatRateOcgtKJ / 3600 x effCcgtHHV (1.53) times the gas of a CCGT MWh and emits that much more.
-  effCcgtHHV:0.52, heatRateOcgtKJ:10624, vomOcgt:80.19 * 1.032 * 1.035, fomOcgtRkW:423.89 * 1.032 * 1.035,
+  effCcgtHHV:0.52, heatRateOcgtKJ:10624, vomOcgt:80.19 * CPI_JAN24_TO_JAN26, fomOcgtRkW:423.89 * CPI_JAN24_TO_JAN26,
   // bldOcgtOn: new OCGT on LNG in the build LP (b_ocgt), sharing the gas build cap with CCGT (gascap_<y>) and carrying the
   // LNG terminal charge where a gas case has one. bldOcgdOn: new OCGT on diesel (b_ocgd), same unit and capex, dispatched
   // with the diesel fleet at its fuel price, no terminal, its own cap of bldOcgdRateMW a year from bldOcgdFromYear: 1 GW a
@@ -6512,6 +6611,47 @@ const FIXED = {
 // IRP 2025 requires the five older stations, with Arnot and Kriel, to close by 2030.
 const UC_FLEET = [{"name":"Arnot*","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":146236.9340034813,"marginal_cost":664.1402453697383,"decom":"2027","region":"Mpumalanga"},{"name":"Arnot**","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":146236.9340034813,"marginal_cost":675.4804253697383,"decom":"2029","region":"Mpumalanga"},{"name":"Camden*","cap":570.0,"unit_cap":190.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":56320.930887372,"marginal_cost":702.0914453697383,"decom":"2030","region":"Mpumalanga"},{"name":"Camden**","cap":911.0,"unit_cap":182.2,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":93868.21814561999,"marginal_cost":733.5367253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Duvha*","cap":1150.0,"unit_cap":575.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":183388.7508532424,"marginal_cost":633.5082053697383,"decom":"2033","region":"Mpumalanga"},{"name":"Duvha**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":275083.12627986365,"marginal_cost":633.5082053697383,"decom":"2034","region":"Mpumalanga"},{"name":"Grootvlei*","cap":380.0,"unit_cap":190.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":47428.2396745848,"marginal_cost":711.3985253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Grootvlei**","cap":190.0,"unit_cap":190.0,"n":1,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":23714.1198372924,"marginal_cost":664.1402453697383,"decom":"2030","region":"Mpumalanga"},{"name":"Hendrina*","cap":760.0,"unit_cap":190.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":60075.6596131968,"marginal_cost":687.7242053697383,"decom":"2030","region":"Mpumalanga"},{"name":"Hendrina**","cap":338.0,"unit_cap":169.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":30037.8298065984,"marginal_cost":733.5367253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Kelvin","cap":160.0,"unit_cap":80.0,"n":2,"msl":0.65,"min_up":8,"min_dn":8,"startup_cost":450165.44254835,"marginal_cost":658.5346505574515,"decom":"2027","region":"Gauteng"},{"name":"Kendal*","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2044","region":"Mpumalanga"},{"name":"Kendal**","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2050","region":"Mpumalanga"},{"name":"Komati","cap":114.0,"unit_cap":114.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":8782.97661497838,"marginal_cost":771.6234653697383,"decom":"2022","region":"Mpumalanga"},{"name":"Kriel*","cap":1215.0,"unit_cap":405.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2028","region":"Mpumalanga"},{"name":"Kriel**","cap":1425.0,"unit_cap":475.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Kusile*","cap":2880.0,"unit_cap":720.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":348234.678785074,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile**","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile***","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Lethabo*","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":585.4818653697383,"decom":"2038","region":"Gauteng"},{"name":"Lethabo**","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":608.7947453697383,"decom":"2041","region":"Gauteng"},{"name":"Majuba*","cap":1818.0,"unit_cap":606.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":482186.41170716693,"marginal_cost":620.6770853697383,"decom":"2048","region":"Mpumalanga"},{"name":"Majuba**","cap":1989.0,"unit_cap":663.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":529614.236756997,"marginal_cost":586.7920853697383,"decom":"2051","region":"Mpumalanga"},{"name":"Matimba*","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":616.1590853697384,"decom":"2042","region":"Limpopo"},{"name":"Matimba**","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":608.7947453697383,"decom":"2044","region":"Limpopo"},{"name":"Matla*","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2032","region":"Mpumalanga"},{"name":"Matla**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2036","region":"Mpumalanga"},{"name":"Medupi*","cap":3600.0,"unit_cap":720.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":435293.3484813425,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Medupi**","cap":717.0,"unit_cap":717.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Tutuka*","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Tutuka**","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2031","region":"Mpumalanga"}];
 
+// UNITS STILL STANDING (TODO 14dn, 13 Oct 2026). The commitment pre-pass used to keep all 85 UC_FLEET units in every
+// year, each scaled by coal installed / 41,530, so in c4's 2040 (20.8 GW standing) it committed 85 units at 49% of their
+// size: minimum stable levels, start costs and commitment steps all followed those shrunken units. Now units retire
+// nearest published date first (the order bldCoalByRegion uses; ties in fleet order), whole units only, to the count whose
+// capacity at the build LPs' scale (bldCoalScale) is nearest the coal installed; the units left are then sized to exactly
+// the coal installed. With coal installed at a year's published fleet (FIXED less bldCoalMW's retirements) that leaves
+// the units with a later date; early retirement beyond it takes the next-nearest dates, as in the regional LP.
+// Returns {units, scale}: units at nameplate (cap, per-unit start cost), and the factor that sizes them.
+function ucUnitsStanding(coalInstalled) {
+  const all = [];
+  for (const g of UC_FLEET) {
+    const n = Math.max(1, g.n || 1);
+    const unitCap = g.unit_cap || (g.cap / n);
+    for (let k = 0; k < n; k++) {
+      all.push({
+        name: g.name + ' U' + (k + 1),
+        cap: unitCap,
+        msl: g.msl,
+        min_up: g.min_up,
+        min_dn: g.min_dn,
+        marginal_cost: g.marginal_cost,
+        // Start-up cost is per unit, so scale the group figure down.
+        startup_cost: (g.startup_cost || 0) / n,
+        region: g.region,
+        decom: g.decom,
+        dy: g.decom === 'beyond 2050' ? 9999 : parseInt(g.decom, 10),
+      });
+    }
+  }
+  const target = Math.max(0, coalInstalled || 0), sc = bldCoalScale();
+  const order = all.map((u, i) => i).sort((a, b) => (all[a].dy - all[b].dy) || (a - b));
+  const gone = new Uint8Array(all.length);
+  let standRaw = all.reduce((t, u) => t + u.cap, 0);
+  for (const i of order) {
+    if ((standRaw - all[i].cap / 2) * sc < target) break;   // retiring this unit would leave the fleet further from target
+    gone[i] = 1; standRaw -= all[i].cap;
+  }
+  const units = all.filter((u, i) => !gone[i]);
+  return { units, scale: standRaw > 0 ? target / standRaw : 0 };
+}
+
 // ── Heuristic Day-Ahead Unit Commitment ───────────────────────────────────────
 // For each day, decides which unit groups to commit based on next-24h net load.
 // Respects min up/down times and adds start-up costs to fuelCost.
@@ -6533,8 +6673,8 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
   }
   const DAYS = 365;
   const HOURS = 8760;
-  // Scale fleet to currently available capacity (EAF applied)
-  const scaleFactor = coalInstalled > 0 ? coalInstalled / 41530 : 0;
+  // The units still standing, sized to the coal installed (TODO 14dn); EAF applied on top.
+  const {units: UC_UNITS, scale: scaleFactor} = ucUnitsStanding(coalInstalled);
   const availFactor = Math.max(0, eafFraction * scaleFactor);
 
   // Unit state: hours remaining on/offline
@@ -6555,25 +6695,7 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
   // point was that minimum stable level plus ramp rates are what produce the
   // "Buffalo curve" - coal unable to drop far enough at midday to make room for
   // solar while remaining available for the morning and evening peaks.
-  const UC_UNITS = [];
-  for (const g of UC_FLEET) {
-    const n = Math.max(1, g.n || 1);
-    const unitCap = g.unit_cap || (g.cap / n);
-    for (let k = 0; k < n; k++) {
-      UC_UNITS.push({
-        name: g.name + ' U' + (k + 1),
-        cap: unitCap,
-        msl: g.msl,
-        min_up: g.min_up,
-        min_dn: g.min_dn,
-        marginal_cost: g.marginal_cost,
-        // Start-up cost is per unit, so scale the group figure down.
-        startup_cost: (g.startup_cost || 0) / n,
-        region: g.region,
-        decom: g.decom,
-      });
-    }
-  }
+  // The individual units come from ucUnitsStanding() above (only those still standing, 14dn).
 
   const unitState = UC_UNITS.map(u => ({
     hoursOn: u.min_up,   // start committed (so min_up constraint doesn't immediately bind)
@@ -6755,6 +6877,7 @@ function simulateGasAnnualFloor(u, prof, outPath){
 
 function simulate(u, prof, outPath, _soc0){
   const p={...FIXED,...u};
+  if (p.importsEndYear > 0 && (p.scenarioYear ?? 2026) > p.importsEndYear) p.importsMW = 0;   // importsEndYear, FIXED
   if (!_soc0 && u.__ccgtFloor === undefined && !p.ccgtForceHourly && ccgtFloorActive(p)) return simulateGasAnnualFloor(u, prof, outPath);
   // ── clean coal (CCS) ──────────────────────────────────────────────────────
   // Applied here so every downstream calculation - dispatch, cost, emissions,
@@ -6812,6 +6935,10 @@ function simulate(u, prof, outPath, _soc0){
   const demand = (p.demandYear === 2025 && prof.demand === PROFILES.demand && PROFILES.demand_2025)
     ? PROFILES.demand_2025 : prof.demand;
   const growth=1+p.demandGrowthPct/100;
+  // Flat demand block (FIXED.demandBlockMW): added to every hour after growth, before rooftop and exports.
+  const demBlock=Math.max(0, +(p.demandBlockMW ?? 0) || 0);
+  // Cape wind under the curtailment allowance (FIXED.bldCapeWindMW): that wind loses bldCapeCurtPct of its output.
+  const capeCurtMW=Math.max(0, +(p.windCapeMW ?? 0) || 0) * Math.max(0, +(p.bldCapeCurtPct ?? FIXED.bldCapeCurtPct) || 0) / 100;
   // Retire nameplate, add nameplate, then take the capture penalty off whatever
   // fleet is left - existing and new alike. A new station with capture loses the
   // same fraction of its output to the capture plant as a retrofitted one.
@@ -6915,7 +7042,7 @@ function simulate(u, prof, outPath, _soc0){
   // Charge across tiers, best round trip first. Returns MW actually taken, which
   // the caller uses so the scalar and the tiers stay in step.
   // Energy passed from coal and storage to peakers to keep operating reserve whole.
-  let _resShedMWh = 0;
+  let _resShedMWh = 0, _resShortMWh = 0, _resShortH = 0;
   // Diesel budget: flat monthly cap, used from the start of each month.
   const _dslMonthCap = Math.max(0, p.dieselBudgetTWh) * 1e6 / 12;
   const _dslUsed = new Float64Array(12);
@@ -7094,24 +7221,25 @@ function simulate(u, prof, outPath, _soc0){
   // Hourly state of charge per tier, diagnostic only - the storage questions of 22 Sep 2026
   // could not be answered without it, because only throughput was visible.
   const tierSoc = {}; for (const t of battTiers) tierSoc[t.k] = new Float64Array(HOURS);
-  const tierDischarge = (mw) => {
-    let got = 0;
-    const _gave = {};   // MW each tier has given this call, so the power limit holds across both passes
+  const _hourGave = { li:0, vrfb:0, fe:0, ps:0 };   // MW each tier has already given this hour (look-ahead discharge, 14do)
+  const tierDischarge = (mw, shortCap = Infinity) => {
+    let got = 0, shortLeft = shortCap;   // _hourGave holds the power each tier has given this hour, across both passes and calls
     const _li = battTiers.find(t => t.k === 'li');
     const _long = battTiers.filter(t => t.mwh >= 100 * t.mw - 1e-6 && t.soc > 0);
     if (_disHour >= 0 && _li && _long.length){
       if (!_fcDef) _buildForecast();
       if (_liShortAhead(_li, _disHour, mw)){
         for (const t of _long){
-          const give = Math.min(mw - got, t.mw, Math.max(0, t.soc));
-          if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give; _gave[t.k] = give;
+          const give = Math.min(mw - got, t.mw - _hourGave[t.k], Math.max(0, t.soc));
+          if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give; _hourGave[t.k] += give;
             if (tierSeries[t.k]) tierSeries[t.k][_disHour] += give; }
         }
       }
     }
     for (const t of battTiers){
-      const give = Math.min(mw - got, t.mw - (_gave[t.k] || 0), Math.max(0, t.soc));
-      if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give;
+      const _short = t.mwh < 100 * t.mw - 1e-6;
+      const give = Math.min(mw - got, t.mw - _hourGave[t.k], Math.max(0, t.soc), _short ? shortLeft : Infinity);
+      if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give; _hourGave[t.k] += give; if (_short) shortLeft -= give;
         if (_disHour >= 0 && tierSeries[t.k]) tierSeries[t.k][_disHour] += give; }
       if (got >= mw - 1e-9) break;
     }
@@ -7134,6 +7262,11 @@ function simulate(u, prof, outPath, _soc0){
   const ccgtMustRunMW = (!_ccgtFloorArr && p.ccgtForceHourly && ccgtFloorActive(p))
     ? Math.round(Math.min(ccgtCap, p.ccgtForceLoadMW) * p.ccgtForceLoadPct / 100) : 0;
   const _mustAt = h => _ccgtFloorArr ? Math.min(ccgtCap, _ccgtFloorArr[h]) : ccgtMustRunMW;
+  // Avon and Dedisa must-run (message 88), within the independent peakers' diesel capacity.
+  const _mdIpp = Math.max(0, dieselAvailMW(p) - Math.min(dieselAvailMW(p), Math.max(0, p.dslTankMW ?? FIXED.dslTankMW)));
+  const _mdAt = h => Math.min(_mdIpp, avonDedisaMustRunMW(p.scenarioYear ?? 2026, h, p));
+  let _mdUnmet = 0, _mdMWh = 0;
+  const _mdArr = new Float64Array(HOURS);   // must-run output by hour: price-taking, so it never sets the price (message 93)
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
   // today's real SA fleet rate and the flexibilised rate based on the flexibilisation slider.
@@ -7272,6 +7405,9 @@ function simulate(u, prof, outPath, _soc0){
   // maintenance included. Read by the adequacy loop to give the build LP a failing draw's own
   // outage path. 5 Oct 2026.
   const coalAvailFrac=new Float32Array(HOURS);
+  // Available coal as a share of standing coal, after outages, committed or not (14 Oct 2026): what COAL_AVAIL's stress
+  // windows read, recorded from the same run as coalAvailFrac so the two always describe one draw.
+  const coalAvailOnlyFrac=new Float32Array(HOURS);
 
   // Pre-pass: net load (residual before coal/storage) is purely a function of demand and
   // weather/baseload - no dependency on storage state - so it can be computed once upfront to
@@ -7311,7 +7447,7 @@ function simulate(u, prof, outPath, _soc0){
       const idx = [];
       for (let k = 0; k < 24; k++){
         const h = h0+k;
-        idx.push({ h, net: demand[h]*growth - ((_wModOn ? windCap*windU[h] + offshoreCap*wind[h] : vreCap.w*wind[h]) + vreCap.p*solarU[h]) });
+        idx.push({ h, net: demand[h]*growth + demBlock - ((_wModOn ? windCap*windU[h] + offshoreCap*wind[h] : vreCap.w*wind[h]) + vreCap.p*solarU[h]) });
       }
       idx.sort((a,b) => b.net - a.net);
       const nMove = 6;                                  // out of the top six hours; back into up to twelve
@@ -7387,11 +7523,11 @@ function simulate(u, prof, outPath, _soc0){
 
   const netLoadPre=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
-    const rawDemand=demandDR[h]*growth;
+    const rawDemand=demandDR[h]*growth + demBlock;
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
     // Offshore on its OWN shape where the profile loaded, onshore's where it did not.
-    let windGen=windCap*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
+    let windGen=windCap*windU[h] - capeCurtMW*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
         pvGen=pvCap*solarU[h];
     const cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Its OWN accumulator, deliberately - the price
@@ -7474,18 +7610,97 @@ function simulate(u, prof, outPath, _soc0){
     vrePct: 0,
     vreMW: _vreMW,
   };
-  const reserveMWAt = h => RESERVE.on
-    ? RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100
-      + Math.max(0, _vreMW[h] - p.reserveVreBaseMW) * p.reserveVrePct / 100   // no fallback: both are FIXED keys
-    : 0;
-  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, Math.max(0, coalInstalled), eafFraction, RESERVE);
+  const _astr = (p.reserveRule ?? FIXED.reserveRule) === 'astr';
+  const _astrPeak = astrPeakHour;
+  const _astrQ = [astrReserveAt(p.scenarioYear ?? 2026, false, p.reserveOperatingMW), astrReserveAt(p.scenarioYear ?? 2026, true, p.reserveOperatingMW)];
+  // After 2030/31: reserveVrePct of wind and solar output above what the 2030 fleet would give this hour (no step at 2031).
+  const _astrVreGrow = (() => {
+    if (!_astr || (p.scenarioYear ?? 2026) <= ASTR_RESERVE.y1) return null;
+    const dW = (p.windMW + p.newWindMW) - (p.reserveVreRefWindMW ?? p.windMW), dP = (p.pvUtilityMW + p.newPvMW) - (p.reserveVreRefPvMW ?? p.pvUtilityMW);
+    return h => Math.max(0, dW * windU[h] + dP * solarU[h]) * p.reserveVrePct / 100;
+  })();
+  const reserveMWAt = h => !RESERVE.on ? 0
+    : _astr ? (q => q.inst + q.reg + q.ten)(_astrQ[_astrPeak(h) ? 1 : 0]) + (_astrVreGrow ? _astrVreGrow(h) : 0)
+    : RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100
+      + Math.max(0, _vreMW[h] - p.reserveVreBaseMW) * p.reserveVrePct / 100;   // no fallback: both are FIXED keys
+  // ASTR cover (reserveRule 'astr'): what storage and quick-start hydro can hold of each product this hour, the rest falls to
+  // coal headroom. Batteries then pumped storage for instantaneous (10 minutes) and regulating (reserveRegHours); pumped storage,
+  // batteries and hydro headroom for ten-minute (reserveTenHours). Each megawatt and megawatt-hour counts once.
+  // Then quick-start and online hydro headroom and the online headroom of running gas and diesel turbines (onlineMW) cover any
+  // product (user, message 90); coal takes the balance. left: the storage power still free for energy after its reserve share,
+  // energy-limited over asHoldHours as in the legacy rule.
+  const _astrCover = (h, bP, bE, pP, pE, onlineMW) => {
+    const coal = _astrCoalNeed(h, bP, bE, pP, pE, onlineMW);
+    return { coal, left: _astrCoalNeed.left };
+  };
+  const _astrCoalNeed = (h, bP, bE, pP, pE, onlineMW) => {
+    const q = _astrQ[_astrPeak(h) ? 1 : 0];
+    const take = (need, H) => { let got = 0;
+      const b = Math.max(0, Math.min(need - got, bP, bE / H)); bP -= b; bE -= b * H; got += b;
+      const s = Math.max(0, Math.min(need - got, pP, pE / H)); pP -= s; pE -= s * H; got += s;
+      return need - got; };
+    const inst = take(q.inst, 1 / 6), reg = take(q.reg + (_astrVreGrow ? _astrVreGrow(h) : 0), Math.max(0.1, p.reserveRegHours ?? FIXED.reserveRegHours));
+    const tenH = Math.max(0.1, p.reserveTenHours ?? FIXED.reserveTenHours);
+    let ten = q.ten;
+    const s = Math.max(0, Math.min(ten, pP, pE / tenH)); ten -= s; pP -= s; pE -= s * tenH;
+    const b = Math.max(0, Math.min(ten, bP, bE / tenH)); ten -= b; bP -= b; bE -= b * tenH;
+    _astrCoalNeed.left = Math.max(0, Math.min(bP, bE / _asHoldH)) + Math.max(0, Math.min(pP, pE / _asHoldH));
+    let rest = inst + reg + Math.max(0, ten);
+    rest -= Math.min(rest, Math.max(0, (p.hydroMW || 0) * (1 - (p.hydroCF ?? FIXED.hydroCF))));
+    return Math.max(0, rest - Math.max(0, onlineMW || 0));
+  };
+  const _gasMSF = p.reserveGasMinStableFrac ?? FIXED.reserveGasMinStableFrac;
+  // Storage power free for reserve after dispatch this hour: unused output plus the charging load that could be dropped (message 97).
+  const _stFreeB = h => Math.max(0, battPower - (stack.batt[h] || 0) + (chargeBattMW[h] || 0));
+  const _stFreeP = h => Math.max(0, psPowerTot - (stack.ps[h] || 0) + (chargePsMW[h] || 0));
+  let _restoreDrMWh = 0, _restoreDslMWh = 0;
+  // Largest c (at most cMax) that coal can take over from a running turbine group of output gen and capacity cap while the reserve
+  // still holds: coal headroom W less c, plus the group's online headroom at gen - c, plus otherMW, covers need.
+  const _astrSwap = (gen, cap, W, need, otherMW, cMax) => {
+    const f = c => (W - c) + astrOnlineHeadroom(gen - c, cap, _gasMSF) + otherMW;
+    let hi = Math.max(0, Math.min(cMax, W, gen));
+    if (!(hi > 1e-6) || f(0) < need - 1e-6) return 0;
+    if (f(hi) >= need - 1e-6) return hi;
+    let lo = 0; for (let i = 0; i < 40; i++){ const mid = (lo + hi) / 2; if (f(mid) >= need - 1e-6) lo = mid; else hi = mid; }
+    return lo;
+  };
+  // STORAGE-AWARE COMMITMENT (TODO 14dq, engine fix (B), 14 Oct 2026). The commitment pre-pass sized coal to each block's
+  // peak net load as if no store existed, so on c4's 2040 build it kept 12.7 GW committed overnight (6.6 GW minimum) where
+  // a 24-hour rolling unit-commitment optimum kept 4-10 GW and let lithium carry the night; the minimum then crowded the
+  // stores out and the midday surplus was spilled. With the look-ahead on, each run of hours with net load above zero is
+  // shaved by what the short stores and pumped storage can give from the surplus run before it (its energy, at most their
+  // power, times their round-trip efficiency and UC_STORE_MARGIN), highest hours first, and coal is committed for the
+  // rest. A run with no surplus before it is not shaved, so a system without surplus (2026) commits as before.
+  const UC_STORE_MARGIN = 0.9;
+  let _ucNet = netLoadPre;
+  if (Math.round(p.storageLookaheadH) > 0 && !p._forceStorageSchedule && !p._forcedDischargeMW && !p._laNoUC){
+    const _sh = battTiers.filter(t => t.mwh < 100 * t.mw - 1e-6);
+    const _P = _sh.reduce((a, t) => a + t.mw, 0) + psPowerTot, _E = _sh.reduce((a, t) => a + t.mwh, 0) + psEnergyTot;
+    if (_P > 0 && _E > 0){
+      const _eta = (_sh.reduce((a, t) => a + t.eff * t.mwh, 0) + psEffTot * psEnergyTot) / _E;
+      _ucNet = Float64Array.from(netLoadPre);
+      let k = 0;
+      while (k < HOURS){
+        let sur = 0; while (k < HOURS && netLoadPre[k] < 0){ sur += Math.min(_P, -netLoadPre[k]); k++; }
+        const a = k; while (k < HOURS && netLoadPre[k] >= 0) k++; const b = k;
+        const B = Math.min(_E, _eta * sur) * UC_STORE_MARGIN;
+        if (!(B > 0) || b <= a) continue;
+        const cut = (L) => { let t = 0; for (let j = a; j < b; j++) t += Math.min(_P, Math.max(0, netLoadPre[j] - L)); return t; };
+        let lo = 0, hi = 0; for (let j = a; j < b; j++) hi = Math.max(hi, netLoadPre[j]);
+        if (cut(0) <= B) hi = 0; else for (let i = 0; i < 30; i++){ const m = (lo + hi) / 2; if (cut(m) > B) lo = m; else hi = m; }
+        for (let j = a; j < b; j++) _ucNet[j] = netLoadPre[j] - Math.min(_P, Math.max(0, netLoadPre[j] - hi));
+      }
+    }
+  }
+  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(_ucNet, Math.max(0, coalInstalled), eafFraction, RESERVE);
   // Lumpy unit availability. Skipped when an explicit Monte Carlo path is
   // supplied (that path is already the outage draw for the run) and when the
   // toggle is off, which restores the smooth-derate behaviour exactly.
   const unitOutage = (!outPath && (p.outageUnitLevel ?? 1))
     ? genUnitOutagePath(eafFraction, p.outageForcedSharePct,
                         p.outageMttrH, p.outageSeed, p.outagePlannedSeason,
-                        p.outageCmPerStationYr, p.outageCmMttrH, p.outageCmUnitShare)
+                        p.outageCmPerStationYr, p.outageCmMttrH, p.outageCmUnitShare,
+                        p.outageStandingUnits ? ucUnitsStanding(Math.max(0, coalInstalled)).units : undefined)
     : null;
   // MONTHLY MEAN AVAILABILITY (outageMonthlyAvail, 12 Oct 2026): rescale the draw so each month's mean availability is
   // eafFraction x that month's factor, hour by hour within the month, capped at 1. Off (null) changes nothing.
@@ -7535,8 +7750,11 @@ function simulate(u, prof, outPath, _soc0){
   let coalFuelMWh=0;   // coal output x part-load multiplier = fuel-equivalent MWh
   // Interruptible load actually called each hour, and its contracted size.
   const drMW=new Float64Array(HOURS);
-  const DR_INT  = Math.max(0, p.drInterruptMW ?? 1200);
+  const DR_INT  = Math.max(0, p.drInterruptMW ?? FIXED.drInterruptMW);
   const DR_COST = Math.max(0, p.drInterruptCostR ?? 4000);
+  // Annual energy cap, off by default (message 101): what is left of drInterruptAnnualMWh this year; 0 means no cap.
+  const DR_CAP = Math.max(0, p.drInterruptAnnualMWh ?? FIXED.drInterruptAnnualMWh);
+  const _drLeft = () => DR_CAP > 0 ? Math.max(0, DR_CAP - E.dr) : Infinity;
   let drCostR = 0;   // total compensation paid to interruptible customers
   // Minimum stable level floor for hour h, used when clamping the reserve
   // withholding so coal is never pushed below what committed units can do.
@@ -7609,6 +7827,114 @@ function simulate(u, prof, outPath, _soc0){
     }
     return a;
   })();
+
+  // 24-HOUR LOOK-AHEAD FOR SHORT-DURATION STORAGE (TODO 14do, engine fix (a), 13 Oct 2026). Lithium and vanadium used to
+  // discharge ahead of coal only in each day's top-quartile net-load hours and were charged from coal every night to a
+  // daily floor of 60% of the battery fleet's energy, so on a solar-heavy system they were near full when the midday
+  // surplus arrived and spilled it. Checked against a 24-hour rolling PyPSA unit-commitment optimum on c4's 2040 build
+  // (validation/single_node): the engine cost 30-48% more a week, cycled lithium about 2 times a week against 5.5-6, and
+  // shed 37 GWh in the stress week where the optimum shed none. Now each hour the short stores look _LA_H hours ahead:
+  // _laReq(h, sEnd) is the energy they must hold at the end of hour h to cover what those hours need beyond the coal
+  // forecast (_fcCoal), net of the surplus they can take in below the committed coal floor, and still end the window at
+  // sEnd. Each hour they discharge ahead of coal whatever they hold above _laReq(h, now): that energy the window's
+  // surplus will put back, so the window ends no emptier than it began (the rolling optimum's rule, which came within
+  // 0-1% of a full week's foresight). They charge from coal only up to _laReq(h, 0), the need surplus will not cover.
+  // Long stores (100 hours or more) keep their own week-long rule, and pumped storage its daily one. A forecast with
+  // perfect sight of load, weather and outages for the window, as the other look-aheads here; storageLookaheadH 0
+  // restores the earlier rule exactly, and so does a forced storage schedule.
+  // 48 HOURS FROM ENGINE FIX (B), 14 Oct 2026. The rolling optimum it is checked against solves 48 hours and keeps 24, so it
+  // sees 24 to 48 hours ahead. At 24 hours the engine shed 1.0-6.8 GWh in two weeks of c4's 2040 build without the top-up
+  // where the optimum shed none: it spent pumped storage and lithium in the run-up to a peak 30-40 hours away, where the
+  // optimum burned diesel early and kept them. At 48 the same weeks shed none; the mean simulate() time rose 15%.
+  const _LA_H = Math.max(0, Math.round(p.storageLookaheadH));
+  const _laOn = _LA_H > 0 && !_forceTwoSided && !_forcedDis;
+  const _shortTiers = battTiers.filter(t => t.mwh < 100 * t.mw - 1e-6), _longTiers = battTiers.filter(t => t.mwh >= 100 * t.mw - 1e-6);
+  const _laP = _shortTiers.reduce((a, t) => a + t.mw, 0), _laE = _shortTiers.reduce((a, t) => a + t.mwh, 0);
+  const _laEff = _laE > 0 ? _shortTiers.reduce((a, t) => a + t.eff * t.mwh, 0) / _laE : 1;
+  // c0, ramp: coal now and its ramp limit, so needs count what coal cannot reach in time as well as what it cannot reach at all.
+  // gas: MW of gas counted beside coal (0: needs beyond coal, which storage serves ahead of gas; ccgtCap: needs beyond gas too).
+  const _laReq = (h, sEnd, c0, ramp, gas = 0) => {
+    let r = sEnd;
+    for (let k = Math.min(HOURS - 1, h + _LA_H); k > h; k--){
+      const floorK = Math.min(ucAvail[k] > 0 ? ucAvail[k] : 0, ucMinStable[k] > 0 ? ucMinStable[k] : 0);
+      const need = Math.max(0, netLoadPre[k] - Math.min(_fcCoal(h, k), c0 + ramp * (k - h)) - gas), sur = Math.max(0, floorK - netLoadPre[k]);
+      r = Math.min(_laE, Math.max(0, r + Math.min(need, _laP) - _laEff * Math.min(sur, _laP)));
+    }
+    return r;
+  };
+  const _laSoc = () => _shortTiers.reduce((a, t) => a + t.soc, 0);
+  // Energy the surplus in the next _LA_H hours will pump into pumped storage (it takes surplus first; engine fix (B), 14 Oct 2026).
+  const _laPsRefill = (h) => {
+    let e = 0;
+    for (let k = h + 1; k <= Math.min(HOURS - 1, h + _LA_H); k++){
+      const floorK = Math.min(ucAvail[k] > 0 ? ucAvail[k] : 0, ucMinStable[k] > 0 ? ucMinStable[k] : 0);
+      e += Math.min(psPowerTot, Math.max(0, floorK - netLoadPre[k])) * psEffTot;
+    }
+    return Math.min(psEnergyTot, e);
+  };
+  // PUMPED STORAGE IN THE LOOK-AHEAD (engine fix (B), 14 Oct 2026). Pumped storage used to give first in every expensive
+  // hour and next after coal in the others, with lithium held back, so it ran down each evening and its 2.7-4.1 GW of
+  // pumping could not refill it by the next stress: in c4's 2040 stress week and s_coalavail's 2030 week the 24-hour rolling
+  // optimum ran lithium daily and kept pumped storage back, and the engine burned 20-40 GWh more diesel. Now lithium and
+  // vanadium serve first and hold their own share (_laReq); pumped storage holds what the short stores and it together
+  // need for the window beyond coal and gas, less what the short stores hold (_laPsHold). p._laNoPsHold restores the old
+  // order (measurement only).
+  const _laJP = _laP + psPowerTot, _laJE = _laE + psEnergyTot;
+  const _laJEff = _laJE > 0 ? (_laEff * _laE + psEffTot * psEnergyTot) / _laJE : 1;
+  const _laPsOn = _laOn && psEnergyTot > 0 && !p._laNoPsHold;
+  const _laPsHold = (h, c0, ramp, gas) => {
+    let r = 0;
+    for (let k = Math.min(HOURS - 1, h + _LA_H); k > h; k--){
+      const floorK = Math.min(ucAvail[k] > 0 ? ucAvail[k] : 0, ucMinStable[k] > 0 ? ucMinStable[k] : 0);
+      const need = Math.max(0, netLoadPre[k] - Math.min(_fcCoal(h, k), c0 + ramp * (k - h)) - gas), sur = Math.max(0, floorK - netLoadPre[k]);
+      r = Math.min(_laJE, Math.max(0, r + Math.min(need, _laJP) - _laJEff * Math.min(sur, _laJP)));
+    }
+    return Math.max(0, r - _laSoc());
+  };
+  // The ramp-aware coal floor below held coal up to the next 12 hours' net load less what coal can ramp, as if no store
+  // could cover the gap: in c4's 2040 May week it kept coal at 10-13 GW overnight (minimum stable 6.6 GW) and 5.6-8.1 GW
+  // at midday into a 24 GW surplus. With the look-ahead on, the floor is the lowest coal level from which coal ramping
+  // up, plus the short stores and pumped storage (their power, and the energy they hold now plus what the window's
+  // surplus puts in), still cover those 12 hours; never above the old floor or below minimum stable.
+  const _laRampFloor = (h, lo, hi, ramp, sStore, pStore) => {
+    if (!(hi > lo)) return hi;
+    const ok = (F) => {
+      let b = sStore;
+      for (let k = 1; k <= 12; k++){
+        const kk = Math.min(HOURS - 1, h + k);
+        const gap = netLoadPre[kk] - Math.min(_fcCoal(h, kk), F + ramp * k);
+        if (gap > 0){ if (gap > pStore) return false; b -= gap; if (b < 0) return false; }
+        else { const fl = Math.min(ucAvail[kk] > 0 ? ucAvail[kk] : 0, ucMinStable[kk] > 0 ? ucMinStable[kk] : 0);
+               b += _laEff * Math.min(Math.max(0, fl - netLoadPre[kk]), _laP); }
+      }
+      return true;
+    };
+    if (!ok(hi)) return hi;
+    let a = lo, z = hi;
+    if (ok(a)) return a;
+    for (let i = 0; i < 12; i++){ const m = (a + z) / 2; if (ok(m)) z = m; else a = m; }
+    return z;
+  };
+  const _laDischarge = (mw) => {   // short tiers only, best round trip first; counts toward the hour's power
+    let got = 0;
+    for (const t of _shortTiers){
+      const give = Math.min(mw - got, t.mw - _hourGave[t.k], Math.max(0, t.soc));
+      if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give; _hourGave[t.k] += give;
+        if (_disHour >= 0 && tierSeries[t.k]) tierSeries[t.k][_disHour] += give; }
+      if (got >= mw - 1e-9) break;
+    }
+    return got;
+  };
+  const _chargeGroup = (mw, hr, costNow, tiers) => {   // tierChargeAt over a subset of the tiers
+    let got = 0;
+    for (const t of tiers){
+      if (!chargeWorthIt(t, hr, costNow || 0)) continue;
+      const take = Math.min(mw - got, t.mw, t.mwh - t.soc);
+      if (take > 0){ t.soc += take * t.eff; tierChg[t.k] += take; got += take; }
+      if (got >= mw - 1e-9) break;
+    }
+    return got;
+  };
 
   // ── PEAK RESERVATION FOR PUMPED STORAGE ───────────────────────────────────
   // Added 31 Aug 2026. The discharge was purely greedy: it served whatever deficit was
@@ -7687,6 +8013,7 @@ function simulate(u, prof, outPath, _soc0){
       : ucCommitted;
     coalAvailFrac[h] = coalInstRem > 0 ? cAvailRaw / coalInstRem : 0;
     coalAvailableArr[h] = (availFrac != null) ? coalInstRem * availFrac : coalAvail;
+    coalAvailOnlyFrac[h] = coalInstRem > 0 ? Math.max(coalAvailFrac[h], coalAvailableArr[h] / coalInstRem) : 0;
     if (_dslTankOn) _dslStock = Math.min(_dslTankCap, _dslStock + Math.max(0, p.dslRefillMW));
     for (const t of battTiers) if (tierSoc[t.k]) tierSoc[t.k][h] = t.soc;
     // operating RESERVE: capacity that is committed but must NOT be dispatched,
@@ -7697,14 +8024,16 @@ function simulate(u, prof, outPath, _soc0){
     // price above coal SRMC - without this the system prices flat all year.
     const reserveNeed = reserveMWAt(h);
     const fastStart   = dieselAvailMW(p) + (p.ccgtMW||0) + ocgtLngMW + battPower + psPowerTot;
-    const reserveOnCoal = Math.max(0, reserveNeed - fastStart);
+    // ASTR: the reserve is held once, in dispatch (_allow below), on every eligible provider; withholding coal here as well counted
+    // coal's share twice and capped storage at coal's headroom (stalled-year shed 0 to 83 GWh, found 14 Oct 2026, message 92).
+    const reserveOnCoal = !RESERVE.on || _astr ? 0 : Math.max(0, reserveNeed - fastStart);
     reserveMWArr[h] = reserveNeed;
     const cAvail = Math.max(ucMSLraw(h), cAvailRaw - reserveOnCoal);
     // UC-derived minimum stable load replaces the fleet-average minStableMW.
     // Clamped to cAvail after the reserve withholding, so a committed fleet is
     // never asked to sit below its own minimum stable level.
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
-    const rawDemand=demandDR[h]*growth;   // same shaped series the UC saw
+    const rawDemand=demandDR[h]*growth + demBlock;   // same shaped series the UC saw
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
     // FIRM EXPORT VOLUME, booked 15 Sep 2026. expAt(h) had been added to the load line
@@ -7715,7 +8044,7 @@ function simulate(u, prof, outPath, _soc0){
     // surplus pool rate and pull firm volume out of the retail sales base.
     E.exportedFirm+=expAt(h);
     E.rooftop+=rooftopGen; loadS[h]=load;
-    let windGen=windCap*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
+    let windGen=windCap*windU[h] - capeCurtMW*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
         pvGen=pvCap*solarU[h], cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Own accumulator, deliberately - see the note at
     // the other declaration. The price engine reads curtailMW as an oversupply
@@ -7790,7 +8119,13 @@ function simulate(u, prof, outPath, _soc0){
     // few hours, given what it can physically ramp in that time.
 
     if(committedMW<prevCommittedMW-rampAllowedMW) committedMW=prevCommittedMW-rampAllowedMW;
-    if(committedMW>prevCommittedMW) startUpCostR+=(committedMW-prevCommittedMW)*p.coalStartUpCostRPerMW;
+    // COAL START-UPS CHARGED ONCE (TODO 14dl, 13 Oct 2026). This aggregate committedMW used to charge
+    // coalStartUpCostRPerMW (R224.52 per MW of commitment added) on top of the commitment pre-pass's own unit start
+    // costs (ucStartCost, UC_FLEET start cost x availability). Both priced the same starts from the same fleet data
+    // (R224.52 is UC_FLEET's R152.58 per installed MW over a 0.68 availability factor), and dispatch follows the
+    // pre-pass units (ucAvail, ucMSL), not this aggregate, whose minStableMW is unused. So only the pre-pass charges
+    // now; committedMW is kept as a diagnostic. The price model's start-up adder (coalStartUpCostRPerMW below) and
+    // the optimiser are unchanged.
     prevCommittedMW=committedMW;
     const minStableMW=committedMW*coalMinStableFrac(coalInstRem>0?committedMW/coalInstRem:0);
     // Ramp-aware floor. Raising committed capacity alone does not help, because the must-run
@@ -7809,6 +8144,8 @@ function simulate(u, prof, outPath, _soc0){
       if(need>rampAwareFloor) rampAwareFloor=need;
     }
     rampAwareFloor=Math.max(0,Math.min(cAvail,rampAwareFloor));
+    if (_laOn && (_laP > 0 || psPowerTot > 0))
+      rampAwareFloor = _laRampFloor(h, Math.min(rampAwareFloor, ucMSLraw(h)), rampAwareFloor, rampAllowedMW, _laSoc() + Math.max(0, psSoc), _laP + psPowerTot);
     // Synchronous generation floor. Synchronous plant = coal + nuclear + hydro + imports.
     // Nuclear, hydro and imports are already must-take at fixed output, so we only need to
     // lift coal if the sum still falls short of the required minimum.
@@ -7828,6 +8165,7 @@ function simulate(u, prof, outPath, _soc0){
       // so it is unmet; counted here so ccgtFloorUnmetMWh is the whole shortfall (6 Oct 2026: it
       // omitted these hours and understated IRP path 2035's shortfall by 9.1 TWh at build 06f).
       _ccgtFloorUnmet += _mustAt(h);
+      _mdUnmet += _mdAt(h);   // Avon and Dedisa: as the gas floor, not run into a surplus; recorded
       // Ramp-down floor: inflexible coal can't instantly drop to zero just because there's a
       // renewable surplus this hour - it's forced to keep producing at least this much, which
       // adds to what needs absorbing (storage charging first, then wasted/curtailed).
@@ -7842,6 +8180,17 @@ function simulate(u, prof, outPath, _soc0){
       // export only what storage cannot absorb.
       const exp1=Math.min(surplus, exportCap);
       if(exp1>0){ exportMW[h]+=exp1; E.exported+=exp1; surplus-=exp1; }
+      // Look-ahead (engine fix (B), 14 Oct 2026): with the whole surplus taken, coal tops the short stores up towards what the
+      // window will need beyond coal, within its ramp and what is committed, as the rolling optimum does at midday.
+      if (_laOn && _laP > 0 && surplus <= 1e-6 && !p._laNoSurCoal){
+        const _tgt = _laReq(h, 0, coalGen, rampAllowedMW), _sNow = _laSoc();
+        let w = Math.min(Math.max(0, _laP - btChg), _tgt - _sNow, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen);
+        if (w > 1e-6){
+          const _cc = coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC + p.vomCoal;
+          w = _chargeGroup(w, h, _cc, _shortTiers);
+          if (w > 0){ coalGen += w; addCharge(h, 'batt', w, _cc); syncBattSoc(); chargeMW[h] += w; }
+        }
+      }
       // clamp AT ZERO. This branch is guarded by residual < 0, so surplus starts
       // strictly positive and every subtraction above is a Math.min against it. The
       // only way it can go negative is tierCharge() returning marginally more than
@@ -7950,7 +8299,7 @@ function simulate(u, prof, outPath, _soc0){
       // holds, so storage is kept for the hours thermal cannot cover. Added 2 Oct 2026. Served
       // before the reserve cap: placed after it, gas no longer covered the reserve-shed balance and
       // IRP's 2030 targets, grid delayed's worst year rose from 3.9 to 7.8 GWh.
-      const _gasFirst = (p.chargeFromThermal ?? FIXED.chargeFromThermal ?? 1) && ccgtCap > 0 && !_forceTwoSided
+      const _gasFirst = (p.chargeFromThermal ?? FIXED.chargeFromThermal ?? 1) && ccgtCap > 0 && !_forceTwoSided && !_laOn
         && anticipatedShortfallG[h] > Math.max(0, battSoc) + Math.max(0, psSoc);
       let _gasEarly = 0;
       if (_gasFirst){
@@ -7964,12 +8313,35 @@ function simulate(u, prof, outPath, _soc0){
         const _spin = Math.max(0, coalCeiling - coalGen)
           + Math.min(psPowerTot, Math.max(0, psSoc) / _asHoldH)
           + Math.min(battPower, Math.max(0, battSoc) / _asHoldH);
-        const _allow = Math.max(0, _spin - reserveMWAt(h));
+        // ASTR: coal and storage may serve the residual up to coal headroom less coal's share of the reserve, plus the storage power
+        // left after its own share; gas already running this hour (must-run and early gas) holds its online headroom.
+        const _cv = _astr ? _astrCover(h, battPower, Math.max(0, battSoc), psPowerTot, Math.max(0, psSoc),
+          astrOnlineHeadroom(_mustAt(h) + _gasEarly, ccgtCap, _gasMSF) + astrOnlineHeadroom(_mdAt(h), dieselAvailMW(p), _gasMSF)) : null;
+        // Joint (message 97): the most coal and storage may serve this hour while what is left of them still covers the reserve;
+        // which store serves, and so which holds the reserve, is decided by dispatch.
+        const _allow = _astr ? Math.max(0, Math.max(0, coalCeiling - coalGen) - _cv.coal) + _cv.left
+          : Math.max(0, _spin - reserveMWAt(h));
         if (residual > _allow){ _resShed = residual - _allow; residual = _allow; }
       }
+      // Look-ahead (14do): the short stores give, ahead of coal, what the window's surplus will put back. After coal they
+      // give what they hold above the later hours' need beyond coal and gas (_laHold), so gas serves now what it can.
+      const _laHold = () => Math.max(0, _laSoc() - _laReq(h, 0, coalGen, rampAllowedMW, ccgtCap));
+      _hourGave.li = _hourGave.vrfb = _hourGave.fe = _hourGave.ps = 0;
+      let _laDis = 0;
+      // Pumped storage gives up to cap MW-hours this hour, within its power left (engine fix (B)).
+      const _psGive = (cap) => { const x = Math.min(residual, psPowerTot - _hourGave.ps, Math.max(0, cap));
+        if (x > 0){ psSoc -= x; residual -= x; E.ps += x; stack.ps[h] += x; _hourGave.ps += x; } };
+      // With pumped storage in the look-ahead (_laPsOn) it opens the single order below; otherwise it is called first in an
+      // ordinary hour, and in an expensive hour after pumped storage.
+      const _laAhead = () => {
+        if (!(_laOn && _laP > 0 && residual > 0)) return;
+        const s0 = _laSoc(), room = s0 - _laReq(h, s0, coalGen, rampAllowedMW);
+        if (room > 1e-6){ _disHour = h; _laDis = _laDischarge(Math.min(residual, room)); _disHour = -1; syncBattSoc(); residual -= _laDis; E.batt += _laDis;
+          btLim = Math.min(battPower - _laDis, Math.max(0, battSoc)); }
+      };
       // psPeakFloor can be negative; the old ancillary floor clamped it at zero.
-      const psLim=Math.min(psPowerTot, Math.max(0, psSoc - Math.max(0, psPeakFloor[h]))),
-            btLim=Math.min(battPower, Math.max(0, battSoc));
+      const psLim=Math.min(psPowerTot, Math.max(0, psSoc - Math.max(0, psPeakFloor[h])));
+      let btLim=Math.min(battPower, Math.max(0, battSoc));
       // ADEQUACY HOLD, 22 Sep 2026. Selling ahead of coal empties the batteries while coal
       // still has room; when a shortfall follows within LDES_LOOKAHEAD_H, the store is empty.
       // Deep decarbonisation 2035 shed 16.5 GWh in 2016 and 8.3 in 2020 that perfect-foresight
@@ -7981,22 +8353,53 @@ function simulate(u, prof, outPath, _soc0){
         if (!_fcDef) _buildForecast();
         return _liShortAhead(li, h, 0);
       })();
-      if(isExpensiveHour && !_holdForAdequacy && !_gasFirst){
+      if (_laPsOn){
+        // One order for every hour (engine fix (B)), all ahead of coal first: pumped storage gives what the window's surplus
+        // would otherwise spill (it pumps first, so its refill is the sure one); the short stores give what the surplus will
+        // put back; in the day's expensive hours pumped storage gives what it holds above the window's need beyond coal, so
+        // it still meets the evening peak each day, as Eskom's schemes do, and is kept back only when a shortfall is coming.
+        // Then coal, the short stores above their hold, and pumped storage above its own. Without the first and third
+        // steps pumped storage sat idle (2026 default 0.3 cycles a year on 60 GWh; high VRE with storage 0.0 on 130 GWh).
+        let psDis1 = Math.min(residual, psPowerTot, Math.max(0, psSoc), Math.max(0, _laPsRefill(h) + psSoc - psEnergyTot));
+        psSoc -= psDis1; residual -= psDis1; E.ps += psDis1;
+        _laAhead();
+        if (isExpensiveHour && !p._laNoPsPeak && residual > 1e-6){
+          const x = Math.min(residual, psPowerTot - psDis1, Math.max(0, psSoc - _laPsHold(h, coalGen, rampAllowedMW, 0)));
+          if (x > 0){ psSoc -= x; residual -= x; E.ps += x; psDis1 += x; }
+        }
+        const topUp = Math.min(residual, Math.max(0, coalCeiling - coalGen)); coalGen += topUp; residual -= topUp;
+        _disHour = h; const btDis = tierDischarge(Math.min(residual, btLim), _laHold()); _disHour = -1; syncBattSoc(); residual -= btDis; E.batt += btDis; stack.batt[h] = _laDis + btDis;
+        const psDis2 = Math.min(residual, psPowerTot - psDis1, Math.max(0, psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap))); psSoc -= psDis2; residual -= psDis2; E.ps += psDis2;
+        _hourGave.ps = psDis1 + psDis2; stack.ps[h] = psDis1 + psDis2;
+        if (btDis > 1 && btDis < btLim - 1) storageMarginal[h] = 'batt';
+        else if (psDis2 > 1 && psDis2 < psPowerTot - psDis1 - 1) storageMarginal[h] = 'ps';
+        else if (topUp <= 1 && _laDis > 1) storageMarginal[h] = 'batt';
+        else if (topUp <= 1 && psDis1 > 1) storageMarginal[h] = 'ps';
+      } else if(isExpensiveHour && !_holdForAdequacy && !_gasFirst){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); _disHour = h; const btDis=tierDischarge(_forceTwoSided ? _want : _want); _disHour = -1; if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        _laAhead();
+        const _want = _laOn ? 0 : _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); _disHour = h; const btDis=tierDischarge(_forceTwoSided ? _want : _want); _disHour = -1; if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=_laDis+btDis;
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
+        // look-ahead on: the batteries cover what coal could not, as in the other branch
+        if (_laOn){ _disHour = h; const _btAfter = tierDischarge(Math.min(residual, btLim), _laHold()); _disHour = -1; syncBattSoc(); residual-=_btAfter; E.batt+=_btAfter; stack.batt[h]+=_btAfter;
+          if(_btAfter>1&&_btAfter<btLim-1) storageMarginal[h]='batt';
+          else if(topUp<=1&&psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
+          else if(topUp<=1&&_laDis>1) storageMarginal[h]='batt';
+        }
         // storage discharged ahead of coal here, so coal is above it in this hour's order
-        if(topUp<=1){
+        else if(topUp<=1){
           if(btDis>1&&btDis<btLim-1) storageMarginal[h]='batt';
           else if(psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
         }
       } else {
+        _laAhead();
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); _disHour = h; const btDis=tierDischarge(_forceTwoSided ? _want : _want); _disHour = -1; if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); _disHour = h; const btDis=tierDischarge(_forceTwoSided ? _want : _want, _laOn ? _laHold() : Infinity); _disHour = -1; if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=_laDis+btDis;
         if(btDis>1&&btDis<btLim-1) storageMarginal[h]='batt';
+        else if(_laDis>1&&topUp<=1&&psDis<=1) storageMarginal[h]='batt';
         else if(psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
       }
       // Bid = cost basis of the stored energy (already net of round-trip losses) plus
@@ -8038,13 +8441,55 @@ function simulate(u, prof, outPath, _soc0){
         residual-=take;
         _ccgtFloorUnmet+=excess;
       }
-      const g=Math.min(residual,Math.max(0,ccgtCap-ccgtMustRun-_gasEarly))+_gasEarly; residual-=g-_gasEarly; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
+      // Avon and Dedisa must-run (message 88): serve the residual, then back coal to its floor; what still cannot be absorbed is
+      // not generated and is recorded, as in a surplus hour. Never pumped into storage: that charged stores at diesel's cost and
+      // raised their bids (message 93). Fuel and CO2 at the diesel fleet's rates.
+      const _md = _mdAt(h); let _mdGenH = 0;
+      if (_md > 0){
+        const take = Math.min(_md, Math.max(0, residual)); let excess = _md - take;
+        if (excess > 0){ const back = Math.min(excess, Math.max(0, coalGen - coalFloorBase)); coalGen -= back; excess -= back; }
+        _mdGenH = _md - excess; residual -= take; _mdUnmet += excess; _mdMWh += _mdGenH; _mdArr[h] = _mdGenH;
+        E.diesel += _mdGenH; stack.diesel[h] = (stack.diesel[h] || 0) + _mdGenH;
+        fuelCost += _mdGenH * (p.costDiesel + p.vomDiesel); carbonCost += _mdGenH * cD; _dslUsed[_monthOfHour[h % 8760]] += _mdGenH;
+      }
+      let g=Math.min(residual,Math.max(0,ccgtCap-ccgtMustRun-_gasEarly))+_gasEarly; residual-=g-_gasEarly;
+      // ASTR (message 90): running gas holds online headroom, so coal held for reserve takes over what the gas headroom then covers.
+      if (_astr && RESERVE.on && g > 1e-6){
+        const _need = _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc), _stFreeP(h), Math.max(0, psSoc), 0);
+        const _c = _astrSwap(ccgtMustRun + g, ccgtCap, Math.max(0, coalCeiling - coalGen), _need, 0, g);
+        if (_c > 0){ g -= _c; coalGen += _c; }
+      }
+      E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
+      // Before diesel (engine fix (B)): pumped storage, then the short stores, give what they hold above the later hours'
+      // need beyond coal, gas and diesel. Pumped storage goes first in the scarce hours: it holds energy for many hours at
+      // little power, and spending its power first keeps the short stores' energy for hours that need more power than it
+      // has (s_coalavail 2030, weather 2017: 0.47 GWh shed in the last hour of the week with 17.5 GWh still pumped).
+      // p._laNoPsFirst puts it after them (measurement only).
+      if (_laPsOn && !p._laNoPsFirst && residual > 1e-6) _psGive(psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p)));
+      // Look-ahead (14do): after gas, the short stores give what they hold above the later hours' need beyond coal, gas and
+      // diesel (energy held against later shedding stays), ahead of diesel; the rest only against this hour's shed, below.
+      if (_laOn && residual > 1e-6){
+        const _lim = Math.min(battPower - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
+        if (_lim > 0){ _disHour = h; const _b3 = tierDischarge(Math.min(residual, _lim), Math.max(0, _laSoc() - _laReq(h, 0, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p)))); _disHour = -1; syncBattSoc(); residual -= _b3; E.batt += _b3; stack.batt[h] += _b3; }
+      }
+      if (_laPsOn && p._laNoPsFirst && residual > 1e-6) _psGive(psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p)));
       const _mo=_monthOfHour[h % 8760];
       // Independent peakers first, then Eskom's own from the tank, so the tank is conserved.
       const _dslAll = dieselAvailMW(p), _dslEsk = Math.min(_dslAll, Math.max(0, p.dslTankMW));
-      const _dslLim = _dslTankOn ? (_dslAll - _dslEsk) + Math.min(_dslEsk, _dslStock) : _dslAll;
-      const dsl=Math.max(0, Math.min(residual,_dslLim, _dslMonthCap - _dslUsed[_mo]));
-      if (_dslTankOn) _dslStock -= Math.max(0, dsl - (_dslAll - _dslEsk)); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
+      const _dslLim = Math.max(0, (_dslTankOn ? (_dslAll - _dslEsk) + Math.min(_dslEsk, _dslStock) : _dslAll) - _mdGenH);   // less Avon and Dedisa's must-run
+      // Interruptible load is called after open-cycle plant and before shedding (user, messages 100 and 101: it is kept for the hours
+      // customers would otherwise be cut; the ASTR sets no order, p.10). p._drFirst restores the order of
+      // message 86, interruptible before diesel (measurement only).
+      if (_astr && p._drFirst && residual > 1 && DR_INT > 0){ const _drE = Math.min(residual, DR_INT, _drLeft()); drMW[h] = _drE; E.dr += _drE; residual -= _drE; drCostR += _drE * DR_COST; }
+      let dsl=Math.max(0, Math.min(residual,_dslLim, _dslMonthCap - _dslUsed[_mo]));
+      // ASTR (message 90): a running diesel turbine holds online headroom too, so coal held for reserve takes over what it covers.
+      if (_astr && RESERVE.on && dsl > 1e-6){
+        const _need = _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc), _stFreeP(h), Math.max(0, psSoc), 0);
+        const _gH = astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF);
+        const _c = _astrSwap(_mdGenH + dsl, _dslAll, Math.max(0, coalCeiling - coalGen), _need, _gH, dsl);
+        if (_c > 0){ dsl -= _c; coalGen += _c; residual -= _c; }
+      }
+      if (_dslTankOn) _dslStock -= Math.max(0, dsl - Math.max(0, _dslAll - _dslEsk - _mdGenH)); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=(stack.diesel[h]||0)+dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
       // stack.coal is set from coalGenTotal in the shared block below, after the off-peak charging
       // bonus, so it reflects every MWh coal actually generated. That is correct now the demand
       // line includes storage charging: coal burned to charge storage is real generation meeting
@@ -8097,21 +8542,44 @@ function simulate(u, prof, outPath, _soc0){
         // stopping - 987 GWh idle while 116 TWh was curtailed.
         const battFleetHours = battPower > 0 ? battEnergy / battPower : (p.battHours ?? 4);
         const battDailyFloor= Math.min(battEnergy*0.60, battPower*battFleetHours*0.75);
-        const psTargetCeiling=Math.min(psEnergyTot*0.85, _offPeak ? Math.max(anticipatedShortfall[h], psDailyFloor) : anticipatedShortfall[h]);
+        const psTargetCeiling=Math.max(0, Math.min(psEnergyTot*0.85, _offPeak ? Math.max(anticipatedShortfall[h], psDailyFloor) : anticipatedShortfall[h])
+          - (_laOn && !p._laNoPs ? _laPsRefill(h) : 0));   // look-ahead (B): less what the coming surplus will pump in
         const battTargetCeiling=Math.min(battEnergy*0.8, _offPeak ? Math.max(anticipatedShortfall[h], battDailyFloor) : anticipatedShortfall[h]);
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
-        if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
+        if(!_laOn){
+          if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
+        } else {
+          // Look-ahead (14do): the short stores take coal only for what the window needs beyond coal and its own surplus;
+          // the long stores only against the forecast shortfall over their horizon, with no daily floor.
+          const _sNow = _laSoc(), _sTgt = _laReq(h, 0, coalGen, rampAllowedMW);
+          if(head>0&&_sNow<_sTgt-1e-6){let w=Math.min(_laP*0.6,_sTgt-_sNow,head); w=_chargeGroup(w,h,chgC,_shortTiers); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w; head-=w;}
+          if(_longTiers.length){
+            const _lE=_longTiers.reduce((a,t)=>a+t.mwh,0), _lP=_longTiers.reduce((a,t)=>a+t.mw,0), _lS=_longTiers.reduce((a,t)=>a+t.soc,0);
+            const _lTgt=Math.min(_lE*0.8, anticipatedShortfall[h]);
+            if(head>0&&_lS<_lTgt){let w=Math.min(_lP*0.6,_lTgt-_lS,head); w=_chargeGroup(w,h,chgC,_longTiers); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w; head-=w;}
+          }
+        }
         // Gas headroom charges storage too when the forecast shortfall exceeds coal and gas
         // together, to that shortfall only. chargeFromThermal 0 turns this off with the rest.
         // Added 2 Oct 2026: the adequacy loop's stalled week left 222 GWh of gas idle before
         // its first shed hour.
         if(_stressAhead && anticipatedShortfallG[h] > 0){
           let gh=ccgtCap-ccgtMustRun-g; const gC=p.costCcgt+p.vomCcgt+cG;
-          const psG=Math.min(psEnergyTot*0.85, anticipatedShortfallG[h]);
+          const psG=(_laOn && !p._laNoPs) ? Math.min(psEnergyTot*0.85, Math.max(0, _laReq(h, 0, coalGen, rampAllowedMW, ccgtCap) - _laSoc()))
+                                          : Math.min(psEnergyTot*0.85, anticipatedShortfallG[h]);   // look-ahead (B): gas only for need beyond gas
           const btG=Math.min(battEnergy*0.8, anticipatedShortfallG[h]);
           if(gh>0&&psSoc<psG){const w=Math.min(psPowerTot*0.8,psG-psSoc,gh); if(w>0){addCharge(h,'ps',w,gC); psSoc+=w*psEffTot; gh-=w; chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
-          if(gh>0&&battSoc<btG){let w=Math.min(battPower*0.6,btG-battSoc,gh); w=tierChargeAt(w,h,gC); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
+          if(!_laOn){
+            if(gh>0&&battSoc<btG){let w=Math.min(battPower*0.6,btG-battSoc,gh); w=tierChargeAt(w,h,gC); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
+          } else {
+            const _gTgtS=_laReq(h, 0, coalGen, rampAllowedMW, ccgtCap), _gS=_laSoc();
+            const _gGroups=[[_shortTiers, _laP, _gS, _gTgtS]];
+            if(_longTiers.length){ const _lE=_longTiers.reduce((a,t)=>a+t.mwh,0); _gGroups.push([_longTiers, _longTiers.reduce((a,t)=>a+t.mw,0), _longTiers.reduce((a,t)=>a+t.soc,0), Math.min(_lE*0.8, anticipatedShortfallG[h])]); }
+            for(const [tiers, pw, soc, tgt] of _gGroups){
+              if(gh>0&&soc<tgt-1e-6){let w=Math.min(pw*0.6,tgt-soc,gh); w=_chargeGroup(w,h,gC,tiers); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; gh-=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
+            }
+          }
         }
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
@@ -8121,9 +8589,10 @@ function simulate(u, prof, outPath, _soc0){
       // it. Booked separately from unserved because it is a managed reduction
       // under contract, not a blackout, and conflating the two would overstate
       // both reliability and its cost.
-      if (residual > 1 && DR_INT > 0){
-        const drUse = Math.min(residual, DR_INT);
-        drMW[h] = drUse; E.dr += drUse; residual -= drUse;
+      const _drPre = _astr ? (drMW[h] || 0) : 0;   // legacy: nothing called earlier this hour
+      if (residual > 1 && DR_INT - _drPre > 0){
+        const drUse = Math.min(residual, DR_INT - _drPre, _drLeft());
+        drMW[h] = _drPre + drUse; E.dr += drUse; residual -= drUse;
         // Interruptible load is a demand reduction, not a generator. It is taken
         // off the demand line where that line is built, further down - writing it
         // here was silently discarded, because loadS[h] is reassigned from
@@ -8145,6 +8614,38 @@ function simulate(u, prof, outPath, _soc0){
       // shortfall is not load shedding, and counting it would put a stage-1 event in the
       // record for a rounding residual. So the energy is now always recorded and only the
       // stage counting keeps the threshold.
+      // Before shed: what pumped storage still holds, then the short stores (engine fix (B); order as before diesel).
+      if (_laPsOn && !p._laNoPsFirst && residual > 1e-6) _psGive(psSoc);
+      // Look-ahead (14do): energy still held for later hours serves this hour's shed.
+      if (_laOn && residual > 1e-6){
+        const _lim = Math.min(battPower - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
+        if (_lim > 0){ _disHour = h; const _b4 = tierDischarge(Math.min(residual, _lim)); _disHour = -1; syncBattSoc(); residual -= _b4; E.batt += _b4; stack.batt[h] += _b4; }
+      }
+      if (_laPsOn && p._laNoPsFirst && residual > 1e-6) _psGive(psSoc);
+      // ASTR (message 92): customers are cut only after emergency and operating reserve are used, as for c5 and c5b. The coal
+      // headroom held for reserve is released last; the reserve shortfall it leaves is recorded below, apart from unserved energy.
+      // RESTORE (user, messages 96 and 100): with load served but operating reserve short, emergency reserve restores it - open-cycle
+      // diesel first, then interruptible load only once open-cycle is exhausted (the ASTR sets no order, p.10; interruptible load's
+      // annual energy is capped, message 98, and is kept for energy shortfalls). Each megawatt lets coal back down one, which
+      // reopens coal headroom.
+      if (_astr && RESERVE.on && residual <= 1e-6 && !p._noRestore){
+        const _onR = astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF) + astrOnlineHeadroom(stack.diesel[h] || 0, _dslAll, _gasMSF);
+        let _short = _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc), _stFreeP(h), Math.max(0, psSoc), _onR) - Math.max(0, coalCeiling - coalGen);
+        if (_short > 1){
+          const d = Math.min(_short, Math.max(0, _dslLim - dsl), Math.max(0, _dslMonthCap - _dslUsed[_mo]), Math.max(0, coalGen - coalFloorBase));
+          if (d > 0){
+            const _ipp = Math.max(0, _dslAll - _dslEsk - _mdGenH);
+            if (_dslTankOn) _dslStock -= Math.max(0, dsl + d - _ipp) - Math.max(0, dsl - _ipp);
+            _dslUsed[_mo] += d; E.diesel += d; stack.diesel[h] = (stack.diesel[h] || 0) + d; fuelCost += d * (p.costDiesel + p.vomDiesel); carbonCost += d * cD;
+            coalGen -= d; dsl += d; _short -= d; _restoreDslMWh += d;
+          }
+        }
+        if (_short > 1){
+          const x = Math.min(_short, Math.max(0, DR_INT - (drMW[h] || 0)), _drLeft(), Math.max(0, coalGen - coalFloorBase));
+          if (x > 0){ drMW[h] = (drMW[h] || 0) + x; E.dr += x; drCostR += x * DR_COST; coalGen -= x; _short -= x; _restoreDrMWh += x; }
+        }
+      }
+      if (_astr && residual > 1e-6){ const _rel = Math.min(residual, Math.max(0, coalCeiling - coalGen)); coalGen += _rel; residual -= _rel; }
       if(residual>0){
         E.unserved+=residual; shedMWh+=residual;
         stack.unserved[h]=residual;
@@ -8180,7 +8681,7 @@ function simulate(u, prof, outPath, _soc0){
     if (_ocMW > 0){ _ocgtMWh += _ocMW; fuelCost += _ocMW*(p.costCcgt*(_ocK-1) + p.vomOcgt - p.vomCcgt); carbonCost += _ocMW*cG*(_ocK-1); }
     thermalP[h] =
         ((stack.unserved[h]||0) > 1)     ? (_pnmCapped ? _pnmLowCap : p.voll)
-      : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD + p.vomDiesel
+      : ((stack.diesel[h]||0) - _mdArr[h] > 1) ? p.costDiesel + cD + p.vomDiesel
       : ((stack.ccgt[h]||0) > 1)         ? (_ocMW > 1 ? (p.costCcgt + cG)*_ocK + p.vomOcgt : p.costCcgt + cG + p.vomCcgt)
       : ((curtailMW[h]||0) > 1)          ? 0
       : (coalGen > 1)                    ? coalMarginalCost(coalGen) * partLoadF[h] * ccsCostMult + ccsCostAdd + cC * partLoadF[h] + p.vomCoal
@@ -8199,7 +8700,7 @@ function simulate(u, prof, outPath, _soc0){
     }
     marginalTech[h] =
         ((stack.unserved[h]||0) > 1)     ? 'unserved'
-      : ((stack.diesel[h]||0) > 1)       ? 'diesel'
+      : ((stack.diesel[h]||0) - _mdArr[h] > 1) ? 'diesel'
       : ((stack.ccgt[h]||0) > 1)         ? 'ccgt'
       : ((curtailMW[h]||0) > 1)          ? 'curtail'
       : (storageMarginal[h])             ? storageMarginal[h]
@@ -8214,14 +8715,26 @@ function simulate(u, prof, outPath, _soc0){
     const plF = partLoadF[h];
     E.coal+=coalGen;
     coalFuelMWh += coalGen * plF;   // fuel-equivalent MWh, for emissions
-    fuelCost+=coalGen*(p.costCoal*plF+p.vomCoal)+(isNaN(ucStartCost[h])?0:ucStartCost[h]);
+    fuelCost+=coalGen*(p.costCoal*plF+p.vomCoal);
+    startUpCostR+=(isNaN(ucStartCost[h])?0:ucStartCost[h]);   // the pre-pass's unit starts, reported as start-up cost (14dl)
     carbonCost+=coalGen*cC*plF;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
     reserveAvailArr[h] = Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen)
       + Math.min(Math.max(0, psPowerTot - (stack.ps[h] || 0)), Math.max(0, psSoc) / _asHoldH)
       + Math.min(Math.max(0, battPower - (stack.batt[h] || 0)), Math.max(0, battSoc) / _asHoldH)
-      + (chargeMW[h] || 0);
+      + (chargeMW[h] || 0)
+      + (_astr ? astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF) + astrOnlineHeadroom(stack.diesel[h] || 0, dieselAvailMW(p), _gasMSF)
+        + Math.max(0, (p.hydroMW || 0) * (1 - (p.hydroCF ?? FIXED.hydroCF))) : 0);
+    // Reserve shortfall (ASTR, message 92): what the hour's eligible providers, after dispatch, leave uncovered. Reported apart
+    // from unserved energy; charging is not counted, as in the optimiser.
+    if (_astr && RESERVE.on){
+      const _sh = Math.max(0, _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc),
+          _stFreeP(h), Math.max(0, psSoc),
+          astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF) + astrOnlineHeadroom(stack.diesel[h] || 0, dieselAvailMW(p), _gasMSF))
+        - Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen));
+      _resShortMWh += _sh; if (_sh > 1) _resShortH++;
+    }
     // Interruptible load comes off the demand line: the customer stopped
     // consuming, so the chart identity stack+curtailed=loadS still holds and
     // the dip is visible where DR was called.
@@ -8862,7 +9375,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -8968,13 +9481,20 @@ function priceStatsOf(mp, stack, E){
  * reproducible and the validators stay meaningful; the Monte Carlo panel varies
  * the seed across its runs, which is where the distribution belongs.
  */
-function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed, season, cmPerStationYr, cmMttrH, cmUnitShare){
+function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed, season, cmPerStationYr, cmMttrH, cmUnitShare, unitList){
   const HOURS = 8760;
   const rnd = mulberry32(seed >>> 0);
 
-  // Build the unit list once from the same fleet the UC scheduler uses.
+  // Build the unit list once from the same fleet the UC scheduler uses: the units still standing when unitList is
+  // given (ucUnitsStanding, TODO 14dr), else all of UC_FLEET.
   const units = [], stationOf = [], stationIx = new Map();
-  for (const g of UC_FLEET){
+  if (Array.isArray(unitList)){
+    for (const u of unitList){
+      const st = String(u.name).replace(/ U[0-9]+$/, '').replace(/\*+$/, '');
+      if (!stationIx.has(st)) stationIx.set(st, stationIx.size);
+      units.push(u.cap); stationOf.push(stationIx.get(st));
+    }
+  } else for (const g of UC_FLEET){
     const n = Math.max(1, g.n || 1);
     const uc = g.unit_cap || (g.cap / n);
     const st = String(g.name).replace(/\*+$/, '');
@@ -9111,6 +9631,30 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 // to numbers near the lcoe* reference anchors at typical capacity factors.
 // BESIPPPP bid window 3 as bid (R9.5bn for 2,464 MWh, May 2025) and its equipment share at the bid date: BNEF global
 // turnkey (USD 165/kWh, 2024 survey; 117, 2025) interpolated to May 2025, at the pinned R16.50/USD. See BLD_COST.batt.
+// CARBON TAX RATE IN LAW, R per tonne CO2e before allowances: Carbon Tax Act 15 of 2019, s5(2A)-(2C) as amended by the
+// Taxation Laws Amendment Act 20 of 2022 (GG 47826, 5 Jan 2023), read on Acts Online's consolidated text, 14 Oct 2026.
+// After 2030 s5(3) raises the rate by amounts the Minister announces in each Budget; none is in law, so the table ends at
+// 2030. The 2022 Budget's intent (at least US$30 by 2030, higher by 2035 and 2040, US$120 beyond 2050) is not legislated.
+const CARBON_TAX_LAW = { 2026: 308, 2027: 347, 2028: 385, 2029: 424, 2030: 462 };
+function carbonTaxHeadline(y){ return CARBON_TAX_LAW[Math.min(2030, Math.max(2026, y))]; }
+// The rates in law are nominal. South Africa's inflation target, 3% from 12 Nov 2025 (National Treasury and SARB joint
+// announcement), states them in 2026 rands like every other cost in the model. Used by 'kept2030' and carbonTaxFull only.
+const CARBON_CPI_PA = 0.03;
+// Effective carbon price for year y, R/t in 2026 rands, as the build optimiser (CARBON_AT) and the engine check
+// (pathcheck.js) both read it. S: FIXED overlaid with the scenario state.
+function carbonTaxAt(y, S){
+  const real = v => v / Math.pow(1 + CARBON_CPI_PA, Math.min(2030, Math.max(2026, y)) - 2026);
+  if (S.carbonTaxFull) return real(carbonTaxHeadline(y));
+  if (!S.carbonTaxPathOn || y <= 2026) return S.carbonTaxRPerT;
+  if ((S.carbonAllowancePath ?? 'kept2030') === 'cut2027'){
+    const L0 = CARBON_TAX_LAW[2026], L1 = CARBON_TAX_LAW[2030];
+    const head = y >= 2030 ? L1 : L0 * Math.pow(L1 / L0, (y - 2026) / 4);
+    return head * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
+  }
+  if (S.carbonAllowancePath !== 'kept2030') throw new Error('carbonAllowancePath must be kept2030 or cut2027: ' + S.carbonAllowancePath);
+  // The 2026 net share (carbonTaxRPerT over the 2026 rate in law) held to 2030 and after.
+  return real(carbonTaxHeadline(y)) * S.carbonTaxRPerT / CARBON_TAX_LAW[2026];
+}
 const BATT_BW3_BID = 9.5e9 / 2464e3;
 const BATT_EQUIP_BID = 165 * Math.pow(117/165, 5/12) * 16.5;
 const BLD_COST = {
@@ -9121,13 +9665,13 @@ const BLD_COST = {
   // average total installed cost USD 1,041/kW (R17,180 at R16.50), so South African bids sit about 66% above the
   // global average. Cross-check only: IRP 2025 workbook BW6 base case R27,446/kW (2026 rands). The previous R21,000 had
   // no recorded source. IRP 2025 cost assumptions are a sensitivity (COSTSET=irp2025), never central (user, 7 Oct).
-  wind:    { c2026: 26647 * 1.032 * 1.035, decl:  0.0286, connIncl: true },
+  wind:    { c2026: 26647 * CPI_JAN24_TO_JAN26, decl:  0.0286, connIncl: true },
   // High: disclosed investment values of awarded or financially closed projects, MW-weighted, escalated to January 2026
   // at SA CPI (6.9% Jan 2023, 5.3% Jan 2024, 3.2% Jan 2025, 3.5% Jan 2026): EDF's BW5 Koruson 1, 420 MW, R11.5bn at
   // financial close Nov 2022 - Jan 2023 (from January 2023); Impofu, 330 MW private, R9bn at financial close Feb 2024
   // (from January 2024). About R30,060/kW. Investment values include financing costs and development fees, so they sit
   // above overnight cost; that is why they are the high case and the overnight bids the central (user, 7 Oct 2026).
-  wind_high: { c2026: (420 * 11.5e9 / 420e3 * 1.053 * 1.032 * 1.035 + 330 * 9e9 / 330e3 * 1.032 * 1.035) / 750, decl: 0.0286, connIncl: true },
+  wind_high: { c2026: (420 * 11.5e9 / 420e3 * 1.053 * CPI_JAN24_TO_JAN26 + 330 * 9e9 / 330e3 * CPI_JAN24_TO_JAN26) / 750, decl: 0.0286, connIncl: true },
   // Low: IRENA, Renewable Power Generation Costs in 2024, onshore wind global weighted average USD 1,041/kW at R16.50.
   wind_low:  { c2026: 1041 * 16.5, decl: 0.0286, connIncl: false },
   // The previous central, R21,000/kW (no recorded source), kept for bldWindModern 0 only.
@@ -9136,7 +9680,7 @@ const BLD_COST = {
   // Single-axis tracking solar, BW6 preferred bidders' mean, R15,715/kW (IPP Office REIPPPP historical data note,
   // 7 Nov 2025, January 2024 rands) x SA CPI January 2024 to January 2026 (1.032 x 1.035, Stats SA). Bid-derived, so
   // it includes the developer's connection. Used for new utility solar when bldPvTracking is on (bldCostEntry).
-  pvtrk:   { c2026: 15715 * 1.032 * 1.035, decl: 0.0389, connIncl: true },
+  pvtrk:   { c2026: 15715 * CPI_JAN24_TO_JAN26, decl: 0.0389, connIncl: true },
   rooftop: { c2026: 17000, decl:  0.0389 },
   // BATTERIES ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14ax). Central: BESIPPPP bid window 3,
   // preferred bidders announced 30 May 2025: 616 MW / 2,464 MWh for R9.5bn (DEE media statement; SAnews), R3,856/kWh,
@@ -9223,7 +9767,7 @@ const BLD_COST = {
   // Open-cycle gas (TODO 14bo item 5): new OCGT on LNG (ocgt) and on diesel (ocgd) take one capex, chosen by
   // bldOcgtCostCase in bldCostEntry. Low ('irp'): IRP 2025 workbook R12,981/kW (9F.05, January 2024 rands) x SA CPI to
   // January 2026, flat real. Central: derived from ccgt in bldCostEntry (user decision 12 Oct 2026).
-  ocgt_irp: { c2026: 12981 * 1.032 * 1.035, decl: 0 },
+  ocgt_irp: { c2026: 12981 * CPI_JAN24_TO_JAN26, decl: 0 },
 };
 // OPEN-CYCLE CENTRAL CAPEX (user, 12 Oct 2026): the CCGT entry scaled by EIA AEO2023's ratio of a frame combustion turbine
 // (USD 867/kW) to a multi-shaft combined cycle (USD 1,176/kW), both 2022 dollars, 0.74, so open and combined cycle sit
@@ -9263,7 +9807,10 @@ FIXED.ccsWaccPct = BLD_DISC * 100;
   // all; at R16.50/USD that is R165/kW-yr. Not specific to either chemistry at fleet scale.
   // Was 0 until 22 Sep 2026, which biased the build toward long duration.
 const BLD_FOM = {
-  wind: 693, pv: 396, rooftop: 495, offshore: 1403, ccgt: 462,
+  // Wind and utility solar (user, 14 Oct 2026, message 74): BW6 bids' fixed O&M, R367 (wind) and R269 (solar) per kW-yr in
+  // January 2024 rands (IPP Office REIPPPP historical data note, 7 Nov 2025), the same bid set as their capex, in 2026 rands.
+  // Was 693 and 396 ('from NREL ATB', edition not recorded). Caveat: what the bid figure includes is not defined.
+  wind: 367 * CPI_JAN24_TO_JAN26, pv: 269 * CPI_JAN24_TO_JAN26, rooftop: 495, offshore: 1403, ccgt: 462,
   ocgt: FIXED.fomOcgtRkW, ocgd: FIXED.fomOcgtRkW,   // IRP 2025 workbook, 9F.05 (FIXED); the LNG terminal charge adds to ocgt only
   batt: null,          // computed from capex, see bldFom()
   vrfb: 165, ironair: 165, // PNNL 2019, $10/kW-yr; see the note above
@@ -9955,6 +10502,13 @@ function bldDemandIndex(opts, y){
   if (ix && ix[y] != null) return +ix[y];
   return Math.pow(1 + ((opts && opts.growth) || 0), y - 2026);
 }
+// Flat demand block in model year y, MW (FIXED.demandBlockMW): opts.demandBlock maps a start year to MW, each value
+// holding until the next year given (e.g. {2027: 930} or {2027: 930, 2029: 675, 2030: 493}); none before the first.
+function bldDemandBlockMW(opts, y){
+  const b = opts && opts.demandBlock; if (!b) return 0;
+  let mw = 0; for (const yy of Object.keys(b).map(Number).sort((a, c) => a - c)) if (yy <= y) mw = +b[yy];
+  return Math.max(0, mw);
+}
 // New nuclear decided in advance and standing by year y (bldNuclearAdd, TODO 14be step 7), MW.
 function bldNuclearAddedMW(S, y){
   const a = S && S.bldNuclearAdd; if (!a) return 0;
@@ -9991,15 +10545,13 @@ function bldBuildLP(opts){
   // planning than the dispatch engine prices them in operations. One number.
   const VOLL = S.voll ?? 87000, CARBON = S.carbonTaxRPerT;
   const RES_HOLD_H = Math.max(0.25, S.asHoldHours);   // the engine's _asHoldH
-  // Legislated carbon tax path, 5 Oct 2026: headline R308/t in 2026 rising to R462/t in 2030
-  // (2022 Budget, Phase 2), tax-free allowances cut 2.5 points a year from 2027 to 2030 (Treasury
-  // Phase 2 paper), so the effective rate goes from carbonTaxRPerT in 2026 to 462 x 0.25 =
-  // R115.5/t in 2030, flat after. carbonTaxPathOn 0 holds carbonTaxRPerT flat.
-  const CARBON_AT = y => {
-    if (!S.carbonTaxPathOn || y <= 2026) return CARBON;
-    const head = y >= 2030 ? 462 : 308 * Math.pow(462 / 308, (y - 2026) / 4);
-    return head * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
-  };
+  // Legislated carbon tax path, 5 Oct 2026, now carbonAllowancePath 'cut2027': headline R308/t in 2026 rising to R462/t
+  // in 2030 (2022 Budget, Phase 2), tax-free allowances cut 2.5 points a year from 2027 to 2030 (Treasury Phase 2 paper),
+  // so the effective rate goes from carbonTaxRPerT in 2026 to 462 x 0.25 = R115.5/t in 2030, flat after. Superseded as
+  // central on 14 Oct 2026 by 'kept2030' (the 2025 Budget kept the allowance to 2030). carbonTaxPathOn 0 holds
+  // carbonTaxRPerT flat.
+  // carbonTaxAt (14 Oct 2026): one function for the optimiser and the engine check; see carbonAllowancePath.
+  const CARBON_AT = y => carbonTaxAt(y, S);
   const CAP_ON = !!(S.carbonCapEnabled), CAP_MT = S.carbonCapMt ?? 140;
   const MC = { coal: S.costCoal + S.vomCoal, diesel: S.costDiesel + S.vomDiesel };   // gas: bldGasFuelR, by year
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:dieselAvailMW(S),
@@ -10008,6 +10560,8 @@ function bldBuildLP(opts){
   const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt, EMIS_DIESEL = S.emisDiesel;
   // Nuclear standing in year y: the existing fleet plus any decided in advance (bldNuclearAdd).
   const NUC = y => EX.nuclear + bldNuclearAddedMW(S, y);
+  // Imports standing in year y: none after importsEndYear when it is set (FIXED), as the engine does.
+  const IMP = y => (S.importsEndYear > 0 && y > S.importsEndYear) ? 0 : EX.imports;
   // Open-cycle gas options (FIXED notes, 11 Oct 2026). b_ocgt / go_: new OCGT on LNG, OC_K times a CCGT MWh's gas and
   // carbon. b_ocgd: new OCGT on diesel, dispatched in the diesel variable gd_ at the fleet's price.
   const OCGT_ON = (S.bldOcgtOn | 0) > 0, OCGD_ON = (S.bldOcgdOn | 0) > 0;
@@ -10157,11 +10711,22 @@ function bldBuildLP(opts){
   }
   // REPURPOSED CONNECTIONS (TODO 14ar): rp_<t>_<y> MW of that year's build on a connection freed by retired coal,
   // which avoids the technology's grid cost from then on. Offshore and rooftop cannot use one.
-  const RP_T = GRID_ON ? T.filter(t => t !== 'rooftop' && GA[t] > 0).concat(PHES_ON ? ['phes'] : [], PHES2_ON ? ['phel'] : []) : [];
+  // bldRpExclude (14 Oct 2026): technologies barred from them.
+  const RP_EX = new Set(S.bldRpExclude || []);
+  const RP_T = GRID_ON ? T.filter(t => t !== 'rooftop' && GA[t] > 0 && !RP_EX.has(t)).concat(PHES_ON && !RP_EX.has('phes') ? ['phes'] : [], PHES2_ON && !RP_EX.has('phel') ? ['phel'] : []) : [];
   for (const t of RP_T) for (const y of Y){
     let credit = 0;
     for (const yy of Y) if (yy >= y) credit += GA[t] / Math.pow(1+BLD_DISC, yy-2026);
     obj.push('-' + (credit * 1000).toFixed(3) + ' rp_' + t + '_' + y);
+  }
+  // CAPE WIND ALLOWANCE (FIXED.bldCapeWindMW): cw_<y> MW of that year's wind on the curtailment allowance, which avoids the
+  // integration charge from then on and loses CAPE_CURT of its output in the balance rows.
+  const CAPE_MW = GRID_ON && T.includes('wind') ? Math.max(0, +(S.bldCapeWindMW || 0)) : 0;
+  const CAPE_CURT = Math.max(0, +(S.bldCapeCurtPct ?? FIXED.bldCapeCurtPct)) / 100;
+  if (CAPE_MW > 0) for (const y of Y){
+    let credit = 0;
+    for (const yy of Y) if (yy >= y) credit += S.txRPerKWyr / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push('-' + (credit * 1000).toFixed(3) + ' cw_' + y);
   }
   // Life extension (TODO 14as): le_<id> MW kept from its end-of-life year to the IRP's date, paying the extension
   // capex over those years and fixed O&M every year it runs.
@@ -10181,7 +10746,13 @@ function bldBuildLP(opts){
   if (PHES_ON) for (const y of Y) L.push(' phescap_' + y + ': ' + Y.filter(yy => yy <= y).flatMap(yy => PHES2_ON ? ['b_phes_' + yy, 'b_phel_' + yy] : ['b_phes_' + yy]).join(' + ') + ' <= ' + PHES_CAP(y).toFixed(1));
   if (PHES2_ON) for (const y of Y) L.push(' phesrate_' + y + ': b_phes_' + y + ' + b_phel_' + y + ' <= ' + PHES_RATE(y));
   // Repurposed connections: no more than that year's build, and in total no more than the coal retired so far.
-  for (const t of RP_T) for (const y of Y) L.push(' rpb_' + t + '_' + y + ': rp_' + t + '_' + y + ' - b_' + t + '_' + y + ' <= 0');
+  for (const t of RP_T) for (const y of Y) L.push(' rpb_' + t + '_' + y + ': rp_' + t + '_' + y + (CAPE_MW > 0 && t === 'wind' ? ' + cw_' + y : '') + ' - b_' + t + '_' + y + ' <= 0');
+  // Cape wind allowance: no more than that year's wind build (shared with any freed connection), and in total no more
+  // than the allowance.
+  if (CAPE_MW > 0){
+    if (!RP_T.includes('wind')) for (const y of Y) L.push(' cwb_' + y + ': cw_' + y + ' - b_wind_' + y + ' <= 0');
+    L.push(' cwpool: ' + Y.map(y => 'cw_' + y).join(' + ') + ' <= ' + CAPE_MW.toFixed(1));
+  }
   if (RP_T.length) for (const y of Y){
     const terms = []; for (const t of RP_T) for (const yy of Y) if (yy <= y) terms.push('rp_' + t + '_' + yy);
     L.push(' rppool_' + y + ': ' + terms.join(' + ') + (RC_ON ? ' - rc_' + y : '') + ' <= ' + Math.max(0, bldCoalMW(Y[0]) - bldCoalMW(y)).toFixed(1));
@@ -10245,16 +10816,27 @@ function bldBuildLP(opts){
   const RES_MW  = (S.reserveEnabled ?? 1) ? (S.reserveOperatingMW || 0) : 0;
   const RES_VRE = (S.reserveEnabled ?? 1) ? (S.reserveVrePct || 0) / 100 : 0;
   const RES_VRE_BASE = S.reserveVreBaseMW || 0;
+  // ASTR reserve in the LP (user, message 86): same products, peak periods and growth term as the engine.
+  const ASTR_ON = (S.reserveEnabled ?? 1) && (S.reserveRule ?? FIXED.reserveRule) === 'astr';
+  const _msf = Math.max(0.05, Math.min(1, S.reserveGasMinStableFrac ?? FIXED.reserveGasMinStableFrac)), ASTR_ONK = (1 - _msf) / _msf;
+  const ASTR_REG_H = Math.max(0.1, S.reserveRegHours ?? FIXED.reserveRegHours), ASTR_TEN_H = Math.max(0.1, S.reserveTenHours ?? FIXED.reserveTenHours);
+  // Wind and solar built after 2030 (cumulative to y less cumulative to 2030), as LP terms with the given coefficients.
+  const astrGrowTerms = (y, cw, cp) => ['wind', 'pv'].map(t => {
+    const c = t === 'wind' ? cw : cp;
+    const up = cum(t, y), base = cum(t, ASTR_RESERVE.y1);
+    if (CUMV) return up.map(v => ' + ' + c.toFixed(5) + ' ' + v).join('') + base.map(v => ' - ' + c.toFixed(5) + ' ' + v).join('');
+    const bs = new Set(base); return up.filter(v => !bs.has(v)).map(v => ' + ' + c.toFixed(5) + ' ' + v).join('');
+  }).join('');
   const COMMIT_ON = !!S.bldCoalCommit, COMMIT_MIN = Math.max(0, Math.min(1, S.bldCoalMinFrac)), COMMIT_H = Math.max(1, S.bldCoalCommitHours);
   for (const y of Y){
-    const dg = bldDemandIndex(opts, y);
+    const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
     const coalCapMean = bldCoalMW(y) * eaf;
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
       const coalCap = r.coalFrac ? bldCoalMW(y) * r.coalFrac[h] : (r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean);
       const i = (r.dem !== undefined ? r.dem : r.d)*24 + h, k = y + '_' + r.d + '_' + h;
-      const dem = PROFILES.demand[i]*dg + expAtLP(i);
+      const dem = PROFILES.demand[i]*dg + dBlk + expAtLP(i);
       if (ST_ON && !r.tail) ST_DEM[y] = (ST_DEM[y] || 0) + r.weight * dem;
       // A tail day from another weather year carries its own shapes; a calendar day reads the
       // default profile. Same index arithmetic for demand either way.
@@ -10271,12 +10853,13 @@ function bldBuildLP(opts){
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
-      const fixed = NUC(y)*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
+      const fixed = NUC(y)*AV_NUC + EX.hydro*AV_HYD + IMP(y)*AV_IMP
                   + EX.wind*wp*AV_CONG + EX.pv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + EX.csp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
         + ' + ' + cum('wind',y).map(v => (wpN*AV_CONG).toFixed(4)+' '+v).join(' + ')
+        + (CAPE_MW > 0 ? Y.filter(yy => yy <= y).map(yy => ' - ' + (CAPE_CURT*wpN*AV_CONG).toFixed(4) + ' cw_' + yy).join('') : '')
         + ' + ' + cum('pv',y).map(v => (spN*AV_CONG).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
         + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
@@ -10323,18 +10906,28 @@ function bldBuildLP(opts){
         // engine's min(power, soc / holdH)), and only the power it is not already discharging.
         // Before this the LP counted the full battery power as reserve even when empty, so it
         // served load the engine had to shed to protect reserve (gap decomposition, RESULTS).
-        const rhs = coalCap + DSL(y) - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
+        // ASTR RESERVE (user, message 86): the engine's products for this hour (year, peak period), the requirement less what
+        // quick-start hydro holds of the ten-minute product; diesel and open-cycle capacity are emergency reserve and do not count
+        // (their energy still frees coal headroom, as in the engine); batteries count up to the product-weighted sustain time;
+        // after 2030 the wind-and-solar growth term on builds since 2030 only.
+        const _qA = ASTR_ON ? astrReserveAt(y, astrPeakHour(i), RES_MW) : null;
+        const _reqA = _qA ? _qA.inst + _qA.reg + _qA.ten : 0;
+        const _hydQ = _qA ? Math.min(_reqA, Math.max(0, (S.hydroMW || 0) * (1 - AV_HYD))) : 0;   // any product (message 90), as the engine
+        const rhs = ASTR_ON ? coalCap - _reqA + _hydQ - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0)
+                    : coalCap + DSL(y) - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
                     - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0);
+        const _holdA = _qA ? (_qA.inst / 6 + _qA.reg * ASTR_REG_H + _qA.ten * ASTR_TEN_H) / Math.max(1, _reqA) : RES_HOLD_H;
         // STORAGE CREDIT BY DURATION ON TAIL DAYS, 6 Oct 2026. Tail days carry the stress margin, and
         // there a battery is credited at min(1, duration / bldMarginHoldHours) of its power: stored
         // energy over 4 h (CAISO and MISO full-credit rule; ISO-NE 2 h), not over asHoldHours (1 h),
         // and at most bldMarginCreditMax x power. Before this a full one-hour battery counted as
         // fully firm for a whole stress window. PJM 2027/28 sensitivity: hold 8, max 0.70. Placeholder
         // until South African ELCC by duration is measured (TODO).
-        const _hold = r.tail ? Math.max(RES_HOLD_H, S.bldMarginHoldHours) : RES_HOLD_H;
+        const _hold = r.tail ? Math.max(_holdA, S.bldMarginHoldHours) : _holdA;
         const _cmax = r.tail ? Math.min(1, Math.max(0, S.bldMarginCreditMax)) : 1;
         const _eNow = 'e_batt_' + y + '_' + r.d, _ePrev = (r.prevD !== undefined) ? 'e_batt_' + y + '_' + r.prevD : null;
-        L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + ' - ' + cum('batt',y).map(v => _cmax.toFixed(4) + ' ' + v).join(' - ') + ' <= ' + (_cmax * EX.batt).toFixed(1));
+        // Free power (message 97 under ASTR): unused output plus the charging load that could be dropped.
+        L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + (ASTR_ON ? ' - bchg_' + k : '') + ' - ' + cum('batt',y).map(v => _cmax.toFixed(4) + ' ' + v).join(' - ') + ' <= ' + (_cmax * EX.batt).toFixed(1));
         if (HS_T && r.tail){
           // Stress day, hourly level: reserve held this hour is limited by the level at its start and at its end.
           L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + hsLevel('batt', y, r, h) + ' <= 0');
@@ -10349,7 +10942,40 @@ function bldBuildLP(opts){
         L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' <= 0');
         if (_ePrev) L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _ePrev + ' <= 0');
         }
-        L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '') + ' - rb_' + k + ' - rsl_' + k
+        // Online headroom (message 90): rgo_ on running CCGT and open-cycle LNG together, rd_ on running diesel turbines, each at
+        // most output x (1 - m) / m and at most capacity less output - astrOnlineHeadroom in the engine, same key, same groups.
+        // Idle capacity holds none, so offline open-cycle plant stays emergency reserve.
+        if (ASTR_ON){
+          const _gG = ' gg_' + k + (OCGT_ON ? ' + go_' + k : ''), _gK = ' - ' + ASTR_ONK.toFixed(6);
+          L.push(' rgo1_' + k + ': rgo_' + k + _gK + ' gg_' + k + (OCGT_ON ? _gK + ' go_' + k : '') + ' <= 0');
+          L.push(' rgo2_' + k + ': rgo_' + k + ' +' + _gG + ' - ' + cum('ccgt',y).join(' - ') + (OCGT_ON ? ' - ' + cum('ocgt',y).join(' - ') : '') + ' <= 0');
+          L.push(' rd1_' + k + ': rd_' + k + _gK + ' gd_' + k + ' <= 0');
+          L.push(' rd2_' + k + ': rd_' + k + ' + gd_' + k + LEV(y).map(v => ' - ' + v).join('') + (OCGD_ON ? ' - ' + cum('ocgd',y).join(' - ') : '') + ' <= ' + DSL(y));
+        }
+        // Pumped storage (message 97): rp_ is at most its unused output plus the pumping load that could be dropped, and at most its
+        // stored energy over the product-weighted sustain time, at the start and the end of the hour - the engine's rule and the
+        // batteries' rows, on the LP's own levels.
+        const _rpOn = ASTR_ON && PS_ON;
+        if (_rpOn){
+          const _ePs = 'e_ps_' + y + '_' + r.d, _ePsPrev = (r.prevD !== undefined) ? 'e_ps_' + y + '_' + r.prevD : null;
+          L.push(' rpp_' + k + ': rp_' + k + ' + pdis_' + k + ' - pchg_' + k + ' <= ' + EX.ps.toFixed(1));
+          if (HS_T && r.tail){
+            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + hsLevel('ps', y, r, h) + ' <= 0');
+            L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + (h > 0 ? hsLevel('ps', y, r, h - 1) : hsStart('ps', y, r)) + ' <= 0');
+          } else if (HS_C && !r.tail){
+            const c = 'c_ps_' + k, c23 = 'c_ps_' + y + '_' + r.d + '_23';
+            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + c + (_ePsPrev ? ' - ' + _ePsPrev + ' <= 0' : ' <= ' + (EX.ps * STORE.find(q => q.t === 'ps').hours * 0.5).toFixed(1)));
+            L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + _ePs + ' + ' + c23 + ' - ' + c + ' <= 0');
+          } else {
+            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + _ePs + ' <= 0');
+            if (_ePsPrev) L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + _ePsPrev + ' <= 0');
+          }
+        }
+        if (ASTR_ON) L.push(' resv_' + k + ': gc_' + k + ' - rgo_' + k + ' - rd_' + k + ' - rb_' + k + ' - rsl_' + k + (_rpOn ? ' - rp_' + k : '')
+          + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
+          + (y > ASTR_RESERVE.y1 && RES_VRE > 0 ? astrGrowTerms(y, RES_VRE * wpN, RES_VRE * spN) : '')
+          + ' <= ' + rhs.toFixed(1));
+        else L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '') + ' - rb_' + k + ' - rsl_' + k
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ')
           + OC_T.map(t => ' - ' + cum(t,y).join(' - ')).join('')
@@ -10362,6 +10988,7 @@ function bldBuildLP(opts){
           + ' <= ' + rhs.toFixed(1));
       }
       L.push(' dmax_' + k + ': gd_' + k + LEV(y).map(v => ' - ' + v).join('') + (OCGD_ON ? ' - ' + cum('ocgd',y).join(' - ') : '') + ' <= ' + DSL(y));
+      { const _mdr = avonDedisaMustRunMW(y, i, S); if (_mdr > 0) L.push(' mdr_' + k + ': gd_' + k + ' >= ' + _mdr.toFixed(1)); }   // Avon and Dedisa (message 88)
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       // Same power limits for vanadium and iron-air: neither can charge or
@@ -10497,10 +11124,10 @@ function bldBuildLP(opts){
     // hourly balance and shed price, and counting their demand here too raised the firm requirement
     // pass by pass until a year whose builds are capped could not meet it (Kerwin part 2 loop, 2026:
     // 2,427 MW needed against 2,000 MW of lithium allowed, infeasible).
-    for (const r of rdY(y)) if (!r.stress) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg);
+    for (const r of rdY(y)) if (!r.stress) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg + dBlk);
     // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
     // an hourly matter and lives in cmax_ and resv_ above.
-    const firm = coalCapMean + NUC(y)*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
+    const firm = coalCapMean + NUC(y)*AV_NUC + EX.hydro*AV_HYD + IMP(y)*AV_IMP
                + EX.ps + DSL(y) + EX.batt;
     // Long-duration storage counts toward firm capacity at its de-rated value:
     // a 100-hour store can be relied on through a long event in a way a 4-hour
@@ -10651,6 +11278,17 @@ function bldSolveLP(lp){
 
 // The build a solve implies, as slider overrides - the same mapping bldApplyToSliders uses,
 // including the coal the optimiser assumed, so the adequacy test is apples to apples.
+// The ASTR reserve's post-2030 growth term is measured from the run's own 2030 wind and solar fleet (user, message 86).
+function bldAstrVreRef(cols, y, st){
+  if (y <= ASTR_RESERVE.y1) return {};
+  let w = 0, pv = 0;
+  for (const [c, v] of Object.entries(cols || {})){
+    const m = c.match(/^b_(wind|pv)_([0-9]+)$/);
+    if (m && +m[2] <= ASTR_RESERVE.y1) { if (m[1] === 'wind') w += v.Primal || 0; else pv += v.Primal || 0; }
+  }
+  const S0 = { ...FIXED, ...(st || {}) };
+  return { reserveVreRefWindMW: Math.round(S0.windMW + w), reserveVreRefPvMW: Math.round(S0.pvUtilityMW + pv) };
+}
 function bldBuildToState(res){
   const tot = {}; let eb = 0;
   for (const [c, v] of Object.entries(res.Columns || {})){
@@ -10679,6 +11317,7 @@ function bldBuildToState(res){
   // Set, not added to the current value: applying a build twice must not retire the fleet twice.
   if ((_ps.bldPeakerRet | 0) > 0) o.dieselDecomMW = bldPeakerDecomMW(endY, _ps, res && res.Columns);
   if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
+  Object.assign(o, bldAstrVreRef(res && res.Columns, endY, _ps));
   return o;
 }
 
@@ -10711,7 +11350,7 @@ function bldAdequacyTest(st, draws){
     const _cust = (st.bldAdequacyBasis ?? FIXED.bldAdequacyBasis) !== 'withCharging';
     let served = 0; for (let h = 0; h < r.loadS.length; h++) served += r.loadS[h] - (_cust ? (r.chargePsMW[h] || 0) + (r.chargeBattMW[h] || 0) : 0);
     const row = { year: y, k, gwh, seed: stk.outageSeed };
-    if (gwh > 0.01){ row.start = bldWorstWindow(r); row.coalFrac = r.coalAvailFrac; }
+    if (gwh > 0.01){ row.start = bldWorstWindow(r); row.coalFrac = r.coalAvailFrac; row.availFrac = r.coalAvailOnlyFrac; }
     rows.push(row);
     if (!worst || gwh > worst.gwh) worst = { year: y, gwh, r, demandGWh: served / 1000 };
   }
@@ -10755,7 +11394,9 @@ function bldStateForYear(res, y, opts){
       ? ((tot.phes || 0) * ((opts.state.bldPhesHours ?? FIXED.bldPhesHours)) + (tot.phel || 0) * (opts.state.bldPhesHours2 || 0)) / ((tot.phes || 0) + (tot.phel || 0))
       : (opts.state.bldPhesHours ?? FIXED.bldPhesHours),
     coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
-    demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, scenarioYear: y,
+    demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, demandBlockMW: bldDemandBlockMW(opts, y), scenarioYear: y,
+    ...bldAstrVreRef(res.Columns, y, opts.state),
+    windCapeMW: Math.round(Object.entries(res.Columns || {}).reduce((a, [c, v]) => { const m = c.match(/^cw_([0-9]+)$/); return a + (m && +m[1] <= y ? (v.Primal || 0) : 0); }, 0)),
     ...(opts.gasFuelR ? { costCcgt: bldGasFuelR(opts, y, { ...FIXED, ...opts.state }) } : {}),
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
         ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}) };
@@ -10826,8 +11467,18 @@ async function bldStressLoopPerYear(opts, onProgress){
         return { y, targetGWh: +(built.stressTarget.targetMWh[y] / 1e3).toFixed(3), expectedShedGWh: +(((rows.get('tgt_' + y) || 0) + sl) / 1e3).toFixed(3), slackGWh: +(sl / 1e3).toFixed(3) }; });
       entry.lpTargetRuns = built.stressTarget.runs;
     }
+    // STALL STOP (user, 14 Oct 2026, the stopping rule for c5, TODO 14dv (9)). Every pass records the shed above target
+    // in the worst year (excessGWh) and how much this pass cut it (cutFrac). With opts.stallFrac set (c5: 0.1) the loop
+    // stops from pass opts.stallFrom on (c5: 4) when a pass cuts it by less than that share; the verdict says so. Unset:
+    // no change.
+    const excess = years.reduce((m, q) => (q.limit > 0 && q.mean > q.limit) ? Math.max(m, q.mean - q.limit) : m, 0);
+    const prevEx = bldStressLog.length ? bldStressLog[bldStressLog.length - 1].excessGWh : null;
+    entry.excessGWh = +excess.toFixed(4);
+    if (prevEx > 0) entry.cutFrac = +((prevEx - excess) / prevEx).toFixed(4);
     bldStressLog.push(entry);
     if (!fails.length){ verdict = 'adequate'; break; }
+    if (opts.stallFrac > 0 && it >= (opts.stallFrom || 1) && entry.cutFrac != null && entry.cutFrac < opts.stallFrac){
+      verdict = 'stall stop'; break; }
     if (it === maxP) break;
     // opts.stressDays (default 7): a longer window opens before the failing week, so the LP must
     // carry storage through the run-up as well as the lull itself (5 Oct 2026; multi-day lulls
@@ -10855,7 +11506,8 @@ async function bldStressLoopPerYear(opts, onProgress){
         const PERY = !!((opts.state || {}).bldWindowsPerYear ?? FIXED.bldWindowsPerYear);
         if (same) { if (PERY && same.years) { if (!same.years.includes(f.y)) same.years.push(f.y); } else same.fromYear = Math.min(same.fromYear ?? BLD_YEARS[0], from); }
         else bldStressPeriods.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, fromYear: from, ...(PERY ? { years: [f.y] } : {}),
-          coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)) });
+          coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)),
+          ...(pick.availFrac ? { availFrac: Array.from(pick.availFrac.slice(st0 * 24, (st0 + SD) * 24)) } : {}) });
         entry.added.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, forModelYear: f.y, fromYear: from, rebound: !!same, shedGWh: +pick.gwh.toFixed(2) });
       }
     }
@@ -11138,12 +11790,11 @@ function renderBuildResult(res, rate, opts){
 // for regional siting. Needed so the regional LP knows what storage a region
 // already has before deciding what to add.
 const BLD_EX_BATT = (() => {
-  const share = { 'Western Cape':0.5754, 'Kwazulu Natal':0.2412,
-                  'Eastern Cape':0.1759, 'Northern Cape':0.0075 };
+  // The operating sites' own regions (BATT_SHARE_BY_REGION, nodal_engine.js, from ESKOM_BESS_OPERATING), 14 Oct 2026.
   const out = {};
   for (const R of ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape',
                    'Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State'])
-    out[R] = 800 * (share[R] || 0);
+    out[R] = FIXED.battPowerMW * (BATT_SHARE_BY_REGION[R] || 0);
   return out;
 })();
 
@@ -12736,6 +13387,51 @@ const TX_SHALLOW = 0.25, TX_BEYOND = 1.5;
 // scenarios, which is higher than either; that is a separate open item, and it moves a
 // conversion by 0.4 points.
 const EAF_NONCOAL_AVAIL = 0.90;
+// NTCSA ASTR 2026/27-2030/31 (January 2026), operating reserve by product, MW (user's reading, message 85, pp. 6-12). Calendar
+// year y takes financial year y/y+1; years between the document's first and last are interpolated linearly; years after 2030/31
+// hold 2030/31's quantities (no basis in the document beyond it). Totals are 2,200 MW peak and off-peak in every year.
+const ASTR_RESERVE = { y0: 2026, y1: 2030, instPeak: 650, instOff: 850, reg: [830, 1140], tenPeak: [720, 410], tenOff: [520, 210] };
+// scaleMW: the operating-reserve setting (reserveOperatingMW); the products are scaled by it over the document's 2,200 MW total,
+// so the setting still moves the requirement (1 at the default, which leaves the ASTR quantities exactly).
+const ASTR_TOTAL = ASTR_RESERVE.instPeak + ASTR_RESERVE.reg[0] + ASTR_RESERVE.tenPeak[0];
+function astrReserveAt(year, peak, scaleMW){
+  const A = ASTR_RESERVE, f = Math.max(0, Math.min(1, ((year ?? A.y0) - A.y0) / (A.y1 - A.y0)));
+  const lin = a => a[0] + (a[1] - a[0]) * f, k = (scaleMW ?? ASTR_TOTAL) / ASTR_TOTAL;
+  return { inst: k * (peak ? A.instPeak : A.instOff), reg: k * lin(A.reg), ten: k * lin(peak ? A.tenPeak : A.tenOff) };
+}
+// Spare headroom a running gas or diesel turbine group holds as operating reserve (user, message 90): output gen of capacity cap,
+// units at or above minimum stable level m, so at most gen x (1 - m) / m to full output of the units running, and at most cap - gen.
+// Offline units hold none. The optimiser's reserve row encodes the same two limits (bldLP, 'ro_' rows).
+function astrOnlineHeadroom(gen, cap, m){
+  if (!(gen > 0) || !(cap > 0)) return 0;
+  const mm = Math.max(0.05, Math.min(1, m ?? FIXED.reserveGasMinStableFrac));
+  return Math.max(0, Math.min(cap - gen, gen * (1 - mm) / mm));
+}
+// Avon and Dedisa's contract-driven output in hour h of year y, MW (FIXED.avonDedisaMustRun notes): the month's daytime or
+// evening level, times the share of the pair still under contract (both through dedisaEndYear; Avon's share in avonEndYear
+// before day avonEndDoy, 20 July; none after).
+function avonDedisaMustRunMW(y, h, P){
+  const F = P || FIXED;
+  if (!(F.avonDedisaMustRun ?? FIXED.avonDedisaMustRun)) return 0;
+  const yr = y ?? 2026, hy = h % 8760, hr = hy % 24, m = hourMonth(hy);
+  const lvl = (hr >= 5 && hr <= 16) ? (F.avonDedisaDayMW ?? FIXED.avonDedisaDayMW)[m]
+            : (hr >= 17 && hr <= 20) ? (F.avonDedisaEveMW ?? FIXED.avonDedisaEveMW)[m] : 0;
+  const av = F.avonMW ?? FIXED.avonMW, de = F.dedisaMW ?? FIXED.dedisaMW;
+  const share = yr <= (F.dedisaEndYear ?? FIXED.dedisaEndYear) ? 1
+    : (yr === (F.avonEndYear ?? FIXED.avonEndYear) && Math.floor(hy / 24) < (F.avonEndDoy ?? FIXED.avonEndDoy)) ? av / (av + de) : 0;
+  return lvl * share;
+}
+// ASTR peak periods (p.29): weekdays only; winter (May-August) 06:00-09:00 and 17:00-20:00, summer 09:00-12:00 and 18:00-21:00;
+// weekends and public holidays have none. On the demand profile's own calendar, 2026 (1 January a Thursday), with South Africa's
+// 2026 public holidays by day of year (9 August falls on a Sunday and moves to Monday 10 August; 21 March and 26 December are
+// Saturdays). Hour h is the hour of the year from 00:00 on 1 January.
+const ASTR_HOLIDAYS_2026 = new Set([0, 92, 95, 116, 120, 166, 221, 266, 349, 358]);
+function astrPeakHour(h){
+  const d = Math.floor(h / 24) % 365, dow = (4 + d) % 7;            // 0 Sunday
+  if (dow === 0 || dow === 6 || ASTR_HOLIDAYS_2026.has(d)) return false;
+  const hr = h % 24, m = hourMonth(h % 8760);
+  return (m >= 4 && m <= 7) ? ((hr >= 6 && hr < 9) || (hr >= 17 && hr < 20)) : ((hr >= 9 && hr < 12) || (hr >= 18 && hr < 21));
+}
 function coalEafFromFleet(fleetPct, nuclearFactor, p){
   const P = p || FIXED;
   const other = P.hydroMW + P.psPowerMW + P.ocgtDieselMW;
@@ -14207,7 +14903,7 @@ function captureCurve(res){
 let _capCurveTimer = null;
 function scheduleCaptureCurve(){
   if (_capCurveTimer) clearTimeout(_capCurveTimer);
-  _capCurveTimer = setTimeout(() => {
+  _capCurveTimer = setTimeout(calcTrack('capCurve', () => {
     _capCurveTimer = null;
     const host = document.getElementById('capCurveBody');
     if (!host || !lastRes) return;
@@ -14215,7 +14911,7 @@ function scheduleCaptureCurve(){
     if (panel && panel.offsetParent === null) return;   // hidden tab, do not spend the CPU
     try { renderCaptureCurve(lastRes); }
     catch (e) { console.error('captureCurve:', e); }
-  }, 400);
+  }), 400);
 }
 
 // ── HYBRID UPLIFT ───────────────────────────────────────────────────────────
@@ -16891,7 +17587,7 @@ const SLIDERS=[
   {grp:'Storage and flexibility'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
   {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>v+'h',
-   note:`Hours of storage at rated power for new lithium only; the existing ${(FIXED.battPowerMW/1000).toFixed(1)} GW fleet stays at 4h. South African utility procurement is 4h today, so that is the default. Longer durations add cell cost only; the inverter does not scale. In this model lithium stays cheapest up to about 16 hours.`},
+   note:`Hours of storage at rated power for new lithium only; the existing ${(FIXED.battPowerMW/1000).toFixed(2)} GW fleet stays at ${FIXED.battHours.toFixed(1)}h. South African utility procurement is 4h today, so that is the default. Longer durations add cell cost only; the inverter does not scale. In this model lithium stays cheapest up to about 16 hours.`},
   {id:'newPsMW',label:'New pumped storage',min:0,max:FIXED.newPsMaxMW,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:`on ${(FIXED.psPowerMW/1000).toFixed(1)} GW existing. New additions modelled at 14-hours of storage (the duration of Eskom\u2019s planned 1,500 MW / 21 GWh Tubatse scheme in Limpopo).`},
   {id:'newVrfbMW',label:'New vanadium flow batteries',min:0,max:20000,step:500,def:FIXED.newVrfbMW,fmt:v=>v===0?'none':(v/1000).toFixed(1)+' GW',
@@ -17119,7 +17815,7 @@ const PRESETS={
   // two of peaking in a crisis. Imports 0.652 and hydro 0.339 are 2025 as measured in ESK19679
   // (6.57 and 1.79 TWh); demand is 2025's own series (demandYear 2025); with them coal runs 168.6 TWh against
   // Eskom's 170.4. 3 Oct 2026.
-  '2025, as modelled':{demandGrowthPct:0,demandYear:2025,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
+  '2025, as modelled':{demandGrowthPct:0,demandYear:2025,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:FIXED.battPowerMW,exportsMW:1705,outageTraceYear:2025},
   // DEMAND +5%, the same in Fossil-free 2040 and IRP path 2035 so the three can be compared.
   // UNSOURCED (checked 9 Oct 2026): a judgement, not a forecast. It was chosen before 23 Sep 2026
   // as roughly half a percent a year to 2035, reasoned as electrification and industrial recovery
@@ -17360,14 +18056,15 @@ SLIDERS.forEach(s=>{
     // hidden below the fold anyway. Native <details> gives keyboard support and
     // screen-reader semantics for free.
     //
-    // Prices and markets defaults closed because it is the least often touched; the build cost
-    // (LCOE) assumptions are a subgroup, closed like every subgroup. Regrouped 6 Oct 2026 into
-    // Demand; Supply and build; Storage and flexibility; Grid and connections; Prices and markets;
-    // Retail and household bill. Everything else stays open so the panel reads as a scenario.
-    const CLOSED_BY_DEFAULT = ['Prices'];
+    // EVERY GROUP STARTS CLOSED (user, 14 Oct 2026), each showing its "n settings" badge, so the
+    // panel opens as a short list of six headings: Demand; Supply and build; Storage and flexibility;
+    // Grid and connections; Prices and markets; Retail and household bill (regrouped 6 Oct 2026).
+    // Until 14 Oct only Prices and markets started closed (CLOSED_BY_DEFAULT). OPEN_BY_DEFAULT names
+    // any group that should start open again; a group added later starts closed like the rest.
+    const OPEN_BY_DEFAULT = [];
     const g=document.createElement('details');
     g.className='grp';
-    g.open = !CLOSED_BY_DEFAULT.some(k => s.grp.indexOf(k) === 0);
+    g.open = OPEN_BY_DEFAULT.some(k => s.grp.indexOf(k) === 0);
     g.innerHTML='<summary><h3>'+s.grp+'</h3><span class="grpcount"></span></summary>';
     controlsEl.appendChild(g);
     g.addEventListener('toggle', () => { try { updateGroupBadges(); } catch(e){} });
@@ -17451,6 +18148,10 @@ SLIDERS.forEach(s=>{
     setPresetActive(null); scheduleRun();
   });
 });
+// Fill the badges once the panel is built (14 Oct 2026). They were refreshed only by a group's
+// 'toggle' event and by applyState, so Prices' count on a fresh load came from the other groups
+// firing 'toggle' as they opened; with every group starting closed no 'toggle' fires at load.
+updateGroupBadges();
 // A collapsed group must declare ITSELF. Hiding controls is only safe if the
 // user can still see that something inside has been changed - otherwise a
 // scenario carries a setting nobody remembers making, which is a worse failure
@@ -17604,9 +18305,14 @@ const PRESET_ORDER = ['2025, as modelled', 'Today 2026', 'IRP\'s 2030 targets',
   b.addEventListener('focus',()=>presetCaption(name));
   b.addEventListener('mouseleave',()=>presetCaption(null));
   b.addEventListener('blur',()=>presetCaption(null));
+  // CALCULATING INDICATOR (user, 15 Oct 2026, message 110). A preset click used to give no sign of life for the seconds
+  // run() takes: scheduleRun() runs it in the next animation frame, before the browser paints, so nothing changed on screen
+  // until the results did. The settings are still applied at once (the suite reads state straight after a click); only the
+  // recalculation now waits for one paint, so 'Calculating…' and the active button show first. Same state, same run():
+  // results unchanged.
   b.addEventListener('click',()=>{
     applyState(PRESETS[name]);
-    setPresetActive(b); scheduleRun();
+    setPresetActive(b); showCalc(); scheduleRunAfterPaint();
   });
   presetsEl.appendChild(b);
 });
@@ -18591,7 +19297,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-12e';
+const BUILD_STAMP = '2026-10-15a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -18736,7 +19442,7 @@ function applyAdequacyToBoard(){
 const ADEQ_N = 48;
 let adequacyEnsemble = null;   // {medUnservedGWh, medStage, medHours, lo, hi, n}
 let adeqToken = 0, adeqTimer = null;
-function scheduleAdequacy(){ clearTimeout(adeqTimer); adeqTimer = setTimeout(runAdequacy, 400); }
+function scheduleAdequacy(){ clearTimeout(adeqTimer); adeqTimer = setTimeout(calcTrack('adequacy', runAdequacy), 400); }
 async function runAdequacy(){
   const token = ++adeqToken;
   const runs = [];
@@ -18795,7 +19501,7 @@ async function runAdequacy(){
 /* --- Monte Carlo outage risk (60 synthetic years, chunked async) --- */
 let mcToken=0, mcTimer=null;
 const MC_N=60;
-function scheduleMC(){clearTimeout(mcTimer); mcTimer=setTimeout(runMC,350);}
+function scheduleMC(){clearTimeout(mcTimer); mcTimer=setTimeout(calcTrack('mc', runMC),350);}
 async function runMC(){
   const token=++mcToken;
   const mean=state.coalEAFPct/100, vol=state.outVolPct/100;
@@ -19069,8 +19775,27 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();hideCalc();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
+// As scheduleRun, but after the next paint (rAF fires before painting; the timeout after it), so a status set on click is seen.
+function scheduleRunAfterPaint(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>setTimeout(()=>{rafPending=false;run();},0));}
+// The status line follows every task a click queues (user, 15 Oct 2026, message 111): 'Calculating…' until run() has drawn
+// the results, then 'Updating risk panels…' until the capture curve, adequacy and Monte Carlo have finished, so the page
+// never looks idle while it is blocked. A task rescheduled before it ends is owed again; only its latest schedule clears it.
+const calcOwed = {}; let calcGen = 0;
+function calcTrack(name, fn){
+  const g = ++calcGen; calcOwed[name] = g; updateCalc();
+  return async (...a) => { try { return await fn(...a); } finally { if (calcOwed[name] === g){ delete calcOwed[name]; updateCalc(); } } };
+}
+function updateCalc(){
+  const e = document.getElementById('calcStatus'); if (!e) return;
+  const owed = Object.keys(calcOwed);
+  e.hidden = !owed.length;
+  if (owed.length) e.textContent = calcOwed.run ? 'Calculating…' : 'Updating risk panels…';
+  presetsEl.classList.toggle('busy', !!owed.length);
+}
+function showCalc(){ calcOwed.run = ++calcGen; updateCalc(); }
+function hideCalc(){ delete calcOwed.run; updateCalc(); }
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
 bldInitRates();

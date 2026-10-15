@@ -1,5 +1,5 @@
 # GridTwin ZA - NTCSA GCCA connection headroom by supply area
-# CC BY 4.0 - attribution required. gridtwinza.org
+# NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 # source fingerprint: gtza-93f0182456516e03
 # NOTE: wind and solar SHARE headroom - they are not additive. The GCCA publishes
 # the larger of the two per area, which is why the figures often match.

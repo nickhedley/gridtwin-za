@@ -217,6 +217,9 @@ const CF_BENCH = {
   peakerSeasonRatio: { lo: 2.15, hi: 8.6, unit: 'x', why: 'Eskom hourly 2025 (ESK19679), all '
     + 'peakers: Jan-Mar output 4.3x Jul-Sep, driven by the fleet recovering through the year. '
     + 'Model run on the measured 2025 availability trace; band is a factor of two' },
+  // FAILS from build 14a at 9.3x, left failing and the band not widened (user, 14 Oct 2026). Cause:
+  // engine (B) runs peakers far less in Jul-Sep 2025 (42 GWh against 108 on 13h) as pumped storage
+  // takes the evening peaks (3.8 TWh a year against 2.7). See RESULTS, 'TODO 14dt mark (3)'.
   // Lower bound 1.8 -> 1.2 on 8 Sep 2026, deliberately.
   //
   // The band was set against Eskom's stated 2-3 GW. The model now reads 1.5 GW, and the
@@ -244,6 +247,12 @@ const CF_BENCH = {
   cfPv:      { lo: 19, hi: 27, why: 'SA fixed-tilt utility PV, 21-24% typical; tracking reaches 26-28%' },
   cfRooftop: { lo: 14, hi: 22, why: 'Below utility PV: mixed orientation, shading, no tracking, urban siting' },
   cfNuclear: { lo: 60, hi: 85, why: 'Koeberg between refuelling outages; sent-out basis, not gross' },
+  // PUMPED STORAGE OUTPUT, added 14 Oct 2026 (user, TODO 14dt mark (3)). Engine fix (B) let pumped storage sit idle in four
+  // scenarios before its peak rule, and 13h's 2025 run delivered 2.76 TWh; an annual output check catches either. Source:
+  // Eskom hourly data (ESK19679, obtained on request; Eskom credited, the analysis is ours), calendar 2025, 'Pumped Water
+  // Generation' summed: 4.49 TWh (pumping 6.00 TWh). Band +/-25% (3.37-5.62 TWh), as for hydro: output is a dispatch
+  // result, and the model's 2025 run uses the measured availability of thermal plant but not Eskom's operating rules.
+  psTWh: { lo: 3.37, hi: 5.62, unit: 'TWh', why: 'Eskom hourly 2025 (ESK19679): pumped-storage generation 4.49 TWh; band +/-25%' },
   cfCoal:    { lo: 35, hi: 60, why: 'Constrained by EAF, not by demand. At 68% EAF and partial loading, ~44%' },
 };
 
@@ -377,6 +386,7 @@ const check = (name, ok, detail) => {
       })(),
       cfRooftop: cf(E.rooftop/1e6, FIXED.rooftopMW),
       cfNuclear: cf(E.nuclear/1e6, FIXED.nuclearMW),
+      psTWh: E.ps/1e6,
       cfCoal: cf(E.coal/1e6, FIXED.coalInstalledMW),
       windMW: FIXED.windMW, pvMW: FIXED.pvUtilityMW, rooftopMW: FIXED.rooftopMW,
       nuclearMW: FIXED.nuclearMW, coalMW: FIXED.coalInstalledMW,

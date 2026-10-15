@@ -414,16 +414,23 @@ const SCENARIOS = {
       // that was enough to invert the first two: 7.7 / 5.0 / 227.3 on the base seed.
       const base = { ...state, coalEAFPct: 55 };
       const seeds = [20260816, 20260816 + 7919, 20260816 + 15838];
-      return [0, 2200, 6000].map(f => seeds
-        .map(sd => simulate({ ...base, reserveOperatingMW: f, outageSeed: sd }, PROFILES).E.unserved || 0)
-        .reduce((x, y) => x + y, 0) / seeds.length);
+      return [0, 2200, 6000].map(f => { const rs = seeds.map(sd => simulate({ ...base, reserveOperatingMW: f, outageSeed: sd }, PROFILES));
+        const m = k => rs.map(k).reduce((x, y) => x + y, 0) / rs.length;
+        return { uns: m(r => r.E.unserved || 0), short: m(r => r.reserveShortMWh || 0) }; });
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const F = w.__flr;
-    const ok = Array.isArray(F) && F[0] <= F[1] + 1 && F[1] <= F[2] + 1 && F[2] > F[0] + 1;
-    check('[Today 2026, 55% EAF] unserved energy rises with the reserve requirement', ok,
-          Array.isArray(F) ? `requirement 0 / 2,200 / 6,000 MW: ${F.map(x => (x/1000).toFixed(1)).join(' / ')} GWh`
-                           : (F ? F.err : 'no result'));
+    // REPLACED 14 Oct 2026 (user, message 96). This asserted that unserved energy rises with the requirement. Since message 92
+    // customers are cut only after emergency and operating reserve are used, so a larger requirement no longer cuts customers:
+    // it calls interruptible load and open-cycle plant to restore reserve and shows as reserve shortfall. The requirement must
+    // still bind, now on reserve shortfall; and the design change is guarded: unserved energy never rises as the requirement rises.
+    const S = Array.isArray(F) ? F.map(x => x.short) : null, U = Array.isArray(F) ? F.map(x => x.uns) : null;
+    check('[Today 2026, 55% EAF] reserve shortfall rises with the reserve requirement',
+          !!S && S[0] <= S[1] + 1 && S[1] <= S[2] + 1 && S[2] > S[0] + 1,
+          S ? `requirement 0 / 2,200 / 6,000 MW: ${S.map(x => (x/1000).toFixed(1)).join(' / ')} GWh short` : (F ? F.err : 'no result'));
+    check('[Today 2026, 55% EAF] unserved energy never rises as the reserve requirement rises',
+          !!U && U[1] <= U[0] + 1 && U[2] <= U[1] + 1,
+          U ? `requirement 0 / 2,200 / 6,000 MW: ${U.map(x => (x/1000).toFixed(2)).join(' / ')} GWh unserved` : (F ? F.err : 'no result'));
   }
 
   // ── system cost carries the cost of energy shed ─────────────────────────
@@ -534,26 +541,31 @@ const SCENARIOS = {
   // ── MUST-RUN GAS ENERGY GOES SOMEWHERE ─────────────────────────────────────
   // Added 22 Sep 2026. With ccgtForceLoad on, forced output was added to generation and the
   // residual clamped at zero, so unneeded gas was burned and emitted against nothing: 27.3 TWh
-  // of it on an IRP-style 2035 build. Grid generation must now balance what is served, exported
-  // and charged, to within storage losses.
+  // of it on an IRP-style 2035 build.
+  // REWRITTEN AS THE EXACT BALANCE, 14 Oct 2026 (user, TODO 14dp (6)). The first version compared generation with the
+  // demand line less charging less firm exports, within a quarter of charging plus 1 TWh. But the demand line (loadS)
+  // already carries both charging and firm exports, so its gap was charging less firm exports, not phantom gas, and it
+  // failed whenever charging passed about 10 TWh a year (engine fix (a) took IRP path 2035 from 8.5 to 14.6 TWh; build 14a
+  // 22.5). The balance itself closes to 1e-12 TWh: generation plus shed equals the demand line plus surplus exports.
+  // Gas burned against nothing would break it, so the check now asks for that, within 0.01 TWh.
   {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__gas = (function(){ try {
       const r = simulate({ ...state, ...PRESETS['IRP path 2035'] }, PROFILES);
-      let load = 0, chg = 0;
-      for (let h = 0; h < 8760; h++){ load += r.loadS[h]; chg += r.chargeMW[h] || 0; }
+      let load = 0;
+      for (let h = 0; h < 8760; h++) load += r.loadS[h];
       const E = r.E;
       const gen = E.wind + E.pv + E.csp + (E.hybrid || 0) + E.nuclear + E.hydro + E.imports
                 + E.coal + E.ps + E.batt + E.ccgt + E.diesel;
-      return { gapTWh: (gen - (load - chg) - (E.exportedFirm || 0)) / 1e6,
-               chargeTWh: chg / 1e6, unmetTWh: (r.ccgtFloorUnmetMWh || 0) / 1e6 };
+      return { gapTWh: (gen + E.unserved - load - (E.exported || 0)) / 1e6, genTWh: gen / 1e6,
+               unmetTWh: (r.ccgtFloorUnmetMWh || 0) / 1e6 };
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const G = w.__gas;
     if (!G || G.err) check('must-run gas energy goes somewhere', false, G ? G.err : 'no result');
-    else check('must-run gas energy goes somewhere', G.gapTWh < 0.25 * G.chargeTWh + 1,
-               `generation exceeds served, exported and charged energy by ${G.gapTWh.toFixed(1)} TWh `
-               + `against ${G.chargeTWh.toFixed(1)} TWh charged; the IRP gas floor went unmet by `
+    else check('must-run gas energy goes somewhere', Math.abs(G.gapTWh) < 0.01,
+               `generation plus shed less the demand line (charging and firm exports included) and surplus exports: `
+               + `${G.gapTWh.toFixed(4)} TWh on ${G.genTWh.toFixed(1)} TWh generated; the IRP gas floor went unmet by `
                + `${G.unmetTWh.toFixed(1)} TWh`);
   }
 

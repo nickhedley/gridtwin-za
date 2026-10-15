@@ -220,13 +220,20 @@ const simScriptClean = cutAt > 0 ? simScript.slice(0, cutAt) : simScript;
 const vm = require('vm');
 // Inject constants that simulate() needs but are defined in nodal_engine.js
 // (loaded as a separate <script src> in the browser but not available here)
-const injectConsts = 'const IMPORTS_CF = 0.85;\n';
+// The browser loads nodal_engine.js as a classic script before index.html, so run it the same way: its
+// constants (IMPORTS_CF, EXISTING_BATT_MW, ...) then come from the one definition instead of a copy here.
+const injectConsts = fs.readFileSync('nodal/nodal_engine.js', 'utf8') + '\n';
 try {
   vm.runInThisContext(injectConsts + simScriptClean);
 } catch(e) {
   if (typeof simulate === 'undefined') { console.log('vm eval error:', String(e).slice(0,150)); }
 }
 
+// Modern-turbine wind (bldWindModern) is on by default, so new wind needs the map the app loads at start-up; load it
+// the same way (setWindModMap, regional map alongside) rather than turning the option off for the suite.
+if (typeof setWindModMap === 'function'){
+  vm.runInThisContext(`(d => { setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; })(${fs.readFileSync('nodal/profiles_wind_modern_map.json', 'utf8')})`);
+}
 if (typeof simulate !== 'function') { console.log('ERROR: simulate() not found after eval'); process.exit(1); }
 if (typeof genOutagePath !== 'function') { console.log('ERROR: genOutagePath() not found after eval'); process.exit(1); }
 console.log('  simulate() and genOutagePath() loaded successfully');

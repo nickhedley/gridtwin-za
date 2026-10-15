@@ -251,6 +251,9 @@ function check(name, ok, detail) {
   //           case it produces 217.1 TWh against the 222.4 the derivation asks for. 18% produces
   //           224.3, which is the nearest whole point. The target is the TWh; the percentage is
   //           just how this model is told to reach it.
+  //           DERIVED EACH RUN from 14 Oct 2026 (build 14l, user message 79): the 2026 profile rebuild (14k) made
+  //           the base 2.4 TWh larger and the fixed 18% then overshot. The check now solves for the growth that
+  //           lands served demand on the target in each weather year, so a change to the base cannot move it.
   //   coal    moderate EAF 60% is Eskom's whole fleet. The conversion to coal alone is now
   //           coalEafFromFleet in index.html rather than a number typed here; at 60 it gives
   //           54.4 against the 56 this check used before.
@@ -265,16 +268,29 @@ function check(name, ok, detail) {
   const mtsao = (() => {
     const s = w.document.createElement('script');
     s.textContent = `
-      { const ov = { demandGrowthPct: 18, coalEAFPct: coalEafFromFleet(60), coalDecomMW: 8400, importsMW: 288,
+      { const ov = { coalEAFPct: coalEafFromFleet(60), coalDecomMW: 8400, importsMW: 288,
                      dieselDecomMW: 340, newWindMW: 3500, newPvMW: 7000, newRooftopMW: 1200,
                      newBattMW: 1900, newBattHours: 4, newCcgtMW: 0 };
-        const u = [], cf = [];
+        // The target, from the derivation above: 264 TWh national over the 2024 ratio 243 / 204.7.
+        const MT_TWH = 264 / (243 / 204.7);
+        const demSumTWh = PROFILES.demand.reduce((a, b) => a + b, 0) / 1e6;
+        const u = [], cf = [], gr = [], srv = [];
         if (typeof bldWeatherYears !== 'undefined' && bldWeatherYears) {
           for (const y of bldWeatherYears.meta.years) {
             const n = weatherYearNational(String(y));
             const prof = { demand: PROFILES.demand, solar: n.solar, wind: n.wind, csp: PROFILES.csp, real: true };
+            // Growth derived from the TWh target in every weather year (14 Oct 2026): served demand is the shaped
+            // series times growth, plus the flat block, less rooftop, and rooftop moves with the weather year.
+            const blk = (state.demandBlockMW ?? FIXED.demandBlockMW ?? 0) * PROFILES.demand.length / 1e6;
+            let g = 18;
+            for (let k = 0; k < 3; k++) {
+              const roof = simulate({ ...state, ...ov, demandGrowthPct: g, outageSeed: 20260816 }, prof).E.rooftop / 1e6;
+              g = 100 * ((MT_TWH - blk + roof) / demSumTWh - 1);
+              if (k === 2) srv.push(demSumTWh * (1 + g / 100) + blk - roof);
+            }
+            gr.push(g);
             for (let i = 0; i < 2; i++) {
-              const r = simulate({ ...state, ...ov, outageSeed: 20260816 + i * 7919 }, prof);
+              const r = simulate({ ...state, ...ov, demandGrowthPct: g, outageSeed: 20260816 + i * 7919 }, prof);
               u.push(r.E.unserved / 1000);
               cf.push(100 * r.E.diesel / ((r.dieselCap || 3060) * 8760));
             }
@@ -282,7 +298,8 @@ function check(name, ok, detail) {
         }
         const m = a => a.reduce((x, y) => x + y, 0) / a.length;
         window.__mt = JSON.stringify({ unservedGWh: u.length ? m(u) : NaN,
-                                       ocgtCFPct: cf.length ? m(cf) : NaN, draws: u.length }); }`;
+                                       ocgtCFPct: cf.length ? m(cf) : NaN, draws: u.length,
+                                       growthPct: gr.length ? m(gr) : NaN, servedTWh: srv.length ? m(srv) : NaN, targetTWh: MT_TWH }); }`;
     w.document.body.appendChild(s);
     return JSON.parse(w.__mt);
   })();
@@ -295,6 +312,9 @@ function check(name, ok, detail) {
   check('NTCSA MTSAO 2030 risk-adjusted: OCGT utilisation near 45%',
         mtsao.ocgtCFPct > 35 && mtsao.ocgtCFPct < 58,
         `${mtsao.ocgtCFPct.toFixed(1)}% against the MTSAO's about 45%`);
+  notes.push(`NTCSA MTSAO 2030 demand: growth derived each run, mean +${mtsao.growthPct.toFixed(1)}% across weather years, `
+             + `served ${mtsao.servedTWh.toFixed(1)} TWh against the ${mtsao.targetTWh.toFixed(1)} TWh target; `
+             + `unserved ${(mtsao.unservedGWh / 1000).toFixed(1)} TWh, OCGT utilisation ${mtsao.ocgtCFPct.toFixed(1)}%`);
 
   // ── THE BUILD PACE AGAINST AN INDEPENDENT PIPELINE ESTIMATE ───────────────
   // Added 1 Oct 2026. GreenCape puts investable new renewable generation to 2030 at 12.9 GW

@@ -744,6 +744,10 @@ const num = t => {
           (Math.max(...meds) - Math.min(...meds)) / Math.min(...meds) < 0.05,
           `medians span ${(100*(Math.max(...meds)-Math.min(...meds))/Math.min(...meds)).toFixed(1)}% `
           + `- the surviving NERSA claim is that they separate on the tail, not the level`);
+    // FAILS from build 14d (14dr outage draw), left failing to investigate after the IRP note (user,
+    // 14 Oct 2026). Means at these 2025 settings, R/MWh, 14a -> 14d: high off-peak 778 -> 914, low
+    // off-peak 868 -> 792; shed 12 -> 37 GWh, more of it in the high season. Medians 743-750 on both.
+    // This check guards a claim in the NERSA correction note.
     check('high-season off-peak is the cheapest block modelled',
           tou.cheapest === 'high offpeak',
           `cheapest is "${tou.cheapest}" - the surviving NERSA claim is that Megaflex `
@@ -1396,6 +1400,11 @@ const num = t => {
       // only. See BLD_FOM in index.html for the sources. This is a correction, not an
       // inflation: the earlier figures understated the cost of every build.
       //
+      // UPDATED 14 Oct 2026, R1.205 -> R1.118, build 2026-10-14l (user decision, message 79). Measured R1.205 on main (build
+      // 14j); BW6 fixed O&M for wind and solar alone R1.134 (-0.071), the rebuilt 2026 demand profile alone R1.188 (-0.016, a
+      // larger sales base), the existing batteries at 68 MW alone R1.205 (no change), all together R1.118. Deliberate input
+      // changes, tolerance unchanged.
+      //
       // UPDATED 7 Oct 2026 (third), R1.096 -> R1.205. Wind central on BW6 compliant bids, R21,000 -> R28,463/kW (user
       // decision). Measured on build 07q: wind alone (old battery cost) gives R1.045, so wind adds R0.109 and the aged
       // battery R0.160. Deliberate input change, tolerance unchanged.
@@ -1435,8 +1444,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.205) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.205 for Deep `
+              Math.abs(ncap.newCap - 1.118) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.118 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

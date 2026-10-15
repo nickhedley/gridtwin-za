@@ -40,16 +40,14 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (13 Oct 2026, main bc21fc2, ESK19679.csv present): 723/725 in the 15 node scripts plus audit 87/87, so 810/812;
-eng5 6/6. The two failures: EDMSA Scenario A CO2 2035 (validate_external) and 'the build stamp is not stale'
-(validate_structure), which fails whenever BUILD_STAMP is older than the day the suite runs. A branch with today's stamp
-shows 811/812. The 805/806 on main's copy of this file (5 Oct) does not match today's scripts: main's own 5 Oct commit
-run today has 815 checks. Without ESK19679.csv, validate_weather adds a failure (the missing Eskom reference) and
-validate_benchmarks skips the fleet-normalised wind check; those totals were not re-measured on 13 Oct.
-Engine branches (13 Oct 2026, ESK19679.csv present): claude/c4-frozen 720/725 (stale stamp; 721 with today's); claude/engine-fix
-(build 13h) 715/725 plus audit 87/87, so 802/812, eng5 6/6: the six extra failures are the engine fix's, causes in RESULTS
-'Engine fixes', waiting on your decisions (TODO 14dp). claude/engine-fix build 14a (engine fix (B), 14 Oct): 715/726 plus audit
-87/87, so 802/813, eng5 6/6; failures and causes in RESULTS 'Engine fix (B) against the same pass marks' (TODO 14dp, 14dt).
+Expected (15 Oct 2026, build 2026-10-15a, branch claude/calc-indicator, ESK19679.csv present): 814/820, node checks 727/733 plus
+audit 87/87; eng5 6/6 (main ef1025d, build 14r: 814/820 on 14 Oct, 813/820 from 15 Oct, the stale stamp); stress_suite.js (repo
+root, `node stress_suite.js`) 290/290 on 14 Oct. The six failures, each with its cause in RESULTS ('Scenario switch and load
+timing' lists them): EDMSA Scenario A CO2 2035 (validate_external); with gas, iron-air moves July gas, and the preset curtailment
+band (validate_findings; the band waits on the preset re-search, TODO 14ef); the Megaflex tariff block (validate_consistency);
+the peaker season ratio and pumped-storage output (validate_benchmarks). 'The build stamp is not stale' (validate_structure)
+fails whenever BUILD_STAMP is older than the day the suite runs. Without ESK19679.csv, validate_weather adds a
+failure (the missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind check.
 
 ## Rules that matter most (RULES.md has the full set)
 

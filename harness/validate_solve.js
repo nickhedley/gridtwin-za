@@ -175,6 +175,44 @@ const check = (name, ok, detail) => {
     `got ${res.Status} after ${secs}s`);
   notes.push(`solved in ${secs}s on the ${PACE} pace`);
 
+  // ── ENGINE AND OPTIMISER AGREE ON RESERVE ELIGIBILITY ─────────────────────
+  // Added 14 Oct 2026 (user, message 90). Under the ASTR rule the spare headroom of running gas and diesel turbines counts as
+  // operating reserve, idle open-cycle plant does not. The engine applies astrOnlineHeadroom(output, capacity, m); the national
+  // build LP has its own rows (rgo_, rd_). Solve the national LP to 2028 with open-cycle LNG on and, in every representative
+  // hour, test the LP's credited headroom against the engine's function on the LP's own dispatch: the LP may never count more.
+  // Before this the LP counted all new gas capacity, running or not, while the engine counted none (found 14 Oct 2026).
+  {
+    w.eval(`window.__agreeLp = (() => { const H0 = BLD_YEARS[BLD_YEARS.length - 1]; bldSetHorizon(2028);
+      try { return bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: { ...state, bldOcgtOn: 1, reserveRule: 'astr' } }).lp; }
+      catch (e) { return 'ERR ' + e; } finally { bldSetHorizon(H0); } })()`);
+    const lpA = w.__agreeLp;
+    let ag = null;
+    try {
+      if (String(lpA).startsWith('ERR')) throw new Error(lpA);
+      const rA = highs.solve(lpA, { time_limit: 180 });
+      if (rA.Status !== 'Optimal') throw new Error('status ' + rA.Status);
+      const C = rA.Columns, v = n => (C[n] && C[n].Primal) || 0, act = {};
+      for (const r of (Array.isArray(rA.Rows) ? rA.Rows : Object.values(rA.Rows))) act[r.Name] = r.Primal;
+      const dslCap = {}; for (const mm of lpA.matchAll(/ rd2_(\S+): .*<= ([0-9.eE+-]+)/g)) dslCap[mm[1]] = +mm[2];
+      const m = w.eval('FIXED.reserveGasMinStableFrac');
+      ag = { n: 0, over: 0, worst: 0, gasOn: 0, dslOn: 0 };
+      for (const name of Object.keys(C)) if (name.startsWith('rgo_')) {
+        const k = name.slice(4), gas = v('gg_' + k) + v('go_' + k), gd = v('gd_' + k), rgo = v(name), rd = v('rd_' + k);
+        const gasCap = rgo + gas - act['rgo2_' + k];          // rgo2: rgo + gas - capacity <= 0
+        const o = Math.max(0, rgo - w.astrOnlineHeadroom(gas, gasCap, m)) + Math.max(0, rd - w.astrOnlineHeadroom(gd, dslCap[k], m));
+        ag.n++; if (o > 1) ag.over++; ag.worst = Math.max(ag.worst, o); if (gas > 1) ag.gasOn++; if (gd > 1) ag.dslOn++;
+      }
+      // Pumped storage (message 97): its reserve is at most its unused output plus the pumping it could drop, as in the engine.
+      const psCap = {}; for (const mm of lpA.matchAll(/ rpp_(\S+): .*<= ([0-9.eE+-]+)/g)) psCap[mm[1]] = +mm[2];
+      ag.ps = 0; ag.psOver = 0;
+      for (const k of Object.keys(psCap)) { ag.ps++; if (v('rp_' + k) - (psCap[k] - v('pdis_' + k) + v('pchg_' + k)) > 1) ag.psOver++; }
+    } catch (e) { ag = { error: String(e).slice(0, 160) }; }
+    check('engine and optimiser count the same online headroom as reserve',
+      ag && !ag.error && ag.n > 0 && ag.over === 0 && ag.ps > 0 && ag.psOver === 0,
+      ag && ag.error ? ag.error : `${ag.over} of ${ag.n} hours where the LP credits more than the engine (worst ${ag.worst.toFixed(1)} MW); `
+        + `gas running in ${ag.gasOn}, diesel in ${ag.dslOn}; pumped storage over its unused power in ${ag.psOver} of ${ag.ps}`);
+  }
+
   if (res.Status !== EXPECT.status) { report(); return; }
 
   const sumOf = (pre) => Object.entries(res.Columns)

@@ -38,6 +38,12 @@ on:
       code_sha:
         description: 'Leave blank. Set by the workflow itself: the commit every job of the run checks out'
         default: ''
+      seed_run:
+        description: 'Optional: the last run of a finished pathway whose state this run reads (with seed_name), e.g. for WIN_FROM=seed/out/pathway_<seed_name>_lp2040.json'
+        default: ''
+      seed_name:
+        description: 'Optional: that pathway run name'
+        default: ''
 
 permissions:
   contents: read
@@ -55,6 +61,8 @@ env:
   PREV_RUN: ${{ inputs.prev_run }}
   JOB_NO: ${{ inputs.job_no }}
   CODE_SHA_IN: ${{ inputs.code_sha }}
+  SEED_RUN: ${{ inputs.seed_run }}
+  SEED_NAME: ${{ inputs.seed_name }}
 
 jobs:
   pass:
@@ -72,6 +80,9 @@ jobs:
           [[ "$RUN_NAME" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "run name: letters, digits, - and _ only"; exit 1; }
           for v in "$PASSES" "$MAX_JOBS" "$JOB_NO"; do [[ "$v" =~ ^[0-9]+$ ]] || { echo "not a whole number: $v"; exit 1; }; done
           [[ -z "$PREV_RUN" || "$PREV_RUN" =~ ^[0-9]+$ ]] || { echo "prev_run must be a run id"; exit 1; }
+          [[ -z "$SEED_RUN" || "$SEED_RUN" =~ ^[0-9]+$ ]] || { echo "seed_run must be a run id"; exit 1; }
+          [[ -z "$SEED_NAME" || "$SEED_NAME" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "seed_name: letters, digits, - and _ only"; exit 1; }
+          [[ -z "$SEED_RUN" && -z "$SEED_NAME" || -n "$SEED_RUN" && -n "$SEED_NAME" ]] || { echo "seed_run and seed_name go together"; exit 1; }
           (( PASSES >= 1 && JOB_NO <= MAX_JOBS )) || { echo "passes_per_job must be at least 1 and job_no at most max_jobs"; exit 1; }
           for kv in $SETTINGS; do
             [[ "$kv" =~ ^[A-Z][A-Z0-9_]*=[A-Za-z0-9_.:,/+-]*$ ]] || { echo "not KEY=VALUE: $kv"; exit 1; }
@@ -117,6 +128,21 @@ jobs:
           npm install --no-save --no-package-lock jsdom@29.1.1 highs@1.15.3
           pip install highspy==1.15.1
           ln -s .. testroot
+
+      # SEED (12 Oct 2026): a seeded run (TODO 14co) starts from a finished run's final stress windows. Every job of the run
+      # fetches that run's state into harness/seed, so WIN_FROM=seed/out/pathway_<seed_name>_lp2040.json reads the same
+      # file in each job and the first pass's LP, and so the cache, stays the same across jobs.
+      - name: Fetch the seed run's state
+        if: inputs.seed_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: state-${{ inputs.seed_name }}
+          path: harness/seed
+          run-id: ${{ inputs.seed_run }}
+          github-token: ${{ github.token }}
+      - name: List the seed files
+        if: inputs.seed_run != ''
+        run: ls -la harness/seed/out
 
       - name: Fetch the previous job's state
         if: inputs.prev_run != ''
@@ -170,7 +196,8 @@ jobs:
           fi
           gh workflow run optimiser-long-run.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME" \
             -f name="$RUN_NAME" -f settings="$SETTINGS" -f passes_per_job="$PASSES" -f max_jobs="$MAX_JOBS" \
-            -f prev_run="$GITHUB_RUN_ID" -f job_no="$((JOB_NO + 1))" -f code_sha="${{ steps.pin.outputs.sha }}"
+            -f prev_run="$GITHUB_RUN_ID" -f job_no="$((JOB_NO + 1))" -f code_sha="${{ steps.pin.outputs.sha }}" \
+            -f seed_run="$SEED_RUN" -f seed_name="$SEED_NAME"
 
   check:
     needs: pass

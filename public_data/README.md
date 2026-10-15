@@ -2,6 +2,8 @@
 
 CC BY 4.0. Attribution required; reuse, modification and commercial use permitted.
 Cite as: GridTwin ZA, gridtwinza.org, accessed <date>.
+Except NTCSA GCCA data: connection_headroom.csv, and the supply areas and NTCSA coordinates in
+transmission_substations.csv, come under the NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1) - non-commercial use only; publication needs NTCSA's written consent.
 
 Compiled from published South African sources. A project fact - name, capacity, technology,
 location, commissioning date - is not copyrightable; these files are the compilation, and
@@ -19,9 +21,11 @@ region, unallocated, and terminated. Terminated projects sit outside the procure
 
 **transmission_substations.csv** - 189 substations with coordinates, voltage and supply-area
 assignment.
+GCCA-derived content: NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 
 **connection_headroom.csv** - NTCSA GCCA connection headroom by supply area. Wind and solar
 share headroom and are not additive.
+NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 
 **environmental_authorisations.csv** - DFFE permits with coordinates. Permits, not plants:
 permitted capacity exceeds built by roughly ten times.
