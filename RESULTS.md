@@ -2696,6 +2696,68 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### c5b_14r sensitivities: 21 runs and s_detgas from c5b_14r's windows, against a null run; both cost measures agree in direction on 17 of the 18 judged runs (s_li8h, by under R0.5bn, does not); s_nogas4strict fails adequacy 2034-40 (top-up pending), s_roof2 2038 topped up with 250 MW (user, 14-15 Oct 2026, messages 82, 104 and 105)
+
+Runs: workflow 'Optimiser long run', ref claude/reserve-rule, code_sha 6045387 (build 2026-10-14r; s_detgas 2ed7225, the same
+engine plus GAS_CUM and GASFLOOR_MW), seed_run 38628612316 (c5b_14r's last job), seed_name c5b_14r; first jobs 223-244, started
+20:57-20:59 UTC on 14 Oct; null_c5b14r run 275 onward, started 23:03. Each run's settings = c5b_14r's line with MAXP=3 and
+WIN_FROM=seed/out/pathway_c5b_14r_lp2040.json, plus its one change (KEY=VALUE replaces or adds, -KEY removes). Dropped as
+before as duplicates of the base: s_coalirp, s_battdecl, s_wind35.
+
+The reference is a null run (c5b_14r's own line, seeded the same way, no change), not c5b_14r itself. c5b_14r passed only after
+its tail-day stress margin reached 3,000 MW; a seeded run starts at margin 0, so its first LP is c5b_14r's windows without the
+margin. The null's final solve is c5b_14r's pass-4 solution (cache key 9ae6092b91). Against c5b_14r itself the null is R5.1bn
+cheaper on the engine (R2,388.4bn against R2,393.5bn), R6.5bn on the objective (R1,591.6bn against R1,598.1bn), and 4.8 Mt higher
+in CO2 (1,996.7 against 1,991.9 Mt).
+
+Engine cost: PV at 8% real, 2026 base, of the GitHub engine checks (pathcheck at each run's code), with any adequacy top-up.
+Objective: the optimiser's final objective without its stress-target penalty (no run had a penalty), from a local rerun at the
+same code (SOLVER=native, TL=7200 against the local default of 900 s, which the strict no-gas solve exceeded with three runs
+sharing four cores; a longer limit changes only whether a solve finishes, not an optimal answer). Every local rerun ends as its
+GitHub run did ('adequate' or 'pass limit'), and two spot checks match GitHub's engine check to every printed digit (s_roof2 2038;
+the null 2040). GitHub's year lines were read from the job logs (the results artifacts cannot be downloaded from this session),
+copied out by a helper and spot-checked against the logs (s_be7, s_nogas4strict, the null).
+
+| Run | Change from c5b_14r's line | Loop | Engine PV, R bn | vs null | CO2 2026-40, Mt | vs null | Objective, R bn | vs null | Same direction |
+|---|---|---|---|---|---|---|---|---|---|
+| null_c5b14r | (none) | pass limit | 2,388.4 | | 1,996.7 | | 1,591.6 | | |
+| s_be7 | NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350 | pass limit | 2,419.6 | +31.2 | 1,995.7 | -0.9 | 1,536.0 | -55.6 | not judged (a) |
+| s_nogas4strict | GAS_CAP=0 OCGD=0 LI_CAP=4000 | pass limit | 2,407.5 as solved; fails 2034-2040, top-up pending | +19.1 | 1,428.7 | -568.0 | pending | pending | pending |
+| s_coal60 | COAL_DATES=coal_dates_irp2025_60y.json | pass limit | 2,373.8 | -14.5 | 2,084.8 | +88.1 | 1,561.0 | -30.6 | yes |
+| s_irpgas | IRP gas plan (as s_irpgas_c5b) | adequate | 2,519.2 | +130.8 | 2,159.5 | +162.8 | 1,696.1 | +104.5 | yes |
+| s_pvirp | PV_CAP_YR (IRP Table 1 solar) | adequate | 2,401.0 | +12.7 | 2,038.5 | +41.8 | 1,608.9 | +17.3 | yes |
+| s_windlow | WIND_CASE=low | adequate | 2,378.4 | -10.0 | 1,806.2 | -190.5 | 1,541.8 | -49.8 | yes |
+| s_roof2 | ROOF_MW=2000 | adequate | 2,423.2 (top-up 250 MW; 2,422.5 as solved) | +34.8 | 1,974.1 | -22.5 | 1,616.9 | +25.3 | yes |
+| s_li8h | LI_EH=8 | pass limit | 2,388.7 | +0.4 | 1,997.5 | +0.8 | 1,591.5 | -0.1 | no |
+| s_be4 | GASFLOOR=1 | adequate | 2,409.3 | +21.0 | 1,963.6 | -33.0 | 1,599.0 | +7.4 | yes |
+| s_be6 | LI_CAP=550 CAP_FROM=2026 | adequate | 2,459.4 | +71.0 | 2,114.1 | +117.4 | 1,660.6 | +69.0 | yes |
+| s_committed | GAS_MIN=2030-2033:1200,2034:200 LI_MIN=2026:360:1440,2027:666:2664,2030:4600:18400 | pass limit | 2,390.3 | +1.9 | 2,007.0 | +10.3 | 1,593.5 | +1.9 | yes |
+| s_gasprem | GAS_PREM=0.015 | pass limit | 2,393.7 | +5.3 | 1,966.3 | -30.4 | 1,601.5 | +9.9 | yes |
+| s_disc10 | DISC=0.10 | pass limit | 2,477.9 | +89.5 | 2,064.4 | +67.7 | 1,473.3 at 10.0% | not comparable | not judged |
+| s_disc113 | DISC=0.113 | pass limit | 2,536.1 | +147.7 | 2,105.9 | +109.2 | 1,403.3 at 11.3% | not comparable | not judged |
+| s_noimp | IMP_END=2030 | pass limit | 2,420.0 | +31.6 | 2,006.0 | +9.3 | 1,657.5 | +65.9 | yes |
+| s_carbonfull | CTAX_FULL=1 | pass limit | 2,752.9 | +364.5 | 1,723.4 | -273.3 | 1,988.1 | +396.5 | yes |
+| s_coalme | -COAL_DATES | adequate | 2,403.3 | +14.9 | 1,936.6 | -60.0 | 1,625.9 | +34.3 | yes |
+| s_batt5 | -BATT_DECL | pass limit | 2,379.5 | -8.8 | 1,975.4 | -21.3 | 1,579.9 | -11.7 | yes |
+| s_gmcv2029 | DEM_BLOCK=2027:930,2029:675,2030:493 | adequate | 2,356.5 | -31.8 | 1,985.8 | -10.9 | 1,556.1 | -35.5 | yes |
+| s_measured | -DEM_BLOCK | adequate | 2,309.2 | -79.1 | 1,943.8 | -52.9 | 1,506.3 | -85.3 | yes |
+| s_cape10 | CAPE_WIND=3470:10 | pass limit | 2,390.0 | +1.6 | 1,998.5 | +1.8 | 1,593.0 | +1.4 | yes |
+| s_detgas | GN 8021 gas: GAS_CUM 3,000 MW in 2030 rising to 8,000 MW by 2037, GASFLOOR_MW=3000 (code 2ed7225) | adequate | 2,427.2 | +38.8 | 2,066.2 | +69.5 | 1,607.6 | +16.0 | yes |
+
+(a) Forced nuclear's capital is not in the objective (recorded for s_be7_c4), so the objective falls by the energy the nuclear
+displaces; the engine, which carries it, puts s_be7 R31.2bn above the null. s_disc10 and s_disc113: the objective is at the run's
+own rate, not comparable with the null's at 8%; their engine PV, at 8%, is. s_li8h: both measures within R0.5bn of the null
+(+R0.4bn engine, -R0.1bn objective), opposite signs; pass mark 5 (TODO 14dt) as written fails on it, recorded, not moved.
+
+Adequacy: every run's engine check is below target in every year except s_nogas4strict (2034-2040; worst 2039, 10.34 GWh against
+2.72) and s_roof2 (2038, 2.4495 against 2.4460 GWh). s_roof2's top-up (harness/topup.js from claude/topup 27337aa, with that
+branch's EXTRA_OCGD_MW line in pathcheck.js, local copy only): 250 MW of diesel open-cycle in 2038, inside the run's caps; R2,422.5bn
+to R2,423.2bn, CO2 unchanged. s_nogas4strict's top-up follows its local rerun. With no gas, open-cycle on diesel is also off in that
+run, so any top-up there is flagged as outside the run's own options.
+
+Loop: ten runs ended 'adequate' within three passes, twelve at the pass limit (MAXP=3) with no year failing the engine check
+except s_nogas4strict; as in the c5b round, the engine check, not the loop's own test, is the adequacy verdict.
+
 ### c5b on build 2026-10-14r, the final base: adequate after five passes; the engine check passes every year; R2,393.5bn engine PV (+R7.9bn on c5b_mr2), 1,991.9 Mt CO2 2026-40 (-9.1 Mt); the CO2 drop is the build, not the code (user, 14 Oct 2026, messages 100 and 105)
 
 Run: workflow 'Optimiser long run', name c5b_14r, code 6045387 (build 2026-10-14r), five jobs ending with run 38628612316 ('done
