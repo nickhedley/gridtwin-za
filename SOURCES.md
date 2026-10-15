@@ -1234,21 +1234,6 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
   section 3.1, Mozal's removal linked to no Cahora Bassa supply; Figure 2's separate 'Moderate_MozalOut' case. Peak: the plan
   quotes the Transmission Development Plan 2024's 43 GW by 2034 (moderate-high); cite as the TDP's.
 
-## Avon and Dedisa (DoE peakers): contract term and dates (14 Oct 2026, message 83)
-
-- Avon Peaking Power press release, POWER Magazine, 25 July 2016 (powermag.com, 'Avon Peaking Power, South Africa's Largest
-  IPP, Reaches Commercial Operation Adding 670 MW to the National Grid'): Avon in full commercial operation on 20 July 2016;
-  'Dedisa Peaking Power was commissioned end of 2015'; both 'contracted to supply electricity to Eskom Holdings, under 15-year
-  Power Purchase Agreements awarded by the DOE on a Build, Own and Operate (BOO) basis'. Read via Firecrawl (the web reader
-  could not resolve the host).
-- IRP 2025, section 3.2.1.2.2, p.13 (gazette p.24): the Avon and Dedisa contracts expire in 2030-31 (as already cited in
-  index.html, otherIppCostR and BLD_PEAKERS notes).
-- Engineering News, 6 June 2013, 'Deal finally concluded for 1 005 MW peaker projects': 15-year PPAs signed (search result;
-  page not opened).
-- End dates used: Dedisa about end-2030, Avon about July 2031, by 15 years from each start (inference; the contractual dates
-  are not published in these sources).
-
-
 ## Coal emissions compliance cost (Minimum Emission Standards; messages 118 and 119, 15 Oct 2026; research helper, pmg.org.za and news pages via Firecrawl because the web reader could not resolve any host; no PDFs; nothing from eskom.co.za)
 
 - Eskom to the NCOP Select Committee on Agriculture, Land Reform and Mineral Resources, 10 June 2025, 'Cost and operational implications
@@ -1294,3 +1279,18 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
   primary energy input costs only, excluding Eskom's other operating costs'; 'costImports 550 Cahora Bassa & international purchases at
   contracted rates'. No source for the 550 figure, and no year, is recorded. Neither had a SOURCES entry until now; neither is escalated
   from FY2025 to 2026 rands. Eskom's integrated report to be checked by the user.
+
+## Avon and Dedisa (DoE peakers): contract term and dates (14 Oct 2026, message 83)
+
+- Avon Peaking Power press release, POWER Magazine, 25 July 2016 (powermag.com, 'Avon Peaking Power, South Africa's Largest
+  IPP, Reaches Commercial Operation Adding 670 MW to the National Grid'): Avon in full commercial operation on 20 July 2016;
+  'Dedisa Peaking Power was commissioned end of 2015'; both 'contracted to supply electricity to Eskom Holdings, under 15-year
+  Power Purchase Agreements awarded by the DOE on a Build, Own and Operate (BOO) basis'. Read via Firecrawl (the web reader
+  could not resolve the host).
+- IRP 2025, section 3.2.1.2.2, p.13 (gazette p.24): the Avon and Dedisa contracts expire in 2030-31 (as already cited in
+  index.html, otherIppCostR and BLD_PEAKERS notes).
+- Engineering News, 6 June 2013, 'Deal finally concluded for 1 005 MW peaker projects': 15-year PPAs signed (search result;
+  page not opened).
+- End dates used: Dedisa about end-2030, Avon about July 2031, by 15 years from each start (inference; the contractual dates
+  are not published in these sources).
+
