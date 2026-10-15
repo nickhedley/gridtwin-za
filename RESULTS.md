@@ -3316,7 +3316,16 @@ What changed in simulate(), all under laGasCharge (1; 0 restores the earlier rul
   that hour. Before, spare gas charged storage only in daytime deficit hours outside the peak, never in surplus or night hours.
 - Before diesel and before shedding, when the window forecasts shedding (need beyond coal, gas and diesel above what the stores
   hold), the store fuller for its size gives first; otherwise pumped storage first, as before.
-- Pumped storage pumps within the rating left in the hour (a bug, RESULTS 'Pumped storage pumped above its rating').
+- Pumped storage pumps within the rating left in the hour. A bug (message 126 (5)): where coal forced above demand or must-run
+  gas had already pumped in an hour, the charging block added up to 80% of the rating again (and the old gas block the same); in
+  c5b_14r's 15 stress weeks 243 hours were above the rating, 386 GWh in all. What it overstated in c5b_14r, by year, from
+  c5b_14r's engine check on build 15d with and without the cap alone (cost R bn / mean shed GWh, without -> with the cap; CO2
+  within 0.2 Mt): 2026-2029 unchanged; 2030 250.04 -> 250.05 / 0.41 -> 0.44; 2031 255.40 -> 255.44 / 1.14 -> 1.17; 2032 263.49 ->
+  263.63 / 0.53 -> 0.61; 2033 272.86 -> 273.02 / 0.47 -> 0.61; 2034 272.58 -> 272.79 / 0.40 -> 0.49; 2035 274.54 -> 274.74 /
+  0.50 -> 0.64; 2036 284.41 -> 284.64 / 1.23 -> 1.47; 2037 286.47 -> 286.70 / 1.82 -> 2.11; 2038 297.90 -> 298.05 / 1.35 -> 1.58;
+  2039 306.94 -> 307.07 / 1.14 -> 1.27; 2040 317.63 -> 317.71 / 1.57 -> 1.78. Cost understated by R1.56bn over 2026-40 (yearly
+  costs summed), shed by 0.03-0.29 GWh a year; every year still passes its target with the cap (2037: 2.11 against 2.58). 15d
+  reproduces c5b_14r's recorded 2035 check (274.54).
 
 Variants measured on the same 15 weeks (shed GWh / engine R m): before 123.0 / 48,524; counting tomorrow's spare gas as refill in
 the holds 141.6 / 47,370 (the stores ran down and the last nights shed more; kept only as _laGasRefill, for measurement); charging
