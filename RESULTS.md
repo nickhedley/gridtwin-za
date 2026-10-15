@@ -3028,6 +3028,38 @@ Not traced: 13b-13d read 845.7 -> 831.7 (1.7%, a pass), the figure RESULTS gives
 builds have bldWindModern 1; and 14m reads 2,412.5 both ways, the first build of the reserve rule, whose double-held coal reserve
 was fixed in 14n ('Reserve rule fix').
 
+### Input checks on c5b_14r (user, 15 Oct 2026, message 119 B): utility solar ran on the BW6 tracker capex, R16,786/kW in 2026; gas fuel R1,298 per MWh of electricity, not the code default R2,003; coal R546 and imports R550 predate the repository, with a source recorded for coal only; pack corrected and two limitations added (messages 118 and 119); nothing in the model changed
+
+Settings: c5b_14r's pathway file (harness/out/pathway_c5b_14r.json, GitHub run, code 6045387, build 2026-10-14r) and the app's own
+cost functions read on c5b_14r's settings by the read-only diagnostic of 'Wind diagnostics on c5b_14r' (validation/w117). Docs on
+main at build 2026-10-15b.
+
+(6) Solar tracking: on. The pathway file records pvTracking 1, so bldCostEntry('pv') returns BLD_COST.pvtrk: R16,785.5/kW in
+2026 (BW6 preferred bidders' R15,715 in January 2024 rands x 1.068), connection included, falling 3.89% a year: R14,322/kW in
+2030. The R12,000/kW fixed-tilt entry is not used. The pack's utility solar row, 'unsourced', is corrected to partly sourced: the
+capex is BW6's, but what the bid includes is not defined and the decline rate has no recorded source.
+
+(7) Gas fuel: c5b_14r ran GAS_CASE=central: R1,298.42 per MWh of electricity, at 52% efficiency on the higher heating value, in
+January 2026 rands, the same in every year 2026-2040 (public_data/gas_price_cases.json: LNG at 13.25% of Brent at USD 80 in 2024
+dollars, USD 11.74/MMBtu at the coast, plus USD 0.25 regasification, at R16.50/USD), with the LNG terminal as a separate fixed charge
+of R530.5/kW-yr on new gas. The engine check applies the same case from the pathway file. The code default costCcgt R2,003/MWh
+(USD 18.50/MMBtu delivered, also per MWh of electricity) is not used in c5b_14r.
+
+(8) Coal R546/MWh and imports R550/MWh: both are in the repository's first commit (774dc8d, 1 October 2026), so git cannot date them.
+The comment beside them in index.html says coal was 'sourced 14 Aug 2026' as Eskom's FY2025 primary energy cost for coal (annual
+financial statements or integrated report; MyBroadband, March 2026), fuel only. Imports is described as Cahora Bassa and other
+purchases 'at contracted rates', with no source and no year. Neither had a SOURCES entry (now added, 'Coal fuel R546/MWh and imports
+R550/MWh'); neither is escalated from FY2025 to 2026 rands. Not checked against Eskom's reports here (no eskom.co.za reads); the user
+will check the 2026 integrated report.
+
+(9) Gas turbines: Wood Mackenzie's 1 April 2026 outlook (turbine prices about USD 600/kW by end-2027, nearly triple 2019; lead times
+about six years; order books sold through 2027) recorded as supporting context (SOURCES 'Gas turbine supply') and as pack limitation
+21: new gas from 2030 may not be deliverable on those lead times. Not used in any input.
+
+Message 118 (1): pack limitation 20, no emissions compliance cost on coal running past 2030 (Eskom to the NCOP, 10 June 2025:
+R257bn plus R6.3bn a year full, R77bn plus R2.1bn a year recommended; Medupi FGD R41.7bn; rand year not stated), noting that
+s_coal60's saving excludes it; SOURCES 'Coal emissions compliance cost'; TODO 14em.
+
 ### Scenario switch and load timing: a preset click blocks the page for 37 s to 3.2 minutes on this machine (risk panels 84% of the engine time); simulate() lost V8's optimising compiler between 14l and 14r, about three-quarters of 14r's 15% slowdown; status line added (build 2026-10-15a; user, 15 Oct 2026, messages 110-112)
 
 Machine: this session's cloud container (4 cores), Chromium 141.0.7390.37 headless, V8 14.1.146.11, Playwright; the app served
