@@ -1248,3 +1248,49 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
 - End dates used: Dedisa about end-2030, Avon about July 2031, by 15 years from each start (inference; the contractual dates
   are not published in these sources).
 
+
+## Coal emissions compliance cost (Minimum Emission Standards; messages 118 and 119, 15 Oct 2026; research helper, pmg.org.za and news pages via Firecrawl because the web reader could not resolve any host; no PDFs; nothing from eskom.co.za)
+
+- Eskom to the NCOP Select Committee on Agriculture, Land Reform and Mineral Resources, 10 June 2025, 'Cost and operational implications
+  of stricter air quality standards targets: engagement with Eskom; with Deputy Minister' (PMG, https://pmg.org.za/committee-meeting/40926/,
+  read) and the attached presentation 'Implications and costs of compliance with the Minimum Emissions Standards' (pptx,
+  https://pmg.org.za/files/250610_Eskom_MES_implications.pptx, read):
+  - full compliance 'will require ~R257 bn (CAPEX) and R6.3 bn (OPEX per annum)', up to 10% on the tariff; flue-gas desulphurisation at
+    Medupi, Majuba, Matimba, Kendal, Lethabo and Tutuka;
+  - Eskom's recommended approach: 'SO2 reduction at Kusile and Medupi1 and the completion of Particulate Matter, and Nitrogen Oxide upgrades
+    at six stations ... R77 bn (CAPEX) and R2.1 bn (OPEX per annum)'; footnote 'Medupi1 - FGD project is not fully funded'. The six
+    stations are not named on that slide (the exemption slide's six are Medupi, Majuba, Kendal, Matimba, Lethabo, Tutuka: an inference);
+  - 'Additional R180bn required for full compliance'; '~R15.6 bn' allocated over five years; 'over R3 bn' spent 2015-2022;
+  - '6 power stations require refit at a cost of R30 - R50bn per station (R256bn total)'; no split by pollutant or station;
+  - MW at risk by April 2030 without FGD: Medupi 4,320, Kendal 3,840, Majuba 3,807, Matimba 3,690, Lethabo 3,558, Tutuka 2,925;
+  - SO2 retrofit 'can only be completed between 2029 and 2036'; Medupi FGD about FY2029, Kendal, Matimba, Lethabo and Tutuka FY2031;
+  - Matla, Duvha and Kriel close before FGD could finish and were taken out of the full-compliance option; Duvha and Matla exempt until
+    shutdown in February and July 2034, Kriel suspended until shutdown in 2030; 'Matla and Duvha are excluded from FGD costing';
+  - Kusile 'currently fully compliant'; no Kusile cost given;
+  - price base (rand year) not stated anywhere.
+- Medupi FGD: R41.7bn, estimated, from Eskom's integrated report for the year to March 2026; Business Day, Kabelo Khumalo, 2 September
+  2026 (read). Daily Maverick, Chris Yelland, 28 September 2026, gives the same figure. An earlier draft cost-benefit study put wet FGD
+  capex at R56.2bn (Business Day, 26 February 2026; Engineering News, 11 March 2026: wet R56bn, semi-dry R48bn, dry R15bn). The two
+  figures are not reconciled in any source found; neither states a price base.
+- Sunday Independent / IOL, Sizwe Dlamini, 'Will SA bear the cost of Eskom's R257bn air quality compliance?', 21 June 2025 (read):
+  R257bn plus R6.3bn a year full, R77bn plus R2.1bn a year compromise.
+- Keep-alive cost: Eskom told the Presidential Climate Commission that keeping Camden, Grootvlei, Hendrina, Arnot and Kriel (4,100 MW)
+  to 2030 adds about R90bn of operating cost to the end of the decade, against R102bn of revenue; R8.4bn of extra maintenance
+  (Engineering News, 10 December 2024, search extract).
+
+## Gas turbine supply (message 119 (9), 15 Oct 2026; supporting context, user-supplied, checked by web search)
+
+- Wood Mackenzie press release, 1 April 2026, 'Gas turbine prices soar 195% as market faces supply-demand crisis', as reported by Power
+  Engineering ('Gas turbine prices climb 195% as supply crunch reshapes power development') and Utility Dive: turbine prices about
+  USD 600/kW by end-2027, nearly triple 2019; lead times about six years; order books sold through 2027; orders about 110 GW at end-2025
+  against 60-70 GW a year of manufacturing capacity; turbines 20-30% of combined-cycle project cost (search results; pages not opened).
+  Not used in any input; cited in the pack as a limitation.
+
+## Coal fuel R546/MWh and imports R550/MWh: what the record holds (message 119 (8), 15 Oct 2026)
+
+- Both constants (FIXED.costCoal 546, FIXED.costImports 550) are in the repository's first commit (774dc8d, 1 October 2026), so git cannot
+  date them. The comment beside them in index.html: 'Dispatch SRMC, R/MWh, fuel-only - sourced 14 Aug 2026: costCoal 546 Eskom FY2025
+  primary energy cost for coal, R546/MWh (Eskom AFS/integrated report; widely cited, e.g. MyBroadband Mar 2026 ...). Basis per Eskom:
+  primary energy input costs only, excluding Eskom's other operating costs'; 'costImports 550 Cahora Bassa & international purchases at
+  contracted rates'. No source for the 550 figure, and no year, is recorded. Neither had a SOURCES entry until now; neither is escalated
+  from FY2025 to 2026 rands. Eskom's integrated report to be checked by the user.
