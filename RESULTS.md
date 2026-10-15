@@ -3210,9 +3210,12 @@ objective is unchanged, R4,118.9m); NEUTRAL=all and NEUTRAL=fe; X_RES=X_MR=X_IL=
 twelve weather years. The gap, step by step:
 - Profile and turbine: Renewables.ninja MERRA-2 output for a Vestas V162 5.6 MW at 120 m hub height at the 98 sites of
   profile_sites.json, mapped onto each weather year (build_wind_modern.py), uncorrected: 42.5% (45.2 / 1.064).
-- The 1.064 correction (+2.7 points): fitted to two farms' developer-stated annual output, Impofu (Enel, 330 MW, 1,260 GWh, 43.6%)
-  and San Kraal (EDF, 140 MW, 616 GWh, 50.2%), over four weather years (check_wind_farms.py). Both are new, large-rotor farms at
-  strong Eastern Cape sites; developer-stated output is a P50 estimate, not metered.
+- The 1.064 correction (+2.7 points): fitted to two farms' annual output as projected by their developers, not measured (message
+  124 (2)): Impofu (Enel Green Power, 330 MW, '1,260 GWh annually', 43.6%; Enel's project page, an annual estimate; the cluster reached
+  full commercial operation in May-June 2026, Engineering News, 30 Jun and 2 Jul 2026) and San Kraal (EDF, 140 MW, 616 GWh, 50.2%;
+  commercial operation 11 Dec 2025, Engineering News, 11 Dec 2025; the 616 GWh figure's source was not found again on 15 Oct 2026 and
+  is unverified). Neither farm had a full year of metered output when the correction was fitted (7 Oct 2026), so the correction rests on
+  two projections, over four weather years (check_wind_farms.py). Both are new, large-rotor farms at strong sites.
 - Site mix: the 98 sites carry the model's national weighting; BW6's wind bids were all in the Eastern and Western Cape supply
   areas (gov.za, 8 Dec 2022). Per-bid capacity factors are not published, so the site effect cannot be separated.
 - Other benchmarks: the existing fleet's profile 37.0% (reanalysis corrected to metered output by 0.848); the REIPPPP wind fleet
@@ -3240,6 +3243,17 @@ Tariffs: BW5 wind, R495.22 weighted (R344.25-617.70), fully indexed; base assume
 Capex a tariff implies on our basis (8% real, 25 years, our fixed O&M, no grid charge), at the bids' capacity factor:
   BW5 wind weighted, at BW6 wind bids' 37.24%: R631/MWh -> R17,773/kW in 2026 rands, against R28,462 used (-38%)
   BW7 solar mid-range, at BW6 tracker bids' 30.13%: R499/MWh -> R10,999/kW in 2026 rands, against R16,786 used (-34%)
+
+Implied capex at 6% and 8% real (message 124 (1)); indexation share applied (both taken as fully indexed, so the real level equals the
+tariff; a partly indexed tariff would imply less); price dates as stated in the table:
+
+| Tariff | R/MWh as bid | Price date | Indexation | 2026 rands | CF (BW6 bids, IPP Office) | Implied capex at 8% real, 25 y | at 6% real, 25 y | at 8%, 20 y (PPA term) | Used in c5b_14r (2026) |
+|---|---|---|---|---|---|---|---|---|---|
+| BW5 wind, weighted average | 495.22 | not stated; assumed April 2021 (RFP 12 Apr 2021, bids 16 Aug 2021), x1.273 | fully indexed (stated: weighted average Fully Indexed Price) | 631 | 37.24% | 17,773 | 21,284 | 16,347 | 28,462 |
+| BW5 wind, lowest (Dwarsrug) | 344.25 | as above | fully indexed | 438 | 37.24% | 11,079 | 13,268 | 10,190 | 28,462 |
+| BW7 solar, first eight, low | 420.74 | not stated; assumed January 2024, x1.068 | not stated; assumed fully indexed | 449 | 30.13% | 9,595 | 11,490 | 8,825 | 16,786 |
+| BW7 solar, first eight, high | 492.20 | as above | as above | 526 | 30.13% | 11,745 | 14,065 | 10,803 | 16,786 |
+| BW7 solar, six added, high | 514.06 | as above | as above | 549 | 30.13% | 12,403 | 14,853 | 11,408 | 16,786 |
 
 Reading: on the bids' own capacity factors the model's 2026 new wind costs 49% more than BW5's weighted tariff before any grid
 charge (72% with it), and new tracking solar 41% more than BW7's mid-range (74% with it). The capex the tariffs imply on the model's
