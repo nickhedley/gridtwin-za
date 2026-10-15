@@ -2742,7 +2742,7 @@ copied out by a helper and spot-checked against the logs (s_be7, s_nogas4strict,
 | s_gmcv2029 | DEM_BLOCK=2027:930,2029:675,2030:493 | adequate | 2,356.5 | -31.8 | 1,985.8 | -10.9 | 1,556.1 | -35.5 | yes |
 | s_measured | -DEM_BLOCK | adequate | 2,309.2 | -79.1 | 1,943.8 | -52.9 | 1,506.3 | -85.3 | yes |
 | s_cape10 | CAPE_WIND=3470:10 | pass limit | 2,390.0 | +1.6 | 1,998.5 | +1.8 | 1,593.0 | +1.4 | yes |
-| s_detgas | GN 8021 gas: GAS_CUM 3,000 MW in 2030 rising to 8,000 MW by 2037, GASFLOOR_MW=3000 (code 2ed7225) | adequate | 2,427.2 | +38.8 | 2,066.2 | +69.5 | 1,607.6 | +16.0 | yes |
+| s_detgas | Determined gas: IRP 2019 section 34's 3,000 MW by 2030, then GN 8021's 5,000 MW (2031-37) on top, GAS_CUM to 8,000 MW by 2037, GASFLOOR_MW=3000 (code 2ed7225) | adequate | 2,427.2 | +38.8 | 2,066.2 | +69.5 | 1,607.6 | +16.0 | yes |
 
 (a) Forced nuclear's capital is not in the objective (recorded for s_be7_c4), so the objective falls by the energy the nuclear
 displaces; the engine, which carries it, puts s_be7 R31.2bn above the null. s_disc10 and s_disc113: the objective is at the run's
@@ -2770,7 +2770,8 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
 - s_nogas4strict is quoted as: does not meet the adequacy standard from 2034 without new peaking plant; the cheapest fix is
   1,500 MW of diesel open-cycle by 2037, about +R28bn (engine PV with the top-up, R2,416.2bn, against the null's R2,388.4bn; the
   top-up itself is R8.7bn of it).
-- Determined gas (s_detgas, GN 8021's gas on the GAS_CUM floor): +R16-39bn against least cost (objective +R16.0bn, engine
+- Determined gas (s_detgas: the IRP 2019 section 34 determination's 3,000 MW by 2030 plus GN 8021's 5,000 MW for 2031-37,
+  additional on our reading, message 108; SOURCES): +R16-39bn against least cost (objective +R16.0bn, engine
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R92.0bn on the engine (R130.8bn less R38.8bn) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
