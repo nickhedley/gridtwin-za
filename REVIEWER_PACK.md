@@ -129,7 +129,7 @@ Two points to probe:
 
 (RESULTS 'New wind on the modern-turbine profile at 1.064', 07s, on the current-turbine profile decided for these checks; 'Cross-check against published least-cost work', 23z)
 
-The EDMSA CO2 failure appears in every suite count recorded since 5 Oct. Its recorded cause: the September 2026 rebuild of the wind profile raised wind output about 11% (calibrated to Eskom measurement; EDMSA's is not), and 2035 CO2 fell with it. The check's own note adds that the earlier agreement was partly two models sharing a bias. The further fall from 88.4 to 83.3 Mt with later engine changes has not been traced (validate_external; RESULTS 'Scenario switch and load timing').
+The EDMSA CO2 failure appears in every suite count recorded since 5 Oct. Its cause is only partly known. The September 2026 rebuild of the wind profile raised wind output about 11% (calibrated to Eskom measurement; EDMSA's is not) and moved the figure from -0.2 to -14.1 Mt, inside the band as widened that day; the check's own note adds that the earlier agreement was partly two models sharing a bias. By 1 Oct, the first build in the repository, it read 90.8 Mt (gap -33.2): the step past the band happened in September, in builds that cannot be re-run, and is not traced; so is the later fall to 83.3 Mt on 14r. It runs on the current-turbine profile, so the modern-turbine decision (7 Oct) does not touch it (RESULTS 'EDMSA Scenario A CO2 2035 (validate_external): already failing').
 
 ---
 
