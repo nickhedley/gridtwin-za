@@ -3237,7 +3237,7 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
-### Coal emissions compliance switch COMPLY (build 2026-10-15c, branch claude/comply): none leaves the optimiser's LP and c5b_14r's engine check unchanged to every digit; full compliance costs R38.0bn a year from 2031 on 21.8 GW of in-scope coal (R1,746/kW-yr), Eskom's recommended plan R11.6bn (R533/kW-yr); in pass 1 of c5b_14r's null LP even the full charge retires no coal early; runs s_comply_comp and s_comply_full held (user, 15 Oct 2026, messages 119 and 122 (4))
+### Coal emissions compliance switch COMPLY (build 2026-10-15d, branch claude/comply): none leaves the optimiser's LP and c5b_14r's engine check unchanged to every digit; full compliance costs R38.0bn a year from 2031 on 21.8 GW of in-scope coal (R1,746/kW-yr), Eskom's recommended plan R11.6bn (R533/kW-yr); in pass 1 of c5b_14r's null LP even the full charge retires no coal early; runs s_comply_comp and s_comply_full held (user, 15 Oct 2026, messages 119 and 122 (4))
 
 What it is: COMPLY = none (default) / compromise / full, in the optimiser (bldBuildLP: rca_, in-scope coal retired early within the
 fleet's rc_, credited the year's charge per MW), the pathway output (comply: the charge on the coal kept, by year) and the engine check
@@ -3283,6 +3283,8 @@ Tests (build 2026-10-15c):
 - Full compliance, pass 1 of the null's LP, solved: Optimal, R1,588.3bn without the charge on coal kept; no coal retired early in any
   year (neither rc_ nor rca_), as in c5b_14r itself. At R1,746/kW-yr, keeping in-scope coal and paying is cheaper in the LP than
   replacing it within the build-rate caps; the held runs will show whether later passes change that.
+- Build 2026-10-15d: the control's always-visible note moved into the label's hover text (the audit's 4,250-word prose ceiling; 4,272
+  with it, 4,247 without) and an error message no longer starts with a capitalised word. Markup and message only; the LP is unchanged.
 
 ### c5b on build 2026-10-14r, the final base: adequate after five passes; the engine check passes every year; R2,393.5bn engine PV (+R7.9bn on c5b_mr2), 1,991.9 Mt CO2 2026-40 (-9.1 Mt); the CO2 drop is the build, not the code (user, 14 Oct 2026, messages 100 and 105)
 
