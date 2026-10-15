@@ -7886,8 +7886,9 @@ function simulate(u, prof, outPath, _soc0){
   // 125 (3)): pumped storage refills only at its pump rating, so spending it first each night left it empty for the week's last
   // nights (c5b_14r's worst stress week), and lithium first left the morning peak with more need than pumped storage's power
   // (s04). Drawing the fuller one keeps both energy and power in hand. p._laNoPsFirst 0 or 1 fixes the order (measurement).
-  const _laPsLastAt = () => p._laNoPsFirst != null ? !!p._laNoPsFirst
-    : (_laGC ? (psEnergyTot > 0 && _laE > 0 && psSoc / psEnergyTot < _laSoc() / _laE) : false);
+  const _laPsLastAt = (h, c0, ramp) => p._laNoPsFirst != null ? !!p._laNoPsFirst
+    : (_laGC ? (psEnergyTot > 0 && _laE > 0 && psSoc / psEnergyTot < _laSoc() / _laE
+        && _laJReq(h, c0, ramp, ccgtCap + dieselAvailMW(p)) > _laSoc() + Math.max(0, psSoc)) : false);
   const _laReq = (h, sEnd, c0, ramp, gas = 0, gRef = 0) => {
     let r = sEnd;
     for (let k = Math.min(HOURS - 1, h + _LA_H); k > h; k--){
@@ -8502,7 +8503,7 @@ function simulate(u, prof, outPath, _soc0){
       // little power, and spending its power first keeps the short stores' energy for hours that need more power than it
       // has (s_coalavail 2030, weather 2017: 0.47 GWh shed in the last hour of the week with 17.5 GWh still pumped).
       // With the charging rule on, the fuller store for its size goes first (_laPsLastAt).
-      const _laPsLastH = _laPsLastAt();
+      const _laPsLastH = _laPsLastAt(h, coalGen, rampAllowedMW);
       if (_laPsOn && !_laPsLastH && residual > 1e-6) _psGive(psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p), _laGR * ccgtCap));
       // Look-ahead (14do): after gas, the short stores give what they hold above the later hours' need beyond coal, gas and
       // diesel (energy held against later shedding stays), ahead of diesel; the rest only against this hour's shed, below.
@@ -8655,7 +8656,7 @@ function simulate(u, prof, outPath, _soc0){
       // record for a rounding residual. So the energy is now always recorded and only the
       // stage counting keeps the threshold.
       // Before shed: what pumped storage still holds, then the short stores (engine fix (B); order as before diesel).
-      const _laPsLastS = _laPsLastAt();
+      const _laPsLastS = _laPsLastAt(h, coalGen, rampAllowedMW);
       if (_laPsOn && !_laPsLastS && residual > 1e-6) _psGive(psSoc);
       // Look-ahead (14do): energy still held for later hours serves this hour's shed.
       if (_laOn && residual > 1e-6){
@@ -9919,16 +9920,28 @@ function bldFom(tech, year){
 // Wind: BW5's weighted average Fully Indexed Price, R495.22/MWh (DMRE media statement, 28 Oct 2021; 12 projects, 1,608 MW);
 //   price base not stated, taken as April 2021 (RFP issued 12 Apr 2021), escalated at SA CPI to January 2026 (x 1.273);
 //   fully indexed, so its real level is the tariff. At BW6 wind bids' 37.24%.
-// Solar: BW7's 14 preferred bidders announced Dec 2024 and 2025, the midpoint of R420.74 (lowest of the first eight) and
-//   R514.06 (highest of the six added) per MWh; price base not stated, taken as January 2024; indexation not stated, taken
-//   as fully indexed. At BW6 tracker bids' 30.13%. The four solar projects appointed on 15 Dec 2025 at R532.00-532.99/MWh
-//   are not in it (RESULTS 'Tariff-calibrated capex').
+// Solar (user, message 126 (3)): the MW-weighted mean of all 18 BW7 solar awards (BW7_SOLAR_AWARDS), R492.53/MWh over
+//   3,940 MW; bid-list prices, and for the four of 15 Dec 2025 the post-negotiation 'VfM price'. Price base not stated in any
+//   of the three lists, taken as January 2024; indexation not stated, taken as fully indexed. At BW6 tracker bids' 30.13%.
 // No BW7 wind tariff has been published (the bids were not awarded; the minister called the prices 'a bit exorbitant').
 // Bid-derived, so connection is included (connIncl). RESULTS 'New wind's capacity factor (45.2%)' sets out the derivation.
 const CPI_APR21_TO_JAN26 = 1.059 * 1.069 * 1.053 * CPI_JAN24_TO_JAN26;
+// BW7 solar awards, [project, MW, R/MWh]. DEE, 'REIPPPP Bid Window 7 - List of Successful Bidders' (Dec 2024, eight) and the
+// July 2025 additional bidders list (six), and 'List of Additional Successful Bidders Following Value for Money Proposal
+// Evaluations' (15 Dec 2025, four; VfM price), dbsa.org. Middlepunt reported R458/MWh at financial close (Engineering News,
+// 14 Apr 2026) against R490.10 bid: bid-list prices are used throughout.
+const BW7_SOLAR_AWARDS = [
+  ['Highveld Solar Consortium', 240, 420.74], ['Palladium Solar 1 Consortium', 240, 435.55], ['Copper Solar 1 Consortium', 240, 435.48],
+  ['Vanadium Solar 1 Consortium', 150, 435.81], ['Middlepunt Solar PV', 240, 490.10], ['Mercury Solar PV 2', 240, 486.86],
+  ['Onderstepoort Solar 1 Consortium', 220, 492.03], ['Onderstepoort Solar 2 Consortium', 190, 492.20],
+  ['Dwaalboom 3 Solar', 180, 499.99], ['Virginia 4 Solar Park', 210, 504.87], ['Florida Solar Park', 200, 506.89],
+  ['Oslaagte Solar 2', 240, 509.02], ['Oslaagte Solar 3', 240, 509.02], ['Leeuwspruit Solar 1', 220, 514.06],
+  ['Rondebosch Solar Park', 240, 532.99], ['Springhaas Solar Facility 1', 240, 532.99], ['Springhaas Solar Facility 6', 170, 532.99],
+  ['Corona Solar PV Project', 240, 532.00],
+];
 const BLD_TARIFF = {
   wind:  { rPerMWh: 495.22, toJan26: CPI_APR21_TO_JAN26, indexShare: 1, cf: BW6_WIND_BID_CF, fom: 'wind', life: 'wind' },
-  pvtrk: { rPerMWh: (420.74 + 514.06) / 2, toJan26: CPI_JAN24_TO_JAN26, indexShare: 1, cf: BW6_PV_TRK_BID_CF, fom: 'pv', life: 'pv' },
+  pvtrk: { rPerMWh: BW7_SOLAR_AWARDS.reduce((a, x) => a + x[1] * x[2], 0) / BW7_SOLAR_AWARDS.reduce((a, x) => a + x[1], 0), toJan26: CPI_JAN24_TO_JAN26, indexShare: 1, cf: BW6_PV_TRK_BID_CF, fom: 'pv', life: 'pv' },
 };
 function bldTariffCapex(k){
   const T = BLD_TARIFF[k], r = BLD_DISC_CENTRAL, n = BLD_LIFE[T.life];
