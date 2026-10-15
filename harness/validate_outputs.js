@@ -356,6 +356,9 @@ function probe(w, src) {
     // Without this the term is plumbed and untested, which is how avgCost drifted 2.8%
     // through fifteen green harnesses in the first place.
     check('curtailFuelCost is non-zero in the coal-curtailment scenario',
+      // UPDATED 15 Oct 2026, 16.7 -> 15.9, build 2026-10-15f: new wind's correction 1.064 -> 1.00 (user, message 125 (1)), so the
+      // scenario's 60 GW of new wind produces less and less coal is curtailed. Measured: 15f with bldWindCorr 'farms' gives 16.4,
+      // with or without the storage fix (laGasCharge, psResOnce), as the build before (15d) did; 16.4 sat inside the tolerance.
       // UPDATED 7 Oct 2026, 13.9 -> 16.7, build 2026-10-07s: the scenario's 60 GW of new wind is now on the
       // modern-turbine profile (bldWindModern, default 1; correction 1.064). Available wind 200.7 -> 247.3 TWh,
       // curtailment 373.4 -> 433.4 TWh. Measured: 07o, 07p, 07q and 07s with bldWindModern 0 all give 14.10.
@@ -364,7 +367,7 @@ function probe(w, src) {
       // UPDATED 22 Sep 2026, 6.342 -> 14.642: demand re-anchored to 2026 and exports removed
       // from the series (build_demand_2026.py); the lower base leaves more forced coal with
       // nowhere to go. Deliberate, not drift.
-      cost.spill.curtailFuelCost / 1e9, 16.7, 0.7,
+      cost.spill.curtailFuelCost / 1e9, 15.9, 0.7,
       'R bn. If this reads zero the scenario has stopped producing coal curtailment and the identity below is no longer exercising the term - fix the scenario, not the check'
       + 'identity below is no longer exercising the term - fix the scenario, not the check',
       'R bn');

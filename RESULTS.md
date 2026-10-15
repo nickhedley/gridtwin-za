@@ -3237,6 +3237,41 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### Build 2026-10-15f: suite and every check that changed status (message 126 (1), 128 (2)); pumped storage counted once in reserve; retail capital follows the cost cases
+
+Suite (ESK19679.csv present), before: build 2026-10-15d (claude/comply) 815/821 (node 728/734, audit 87/87), eng5 6/6. After, on
+15f as run: 814/821 (node 727/734, audit 87/87), eng5 6/6; after the two re-pins below, 816/821 (node 729/734). Changed checks:
+- validate_benchmarks psTWh, fail to pass: pumped-storage output on the 2025 trace 3.3 -> 3.6 TWh (Eskom 4.49 TWh, band +/-25%).
+  Cause: the charging rule (laGasCharge). Measured: 15d with only the pump-rating cap gives 3.3, as 15d.
+- validate_benchmarks peakerSeasonRatio, still failing: 1.8 -> 1.7x (band 2.15-8.6x); same cause, no change of status.
+- validate_invariants, 'unserved energy never rises as the reserve requirement rises': failed on 15e with the fuller-store order in
+  every hour (0.80 / 0.35 / 0.46 GWh); passes on 15f with the order gated on forecast shedding (0.80 / 0.35 / 0.35).
+- validate_consistency, new-build capital: R1.118 -> R0.965/kWh; the whole move is the wind capex (the same build with BLD_COST.wind
+  at the BW6 figure gives R1.118 exactly). Anchor re-measured, tolerance unchanged.
+- validate_response, drInterruptMW -> avgCost and -> loleHrs, responsive to inert: in the test's context (Today 2026, 55% EAF,
+  2025 trace) the engine with the charging rule sheds nothing (0.72 GWh without it), so interruptible load has no shortfall to
+  remove and its effect on cost falls to R0.03/MWh. Baseline rewritten for these two cells only.
+- validate_outputs, curtailFuelCost in the coal-curtailment scenario: R16.4bn -> R15.9bn (anchor 16.7 +/- 0.7). Cause: new wind's
+  correction 1.064 -> 1.00; the same build with the correction at 1.064 gives 16.4 with or without the storage fix. Anchor 15.9.
+- validate_findings, two known failures, values moved: iron-air's effect on July gas 22.2% -> 13.4% (607 -> 472 GWh becomes
+  770 -> 667); Fossil-free 2040 curtailment 121.8 -> 113.4 against 96.3 +/- 15%. Both from the storage fix's dispatch; still failing.
+
+Pumped storage in reserve (messages 127 (1), 128 (1)): in _stFreeP (the storage power free for reserve after dispatch, used for
+coal's reserve need in three places and the reported reserve shortfall) and reserveAvailArr, pumping units were counted twice: their
+pumping load as interruptible and their full rating as generating headroom. Up to the pumping MW (2,724 MW at full pump), in every
+pumping hour: in c5b_14r's 15 stress weeks pumped storage pumps in 880 of 2,535 hours (35%), on average 2,316 MW. psResOnce 1, the
+default: a unit counts as its pumping load or, within the rating, as generating headroom, not both; the fleet's free power is its
+rating less what it generates. ASSUMPTION (user): no credit for switching from pumping to generating within the ten-minute window.
+Effect: on the 15 stress weeks none (shed and cost identical to the digit: the 14.5 GW of lithium covers the reserve in those
+weeks); Today 2026 at 55% EAF, three draws: shed unchanged at 0.347 GWh, diesel +7 GWh, cost +R39m. On c5b_14r's adequacy: below,
+when the check lands. Batteries keep the same form (rating less discharge plus charging load): an inverter swings from full charge
+to full discharge within seconds, so that is not a double count.
+
+Retail capital (message 127 (2)): retailComponents priced new build from BLD_COST directly, so the wind, solar and battery cases did
+not reach the retail panel; it now reads bldCostEntry, as the optimiser and the engine do. Deep decarbonisation 2035: R0.965/kWh on
+the central capex, R1.118 on BW6's. The pathway records the 2026 wind and solar capex it used (capex2026), and the engine check
+records its own in every row and stops if they differ.
+
 ### New central inputs (messages 125 (1)-(2) and 126 (2)-(4), build 2026-10-15e): wind and tracking solar capex calibrated to awarded tariffs at 8% real (wind R17,773/kW from BW5, the low end of the evidence; solar R11,755/kW from the MW-weighted mean of all 18 BW7 awards), new wind uncorrected (42.5%), the optimiser's days matched to the twelve-year wind and solar, and the spur double count removed; BW7's wind bid prices are not published
 
 | Input | Before (c5b_14r) | Now | Source and assumptions |

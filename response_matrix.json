@@ -1,10 +1,10 @@
 {
  "base": {
-  "coalTWh": 147.405,
-  "co2": 157.509,
-  "avgCost": 1101.02,
-  "replAvg": 1542.2,
-  "avgPrice": 757.8,
+  "coalTWh": 147.407,
+  "co2": 157.51,
+  "avgCost": 1101.01,
+  "replAvg": 1542.22,
+  "avgPrice": 757.81,
   "rePct": 21.187,
   "curtTWh": 0,
   "loleHrs": 0
@@ -473,12 +473,12 @@
   "drInterruptMW": {
    "coalTWh": false,
    "co2": false,
-   "avgCost": true,
+   "avgCost": false,
    "replAvg": false,
    "avgPrice": true,
    "rePct": false,
    "curtTWh": false,
-   "loleHrs": true
+   "loleHrs": false
   },
   "drInterruptCostR": {
    "coalTWh": false,
