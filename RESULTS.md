@@ -3157,6 +3157,126 @@ pathway file from the local reproduction at 6045387, all 15 years, default seeds
 engine PV R2,393.4554bn at 8% and CO2 1,991.9215 Mt 2026-40 on both, as on GitHub (R2,393.5bn, 1,991.9 Mt); every year adequate;
 2035 R274.5393bn, 128.6012 Mt, 0.498016 GWh, as the earlier local check.
 
+### The engine sheds in c5b_14r's worst stress week because it never charges storage from gas and cycles pumped storage daily; the 24-hour optimum runs CCGT through the solar hours, banks 40-56 GWh in pumped storage and enters the last day with 40 GWh in its stores (engine build 2026-10-14r; user, 15 Oct 2026, messages 122 (2) and 123 (3)); no engine change
+
+Week s01 of 'Like-for-like cross-check on c5b_14r's weeks' (2037, weather year 2021, hours 897-1064, seed 87939557): the engine
+sheds 42.9 GWh, all in the week's last nine hours (hours 159-167 of the week), where both its stores are empty; the optimum (all
+three additions on) sheds none. Hour by hour the two sides have the same coal availability (the same outage draw), the same coal
+output in the shed hours (at availability, 9,352 MW), CCGT and diesel at their limits (5,886 and 3,709 MW), imports at 1,066 MW
+and no reserve held on coal; the difference is the energy in storage when the last day starts:
+
+| Hour of week | Load MW | Lithium stored, engine / optimum, MWh | Pumped storage stored, engine / optimum | CCGT and open-cycle LNG, engine / optimum, MW | Diesel, engine / optimum |
+|---|---|---|---|---|---|
+| 6 | 26,876 | 29,395 / 41,822 | 21,704 / 15,595 | 0 / 5,213 | 0 / 0 |
+| 30 | 26,481 | 14,976 / 36,213 | 21,095 / 12,586 | 0 / 5,213 | 0 / 0 |
+| 54 | 27,117 | 43,415 / 42,101 | 22,088 / 17,474 | 0 / 5,213 | 0 / 0 |
+| 78 | 32,993 | 58,208 / 55,352 | 26,901 / 38,911 | 37 / 5,886 | 0 / 0 |
+| 102 | 32,472 | 58,164 / 34,618 | 9,832 / 40,042 | 396 / 5,886 | 0 / 0 |
+| 126 | 29,120 | 58,186 / 51,823 | 20,583 / 56,136 | 220 / 5,886 | 0 / 0 |
+| 150 | 31,454 | 21,040 / 37,717 | 11,026 / 36,095 | 5,886 / 5,886 | 0 / 0 |
+| 159 | 27,139 | 0 / 22,413 | 0 / 17,504 | 5,886 / 5,886 | 3,709 / 3,709 |
+
+With only iron-air held at window ends (NEUTRAL=fe), the optimum enters hour 159 with 21,522 MWh of lithium and 18,395 MWh of pumped storage and sheds nothing.
+
+Cause, from the hours above and the code (index.html at 6045387):
+- The engine never charges storage from gas. With the storage look-ahead on (storageLookaheadH 48, every c5b_14r run), short
+  stores charge from surplus and coal only ('They charge from coal only up to _laReq(h, 0)'), and the older gas-ahead-of-storage
+  rule (_gasFirst) is switched off when the look-ahead is on (!_laOn). In solar hours the engine turns CCGT down to 0-400 MW;
+  the optimum keeps it at 5.2-5.9 GW and puts the difference into storage.
+- Pumped storage is cycled daily: the engine fills it to about 20 GWh by day and empties it most evenings (its hold rule,
+  _laPsHold, sizes the hold on the 48-hour window). The optimum builds it to 39-56 GWh by days 3-5 and holds it.
+- Not foresight: both sides see 48 hours. Not the optimum's end-of-window rule: with only iron-air held at window ends the
+  optimum still enters hour 159 with 40 GWh in its stores. Not coal commitment, ramps, reserve, imports or outage draws: identical.
+
+Fix options (no change before the user decides; effects are expected, not measured):
+(a) let the look-ahead charge short stores from spare CCGT and LNG open-cycle plant when the window's need beyond coal exceeds what
+    surplus will bring, as the optimum does. Expected to remove most stress-week shedding, since in all 15 stress weeks the optimum
+    sheds none; fuel cost rises a little in those weeks, diesel and shed fall.
+(b) pumped storage on the same look-ahead as lithium, with its own duration (60 GWh at 2,724 MW, 22 hours), so it banks over days.
+(c) a longer look-ahead, 72 or 96 hours: helps only together with (a); measured cost about 15% more simulate() time per extra
+    24 hours (engine fix (B), 14 Oct).
+(d) for weeks that shed, an hourly optimum in place of the rule (as the cross-check does): closest to the optimum, heaviest.
+Effect on the stress margin: c5b_14r needed a 3,000 MW stress margin for the engine check to pass; that margin covers the engine's
+dispatch shortfall as much as capacity. With (a) and (b) the engine's stress-week shedding should move towards the optimum's zero,
+so the margin needed, the top-ups and engine PV would all fall; by how much needs a re-run of the loop on the changed engine.
+
+Settings: validation/single_node (PR #51) with an hourly dump added to sn_pypsa40_roll_x.py (DUMP_HOURLY, read-only: the
+objective is unchanged, R4,118.9m); NEUTRAL=all and NEUTRAL=fe; X_RES=X_MR=X_IL=1.
+
+### New wind's capacity factor (45.2%) against BW6 wind bids' own (37.24%), and new wind and solar cost against BW5 and BW7 tariffs on the same capacity factor basis: the model's 2026 cost is 41-49% above the tariffs before any grid charge (build 2026-10-14r; user, 15 Oct 2026, message 123 (1)-(2)); no change
+
+(1) Capacity factor. The capex and fixed O&M of new wind come from BW6's compliant wind bids, whose 'typical capacity factor' is
+37.24% (IPP Office REIPPPP historical data note, 7 Nov 2025; definition not stated). New wind in the model runs at 45.2% over the
+twelve weather years. The gap, step by step:
+- Profile and turbine: Renewables.ninja MERRA-2 output for a Vestas V162 5.6 MW at 120 m hub height at the 98 sites of
+  profile_sites.json, mapped onto each weather year (build_wind_modern.py), uncorrected: 42.5% (45.2 / 1.064).
+- The 1.064 correction (+2.7 points): fitted to two farms' developer-stated annual output, Impofu (Enel, 330 MW, 1,260 GWh, 43.6%)
+  and San Kraal (EDF, 140 MW, 616 GWh, 50.2%), over four weather years (check_wind_farms.py). Both are new, large-rotor farms at
+  strong Eastern Cape sites; developer-stated output is a P50 estimate, not metered.
+- Site mix: the 98 sites carry the model's national weighting; BW6's wind bids were all in the Eastern and Western Cape supply
+  areas (gov.za, 8 Dec 2022). Per-bid capacity factors are not published, so the site effect cannot be separated.
+- Other benchmarks: the existing fleet's profile 37.0% (reanalysis corrected to metered output by 0.848); the REIPPPP wind fleet
+  produced 11,040 GWh in 2025 on 3,763 MW at year end, about 33% (our division of Engineering News, 9 Jan 2026, and SolarQuarter,
+  10 Apr 2026, search extracts; the fleet grew during the year); IRP 2023's CSIR/Fraunhofer 38.1% and EPRI 36.3% (Meridian,
+  unverified, see 'Wind diagnostics on c5b_14r').
+Judgement: 45.2% is defensible only for the best new sites and largest rotors; for a programme of 17-24 GW over 2026-40 it is the
+top of the range, and the bids that set its cost assumed 37.24%. Defensible central range on the evidence found: about 38-43%.
+The 'low' correction (1.00) gives 42.5%. A capacity factor on BW6's basis would also need BW6's capex, which is the pair used here.
+
+(2) Cost per MWh against tariffs, 2026 rands, same capacity factor basis (2026 capex; 8% real over 25 years; fixed O&M as in the
+model). Tariffs are 20-year, fully CPI-indexed prices (BW5: 'weighted average Fully Indexed Price'; BW7: indexation not stated in
+the sources found, assumed fully indexed), so comparable in kind with a real levelised cost, at the bidders' own cost of capital.
+
+| Tech | Capacity factor basis | CF | 2026 capex R/kW | R/MWh, no grid charge | with R402 only | with R402 and spur | Tariff, 2026 rands | Gap without grid charge | Gap with both |
+|---|---|---|---|---|---|---|---|---|---|
+| wind | BW6 wind bids, typical (IPP Office) | 37.2% | 28,462 | 937 | 1,061 | 1,087 | 631 (438-787) | +49% | +72% |
+| wind | ours, twelve-year mean | 45.2% | 28,462 | 772 | 873 | 895 | 631 (438-787) | +22% | +42% |
+| wind | REIPPPP wind fleet 2025, about | 33.0% | 28,462 | 1,058 | 1,197 | 1,226 | 631 (438-787) | +68% | +94% |
+| solar (tracking) | BW6 tracker bids, typical (IPP Office) | 30.1% | 16,786 | 705 | 857 | 871 | 449-549 (mid 499) | +41% | +74% |
+| solar (tracking) | ours, twelve-year mean | 28.7% | 16,786 | 741 | 901 | 915 | 449-549 (mid 499) | +48% | +83% |
+
+Tariffs: BW5 wind, R495.22 weighted (R344.25-617.70), fully indexed; base assumed April 2021, x1.273 | BW7 solar, R420.74-492.20 (first eight) and R499.99-514.06 (six added); base assumed January 2024, x1.068
+
+Capex a tariff implies on our basis (8% real, 25 years, our fixed O&M, no grid charge), at the bids' capacity factor:
+  BW5 wind weighted, at BW6 wind bids' 37.24%: R631/MWh -> R17,773/kW in 2026 rands, against R28,462 used (-38%)
+  BW7 solar mid-range, at BW6 tracker bids' 30.13%: R499/MWh -> R10,999/kW in 2026 rands, against R16,786 used (-34%)
+
+Reading: on the bids' own capacity factors the model's 2026 new wind costs 49% more than BW5's weighted tariff before any grid
+charge (72% with it), and new tracking solar 41% more than BW7's mid-range (74% with it). The capex the tariffs imply on the model's
+basis, R17,773/kW for wind and R10,999/kW for solar, sit close to the low wind case (IRENA, R17,177/kW in 2026) and the old R12,000
+solar entry. Caveats: price bases are not published (April 2021 and January 2024 assumed); BW5 was bid before the 2022 turbine
+price rise and BW6 awarded no wind (no grid capacity confirmed in the Cape supply areas; gov.za, 8 Dec 2022) and BW7 none (the minister said
+the wind tariffs were too high; SOURCES 'REIPPPP onshore wind tariffs'); bidders' cost of capital, PPA term (20 years against a
+25-year life) and merchant tail differ from the model's.
+
+### Battery fleet against what is contracted and operating: of BESIPPPP's 1,744 MW / 6,976 MWh, c5b_14r carries 666 MW / 2,664 MWh as committed floors and none as existing fleet; RMIPPPP batteries (Kenhardt 225 MW / 1,140 MWh and others) sit inside the 335.1 MW hybrid supply block, not as storage (user, 15 Oct 2026); report only, no change before the note
+
+Sources: research helper, 15 Oct 2026 (Engineering News BESIPPPP window updates, 22 May 2026, and RMIPPPP update, 24 Jul 2026, read;
+pv magazine, 28 Feb 2024, read; Crown Electricity+Control, 2 May 2024, read; others as search extracts; nothing from eskom.co.za).
+c5b_14r: pathway file (existingBatt 68 MW / 292 MWh; LI_MIN 2026 360 MW / 1,440 MWh, 2027 666 MW / 2,664 MWh cumulative) and
+RESULTS 'c5b proposal' (committed builds table); FIXED.hybridMW 335.1 at build 14r.
+
+| Project or window | MW / MWh | Status, online date | In c5b_14r as |
+|---|---|---|---|
+| Eskom phase 1 (Hex, Pongola, Elandskop) | 68 / 292 | operating | existing fleet |
+| BESIPPPP BW1: Mogobe 103, Oasis Aggeneis 77, Mookodi 77, Nieuwehoop 103 | 360 / at least 1,440 | financial close Oct-Nov 2024; COD expected Sep-Nov 2026 (Mogobe 'by the end of this year') | committed floor, 2026 |
+| BESIPPPP BW1: Red Sands 153 | 153 / 612 | financial close Jul 2025; COD about 2027 (unconfirmed) | committed floor, 2027 |
+| BESIPPPP BW2: Mercury 76, Hartbeesfontein 77 | 153 / 612 | financial close Apr and Jun 2026 | committed floor, 2027 |
+| BESIPPPP BW2: the other six (77 MW each) | 462 / about 1,848 | preferred bidders Dec 2024; no financial close found | not in (the optimiser may build lithium anyway) |
+| BESIPPPP BW3: five Free State projects | 616 / 2,464 | preferred bidders May 2025; no financial close; COD expected by Jan 2028 | not in |
+| RMIPPPP Kenhardt 1-3 (Scatec) | battery 225 / 1,140, PV 540 | COD Nov-Dec 2023; 150 MW dispatchable 05:00-21:30, 20-year PPA | inside hybridMW 335.1 (supply contract), battery not modelled as storage |
+| RMIPPPP Hydra, De Aar (TotalEnergies) | battery MW not stated / 500, PV 216 | operating since 16 Jul 2026; 75 MW 05:00-21:30 | inside hybridMW if Eskom's Week 32 report counted it (not checked) |
+| RMIPPPP Umoyilanga, Dassiesridge / Avondale (EDF) | 45 / 115 and 30 / 90 | provisional COD 5 Dec 2025 / 2026 target | Dassiesridge inside hybridMW; Avondale not yet |
+| RMIPPPP Oya (ENGIE/G7) | about 94 / 242 | financial close Feb 2024; COD not found | not in (RESULTS 'c5b proposal' said the hybrid bucket already held it: not so, as it is not operating) |
+| RMIPPPP ACWA DAO | MW not stated / about 1,200 | operations scheduled Q2 2026; not confirmed | not in |
+| Private batteries above 20 MW | none operating found (SOLA Naos-1, 660 MWh, COD H1 2028) | | not in |
+
+Findings: c5b_14r's 2026 floor (360 MW) brings the BW1 projects forward a few months (COD late 2026, and the floor counts them for
+all of 2026). BESIPPPP projects not at financial close (1,078 MW, BW2's other six and BW3) are left to the optimiser, which builds
+lithium on cost from 2028 anyway. RMIPPPP batteries are modelled as a firm 05:00-21:30 block, not as storage the engine can
+dispatch; their stored energy outside that window is not counted. Flag: 'c5b proposal' lists Oya, Hydra and Avondale as already in
+the 335.1 MW hybrid block; only those operating at Eskom's Week 32 report can be.
+
 ### PROVISIONAL until the reviewer has read them: c5b_14r sensitivities, 21 runs and s_detgas from c5b_14r's windows, against a null run; pass mark 5 met on 18 of 20 comparable runs (s_be7 structural, s_li8h immaterial); s_nogas4strict does not meet the adequacy standard from 2034 without new peaking plant; determined gas +R16-39bn against least cost (user, 14-15 Oct 2026, messages 82, 104, 105 and 107)
 
 Runs: workflow 'Optimiser long run', ref claude/reserve-rule, code_sha 6045387 (build 2026-10-14r; s_detgas 2ed7225, the same
