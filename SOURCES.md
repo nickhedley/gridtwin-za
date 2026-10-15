@@ -1271,6 +1271,14 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
   Assumptions' (not read, long PDF). Draft IRP 2024 stakeholder deck, November 2024 (extract): 'starting costs for solar PV and wind
   are based on real South African costs'. The assumptions workbook (user upload, 'Additional Data Assumptions', Learning Rates
   sheet) gives capex by year only.
+- IPP Office, 'South African REIPPPP historical data' note, 7 Nov 2025 (user upload), table of average cost per programme in January
+  2024 terms: typical capacity factor 30.13% (BW6 solar preferred, tracking), 31.07% (BW6 solar compliant), 37.24% (BW6 wind compliant),
+  72.11% (RMIPPPP solar with BESS); BESS BW1 preferred R27,887.77/kW and compliant R39,901.69/kW, 'including augmentation costs',
+  augmentation 6% of total overnight cost; fixed O&M R678.22 and R602.78/kW-yr; PPA life 15 years for BESS, 20 for the rest.
+- REIPPPP BW7 solar: eight preferred bidders, 1,760 MW, 'representing investment of R31.4-billion' (Engineering News, 'Ministry
+  unpacks latest renewable energy preferred bidder awards', 6 Jan 2025, read via Firecrawl); bids R420.74-492.20/MWh (search
+  extracts: TaiyangNews; DBSA 'REIPPPP BW 7 Successful Bidders'); six more, 1,290 MW, R499.99-514.06/MWh (Engineering News, 23 Jul
+  2025, search extract; DBSA 'REIPPPP BW 7 Additional Bidders'). No capex per kW or price base published. No wind awarded.
 - Unverified, not used: Meridian Economics, 'Comparative analysis of IRP 2023 cost assumptions', 2 February 2024, 42 pages; the
   helper read pages 1-12 with Firecrawl, against the rule for long PDFs (it reported this). Its figures are listed in RESULTS
   'Wind diagnostics on c5b_14r' and stay unverified until the full document is read; it is not to be re-fetched (user, message 120).

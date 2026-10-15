@@ -2823,8 +2823,13 @@ the overlap risk sits elsewhere.
   2025): upstream works for IPPs are committed only once IPPs are preferred bidders (extract). NERSA's Transmission Tariff Code:
   'The connection charge is based on the cost of assets used for the benefit of a single customer' (extract). So generation
   integration is shared upstream network, recovered through use-of-system charges, not the IPP's dedicated assets.
-- Where overlap can occur in the model: the spur charge. Bid capex already carries a typical connection, so the LP charges only
-  the distance beyond the median; a project farther out than its bid assumed is charged twice for the excess only.
+- Where overlap does occur in the model: the spur (message 121 (2)). Yes, the spur is charged when connIncl is true: bldGridCapexKW
+  then charges the distance beyond the 18 km median (22.0 km for wind, 9.7 km for solar) instead of the whole distance (37.7 and
+  21.9 km), R1,010/kW for wind and R445/kW for solar, R85 and R37/kW-yr over 40 years. If the bid capex covers each project's
+  actual connection whatever its length, that is a double count: about R21/MWh on new wind and R15/MWh on new solar at the
+  twelve-year capacity factors. Over c5b_14r's build it applies to 15.4 GW of wind (the 1.58 GW on the Cape allowance pays
+  neither charge) and 16.2 GW of solar (20.7 GW of its 36.9 GW sits on connections freed by retired coal): about R1.9bn a year
+  by 2040, or R10.9bn of one-off connection capex discounted to 2026 at 8%. Not fixed (user, message 121).
 - The R402 itself (message 120 (1)): it rests on RESULTS 'Transmission reconciled to what the TDP buys' (22 Sep 2026, build
   2026-09-22ad), from TDP 2024 Rev 2, Table 4: new generation integration R54.3bn plus land and rights pro rata to capacity
   expansion (R4.9bn x 54.3/80.7), 51.2% of the five-year R112.5bn; that share applied to the decade's R440bn (DBSA; NTCSA
@@ -2846,12 +2851,26 @@ capacity factor not specified; EPRI's solar 26.5% (CdTe) and 29% (crystalline si
 (16.8-22.6% by region); IRP 2023's wind and solar fixed O&M 'significantly higher' than other sources; IRP 2023's solar LCOE about
 double the average BW6 successful bid price.
 
-(4) Reduced cost of new wind in 2030, 2035 and 2040 from c5b_14r's own solution: not done. The run saves each solve's column
-duals in its LP cache, which GitHub keeps as the artifact state-c5b_14r (run 38628612316, expires 21 Oct 2026); this session's
-network policy does not allow the artifact host (productionresultssa3.blob.core.windows.net), and the local reproduction's cache
-was cleared. Pending the user's choice: allow the host, or re-solve the identical final LP locally (a reproduction, not a new
-scenario). Note c5b_14r ran five passes; the build is the fifth pass's solution, which is the one to read.
+(4) Reduced cost of new wind: dropped (user, 15 Oct 2026, message 122 (5)); the run's LP cache sits in a GitHub artifact whose host
+is not reachable from this session.
 
+Additions (message 121):
+- BW6 wind bids' own capacity factor. The IPP Office note (7 Nov 2025, January 2024 terms) gives a 'typical capacity factor' of
+  37.24% for the BW6 wind compliant bids whose capex (R26,647/kW) and fixed O&M (R366.95) the model uses, and 30.13% for the BW6
+  tracking solar preferred bidders (R15,715/kW). New wind in the model runs at 45.2% over the twelve weather years (modern
+  turbine x 1.064, fitted to Impofu and San Kraal): about 21% more energy per kW than the bids that set its cost. Flag only.
+- Solar, BW7 (message 121 (1)): no capex per kW is published. The first eight preferred bidders (1,760 MW, announced December
+  2024 and January 2025) bid R420.74-492.20/MWh, with announced investment of R31.4bn (Engineering News, 6 January 2025, read),
+  R17,841/kW; six more (1,290 MW, July 2025) bid R499.99-514.06/MWh (Engineering News, 23 July 2025, search extract). The
+  investment figure includes development and financing, like the wind high case, so it is not comparable with BW6's overnight
+  R15,715/kW (R16,786 in 2026 rands) used here; neither price base is stated. BW7's tariffs sit below BW5's solar R428.79 at
+  their low end. A BW7-based solar capex would need the IPP Office's BW7 cost data, not yet published.
+- Battery fixed O&M (message 121 (3)): 2.5% of capex a year (bldFom), from NREL's Annual Technology Baseline, which states that
+  'the FOM costs include battery augmentation costs' (ATB 2024, as quoted in index.html; RESULTS 'Error 2, battery O&M counted
+  twice', September 2026). So augmentation is inside it, and none is added to capex. At c5b's 2026 capex (R13,699/kW at 4 hours)
+  that is R342/kW-yr. The South African bid basis splits it differently: BESIPPPP BW1 preferred bidders R27,888/kW including
+  augmentation at 6% of overnight cost, plus fixed O&M R678.22/kW-yr (IPP Office note, January 2024 terms). Whether the BW3
+  project value behind the model's capex includes augmentation is not published.
 ### Iron-air with gas in July (validate_findings): the check has failed since 07s; today's 607 -> 472 GWh comes from 14d's outage draw (600 -> 475) plus Avon and Dedisa's must-run diesel from 14p (user, 15 Oct 2026, message 113 (4))
 
 Check: 'with gas, 20 GW of 100-hour iron-air barely moves July' (validate_findings; Seriti Green: 20 GW wind, 25 GW solar, 20 GW /
