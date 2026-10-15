@@ -1,0 +1,18 @@
+--- pathway/pathway_perfail.js	2026-10-14 19:13:46.000000000 +0000
++++ pathway/pathway_repdays.js	2026-10-15 13:08:28.593079552 +0000
+@@ -205,6 +205,15 @@
+  // GRID (7 Oct 2026, TODO 14ar): optimiser grid cost. GRID=1 central, 2 high; GRID_BEYOND=1 spur only beyond the
+  // median; GRID_BATTHALF=1 storage pays half the integration charge. Unset = FIXED (off).
+  w.eval(`if(!('bldGridCost' in FIXED)) throw new Error('bldGridCost missing');`+(process.env.GRID!==undefined?` state.bldGridCost=${+process.env.GRID};`:'')+(process.env.GRID_BEYOND!==undefined?` state.bldGridSpurBeyond=${+process.env.GRID_BEYOND};`:'')+(process.env.GRID_BATTHALF!==undefined?` state.bldGridBattHalf=${+process.env.GRID_BATTHALF};`:''));
++ // REPDAYS=<json {days:[...]}> (message 122 (1), scratch test, not on main): the optimiser's calendar days replaced by the listed
++ // days (same count, same weight 365/n, chained in calendar order); bldRepDays' weather-year tail days are kept as they are.
++ if (process.env.REPDAYS){ const RD=JSON.parse(fs.readFileSync(process.env.REPDAYS,'utf8')).days;
++   w.eval(`(function(){ const _o=bldRepDays; window.bldRepDays=function(n){ const r=_o(n); const cal=r.filter(q=>!q.tail&&!q.solar), rest=r.filter(q=>q.tail||q.solar);
++     if (cal.length!==${RD.length}) throw new Error('REPDAYS: '+cal.length+' calendar days, list has ${RD.length}');
++     const ks=Object.keys(cal[0]).sort().join(','); if (ks!=='d,prevD,weight' && ks!=='d,weight') throw new Error('REPDAYS: calendar row fields '+ks);
++     const days=${JSON.stringify(RD)}.slice().sort((a,b)=>a-b), wt=cal[0].weight;
++     return days.map((d,i)=>({d, weight:wt, prevD:i===0?undefined:days[i-1]})).concat(rest); }; })()`);
++   console.log('REPDAYS', JSON.stringify(RD), 'check', w.eval('JSON.stringify(bldRepDays(12).filter(q=>!q.tail&&!q.solar).map(q=>q.d))')); }
+  // PEAK (7 Oct 2026, TODO 14as): existing peakers. PEAK=1 end-of-life dates, 2 IRP 2025 dates; PEAK_EXT=0 offers no
+  // life extension; PEAK_EXT_R the extension capex, R/kW. Unset = FIXED (off).
+  w.eval(`if(!('bldPeakerRet' in FIXED)) throw new Error('bldPeakerRet missing');`+(process.env.PEAK!==undefined?` state.bldPeakerRet=${+process.env.PEAK};`:'')+(process.env.PEAK_EXT!==undefined?` state.bldPeakerLifeExt=${+process.env.PEAK_EXT};`:'')+(process.env.PEAK_EXT_R!==undefined?` state.bldPeakerExtRkW=${+process.env.PEAK_EXT_R};`:''));

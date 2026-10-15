@@ -3157,6 +3157,58 @@ pathway file from the local reproduction at 6045387, all 15 years, default seeds
 engine PV R2,393.4554bn at 8% and CO2 1,991.9215 Mt 2026-40 on both, as on GitHub (R2,393.5bn, 1,991.9 Mt); every year adequate;
 2035 R274.5393bn, 128.6012 Mt, 0.498016 GWh, as the earlier local check.
 
+### PROVISIONAL: representative days test (s_repdays_c5b14r). With the optimiser's eight evenly spaced calendar days re-chosen so new wind and tracking solar match their twelve-year means, the optimiser builds 64% more wind by 2040 (27.9 GW against 17.0 GW) and 35% less utility solar (24.0 GW against 36.9 GW); engine PV 2026-40 falls R10.6bn (0.4%) and CO2 2026-40 falls 169.5 Mt (8.5%); every year passes the adequacy standard (engine build 2026-10-14r; user, 15 Oct 2026, message 122 (1)); test only, no model change
+
+How the current days are chosen: bldRepDays(12) takes four days selected from the default profile (the tightest net-load hour, day 162; the slackest day, 195; the middle of the worst three-day net load, 218; the middle of the worst three-day wind lull, 359) and eight evenly spaced days (0, 45, 90, 135, 180, 225, 270, 315), each weighted 365/12, plus the weather-year tail days and stress windows. On those twelve days new wind runs at 33.9% against 45.2% over the twelve weather years, and tracking solar at 33.1% against 28.7% (TODO 14el).
+
+Option taken (the least change in TODO 14el, option (a) by choice of days): keep the four selected days and the equal weights; replace each evenly spaced day by one day from the same 45-day block, chosen so the twelve days' new wind and tracking solar match the twelve-year means, demand stays at its current level, and each day stays close to its block's original. Reweighting the current days was tried first and rejected: matching both means needs about 115-132 days of weight on day 180 alone.
+
+| On the 12 days | Current days | Re-chosen days | Twelve-year mean |
+|---|---|---|---|
+| Days | 0, 45, 90, 135, 162, 180, 195, 218, 225, 270, 315, 359 | 20, 72, 95, 159, 162, 195, 201, 218, 269, 289, 335, 359 | - |
+| New wind (modern turbine x 1.064) | 33.9% | 45.2% | 45.2% |
+| Tracking solar | 33.1% | 28.7% | 28.7% |
+| Existing wind | 26.7% | 36.6% | 37.0% |
+| Fixed-tilt solar | 25.3% | 21.4% | 22.4% |
+| Demand, mean MW (default year 23,177) | 23,210 | 23,207 | - |
+
+Existing wind and fixed-tilt solar were not targeted; both move toward their twelve-year means. Demand is unchanged.
+
+| Built by (cumulative new MW) | 2030: days test / null / c5b_14r | 2035 | 2040 |
+|---|---|---|---|
+| Wind | 4,329 / 3,220 / 3,359 | 14,533 / 7,520 / 7,493 | 27,940 / 17,014 / 16,993 |
+| Utility solar | 6,159 / 6,791 / 7,120 | 16,949 / 17,946 / 17,925 | 24,015 / 36,905 / 36,912 |
+| Lithium MW | 6,008 / 6,219 / 6,712 | 12,323 / 11,689 / 11,672 | 18,777 / 20,216 / 20,203 |
+| Lithium MWh | 23,907 / 22,716 / 22,671 | 49,294 / 46,761 / 46,691 | 75,106 / 93,887 / 93,920 |
+| CCGT | 0 / 514 / 527 | 3,187 / 4,177 / 4,197 | 8,220 / 7,137 / 7,152 |
+| Open-cycle LNG | 1,200 / 686 / 673 | 1,340 / 686 / 673 | 1,340 / 686 / 673 |
+| Open-cycle diesel | 0 / 298 / 309 | 0 / 298 / 309 | 0 / 298 / 309 |
+| Pumped hydro, iron-air | 0 in all three | 0 | 0 |
+| Coal retired early | none in any run | none | none |
+
+| Measure | Days test | Null | Difference |
+|---|---|---|---|
+| Engine PV 2026-40 at 8% real | R2,377.8bn | R2,388.4bn | -R10.6bn |
+| CO2 2026-40 | 1,827.2 Mt | 1,996.7 Mt | -169.5 Mt |
+| Optimiser objective (without the stress-target penalty) | R1,580.7bn | R1,591.6bn | not like for like: scored on different days |
+
+| Year | Mean shed, GWh: days test / null | Target | Passes |
+|---|---|---|---|
+| 2031 | 1.18 / 1.19 | 2.25 | both |
+| 2032 | 0.80 / 0.55 | 2.30 | both |
+| 2033 | 0.59 / 0.47 | 2.35 | both |
+| 2034 | 0.17 / 0.41 | 2.41 | both |
+| 2035 | 0.01 / 0.50 | 2.46 | both |
+| 2036 | 0.03 / 1.24 | 2.51 | both |
+| 2037 | 0.25 / 1.82 | 2.58 | both |
+| 2038 | 0.22 / 1.36 | 2.65 | both |
+| 2039 | 0.00 / 1.14 | 2.72 | both |
+| 2040 | 0.11 / 1.59 | 2.78 | both |
+
+Caveats: provisional; one run at MAXP=3, stopped at the pass limit (1,761 s), as the null was. The engine PV is the like-for-like measure (same engine, all 8,760 hours of each year); the objective is not. The engine still has the storage behaviour in RESULTS 'The engine sheds in c5b_14r's worst stress week'; the stress margin was not re-measured. Yearly new wind in the days test peaks at 3,420 MW (2039), just under the 3,500 MW a year cap from 2031, so the cap is close to binding. New wind's 45.2% itself rests on the 1.064 correction from two developer projections (RESULTS 'New wind's capacity factor (45.2%)').
+
+Settings to reproduce: c5b_14r's settings as in the null (COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5 STRESS_TARGET=1 GRID=1 ROOF_MW=900 COAL_AVAIL=1 PVTRK=1 COAL_DATES=coal_dates_irp2025.json BATT_DECL=0.03 WIND_CAP=3500 WIND_CAP_FROM=2031 MAXP=3 STALL=0.1 STALL_FROM=4 DEM_BLOCK=2027:930 IMP_AVG_MW=1066 CAPE_WIND=1580:4 RP_EXCL=wind MIN_BUILD=wind:2026:696,wind:2027:886,pv:2026:354,pv:2027:609,pv:2028:849 LI_MIN=2026:360:1440,2027:666:2664 WIN_FROM=out/pathway_c5b_14r_lp2040.json SOLVER=native) plus REPDAYS=<file with {"days":[20,72,95,159,162,195,201,218,269,289,335,359]}>, on build 2026-10-14r with harness/pathway/pathway_perfail.js carrying validation/days/pathway_repdays.patch (scratch override, not on main). Engine check: pathcheck.js with YEARS, IN and OUTC only, in three year groups. Days chosen by validation/days/rechoose.py from the per-day means written by validation/days/days_dump_snippet.js (the per-day file is derived from the model's profiles and stays local, as the week files do). Tables by validation/days/report.py.
+
 ### The engine sheds in c5b_14r's worst stress week because it never charges storage from gas and cycles pumped storage daily; the 24-hour optimum runs CCGT through the solar hours, banks 40-56 GWh in pumped storage and enters the last day with 40 GWh in its stores (engine build 2026-10-14r; user, 15 Oct 2026, messages 122 (2) and 123 (3)); no engine change
 
 Week s01 of 'Like-for-like cross-check on c5b_14r's weeks' (2037, weather year 2021, hours 897-1064, seed 87939557): the engine
