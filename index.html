@@ -5918,6 +5918,7 @@ const FIXED = {
   // issue in profiles.json, listed in HANDOVER, not something to paper over with
   // a fabricated loss factor in the engine.
   chargeFromThermal:1,   // engine may charge storage from coal headroom when its forecast says stress is coming
+  psResOnce:0,  // count pumped-storage units once in reserve (message 127 (1)); 0 keeps the double count pending the user's decision
   laGasCharge:1,  // charge storage from spare coal and gas ahead of a forecast shortfall beyond coal and gas (message 125 (3)); 0 restores the earlier rule
   storageLookaheadH:48,  // storage plans over the next 48 hours (14do 13 Oct, 24; engine fix (B) 14 Oct 2026, 48); 0 restores the earlier rule
   nuclearCF:0.66,
@@ -7677,7 +7678,11 @@ function simulate(u, prof, outPath, _soc0){
   const _gasMSF = p.reserveGasMinStableFrac ?? FIXED.reserveGasMinStableFrac;
   // Storage power free for reserve after dispatch this hour: unused output plus the charging load that could be dropped (message 97).
   const _stFreeB = h => Math.max(0, battPower - (stack.batt[h] || 0) + (chargeBattMW[h] || 0));
-  const _stFreeP = h => Math.max(0, psPowerTot - (stack.ps[h] || 0) + (chargePsMW[h] || 0));
+  // Pumped storage (message 127 (1)): psResOnce 1 counts each unit once. A unit pumping can stop (its pumping load) or, after a
+  // mode change, generate, not both, so the fleet's free power is its rating less what it generates; the rule above (0, the
+  // default until the user decides) adds the pumping load on top, counting pumping units twice, up to psPowerTot MW in pumping hours.
+  const _psResOnce = (p.psResOnce ?? FIXED.psResOnce ?? 0) ? 1 : 0;
+  const _stFreeP = h => Math.max(0, psPowerTot - (stack.ps[h] || 0) + (_psResOnce ? 0 : (chargePsMW[h] || 0)));
   let _restoreDrMWh = 0, _restoreDslMWh = 0;
   // Largest c (at most cMax) that coal can take over from a running turbine group of output gen and capacity cap while the reserve
   // still holds: coal headroom W less c, plus the group's online headroom at gen - c, plus otherMW, covers need.
@@ -8798,10 +8803,17 @@ function simulate(u, prof, outPath, _soc0){
     carbonCost+=coalGen*cC*plF;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
-    reserveAvailArr[h] = Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen)
+    reserveAvailArr[h] = !_psResOnce ? Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen)
       + Math.min(Math.max(0, psPowerTot - (stack.ps[h] || 0)), Math.max(0, psSoc) / _asHoldH)
       + Math.min(Math.max(0, battPower - (stack.batt[h] || 0)), Math.max(0, battSoc) / _asHoldH)
       + (chargeMW[h] || 0)
+      + (_astr ? astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF) + astrOnlineHeadroom(stack.diesel[h] || 0, dieselAvailMW(p), _gasMSF)
+        + Math.max(0, (p.hydroMW || 0) * (1 - (p.hydroCF ?? FIXED.hydroCF))) : 0)
+      // psResOnce: pumped storage at most its rating less what it generates, pumping load included in that, not added to it
+      : Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen)
+      + Math.min(Math.max(0, psPowerTot - (stack.ps[h] || 0)), (chargePsMW[h] || 0) + Math.max(0, psSoc) / _asHoldH)
+      + Math.min(Math.max(0, battPower - (stack.batt[h] || 0)), Math.max(0, battSoc) / _asHoldH)
+      + Math.max(0, (chargeMW[h] || 0) - (chargePsMW[h] || 0))
       + (_astr ? astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF) + astrOnlineHeadroom(stack.diesel[h] || 0, dieselAvailMW(p), _gasMSF)
         + Math.max(0, (p.hydroMW || 0) * (1 - (p.hydroCF ?? FIXED.hydroCF))) : 0);
     // Reserve shortfall (ASTR, message 92): what the hour's eligible providers, after dispatch, leave uncovered. Reported apart
@@ -16072,8 +16084,10 @@ function retailComponents(markup, stranded, year, viaMuni){
   // Priced at the midpoint vintage, because a fleet costed at the scenario year was not all
   // bought in that year.
   const vintage = base + dy / 2;
+  // Through bldCostEntry, as the optimiser does (message 127 (2), 15 Oct 2026): it read BLD_COST[k] directly, so the wind and
+  // solar cases (bldWindCase, bldPvCase, tracking) and the battery case did not reach the retail panel's capital.
   const costAt = (k) => {
-    const b = (typeof BLD_COST !== 'undefined') ? BLD_COST[k] : null;
+    const b = (typeof bldCostEntry === 'function') ? bldCostEntry(k) : (typeof BLD_COST !== 'undefined') ? BLD_COST[k] : null;
     if (!b) return 0;
     return b.c2026 * Math.pow(1 - (b.decl || 0), vintage - 2026);
   };
