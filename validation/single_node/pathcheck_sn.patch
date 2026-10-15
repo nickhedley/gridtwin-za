@@ -1,0 +1,51 @@
+--- a/harness/pathcheck.js
++++ b/harness/pathcheck_sn.js
+@@ -112,6 +112,10 @@
+    if (cum.phes + cum.phel > 0){ const PS=P.phes||{}, H=+(PS.hours??(process.env.PH||w.eval('FIXED.bldPhesHours'))), H2=+(PS.hours2??(process.env.PH2||0)), B=PS.basis??(process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis'));
+      const ann=h=>+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${h}),60)+FIXED.bldPhesFomRkW`), P1=cum.phes, P2=cum.phel;
+      over.newPsMW=P1+P2; over.newPsHours=(H*P1+H2*P2)/(P1+P2); over.newPsMaxMW=1e7; over.acapPs=(ann(H)*P1+(P2>0?ann(H2)*P2:0))/(P1+P2); }
++   // CROSS-CHECK CAPTURE (message 116; scratch copy only): SN_SCAN=<file> appends, for each weather year and draw the engine check
++   // uses, the year's worst 168 hours of unserved energy; SN_WEEKS=<file.json> captures the listed weeks of this year with the
++   // read-only hook, as validation/single_node/sn_run40.js writes them. Either skips the year's usual check.
++   if (process.env.SN_SCAN || process.env.SN_WEEKS) { await snYear(w, y, over); continue; }
+    const batch=(k0,k1)=>JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
+       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
+        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
+@@ -179,3 +183,37 @@
+  }
+  fs.writeFileSync(process.env.OUTC||'pathcheck.json', JSON.stringify(rows)); process.exit(0);
+ })();
++// Capture helpers for the cross-check (message 116). Seeds as the engine check's draws: SEED_BASE + k*104729 + wy*7919.
++async function snYear(w, y, over){
++  if (process.env.SN_SCAN){
++    const r=JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years) for (let k=0;k<${K};k++){ const nat=weatherYearNational(String(yy));
++      const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
++      const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
++      const u=x.stack.unserved; let s=0,best=-1,bh=0; for(let h=0;h<u.length;h++){ s+=u[h]||0; if(h>=168) s-=u[h-168]||0; if(h>=167 && s>best){best=s; bh=h-167;} }
++      o.push({y:${y}, wy:yy, k, seed:${SEED_BASE}+k*104729+yy*7919, shedGWh:x.E.unserved/1e3, worst168GWh:best/1e3, worstStart:bh}); }
++      return JSON.stringify(o); })()`));
++    for (const x of r) fs.appendFileSync(process.env.SN_SCAN, JSON.stringify(x)+'\n');
++    console.log('scan', y, r.length, 'runs, worst', Math.max(...r.map(x=>x.worst168GWh)).toFixed(3), 'GWh');
++  }
++  if (process.env.SN_WEEKS){
++    for (const wk of JSON.parse(fs.readFileSync(process.env.SN_WEEKS,'utf8')).filter(q=>q.y===y)){
++      const START=+wk.start, N=+wk.n, sd=+wk.seed, WY=wk.wy; const hours={}; let consts=null;
++      w.__SNH=(h,o)=>{ if (h>=START-1 && h<START+N) hours[h]=JSON.parse(JSON.stringify(o)); };
++      w.__SNC=(o)=>{ consts=JSON.parse(JSON.stringify(o)); };
++      const res=JSON.parse(w.eval(`(function(){ const nat=${WY==='default'?'{solar:PROFILES.solar,wind:PROFILES.wind}':'weatherYearNational(String('+(+WY)+'))'}; const st={...state,...${JSON.stringify(over)},outageSeed:${sd}};
++        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
++        const sl=(a)=>a?Array.from(a).slice(${START-1},${START+N}):null;
++        const p={...FIXED,...st};
++        return JSON.stringify({E:x.E, fuelCost:x.fuelCost, carbonCost:x.carbonCost, startUpCostR:x.startUpCostR, unservedCostR:x.unservedCostR, systemCostR:x.systemCostR,
++          reserveShortMWh:x.reserveShortMWh, socLi:sl(x.socByTier&&x.socByTier.li), socFe:sl(x.socByTier&&x.socByTier.fe), disLi:sl(x.battByTier&&x.battByTier.li), disFe:sl(x.battByTier&&x.battByTier.fe),
++          chargeBatt:sl(x.chargeBattMW), chargePs:sl(x.chargePsMW), battTierTWh:x.battTierTWh,
++          tiers:{li:{mw:p.battPowerMW+p.newBattMW, mwh:p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours, eff:p.battEff??0.88},
++                 fe:{mw:Math.max(0,p.newIronAirMW||0), mwh:Math.max(0,p.newIronAirMW||0)*(p.newIronAirHours??100), eff:p.newIronAirEff??0.45},
++                 vrfb:{mw:Math.max(0,p.newVrfbMW||0)}, vppB:p.vppBattMW||0}, stamp:BUILD_STAMP, coalDecomMW:st.coalDecomMW||0});})()`));
++      const uc=JSON.parse(w.eval('JSON.stringify(UC_FLEET)'));
++      fs.writeFileSync(wk.out, JSON.stringify({START,N,SEED:sd,WY:(WY==='default'?WY:+WY),Y:y,over:{coalDecomMW:res.coalDecomMW,...over},consts,hours,res,uc}));
++      console.log('week', wk.out, 'hours', Object.keys(hours).length, 'consts', !!consts);
++      w.__SNH=null; w.__SNC=null;
++    }
++  }
++}

@@ -79,6 +79,29 @@ Stress-week shed, engine / PyPSA: 37.3 / 0 GWh on 12e-13g, 0 / 0 on 13h. The ful
 operating reserve; both sides see the week's load, weather and outages (24 hours ahead for the rolling optimum and 13h's
 look-ahead).
 
+## Like for like on 14r (c5b_14r's engine), 15 Oct 2026
+
+Files: `engine_hook_14r.patch` (the hook for build 2026-10-14r, commit 6045387: the old hook's fields plus the reserve products,
+must-run, interruptible and restore-step totals and the standing coal units), `pathcheck_sn.patch` (applied to a copy of
+harness/pathcheck.js named pathcheck_sn.js: `SN_SCAN=<file>` scans each year's weather years and draws for the worst 168 hours of
+shed, `SN_WEEKS=<weeks json>` records weeks; otherwise identical to pathcheck.js), `weeks_14r.json` (the 20 weeks),
+`eng40_cost_x.py` (adds the 14r fields and engineFlatILRm, the engine figure with interruptible compensation),
+`sn_pypsa40_roll_x.py` (switches `X_RES`, `X_MR`, `X_IL`, each 0 or 1, and `X_RESPEN`; all 0 reproduces sn_pypsa40_roll.py to the
+digit), `table_14r.py` (the tables in RESULTS).
+
+```
+git -C <repo> archive 6045387 | tar -x -C /tmp/r14r; patch -s -p1 -d /tmp/r14r < engine_hook_14r.patch
+cp /tmp/r14r/harness/pathcheck.js /tmp/r14r/harness/pathcheck_sn.js; patch -s /tmp/r14r/harness/pathcheck_sn.js < pathcheck_sn.patch
+cd /tmp/r14r/harness     # with node_modules and the testroot link as for the suite
+SN_SCAN=scan.jsonl K=2 IN=<pathway_c5b_14r.json> node pathcheck_sn.js
+SN_WEEKS=<weeks json, out paths edited> IN=<pathway_c5b_14r.json> YEARS=2026,2032,2033,2036,2037,2038,2039,2040 node pathcheck_sn.js
+python3 eng40_cost_x.py wk_s01.json
+NEUTRAL=all X_RES=1 X_MR=1 X_IL=1 python3 sn_pypsa40_roll_x.py wk_s01.json roll_s01_all.json 24     # settings off/res/mr/il/all
+WK=<week folder> RO=<output folder> python3 table_14r.py
+```
+
+Results: RESULTS 'Like-for-like cross-check on c5b_14r's weeks'.
+
 ## Licences
 
 PyPSA (MIT), linopy (MIT), HiGHS (MIT). The inputs are the repository's own files at the commit used.

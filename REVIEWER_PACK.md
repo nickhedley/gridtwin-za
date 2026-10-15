@@ -135,9 +135,31 @@ The EDMSA CO2 failure appears in every suite count recorded since 5 Oct. Its cau
 
 ## 3. The PyPSA cross-check
 
-Finding: on cost, the single-node engine is 1.2% above a single-node PyPSA unit-commitment optimum with 24 hours of sight on the 2026 baseline week, and 1.7–4.0% above it on three storage-heavy 2040 weeks (build 14a). Before the October engine fixes it was 30–48% above on those weeks, and it shed 37.3 GWh where PyPSA shed none. One problem remains. On 14d, the engine c5 used, the engine sheds in 6 of 15 stress weeks where the optimum does not (0.24–4.79 GWh), always in the week's last hour. The PyPSA side holds no operating reserve; the engine holds 2.2–2.5 GW.
+Finding: on c5b_14r's own weeks, like for like (operating reserve by product, Avon and Dedisa must-run and interruptible load on the PyPSA side as well), the engine is 1.2% above a single-node PyPSA unit-commitment optimum with 24 hours of sight on the 2026 baseline, 1.1% on 2040 May and 3.5% on 2040 November. In stress it is not close: 26.0% above on the 2040 stress week and 3.1–26.0% (median 8.6%) on the 15 worst stress weeks found in 360 engine-check runs of c5b_14r's 2026–2040. The engine sheds 123.0 GWh across those 15 weeks; the optimum sheds none, with the additions on or off, and covers the reserve in every hour. So mark (1), within 5%, fails on 13 of the 15 and mark (2), no more shed than the optimum, on all 15 (chosen as the engine's worst weeks, so its shedding is by construction; the optimum's none is the finding). The earlier reading, that the engine sheds because it holds coal as reserve which the optimum does not, no longer stands (RESULTS 'Like-for-like cross-check on c5b_14r's weeks').
 
-Not re-run on 14r, the engine c5b_14r uses. Since 14d it holds operating reserve by product (ASTR), runs Avon and Dedisa on their contracts, calls 1,000 MW of interruptible load after open-cycle plant and restores reserve with open-cycle plant. None of these has a counterpart on the PyPSA side, which holds no reserve.
+Engine above the 24-hour optimum on c5b_14r's weeks, %, by what the PyPSA side includes (engine build 14r):
+
+| Week | all off | reserve only | must-run only | interruptible only | all on |
+|---|---|---|---|---|---|
+| base (2026, default profiles, hour 3264) | +5.6 | +5.6 | +1.2 | +5.6 | +1.2 |
+| may (2040, weather 2025, hour 3264) | +1.0 | +1.3 | +1.0 | +1.1 | +1.1 |
+| nov (2040, weather 2025, hour 7848) | +3.3 | +3.8 | +3.3 | +3.5 | +3.5 |
+| stress (2040, weather 2021, hour 897) | +21.8 | +23.0 | +21.8 | +24.3 | +26.0 |
+| stress14d (2040, weather 2016, hour 6807) | +1.0 | +0.9 | +1.0 | +5.2 | +5.1 |
+
+The 15 stress weeks:
+
+| Setting | Gap median, % | Gap range, % | Weeks the engine sheds | Weeks the optimum sheds | Engine shed GWh | Optimum shed GWh |
+|---|---|---|---|---|---|---|
+| all off | +7.8 | +2.2 to +21.8 | 15 | 0 | 123.0 | 0.0 |
+| reserve only | +8.0 | +2.5 to +23.0 | 15 | 0 | 123.0 | 0.0 |
+| must-run only | +7.8 | +2.2 to +21.8 | 15 | 0 | 123.0 | 0.0 |
+| interruptible only | +8.9 | +3.0 to +24.3 | 15 | 0 | 123.0 | 0.0 |
+| all on | +8.6 | +3.1 to +26.0 | 15 | 0 | 123.0 | 0.0 |
+
+Caveats: differences between settings under about 1% are an artefact of the rolling windows (single-week solves show reserve adds nothing measurable to the optimum's cost); one bus, one outage draw per week; both sides see the actual week ahead (limitation 19).
+
+Earlier, on c4's weeks: the engine was 1.2% above the optimum on the 2026 baseline and 1.7–4.0% above on three storage-heavy 2040 weeks (build 14a), down from 30–48% before the October engine fixes.
 
 ### What was compared
 
@@ -151,6 +173,7 @@ Both sides run the same week with the same inputs (RESULTS 'Single-node engine (
 - the engine's starting commitment and ramp limit;
 - each store's start and end state of charge;
 - shed at R9,530/MWh.
+- on 14r, switchable: the engine's reserve products by hour, its delivered Avon and Dedisa must-run, and 1,000 MW of interruptible load at R4,000/MWh (validation/single_node, sn_pypsa40_roll_x.py).
 
 PyPSA 1.4.0 runs on one bus, solved by HiGHS 1.15.1 to a 0.1% gap. The weeks are the Today 2026 baseline, plus May, November and the worst stress week of c4's 2040 build, which carries 22.5 GW of lithium. The fair comparator is a 24-hour rolling optimum: 48-hour windows, 24 hours kept from each.
 
@@ -320,7 +343,7 @@ Each can be answered from this pack in 30–40 minutes. Each is tied to a decisi
 
    Decision: whether c5b's adequacy verdicts and top-ups come from the engine, or wait for a reserve-holding optimum.
 
-   Evidence: on 14a and 14d the engine is within 1.2–4.1% of a 24-hour PyPSA optimum on cost. It sheds in 6 of 15 stress weeks where the optimum does not, always in the last hour, with storage empty and 2.2–2.5 GW of coal held as reserve that PyPSA does not hold. The comparison has not been re-run on 14r, the engine c5b_14r uses (section 3).
+   Evidence: on 14r, c5b_14r's engine, the engine is within 1.1–3.5% of a 24-hour PyPSA optimum on ordinary weeks but 3.1–26.0% above it on c5b_14r's 15 worst stress weeks, where it sheds 123.0 GWh and the optimum, holding the same reserve, sheds none (section 3). The engine's adequacy verdicts and top-ups therefore rest partly on its dispatch, not only on the build.
 
    Question: would you accept the verdicts on this evidence? If not, which one further test would you require?
 
