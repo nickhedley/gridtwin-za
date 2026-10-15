@@ -2696,6 +2696,93 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### Scenario switch and load timing: a preset click blocks the page for 37 s to 3.2 minutes on this machine (risk panels 84% of the engine time); simulate() lost V8's optimising compiler between 14l and 14r, about three-quarters of 14r's 15% slowdown; status line added (build 2026-10-15a; user, 15 Oct 2026, messages 110-112)
+
+Machine: this session's cloud container (4 cores), Chromium 141.0.7390.37 headless, V8 14.1.146.11, Playwright; the app served
+locally (python http.server). Builds: 14l (93931e7), 14r (main, ef1025d; index.html identical to 6045387, where c5b_14r ran),
+15a (branch claude/calc-indicator: main plus the status line, no engine change). Absolute times are this machine's; a desktop
+browser is faster. Comparisons are same machine, same session, nothing else running.
+
+Load, fresh page, a fixed two-minute window (first results = end of the long task in which run() first draws; free = end of the
+last long task):
+
+| Build | First results, s | Free, s |
+|---|---|---|
+| 14l | 2.1, 1.6 | 52.9, 50.3 |
+| 14r | 1.6, 1.5 | 56.9, 56.8 |
+| 15a | 1.4, 1.5 | 55.2, 53.8 |
+
+Superseded: earlier load figures that stopped after 3 or 10 s of quiet (free at 14 s, 28-32 s) were cut short by a pause while
+inputs load; the page is busy again after it.
+
+Preset clicks, one page per build, after a 120 s start-up and with nothing in flight; each click waits for the last risk-panel
+run it started to end before the next (no quiet-time heuristics: run(), runMC(), runAdequacy() and the capture curve wrapped).
+Results = click to run() drawing the results; free = click to the end of the last risk-panel run:
+
+| Preset | 14l results, s | 14l free, s | 14r results, s | 14r free, s |
+|---|---|---|---|---|
+| 2025, as modelled | 5.6 | 49.3 | 5.5 | 55.4 |
+| Today 2026 | 2.8 | 38.6 | 3.6 | 47.1 |
+| IRP's 2030 targets | 9.4 | 126.9 | 11.1 | 153.9 |
+| IRP's 2030 targets, grid delayed | 7.9 | 132.5 | 9.5 | 148.5 |
+| IRP path 2035 | 10.1 | 153.8 | 11.5 | 194.1 |
+| Deep decarbonisation 2035 | 4.4 | 40.0 | 4.3 | 49.2 |
+| Fossil-free 2040 | 3.3 | 32.2 | 3.3 | 37.0 |
+| Sum | 43.4 | 573.2 | 48.8 | 685.3 |
+
+14l to 14r: results +12%, free +20%. The page is blocked throughout (long tasks 98.9-99.8% of each interval). Superseded: the
+first round of 15 Oct (results 48.5 to 54.3 s, free 396 to 469 s), whose start-up wait ended before start-up's own risk panels
+finished and whose waits between clicks could give up after 60 s, so clicks overlapped. Single round per build.
+
+Engine profile, 14r, the seven clicks (V8 sampling profiler, 1 ms, 466 s of script): simulate() 99%; by caller Monte Carlo
+(runMC, 60 draws) 52%, adequacy (runAdequacy, 48 draws) 32%, run() 9%, capture curve 6%; the gas floor re-runs
+(simulateGasAnnualFloor) 73% of engine time; inside the engine _fcCoal 28%, _laReq 22%. A draw on IRP's 2030 targets costs 3
+single runs (the floor search repeats twice), on IRP path 2035 5 (four times); each run is two passes (the cyclic close).
+
+Why 14r is slower than 14l. Same 12 weather-year draws with outages, as runAdequacy draws them, on IRP's 2030 targets and IRP
+path 2035 (216 simulate() calls on both builds), no profiler, two rounds:
+
+| Build | IRP's 2030 targets, s | IRP path 2035, s | Both, s |
+|---|---|---|---|
+| 14l | 15.1, 14.4 | 16.6, 15.9 | 31.7, 30.3 |
+| 14r | 15.7, 15.9 | 19.9, 19.7 | 35.6, 35.6 |
+| 14r, V8 limit raised (--max-optimized-bytecode-size=200000) | 15.2, 15.0 | 17.4, 16.5 | 32.6, 31.6 |
+
+V8 trace (--trace-opt): on 14l simulate() is compiled by TurboFan (16 completed optimisations in one run); on 14r it is never
+sent to TurboFan, only to the mid-tier Maglev (15 compiles, no TurboFan); with the limit raised, TurboFan compiles it again (12
+completed). V8 does not hand functions above a bytecode size limit to TurboFan, and simulate() grew past it between 14l and 14r
+(the reserve rule, the must-run, interruptible load and the restore step). So of 14r's +15% on these draws, about three-quarters
+(35.6 to 32.1 s, against 31.0 on 14l) is the lost compiler tier and the rest (+3.5%) the new code itself. Line-level profile
+(100 us): self time on lines of simulate() unchanged between the builds rose 5.8 to 13.4 s, new or changed lines added 1.5 s
+(largest: the ASTR cover check at the price line +0.6 s, the ASTR shed order +0.3 s, the Avon and Dedisa must-run +0.2 s,
+interruptible ordering +0.2 s). Users' browsers cannot raise the limit; splitting simulate() is the only fix (TODO 14ds (d)).
+
+Status line (15a): a click shows 'Calculating…' under the preset buttons before the engine starts (painted 16-18 ms after the
+click, the engine starting 22 ms after it), 'Updating risk panels…' once the results are drawn, and hides when the capture curve,
+adequacy and Monte Carlo have finished. Measured: on load it hid 4 ms after the last long task (55.2 and 53.8 s); after a click on IRP's 2030 targets from a quiet page it hid when the last risk-panel run ended (149.7 s; main 154.5 s, the same calls in the same order); on four other presets it hid within 7 ms of the last long task.
+The preset buttons' 0.15 s colour fade is switched off while it shows (it froze half-way during the run). No engine code changed.
+
+Start-up (main, run(), the schedulers and the risk-panel runs wrapped from DOMContentLoaded): run() at 1.6 s (early results) and
+again at 5.4 s when every engine input has settled (by design, 22 Sep); the capture curve at 2.6 s and again at 11.3 s (about
+2.5 s of blocking spent on a curve that is redrawn); one Monte Carlo run (11.3-38.4 s) and one adequacy run (11.3-59.7 s). The
+risk panels run once at start-up; an apparent second pass reported on 15 Oct was the status line rewriting its text when a task
+ended, misread as a new schedule.
+
+Suite on 14r (main ef1025d, 15 Oct, ESK19679.csv present): 726/733 node checks, audit 87/87 (813/820), eng5 6/6; the same 820
+checks as at the #44 merge (814/820 on 14 Oct). The six failures at merge fail with identical figures (logs compared line by
+line): EDMSA Scenario A CO2 2035 (83.3 against 124 +/-22 Mt); with gas, 20 GW of 100-hour iron-air moves July (607 -> 472 GWh,
+22.2%, limit 2%); the preset curtailment band (Fossil-free 2040 121.8 against 96.3 +/-15%); the Megaflex block; the peaker season
+ratio (1.8x against 2.15-8.6x); pumped storage (3.3 against 3.37-5.62 TWh). Each cause is recorded in its own entry. The
+seventh, 'the build stamp is not stale' (validate_structure), compares BUILD_STAMP's date (2026-10-14) with the day the suite
+runs; it passed on 14 Oct and fails on main from 15 Oct until a delivered change bumps the stamp.
+
+Suite on 15a (ESK19679.csv present): 727/733 node checks, audit 87/87 (814/820), eng5 6/6; main on the same day 813/820. Every
+log identical to main's line for line, except the stamp check (passes on 15a), lint's size line (1,370 to 1,372 KB of JS) and
+where one asynchronous 'Weather years loaded' line falls in validate_findings' log. Outputs unchanged. c5b_14r's engine check (harness/pathcheck.js, IN = c5b_14r's
+pathway file from the local reproduction at 6045387, all 15 years, default seeds) run on main and on 15a: outputs byte-identical;
+engine PV R2,393.4554bn at 8% and CO2 1,991.9215 Mt 2026-40 on both, as on GitHub (R2,393.5bn, 1,991.9 Mt); every year adequate;
+2035 R274.5393bn, 128.6012 Mt, 0.498016 GWh, as the earlier local check.
+
 ### PROVISIONAL until the reviewer has read them: c5b_14r sensitivities, 21 runs and s_detgas from c5b_14r's windows, against a null run; pass mark 5 met on 18 of 20 comparable runs (s_be7 structural, s_li8h immaterial); s_nogas4strict does not meet the adequacy standard from 2034 without new peaking plant; determined gas +R16-39bn against least cost (user, 14-15 Oct 2026, messages 82, 104, 105 and 107)
 
 Runs: workflow 'Optimiser long run', ref claude/reserve-rule, code_sha 6045387 (build 2026-10-14r; s_detgas 2ed7225, the same
