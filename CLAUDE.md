@@ -43,7 +43,7 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
 Expected (15 Oct 2026, build 2026-10-15a, branch claude/calc-indicator, ESK19679.csv present): 814/820, node checks 727/733 plus
 audit 87/87; eng5 6/6 (main ef1025d, build 14r: 814/820 on 14 Oct, 813/820 from 15 Oct, the stale stamp); stress_suite.js (repo
 root, `node stress_suite.js`) 290/290 on 14 Oct. The six failures, each with its cause in RESULTS ('Scenario switch and load
-timing' lists them): EDMSA Scenario A CO2 2035 (validate_external); with gas, iron-air moves July gas, and the preset curtailment
+timing' lists them; EDMSA's is only partly traced, RESULTS 'EDMSA Scenario A CO2 2035'): EDMSA Scenario A CO2 2035 (validate_external); with gas, iron-air moves July gas, and the preset curtailment
 band (validate_findings; the band waits on the preset re-search, TODO 14ef); the Megaflex tariff block (validate_consistency);
 the peaker season ratio and pumped-storage output (validate_benchmarks). 'The build stamp is not stale' (validate_structure)
 fails whenever BUILD_STAMP is older than the day the suite runs. Without ESK19679.csv, validate_weather adds a
