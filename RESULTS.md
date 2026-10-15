@@ -3246,13 +3246,14 @@ fleet's rc_, credited the year's charge per MW), the pathway output (comply: the
 already compliant; Matla, Duvha and Kriel close before FGD could finish). Source and settings: Eskom to the NCOP select committee,
 10 June 2025 (PMG meeting 40926 and the attached presentation; SOURCES 'Coal emissions compliance cost', PR #53).
 
-Assumptions, each the author's (open to the user): allocation pro rata by MW of the six (the presentation does not itemise by station);
+Assumptions, accepted by the user as provisional (15 Oct 2026, message 125 (4)): allocation pro rata by MW of the six (the presentation does not itemise by station);
 the whole R77bn falls on the six (Kusile's part cannot be separated, so their share is overstated by it); rand year not stated, taken as
 January 2025 rands x SA CPI to January 2026 (1.035); capital from 2031 as an annuity at BLD_DISC (8%) over each station's remaining life
 to its last unit's scheduled closure, at most 30 years (Medupi, beyond 2050, takes 30); the charge is per MW standing, so a unit that
 closes stops paying (a slight under-recovery) and early retirement avoids it pro rata (retiring part of a station is a linear
 approximation). Cross-check: Medupi's pro-rata share of full compliance is R50.5bn against R41.7bn for its FGD alone (Eskom FY2026
-integrated report, as reported by Business Day, 2 Sep 2026) and R56.2bn in February 2026's draft cost-benefit study.
+integrated report, as reported by Business Day, 2 Sep 2026) and R56.2bn in February 2026's draft cost-benefit study. Pro rata by MW therefore puts R8.8bn (21%) more on Medupi than the
+reported FGD figure; the reported figure covers FGD only, so the gap is not all over-allocation.
 
 On c5b_14r's coal dates (coal_dates_irp2025.json), from the app's own functions (complyStations, complyYear):
 
