@@ -3423,6 +3423,249 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### Generation by carrier, c5d and c5c, 2030 / 2035 / 2040 (build 2026-10-16a; user, 16 Oct 2026, message 139 (1)); report only, no model change
+
+Settings. The hooked engine check of message 135 (local copy of build 16a, harness/pathcheck.js TF=0.5 GRID=1, all years, means
+over twelve weather years and the check's outage draws), one report-only measure per run: the engine's energy totals (E);
+wind split between existing and new MW on the engine's own hourly blend (existing MW on the current profile, new MW on the
+modern-turbine profile, delivered output shared pro rata); gas split between CCGT and open-cycle on LNG as in message 135;
+storage charging from chargeMW; served demand as the demand line less storage charging, plus rooftop, less firm exports and
+unserved energy. The energy balance (generation, storage discharge and unserved, against the demand line and surplus exports)
+closes to within 1e-12 TWh in every year; the hooked check returns both runs' recorded engine PV and CO2 to every digit.
+TWh, with each carrier's share of total generation; storage moves energy in time, so it is shown below the total, not in it.
+
+| Carrier | c5d 2030 | c5d 2035 | c5d 2040 | c5c 2030 | c5c 2035 | c5c 2040 |
+|---|---|---|---|---|---|---|
+| Coal | 113.1 (47.2%) | 74.4 (27.1%) | 59.8 (19.0%) | 122.0 (50.9%) | 73.3 (26.6%) | 55.4 (17.5%) |
+| Nuclear | 10.9 (4.5%) | 10.9 (4.0%) | 10.9 (3.4%) | 10.9 (4.5%) | 10.9 (3.9%) | 10.9 (3.4%) |
+| Wind, existing | 14.6 (6.1%) | 14.1 (5.1%) | 13.8 (4.4%) | 14.7 (6.1%) | 14.4 (5.2%) | 14.0 (4.4%) |
+| Wind, new | 42.3 (17.7%) | 94.7 (34.4%) | 110.1 (34.9%) | 33.2 (13.9%) | 79.3 (28.8%) | 98.0 (31.0%) |
+| Utility solar | 23.1 (9.6%) | 38.4 (14.0%) | 62.3 (19.8%) | 23.2 (9.7%) | 56.2 (20.4%) | 83.4 (26.3%) |
+| Rooftop solar | 19.2 (8.0%) | 26.1 (9.5%) | 33.0 (10.5%) | 19.2 (8.0%) | 26.1 (9.5%) | 33.0 (10.4%) |
+| CSP | 1.5 (0.6%) | 1.5 (0.6%) | 1.5 (0.5%) | 1.5 (0.6%) | 1.5 (0.6%) | 1.5 (0.5%) |
+| Hybrid (RMIPPPP) | 1.7 (0.7%) | 1.3 (0.5%) | 1.0 (0.3%) | 1.8 (0.7%) | 1.2 (0.4%) | 0.9 (0.3%) |
+| Hydro | 2.9 (1.2%) | 2.9 (1.1%) | 2.9 (0.9%) | 2.9 (1.2%) | 2.9 (1.1%) | 2.9 (0.9%) |
+| Imports | 9.3 (3.9%) | 9.3 (3.4%) | 9.3 (3.0%) | 9.3 (3.9%) | 9.3 (3.4%) | 9.3 (2.9%) |
+| CCGT | 0.0 (0.0%) | 1.2 (0.4%) | 10.4 (3.3%) | 0.0 (0.0%) | 0.5 (0.2%) | 6.8 (2.2%) |
+| Open-cycle on LNG | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.2 (0.1%) | 0.1 (0.0%) | 0.3 (0.1%) |
+| Diesel | 0.9 (0.4%) | 0.1 (0.0%) | 0.2 (0.1%) | 0.8 (0.3%) | 0.0 (0.0%) | 0.2 (0.1%) |
+| Total generation | 239.6 (100%) | 274.9 (100%) | 315.3 (100%) | 239.6 (100%) | 275.8 (100%) | 316.6 (100%) |
+| Storage discharge (batteries and pumped storage) | 4.5 (1.9%) | 12.6 (4.6%) | 22.3 (7.1%) | 4.9 (2.0%) | 18.7 (6.8%) | 31.5 (10.0%) |
+| Storage charging | 5.8 (2.4%) | 15.4 (5.6%) | 26.7 (8.5%) | 6.2 (2.6%) | 22.5 (8.1%) | 37.2 (11.8%) |
+| Storage losses (charging less discharge) | 1.2 (0.5%) | 2.8 (1.0%) | 4.4 (1.4%) | 1.3 (0.5%) | 3.8 (1.4%) | 5.7 (1.8%) |
+| Surplus curtailment | 0.2 (0.1%) | 6.3 (2.3%) | 12.4 (3.9%) | 0.0 (0.0%) | 3.1 (1.1%) | 12.0 (3.8%) |
+| Congestion stopgap loss (1.3%) | 1.1 (0.4%) | 2.0 (0.7%) | 2.6 (0.8%) | 0.9 (0.4%) | 2.0 (0.7%) | 2.7 (0.9%) |
+| Firm exports | 6.6 (2.7%) | 6.6 (2.4%) | 6.6 (2.1%) | 6.6 (2.7%) | 6.6 (2.4%) | 6.6 (2.1%) |
+| Interruptible load called | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Unserved | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Served demand (incl. rooftop) | 231.8 (96.7%) | 265.5 (96.6%) | 304.3 (96.5%) | 231.8 (96.7%) | 265.5 (96.3%) | 304.3 (96.1%) |
+| Energy balance residual | 1.9e-12 | 5.1e-13 | -3.2e-13 | 2.0e-12 | 6.0e-13 | -8.2e-13 |
+
+Imports are 1,150 MW at the pathway's 0.927 (IMP_AVG_MW=1066) to the horizon; the contract's 2030 end is not applied in either
+run. Storage discharge is batteries (lithium, flow and iron-air) and pumped storage together.
+
+### The 2026 replay curtails almost nothing for oversupply; NTCSA curtailed up to 3 GW on a winter day in 2026, which the replay reaches only with every coal unit's minimum at 0.75 or more of committed capacity under the engine's commitment rules ; deemed energy for curtailed REIPPPP output is not in the engine's cost and would add at most R0.5-1.6bn a year (c5c R9.9bn, c5d R13.7bn over 2026-40) (build 2026-10-16a; user, 16 Oct 2026, messages 130 and 141 (2)); report only, no model change
+
+Settings. 'Today 2026' preset (applyState), build 16a, harness copy at the suite's after-copy; twelve weather years (2014-2025)
+times ten outage draws, the engine check's seeds (71830529 + k x 104729 + year x 7919), simulate with real profiles; the 1.3%
+congestion stopgap on (congestionCurtailOn). Measured: surplus curtailment (curtailMW) and the congestion stopgap (congestMW) by
+month; for May-August, each run's largest hourly surplus curtailment between 06:00 and 17:59, its largest daily total in those
+hours, and the days with an hour above 1 GW. Coal minimum test (report only, local copy): every UC_FLEET row's minimum stable level
+raised to at least 0.65, 0.70, 0.75 or 0.80 before the replay; nothing else changed. Script: m130_replay.js and m130_msl.js
+(scratch, not in the repository).
+
+Coal minimum stable levels in the code: the engine's 31 UC_FLEET rows across 16 stations, 15 at 0.65 and 16 at 0.50 (our own value,
+unsourced, TODO 14dj), 0.563 capacity-weighted over 41,530 MW; units are committed in 4-hour blocks (BLOCK_HOURS), so a unit can come off over
+midday and return for the evening peak. The build LP uses bldCoalMinFrac 0.65.
+
+As modelled, mean of 120 runs, GWh:
+
+| | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec | Year |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Surplus curtailment | 0.00 | 0.00 | 0.00 | 0.01 | 0.00 | 0.00 | 0.00 | 0.00 | 0.05 | 0.00 | 0.00 | 0.00 | 0.06 |
+| Congestion stopgap (1.3%) | 21.2 | 18.4 | 20.5 | 19.9 | 23.6 | 27.1 | 28.1 | 26.3 | 24.0 | 24.2 | 22.2 | 22.0 | 277.6 |
+
+Winter (May-August) midday, as modelled: no hour of surplus curtailment in any of the 120 runs; the largest day with the stopgap
+counted is 0.90 GWh on average (0.94 GWh at most), and the stopgap's largest hour is 95 MW.
+
+Coal minimum test, means of 120 runs:
+
+| Every unit's minimum at least | Surplus curtailment, GWh a year | Winter midday peak, MW, mean / largest | Runs with a winter peak of 3 GW or more | Days a year with an hour above 1 GW | Largest winter day, GWh, mean / largest |
+|---|---|---|---|---|---|
+| as coded (0.50 or 0.65) | 0.06 | 0 / 0 | 0 of 120 | 0.0 | 0.0 / 0.0 |
+| 0.65 | 5.9 | 468 / 1,574 | 0 | 0.2 | 0.5 / 2.4 |
+| 0.70 | 25.1 | 1,423 / 2,614 | 0 | 1.4 | 1.6 / 4.5 |
+| 0.75 | 116.4 | 2,479 / 3,654 | 10 | 4.0 | 3.6 / 7.3 |
+| 0.80 | 694.3 | 4,982 / 6,653 | 120 | 24.4 | 18.8 / 25.6 |
+
+Observed (sources, no eskom.co.za):
+- NTCSA: curtailment "of up to 3 000MW in a particular day" in winter 2026 (Gav Hurford, acting general manager of the System
+  Operator, TechCentral, 7 Oct 2026). Sapvia: instructions to IPPs from about 100 a month earlier in 2026 to more than 1,000 a month
+  (TechCentral, 15 Oct 2026; SAPVIA, 'Solar industry welcomes upfront payment of curtailment claims as IPP curtailment events climb
+  tenfold', 2026).
+- NTCSA's stated cause: operational constraints on the System Operator in daylight hours; coal units cannot be ramped quickly, so
+  they stay online through the day at minimum stable levels to cover the morning and evening peaks; hydro and pumped storage are
+  adjusted first and self-dispatching renewable IPPs are curtailed last (SAPVIA, above; Engineering News, 30 Jul 2026). This is
+  oversupply against coal kept online, not a network limit. The separate congestion mechanism (NERSA, 29 Apr 2025; Western and
+  Eastern Cape, 4% cap) covers grid-constrained curtailment and excludes oversupply.
+- Eskom's tested minimums (user, message 141; Eskom RT&D 2023, not read here): about 44-62% of capacity without oil support.
+
+Finding. The replay reproduces a winter peak of about 3 GW only with every unit's minimum at 0.75 or more (median run 2.5 GW, 10 of
+120 runs at 3 GW or more); 0.70 gives 2.6 GW at most, 0.65 1.6 GW. That is above Eskom's tested 44-62%, so the gap is not mainly the
+technical minimum: under the engine's 4-hour commitment blocks, units come off over midday, which NTCSA says the System Operator does not
+do. The 0.75 floor is an effective proxy for keeping units online, not a technical minimum. Caveats: NTCSA's 3 GW is a single
+reported day, not a distribution; the model has no instruction count; the 2026 replay uses the preset's fleet and the 2014-2025
+weather. Implication for the 50% minimum: on its own it is within Eskom's tested range; with 4-hour decommitment it lets the engine
+avoid nearly all 2026 curtailment, so the engine understates midday oversupply now and, by the same rule, in the pathway years.
+This belongs with the coal flexibility option in the post-note batch (TODO 14du, message 136 (2)); no value set here.
+
+Deemed energy (message 130 (2)). The engine does not charge for curtailed REIPPPP output: system cost pays the PPA on
+delivered REIPPPP output only (reipppOutputMWh times reipppRate(year)). Deemed energy appears only in the retail panel, on
+curtailment above 10% of wind and solar output system-wide (RETAIL_T curtailment_compensation), a level no year of c5c or c5d
+reaches (largest 3.9%, c5d 2040). Estimate, same hooked engine check as message 135 (local copy of 16a, harness/pathcheck.js
+TF=0.5 GRID=1, all years; constants read through FIXED as the engine reads them): REIPPPP's share of each hour's curtailment,
+pro rata to delivered output at the engine's own REIPPPP shares (4,042 MW of the wind, 2,783 MW of the utility solar), surplus
+curtailment and the 1.3% stopgap apart, valued at reipppRate(year), the average REIPPPP tariff in 2026 rands with expired
+windows paying nothing. No threshold is applied, so for BW1-6, which pay only beyond a threshold, it is an upper bound. The
+hooked check returns both runs' recorded engine PV and CO2 to every digit.
+
+| Year | REIPPPP rate, R/MWh (2026 rands) | c5c surplus GWh | c5c stopgap GWh | c5c R bn | c5d surplus GWh | c5d stopgap GWh | c5d R bn |
+|---|---|---|---|---|---|---|---|
+| 2026 | 1,908 | 0.1 | 245.5 | 0.47 | 0.2 | 247.8 | 0.47 |
+| 2027 | 1,908 | 0.1 | 249.0 | 0.48 | 0.9 | 254.9 | 0.49 |
+| 2028 | 1,908 | 1.8 | 255.9 | 0.49 | 4.5 | 259.2 | 0.50 |
+| 2029 | 1,908 | 0.9 | 265.4 | 0.51 | 37.8 | 267.5 | 0.58 |
+| 2030 | 1,908 | 0.3 | 270.6 | 0.52 | 50.5 | 272.1 | 0.62 |
+| 2031 | 1,908 | 2.5 | 274.2 | 0.53 | 127.2 | 274.9 | 0.77 |
+| 2032 | 1,908 | 48.0 | 276.5 | 0.62 | 317.9 | 276.7 | 1.13 |
+| 2033 | 1,908 | 220.0 | 278.0 | 0.95 | 541.9 | 277.6 | 1.56 |
+| 2034 | 1,360 | 359.1 | 278.6 | 0.87 | 838.1 | 278.3 | 1.52 |
+| 2035 | 1,060 | 421.1 | 278.9 | 0.74 | 878.3 | 278.6 | 1.23 |
+| 2036 | 1,060 | 579.6 | 279.4 | 0.91 | 904.5 | 278.7 | 1.25 |
+| 2037 | 692 | 693.0 | 279.8 | 0.67 | 960.5 | 279.2 | 0.86 |
+| 2038 | 692 | 813.7 | 280.2 | 0.76 | 1200.3 | 279.8 | 1.02 |
+| 2039 | 531 | 936.9 | 280.5 | 0.65 | 1250.6 | 280.3 | 0.81 |
+| 2040 | 531 | 1181.2 | 280.8 | 0.78 | 1322.0 | 280.6 | 0.85 |
+
+Sum 2026-40: c5c R9.9bn (R5.8bn in present value at 8%), c5d R13.7bn (R7.8bn); at most 0.38% of the year's engine cost in c5c
+and 0.64% in c5d (both 2033). Against what is observed: NTCSA had about R2bn of curtailment claims under verification in mid-June
+2026 and R1.5bn in late July, a backlog built up from April and May (Engineering News, 18 June and 27 July 2026), against R402m
+of deemed energy for all of 2025 (NERSA; the basis of the 1.3% stopgap). The model's 2026 figure, R0.47bn, sits on 2025's level by
+construction; 2026's claims run several times higher, in line with the oversupply curtailment the 2026 replay does not produce
+(above). Caveats: the R1.5-2bn is a backlog, not a year's total; the rate averages all windows and technologies.
+
+### Solar on c5d and c5c: totals, curtailment, build limits, midday net load, tracking capacity factor, and grid charges in bids (build 2026-10-16a; user, 16 Oct 2026, message 134); report only, no model change
+
+Settings. c5d and c5c as run (RESULTS 'New central c5d', 'New central c5c'). Engine check harness/pathcheck.js, TF=0.5 GRID=1,
+YEARS=2030,2035,2040, on a local copy of build 16a with one report-only measure added to each run: utility solar potential from the
+profiles (existing MW on fixed tilt, new MW on the tracking twin), delivered utility solar (stack.pv), surplus curtailment split
+between wind and solar pro rata from curtailMW, the 1.3% congestion stopgap kept apart, rooftop (E.rooftop), and midday net load
+(10:00-14:59: grid demand plus firm exports, less interruptible load, rooftop and utility solar potential). Means over twelve weather
+years and the check's outage draws. Limits and reduced costs from c5d's cached pass-1 solution (cache key 114c77e6f6).
+
+| | c5d 2030 | c5d 2035 | c5d 2040 | c5c 2030 | c5c 2035 | c5c 2040 |
+|---|---|---|---|---|---|---|
+| New utility solar, cumulative MW | 6,791 | 13,744 | 24,672 | 6,791 | 20,657 | 33,606 |
+| Existing utility solar, potential TWh | 6.42 | 6.42 | 6.42 | 6.42 | 6.42 | 6.42 |
+| New utility solar, potential TWh | 17.06 | 34.52 | 61.97 | 17.06 | 51.89 | 84.41 |
+| Utility solar delivered, TWh | 23.10 | 38.43 | 62.34 | 23.17 | 56.18 | 83.41 |
+| Rooftop, TWh (never curtailed) | 19.19 | 26.08 | 32.97 | 19.19 | 26.08 | 32.97 |
+| All solar delivered, TWh | 42.29 | 64.51 | 95.31 | 42.36 | 82.26 | 116.38 |
+| Surplus curtailment of solar, TWh | 0.07 | 1.97 | 5.08 | 0.00 | 1.37 | 6.11 |
+| as a share of utility solar potential | 0.3% | 4.8% | 7.4% | 0.0% | 2.3% | 6.7% |
+| as a share of all solar potential | 0.2% | 2.9% | 5.0% | 0.0% | 1.6% | 4.9% |
+| Congestion stopgap loss on solar, TWh | 0.31 | 0.54 | 0.97 | 0.31 | 0.76 | 1.31 |
+| Hours with any curtailment | 133 | 1,052 | 1,393 | 1 | 454 | 1,028 |
+| Midday net load, mean MW | 17,678 | 15,066 | 10,483 | 17,678 | 10,458 | 4,528 |
+| Midday net load, peak MW | 31,386 | 35,378 | 39,950 | 31,402 | 35,025 | 39,495 |
+| Midday net load, lowest MW | 9,613 | 4,642 | -3,223 | 9,613 | -1,194 | -10,813 |
+
+Build limits on new solar in c5d (yearly cap 2,500 MW in 2026 rising 7% a year to 6,446 MW in 2040):
+- The yearly cap binds only in 2030: 3,277 MW built at the cap, reduced cost -R158,759 per MW against an objective coefficient of
+  R9.23m per MW (the present value of its costs to 2040), 1.7%. In 2035 (394 MW built, cap 4,596) and 2040 (3,178 MW, cap 6,446)
+  solar is at the margin: reduced cost 0.
+- The freed-coal connection pool (rppool: connections at retired coal sites no more than the coal retired) binds in 2028-29 and
+  2031-40, duals -R0.14m to -R0.29m per MW (2028 -R1.45m). It limits the connection discount, not the solar build. The per-year
+  link (rpb_pv) binds in 2029, 2030 and 2036. The committed minimum (mbmin_pv) binds 2026-28.
+
+10% margin against 0% (s_prm10_c5d, which returns c5c's build, against c5d), new MW by 2030 / 2035 / 2040: solar 6,791 / 20,657 /
+33,606 against 6,791 / 13,744 / 24,672; lithium 6,666 / 13,438 / 20,678 against 3,190 / 7,872 / 12,239. Solar moves with lithium:
++8.9 GW of solar with +8.4 GW of lithium by 2040.
+
+Tracking capacity factor. New utility solar's national tracking profile averages 28.67% over the twelve weather years (2014-2025),
+27.35% to 29.58% by year. The profile is a capacity-weighted blend of regions: Northern Cape 39.2%, Limpopo 15.5%, Hydra Central
+14.0%, North West 13.6%, Western Cape 11.0%, Free State 5.2%, Gauteng 1.5%; the Northern Cape alone gives 30.11%. The gap to 30.13%
+is the site mix, not the weather years (no year reaches 30.13%). Correction to the request: 30.13% is BW6 bids' typical
+single-axis tracking capacity factor (IPP Office REIPPPP historical data note, 7 Nov 2025, definition not stated; BW6_PV_TRK_BID_CF),
+the basis on which BW7's tariffs are turned into capex; BW7's own capacity factors are not published.
+
+Grid charges in bids (research helper, 16 Oct 2026; the web reader failed, Firecrawl read two sources before running out of
+credits, the rest is search snippets; no eskom.co.za page opened):
+- Shallow connection: paid by the bidder, inside the bid tariff, no cap. The bid carries a cost estimate letter from the grid
+  provider (BW5 Part B 2.6.3.6.2.2; IPP Office, BW5 Bidders' Conference Queries and Clarifications, 26 May 2021, Q7, Q10, Q11, Q50,
+  Q70, read; tariff adjustments only for exchange and interest rates, "any other cost items are Bidders' risk"). Cost estimate
+  letters can include 400 kV shared or upstream scopes. BW7 accepts a cost estimate letter or a budget quote (Cliffe Dekker
+  Hofmeyr, 7 Feb 2024, read).
+- Generator use-of-system: a transmission network charge for generators in R/kW a month on maximum export capacity, in six zones;
+  Cape and Karoo R0.00 in 2026/27 (tariff booklet snippet, on eskom.co.za, not opened; other zones not verified). Reimbursed to the
+  seller under the PPA (BW6 wind PPA, Appendix K2, 'Use of System Charges', clause 8.4, snippet; Eberhard and Naude, REIPPPP
+  Review 2017, p. 127, snippet), so not in the tariff. The clause wording seen names distribution charges; that transmission
+  charges are reimbursed too is the helper's inference.
+- Deep strengthening: socialised through network tariffs, not paid by bidders (Engineering News, 1 Oct 2014, snippet). No 2025
+  decision found moving it onto generators; NERSA's congestion curtailment (29 Apr 2025, 4% cap, 1,580 MW in the Western and Eastern
+  Cape) and the Grid Capacity Allocation Rules (27 Nov 2025) leave it there.
+- Overlap with the R402/kW-yr integration charge (FIXED.txRPerKWyr, from TDP 2024 generation integration spend): small at most.
+  R402 is shared-network spend bidders do not pay; the use-of-system charge is reimbursed and R0 in the Cape and Karoo. The only
+  likely double count is the bidder-paid share of shared connection works in cost estimate letters, and only if TDP 2024 counts
+  them; that belongs with the spur charge (bldGridCapexKW), not the R402. Not verified: the BW7 and BESIPPPP clauses, clause 8.4's
+  text, the other zones' charges, and whether TDP generation integration spend includes IPP-funded works.
+- Who pays the R402 in c5d (bldGridAnn, from the code): new wind, utility solar, CCGT, open-cycle on LNG and on diesel, pumped
+  hydro and offshore wind, each also paying its spur annuity; batteries, flow batteries and iron-air pay none (bldGridBattHalf 0);
+  rooftop pays none. s_grid0_c5d (R0 for wind and solar) and s_grid50_c5d (R201) bound its effect; reported with the c5d
+  sensitivities.
+
+### Gas and diesel by type, CCGT hours and starts, and LNG demand against the 51% minimum, c5d and c5c, 2030-40 (build 2026-10-16a; user, 16 Oct 2026, message 135); report only, no model change
+
+Settings. As above (local copy of build 16a, harness/pathcheck.js TF=0.5 GRID=1, all years), one report-only measure per run: each
+hour's gas output (stack.ccgt) assigned first to CCGT up to its MW, the rest to open-cycle on LNG; CCGT hours with output above 1 MW;
+starts counted as hours with CCGT output above 1 MW after an hour at or below it (fleet start events, not unit starts); diesel from
+stack.diesel. Capacity factors on the year's MW; diesel on the 3,400 MW existing fleet (FIXED.ocgtDieselMW; no peaker retirement in
+either run, PEAK not set). Diesel output in 2030-31 includes Avon and Dedisa's contracted daily running to the contracts' end
+(avonDedisaMustRun), hence its hours. LNG in PJ of fuel: CCGT 3.6/0.52 = 6.92 GJ per MWh (CCGT_EFF), open-cycle 10.624 GJ per MWh (heatRateOcgtKJ).
+The 51% minimum is s_be4's rule (GASFLOOR=1; ccgtForceLoadPct 51 on CCGT up to ccgtForceLoadMW 6,000 MW, 2030-40), at the CCGT
+heat rate; open-cycle plant is outside it.
+
+| c5d | CCGT MW | TWh | CF | hours | starts | Open-cycle LNG MW | TWh | CF | Diesel TWh | CF | hours | LNG PJ | 51% minimum PJ | share |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2030 | 0 | 0.00 | – | 0 | 0 | 0 | 0.000 | – | 0.855 | 2.87% | 4,347 | 0.0 | 0.0 | – |
+| 2031 | 0 | 0.00 | – | 0 | 0 | 0 | 0.000 | – | 0.464 | 1.56% | 2,230 | 0.0 | 0.0 | – |
+| 2032 | 452 | 0.22 | 5.6% | 607 | 194 | 0 | 0.000 | – | 0.182 | 0.61% | 163 | 1.5 | 14.0 | 11% |
+| 2033 | 1,334 | 0.48 | 4.1% | 504 | 165 | 0 | 0.000 | – | 0.126 | 0.42% | 110 | 3.3 | 41.3 | 8% |
+| 2034 | 2,534 | 0.86 | 3.9% | 540 | 173 | 0 | 0.000 | – | 0.118 | 0.39% | 85 | 6.0 | 78.4 | 8% |
+| 2035 | 3,089 | 1.16 | 4.3% | 677 | 180 | 31 | 0.008 | 2.8% | 0.119 | 0.40% | 82 | 8.1 | 95.5 | 9% |
+| 2036 | 4,139 | 1.90 | 5.2% | 850 | 210 | 31 | 0.008 | 2.9% | 0.124 | 0.42% | 82 | 13.2 | 128.0 | 10% |
+| 2037 | 5,339 | 3.22 | 6.9% | 1,103 | 234 | 31 | 0.009 | 3.2% | 0.132 | 0.44% | 86 | 22.4 | 165.1 | 14% |
+| 2038 | 6,539 | 4.75 | 8.3% | 1,313 | 254 | 31 | 0.009 | 3.3% | 0.137 | 0.46% | 92 | 33.0 | 185.6 | 18% |
+| 2039 | 7,739 | 7.75 | 11.4% | 1,711 | 281 | 31 | 0.012 | 4.3% | 0.166 | 0.56% | 117 | 53.8 | 185.6 | 29% |
+| 2040 | 8,939 | 10.39 | 13.3% | 1,929 | 295 | 31 | 0.013 | 4.7% | 0.184 | 0.62% | 140 | 72.1 | 185.6 | 39% |
+
+| c5c | CCGT MW | TWh | CF | hours | starts | Open-cycle LNG MW | TWh | CF | Diesel TWh | CF | hours | LNG PJ | 51% minimum PJ | share |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2030 | 0 | 0.00 | – | 0 | 0 | 511 | 0.184 | 4.1% | 0.793 | 2.66% | 4,696 | 2.0 | 0.0 | – |
+| 2031 | 0 | 0.00 | – | 0 | 0 | 511 | 0.220 | 4.9% | 0.364 | 1.22% | 2,374 | 2.3 | 0.0 | – |
+| 2032 | 222 | 0.07 | 3.7% | 356 | 100 | 791 | 0.211 | 3.1% | 0.056 | 0.19% | 67 | 2.7 | 6.9 | 40% |
+| 2033 | 609 | 0.12 | 2.2% | 223 | 56 | 791 | 0.128 | 1.9% | 0.031 | 0.10% | 27 | 2.2 | 18.8 | 12% |
+| 2034 | 1,809 | 0.36 | 2.3% | 258 | 65 | 791 | 0.122 | 1.8% | 0.026 | 0.09% | 21 | 3.8 | 56.0 | 7% |
+| 2035 | 2,621 | 0.54 | 2.4% | 335 | 76 | 791 | 0.107 | 1.5% | 0.026 | 0.09% | 21 | 4.9 | 81.1 | 6% |
+| 2036 | 2,765 | 0.74 | 3.1% | 428 | 89 | 791 | 0.136 | 2.0% | 0.043 | 0.14% | 35 | 6.6 | 85.5 | 8% |
+| 2037 | 3,379 | 1.39 | 4.7% | 638 | 114 | 791 | 0.195 | 2.8% | 0.067 | 0.22% | 63 | 11.7 | 104.5 | 11% |
+| 2038 | 4,545 | 2.50 | 6.3% | 845 | 143 | 791 | 0.220 | 3.2% | 0.095 | 0.32% | 87 | 19.6 | 140.6 | 14% |
+| 2039 | 5,745 | 4.90 | 9.7% | 1,261 | 188 | 791 | 0.314 | 4.5% | 0.148 | 0.50% | 125 | 37.3 | 177.7 | 21% |
+| 2040 | 6,867 | 6.83 | 11.4% | 1,442 | 207 | 791 | 0.336 | 4.8% | 0.182 | 0.61% | 147 | 50.8 | 185.6 | 27% |
+
+LNG demand stays below the 51% minimum's in every year of both runs: in 2040 c5d burns 72.1 PJ, 39% of the 185.6 PJ the minimum
+requires on 6,000 MW of CCGT; c5c 50.8 PJ, 27%.
+
 ### New central c5d: c5c's settings with the planning margin off (build 2026-10-16a), adopted from the 0% test, which it reproduces exactly; adequacy set by the probabilistic standard alone; the 10% margin becomes sensitivity s_prm10 (user, 16 Oct 2026, message 133); PROVISIONAL
 
 Decision (user, message 133): the build LP's planning reserve margin is off in the central. Adequacy is then set by the

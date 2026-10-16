@@ -41,7 +41,11 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node eng5.js
 
 Expected (15 Oct 2026, build 2026-10-15f, branch claude/c5c-central, ESK19679.csv present): 816/821, node checks 729/734 plus
-audit 87/87; eng5 6/6 (815/821 on build 15d, branch claude/comply). The five failures, each with its cause in RESULTS ('Scenario
+audit 87/87; eng5 5/6 (815/821 and eng5 6/6 on build 15d, branch claude/comply). eng5's one failure, check 6 'storage cuts
+unserved', is intended behaviour (user, 16 Oct 2026, message 141): since build 15e spare gas charges the existing stores ahead of
+a forecast shortfall (laGasCharge), which cuts unserved energy with no new batteries by 12%, so 30 GW of new batteries cut it
+8.3% against the check's 10% (RESULTS 'New central c5d'). The check is unchanged; its redesign waits for after the note (TODO
+14ew). Build 16a measured the same counts. The five failures, each with its cause in RESULTS ('Scenario
 switch and load timing' lists them; EDMSA's is only partly traced, RESULTS 'EDMSA Scenario A CO2 2035'; values on 15f in 'Build
 2026-10-15f: suite and every check that changed status'): EDMSA Scenario A CO2 2035 (validate_external); with gas, iron-air moves
 July gas, and the preset curtailment band (validate_findings; the band waits on the preset re-search, TODO 14ef); the Megaflex
