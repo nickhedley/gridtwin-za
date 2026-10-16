@@ -1381,3 +1381,18 @@ as given by Nick Hedley; the deck was not read here. Eskom's terms apply: cited 
 - Cost-to-serve, for TODO 14an and the industrial electrification scope (HANDOVER 'An industrial electrification scenario, to be
   built'): about 70% of cost-to-serve has fixed or capacity drivers; the generation capacity charge recovered about 1.4% of
   generation costs in 2025/26.
+
+## SOLTRAK Monthly Insights Report, September 2026: C&I export limiting and performance ratio (user, 16 Oct 2026, message 151; record only, no input changed)
+
+SOLTRAK, Monthly Insights Report, September 2026. Figures as given by Nick Hedley; the report was not read here. Sample: 354
+commercial and industrial (C&I) sites, 277 MWp.
+
+- Export-limit curtailment, January to September 2026: 8,945 MWh against about 234 GWh of potential production, about 3.8%.
+  This is site-level export limiting, not system curtailment.
+- Performance ratio: 68.3% measured (73.8% evaluated).
+- Blended savings rate: R2.18/kWh.
+- Bears on two rooftop assumptions, to test after the note (TODO 14fb):
+  - Rooftop is never curtailed. The engines net it off demand, capped only at 90% of each hour's demand.
+  - rooftopDerate 0.78 (FIXED): about 17.5% capacity factor on the national profile, 19.6% on Today 2026's run.
+  - The sample is C&I, not residential. A performance ratio is not the same measure as a derate applied to a utility
+    per-unit profile; reconcile the two before comparing.
