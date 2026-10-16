@@ -3862,6 +3862,57 @@ coal minimum test (message 130) reproduced about 3 GW only with every unit's min
 not rerun with the hold (s_daylight). Caveats as for message 130: NTCSA's 3 GW is a single reported day, and the replay uses the
 preset's fleet and the 2014-2025 weather.
 
+### s_nogas_li8h_c5d: with no new gas or diesel open-cycle, lithium at up to 4 GW a year and 8 hours misses the standard in 2035-40 and stays under NTCSA's 20 GWh; 1,500 MW of diesel open-cycle closes the gap for +R7.8bn, R2.0bn below s_nogas4strict topped up (user, 16 Oct 2026, message 150 (2); build 2026-10-16a)
+
+Settings. s_nogas4strict_c5d (GAS_CAP=0 OCGD=0 LI_CAP=4000) plus s_li8h (LI_EH=8), so no new gas and no diesel open-cycle, on c5d's
+line (scratch env_central.sh, the planning margin off), the chain's copy of build 2026-10-16a, MAXP=3 as the other sensitivities,
+from scratch, 16 Oct 2026 16:39-17:24 UTC. Engine check: pathcheck.js, TF=0.5 LNG=1 GRID=1, 2026-40. Top-up: topup.js, 250 MW steps
+of diesel open-cycle at the engine check's settings, 17:45-18:31. Script nogas_li8h.sh (scratch).
+
+The run stops at its pass limit (3) with zero stress-target slack. Mean unserved energy as solved, GWh on customer demand (120 to
+480 runs a year), against the model's standard (0.5 x 0.002% of customer demand) and NTCSA's medium-term test of 20 GWh a year;
+worst single run in GWh:
+
+| Year | s_nogas_li8h | s_nogas4strict | Our standard | Over ours | Over NTCSA's 20 | Worst single run, s_nogas_li8h / s_nogas4strict |
+|---|---|---|---|---|---|---|
+| 2026 | 0.00 | 0.00 | 1.96 | no | no | 0 / 0 |
+| 2027 | 0.00 | 0.00 | 2.07 | no | no | 0 / 0 |
+| 2028 | 0.00 | 0.00 | 2.10 | no | no | 0 / 0 |
+| 2029 | 0.05 | 0.04 | 2.13 | no | no | 2 / 2 |
+| 2030 | 0.69 | 0.64 | 2.19 | no | no | 37 / 36 |
+| 2031 | 1.23 | 1.19 | 2.25 | no | no | 62 / 60 |
+| 2032 | 1.10 | 1.04 | 2.30 | no | no | 63 / 60 |
+| 2033 | 1.68 | 1.65 | 2.35 | no | no | 183 / 179 |
+| 2034 | 2.35 | 2.81 | 2.41 | no | no | 159 / 173 |
+| 2035 | 2.58 | 3.36 | 2.46 | yes | no | 86 / 96 |
+| 2036 | 5.42 | 5.48 | 2.51 | yes | no | 158 / 162 |
+| 2037 | 8.15 | 9.07 | 2.58 | yes | no | 206 / 210 |
+| 2038 | 5.24 | 5.17 | 2.65 | yes | no | 186 / 186 |
+| 2039 | 5.64 | 5.54 | 2.72 | yes | no | 182 / 180 |
+| 2040 | 4.95 | 4.91 | 2.78 | yes | no | 183 / 177 |
+
+It does not meet the model's standard without a top-up: it is over in 2035-40, one year fewer than s_nogas4strict (2034 passes, 2.35
+against 2.41). It is under NTCSA's 20 GWh in every year (largest 8.15 GWh, 2037). Its worst single run is 86-206 GWh a year from 2033.
+
+Top-up: 250 MW of diesel open-cycle in 2035, 750 in 2036 and 500 in 2037, 1,500 MW in all, against s_nogas4strict's 250 in 2034,
+250 in 2035, 500 in 2036 and 500 in 2037; every year then meets the standard. Every top-up year is flagged: diesel open-cycle is
+excluded in this run, so the top-up prices the gap.
+
+| | s_nogas_li8h | s_nogas4strict | Null |
+|---|---|---|---|
+| Engine PV as solved, R bn | 2,227.3 | 2,228.5 | 2,204.9 |
+| Engine PV topped up, R bn | 2,235.0 (+7.8: capex 6.6, fixed O&M 1.3, fuel 0.1, other -0.2) | 2,237.0 (+8.4) | |
+| Topped up against the null, R bn | +30.1 | +32.0 | |
+| CO2 2026-40, Mt, as solved / topped up | 1,347.0 / 1,347.1 | 1,349.2 / 1,349.4 | 1,533.7 |
+| Optimiser objective, R bn | 1,452.0 | 1,451.9 | 1,403.0 |
+| New lithium in 2040, MW / GWh | 25,362 / 147.4 | 21,622 / 141.9 | 12,239 / 53.1 |
+
+Build 2026-40 against s_nogas4strict: wind 33,105 against 30,681 MW, offshore wind 3,633 against 4,794 MW, utility solar 54,854
+against 54,599 MW; iron-air 300 MW and pumped hydro 1,500 MW in both; no new gas in either.
+
+Topped up, the 8-hour cap costs R2.0bn less than s_nogas4strict for the same 1,500 MW of diesel open-cycle, added a year later.
+Caveat: both runs stop at the pass limit (MAXP=3), so neither build is the loop's last word.
+
 ### c5d sensitivities, 30 runs against the null: all adequate on the engine check except s_nogas4strict (1,500 MW of diesel open-cycle prices its gap, +R8.4bn); s_imp2030 +R25.0bn and +42.1 Mt; the 8-hour lithium cap does not bind (build 2026-10-16a; user, 16 Oct 2026, messages 133 (2), 143 (5) and 150 (1))
 
 Settings. c5d's line (scratch env_central.sh, the planning margin off, build 2026-10-16a) with one change per run, MAXP=3, from
