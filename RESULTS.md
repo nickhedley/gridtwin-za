@@ -4082,6 +4082,40 @@ open-cycle in 2034, 250 in 2035, 500 in 2036 and 500 in 2037, 1,500 MW in all; e
 R2,228.5bn as solved, R2,237.0bn topped up (+R8.4bn: capex 7.2, fixed O&M 1.4, fuel 0.1, other -0.2), +R32.0bn against the null;
 CO2 1,349.2 to 1,349.4 Mt. Every top-up year is flagged: diesel open-cycle is excluded in this run, so the top-up prices the gap.
 
+### Reviewer pack on c5d: new wind costs 0.876 of BW5's tariff per MWh and solar 1.051 of BW7's, because capex is backed out at BW6 bids' capacity factors; c5d's worst 14 days exceed one LNG cargo every year from 2035; c5d's engine passes 28 of 29 benchmarks (user, 16 Oct 2026, message 158 (2)-(4); build 2026-10-16f)
+
+Wind and solar cost per MWh against their tariffs (message 158 (3)). From the code (BLD_TARIFF, bldTariffCapex, bldLcoeAnchor) on
+build 2026-10-16f, which leaves them as on 16a: 2026, 8% real (BLD_DISC_CENTRAL), 25-year lives, fixed O&M from BLD_FOM, before grid
+charges. Script tariff_cf.js (scratch). The capex is backed out of the tariff at the bid capacity factor and the cost per MWh is taken
+at the run capacity factor, so the cost is the tariff x bid CF / run CF exactly.
+
+| | Wind | Tracking solar |
+|---|---|---|
+| Tariff | BW5, R495.22/MWh, April 2021 rands | BW7, R492.53/MWh MW-weighted, January 2024 rands |
+| Tariff in 2026 rands | R630.6/MWh (x1.2733) | R526.1/MWh (x1.0681) |
+| Capacity factor the capex is backed out at | 37.24% (BW6_WIND_BID_CF) | 30.13% (BW6_PV_TRK_BID_CF) |
+| Capex, central | R17,773/kW | R11,755/kW |
+| Capacity factor new build runs at | 42.507% (NEW_WIND_CF_12Y) | 28.673% (NEW_PVTRK_CF_12Y) |
+| Cost at that capacity factor | R552.4/MWh | R552.8/MWh |
+| Against the tariff | x0.876 | x1.051 |
+| Capex backed out at the run capacity factor (s_tariffcf) | R20,879/kW | R11,038/kW |
+
+The user's arithmetic (message 158 (3)): wind R552.5 against R630.6 (x0.876), solar R552.3 against R526.1 (x1.050), capex R20,875
+and R11,052/kW. The differences, under R1/MWh and R14/kW, come from the capacity factors rounded to 42.5% and 28.7%.
+
+LNG cargoes on c5d (message 158 (2), limitation 11). From c5d's engine check (pathcheck_c5d, TF=0.5 LNG=1 GRID=1, build 2026-10-16a;
+one cargo = one floating storage unit, 170,000 m3 x 0.45 t/m3 x 53.37 GJ/t = 4.08 PJ, no heel, CCGT at 52%): the worst 14 days of
+each year's runs, in cargoes: 2032 0.22, 2033 0.52, 2034 0.93, 2035 1.03, 2036 1.23, 2037 1.86, 2038 2.20, 2039 2.66, 2040 3.15; no
+LNG burned in 2026-31. c5d is adequate on its first pass, so its LP has no stress windows (lpWindows null) and c5's stress-window
+measure (10 of 33 window-years above one cargo) has no c5d counterpart.
+
+Benchmarks on c5d's engine (message 158 (1)). The idle suite on build 2026-10-16c (main e6da3eb, 16 Oct 2026, ESK19679.csv present),
+whose engine check of c5d is identical to 16a's (RESULTS 'Fleet table out of the public repository'): validate_benchmarks 28/29.
+Coal 166.83 TWh against Ember's 171.26 (-2.6%), CO2 176.87 Mt against 160.30 (+10.3%), grid generation 216.7 TWh, coal capacity
+factor 48.0%, surplus 1.6 GW (2025) and 4.2 GW (2026), pumped-storage output 3.6 TWh (band 3.37-5.62, pass; 3.3 on 14r, fail); the
+one failure is the peaker season ratio, 1.7x against 2.15-8.6x. validate_external 7/8: CSIR 2030 coal share 50.9%, renewable share
+43.3%, EDMSA Scenario A CO2 2035 83.3 Mt (fail), as on 14r.
+
 ### s_nogas4strict_c5c: the gap priced at 1,250 MW of diesel open-cycle (+R5.6bn, R11.0bn above the null); six passes do not close it, because the build sits on its storage caps from 2036 (user, 16 Oct 2026, message 129 (1)); PROVISIONAL
 
 Settings: s_nogas4strict_c5c as recorded in 'New central c5c and its first ten sensitivities' (c5c's line, GAS_CAP=0 OCGD=0
