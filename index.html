@@ -1304,8 +1304,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
 
 
-<script src="nodal/nodal_engine.js?v=25"></script>
-      <script src="nodal/nodal_dispatch.js?v=28"></script>
+<script src="nodal/nodal_engine.js?v=26"></script>
+      <script src="nodal/nodal_dispatch.js?v=29"></script>
       <script>
 
 
@@ -6628,6 +6628,8 @@ const FIXED = {
 
 
 // ── Unit Commitment Fleet Data (from PyPSA-RSA fleet_by_region_v2.csv) ────────
+// That file left the public repository on build 2026-10-16c (TODO 14dh) and stays in its history; nodal/fleet_units.csv
+// holds the columns the nodal readers use.
 // Decommissioning dates for Camden, Hendrina and Grootvlei moved to 2030 on 4 Oct 2026: the 17 units
 // operate under an emissions exemption to 31 Mar 2030 (DFFE, May 2024; Eskom, Dec 2024), and the
 // IRP 2025 requires the five older stations, with Arnot and Kriel, to close by 2030.
@@ -19602,7 +19604,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-16b';
+const BUILD_STAMP = '2026-10-16c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

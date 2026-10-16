@@ -71,13 +71,20 @@ def load_real_data():
     cap = json.load(open('regional_renewable_capacity.json'))
     rooftop_mw = json.load(open('rooftop_mw_by_region.json'))
 
-    fleet_df = pd.read_csv('fleet_by_region_v2.csv', comment='#')
-    fleet_df = fleet_df[fleet_df['Scenario'] == 'BASE'].copy()
-    for col in ['Heat Rate (GJ/MWh)', 'Fuel Price (R/GJ)', 'Variable O&M Cost (R/MWh)', 'Capacity (MW)',
+    fleet_df = pd.read_csv('fleet_units.csv', comment='#')
+    num_cols = ['Marginal Cost (R/MWh)', 'Capacity (MW)',
                 'Max Ramp Up (%/h)', 'Max Ramp Down (%/h)', 'Min Stable Level (%)',
-                'Min Up Time (h)', 'Min Down Time (h)', 'Start Up Cost (R)']:
+                'Min Up Time (h)', 'Min Down Time (h)', 'Start Up Cost (R)']
+    # A missing column stops the run (user, 16 Oct 2026, message 146; TODO 14dh); blank cells still read as 0.
+    miss = [c for c in ['Scenario', 'Power Station Name', 'region', 'Carrier'] + num_cols if c not in fleet_df.columns]
+    if miss:
+        raise SystemExit(f'fleet_units.csv: no column(s) {miss}')
+    fleet_df = fleet_df[fleet_df['Scenario'] == 'BASE'].copy()
+    if fleet_df.empty:
+        raise SystemExit('fleet_units.csv: no BASE rows')
+    for col in num_cols:
         fleet_df[col] = pd.to_numeric(fleet_df[col], errors='coerce').fillna(0)
-    fleet_df['marginal_cost'] = fleet_df['Heat Rate (GJ/MWh)'] * fleet_df['Fuel Price (R/GJ)'] + fleet_df['Variable O&M Cost (R/MWh)']
+    fleet_df['marginal_cost'] = fleet_df['Marginal Cost (R/MWh)']   # heat rate x fuel price + variable O&M, precomputed
 
     return demand, wind_pu, solar_pu, cap, rooftop_mw, fleet_df
 

@@ -1273,23 +1273,27 @@ if (typeof require !== 'undefined' && require.main === module) {
   Object.keys(rooftopMw).forEach(r => { rooftopMw[r] = Math.max(0, rooftopMw[r] - (_priv[r] || 0)); });
 
   // fleet: parse CSV keeping quotes/commas correctly via manual field split
-  const fleetRaw = fs.readFileSync('fleet_by_region_v2.csv','utf8').trim().split('\n').filter(l => !l.startsWith('#'));
+  const fleetRaw = fs.readFileSync('fleet_units.csv','utf8').trim().split('\n').filter(l => !l.startsWith('#'));
   // strip surrounding quotes from each field (the CSV uses quoted fields throughout)
   const unq = s => s ? s.replace(/^"+|"+$/g,'').trim() : '';
   const fHdr = fleetRaw[0].split(',').map(unq);
+  // A missing column stops the read (user, 16 Oct 2026, message 146; TODO 14dh): fc throws where f used to read a missing
+  // column as 0. Blank cells keep f's defaults (0, or 1 for ramps).
+  const fc = (r, k) => { if (!(k in r)) throw new Error('nodal/fleet_units.csv: no column "' + k + '"'); return r[k]; };
   const fleet = fleetRaw.slice(1).map(line=>{
     const v=line.split(','), row={};
     fHdr.forEach((h,j)=>{ row[h]=unq(v[j]||''); }); return row;
-  }).filter(r=>r.Scenario==='BASE').map(r=>{
-    const f=k=>{const v=r[k]; return(!v||v==='-')?0:(parseFloat(v)||0);};
-    return { name:r['Power Station Name'], region:r['region'], carrier:r['Carrier'],
+  }).filter(r=>fc(r,'Scenario')==='BASE').map(r=>{
+    const f=k=>{const v=fc(r,k); return(!v||v==='-')?0:(parseFloat(v)||0);};
+    return { name:fc(r,'Power Station Name'), region:fc(r,'region'), carrier:fc(r,'Carrier'),
              capacityMw:f('Capacity (MW)'),
-             marginalCost:f('Heat Rate (GJ/MWh)')*f('Fuel Price (R/GJ)')+f('Variable O&M Cost (R/MWh)'),
+             marginalCost:f('Marginal Cost (R/MWh)'),   // heat rate x fuel price + variable O&M, precomputed in fleet_units.csv
              decomYear:Infinity, minStableFrac:f('Min Stable Level (%)'),
              rampUpFrac:f('Max Ramp Up (%/h)')||1, rampDownFrac:f('Max Ramp Down (%/h)')||1,
              minUpTime:f('Min Up Time (h)'), minDownTime:f('Min Down Time (h)'),
              startUpCost:f('Start Up Cost (R)') };
   });
+  if (!fleet.length) throw new Error('nodal/fleet_units.csv: no BASE rows');
 
   const nat = JSON.parse(fs.readFileSync('profiles.json','utf8'));
   const cspPu = nat.csp_pu ? Float64Array.from(nat.csp_pu) : null;

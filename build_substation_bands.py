@@ -44,7 +44,7 @@ KNOWN LIMITATIONS (also written into the output file's meta block)
 WHEN TO RERUN
 -------------
 Whenever nodal/headroom_summary.json changes (a new GCCA release), or when
-substations_compact.json / transmission_lines.geojson / fleet_by_region_v2.csv
+substations_compact.json / transmission_lines.geojson / fleet_units.csv
 are updated. The bands are DERIVED - never hand-edit substation_bands.json,
 for the same reason pvUtilityMW went wrong: a hand-set constant nobody can
 reproduce eventually stops matching its own source.
@@ -97,8 +97,13 @@ def haversine_km(a, b, c, d):
         math.cos(rad(a)) * math.cos(rad(c)) * math.sin(rad(d - b) / 2) ** 2))
 
 gen = defaultdict(float); placed = 0
-for row in csv.DictReader(l for l in open(N('fleet_by_region_v2.csv')) if not l.startswith('#')):
-    if row.get('Scenario') != 'BASE':
+fleet_rd = csv.DictReader(l for l in open(N('fleet_units.csv')) if not l.startswith('#'))
+# A missing column stops the build (user, 16 Oct 2026, message 146; TODO 14dh).
+miss = [c for c in ('Scenario', 'GPS Latitude', 'GPS Longitude', 'Capacity (MW)') if c not in (fleet_rd.fieldnames or [])]
+if miss:
+    sys.exit(f'fleet_units.csv: no column(s) {miss}')
+for row in fleet_rd:
+    if row['Scenario'] != 'BASE':
         continue
     try:
         lat = float(row['GPS Latitude']); lng = float(row['GPS Longitude'])

@@ -92,7 +92,7 @@ Both scripts read from the `nodal/` folder. Run from the repo root:
 gridtwin-za/
 ├── nodal/
 │   ├── nodal_engine.js          (required by mip_solver.py for SoC init)
-│   ├── fleet_by_region_v2.csv
+│   ├── fleet_units.csv
 │   ├── demand_2025_regional.csv
 │   ├── profiles_regional.json
 │   └── regional_renewable_capacity.json

@@ -4,7 +4,7 @@
 let nodalDataCache = null;
 
 function parseCSVText(text) {
-  const lines = text.trim().split('\n');
+  const lines = text.trim().split('\n').filter(l => !l.startsWith('#'));   // '#' lines state the file's source
   const headers = lines[0].split(',');
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -30,7 +30,7 @@ async function loadNodalData() {
     fetch(`nodal/demand_2025_regional.csv?v=${DATA_V}`).then(r => r.text()),
     fetch(`nodal/profiles_regional.json?v=${DATA_V}`).then(r => r.json()),
     fetch(`nodal/regional_renewable_capacity.json?v=${DATA_V}`).then(r => r.json()),
-    fetch(`nodal/fleet_by_region_v2.csv?v=${DATA_V}`).then(r => r.text()),
+    fetch(`nodal/fleet_units.csv?v=${DATA_V}`).then(r => r.text()),
     fetch(`nodal/rooftop_mw_by_region.json?v=${DATA_V}`).then(r => r.json()),
     fetch(`profiles.json?v=${DATA_V}`).then(r => r.json()),
   ]);
@@ -49,25 +49,28 @@ async function loadNodalData() {
   });
 
   const fleetRows = parseCSVText(fleetText);
-  const fleet = fleetRows.filter(r => r.Scenario === 'BASE').map(r => {
-    const hr = parseFloat(r['Heat Rate (GJ/MWh)']) || 0;
-    const fp = parseFloat(r['Fuel Price (R/GJ)']) || 0;
-    const vom = parseFloat(r['Variable O&M Cost (R/MWh)']) || 0;
-    const decomRaw = r['Decommissioning Date'];
+  // A missing column stops the read (user, 16 Oct 2026, message 146; TODO 14dh): fc throws where parseFloat(undefined) || 0
+  // used to default it. Blank cells keep the defaults below (no ramp limit, no minimum up or down time).
+  const fc = (r, k) => { if (!(k in r)) throw new Error('nodal/fleet_units.csv: no column "' + k + '"'); return r[k]; };
+  const fleet = fleetRows.filter(r => fc(r, 'Scenario') === 'BASE').map(r => {
+    // Marginal cost (R/MWh) = heat rate x fuel price + variable O&M, precomputed in fleet_units.csv.
+    const mc = parseFloat(fc(r, 'Marginal Cost (R/MWh)')) || 0;
+    const decomRaw = fc(r, 'Decommissioning Date');
     const decomYear = (decomRaw === '-' || !decomRaw) ? Infinity : parseInt(decomRaw, 10);
     return {
-      name: r['Power Station Name'], region: r['region'], carrier: r['Carrier'],
-      capacityMw: parseFloat(r['Capacity (MW)']), marginalCost: hr * fp + vom, decomYear,
+      name: fc(r, 'Power Station Name'), region: fc(r, 'region'), carrier: fc(r, 'Carrier'),
+      capacityMw: parseFloat(fc(r, 'Capacity (MW)')), marginalCost: mc, decomYear,
       // Real per-unit unit-commitment parameters (PyPSA-RSA sourced, same fleet file). Defaults
       // are permissive so any unit missing a value behaves as it did before this was added.
-      minStableFrac: parseFloat(r['Min Stable Level (%)']) || 0,
-      rampUpFrac: parseFloat(r['Max Ramp Up (%/h)']) || 1,
-      rampDownFrac: parseFloat(r['Max Ramp Down (%/h)']) || 1,
-      minUpTime: parseFloat(r['Min Up Time (h)']) || 0,
-      minDownTime: parseFloat(r['Min Down Time (h)']) || 0,
-      startUpCost: parseFloat(r['Start Up Cost (R)']) || 0,
+      minStableFrac: parseFloat(fc(r, 'Min Stable Level (%)')) || 0,
+      rampUpFrac: parseFloat(fc(r, 'Max Ramp Up (%/h)')) || 1,
+      rampDownFrac: parseFloat(fc(r, 'Max Ramp Down (%/h)')) || 1,
+      minUpTime: parseFloat(fc(r, 'Min Up Time (h)')) || 0,
+      minDownTime: parseFloat(fc(r, 'Min Down Time (h)')) || 0,
+      startUpCost: parseFloat(fc(r, 'Start Up Cost (R)')) || 0,
     };
   });
+  if (!fleet.length) throw new Error('nodal/fleet_units.csv: no BASE rows');
 
   // Real CSP from national profiles.json (Eskom 2021 measured data). Falls back to the engine's
   // own synthetic builder if unavailable, but that shape was materially wrong: zero output before

@@ -99,6 +99,16 @@ CORRIDORS = [
   ['Free State','North West',651,235],
 ]
 
+FLEET_COLS = ('Scenario', 'Power Station Name', 'region', 'Carrier', 'Capacity (MW)', 'Marginal Cost (R/MWh)',
+              'Min Stable Level (%)', 'Max Ramp Up (%/h)', 'Max Ramp Down (%/h)', 'Min Up Time (h)', 'Min Down Time (h)',
+              'Start Up Cost (R)')
+
+def fleet_col(row, k):
+    """A column of a fleet_units.csv row; a missing column stops the run (user, 16 Oct 2026, message 146; TODO 14dh)."""
+    if k not in row:
+        raise SystemExit(f'fleet_units.csv: no column "{k}"')
+    return row[k]
+
 def load_data(data_dir='.'):
     """Load the same data GridTwin ZA uses."""
     import csv
@@ -116,10 +126,14 @@ def load_data(data_dir='.'):
     csp_pu = np.array(nat.get('csp_pu', [0]*8760))
     cap = json.load(open(p('regional_renewable_capacity.json')))
     rooftop = json.load(open(p('rooftop_mw_by_region.json')))
-    fleet_csv = os.path.join(data_dir, 'nodal/fleet_by_region_v2.csv')
-    if not os.path.exists(fleet_csv): fleet_csv = os.path.join(data_dir, 'fleet_by_region_v2.csv')
+    fleet_csv = os.path.join(data_dir, 'nodal/fleet_units.csv')
+    if not os.path.exists(fleet_csv): fleet_csv = os.path.join(data_dir, 'fleet_units.csv')
     fleet_rows = parse_csv(fleet_csv)
-    fleet = [r for r in fleet_rows if r.get('Scenario')=='BASE']
+    # Every column the network build reads, checked here so a missing one stops the run before any solve.
+    miss = [c for c in FLEET_COLS if not fleet_rows or c not in fleet_rows[0]]
+    if miss: raise SystemExit(f'{fleet_csv}: no column(s) {miss}')
+    fleet = [r for r in fleet_rows if fleet_col(r, 'Scenario')=='BASE']
+    if not fleet: raise SystemExit(fleet_csv + ': no BASE rows')
     return demand, wind_pu, solar_pu, csp_pu, cap, rooftop, fleet
 
 def build_network(args, data, start_hour, n_hours, unit_commitment=False):
@@ -139,17 +153,17 @@ def build_network(args, data, start_hour, n_hours, unit_commitment=False):
         n.add('Load', f'{r} load', bus=r, p_set=raw-rooftop_gen)
     # thermal fleet
     for row in fleet:
-        r = row.get('region','')
+        r = fleet_col(row, 'region')
         if r not in REGIONS: continue
-        carrier = row.get('Carrier','')
+        carrier = fleet_col(row, 'Carrier')
         def f(k):
-            v=row.get(k,'0') or '0'
+            v=fleet_col(row, k) or '0'   # a blank cell still reads as 0
             try: return float(v)
             except: return 0.0
         cap_mw = f('Capacity (MW)')
         if carrier == 'coal': cap_mw *= args.coalEAFPct/100
-        mc = f('Heat Rate (GJ/MWh)') * f('Fuel Price (R/GJ)') + f('Variable O&M Cost (R/MWh)')
-        gname = row['Power Station Name']+'_'+row.get('Scenario','BASE')
+        mc = f('Marginal Cost (R/MWh)')   # heat rate x fuel price + variable O&M, precomputed
+        gname = fleet_col(row, 'Power Station Name')+'_'+fleet_col(row, 'Scenario')
         if carrier == 'coal' and unit_commitment:
             n.add('Generator', gname, bus=r, p_nom=cap_mw, marginal_cost=mc, carrier=carrier,
                   committable=True,
@@ -208,8 +222,8 @@ def main():
     # find data directory
     data_dir = os.path.dirname(os.path.abspath(__file__))
     # fleet CSV may be in nodal/ (deployed repo) or in root (dev environment)
-    if not os.path.exists(os.path.join(data_dir,'nodal/fleet_by_region_v2.csv')) and        not os.path.exists(os.path.join(data_dir,'fleet_by_region_v2.csv')):
-        sys.exit('ERROR: run from the gridtwin-za repo root (fleet_by_region_v2.csv not found)')
+    if not os.path.exists(os.path.join(data_dir,'nodal/fleet_units.csv')) and        not os.path.exists(os.path.join(data_dir,'fleet_units.csv')):
+        sys.exit('ERROR: run from the gridtwin-za repo root (nodal/fleet_units.csv not found)')
 
     print('Loading data...', end=' ', flush=True)
     data = load_data(data_dir)
