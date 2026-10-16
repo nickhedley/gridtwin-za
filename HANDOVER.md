@@ -111,6 +111,23 @@ from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separ
    start. Caveats: Eskom has done the procedure tier only and the mill backlog binds before design limits; sources mix sent-out
    and generated MW and percentages of different ratings; Indian results are short tests; costs differ in year and currency.
 
+### Decision on the first batch of new options (user, 16 Oct 2026, message 136; record only)
+
+Nothing is built before the note goes out (6 Nov). After it, the first batch of new optimiser options is coal flexibility, VPPs,
+demand response (interruptible at its contracted MW, plus paid load shifting) and long-duration storage (TODO 14ek). Each is a
+year-by-year choice in the build LP with a sourced cost and ceiling, carried through the engine check.
+
+- Order: interruptible demand response, then coal flexibility, VPP, load shifting, long-duration storage. Each on its own branch and
+  pull request, with the LP-key test and the suite. One new central and one set of sensitivities at the end of the batch, not after
+  each option.
+- Coal flexibility is three choices, not a peaker: a lower minimum stable level, a faster ramp and seasonal shutdown, each on a
+  flexibilised share of the fleet, with the retrofit cost on that share only. The three faults in the existing switch (above: the
+  charge on all standing coal, the nodal engine's 1%, the frontier caption) are fixed in the same work. Basis: Eskom RT&D 2023 for
+  before, CEA and the Indian pilots for after, Agora as the deep-retrofit bound, Kumar for wear per start. No values until the
+  user's Meridian call notes.
+- VPP: no South African cost. Bring the user the options for its cost basis before building; Brattle's US figure is not used
+  without the user's decision.
+
 ## c5 inputs and stopping rule (13 Oct 2026, 22:00 UTC; proposals for your decision before launch)
 
 Final c5 inputs (your decisions, 14 Oct, second message): tracking on (PVTRK=1); carbon central 'kept2030' (TODO 14eb);

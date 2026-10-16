@@ -30,6 +30,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  w.eval(`applyState(PRESETS['Today 2026']);`); await w.eval('loadWeatherYears()');
  // GRID (7 Oct 2026, TODO 14ar): the same grid-cost settings as the pathway run.
  w.eval(`if(!('bldGridCost' in FIXED)) throw new Error('bldGridCost missing');`+(process.env.GRID!==undefined?` state.bldGridCost=${+process.env.GRID};`:'')+(process.env.GRID_BEYOND!==undefined?` state.bldGridSpurBeyond=${+process.env.GRID_BEYOND};`:'')+(process.env.GRID_BATTHALF!==undefined?` state.bldGridBattHalf=${+process.env.GRID_BATTHALF};`:''));
+ // The share of the integration charge new wind and solar paid in the optimiser (bldGridIntVreShare, 16 Oct 2026), so costGrid
+ // carries the same charge. Runs made before 16 Oct record none: the default (1).
+ if (P.gridIntVreShare != null) w.eval(`state.bldGridIntVreShare=${+P.gridIntVreShare};`);
  const GRID_ON=+w.eval('(state.bldGridCost??FIXED.bldGridCost)|0')>0, rpCum={};
  // PEAK (TODO 14as): the same peaker settings as the pathway run; each year's diesel retired comes from the schedule.
  w.eval(`if(!('bldPeakerRet' in FIXED)) throw new Error('bldPeakerRet missing');`+(process.env.PEAK!==undefined?` state.bldPeakerRet=${+process.env.PEAK};`:'')+(process.env.PEAK_EXT!==undefined?` state.bldPeakerLifeExt=${+process.env.PEAK_EXT};`:'')+(process.env.PEAK_EXT_R!==undefined?` state.bldPeakerExtRkW=${+process.env.PEAK_EXT_R};`:''));
@@ -178,7 +181,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      const built={wind:cum.wind,pv:cum.pv,batt:cum.batt,vrfb:cum.vrfb,ironair:cum.ironair,ccgt:cum.ccgt,offshore:cum.off,phes:cum.phes,phel:cum.phel,ocgt:cum.ocgt,ocgd:cum.ocgd};
      let g=0; for (const t of Object.keys(built)) g+=Math.max(0,built[t]-(rpCum[t]||0))*ga[t]*1000;
      // Wind on the Cape curtailment allowance pays no integration charge (14 Oct 2026).
-     g-=Math.min(cwCum, Math.max(0,cum.wind-(rpCum.wind||0)))*(+w.eval('state.txRPerKWyr ?? FIXED.txRPerKWyr'))*1000;
+     g-=Math.min(cwCum, Math.max(0,cum.wind-(rpCum.wind||0)))*(+w.eval('state.txRPerKWyr ?? FIXED.txRPerKWyr'))*(+w.eval('state.bldGridIntVreShare ?? FIXED.bldGridIntVreShare'))*1000;
      const engTx=+w.eval(`txChargeFor(${cum.wind},${cum.pv},${cum.off},{...FIXED,...state,...${JSON.stringify(over)}})`);
      r.gridOptBn=g/1e9; r.engTxBn=engTx/1e9; r.costGrid=r.cost-r.engTxBn+r.gridOptBn; r.rpCumMW=Object.values(rpCum).reduce((a,b)=>a+b,0);
    }

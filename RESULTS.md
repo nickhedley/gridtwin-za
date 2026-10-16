@@ -3423,6 +3423,44 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### New central c5d: c5c's settings with the planning margin off (build 2026-10-16a), adopted from the 0% test, which it reproduces exactly; adequacy set by the probabilistic standard alone; the 10% margin becomes sensitivity s_prm10 (user, 16 Oct 2026, message 133); PROVISIONAL
+
+Decision (user, message 133): the build LP's planning reserve margin is off in the central. Adequacy is then set by the
+probabilistic standard alone (mean unserved energy at most half of 0.002% of customer demand, checked hourly in the engine over
+twelve weather years and outage draws), about eight times stricter than NTCSA's medium-term test of 20 GWh a year (RESULTS
+'Planning reserve margin in the build LP'; SOURCES 'Adequacy criteria'). The 10% margin is sensitivity s_prm10.
+
+Build 2026-10-16a (branch claude/c5d-margin-off): FIXED.bldPlanMarginPct 0, so no res_ row is written; PRM=10 in the pathway
+restores it. Also FIXED.bldGridIntVreShare 1 (s_grid0 and s_grid50 set it to 0 and 0.5) and eng5 exiting non-zero on failure.
+
+Reproduction, not a new run: c5d's line is c5c's (c5c's env_central line, MAXP=6) on build 16a. Its pass-1 LP has the cache key
+of the 0% test's pass 1 (114c77e6f6), so the LP text is byte-identical and the solve replayed; adequate on pass 1. Its engine check
+(TF=0.5 LNG=1 GRID=1) equals s_prm0_c5c's in every field of every year. The null (MAXP=3) replays the same key; s_prm10_c5d
+replays c5c's (9c2e2e1eaa) and returns c5c's build and objective to every digit. c5d's build, engine PV (R2,204.9bn; R2,214.0bn
+with grid), CO2 (1,533.7 Mt) and adequacy by year are the 0% column of 'Planning reserve margin in the build LP'.
+
+Suite (ESK19679.csv present in both copies; run 06:16-06:42 UTC on frozen copies, with the c5d runs and their engine checks
+running beside it, load 10-18 on four cores):
+- Before (main, build 15f): 814/821, node checks 727/734 plus audit 87/87; eng5 5/6.
+- After (16a): 815/821 before one fix, node 728/734 plus audit 86/87; eng5 5/6. The audit read 'MTSAO' in the new FIXED
+  comment as a shouted word; the comment was reworded (no LP or engine change) and the audit reads 87/87, so 816/821.
+- The seven failures before: (1) benchmarks, peaker season ratio 1.7x against 2.15-8.6x (known); (2) consistency, Megaflex
+  high-season off-peak not the cheapest block (known); (3) external, EDMSA Scenario A CO2 2035 83.3 against 124 Mt (known);
+  (4) findings, 20 GW of iron-air moves July gas 13.4% (known); (5) findings, Fossil-free 2040 curtailment 113.4 against 96.3
+  +/-15% until the preset re-search (known, 14ef); (6) structure, the build stamp (15 Oct) is older than today (16 Oct), a
+  date check, cleared by the new stamp; (7) solve, 'engine and optimiser count the same online headroom as reserve' stopped at
+  its 180 s solver time limit under the load; re-run alone at raised priority it passes on main (43.8 s) and on 16a (72.8 s).
+  So 15f's own baseline is 816/821 with the five known failures, as recorded on 15 Oct; a full re-run with no runs in the
+  background is still owed (message 137 (3)).
+- eng5 check 6 'storage cuts unserved' fails on 15f and 16a, and did on 15 Oct (it exited 0, so it was misreported as 6/6).
+  Unrounded mean unserved energy (TWh) at 0 / 10 / 20 / 30 GW of new batteries, 'Today 2026' at 48% EAF, eight draws:
+  15d 0.05128 / 0.04420 / 0.04416 / 0.04416 (passes); 15f 0.04530 / 0.04153 / 0.04156 / 0.04156 (fails: the sweep cuts 8.3%,
+  the check needs 10%; each step within its 2% tolerance). Cause: the storage fix's gas charging (laGasCharge, build 15e):
+  with it off, 15f returns 15d's four values to every digit; with psResOnce off nothing changes. Spare gas now fills the
+  existing stores ahead of a forecast shortfall, which cuts unserved energy with no new batteries by 12%, so added batteries
+  cut less. The mechanism is in c5c's and c5d's engine checks as adopted (messages 125-126); no fault found. The check and the
+  expected counts in CLAUDE.md are unchanged pending the user's decision.
+
 ### s_nogas4strict_c5c: the gap priced at 1,250 MW of diesel open-cycle (+R5.6bn, R11.0bn above the null); six passes do not close it, because the build sits on its storage caps from 2036 (user, 16 Oct 2026, message 129 (1)); PROVISIONAL
 
 Settings: s_nogas4strict_c5c as recorded in 'New central c5c and its first ten sensitivities' (c5c's line, GAS_CAP=0 OCGD=0

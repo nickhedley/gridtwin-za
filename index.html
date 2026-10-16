@@ -5620,6 +5620,10 @@ const FIXED = {
   // the spur only beyond the 18 km median, for capex that already includes connection. bldGridBattHalf 1 charges
   // storage half the integration charge (sensitivity; central charges storage none).
   bldGridCost:0, bldGridSpurBeyond:0, bldGridBattHalf:0,
+  // Share of the integration charge (txRPerKWyr) that new wind and utility solar pay in the build LP (user, 16 Oct 2026):
+  // 1 central; 0 is sensitivity s_grid0 and 0.5 s_grid50. Other technologies keep the full charge. The engine's own
+  // transmission charge (txChargeFor) is not changed; the engine check's costGrid carries the optimiser's charge.
+  bldGridIntVreShare:1,
   // EXISTING DIESEL PEAKERS: RETIREMENT AND LIFE EXTENSION (TODO 14as, 7 Oct 2026, user decisions; see BLD_PEAKERS).
   // bldPeakerRet 0 off (default until reviewed: all 3.4 GW to 2040, as before), 1 end-of-life dates, 2 the IRP 2025's
   // dates. bldPeakerLifeExt 1 (with 1) lets the build LP keep Ankerlig and Gourikwa to the IRP's mid-2040s at
@@ -5655,6 +5659,12 @@ const FIXED = {
   // plus reserve shortfall (calendar days at their weights, windows at that probability) to targetFrac x 0.002% of
   // demand, with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
   bldStressTarget:0,
+  // PLANNING RESERVE MARGIN IN THE BUILD LP (user, 16 Oct 2026, message 133): firm capacity at least (1 + this / 100) x the
+  // peak hour of the year's represented days (row res_, wind and solar uncredited, every store at min(power, energy / 4 h)).
+  // 0 writes no res_ row: adequacy is set by the probabilistic standard alone (half of 0.002% of demand, checked in the
+  // engine), about eight times stricter than NTCSA's medium-term adequacy test of 20 GWh a year. Was 10, with no source, from the code's
+  // first commit to build 15f; 10 is now sensitivity s_prm10 (RESULTS 'Planning reserve margin in the build LP').
+  bldPlanMarginPct:0,
   // LITHIUM ENERGY BUILT PER YEAR (user, 12 Oct 2026, central c4): at most bldLiEnergyHours x the year's lithium power
   // cap (eb_batt bound). 4 hours, matching South African procurement so far (1,744 MW / 6,976 MWh); 8 hours is the first
   // sensitivity. Was 12 hours with no recorded source (36 GWh a year at 3 GW, about 1.8 times Australia's record year).
@@ -10102,7 +10112,9 @@ function bldGridCapexKW(tech, S){
 function bldGridAnn(tech, S){
   if (!(S.bldGridCost | 0)) return 0;
   const store = (tech === 'batt' || tech === 'vrfb' || tech === 'ironair');
-  const integ = tech === 'rooftop' ? 0 : store ? (S.bldGridBattHalf ? 0.5 : 0) * S.txRPerKWyr : S.txRPerKWyr;
+  const vreK = (tech === 'wind' || tech === 'pv') ? +(S.bldGridIntVreShare ?? FIXED.bldGridIntVreShare) : 1;
+  if (!(vreK >= 0 && vreK <= 1)) throw new Error('bldGridIntVreShare must be 0-1: ' + vreK);
+  const integ = tech === 'rooftop' ? 0 : store ? (S.bldGridBattHalf ? 0.5 : 0) * S.txRPerKWyr : (vreK === 1 ? S.txRPerKWyr : vreK * S.txRPerKWyr);
   return bldAnnuity(bldGridCapexKW(tech, S), BLD_GRID.lifeY) + integ;
 }
 
@@ -10996,7 +11008,9 @@ function bldBuildLP(opts){
   const CAPE_CURT = Math.max(0, +(S.bldCapeCurtPct ?? FIXED.bldCapeCurtPct)) / 100;
   if (CAPE_MW > 0) for (const y of Y){
     let credit = 0;
-    for (const yy of Y) if (yy >= y) credit += S.txRPerKWyr / Math.pow(1+BLD_DISC, yy-2026);
+    // The integration charge it avoids is what new wind pays (bldGridIntVreShare of txRPerKWyr; 16 Oct 2026).
+    const _cwK = +(S.bldGridIntVreShare ?? FIXED.bldGridIntVreShare), _cwTx = _cwK === 1 ? S.txRPerKWyr : _cwK * S.txRPerKWyr;
+    for (const yy of Y) if (yy >= y) credit += _cwTx / Math.pow(1+BLD_DISC, yy-2026);
     obj.push('-' + (credit * 1000).toFixed(3) + ' cw_' + y);
   }
   // Life extension (TODO 14as): le_<id> MW kept from its end-of-life year to the IRP's date, paying the extension
@@ -11062,6 +11076,8 @@ function bldBuildLP(opts){
   // does not make, and the reason this remains a screen.
   const TAIL_COAL_FACTOR = 0.76;
   const AV_NUC = S.nuclearCF ?? FIXED.nuclearCF;
+  const PLAN_M = +(S.bldPlanMarginPct ?? FIXED.bldPlanMarginPct);   // planning reserve margin, % (0: no res_ row)
+  if (!(PLAN_M >= 0 && PLAN_M <= 50)) throw new Error('bldBuildLP: bldPlanMarginPct must be 0-50: ' + PLAN_M);
   const AV_HYD = S.hydroCF ?? FIXED.hydroCF;
   const AV_IMP = S.importsCF ?? FIXED.importsCF;
   // ROOFTOP AND CONGESTION, also from the engine's keys. The engine derates rooftop to 0.78 of
@@ -11434,13 +11450,13 @@ function bldBuildLP(opts){
       L.push(' cc' + S2.t + '_' + y + ': cc_' + S2.t + '_' + y + ' - '
         + cum(S2.t,y).map(v => credit.toFixed(2) + ' ' + v).join(' - ') + ' <= 0');
     }
-    L.push(' res_' + y + ': cc_batt_' + y
+    if (PLAN_M > 0) L.push(' res_' + y + ': cc_batt_' + y
       + ' + ' + STORE.filter(S2 => S2.t !== 'batt').map(S2 => 'cc_' + S2.t + '_' + y).join(' + ')
       + ' + ' + cum('ccgt',y).join(' + ')
       + OC_T.map(t => ' + ' + cum(t,y).join(' + ')).join('')
       + LEV(y).map(v => ' + ' + v).join('')
       + (RC_ON ? ' - ' + eaf.toFixed(4) + ' rc_' + y : '')
-      + ' >= ' + (RC_ON ? (peak*1.10 - firm) : Math.max(0, peak*1.10 - firm)).toFixed(1));
+      + ' >= ' + (RC_ON ? (peak*(1 + PLAN_M/100) - firm) : Math.max(0, peak*(1 + PLAN_M/100) - firm)).toFixed(1));
   }
 
   // Lithium's duration stays inside 1 to LI_MAX_HOURS, the range the slider offers and the
@@ -19597,7 +19613,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-15f';
+const BUILD_STAMP = '2026-10-16a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
