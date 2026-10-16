@@ -271,7 +271,7 @@ Engine and optimiser (builds 14m–14r; section 1 and limitations 17–18): oper
 
 ### The sensitivities: provisional until you have read them
 
-Each run takes c5d's settings, makes one change, and runs up to three passes from scratch. The reference is a null run made the same way with no change: R2,204.9bn engine PV, 1,533.7 Mt and objective R1,403.0bn, the same LP as c5d's first pass (RESULTS 'c5d sensitivities, 30 runs against the null').
+Each run takes c5d's settings, makes one change, and runs up to three passes from scratch. s_tariffcf was added for this pack, on build 2026-10-16f, whose LP with its flag off is c5d's. The reference is a null run made the same way with no change: R2,204.9bn engine PV, 1,533.7 Mt and objective R1,403.0bn, the same LP as c5d's first pass (RESULTS 'c5d sensitivities, 30 runs against the null').
 
 | Run | Change from c5d | Engine PV vs null, R bn | CO2 2026–40 vs null, Mt | Objective vs null, R bn | Same direction |
 |---|---|---|---|---|---|
@@ -287,6 +287,7 @@ Each run takes c5d's settings, makes one change, and runs up to three passes fro
 | s_roof2 | Rooftop 2,000 MW a year | +52.1 | -16.9 | +49.3 | yes |
 | s_be7 | IRP nuclear forced: 1,250 MW in 2036–37, 1,350 MW in 2038–39 | +36.6 | -24.7 | -45.5 | no |
 | s_nogas4strict | No new gas or diesel open-cycle; lithium up to 4 GW a year | +32.0 (top-up) | -184.5 | +48.9 | yes |
+| s_tariffcf | Wind and solar capex backed out of their tariffs at the capacity factor each runs at (wind R20,879/kW at 42.5%, solar R11,038/kW at 28.7%), so each costs its tariff | +30.8 | +94.0 | +31.4 | yes |
 | s_wind372 | New wind at BW6 bids' 37.2% | +30.6 | +132.1 | +44.4 | yes |
 | s_committed | Committed gas (1,200 MW a year 2030–33, 200 MW in 2034) and lithium minimums | +27.0 | +18.6 | +23.3 | yes |
 | s_be6 | Lithium capped at 550 MW a year from 2026 | +25.4 | +22.6 | +13.4 | yes |
@@ -311,10 +312,11 @@ Each run takes c5d's settings, makes one change, and runs up to three passes fro
 
 What the author takes from the table (RESULTS, as above):
 
-- Pass mark 5, set before the runs: the two cost measures move the same way on 22 of the 27 comparable runs. Three of the exceptions are structural: the compliance charge (s_comply_comp, s_comply_full) and s_be7's forced nuclear capital sit outside the objective. s_be4 and s_cape10 move by less than R10bn and are not traced.
+- Pass mark 5, set before the runs: the two cost measures move the same way on 23 of the 28 comparable runs, s_tariffcf included. Three of the exceptions are structural: the compliance charge (s_comply_comp, s_comply_full) and s_be7's forced nuclear capital sit outside the objective. s_be4 and s_cape10 move by less than R10bn and are not traced.
 - s_nogas4strict fails the standard in 2034–40. Its mean unserved energy stays below NTCSA's 20 GWh a year in every year (largest 9.07 GWh, 2037); its worst single run is 96–210 GWh a year from 2033. 1,500 MW of diesel open-cycle by 2037 closes the gap for +R8.4bn, +R32.0bn against the null.
 - Determined gas costs +R79.2bn on the engine and +R44.9bn on the objective against least cost. The IRP's gas beyond the determinations accounts for R114.3bn of s_irpgas's engine premium (R95.6bn on the objective). s_irpgas's build retires 7,167 MW of coal early, from 2029, which carries its CO2 cut (RESULTS 'c5d sensitivities').
 - s_li8h: the 4-hour lithium energy cap does not bind on c5d; its build equals the null's.
+- s_tariffcf (added for this pack, build 2026-10-16f): with wind and solar each costing its awarded tariff per MWh, new wind falls from 31.8 to 29.4 GW by 2040 and utility solar rises from 24.7 to 27.9 GW; engine PV +R30.8bn and CO2 +94.0 Mt, most of it before 2035 (2030: 132.8 against 122.0 Mt). Adequate in every year (RESULTS 'Reviewer pack on c5d').
 - Every other run's engine check is below target in every year.
 
 ---
@@ -378,7 +380,7 @@ Each can be answered from this pack in 30–40 minutes. Each is tied to a decisi
 
    Decision: c5d backs capex out at BW6 bids' typical capacity factors (wind 37.24%, solar 30.13%); s_tariffcf backs it out at the capacity factors new build runs at (42.5% and 28.7%). The author decides on the central after this run.
 
-   Evidence: on the central basis new wind costs R552.4/MWh, 0.876 of BW5's awarded tariff in 2026 rands, and solar R552.8/MWh, 1.051 of BW7's (limitation 9). The capacity factors behind the awarded tariffs are not published. s_tariffcf's result is in section 4.
+   Evidence: on the central basis new wind costs R552.4/MWh, 0.876 of BW5's awarded tariff in 2026 rands, and solar R552.8/MWh, 1.051 of BW7's (limitation 9). The capacity factors behind the awarded tariffs are not published. s_tariffcf, which backs capex out at the run capacity factors, costs +R30.8bn of engine PV and +94.0 Mt of CO2 against c5d's null, with 2.3 GW less wind and 3.2 GW more solar by 2040 (section 4).
 
    Question: should the capex be backed out at the bid window's typical capacity factor, at the capacity factor the model runs new build at, or at another figure, and from which source?
 
