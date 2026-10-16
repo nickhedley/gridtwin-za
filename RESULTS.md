@@ -3443,8 +3443,55 @@ Which constraints bind in c5c (its pass-1 solve, cache key 9c2e2e1eaa, objective
 - Minimum builds bind: wind 2026-27, solar 2026-28 and lithium 2026-27 sit exactly on the committed-project floors (MIN_BUILD,
   LI_MIN). Those are committed projects, not adequacy rules.
 
-Tests on c5c's settings with the margin at 5% (1.05) and off (res_ rows not written), local test copies of build 15f only,
-running (message 131 (1)); the central is unchanged until the user decides.
+Tests on c5c's settings with the margin at 5% (1.05) and off (res_ rows not written), message 131 (1). Local test copies of build
+15f with that one line changed (index.html, res_ row); c5c's line (MAXP=6) from scratch; engine check TF=0.5 LNG=1 GRID=1; run
+16 Oct 03:01-03:47 UTC. All three were adequate on pass 1 with no stress windows added. The central is unchanged until the user
+decides. PROVISIONAL.
+
+| | 10% (c5c) | 5% (s_prm5_c5c) | 0% (s_prm0_c5c) |
+|---|---|---|---|
+| Wind, new MW 2030 / 2035 / 2040 | 9,080 / 22,023 / 28,082 | 9,080 / 22,936 / 29,251 | 11,580 / 26,829 / 31,755 |
+| Solar | 6,791 / 20,657 / 33,606 | 7,189 / 19,845 / 31,110 | 6,791 / 13,744 / 24,672 |
+| Lithium MW | 6,666 / 13,438 / 20,678 | 5,233 / 11,774 / 18,274 | 3,190 / 7,872 / 12,239 |
+| Lithium MWh | 26,664 / 53,755 / 82,716 | 20,934 / 47,098 / 73,102 | 7,524 / 23,444 / 53,119 |
+| CCGT | 0 / 2,621 / 6,867 | 0 / 2,590 / 7,291 | 0 / 3,089 / 8,939 |
+| Open-cycle on LNG | 511 / 791 / 791 | 258 / 554 / 554 | 0 / 31 / 31 |
+| Diesel open-cycle, pumped hydro, iron-air, early coal retirement | none | none | none |
+| Engine PV 2026-40, R bn (with grid) | 2,257.5 (2,268.8) | 2,238.9 (2,249.7), -18.6 | 2,204.9 (2,214.0), -52.6 |
+| Optimiser objective, R bn | 1,447.6 | 1,430.2 | 1,403.0 |
+| CO2 2026-40, Mt | 1,548.9 | 1,551.7 (+2.8) | 1,533.7 (-15.2) |
+| CO2 2030 / 2035 / 2040, Mt | 131.1 / 79.0 / 61.4 | 130.1 / 78.3 / 62.7 | 122.0 / 80.3 / 67.0 |
+| Gas TWh 2040 | 7.2 | 8.0 | 10.4 |
+| Years failing the standard | none | none | none |
+
+Mean unserved energy against the standard (GWh, engine check):
+
+| Year | Target | 10% | 5% | 0% |
+|---|---|---|---|---|
+| 2026-28 | 1.96-2.10 | 0.00 | 0.00 | 0.00 |
+| 2029 | 2.13 | 0.00 | 0.00 | 0.04 |
+| 2030 | 2.19 | 0.22 | 0.30 | 0.77 |
+| 2031 | 2.25 | 0.21 | 0.47 | 1.13 |
+| 2032 | 2.30 | 0.02 | 0.05 | 0.72 |
+| 2033 | 2.35 | 0.10 | 0.15 | 0.73 |
+| 2034 | 2.41 | 0.02 | 0.01 | 0.49 |
+| 2035 | 2.46 | 0.00 | 0.00 | 0.44 |
+| 2036 | 2.51 | 0.02 | 0.02 | 0.71 |
+| 2037 | 2.58 | 0.13 | 0.21 | 0.87 |
+| 2038 | 2.65 | 0.27 | 0.36 | 0.68 |
+| 2039 | 2.72 | 0.14 | 0.27 | 0.43 |
+| 2040 | 2.78 | 0.22 | 0.28 | 0.35 |
+
+With the margin off, every year still meets the model's standard; the closest is 2031 at 1.13 against 2.25 GWh (50%). The margin
+buys firm lithium and open-cycle plant that the engine's adequacy test does not need; without it the optimiser builds more wind and
+CCGT and less solar and lithium. Caveat: the standard is the model's own (half of 0.002% of demand); NTCSA's medium-term test is
+20 GWh a year (below), so every run here is far inside it.
+
+South Africa's criteria (message 131 (3), research helper, 16 Oct 2026; SOURCES 'Adequacy criteria'): IRP 2025 states no numeric
+criterion, only that adequacy is "measured by the volume of unserved energy, the operation of peaking generators and the
+availability of contingency generator(s)"; NTCSA's Medium-Term System Adequacy Outlook 2025-2029 (30 Oct 2024) deems adequacy met
+when unserved energy is below 20 GWh a year and open-cycle gas turbines run below a 6% capacity factor. No planning reserve margin
+was found in either. Both read from search extracts and one secondary article; page numbers not seen.
 
 ### New central c5c and its first ten sensitivities (build 2026-10-15f, PROVISIONAL): adequate on pass 1; engine PV R2,257.5bn at 8% real against c5b_14r's R2,394.3bn on the same build; CO2 1,549 Mt against 1,990 Mt; wind 28.1 GW by 2040 at BW5-calibrated capex and 26.3 GW at BW6 capex (user, 15-16 Oct 2026, messages 125, 126 (2), 128 (3)-(4))
 
@@ -11282,6 +11329,10 @@ USD 77/kWh, which is what `FIXED.acapIronAir` already used and sourced. ANY EARL
 RESULT WHERE IRON-AIR WON THE OPTIMISER IS SUSPECT.
 
 ### South Africa has no reliability threshold to compare this against
+
+[Corrected 16 Oct 2026: there is one. NTCSA's Medium-Term System Adequacy Outlook deems adequacy met when unserved energy is
+below 20 GWh a year and open-cycle gas turbines run below a 6% capacity factor (RESULTS 'Planning reserve margin in the build LP';
+SOURCES 'Adequacy criteria'). IRP 2025 states no numeric criterion.]
 
 The Grid Code and Distribution Network Code require a NERSA-approved Cost of Unserved
 Energy, approved 2015 and updated 2016, and COUE is an IRP input. So the test is

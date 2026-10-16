@@ -1320,3 +1320,24 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
 - Unverified, not used: Meridian Economics, 'Comparative analysis of IRP 2023 cost assumptions', 2 February 2024, 42 pages; the
   helper read pages 1-12 with Firecrawl, against the rule for long PDFs (it reported this). Its figures are listed in RESULTS
   'Wind diagnostics on c5b_14r' and stay unverified until the full document is read; it is not to be re-fetched (user, message 120).
+
+## Adequacy criteria: IRP 2025 and NTCSA (message 131 (3), 16 Oct 2026; research helper, web search, search extracts and one article read directly; no eskom.co.za)
+
+- IRP 2025 (Department of Electricity and Energy, October 2025, user-friendly version; copy at
+  https://cer.org.za/wp-content/uploads/2006/08/User-Friendly-IRP-2025.pdf): no numeric criterion found (no unserved-energy
+  threshold, loss-of-load measure, reserve margin or capacity-credit rule). It states: "The capacity and energy adequacy of the
+  system are measured by the volume of unserved energy, the operation of peaking generators and the availability of contingency
+  generator(s) of a dispatchable nature with the ability to operate as a baseload, if needed." It refers to the Grid Code's
+  credible multiple-unit contingency (loss of three coal units or both Koeberg units). Search extracts only; page not seen; the
+  gazetted text (Gazette 53596, notice 6767) not opened. The same wording is in section 2.2 of the December 2024 draft (extract).
+- NTCSA, Medium-Term System Adequacy Outlook 2025-2029, 30 October 2024 (Grid Code clause 2.1.2(7)),
+  https://www.ntcsa.co.za/wp-content/uploads/2024/10/Medium-Term-System-Adequacy-Outlook-2025-2029.pdf: adequacy is met when
+  "i. The total amount of unserved energy per year is less than 20 GWh. ii. The capacity factor of open-cycle gas turbines is less
+  than 6% per year." Search extract only; page not seen (the PDF could not be downloaded through the proxy). MTSAO 2026-2030
+  (30 Oct 2025) refers to "the 6% adequacy metric" (extract). Daily Maverick, Chris Yelland, 3 Nov 2025 (read directly, secondary):
+  "Adequacy is deemed acceptable when annual unserved energy is below 20 gigawatt-hours and OCGT capacity factors remain under 6%."
+  Earlier editions are on eskom.co.za and were not opened; extracts say the 2022 edition added a contingency base-load capacity
+  factor under 50%.
+- Neither names a planning reserve margin. The build LP's 10% margin therefore has no South African source (RESULTS 'Planning
+  reserve margin in the build LP').
+
