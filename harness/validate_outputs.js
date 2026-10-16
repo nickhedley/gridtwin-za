@@ -477,7 +477,8 @@ function probe(w, src) {
   };
   // REIPPPP Bid Window 7 solar bids averaged R0.46/kWh; the model anchors above
   // that to reflect unsubsidised, non-BW7 conditions.
-  checkRange('Utility solar LCOE', lc('Utility solar PV'), 0.40, 0.75,
+  // The LCOE chart's solar row is labelled 'Utility solar' from build 2026-10-16e (message 152 item 31); same row, same test.
+  checkRange('Utility solar LCOE', lc('Utility solar'), 0.40, 0.75,
     'REIPPPP BW7 solar bids averaged R0.46/kWh', 'R/kWh');
   checkRange('Wind LCOE', lc('Wind'), 0.55, 1.00,
     'REIPPPP BW7: wind bid above solar', 'R/kWh');
@@ -494,7 +495,7 @@ function probe(w, src) {
   // Merit order: the wind and solar anchors both sit below diesel (user, 16 Oct 2026, message 144 (1)). Was solar < wind <
   // diesel; the anchors now come from the central's own costs (bldLcoeAnchor), which put wind at R552.4 and solar at
   // R552.8/MWh, so solar below wind no longer holds (RESULTS 'Site figures re-measured on build 2026-10-16a').
-  const solar = lc('Utility solar PV'), wind = lc('Wind'), diesel = lc('Diesel OCGT');
+  const solar = lc('Utility solar'), wind = lc('Wind'), diesel = lc('Diesel OCGT');
   results.push({ name: 'Merit order: wind and solar below diesel', actual: `${wind}, ${solar} < ${diesel}`,
     expected: 'both below diesel', tol: null, pass: solar < diesel && wind < diesel,
     source: 'Structural: cheapest renewables below peaking plant', unit: '' });

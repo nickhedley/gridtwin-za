@@ -95,7 +95,9 @@ CHECKS = [
     # Storage investment summary: the merchant-vs-attached comparison the separate
     # battery panels never made.
     ('storageSummary',                                             'storage investment summary'),
-    ('Merchant or attached',                                       'merchant vs co-located comparison'),
+    # 16 Oct 2026 (message 152, items 16 and 18): the rhetorical heading and 'actually' were cut; the pins follow the
+    # wording that survives, so each still asserts its comparison is on the page.
+    ('attached to a solar plant at half its capacity',             'merchant vs co-located comparison'),
     # System status must reflect FREQUENCY, not just the worst hour. Keyed on maxStage
     # alone, one bad hour in 8,760 flipped the board to "Stage 3" beside 0 GWh of shed.
     ('Tight hours',                                                'status word: frequency-aware'),
@@ -116,7 +118,7 @@ CHECKS = [
     ('start-up, new-build capital',                                'KPI note not shouted'),
     # Wheeling coverage. The panel priced transport and never answered what share of the
     # load a contract covers - the question an offtaker asks first.
-    ('What share of the load does it actually cover',              'wheeling coverage table'),
+    ('What share of the load does it cover',                       'wheeling coverage table'),
     ('wheelCoverageHtml',                                          'coverage renderer'),
     # Green hydrogen from curtailed energy, and the grid-enhancing cost comparison.
     # Both answer "should we", not "could we" - the toggles already answered the latter.
@@ -296,6 +298,43 @@ def check_prose(src):
         t = re.sub(r'&[a-z#0-9]+;', ' ', t)
         total += len(t.split())
     return total, len(blocks)
+
+# CAPTION TONE (user, 16 Oct 2026, message 156 item 26). A caption says what the control is, its default and the basis
+# for the default; it does not tell the reader what to do with it (RULES.md). Checked on the RENDERED text, not the source:
+# render_text.js loads the page in jsdom with its own start-up, opens every section, runs both forecasts and collects
+# every title attribute, so text built at run time is covered. Word-bounded and case-insensitive.
+TUTORIAL = [r'\bto ask\b', r'\bto see what\b', r'\bto test what\b', r'\bswitch on to\b', r'\bset this\b',
+            r'\btry\b', r'\bexplore\b', r'\byou can see\b']
+
+def check_tutorial(html_path):
+    import subprocess, json, os
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.abspath(os.path.dirname(html_path) or '.')
+    try:
+        out = subprocess.run(['node', os.path.join(here, 'render_text.js'), root], capture_output=True, text=True,
+                             timeout=900, cwd=here)
+        d = json.loads(out.stdout)
+    except Exception as e:
+        return None, f'render_text.js did not return the rendered text ({e})'
+    if not d.get('ready'):
+        return None, 'the page did not finish its start-up (GTZA_READY) in render_text.js'
+    text = d['text'] + ' || ' + ' || '.join(d['titles'])
+    hits = []
+    for pat in TUTORIAL:
+        for m in re.finditer(pat, text, re.I):
+            hits.append(text[max(0, m.start() - 50):m.end() + 30].strip())
+    return hits, None
+
+_tut, _tut_err = check_tutorial(sys.argv[1] if len(sys.argv) > 1 else 'index.html')
+if _tut_err:
+    missing.append(('captions state what a control is, not what to do with it (rendered text)', _tut_err))
+    print(f'  TUTORIAL: {_tut_err}')
+elif _tut:
+    missing.append(('captions state what a control is, not what to do with it (rendered text)',
+                    f'{len(_tut)} phrases, e.g. ' + ' | '.join(_tut[:3])))
+    print(f'  TUTORIAL: {len(_tut)} phrases in the rendered text')
+else:
+    print('  tutorial phrases in the rendered text: none')
 
 _prose, _blocks = check_prose(c)
 _shout = check_shouting(c)
