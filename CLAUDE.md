@@ -40,12 +40,13 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (15 Oct 2026, build 2026-10-15d, branch claude/comply, ESK19679.csv present): 815/821, node checks 728/734 plus
-audit 87/87 (814/820 before the compliance check in validate_lp); eng5 6/6 (main ef1025d, build 14r: 814/820 on 14 Oct, 813/820 from 15 Oct, the stale stamp); stress_suite.js (repo
-root, `node stress_suite.js`) 290/290 on 14 Oct. The six failures, each with its cause in RESULTS ('Scenario switch and load
-timing' lists them; EDMSA's is only partly traced, RESULTS 'EDMSA Scenario A CO2 2035'): EDMSA Scenario A CO2 2035 (validate_external); with gas, iron-air moves July gas, and the preset curtailment
-band (validate_findings; the band waits on the preset re-search, TODO 14ef); the Megaflex tariff block (validate_consistency);
-the peaker season ratio and pumped-storage output (validate_benchmarks). 'The build stamp is not stale' (validate_structure)
+Expected (15 Oct 2026, build 2026-10-15f, branch claude/c5c-central, ESK19679.csv present): 816/821, node checks 729/734 plus
+audit 87/87; eng5 6/6 (815/821 on build 15d, branch claude/comply). The five failures, each with its cause in RESULTS ('Scenario
+switch and load timing' lists them; EDMSA's is only partly traced, RESULTS 'EDMSA Scenario A CO2 2035'; values on 15f in 'Build
+2026-10-15f: suite and every check that changed status'): EDMSA Scenario A CO2 2035 (validate_external); with gas, iron-air moves
+July gas, and the preset curtailment band (validate_findings; the band waits on the preset re-search, TODO 14ef); the Megaflex
+tariff block (validate_consistency); the peaker season ratio (validate_benchmarks). Pumped-storage output passes from 15f (the
+storage fix). 'The build stamp is not stale' (validate_structure)
 fails whenever BUILD_STAMP is older than the day the suite runs. Without ESK19679.csv, validate_weather adds a
 failure (the missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind check.
 

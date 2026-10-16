@@ -1405,6 +1405,10 @@ const num = t => {
       // larger sales base), the existing batteries at 68 MW alone R1.205 (no change), all together R1.118. Deliberate input
       // changes, tolerance unchanged.
       //
+      // UPDATED 15 Oct 2026, R1.118 -> R0.965. New wind central calibrated to BW5's tariff, R28,462 -> R17,773/kW (user,
+      // message 125 (2); build 15e). Measured: the same build with BLD_COST.wind at the BW6 figure gives R1.118 exactly, so the
+      // whole move is the wind input (retailComponents reads BLD_COST.wind, the central). Deliberate input change, tolerance unchanged.
+      //
       // UPDATED 7 Oct 2026 (third), R1.096 -> R1.205. Wind central on BW6 compliant bids, R21,000 -> R28,463/kW (user
       // decision). Measured on build 07q: wind alone (old battery cost) gives R1.045, so wind adds R0.109 and the aged
       // battery R0.160. Deliberate input change, tolerance unchanged.
@@ -1444,8 +1448,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.118) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.118 for Deep `
+              Math.abs(ncap.newCap - 0.965) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.965 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

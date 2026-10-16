@@ -42,8 +42,10 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // BATT_CASE (7 Oct 2026): lithium cost case, central (BW3 aged to January 2026), high (BW3 as bid) or low (global turnkey).
  w.eval(`if(!('bldBattCase' in FIXED)) throw new Error('bldBattCase missing');`+(process.env.BATT_CASE!==undefined?` state.bldBattCase=${JSON.stringify(process.env.BATT_CASE)};`:''));
  // WINDMOD / WIND_CASE (7 Oct 2026): new wind on the modern-turbine profile with bid capex (1, default) or the previous
- // R21,000 on the current profile (0); wind cost case central, high or low; WIND_CORR the new-wind correction, central or low.
- w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:''));
+ // R21,000 on the current profile (0); wind cost case central, bw6, high or low; WIND_CORR the new-wind correction, none, farms or
+ // bw6; PV_CASE tracking solar capex, central or bw6. Runs from 15 Oct 2026 record all three, and the run's own values apply (below).
+ // PS_RES_ONCE (message 127 (1)): 1 counts pumped-storage units once in reserve (psResOnce).
+ w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:'')+(process.env.PV_CASE!==undefined?` state.bldPvCase=${JSON.stringify(process.env.PV_CASE)};`:'')+(process.env.PS_RES_ONCE!==undefined?` state.psResOnce=${+process.env.PS_RES_ONCE};`:''));
  // COSTSET (7 Oct 2026): the same cost set as the pathway run; see pathway/costset.js.
  require('./pathway/costset.js')(w, process.env.COSTSET);
  // The pathway's lithium capex decline (BATT_DECL, 13 Oct 2026) when it recorded one, so the check prices lithium as the optimiser did.
@@ -91,6 +93,17 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (P.pvTracking != null){
    if (process.env.PVTRK !== undefined && +process.env.PVTRK !== +P.pvTracking) throw new Error('PVTRK '+process.env.PVTRK+' disagrees with the run\'s pvTracking '+P.pvTracking);
    w.eval(`state.bldPvTracking=${+P.pvTracking};`); console.log('pvTracking from the pathway:', +P.pvTracking); }
+ // Wind correction, wind and solar capex cases (15 Oct 2026, message 125): the pathway's own, as for tracking. An env value
+ // given as well must agree. Runs made before 15 Oct record none: the env values alone, and the defaults changed that day
+ // (correction none, tariff-calibrated capex), so an older run needs WIND_CORR=farms WIND_CASE=bw6 PV_CASE=bw6 to be checked as built.
+ for (const [k, env, st] of [['windCorr', 'WIND_CORR', 'bldWindCorr'], ['windCase', 'WIND_CASE', 'bldWindCase'], ['pvCase', 'PV_CASE', 'bldPvCase']]){
+   if (P[k] == null) continue;
+   if (process.env[env] !== undefined && process.env[env] !== P[k]) throw new Error(env+' '+process.env[env]+' disagrees with the run\'s '+k+' '+P[k]);
+   w.eval(`state.${st}=${JSON.stringify(P[k])};`); console.log(k+' from the pathway:', P[k]); }
+ // The 2026 wind and solar capex the check prices new build at (message 127 (2)), set beside the optimiser's in each row.
+ const CAPEX26={wind:+w.eval("bldCapex('wind', 2026)"), pv:+w.eval("bldCapex('pv', 2026)")};
+ console.log('capex 2026, engine check:', JSON.stringify(CAPEX26), 'optimiser:', JSON.stringify(P.capex2026||null));
+ if (P.capex2026 && (Math.abs(P.capex2026.wind-CAPEX26.wind)>0.01 || Math.abs(P.capex2026.pv-CAPEX26.pv)>0.01)) throw new Error('capex differs from the optimiser\'s: '+JSON.stringify(CAPEX26)+' against '+JSON.stringify(P.capex2026));
  const rows=[];
  for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0; cwCum+=P.sched[y].cw||0;
    // YEARS=2036,2037 (8 Oct 2026, TODO 14bk): check only these years; builds of the skipped years still accumulate.
@@ -180,7 +193,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // COMPLY (15 Oct 2026): the coal emissions compliance charge the pathway run recorded for this year (on the in-scope coal it kept),
    // reported beside the engine's cost; cost itself is unchanged. Only when the run carries one.
    if (P.comply && P.comply.years && P.comply.years[y]){ r.complyBn=P.comply.years[y].keptChargeR/1e9; r.costComply=r.cost+r.complyBn; }
-   rows.push({y,...over,...r}); console.log(y, JSON.stringify(r));
+   rows.push({y,...over,...r, capexWind2026:CAPEX26.wind, capexPv2026:CAPEX26.pv}); console.log(y, JSON.stringify(r));
  }
  fs.writeFileSync(process.env.OUTC||'pathcheck.json', JSON.stringify(rows)); process.exit(0);
 })();
