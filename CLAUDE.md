@@ -84,6 +84,8 @@ available; otherwise a Playwright script against /opt/pw-browsers/chromium.
 - En dashes, never em dashes. No italics. No words in all caps.
 - End every message with a short running list of the pressing outstanding tasks.
 - Push back when something is asserted as safe or settled; never fudge a test to pass.
+- Times (user, 16 Oct 2026, message 165): in chat and PR descriptions, give times in South Africa time (SAST, UTC+2) and
+  label them, e.g. "19:58 SAST". RESULTS keeps UTC, labelled, as now, so the record stays consistent.
 
 ## Research helpers
 
