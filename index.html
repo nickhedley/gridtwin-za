@@ -5597,6 +5597,12 @@ const FIXED = {
   // engine under-use: over twelve 2040 stress windows the LP opens half full, must refill, and discharges 11%
   // less than the engine. What remains is the LP's within-window foresight and daily storage balance, an
   // optimism of the method for all storage, not of pumped storage.
+  // COAL KEPT ONLINE THROUGH DAYLIGHT (user, 16 Oct 2026, messages 143 (4) and 144 (6); sensitivity s_daylight). NTCSA says the
+  // System Operator keeps coal online at minimum stable level through daylight for the morning and evening peaks and curtails
+  // renewables last (RESULTS 'The 2026 replay curtails almost nothing for oversupply'). On (1): a coal unit that is on when a
+  // commitment block starts in [ucDaylightFrom, ucDaylightTo) stays on (engine, buildUCSchedule), and the build LP's committed
+  // coal cannot fall from one hour to the next inside those hours (cdh_ rows). Off (0, central): unchanged.
+  ucDaylightHold:0, ucDaylightFrom:8, ucDaylightTo:16,
   bldCoalCommit:1, bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldPsEnergy:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // OPTIMISER GRID COST (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCost 0 off (default until
   // the effect on the pathway is reviewed), 1 central (ITP basis), 2 high (MISO basis). bldGridSpurBeyond 1 charges
@@ -6683,7 +6689,7 @@ function ucUnitsStanding(coalInstalled) {
 //          ucMinStable[hour] = MW  (fleet minimum stable load per hour)
 //          ucAvail[hour] = MW      (committed capacity per hour)
 //          ucStartCost[hour] = R   (start-up cost charged this hour)
-function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
+function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, dayHold) {
   // resOpts carries the reserve settings through from simulate(); absent means
   // reserve off, which reproduces the pre-reserve behaviour exactly.
   const RES_ON = !!(resOpts && resOpts.on);
@@ -6804,8 +6810,9 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
       const st = unitState[i];
       if (st.cap <= 0) continue;
 
-      // Must stay on if min_up not yet satisfied
-      const mustOn  = st.isOn  && st.hoursOn  < u.min_up;
+      // Must stay on if min_up not yet satisfied, or (ucDaylightHold) when the block starts in daylight hours
+      const mustOn  = (st.isOn  && st.hoursOn  < u.min_up)
+                   || (!!dayHold && st.isOn && (h0 % 24) >= dayHold[0] && (h0 % 24) < dayHold[1]);
       // Must stay off if min_down not yet satisfied
       const mustOff = !st.isOn && st.hoursOff < u.min_dn;
 
@@ -7720,7 +7727,8 @@ function simulate(u, prof, outPath, _soc0){
       }
     }
   }
-  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(_ucNet, Math.max(0, coalInstalled), eafFraction, RESERVE);
+  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(_ucNet, Math.max(0, coalInstalled), eafFraction, RESERVE,
+    ((p.ucDaylightHold ?? FIXED.ucDaylightHold) | 0) > 0 ? [p.ucDaylightFrom ?? FIXED.ucDaylightFrom, p.ucDaylightTo ?? FIXED.ucDaylightTo] : null);
   // Lumpy unit availability. Skipped when an explicit Monte Carlo path is
   // supplied (that path is already the outage draw for the run) and when the
   // toggle is off, which restores the smooth-derate behaviour exactly.
@@ -11118,6 +11126,7 @@ function bldBuildLP(opts){
     if (CUMV) return up.map(v => ' + ' + c.toFixed(5) + ' ' + v).join('') + base.map(v => ' - ' + c.toFixed(5) + ' ' + v).join('');
     const bs = new Set(base); return up.filter(v => !bs.has(v)).map(v => ' + ' + c.toFixed(5) + ' ' + v).join('');
   }).join('');
+  const DAY_HOLD = ((S.ucDaylightHold ?? FIXED.ucDaylightHold) | 0) > 0, DAY_FROM = S.ucDaylightFrom ?? FIXED.ucDaylightFrom, DAY_TO = S.ucDaylightTo ?? FIXED.ucDaylightTo;
   const COMMIT_ON = !!S.bldCoalCommit, COMMIT_MIN = Math.max(0, Math.min(1, S.bldCoalMinFrac)), COMMIT_H = Math.max(1, S.bldCoalCommitHours);
   for (const y of Y){
     const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
@@ -11172,6 +11181,8 @@ function bldBuildLP(opts){
         L.push(' cmin_' + k + ': gc_' + k + ' - ' + COMMIT_MIN.toFixed(3) + ' cm_' + k + ' >= 0');
         L.push(' cru_' + k + ': cm_' + k + ' - cm_' + kp + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
         L.push(' crd_' + k + ': cm_' + kp + ' - cm_' + k + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
+        // ucDaylightHold: committed coal does not fall inside the daylight hours (written only when on, so the central LP is unchanged).
+        if (DAY_HOLD && h >= DAY_FROM && h < DAY_TO) L.push(' cdh_' + k + ': cm_' + kp + ' - cm_' + k + ' <= 0');
       }
       L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
       if (OCGT_ON) L.push(' gomax_' + k + ': go_' + k + ' - ' + cum('ocgt',y).join(' - ') + ' <= 0');
@@ -19604,7 +19615,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-16c';
+const BUILD_STAMP = '2026-10-16d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

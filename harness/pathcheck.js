@@ -33,6 +33,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // The share of the integration charge new wind and solar paid in the optimiser (bldGridIntVreShare, 16 Oct 2026), so costGrid
  // carries the same charge. Runs made before 16 Oct record none: the default (1).
  if (P.gridIntVreShare != null) w.eval(`state.bldGridIntVreShare=${+P.gridIntVreShare};`);
+ if (P.ucDaylightHold) w.eval(`state.ucDaylightHold=${+P.ucDaylightHold};`);   // s_daylight (messages 143 (4), 144 (6))
  const GRID_ON=+w.eval('(state.bldGridCost??FIXED.bldGridCost)|0')>0, rpCum={};
  // PEAK (TODO 14as): the same peaker settings as the pathway run; each year's diesel retired comes from the schedule.
  w.eval(`if(!('bldPeakerRet' in FIXED)) throw new Error('bldPeakerRet missing');`+(process.env.PEAK!==undefined?` state.bldPeakerRet=${+process.env.PEAK};`:'')+(process.env.PEAK_EXT!==undefined?` state.bldPeakerLifeExt=${+process.env.PEAK_EXT};`:'')+(process.env.PEAK_EXT_R!==undefined?` state.bldPeakerExtRkW=${+process.env.PEAK_EXT_R};`:''));
