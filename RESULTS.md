@@ -3460,6 +3460,21 @@ LCOE chart and the replacement-cost figure only. Replacement cost per MWh, 16a a
 Today 2026 R1,542 against R1,528 (-0.9%); Deep decarbonisation 2035 R1,110 against R997 (-10.2%); Fossil-free 2040 R1,110 against
 R985 (-11.3%). No dispatch, system cost or build changes.
 
+Merit-order check (user, message 144 (1)): validate_outputs tested solar < wind < diesel on the anchors. The anchors now come from
+the central's own costs, wind R552.4 and solar R552.8/MWh (both R550 at the slider step), so solar below wind no longer holds;
+the check now tests that the wind and solar anchors both sit below diesel.
+
+The two data files without a licence field (user, message 144 (3)) now state their source in a header line, 'under the source's
+terms', no licence chosen: nodal/fleet_by_region_v2.csv from PyPSA-RSA (as recorded in the data repository's notes; slimming it
+waits on TODO 14dh), nodal/demand_2025_regional.csv from UCT ESRG (ZivaHub; dataset and version not recorded). Check on the
+latter: it is not Eskom data obtained on request. Its national column (8,760 hours, mean 26,300 MW, equal to the sum of the ten
+regional columns) correlates 0.91 with ESK19679's 2025 domestic demand in profiles.json (demand_2025) and runs 11.9% above it,
+so it is not a copy of that series. Every reader of the nodal/ copies skips '#' lines (both nodal engines, stress_suite.js,
+build_hydra_split.py, build_substation_bands.py, the validation scripts); stress_suite.js passes 290/290 on the new files.
+
+Removed from always-visible prose under the rule of items 8 and 31: 'Coal share moves about 0.45 points per 1% of demand ... an
+8-point gap' (other published models panel), a measurement with no RESULTS entry.
+
 ### New gas pays its full annualised capex, fixed O&M and LNG terminal charge whatever it runs; no published price or revenue figure is labelled energy-only (user, 16 Oct 2026, message 130 resent; TODO 14an); report only, no model change
 
 Gas. Build 2026-10-16b (the gas cost terms are unchanged from 16a). The engine's capital line (newCapexR in simulate) charges

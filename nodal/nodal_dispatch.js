@@ -4,7 +4,7 @@
 let nodalDataCache = null;
 
 function parseCSVText(text) {
-  const lines = text.trim().split('\n');
+  const lines = text.trim().split('\n').filter(l => !l.startsWith('#'));   // '#' lines state the file's source
   const headers = lines[0].split(',');
   const rows = [];
   for (let i = 1; i < lines.length; i++) {

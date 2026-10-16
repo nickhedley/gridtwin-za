@@ -871,7 +871,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div>
           <div id="nav-prices" class="panel" style="">
             <div class="ph"><h2>Wholesale shadow price</h2>
-              <span class="tag">modelled &middot; what a market would clear at</span>
+              <span class="tag">modelled &middot; energy-only shadow price &middot; what a market would clear at</span>
               <!-- Inside .ph, which is already flex with space-between, so the button sits
                    at the right edge of the header rather than on a row of its own. It is a
                    PANEL ACTION, not a control that scopes the panel - which is why the
@@ -882,7 +882,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Price-setting technology by hour</h2><span class="tag">modelled</span>
+            <div class="ph"><h2>Price-setting technology by hour</h2><span class="tag">modelled &middot; energy-only shadow price</span>
               <div class="wkbtns">
                 <button id="spW" class="active">Winter week</button>
                 <button id="spS">Summer week</button>
@@ -998,12 +998,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture price forecast</h2><span class="tag">modelled &middot; PPA value to 2030</span></div>
+            <div class="ph"><h2>Capture price forecast</h2><span class="tag">modelled &middot; energy-only shadow price &middot; PPA value to 2030</span></div>
             <div class="pb" id="capFcBody"></div>
           </div>
 
           <div id="nav-capture" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture rate by region</h2><span class="tag">modelled &middot; what a project earns vs the average MWh</span></div>
+            <div class="ph"><h2>Capture rate by region</h2><span class="tag">modelled &middot; energy-only shadow price &middot; what a project earns vs the average MWh</span></div>
             <div class="pb" id="captureBody"></div>
           </div>
 
@@ -1014,7 +1014,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Battery revenue benchmark</h2><span class="tag">modelled &middot; lithium-ion 4h &middot; what a BESS would earn</span></div>
+            <div class="ph"><h2>Battery revenue benchmark</h2><span class="tag">modelled &middot; energy-only shadow price &middot; lithium-ion 4h &middot; what a BESS would earn</span></div>
             <div class="pb" id="bessBody"></div>
           </div>
 
@@ -1024,7 +1024,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" id="capCurvePanel" style="margin-top:18px">
-          <div class="ph"><h2>Capture rate projections</h2><span class="tag">modelled &middot; cannibalisation &middot; wind vs solar</span></div>
+          <div class="ph"><h2>Capture rate projections</h2><span class="tag">modelled &middot; energy-only shadow price &middot; cannibalisation &middot; wind vs solar</span></div>
           <div class="pb" id="capCurveBody"></div>
           </div>
 
@@ -1062,28 +1062,21 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         gross of downstream losses. Our grid demand of 206&nbsp;TWh against Eskom&rsquo;s 183&nbsp;TWh of
         billed sales implies about 11&nbsp;%, which sits on Eskom&rsquo;s reported 9.1&nbsp;% T&amp;D loss
         figure. Adding a loss factor on top would double-count it and push coal roughly 11&nbsp;% above
-        its benchmark, having started 2&nbsp;% below. Output was calibrated against
-        <strong>Ember's metered generation</strong> (12 months to May 2026) on 16 Aug 2026, which
-        found the model overstating non-fossil generation by about 8&nbsp;percentage points. Koeberg's
-        capacity factor was corrected from a hardcoded 0.90; the default is now <span data-num="nuclearCF"></span>&nbsp;% sent-out. Turbine and panel
-        availability derates were briefly added to wind and utility PV and then removed
-        as a double count: the national profiles are Eskom&rsquo;s own metered hourly output
+        its benchmark, having started 2&nbsp;% below. Output is compared with
+        <strong>Ember's metered generation</strong> (12 months to May 2026). Koeberg runs at
+        <span data-num="nuclearCF"></span>&nbsp;% sent-out by default. Wind and utility PV carry no
+        availability derate: the national profiles are Eskom&rsquo;s own metered hourly output
         (Data Portal ESK19243), so availability, losses and real curtailment are already inside the
         per-unit series, and the regional profiles are Renewables.ninja, whose PV already carries a
-        10&nbsp;% system loss. The wind normalisation was corrected again on
-        6&nbsp;September&nbsp;2026. Dividing metered energy by any flat nameplate understates the
-        per-unit series while the fleet is growing, and the 4,044&nbsp;MW figure derived in August
-        was an end-of-period estimate against a year whose mean installed capacity was
-        3,642&nbsp;MW &ndash; understating wind by 11&nbsp;% and solar by 21&nbsp;%. Each hour is now
-        divided by that hour&rsquo;s measured installed capacity, from Eskom&rsquo;s ESK19679.
+        10&nbsp;% system loss. The wind series divides each hour&rsquo;s metered output by that
+        hour&rsquo;s measured installed capacity, from Eskom&rsquo;s ESK19679.
         Compared fleet-normalised, the model&rsquo;s wind capacity factor lands within
         1&nbsp;% of Eskom&rsquo;s measurement; compared as energy it reads about 20&nbsp;% above
-        Ember, which is fleet size and weather year rather than model error. A separate audit
-        found rooftop PV running at
-        21.2&nbsp;% capacity factor against utility PV&rsquo;s 22.1&nbsp;%, which is physically wrong:
-        a rooftop fleet takes whatever orientation the roof has, is shaded, is never cleaned, does not
-        track, and sits in Gauteng and the Western Cape rather than the Northern Cape. Its derate moved
-        from 0.94 to 0.78 (rooftopDerate); the comparison panel shows the resulting capacity factor. Note also that NTCSA&rsquo;s <span data-num="eskomRooftop"></span>&nbsp;GW rooftop figure is itself
+        Ember, which is fleet size and weather year rather than model error. Rooftop PV carries a
+        <span data-num="rooftopDerate"></span> derate (rooftopDerate): a rooftop fleet takes whatever
+        orientation the roof has, is shaded, is never cleaned, does not track, and sits in Gauteng and
+        the Western Cape rather than the Northern Cape; the comparison panel shows the resulting
+        capacity factor. Note also that NTCSA&rsquo;s <span data-num="eskomRooftop"></span>&nbsp;GW rooftop figure is itself
         an inference &ndash; NTCSA derives it from residual load on sunny versus cloudy days
         and counts only systems under 100&nbsp;kWp &ndash; and analysts have questioned whether it runs
         high. The remaining gap is deliberate rather than
@@ -3233,7 +3226,7 @@ async function runPrefeas() {
   const offtake = document.getElementById('pf_offtake').value;
   const price = parseFloat(document.getElementById('pf_price').value)||2.50;
   const costPreset = document.getElementById('pf_cost_preset').value;
-  let costRwp = parseFloat(costPreset==='custom' ? 6 : costPreset);
+  let costRwp = parseFloat(costPreset) || RT_TYPES.lci.costRwp;   // the rooftop tab's brackets (RT_TYPES), filled at start-up
   const battHours = parseInt(document.getElementById('pf_batt').value)||0;
   const techEl = document.querySelector('input[name="pfTech"]:checked');
   const pfTech = techEl ? techEl.value : 'solar';
@@ -3409,7 +3402,7 @@ async function runPrefeas() {
         <li style="margin-bottom:3px">Apply for <strong>grid connection</strong> to ${grid.authority} – use the Grid Connection tab above to check GCCA headroom first</li>
         ${offtake==='wheeling'?'<li style="margin-bottom:3px">Obtain NTCSA <strong>wheeling agreement</strong> and negotiate TUoS tariff</li>':
           offtake==='grid'?'<li style="margin-bottom:3px">Negotiate <strong>PPA with offtaker</strong> or prepare REIPPPP bid</li>':''}
-        <li>Get <strong>3 EPC quotes</strong> – SA market range ${costRwp-1}–${costRwp+1} R/Wp for this system size</li>
+        <li>Get <strong>3 EPC quotes</strong> and compare them with the indicative, unsourced R${costRwp}/Wp used here</li>
       </ol>
     </div>
 
@@ -4909,11 +4902,8 @@ function printPrefeas() {
             </div>
             <div>
               <label style="font-weight:600;display:block;margin-bottom:3px">Installed cost</label>
-              <select id="pf_cost_preset" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-                <option value="7">Rooftop &lt;100kWp – R7/Wp</option>
-                <option value="6" selected>Mid C&amp;I 100–1,000kWp – R6/Wp</option>
-                <option value="5">Ground-mount &gt;1MWp – R5/Wp</option>
-              </select>
+              <select id="pf_cost_preset" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"></select>
+              <div style="font-size:9px;color:var(--ink2);margin-top:2px">Indicative and unsourced: the rooftop tab&rsquo;s brackets.</div>
             </div>
             <div>
               <label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label>
@@ -13163,9 +13153,7 @@ function renderExternalComparison(){
     + 'when asked the same question at the same assumptions. A model falling far outside would '
     + 'have a problem worth finding. One landing inside has not been proved right.</div>'
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:7px">'
-    + 'The assumptions matter more than the model here. Coal share moves about 0.45 points per '
-    + '1&#37; of demand, so running this at today\u2019s demand rather than the CSIR\u2019s would show an '
-    + '8-point gap that says nothing about either model. The retirement schedule and technology '
+    + 'The assumptions matter more than the model here. The retirement schedule and technology '
     + 'costs are not fully recoverable from what the CSIR published, which is why the bands are '
     + '&plusmn;6 and &plusmn;8 rather than tighter.'
     + '<div style="margin-top:5px">There is no cost comparison here. PyPSA-ZA reports a 95&#37; '
@@ -14924,7 +14912,7 @@ function renderPricePanel(r){
     + `<div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>0%</span><span>hours of the year</span><span>100%</span></div></div>`
     + `</div>`
 
-    + `<div style="font-size:10px;font-weight:600;color:var(--ink2);margin:12px 0 3px">Capture price \u2013 what each technology actually earns</div>`
+    + `<div style="font-size:10px;font-weight:600;color:var(--ink2);margin:12px 0 3px">Capture price at the energy-only shadow price \u2013 what each technology earns</div>`
     + `<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">`
     + `<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 6px">Technology</th>`
     + `<th style="text-align:right;padding:4px 6px">Capture price</th>`
@@ -20264,6 +20252,7 @@ const ABOUT_NUM = {
   rooftopGW: () => (FIXED.rooftopMW / 1000).toFixed(1),
   coalGW: () => (FIXED.coalInstalledMW / 1000).toFixed(1),
   psGW: () => (FIXED.psPowerMW / 1000).toFixed(1),
+  rooftopDerate: () => FIXED.rooftopDerate.toFixed(2),
   battGW: () => (FIXED.battPowerMW / 1000).toFixed(2),
   importsMW: () => _numInt(FIXED.importsMW),
   importsCF: () => String(Math.round(FIXED.importsCF * 100)),
@@ -20275,6 +20264,12 @@ const ABOUT_NUM = {
   eskomPeak: () => String(_eskomRow('Winter peak demand')),
 };
 function fillAboutNums(){
+  // The pre-feasibility tab's installed cost reads the rooftop tab's brackets (RT_TYPES; message 144 (4)).
+  const pf = document.getElementById('pf_cost_preset');
+  if (pf && !pf.options.length) for (const [k, b] of Object.entries(RT_TYPES)){
+    const o = document.createElement('option'); o.value = b.costRwp; o.textContent = b.label + ' \u2013 R' + b.costRwp + '/Wp';
+    if (k === 'lci') o.selected = true; pf.appendChild(o);
+  }
   for (const el of document.querySelectorAll('[data-num]')){
     const f = ABOUT_NUM[el.dataset.num];
     if (!f) throw new Error('ABOUT_NUM has no ' + el.dataset.num);
@@ -20862,7 +20857,8 @@ const RT_TYPES = {
   // site-specific measurement.
   //
   // costRwp: fully-installed cost (panels, inverter, mounting, cabling, labour, COC),
-  // excluding battery. Calibrated to 2026 SA market rates - residential installers
+  // excluding battery. Indicative and unsourced (user, 16 Oct 2026, message 144 (4)): the pre-feasibility tab reads these
+  // brackets too; TODO 14ez sources them from GreenCape after the note. Said to be calibrated to 2026 SA market rates - residential installers
   // report R15,000-R18,000/kW for a typical 5kW system, commercial R12,000-R18,000/kW
   // with cost per kW dropping as systems scale up. Smaller systems carry proportionally
   // more fixed cost (site visit, COC, small-order component pricing), which is why the
@@ -20872,6 +20868,9 @@ const RT_TYPES = {
   lci:        { wpPerM2: 170, usagePct: 0.85, costRwp: 11.0, label: 'Large C&I',                 selfConsumeNoStorage: 0.65 },
   industrial: { wpPerM2: 175, usagePct: 0.80, costRwp: 9.5,  label: 'Industrial / warehouse',     selfConsumeNoStorage: 0.60 },
 };
+
+// The brackets' installed costs as one line, for the rooftop tab's note (one list, from RT_TYPES).
+function rtCostList(){ return Object.values(RT_TYPES).map(b => b.label + ' R' + b.costRwp + '/Wp').join(', '); }
 
 // Additional self-consumption unlocked by battery storage, on top of the no-storage
 // baseline above - a battery lets midday solar surplus be time-shifted into the
@@ -21587,7 +21586,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by bracket: home R17/Wp, small C&I R13, large C&I R11, industrial R9.5 (2026 SA rates, excluding battery). O&M 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The remainder falls in runs of dull winter days, which needs days of autonomy rather than one night\'s storage. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Grid-scale solar &amp; wind tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by bracket, indicative and unsourced: ' + rtCostList() + ' (excluding battery). O&M 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The remainder falls in runs of dull winter days, which needs days of autonomy rather than one night\'s storage. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Grid-scale solar &amp; wind tab for site-specific data.</div>';
 }
 
 

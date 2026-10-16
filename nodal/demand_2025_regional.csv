@@ -1,3 +1,5 @@
+# source: hourly 2025 demand split across the 10 GCCA supply regions, from UCT ESRG (B. Merven, ZivaHub; README 'Data sources'); the dataset and version are not recorded in the repository; the national column is not Eskom's ESK19679 series (correlation 0.91, 12% higher)
+# licence: under the source's terms (UCT ESRG, ZivaHub); no licence of our own
 overall_hour,national_demand,Eastern Cape_corrected,Limpopo_corrected,Mpumalanga_corrected,Gauteng_corrected,Western Cape_corrected,Northern Cape_corrected,Hydra Central_corrected,Kwazulu Natal_corrected,North West_corrected,Free State_corrected
 1,20672.2994407108,885.1322701513726,2247.462794234608,2968.850797757607,5231.222329332438,1907.1221311978384,537.8406468956188,113.6342487773109,3952.559010532307,2281.3926558953794,547.082555936319
 2,20497.4309923051,857.2212236280775,2236.2316949885794,2916.695461587234,5182.802847071151,1863.547870758691,543.9145586200559,124.71413989620795,3993.307277623348,2238.7974259980806,540.1984921336723

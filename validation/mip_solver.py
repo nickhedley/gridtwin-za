@@ -103,7 +103,7 @@ def load_data(data_dir='.'):
     """Load the same data GridTwin ZA uses."""
     import csv
     def parse_csv(path):
-        with open(path) as f: return list(csv.DictReader(f))
+        with open(path) as f: return list(csv.DictReader(l for l in f if not l.startswith('#')))
     def p(name):
         nodal = os.path.join(data_dir, 'nodal', name)
         return nodal if os.path.exists(nodal) else os.path.join(data_dir, name)

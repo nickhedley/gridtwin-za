@@ -53,7 +53,7 @@ def _hav(a, b, c, d):
     return 2 * R * _math.asin(_math.sqrt(h))
 
 _PLANTS = []
-for _r in _csv.DictReader(open("nodal/fleet_by_region_v2.csv")):
+for _r in _csv.DictReader(l for l in open("nodal/fleet_by_region_v2.csv") if not l.startswith("#")):
     if _r.get("Scenario") != "BASE":
         continue
     try:
