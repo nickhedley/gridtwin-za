@@ -3423,6 +3423,27 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### s_nogas4strict_c5c: the gap priced at 1,250 MW of diesel open-cycle (+R5.6bn, R11.0bn above the null); six passes do not close it, because the build sits on its storage caps from 2036 (user, 16 Oct 2026, message 129 (1)); PROVISIONAL
+
+Settings: s_nogas4strict_c5c as recorded in 'New central c5c and its first ten sensitivities' (c5c's line, GAS_CAP=0 OCGD=0
+LI_CAP=4000, MAXP=3, build 15f). Top-up: harness/topup.js from claude/topup 27337aa with that branch's EXTRA_OCGD_MW line in
+pathcheck.js, on a local copy of the run build only; 250 MW steps per failing year; the engine check's own settings (TF=0.5 LNG=1
+GRID=1); 16 Oct 02:43-03:49 UTC. Six passes: the same run with MAXP=6 (STALL=0.1 from pass 4, as c5c's line), from scratch, the LP
+cache replaying passes 1-3; 02:43-04:05 UTC.
+
+Top-up, diesel open-cycle added (cumulative): 250 MW in 2035, 750 by 2036, 1,000 by 2037, 1,250 by 2040; 2038-39 pass on the
+1,000 already added. Mean unserved energy as solved / topped up / target (GWh): 2035 3.18 / 2.45 / 2.46; 2036 4.70 / 2.44 / 2.51;
+2037 6.47 / 2.56 / 2.58; 2038 5.93 / 2.47 / 2.65; 2039 7.23 / 2.52 / 2.72; 2040 6.45 / 2.47 / 2.78. Engine PV R2,262.9bn as solved,
+R2,268.5bn topped up (+R5.6bn: capex 4.8, fixed O&M 0.9, fuel 0.04, other -0.2), R11.0bn above the null (R2,257.5bn); CO2
+1,383.8 to 1,383.9 Mt (null 1,548.9). Every top-up year is flagged: diesel open-cycle is excluded in this run, so the top-up prices
+the gap rather than being a build the run allows (as for c5b_14r's, 1,500 MW and +R8.7bn).
+
+Six passes: the loop stopped at pass 4 on the stall rule (worst-year excess 16.8, 12.4, 5.74, 5.74 GWh over passes 1-4; pass 4 cut
+it by 0%). Pass 4's build is identical to pass 3's in every year, so its engine check is identical (fails 2035-40 as above). The
+three windows added after pass 3 could not change the build: lithium energy is at its cap of 16,000 MWh a year in 2030 and every
+year 2036-40 (4 GW x 4 h), Tubatse's 1,500 MW comes in 2038 (the only pumped hydro allowed), and iron-air is built at 135-150 MW a
+year from 2038. With gas and diesel excluded, storage within the run's caps does not meet the standard from 2035.
+
 ### Planning reserve margin in the build LP: 10% over peak on firm capacity, no source; wind and solar get no credit, storage min(power, energy / 4 h); it binds in c5c in every year 2030-40 and sets c5c's firm capacity; the stress margin, the stress-target rows and the reserve slack do not bind (user, 16 Oct 2026, messages 129 (2) and 131 (2))
 
 What it is (index.html, bldBuildLP, row res_<year>; in the code since it entered this repository, 1 Oct 2026). Each year:
