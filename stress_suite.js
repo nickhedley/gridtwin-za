@@ -31,16 +31,18 @@ function loadData() {
   const cap = JSON.parse(fs.readFileSync('nodal/regional_renewable_capacity.json', 'utf8'));
   const rooftopMw = JSON.parse(fs.readFileSync('nodal/rooftop_mw_by_region.json', 'utf8'));
 
-  const fleetRows = parseCSV(fs.readFileSync('nodal/fleet_by_region_v2.csv', 'utf8'));
-  const fleet = fleetRows.filter(r => r.Scenario === 'BASE').map(r => {
-    const hr = parseFloat(r['Heat Rate (GJ/MWh)']) || 0;
-    const fp = parseFloat(r['Fuel Price (R/GJ)']) || 0;
-    const vom = parseFloat(r['Variable O&M Cost (R/MWh)']) || 0;
-    const decomRaw = r['Decommissioning Date'];
+  const fleetRows = parseCSV(fs.readFileSync('nodal/fleet_units.csv', 'utf8'));
+  // A missing column stops the read (user, 16 Oct 2026, message 146; TODO 14dh): fc throws where parseFloat(undefined) || 0
+  // used to default it.
+  const fc = (r, k) => { if (!(k in r)) throw new Error('nodal/fleet_units.csv: no column "' + k + '"'); return r[k]; };
+  const fleet = fleetRows.filter(r => fc(r, 'Scenario') === 'BASE').map(r => {
+    const mc = parseFloat(fc(r, 'Marginal Cost (R/MWh)')) || 0;   // heat rate x fuel price + variable O&M, precomputed
+    const decomRaw = fc(r, 'Decommissioning Date');
     const decomYear = (decomRaw === '-' || !decomRaw) ? Infinity : parseInt(decomRaw, 10);
-    return { name: r['Power Station Name'], region: r['region'], carrier: r['Carrier'],
-             capacityMw: parseFloat(r['Capacity (MW)']), marginalCost: hr * fp + vom, decomYear };
+    return { name: fc(r, 'Power Station Name'), region: fc(r, 'region'), carrier: fc(r, 'Carrier'),
+             capacityMw: parseFloat(fc(r, 'Capacity (MW)')), marginalCost: mc, decomYear };
   });
+  if (!fleet.length) throw new Error('nodal/fleet_units.csv: no BASE rows');
 
   return { demandByRegion, windPu, solarPu, windMw: cap.wind_mw, solarMw: cap.solar_mw, rooftopMw, fleet };
 }

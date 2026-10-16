@@ -3476,6 +3476,57 @@ build_hydra_split.py, build_substation_bands.py, the validation scripts); stress
 Removed from always-visible prose under the rule of items 8 and 31: 'Coal share moves about 0.45 points per 1% of demand ... an
 8-point gap' (other published models panel), a measurement with no RESULTS entry.
 
+### Fleet table out of the public repository: c5d unchanged to every digit; every reader stops on a missing column; three readers on main found broken by build 16b's '#' source lines and fixed (user, 16 Oct 2026, message 146; build 2026-10-16c)
+
+Settings. Branch claude/fleet-slim (a6dc99c) rebased onto main e1a4cad (build 2026-10-16b), plus the strict readers; build
+2026-10-16c. c5d: c5c's central settings (scratch env_central.sh) with MAXP=6, as in 'New central c5d'. Before: main e1a4cad.
+ESK19679.csv present. Scratch scripts (not in the repository): disp_runner.js, strict_test.py, pyeng_run.py, render_nodal.js.
+
+What leaves the public tip: the three copies of fleet_by_region_v2.csv (root, nodal/, 'nodal old/') and its entry in
+'nodal old.zip'. What stays public: nodal/fleet_units.csv, the 51 BASE rows with the 15 columns the code reads (Scenario,
+Power Station Name, Carrier, region, Capacity (MW), Decommissioning Date, Marginal Cost (R/MWh), Min Stable Level (%), Max Ramp
+Up and Down (%/h), Min Up and Down Time (h), Start Up Cost (R), GPS Latitude and Longitude), each value as in the full file
+(checked) and the marginal cost equal to heat rate x fuel price + variable O&M to the last digit; and UC_FLEET in index.html,
+unchanged. The full file stays in the repository's history; no history is rewritten.
+
+| Test | Result |
+|---|---|
+| c5d pass-1 LP key (DUMP_LP, DUMP_STOP=1) | 114c77e6f6, unchanged |
+| c5d engine check (pathcheck.js, TF=0.5 LNG=1 GRID=1, on c5d's recorded pathway, 2026-40) | the three output files byte-identical to the check recorded on 16a |
+| Nodal engine CLI, nodal/ (defaults: hour 3264, coal EAF 64%, no new batteries) | identical to main |
+| Engine CLIs, root and 'nodal old/' (run from nodal/) | identical to main's on the same data without the '#' lines |
+| nodal_engine.py, both copies, one week from hour 3264 | fleet and dispatch identical to main's on the same data without the '#' lines |
+| Browser loader, nodal/nodal_dispatch.js (in Node) | the same 51 units, fleet objects identical |
+| Page in Chromium, fresh load | loads nodal/fleet_units.csv?v=8: 51 units, 49,134 MW; no console errors |
+| stress_suite | 290/290 before and after; the nodal sections identical |
+| pypsa_crossval_uc.py, both copies (from nodal/; PyPSA 1.4.0, HiGHS 1.15.1) | objective 2.1802145367e9 both, identical |
+| validation/mip_solver.py --lp-only, copied to the root | R2,191.75m (2.1917549749e9), identical, as on 13 Oct |
+| build_hydra_split.py, build_substation_bands.py | outputs identical before and after |
+| Missing column: 13 reader files, each column it reads removed in turn | 124 of 124 cases stop with an error naming the column |
+
+stress_suite's single-node section draws random profiles (Math.random) and differs between two runs of main, so only its
+nodal sections can be compared. Blank cells still take their documented defaults: no ramp limit where the ramp rates are blank
+(19 rows), no minimum up or down time where those are blank (21 rows).
+
+Found on main and fixed here. Build 16b's '#' source lines broke three readers that do not skip them:
+- both nodal_engine.py copies: a parser error on the demand CSV;
+- the root and 'nodal old/' engine CLIs: they read the demand file's source line as its header and ran on empty demand,
+  with no error;
+- 'nodal old/nodal_dispatch.js': it loaded an empty fleet, with no error.
+All now skip '#' lines. Build 16b also changed both CSVs without bumping nodal_dispatch's DATA_V; it is now 8.
+The page itself was not affected (message 149 (1)): a fresh load of main e1a4cad (16b) in Chromium, main's files served
+locally (the deployed site was not reached), loads the nodal fleet in full, 51 units and 49,134 MW, and demand for all 10
+regions x 8,760 hours with no missing values, 230.39 TWh; no console errors. The branch loads the same.
+
+Still open (TODO 14dh). Rerunning the two build scripts, on main as on this branch, gives outputs that differ from the
+committed files:
+- nodal/substation_bands.json: 4 substations more (Chatty, Ottawa, Durban South, Zwavelpoort) and Koruson's circuits 0 to 2.
+  The build script writes no licence line, so the committed file's licence line was added by hand.
+- nodal/supply_area_split_draft.json: 25 excluded substations against 24, 82 differences in all.
+Also still open: mip_solver.py looks for its data beside itself and fails unless copied to the repository root. Follow-ups
+(message 149): TODO 14fc (copies nothing reads), 14fd (regenerate substation_bands.json from its script), 14fe (seed
+stress_suite's random profiles).
+
 ### New gas pays its full annualised capex, fixed O&M and LNG terminal charge whatever it runs; no published price or revenue figure is labelled energy-only (user, 16 Oct 2026, message 130 resent; TODO 14an); report only, no model change
 
 Gas. Build 2026-10-16b (the gas cost terms are unchanged from 16a). The engine's capital line (newCapexR in simulate) charges

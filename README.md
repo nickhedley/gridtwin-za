@@ -196,7 +196,7 @@ validation/
 nodal/
   nodal_engine.js                    browser-side 10-region dispatch engine
   nodal_dispatch.js                  fetches nodal data + orchestrates full-year run
-  fleet_by_region_v2.csv             generation fleet assigned to real GCCA supply regions
+  fleet_units.csv                    thermal fleet by GCCA supply region, only the columns the code uses (PyPSA-RSA; SOURCES)
   demand_2025_regional.csv           hourly 2025 demand, 10 regions (UCT ZivaHub)
   profiles_regional.json             PVGIS SARAH2 regional solar + MERRA-2 wind profiles
   regional_renewable_capacity.json   installed wind/solar MW per region (REIPPPP sites)

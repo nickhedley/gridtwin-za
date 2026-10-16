@@ -57,7 +57,7 @@ def loss_fraction(length_km, flow_mw, limit_mw):
 class NodalEngine:
     def __init__(self, demand_csv, profiles_json, fleet_csv, renewable_capacity_json):
         # --- Demand ---
-        self.demand = pd.read_csv(demand_csv)
+        self.demand = pd.read_csv(demand_csv, comment='#')   # '#' lines state the file's source
         self.demand_cols = {r: f"{r}_corrected" for r in REGIONS}
 
         # --- Renewable hourly capacity factor profiles ---
@@ -71,17 +71,20 @@ class NodalEngine:
         self.solar_mw = cap['solar_mw']
 
         # --- Thermal/hydro/nuclear fleet ---
-        fleet = pd.read_csv(fleet_csv)
+        fleet = pd.read_csv(fleet_csv, comment='#')   # '#' lines state the file's source
+        # A missing column stops the read (user, 16 Oct 2026, message 146; TODO 14dh).
+        _miss = [c for c in ('Scenario', 'Power Station Name', 'region', 'Carrier', 'Capacity (MW)', 'Marginal Cost (R/MWh)')
+                 if c not in fleet.columns]
+        if _miss:
+            raise ValueError(f'{fleet_csv}: no column(s) {_miss}')
         fleet = fleet[fleet['Scenario'] == 'BASE'].copy()
+        if fleet.empty:
+            raise ValueError(f'{fleet_csv}: no BASE rows')
 
         def marginal_cost(row):
-            hr = pd.to_numeric(row['Heat Rate (GJ/MWh)'], errors='coerce')
-            fp = pd.to_numeric(row['Fuel Price (R/GJ)'], errors='coerce')
-            vom = pd.to_numeric(row['Variable O&M Cost (R/MWh)'], errors='coerce')
-            hr = 0 if pd.isna(hr) else hr
-            fp = 0 if pd.isna(fp) else fp
-            vom = 0 if pd.isna(vom) else vom
-            return hr * fp + vom
+            # heat rate x fuel price + variable O&M, precomputed in fleet_units.csv
+            mc = pd.to_numeric(row['Marginal Cost (R/MWh)'], errors='coerce')
+            return 0 if pd.isna(mc) else mc
 
         fleet['marginal_cost'] = fleet.apply(marginal_cost, axis=1)
         self.fleet = fleet[['Power Station Name','region','Carrier','Capacity (MW)','marginal_cost']].reset_index(drop=True)

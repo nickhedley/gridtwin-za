@@ -39,7 +39,7 @@ _ALL = json.load(open("nodal/substations_compact.json"))["subs"]
 #      concept. Gariep 132 kV is labelled Free State for that reason; the
 #      transmission node serving Gariep is Ruigtevallei, 1.8 km away, Hydra Central.
 #
-#  (2) Plant-side substations, within 500 m of a power station in fleet_by_region_v2.
+#  (2) Plant-side substations, within 500 m of a power station in nodal/fleet_units.csv.
 #      These are switchyards, not independent nodes. Of the 19 such entries, three
 #      disagree with the fleet's own supply area - Gariep, Van der Kloof and Lethabo -
 #      and those three are exactly the cases where province differs from supply area.
@@ -53,8 +53,13 @@ def _hav(a, b, c, d):
     return 2 * R * _math.asin(_math.sqrt(h))
 
 _PLANTS = []
-for _r in _csv.DictReader(l for l in open("nodal/fleet_by_region_v2.csv") if not l.startswith("#")):
-    if _r.get("Scenario") != "BASE":
+_FLEET = _csv.DictReader(l for l in open("nodal/fleet_units.csv") if not l.startswith("#"))
+# A missing column stops the build (user, 16 Oct 2026, message 146; TODO 14dh).
+_miss = [c for c in ("Scenario", "GPS Latitude", "GPS Longitude") if c not in (_FLEET.fieldnames or [])]
+if _miss:
+    sys.exit(f"nodal/fleet_units.csv: no column(s) {_miss}")
+for _r in _FLEET:
+    if _r["Scenario"] != "BASE":
         continue
     try:
         _PLANTS.append((float(_r["GPS Latitude"]), float(_r["GPS Longitude"])))
