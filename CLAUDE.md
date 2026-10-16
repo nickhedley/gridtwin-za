@@ -40,7 +40,8 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (16 Oct 2026, build 2026-10-16g, branch claude/pack-c5d on main 8f10c8e, ESK19679.csv present, two preset jobs running
+Expected (16 Oct 2026, build 2026-10-16h, central c5e, branch claude/c5e: the same counts as 16g, no check changes status;
+RESULTS 'Build 2026-10-16h'). On build 2026-10-16g, branch claude/pack-c5d on main 8f10c8e, ESK19679.csv present, two preset jobs running
 beside it): 819/824, node checks 732/737 plus audit 87/87; eng5 5/6, as on 16e (branch claude/site-sweep2, main aa23aa5); 16g
 adds the s_tariffcf flag, off, which moves no check. 16e added one check, passing (validate_consistency
 'CCS at the default share cuts emissions part of the way', message 157 (3)). On build 16c (main e6da3eb, nothing else running) it

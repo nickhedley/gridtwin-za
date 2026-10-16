@@ -4087,6 +4087,28 @@ open-cycle in 2034, 250 in 2035, 500 in 2036 and 500 in 2037, 1,500 MW in all; e
 R2,228.5bn as solved, R2,237.0bn topped up (+R8.4bn: capex 7.2, fixed O&M 1.4, fuel 0.1, other -0.2), +R32.0bn against the null;
 CO2 1,349.2 to 1,349.4 Mt. Every top-up year is flagged: diesel open-cycle is excluded in this run, so the top-up prices the gap.
 
+### Build 2026-10-16h, central c5e: wind and solar capex backed out at the capacity factor each runs at by default; suite 819/824 as on 16g, no check changes status, four values move with the capex (user, 16 Oct 2026, message 161 (1); build 2026-10-16h)
+
+The change: FIXED.bldTariffCfBasis 'run' (was 'bid'). New wind R20,879/kW (was R17,773) and tracking solar R11,038/kW (was
+R11,755) in 2026, so each costs its awarded tariff per MWh at its twelve-year capacity factor; the LCOE anchors are the tariffs in
+2026 rands, R630 (wind, was R550) and R530/MWh (solar, was R550). The bw6, high and low cost cases are not tariff-derived and keep
+their own capex; with a new-wind correction other than 'none', 'run' holds the central profile's capex (user, message 161).
+pathcheck.js checks runs recorded before 16f, which carry no basis, on 'bid'. Probe on the page (jsdom): the values above, bw6
+wind R28,462 and solar R16,786/kW, wind with the farms correction R20,879/kW.
+
+Suite on 16h (branch claude/c5e on claude/pack-c5d, ESK19679.csv present, two preset jobs running beside it): 819/824 (node
+checks 732/737 plus audit 87/87), eng5 5/6, the same as 16g; the five known failures. Values that moved, each still passing:
+
+| Check | 16g | 16h | Cause |
+|---|---|---|---|
+| validate_solve, the regional optimiser's test build | wind 10.78, solar 7.62 GW | wind 6.03, solar 7.80 GW | wind capex +17.5% |
+| validate_outputs, 'avgCost reconciles with curtailed coal fuel in play' | R2,600.1/MWh | R2,700.5/MWh | the scenario's new wind at the higher capex; the identity holds |
+| validate_outputs, 'Utility solar LCOE' | R0.6/kWh | R0.5/kWh | the anchor, R550 to R530 |
+| validate_outputs, 'Merit order: wind and solar below diesel' | 0.55, 0.55 | 0.63, 0.53 | the anchors |
+
+validate_lp's two LP sizes move by 1 and 10 characters (the cost coefficients). Fresh load in Chromium: start-up completes, no
+console errors.
+
 ### Reviewer pack on c5d: new wind costs 0.876 of BW5's tariff per MWh and solar 1.051 of BW7's, because capex is backed out at BW6 bids' capacity factors; c5d's worst 14 days exceed one LNG cargo every year from 2035; c5d's engine passes 28 of 29 benchmarks; s_tariffcf, each at its tariff, costs +R30.8bn and +94.0 Mt against the null (user, 16 Oct 2026, message 158 (2)-(4); build 2026-10-16f)
 
 Wind and solar cost per MWh against their tariffs (message 158 (3)). From the code (BLD_TARIFF, bldTariffCapex, bldLcoeAnchor) on
