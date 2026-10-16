@@ -84,5 +84,6 @@ setTimeout(()=>{
  if(!mono6) fails.push('storage vs unserved');
 
  console.log('\n'+(fails.length?'FAILURES: '+fails.join(', '):'all 6 monotonicity checks pass'));
- process.exit(0);
+ // Exit non-zero on any failure (user, 16 Oct 2026, message 137 (2)): it exited 0 whatever failed, so a failure read as a pass.
+ process.exit(fails.length ? 1 : (process.exitCode || 0));
 },7000);
