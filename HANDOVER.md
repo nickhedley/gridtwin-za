@@ -1195,6 +1195,10 @@ should mean a lower price for everyone, which in turn should make the next facto
 electricity cheaper. If that loop closes, industrial electrification is not just a decarbonisation
 measure, it is a tariff measure, and it argues for itself.
 
+Evidence for the fixed-cost half (user, 16 Oct 2026, message 147): Eskom Distribution's EEBI webinar deck (14 Oct 2026,
+slide 3) puts about 70% of cost-to-serve on fixed or capacity drivers, and the generation capacity charge recovered about 1.4%
+of generation costs in 2025/26. Cited and summarised under Eskom's terms (SOURCES 'Eskom Distribution, EEBI webinar deck').
+
 The model can test both halves, and the second half is the one nobody asks:
 
 **Does added industrial load lower the price for existing customers?** The retail stack already
