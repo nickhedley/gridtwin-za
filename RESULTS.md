@@ -3448,7 +3448,17 @@ c5c against c5b_14r (c5b_14r's build re-checked on 15f with its own cases: WIND_
 | Pumped storage, iron-air, early coal retirement | none | none | nuclear 5,200 and pumped storage 1,332 by 2040 |
 
 Engine PV 2026-40: c5c R2,257.5bn (R2,268.8bn with grid); c5b_14r R2,394.3bn on 15f (R2,394.2bn with pumped storage counted twice).
-CO2 2026-40: 1,548.9 Mt against 1,990.1 Mt. Adequacy: every year passes; worst year 10.3% of its target; mean shed peaks at 0.27
+CO2 2026-40: 1,548.9 Mt against 1,990.1 Mt. CO2 by year (message 129 (3); engine checks; IRP 2025 Figure 19, plan p.30, SOURCES
+'IRP 2025 emissions'):
+
+| Mt CO2 | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| c5c | 131.1 | 79.0 | 61.4 |
+| c5b_14r (build 15f, its own cases) | 150.1 | 128.3 | 79.2 |
+| IRP 2025 | 168 | 142 | not published (none found; the plan's horizon is 2039) |
+
+Caveat: the IRP's 168 Mt goes with 255 TWh of demand in 2030; c5c's engine serves 220.5 TWh in 2030 on its own basis (c5b_14r
+220.6; on the IRP's basis the c5 line's 2030 demand was about 240 TWh, entry 'c5 demand against IRP 2025'), so the bases differ. Adequacy: every year passes; worst year 10.3% of its target; mean shed peaks at 0.27
 GWh in 2038. Capex recorded in the run and applied in the check: wind R17,773/kW, solar R11,755/kW (2026 rands).
 Caveat: c5b_14r used BW6 capex and the 1.064 wind correction; most of the gap is those inputs (see s_bw6capex_c5c and s_wind1064_c5c).
 
