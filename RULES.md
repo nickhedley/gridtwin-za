@@ -175,6 +175,14 @@ not comparable.
 
 ---
 
+## Captions say what a control is, not what to do with it (user, 16 Oct 2026, message 156)
+
+A caption states what the control is, its default and the basis for the default. It does not tell the reader what to do with
+it ("set this to ask...", "switch on to see...", "try..."). Plain map and form instructions ("Click the map to query a
+location") and cross-references ("see About", "see LICENSE") stay. Numbers in a caption are read from the code, not typed.
+audit.py checks the rendered page text, not the source, for "to ask", "to see what", "to test what", "switch on to", "set
+this", "try", "explore" and "you can see" (harness/render_text.js renders it).
+
 ## When a result contradicts the question
 
 Say so first, before anything else. On 28 Aug a request to show that a
