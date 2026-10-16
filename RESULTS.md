@@ -3841,6 +3841,27 @@ running beside it, load 10-18 on four cores):
   cut less. The mechanism is in c5c's and c5d's engine checks as adopted (messages 125-126); no fault found. The check and the
   expected counts in CLAUDE.md are unchanged pending the user's decision.
 
+### Coal held online through daylight: the 2026 replay's winter midday curtailment peaks at 849 MW, not NTCSA's 3 GW; s_daylight not run (user, 16 Oct 2026, messages 143 (4) and 144 (6); build 2026-10-16d, branch claude/daylight-hold)
+
+Settings. Branch claude/daylight-hold (b5f033f, build 2026-10-16d on main e6da3eb; pushed, no pull request). FIXED.ucDaylightHold 0
+by default; set to 1, a commitment block starting from 08:00 to before 16:00 keeps every coal unit that is already on (engine,
+buildUCSchedule; the build LP's cdh_ rows likewise). The 2026 replay: 'Today 2026' preset, twelve weather years (2014-2025) x ten
+outage draws, the engine check's seeds; script m130_day.js (scratch), as in 'The 2026 replay curtails almost nothing for oversupply' (message 130). LP-key test
+on 16a: with the hold off, c5d's pass-1 key is 114c77e6f6, unchanged; on, 2,280 cdh_ rows and otherwise identical.
+
+| 2026 replay, 120 runs | Hold off | Hold on |
+|---|---|---|
+| Surplus curtailment, GWh a year, mean (largest run) | 0.06 (0.53) | 1.28 (4.04) |
+| Winter (May-August) midday peak, MW, mean / median / largest | 0 / 0 / 0 | 179 / 0 / 849 |
+| Runs with a winter peak of 3 GW or more | 0 | 0 |
+| Largest winter day, GWh, mean / largest | 0.00 / 0.00 | 0.23 / 1.41 |
+
+Finding. Holding committed coal online through daylight does not reproduce NTCSA's reported curtailment of up to 3 GW on a winter
+day: no run reaches 3 GW, and the largest is 849 MW. The hold keeps on only the units already committed at 08:00. The
+coal minimum test (message 130) reproduced about 3 GW only with every unit's minimum at 0.75 or more. Per message 144 (6), c5d was
+not rerun with the hold (s_daylight). Caveats as for message 130: NTCSA's 3 GW is a single reported day, and the replay uses the
+preset's fleet and the 2014-2025 weather.
+
 ### c5d sensitivities, 30 runs against the null: all adequate on the engine check except s_nogas4strict (1,500 MW of diesel open-cycle prices its gap, +R8.4bn); s_imp2030 +R25.0bn and +42.1 Mt; the 8-hour lithium cap does not bind (build 2026-10-16a; user, 16 Oct 2026, messages 133 (2), 143 (5) and 150 (1))
 
 Settings. c5d's line (scratch env_central.sh, the planning margin off, build 2026-10-16a) with one change per run, MAXP=3, from
