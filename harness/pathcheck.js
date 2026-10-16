@@ -99,7 +99,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // Wind correction, wind and solar capex cases (15 Oct 2026, message 125): the pathway's own, as for tracking. An env value
  // given as well must agree. Runs made before 15 Oct record none: the env values alone, and the defaults changed that day
  // (correction none, tariff-calibrated capex), so an older run needs WIND_CORR=farms WIND_CASE=bw6 PV_CASE=bw6 to be checked as built.
- for (const [k, env, st] of [['windCorr', 'WIND_CORR', 'bldWindCorr'], ['windCase', 'WIND_CASE', 'bldWindCase'], ['pvCase', 'PV_CASE', 'bldPvCase']]){
+ // tariffCfBasis (message 158 (4)): the capacity factor wind and solar capex were backed out at; runs before 16 Oct record none (bid).
+ for (const [k, env, st] of [['windCorr', 'WIND_CORR', 'bldWindCorr'], ['windCase', 'WIND_CASE', 'bldWindCase'], ['pvCase', 'PV_CASE', 'bldPvCase'], ['tariffCfBasis', 'TARIFF_CF', 'bldTariffCfBasis']]){
    if (P[k] == null) continue;
    if (process.env[env] !== undefined && process.env[env] !== P[k]) throw new Error(env+' '+process.env[env]+' disagrees with the run\'s '+k+' '+P[k]);
    w.eval(`state.${st}=${JSON.stringify(P[k])};`); console.log(k+' from the pathway:', P[k]); }

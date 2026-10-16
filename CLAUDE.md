@@ -40,8 +40,9 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (16 Oct 2026, build 2026-10-16e, branch claude/site-sweep2 on main aa23aa5, ESK19679.csv present, two pathway jobs
-running beside it): 819/824, node checks 732/737 plus audit 87/87; eng5 5/6. 16e added one check, passing (validate_consistency
+Expected (16 Oct 2026, build 2026-10-16g, branch claude/pack-c5d on main 8f10c8e, ESK19679.csv present, two preset jobs running
+beside it): 819/824, node checks 732/737 plus audit 87/87; eng5 5/6, as on 16e (branch claude/site-sweep2, main aa23aa5); 16g
+adds the s_tariffcf flag, off, which moves no check. 16e added one check, passing (validate_consistency
 'CCS at the default share cuts emissions part of the way', message 157 (3)). On build 16c (main e6da3eb, nothing else running) it
 was 818/823; on 15f 816/821; 16b added two checks, both passing (the LICENSE list, the LCOE anchors' capacity factors). 815/821 and eng5 6/6 on build 15d, branch claude/comply. eng5's one failure, check 6 'storage cuts
 unserved', is intended behaviour (user, 16 Oct 2026, message 141): since build 15e spare gas charges the existing stores ahead of

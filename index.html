@@ -5614,6 +5614,11 @@ const FIXED = {
   // Solar capex case for new utility solar on the tracking profile: 'central' (BW7 tariffs, BLD_TARIFF) or 'bw6' (BW6
   // tracker bids). Message 125 (2).
   bldPvCase:'central',
+  // The capacity factor at which wind and tracking-solar capex are backed out of their tariffs (BLD_TARIFF): 'bid' (BW6 bids'
+  // typical capacity factors, BW6_WIND_BID_CF and BW6_PV_TRK_BID_CF; the central) or 'run' (the capacity factor each runs at,
+  // NEW_WIND_CF_12Y and NEW_PVTRK_CF_12Y, so each costs its awarded tariff per MWh). Sensitivity s_tariffcf (user, 16 Oct 2026,
+  // message 158 (4)); applies to the central wind and solar cases with the uncorrected new-wind profile.
+  bldTariffCfBasis:'bid',
   // The optimiser's calendar days (bldRepDays): 'matched' (message 125 (1)) re-chooses the evenly spaced days within their
   // blocks so new wind and new utility solar on the days match their twelve-year means; 'even' the earlier evenly spaced days.
   bldRepDaysRule:'matched',
@@ -9945,10 +9950,11 @@ const BLD_TARIFF = {
   wind:  { rPerMWh: 495.22, toJan26: CPI_APR21_TO_JAN26, indexShare: 1, cf: BW6_WIND_BID_CF, fom: 'wind', life: 'wind' },
   pvtrk: { rPerMWh: BW7_SOLAR_AWARDS.reduce((a, x) => a + x[1] * x[2], 0) / BW7_SOLAR_AWARDS.reduce((a, x) => a + x[1], 0), toJan26: CPI_JAN24_TO_JAN26, indexShare: 1, cf: BW6_PV_TRK_BID_CF, fom: 'pv', life: 'pv' },
 };
-function bldTariffCapex(k){
+function bldTariffCapex(k, cf = BLD_TARIFF[k].cf){
   const T = BLD_TARIFF[k], r = BLD_DISC_CENTRAL, n = BLD_LIFE[T.life];
   if (T.indexShare !== 1) throw new Error('bldTariffCapex: only fully indexed tariffs are handled');
-  return (T.rPerMWh * T.toJan26 * T.cf * 8.76 - BLD_FOM[T.fom]) * (1 - Math.pow(1 + r, -n)) / r;
+  if (!(cf > 0 && cf < 1)) throw new Error('bldTariffCapex: capacity factor out of range: ' + cf);
+  return (T.rPerMWh * T.toJan26 * cf * 8.76 - BLD_FOM[T.fom]) * (1 - Math.pow(1 + r, -n)) / r;
 }
 BLD_COST.wind.c2026 = bldTariffCapex('wind');
 BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
@@ -9959,6 +9965,14 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // solar), measured 16 Oct 2026 and held here because the weather years load after the sliders are built; validate_weather
 // recomputes them. They feed the LCOE chart and the replacement-cost figure, not dispatch or the build optimiser.
 const NEW_WIND_CF_12Y = 0.42507, NEW_PVTRK_CF_12Y = 0.28673;
+// The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
+BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
+BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };
+function bldTariffCfBasis(){
+  const b = typeof state !== 'undefined' ? (state.bldTariffCfBasis ?? FIXED.bldTariffCfBasis) : FIXED.bldTariffCfBasis;
+  if (b !== 'bid' && b !== 'run') throw new Error('bldTariffCfBasis must be bid or run: ' + b);
+  return b;
+}
 function bldLcoeAnchor(costKey, fomKey, lifeKey, cf){
   const r = BLD_DISC_CENTRAL, n = BLD_LIFE[lifeKey];
   return (BLD_COST[costKey].c2026 * r / (1 - Math.pow(1 + r, -n)) + BLD_FOM[fomKey]) / (cf * 8.76);   // R/MWh
@@ -10326,6 +10340,10 @@ function bldCostEntry(tech){
   if (tech === 'pv' && bldPvTrackingOn()){
     const c = typeof state !== 'undefined' ? (state.bldPvCase ?? FIXED.bldPvCase) : FIXED.bldPvCase;
     if (c !== 'central' && c !== 'bw6') throw new Error('bldPvCase must be central or bw6: ' + c);
+    if (bldTariffCfBasis() === 'run'){
+      if (c !== 'central') throw new Error("bldTariffCfBasis 'run' applies to the central solar case only, not " + c);
+      return BLD_COST.pvtrk_runcf;
+    }
     return c === 'bw6' ? BLD_COST.pvtrk_bw6 : BLD_COST.pvtrk;
   }
   if (tech === 'batt'){ const c = bldBattCase(); return c === 'high' ? BLD_COST.batt_high : c === 'low' ? BLD_COST.batt_low : BLD_COST.batt; }
@@ -10333,6 +10351,11 @@ function bldCostEntry(tech){
     if (!bldWindModernOn()) return BLD_COST.wind_legacy;
     const c = typeof state !== 'undefined' ? (state.bldWindCase ?? FIXED.bldWindCase) : FIXED.bldWindCase;
     if (c !== 'central' && c !== 'bw6' && c !== 'high' && c !== 'low') throw new Error('bldWindCase must be central, bw6, high or low: ' + c);
+    if (bldTariffCfBasis() === 'run'){
+      const corr = typeof state !== 'undefined' ? (state.bldWindCorr ?? FIXED.bldWindCorr) : FIXED.bldWindCorr;
+      if (c !== 'central' || corr !== 'none') throw new Error("bldTariffCfBasis 'run' applies to the central wind case on the uncorrected profile only, not " + c + ' with correction ' + corr);
+      return BLD_COST.wind_runcf;
+    }
     return c === 'high' ? BLD_COST.wind_high : c === 'low' ? BLD_COST.wind_low : c === 'bw6' ? BLD_COST.wind_bw6 : BLD_COST.wind;
   }
   return BLD_COST[tech];
@@ -19560,7 +19583,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-16e';
+const BUILD_STAMP = '2026-10-16g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
