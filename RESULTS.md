@@ -3423,6 +3423,97 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### s_nogas4strict_c5c: the gap priced at 1,250 MW of diesel open-cycle (+R5.6bn, R11.0bn above the null); six passes do not close it, because the build sits on its storage caps from 2036 (user, 16 Oct 2026, message 129 (1)); PROVISIONAL
+
+Settings: s_nogas4strict_c5c as recorded in 'New central c5c and its first ten sensitivities' (c5c's line, GAS_CAP=0 OCGD=0
+LI_CAP=4000, MAXP=3, build 15f). Top-up: harness/topup.js from claude/topup 27337aa with that branch's EXTRA_OCGD_MW line in
+pathcheck.js, on a local copy of the run build only; 250 MW steps per failing year; the engine check's own settings (TF=0.5 LNG=1
+GRID=1); 16 Oct 02:43-03:49 UTC. Six passes: the same run with MAXP=6 (STALL=0.1 from pass 4, as c5c's line), from scratch, the LP
+cache replaying passes 1-3; 02:43-04:05 UTC.
+
+Top-up, diesel open-cycle added (cumulative): 250 MW in 2035, 750 by 2036, 1,000 by 2037, 1,250 by 2040; 2038-39 pass on the
+1,000 already added. Mean unserved energy as solved / topped up / target (GWh): 2035 3.18 / 2.45 / 2.46; 2036 4.70 / 2.44 / 2.51;
+2037 6.47 / 2.56 / 2.58; 2038 5.93 / 2.47 / 2.65; 2039 7.23 / 2.52 / 2.72; 2040 6.45 / 2.47 / 2.78. Engine PV R2,262.9bn as solved,
+R2,268.5bn topped up (+R5.6bn: capex 4.8, fixed O&M 0.9, fuel 0.04, other -0.2), R11.0bn above the null (R2,257.5bn); CO2
+1,383.8 to 1,383.9 Mt (null 1,548.9). Every top-up year is flagged: diesel open-cycle is excluded in this run, so the top-up prices
+the gap rather than being a build the run allows (as for c5b_14r's, 1,500 MW and +R8.7bn).
+
+Six passes: the loop stopped at pass 4 on the stall rule (worst-year excess 16.8, 12.4, 5.74, 5.74 GWh over passes 1-4; pass 4 cut
+it by 0%). Pass 4's build is identical to pass 3's in every year, so its engine check is identical (fails 2035-40 as above). The
+three windows added after pass 3 could not change the build: lithium energy is at its cap of 16,000 MWh a year in 2030 and every
+year 2036-40 (4 GW x 4 h), Tubatse's 1,500 MW comes in 2038 (the only pumped hydro allowed), and iron-air is built at 135-150 MW a
+year from 2038. With gas and diesel excluded, storage within the run's caps does not meet the standard from 2035.
+
+### Planning reserve margin in the build LP: 10% over peak on firm capacity, no source; wind and solar get no credit, storage min(power, energy / 4 h); it binds in c5c in every year 2030-40 and sets c5c's firm capacity; the stress margin, the stress-target rows and the reserve slack do not bind (user, 16 Oct 2026, messages 129 (2) and 131 (2))
+
+What it is (index.html, bldBuildLP, row res_<year>; in the code since it entered this repository, 1 Oct 2026). Each year:
+credited storage + new CCGT + new open-cycle (LNG and diesel) - EAF x early-retired coal >= 1.10 x peak - firm, where peak is
+the highest hourly demand on the year's represented days (stress windows left out) and firm is standing coal at its mean
+availability (EAF), nuclear, hydro and imports at their availability factors, existing pumped storage, existing diesel and existing
+batteries. Wind and solar, new or existing, count zero. Every store (lithium, vanadium, iron-air, pumped hydro) is credited at the
+lesser of its power and its energy over 4 hours (rows ccpow_, ccnrg_, cc<tech>_). Value: 10%. Source: none recorded; it is a
+modelling choice, not South Africa's criterion (that is being sourced, message 131 (3)).
+
+Which constraints bind in c5c (its pass-1 solve, cache key 9c2e2e1eaa, objective 1,447,614,593,962.7, identical to the run's):
+- res_ binds in every year 2030-2040 (shadow price R3.74m per MW of requirement in 2030, falling to R0.25m in 2040, present
+  value at 8%), slack in 2026-29. Credited lithium equals the whole lithium build from 2030 (2030: 6,666 MW; 2040: 20,679 MW),
+  so the margin, not energy, sets how much firm capacity c5c holds.
+- Stress margin: 0 MW (no windows added; adequate on pass 1). Stress-target rows tgt_: none binding; expected shed in the LP
+  0-0.35 GWh against targets of 2.1-3.1 GWh, slack 0, so no penalty. Reserve slack rsl_: zero in every hour.
+- Hourly operating reserve (resv_, ASTR): binding in 37 of 6,840 hours, small shadow prices (sum R0.08m).
+- Minimum builds bind: wind 2026-27, solar 2026-28 and lithium 2026-27 sit exactly on the committed-project floors (MIN_BUILD,
+  LI_MIN). Those are committed projects, not adequacy rules.
+
+Tests on c5c's settings with the margin at 5% (1.05) and off (res_ rows not written), message 131 (1). Local test copies of build
+15f with that one line changed (index.html, res_ row); c5c's line (MAXP=6) from scratch; engine check TF=0.5 LNG=1 GRID=1; run
+16 Oct 03:01-03:47 UTC. All three were adequate on pass 1 with no stress windows added. The central is unchanged until the user
+decides. PROVISIONAL.
+
+| | 10% (c5c) | 5% (s_prm5_c5c) | 0% (s_prm0_c5c) |
+|---|---|---|---|
+| Wind, new MW 2030 / 2035 / 2040 | 9,080 / 22,023 / 28,082 | 9,080 / 22,936 / 29,251 | 11,580 / 26,829 / 31,755 |
+| Solar | 6,791 / 20,657 / 33,606 | 7,189 / 19,845 / 31,110 | 6,791 / 13,744 / 24,672 |
+| Lithium MW | 6,666 / 13,438 / 20,678 | 5,233 / 11,774 / 18,274 | 3,190 / 7,872 / 12,239 |
+| Lithium MWh | 26,664 / 53,755 / 82,716 | 20,934 / 47,098 / 73,102 | 7,524 / 23,444 / 53,119 |
+| CCGT | 0 / 2,621 / 6,867 | 0 / 2,590 / 7,291 | 0 / 3,089 / 8,939 |
+| Open-cycle on LNG | 511 / 791 / 791 | 258 / 554 / 554 | 0 / 31 / 31 |
+| Diesel open-cycle, pumped hydro, iron-air, early coal retirement | none | none | none |
+| Engine PV 2026-40, R bn (with grid) | 2,257.5 (2,268.8) | 2,238.9 (2,249.7), -18.6 | 2,204.9 (2,214.0), -52.6 |
+| Optimiser objective, R bn | 1,447.6 | 1,430.2 | 1,403.0 |
+| CO2 2026-40, Mt | 1,548.9 | 1,551.7 (+2.8) | 1,533.7 (-15.2) |
+| CO2 2030 / 2035 / 2040, Mt | 131.1 / 79.0 / 61.4 | 130.1 / 78.3 / 62.7 | 122.0 / 80.3 / 67.0 |
+| Gas TWh 2040 | 7.2 | 8.0 | 10.4 |
+| Years failing the standard | none | none | none |
+
+Mean unserved energy against the standard (GWh, engine check):
+
+| Year | Target | 10% | 5% | 0% |
+|---|---|---|---|---|
+| 2026-28 | 1.96-2.10 | 0.00 | 0.00 | 0.00 |
+| 2029 | 2.13 | 0.00 | 0.00 | 0.04 |
+| 2030 | 2.19 | 0.22 | 0.30 | 0.77 |
+| 2031 | 2.25 | 0.21 | 0.47 | 1.13 |
+| 2032 | 2.30 | 0.02 | 0.05 | 0.72 |
+| 2033 | 2.35 | 0.10 | 0.15 | 0.73 |
+| 2034 | 2.41 | 0.02 | 0.01 | 0.49 |
+| 2035 | 2.46 | 0.00 | 0.00 | 0.44 |
+| 2036 | 2.51 | 0.02 | 0.02 | 0.71 |
+| 2037 | 2.58 | 0.13 | 0.21 | 0.87 |
+| 2038 | 2.65 | 0.27 | 0.36 | 0.68 |
+| 2039 | 2.72 | 0.14 | 0.27 | 0.43 |
+| 2040 | 2.78 | 0.22 | 0.28 | 0.35 |
+
+With the margin off, every year still meets the model's standard; the closest is 2031 at 1.13 against 2.25 GWh (50%). The margin
+buys firm lithium and open-cycle plant that the engine's adequacy test does not need; without it the optimiser builds more wind and
+CCGT and less solar and lithium. Caveat: the standard is the model's own (half of 0.002% of demand); NTCSA's medium-term test is
+20 GWh a year (below), so every run here is far inside it.
+
+South Africa's criteria (message 131 (3), research helper, 16 Oct 2026; SOURCES 'Adequacy criteria'): IRP 2025 states no numeric
+criterion, only that adequacy is "measured by the volume of unserved energy, the operation of peaking generators and the
+availability of contingency generator(s)"; NTCSA's Medium-Term System Adequacy Outlook 2025-2029 (30 Oct 2024) deems adequacy met
+when unserved energy is below 20 GWh a year and open-cycle gas turbines run below a 6% capacity factor. No planning reserve margin
+was found in either. Both read from search extracts and one secondary article; page numbers not seen.
+
 ### New central c5c and its first ten sensitivities (build 2026-10-15f, PROVISIONAL): adequate on pass 1; engine PV R2,257.5bn at 8% real against c5b_14r's R2,394.3bn on the same build; CO2 1,549 Mt against 1,990 Mt; wind 28.1 GW by 2040 at BW5-calibrated capex and 26.3 GW at BW6 capex (user, 15-16 Oct 2026, messages 125, 126 (2), 128 (3)-(4))
 
 Settings. Build 2026-10-15f (branch claude/c5c-central; index.html, pathcheck.js and pathway_perfail.js identical to the run copy).
@@ -3448,7 +3539,17 @@ c5c against c5b_14r (c5b_14r's build re-checked on 15f with its own cases: WIND_
 | Pumped storage, iron-air, early coal retirement | none | none | nuclear 5,200 and pumped storage 1,332 by 2040 |
 
 Engine PV 2026-40: c5c R2,257.5bn (R2,268.8bn with grid); c5b_14r R2,394.3bn on 15f (R2,394.2bn with pumped storage counted twice).
-CO2 2026-40: 1,548.9 Mt against 1,990.1 Mt. Adequacy: every year passes; worst year 10.3% of its target; mean shed peaks at 0.27
+CO2 2026-40: 1,548.9 Mt against 1,990.1 Mt. CO2 by year (message 129 (3); engine checks; IRP 2025 Figure 19, plan p.30, SOURCES
+'IRP 2025 emissions'):
+
+| Mt CO2 | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| c5c | 131.1 | 79.0 | 61.4 |
+| c5b_14r (build 15f, its own cases) | 150.1 | 128.3 | 79.2 |
+| IRP 2025 | 168 | 142 | not published (none found; the plan's horizon is 2039) |
+
+Caveat: the IRP's 168 Mt goes with 255 TWh of demand in 2030; c5c's engine serves 220.5 TWh in 2030 on its own basis (c5b_14r
+220.6; on the IRP's basis the c5 line's 2030 demand was about 240 TWh, entry 'c5 demand against IRP 2025'), so the bases differ. Adequacy: every year passes; worst year 10.3% of its target; mean shed peaks at 0.27
 GWh in 2038. Capex recorded in the run and applied in the check: wind R17,773/kW, solar R11,755/kW (2026 rands).
 Caveat: c5b_14r used BW6 capex and the 1.064 wind correction; most of the gap is those inputs (see s_bw6capex_c5c and s_wind1064_c5c).
 
@@ -6753,7 +6854,8 @@ What differs between this setup and the IRP's, any of which could explain the ga
 - Discount rate: the IRP uses 11.3% (p.34); the model 8% real (BLD_DISC). The cost-set run kept 8%. A higher rate
   favours low-capital, high-fuel plant such as gas over solar, wind and storage. Not yet tested.
 - Reliability basis: the model plans to half the 0.002% unserved-energy standard, checked hourly over twelve weather
-  years and outage draws, with no reserve margin. The IRP's reliability criterion or reserve margin is not in the
+  years and outage draws, with no reserve margin [corrected 16 Oct 2026: wrong; the build LP has held a 10% planning margin on
+  firm capacity throughout, RESULTS 'Planning reserve margin in the build LP']. The IRP's reliability criterion or reserve margin is not in the
   extract; to be sourced from the IRP before 14be.
 - Build pace for the alternatives: the model's default allows 2 GW a year of lithium and 2.5 GW of solar and of wind;
   the pace implied by the IRP is 0.55, 1.5 and 2.2 GW (BLD_PACE.irp). Storage is what replaces gas in the model.
@@ -11248,6 +11350,10 @@ USD 77/kWh, which is what `FIXED.acapIronAir` already used and sourced. ANY EARL
 RESULT WHERE IRON-AIR WON THE OPTIMISER IS SUSPECT.
 
 ### South Africa has no reliability threshold to compare this against
+
+[Corrected 16 Oct 2026: there is one. NTCSA's Medium-Term System Adequacy Outlook deems adequacy met when unserved energy is
+below 20 GWh a year and open-cycle gas turbines run below a 6% capacity factor (RESULTS 'Planning reserve margin in the build LP';
+SOURCES 'Adequacy criteria'). IRP 2025 states no numeric criterion.]
 
 The Grid Code and Distribution Network Code require a NERSA-approved Cost of Unserved
 Energy, approved 2015 and updated 2016, and COUE is an IRP input. So the test is
