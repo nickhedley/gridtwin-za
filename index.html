@@ -6030,7 +6030,7 @@ const FIXED = {
   // WHAT SHARE OF THE FLEET IS RETROFITTED. Added 18 Sep 2026. Until then CCS was
   // all-or-nothing across all 39,692 MW, which is not a programme anyone would run: no
   // country retrofits an entire coal fleet, and in South Africa only Medupi and Kusile are
-  // plausible candidates - together about 9,600 MW, or 24% of installed coal.
+  // plausible candidates. Their share is the default, computed after UC_FLEET (message 155).
   //
   // Measured at 100%, the switch does two things at once and the second dominates. The 25%
   // parasitic load takes 39.7 GW of coal down to 29.8 GW effective, the system reaches for
@@ -6040,10 +6040,9 @@ const FIXED = {
   // the rest is the CCS cost itself. A control run retiring 25% of the fleet with no CCS
   // reproduces the same shape, which confirms the capacity loss is doing the work.
   //
-  // A share slider separates the two. At 24% the model answers what Medupi and Kusile with
-  // capture would cost; at 100% it answers what it would cost to retrofit everything, which
-  // is the question nobody is asking.
-  ccsSharePct:100,
+  // A share slider separates the two. The default answers what Medupi and Kusile with capture
+  // would cost; at 100% it answers what it would cost to retrofit everything.
+  ccsSharePct:null,   // set after UC_FLEET: Medupi and Kusile's share of the coal fleet (user, 16 Oct 2026, message 155)
   // ccsTsR 900. Revised down TO 810 ON 23 AUG AND reverted ON 27 AUG.
   //
   // The 23 Aug cut rested on Leandra: 34 Gt characterised in Ventersdorp basalt,
@@ -6635,6 +6634,14 @@ const FIXED = {
 // IRP 2025 requires the five older stations, with Arnot and Kriel, to close by 2030.
 const UC_FLEET = [{"name":"Arnot*","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":146236.9340034813,"marginal_cost":664.1402453697383,"decom":"2027","region":"Mpumalanga"},{"name":"Arnot**","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":146236.9340034813,"marginal_cost":675.4804253697383,"decom":"2029","region":"Mpumalanga"},{"name":"Camden*","cap":570.0,"unit_cap":190.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":56320.930887372,"marginal_cost":702.0914453697383,"decom":"2030","region":"Mpumalanga"},{"name":"Camden**","cap":911.0,"unit_cap":182.2,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":93868.21814561999,"marginal_cost":733.5367253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Duvha*","cap":1150.0,"unit_cap":575.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":183388.7508532424,"marginal_cost":633.5082053697383,"decom":"2033","region":"Mpumalanga"},{"name":"Duvha**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":275083.12627986365,"marginal_cost":633.5082053697383,"decom":"2034","region":"Mpumalanga"},{"name":"Grootvlei*","cap":380.0,"unit_cap":190.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":47428.2396745848,"marginal_cost":711.3985253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Grootvlei**","cap":190.0,"unit_cap":190.0,"n":1,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":23714.1198372924,"marginal_cost":664.1402453697383,"decom":"2030","region":"Mpumalanga"},{"name":"Hendrina*","cap":760.0,"unit_cap":190.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":60075.6596131968,"marginal_cost":687.7242053697383,"decom":"2030","region":"Mpumalanga"},{"name":"Hendrina**","cap":338.0,"unit_cap":169.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":30037.8298065984,"marginal_cost":733.5367253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Kelvin","cap":160.0,"unit_cap":80.0,"n":2,"msl":0.65,"min_up":8,"min_dn":8,"startup_cost":450165.44254835,"marginal_cost":658.5346505574515,"decom":"2027","region":"Gauteng"},{"name":"Kendal*","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2044","region":"Mpumalanga"},{"name":"Kendal**","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2050","region":"Mpumalanga"},{"name":"Komati","cap":114.0,"unit_cap":114.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":8782.97661497838,"marginal_cost":771.6234653697383,"decom":"2022","region":"Mpumalanga"},{"name":"Kriel*","cap":1215.0,"unit_cap":405.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2028","region":"Mpumalanga"},{"name":"Kriel**","cap":1425.0,"unit_cap":475.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Kusile*","cap":2880.0,"unit_cap":720.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":348234.678785074,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile**","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile***","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Lethabo*","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":585.4818653697383,"decom":"2038","region":"Gauteng"},{"name":"Lethabo**","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":608.7947453697383,"decom":"2041","region":"Gauteng"},{"name":"Majuba*","cap":1818.0,"unit_cap":606.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":482186.41170716693,"marginal_cost":620.6770853697383,"decom":"2048","region":"Mpumalanga"},{"name":"Majuba**","cap":1989.0,"unit_cap":663.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":529614.236756997,"marginal_cost":586.7920853697383,"decom":"2051","region":"Mpumalanga"},{"name":"Matimba*","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":616.1590853697384,"decom":"2042","region":"Limpopo"},{"name":"Matimba**","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":608.7947453697383,"decom":"2044","region":"Limpopo"},{"name":"Matla*","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2032","region":"Mpumalanga"},{"name":"Matla**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2036","region":"Mpumalanga"},{"name":"Medupi*","cap":3600.0,"unit_cap":720.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":435293.3484813425,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Medupi**","cap":717.0,"unit_cap":717.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Tutuka*","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Tutuka**","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2031","region":"Mpumalanga"}];
 
+// CARBON CAPTURE'S DEFAULT SHARE (user, 16 Oct 2026, message 155): Medupi and Kusile, the only plausible candidates, as a
+// share of the coal fleet: their UC_FLEET capacity over FIXED.coalInstalledMW, to 0.1 point.
+const CCS_CANDIDATE_MW = UC_FLEET.filter(u => /^(Medupi|Kusile)/.test(u.name)).reduce((s, u) => s + u.cap, 0);
+if (!(CCS_CANDIDATE_MW > 0)) throw new Error('UC_FLEET has no Medupi or Kusile rows');
+FIXED.ccsSharePct = Math.round(1000 * CCS_CANDIDATE_MW / FIXED.coalInstalledMW) / 10;
+// The retrofitted share, 0-1: one definition for the engine, the price path and the CCS panel.
+function ccsShareFrac(p){ return Math.max(0, Math.min(100, p.ccsSharePct ?? FIXED.ccsSharePct)) / 100; }
+
 // UNITS STILL STANDING (TODO 14dn, 13 Oct 2026). The commitment pre-pass used to keep all 85 UC_FLEET units in every
 // year, each scaled by coal installed / 41,530, so in c4's 2040 (20.8 GW standing) it committed 85 units at 49% of their
 // size: minimum stable levels, start costs and commitment steps all followed those shrunken units. Now units retire
@@ -6927,7 +6934,7 @@ function simulate(u, prof, outPath, _soc0){
     // fleet to carry a per-station CCS flag, which is a larger change and probably the right
     // one eventually, since Medupi and Kusile are newer and cheaper to run than the units
     // that would be displaced.
-    const shr = Math.max(0, Math.min(100, p.ccsSharePct ?? 100)) / 100;
+    const shr = ccsShareFrac(p);
     const pen = ((p.ccsPenaltyPct ?? 25) / 100) * shr;
     const cap = ((p.ccsCaptureRatePct ?? 90) / 100) * shr;
     const keep = Math.max(0.4, 1 - pen);
@@ -6935,10 +6942,11 @@ function simulate(u, prof, outPath, _soc0){
     // remains after decommissioning and new build - see coalInstRem. Applying it
     // here would subtract retired MW from an already-penalised figure and would
     // let new coal escape the penalty altogether.
+    // The adders apply to the retrofitted share only (message 155; until build 16d they were charged on every coal MWh).
     p.costCoal = p.costCoal / keep                          // more fuel per MWh sold
-               + (p.ccsOpexR ?? 180)                        // solvent, compression
-               + (p.ccsCapexR ?? 260)                       // annualised retrofit
-               + (p.ccsTsR ?? 900);                         // transport and storage
+               + ((p.ccsOpexR ?? 180)                       // solvent, compression
+               +  (p.ccsCapexR ?? 260)                      // annualised retrofit
+               +  (p.ccsTsR ?? 900)) * shr;                 // transport and storage
     p.emisCoal = p.emisCoal * (1 - cap) / keep;             // net of the penalty
   }
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
@@ -6969,7 +6977,7 @@ function simulate(u, prof, outPath, _soc0){
   // Share-weighted, matching the block above. Written once here and once at the cost site
   // below; both read ccsSharePct so they cannot drift apart.
   const ccsKeep = p.ccsEnabled
-    ? Math.max(0.4, 1 - ((p.ccsPenaltyPct ?? 25)/100) * (Math.max(0, Math.min(100, p.ccsSharePct ?? 100))/100))
+    ? Math.max(0.4, 1 - ((p.ccsPenaltyPct ?? 25)/100) * ccsShareFrac(p))
     : 1;
   const coalInstRem=(Math.max(0,p.coalInstalledMW-p.coalDecomMW)+p.newCoalMW)*ccsKeep;
   const coalAvail=coalInstRem*p.coalEAFPct/100;
@@ -7419,7 +7427,7 @@ function simulate(u, prof, outPath, _soc0){
   // Carry the capture cost into the marginal price. The merit curve holds each
   // unit's own fuel cost, so the energy penalty scales it and the capture costs
   // add on top - the same build-up p.costCoal gets, applied per unit.
-  const _ccsShr = Math.max(0, Math.min(100, p.ccsSharePct ?? 100)) / 100;
+  const _ccsShr = ccsShareFrac(p);
   const ccsCostMult = p.ccsEnabled ? 1/Math.max(0.4, 1-((p.ccsPenaltyPct ?? 25)/100)*_ccsShr) : 1;
   const ccsCostAdd  = p.ccsEnabled ? ((p.ccsOpexR ?? 180)+(p.ccsCapexR ?? 260)+(p.ccsTsR ?? 900))*_ccsShr : 0; // TOTAL coal generation per hour, including any off-peak
   // charging bonus - unlike stack.coal (load-serving only, for the chart), this is what real fuel
@@ -17671,18 +17679,21 @@ function renderCCS(r){
   const host = document.getElementById('ccsBody');
   if (!host || !r) return;
   const on = !!state.ccsEnabled;
-  const pen = (state.ccsPenaltyPct ?? 25) / 100;
-  const cap = ((state.ccsCaptureRatePct ?? 90) / 100)
-            * (Math.max(0, Math.min(100, state.ccsSharePct ?? 100)) / 100);
-  const keep = Math.max(0.4, 1 - pen);
+  // Fleet figures weighted by the retrofitted share, as the engine does (message 155); keepUnit is one retrofitted
+  // station's, for the new-build row.
+  const shr = ccsShareFrac(state);
+  const penUnit = (state.ccsPenaltyPct ?? 25) / 100, pen = penUnit * shr;
+  const cap = ((state.ccsCaptureRatePct ?? 90) / 100) * shr;
+  const keepUnit = Math.max(0.4, 1 - penUnit), keep = Math.max(0.4, 1 - pen);
   const base = FIXED.costCoal;
-  const withCcs = base/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 900);
+  const adders = (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 900);
+  const withCcs = base/keep + adders * shr;
   const netCut = 1 - (1 - cap)/keep;
   // Use the scenario's actual fleet, not the nameplate constant, so the panel
   // tracks the decommissioning and new-build sliders.
   const fleetMW = Math.max(0, (state.coalInstalledMW ?? FIXED.coalInstalledMW) - (state.coalDecomMW || 0))
                 + (state.newCoalMW || 0);
-  const lostGW = fleetMW * pen / 1000;
+  const lostGW = fleetMW * pen / 1000;   // pen is share-weighted
   const R = v => 'R' + Math.round(v).toLocaleString();
   const c2 = v => (v/1000).toFixed(2);
 
@@ -17725,7 +17736,7 @@ function renderCCS(r){
     + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2(withCcs)}/kWh</td></tr>`
     + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">New build, lifecycle</td>`
     + `<td style="text-align:right;padding:4px 5px">R${c2(state.lcoeCoalNew ?? 1550)}/kWh</td>`
-    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2((state.lcoeCoalNew ?? 1550)/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 900))}/kWh</td></tr>`
+    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2((state.lcoeCoalNew ?? 1550)/keepUnit + adders)}/kWh</td></tr>`
     + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Saleable capacity`
     + `<br><span style="font-size:9px;color:var(--ink2)">after this scenario\u2019s retirements and new build</span></td>`
     + `<td style="text-align:right;padding:4px 5px">${(fleetMW/1000).toFixed(1)} GW</td>`
@@ -17738,8 +17749,8 @@ function renderCCS(r){
     // ── Capital recovery, the tariff side ────────────────────────────────
     + (() => {
         const rKw = state.ccsCapexRkW ?? 38000;                 // R/kW installed
-        const gw = fleetMW / 1000;
-        const totalBn = rKw * (fleetMW * 1000) / 1e9;           // R/kW \u00d7 kW \u2192 R bn
+        const gw = fleetMW * shr / 1000;                        // the retrofitted share only (message 155)
+        const totalBn = rKw * (fleetMW * shr * 1000) / 1e9;     // R/kW \u00d7 kW \u2192 R bn
         const wacc = (state.ccsWaccPct ?? FIXED.ccsWaccPct) / 100;
         const life = state.ccsLifeYrs ?? 20;
         // Annual revenue requirement: return on the un-depreciated asset plus
@@ -17855,17 +17866,13 @@ const SLIDERS=[
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:39692,step:1000,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`of ${(FIXED.coalInstalledMW/1000).toFixed(1)} GW installed (Eskom FY2026 nominal).`},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Placeholder until the coal flexibility option. Retrofit R223/kW/yr is one German lignite plant (Weisweiler). SA fleet ramps ~24&#37;/hr today (Agora 2017); the ~100&#37;/hr once flexibilised is unsourced: IRENA gives 3\u20136&#37; a minute at the state of the art, and Agora no more than 1&#37; a minute for old South African units. Applies to the non-decommissioned fleet.'},
   {id:'ccsEnabled',toggle:true,def:false,label:'Apply carbon capture &amp; storage to the coal fleet',note:'Retrofits the existing fleet and includes capture on new build.'},
-  {id:'ccsSharePct',label:'\u2013 share of the fleet retrofitted',min:0,max:100,step:2,
+  {id:'ccsSharePct',label:'\u2013 share of the fleet retrofitted',min:0,max:100,step:0.2,
    def:FIXED.ccsSharePct,ctrlStyle:SUB_CTRL,
-   fmt:v=>v+' % of coal ('+((v/100)*39.7).toFixed(1)+' GW)',
-   note:'How much of the 39.7 GW coal fleet carries capture. The default of 100% is not a '
-     + 'programme anyone would run \u2013 no country retrofits an entire coal fleet, and here only '
-     + 'Medupi and Kusile are plausible candidates, about 9.6 GW or 24%. At 100% the switch '
-     + 'does two things at once and the second dominates: the 25% parasitic load takes 39.7 GW '
-     + 'of coal down to 29.8 GW effective, the system reaches for diesel at R6,100/MWh, and '
-     + 'unserved energy appears from nothing. That is a capacity shock, not a carbon result. '
-     + 'Retiring a quarter of the fleet with no capture at all reproduces the same shape. '
-     + 'Set 24% to ask what Medupi and Kusile with capture would cost.'},
+   fmt:v=>(+v).toFixed(1)+'% of coal ('+((v/100)*FIXED.coalInstalledMW/1000).toFixed(1)+' GW)',
+   // Caption (user, 16 Oct 2026, messages 153, 155 and 156): every number read from the code.
+   note:`Share of the ${(FIXED.coalInstalledMW/1000).toFixed(1)} GW coal fleet fitted with capture. Defaults to `
+     + `${FIXED.ccsSharePct}% (${Math.round(CCS_CANDIDATE_MW).toLocaleString('en-US')} MW), which covers retrofits at Medupi and `
+     + `Kusile only. The ${FIXED.ccsPenaltyPct}% parasitic load cuts available coal, so high shares show a shortfall.`},
   {id:'nuclearCF',label:'Koeberg availability',min:0.30,max:0.95,step:0.01,def:FIXED.nuclearCF,fmt:v=>Math.round(v*100)+' %',
    note:'Sent-out capacity factor. ESK19679: 49% in 2023 (unit 1 life-extension outage), 62% in 2025, 61% in 2026 to August. The default allows for recovery.'},
   {id:'newWindMW',label:'New onshore wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.windMW/1000).toFixed(1)} GW existing (REIPPPP, 470 MW wheeled and Eskom\u2019s 100 MW Sere farm).`},

@@ -3476,6 +3476,39 @@ build_hydra_split.py, build_substation_bands.py, the validation scripts); stress
 Removed from always-visible prose under the rule of items 8 and 31: 'Coal share moves about 0.45 points per 1% of demand ... an
 8-point gap' (other published models panel), a measurement with no RESULTS entry.
 
+### Carbon capture's cost weighted by the retrofitted share: at the new 21.8% default, Today 2026 costs +R47.8bn a year with capture against +R205.6bn before the fix, for the same 23.6 Mt cut; the default is Medupi and Kusile's share of the fleet (user, 16 Oct 2026, message 155; build 2026-10-16d)
+
+Settings. 'Today 2026' preset (applyState), one headline run each on the default profiles and the page's seed (simulate(state,
+PROFILES)), capture off, and on at 21.8% and 100%; then renderCCS at 21.8%. Before: main e6da3eb (build 2026-10-16c). After: branch
+claude/site-sweep2. Script ccs_measure.js (scratch, not in the repository).
+
+The fix. The engine charged capture's three adders (solvent and compression R180, annualised capital R260, transport and storage
+R900 per MWh, FIXED) on every coal MWh whatever the share, while the energy penalty and capture rate were weighted by it (TODO
+14du recorded this). They are now weighted too, as the price path already was. The CCS panel weighted only the capture rate; its
+running cost, energy penalty, saleable capacity, net cut and programme capital are now weighted, and its new-build row stays a
+per-station figure. One helper, ccsShareFrac, replaces four copies of the share formula. Default share: Medupi and Kusile's
+UC_FLEET capacity, 8,637 MW, over FIXED.coalInstalledMW, 39,692 MW: 21.8% (20.8% of UC_FLEET's own 41,530 MW total).
+
+| Today 2026 | Capture off | 21.8%, before | 21.8%, after | 100%, before and after |
+|---|---|---|---|---|
+| System cost, R bn a year | 215.2 | 420.8 | 263.0 | 441.5 |
+| Average cost, R/MWh | 1,101 | 2,153 | 1,346 | 2,260 |
+| CO2, Mt | 157.5 | 133.9 | 133.9 | 22.4 |
+| Coal, TWh | 147.4 | 147.3 | 147.3 | 145.7 |
+| Unserved, GWh | 0 | 0 | 0 | 6.8 |
+| Cost of capture against off, R bn a year | | +205.6 | +47.8 | +226.3 |
+| Per tonne avoided, R/t | | 8,699 | 2,022 | 1,675 |
+
+CCS panel at 21.8%, before / after: existing fleet running cost with capture R2.07 / R0.87 per kWh (R0.55 unabated); saleable
+capacity 29.8 / 37.5 GW of 39.7; net emissions cut -7% / 15%; programme capital R1,508bn for 39.7 GW / R329bn for 8.7 GW, tariff
+impact +61c / +13c per kWh.
+
+The consistency check 'CCS lowers emissions when enabled' (validate_consistency) now fails at the default: 133.88 against 157.51 Mt.
+It requires CO2 with capture below half of CO2 without, a threshold only a near-full share reaches. At 21.8% the expected coal
+emission factor is (1 - 0.9 x 0.218) / (1 - 0.25 x 0.218) = 0.850 of unabated, and the run gives 133.88 / 157.51 = 0.850, so
+capture is applied as intended. The check is unchanged pending the user's decision (message 155 (3)).
+
+
 ### Fleet table out of the public repository: c5d unchanged to every digit; every reader stops on a missing column; three readers on main found broken by build 16b's '#' source lines and fixed (user, 16 Oct 2026, message 146; build 2026-10-16c)
 
 Settings. Branch claude/fleet-slim (a6dc99c) rebased onto main e1a4cad (build 2026-10-16b), plus the strict readers; build
