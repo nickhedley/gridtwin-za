@@ -483,11 +483,17 @@ const num = t => {
   // fallback that no longer exists. The mutation does not leak today; this asserts that
   // it keeps not leaking, because the failure would be invisible - every number stays
   // plausible, just wrong.
+  //
+  // From build 2026-10-16e capture covers a share of the coal fleet, by default Medupi and Kusile's 21.8%
+  // (FIXED.ccsSharePct; user, 16 Oct 2026, message 155). The check was written when capture covered the whole fleet,
+  // so its run pins ccsSharePct to 100 and tests what it always tested (message 157 (3)). A second run at the
+  // default share must land between the capture-off run and the whole-fleet run.
   const iso = run(`
     const a = simulate({ ...state, ccsEnabled: false }, PROFILES);
-    const b = simulate({ ...state, ccsEnabled: true  }, PROFILES);
+    const b = simulate({ ...state, ccsEnabled: true, ccsSharePct: 100 }, PROFILES);
+    const d = simulate({ ...state, ccsEnabled: true, ccsSharePct: FIXED.ccsSharePct }, PROFILES);
     const c = simulate({ ...state, ccsEnabled: false }, PROFILES);
-    return { first: a.co2, mid: b.co2, third: c.co2,
+    return { first: a.co2, mid: b.co2, dflt: d.co2, third: c.co2, share: FIXED.ccsSharePct,
              fixedEmis: FIXED.emisCoal, fixedCost: FIXED.costCoal };
   `);
   if (iso && !iso.err){
@@ -498,8 +504,12 @@ const num = t => {
           + `so this means the object is being shared`);
     check('CCS lowers emissions when enabled',
           iso.mid < iso.first * 0.5,
-          `${iso.mid.toFixed(2)} against ${iso.first.toFixed(2)} Mt - if these converge the `
+          `${iso.mid.toFixed(2)} against ${iso.first.toFixed(2)} Mt with capture on the whole fleet - if these converge the `
           + `capture rate is not being applied at all`);
+    check('CCS at the default share cuts emissions part of the way',
+          iso.dflt < iso.first && iso.dflt > iso.mid,
+          `${iso.dflt.toFixed(2)} Mt at ${iso.share}% of the fleet, against ${iso.first.toFixed(2)} Mt without capture and `
+          + `${iso.mid.toFixed(2)} Mt with capture on the whole fleet`);
     check('the emission and cost constants survive a CCS run',
           Math.abs(iso.fixedEmis - 1.04) < 1e-9 && iso.fixedCost === 546,
           `FIXED.emisCoal ${iso.fixedEmis}, FIXED.costCoal ${iso.fixedCost} - the CCS `

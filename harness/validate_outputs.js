@@ -477,7 +477,7 @@ function probe(w, src) {
   };
   // REIPPPP Bid Window 7 solar bids averaged R0.46/kWh; the model anchors above
   // that to reflect unsubsidised, non-BW7 conditions.
-  // The LCOE chart's solar row is labelled 'Utility solar' from build 2026-10-16d (message 152 item 31); same row, same test.
+  // The LCOE chart's solar row is labelled 'Utility solar' from build 2026-10-16e (message 152 item 31); same row, same test.
   checkRange('Utility solar LCOE', lc('Utility solar'), 0.40, 0.75,
     'REIPPPP BW7 solar bids averaged R0.46/kWh', 'R/kWh');
   checkRange('Wind LCOE', lc('Wind'), 0.55, 1.00,

@@ -145,8 +145,13 @@ const CONTEXT = {
   reserveOperatingMW:   { reserveEnabled: 1, coalEAFPct: 55 },
   outageForcedSharePct: { outageUnitLevel: 1, coalEAFPct: 55 },
   outageMttrH:          { outageUnitLevel: 1, coalEAFPct: 55 },
-  ccsCaptureRatePct:{ ccsEnabled: 1 }, ccsPenaltyPct: { ccsEnabled: 1 },
-  ccsOpexR: { ccsEnabled: 1 }, ccsCapexR: { ccsEnabled: 1 }, ccsTsR: { ccsEnabled: 1 },
+  // ccsSharePct 100, message 157 (4): the cells for these controls were pinned when capture covered the whole fleet. From
+  // build 2026-10-16e it covers a share, by default Medupi and Kusile's 21.8%, so the rows hold the whole fleet to test
+  // what they were pinned under. The baseline is not re-pinned.
+  ccsEnabled:       { ccsSharePct: 100 },
+  ccsCaptureRatePct:{ ccsEnabled: 1, ccsSharePct: 100 }, ccsPenaltyPct: { ccsEnabled: 1, ccsSharePct: 100 },
+  ccsOpexR: { ccsEnabled: 1, ccsSharePct: 100 }, ccsCapexR: { ccsEnabled: 1, ccsSharePct: 100 },
+  ccsTsR: { ccsEnabled: 1, ccsSharePct: 100 },
   coalRampFlexPct:  { coalFlexPct: 1 },
   // Nothing to export without a surplus, and no price effect without capacity.
   exportCapMW:  { newWindMW: 45000, newPvMW: 52000, coalDecomMW: 27000 },
@@ -286,9 +291,10 @@ const BUILD_ONLY = {
     // falsy-zero bug sailed through 65/65. These are the same constants
     // stress_deep's G0 guard sweeps, and they are exactly where x || N hides.
     const EXTRA = {
-      ccsCaptureRatePct: { pts: [0, 45, 90], ctx: { ccsEnabled: 1 } },
-      ccsPenaltyPct:     { pts: [0, 10, 25], ctx: { ccsEnabled: 1 } },
-      ccsOpexR:          { pts: [0, 180, 400], ctx: { ccsEnabled: 1 } },
+      // The CCS rows take their context from CONTEXT above, so it is stated once (message 157 (4)).
+      ccsCaptureRatePct: { pts: [0, 45, 90], ctx: CONTEXT.ccsCaptureRatePct },
+      ccsPenaltyPct:     { pts: [0, 10, 25], ctx: CONTEXT.ccsPenaltyPct },
+      ccsOpexR:          { pts: [0, 180, 400], ctx: CONTEXT.ccsOpexR },
       coalInstalledMW:   { pts: [0, 20000, 42000], ctx: {} },
       battHours:         { pts: [0, 4, 12], ctx: { battPowerMW: 8000, newBattMW: 0 } },
       emisCoal:          { pts: [0, 0.5, 1.04], ctx: {} },

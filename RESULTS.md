@@ -3476,7 +3476,7 @@ build_hydra_split.py, build_substation_bands.py, the validation scripts); stress
 Removed from always-visible prose under the rule of items 8 and 31: 'Coal share moves about 0.45 points per 1% of demand ... an
 8-point gap' (other published models panel), a measurement with no RESULTS entry.
 
-### Site sweep 2: numbers on the page that RESULTS does not record, removed; recorded ones quoted with their build (user, 16 Oct 2026, message 152; build 2026-10-16d)
+### Site sweep 2: numbers on the page that RESULTS does not record, removed; recorded ones quoted with their build (user, 16 Oct 2026, message 152; build 2026-10-16e)
 
 Checked against main e6da3eb (build 2026-10-16c) and RESULTS. Removed from the page, unrecorded: the residual bill +40% at a 50%
 private share; the VPP's 2 GW by 50% enrolment; part-load 1.5% today, 3.6% with 20 GW more solar and about 4% of the CO2 saving;
@@ -3492,7 +3492,7 @@ PyPSA optimum in three ordinary weeks, 1.2% in the 2026 baseline week, 26% in th
 now gives the cause recorded in 'The 2026 replay curtails almost nothing for oversupply' (message 130).
 
 
-### Carbon capture's cost weighted by the retrofitted share: at the new 21.8% default, Today 2026 costs +R47.8bn a year with capture against +R205.6bn before the fix, for the same 23.6 Mt cut; the default is Medupi and Kusile's share of the fleet (user, 16 Oct 2026, message 155; build 2026-10-16d)
+### Carbon capture's cost weighted by the retrofitted share: at the new 21.8% default, Today 2026 costs +R47.8bn a year with capture against +R205.6bn before the fix, for the same 23.6 Mt cut; the default is Medupi and Kusile's share of the fleet (user, 16 Oct 2026, message 155; build 2026-10-16e)
 
 Settings. 'Today 2026' preset (applyState), one headline run each on the default profiles and the page's seed (simulate(state,
 PROFILES)), capture off, and on at 21.8% and 100%; then renderCCS at 21.8%. Before: main e6da3eb (build 2026-10-16c). After: branch
@@ -3519,10 +3519,37 @@ CCS panel at 21.8%, before / after: existing fleet running cost with capture R2.
 capacity 29.8 / 37.5 GW of 39.7; net emissions cut -7% / 15%; programme capital R1,508bn for 39.7 GW / R329bn for 8.7 GW, tariff
 impact +61c / +13c per kWh.
 
-The consistency check 'CCS lowers emissions when enabled' (validate_consistency) now fails at the default: 133.88 against 157.51 Mt.
-It requires CO2 with capture below half of CO2 without, a threshold only a near-full share reaches. At 21.8% the expected coal
-emission factor is (1 - 0.9 x 0.218) / (1 - 0.25 x 0.218) = 0.850 of unabated, and the run gives 133.88 / 157.51 = 0.850, so
-capture is applied as intended. The check is unchanged pending the user's decision (message 155 (3)).
+The consistency check 'CCS lowers emissions when enabled' (validate_consistency) failed at the new default: 133.88 against 157.51
+Mt. Cause: the check was written when capture covered the whole fleet. It requires CO2 with capture below half of CO2 without, a
+threshold only a near-full share reaches. At 21.8% the expected coal emission factor is (1 - 0.9 x 0.218) / (1 - 0.25 x 0.218) =
+0.850 of unabated, and the run gives 133.88 / 157.51 = 0.850, so capture is applied as intended. Fixed (user, message 157 (3)): the
+check keeps its 0.5 threshold and pins ccsSharePct 100 in its run, 22.39 against 157.51 Mt, pass. A new check, 'CCS at the default
+share cuts emissions part of the way', requires the run at FIXED.ccsSharePct to fall between the two: 133.88 Mt, pass.
+validate_consistency 80/81, the one failure the Megaflex block.
+
+Response matrix (validate_response; message 157 (4)). Four cells pinned when capture covered the whole fleet stopped moving at the
+21.8% default: ccsEnabled and ccsPenaltyPct on the renewable share (rePct) and on hours with unserved energy (loleHrs). The baseline
+is not re-pinned. The context rows for ccsEnabled, ccsCaptureRatePct, ccsPenaltyPct, ccsOpexR, ccsCapexR and ccsTsR now carry
+ccsSharePct 100, the conditions the cells were pinned under, and the sweep of non-slider parameters takes its CCS context from those
+rows. The four cells return to their pinned values: 87/87. ccsCapexR and ccsTsR are neither sliders nor in that sweep, so their
+rows are not swept, as before.
+
+At 21.8% the energy penalty does not move unserved energy. Page default state on load (the validators' state; capture off gives
+157.51 Mt, as 'Today 2026'), default profiles and seed, capture on, build 2026-10-16e; script ccs_probe.js (scratch):
+
+| Energy penalty, % | 0 | 10 | 25 (default) |
+|---|---|---|---|
+| 21.8%: unserved, GWh | 0 | 0 | 0 |
+| 21.8%: hours with unserved above 1 MW | 0 | 0 | 0 |
+| 21.8%: coal, TWh | 147.407 | 147.390 | 147.350 |
+| 21.8%: renewable share, % | 21.187 | 21.187 | 21.188 |
+| 100%: unserved, GWh | 0 | 0 | 6.76 |
+| 100%: hours with unserved above 1 MW | 0 | 0 | 12 |
+| 100%: coal, TWh | 147.407 | 147.273 | 145.652 |
+| 100%: renewable share, % | 21.187 | 21.191 | 21.202 |
+
+The ccsEnabled caption no longer says it retrofits the existing fleet (message 157 (5)). It now says the share applies to new coal
+build as well as the existing fleet: the engine applies it to the whole coal block (coalInstRem and p.costCoal).
 
 
 ### Fleet table out of the public repository: c5d unchanged to every digit; every reader stops on a missing column; three readers on main found broken by build 16b's '#' source lines and fixed (user, 16 Oct 2026, message 146; build 2026-10-16c)
