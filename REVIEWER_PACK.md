@@ -25,7 +25,7 @@ How to read the pack:
 
 ## 1. Assumptions
 
-Finding: of 23 rows, 5 are fully sourced and 15 partly sourced. One is unsourced: the LNG cargo size (the utility solar row was corrected on 15 Oct: c5b_14r used the BW6 tracker capex). Two rows mix a sourced value with an unsourced one: coal operation, where the minimum stable level is unsourced, and grid cost, where the free connection on retired-coal sites is a modelling choice.
+Finding: of 24 rows, 5 are fully sourced and 15 partly sourced. Two are unsourced: the LNG cargo size and the 10% planning reserve margin in the build LP (the utility solar row was corrected on 15 Oct: c5b_14r used the BW6 tracker capex). Two rows mix a sourced value with an unsourced one: coal operation, where the minimum stable level is unsourced, and grid cost, where the free connection on retired-coal sites is a modelling choice.
 
 Status key:
 
@@ -57,6 +57,7 @@ Status key:
 | Avon and Dedisa | Run on their contracts until they end (Dedisa end-2030, Avon 20 July 2031): monthly daytime and evening-peak levels, nights zero, 899 GWh a year; fuel and CO2 at the diesel fleet's rates (RESULTS 'Avon and Dedisa as must-run to contract end') | Levels from Eskom data (ESK19679, January–August 2026); September–December are 2025's shape scaled to 2026's level, the author's choice | partly |
 | Interruptible load | 1,000 MW, no annual energy cap; called after open-cycle plant, as the last resource before shedding, and to restore reserve once open-cycle is exhausted (RESULTS 'Interruptible load cap tried and withdrawn') | Eskom's certified instantaneous demand response, 1,014 MW (NREL, Demand Response at the Grid Edge, FY24). The order is the author's decision: the ASTR sets none (p.10) | partly |
 | VoLL | Engine R9,530/MWh. Optimiser: stress-window shortfall at R87,000/MWh × 365 (RESULTS 'Load shedding now costed'; 'Both measures for every run') | Eskom's Cost of Load Shedding (NERSA review, 2022); the IRP's COUE of R87.85/kWh | sourced |
+| Planning reserve margin (build LP) | Each year, firm capacity at least 1.10 × the peak hour of the represented days. Wind and solar count zero; every store counts at the lesser of its power and its energy over 4 hours; coal at its mean availability; nuclear, hydro and imports at their availability factors; new CCGT and open-cycle at full MW. Binding in c5c in every year 2030–40, where it sets the firm capacity built (RESULTS 'Planning reserve margin in the build LP') | No source: a modelling choice in the code since 1 Oct 2026. Not South Africa's criterion; tests at 5% and 0% running (16 Oct 2026) | unsourced |
 | Adequacy standard | Mean unserved energy at most half of 0.002% of customer demand: 2.19 GWh in 2030 and 2.78 GWh in 2040 for c5b_14r (c5: 2.08 and 2.66) (RESULTS 'Average system cost per MWh served'; 'c5b on build 2026-10-14r') | The 0.002% is the Australian NEM standard; halving it is the author's choice, 12 Oct 2026. South Africa has only a COUE (RESULTS 'South Africa has no reliability threshold') | partly |
 
 Build limits in c5, which c5b_14r keeps (RESULTS 'c5 inputs, final'; 'Diagnosis, not deliverable'; 'c5b proposal'; SOURCES 'Tubatse pumped storage'):

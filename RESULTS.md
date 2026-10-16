@@ -3423,6 +3423,29 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### Planning reserve margin in the build LP: 10% over peak on firm capacity, no source; wind and solar get no credit, storage min(power, energy / 4 h); it binds in c5c in every year 2030-40 and sets c5c's firm capacity; the stress margin, the stress-target rows and the reserve slack do not bind (user, 16 Oct 2026, messages 129 (2) and 131 (2))
+
+What it is (index.html, bldBuildLP, row res_<year>; in the code since it entered this repository, 1 Oct 2026). Each year:
+credited storage + new CCGT + new open-cycle (LNG and diesel) - EAF x early-retired coal >= 1.10 x peak - firm, where peak is
+the highest hourly demand on the year's represented days (stress windows left out) and firm is standing coal at its mean
+availability (EAF), nuclear, hydro and imports at their availability factors, existing pumped storage, existing diesel and existing
+batteries. Wind and solar, new or existing, count zero. Every store (lithium, vanadium, iron-air, pumped hydro) is credited at the
+lesser of its power and its energy over 4 hours (rows ccpow_, ccnrg_, cc<tech>_). Value: 10%. Source: none recorded; it is a
+modelling choice, not South Africa's criterion (that is being sourced, message 131 (3)).
+
+Which constraints bind in c5c (its pass-1 solve, cache key 9c2e2e1eaa, objective 1,447,614,593,962.7, identical to the run's):
+- res_ binds in every year 2030-2040 (shadow price R3.74m per MW of requirement in 2030, falling to R0.25m in 2040, present
+  value at 8%), slack in 2026-29. Credited lithium equals the whole lithium build from 2030 (2030: 6,666 MW; 2040: 20,679 MW),
+  so the margin, not energy, sets how much firm capacity c5c holds.
+- Stress margin: 0 MW (no windows added; adequate on pass 1). Stress-target rows tgt_: none binding; expected shed in the LP
+  0-0.35 GWh against targets of 2.1-3.1 GWh, slack 0, so no penalty. Reserve slack rsl_: zero in every hour.
+- Hourly operating reserve (resv_, ASTR): binding in 37 of 6,840 hours, small shadow prices (sum R0.08m).
+- Minimum builds bind: wind 2026-27, solar 2026-28 and lithium 2026-27 sit exactly on the committed-project floors (MIN_BUILD,
+  LI_MIN). Those are committed projects, not adequacy rules.
+
+Tests on c5c's settings with the margin at 5% (1.05) and off (res_ rows not written), local test copies of build 15f only,
+running (message 131 (1)); the central is unchanged until the user decides.
+
 ### New central c5c and its first ten sensitivities (build 2026-10-15f, PROVISIONAL): adequate on pass 1; engine PV R2,257.5bn at 8% real against c5b_14r's R2,394.3bn on the same build; CO2 1,549 Mt against 1,990 Mt; wind 28.1 GW by 2040 at BW5-calibrated capex and 26.3 GW at BW6 capex (user, 15-16 Oct 2026, messages 125, 126 (2), 128 (3)-(4))
 
 Settings. Build 2026-10-15f (branch claude/c5c-central; index.html, pathcheck.js and pathway_perfail.js identical to the run copy).
@@ -6763,7 +6786,8 @@ What differs between this setup and the IRP's, any of which could explain the ga
 - Discount rate: the IRP uses 11.3% (p.34); the model 8% real (BLD_DISC). The cost-set run kept 8%. A higher rate
   favours low-capital, high-fuel plant such as gas over solar, wind and storage. Not yet tested.
 - Reliability basis: the model plans to half the 0.002% unserved-energy standard, checked hourly over twelve weather
-  years and outage draws, with no reserve margin. The IRP's reliability criterion or reserve margin is not in the
+  years and outage draws, with no reserve margin [corrected 16 Oct 2026: wrong; the build LP has held a 10% planning margin on
+  firm capacity throughout, RESULTS 'Planning reserve margin in the build LP']. The IRP's reliability criterion or reserve margin is not in the
   extract; to be sourced from the IRP before 14be.
 - Build pace for the alternatives: the model's default allows 2 GW a year of lithium and 2.5 GW of solar and of wind;
   the pace implied by the IRP is 0.55, 1.5 and 2.2 GW (BLD_PACE.irp). Storage is what replaces gas in the model.
