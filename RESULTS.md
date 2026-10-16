@@ -3423,6 +3423,43 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### Site figures re-measured on build 2026-10-16a for the site text fixes: the reserve and unit-level outage examples no longer hold and leave the page; rooftop runs at 19.6% capacity factor; 8 of 12 comparison rows sit beyond 5%, 7 of them explained; the LCOE anchors computed from the build costs (user, 16 Oct 2026, messages 138, items 8, 16 and 40, and 143 (1))
+
+Settings. Build 2026-10-16a (main at ee45bd1, before the site text fixes), 'Today 2026' preset (applyState), one headline run
+each (simulate(state, PROFILES): the default 2025 profiles and the page's default seed), with the changes listed; local scripts
+m8.js and val.js (scratch, not in the repository).
+
+| Case | Shed hours | Unserved, GWh | Diesel hours (output above 1 MW) | Diesel, TWh |
+|---|---|---|---|---|
+| Today 2026 as set (EAF 65%) | 0 | 0 | 5,841 | 0.91 |
+| EAF 55%, flat derate (outageUnitLevel 0) | 0 | 0 | 5,841 | 1.01 |
+| EAF 55%, unit-level outages (the default) | 1 | 0.07 | 5,896 | 1.29 |
+| EAF 52%, demand +12%, reserve off (reserveEnabled 0) | 263 | 377.8 | 6,375 | 6.52 |
+| EAF 52%, demand +12%, reserve on (the default) | 276 | 375.5 | 6,453 | 7.43 |
+
+The page said unit-level outages at EAF 55% shed 207 hours instead of 3, with diesel at 1,402 hours instead of 415, and that
+reserve at EAF 52% and +12% demand moved diesel from 1,843 to 2,031 running hours. None holds on 16a, and diesel hours now
+include Avon and Dedisa's contracted daily running (avonDedisaMustRun) to 2030-31, so running hours no longer measure dispatch.
+The numbers are removed from the page; the qualitative statements stay.
+
+Rooftop capacity factor on the default profile: 19.6% (E.rooftop over 8,942 MW x 8,760 h), against the page's 17.6% (About)
+and 21% (comparison table); the table now computes it from the run.
+
+Comparison with Eskom's published figures (ESKOM_ACTUALS, as at 9 August 2026), model against published, rows beyond 5%: OCGT
+load factor 3.07% against 1.17%; coal installed 39.7 against 42 GW; wind installed 4.61 against 4.14 GW; utility PV installed
+3.27 against 2.78 GW; coal generation 147.4 against 177.7 TWh; wind generation 14.1 against 11.6 TWh; solar generation 24.0
+against 19.4 TWh; nuclear generation 10.87 against 11.5 TWh. All but coal installed carry a note calling the gap expected
+(expectedGap), so the drift line now names coal installed only. Within 5%: EAF 65 against 67.95%, rooftop 8.94 against 9.1 GW,
+winter peak 29.6 against 28.7 GW, hybrid 0.335 against 0.335 GW.
+
+LCOE anchors computed from the build costs (user, message 143 (1); build 2026-10-16b): BLD_COST 2026 capex and BLD_FOM over
+BLD_LIFE (25 years) at 8% real, at the twelve-year means of the new-build profiles (bldTwelveYearMeans(1, true): modern-turbine
+wind uncorrected 42.507%, tracking solar 28.673%; NEW_WIND_CF_12Y and NEW_PVTRK_CF_12Y, recomputed by validate_weather), before
+the grid charge: wind R552.4/MWh, solar R552.8/MWh, both R550 at the slider's R10 step (were R750 and R550, typed). They feed the
+LCOE chart and the replacement-cost figure only. Replacement cost per MWh, 16a against 16b (same scenario, page default seed):
+Today 2026 R1,542 against R1,528 (-0.9%); Deep decarbonisation 2035 R1,110 against R997 (-10.2%); Fossil-free 2040 R1,110 against
+R985 (-11.3%). No dispatch, system cost or build changes.
+
 ### New central c5d: c5c's settings with the planning margin off (build 2026-10-16a), adopted from the 0% test, which it reproduces exactly; adequacy set by the probabilistic standard alone; the 10% margin becomes sensitivity s_prm10 (user, 16 Oct 2026, message 133); PROVISIONAL
 
 Decision (user, message 133): the build LP's planning reserve margin is off in the central. Adequacy is then set by the
