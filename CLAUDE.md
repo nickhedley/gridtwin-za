@@ -40,9 +40,10 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (16 Oct 2026, build 2026-10-16c, main e6da3eb, ESK19679.csv present, nothing else running): 818/823, node checks
-731/736 plus audit 87/87; eng5 5/6. On build 15f it was 816/821; 16b added two checks, both passing (the LICENSE list, the
-LCOE anchors' capacity factors). 815/821 and eng5 6/6 on build 15d, branch claude/comply. eng5's one failure, check 6 'storage cuts
+Expected (16 Oct 2026, build 2026-10-16e, branch claude/site-sweep2 on main aa23aa5, ESK19679.csv present, two pathway jobs
+running beside it): 819/824, node checks 732/737 plus audit 87/87; eng5 5/6. 16e added one check, passing (validate_consistency
+'CCS at the default share cuts emissions part of the way', message 157 (3)). On build 16c (main e6da3eb, nothing else running) it
+was 818/823; on 15f 816/821; 16b added two checks, both passing (the LICENSE list, the LCOE anchors' capacity factors). 815/821 and eng5 6/6 on build 15d, branch claude/comply. eng5's one failure, check 6 'storage cuts
 unserved', is intended behaviour (user, 16 Oct 2026, message 141): since build 15e spare gas charges the existing stores ahead of
 a forecast shortfall (laGasCharge), which cuts unserved energy with no new batteries by 12%, so 30 GW of new batteries cut it
 8.3% against the check's 10% (RESULTS 'New central c5d'). The check is unchanged; its redesign waits for after the note (TODO
