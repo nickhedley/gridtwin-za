@@ -97,7 +97,7 @@ def haversine_km(a, b, c, d):
         math.cos(rad(a)) * math.cos(rad(c)) * math.sin(rad(d - b) / 2) ** 2))
 
 gen = defaultdict(float); placed = 0
-for row in csv.DictReader(open(N('fleet_by_region_v2.csv'))):
+for row in csv.DictReader(l for l in open(N('fleet_by_region_v2.csv')) if not l.startswith('#')):
     if row.get('Scenario') != 'BASE':
         continue
     try:

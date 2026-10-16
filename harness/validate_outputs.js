@@ -491,10 +491,12 @@ function probe(w, src) {
   checkRange('Diesel OCGT LCOE', lc('Diesel OCGT'), 7.00, 13.50,
     'SRMC R6,206/MWh + OCGT capex at 2-10% capacity factor', 'R/kWh');
 
-  // Merit order must be monotonic where the physics demands it.
+  // Merit order: the wind and solar anchors both sit below diesel (user, 16 Oct 2026, message 144 (1)). Was solar < wind <
+  // diesel; the anchors now come from the central's own costs (bldLcoeAnchor), which put wind at R552.4 and solar at
+  // R552.8/MWh, so solar below wind no longer holds (RESULTS 'Site figures re-measured on build 2026-10-16a').
   const solar = lc('Utility solar PV'), wind = lc('Wind'), diesel = lc('Diesel OCGT');
-  results.push({ name: 'Merit order: solar < wind < diesel', actual: `${solar} < ${wind} < ${diesel}`,
-    expected: 'ascending', tol: null, pass: solar < wind && wind < diesel,
+  results.push({ name: 'Merit order: wind and solar below diesel', actual: `${wind}, ${solar} < ${diesel}`,
+    expected: 'both below diesel', tol: null, pass: solar < diesel && wind < diesel,
     source: 'Structural: cheapest renewables below peaking plant', unit: '' });
 
   // ───────────────────────────────────────────────────────────────────────────

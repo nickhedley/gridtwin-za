@@ -1246,7 +1246,7 @@ if (typeof require !== 'undefined' && require.main === module) {
   const newBattMw  = parseFloat(process.argv[4] || '0');
 
   function parseCSV(text) {
-    const lines = text.trim().split('\n'), headers = lines[0].split(',');
+    const lines = text.trim().split('\n').filter(l => !l.startsWith('#')), headers = lines[0].split(',');   // '#' lines state the source
     return lines.slice(1).map(line => { const v=line.split(','),r={}; headers.forEach((h,j)=>{r[h]=v[j];}); return r; });
   }
 
@@ -1273,7 +1273,7 @@ if (typeof require !== 'undefined' && require.main === module) {
   Object.keys(rooftopMw).forEach(r => { rooftopMw[r] = Math.max(0, rooftopMw[r] - (_priv[r] || 0)); });
 
   // fleet: parse CSV keeping quotes/commas correctly via manual field split
-  const fleetRaw = fs.readFileSync('fleet_by_region_v2.csv','utf8').trim().split('\n');
+  const fleetRaw = fs.readFileSync('fleet_by_region_v2.csv','utf8').trim().split('\n').filter(l => !l.startsWith('#'));
   // strip surrounding quotes from each field (the CSV uses quoted fields throughout)
   const unq = s => s ? s.replace(/^"+|"+$/g,'').trim() : '';
   const fHdr = fleetRaw[0].split(',').map(unq);

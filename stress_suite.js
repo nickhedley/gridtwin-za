@@ -8,7 +8,7 @@ const path = require('path');
 const { NodalEngine, REGIONS, CORRIDORS } = require('./nodal/nodal_engine.js');
 
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
+  const lines = text.trim().split('\n').filter(l => !l.startsWith('#'));   // '#' lines state the file's source
   const headers = lines[0].split(',');
   return lines.slice(1).map(line => {
     const vals = line.split(',');

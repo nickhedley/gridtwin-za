@@ -61,7 +61,7 @@ def build_topology_only():
     return n
 
 def load_real_data():
-    demand_df = pd.read_csv('demand_2025_regional.csv')
+    demand_df = pd.read_csv('demand_2025_regional.csv', comment='#')
     demand = {r: demand_df[f'{r}_corrected'].values for r in REGIONS}
 
     profiles = json.load(open('profiles_regional.json'))
@@ -71,7 +71,7 @@ def load_real_data():
     cap = json.load(open('regional_renewable_capacity.json'))
     rooftop_mw = json.load(open('rooftop_mw_by_region.json'))
 
-    fleet_df = pd.read_csv('fleet_by_region_v2.csv')
+    fleet_df = pd.read_csv('fleet_by_region_v2.csv', comment='#')
     fleet_df = fleet_df[fleet_df['Scenario'] == 'BASE'].copy()
     for col in ['Heat Rate (GJ/MWh)', 'Fuel Price (R/GJ)', 'Variable O&M Cost (R/MWh)', 'Capacity (MW)',
                 'Max Ramp Up (%/h)', 'Max Ramp Down (%/h)', 'Min Stable Level (%)',

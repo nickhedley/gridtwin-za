@@ -242,6 +242,16 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
     notes.push(`mean ${tech} CF across ${xs.length} years: ${m.toFixed(2)}%`);
   }
 
+  // THE LCOE ANCHORS' CAPACITY FACTORS (user, 16 Oct 2026, message 143 (1)). FIXED.lcoeWind and lcoePv are computed from
+  // BLD_COST at NEW_WIND_CF_12Y and NEW_PVTRK_CF_12Y, held as constants because the weather years load after the sliders
+  // are built. They must equal the twelve-year means the loaded profiles give.
+  {
+    const a = probe(`const m = bldTwelveYearMeans(1, true); return { w: m.wind, t: m.solar, cw: NEW_WIND_CF_12Y, ct: NEW_PVTRK_CF_12Y, mod: bldWindModernOn() };`);
+    check('the LCOE anchors use the twelve-year new-build capacity factors',
+          !a.error && a.mod === true && Math.abs(a.w - a.cw) < 5e-5 && Math.abs(a.t - a.ct) < 5e-5,
+          a.error || `wind ${a.w} against ${a.cw}, tracking solar ${a.t} against ${a.ct}, modern wind ${a.mod}`);
+  }
+
   // 4. THE ANCHORS. Each path against the MEASUREMENT, not against each other.
   {
     // Eskom's own wind CF for the anchor year, read from the hourly file with the hourly
