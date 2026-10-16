@@ -3423,6 +3423,56 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### Coal emissions compliance switch COMPLY (build 2026-10-15d, branch claude/comply): none leaves the optimiser's LP and c5b_14r's engine check unchanged to every digit; full compliance costs R38.0bn a year from 2031 on 21.8 GW of in-scope coal (R1,746/kW-yr), Eskom's recommended plan R11.6bn (R533/kW-yr); in pass 1 of c5b_14r's null LP even the full charge retires no coal early; runs s_comply_comp and s_comply_full held (user, 15 Oct 2026, messages 119 and 122 (4))
+
+What it is: COMPLY = none (default) / compromise / full, in the optimiser (bldBuildLP: rca_, in-scope coal retired early within the
+fleet's rc_, credited the year's charge per MW), the pathway output (comply: the charge on the coal kept, by year) and the engine check
+(complyBn and costComply beside cost, only when a run carries it), with a control in the build panel. Two groups (user, message 122
+(4)): Medupi, Majuba, Matimba, Kendal, Lethabo and Tutuka carry the cost (Eskom's six FGD stations); every other station none (Kusile
+already compliant; Matla, Duvha and Kriel close before FGD could finish). Source and settings: Eskom to the NCOP select committee,
+10 June 2025 (PMG meeting 40926 and the attached presentation; SOURCES 'Coal emissions compliance cost', PR #53).
+
+Assumptions, accepted by the user as provisional (15 Oct 2026, message 125 (4)): allocation pro rata by MW of the six (the presentation does not itemise by station);
+the whole R77bn falls on the six (Kusile's part cannot be separated, so their share is overstated by it); rand year not stated, taken as
+January 2025 rands x SA CPI to January 2026 (1.035); capital from 2031 as an annuity at BLD_DISC (8%) over each station's remaining life
+to its last unit's scheduled closure, at most 30 years (Medupi, beyond 2050, takes 30); the charge is per MW standing, so a unit that
+closes stops paying (a slight under-recovery) and early retirement avoids it pro rata (retiring part of a station is a linear
+approximation). Cross-check: Medupi's pro-rata share of full compliance is R50.5bn against R41.7bn for its FGD alone (Eskom FY2026
+integrated report, as reported by Business Day, 2 Sep 2026) and R56.2bn in February 2026's draft cost-benefit study. Pro rata by MW therefore puts R8.8bn (21%) more on Medupi than the
+reported FGD figure; the reported figure covers FGD only, so the gap is not all over-allocation.
+
+On c5b_14r's coal dates (coal_dates_irp2025.json), from the app's own functions (complyStations, complyYear):
+
+| Station | MW (scaled) | Last unit closes | Annuity life from 2031, y | Compromise capital / annuity / opex, R bn | Full capital / annuity / opex, R bn |
+|---|---|---|---|---|---|
+| Medupi | 4,137 | beyond 2050 | 30 | 15.1 / 1.34 / 0.41 | 50.5 / 4.49 / 1.24 |
+| Majuba | 3,649 | 2051 | 20 | 13.4 / 1.36 / 0.36 | 44.6 / 4.54 / 1.09 |
+| Matimba | 3,536 | 2044 | 13 | 12.9 / 1.64 / 0.35 | 43.2 / 5.47 / 1.06 |
+| Kendal | 3,680 | 2050 | 19 | 13.5 / 1.40 / 0.37 | 45.0 / 4.68 / 1.10 |
+| Lethabo | 3,410 | 2041 | 10 | 12.5 / 1.86 / 0.34 | 41.7 / 6.21 / 1.02 |
+| Tutuka | 3,364 | 2041 | 10 | 12.3 / 1.83 / 0.34 | 41.1 / 6.12 / 1.01 |
+
+| Year | In-scope MW standing | Compromise R bn a year (R/kW-yr) | Full R bn a year (R/kW-yr) |
+|---|---|---|---|
+| 2030 | 0 | 0.00 (0) | 0.00 (0) |
+| 2031 | 21,776 | 11.61 (533) | 38.03 (1,746) |
+| 2035 | 21,776 | 11.61 (533) | 38.03 (1,746) |
+| 2040 | 13,750 | 6.68 (486) | 21.83 (1,588) |
+
+Tests (build 2026-10-15c):
+- LP key: pass 1 of the null's LP (c5b_14r's settings, WIN_FROM c5b_14r's windows) is byte-identical on main (15b), on the branch with
+  COMPLY unset and with COMPLY=none: sha1 39bc3c87c6..., c5b_14r's own cached key. The coal-dates rule moved into the app
+  (BLD_COAL_UNIT_DATES, same rule and summation order as the pathway's old override), and that LP covers it.
+- With compromise or full, the LP equals main's once the rca_ terms, their 10 rcain_ rows and 10 bounds are removed.
+- c5b_14r's engine check, 2035, on the branch: cost 274.53930954131226, CO2 128.60122335276498, mean 0.4980164465421398, as on 14r;
+  no compliance fields.
+- validate_lp: a new check, the same LP-key test on the suite's state, plus the capital summing to R257bn x 1.035.
+- Full compliance, pass 1 of the null's LP, solved: Optimal, R1,588.3bn without the charge on coal kept; no coal retired early in any
+  year (neither rc_ nor rca_), as in c5b_14r itself. At R1,746/kW-yr, keeping in-scope coal and paying is cheaper in the LP than
+  replacing it within the build-rate caps; the held runs will show whether later passes change that.
+- Build 2026-10-15d: the control's always-visible note moved into the label's hover text (the audit's 4,250-word prose ceiling; 4,272
+  with it, 4,247 without) and an error message no longer starts with a capitalised word. Markup and message only; the LP is unchanged.
+
 ### c5b on build 2026-10-14r, the final base: adequate after five passes; the engine check passes every year; R2,393.5bn engine PV (+R7.9bn on c5b_mr2), 1,991.9 Mt CO2 2026-40 (-9.1 Mt); the CO2 drop is the build, not the code (user, 14 Oct 2026, messages 100 and 105)
 
 Run: workflow 'Optimiser long run', name c5b_14r, code 6045387 (build 2026-10-14r), five jobs ending with run 38628612316 ('done

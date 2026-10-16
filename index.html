@@ -647,6 +647,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div id="bldPaceNote" style="font-size:9.5px;color:var(--ink2);margin-top:3px"></div>
           </div>
           <div>
+            <label for="bldComply" title="From 2031, charged on Medupi, Majuba, Matimba, Kendal, Lethabo and Tutuka while they stand; retiring them early avoids it. Eskom to Parliament, 10 June 2025." style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Coal emissions compliance cost?</label>
+            <select id="bldComply" onchange="state.bldComply=this.value" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <option value="none" selected>None &ndash; as in the central pathway</option>
+              <option value="compromise">Eskom's recommended plan &ndash; R77bn + R2.1bn a year</option>
+              <option value="full">Full compliance &ndash; R257bn + R6.3bn a year</option>
+            </select>
+          </div>
+          <div>
             <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Where to build?</label>
             <select id="bldRegional" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
               <option value="0">National &ndash; how much, and when</option>
@@ -5304,7 +5312,8 @@ function bldPhesCumCapMW(cap, y){
 }
 // SA CPI, January 2024 to January 2026: 3.2% (January 2025) and 3.5% (January 2026), Stats SA headline as reported
 // (SOURCES 'SA CPI, January 2024 to January 2026'). One constant for every January 2024 rand figure restated in 2026 rands.
-const CPI_JAN24_TO_JAN26 = 1.032 * 1.035;
+const CPI_JAN25_TO_JAN26 = 1.035;
+const CPI_JAN24_TO_JAN26 = 1.032 * CPI_JAN25_TO_JAN26;
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -5558,6 +5567,8 @@ const FIXED = {
   demandYear:null,
   // Build optimiser may retire coal ahead of Eskom's unit schedule (rc_ in bldBuildLP). 4 Oct 2026.
   bldCoalEarlyOn:1,
+  // Coal emissions compliance cost (COMPLY_MES): 'none' (default), 'compromise' or 'full'. 15 Oct 2026, user, messages 119 and 122.
+  bldComply:'none',
   // Build optimiser may build offshore wind, capped at ESMAP's medium path. 4 Oct 2026.
   bldOffshoreOn:1,
   // Utility solar build-rate cap growth, % a year from the 2026 cap: an assumption that the
@@ -9877,6 +9888,60 @@ const BLD_PEAKERS = [
 ];
 function bldPeakerOffYear(p, S){ const m = S.bldPeakerRet | 0; return m === 1 ? p.eol : m === 2 ? p.irp : 9999; }
 function bldPeakerExtOn(p, S, y){ return (S.bldPeakerRet | 0) === 1 && !!S.bldPeakerLifeExt && p.ext && y >= p.eol; }
+// COAL EMISSIONS COMPLIANCE (TODO 14em; user, 15 Oct 2026, messages 119 and 122 (4)). Eskom to the NCOP Select Committee on Agriculture,
+// Land Reform and Mineral Resources, 10 June 2025 (PMG committee meeting 40926 and the attached presentation, 'Implications and costs of
+// compliance with the Minimum Emissions Standards'): full compliance ~R257bn capital plus R6.3bn a year, flue-gas desulphurisation at
+// Medupi, Majuba, Matimba, Kendal, Lethabo and Tutuka; Eskom's recommended plan R77bn plus R2.1bn a year (SO2 at Kusile and Medupi,
+// particulates and NOx at six stations). Two groups (user, message 122 (4)): the six stations in scope carry the cost and every other
+// station none. Kusile is already compliant, and the part of the R77bn that is Kusile's cannot be separated, so the whole R77bn falls on
+// the six (an assumption that overstates their share by Kusile's part). Matla, Duvha and Kriel close before FGD could finish (Eskom
+// excluded them). Allocation: pro rata by MW of the six, since the presentation does not itemise by station; cross-check: Medupi's FGD
+// alone is R41.7bn (Eskom FY2026 integrated report, as reported by Business Day, 2 Sep 2026), against its pro-rata share of the full
+// case. Rand year: not stated; taken as January 2025 rands and escalated by SA CPI to January 2026 (assumption). From 2031, each
+// station's capital is an annuity at BLD_DISC over its remaining life to its last unit's scheduled closure (at most 30 years), plus
+// the yearly operating cost, charged per MW of the station still standing (units closing earlier stop paying: a slight
+// under-recovery). Early retirement of in-scope coal avoids both, pro rata: retiring part of a station saves part of its cost, a
+// linear approximation. The charge is reported beside the engine's cost; the engine's dispatch is unchanged.
+const COMPLY_MES = {
+  stations: ['Medupi', 'Majuba', 'Matimba', 'Kendal', 'Lethabo', 'Tutuka'],
+  cases: { compromise: { capexBn: 77, opexBnYr: 2.1 }, full: { capexBn: 257, opexBnYr: 6.3 } },
+  fromYear: 2031, maxLifeY: 30, rand: CPI_JAN25_TO_JAN26,
+};
+function complyCase(S){
+  const c = (S && S.bldComply != null) ? S.bldComply : FIXED.bldComply;
+  if (c !== 'none' && c !== 'compromise' && c !== 'full') throw new Error('bldComply must be none, compromise or full: ' + c);
+  return c;
+}
+// The six stations with their MW (scaled as bldCoalMW), closure year, capital, its annuity and the yearly operating cost, R.
+function complyStations(S){
+  const c = complyCase(S); if (c === 'none') return [];
+  const K = COMPLY_MES.cases[c], sc = bldCoalScale();
+  const st = COMPLY_MES.stations.map(name => {
+    const gs = UC_FLEET.filter(g => g.name.replace(/\*+$/, '') === name);
+    if (!gs.length) throw new Error('bldComply: no UC_FLEET rows for ' + name);
+    const last = g => { const d = BLD_COAL_UNIT_DATES && BLD_COAL_UNIT_DATES[g.name]; return d ? Math.max(...d) : (g.decom === 'beyond 2050' ? 9999 : parseInt(g.decom, 10)); };
+    return { name, groups: gs, mw: gs.reduce((a, g) => a + g.cap, 0) * sc, close: Math.max(...gs.map(last)) };
+  });
+  const tot = st.reduce((a, x) => a + x.mw, 0);
+  for (const x of st){
+    x.life = Math.max(1, Math.min(COMPLY_MES.maxLifeY, x.close - COMPLY_MES.fromYear));
+    x.capexR = K.capexBn * 1e9 * COMPLY_MES.rand * x.mw / tot;
+    x.opexR = K.opexBnYr * 1e9 * COMPLY_MES.rand * x.mw / tot;
+    x.annR = bldAnnuity(x.capexR, x.life);
+  }
+  return st;
+}
+// The charge in model year y, R, and the in-scope MW standing (scaled); rateR is the charge per MW standing.
+function complyYear(S, y){
+  const st = complyStations(S);
+  if (!st.length || y < COMPLY_MES.fromYear) return { chargeR: 0, mwA: 0, rateR: 0 };
+  const sc = bldCoalScale(); let chargeR = 0, mwA = 0;
+  for (const x of st){
+    const m = x.groups.reduce((a, g) => a + bldCoalGroupRawMW(g, y), 0) * sc;
+    if (m > 0){ mwA += m; chargeR += (x.annR + x.opexR) * m / x.mw; }
+  }
+  return { chargeR, mwA, rateR: mwA > 0 ? chargeR / mwA : 0 };
+}
 // Diesel MW retired by year y, less any life extension the build LP chose (cols: its solution, or none).
 function bldPeakerDecomMW(y, S, cols){
   let mw = 0;
@@ -10148,11 +10213,23 @@ function bldCapex(tech, year){
 // UC_FLEET's unit sizes sum to 41.4 GW in 2026 against Eskom's nominal 39,692 MW (integrated
 // report FY2026). The schedule keeps its shape and is scaled so 2026 matches FIXED.coalInstalledMW;
 // one scale for both build LPs. 4 Oct 2026.
+// Per-unit decommissioning years for a sensitivity (the pathway's COAL_DATES, TODO 14cr): {group name: [year per unit]}. A listed
+// unit is gone from the start of its year; groups not listed keep UC_FLEET's date. null (default): UC_FLEET's dates only.
+let BLD_COAL_UNIT_DATES = null;
+// MW of one UC_FLEET group standing at the start of a year (unscaled).
+function bldCoalGroupRawMW(g, year){
+  const d = BLD_COAL_UNIT_DATES && BLD_COAL_UNIT_DATES[g.name];
+  if (d){ let cap = 0; const per = g.cap / d.length; for (const y of d) if (y > year) cap += per; return cap; }
+  const dy = (g.decom === 'beyond 2050') ? 9999 : parseInt(g.decom, 10);
+  return dy > year ? g.cap : 0;
+}
+// Summed unit by unit in UC_FLEET order, as the pathway's COAL_DATES override did, so the LP's coal rows are unchanged to the digit.
 function bldCoalRawMW(year){
   let cap = 0;
-  for (const u of UC_FLEET){
-    const dy = (u.decom === 'beyond 2050') ? 9999 : parseInt(u.decom, 10);
-    if (dy > year) cap += u.cap;
+  for (const g of UC_FLEET){
+    const d = BLD_COAL_UNIT_DATES && BLD_COAL_UNIT_DATES[g.name];
+    if (d){ const per = g.cap / d.length; for (const y of d) if (y > year) cap += per; }
+    else { const dy = (g.decom === 'beyond 2050') ? 9999 : parseInt(g.decom, 10); if (dy > year) cap += g.cap; }
   }
   return cap;
 }
@@ -10714,6 +10791,13 @@ function bldBuildLP(opts){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
     obj.push('-' + (S.fomCoal * 1000 * df).toFixed(3) + ' rc_' + y);
   }
+  // COMPLIANCE (COMPLY_MES): rca_<y>, in-scope coal retired early by year y (within rc_<y>), avoids the year's compliance charge per MW.
+  // The charge on what stays is a constant, outside the LP. 'none' adds nothing, so the LP text is unchanged.
+  const CMP = RC_ON ? Y.map(y => ({ y, ...complyYear(S, y) })).filter(q => q.mwA > 0) : [];
+  for (const q of CMP){
+    const df = 1/Math.pow(1+BLD_DISC, q.y-2026);
+    obj.push('-' + (q.rateR * df).toFixed(3) + ' rca_' + q.y);
+  }
   // REPURPOSED CONNECTIONS (TODO 14ar): rp_<t>_<y> MW of that year's build on a connection freed by retired coal,
   // which avoids the technology's grid cost from then on. Offshore and rooftop cannot use one.
   // bldRpExclude (14 Oct 2026): technologies barred from them.
@@ -10745,6 +10829,9 @@ function bldBuildLP(opts){
   L.push('Subject To');
   if (RC_ON) for (let i = 1; i < Y.length; i++)
     L.push(' rcmono_' + Y[i] + ': rc_' + Y[i] + ' - rc_' + Y[i-1] + ' >= 0');
+  // Within the fleet's early retirement (rc_ is already cumulative); no monotone row of its own, since the in-scope MW standing falls
+  // as units reach their dates.
+  for (const q of CMP) L.push(' rcain_' + q.y + ': rca_' + q.y + ' - rc_' + q.y + ' <= 0');
   const cumOff = y => Y.filter(yy => yy <= y).map(yy => 'b_off_' + yy);
   if (OFF_ON) for (const y of Y) L.push(' offcap_' + y + ': ' + cumOff(y).join(' + ') + ' <= ' + OFF_PATH(y).toFixed(1));
   const PHES_CAP = y => bldPhesCumCapMW(S.bldPhesCap, y), PHES_RATE = y => PHES_CAP(y) > 0 ? S.bldPhesRateMW : 0;
@@ -11212,6 +11299,7 @@ function bldBuildLP(opts){
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + ((S.bldLiEnergyHours ?? FIXED.bldLiEnergyHours) * RATE.batt).toFixed(1));   // bldLiEnergyHours x the power cap
   if (PS_ON) for (const y of Y) L.push(' 0 <= b_ps_'+y+' <= 0');
   if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
+  for (const q of CMP) L.push(' 0 <= rca_'+q.y+' <= ' + q.mwA.toFixed(1));
   for (const p of LE_P) L.push(' 0 <= le_' + p.id + ' <= ' + p.mw);
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
   for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
@@ -19302,7 +19390,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-15b';
+const BUILD_STAMP = '2026-10-15d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
