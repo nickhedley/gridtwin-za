@@ -1341,3 +1341,20 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
 - Neither names a planning reserve margin. The build LP's 10% margin therefore has no South African source (RESULTS 'Planning
   reserve margin in the build LP').
 
+
+## Eskom Distribution, EEBI webinar deck, 14 Oct 2026: rooftop cross-check and cost-to-serve (user, 16 Oct 2026, message 147; record only, no input changed)
+
+Eskom Distribution, 'Time-of-Use Tariffs, Feed-in Tariffs and Smart Metering', EEBI webinar, 14 October 2026, slide 3. Figures
+as given by Nick Hedley; the deck was not read here. Eskom's terms apply: cited and summarised, the slides not reproduced.
+
+- Rooftop cross-check: privately procured solar PV 5,953 MW in July 2024, 6,165 MW in January 2025 and 6,208 MW in May 2025.
+  - NTCSA's weekly privately-procured solar PV series, which the model uses: January 2025 6,177.5 MW (section 'Notes that keep
+    biting', the Backcast 2025 derivation), 0.2% above Distribution's 6,165; June 2025 6,800 MW (index.html, the comment beside
+    the rooftop derivation), 9.5% above Distribution's May 2025 figure, one month earlier; June 2026 9,107.4 MW.
+  - The model's input is FIXED.rooftopMW 8,942.1 MW: NTCSA's August 2026 9,430.1 MW less 488 MW of H1 2026 wheeled solar. The
+    9.1 GW is the Eskom comparison table's rooftop row (as at 9 August 2026).
+  - NTCSA's series covers every installation without an NTCSA contract, wheeled ground-mounted plant included; Distribution's
+    definition is not recorded here. The definitions may differ. Reconcile after the note (TODO 14fb).
+- Cost-to-serve, for TODO 14an and the industrial electrification scope (HANDOVER 'An industrial electrification scenario, to be
+  built'): about 70% of cost-to-serve has fixed or capacity drivers; the generation capacity charge recovered about 1.4% of
+  generation costs in 2025/26.
