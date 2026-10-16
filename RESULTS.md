@@ -3423,6 +3423,37 @@ Decisions (user, 15 Oct 2026, message 107); every result in this entry is provis
   +R38.8bn against the null). The IRP gas plan beyond the determinations accounts for about R90bn of s_irpgas's premium:
   s_irpgas less s_detgas is R91.9bn on the engine (corrected 15 Oct from R92.0bn, which subtracted the rounded R130.8bn and R38.8bn; generated from the run outputs, message 115) and R88.5bn on the objective (R104.5bn less R16.0bn).
 
+### New gas pays its full annualised capex, fixed O&M and LNG terminal charge whatever it runs; no published price or revenue figure is labelled energy-only (user, 16 Oct 2026, message 130 resent; TODO 14an); report only, no model change
+
+Gas. Build 2026-10-16b (the gas cost terms are unchanged from 16a). The engine's capital line (newCapexR in simulate) charges
+every new MW of gas the annuity of its capex at the vintage midpoint plus fixed O&M (acapAt('ccgt'), acapOc('ocgt'),
+acapOc('ocgd')): capacity times R/kW-yr, with no term in hours run. The LNG terminal charge (GAS_FOM_ADD, R530.5/kW-yr in c5d)
+is added to BLD_FOM.ccgt and BLD_FOM.ocgt by both the pathway (the build LP) and harness/pathcheck.js (the engine check), so it
+reaches CCGT and open-cycle on LNG, not open-cycle on diesel. Test ('Today 2026' at scenario year 2035, gas fuel set to R1m/MWh
+so the new plant barely runs, 0.019 TWh, a 0.2% capacity factor; one headline run each, all new gas reset per case), change in
+newCapexR per 1,000 MW: CCGT R3.568bn a year (R3,568/kW-yr), R4.098bn with the terminal (+R0.531bn, exactly 530.5 x 1,000 MW);
+open-cycle on LNG R2.742bn, R3.273bn with the terminal; open-cycle on diesel R2.742bn, no terminal. The charge equals MW times the
+R/kW-yr in every case. Harness caution found on the way: applyState resets sliders and PRESET_NON_SLIDER_KEYS only, so newOcgtMW
+and newOcgdMW carry over between presets in a script; the page's optimiser leaves both at 0 (bldOcgtOn and bldOcgdOn off) and
+pathcheck sets them each year, so no recorded run is affected.
+
+Labels. Build 2026-10-16b, rendered in Chromium ('Today 2026'). No panel says energy-only. Figures that are energy-only by
+construction (the hourly shadow price: the running cost of the marginal unit, and the value of lost load, R87,000/MWh, when
+demand goes unserved; no capacity or reserve revenue with 'Price reserve capacity' off, the default) and how they are labelled:
+- Wholesale shadow price, with its capture-price table ('what each technology actually earns': wind R755, solar R744, coal R761,
+  battery R3,477/MWh): labelled 'what a market would clear at'; the footnote explains the price, not that capacity and reserve
+  revenue are left out.
+- Price-setting technology by hour: as above.
+- Capture price forecast ('what a wind or solar PPA is worth'), capture rate by region and capture rate projections: not
+  labelled energy-only; 'what a project earns' reads as total earnings.
+- Battery revenue benchmark ('what a BESS would earn'): describes arbitrage in the text, not in its label.
+Labelled by stream, so not energy-only and clear: battery revenue split (arbitrage, reserve and inertia, capacity; the last two
+R0 by default) and battery revenue projections ('shows arbitrage only'); capacity payments (a capacity stream by design). The
+shadow dynamic retail price is an all-in retail price by design and says so. Where a battery earns most needs a full model run
+and was not rendered. TODO 14an bears on all of the energy-only figures: when gas runs the shadow price can sit below gas's
+running cost, and storage is priced below the unit that is running, so capture prices, battery arbitrage and the missing-money
+figures understate what the energy market would pay in those hours.
+
 ### Generation by carrier, c5d and c5c, 2030 / 2035 / 2040 (build 2026-10-16a; user, 16 Oct 2026, message 139 (1)); report only, no model change
 
 Settings. The hooked engine check of message 135 (local copy of build 16a, harness/pathcheck.js TF=0.5 GRID=1, all years, means
