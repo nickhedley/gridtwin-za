@@ -3466,7 +3466,8 @@ the check now tests that the wind and solar anchors both sit below diesel.
 
 The two data files without a licence field (user, message 144 (3)) now state their source in a header line, 'under the source's
 terms', no licence chosen: nodal/fleet_by_region_v2.csv from PyPSA-RSA (as recorded in the data repository's notes; slimming it
-waits on TODO 14dh), nodal/demand_2025_regional.csv from UCT ESRG (ZivaHub; dataset and version not recorded). Check on the
+waits on TODO 14dh), nodal/demand_2025_regional.csv as likely UCT ESRG regional demand (ZivaHub), version unconfirmed (user,
+message 145; TODO 14fa). Check on the
 latter: it is not Eskom data obtained on request. Its national column (8,760 hours, mean 26,300 MW, equal to the sum of the ten
 regional columns) correlates 0.91 with ESK19679's 2025 domestic demand in profiles.json (demand_2025) and runs 11.9% above it,
 so it is not a copy of that series. Every reader of the nodal/ copies skips '#' lines (both nodal engines, stress_suite.js,
