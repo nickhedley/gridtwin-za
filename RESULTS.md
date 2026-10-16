@@ -3476,6 +3476,22 @@ build_hydra_split.py, build_substation_bands.py, the validation scripts); stress
 Removed from always-visible prose under the rule of items 8 and 31: 'Coal share moves about 0.45 points per 1% of demand ... an
 8-point gap' (other published models panel), a measurement with no RESULTS entry.
 
+### Site sweep 2: numbers on the page that RESULTS does not record, removed; recorded ones quoted with their build (user, 16 Oct 2026, message 152; build 2026-10-16d)
+
+Checked against main e6da3eb (build 2026-10-16c) and RESULTS. Removed from the page, unrecorded: the residual bill +40% at a 50%
+private share; the VPP's 2 GW by 50% enrolment; part-load 1.5% today, 3.6% with 20 GW more solar and about 4% of the CO2 saving;
+coal 11% above and 2% below its benchmark; "fiftyfold" between the deterministic run and the ensemble (the default now sheds 0);
+17% less wind in 2022 than 2023; the 23 GW committed-fleet floor; the shadow price's R715-760 range and 7 GW of fast-start plant;
+206 TWh against 183 TWh of billed sales and the 9.1% loss figure; 3.1% demand growth in the capture price forecast (the forecast
+now holds the scenario's demand level); battery revenue streams "worth roughly 40%" elsewhere; the R694 against R748 discharge
+price (superseded by 'TODO 14dp settled on build 14a'). Kept, recorded: the long-duration premium's about R9,700/kW-yr ('What a
+capacity payment for long-duration storage would have to be', build 2026-09-17a, R9,683 at 20 GW); lithium at about 16 hours,
+reworded to what RESULTS records, system cost lowest at 16 hours ('Lithium beyond 12 hours', build 2026-10-02d). The unit
+commitment benchmark now quotes 'Like-for-like cross-check on c5b_14r's weeks' (build 2026-10-14r): 1.1-3.5% above a single-node
+PyPSA optimum in three ordinary weeks, 1.2% in the 2026 baseline week, 26% in the 2040 stress week. The curtailment forecast note
+now gives the cause recorded in 'The 2026 replay curtails almost nothing for oversupply' (message 130).
+
+
 ### Carbon capture's cost weighted by the retrofitted share: at the new 21.8% default, Today 2026 costs +R47.8bn a year with capture against +R205.6bn before the fix, for the same 23.6 Mt cut; the default is Medupi and Kusile's share of the fleet (user, 16 Oct 2026, message 155; build 2026-10-16d)
 
 Settings. 'Today 2026' preset (applyState), one headline run each on the default profiles and the page's seed (simulate(state,
