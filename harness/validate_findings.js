@@ -489,7 +489,9 @@ setTimeout(()=>{
       return out;`);
     if (curt && !curt.error){
       // Re-pinned 4 Oct 2026 for the re-sized presets (was 65.2 and 119.7, on the old builds).
-      const PIN = { 'Deep decarbonisation 2035': 52.7, 'Fossil-free 2040': 96.3 };
+      // Re-pinned 18 Oct 2026 on build 2026-10-17i for the presets re-searched on c5e's costs, Deep topped up on independent
+      // draws (TODO 14ef; was 52.7 and 96.3). Measured on the default profiles as below; twelve-year means in RESULTS.
+      const PIN = { 'Deep decarbonisation 2035': 46.9, 'Fossil-free 2040': 114.9 };
       const bad = [];
       for (const [name, pinned] of Object.entries(PIN)){
         const got = curt[name];

@@ -18181,7 +18181,11 @@ const PRESETS={
   // Re-sized 4 Oct 2026, after the congestion fix and common-mode outages: least system cost
   // meeting half the 0.002% standard (mean shed about 2 GWh), searched technology by technology at
   // 2, 1 and 0.5 GW steps with rooftop fixed at expected uptake, then confirmed on 480 draws.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:25500,newPvMW:26000,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:10000,newBattHours:12,newIronAirMW:625,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // Re-searched 17 Oct 2026 on c5e's costs (search A, seed 20260816, 480 runs: wind 25,500, solar 26,000, lithium 10,000,
+  // iron-air 625; mean shed 1.88 against 1.89 GWh, R226.1bn a year). On independent draws (seed 71830529, 240 runs) that build
+  // shed 3.46 against 1.90, so it was topped up on those draws (message 195 (1)), six rounds: wind 26,500, solar 27,500,
+  // lithium 10,500; 1.83 GWh, R230.1bn a year (harness/ext/topup_deep_c5e.json).
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:26500,newPvMW:27500,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:10500,newBattHours:12,newIronAirMW:625,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,
@@ -18616,7 +18620,7 @@ const PRESET_DESC = {
   'IRP\'s 2030 targets': 'The IRP 2025\u2019s Table 1 build to 2030 (7.3 GW of new wind, 10.3 GW of new solar, 3.7 GW of storage, 6 GW of gas at its 51% floor), with coal retired on IRP 2025 Figure 3\u2019s dates, on the IRP\u2019s own demand growth.',
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
   'IRP path 2035': 'The IRP 2025\u2019s Table 1 build to 2035 (21.0 GW of new wind, 17.5 GW of new solar, 4.7 GW of storage, 10.75 GW of gas), on the transition presets\u2019 +5% demand, so the three compare like for like.',
-  'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035 and no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the cheapest build the preset search found that meets half the reliability standard on the central costs.`)(PRESETS['Deep decarbonisation 2035']),
+  'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035 and no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the preset search\u2019s cheapest build on the central costs, topped up until it meets half the reliability standard on independent outage draws.`)(PRESETS['Deep decarbonisation 2035']),
   'Fossil-free 2040': (P => `No coal, diesel or gas by 2040: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newOffshoreMW)} GW offshore, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the cheapest build the preset search found that meets half the reliability standard on the central costs.`)(PRESETS['Fossil-free 2040']),
 };
 const presetsEl=document.getElementById('presets');
