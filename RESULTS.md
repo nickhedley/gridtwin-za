@@ -4360,6 +4360,124 @@ verdict from the engine (user, message 179): "2025 replay (16h): 91.4 GWh shed o
 load); 76.4 GWh with interruptible load capped at Eskom's 69.5 GWh (6.9 shed), against Eskom's 459.5 GWh in 2025 (390.0 manual
 load reduction plus 69.5 interruptible load, ILS; IOS left out). ESK19679 totals."
 
+### Fixed presets and the 2025 replay, build by build from 12e to 16h: the replay now sheds 4.3 GWh against Eskom's 390 (28.3 on 12e), mostly from interruptible load; Today 2026 costs R5.0bn more from Avon and Dedisa's must-run; the IRP presets cost R1.2-7.8bn less, from the engine fixes and the central costs (user, 16 Oct 2026, message 132, TODO 14et; builds 2026-10-12e to 16h)
+
+Settings. preset_check.js (scratch): each preset applied as the page applies it (applyState), twelve weather years x 20 outage
+draws (240 runs), seeds as pathcheck.js (71830529 + k x 104729 + year x 7919), profiles.json demand and CSP; target half of 0.002%
+of customer demand. replay2025.js (scratch): '2025, as modelled' as the page runs it (simulate(state, PROFILES)); its outages are
+fixed by the preset, so 20 seeds give the same shed. Builds: main's merges 12e (0f1d9a2, the frozen c4 line; 13m, 04b5bcd,
+reproduces it to the digit), 14b, 14i, 14j, 14l, 14r, 15a, 15b, 15d, 15f, 16a, 16b, 16c, then 16h (branch claude/c5e). 13c and
+13d are main before c4 was merged, a side line not in this sequence. Run 16-17 Oct 2026, 18:38-01:03 UTC, two jobs at a time,
+beside the c5e chain. The method reproduces the 12e inventory: costs and CO2 within R0.1bn and 0.1 Mt, shed within 0.07 GWh
+(the draw set), the 2025 page run 28.3 GWh.
+
+Before and after, 12e to 16h (240 runs each; cost R bn a year, CO2 Mt, curtailment TWh, mean shed against target GWh):
+
+| Preset | Cost 12e / 16h | CO2 12e / 16h | Curtailment 12e / 16h | Shed / target 12e | Shed / target 16h |
+|---|---|---|---|---|---|
+| Today 2026 | 212.8 / 216.4 | 157.4 / 159.7 | 0.00 / 0.00 | 0.19 / 1.94 | 0.02 / 1.96 |
+| IRP 2030, delayed | 301.1 / 298.6 | 149.4 / 152.0 | 0.06 / 0.01 | 0.10 / 2.27 | 0.15 / 2.30 |
+| IRP 2030 | 307.5 / 300.6 | 128.3 / 129.7 | 2.72 / 0.11 | 0.00 / 2.27 | 0.00 / 2.30 |
+| IRP path 2035 | 287.3 / 279.5 | 64.3 / 56.5 | 38.27 / 27.37 | 0.00 / 1.90 | 0.00 / 1.92 |
+| 2025 (12 weather years) | 227.4 / 227.1 | 179.9 / 180.4 | 0.00 / 0.00 | 32.49 / 2.11 | 8.67 / 2.11 |
+| Deep 2035 | 325.2 / 281.9 | 30.6 / 15.8 | 68.74 / 42.15 | 0.03 / 1.87 | 0.00 / 1.90 |
+| Fossil-free 2040 | 386.5 / 349.1 | 0.0 / 0.0 | 110.41 / 99.26 | 0.00 / 1.78 | 0.00 / 1.80 |
+
+Step by step, Cost, R bn a year:
+
+| Step | Cause | Today 2026 | IRP 2030, delayed | IRP 2030 | IRP path 2035 | 2025 (12 weather years) |
+|---|---|---|---|---|---|---|
+| 12e to 14b | engine fixes, builds 13f-14a | -1.3 | -1.2 | -1.4 | +11.6 | -3.8 |
+| 14b to 14j | c5 inputs (14i, 14j) | -0.0 | +0.1 | +0.0 | -0.1 | +0.0 |
+| 14j to 14l | c5b demand (14k) and build (14l) | -0.1 | -2.0 | -3.4 | -8.4 | -0.8 |
+| 14l to 14r | reserve rule, Avon and Dedisa must-run, storage reserve in dispatch, interruptible load (14m-14r) | +5.0 | +3.8 | +2.7 | -0.0 | +5.7 |
+| 14r to 15d | 15a-15d | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+| 15d to 15f | central inputs (15e) and engine storage fix (15e-15f) | -0.0 | -4.4 | -6.9 | -16.3 | -1.3 |
+| 15f to 16c | 16a-16c | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+| 16c to 16h | c5e: capex on 'run' (16h) | +0.0 | +1.2 | +2.0 | +5.4 | +0.0 |
+
+Step by step, CO2, Mt:
+
+| Step | Cause | Today 2026 | IRP 2030, delayed | IRP 2030 | IRP path 2035 | 2025 (12 weather years) |
+|---|---|---|---|---|---|---|
+| 12e to 14b | engine fixes, builds 13f-14a | -0.1 | -0.9 | -2.9 | -12.3 | +0.6 |
+| 14b to 14j | c5 inputs (14i, 14j) | -0.0 | -0.1 | -0.0 | -0.0 | +0.0 |
+| 14j to 14l | c5b demand (14k) and build (14l) | +2.5 | +2.7 | +2.7 | +2.3 | -0.1 |
+| 14l to 14r | reserve rule, Avon and Dedisa must-run, storage reserve in dispatch, interruptible load (14m-14r) | -0.1 | -0.0 | -0.0 | -0.0 | -0.2 |
+| 14r to 15d | 15a-15d | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+| 15d to 15f | central inputs (15e) and engine storage fix (15e-15f) | +0.0 | +0.9 | +1.6 | +2.1 | +0.2 |
+| 15f to 16c | 16a-16c | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+| 16c to 16h | c5e: capex on 'run' (16h) | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+
+Step by step, Curtailment, TWh:
+
+| Step | Cause | Today 2026 | IRP 2030, delayed | IRP 2030 | IRP path 2035 | 2025 (12 weather years) |
+|---|---|---|---|---|---|---|
+| 12e to 14b | engine fixes, builds 13f-14a | -0.00 | -0.05 | -2.61 | -7.87 | +0.00 |
+| 14b to 14j | c5 inputs (14i, 14j) | +0.00 | +0.00 | +0.00 | +0.03 | +0.00 |
+| 14j to 14l | c5b demand (14k) and build (14l) | +0.00 | +0.00 | +0.02 | -0.34 | +0.00 |
+| 14l to 14r | reserve rule, Avon and Dedisa must-run, storage reserve in dispatch, interruptible load (14m-14r) | +0.00 | -0.00 | -0.00 | -0.00 | +0.00 |
+| 14r to 15d | 15a-15d | +0.00 | +0.00 | +0.00 | +0.00 | +0.00 |
+| 15d to 15f | central inputs (15e) and engine storage fix (15e-15f) | +0.00 | -0.00 | -0.02 | -2.72 | +0.00 |
+| 15f to 16c | 16a-16c | +0.00 | +0.00 | +0.00 | +0.00 | +0.00 |
+| 16c to 16h | c5e: capex on 'run' (16h) | +0.00 | +0.00 | +0.00 | +0.00 | +0.00 |
+
+2025 page run, by build:
+
+| Build | Shed, GWh | Pumped storage, TWh | Peakers (diesel), TWh | Coal, TWh |
+|---|---|---|---|---|
+| 12e | 28.3 | 2.32 | 2.25 | 168.6 |
+| 14b | 15.2 | 3.88 | 1.65 | 169.7 |
+| 14i | 15.2 | 3.88 | 1.65 | 169.7 |
+| 14j | 15.2 | 3.88 | 1.65 | 169.7 |
+| 14l | 15.8 | 3.77 | 1.76 | 169.5 |
+| 14r | 4.4 | 3.59 | 2.74 | 168.5 |
+| 15a | 4.4 | 3.59 | 2.74 | 168.5 |
+| 15b | 4.4 | 3.59 | 2.74 | 168.5 |
+| 15d | 4.4 | 3.59 | 2.74 | 168.5 |
+| 15f | 4.3 | 4.01 | 2.56 | 168.9 |
+| 16a | 4.3 | 4.01 | 2.56 | 168.9 |
+| 16b | 4.3 | 4.01 | 2.56 | 168.9 |
+| 16c | 4.3 | 4.01 | 2.56 | 168.9 |
+| 16h | 4.3 | 4.01 | 2.56 | 168.9 |
+
+
+What each step was, by switching features off on 16h (toggles.js, scratch; 2025 page run, and Today 2026 on twelve weather years
+x 5 draws):
+
+| Switched off | 2025 replay: shed, GWh | Pumped storage, TWh | Peakers, TWh | Today 2026: cost, R bn | Today 2026: peakers, TWh |
+|---|---|---|---|---|---|
+| Nothing (16h) | 4.3 | 4.01 | 2.56 | 216.4 | 0.91 |
+| Interruptible load (drInterruptMW 0) | 31.6 | 4.01 | 2.59 | 216.4 | 0.91 |
+| Avon and Dedisa must-run (avonDedisaMustRun 0) | 8.6 | 4.08 | 2.06 | 211.4 | 0.01 |
+| Operating reserve (reserveEnabled 0) | 2.6 | 3.96 | 1.98 | 216.6 | 0.90 |
+| Storage charged from spare coal and gas (laGasCharge 0) | 4.4 | 3.59 | 2.74 | 216.4 | 0.91 |
+| Pumped storage counted twice in reserve (psResOnce 0) | 4.3 | 4.01 | 2.55 | 216.4 | 0.90 |
+
+- 12e to 14b, the engine fixes (RESULTS 'Engine fixes (builds 2026-10-13f to 13h …)', 'Engine fix (B) against the same pass
+  marks (build 2026-10-14a)'): the 2025 replay's shed 28.3 to 15.2 GWh and pumped storage 2.32 to 3.88 TWh; IRP path 2035 +R11.6bn
+  and -12.3 Mt, its curtailment -7.9 TWh; IRP 2030's curtailment 2.72 to 0.10 TWh.
+- 14j to 14l, c5b's demand and build ('c5b demand inputs built', 'c5b build'): customer demand +2.4 to +2.9 TWh in every preset
+  but the replay, CO2 +2.3 to +2.7 Mt; cost down R2.0-8.4bn where there is new wind (fixed O&M at BW6's bids).
+- 14l to 14r: interruptible load takes 27.3 GWh off the replay's shed; Avon and Dedisa's must-run cuts it by 4.3 GWh and runs
+  0.5 TWh more diesel in the replay and 0.9 TWh more in Today 2026, R5.0bn a year; the operating reserve adds 1.7 GWh of shed.
+- 15d to 15f, the central inputs and the storage fix ('New central inputs', 'Engine storage fix'): the IRP presets' cost
+  -R4.4bn to -R16.3bn (new wind at BW5's tariff); storage charged from spare coal and gas lifts the replay's pumped storage from
+  3.59 to 4.01 TWh.
+- 16c to 16h, c5e: the presets with new wind +R1.2-5.4bn (wind capex R17,773 to R20,879/kW); the fixed presets' new solar is
+  fixed-tilt (the page default), which the basis does not touch.
+- 14b to 14j, 14r to 15d and 15f to 16c move nothing.
+
+2025, as modelled, against Eskom's 2025 (ESK19679, the author's analysis; RESULTS 'The backcast gap, re-measured'), page run on
+16h: coal 168.9 against 170.4 TWh (-0.9%), imports 6.57 and hydro 1.79 as Eskom's (inputs), peakers 2.56 against 3.36 TWh,
+pumped storage 4.01 against 4.49 TWh (inside the benchmark band, 3.37-5.62), shed 4.3 against 390 GWh, curtailment none against
+about 1.0-1.6%. The energy matches; the operation does not, as recorded since 3 Oct: Eskom shed to refill storage for the week
+ahead, which the model does not. On twelve weather years the preset sheds 8.7 GWh.
+
+Pages that quote the old figures: the reviewer pack's section 2 (28-89 GWh of shed), to be refreshed on c5e. No fixed preset's
+description quotes a result. Fossil-free 2040's curtailment (99.3 TWh on 240 runs; validate_findings' band 96.3 +/-15% on its own
+single run) waits for the re-search, as TODO 14ef records. Deep decarbonisation and Fossil-free are searched next, on 'run'.
+
 ### Build 2026-10-16h, central c5e: wind and solar capex backed out at the capacity factor each runs at by default; suite 819/824 as on 16g, no check changes status, four values move with the capex (user, 16 Oct 2026, message 161 (1); build 2026-10-16h)
 
 The change: FIXED.bldTariffCfBasis 'run' (was 'bid'). New wind R20,879/kW (was R17,773) and tracking solar R11,038/kW (was
