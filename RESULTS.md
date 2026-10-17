@@ -4839,7 +4839,19 @@ wind's capacity factor (NEW_WIND_CF_12Y) moves with the map, 0.42507 to 0.42499 
 sets new wind's capex on the central's 'run' basis, so c5f's wind capex is 0.02% below c5e's for this reason alone. Not refitted: the wind profiles' fleet bias
 factor (1.0753, fitted 6 Sep 2026 to Eskom's 2022-23 output), since Msenge ran from October 2024, outside that window.
 
-Runs (to follow here): a frozen copy of build 2026-10-17e; c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run
+Suite on build 2026-10-17e (2d5051f, 17 Oct 2026, 22:09-22:21 UTC, with ESK19679.csv; the Deep preset top-up running alongside):
+819/825, eng5 5/6. The five known failures as on main (validate_findings 2, validate_consistency 1, validate_benchmarks 1,
+validate_external 1) and eng5's 'storage vs unserved'; findings' values move a little with Msenge (July gas 764 to 657 GWh, was
+770 to 667; Fossil-free 2040 curtailment 113.7, was 113.4). One new failure: validate_response's matrix differs from the baseline
+in three cells, each responsive on main and inert here: newBattMW to coalTWh and to co2, and newVrfbMW to rePct. Cause, measured
+on both builds with the check's own sweep (scratch c5f/probe): the three were marginal on main, relative spans 1.22e-4, 1.08e-4
+and 1.42e-4 against the 1e-4 threshold; Msenge's wind lowers coal at the defaults (147.407 to 147.196 TWh) and the spans fall to
+8.8e-5, 6.4e-5 and 9.4e-5. Across 0 to 80 GW of new lithium, coal moves about 0.02 TWh on either build: at the 2026 defaults
+storage has almost no surplus to shift, so these cells did not test much before either. Baseline not rewritten; Nick decides
+(the two ways: rewrite the three cells with this cause, or give newBattMW and newVrfbMW a context where storage has surplus to
+shift, as lcoeBatt has). The check reads the page only, so c5f's runs are not affected.
+
+Runs (to follow here): a frozen copy of build 2026-10-17e (2d5051f; pass-1 LP key 71b0df1e44; started 22:23 UTC); c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run
 on c5e (30 plus s_roof05) and s_roof09 (ROOF_MW=900, c5e's pace), each at MAXP=3, two at a time, from scratch, each with its
 engine check (pathcheck.js TF=0.5 LNG=1 GRID=1, 2026-40). s_be6 follows Table 1's schedule (STOR_CUM, as s_be6t1_c5e). Runs that
 set MIN_BUILD or LI_MIN take c5f's floors merged with their own (s_committed: LI_MIN=2026:360:1440,2027:760.5:3059,
