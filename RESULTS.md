@@ -4412,6 +4412,23 @@ rooftop (3,600 MW by 2030, 6,300 by 2033 in c5e) is outside both columns; the mo
 2.5 GW a year to 2030 and 3.5 GW after, lithium 3 GW) and the freed-coal connections, not by grid capacity; what ITIPP's 3,222
 MW counts is as reported.
 
+### c5e's curtailment against Europe's: 7.0% of utility wind and solar in 2040, inside the 2.2-10% European systems report (user, 17 Oct 2026, message 162 (2); build 2026-10-16h; report only)
+
+c5e's engine check through the hooked copy (the generation-by-carrier table in 'New central c5e'): curtailed energy, surplus
+plus the 1.3% congestion stopgap, as a share of utility wind and solar available (delivered plus curtailed; rooftop is netted
+off demand and never curtailed, so it is outside):
+
+| Year | Surplus | Stopgap | Together | Together, rooftop in the base |
+|---|---|---|---|---|
+| 2030 | 0.0% | 1.3% | 1.3% | 1.0% |
+| 2035 | 2.7% | 1.3% | 4.0% | 3.4% |
+| 2040 | 5.7% | 1.3% | 7.0% | 6.0% |
+
+Europe (Beyond Fossil Fuels, Ember, E3G and IEEFA, May 2025, p.18; SOURCES): UK 10% (2024), Ireland 9.7% (2023), Germany 6.8%
+(2023), Netherlands 4.9% of wind and solar (2024), Spain 2.2% (2024); methods differ. Caveats: the 1.3% stopgap is a flat
+assumption for local grid limits a single node cannot see; the engine's midday coal blocks likely understate curtailment
+(pack limitation 23); Europe's figures are measured, c5e's modelled.
+
 ### Reviewer pack on c5e: c5e's worst 14 days exceed one LNG cargo every year from 2035 (3.04 in 2040), and 3 of its 33 stress-window-years exceed one; deemed energy upper bound R11.3bn (R6.5bn in present value) against c5d's R13.7bn; the 4-hour lithium energy cap binds in 2039; s_irpgas retires 6.2-6.5 GW of coal early from 2026 (user, 17 Oct 2026, message 161 (4), with 166, 177, 179 and 180 (1); build 2026-10-16h; report only)
 
 Settings. c5e's run and engine check as in 'New central c5e' (frozen copy of 16h; pathcheck.js TF=0.5 LNG=1 GRID=1). Deemed

@@ -1477,3 +1477,14 @@ and summarised, not reproduced. As given by Nick Hedley with pages; the report w
   24 GW by 2033; ITIPP 3,222 MW by August 2029. Set against c5e's build in RESULTS 'c5e's new wind and solar against NTCSA's
   connection programme' and the pack's build-limits note.
 
+## Beyond Fossil Fuels, Ember, E3G and IEEFA: European grid operators and the energy transition, May 2025 (user, 17 Oct 2026, message 162)
+
+Beyond Fossil Fuels, Ember, E3G and IEEFA, 'How Europe's grid operators are preparing for the energy transition', May 2025. As
+given by Nick Hedley with pages; the report was not read here. Cited and summarised; no figures reproduced.
+
+- Curtailment of wind and solar (p.18): UK 10% (2024), Ireland 9.7% (2023), Germany 6.8% (2023), Netherlands 4.9% of wind and
+  solar (2024), Spain 2.2% (2024). Methods differ between countries. Set against c5e's curtailment in RESULTS 'c5e's curtailment
+  against Europe's' and pack limitation 23.
+- System non-synchronous penetration (SNSP): EirGrid's operating limit (p.21) and Figure 4 (p.22), Ireland 75%. For the SNSP
+  measure on c5e (message 162 (1), to follow; pack limitation 4).
+
