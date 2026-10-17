@@ -18146,7 +18146,7 @@ const PRESETS={
   // Offshore is flat from 5 to 8 GW within about R1bn. Derivation in RESULTS.md.
   // Re-sized 4 Oct 2026 by the same search; offshore held at ESMAP's 5 GW deployable by 2040
   // (5.25 GW was cheaper but not deployable). No coal, so twelve weather years fix the result.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:45000,newOffshoreMW:5000,newRooftopMW:16800,newBattMW:32000,newBattHours:12,newIronAirMW:2250,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:100,newWindMW:35000,newPvMW:45000,newOffshoreMW:5000,newRooftopMW:16800,newBattMW:32000,newBattHours:12,newIronAirMW:2250,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
