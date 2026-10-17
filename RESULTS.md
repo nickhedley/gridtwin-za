@@ -4437,6 +4437,36 @@ Europe (Beyond Fossil Fuels, Ember, E3G and IEEFA, May 2025, p.18; SOURCES): UK 
 assumption for local grid limits a single node cannot see; the engine's midday coal blocks likely understate curtailment
 (pack limitation 23); Europe's figures are measured, c5e's modelled.
 
+### Coal priority in c5e's 2026: with every coal unit's minimum at 0.75 (the proxy that reaches NTCSA's 3 GW), surplus curtailment rises from 0.1 to 112 GWh and the deemed-energy upper bound from R0.47bn to R0.63bn, while the engine's 2026 cost falls R1.8bn on less diesel (user, 17 Oct 2026, message 180 (2); build 2026-10-16h; report only)
+
+Settings. c5e's 2026 engine check (pathway_c5e.json, YEARS=2026, TF=0.5 GRID=1, twelve weather years x ten draws, the engine
+check's seeds) through the hooked copy of messages 130 and 139, with every UC_FLEET row's minimum stable level raised to at least
+0.75 (MSL=0.75, as m130_msl.js; scratch copy c5e/msl only). 0.75 is the setting with which the 2026 replay reaches a winter
+midday curtailment of about 3 GW (RESULTS 'The 2026 replay curtails almost nothing for oversupply'): a proxy for keeping units
+online through daylight, not a technical minimum. Against c5e's 2026 as run, which the hooked copy returns to every digit (engine
+cost R217.87bn, CO2 155.79 Mt).
+
+| c5e, 2026 | As run | Coal minimum at least 0.75 | Change |
+|---|---|---|---|
+| Surplus curtailment, wind and solar, GWh | 0.1 | 111.6 | +111.5 |
+| of which REIPPPP's share, GWh | 0.1 | 84.7 | +84.6 |
+| Congestion stopgap (1.3%), GWh | 322 | 322 | 0 |
+| Deemed energy for curtailed REIPPPP output, upper bound, R bn (2026 rands) | 0.47 | 0.63 | +0.16 |
+| Engine cost, R bn | 217.87 | 216.08 | -1.79 |
+| Diesel, TWh | 0.90 | 0.63 | -0.27 |
+| Storage discharge (batteries and pumped storage), TWh | 3.93 | 2.94 | -0.99 |
+| Coal, TWh | 145.44 | 145.50 | +0.06 |
+| CO2, Mt | 155.79 | 155.63 | -0.16 |
+| Mean unserved energy, GWh (target 1.96) | 0.00 | 0.00 | 0 |
+
+Deemed energy as in 'The 2026 replay curtails almost nothing for oversupply' (REIPPPP's pro-rata share at reipppRate, R1,908/MWh
+in 2026, no threshold, so an upper bound). Finding: keeping coal online through daylight costs at most R0.16bn of deemed energy
+in 2026 and, in this engine, saves about R1.7bn of diesel: coal held on at midday covers the evening peak that the engine's 4-hour
+blocks otherwise meet with diesel and storage after taking units off. So the engine's midday decommitment is not least cost in
+2026, and its cost should not be read as the economic dispatch SAWEM is designed to produce (pack limitation 23 says it is;
+Nick decides on the wording). Caveats: one year; the 0.75 floor is a proxy for commitment, applied all day; no start-up costs
+or ramp limits beyond the engine's; observed 2026 claims were R1.5-2bn of backlog by mid-year against the bound here.
+
 ### s_committed and s_be6 on c5e, by carrier and year: CO2 +81.7 and +67.8 Mt against the null (+18.6 and +22.6 on c5d) because existing coal makes up energy the optimiser no longer builds wind, solar and lithium for (user, 17 Oct 2026, message 181 (1); build 2026-10-16h)
 
 Settings. Each run's engine check through the hooked copy of message 139 (TF=0.5 GRID=1, all years; scratch gen181.sh), which
