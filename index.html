@@ -4243,12 +4243,9 @@ function printPrefeas() {
   // tariff. The block STRUCTURE is public and unambiguous; the rates are not needed to show
   // that the structure does not track cost.
   //
-  // Megaflex, per Eskom's published schedule:
-  //   high demand season  Jun-Aug          low demand season  Sep-May
-  //   weekday peak        06-09, 17-19     weekday standard   09-17, 19-22
-  //   weekday off-peak    22-06
-  //   Saturday standard   07-12, 18-20     Saturday off-peak  rest
-  //   Sunday              off-peak all day
+  // Megaflex windows from 1 April 2025, by season and day type (TOU_WINDOWS, beside FIXED; message 171). Until build
+  // 2026-10-17a this held the pre-2025 schedule, one set for both seasons: weekday peak 06-09 and 17-19, standard 09-17 and
+  // 19-22, Saturday standard 07-12 and 18-20, Sunday off-peak all day.
   function touBlockOf(hour){
     const MD = [31,28,31,30,31,30,31,31,30,31,30,31];
     let m = 0, d0 = 0;
@@ -4257,13 +4254,7 @@ function printPrefeas() {
     // 1 Jan 2025 was a Wednesday; day 0 = Wed. 0=Sun ... 6=Sat
     const dow = (Math.floor(hour / 24) + 3) % 7;
     const season = (m >= 5 && m <= 7) ? 'high' : 'low';
-    let block;
-    if (dow === 0) block = 'offpeak';
-    else if (dow === 6) block = ((hod >= 7 && hod < 12) || (hod >= 18 && hod < 20))
-                                ? 'standard' : 'offpeak';
-    else if ((hod >= 6 && hod < 9) || (hod >= 17 && hod < 19)) block = 'peak';
-    else if ((hod >= 9 && hod < 17) || (hod >= 19 && hod < 22)) block = 'standard';
-    else block = 'offpeak';
+    const block = touWindowBlock(season, dow, hod);
     return { season, block, weekend: dow === 0 || dow === 6 };
   }
   window.touBlockOf = touBlockOf;
@@ -6612,6 +6603,22 @@ const FIXED = {
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
+
+// TIME-OF-USE WINDOWS (user, 17 Oct 2026, messages 171-173): Eskom's 2026/27 tariff booklet, Appendix A (printed p.46), in force
+// since 1 April 2025, cross-checked against Eskom Distribution's webinar slide 4 (14 Oct 2026) (SOURCES 'Eskom Distribution and
+// NERSA'; RESULTS 'The code's time-of-use windows against Eskom's 2025/26 changes'). Megaflex (touBlockOf) and Homeflex (flexAt)
+// share them. Hours [start, end); every other hour is off-peak. Public holidays are not modelled: each takes its weekday's windows.
+const TOU_WINDOWS = {
+  high: { peak: [[6, 8], [17, 20]], standard: [[8, 17], [20, 22]], satStandard: [[7, 12], [17, 19]], sunStandard: [[17, 19]] },          // June-August
+  low:  { peak: [[7, 9], [18, 21]], standard: [[6, 7], [9, 18], [21, 22]], satStandard: [[7, 12], [18, 20]], sunStandard: [[18, 20]] }, // September-May
+};
+// The block of an hour: season 'high' or 'low', dow 0 Sunday ... 6 Saturday, hod 0-23.
+function touWindowBlock(season, dow, hod){
+  const W = TOU_WINDOWS[season], inW = a => a.some(([s, e]) => hod >= s && hod < e);
+  if (dow === 0) return inW(W.sunStandard) ? 'standard' : 'offpeak';
+  if (dow === 6) return inW(W.satStandard) ? 'standard' : 'offpeak';
+  return inW(W.peak) ? 'peak' : inW(W.standard) ? 'standard' : 'offpeak';
+}
 
 
 // ── Unit Commitment Fleet Data (from PyPSA-RSA fleet_by_region_v2.csv) ────────
@@ -16552,14 +16559,12 @@ function retailHourly(){
   // the winter peak and off-peak and had to caveat that its Homeflex spread was a
   // high-demand-season figure. High season is three months of twelve, so the annual average
   // weights it a quarter. NERSA also moved the peak-to-standard ratio from 1:8 to 1:6 and
-  // shifted the windows, which are the ones used here.
-  const flexAt = (h, high) => {
-    const pk = high ? (h >= 6 && h < 8) || (h >= 17 && h < 20)
-                    : (h >= 7 && h < 9) || (h >= 18 && h < 21);
-    const std = high ? (h >= 8 && h < 17) : (h >= 9 && h < 18);
-    if (pk)  return high ? R.high_season_peak     : R.low_season_peak;
-    if (std) return high ? R.high_season_standard : R.low_season_standard;
-    return high ? R.high_season_offpeak : R.low_season_offpeak;
+  // shifted the windows. The windows are Eskom's 2025/26 ones (TOU_WINDOWS), weekends included, from build 2026-10-17a
+  // (message 171); before, the evening standard hours and the low season's 06-07 counted as off-peak, and every day as a weekday.
+  // dow 0 Sunday ... 6 Saturday; a weekday when not given.
+  const flexAt = (h, high, dow = 1) => {
+    const s = high ? 'high' : 'low', b = touWindowBlock(s, dow, h);
+    return R[s + '_season_' + b];
   };
 
   // A REPRESENTATIVE WEEK, hour by hour, on the same basis as the daily curve. The daily
@@ -16592,23 +16597,20 @@ function retailHourly(){
     const v = residentialRate(variable, flatSum - netSum - txSum, netSum, markup, txSum);
     week.push(capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
   }
-  // The week now uses the season it is actually showing, with all six rates.
+  // The week now uses the season it is actually showing, with all six rates, and each day's own windows: Saturday and
+  // Sunday from build 2026-10-17a (message 171), on the profile calendar (1 January a Wednesday, as touBlockOf).
   const weekHigh = (wkMode === 'W');
-  // WEEKEND RATES ARE NOT MODELLED, and until 15 Sep 2026 a ternary here pretended they
-  // were: both branches called flexAt with identical arguments. Eskom's time-of-use tariffs
-  // do treat Saturday and Sunday differently from weekdays, so this comparator overstates
-  // the Homeflex cost on two days in seven. The dead branch is gone rather than filled,
-  // because the weekend windows have not been sourced from the NERSA schedule and inventing
-  // them would be worse than the gap. See open items.
   const weekFlex = [];
   for (let i = 0; i < 168; i++){
-    const h = (wkStart + i) % 24;
-    weekFlex.push(flexAt(h, weekHigh));
+    const hy = wkStart + i, h = hy % 24, dow = (Math.floor(hy / 24) + 3) % 7;
+    weekFlex.push(flexAt(h, weekHigh, dow));
   }
 
   // The two tariffs a household can actually buy today, for comparison.
   const flat = new Array(24).fill(hp.energy_r_per_kwh);
-  const flex = hod.map((_, h) => 0.25 * flexAt(h, true) + 0.75 * flexAt(h, false));
+  // The average day: high season a quarter of the year, each season's day five weekdays, a Saturday and a Sunday in seven.
+  const flexDay = (h, high) => (5 * flexAt(h, high, 1) + flexAt(h, high, 6) + flexAt(h, high, 0)) / 7;
+  const flex = hod.map((_, h) => 0.25 * flexDay(h, true) + 0.75 * flexDay(h, false));
   // ── AGILE-STYLE: WHAT THE HOUSEHOLD PAYS, NOT WHAT THE PRICE AVERAGES ────────
   // Added 16 Sep 2026. Octopus Agile's defining feature is that the bill depends on WHEN you
   // consume, so an unweighted mean of the price is not what an Agile customer pays. These two
@@ -19583,7 +19585,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-16h';
+const BUILD_STAMP = '2026-10-17a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -37,9 +37,9 @@
   "description": "Time-of-use residential. Required for any household with grid-tied generation, so every rooftop PV customer is on it. Same network, retail and ancillary charges as Homepower; only the energy charges differ.",
   "source": "NERSA Reasons for Decision, Eskom Electricity Retail Tariff Plan, 18 Feb 2025, Table 7. Proposed rates in 2024/25 rand, adjusted to 2026/27 by the approved ERTSA increases.",
   "high_season": "June to August",
-  "peak_hours": "high season 06:00-08:00 and 17:00-20:00; low season 07:00-09:00 and 18:00-21:00",
-  "peak_to_standard_ratio": 6,
-  "ratio_note": "NERSA approved a change from 1:8 to 1:6 in Feb 2025. The 4.4x spread previously quoted here came from two rates only and was a winter figure; the full six-rate table is now present and the annual spread can be computed properly.",
+  "peak_hours": "high season 06:00-08:00 and 17:00-20:00; low season 07:00-09:00 and 18:00-21:00; standard and weekend windows in index.html, TOU_WINDOWS",
+  "high_season_peak_to_offpeak_ratio": 6,
+  "ratio_note": "High-season peak to off-peak, 6:1: the 2026/27 tariff booklet's Megaflex rates, 739.28 against 123.20 c/kWh (Appendix A; off-peak the same in both seasons). Eskom Distribution's webinar slide 4 (14 Oct 2026) gives the 2025/26 change as 8:1 to 6:1. NERSA's text (18 Feb 2025) calls it peak to standard; it was held here as peak_to_standard_ratio until 17 Oct 2026 (message 171). Homeflex's own 2026/27 rates below give 3.86 high-season peak to off-peak. The 4.4x spread once quoted here came from two rates only and was a winter figure.",
   "all_six_rates_note": "PREVIOUSLY ONLY THE WINTER PAIR WAS HELD, and the panel had to caveat that its Homeflex comparison was a high-demand-season figure. Resolved 10 Sep 2026 from the NERSA decision document.",
   "rates_r_per_kwh_2026_27": {
    "high_season_peak": 7.5386,
