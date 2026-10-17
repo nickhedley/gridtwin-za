@@ -4686,6 +4686,14 @@ Platinum', 100 MW of wheeled solar in North West, already in by_source.private: 
 offtaker, the province, about 100 MW wheeled to ARM's mines and supply from 2026. Not confirmed from a page read: the Arup, SOLA
 and Engineering News pages could not be opened from this environment.
 
+### Bid Window 5: Mainstream–Globeleq's 12 projects did not reach financial close and their PPAs were cancelled; GEM's September 2026 release still lists Sutherland and Waaihoek in construction, which is stale (user, 17 Oct 2026, message 189 (3)); no model change
+
+Green Building Africa (5 Dec 2024) reports that the 12 Bid Window 5 projects of Mainstream and Globeleq failed to reach financial close
+and that their power purchase agreements were cancelled; the 12 are named in Mainstream's release of 29 Oct 2021. GEM's Global
+Integrated Power Tracker, September 2026 release (CC BY 4.0), still lists two of them, Sutherland wind and Waaihoek wind (140 MW
+each), as in construction; that status is stale. The model takes Bid Window 5 from the IPP Office report (online projects in the
+regional totals; only Wolf, 84 MW, in construction), so nothing changes.
+
 ### Reviewer pack on c5e: c5e's worst 14 days exceed one LNG cargo every year from 2035 (3.04 in 2040), and 3 of its 33 stress-window-years exceed one; deemed energy upper bound R11.3bn (R6.5bn in present value) against c5d's R13.7bn; the 4-hour lithium energy cap binds in 2039; s_irpgas retires 6.2-6.5 GW of coal early from 2026 (user, 17 Oct 2026, message 161 (4), with 166, 177, 179 and 180 (1); build 2026-10-16h; report only)
 
 Settings. c5e's run and engine check as in 'New central c5e' (frozen copy of 16h; pathcheck.js TF=0.5 LNG=1 GRID=1). Deemed
