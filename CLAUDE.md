@@ -41,7 +41,8 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node eng5.js
 
 Expected (17 Oct 2026, build 2026-10-17a, branch claude/tou-171 on main a9691ab, ESK19679.csv present, preset searches
-running beside it): 820/825, node checks 733/738 plus audit 87/87; eng5 5/6. 17a moves the time-of-use windows to Eskom's
+running beside it): 820/825, node checks 733/738 plus audit 87/87; eng5 5/6. The same on 17b (branch claude/mdr-cap rebased on main 75ccd5b; validate_solve's headroom check rerun
+alone after a time limit under load, RESULTS 'Build 2026-10-17b'). 17a moves the time-of-use windows to Eskom's
 2025/26 schedule and splits validate_consistency's Megaflex median check in two, both passing (message 183 (1); RESULTS
 'Time-of-use windows on Eskom's 2025/26 schedule'). On 16h (central c5e, branch claude/c5e): 819/824, node checks 732/737 plus
 audit 87/87; eng5 5/6. The same on 16g (branch claude/pack-c5d on main 8f10c8e) and 16e

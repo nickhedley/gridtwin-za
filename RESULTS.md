@@ -4325,6 +4325,10 @@ Suite on 17b (branch claude/mdr-cap on main a9691ab, ESK19679.csv present, prese
 validate_solve's headroom check hit the solver's time limit with the machine fully loaded (load about 10 on 4 cores), as on 17a's
 first run; rerun alone it passed 9/9 (53.5 s). The LP that check solves is the same size as on 16h (23,161,298 characters, 255,181
 rows); the cap writes no different row there, since no diesel is retired.
+Rebased on main 75ccd5b (#74, build 17a's time-of-use windows) on 17 Oct 2026, stamp kept at 17b: 820/825, node checks
+733/738 plus audit 87/87; eng5 5/6; the five known failures only (CLAUDE.md lists them); 17a's two split Megaflex median checks
+pass on 17b as on 17a. Pathway runs and preset searches were running beside it; validate_solve's headroom check again hit the
+solver's time limit (8/9) and, rerun alone (other jobs still running), passed 9/9 (42.7 s). ESK19679.csv present.
 
 ### The 2025 replay against Eskom's 2025 like for like: 91.4 GWh shed or interrupted against Eskom's 459.5 GWh; with interruptible load capped at Eskom's 69.5 GWh it sheds 6.9 GWh instead of 4.3 (user, 17 Oct 2026, messages 174-176; build 2026-10-16h; report only)
 
