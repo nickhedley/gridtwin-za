@@ -4468,7 +4468,8 @@ exactly in every run. Script snsp.sh (scratch).
 | 2040 | 97.4% | 97.3% | 69.4% | 4,080 | 4,599 |
 
 Caveats: the engine's own synchronous floor (6 GW, with 30% of battery power counted as grid-forming, and gas not counted) is
-what holds coal on; the build LP has no inertia or system-strength requirement (pack limitation 4), so these SNSP levels carry no
+what holds coal on; the 30% (SYNC_GFM_SHARE) is unsourced: the code cites AEMO's accreditation of grid-forming batteries and
+National Grid ESO's stability pathfinders for grid-forming batteries in principle, not for the share (message 186 (3)); the build LP has no inertia or system-strength requirement (pack limitation 4), so these SNSP levels carry no
 cost for synchronous condensers or grid-forming inverters. Ireland's 75% is an operating limit for its system, given for scale.
 
 ### Coal priority in c5e's 2026: with every coal unit's minimum at 0.75 (the proxy that reaches NTCSA's 3 GW), surplus curtailment rises from 0.1 to 112 GWh and the deemed-energy upper bound from R0.47bn to R0.63bn, while the engine's 2026 cost falls R1.8bn on less diesel (user, 17 Oct 2026, message 180 (2); build 2026-10-16h; report only)
@@ -4497,9 +4498,11 @@ Deemed energy as in 'The 2026 replay curtails almost nothing for oversupply' (RE
 in 2026, no threshold, so an upper bound). Finding: keeping coal online through daylight costs at most R0.16bn of deemed energy
 in 2026 and, in this engine, saves about R1.7bn of diesel: coal held on at midday covers the evening peak that the engine's 4-hour
 blocks otherwise meet with diesel and storage after taking units off. So the engine's midday decommitment is not least cost in
-2026, and its cost should not be read as the economic dispatch SAWEM is designed to produce (pack limitation 23 says it is;
-Nick decides on the wording). Caveats: one year; the 0.75 floor is a proxy for commitment, applied all day; no start-up costs
-or ramp limits beyond the engine's; observed 2026 claims were R1.5-2bn of backlog by mid-year against the bound here.
+2026, and its cost should not be read as the economic dispatch SAWEM is designed to produce (pack limitation 23 now says so,
+Nick's wording, message 186 (2); the same test on c5e's 2030 and 2035 follows). Caveats: one year; the 0.75 floor is a proxy for commitment, applied all day; no start-up costs
+or ramp limits beyond the engine's; curtailment claims awaiting payment were about R2bn in mid-June 2026 and R1.5bn in late July, a
+backlog built up from April and May (Engineering News, 18 June and 27 July 2026; RESULTS 'The 2026 replay curtails almost nothing
+for oversupply'), against the bound here.
 
 ### s_committed and s_be6 on c5e, by carrier and year: CO2 +81.7 and +67.8 Mt against the null (+18.6 and +22.6 on c5d) because existing coal makes up energy the optimiser no longer builds wind, solar and lithium for (user, 17 Oct 2026, message 181 (1); build 2026-10-16h)
 
