@@ -4227,22 +4227,22 @@ BW6 cases are not tariff-derived and keep their own capex.
 
 | Run | Change from c5e | Engine PV vs null, R bn | CO2 2026–40 vs null, Mt | Objective vs null, R bn | Same direction |
 |---|---|---|---|---|---|
-| s_carbonfull | Carbon tax at the full statutory rate, being rerun (e) | +294.0 | -285.4 | +302.1 | yes |
-| s_irpgas | IRP 2025's gas plan, superseded (d) | +185.4 | -128.9 | +136.1 | yes |
-| s_comply_full | Coal emissions compliance, full, being rerun (e) | +154.2 (with charge) | -100.6 | -6.5 | no |
+| s_carbonfull | Carbon tax at the full statutory rate (d) | +299.3 | -265.1 | +302.7 | yes |
+| s_irpgas | IRP 2025's gas plan (d) | +202.7 | -29.9 | +150.9 | yes |
+| s_comply_full | Coal emissions compliance, full (d) | +171.1 (with charge) | -2.0 | -0.0 | no |
 | s_disc113 | Discount rate 11.3% | +123.0 | +120.1 | not comparable (a) | not judged |
 | s_bw6capex | Wind and solar capex at BW6 bids (wind R28,462/kW, solar R16,786/kW), the high end of the evidence | +110.1 | +203.0 | +100.8 | yes |
-| s_detgas | Determined gas: 3,000 MW by 2030 (IRP 2019 section 34) plus 5,000 MW in 2031–37 (GN 8021), additional on our reading, being rerun (e) | +79.4 | -1.5 | +45.9 | yes |
+| s_detgas | Determined gas: 3,000 MW by 2030 (IRP 2019 section 34) plus 5,000 MW in 2031–37 (GN 8021), additional on our reading (d) | +81.3 | +114.9 | +46.3 | yes |
 | s_disc10 | Discount rate 10% | +75.0 | +80.6 | not comparable (a) | not judged |
 | s_roof2 | Rooftop 2,000 MW a year (b) | +54.1 | -7.4 | +48.0 | yes |
 | s_comply_comp | Coal emissions compliance, Eskom's recommended plan | +52.3 (with charge) | +0.0 | -0.0 | no |
 | s_prm10 | Planning reserve margin 10% over peak (the c5c rule) | +35.5 | +14.1 | +32.2 | yes |
 | s_be7 | IRP nuclear forced: 1,250 MW in 2036–37, 1,350 MW in 2038–39 | +35.5 | -18.8 | -46.8 | no |
+| s_be6 | Battery storage on IRP 2025's Table 1 schedule (c) | +33.5 | +55.6 | +19.7 | yes |
 | s_nogas4strict | No new gas or diesel open-cycle; lithium up to 4 GW a year | +28.0 (top-up) | -228.9 | +45.2 | yes |
 | s_noimp | No imports after 2030 (s_imp2030) | +25.7 | +26.5 | +55.8 | yes |
-| s_be6 | Lithium at IRP 2025's pace, 550 MW a year, superseded (c) | +25.2 | +67.8 | +14.5 | yes |
+| s_committed | Committed gas (1,200 MW a year 2030–33, 200 MW in 2034) and lithium minimums (d) | +24.8 | +115.2 | +19.6 | yes |
 | s_wind372 | New wind at BW6 bids' 37.2%, c5e's capex held | +24.0 | +97.0 | +36.9 | yes |
-| s_committed | Committed gas (1,200 MW a year 2030–33, 200 MW in 2034) and lithium minimums, being rerun (e) | +22.5 | +81.7 | +19.0 | yes |
 | s_pvirp | Solar capped by year at Table 1 | +8.1 | +5.0 | +10.8 | yes |
 | s_gasprem | Gas capital at a 1.5-point finance premium | +2.9 | -25.0 | +6.4 | yes |
 | s_cape10 | 3,470 MW of Cape wind at 10% curtailment | +2.1 | +1.6 | +0.2 | yes |
@@ -4262,9 +4262,8 @@ BW6 cases are not tariff-derived and keep their own capex.
 (a) The discount-rate runs' objectives are at their own rate and are not compared; their engine PV is at 8%. "with charge": engine
 PV includes the emissions compliance charge, which the objective does not carry. "top-up": with the diesel open-cycle top-up.
 (b) Engine PV counts rooftop capex as system cost and leaves out what households save on bills and any distribution effect.
-(c) 550 MW a year is the build LP's IRP 2025 pace (BLD_PACE.irp). Corrected 17 Oct 2026 (message 185 (3)): Table 1's storage column, Eskom BESS included (IRP 2025, Table 1, p.31; public_data/irp2025_extract.csv), reaches 7,224 MW of new storage by 2040 and about 8.2 GW by 2042; the 8.5 GW first given here counted Eskom's 294 MW twice, since the extract's 2026-42 total (8,223 MW) already includes it. Superseded: s_be6 is being rerun with cumulative new battery storage (lithium, vanadium flow and iron-air together) capped at Table 1's column (144, 294, 909 and 3,524 MW by 2026-29, +200 MW a year in 2030-35, +500 a year in 2036-40), never below the committed floor, as 'Battery storage on IRP 2025's Table 1 schedule'.
-(d) Superseded (message 185 (2)): s_irpgas retires 6,185 MW of coal ahead of Figure 3 from 2026, which IRP 2025 Figure 3 and NTCSA's MTSAO do not; it is being rerun with no coal retired before 2029 (RC_FROM=2029).
-(e) Being rerun (message 187 (1)): each retires coal ahead of Figure 3 from 2026 by the optimiser's choice (s_comply_full 2,955 MW, s_detgas 1,422, s_carbonfull 1,256, s_committed 609); RC_FROM=2029 is the pathway's default from 17 Oct 2026, and these figures stand until the reruns.
+(c) Since 17 Oct 2026 (message 185 (3)): cumulative new battery storage (lithium, vanadium flow and iron-air) capped at IRP 2025 Table 1's storage column year by year, Eskom BESS included (144, 294, 909 and 3,524 MW by 2026-29, +200 MW a year in 2030-35, +500 in 2036-40, 7,224 MW by 2040; IRP 2025, Table 1, p.31; public_data/irp2025_extract.csv), never below the committed floor (STOR_CUM; run s_be6t1_c5e). As first run, lithium at 550 MW a year (the build LP's BLD_PACE.irp): +R25.2bn, +67.8 Mt, +R14.5bn.
+(d) Rerun 17 Oct 2026 with no coal retired ahead of Figure 3 before 2029 (RC_FROM=2029, the pathway's default from then; messages 185 (2) and 187 (1); runs *_rc29_c5e). As first run, when the optimiser could retire coal from 2026 (engine PV / CO2 / objective against the null, and the MW retired from 2026): s_irpgas +185.4 / -128.9 / +136.1, 6,185 MW; s_comply_full +154.2 / -100.6 / -6.5, 2,955 MW; s_detgas +79.4 / -1.5 / +45.9, 1,422 MW; s_carbonfull +294.0 / -285.4 / +302.1, 1,256 MW; s_committed +22.5 / +81.7 / +19.0, 609 MW. On the rerun only s_irpgas (5,772 MW from 2029) and s_comply_full (71 MW from 2029) retire coal early.
 Same direction on 23 of 28 comparable runs; of the five "no" rows, the compliance charge (s_comply_comp, s_comply_full) and
 s_be7's forced nuclear capital sit outside the objective; s_coalme (engine -R0.5bn, objective +R21.8bn) and s_be4 (-R1.7bn,
 +R6.3bn) move engine PV by under R2bn and are not traced. Every run stops adequate on the engine check in every year except
@@ -4308,6 +4307,60 @@ returns c5e's engine PV and CO2 to every digit; c5d as recorded in 'Generation b
 | Unserved | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) |
 | Served demand (incl. rooftop) | 231.8 (96.7%) | 265.5 (96.5%) | 304.3 (96.4%) | 231.8 (96.7%) | 265.5 (96.6%) | 304.3 (96.5%) |
 | Energy balance residual | 2.0e-12 | 3.4e-13 | -6.1e-13 | 1.9e-12 | 5.1e-13 | -3.2e-13 |
+
+### LCOE anchors on reference parameters (build 2026-10-17c): lithium R1,340/MWh discharged at one full cycle a day, rooftop R1,360 at its resource capacity factor, new diesel open-cycle R9,350 at 10%; c5e's 2030 run-based costs in the captions; the replacement-cost figure takes lithium and diesel from the run; response baseline rewritten for 8 replacement-cost cells (user, 16-17 Oct 2026, messages 159, 186 (4), 194 (1) and 195 (2))
+
+What changed. Three LCOE anchors are derived from the build costs (BLD_COST central, its fixed O&M and life) at 8% real
+(BLD_DISC_CENTRAL), on reference parameters, not on how much a run uses the plant (message 194 (1), replacing 186 (4)'s anchors on
+c5e's 2030 dispatch, which gave R5,980 for lithium and R17,200 for diesel). Wind and solar are unchanged.
+
+| Anchor, R/MWh | Was | Now | Basis | c5e 2030 (engine check, 12 weather years x 20 draws) |
+|---|---|---|---|---|
+| Lithium (4 h), per MWh discharged, charging not costed | 1,600 (typed) | 1,340 | one full cycle a day, 365 a year | 81.1 full cycles (1.142 TWh from 14,074 MWh): R5,986 |
+| Rooftop | 900 (typed) | 1,360 | twelve-year fixed-tilt solar mean 22.398% x the 0.78 derate = 17.47% | the same 17.47% (19.19 TWh from 12,542.1 MW): R1,364 |
+| New diesel open-cycle, with fuel, VOM and carbon | 9,000 (typed) | 9,350 | 10% capacity factor (a) | 2.85% (0.85 TWh from 3,400 MW): R17,180 |
+| Wind | 630 | 630 | twelve-year new-build mean 42.5% (unchanged) | new wind 41.74% (30.0 TWh from 8,206 MW): R642 |
+| Utility solar | 530 | 530 | twelve-year tracking mean 28.7% (unchanged) | not separable: the engine reports utility solar as one fleet |
+
+Inputs: lithium R13,699/kW at 4 h (BLD_COST.batt; BATT_COST_HOURS), fixed O&M 2.5% of capex (BLD_FOM_BATT_SHARE), 15 years;
+rooftop R17,000/kW, R495/kW-yr, 25 years; new diesel open-cycle R25,778/kW (BLD_COST.ccgt x EIA AEO2023's 867/1,176,
+bldOcgtCentralCost), R452.8/kW-yr, 30 years, plus fuel R6,100/MWh, VOM R70/MWh and carbon at R46/t x 0.78 t/MWh (dieselSrmcR,
+R6,206/MWh). (a) Lazard's long-standing capacity factor for gas peaking plant in its levelised cost studies; newer editions use
+15-20%; from search results, the pages not read. The c5e figures are held for the captions only (C5E_2030_*). Slider maxima
+widened (lithium R8.00/kWh, diesel R20.00/kWh) so c5e's run-based costs can be set on them.
+
+Typed and unsourced, captions say so: pumped storage R1,400, vanadium flow R2,100, iron-air R1,750, nuclear R1,650, CSP R2,000
+(in the repository since its first commit, 1 Oct 2026; sources after the preset PR, TODO 14fw (2)). New coal R1,550 keeps its
+source (Coal Baseload IPP Programme, bid window 1, October 2016, escalated).
+
+The replacement-cost figure (message 194 (1)). It needs each technology's cost to the run, not at reference use: lithium and diesel
+now come from the run's own capacity, priced at the slider's cost per unit of capacity (the slider times the reference output of
+that capacity: 365 cycles of the run's lithium energy; 10% of the run's diesel MW), plus diesel's running cost on the energy the
+run burns. The capital part is measured against the running cost the anchor was built on, so the fuel and carbon sliders move only
+the running cost. Vanadium flow and iron-air stay priced per MWh discharged at their typed LCOE, on their share of the battery
+class's energy; every other technology stays energy x LCOE. At the page's defaults the figure goes from R1,532.8 to R1,604.5/MWh
+(+4.7%); on c5e's 2030 fleet (4,666 MW of new lithium at 2.95 h, 8,206 MW wind, 7,339 MW solar, 3,600 MW rooftop) from R1,317.5
+to R1,443.5 (+9.6%).
+
+Check: validate_weather 'each derived LCOE anchor equals its formula' recomputes wind, solar, rooftop, lithium and diesel with its
+own annuity on the reference basis; it failed as it should with the rooftop anchor broken by R10. Its capacity-factor check now
+also holds the fixed-tilt mean (FIXED_PV_CF_12Y).
+
+Response baseline rewritten (message 195 (2)): rewritten only because every cell that moved is fed by the LCOE anchors. Against
+the old baseline, the only base value that moved is the replacement cost, R1,542.22 -> R1,604.53/MWh; no other output's base
+value or cell moved. The eight cells, each the replacement cost's relative span over the check's own sweep (zero, minimum,
+quartiles, maximum; battHours on 0, 4 and 12 h with 8,000 MW), against the 1e-4 threshold:
+
+| Control | Old (17b) | New (17c) | Cause |
+|---|---|---|---|
+| newBattMW | 7.7e-5, does not move | 0.499, moves (R1,604.5 to R2,405.2/MWh at 80 GW) | lithium priced on the capacity the run holds |
+| battHours | 3.5e-5, does not move | 0.150, moves | the same: the existing fleet's energy capacity is priced |
+| newVrfbMW | 7.3e-5, does not move | 1.4e-4, moves | vanadium priced on its own share; lithium no longer priced as a share of discharge |
+| carbonTaxRPerT | 0, does not move | 4.5e-3, moves | diesel's running cost carries carbon at the slider's rate |
+| newIronAirMW | 1.3e-4, moves | 1.5e-5, does not move | iron-air priced on its own share; it no longer re-prices lithium's discharge |
+| newCoalMW | 1.7e-4, moves | 4.1e-5, does not move | the diesel it displaces is priced at its running cost, not the full LCOE; diesel capital paid on capacity either way |
+| coalFlexPct | 1.3e-4, moves | 8.7e-5, does not move | the same |
+| outageUnitLevel | 2.0e-4, moves | 5.8e-5, does not move | the same |
 
 ### Avon and Dedisa's must-run in the build LP capped at the independent peakers' diesel, as the engine does (build 2026-10-17b): c5e's pass-1 LP unchanged (key b7e3107906); the Fossil-free B start's LP equals its must-run-off run; no recorded run affected (user, 17 Oct 2026, message 182 (2); TODO 14fk)
 
@@ -4680,6 +4733,9 @@ the commitment rule is TODO 14ft. Caveats as for 2026.
 
 ### s_committed and s_be6 on c5e, by carrier and year: CO2 +81.7 and +67.8 Mt against the null (+18.6 and +22.6 on c5d) because existing coal makes up energy the optimiser no longer builds wind, solar and lithium for (user, 17 Oct 2026, message 181 (1); build 2026-10-16h)
 
+Rerun since (17 Oct 2026, messages 185 (3) and 187 (1)): s_committed with no coal retired before 2029, +115.2 Mt; s_be6 on
+Table 1's storage schedule, +55.6 Mt (RESULTS 'RC_FROM=2029 is the pathway's default'). The account below is of the first runs.
+
 Settings. Each run's engine check through the hooked copy of message 139 (TF=0.5 GRID=1, all years; scratch gen181.sh), which
 returns each run's recorded engine PV and CO2 to every digit (s_committed R2,258.2bn and 1,709.4 Mt; s_be6 R2,261.0bn and 1,695.5
 Mt); builds from the pathway files; the null's build and engine check equal c5e's. Scripts decomp.py and gen_decomp.py (scratch).
@@ -4816,7 +4872,11 @@ reruns; with RC_FROM=2029, which does not move the comparison, since s_constr re
 
 Floors for s_constr2_c5e: MIN_BUILD=wind:2026:1131,wind:2027:2245.5,pv:2026:1018,pv:2027:2276,pv:2028:3405; LI_MIN unchanged.
 
-### RC_FROM=2029 is the pathway's default from 17 Oct 2026: no coal retired ahead of its dates before 2029 unless RC_FROM=0; c5e and its null being confirmed; c5e's four early-retiring sensitivities rerun after s_be6 (user, 17 Oct 2026, message 187 (1))
+Result (17 Oct 2026, with its engine check, TF=0.5 LNG=1 GRID=1; RC_FROM=2029, which moves nothing here): against the null,
+engine PV +R2.0bn, CO2 -15.0 Mt, objective +R2.7bn, adequate after two passes (worst year 64% of target); against s_constr, engine PV
++R0.1bn and CO2 -2.5 Mt. Wind and solar totals by 2040 are unchanged (29.4 and 27.9 GW): the additions bring 2027-28 build forward.
+
+### RC_FROM=2029 is the pathway's default from 17 Oct 2026: no coal retired ahead of its dates before 2029 unless RC_FROM=0; c5e and its null solve to the same result with it; without early retirement, s_irpgas cuts 29.9 Mt of CO2 instead of 128.9 and s_comply_full 2.0 Mt instead of 100.6 (user, 17 Oct 2026, messages 185 (2) and 187 (1))
 
 What changed: pathway_perfail.js reads RC_FROM as 2029 when it is unset (until now: no limit, early retirement from the first
 year). RC_FROM=0 restores that, which every run recorded before 17 Oct 2026 used. Basis: IRP 2025 Figure 3 retires no coal
@@ -4833,6 +4893,28 @@ None of the four exists to test closure before 2029: s_comply_full tests the emi
 (COMPLY_MES), so closure to avoid it stays open from 2029; s_detgas, s_carbonfull and s_committed test gas, the carbon price
 and committed builds. Their recorded figures are marked (e) in c5e's sensitivity table until the reruns land. c5d's and c5c's
 sensitivities are marked in their own sections as allowing early retirement and are not rerun.
+
+Confirmed (17 Oct 2026): c5e_rc29 (MAXP=6) and null_rc29_c5e (MAXP=3) against c5e and null_c5e as recorded: every build variable
+within 2e-9 MW, objective within 2e-15 relative (R1,434.4bn), two passes each, both adequate, the same schedule. The engine checks
+were not rerun, since their inputs are the same.
+
+The reruns, against the null (engine PV and objective R bn, CO2 2026-40 Mt; coal retired ahead of Figure 3), each with its engine
+check (pathcheck.js, TF=0.5 LNG=1 GRID=1), on the frozen c5e copy; c5e's sensitivity table now carries them (note (d)):
+
+| Run | Engine PV | CO2 | Objective | Coal retired early | As first run: engine PV / CO2 / coal retired |
+|---|---|---|---|---|---|
+| s_irpgas | +202.7 | -29.9 | +150.9 | 5,772 MW from 2029 | +185.4 / -128.9 / 6,185 MW from 2026, 6,519 from 2029 |
+| s_comply_full | +171.1 (with charge) | -2.0 | -0.0 | 71 MW from 2029 | +154.2 / -100.6 / 2,955 MW from 2026 |
+| s_detgas | +81.3 | +114.9 | +46.3 | none | +79.4 / -1.5 / 1,422 MW from 2026 |
+| s_carbonfull | +299.3 | -265.1 | +302.7 | none | +294.0 / -285.4 / 1,256 MW from 2026 |
+| s_committed | +24.8 | +115.2 | +19.6 | none | +22.5 / +81.7 / 609 MW from 2026 |
+
+Every rerun is adequate on its engine check in every year (s_irpgas, s_detgas, s_carbonfull and s_committed after one pass,
+s_comply_full after two). Finding: most of the CO2 those five runs cut against the null came from coal the optimiser closed in
+2026-28: without it s_irpgas cuts 99 Mt less, s_comply_full 99 Mt less and s_detgas turns from -1.5 to +114.9 Mt. Engine PV moves
+by +R1.9bn to +R17.3bn. The by-carrier account in 's_committed and s_be6 on c5e, by carrier and year' is of the first runs.
+s_be6 on Table 1's schedule (s_be6t1_c5e, with RC_FROM=2029; note (c)): +R33.5bn, +55.6 Mt, +R19.7bn, adequate after two passes
+(as first run, at 550 MW a year of lithium: +R25.2bn, +67.8 Mt).
 
 ### Private wheeled plant operating since 2024-25: Msenge Emoyeni wind (69 MW, October 2024) is missing from c5e's base and loads with the next central; the solar plants (Selemela 2 and 3, Damlaagte, Springbok) are assumed to be inside NTCSA's rooftop PV estimate and are not loaded; none is in by_source.private or c5e's floors (user, 17 Oct 2026, messages 187 (2), 188, 190 (1) and 191 (1)-(3))
 
@@ -4860,6 +4942,37 @@ Msenge Emoyeni wind, Bedford, Eastern Cape: 69 MW, commercial operation by 10 Oc
 REIPPPP 4,042 plus H1 2026's wheeled 470 (Umsobomvu and the three Impofu farms) plus Eskom's 100, and no c5e floor names it. The
 satellite register (nodal/project_register.json) shows it as a map point with no capacity counted. Reviewer pack limitation 25;
 loaded with the next central (message 191 (2)), not now.
+
+One rule for all private solar (user, 17 Oct 2026, message 193 (1)). On the same footnote, the wheeled solar c5e's base already
+loads (by_source.private, from the H1 2026 monitor) is probably inside NTCSA's estimate too. The base already applies one rule:
+FIXED.rooftopMW is the August 2026 estimate, 9,430.1 MW (nodal/rooftop_mw_by_region.json, Week 37 report), less that wheeled
+solar, 488 MW, which is counted as utility solar instead (FIXED.pvUtilityMW 3,271 = REIPPPP 2,783 + 488); validate_capacity
+asserts the subtraction (made 15 Aug 2026 to remove the same double count). By plant, 2026:
+
+| Plant | MW | Route | How c5e's base counts it | If wheeled PV is inside the estimate (assumed) | If it is not |
+|---|---|---|---|---|---|
+| Mooi Plaats, Limpopo | 240 | wheeled | utility solar (by_source.private); taken off rooftop | once, as utility solar | utility solar, and 240 MW taken off rooftop that the estimate never held |
+| Bolobedu, Limpopo | 148 | wheeled | as Mooi Plaats | once, as utility solar | as Mooi Plaats, 148 MW |
+| ARM Platinum (Selemela 1), North West | 100 | wheeled | as Mooi Plaats | once, as utility solar | as Mooi Plaats, 100 MW |
+| Selemela 2 and 3, North West | 200 | wheeled | not loaded | once, inside rooftop | missing |
+| Damlaagte, Free State | 97.5 | wheeled | not loaded | once, inside rooftop | missing |
+| Springbok, Free State | about 150 | wheeled | not loaded | once, inside rooftop | missing |
+| Lephalale 1, PPC Slurry, PPC Dwaalboom | 88 | captive | not loaded (behind the meter) | inside rooftop | inside rooftop: no agreement with NTCSA of any kind |
+
+MW at stake in 2026: if wheeled PV is inside the estimate, none is missing or counted twice, and 447.5 MW of wheeled solar sits in
+the rooftop bucket (rooftop profile, netted off demand). If it is not, c5e's base is 935.5 MW short: 488 MW of rooftop taken off
+and 447.5 MW of wheeled solar missing. Plant built after August 2026 (SunCentral 1 and the other private solar in c5e's floors)
+is new build, outside the August estimate either way. c5e's rooftop growth after August 2026 is
+fixed at 900 MW a year (ROOF_MW); recorded below (user, 17 Oct 2026, message 195 (3)). No model change before the note (pack
+limitation 25 gives both readings).
+
+Rooftop growth (user, 17 Oct 2026, message 195 (3)). c5e's 900 MW a year of new rooftop solar (ROOF_MW=900) is IRP 2025 Table 1's
+distributed generation for own use: 900 MW a year in 2026-35 (IRP p.31, gazette p.42; public_data/irp2025_extract.csv), with none
+listed for 2036-42. c5e adds it from 2027 (2026 stands at the August 2026 estimate) and keeps 900 MW a year to 2040, where the IRP
+lists none after 2035: 12,600 MW by 2040. NTCSA's estimates of rooftop PV beside it: 7,464 MW in December 2025 (Eskom weekly
+reports, via Engineering News, 23 Jan 2026), 8,294.5 MW in May 2026 (Weekly System Status Report 2026 week 25, pp.5-6) and
+9,430.1 MW in August 2026 (week 37 report), 1,966 MW more than December 2025; NTCSA notes that month-to-month jumps partly reflect
+cloudy days. No model change; s_roof2 (2,000 MW a year) covers a faster pace.
 
 Selemela 1 is a separate plant (Arup's project page, read 17 Oct 2026): 132 MWp near Lichtenburg, developed by SOLA, supplying
 African Rainbow Minerals' operations through wheeling, energised and grid-connected. Consistent, from a page read, with the H1
@@ -4936,7 +5049,8 @@ Superseded (user, 17 Oct 2026, message 185 (2)): IRP 2025 Figure 3 and NTCSA's M
 2026 is the optimiser's choice, not an input: the build LP may retire coal ahead of its dates from the first year (the rc_
 variables, bounded only by the coal standing; bldCoalEarlyOn), and nothing in s_irpgas's settings forces it. s_irpgas is being
 rerun with no coal retired before 2029 (RC_FROM=2029, a pathway setting added 17 Oct 2026; s_irpgas_rc29_c5e); these figures stand
-until then. Other recorded runs that retire coal before 2029, all by the optimiser's choice (rc_ from 2026, pathway files): on c5e,
+until then. Rerun 17 Oct 2026 (s_irpgas_rc29_c5e): 5,772 MW retired from 2029, engine PV +R202.7bn and CO2 -29.9 Mt against the null, adequate after one
+pass (RESULTS 'RC_FROM=2029 is the pathway's default'). Other recorded runs that retire coal before 2029, all by the optimiser's choice (rc_ from 2026, pathway files): on c5e,
 s_comply_full 2,955 MW, s_detgas 1,422, s_carbonfull 1,256 and s_committed 609; on c5d, s_irpgas 3,586 (7,167 from 2028),
 s_comply_full 3,471, s_detgas 1,946, s_committed 1,019 and s_carbonfull 968; on c5c, s_irpgas 3,238, s_comply_full 1,302 and
 s_detgas 849. c5e, c5d and c5c themselves and their nulls retire none early. Decided (user, 17 Oct 2026, message 187 (1)):

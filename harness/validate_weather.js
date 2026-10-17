@@ -246,10 +246,42 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
   // BLD_COST at NEW_WIND_CF_12Y and NEW_PVTRK_CF_12Y, held as constants because the weather years load after the sliders
   // are built. They must equal the twelve-year means the loaded profiles give.
   {
-    const a = probe(`const m = bldTwelveYearMeans(1, true); return { w: m.wind, t: m.solar, cw: NEW_WIND_CF_12Y, ct: NEW_PVTRK_CF_12Y, mod: bldWindModernOn() };`);
+    const a = probe(`const m = bldTwelveYearMeans(1, true), f = bldTwelveYearMeans(1, false); return { w: m.wind, t: m.solar, x: f.solar, cw: NEW_WIND_CF_12Y, ct: NEW_PVTRK_CF_12Y, cx: FIXED_PV_CF_12Y, mod: bldWindModernOn() };`);
     check('the LCOE anchors use the twelve-year new-build capacity factors',
-          !a.error && a.mod === true && Math.abs(a.w - a.cw) < 5e-5 && Math.abs(a.t - a.ct) < 5e-5,
-          a.error || `wind ${a.w} against ${a.cw}, tracking solar ${a.t} against ${a.ct}, modern wind ${a.mod}`);
+          !a.error && a.mod === true && Math.abs(a.w - a.cw) < 5e-5 && Math.abs(a.t - a.ct) < 5e-5 && Math.abs(a.x - a.cx) < 5e-5,
+          a.error || `wind ${a.w} against ${a.cw}, tracking solar ${a.t} against ${a.ct}, fixed-tilt solar (rooftop) ${a.x} against ${a.cx}, modern wind ${a.mod}`);
+  }
+
+  // THE DERIVED LCOE ANCHORS EQUAL THEIR FORMULAS (user, 16-17 Oct 2026, messages 159 (3) and 194 (1)). Each is recomputed here,
+  // with this harness's own annuity, from the build costs, fixed O&M and lives the page holds and the reference capacity factor
+  // or cycles it is anchored on, rounded to its slider's step, and compared with what the page set: wind, tracking solar and
+  // rooftop at their twelve-year resource capacity factors (checked just above; rooftop with its derate), lithium (4 h) at one
+  // full cycle a day, per MWh discharged with charging not costed, and new diesel open-cycle at the 10% reference capacity
+  // factor plus fuel, variable O&M and carbon at the compliance rate (RESULTS 'LCOE anchors on reference parameters').
+  {
+    const a = probe(`const runcf = FIXED.bldTariffCfBasis === 'run';
+      return { r: BLD_DISC_CENTRAL, L: BLD_LIFE, F: BLD_FOM, share: BLD_FOM_BATT_SHARE, bh: BATT_COST_HOURS,
+        cw: BLD_COST[runcf ? 'wind_runcf' : 'wind'].c2026, cp: BLD_COST[runcf ? 'pvtrk_runcf' : 'pvtrk'].c2026,
+        cb: BLD_COST.batt.c2026, cr: BLD_COST.rooftop.c2026, cc: BLD_COST.ccgt.c2026, ct: EIA_AEO2023_CT_KW, ccc: EIA_AEO2023_CC_KW,
+        cfW: NEW_WIND_CF_12Y, cfP: NEW_PVTRK_CF_12Y, cyc: LI_REF_CYCLES, cfR: FIXED_PV_CF_12Y * FIXED.rooftopDerate, cfD: DSL_REF_CF,
+        fuelD: FIXED.costDiesel, vomD: FIXED.vomDiesel, emD: FIXED.emisDiesel, tax: FIXED.carbonTaxRPerT,
+        got: { wind: FIXED.lcoeWind, pv: FIXED.lcoePv, batt: FIXED.lcoeBatt, rooftop: FIXED.lcoeRooftop, diesel: FIXED.lcoeDiesel } };`);
+    if (a.error) check('each derived LCOE anchor equals its formula', false, a.error);
+    else {
+      const ann = (c, n) => c * a.r / (1 - Math.pow(1 + a.r, -n));
+      const step = (x, s) => Math.round(x / s) * s;
+      const want = {
+        wind:    step((ann(a.cw, a.L.wind) + a.F.wind) / (a.cfW * 8.76), 10),
+        pv:      step((ann(a.cp, a.L.pv) + a.F.pv) / (a.cfP * 8.76), 10),
+        batt:    step((ann(a.cb, a.L.batt) + a.cb * a.share) / (a.bh * a.cyc / 1000), 20),
+        rooftop: step((ann(a.cr, a.L.rooftop) + a.F.rooftop) / (a.cfR * 8.76), 10),
+        diesel:  step((ann(a.cc * a.ct / a.ccc, a.L.ocgd) + a.F.ocgd) / (a.cfD * 8.76) + a.fuelD + a.vomD + a.tax * a.emD, 50),
+      };
+      const off = Object.keys(want).filter(k => want[k] !== a.got[k]);
+      check('each derived LCOE anchor equals its formula', off.length === 0,
+            off.map(k => `${k}: page ${a.got[k]}, formula ${want[k]}`).join('; '));
+      notes.push('derived LCOE anchors, R/MWh: ' + Object.keys(want).map(k => `${k} ${a.got[k]}`).join(', '));
+    }
   }
 
   // 4. THE ANCHORS. Each path against the MEASUREMENT, not against each other.
