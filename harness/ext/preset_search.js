@@ -12,7 +12,9 @@
 // Run from harness/:  PRESET='Deep decarbonisation 2035' DRAWS=2 CONFIRM=40 OUT=ext/search_deep.json node ext/preset_search.js
 const fs = require('fs'), path = require('path'); const { JSDOM } = require(process.cwd() + '/node_modules/jsdom');
 const ROOT = 'testroot', PRESET = process.env.PRESET || 'Deep decarbonisation 2035', OUT = process.env.OUT || 'ext/preset_search.json';
-const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), SEED = 20260816;
+// SEED (17 Oct 2026, message 195 (1)): the outage draws' base. 20260816, the build loop's own draws, unless set; 71830529 gives the
+// independent draws pathcheck.js and the preset check use.
+const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), SEED = +(process.env.SEED || 20260816);
 (async () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, url: 'file://' + path.resolve(ROOT) + '/index.html',
@@ -119,6 +121,16 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
     }
     return null;
   };
+  // TOPUP_ONLY=1 (17 Oct 2026, message 195 (1)): no search. Score the preset as it stands on CONFIRM draws and, if it misses the
+  // target, run the top-up rounds above on the same runs. With SEED=71830529 and DRAWS=CONFIRM=20 these are the preset check's runs.
+  if (process.env.TOPUP_ONLY){
+    const c = evaluate(base, CONFIRM), out = { stamp, preset: PRESET, seed: SEED, draws: CONFIRM, target, start: { build: base, ...c }, log };
+    console.log('as set,', CONFIRM, 'draws, seed', SEED, ': shed', c.shed.toFixed(2), 'cost', c.cost.toFixed(1), 'target', target.toFixed(2));
+    out.final = c.shed > target ? topUp(base, c, out) : { build: base, ...c };
+    fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
+    console.log('done', JSON.stringify(out.final), ((Date.now() - t0) / 60000).toFixed(0) + ' min');
+    process.exit(0);
+  }
   // RESUME=<output json> (7 Oct 2026): skip the search; take its searched build and confirm result, run the top-ups.
   if (process.env.RESUME){
     const R = JSON.parse(fs.readFileSync(process.env.RESUME, 'utf8'));
