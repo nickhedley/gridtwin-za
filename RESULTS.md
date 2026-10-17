@@ -4890,7 +4890,13 @@ or span where the base is 0), threshold 1e-4:
 | battHours | curtTWh | 0 (inert) | 7.71e+0 (responsive) | yes |
 | battHours | loleHrs | 0 (inert) | 1.72e+2 (responsive) | yes |
 
-Runs (to follow here): a frozen copy of build 2026-10-17e (2d5051f; pass-1 LP key 71b0df1e44; started 22:23 UTC); c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run
+Suite on build 2026-10-17g (b82bfd3, 17 Oct 2026, 22:46-22:59 UTC, with ESK19679.csv; c5f's run and the Deep preset top-up
+running alongside): 820/825, eng5 5/6. The five known failures as on main and eng5's 'storage vs unserved'; validate_response
+87/87 after the decision above. Findings' values on 17g: July gas 788 to 688 GWh with 20 GW of iron-air (12.7%); Fossil-free 2040
+curtailment 113.1.
+
+Runs (to follow here): a frozen copy of build 2026-10-17g (b82bfd3; pass-1 LP key f689a33bfd; started 22:46 UTC; the 17e start
+at 22:23 UTC, LP key 71b0df1e44, was stopped at 22:30 for the demand add-back and its files set aside); c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run
 on c5e (30 plus s_roof05) and s_roof09 (ROOF_MW=900, c5e's pace), each at MAXP=3, two at a time, from scratch, each with its
 engine check (pathcheck.js TF=0.5 LNG=1 GRID=1, 2026-40). s_be6 follows Table 1's schedule (STOR_CUM, as s_be6t1_c5e). Runs that
 set MIN_BUILD or LI_MIN take c5f's floors merged with their own (s_committed: LI_MIN=2026:360:1440,2027:760.5:3059,
