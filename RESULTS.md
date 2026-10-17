@@ -4834,7 +4834,9 @@ Derived data recomputed for Msenge (17 Oct 2026): the page's national modern-win
 weighted by regional wind capacity, so the page stopped with 'modern wind map disagrees with the series (2.62e-3)'. Rebuilt by
 build_wind_modern.py with MAP_ONLY=1 (new: reweights the written series, no fetch), which reproduces the committed map byte for byte
 from the old capacity file; largest change in the national map 0.0046, regional maps unchanged. public_data's
-operational_renewable_capacity.csv regenerated (Eastern Cape private wind 399 MW). Not refitted: the wind profiles' fleet bias
+operational_renewable_capacity.csv regenerated (Eastern Cape private wind 399 MW). The page's held twelve-year mean of new
+wind's capacity factor (NEW_WIND_CF_12Y) moves with the map, 0.42507 to 0.42499 (validate_weather recomputes it: 0.424995); it
+sets new wind's capex on the central's 'run' basis, so c5f's wind capex is 0.02% below c5e's for this reason alone. Not refitted: the wind profiles' fleet bias
 factor (1.0753, fitted 6 Sep 2026 to Eskom's 2022-23 output), since Msenge ran from October 2024, outside that window.
 
 Runs (to follow here): a frozen copy of build 2026-10-17e; c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run

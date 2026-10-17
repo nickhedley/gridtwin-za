@@ -9978,7 +9978,9 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // are the twelve-year means of the new-build profiles (bldTwelveYearMeans(1, true): modern-turbine wind uncorrected, tracking
 // solar), measured 16 Oct 2026 and held here because the weather years load after the sliders are built; validate_weather
 // recomputes them. They feed the LCOE chart and the replacement-cost figure, not dispatch or the build optimiser.
-const NEW_WIND_CF_12Y = 0.42507, NEW_PVTRK_CF_12Y = 0.28673;
+// Wind re-measured 17 Oct 2026 (build 2026-10-17e): 0.42507 to 0.42499, after Msenge Emoyeni's 69 MW reweighted the national
+// modern-wind map (nodal/profiles_wind_modern_map.json).
+const NEW_WIND_CF_12Y = 0.42499, NEW_PVTRK_CF_12Y = 0.28673;
 // The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
 BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
 BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };
