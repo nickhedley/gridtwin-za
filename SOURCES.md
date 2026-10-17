@@ -908,9 +908,15 @@ harness/ext/grid_distances.py.
 
 ## Interruptible load: annual energy (user, message 98; build 2026-10-14q)
 
-- 177 GWh a year: Eskom data ESK19679, 2025, the two interruptible products together (ILS 69.5 GWh, IOS 107.8 GWh), aggregate
-  only, Eskom credited, the analysis ours. A calibration to observed use, not a sourced contract limit. Manual load reduction
-  (390 GWh in 2025) is a separate, instructed product and is not counted.
+- 177 GWh a year: Eskom data ESK19679, 2025, ILS (interruptible load supply) 69.5 GWh plus IOS (interruption of supply,
+  excluding ILS and manual load reduction) 107.8 GWh, aggregate only, Eskom credited, the analysis ours. Corrected 17 Oct 2026
+  (user, message 176 (2)): until then this line called the two together "the two interruptible products"; IOS is not
+  interruptible load alone. It covers contracted and mandatory demand reduction used by Eskom National Control and also
+  interruptions of supply due to transmission (USAID and DMRE, South Africa: Energy Efficiency Demand Side Management
+  Experience 2004-2022, June 2023, as found by web search; the report was not opened), and the data does not split the two. The
+  like-for-like interruptible load is ILS, 69.5 GWh. The 177 GWh was a calibration to observed use, tried as an annual cap in build
+  14q and withdrawn in 14r; nothing in the code uses it (drInterruptAnnualMWh defaults to 0). Manual load reduction (390 GWh in
+  2025, on 17 days between 31 Jan and 15 May) is a separate, instructed product and is not counted.
 
 ## Interruptible load: contracted size (user, message 94; 14 Oct 2026; applied as 1,000 MW in build 2026-10-14q, message 95)
 
@@ -921,7 +927,8 @@ harness/ext/grid_distances.py.
   load shed up to 842 MW over 218 hours, 57 GWh in 2021.
 - NTCSA ASTR 2026/27-2030/31 (January 2026), p.10: emergency reserve 1,200 MW, made up of interruptible loads, generator emergency
   capacity (EL1) and gas turbines; the engine's drInterruptMW 1,200 has no source of its own.
-- Eskom data ESK19679, aggregates only: ILS and IOS together 2025 at most 1,541 MW, 99th percentile 515 MW.
+- Eskom data ESK19679, aggregates only: ILS and IOS together 2025 at most 1,541 MW, 99th percentile 515 MW (IOS mixes demand
+  reduction with transmission interruptions; see the annual-energy entry above).
 
 ## Gas and diesel turbines' minimum stable level for online reserve headroom (user, message 90; build 2026-10-14n)
 

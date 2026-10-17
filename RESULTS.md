@@ -4087,6 +4087,24 @@ open-cycle in 2034, 250 in 2035, 500 in 2036 and 500 in 2037, 1,500 MW in all; e
 R2,228.5bn as solved, R2,237.0bn topped up (+R8.4bn: capex 7.2, fixed O&M 1.4, fuel 0.1, other -0.2), +R32.0bn against the null;
 CO2 1,349.2 to 1,349.4 Mt. Every top-up year is flagged: diesel open-cycle is excluded in this run, so the top-up prices the gap.
 
+### The 2025 replay against Eskom's 2025 like for like: 91.4 GWh shed or interrupted against Eskom's 459.5 GWh; with interruptible load capped at Eskom's 69.5 GWh it sheds 6.9 GWh instead of 4.3 (user, 17 Oct 2026, messages 174-176; build 2026-10-16h; report only)
+
+Settings. '2025, as modelled' as the page runs it (simulate(state, PROFILES)), build 2026-10-16h; scripts replay_dr.js and
+replay_drcap.js (scratch). Eskom: ESK19679 totals for calendar 2025, the analysis ours, not Eskom's: manual load reduction 390.0
+GWh (17 days, 31 Jan to 15 May), ILS 69.5 GWh, IOS 107.8 GWh.
+
+| | Shed, GWh | Interruptible load called, GWh | Together, GWh |
+|---|---|---|---|
+| Replay, as the page runs it | 4.3 | 87.1 | 91.4 |
+| Replay, interruptible load capped at 69.5 GWh for the year (drInterruptAnnualMWh 69500) | 6.9 | 69.5 | 76.4 |
+| Eskom 2025: manual load reduction and ILS | 390.0 | 69.5 | 459.5 |
+
+IOS (107.8 GWh) is left out: it covers contracted and mandatory demand reduction used by National Control and also interruptions
+of supply due to transmission (SOURCES 'Interruptible load: annual energy', corrected), and the data does not split them; with it,
+Eskom's total is 567.3 GWh. The cap moves peakers and pumped storage by under 0.01 TWh. The one-line caveat for every adequacy
+verdict from the engine: "2025 replay (16h): 91.4 GWh shed or interrupted (4.3 shed, 6.9 with interruptible load capped at Eskom's
+69.5 GWh), against Eskom's 459.5 GWh in 2025 (390.0 manual load reduction plus 69.5 interruptible load; IOS left out)."
+
 ### Build 2026-10-16h, central c5e: wind and solar capex backed out at the capacity factor each runs at by default; suite 819/824 as on 16g, no check changes status, four values move with the capex (user, 16 Oct 2026, message 161 (1); build 2026-10-16h)
 
 The change: FIXED.bldTariffCfBasis 'run' (was 'bid'). New wind R20,879/kW (was R17,773) and tracking solar R11,038/kW (was
