@@ -1403,3 +1403,20 @@ commercial and industrial (C&I) sites, 277 MWp.
   - rooftopDerate 0.78 (FIXED): about 17.5% capacity factor on the national profile, 19.6% on Today 2026's run.
   - The sample is C&I, not residential. A performance ratio is not the same measure as a derate applied to a utility
     per-unit profile; reconcile the two before comparing.
+
+## Eskom Distribution and NERSA: time-of-use, feed-in tariffs and smart metering webinar, 14 Oct 2026 (user, 17 Oct 2026, message 170)
+
+O. Rantwane (Eskom Distribution), 'Time-of-Use Tariffs, Feed-in Tariffs and Smart Metering: residential and commercial
+customers', 14 October 2026, eight slides; the deck was read here (uploaded by the user; not committed). W. Mkhize (NERSA), same
+webinar, slide 12, as given by Nick Hedley (SOURCES 'NERSA: wholesale market roadmap', where recorded). Eskom's terms: cited and
+summarised, the slides not reproduced. The entry 'Eskom Distribution, EEBI webinar deck' above covers slide 3 as first given.
+
+- Slide 3: rooftop solar PV from 2.2 GW in 2022 to 6.2 GW by 2025; privately procured solar PV 6,208 MW in May 2025 (TODO 14fb,
+  beside NTCSA's series and Eskom's 7.4 GW estimate for 2025, GreenCape MIR 2026 p.16).
+- Slide 4: the 2025/26 changes to time-of-use: the high-season peak to low-season off-peak ratio from 8:1 to 6:1; the morning
+  peak cut to 2 hours and the evening peak raised to 3; 2 standard hours on Sunday evening. The hour-by-hour windows, read from
+  the 2026/27 tariff booklet (Appendix A, printed p.46) and cross-checked against this slide, are in RESULTS 'The code's
+  time-of-use windows against Eskom's 2025/26 changes'.
+- Slide 5: about 1.8 million smart meters installed (October 2026), about 25% of small-customer premises smart-metered; 184
+  premises on Homeflex against about 59,000 on Homepower (TODO 14fm).
+

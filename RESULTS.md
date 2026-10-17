@@ -4087,6 +4087,29 @@ open-cycle in 2034, 250 in 2035, 500 in 2036 and 500 in 2037, 1,500 MW in all; e
 R2,228.5bn as solved, R2,237.0bn topped up (+R8.4bn: capex 7.2, fixed O&M 1.4, fuel 0.1, other -0.2), +R32.0bn against the null;
 CO2 1,349.2 to 1,349.4 Mt. Every top-up year is flagged: diesel open-cycle is excluded in this run, so the top-up prices the gap.
 
+### The code's time-of-use windows against Eskom's 2025/26 changes: Megaflex still on the pre-2025 windows; Homeflex has the new peaks but not the evening or low-season early standard hours, and no weekends; the '1:6' label is a peak to off-peak ratio (user, 17 Oct 2026, message 170 (2); build 2026-10-16h; report only, the fix is message 171)
+
+Eskom's windows for 2026/27, read from the tariff booklet (Appendix A, printed p.46) and cross-checked against Eskom Distribution's
+webinar slide 4 (SOURCES 'Eskom Distribution and NERSA'; user confirmed, messages 172-173); all other hours off-peak:
+
+| Season | Weekday peak | Weekday standard | Saturday standard | Sunday standard |
+|---|---|---|---|---|
+| High (Jun-Aug) | 06-08, 17-20 | 08-17, 20-22 | 07-12, 17-19 | 17-19 |
+| Low (Sep-May) | 07-09, 18-21 | 06-07, 09-18, 21-22 | 07-12, 18-20 | 18-20 |
+
+The code (build 2026-10-16h):
+
+| Where | Windows in the code | Against 2026/27 |
+|---|---|---|
+| Megaflex, touBlockOf (the panel on whether the tariff tracks cost; no rates used) | One set for both seasons: weekday peak 06-09 and 17-19, standard 09-17 and 19-22; Saturday standard 07-12 and 18-20; Sunday off-peak all day | Pre-2025: a 3-hour morning and 2-hour evening peak in both seasons, against 2 and 3 hours, shifted an hour later in the low season; no Sunday standard; Saturday right for the low season only |
+| Homeflex, flexAt (the retail panel; all six 2026/27 rates) | Peak high 06-08 and 17-20, low 07-09 and 18-21; standard high 08-17, low 09-18; weekdays applied to all seven days | Peaks right. Evening standard (high 20-22, low 21-22) and the low season's 06-07 are off-peak in the code; Saturday and Sunday windows absent (the code says so: not sourced at the time) |
+
+Ratios. nodal/eskom_tariff_components.json labels homeflex.peak_to_standard_ratio 6 ('NERSA approved a change from 1:8 to 1:6').
+Slide 4 gives the change as high-season peak to low-season off-peak, 8:1 to 6:1; the booklet's Megaflex rates give 739.28 / 123.20
+= 6.0, high-season peak to off-peak (off-peak the same in both seasons). NERSA's text calls it peak to standard. Homeflex's own
+2026/27 rates in the file: high-season peak to off-peak 3.86, peak to standard 2.97; low season peak to off-peak 1.89. Message 171
+relabels the field and moves both sets of windows to 2026/27, with the Megaflex comparison (touCompare) rerun.
+
 ### New central c5e: c5d's settings with wind and solar capex backed out at the capacity factor each runs at; adequate after two passes, engine PV R2,235.7bn (+R30.8bn on c5d), CO2 1,627.7 Mt (+94.0); identical to s_tariffcf; 30 sensitivities and s_roof05 rerun on it (user, 16 Oct 2026, message 161 (2), 164 (2); build 2026-10-16h)
 
 Settings. c5c's central settings (scratch env_central.sh: COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1
