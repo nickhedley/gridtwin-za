@@ -13942,7 +13942,22 @@ function simulateTwoPass(st, PROF, opts){
 // SOLAR TRACKING PROFILES (TODO 14aw). bldSolarTrk holds the regional tracking series; SOLAR_TRK_G the national
 // tracking/fixed ratio by month and hour (capacity-weighted over regions and the fetched years), which derives a
 // tracking twin for a profile that has none of its own (the default single-year PROFILES.solar).
-let bldSolarTrk = null, SOLAR_TRK_G = null;
+let bldSolarTrk = null, SOLAR_TRK_G = null, SOLAR_TRK_ERR = null;
+// The national map arrives at start-up from nodal/profiles_solar_tracking_map.json (build_solar_tracking.py, as for the
+// modern-wind map), so a preset with tracking solar runs before the weather years load (18 Oct 2026, build 2026-10-17i);
+// when the full files load, bldBuildSolarTrkRatio recomputes it and the page stops if the two disagree.
+function setSolarTrkMap(G, source){
+  if (!Array.isArray(G) || G.length !== 12 || G.some(r => !r || r.length !== 24)) throw new Error('solar tracking map from ' + source + ' is not 12 months x 24 hours');
+  if (SOLAR_TRK_G){
+    let d = 0;
+    for (let m = 0; m < 12; m++) for (let hh = 0; hh < 24; hh++) d = Math.max(d, Math.abs(G[m][hh] - SOLAR_TRK_G[m][hh]) / Math.max(1e-9, Math.abs(SOLAR_TRK_G[m][hh])));
+    if (d > 1e-9){ SOLAR_TRK_G = null;
+      SOLAR_TRK_ERR = 'solar tracking map disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun build_solar_tracking.py with MAP_ONLY=1';
+      throw new Error(SOLAR_TRK_ERR); }
+    return;
+  }
+  SOLAR_TRK_G = G.map(r => Array.from(r));
+}
 const _MSTART_H = [0,31,59,90,120,151,181,212,243,273,304,334].map(d => d * 24);
 function hourMonth(h){ let m = 11; while (m > 0 && h < _MSTART_H[m]) m--; return m; }
 function bldBuildSolarTrkRatio(){
@@ -13956,7 +13971,7 @@ function bldBuildSolarTrkRatio(){
       const m = hourMonth(h); num[m][h % 24] += w * T[y][h] / st; den[m][h % 24] += w * F[y][h] / sc;
     }
   }
-  SOLAR_TRK_G = num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1));
+  setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1)), 'the series');
 }
 // MODERN-TURBINE WIND (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
 // current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
@@ -14031,7 +14046,7 @@ function windModOf(wind){
 // The tracking twin of a fixed-tilt solar profile: its own if built with one, else derived from SOLAR_TRK_G.
 function solarTrkOf(solar){
   if (solar.trk) return solar.trk;
-  if (!SOLAR_TRK_G) throw new Error('solar tracking is on but nodal/profiles_solar_tracking.json is not loaded');
+  if (!SOLAR_TRK_G) throw new Error(SOLAR_TRK_ERR || 'solar tracking is on but nodal/profiles_solar_tracking_map.json is not loaded');
   const t = new Float64Array(solar.length);
   for (let h = 0; h < solar.length; h++) t[h] = Math.min(1, solar[h] * SOLAR_TRK_G[hourMonth(h % HOURS)][h % 24]);
   solar.trk = t; return t;
@@ -20278,6 +20293,9 @@ const P_FIG3 = fetch('harness/coal_dates_irp2025.json?v=' + (window.DATA_V || '7
   .then(d => { if (d && d.units) IRP_FIG3_UNIT_DATES = d.units; }).catch(() => {});   // IRP presets' coal (message 185 (4))
 const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
   .then(d => { if (d){ setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; } }).catch(e => console.error('[GridTwin]', e.message));
+// Tracking-solar map (bldPvTracking, a preset key): needed by any dispatch with new tracking solar on the default profile.
+const P_STRK = fetch('nodal/profiles_solar_tracking_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
+  .then(d => { if (d) setSolarTrkMap(d.map, 'nodal/profiles_solar_tracking_map.json'); }).catch(e => console.error('[GridTwin]', e.message));
 // NUMBERS IN THE PROSE, FROM THE CODE (site text fixes, user 16 Oct 2026, message 138). Each <span data-num="key"> (or an
 // <option>) shows ABOUT_NUM[key](), so a constant is never typed a second time into the About text; an unknown key throws.
 const _numInt = v => Math.round(v).toLocaleString('en-US');
@@ -20321,7 +20339,7 @@ function fillAboutNums(){
     el.textContent = f();
   }
 }
-Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD, P_FIG3]).then(() => {
+Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD, P_FIG3, P_STRK]).then(() => {
   fillAboutNums();
   // The methodology table's capex line is filled from BLD_COST, so it cannot drift from the constants (7 Oct 2026:
   // it still read R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965).

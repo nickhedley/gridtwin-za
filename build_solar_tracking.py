@@ -27,7 +27,14 @@ TIME
 PVGIS returns UTC; the fixed-tilt file is shifted +2 h to SAST (8 Sep 2026). The same shift is applied.
 
 USAGE (from the repo root)
-    python3 build_solar_tracking.py               # writes nodal/profiles_solar_tracking.json
+    python3 build_solar_tracking.py               # writes nodal/profiles_solar_tracking.json and the national map
+    MAP_ONLY=1 python3 build_solar_tracking.py    # rewrites only the national map, e.g. after a regional capacity change
+
+NATIONAL MAP (18 Oct 2026, build 2026-10-17i). The page's SOLAR_TRK_G, the national tracking/fixed ratio by month and hour
+of day (capacity-weighted over regions and the years in both files), is written to MAP_OUT so the page has it at start-up
+without the two large multi-year files; it is computed here exactly as the page's bldBuildSolarTrkRatio does, and the page
+recomputes it when the full files load and stops if the two disagree. Without it, a preset with tracking solar
+(bldPvTracking) could not run until the weather years had loaded.
 """
 import json, os, time, urllib.request
 from rebuild_solar_pvgis import COORDS
@@ -35,6 +42,8 @@ from rebuild_solar_pvgis import COORDS
 API, DB, LOSS = 'v5_3', 'PVGIS-SARAH3', 10
 SRC = 'nodal/profiles_regional_multiyear.json'
 OUT = 'nodal/profiles_solar_tracking.json'
+MAP_OUT = 'nodal/profiles_solar_tracking_map.json'
+CAP = 'nodal/regional_renewable_capacity.json'   # the page's capacity weights (bldWxWeights.solar)
 CACHE = 'pvgis_tracking_cache.json'
 SHIFT = 2   # hours, UTC to SAST
 
@@ -105,6 +114,29 @@ def main():
         'cf_by_region_year': ratio_note},
         'scale': scale, 'solar_trk_pu': out}, open(OUT, 'w'), separators=(',', ':'))
     print('wrote', OUT)
+    write_map()
+
+def write_map():
+    # As the page's bldBuildSolarTrkRatio: solar weights normalised over the regions in CAP; regions lacking either series
+    # skipped; per month and hour of day, the ratio of the weighted sums of tracking and fixed-tilt output, all years in both.
+    cap = json.load(open(CAP))['solar_mw']; tot = sum(cap.values()); W = {r: v / tot for r, v in cap.items()}
+    d, trk = json.load(open(SRC)), json.load(open(OUT))
+    sc, st = d.get('scale', 1) or 1, trk.get('scale', 1) or 1
+    num, den = [[0.0] * 24 for _ in range(12)], [[0.0] * 24 for _ in range(12)]
+    for r, w in W.items():
+        T, F = trk['solar_trk_pu'].get(r), d['solar_pu'].get(r)
+        if not w or not T or not F: continue
+        for y in T:
+            if y not in F: continue
+            for h in range(8760):
+                m = month_of(h); num[m][h % 24] += w * T[y][h] / st; den[m][h % 24] += w * F[y][h] / sc
+    G = [[num[m][hh] / den[m][hh] if den[m][hh] > 1e-9 else 1 for hh in range(24)] for m in range(12)]
+    json.dump({'meta': {'what': 'SOLAR_TRK_G: national tracking/fixed-tilt solar output ratio by month (rows) and hour of day (columns), '
+                                'capacity-weighted (' + CAP + '), all years in both files; derives a tracking twin of the default profile.',
+                        'built_by': 'build_solar_tracking.py from ' + OUT + ' and ' + SRC,
+                        'licence': d['meta'].get('licence'), 'copyright': d['meta'].get('copyright')},
+               'map': G}, open(MAP_OUT, 'w'), separators=(',', ':'))
+    print('wrote', MAP_OUT)
 
 _MD = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 _MSTART = [sum(_MD[:i]) * 24 for i in range(12)]
@@ -113,4 +145,7 @@ def month_of(h):
         if h >= _MSTART[m]: return m
 
 if __name__ == '__main__':
-    main()
+    if os.environ.get('MAP_ONLY') == '1':
+        write_map()
+    else:
+        main()

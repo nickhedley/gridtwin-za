@@ -34,7 +34,8 @@ CHECKS = [
     ('Rooftop solar</button>',                                     'tab: rooftop solar'),
     # Presets & costs
     ("2030 targets",                                                 'IRP preset name'),
-    ('coalDecomMW:8000,newWindMW:7341,newPvMW:10313',              'IRP preset values (IRP 2025 Table 1, 7 Oct 2026)'),
+    ('get coalDecomMW(){ return irpFig3CoalRetiredMW(2030); },newWindMW:7341,newPvMW:10313',
+                                                                   'IRP preset values (IRP 2025 Table 1, 7 Oct 2026; coal from Figure 3\'s dates, 17 Oct 2026)'),
     ('Deep decarbonisation 2035',                                     'deep decarbonisation preset'),
     ('costCoal:546',                                               'coal cost R546/MWh'),
     ('costCcgt:2003',                                              'CCGT dispatch R2003/MWh, FY2026 JKM reference'),
