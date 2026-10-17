@@ -393,7 +393,11 @@ prov_projects = [
 unallocated = [
     dict(name="BW6, sixth project", tech="solar", mw=140.0, status="preferred_bidder", bw="BW6",
          n_projects=1,
-         note="BW6 pre-CC is 640 MW across 4 projects (p.27); 500 MW is named above, leaving 140 MW unidentified."),
+         note="BW6 pre-CC is 640 MW across 4 projects (p.27); 500 MW is named above, leaving 140 MW unidentified."
+              " Probably Ngonyama solar (ib vogt, Dealesville, Free State): added as BW6's sixth preferred bidder in"
+              " March 2023, NERSA licence July 2023, no financial close reported by August 2025 (Green Building Africa,"
+              " 6 Apr 2023 and 29 Jul 2023). A probable identification (user, 17 Oct 2026, message 189 (2)); MW and"
+              " status unchanged."),
     dict(name="BW7 solar PV", tech="solar", mw=3940.0, status="preferred_bidder", bw="BW7",
          n_projects=18,
          note="8 preferred bidders (1760 MW) appointed 23 Dec 2024, 6 (1290 MW) on 21 Jul 2025 after wind-to-solar technology reallocation, 4 (890 MW) on 15 Dec 2025 after value-for-money negotiations. Provincial figures circulated for the first tranche come from a ministerial press release, not the quarterly report, and are DELIBERATELY not apportioned to regions here: those same figures (Mpumalanga 480, Limpopo 400, Free State 480, North West 400) previously leaked into the operational capacity file and caused the geography bug this rebuild exists to fix."),

@@ -177,7 +177,10 @@ the code: the weekly table, by province and nationally, covers EVERYTHING that i
 RMIPPPP - wheeled utility plant and behind-the-meter rooftop, ground and roof mounted, residential
 through mining. It is a measured figure, not an estimate, which makes it the best rooftop source
 available; registration data is incomplete and will stay that way. Rooftop is obtained by
-subtracting the known wheeled plant from it.
+subtracting the known wheeled plant from it. Read at source (user, 17 Oct 2026, message 191 (1)): NTCSA Weekly
+System Status Report 2026 week 25, p.6, "Rooftop PV includes ground-mounted as well as all other PV installations that do not
+have contracts with NTCSA"; estimated rooftop PV 8,294.5 MW for May 2026 (pp.5-6). Wheeled plant sells to private buyers, so it
+is assumed inside; whether a network-use agreement counts as a contract with NTCSA is open.
 
 WHICH MEANS THE QUEUE BELOW IS A RECLASSIFICATION, NOT AN ADDITION. `FIXED.rooftopMW` 8,942.1 is
 the August 2026 NTCSA figure less the 488 MW of wheeled solar in `by_source.private`, which covers
@@ -1419,4 +1422,72 @@ summarised, the slides not reproduced. The entry 'Eskom Distribution, EEBI webin
   time-of-use windows against Eskom's 2025/26 changes'.
 - Slide 5: about 1.8 million smart meters installed (October 2026), about 25% of small-customer premises smart-metered; 184
   premises on Homeflex against about 59,000 on Homepower (TODO 14fm).
+
+## NESO: emergency assistance, October 2026 (user, 17 Oct 2026, message 166; reviewer pack limitation 1)
+
+NESO (National Energy System Operator, Great Britain), 'Emergency Assistance: what it is, and why we used it over the last
+week', Craig Dyke, 14 October 2026. As given by Nick Hedley; the post was not read here. Cited and summarised, not reproduced.
+
+- NESO called 1,200 MW of emergency interconnector support for London and the South East when planned transmission did not
+  return to service, with supply available elsewhere in GB.
+- Use: a single-node adequacy test counts such a case as adequate (pack limitation 1).
+
+## Modo Energy: Netherlands battery revenue by duration, January–September 2026 (user, 17 Oct 2026, message 177; reviewer pack section 4 and limitation 19)
+
+Modo Energy, chart of Netherlands battery (BESS) revenue by duration, January–September 2026, posted on LinkedIn, 17 October
+2026. As given by Nick Hedley; the chart was not read here. Cited and summarised, not reproduced. A reference only, not an input.
+
+- Marginal value of the second hour of duration EUR 92k/MW a year, of the fourth EUR 14k, in a market where balancing
+  services dominate battery revenue. Placed beside s_li8h.
+- Modo applies a 0.80 calibration, from backtests, to its figures. Placed in limitation 19 as a reference for the size of
+  the foresight effect, not a correction.
+
+## NERSA: wholesale market roadmap, webinar of 14 Oct 2026 (user, 17 Oct 2026, message 180 (1); reviewer pack limitation 23)
+
+W. Mkhize (NERSA), webinar on time-of-use tariffs, feed-in tariffs and smart metering, 14 October 2026, slide 12: NERSA's
+roadmap for the South African wholesale electricity market (SAWEM) has the market's external simulation running into early
+2027. As given by Nick Hedley; the slide was not read here and the deck is not held. The webinar's fuller entry (Eskom
+Distribution's slides, message 170) follows after the c5e work.
+
+- Use: limitation 23 places the understatement of midday curtailment mainly in 2026-27, if the market starts on time, since
+  the engine's economic midday dispatch is the dispatch the market is designed to produce. Coal given priority today:
+  NTCSA, as reported by SAPVIA and Engineering News, 30 Jul 2026 (RESULTS 'The 2026 replay curtails almost nothing for
+  oversupply').
+
+## Meridian Economics: renewable energy levelised cost tool, June 2020 (user, 17 Oct 2026, message 163; reviewer pack section 1 and limitation 24; report only)
+
+Meridian Economics, 'Renewable Energy Levelised Cost Tool' (note), June 2020. As given by Nick Hedley; the note was not read
+here. Cited and summarised, not reproduced. A reference only; no input changed.
+
+- Degradation, best estimates (Table 1, p.iii): wind 0.3% a year, solar PV 0.5%. The model has none (pack limitation 24;
+  RESULTS 'Degradation is not modelled').
+- Capacity factors: wind 35-45% (best estimate 40%), solar PV 22-26% (24%; tracking or fixed not stated). Page not recorded.
+  Beside the pack's 42.5% (new wind, modern-turbine profile) and 28.7% (tracking solar).
+- Cost path (Figure 1, p.v): wind and solar levelised cost about a third lower by 2040, on NREL ATB 2019 learning. Beside the
+  model's 3.89% a year decline in solar capex, which has no source; not a source for the rate.
+
+## GreenCape: National Renewable Energy Market Intelligence Report 2026 (user, 16-17 Oct 2026, message 164)
+
+GreenCape, National Renewable Energy Market Intelligence Report 2026, May 2026. Copyright GreenCape, all rights reserved: cited
+and summarised, not reproduced. As given by Nick Hedley with pages; the report was not read here.
+
+- Figure 1 (p.14, end-March 2026): 2,159 MW wind, 2,368 MW solar PV and 888 MW battery storage under construction. NTCSA's
+  Generation Customer Connections Dashboard (Figure 2, p.15, March 2026): 5,354 MW of wind and solar in execution. Against the
+  committed floors (886 MW wind, 849 MW solar, 666 MW lithium): the s_constr comparison follows (message 164 (1)).
+- Rooftop (p.16): Eskom's estimate 7.4 GW in 2025. Figure 4 (p.17): about 10 GW by 2030, after installs slowed with
+  load-shedding. Behind s_roof05 (RESULTS 'New central c5e').
+- Connection programme (p.20, citing NTCSA 2024): 13 GW of new renewables in 2024-30 through transformer upgrades and a further
+  24 GW by 2033; ITIPP 3,222 MW by August 2029. Set against c5e's build in RESULTS 'c5e's new wind and solar against NTCSA's
+  connection programme' and the pack's build-limits note.
+
+## Beyond Fossil Fuels, Ember, E3G and IEEFA: European grid operators and the energy transition, May 2025 (user, 17 Oct 2026, message 162)
+
+Beyond Fossil Fuels, Ember, E3G and IEEFA, 'How Europe's grid operators are preparing for the energy transition', May 2025. As
+given by Nick Hedley with pages; the report was not read here. Cited and summarised; no figures reproduced.
+
+- Curtailment of wind and solar (p.18): UK 10% (2024), Ireland 9.7% (2023), Germany 6.8% (2023), Netherlands 4.9% of wind and
+  solar (2024), Spain 2.2% (2024). Methods differ between countries. Set against c5e's curtailment in RESULTS 'c5e's curtailment
+  against Europe's' and pack limitation 23.
+- System non-synchronous penetration (SNSP): EirGrid's operating limit (p.21) and Figure 4 (p.22), Ireland 75%. For the SNSP
+  measure on c5e (message 162 (1); RESULTS 'SNSP on c5e'; pack limitation 4).
 

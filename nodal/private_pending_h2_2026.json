@@ -6,7 +6,7 @@
   "compiled": "2026-10-01",
   "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/",
   "attribution": "GridTwin ZA, Nick Hedley",
-  "effect_when_loaded": "These megawatts are NOT missing from the model. NTCSA's weekly privately-procured solar PV total covers all non-REIPPPP, non-RMIPPPP solar - wheeled and behind-the-meter alike - and FIXED.rooftopMW is derived from it by subtracting the wheeled plant in by_source.private, which currently covers H1 2026 only. So every entry below is already inside rooftopMW, counted once but in the wrong bucket. Loading one moves capacity from rooftop to wheeled: add it to by_source.private, subtract the same figure from FIXED.rooftopMW, in one commit."
+  "effect_when_loaded": "These megawatts are NOT missing from the model. NTCSA's weekly privately-procured solar PV total covers all non-REIPPPP, non-RMIPPPP solar - wheeled and behind-the-meter alike - and FIXED.rooftopMW is derived from it by subtracting the wheeled plant in by_source.private, which currently covers H1 2026 only. So every entry below is already inside rooftopMW, counted once but in the wrong bucket. Loading one moves capacity from rooftop to wheeled: add it to by_source.private, subtract the same figure from FIXED.rooftopMW, in one commit. Assumed, 17 Oct 2026: NTCSA's Weekly System Status Report (2026 week 25, p.6) defines its rooftop PV estimate as ground-mounted and all other PV installations without contracts with NTCSA; wheeled plant sells to private buyers, so the solar entries are taken to be inside it and are not loaded. Open: whether a network-use agreement counts as a contract with NTCSA."
  },
  "entries": [
   {
@@ -24,17 +24,18 @@
    "source": "Green Building Africa, 1 Oct 2026"
   },
   {
-   "name": "Selemela 1 and 2",
+   "name": "Selemela 2 and 3 (Tronox)",
    "tech": "solar",
    "mw": 200,
-   "basis": "MW AC; 256 MWp installed",
-   "region_reported": "North West, Lichtenburg",
+   "basis": "MW AC; 256 MWp installed (126 and 130 MWp)",
+   "region_reported": "North West, near Lichtenburg",
    "status": "operational",
-   "cod": "2024-04-24",
-   "offtake": "wheeled to Tronox sites in the Western Cape and KwaZulu-Natal",
+   "cod": "early 2024",
+   "cod_note": "SOLA's project pages: commissioned early 2024. The 24 Apr 2024 date and the 200 MW AC were reported in the trade press (Jul 2024) and have not been re-read.",
+   "offtake": "wheeled to Tronox",
    "developer": "SOLA Group",
-   "source": "trade press, Jul 2024",
-   "note": "Pre-2026, so absent from the H1 2026 monitor. The regional file carries only 100 MW of private solar in North West."
+   "source": "SOLA project pages, Selemela 2 and Selemela 3 (read 17 Oct 2026)",
+   "note": "Pre-2026, so absent from the H1 2026 monitor. The regional file carries only 100 MW of private solar in North West. Not Selemela 1, a separate 132 MWp plant for African Rainbow Minerals (Arup project page), supplying ARM's operations through wheeling, energised and grid-connected; consistent, from a page read (17 Oct 2026), with the H1 2026 monitor's 'ARM Platinum' 100 MW wheeled in North West, which is already in by_source.private."
   },
   {
    "name": "Damlaagte",
@@ -44,9 +45,9 @@
    "region_reported": "Free State",
    "status": "operational",
    "cod": "2025-08-23",
-   "offtake": "Sasol and Air Liquide",
+   "offtake": "private power purchase agreements with Sasol and Air Liquide",
    "developer": "Mainstream",
-   "source": "trade press, Oct 2025",
+   "source": "Mainstream release, 23 Aug 2025 (read 17 Oct 2026)",
    "note": "Pre-2026, so absent from the H1 2026 monitor."
   },
   {
