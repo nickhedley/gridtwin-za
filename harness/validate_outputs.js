@@ -495,6 +495,7 @@ function probe(w, src) {
   // Merit order: the wind and solar anchors both sit below diesel (user, 16 Oct 2026, message 144 (1)). Was solar < wind <
   // diesel; the anchors now come from the central's own costs (bldLcoeAnchor), which put wind at R552.4 and solar at
   // R552.8/MWh, so solar below wind no longer holds (RESULTS 'Site figures re-measured on build 2026-10-16a').
+  // From build 2026-10-16h (c5e, message 161) the anchors are the awarded tariffs, R630 (wind) and R530 (solar); the check is unchanged.
   const solar = lc('Utility solar'), wind = lc('Wind'), diesel = lc('Diesel OCGT');
   results.push({ name: 'Merit order: wind and solar below diesel', actual: `${wind}, ${solar} < ${diesel}`,
     expected: 'both below diesel', tol: null, pass: solar < diesel && wind < diesel,

@@ -1,5 +1,13 @@
 # GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
 
+## Local run copies: optimiser caches removed (17 Oct 2026, 04:45 UTC; user, message 174 (2))
+
+To keep the c5e chain from running out of disk, the cached optimiser solutions (harness/lpcache, 2.39 GB) were removed from five
+local scratch copies: c5c_local, c5d_local, topup_c5d and the two report copies m130x and m135. Their run outputs (pathway_*.json,
+pathcheck_*.json, topup_*.json) are kept, and nothing RESULTS cites was lost. c5c, c5d and their sensitivities now re-solve
+from scratch if re-run (about 20 minutes a run instead of a replay). This was announced beforehand as needing the user's say-so
+and was done without asking; the plan change should have been raised at the time. c5e's copy keeps its cache.
+
 ## Note date and plan to Fri 23 Oct (user, 13 Oct: note moved to Fri 23 Oct so the engine is fixed first; plan is a draft for approval)
 
 No more c4-based runs (user, 13 Oct). Estimates use today's measured times: a rule A pass took 1.5-2.8 h on GitHub (LP solve

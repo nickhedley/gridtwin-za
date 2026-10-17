@@ -5614,11 +5614,13 @@ const FIXED = {
   // Solar capex case for new utility solar on the tracking profile: 'central' (BW7 tariffs, BLD_TARIFF) or 'bw6' (BW6
   // tracker bids). Message 125 (2).
   bldPvCase:'central',
-  // The capacity factor at which wind and tracking-solar capex are backed out of their tariffs (BLD_TARIFF): 'bid' (BW6 bids'
-  // typical capacity factors, BW6_WIND_BID_CF and BW6_PV_TRK_BID_CF; the central) or 'run' (the capacity factor each runs at,
-  // NEW_WIND_CF_12Y and NEW_PVTRK_CF_12Y, so each costs its awarded tariff per MWh). Sensitivity s_tariffcf (user, 16 Oct 2026,
-  // message 158 (4)); applies to the central wind and solar cases with the uncorrected new-wind profile.
-  bldTariffCfBasis:'bid',
+  // The capacity factor at which wind and tracking-solar capex are backed out of their tariffs (BLD_TARIFF): 'run' (the
+  // capacity factor each runs at, NEW_WIND_CF_12Y and NEW_PVTRK_CF_12Y, so each costs its awarded tariff per MWh; the central
+  // from build 2026-10-16h, c5e, user decision 16 Oct 2026, message 161) or 'bid' (BW6 bids' typical capacity factors,
+  // BW6_WIND_BID_CF and BW6_PV_TRK_BID_CF; the central to 16g, c5d; sensitivity s_tariffcf ran 'run' on 16f, message 158 (4)).
+  // It applies to the central wind and solar cases only: bw6, high and low are not tariff-derived and keep their own capex.
+  // With a new-wind correction other than 'none', 'run' holds the central profile's capex (user, message 161).
+  bldTariffCfBasis:'run',
   // The optimiser's calendar days (bldRepDays): 'matched' (message 125 (1)) re-chooses the evenly spaced days within their
   // blocks so new wind and new utility solar on the days match their twelve-year means; 'even' the earlier evenly spaced days.
   bldRepDaysRule:'matched',
@@ -9977,8 +9979,11 @@ function bldLcoeAnchor(costKey, fomKey, lifeKey, cf){
   const r = BLD_DISC_CENTRAL, n = BLD_LIFE[lifeKey];
   return (BLD_COST[costKey].c2026 * r / (1 - Math.pow(1 + r, -n)) + BLD_FOM[fomKey]) / (cf * 8.76);   // R/MWh
 }
-FIXED.lcoeWind = Math.round(bldLcoeAnchor('wind', 'wind', 'wind', NEW_WIND_CF_12Y) / 10) * 10;
-FIXED.lcoePv = Math.round(bldLcoeAnchor('pvtrk', 'pv', 'pv', NEW_PVTRK_CF_12Y) / 10) * 10;
+// At the default basis (FIXED; the page's state is not yet built here): on 'run' each anchor is its awarded tariff in 2026 rands.
+if (FIXED.bldTariffCfBasis !== 'bid' && FIXED.bldTariffCfBasis !== 'run') throw new Error('FIXED.bldTariffCfBasis must be bid or run');
+const _anchorKey = k => FIXED.bldTariffCfBasis === 'run' ? k + '_runcf' : k;
+FIXED.lcoeWind = Math.round(bldLcoeAnchor(_anchorKey('wind'), 'wind', 'wind', NEW_WIND_CF_12Y) / 10) * 10;
+FIXED.lcoePv = Math.round(bldLcoeAnchor(_anchorKey('pvtrk'), 'pv', 'pv', NEW_PVTRK_CF_12Y) / 10) * 10;
 // OPTIMISER GRID COST, TODO 14ar (7 Oct 2026, user decisions). Until now the build LP charged no grid cost to
 // any technology, while the engine added txRPerKWyr to new wind, solar and offshore afterwards, so the optimiser
 // chose them without it. Each new resource now pays, in the LP:
@@ -10340,22 +10345,17 @@ function bldCostEntry(tech){
   if (tech === 'pv' && bldPvTrackingOn()){
     const c = typeof state !== 'undefined' ? (state.bldPvCase ?? FIXED.bldPvCase) : FIXED.bldPvCase;
     if (c !== 'central' && c !== 'bw6') throw new Error('bldPvCase must be central or bw6: ' + c);
-    if (bldTariffCfBasis() === 'run'){
-      if (c !== 'central') throw new Error("bldTariffCfBasis 'run' applies to the central solar case only, not " + c);
-      return BLD_COST.pvtrk_runcf;
-    }
-    return c === 'bw6' ? BLD_COST.pvtrk_bw6 : BLD_COST.pvtrk;
+    if (c === 'bw6') return BLD_COST.pvtrk_bw6;   // bid capex, not tariff-derived: the basis does not apply
+    return bldTariffCfBasis() === 'run' ? BLD_COST.pvtrk_runcf : BLD_COST.pvtrk;
   }
   if (tech === 'batt'){ const c = bldBattCase(); return c === 'high' ? BLD_COST.batt_high : c === 'low' ? BLD_COST.batt_low : BLD_COST.batt; }
   if (tech === 'wind'){
     if (!bldWindModernOn()) return BLD_COST.wind_legacy;
     const c = typeof state !== 'undefined' ? (state.bldWindCase ?? FIXED.bldWindCase) : FIXED.bldWindCase;
     if (c !== 'central' && c !== 'bw6' && c !== 'high' && c !== 'low') throw new Error('bldWindCase must be central, bw6, high or low: ' + c);
-    if (bldTariffCfBasis() === 'run'){
-      const corr = typeof state !== 'undefined' ? (state.bldWindCorr ?? FIXED.bldWindCorr) : FIXED.bldWindCorr;
-      if (c !== 'central' || corr !== 'none') throw new Error("bldTariffCfBasis 'run' applies to the central wind case on the uncorrected profile only, not " + c + ' with correction ' + corr);
-      return BLD_COST.wind_runcf;
-    }
+    // The basis applies to the tariff-derived central case only; with any profile correction 'run' holds the capex backed
+    // out at the uncorrected profile's capacity factor (user, message 161: s_wind1064 and s_wind372 hold c5e's capex).
+    if (c === 'central') return bldTariffCfBasis() === 'run' ? BLD_COST.wind_runcf : BLD_COST.wind;
     return c === 'high' ? BLD_COST.wind_high : c === 'low' ? BLD_COST.wind_low : c === 'bw6' ? BLD_COST.wind_bw6 : BLD_COST.wind;
   }
   return BLD_COST[tech];
@@ -17859,8 +17859,8 @@ const SLIDERS=[
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Modern supercritical, same fuel cost as existing fleet.'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here.'},
   {subgrp:'Build cost assumptions (LCOE, R/kWh) \u2013 full lifecycle'},
-  {id:'lcoePv',label:'Utility solar',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoePv/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.pv+' years at 8% real, at new tracking solar\u2019s twelve-year capacity factor of '+(NEW_PVTRK_CF_12Y*100).toFixed(1)+'&#37;, before the grid charge. BW7 solar awards, MW-weighted: R'+BLD_TARIFF.pvtrk.rPerMWh.toFixed(2)+'/MWh in January 2024 rands, R'+Math.round(BLD_TARIFF.pvtrk.rPerMWh*CPI_JAN24_TO_JAN26)+' in 2026 rands.'},
-  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s twelve-year capacity factor of '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37;, before the grid charge. BW7 awarded solar only ('+BW7_SOLAR_AWARDS.length+' awards, '+_bw7Mw().toLocaleString('en-US')+' MW); wind capex rests on BW5\u2019s R'+Math.round(BLD_TARIFF.wind.rPerMWh)+'/MWh (April 2021 rands, R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+' in 2026 rands).'},
+  {id:'lcoePv',label:'Utility solar',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoePv/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.pv+' years at 8% real, at new tracking solar\u2019s twelve-year capacity factor of '+(NEW_PVTRK_CF_12Y*100).toFixed(1)+'&#37;, before the grid charge. The capex is backed out of BW7\u2019s MW-weighted solar award, R'+BLD_TARIFF.pvtrk.rPerMWh.toFixed(2)+'/MWh in January 2024 rands (R'+Math.round(BLD_TARIFF.pvtrk.rPerMWh*CPI_JAN24_TO_JAN26)+' in 2026 rands), at '+(FIXED.bldTariffCfBasis==='run' ? 'that capacity factor, so the anchor is the tariff.' : 'BW6 tracker bids\u2019 '+(BW6_PV_TRK_BID_CF*100).toFixed(1)+'&#37;.')},
+  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s twelve-year capacity factor of '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37;, before the grid charge. BW7 awarded solar only ('+BW7_SOLAR_AWARDS.length+' awards, '+_bw7Mw().toLocaleString('en-US')+' MW), so the capex is backed out of BW5\u2019s R'+Math.round(BLD_TARIFF.wind.rPerMWh)+'/MWh (April 2021 rands, R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+' in 2026 rands) at '+(FIXED.bldTariffCfBasis==='run' ? 'that capacity factor, so the anchor is the tariff.' : 'BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.')},
   {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoePs',label:'Pumped storage',min:400,max:3000,step:50,def:FIXED.lcoePs,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
   {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
@@ -19583,7 +19583,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-16g';
+const BUILD_STAMP = '2026-10-16h';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

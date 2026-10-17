@@ -252,8 +252,8 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
  // from 15 Oct 2026), farms or bw6. PV_CASE (15 Oct 2026): tracking solar capex, central (BW7 tariffs) or bw6. REPDAYS_RULE: the
  // optimiser's calendar days, matched (default) or even. All four are recorded in the output for the engine check.
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:'')+(process.env.PV_CASE!==undefined?` state.bldPvCase=${JSON.stringify(process.env.PV_CASE)};`:'')+(process.env.PS_RES_ONCE!==undefined?` state.psResOnce=${+process.env.PS_RES_ONCE};`:'')+(process.env.REPDAYS_RULE!==undefined?` state.bldRepDaysRule=${JSON.stringify(process.env.REPDAYS_RULE)};`:''));
- // TARIFF_CF (16 Oct 2026, message 158 (4)): bid (default) or run, the capacity factor at which wind and solar capex are backed out
- // of their tariffs (bldTariffCfBasis); sensitivity s_tariffcf. Recorded in the output for the engine check.
+ // TARIFF_CF (16 Oct 2026, message 158 (4)): run (the default from build 2026-10-16h, c5e) or bid (c5d), the capacity factor at
+ // which wind and solar capex are backed out of their tariffs (bldTariffCfBasis). Recorded in the output for the engine check.
  w.eval(`if(!('bldTariffCfBasis' in FIXED)) throw new Error('bldTariffCfBasis missing');`+(process.env.TARIFF_CF!==undefined?` state.bldTariffCfBasis=${JSON.stringify(process.env.TARIFF_CF)};`:''));
  // STRESS_TARGET (8 Oct 2026, TODO 14bk): 1 plans the stress windows to the standard (bldStressTarget); unset = FIXED (0).
  w.eval(`if(!('bldStressTarget' in FIXED)) throw new Error('bldStressTarget missing');`+(process.env.STRESS_TARGET!==undefined?` state.bldStressTarget=${+process.env.STRESS_TARGET};`:''));

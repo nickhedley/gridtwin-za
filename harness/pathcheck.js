@@ -104,6 +104,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    if (P[k] == null) continue;
    if (process.env[env] !== undefined && process.env[env] !== P[k]) throw new Error(env+' '+process.env[env]+' disagrees with the run\'s '+k+' '+P[k]);
    w.eval(`state.${st}=${JSON.stringify(P[k])};`); console.log(k+' from the pathway:', P[k]); }
+ // Runs recorded before build 2026-10-16f carry no tariffCfBasis and were all built on 'bid'; from 16h the default is 'run', so
+ // they are checked on 'bid' (or on TARIFF_CF if given), never on the new default (message 161).
+ if (P.tariffCfBasis == null){ const b = process.env.TARIFF_CF || 'bid'; w.eval(`state.bldTariffCfBasis=${JSON.stringify(b)};`); console.log('tariffCfBasis: none recorded, checked on', b); }
  // The 2026 wind and solar capex the check prices new build at (message 127 (2)), set beside the optimiser's in each row.
  const CAPEX26={wind:+w.eval("bldCapex('wind', 2026)"), pv:+w.eval("bldCapex('pv', 2026)")};
  console.log('capex 2026, engine check:', JSON.stringify(CAPEX26), 'optimiser:', JSON.stringify(P.capex2026||null));
