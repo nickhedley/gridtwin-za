@@ -179,8 +179,8 @@ through mining. It is a measured figure, not an estimate, which makes it the bes
 available; registration data is incomplete and will stay that way. Rooftop is obtained by
 subtracting the known wheeled plant from it. Read at source (user, 17 Oct 2026, message 191 (1)): NTCSA Weekly
 System Status Report 2026 week 25, p.6, "Rooftop PV includes ground-mounted as well as all other PV installations that do not
-have contracts with NTCSA"; estimated rooftop PV 8,294.5 MW for May 2026 (pp.5-6). Wheeled plant sells to private buyers, so it
-is assumed inside; whether a network-use agreement counts as a contract with NTCSA is open.
+have contracts with NTCSA"; estimated rooftop PV 8,294.5 MW for May 2026 (pp.5-6), where NTCSA notes that month-to-month jumps partly reflect cloudy days.
+Wheeled plant sells to private buyers, so it is assumed inside; whether a network-use agreement counts as a contract with NTCSA is open.
 
 WHICH MEANS THE QUEUE BELOW IS A RECLASSIFICATION, NOT AN ADDITION. `FIXED.rooftopMW` 8,942.1 is
 the August 2026 NTCSA figure less the 488 MW of wheeled solar in `by_source.private`, which covers

@@ -4765,10 +4765,17 @@ asserts the subtraction (made 15 Aug 2026 to remove the same double count). By p
 MW at stake in 2026: if wheeled PV is inside the estimate, none is missing or counted twice, and 447.5 MW of wheeled solar sits in
 the rooftop bucket (rooftop profile, netted off demand). If it is not, c5e's base is 935.5 MW short: 488 MW of rooftop taken off
 and 447.5 MW of wheeled solar missing. Plant built after August 2026 (SunCentral 1 and the other private solar in c5e's floors)
-is new build, outside the August estimate either way. Not traced here: c5e's rooftop growth after August 2026 is fixed at 900 MW
-a year (ROOF_MW in c5e's settings; its basis is not recorded in RESULTS); if that rate was read off the estimate's own growth, then on the first
-reading it would carry new wheeled solar that c5e also builds as utility solar. No model change before the note (pack
+is new build, outside the August estimate either way. c5e's rooftop growth after August 2026 is
+fixed at 900 MW a year (ROOF_MW); recorded below (user, 17 Oct 2026, message 195 (3)). No model change before the note (pack
 limitation 25 gives both readings).
+
+Rooftop growth (user, 17 Oct 2026, message 195 (3)). c5e's 900 MW a year of new rooftop solar (ROOF_MW=900) is IRP 2025 Table 1's
+distributed generation for own use: 900 MW a year in 2026-35 (IRP p.31, gazette p.42; public_data/irp2025_extract.csv), with none
+listed for 2036-42. c5e adds it from 2027 (2026 stands at the August 2026 estimate) and keeps 900 MW a year to 2040, where the IRP
+lists none after 2035: 12,600 MW by 2040. NTCSA's estimates of rooftop PV beside it: 7,464 MW in December 2025 (Eskom weekly
+reports, via Engineering News, 23 Jan 2026), 8,294.5 MW in May 2026 (Weekly System Status Report 2026 week 25, pp.5-6) and
+9,430.1 MW in August 2026 (week 37 report), 1,966 MW more than December 2025; NTCSA notes that month-to-month jumps partly reflect
+cloudy days. No model change; s_roof2 (2,000 MW a year) covers a faster pace.
 
 Selemela 1 is a separate plant (Arup's project page, read 17 Oct 2026): 132 MWp near Lichtenburg, developed by SOLA, supplying
 African Rainbow Minerals' operations through wheeling, energised and grid-connected. Consistent, from a page read, with the H1
