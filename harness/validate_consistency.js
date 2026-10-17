@@ -712,6 +712,7 @@ const num = t => {
              total: Object.values(tally).reduce((a, b) => a + b, 0), weekend,
              highPeakMean: hp ? hp.mean : null, lowPeakMean: lp ? lp.mean : null,
              medians: rows.map(r => r.median),
+             medianBy: Object.fromEntries(rows.map(r => [r.block, r.median])),
              cheapest: rows.slice().sort((a, b) => a.mean - b.mean)[0].block,
              // TARIFF_RANK is closure-scoped and not on window, so it cannot be read from
              // here. Referencing it threw, the probe returned an error, and the guard below
@@ -749,11 +750,22 @@ const num = t => {
     // Replaced by the two findings that survive correction. Both are about the median and
     // the ordering, neither depends on a handful of extreme hours, and that is why they
     // held when the original did not.
-    const meds = tou.medians.filter(x => x > 0);
-    check('the blocks barely separate a typical hour',
-          (Math.max(...meds) - Math.min(...meds)) / Math.min(...meds) < 0.05,
-          `medians span ${(100*(Math.max(...meds)-Math.min(...meds))/Math.min(...meds)).toFixed(1)}% `
-          + `- the surviving NERSA claim is that they separate on the tail, not the level`);
+    // RE-SPECIFIED 17 Oct 2026 (user, message 183 (1)), build 2026-10-17a. On the pre-2025 windows every block's median sat
+    // within 5% of the others (1.3% on build 16h; the high-season peak R754/MWh), so the blocks separated on the tail only. On
+    // Eskom's 2025/26 windows (TOU_WINDOWS, message 171) the high-season peak's median is R992/MWh against R745-751 for the
+    // other six: its 17-20 evening peak catches more of the winter hours coal does not price. So the claim is now two checks:
+    // the high-season peak separates on its median, and the other six still do not. RESULTS 'Time-of-use windows on Eskom's
+    // 2025/26 schedule' keeps the pre-2025 result, dated.
+    const mb = tou.medianBy || {}, hpMed = mb['high peak'];
+    const others = Object.keys(mb).filter(k => k !== 'high peak').map(k => mb[k]).filter(x => x > 0);
+    check('outside the high-season peak, the blocks barely separate a typical hour',
+          others.length === 6 && (Math.max(...others) - Math.min(...others)) / Math.min(...others) < 0.05,
+          `the other ${others.length} medians span ${(100*(Math.max(...others)-Math.min(...others))/Math.min(...others)).toFixed(1)}% `
+          + `- the claim is that, apart from the high-season peak, they separate on the tail, not the level`);
+    check('the high-season peak separates on its median',
+          hpMed > 0 && others.length > 0 && hpMed > 1.05 * Math.max(...others),
+          `high-season peak median R${hpMed && hpMed.toFixed(0)}/MWh against at most R${Math.max(...others).toFixed(0)} for the `
+          + `others - on the 2025/26 windows it sits above them by more than 5%; if this fails, the finding needs revisiting`);
     // FAILS from build 14d (14dr outage draw), left failing to investigate after the IRP note (user,
     // 14 Oct 2026). Means at these 2025 settings, R/MWh, 14a -> 14d: high off-peak 778 -> 914, low
     // off-peak 868 -> 792; shed 12 -> 37 GWh, more of it in the high season. Medians 743-750 on both.
