@@ -1486,5 +1486,5 @@ given by Nick Hedley with pages; the report was not read here. Cited and summari
   solar (2024), Spain 2.2% (2024). Methods differ between countries. Set against c5e's curtailment in RESULTS 'c5e's curtailment
   against Europe's' and pack limitation 23.
 - System non-synchronous penetration (SNSP): EirGrid's operating limit (p.21) and Figure 4 (p.22), Ireland 75%. For the SNSP
-  measure on c5e (message 162 (1), to follow; pack limitation 4).
+  measure on c5e (message 162 (1); RESULTS 'SNSP on c5e'; pack limitation 4).
 

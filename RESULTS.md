@@ -4437,6 +4437,42 @@ Europe (Beyond Fossil Fuels, Ember, E3G and IEEFA, May 2025, p.18; SOURCES): UK 
 assumption for local grid limits a single node cannot see; the engine's midday coal blocks likely understate curtailment
 (pack limitation 23); Europe's figures are measured, c5e's modelled.
 
+### SNSP on c5e, EirGrid's definition: the hourly maximum passes Ireland's 75% limit from 2029 (82%) and reaches 97% in 2040; hours above 75% rise from 43 a year in 2029 to 2,926 in 2035 and 4,080 in 2040 (user, 17 Oct 2026, message 162 (1); build 2026-10-16h; report only)
+
+Definition (EirGrid, as in Beyond Fossil Fuels, Ember, E3G and IEEFA, May 2025, p.21; Ireland's limit 75%, Figure 4, p.22;
+SOURCES): non-synchronous generation plus HVDC imports, over demand plus exports. Counted here, hour by hour: non-synchronous =
+wind, utility solar, rooftop, RMIPPPP hybrids, battery and flow-storage discharge, and imports (Cahora Bassa arrives by HVDC);
+synchronous = coal, nuclear, hydro, pumped storage, CSP, gas and diesel. Demand = the engine's grid load with storage charging
+(charging on the demand side) and firm exports, plus rooftop (gross demand, since rooftop counts as generation), plus surplus
+exports. Unserved energy stays in demand.
+
+Settings. c5e's engine check, every year, through a scratch copy of the hooked engine check (c5e/snsp) with one inert line in its
+copy of the page that records hourly rooftop output; TF=0.5 GRID=1, the engine check's runs and seeds. The copy returns c5e's
+engine PV (R2,235.7bn) and CO2 (1,627.7 Mt) to every digit, and the recorded hourly rooftop sums to the engine's rooftop total
+exactly in every run. Script snsp.sh (scratch).
+
+| Year | Largest hour, all runs | Largest hour, mean over runs | Mean over the year | Hours above 75%, mean over runs | Hours above 75%, largest run |
+|---|---|---|---|---|---|
+| 2026 | 65.7% | 61.4% | 22.0% | 0 | 0 |
+| 2027 | 65.9% | 61.8% | 21.9% | 0 | 0 |
+| 2028 | 72.2% | 69.4% | 26.1% | 0 | 0 |
+| 2029 | 82.3% | 80.7% | 33.0% | 43 | 71 |
+| 2030 | 92.1% | 89.3% | 39.3% | 343 | 462 |
+| 2031 | 94.4% | 93.2% | 45.9% | 895 | 1,091 |
+| 2032 | 95.0% | 94.7% | 52.6% | 1,706 | 2,105 |
+| 2033 | 95.6% | 95.5% | 57.1% | 2,300 | 2,785 |
+| 2034 | 96.3% | 96.2% | 60.0% | 2,718 | 3,200 |
+| 2035 | 96.6% | 96.5% | 61.4% | 2,926 | 3,397 |
+| 2036 | 96.8% | 96.6% | 63.0% | 3,154 | 3,634 |
+| 2037 | 96.9% | 96.8% | 64.6% | 3,412 | 3,923 |
+| 2038 | 97.1% | 96.9% | 66.3% | 3,677 | 4,196 |
+| 2039 | 97.3% | 97.1% | 68.5% | 3,971 | 4,500 |
+| 2040 | 97.4% | 97.3% | 69.4% | 4,080 | 4,599 |
+
+Caveats: the engine's own synchronous floor (6 GW, with 30% of battery power counted as grid-forming, and gas not counted) is
+what holds coal on; the build LP has no inertia or system-strength requirement (pack limitation 4), so these SNSP levels carry no
+cost for synchronous condensers or grid-forming inverters. Ireland's 75% is an operating limit for its system, given for scale.
+
 ### Coal priority in c5e's 2026: with every coal unit's minimum at 0.75 (the proxy that reaches NTCSA's 3 GW), surplus curtailment rises from 0.1 to 112 GWh and the deemed-energy upper bound from R0.47bn to R0.63bn, while the engine's 2026 cost falls R1.8bn on less diesel (user, 17 Oct 2026, message 180 (2); build 2026-10-16h; report only)
 
 Settings. c5e's 2026 engine check (pathway_c5e.json, YEARS=2026, TF=0.5 GRID=1, twelve weather years x ten draws, the engine
