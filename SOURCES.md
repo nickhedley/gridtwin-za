@@ -337,6 +337,12 @@ These do not populate a JSON file, but a number in `FIXED` rests on each. Changi
 source means changing the constant, so they belong in this register.
 
 ```
+Lazard LCOE+ 2025      Levelized Cost of Energy+ (June 2025), Appendix A, LCOE v18.0 key
+                         assumptions, p.37: gas peaking (new build) capacity factor 15%-10%.
+                         Read 18 Oct 2026 (user, message 199 (1)). DSL_REF_CF 0.10, the bottom of
+                         the range, is the reference capacity factor for the diesel open-cycle
+                         LCOE anchor (FIXED.lcoeDiesel). An international gas-peaker reference,
+                         not a South African diesel figure. Cite; do not reproduce the table.
 Eskom TDP 2024           2025-2034: 14,494 km, 210 transformers, 133,000 MVA, 56 GW, about
                          R440bn (DBSA; NTCSA CEO, Aug 2026). txRPerKWyr 402 = generation
                          integration only: R225bn for 46.9 GW of grid-connected generation
