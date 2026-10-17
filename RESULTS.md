@@ -4576,9 +4576,9 @@ GRID=1. Against c5e's null (R2,235.7bn, 1,627.7 Mt, objective R1,434.4bn).
 | Optimiser objective, R bn | 1,436.9 | +2.5 (same direction as engine PV) |
 | Passes; adequacy | 2; every year, closest 2032 at 64% of target, zero stress-target slack | null: 2, closest 2031 at 52% |
 
-Build against the null, MW: new wind +435 in 2026, +784 in 2027, -2,124 in 2028, +926 in 2033-38 (+1 overall); utility solar
-+469, +1,003 and +739 in 2026-28, -397 in 2029 and -1,826 in 2031-37 (-11 overall); lithium +94 MW / +395 MWh in 2027 and +660 MWh
-in 2028, less in 2033-36 (+2 MW and -39 MWh overall); CCGT +49, open-cycle on LNG -47. The floors bind exactly: wind 2,105.5 MW
+Build against the null, MW: new wind +435 in 2026, +784 in 2027, -2,124 in 2028, +906 in 2033-39 (+1 overall); utility solar
++469, +1,003 and +739 in 2026-28, -397 in 2029 and -1,812 in 2031-37 (-11 overall); lithium +94 MW / +395 MWh in 2027 and +660 MWh
+in 2028, less in 2033-36 (+2 MW and -39 MWh overall); CCGT +50, open-cycle on LNG -47. The floors bind exactly: wind 2,105.5 MW
 by 2027 and solar 3,210 MW by 2028. So the confirmed projects change when wind and solar arrive, not how much is built by 2040; the
 early arrival cuts 2026-28 coal burn by 12.8 TWh and costs R1.9bn in present value.
 
