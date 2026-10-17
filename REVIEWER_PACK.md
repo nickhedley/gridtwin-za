@@ -67,7 +67,7 @@ Build limits in c5, which c5b_14r, c5d and c5e keep (RESULTS 'c5 inputs, final';
 - new gas from 2030, at most 1,200 MW a year;
 - pumped hydro: Tubatse only, 1,500 MW from 2038.
 
-Against NTCSA's connection programme (13 GW of new renewables in 2024–30 through transformer upgrades and a further 24 GW by 2033; GreenCape MIR 2026, p.20, citing NTCSA 2024), c5e connects 15.5 GW of new wind and utility solar in 2026–30 and 33.1 GW in 2026–33; ITIPP adds 3,222 MW by August 2029, against c5e's 9.8 GW in 2026–29. NTCSA's periods start in 2024, and rooftop is outside both (RESULTS 'c5e's new wind and solar against NTCSA's connection programme').
+c5e connects 15.5 GW of new wind and utility solar in 2026–30, at the limit of NTCSA’s stated programme: 13 GW of new renewables for 2024–30 through transformer upgrades, plus 3.2 GW from the first private transmission tender by August 2029. (GreenCape MIR 2026, p.20, citing NTCSA 2024; RESULTS 'c5e's new wind and solar against NTCSA's connection programme')
 
 ---
 
@@ -301,7 +301,7 @@ Each run takes c5e's settings, makes one change, and runs up to three passes fro
 | s_be7 | IRP nuclear forced: 1,250 MW in 2036–37, 1,350 MW in 2038–39 | +35.5 | -18.8 | -46.8 | no |
 | s_nogas4strict | No new gas or diesel open-cycle; lithium up to 4 GW a year | +28.0 (top-up) | -228.9 | +45.2 | yes |
 | s_noimp | No imports after 2030 (s_imp2030) | +25.7 | +26.5 | +55.8 | yes |
-| s_be6 | Lithium capped at 550 MW a year from 2026 | +25.2 | +67.8 | +14.5 | yes |
+| s_be6 | Lithium at IRP 2025's pace, 550 MW a year (c) | +25.2 | +67.8 | +14.5 | yes |
 | s_wind372 | New wind at BW6 bids' 37.2%, c5e's capex held | +24.0 | +97.0 | +36.9 | yes |
 | s_committed | Committed gas (1,200 MW a year 2030–33, 200 MW in 2034) and lithium minimums | +22.5 | +81.7 | +19.0 | yes |
 | s_pvirp | Solar capped by year at Table 1 | +8.1 | +5.0 | +10.8 | yes |
@@ -323,12 +323,13 @@ Each run takes c5e's settings, makes one change, and runs up to three passes fro
 (a) The objective is at the run's own discount rate, not comparable with the null's at 8%; engine PV, at 8%, is.
 "With charge": engine PV includes the emissions compliance charge, which the objective does not carry. "Top-up": with 1,250 MW of diesel open-cycle (below).
 (b) Engine PV counts rooftop capex as system cost and leaves out what households save on bills and any distribution effect.
+(c) 550 MW a year is the build LP's IRP 2025 pace (BLD_PACE.irp), from Table 1's 8.5 GW of new storage: energy storage 8,223 MW in 2026-42 plus Eskom's 294 MW of batteries in 2026-27 (IRP 2025, Table 1, p.31; public_data/irp2025_extract.csv). The code's note says 8.5 GW 'by 2039'; Table 1 reaches it in 2042, an average of 501 MW a year over 2026-42 (480 over 2026-39), and adds 2,615 MW in 2029 alone, so a flat 550 is the plan's average pace, not its schedule.
 
 What the author takes from the table (RESULTS 'New central c5e'; 'Reviewer pack on c5e'):
 
 - Pass mark 5, set before the runs: the two cost measures move the same way on 23 of the 28 comparable runs. Three of the exceptions are structural: the compliance charge (s_comply_comp, s_comply_full) and s_be7's forced nuclear capital sit outside the objective. s_coalme (engine -R0.5bn, objective +R21.8bn) and s_be4 (-R1.7bn, +R6.3bn) move engine PV by under R2bn and are not traced.
 - s_nogas4strict fails the standard in 2034–40 as solved (largest 8.34 GWh in 2037, against a target of 2.58). Its mean unserved energy stays below NTCSA's 20 GWh a year in every year; its worst single run is 103–218 GWh a year from 2033. 1,250 MW of diesel open-cycle in 2034–37 closes the gap for +R7.4bn, +R28.0bn against the null; on c5d it needed 1,500 MW.
-- Determined gas costs +R79.4bn on the engine and +R45.9bn on the objective against least cost. The IRP's gas beyond the determinations accounts for R106.0bn of s_irpgas's engine premium (R90.2bn on the objective). s_irpgas's build retires 6,185 MW of coal early from 2026 and 6,519 MW from 2029, which carries its CO2 cut (on c5d, 7,167 MW from 2029).
+- Determined gas costs +R79.4bn on the engine and +R45.9bn on the objective against least cost. The IRP's gas beyond the determinations accounts for R106.0bn of s_irpgas's engine premium (R90.2bn on the objective). s_irpgas's build retires 6,185 MW of coal early from 2026 and 6,519 MW from 2029, which carries its CO2 cut (on c5d, 7,167 MW from 2029). Before the forced gas arrives in 2029, 2026–28 are covered by earlier wind, solar and lithium (+1.3, +5.2 and +0.9 GW by 2028 against the null) and the remaining coal; the engine check passes in those years, at 8–18% of target.
 - s_li8h: the 4-hour lithium energy cap binds on c5e in 2039 only, at 12,000 MWh; with 8 hours the run builds 12,714 MWh that year, and engine PV moves -R0.1bn and CO2 -0.5 Mt. On c5d it did not bind. For reference, Modo Energy puts the marginal value of a battery's second hour in the Netherlands, January–September 2026, at EUR 92k/MW-yr and of its fourth at EUR 14k, in a market where balancing services dominate battery revenue (SOURCES 'Modo Energy: Netherlands battery revenue by duration').
 - Every other run's engine check is below target in every year (caveat above): 8 runs after one pass, 22 after two.
 
