@@ -4437,6 +4437,65 @@ Europe (Beyond Fossil Fuels, Ember, E3G and IEEFA, May 2025, p.18; SOURCES): UK 
 assumption for local grid limits a single node cannot see; the engine's midday coal blocks likely understate curtailment
 (pack limitation 23); Europe's figures are measured, c5e's modelled.
 
+### s_committed and s_be6 on c5e, by carrier and year: CO2 +81.7 and +67.8 Mt against the null (+18.6 and +22.6 on c5d) because existing coal makes up energy the optimiser no longer builds wind, solar and lithium for (user, 17 Oct 2026, message 181 (1); build 2026-10-16h)
+
+Settings. Each run's engine check through the hooked copy of message 139 (TF=0.5 GRID=1, all years; scratch gen181.sh), which
+returns each run's recorded engine PV and CO2 to every digit (s_committed R2,258.2bn and 1,709.4 Mt; s_be6 R2,261.0bn and 1,695.5
+Mt); builds from the pathway files; the null's build and engine check equal c5e's. Scripts decomp.py and gen_decomp.py (scratch).
+TWh against the null; existing wind, nuclear, hydro, imports and rooftop do not move.
+
+s_committed (committed gas, 1,200 MW a year in 2030-33 and 200 MW in 2034, and lithium minimums), TWh:
+
+| Carrier | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 | 2026-40 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Coal | -0.6 | -0.0 | +8.8 | +10.7 | +10.3 | +8.0 | +12.8 | +14.9 | +10.8 | +5.0 | +2.5 | -0.9 | -1.6 | -0.8 | -1.0 | +78.9 |
+| Wind, new | -0.0 | +0.0 | -8.5 | -10.2 | -10.2 | -10.1 | -10.0 | -9.6 | -6.6 | -1.0 | +2.0 | +2.3 | +3.1 | +1.5 | +1.6 | -55.6 |
+| Utility solar | +0.6 | +0.0 | -0.4 | -0.5 | -0.5 | +1.7 | -4.0 | -6.9 | -6.0 | -5.7 | -5.6 | -2.0 | -2.2 | -1.9 | -1.9 | -35.1 |
+| CCGT | +0.0 | +0.0 | +0.0 | +0.0 | -0.1 | +0.3 | +0.7 | +0.9 | +1.0 | +0.9 | +0.4 | +0.1 | +0.2 | +0.3 | +0.5 | +5.1 |
+| Open-cycle on LNG | +0.0 | +0.0 | +0.0 | +0.0 | +0.5 | +0.3 | +0.2 | +0.1 | +0.3 | +0.4 | +0.4 | +0.5 | +0.6 | +0.6 | +0.7 | +4.7 |
+| Diesel | +0.0 | +0.0 | +0.0 | +0.1 | +0.0 | -0.2 | -0.2 | -0.1 | -0.1 | -0.1 | -0.1 | -0.0 | -0.0 | -0.0 | -0.0 | -0.6 |
+| Storage discharge | +0.0 | +0.0 | -0.0 | +0.3 | +0.5 | +0.2 | -1.3 | -2.2 | -2.1 | -1.9 | -1.3 | -0.5 | -0.6 | -0.7 | -0.8 | -10.4 |
+| Storage charging | +0.0 | -0.0 | -0.0 | +0.3 | +0.6 | +0.2 | -1.6 | -2.6 | -2.5 | -2.3 | -1.6 | -0.5 | -0.7 | -0.8 | -0.9 | -12.3 |
+| Surplus curtailment | +0.0 | -0.0 | -0.0 | -0.0 | -0.0 | -0.1 | -0.5 | -1.2 | -1.2 | -0.3 | -0.6 | +0.3 | +0.6 | +0.2 | +0.2 | -2.8 |
+| CO2, Mt | -0.7 | -0.1 | +8.8 | +10.7 | +10.3 | +7.9 | +13.0 | +15.2 | +11.4 | +5.5 | +2.8 | -0.8 | -1.4 | -0.4 | -0.6 | +81.7 |
+
+Build against the null, MW: new wind -2,320 in 2028 and -460 in 2029, +3,737 in 2033-38 and -476 in 2039 (+481 overall); utility solar
+-2,361 in 2032 and -1,286 in 2033 (-791 over 2026-40); lithium -1,428 MW / -6,717 MWh in 2032 and -615 / -3,052 in 2033; open-cycle
+gas +957 in 2030 and +363 in 2031; CCGT +2,640 in 2031-33, -3,224 in 2034-37 (-770 overall); coal retired early 609 MW from 2026.
+One pass, adequate in every year (the null needed two, its second for 2030).
+
+Cause: the committed gas and lithium give 2030-33 the firm capacity that, in the null, wind, solar and lithium built ahead of need
+provide; with it, the optimiser defers 2,780 MW of 2028-29 wind to 2033-38 and drops 3.6 GW of 2032-33 solar and 2.0 GW of
+lithium, and existing coal generates the energy: +78.9 TWh, 2028-36. On c5d the same constraint moved less (wind -432 MW in 2026,
+solar -2.6 GW in 2031-33, coal +17.0 TWh), because c5d's null already built wind at the 2.5 GW yearly cap in 2027-30 and the
+constraint left it there; on c5e, where new wind costs its tariff (R630.6/MWh against R552.4 on c5d), the null builds only the
+committed 886 MW in 2026-27 and 2,320 MW in 2028, below the cap.
+
+s_be6 (lithium at IRP 2025's pace, 550 MW a year), TWh:
+
+| Carrier | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 | 2026-40 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Coal | +0.0 | +0.0 | +1.9 | +2.9 | +2.5 | +2.2 | +7.9 | +10.1 | +8.4 | +4.0 | +5.6 | +3.9 | +5.0 | +4.2 | +3.0 | +61.6 |
+| Wind, new | +0.0 | +0.0 | -1.5 | -1.5 | -1.6 | -1.6 | -1.6 | -1.4 | +1.5 | +7.0 | +6.1 | +10.6 | +8.0 | +12.7 | +18.1 | +54.8 |
+| Utility solar | +0.0 | +0.0 | -0.4 | -1.4 | -1.4 | -1.1 | -7.4 | -10.0 | -11.4 | -12.1 | -13.3 | -16.3 | -15.0 | -19.6 | -24.9 | -134.3 |
+| CCGT | +0.0 | +0.0 | +0.0 | +0.0 | -0.1 | -0.1 | +0.4 | +0.4 | +0.6 | +0.4 | +0.7 | +0.9 | +1.1 | +1.6 | +2.3 | +8.4 |
+| Open-cycle on LNG | +0.0 | +0.0 | +0.0 | +0.0 | +0.3 | +0.6 | +0.4 | +0.3 | +0.3 | +0.2 | +0.3 | +0.3 | +0.4 | +0.5 | +0.7 | +4.2 |
+| Diesel | -0.0 | -0.0 | -0.0 | +0.0 | +0.1 | -0.1 | -0.2 | -0.1 | -0.1 | -0.1 | -0.1 | -0.1 | -0.1 | -0.1 | -0.1 | -1.1 |
+| Storage discharge | +0.0 | +0.0 | +0.0 | +0.0 | -0.7 | -1.0 | -2.6 | -3.3 | -3.5 | -3.2 | -3.5 | -4.3 | -3.9 | -5.9 | -8.6 | -40.4 |
+| Storage charging | +0.0 | +0.0 | +0.0 | +0.1 | -0.8 | -1.1 | -3.1 | -3.9 | -4.1 | -3.8 | -4.1 | -5.1 | -4.4 | -6.4 | -9.4 | -46.0 |
+| Surplus curtailment | -0.0 | -0.0 | -0.0 | -0.0 | +0.1 | +0.2 | +0.1 | -0.3 | -0.4 | +0.4 | -0.3 | +0.2 | -1.4 | -1.5 | -0.3 | -3.3 |
+| CO2, Mt | +0.0 | +0.0 | +1.9 | +2.9 | +2.7 | +2.4 | +8.2 | +10.5 | +9.0 | +4.4 | +6.1 | +4.5 | +5.7 | +5.1 | +4.1 | +67.8 |
+
+Build against the null, MW: lithium -4,726 MW / -39,727 MWh over 2026-40 (550 a year throughout); utility solar -10,836 (2028-40);
+new wind +5,354 (mostly 2034-40; -418 in 2028); CCGT +904; open-cycle gas +1,607 in 2030-31. One pass, adequate in every year.
+
+Cause: with lithium held to 550 MW a year, solar loses most of the storage that moves its output into the evening; the optimiser
+builds 10.8 GW less of it and replaces the energy with new wind (+54.8 TWh), existing coal (+61.6 TWh, every year from 2028, most
+in 2032-34) and gas (+12.6 TWh). On c5d the same cap cut solar by 8.1 GW and added 19.1 TWh of coal, with coal 9.9 TWh lower
+in 2026-30; on c5e coal is unchanged in 2026-27 and higher from 2028. Both runs build 550 MW of lithium a year in 2026-28, more
+than their nulls; why c5d's early coal fell and c5e's did not is not traced. The larger solar cut on c5e (10.8 against 8.1 GW)
+goes with its null's larger solar and lithium build (27.9 GW and 13.0 GW against 24.7 and 12.2).
+
 ### s_constr's floors, by project and year, from pages read: wind 1,131 MW by 2026 and 2,105.5 by 2027; solar 823, 2,081 and 3,210 MW by 2026, 2027 and 2028; lithium 760.5 MW / 3,059 MWh by 2027 and 3,719 MWh by 2028 (user, 17 Oct 2026, messages 164 (1), 183 (2) and 184; a sensitivity only; the run follows)
 
 s_constr is a sensitivity on c5e's line, not a change to the central's committed floors (Nick's decision, message 183 (2)). The
