@@ -4102,8 +4102,9 @@ GWh (17 days, 31 Jan to 15 May), ILS 69.5 GWh, IOS 107.8 GWh.
 IOS (107.8 GWh) is left out: it covers contracted and mandatory demand reduction used by National Control and also interruptions
 of supply due to transmission (SOURCES 'Interruptible load: annual energy', corrected), and the data does not split them; with it,
 Eskom's total is 567.3 GWh. The cap moves peakers and pumped storage by under 0.01 TWh. The one-line caveat for every adequacy
-verdict from the engine: "2025 replay (16h): 91.4 GWh shed or interrupted (4.3 shed, 6.9 with interruptible load capped at Eskom's
-69.5 GWh), against Eskom's 459.5 GWh in 2025 (390.0 manual load reduction plus 69.5 interruptible load; IOS left out)."
+verdict from the engine (user, message 179): "2025 replay (16h): 91.4 GWh shed or interrupted (4.3 shed plus 87.1 interruptible
+load); 76.4 GWh with interruptible load capped at Eskom's 69.5 GWh (6.9 shed), against Eskom's 459.5 GWh in 2025 (390.0 manual
+load reduction plus 69.5 interruptible load, ILS; IOS left out). ESK19679 totals."
 
 ### Build 2026-10-16h, central c5e: wind and solar capex backed out at the capacity factor each runs at by default; suite 819/824 as on 16g, no check changes status, four values move with the capex (user, 16 Oct 2026, message 161 (1); build 2026-10-16h)
 
