@@ -4373,6 +4373,29 @@ checks 732/737 plus audit 87/87), eng5 5/6, the same as 16g; the five known fail
 validate_lp's two LP sizes move by 1 and 10 characters (the cost coefficients). Fresh load in Chromium: start-up completes, no
 console errors.
 
+### Degradation is not modelled: on c5e's basis cost per MWh stays at the tariff, while lifetime output per MW is 2.4% (wind) and 4.0% (solar) too high and capex per kW 2.9% and 5.1% too high; on c5d's 'bid' basis cost per MWh was 2.5% and 4.2% too low (user, 17 Oct 2026, message 163; build 2026-10-16h; report only, no model change)
+
+Source: Meridian Economics, 'Renewable Energy Levelised Cost Tool', June 2020, Table 1, p.iii: degradation 0.3% a year for wind,
+0.5% for solar PV (SOURCES 'Meridian Economics'). Arithmetic: levelised output at 8% real over 25 years (BLD_LIFE wind and pv),
+degradation from year 2: -2.42% (wind), -3.99% (solar); from year 1: -2.71% and -4.47% (the user's 2.4% and 4.0% confirmed).
+
+| | Wind | Tracking solar |
+|---|---|---|
+| Levelised output, degradation from year 2 | -2.42% | -3.99% |
+| Capex backed out of the tariff without degradation (c5e, 'run') | R20,879/kW | R11,038/kW |
+| The same with degradation | R20,272/kW (-2.9%) | R10,476/kW (-5.1%) |
+| Cost per MWh on 'run' (capex backed out and dispatch both without degradation) | the tariff, R630.6 | the tariff, R526.1 |
+| Cost per MWh with capex held ('bid', c5d), degradation added | +2.48% | +4.15% |
+
+On 'run' the model leaves degradation out of both the capex derivation and the dispatch, so the two cancel in the cost per MWh;
+what is wrong is per MW: lifetime output per MW too high, so too little capacity for a given energy, more so as plant ages, and
+capex per kW too high. Adding degradation to the capex derivation only gives R615.3 (wind) and R505.1/MWh (solar), which mixes two
+treatments. On 'bid' (c5d), capex is fixed, so cost per MWh was understated by 2.5% and 4.2%.
+
+Also from the note, for reference only: wind capacity factors 35-45% (40%) and solar PV 22-26% (24%; tracking or fixed not
+stated), against the model's 42.5% and 28.7%; wind and solar levelised cost about a third lower by 2040 (Figure 1, p.v; NREL
+ATB 2019 learning), against the model's 3.89% a year solar capex decline, 43% lower by 2040, which has no source.
+
 ### Reviewer pack on c5e: c5e's worst 14 days exceed one LNG cargo every year from 2035 (3.04 in 2040), and 3 of its 33 stress-window-years exceed one; deemed energy upper bound R11.3bn (R6.5bn in present value) against c5d's R13.7bn; the 4-hour lithium energy cap binds in 2039; s_irpgas retires 6.2-6.5 GW of coal early from 2026 (user, 17 Oct 2026, message 161 (4), with 166, 177, 179 and 180 (1); build 2026-10-16h; report only)
 
 Settings. c5e's run and engine check as in 'New central c5e' (frozen copy of 16h; pathcheck.js TF=0.5 LNG=1 GRID=1). Deemed

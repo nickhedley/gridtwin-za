@@ -1450,3 +1450,16 @@ Distribution's slides, message 170) follows after the c5e work.
   the engine's economic midday dispatch is the dispatch the market is designed to produce. Coal given priority today:
   NTCSA, as reported by SAPVIA and Engineering News, 30 Jul 2026 (RESULTS 'The 2026 replay curtails almost nothing for
   oversupply').
+
+## Meridian Economics: renewable energy levelised cost tool, June 2020 (user, 17 Oct 2026, message 163; reviewer pack section 1 and limitation 24; report only)
+
+Meridian Economics, 'Renewable Energy Levelised Cost Tool' (note), June 2020. As given by Nick Hedley; the note was not read
+here. Cited and summarised, not reproduced. A reference only; no input changed.
+
+- Degradation, best estimates (Table 1, p.iii): wind 0.3% a year, solar PV 0.5%. The model has none (pack limitation 24;
+  RESULTS 'Degradation is not modelled').
+- Capacity factors: wind 35-45% (best estimate 40%), solar PV 22-26% (24%; tracking or fixed not stated). Page not recorded.
+  Beside the pack's 42.5% (new wind, modern-turbine profile) and 28.7% (tracking solar).
+- Cost path (Figure 1, p.v): wind and solar levelised cost about a third lower by 2040, on NREL ATB 2019 learning. Beside the
+  model's 3.89% a year decline in solar capex, which has no source; not a source for the rate.
+
