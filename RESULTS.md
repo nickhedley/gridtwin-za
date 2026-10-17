@@ -4308,6 +4308,60 @@ returns c5e's engine PV and CO2 to every digit; c5d as recorded in 'Generation b
 | Served demand (incl. rooftop) | 231.8 (96.7%) | 265.5 (96.5%) | 304.3 (96.4%) | 231.8 (96.7%) | 265.5 (96.6%) | 304.3 (96.5%) |
 | Energy balance residual | 2.0e-12 | 3.4e-13 | -6.1e-13 | 1.9e-12 | 5.1e-13 | -3.2e-13 |
 
+### LCOE anchors on reference parameters (build 2026-10-17c): lithium R1,340/MWh discharged at one full cycle a day, rooftop R1,360 at its resource capacity factor, new diesel open-cycle R9,350 at 10%; c5e's 2030 run-based costs in the captions; the replacement-cost figure takes lithium and diesel from the run; response baseline rewritten for 8 replacement-cost cells (user, 16-17 Oct 2026, messages 159, 186 (4), 194 (1) and 195 (2))
+
+What changed. Three LCOE anchors are derived from the build costs (BLD_COST central, its fixed O&M and life) at 8% real
+(BLD_DISC_CENTRAL), on reference parameters, not on how much a run uses the plant (message 194 (1), replacing 186 (4)'s anchors on
+c5e's 2030 dispatch, which gave R5,980 for lithium and R17,200 for diesel). Wind and solar are unchanged.
+
+| Anchor, R/MWh | Was | Now | Basis | c5e 2030 (engine check, 12 weather years x 20 draws) |
+|---|---|---|---|---|
+| Lithium (4 h), per MWh discharged, charging not costed | 1,600 (typed) | 1,340 | one full cycle a day, 365 a year | 81.1 full cycles (1.142 TWh from 14,074 MWh): R5,986 |
+| Rooftop | 900 (typed) | 1,360 | twelve-year fixed-tilt solar mean 22.398% x the 0.78 derate = 17.47% | the same 17.47% (19.19 TWh from 12,542.1 MW): R1,364 |
+| New diesel open-cycle, with fuel, VOM and carbon | 9,000 (typed) | 9,350 | 10% capacity factor (a) | 2.85% (0.85 TWh from 3,400 MW): R17,180 |
+| Wind | 630 | 630 | twelve-year new-build mean 42.5% (unchanged) | new wind 41.74% (30.0 TWh from 8,206 MW): R642 |
+| Utility solar | 530 | 530 | twelve-year tracking mean 28.7% (unchanged) | not separable: the engine reports utility solar as one fleet |
+
+Inputs: lithium R13,699/kW at 4 h (BLD_COST.batt; BATT_COST_HOURS), fixed O&M 2.5% of capex (BLD_FOM_BATT_SHARE), 15 years;
+rooftop R17,000/kW, R495/kW-yr, 25 years; new diesel open-cycle R25,778/kW (BLD_COST.ccgt x EIA AEO2023's 867/1,176,
+bldOcgtCentralCost), R452.8/kW-yr, 30 years, plus fuel R6,100/MWh, VOM R70/MWh and carbon at R46/t x 0.78 t/MWh (dieselSrmcR,
+R6,206/MWh). (a) Lazard's long-standing capacity factor for gas peaking plant in its levelised cost studies; newer editions use
+15-20%; from search results, the pages not read. The c5e figures are held for the captions only (C5E_2030_*). Slider maxima
+widened (lithium R8.00/kWh, diesel R20.00/kWh) so c5e's run-based costs can be set on them.
+
+Typed and unsourced, captions say so: pumped storage R1,400, vanadium flow R2,100, iron-air R1,750, nuclear R1,650, CSP R2,000
+(in the repository since its first commit, 1 Oct 2026; sources after the preset PR, TODO 14fw (2)). New coal R1,550 keeps its
+source (Coal Baseload IPP Programme, bid window 1, October 2016, escalated).
+
+The replacement-cost figure (message 194 (1)). It needs each technology's cost to the run, not at reference use: lithium and diesel
+now come from the run's own capacity, priced at the slider's cost per unit of capacity (the slider times the reference output of
+that capacity: 365 cycles of the run's lithium energy; 10% of the run's diesel MW), plus diesel's running cost on the energy the
+run burns. The capital part is measured against the running cost the anchor was built on, so the fuel and carbon sliders move only
+the running cost. Vanadium flow and iron-air stay priced per MWh discharged at their typed LCOE, on their share of the battery
+class's energy; every other technology stays energy x LCOE. At the page's defaults the figure goes from R1,532.8 to R1,604.5/MWh
+(+4.7%); on c5e's 2030 fleet (4,666 MW of new lithium at 2.95 h, 8,206 MW wind, 7,339 MW solar, 3,600 MW rooftop) from R1,317.5
+to R1,443.5 (+9.6%).
+
+Check: validate_weather 'each derived LCOE anchor equals its formula' recomputes wind, solar, rooftop, lithium and diesel with its
+own annuity on the reference basis; it failed as it should with the rooftop anchor broken by R10. Its capacity-factor check now
+also holds the fixed-tilt mean (FIXED_PV_CF_12Y).
+
+Response baseline rewritten (message 195 (2)): rewritten only because every cell that moved is fed by the LCOE anchors. Against
+the old baseline, the only base value that moved is the replacement cost, R1,542.22 -> R1,604.53/MWh; no other output's base
+value or cell moved. The eight cells, each the replacement cost's relative span over the check's own sweep (zero, minimum,
+quartiles, maximum; battHours on 0, 4 and 12 h with 8,000 MW), against the 1e-4 threshold:
+
+| Control | Old (17b) | New (17c) | Cause |
+|---|---|---|---|
+| newBattMW | 7.7e-5, does not move | 0.499, moves (R1,604.5 to R2,405.2/MWh at 80 GW) | lithium priced on the capacity the run holds |
+| battHours | 3.5e-5, does not move | 0.150, moves | the same: the existing fleet's energy capacity is priced |
+| newVrfbMW | 7.3e-5, does not move | 1.4e-4, moves | vanadium priced on its own share; lithium no longer priced as a share of discharge |
+| carbonTaxRPerT | 0, does not move | 4.5e-3, moves | diesel's running cost carries carbon at the slider's rate |
+| newIronAirMW | 1.3e-4, moves | 1.5e-5, does not move | iron-air priced on its own share; it no longer re-prices lithium's discharge |
+| newCoalMW | 1.7e-4, moves | 4.1e-5, does not move | the diesel it displaces is priced at its running cost, not the full LCOE; diesel capital paid on capacity either way |
+| coalFlexPct | 1.3e-4, moves | 8.7e-5, does not move | the same |
+| outageUnitLevel | 2.0e-4, moves | 5.8e-5, does not move | the same |
+
 ### Avon and Dedisa's must-run in the build LP capped at the independent peakers' diesel, as the engine does (build 2026-10-17b): c5e's pass-1 LP unchanged (key b7e3107906); the Fossil-free B start's LP equals its must-run-off run; no recorded run affected (user, 17 Oct 2026, message 182 (2); TODO 14fk)
 
 The change. The build LP's mdr_ row now forces min(the must-run, the independent peakers' diesel standing that year): existing

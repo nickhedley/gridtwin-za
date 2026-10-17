@@ -6525,6 +6525,8 @@ const FIXED = {
   coalStartUpCostRPerMW:224.52,
   // LCOE = SRMC + annuitised capex / capacity factor, so LCOE can never be below
   // a technology's own SRMC. validate_outputs.js now asserts that invariant.
+  //   lcoeDiesel       DERIVED from 17 Oct 2026 (messages 159 and 186 (4); bldLcoeAt, after BLD_COST): new open-cycle's
+  //                    capex and fixed O&M at the 2.9% capacity factor of c5e's 2030, plus fuel, VOM and carbon. History below.
   //   lcoeDiesel 9000  CORRECTED 14 Aug 2026 from 5500, which was BELOW diesel's
   //                    own SRMC (R6,206 = 6100 fuel + 70 VOM + carbon) and so
   //                    definitionally impossible. Peaker LCOE is dominated by
@@ -6547,7 +6549,7 @@ const FIXED = {
   //                    together, which is exactly why cross-panel consistency
   //                    never flagged it. Consistency is not accuracy.
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
-  lcoePv:null, lcoeWind:null, lcoeRooftop:900, lcoeBatt:1600,   // lcoePv, lcoeWind: set from BLD_COST below (bldLcoeAnchor)
+  lcoePv:null, lcoeWind:null, lcoeRooftop:null, lcoeBatt:null,   // set from BLD_COST below (bldLcoeAnchor, bldLcoeAt); were 900 and 1600, typed
   // Long-duration LCOE, R/MWh discharged. Pumped storage has high capex but a
   // 60-100 year life and cheap energy capacity - a bigger reservoir, not more
   // cells - so per MWh it undercuts lithium at long duration. Vanadium sits
@@ -6599,7 +6601,7 @@ const FIXED = {
   // (1,250 in 2036 and 2037, 1,350 in 2038 and 2039). The build LP counts it as supply from its year and the engine
   // charges its capital (newNuclearMW, acapNuclear); its cost is a constant the LP leaves out. null: none.
   bldNuclearAdd:null,
-  lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
+  lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:null, // lcoeDiesel set from BLD_COST below (bldLcoeAt); was 9000, typed
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
@@ -9392,26 +9394,30 @@ function simulate(u, prof, outPath, _soc0){
   // Coal is charged new-build coal LCOE; storage discharge priced at storage LCOE.
   // hybrid at R1,900/MWh: RMIPPPP awarded tariffs cluster R1.5-2.3/kWh; midpoint,
   // used only as a replacement-cost weight for its 1.77 TWh - not a dispatch cost.
-  const lcoeOf={coal:p.lcoeCoalNew, ccgt:p.lcoeCcgt, diesel:p.lcoeDiesel, nuclear:p.lcoeNuclear,
+  const lcoeOf={coal:p.lcoeCoalNew, ccgt:p.lcoeCcgt, nuclear:p.lcoeNuclear,
     hydro:p.lcoeHydro, imports:p.lcoeImports, wind:p.lcoeWind, pv:p.lcoePv, csp:p.lcoeCsp,
-    rooftop:p.lcoeRooftop, ps:p.lcoePs, batt:p.lcoeBatt, hybrid:1900,
-    // Vanadium and iron-air discharge through the battery-class aggregate, so
-    // their energy shows up under E.batt. Their LCOE is therefore blended into
-    // the battery figure below in proportion to the energy each holds - without
-    // this the sliders would be inert, which the deep harness duly flagged.
+    rooftop:p.lcoeRooftop, ps:p.lcoePs, hybrid:1900,
     };
-  // Blend the battery-class LCOE by the energy share of each technology, so a
-  // fleet that is mostly iron-air is costed as iron-air rather than as lithium.
+  let replTotal=0;
+  for(const k in lcoeOf) replTotal += E[k]*lcoeOf[k];
+  // LITHIUM AND DIESEL FROM THE RUN (user, 17 Oct 2026, message 194 (1)). Their sliders are costs at reference use (one full
+  // cycle a day; a 10% capacity factor), so energy x slider would price only what this run uses them for. The replacement
+  // figure takes the run's own cost: the capacity the run holds, at the slider's cost per unit of capacity (slider x the
+  // reference output of that capacity), plus diesel's running cost on the energy the run burns. A run that cycles lithium
+  // 81 times a year pays for the whole battery, as its engine cost does.
+  // Vanadium and iron-air discharge through the battery-class aggregate (E.batt) and stay priced per MWh discharged at
+  // their typed LCOE, on their share of the class's energy, as before; without this their sliders would be inert.
   {
     const _vE = (p.newVrfbMW||0)*(p.newVrfbHours ?? 8);
     const _fE = (p.newIronAirMW||0)*(p.newIronAirHours ?? 100);
     const _lE = p.battPowerMW*p.battHours + (p.newBattMW||0)*(p.newBattHours ?? 4);
     const _tot = _vE + _fE + _lE;
-    if (_tot > 0) lcoeOf.batt = (_lE*p.lcoeBatt + _vE*(p.lcoeVrfb ?? 2100)
-                           + _fE*(p.lcoeIronAir ?? 1750)) / _tot;
+    replTotal += p.lcoeBatt * LI_REF_CYCLES * _lE;
+    if (_tot > 0) replTotal += E.batt * (_vE*(p.lcoeVrfb ?? 2100) + _fE*(p.lcoeIronAir ?? 1750)) / _tot;
+    // The slider's capital part is measured against the running cost its anchor was built on (FIXED), so the fuel and carbon
+    // sliders move only the running cost, which the energy the run burns pays at the run's own rates.
+    replTotal += Math.max(0, p.lcoeDiesel - dieselSrmcR(FIXED)) * dieselAvailMW(p) * DSL_REF_CF * 8760 + dieselSrmcR(p) * E.diesel;
   }
-  let replTotal=0;
-  for(const k in lcoeOf) replTotal += E[k]*lcoeOf[k];
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   // peak demand vs peak grid LOAD. loadS includes storage charging, which is a
   // real draw on the system but is NOT demand - it is the system buying energy
@@ -9754,6 +9760,7 @@ function carbonTaxAt(y, S){
 const BW6_WIND_BID_CF = 0.3724, BW6_PV_TRK_BID_CF = 0.3013;
 const BATT_BW3_BID = 9.5e9 / 2464e3;
 const BATT_EQUIP_BID = 165 * Math.pow(117/165, 5/12) * 16.5;
+const BATT_COST_HOURS = 4;   // the lithium capex below is per kW of a 4-hour system
 const BLD_COST = {
   // WIND ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14av). BW6 wind compliant bids, R26,647/kW
   // (IPP Office REIPPPP historical data note, 7 Nov 2025, January 2024 rands; no wind was awarded in BW6) x SA CPI
@@ -9801,8 +9808,8 @@ const BLD_COST = {
   // Cases (bldBattCase): 'high' BW3 as bid (R3,990/kWh in 2026 rands); 'low' global turnkey equipment only
   // (R2,026/kWh, excludes EPC and connection). Replace with the first section 34 determination's bid prices when
   // published (TODO 14au).
-  batt:    { c2026: 4 * (BATT_EQUIP_BID * Math.pow(117/165, 8/12) + (BATT_BW3_BID - BATT_EQUIP_BID) * 1.035), decl:  0.0500, connIncl: true },
-  batt_high: { c2026: 4 * BATT_BW3_BID * 1.035, decl: 0.0500, connIncl: true },
+  batt:    { c2026: BATT_COST_HOURS * (BATT_EQUIP_BID * Math.pow(117/165, 8/12) + (BATT_BW3_BID - BATT_EQUIP_BID) * 1.035), decl:  0.0500, connIncl: true },
+  batt_high: { c2026: BATT_COST_HOURS * BATT_BW3_BID * 1.035, decl: 0.0500, connIncl: true },
   batt_low:  { c2026: 8105, decl: 0.0500, connIncl: false },
   // long-duration storage, added Aug 2026. Both are priced per kW of power at
   // their own duration, like the lithium line above (R10,500/kW = 4h).
@@ -9876,6 +9883,7 @@ const BLD_COST = {
 // on one 2026 price basis and follow the same real escalation: R25,778/kW in 2026 against the IRP's R13,865 (the low
 // case). Derived in bldCostEntry when used, so it follows any change to BLD_COST.ccgt (GAS_CAPEX, cost sets).
 const EIA_AEO2023_CT_KW = 867, EIA_AEO2023_CC_KW = 1176;
+function bldOcgtCentralCost(){ return { c2026: BLD_COST.ccgt.c2026 * EIA_AEO2023_CT_KW / EIA_AEO2023_CC_KW, decl: BLD_COST.ccgt.decl }; }
 // vrfb gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
 // no depth-of-discharge limit, so it outlives lithium by a decade. Iron-air at 20
 // is a judgement - no fleet has run long enough to know.
@@ -9925,8 +9933,9 @@ const BLD_FOM = {
 };
 // Fixed O&M for a technology in a given year, R/kW-yr. Declines with capex where it is
 // expressed as a share of capex, flat otherwise - which is the ATB's own treatment.
+const BLD_FOM_BATT_SHARE = 0.025;   // lithium fixed O&M, a share of its capex a year
 function bldFom(tech, year){
-  if (tech === 'batt') return bldCapex('batt', year) * 0.025;
+  if (tech === 'batt') return bldCapex('batt', year) * BLD_FOM_BATT_SHARE;
   return BLD_FOM[tech] || 0;
 }
 // CAPEX CALIBRATED TO AWARDED TARIFFS (user, 15 Oct 2026, message 125 (2)). New wind and new tracking solar take the capex
@@ -9992,6 +10001,33 @@ if (FIXED.bldTariffCfBasis !== 'bid' && FIXED.bldTariffCfBasis !== 'run') throw 
 const _anchorKey = k => FIXED.bldTariffCfBasis === 'run' ? k + '_runcf' : k;
 FIXED.lcoeWind = Math.round(bldLcoeAnchor(_anchorKey('wind'), 'wind', 'wind', NEW_WIND_CF_12Y) / 10) * 10;
 FIXED.lcoePv = Math.round(bldLcoeAnchor(_anchorKey('pvtrk'), 'pv', 'pv', NEW_PVTRK_CF_12Y) / 10) * 10;
+// LCOE ANCHORS ON REFERENCE PARAMETERS (user, 17 Oct 2026, messages 159 and 194 (1); replaces 186 (4)'s anchors on c5e's 2030
+// dispatch, which showed how little c5e used lithium and diesel, not what they cost). Lithium (4 h), rooftop and new diesel
+// open-cycle at their 2026 central capex, fixed O&M and life, at 8% real (BLD_DISC_CENTRAL):
+//  - rooftop: its resource capacity factor, the twelve-year mean of the fixed-tilt solar profile (FIXED_PV_CF_12Y, held as
+//    NEW_PVTRK_CF_12Y is; validate_weather recomputes it) times the rooftop derate, which is what the engine's rooftop produces.
+//  - lithium: one full cycle a day, 365 a year, so a 4-hour kW discharges 4 x 365 kWh a year. Per MWh discharged; the charging
+//    energy is not costed. Central capex (BLD_COST.batt) and its fixed O&M share.
+//  - diesel open-cycle: a 10% capacity factor, Lazard's long-standing assumption for gas peaking plant in its levelised cost
+//    studies (newer editions 15-20%), on new open-cycle's central capex (bldOcgtCentralCost) and fixed O&M, plus fuel, variable
+//    O&M and carbon at the compliance rate, as the CCGT readout (dieselSrmcR).
+// c5e's 2030 engine check (pathway_c5e.json, TF=0.5, twelve weather years x 20 draws) is held for the captions only: lithium
+// 81.141 full cycles a year (1.142 TWh from 14,074 MWh), the diesel fleet 2.8529% (0.85 TWh from 3,400 MW), new wind 41.74%
+// (30.0 TWh from 8,206 MW); RESULTS 'LCOE anchors on reference parameters' has the run-based costs. Vanadium flow, iron-air,
+// nuclear, CSP, new coal and pumped storage stay typed (messages 159 (2) and 191 (6)). Each anchor is rounded to its slider's step.
+const FIXED_PV_CF_12Y = 0.22398, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
+const C5E_2030_LI_CYCLES = 81.141, C5E_2030_DSL_CF = 0.028529, C5E_2030_WIND_CF = 0.41740;
+function bldLcoeAt(capex, fom, life, mwhPerKwYr){
+  const r = BLD_DISC_CENTRAL;
+  return (capex * r / (1 - Math.pow(1 + r, -life)) + fom) / mwhPerKwYr;   // R/MWh
+}
+// Diesel's running cost, R/MWh: fuel, variable O&M and carbon at the compliance rate. The floor under any diesel LCOE.
+function dieselSrmcR(q){ return q.costDiesel + q.vomDiesel + q.carbonTaxRPerT * q.emisDiesel; }
+const bldLcoeBattAt = cycles => bldLcoeAt(BLD_COST.batt.c2026, BLD_COST.batt.c2026 * BLD_FOM_BATT_SHARE, BLD_LIFE.batt, BATT_COST_HOURS * cycles / 1000);
+const bldLcoeDieselAt = cf => bldLcoeAt(bldOcgtCentralCost().c2026, BLD_FOM.ocgd, BLD_LIFE.ocgd, cf * 8.76) + dieselSrmcR(FIXED);
+FIXED.lcoeBatt = Math.round(bldLcoeBattAt(LI_REF_CYCLES) / 20) * 20;
+FIXED.lcoeRooftop = Math.round(bldLcoeAt(BLD_COST.rooftop.c2026, BLD_FOM.rooftop, BLD_LIFE.rooftop, FIXED_PV_CF_12Y * FIXED.rooftopDerate * 8.76) / 10) * 10;
+FIXED.lcoeDiesel = Math.round(bldLcoeDieselAt(DSL_REF_CF) / 50) * 50;
 // OPTIMISER GRID COST, TODO 14ar (7 Oct 2026, user decisions). Until now the build LP charged no grid cost to
 // any technology, while the engine added txRPerKWyr to new wind, solar and offshore afterwards, so the optimiser
 // chose them without it. Each new resource now pays, in the LP:
@@ -10348,7 +10384,7 @@ function bldCostEntry(tech){
     const c = typeof state !== 'undefined' ? (state.bldOcgtCostCase ?? FIXED.bldOcgtCostCase) : FIXED.bldOcgtCostCase;
     if (c === 'irp') return BLD_COST.ocgt_irp;
     if (c !== 'central') throw new Error('bldOcgtCostCase must be central or irp: ' + c);
-    return { c2026: BLD_COST.ccgt.c2026 * EIA_AEO2023_CT_KW / EIA_AEO2023_CC_KW, decl: BLD_COST.ccgt.decl };
+    return bldOcgtCentralCost();
   }
   if (tech === 'pv' && bldPvTrackingOn()){
     const c = typeof state !== 'undefined' ? (state.bldPvCase ?? FIXED.bldPvCase) : FIXED.bldPvCase;
@@ -17868,17 +17904,17 @@ const SLIDERS=[
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here.'},
   {subgrp:'Build cost assumptions (LCOE, R/kWh) \u2013 full lifecycle'},
   {id:'lcoePv',label:'Utility solar',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoePv/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.pv+' years at 8% real, at new tracking solar\u2019s twelve-year capacity factor of '+(NEW_PVTRK_CF_12Y*100).toFixed(1)+'&#37;, before the grid charge. The capex is backed out of BW7\u2019s MW-weighted solar award, R'+BLD_TARIFF.pvtrk.rPerMWh.toFixed(2)+'/MWh in January 2024 rands (R'+Math.round(BLD_TARIFF.pvtrk.rPerMWh*CPI_JAN24_TO_JAN26)+' in 2026 rands), at '+(FIXED.bldTariffCfBasis==='run' ? 'that capacity factor, so the anchor is the tariff.' : 'BW6 tracker bids\u2019 '+(BW6_PV_TRK_BID_CF*100).toFixed(1)+'&#37;.')},
-  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s twelve-year capacity factor of '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37;, before the grid charge. BW7 awarded solar only ('+BW7_SOLAR_AWARDS.length+' awards, '+_bw7Mw().toLocaleString('en-US')+' MW), so the capex is backed out of BW5\u2019s R'+Math.round(BLD_TARIFF.wind.rPerMWh)+'/MWh (April 2021 rands, R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+' in 2026 rands) at '+(FIXED.bldTariffCfBasis==='run' ? 'that capacity factor, so the anchor is the tariff.' : 'BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.')},
-  {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoePs',label:'Pumped storage',min:400,max:3000,step:50,def:FIXED.lcoePs,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
-  {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
-  {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
-  {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:3500,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
+  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s twelve-year capacity factor of '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37;, before the grid charge. BW7 awarded solar only ('+BW7_SOLAR_AWARDS.length+' awards, '+_bw7Mw().toLocaleString('en-US')+' MW), so the capex is backed out of BW5\u2019s R'+Math.round(BLD_TARIFF.wind.rPerMWh)+'/MWh (April 2021 rands, R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+' in 2026 rands) at '+(FIXED.bldTariffCfBasis==='run' ? 'that capacity factor, so the anchor is the tariff.' : 'BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.')+' c5e 2030: new wind ran at '+(C5E_2030_WIND_CF*100).toFixed(1)+'&#37;, R'+(bldLcoeAnchor(_anchorKey('wind'), 'wind', 'wind', C5E_2030_WIND_CF)/1000).toFixed(2)+'/kWh.'},
+  {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeRooftop/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.rooftop+' years at 8% real, at rooftop\u2019s twelve-year capacity factor of '+(FIXED_PV_CF_12Y*FIXED.rooftopDerate*100).toFixed(1)+'&#37; (the fixed-tilt solar profile x the '+FIXED.rooftopDerate.toFixed(2)+' derate). c5e 2030: the same.'},
+  {id:'lcoePs',label:'Pumped storage',min:400,max:3000,step:50,def:FIXED.lcoePs,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. Typed; no source recorded (in the model since 1 Oct 2026).'},
+  {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. Typed; no source recorded (in the model since 1 Oct 2026). c5e builds none, so there are no measured cycles to anchor it on.'},
+  {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. Typed; no source recorded (in the model since 1 Oct 2026). c5e builds none, so there are no measured cycles to anchor it on.'},
+  {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:8000,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeBatt/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.batt+' years at 8% real, at one full cycle a day ('+LI_REF_CYCLES+' a year). Per kWh discharged; the charging energy is not costed. c5e 2030: '+Math.round(C5E_2030_LI_CYCLES)+' cycles, R'+((bldLcoeBattAt(C5E_2030_LI_CYCLES))/1000).toFixed(2)+'/kWh delivered.'},
+  {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:'Typed; no source recorded (in the model since 1 Oct 2026).'},
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R2.00/kWh \u2013 about 60&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the FY2026 reference of $18.50.'},
-  {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher.'},
+  {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Typed; no source recorded (in the model since 1 Oct 2026). Wide range; SMRs higher.'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
-  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'R9.00 at a 5&#37; capacity factor; R13.20 at 2&#37;, R7.60 at 10&#37;. Floor is diesel\u2019s own SRMC, ~R6.2/kWh.'},
+  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:20000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': new diesel open-cycle\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.ocgd+' years at 8% real, at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor (Lazard\u2019s reference for peaking plant), plus fuel, variable O&M and carbon. Floor is diesel\u2019s own running cost, R'+((dieselSrmcR(FIXED))/1000).toFixed(2)+'/kWh. c5e 2030: '+(C5E_2030_DSL_CF*100).toFixed(1)+'&#37;, R'+((bldLcoeDieselAt(C5E_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
   {endsub:true},
   {grp:'Storage and flexibility'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
@@ -19591,7 +19627,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-17b';
+const BUILD_STAMP = '2026-10-17c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
