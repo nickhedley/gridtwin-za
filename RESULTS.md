@@ -4320,6 +4320,12 @@ c5b_14r, c5c, c5d, c5e and every sensitivity on them keep the 3,400 MW of existi
 DSL_DECOM (builds 07s and 07t, RESULTS 'Build LP: coal-limit rounding made retiring all coal infeasible') predate the must-run. The hourly engine always capped it, so no engine
 check, preset or replay is affected.
 
+Suite on 17b (branch claude/mdr-cap on main a9691ab, ESK19679.csv present, preset searches and engine checks running beside it):
+819/824, node checks 732/737 plus audit 87/87; eng5 5/6; the same as 16h, no check changes status. On the first run
+validate_solve's headroom check hit the solver's time limit with the machine fully loaded (load about 10 on 4 cores), as on 17a's
+first run; rerun alone it passed 9/9 (53.5 s). The LP that check solves is the same size as on 16h (23,161,298 characters, 255,181
+rows); the cap writes no different row there, since no diesel is retired.
+
 ### The 2025 replay against Eskom's 2025 like for like: 91.4 GWh shed or interrupted against Eskom's 459.5 GWh; with interruptible load capped at Eskom's 69.5 GWh it sheds 6.9 GWh instead of 4.3 (user, 17 Oct 2026, messages 174-176; build 2026-10-16h; report only)
 
 Settings. '2025, as modelled' as the page runs it (simulate(state, PROFILES)), build 2026-10-16h; scripts replay_dr.js and
