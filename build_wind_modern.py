@@ -28,6 +28,7 @@ file. The page recomputes it when the full files load and stops if the two disag
 
 USAGE (repo root; the Renewables.ninja credential is attached by the environment)
     python3 build_wind_modern.py            # writes nodal/profiles_wind_modern.json
+    MAP_ONLY=1 python3 build_wind_modern.py # rewrites only the national map in MAP_OUT, after a regional capacity change
 """
 import json, os, time, urllib.request, urllib.parse, urllib.error
 
@@ -133,8 +134,12 @@ def main():
         'licence': d['meta'].get('licence'), 'copyright': d['meta'].get('copyright'), 'years': d['meta']['years']},
         'scale': scale, 'wind_modern_pu': out}, open(OUT, 'w'), separators=(',', ':'))
     print('wrote', OUT)
+    write_map(d, out, fmap)
+
+def write_map(d, out, fmap):
     # National mapping for the page's default profile, as bldBuildWindModMap: weights normalised over all regions in CAP,
     # regions lacking either series skipped, ratio of sums per bin of national current-turbine output.
+    scale = d.get('scale', 1000)
     cap = json.load(open(CAP))['wind_mw']; T = sum(cap.values()); W = {r: v / T for r, v in cap.items()}
     num, den = [0.0] * BINS, [0.0] * BINS
     for y in d['meta']['years']:
@@ -154,4 +159,9 @@ def main():
     print('wrote', MAP_OUT)
 
 if __name__ == '__main__':
-    main()
+    if os.environ.get('MAP_ONLY') == '1':
+        # MAP_ONLY=1 (17 Oct 2026): recompute only MAP_OUT's national map, from the written OUT series and the current CAP
+        # weights, when regional capacity changes; no fetch. The regional maps do not depend on CAP and are kept.
+        write_map(json.load(open(SRC)), json.load(open(OUT))['wind_modern_pu'], json.load(open(MAP_OUT))['regional_map'])
+    else:
+        main()
