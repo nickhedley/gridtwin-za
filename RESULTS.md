@@ -4437,6 +4437,51 @@ Europe (Beyond Fossil Fuels, Ember, E3G and IEEFA, May 2025, p.18; SOURCES): UK 
 assumption for local grid limits a single node cannot see; the engine's midday coal blocks likely understate curtailment
 (pack limitation 23); Europe's figures are measured, c5e's modelled.
 
+### s_constr's floors, by project and year, from pages read: wind 1,131 MW by 2026 and 2,105.5 by 2027; solar 823, 2,081 and 3,210 MW by 2026, 2027 and 2028; lithium 760.5 MW / 3,059 MWh by 2027 and 3,719 MWh by 2028 (user, 17 Oct 2026, messages 164 (1), 183 (2) and 184; a sensitivity only; the run follows)
+
+s_constr is a sensitivity on c5e's line, not a change to the central's committed floors (Nick's decision, message 183 (2)). The
+first list (research helper, 17 Oct) rested on search summaries only; this one applies Nick's check of 17 Oct against pages read
+(s_constr_verified.md, user's file, not committed), whose pages are cited below. Projects already in the model's fleet or floors
+are left out. Floors are cumulative, at least so much new build by the year, on top of c5e's (wind 696 by 2026 and 886 by 2027;
+solar 354, 609 and 849 by 2026-28; lithium 360 MW / 1,440 MWh by 2026 and 666 / 2,664 by 2027). Each project sits in its
+expected commercial-operation year; where none is published the year is assumed, financial close plus 24 months for wind and 20
+for solar (SunCentral 1's interval), and marked so. Evidence: 'read' is a page read on 17 Oct (Engineering News pages mostly did
+not open, so Mining Weekly copies and company releases stand in); MW is AC or contracted export unless marked.
+
+| Year | Technology | Project | MW | Year basis | Pages read |
+|---|---|---|---|---|---|
+| 2026 | wind | Ummbila Emoyeni P1 | 155 | operating since 31 Jul 2026 | Mining Weekly, 25 Sep 2026; Energy News Network, 31 Jul 2026 |
+| 2026 | wind | Ishwati Emoyeni | 140 | COD Q4 2026, at risk after the Feb-Jun 2026 rains (FC Sep 2024, announced 25 Feb 2025) | Business Day, 25 Feb 2025; Mining Weekly, 14 Aug 2026; Ecofin, 9 Jul 2026 |
+| 2026 | wind | De Aar 2 South | 140 (155 installed) | COD end-2026 (FC 26 Nov 2024) | Mulilo, 26 Nov 2024; Sasol, 26 Nov 2024; Infrastructure News, 12 Jan 2026 |
+| 2027 | wind | Ummbila Emoyeni P2 and P3 | 310 | by Nov 2027 (FC Aug and 14 Oct 2025) | Mining Weekly, 25 Sep 2026; Business Report, 14 Oct 2025; Standard Bank, 18 Aug 2025 |
+| 2027 | wind | Overberg P1 | 230 (242 installed) | early 2027 (FC 13 Mar 2025) | Business Report, 7 Apr 2025; MyBroadband, 11 Aug 2025; Engineering News via Creamer newsletter, 13 Mar 2025 |
+| 2027 | wind | Overberg P2 | 150 (158 installed) | early 2027 (FC by 30 May 2025) | Discovery, 30 May 2025; Red Rocket, 7 Jun 2025; Standard Bank, 8 Jul 2025 |
+| 2027 | wind | Wind Garden (NOA-owned) | 94.5 | assumed: FC 9 May 2025 + 24 months | SAWEA, 9 May 2025; Crown, 15 May 2025 |
+| 2026 | solar | Ilikwa | 50 | operating since 3 Aug 2026 | Mainstream, 2 Oct 2024 and 3 Aug 2026 |
+| 2026 | solar | Du Plessis Dam PV2 | 75 (105 MWdc) | assumed: FC 18 Mar 2025 + 20 months | Mulilo, 18 Mar 2025; PIDG, 25 Mar 2025 |
+| 2026 | solar | Paarde Valley PV2 | 120 (142.6 MWdc) | end-2026 (FC 26 Nov 2024) | Mulilo, 26 Nov 2024; Engineering News, Feb 2026 |
+| 2026 | solar | Khauta West | 110, inferred AC (157 probably DC; neither labelled) | Q4 2026 | RenewAfrica, 16 Sep 2025; PNE, 18 Jun 2025 |
+| 2026 | solar | SunCentral 2 | 114 | first power 2026; late construction at 30 Sep 2026 | Energize, 17 Feb 2026; africa.com, 30 Sep 2026 |
+| 2027 | solar | Khauta South | 240, inferred AC (349 probably DC; neither labelled) | Q1 2027 | PNE, 18 Jun 2025; Energize, 10 Jun 2025 |
+| 2027 | solar | Orkney | 150 (219 MWdc) | assumed: FC 23 Feb 2026 + 20 months | Mulilo, 23 Feb 2026; Engineering News, 1 May 2026 |
+| 2027 | solar | Tournee | 300 (331 MWp) | Q4 2027 (FC 30 Sep 2025, 24-month build) | Red Rocket release (Eaglestone), 30 Sep 2025; Engineering News, Oct 2025 |
+| 2027 | solar | Beaufort West | 250 (380 MWdc) | assumed: FC 20 Apr 2026 + 20 months | Green Building Africa, 20 Apr 2026; Engineering News, 26 Jun 2026 |
+| 2027 | solar | Kumba Sishen (Envusa) | 63 (72.5 MWdc) | first power Q4 2027 (FC 23 Jul 2026) | Mining Weekly, 23 Jul 2026; PV Tech, 27 Jul 2026 |
+| 2028 | solar | Notsi | 475 (620 MWdc) | no COD published; 26-month build from FC, 5 Mar 2026 | Discovery and Anthem release, 5 Mar 2026; Engineering News, 20 Mar 2026 |
+| 2028 | solar | SunCentral 3 | 114 | assumed: FC 19 Aug 2026 + 20 months (pre-construction in Aug 2026) | Engineering News, 19 Aug 2026 |
+| 2028 | solar | Naos-1 PV | 300 (435 MWp) | H1 2028 (FC Feb 2026) | pv magazine, 13 Feb 2026; SolarQuarter, 18 Feb 2026; ESS News, 30 Jun 2026 |
+| 2027 | lithium | Eskom battery phase 1: Skaapvlei, Paleisheuwel, Graafwater | 94.5 MW / 395 MWh | not before Apr 2027 | PMG, NW4150, 21 Sep 2026 (read 14 Oct); MyBroadband, 9 Oct 2024 and 6 Jun 2025 |
+| 2028 | lithium | Naos-1 battery | 660 MWh contracted (855 installed); MW unpublished, so no MW added | H1 2028 | as Naos-1 PV |
+
+Floors (MIN_BUILD and LI_MIN, scratch s_constr.env): MIN_BUILD=wind:2026:1131,wind:2027:2105.5,pv:2026:823,pv:2027:2081,
+pv:2028:3210; LI_MIN=2026:360:1440,2027:760.5:3059,2028:760.5:3719.
+
+Left out: Sonvanger (100 MW, unconfirmed, weak source); Lion Thorn (49 MWp, AC not published). Already in the model and so not
+added: Impofu and Umsobomvu (nodal/pfl_private_h1_2026.json), Doornhoek (nodal/ipp_pipeline.json), and the floor's own projects
+(Zen and Bergriver confirmed under construction by 12 Feb 2026: Acciona, 15 Dec 2025; Energize, 12 Feb 2026). Mooi Plaats's
+province in pfl_private_h1_2026.json (Limpopo; the research helper finds the Northern Cape from search summaries) is still to be
+checked against PFL's own table; it does not affect the single-node runs.
+
 ### Reviewer pack on c5e: c5e's worst 14 days exceed one LNG cargo every year from 2035 (3.04 in 2040), and 3 of its 33 stress-window-years exceed one; deemed energy upper bound R11.3bn (R6.5bn in present value) against c5d's R13.7bn; the 4-hour lithium energy cap binds in 2039; s_irpgas retires 6.2-6.5 GW of coal early from 2026 (user, 17 Oct 2026, message 161 (4), with 166, 177, 179 and 180 (1); build 2026-10-16h; report only)
 
 Settings. c5e's run and engine check as in 'New central c5e' (frozen copy of 16h; pathcheck.js TF=0.5 LNG=1 GRID=1). Deemed
@@ -6266,7 +6311,9 @@ gas    none committed for 2026-28
 ```
 
 The 2026 wind and solar rows close the fleet gap to IRP Table 1's 2025 base (0.7 GW wind, 0.4 GW solar). Not forced
-(financial close not confirmed): De Aar 2 PV 120 and Paarde Valley PV2 110 (H2 2026), Overberg 230, Ishwati Emoyeni 140,
+(financial close not confirmed): De Aar 2 South wind 140 and Paarde Valley PV2 120 (H2 2026) [corrected 17 Oct 2026, message 184:
+first recorded here as 'De Aar 2 PV 120', which does not exist, and Paarde Valley PV2 at 110; both reached financial close on 26 Nov
+2024 (Mulilo; Sasol), so neither was in fact without it], Overberg 230, Ishwati Emoyeni 140,
 Wind Garden 94.5. Provinces of the private wind plants are to be confirmed before the run, for the Cape allowance (C).
 
 B. Existing batteries: battPowerMW 800 has no source. Sourced figure for stand-alone grid batteries operating at 30 June 2026:
