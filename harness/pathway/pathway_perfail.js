@@ -256,9 +256,10 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
  if (process.env.DSL_DECOM) w.eval(`state.dieselDecomMW=${+process.env.DSL_DECOM};`);
  const COAL_DECOM = process.env.COAL_DECOM ? +process.env.COAL_DECOM : null;
  const RC_MIN = COAL_DECOM === null ? null : Math.max(0, +w.eval(`bldCoalMW(BLD_YEARS[BLD_YEARS.length-1]) - (FIXED.coalInstalledMW - ${COAL_DECOM})`));
-// RC_FROM (user, 17 Oct 2026, message 185 (2)): no coal retired ahead of its dates before this year (rc_ upper bound 0), since IRP
-// 2025 Figure 3 and NTCSA's MTSAO retire none before 2029. Unset: early retirement allowed from the first year, as before.
-const RC_FROM = process.env.RC_FROM ? +process.env.RC_FROM : 0;
+// RC_FROM (user, 17 Oct 2026, messages 185 (2) and 187 (1)): no coal retired ahead of its dates before this year (rc_ upper bound
+// 0), since IRP 2025 Figure 3 and NTCSA's MTSAO 2026-2030 phase closures from 2029. Default 2029 from 17 Oct 2026 (message 187 (1));
+// RC_FROM=0 allows early retirement from the first year, as every run recorded before then did.
+const RC_FROM = process.env.RC_FROM !== undefined && process.env.RC_FROM !== '' ? +process.env.RC_FROM : 2029;
  // WINDMOD / WIND_CASE (7 Oct 2026): new wind on the modern-turbine profile with bid capex (1, default) or the previous
  // R21,000 on the current profile (0); wind cost case central, bw6, high or low; WIND_CORR the new-wind correction, none (central
  // from 15 Oct 2026), farms or bw6. PV_CASE (15 Oct 2026): tracking solar capex, central (BW7 tariffs) or bw6. REPDAYS_RULE: the

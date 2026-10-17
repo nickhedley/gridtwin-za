@@ -177,7 +177,9 @@ the code: the weekly table, by province and nationally, covers EVERYTHING that i
 RMIPPPP - wheeled utility plant and behind-the-meter rooftop, ground and roof mounted, residential
 through mining. It is a measured figure, not an estimate, which makes it the best rooftop source
 available; registration data is incomplete and will stay that way. Rooftop is obtained by
-subtracting the known wheeled plant from it.
+subtracting the known wheeled plant from it. Not settled (user, 17 Oct 2026, message 188; TODO 14fq): no published
+definition has been read; search results point to a footnote in NTCSA's Weekly System Status Report (2025 week 39) that counts
+ground-mounted and all other PV without contracts with NTCSA, which does not say whether a wheeling agreement is such a contract.
 
 WHICH MEANS THE QUEUE BELOW IS A RECLASSIFICATION, NOT AN ADDITION. `FIXED.rooftopMW` 8,942.1 is
 the August 2026 NTCSA figure less the 488 MW of wheeled solar in `by_source.private`, which covers

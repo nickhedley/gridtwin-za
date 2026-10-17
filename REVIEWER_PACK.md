@@ -67,7 +67,7 @@ Build limits in c5, which c5b_14r, c5d and c5e keep (RESULTS 'c5 inputs, final';
 - new gas from 2030, at most 1,200 MW a year;
 - pumped hydro: Tubatse only, 1,500 MW from 2038.
 
-c5e connects 15.5 GW of new wind and utility solar in 2026–30. NTCSA's stated programme for 2024–30 is 16.2 GW: 13 GW of new renewables through transformer upgrades plus 3.2 GW from the first private transmission tender by August 2029. Net of at least 0.75 GW connected in 2025, c5e's early build is at or above it. (GreenCape MIR 2026, p.20, citing NTCSA 2024; RESULTS 'c5e's new wind and solar against NTCSA's connection programme')
+c5e connects 15.5 GW of new wind and utility solar in 2026–30. NTCSA's stated programme for 2024–30 is 16.2 GW: 13 GW of new renewables through transformer upgrades plus 3.2 GW from the first private transmission tender by August 2029. At least 1.1 GW connected in 2024–25, so c5e's early build is above it. (GreenCape MIR 2026, p.20, citing NTCSA 2024; 2024–25 connections: NERSA via SolarQuarter, 10 Apr 2026; SOLA's Selemela 2 and 3 project pages; Mainstream, 23 Aug 2025; Sibanye-Stillwater, 1 Apr 2025, for Castle; RESULTS 'c5e's new wind and solar against NTCSA's connection programme')
 
 ---
 
@@ -288,12 +288,12 @@ Each run takes c5e's settings, makes one change, and runs up to three passes fro
 
 | Run | Change from c5e | Engine PV vs null, R bn | CO2 2026–40 vs null, Mt | Objective vs null, R bn | Same direction |
 |---|---|---|---|---|---|
-| s_carbonfull | Carbon tax at the full statutory rate | +294.0 | -285.4 | +302.1 | yes |
+| s_carbonfull | Carbon tax at the full statutory rate, being rerun (e) | +294.0 | -285.4 | +302.1 | yes |
 | s_irpgas | IRP 2025's gas plan, superseded (d) | +185.4 | -128.9 | +136.1 | yes |
-| s_comply_full | Coal emissions compliance, full | +154.2 (with charge) | -100.6 | -6.5 | no |
+| s_comply_full | Coal emissions compliance, full, being rerun (e) | +154.2 (with charge) | -100.6 | -6.5 | no |
 | s_disc113 | Discount rate 11.3% | +123.0 | +120.1 | not comparable (a) | not judged |
 | s_bw6capex | Wind and solar capex at BW6 bids (wind R28,462/kW, solar R16,786/kW), the high end of the evidence | +110.1 | +203.0 | +100.8 | yes |
-| s_detgas | Determined gas: 3,000 MW by 2030 (IRP 2019 section 34) plus 5,000 MW in 2031–37 (GN 8021), additional on our reading | +79.4 | -1.5 | +45.9 | yes |
+| s_detgas | Determined gas: 3,000 MW by 2030 (IRP 2019 section 34) plus 5,000 MW in 2031–37 (GN 8021), additional on our reading, being rerun (e) | +79.4 | -1.5 | +45.9 | yes |
 | s_disc10 | Discount rate 10% | +75.0 | +80.6 | not comparable (a) | not judged |
 | s_roof2 | Rooftop 2,000 MW a year (b) | +54.1 | -7.4 | +48.0 | yes |
 | s_comply_comp | Coal emissions compliance, Eskom's recommended plan | +52.3 (with charge) | +0.0 | -0.0 | no |
@@ -303,7 +303,7 @@ Each run takes c5e's settings, makes one change, and runs up to three passes fro
 | s_noimp | No imports after 2030 (s_imp2030) | +25.7 | +26.5 | +55.8 | yes |
 | s_be6 | Lithium at IRP 2025's pace, 550 MW a year, superseded (c) | +25.2 | +67.8 | +14.5 | yes |
 | s_wind372 | New wind at BW6 bids' 37.2%, c5e's capex held | +24.0 | +97.0 | +36.9 | yes |
-| s_committed | Committed gas (1,200 MW a year 2030–33, 200 MW in 2034) and lithium minimums | +22.5 | +81.7 | +19.0 | yes |
+| s_committed | Committed gas (1,200 MW a year 2030–33, 200 MW in 2034) and lithium minimums, being rerun (e) | +22.5 | +81.7 | +19.0 | yes |
 | s_pvirp | Solar capped by year at Table 1 | +8.1 | +5.0 | +10.8 | yes |
 | s_gasprem | Gas capital at a 1.5-point finance premium | +2.9 | -25.0 | +6.4 | yes |
 | s_cape10 | 3,470 MW of Cape wind at 10% curtailment | +2.1 | +1.6 | +0.2 | yes |
@@ -325,6 +325,7 @@ Each run takes c5e's settings, makes one change, and runs up to three passes fro
 (b) Engine PV counts rooftop capex as system cost and leaves out what households save on bills and any distribution effect.
 (c) 550 MW a year is the build LP's IRP 2025 pace (BLD_PACE.irp). Corrected 17 Oct 2026 (message 185 (3)): Table 1's storage column, Eskom BESS included (IRP 2025, Table 1, p.31; public_data/irp2025_extract.csv), reaches 7,224 MW of new storage by 2040 and about 8.2 GW by 2042; the 8.5 GW first given here counted Eskom's 294 MW twice, since the extract's 2026-42 total (8,223 MW) already includes it. Superseded: s_be6 is being rerun with cumulative new battery storage (lithium, vanadium flow and iron-air together) capped at Table 1's column (144, 294, 909 and 3,524 MW by 2026-29, +200 MW a year in 2030-35, +500 a year in 2036-40), never below the committed floor, as 'Battery storage on IRP 2025's Table 1 schedule'.
 (d) Superseded (message 185 (2)): s_irpgas retires 6,185 MW of coal ahead of Figure 3 from 2026, which IRP 2025 Figure 3 and NTCSA's MTSAO do not; it is being rerun with no coal retired before 2029 (RC_FROM=2029).
+(e) Being rerun (message 187 (1)): each retires coal ahead of Figure 3 from 2026 by the optimiser's choice (s_comply_full 2,955 MW, s_detgas 1,422, s_carbonfull 1,256, s_committed 609); RC_FROM=2029 is the pathway's default from 17 Oct 2026, and these figures stand until the reruns.
 
 What the author takes from the table (RESULTS 'New central c5e'; 'Reviewer pack on c5e'):
 
