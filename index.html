@@ -5398,7 +5398,11 @@ const FIXED = {
   //           wind inside hybrid projects is reported ONLY in Eskom's "Hybrid"
   //           line, never decomposed into the Wind line - which also confirms
   //           hybridMW cannot double-count against windMW or pvUtilityMW.
-  // = 4,612 MW. Three published sources, disjoint universes. The previous 4,458
+  // +    69 MW Msenge Emoyeni, private wheeled wind in commercial operation by
+  //           10 Oct 2024 (Sasol release), before the PFL monitor's window; added
+  //           17 Oct 2026 for central c5f (messages 190 (1) and 196 (2)) through
+  //           build_capacity.py's PRE2026_PRIVATE list.
+  // = 4,681 MW. Published sources, disjoint universes. The previous 4,458
   // was 3,600 + 858, where the 3,600 baseline had muddled provenance and the
   // 858 mixed grid-supply with wheeled - a figure that could not be decomposed.
   // validate_capacity.js asserts this equality; if you change windMW by hand it
@@ -5434,7 +5438,7 @@ const FIXED = {
   //
   // See nodal/private_pending_h2_2026.json. When the next PFL monitor lands, every megawatt
   // added to by_source.private must be SUBTRACTED from this constant in the same commit.
-  ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3271, rooftopMW:8942.1, cspMW:600,
+  ocgtDieselMW:3400, windMW:4681, pvUtilityMW:3271, rooftopMW:8942.1, cspMW:600,
   // Fixed O&M for the existing fleet, R/kW-yr. Added 18 Sep 2026; before that no
   // system-cost aggregate carried any operating cost for plant already built, so
   // retiring coal appeared to save only fuel and carbon.
@@ -13107,7 +13111,7 @@ function renderExternalComparison(){
   // CSIR Least-cost 2030, at CSIR's OWN assumptions - Table 1 of the report:
   // 285 TWh demand, 65% EAF, and the low end of their reported capacity range.
   const sc = { ...state,
-    newPvMW: 15000 - 3271, newWindMW: 20000 - 4612,
+    newPvMW: 15000 - FIXED.pvUtilityMW, newWindMW: 20000 - FIXED.windMW,   // CSIR's 15 GW of solar and 20 GW of wind in total
     demandGrowthPct: 30, coalEAFPct: 65 };
   let r;
   try { r = simulate(sc, PROFILES); } catch(e){ return; }
@@ -19591,7 +19595,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-17b';
+const BUILD_STAMP = '2026-10-17e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
