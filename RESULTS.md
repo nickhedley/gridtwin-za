@@ -4425,7 +4425,7 @@ For the note and the pack's build-limits note (user, 17 Oct 2026, message 185 (1
 
 Restated (user, 17 Oct 2026, message 187 (3)), replacing the line above: "c5e connects 15.5 GW of new wind and utility solar in 2026–30. NTCSA's stated programme for 2024–30 is 16.2 GW: 13 GW of new renewables through transformer upgrades plus 3.2 GW from the first private transmission tender by August 2029. At least 1.1 GW connected in 2024–25, so c5e's early build is above it." c5e's 2026-30 figure without Castle: 15,545 - 89 = 15,456 MW (c5e's 2026 wind floor of 696 MW includes Castle). Connected in 2024-25, at least 1,139.5 MW: Bid Window 5, 753 MW in 2025 (NERSA via SolarQuarter, 10 Apr 2026; secondary); Selemela 2 and 3, 200 MW AC, early 2024 (SOLA's project pages); Damlaagte, 97.5 MW, 23 Aug 2025 (Mainstream release, 23 Aug 2025); Castle wind, 89 MW, commercial operation at the end of March 2025 (Sibanye-Stillwater, SENS of 1 Apr 2025, and Mining Weekly, 1 Apr 2025; from search results, the pages could not be opened from this environment). Together at least 16.6 GW against the programme's 16.2 GW. Caveat as before: CSIR (TechCentral, 30 Sep 2025) reports no new Eskom or IPP capacity in 2024, against Selemela's early 2024; CSIR may count public procurement only.
 
-Restated again (user, 17 Oct 2026, message 190 (4)): "At least 1.3 GW connected in 2024–25, so c5e's early build is above it", the rest of the line unchanged. Added to the tally: Msenge Emoyeni wind, 69 MW, October 2024 (Sasol release, 10 Oct 2024), and Springbok solar, about 150 MWac, October 2025 (GEM's September 2026 release; Engineering News gives 195 MW, basis not stated); at least 1,358.5 MW in all. The condition on Springbok: whether NTCSA's private PV series counts it (TODO 14fq) bears on the model's base, not on this line, which counts c5e's new build in 2026-30 (Springbok is not among c5e's floors; c5e's Virginia 240 is the BW6 Virginia Solar Park) and connections in 2024-25, where Springbok is in no other figure; so 1.3.
+Restated again (user, 17 Oct 2026, message 190 (4)): "At least 1.3 GW connected in 2024–25, so c5e's early build is above it", the rest of the line unchanged. Added to the tally: Msenge Emoyeni wind, 69 MW, October 2024 (Sasol release, 10 Oct 2024), and Springbok solar, about 150 MWac, October 2025 (GEM's September 2026 release; Engineering News gives 195 MW, basis not stated); at least 1,358.5 MW in all. Superseding that reasoning (user, 17 Oct 2026, message 191 (4)): the tally counts grid connections, not the model's accounting, so Springbok counts either way, at 150 MWac, the lower of its two figures: 753 + 200 + 97.5 + 89 + 69 + 150 = 1,358.5 MW. (c5e's Virginia 240 floor is the BW6 Virginia Solar Park, not Springbok.)
 
 ### c5e's curtailment against Europe's: 7.0% of utility wind and solar in 2040, inside the 2.2-10% European systems report (user, 17 Oct 2026, message 162 (2); build 2026-10-16h; report only)
 
@@ -4691,7 +4691,7 @@ None of the four exists to test closure before 2029: s_comply_full tests the emi
 and committed builds. Their recorded figures are marked (e) in c5e's sensitivity table until the reruns land. c5d's and c5c's
 sensitivities are marked in their own sections as allowing early retirement and are not rerun.
 
-### Private wheeled plant operating since 2024-25: Msenge Emoyeni wind (69 MW) is missing from c5e's base; for the solar plants (Selemela 2 and 3, Damlaagte, Springbok) it depends on what NTCSA's private PV series counts, which is not settled; none is in by_source.private or c5e's floors (user, 17 Oct 2026, messages 187 (2), 188 and 190 (1))
+### Private wheeled plant operating since 2024-25: Msenge Emoyeni wind (69 MW, October 2024) is missing from c5e's base and loads with the next central; the solar plants (Selemela 2 and 3, Damlaagte, Springbok) are assumed to be inside NTCSA's rooftop PV estimate and are not loaded; none is in by_source.private or c5e's floors (user, 17 Oct 2026, messages 187 (2), 188, 190 (1) and 191 (1)-(3))
 
 Sources for the plants: SOLA's project pages for Selemela 2 and Selemela 3 (126 and 130 MWp near Lichtenburg, North West,
 wheeled to Tronox, commissioned early 2024); Mainstream's release of 23 Aug 2025 (Damlaagte, 97.5 MW, Free State, commercial
@@ -4699,33 +4699,28 @@ operation 23 Aug 2025, private power purchase agreements with Sasol and Air Liqu
 on a trade-press report (Jul 2024) not re-read. Springbok: RESULTS 'the 2025 demand step' (about 150 MWac, wheeled from October
 2025).
 
-What the series covers: FIXED.rooftopMW (8,942.1 MW) is NTCSA's August 2026 privately procured PV total less the 488 MW of
-wheeled solar in by_source.private, which covers H1 2026 only (index.html, the comment above rooftopMW). The repo's statement
-that the series counts wheeled utility plant (SOURCES, 'NTCSA's weekly privately-procured solar PV table', 1 Oct 2026) rests on
-practitioners' description, not a published definition. Published evidence found 17 Oct 2026, from search results only (the
-pages could not be opened from this environment): a footnote in NTCSA's Weekly System Status Report (2025 week 39,
-ntcsa.co.za) that rooftop PV includes ground-mounted as well as all other PV installations without contracts with NTCSA, which
-would take in private ground-mounted plant, though it does not say whether a wheeling agreement counts as such a contract; and
-a parliamentary reply (PMG) that Eskom estimates behind-the-meter PV from the difference in demand between sunny and cloudy
-days, a method that would also pick up wheeled output if that output lowers the demand Eskom measures. Neither settles it.
+What NTCSA's series covers, read at source (17 Oct 2026): NTCSA Weekly System Status Report 2026 week 25, p.6: "Rooftop PV
+includes ground-mounted as well as all other PV installations that do not have contracts with NTCSA"; estimated rooftop PV
+8,294.5 MW for May 2026 (pp.5-6). FIXED.rooftopMW (8,942.1 MW) is the same series' August 2026 figure less the 488 MW of wheeled
+solar in by_source.private, which covers H1 2026 only (index.html, the comment above rooftopMW).
 
-If the series counts them, Selemela 2 and 3 (200 MW AC), Damlaagte (97.5 MW) and Springbok (about 150 MWac) are in c5e's base as
-rooftop, about 450 MW on the rooftop profile and netted off demand, and loading them as wheeled plant must take the same MW out
-of FIXED.rooftopMW or it double counts. If it does not, they are missing and loading adds them. Until it is settled no solar plant is
-recorded as missing and none is loaded; pack limitation 25 says so (TODO 14fq). Neither by_source.private nor c5e's floors
-(the committed 2026-28 floors; s_constr's MIN_BUILD) name any of them. nodal/private_pending_h2_2026.json holds Selemela 2 and 3,
-renamed 'Selemela 2 and 3 (Tronox)', and Damlaagte, with these sources; Springbok is not in it.
+Assumption (user, 17 Oct 2026, message 191 (1)): wheeled plants sell to private buyers, not to NTCSA, so Selemela 2 and 3
+(200 MW AC), Damlaagte (97.5 MW) and Springbok (about 150 MWac) are probably inside the rooftop estimate, about 450 MW counted
+once, on the rooftop profile. They are not loaded: loading them would double count. Open question: whether a wheeling plant's
+network-use agreement with NTCSA counts as a contract with NTCSA in the footnote's sense; if it does, they are outside the
+estimate and missing. None of them is in by_source.private or c5e's floors (the committed 2026-28 floors; s_constr's MIN_BUILD).
+nodal/private_pending_h2_2026.json holds Selemela 2 and 3, renamed 'Selemela 2 and 3 (Tronox)', and Damlaagte, with these
+sources; Springbok is not in it.
 
 Msenge Emoyeni wind, Bedford, Eastern Cape: 69 MW, commercial operation by 10 Oct 2024, wheeled to Sasolburg; AIIM 62%, Reatile
-38% (Sasol release, 10 Oct 2024). It is wind, so not in the rooftop bucket, and it is missing from c5e's base: FIXED.windMW 4,612 is
+38% (Sasol release, 10 Oct 2024). It is wind, outside the footnote, and it is missing from c5e's base: FIXED.windMW 4,612 is
 REIPPPP 4,042 plus H1 2026's wheeled 470 (Umsobomvu and the three Impofu farms) plus Eskom's 100, and no c5e floor names it. The
 satellite register (nodal/project_register.json) shows it as a map point with no capacity counted. Reviewer pack limitation 25;
-loaded in the next central, not now.
+loaded with the next central (message 191 (2)), not now.
 
-Selemela 1 is a separate 132 MWp plant for African Rainbow Minerals (Arup's project page). Probably the H1 2026 monitor's 'ARM
-Platinum', 100 MW of wheeled solar in North West, already in by_source.private: search results (17 Oct 2026) agree on the
-offtaker, the province, about 100 MW wheeled to ARM's mines and supply from 2026. Not confirmed from a page read: the Arup, SOLA
-and Engineering News pages could not be opened from this environment.
+Selemela 1 is a separate plant (Arup's project page, read 17 Oct 2026): 132 MWp near Lichtenburg, developed by SOLA, supplying
+African Rainbow Minerals' operations through wheeling, energised and grid-connected. Consistent, from a page read, with the H1
+2026 monitor's 'ARM Platinum', 100 MW of wheeled solar in North West, already in by_source.private (message 191 (3)).
 
 ### Bid Window 5: Mainstream–Globeleq's 12 projects did not reach financial close and their PPAs were cancelled; GEM's September 2026 release still lists Sutherland and Waaihoek in construction, which is stale (user, 17 Oct 2026, message 189 (3)); no model change
 
