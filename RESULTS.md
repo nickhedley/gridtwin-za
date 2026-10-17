@@ -4792,7 +4792,7 @@ Integrated Power Tracker, September 2026 release (CC BY 4.0), still lists two of
 each), as in construction; that status is stale. The model takes Bid Window 5 from the IPP Office report (online projects in the
 regional totals; only Wolf, 84 MW, in construction), so nothing changes.
 
-### New central c5f, set up on build 2026-10-17e: rooftop 1,200 MW a year from 2027 to 2040, Msenge Emoyeni's 69 MW of wind in the base, and s_constr2's floors as the committed minimums; runs to follow (user, 17 Oct 2026, message 196)
+### New central c5f, set up on build 2026-10-17g: rooftop 1,200 MW a year from 2027 to 2040, Msenge Emoyeni's 69 MW of wind in the base, s_constr2's floors as the committed minimums, and wheeled wind's load added back to demand; runs to follow (user, 17-18 Oct 2026, messages 196 and 199)
 
 Settings. c5e's central settings ('New central c5e'; scratch env_central.sh) with three changes and no others (message 196),
 and RC_FROM=2029, the default since 17 Oct:
@@ -4805,6 +4805,7 @@ and RC_FROM=2029, the default since 17 Oct:
 3. Committed minimums are s_constr2's floors: MIN_BUILD=wind:2026:1131,wind:2027:2245.5,pv:2026:1018,pv:2027:2276,pv:2028:3405;
    LI_MIN=2026:360:1440,2027:760.5:3059,2028:760.5:3719 (c5e's: wind 696 and 886 MW by 2026-27; solar 354, 609 and 849 by
    2026-28; lithium 360 MW / 1,440 MWh by 2026 and 666 / 2,664 by 2027).
+4. Demand (message 199 (3), build 2026-10-17g): Msenge's and Castle's wheeled load added back to the 2026 demand, below.
 
 Rooftop evidence (user, message 196 (1)). NTCSA's estimates of rooftop PV, December each year: 5,204 MW in 2023 and 6,165 MW in
 2024 (Weekly System Status Report 2025 week 5, p.6), 7,464 MW in 2025 (Eskom weekly reports, via Engineering News, 23 Jan 2026);
@@ -4823,12 +4824,17 @@ grade B (Karreebosch); solar +2,556 MW, of it 1,972 grade A, 234 grade B (SunCen
 South, AC inferred); lithium +94.5 MW / +1,055 MWh, all grade A (Naos-1's MW unpublished, so none added). Years assumed from
 financial close: Wind Garden, Du Plessis Dam PV2, Orkney, Beaufort West, SunCentral 3 and Ukuqala; Notsi's from its build length.
 
-Caveat, demand side: Msenge's load is not in the demand series. Contracted demand leaves out load served by wheeled plant, and
-build_demand_2026.py adds back only the H1 2026 wheeled plants' output (pre-2026 private wheeling taken as zero; 'Wheeled plant
-counted once'). Msenge ran through 2025 and 2026, so its load is missing from both sides of the ratio and from the level: c5f
-supplies its output, about 0.18-0.24 TWh a year at a 30-40% capacity factor (about 0.1% of annual demand), against demand that
-does not hold the load it serves. Castle wind (89 MW, about 0.31 TWh a year) is in neither the fleet nor the demand. Not changed
-in c5f (message 196: no other changes to the central).
+Demand (user, 18 Oct 2026, message 199 (3); build 2026-10-17g). c5f's 2026 demand is anchored on measured 2025 demand: Eskom's
+RSA Contracted Demand less exports for calendar 2025 (ESK19679), scaled to 2026 by the Jan-Aug ratio (build_demand_2026.py). Contracted
+demand leaves out load served by wheeled plant, and until 17e the script added back only the H1 2026 wheeled fleet. It now adds
+back the wheeled wind running through the 2025 base year: Msenge Emoyeni (69 MW, from October 2024, read from the generated
+capacity file) and Castle (89 MW, wheeled to Sibanye-Stillwater from about the end of March 2025; Mining Weekly, 1 Apr 2025), each
+on the model's 2025 wind shape (35.5% capacity factor): 0.426 TWh into the 2025 base and the Jan-Aug ratio's 2026 side, and hour
+by hour in September-December. Added a year in 2026: 0.491 TWh (Msenge 0.214, Castle 0.277; Mining Weekly put Castle at about
+0.309); domestic grid demand 2026 187.67 to 188.16 TWh, the Jan-Aug ratio 0.9519 to 0.9525. Castle is in the demand and not in
+the fleet, so c5f supplies its load from other plant. The 2025 backcast series (demand_2025) is unchanged: its preset runs
+Eskom's own wind fleet (windMW 3,900), without wheeled plant. Until this change (17e) the caveat was that c5f supplied Msenge's
+output against demand without its load.
 
 Derived data recomputed for Msenge (17 Oct 2026): the page's national modern-wind map (nodal/profiles_wind_modern_map.json) is
 weighted by regional wind capacity, so the page stopped with 'modern wind map disagrees with the series (2.62e-3)'. Rebuilt by
@@ -4847,9 +4853,42 @@ in three cells, each responsive on main and inert here: newBattMW to coalTWh and
 on both builds with the check's own sweep (scratch c5f/probe): the three were marginal on main, relative spans 1.22e-4, 1.08e-4
 and 1.42e-4 against the 1e-4 threshold; Msenge's wind lowers coal at the defaults (147.407 to 147.196 TWh) and the spans fall to
 8.8e-5, 6.4e-5 and 9.4e-5. Across 0 to 80 GW of new lithium, coal moves about 0.02 TWh on either build: at the 2026 defaults
-storage has almost no surplus to shift, so these cells did not test much before either. Baseline not rewritten; Nick decides
-(the two ways: rewrite the three cells with this cause, or give newBattMW and newVrfbMW a context where storage has surplus to
-shift, as lcoeBatt has). The check reads the page only, so c5f's runs are not affected.
+storage has almost no surplus to shift, so these cells did not test much before either. Baseline not rewritten on that
+evidence. Decision (user, 18 Oct 2026, message 199 (2)): do not record them as inert; test the battery and vanadium controls where
+storage has surplus to shift, threshold unchanged. validate_response now sweeps newBattMW and newVrfbMW with 30 GW of new wind and
+30 GW of new solar (syncMinMW's context; about 58 TWh curtailed without new storage), and battHours with the same added to its
+own context (8 GW of existing storage, no new), since it flipped for the same reason on 17g (renewable share 9.4e-5 on 17e,
+1.41e-4 on 17g; rounding at three decimals). The baseline was rewritten with nine cells changed, all inert to responsive and all
+in these three controls; no other cell moved, and base values moved with Msenge and the demand add-back (replacement cost
+1,542.22 to 1,531.89 R/MWh; coal 147.407 to 147.685 TWh). Spans on build 2026-10-17g, the check's own measure (span over base,
+or span where the base is 0), threshold 1e-4:
+
+| Control | Output | Old context: span on 17g (flag in main's baseline) | New context: span | Changed in baseline |
+|---|---|---|---|---|
+| newBattMW | coalTWh | 1.02e-4 (responsive) | 1.25e-1 (responsive) |  |
+| newBattMW | co2 | 5.07e-5 (responsive) | 1.32e-1 (responsive) |  |
+| newBattMW | avgCost | 7.21e-1 (responsive) | 6.57e-1 (responsive) |  |
+| newBattMW | replAvg | 8.49e-5 (inert) | 1.82e-2 (responsive) | yes |
+| newBattMW | avgPrice | 1.74e-2 (responsive) | 2.23e-1 (responsive) |  |
+| newBattMW | rePct | 4.71e-5 (inert) | 4.34e-1 (responsive) | yes |
+| newBattMW | curtTWh | 0 (inert) | 2.00e+1 (responsive) | yes |
+| newBattMW | loleHrs | 0 (inert) | 0 (inert) |  |
+| newVrfbMW | coalTWh | 2.23e-4 (responsive) | 1.19e-1 (responsive) |  |
+| newVrfbMW | co2 | 1.46e-4 (responsive) | 1.26e-1 (responsive) |  |
+| newVrfbMW | avgCost | 4.66e-1 (responsive) | 3.97e-1 (responsive) |  |
+| newVrfbMW | replAvg | 8.49e-5 (inert) | 9.96e-3 (responsive) | yes |
+| newVrfbMW | avgPrice | 1.74e-2 (responsive) | 2.22e-1 (responsive) |  |
+| newVrfbMW | rePct | 1.41e-4 (responsive) | 4.21e-1 (responsive) |  |
+| newVrfbMW | curtTWh | 0 (inert) | 2.05e+1 (responsive) | yes |
+| newVrfbMW | loleHrs | 0 (inert) | 0 (inert) |  |
+| battHours | coalTWh | 1.96e-4 (responsive) | 3.05e-2 (responsive) |  |
+| battHours | co2 | 1.33e-4 (responsive) | 3.69e-2 (responsive) |  |
+| battHours | avgCost | 3.73e-4 (responsive) | 7.24e-2 (responsive) |  |
+| battHours | replAvg | 5.22e-5 (inert) | 3.30e-2 (responsive) | yes |
+| battHours | avgPrice | 1.98e-2 (responsive) | 1.89e+0 (responsive) |  |
+| battHours | rePct | 1.41e-4 (inert) | 1.51e-1 (responsive) | yes |
+| battHours | curtTWh | 0 (inert) | 7.71e+0 (responsive) | yes |
+| battHours | loleHrs | 0 (inert) | 1.72e+2 (responsive) | yes |
 
 Runs (to follow here): a frozen copy of build 2026-10-17e (2d5051f; pass-1 LP key 71b0df1e44; started 22:23 UTC); c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run
 on c5e (30 plus s_roof05) and s_roof09 (ROOF_MW=900, c5e's pace), each at MAXP=3, two at a time, from scratch, each with its
