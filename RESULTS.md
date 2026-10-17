@@ -4830,6 +4830,13 @@ supplies its output, about 0.18-0.24 TWh a year at a 30-40% capacity factor (abo
 does not hold the load it serves. Castle wind (89 MW, about 0.31 TWh a year) is in neither the fleet nor the demand. Not changed
 in c5f (message 196: no other changes to the central).
 
+Derived data recomputed for Msenge (17 Oct 2026): the page's national modern-wind map (nodal/profiles_wind_modern_map.json) is
+weighted by regional wind capacity, so the page stopped with 'modern wind map disagrees with the series (2.62e-3)'. Rebuilt by
+build_wind_modern.py with MAP_ONLY=1 (new: reweights the written series, no fetch), which reproduces the committed map byte for byte
+from the old capacity file; largest change in the national map 0.0046, regional maps unchanged. public_data's
+operational_renewable_capacity.csv regenerated (Eastern Cape private wind 399 MW). Not refitted: the wind profiles' fleet bias
+factor (1.0753, fitted 6 Sep 2026 to Eskom's 2022-23 output), since Msenge ran from October 2024, outside that window.
+
 Runs (to follow here): a frozen copy of build 2026-10-17e; c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run
 on c5e (30 plus s_roof05) and s_roof09 (ROOF_MW=900, c5e's pace), each at MAXP=3, two at a time, from scratch, each with its
 engine check (pathcheck.js TF=0.5 LNG=1 GRID=1, 2026-40). s_be6 follows Table 1's schedule (STOR_CUM, as s_be6t1_c5e). Runs that
