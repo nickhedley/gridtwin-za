@@ -4264,6 +4264,59 @@ checks 732/737 plus audit 87/87), eng5 5/6, the same as 16g; the five known fail
 validate_lp's two LP sizes move by 1 and 10 characters (the cost coefficients). Fresh load in Chromium: start-up completes, no
 console errors.
 
+### Reviewer pack on c5e: c5e's worst 14 days exceed one LNG cargo every year from 2035 (3.04 in 2040), and 3 of its 33 stress-window-years exceed one; deemed energy upper bound R11.3bn (R6.5bn in present value) against c5d's R13.7bn; the 4-hour lithium energy cap binds in 2039; s_irpgas retires 6.2-6.5 GW of coal early from 2026 (user, 17 Oct 2026, message 161 (4), with 166, 177, 179 and 180 (1); build 2026-10-16h; report only)
+
+Settings. c5e's run and engine check as in 'New central c5e' (frozen copy of 16h; pathcheck.js TF=0.5 LNG=1 GRID=1). Deemed
+energy from the hooked engine check of message 135 on c5e, the copy behind c5e's generation-by-carrier table, which returns
+c5e's engine PV and CO2 to every digit; method as in 'The 2026 replay curtails almost nothing for oversupply'. Scripts
+refresh_c5e.py (the pack), deemed_c5e.py (scratch). The pack's other c5e figures come from 'New central c5e'.
+
+LNG cargoes on c5e (pack limitation 11 and question 4; one cargo = one floating storage unit, 4.08 PJ, no heel, CCGT at 52%).
+Worst 14 days of each year's runs: 2030 0.22, 2031 0.21, 2032 0.22, 2033 0.46, 2034 0.95, 2035 1.05, 2036 1.14, 2037 1.76,
+2038 2.22, 2039 2.56, 2040 3.04. 2026-29 carry no LNG fields because no CCGT stands; their gas output is 0. Pass 1 failed 2030
+(3.74 GWh of mean unserved energy against 2.19) and added three stress windows for 2030 (weather years 2021, 2020 and 2017),
+binding 2030-40; re-dispatched, 3 of the 33 window-years exceed one cargo: 2038 1.39, 2039 1.22, 2040 1.56. c5d: 1.03 in 2035
+and 3.15 in 2040, no stress windows; c5: 10 of 33 window-years above one from 2034.
+
+Deemed energy for curtailed REIPPPP output, upper bound (pack limitation 23), R bn in 2026 rands:
+
+| Year | REIPPPP rate, R/MWh (2026 rands) | c5d surplus GWh | c5d stopgap GWh | c5d R bn | c5e surplus GWh | c5e stopgap GWh | c5e R bn |
+|---|---|---|---|---|---|---|---|
+| 2026 | 1,908 | 0.2 | 247.8 | 0.47 | 0.1 | 245.5 | 0.47 |
+| 2027 | 1,908 | 0.9 | 254.9 | 0.49 | 0.0 | 247.3 | 0.47 |
+| 2028 | 1,908 | 4.5 | 259.2 | 0.50 | 1.4 | 254.8 | 0.49 |
+| 2029 | 1,908 | 37.8 | 267.5 | 0.58 | 9.3 | 265.1 | 0.52 |
+| 2030 | 1,908 | 50.5 | 272.1 | 0.62 | 4.4 | 270.3 | 0.52 |
+| 2031 | 1,908 | 127.2 | 274.9 | 0.77 | 49.0 | 273.7 | 0.62 |
+| 2032 | 1,908 | 317.9 | 276.7 | 1.13 | 154.3 | 276.0 | 0.82 |
+| 2033 | 1,908 | 541.9 | 277.6 | 1.56 | 321.8 | 277.3 | 1.14 |
+| 2034 | 1,360 | 838.1 | 278.3 | 1.52 | 486.2 | 278.1 | 1.04 |
+| 2035 | 1,060 | 878.3 | 278.6 | 1.23 | 588.2 | 278.5 | 0.92 |
+| 2036 | 1,060 | 904.5 | 278.7 | 1.25 | 715.4 | 278.9 | 1.05 |
+| 2037 | 692 | 960.5 | 279.2 | 0.86 | 845.9 | 279.4 | 0.78 |
+| 2038 | 692 | 1200.3 | 279.8 | 1.02 | 995.8 | 279.9 | 0.88 |
+| 2039 | 531 | 1250.6 | 280.3 | 0.81 | 1162.4 | 280.4 | 0.77 |
+| 2040 | 531 | 1322.0 | 280.6 | 0.85 | 1200.0 | 280.6 | 0.79 |
+
+Sum 2026-40: c5e R11.3bn (R6.5bn in present value at 8%), c5d R13.7bn (R7.8bn). c5e curtails less surplus than c5d in every
+year.
+
+Carbon tax payments on c5e: R7.2bn in 2026, R8.1bn in 2030, R4.1bn in 2040; R62.2bn in present value; engine PV without them
+R2,173.6bn.
+
+s_irpgas on c5e (pathway_s_irpgas_c5e.json, the rc_ variables): coal retired ahead of Figure 3, 6,185 MW in 2026-28 and 6,519 MW
+from 2029 to 2040. On c5d: 7,167 MW from 2029.
+
+s_li8h on c5e: the null's lithium energy in 2039 is 12,000 MWh, the cap (4 hours of the 3,000 MW a year power cap). s_li8h
+builds 12,714 MWh in 2039 and moves other builds in 2036-39 by at most 181 MW (utility solar 2039 +181, wind 2039 -162);
+engine PV -R0.1bn, CO2 -0.5 Mt. On c5d the null's 2039 lithium energy was 10,554 MWh, below the cap.
+
+Pack changes beyond c5e's figures: the NESO line in limitation 1 (message 166; SOURCES 'NESO: emergency assistance'); Modo's
+0.80 backtest calibration in limitation 19 and its second- and fourth-hour values beside s_li8h (message 177; SOURCES 'Modo
+Energy'); the adequacy caveat line of message 179 in sections 2, 4 and 6 and limitation 3; limitation 23 on coal priority
+and the wholesale market (message 180 (1); SOURCES 'NERSA: wholesale market roadmap'); section 2's shed figures moved from
+12e's 28-89 GWh to 16h's.
+
 ### Reviewer pack on c5d: new wind costs 0.876 of BW5's tariff per MWh and solar 1.051 of BW7's, because capex is backed out at BW6 bids' capacity factors; c5d's worst 14 days exceed one LNG cargo every year from 2035; c5d's engine passes 28 of 29 benchmarks; s_tariffcf, each at its tariff, costs +R30.8bn and +94.0 Mt against the null (user, 16 Oct 2026, message 158 (2)-(4); build 2026-10-16f)
 
 Wind and solar cost per MWh against their tariffs (message 158 (3)). From the code (BLD_TARIFF, bldTariffCapex, bldLcoeAnchor) on

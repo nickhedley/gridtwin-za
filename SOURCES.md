@@ -1403,3 +1403,34 @@ commercial and industrial (C&I) sites, 277 MWp.
   - rooftopDerate 0.78 (FIXED): about 17.5% capacity factor on the national profile, 19.6% on Today 2026's run.
   - The sample is C&I, not residential. A performance ratio is not the same measure as a derate applied to a utility
     per-unit profile; reconcile the two before comparing.
+
+## NESO: emergency assistance, October 2026 (user, 17 Oct 2026, message 166; reviewer pack limitation 1)
+
+NESO (National Energy System Operator, Great Britain), 'Emergency Assistance: what it is, and why we used it over the last
+week', Craig Dyke, 14 October 2026. As given by Nick Hedley; the post was not read here. Cited and summarised, not reproduced.
+
+- NESO called 1,200 MW of emergency interconnector support for London and the South East when planned transmission did not
+  return to service, with supply available elsewhere in GB.
+- Use: a single-node adequacy test counts such a case as adequate (pack limitation 1).
+
+## Modo Energy: Netherlands battery revenue by duration, January–September 2026 (user, 17 Oct 2026, message 177; reviewer pack section 4 and limitation 19)
+
+Modo Energy, chart of Netherlands battery (BESS) revenue by duration, January–September 2026, posted on LinkedIn, 17 October
+2026. As given by Nick Hedley; the chart was not read here. Cited and summarised, not reproduced. A reference only, not an input.
+
+- Marginal value of the second hour of duration EUR 92k/MW a year, of the fourth EUR 14k, in a market where balancing
+  services dominate battery revenue. Placed beside s_li8h.
+- Modo applies a 0.80 calibration, from backtests, to its figures. Placed in limitation 19 as a reference for the size of
+  the foresight effect, not a correction.
+
+## NERSA: wholesale market roadmap, webinar of 14 Oct 2026 (user, 17 Oct 2026, message 180 (1); reviewer pack limitation 23)
+
+W. Mkhize (NERSA), webinar on time-of-use tariffs, feed-in tariffs and smart metering, 14 October 2026, slide 12: NERSA's
+roadmap for the South African wholesale electricity market (SAWEM) has the market's external simulation running into early
+2027. As given by Nick Hedley; the slide was not read here and the deck is not held. The webinar's fuller entry (Eskom
+Distribution's slides, message 170) follows after the c5e work.
+
+- Use: limitation 23 places the understatement of midday curtailment mainly in 2026-27, if the market starts on time, since
+  the engine's economic midday dispatch is the dispatch the market is designed to produce. Coal given priority today:
+  NTCSA, as reported by SAPVIA and Engineering News, 30 Jul 2026 (RESULTS 'The 2026 replay curtails almost nothing for
+  oversupply').
