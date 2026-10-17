@@ -4087,6 +4087,142 @@ open-cycle in 2034, 250 in 2035, 500 in 2036 and 500 in 2037, 1,500 MW in all; e
 R2,228.5bn as solved, R2,237.0bn topped up (+R8.4bn: capex 7.2, fixed O&M 1.4, fuel 0.1, other -0.2), +R32.0bn against the null;
 CO2 1,349.2 to 1,349.4 Mt. Every top-up year is flagged: diesel open-cycle is excluded in this run, so the top-up prices the gap.
 
+### New central c5e: c5d's settings with wind and solar capex backed out at the capacity factor each runs at; adequate after two passes, engine PV R2,235.7bn (+R30.8bn on c5d), CO2 1,627.7 Mt (+94.0); identical to s_tariffcf; 30 sensitivities and s_roof05 rerun on it (user, 16 Oct 2026, message 161 (2), 164 (2); build 2026-10-16h)
+
+Settings. c5c's central settings (scratch env_central.sh: COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1
+GAS_CASE=central GAS_FOM_ADD=530.5 STRESS_TARGET=1 GRID=1 ROOF_MW=900 COAL_AVAIL=1 PVTRK=1 COAL_DATES=coal_dates_irp2025.json
+BATT_DECL=0.03 WIND_CAP=3500 WIND_CAP_FROM=2031 MAXP=6 STALL=0.1 STALL_FROM=4 DEM_BLOCK=2027:930 IMP_AVG_MW=1066 CAPE_WIND=1580:4
+RP_EXCL=wind, the committed minimums, SOLVER=native) on a frozen copy of build 2026-10-16h, where bldTariffCfBasis 'run' is the
+default (RESULTS 'Build 2026-10-16h'). c5e at MAXP=6; the null and every sensitivity at MAXP=3, two at a time, from scratch,
+16-17 Oct 2026, 20:00-07:21 UTC; each with its engine check (pathcheck.js TF=0.5 LNG=1 GRID=1, 2026-40). Scripts chain.sh,
+pack_rows_c5e.py, irp_c5d.py (on c5e's files), gen_c5e.py (scratch). c5e's pass-1 LP key is b7e3107906, s_tariffcf's on 16f;
+its build equals s_tariffcf's in every variable and its engine check equals s_tariffcf's in every year.
+
+Adequacy caveat, for every verdict from the engine below: "2025 replay (16h): 91.4 GWh shed or interrupted (4.3 shed plus 87.1 interruptible load); 76.4 GWh with interruptible load capped at Eskom's 69.5 GWh (6.9 shed), against Eskom's 459.5 GWh in 2025 (390.0 manual load reduction plus 69.5 interruptible load, ILS; IOS left out). ESK19679 totals." (RESULTS 'The 2025 replay against Eskom's 2025 like for like'; 'Fixed presets and the 2025 replay')
+
+| | c5e | c5d | Change |
+|---|---|---|---|
+| Wind capex 2026, R/kW | 20,879 | 17,773 | backed out at 42.5% instead of 37.24% |
+| Tracking solar capex 2026, R/kW | 11,038 | 11,755 | backed out at 28.7% instead of 30.13% |
+| Engine PV 2026-40, R bn | 2,235.7 | 2,204.9 | +30.8 |
+| Optimiser objective, R bn | 1,434.4 | 1,403.0 | +31.4 |
+| CO2 2026-40, Mt | 1,627.7 | 1,533.7 | +94.0 |
+| CO2 2030 / 2035 / 2040, Mt | 132.8 / 86.2 / 67.3 | 122.0 / 80.3 / 67.0 | |
+| Coal 2030 / 2035 / 2040, TWh | 123.7 / 80.0 / 60.1 | 113.1 / 74.4 / 59.8 | |
+| New wind 2026-40, MW | 29,430 | 31,755 | -2,324 |
+| New utility solar 2026-40, MW | 27,912 | 24,672 | +3,240 |
+| New lithium 2026-40, MW | 12,976 | 12,239 | +737 |
+| New CCGT / open-cycle on LNG, MW | 8,195 / 214 | 8,939 / 31 | |
+| Average cost per MWh served 2030 / 2035 / 2040, R | 1,058 / 946 / 959 | 1,030 / 925 / 940 | |
+| Passes; adequacy | 2; every year, closest 52% of target (2031) | 1; every year, closest 50% (2031) | |
+
+Without carbon tax payments engine PV is R2,173.6bn (payments R62.2bn in present value). In 2026-27 c5e builds only the committed
+wind (886 MW) against c5d's 4,080 MW; more of the early renewable build is solar.
+
+c5e against IRP 2025 Table 1 (as for c5d in the reviewer pack; build from c5e's pathway file, CO2 from its engine check):
+
+| Year | Wind c5e / IRP | Solar c5e / IRP | Rooftop c5e / IRP DG | Lithium c5e MW / MWh | IRP storage MW | CCGT | Open-cycle LNG / diesel | IRP gas | IRP nuclear | Coal standing c5e / IRP Fig 3 | CO2 Mt c5e / IRP |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026 | 696 / 964 | 354 / 3,553 | - / 900 | 360 / 1,440 | 144 | - | - / - | - | - | 39,692 / 39,692 | 155.8 / – |
+| 2027 | 190 / 2,847 | 255 / 2,886 | 900 / 900 | 306 / 1,224 | 150 | - | - / - | - | - | 39,692 / 39,692 | 165.7 / – |
+| 2028 | 2,320 / 770 | 390 / 1,760 | 900 / 900 | - / - | 615 | - | - / - | - | - | 39,692 / 39,692 | 158.9 / – |
+| 2029 | 2,500 / 760 | 3,063 / 1,314 | 900 / 900 | 1,000 / - | 2,615 | - | - / - | 3,000 | - | 37,027 / 37,064 | 145.0 / – |
+| 2030 | 2,500 / 2,000 | 3,277 / 800 | 900 / 900 | 3,000 / 11,118 | 200 | 214 | 214 / - | 3,000 | - | 32,433 / 32,388 | 132.8 / 168 |
+| 2031 | 3,500 / 2,500 | 2,660 / 1,000 | 900 / 900 | 125 / 180 | 200 | - | - / - | - | - | 30,876 / 30,839 | 119.4 / – |
+| 2032 | 3,500 / 2,600 | 3,173 / 1,200 | 900 / 900 | 1,636 / 6,717 | 200 | - | - / - | 1,250 | - | 29,223 / 29,324 | 103.8 / – |
+| 2033 | 3,480 / 2,600 | 1,286 / 1,400 | 900 / 900 | 794 / 3,052 | 200 | 597 | - / - | 1,250 | - | 28,121 / 27,886 | 94.0 / – |
+| 2034 | 2,707 / 3,000 | 1,094 / 1,600 | 900 / 900 | 718 / 2,572 | 200 | 1,200 | - / - | 1,250 | - | 26,467 / 26,403 | 88.2 / – |
+| 2035 | 1,821 / 3,000 | 290 / 2,000 | 900 / 900 | 420 / 1,234 | 200 | 676 | - / - | 1,000 | - | 25,916 / 26,029 | 86.2 / 142 |
+| 2036 | 1,954 / 2,000 | 600 / 1,600 | 900 / - | 449 / 2,354 | 500 | 708 | - / - | 1,250 | 1,250 | 25,348 / 25,350 | 83.7 / – |
+| 2037 | 1,566 / 3,000 | 1,791 / 1,600 | 900 / - | 872 / 4,466 | 500 | 1,200 | - / - | 1,500 | 1,250 | 23,658 / 23,415 | 80.5 / – |
+| 2038 | 1,706 / 3,000 | 2,075 / 1,600 | 900 / - | 933 / 5,255 | 500 | 1,200 | - / - | 1,250 | 1,350 | 21,969 / 21,819 | 76.5 / – |
+| 2039 | 990 / 3,500 | 4,249 / 1,600 | 900 / - | 1,358 / 12,000 | 500 | 1,200 | - / - | 1,250 | 1,350 | 19,661 / 19,825 | 70.0 / – |
+| 2040 | - / 3,500 | 3,357 / 1,600 | 900 / - | 1,006 / 11,001 | 500 | 1,200 | - / - | 1,250 | - | 17,890 / 17,958 | 67.3 / – |
+| Total | 29,430 / 36,041 | 27,914 / 25,513 | 12,600 / 9,000 | 12,977 / 62,613 | 7,224 | 8,195 | 214 / 0 | 17,250 | 5,200 | – | 1,627.7 / – |
+
+The 30 sensitivities on c5e, each against c5e's null (null_c5e, MAXP=3: engine PV R2,235.7bn, CO2 1,627.7 Mt, objective
+R1,434.4bn), plus s_roof05 (message 164 (2)). s_wind1064 and s_wind372 hold c5e's wind capex (user, message 161); s_bw6capex's
+BW6 cases are not tariff-derived and keep their own capex.
+
+| Run | Change from c5e | Engine PV vs null, R bn | CO2 2026–40 vs null, Mt | Objective vs null, R bn | Same direction |
+|---|---|---|---|---|---|
+| s_carbonfull | Carbon tax at the full statutory rate | +294.0 | -285.4 | +302.1 | yes |
+| s_irpgas | IRP 2025's gas plan | +185.4 | -128.9 | +136.1 | yes |
+| s_comply_full | Coal emissions compliance, full | +154.2 (with charge) | -100.6 | -6.5 | no |
+| s_disc113 | Discount rate 11.3% | +123.0 | +120.1 | not comparable (a) | not judged |
+| s_bw6capex | Wind and solar capex at BW6 bids (wind R28,462/kW, solar R16,786/kW), the high end of the evidence | +110.1 | +203.0 | +100.8 | yes |
+| s_detgas | Determined gas: 3,000 MW by 2030 (IRP 2019 section 34) plus 5,000 MW in 2031–37 (GN 8021), additional on our reading | +79.4 | -1.5 | +45.9 | yes |
+| s_disc10 | Discount rate 10% | +75.0 | +80.6 | not comparable (a) | not judged |
+| s_roof2 | Rooftop 2,000 MW a year | +54.1 | -7.4 | +48.0 | yes |
+| s_comply_comp | Coal emissions compliance, Eskom's recommended plan | +52.3 (with charge) | +0.0 | -0.0 | no |
+| s_prm10 | Planning reserve margin 10% over peak (the c5c rule) | +35.5 | +14.1 | +32.2 | yes |
+| s_be7 | IRP nuclear forced: 1,250 MW in 2036–37, 1,350 MW in 2038–39 | +35.5 | -18.8 | -46.8 | no |
+| s_nogas4strict | No new gas or diesel open-cycle; lithium up to 4 GW a year | +28.0 (top-up) | -228.9 | +45.2 | yes |
+| s_noimp | No imports after 2030 (s_imp2030) | +25.7 | +26.5 | +55.8 | yes |
+| s_be6 | Lithium capped at 550 MW a year from 2026 | +25.2 | +67.8 | +14.5 | yes |
+| s_wind372 | New wind at BW6 bids' 37.2%, c5e's capex held | +24.0 | +97.0 | +36.9 | yes |
+| s_committed | Committed gas (1,200 MW a year 2030–33, 200 MW in 2034) and lithium minimums | +22.5 | +81.7 | +19.0 | yes |
+| s_pvirp | Solar capped by year at Table 1 | +8.1 | +5.0 | +10.8 | yes |
+| s_gasprem | Gas capital at a 1.5-point finance premium | +2.9 | -25.0 | +6.4 | yes |
+| s_cape10 | 3,470 MW of Cape wind at 10% curtailment | +2.1 | +1.6 | +0.2 | yes |
+| s_li8h | Lithium energy cap at 8 hours instead of 4 | -0.1 | -0.5 | -0.0 | yes |
+| s_coalme | Coal on Meridian's ME IRP 2024 dates | -0.5 | -45.8 | +21.8 | no |
+| s_be4 | 51% minimum capacity factor on new CCGT | -1.7 | -28.1 | +6.3 | no |
+| s_grid50 | Integration charge R201/kW-yr (half) for new wind and solar | -3.5 | -88.6 | -30.2 | yes |
+| s_grid0 | Integration charge R0 for new wind and solar | -6.2 | -201.3 | -68.8 | yes |
+| s_batt5 | Lithium capex falling 5% a year instead of 3% | -9.6 | -15.5 | -7.8 | yes |
+| s_wind1064 | New wind at the 1.064 correction (45.2%), c5e's capex held | -12.2 | -48.8 | -19.5 | yes |
+| s_coal60 | Coal on Figure 3's 60-year line | -14.3 | +28.5 | -26.8 | yes |
+| s_roof05 | Rooftop 500 MW a year | -18.9 | +5.0 | -16.2 | yes |
+| s_gmcv2029 | Smelter block 930 MW to 2028, 675 MW in 2029, 493 MW from 2030 | -24.9 | -8.1 | -27.4 | yes |
+| s_measured | No smelter block (measured demand only) | -64.1 | -25.8 | -70.1 | yes |
+| s_disc6 | Discount rate 6% | -79.2 | -88.7 | not comparable (a) | not judged |
+
+(a) The discount-rate runs' objectives are at their own rate and are not compared; their engine PV is at 8%. "with charge": engine
+PV includes the emissions compliance charge, which the objective does not carry. "top-up": with the diesel open-cycle top-up.
+Same direction on 23 of 28 comparable runs; of the five "no" rows, the compliance charge (s_comply_comp, s_comply_full) and
+s_be7's forced nuclear capital sit outside the objective; s_coalme (engine -R0.5bn, objective +R21.8bn) and s_be4 (-R1.7bn,
++R6.3bn) move engine PV by under R2bn and are not traced. Every run stops adequate on the engine check in every year except
+s_nogas4strict; passes: one for 8 runs, two for 22.
+
+s_nogas4strict on c5e (no new gas or diesel open-cycle; lithium up to 4 GW a year): over the model's standard in 2034-40 as
+solved (largest 8.34 GWh in 2037 against 2.58), under NTCSA's 20 GWh in every year; worst single run 103-218 GWh a year from
+2033. Top-up: 1,250 MW of diesel open-cycle (250 MW in 2034, 250 in 2035, 500 in 2036, 250 in 2037), every year then meets the
+standard; engine PV R2,256.3bn as solved, R2,263.7bn topped up (+R7.4bn), +R28.0bn against the null; CO2 1,399.0 Mt. On c5d it
+needed 1,500 MW. Caveat as above.
+
+s_roof05 (rooftop 500 MW a year instead of 900): engine PV -R18.9bn, CO2 +5.0 Mt, objective -R16.2bn; adequate.
+
+Generation by carrier, c5e and c5d, 2030 / 2035 / 2040 (the hooked engine check of message 139 on c5e, local copy of 16h; it
+returns c5e's engine PV and CO2 to every digit; c5d as recorded in 'Generation by carrier, c5d and c5c'):
+
+| Carrier | c5e 2030 | c5e 2035 | c5e 2040 | c5d 2030 | c5d 2035 | c5d 2040 |
+|---|---|---|---|---|---|---|
+| Coal | 123.7 (51.6%) | 80.0 (29.1%) | 60.1 (19.0%) | 113.1 (47.2%) | 74.4 (27.1%) | 59.8 (19.0%) |
+| Nuclear | 10.9 (4.5%) | 10.9 (4.0%) | 10.9 (3.4%) | 10.9 (4.5%) | 10.9 (4.0%) | 10.9 (3.4%) |
+| Wind, existing | 14.7 (6.1%) | 14.3 (5.2%) | 13.9 (4.4%) | 14.6 (6.1%) | 14.1 (5.1%) | 13.8 (4.4%) |
+| Wind, new | 30.0 (12.5%) | 83.0 (30.2%) | 102.7 (32.5%) | 42.3 (17.7%) | 94.7 (34.4%) | 110.1 (34.9%) |
+| Utility solar | 24.5 (10.2%) | 44.1 (16.0%) | 70.2 (22.2%) | 23.1 (9.6%) | 38.4 (14.0%) | 62.3 (19.8%) |
+| Rooftop solar | 19.2 (8.0%) | 26.1 (9.5%) | 33.0 (10.4%) | 19.2 (8.0%) | 26.1 (9.5%) | 33.0 (10.5%) |
+| CSP | 1.5 (0.6%) | 1.5 (0.6%) | 1.5 (0.5%) | 1.5 (0.6%) | 1.5 (0.6%) | 1.5 (0.5%) |
+| Hybrid (RMIPPPP) | 1.8 (0.7%) | 1.3 (0.5%) | 1.0 (0.3%) | 1.7 (0.7%) | 1.3 (0.5%) | 1.0 (0.3%) |
+| Hydro | 2.9 (1.2%) | 2.9 (1.1%) | 2.9 (0.9%) | 2.9 (1.2%) | 2.9 (1.1%) | 2.9 (0.9%) |
+| Imports | 9.3 (3.9%) | 9.3 (3.4%) | 9.3 (3.0%) | 9.3 (3.9%) | 9.3 (3.4%) | 9.3 (3.0%) |
+| CCGT | 0.1 (0.1%) | 1.4 (0.5%) | 9.9 (3.1%) | 0.0 (0.0%) | 1.2 (0.4%) | 10.4 (3.3%) |
+| Open-cycle on LNG | 0.1 (0.0%) | 0.1 (0.0%) | 0.1 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Diesel | 0.8 (0.4%) | 0.2 (0.1%) | 0.2 (0.1%) | 0.9 (0.4%) | 0.1 (0.0%) | 0.2 (0.1%) |
+| Total generation | 239.6 (100%) | 275.0 (100%) | 315.7 (100%) | 239.6 (100%) | 274.9 (100%) | 315.3 (100%) |
+| Storage discharge (batteries and pumped storage) | 4.7 (1.9%) | 13.5 (4.9%) | 25.3 (8.0%) | 4.5 (1.9%) | 12.6 (4.6%) | 22.3 (7.1%) |
+| Storage charging | 5.9 (2.5%) | 16.5 (6.0%) | 30.1 (9.5%) | 5.8 (2.4%) | 15.4 (5.6%) | 26.7 (8.5%) |
+| Storage losses (charging less discharge) | 1.3 (0.5%) | 3.0 (1.1%) | 4.8 (1.5%) | 1.2 (0.5%) | 2.8 (1.0%) | 4.4 (1.4%) |
+| Surplus curtailment | 0.0 (0.0%) | 4.0 (1.5%) | 11.4 (3.6%) | 0.2 (0.1%) | 6.3 (2.3%) | 12.4 (3.9%) |
+| Congestion stopgap loss (1.3%) | 0.9 (0.4%) | 1.9 (0.7%) | 2.6 (0.8%) | 1.1 (0.4%) | 2.0 (0.7%) | 2.6 (0.8%) |
+| Firm exports | 6.6 (2.7%) | 6.6 (2.4%) | 6.6 (2.1%) | 6.6 (2.7%) | 6.6 (2.4%) | 6.6 (2.1%) |
+| Interruptible load called | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Unserved | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Served demand (incl. rooftop) | 231.8 (96.7%) | 265.5 (96.5%) | 304.3 (96.4%) | 231.8 (96.7%) | 265.5 (96.6%) | 304.3 (96.5%) |
+| Energy balance residual | 2.0e-12 | 3.4e-13 | -6.1e-13 | 1.9e-12 | 5.1e-13 | -3.2e-13 |
+
 ### The 2025 replay against Eskom's 2025 like for like: 91.4 GWh shed or interrupted against Eskom's 459.5 GWh; with interruptible load capped at Eskom's 69.5 GWh it sheds 6.9 GWh instead of 4.3 (user, 17 Oct 2026, messages 174-176; build 2026-10-16h; report only)
 
 Settings. '2025, as modelled' as the page runs it (simulate(state, PROFILES)), build 2026-10-16h; scripts replay_dr.js and
