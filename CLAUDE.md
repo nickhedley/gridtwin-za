@@ -52,11 +52,17 @@ was 818/823; on 15f 816/821; 16b added two checks, both passing (the LICENSE lis
 unserved', is intended behaviour (user, 16 Oct 2026, message 141): since build 15e spare gas charges the existing stores ahead of
 a forecast shortfall (laGasCharge), which cuts unserved energy with no new batteries by 12%, so 30 GW of new batteries cut it
 8.3% against the check's 10% (RESULTS 'New central c5d'). The check is unchanged; its redesign waits for after the note (TODO
-14ew). Build 16a measured the same counts. The five failures, each with its cause in RESULTS ('Scenario
-switch and load timing' lists them; EDMSA's is only partly traced, RESULTS 'EDMSA Scenario A CO2 2035'; values on 15f in 'Build
-2026-10-15f: suite and every check that changed status'): EDMSA Scenario A CO2 2035 (validate_external); with gas, iron-air moves
-July gas, and the preset curtailment band (validate_findings; the band waits on the preset re-search, TODO 14ef); the Megaflex
-tariff block (validate_consistency); the peaker season ratio (validate_benchmarks). Pumped-storage output passes from 15f (the
+14ew). Build 16a measured the same counts. The five known failures, by check name, each with its cause in RESULTS ('Scenario switch and load timing' lists them; values on
+15f in 'Build 2026-10-15f: suite and every check that changed status'):
+
+1. validate_external: 'EDMSA Scenario A CO2 2035 within 22 Mt of the published figure' (cause only partly traced, RESULTS
+   'EDMSA Scenario A CO2 2035').
+2. validate_findings: 'with gas, 20 GW of 100-hour iron-air barely moves July'.
+3. validate_findings: 'preset curtailment sits within its weather band' (waits on the preset re-search, TODO 14ef).
+4. validate_consistency: 'high-season off-peak is the cheapest block modelled' (the Megaflex block).
+5. validate_benchmarks: 'peakerSeasonRatio is physically plausible'.
+
+Pumped-storage output passes from 15f (the
 storage fix). 'The build stamp is not stale' (validate_structure)
 fails whenever BUILD_STAMP is older than the day the suite runs. Without ESK19679.csv, validate_weather adds a
 failure (the missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind check.
