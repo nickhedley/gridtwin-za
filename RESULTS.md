@@ -4228,7 +4228,7 @@ BW6 cases are not tariff-derived and keep their own capex.
 | s_bw6capex | Wind and solar capex at BW6 bids (wind R28,462/kW, solar R16,786/kW), the high end of the evidence | +110.1 | +203.0 | +100.8 | yes |
 | s_detgas | Determined gas: 3,000 MW by 2030 (IRP 2019 section 34) plus 5,000 MW in 2031–37 (GN 8021), additional on our reading | +79.4 | -1.5 | +45.9 | yes |
 | s_disc10 | Discount rate 10% | +75.0 | +80.6 | not comparable (a) | not judged |
-| s_roof2 | Rooftop 2,000 MW a year | +54.1 | -7.4 | +48.0 | yes |
+| s_roof2 | Rooftop 2,000 MW a year (b) | +54.1 | -7.4 | +48.0 | yes |
 | s_comply_comp | Coal emissions compliance, Eskom's recommended plan | +52.3 (with charge) | +0.0 | -0.0 | no |
 | s_prm10 | Planning reserve margin 10% over peak (the c5c rule) | +35.5 | +14.1 | +32.2 | yes |
 | s_be7 | IRP nuclear forced: 1,250 MW in 2036–37, 1,350 MW in 2038–39 | +35.5 | -18.8 | -46.8 | no |
@@ -4248,13 +4248,14 @@ BW6 cases are not tariff-derived and keep their own capex.
 | s_batt5 | Lithium capex falling 5% a year instead of 3% | -9.6 | -15.5 | -7.8 | yes |
 | s_wind1064 | New wind at the 1.064 correction (45.2%), c5e's capex held | -12.2 | -48.8 | -19.5 | yes |
 | s_coal60 | Coal on Figure 3's 60-year line | -14.3 | +28.5 | -26.8 | yes |
-| s_roof05 | Rooftop 500 MW a year | -18.9 | +5.0 | -16.2 | yes |
+| s_roof05 | Rooftop 500 MW a year (b) | -18.9 | +5.0 | -16.2 | yes |
 | s_gmcv2029 | Smelter block 930 MW to 2028, 675 MW in 2029, 493 MW from 2030 | -24.9 | -8.1 | -27.4 | yes |
 | s_measured | No smelter block (measured demand only) | -64.1 | -25.8 | -70.1 | yes |
 | s_disc6 | Discount rate 6% | -79.2 | -88.7 | not comparable (a) | not judged |
 
 (a) The discount-rate runs' objectives are at their own rate and are not compared; their engine PV is at 8%. "with charge": engine
 PV includes the emissions compliance charge, which the objective does not carry. "top-up": with the diesel open-cycle top-up.
+(b) Engine PV counts rooftop capex as system cost and leaves out what households save on bills and any distribution effect.
 Same direction on 23 of 28 comparable runs; of the five "no" rows, the compliance charge (s_comply_comp, s_comply_full) and
 s_be7's forced nuclear capital sit outside the objective; s_coalme (engine -R0.5bn, objective +R21.8bn) and s_be4 (-R1.7bn,
 +R6.3bn) move engine PV by under R2bn and are not traced. Every run stops adequate on the engine check in every year except
@@ -4266,7 +4267,8 @@ solved (largest 8.34 GWh in 2037 against 2.58), under NTCSA's 20 GWh in every ye
 standard; engine PV R2,256.3bn as solved, R2,263.7bn topped up (+R7.4bn), +R28.0bn against the null; CO2 1,399.0 Mt. On c5d it
 needed 1,500 MW. Caveat as above.
 
-s_roof05 (rooftop 500 MW a year instead of 900): engine PV -R18.9bn, CO2 +5.0 Mt, objective -R16.2bn; adequate.
+s_roof05 (rooftop 500 MW a year instead of 900): engine PV -R18.9bn, CO2 +5.0 Mt, objective -R16.2bn; adequate. Engine PV counts rooftop capex as
+system cost and leaves out what households save on bills and any distribution effect (user, message 181 (2)); the same holds for s_roof2.
 
 Generation by carrier, c5e and c5d, 2030 / 2035 / 2040 (the hooked engine check of message 139 on c5e, local copy of 16h; it
 returns c5e's engine PV and CO2 to every digit; c5d as recorded in 'Generation by carrier, c5d and c5c'):
