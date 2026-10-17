@@ -9414,8 +9414,9 @@ function simulate(u, prof, outPath, _soc0){
     const _tot = _vE + _fE + _lE;
     replTotal += p.lcoeBatt * LI_REF_CYCLES * _lE;
     if (_tot > 0) replTotal += E.batt * (_vE*(p.lcoeVrfb ?? 2100) + _fE*(p.lcoeIronAir ?? 1750)) / _tot;
-    const _srmcD = dieselSrmcR(p);
-    replTotal += Math.max(0, p.lcoeDiesel - _srmcD) * dieselAvailMW(p) * DSL_REF_CF * 8760 + _srmcD * E.diesel;
+    // The slider's capital part is measured against the running cost its anchor was built on (FIXED), so the fuel and carbon
+    // sliders move only the running cost, which the energy the run burns pays at the run's own rates.
+    replTotal += Math.max(0, p.lcoeDiesel - dieselSrmcR(FIXED)) * dieselAvailMW(p) * DSL_REF_CF * 8760 + dieselSrmcR(p) * E.diesel;
   }
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   // peak demand vs peak grid LOAD. loadS includes storage charging, which is a
