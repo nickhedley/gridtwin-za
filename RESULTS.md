@@ -4362,6 +4362,8 @@ load reduction plus 69.5 interruptible load, ILS; IOS left out). ESK19679 totals
 
 ### Fixed presets and the 2025 replay, build by build from 12e to 16h: the replay now sheds 4.3 GWh against Eskom's 390 (28.3 on 12e), mostly from interruptible load; Today 2026 costs R5.0bn more from Avon and Dedisa's must-run; the IRP presets cost R1.2-7.8bn less, from the engine fixes and the central costs (user, 16 Oct 2026, message 132, TODO 14et; builds 2026-10-12e to 16h)
 
+### Fixed presets and the 2025 replay, build by build from 12e to 16h: the replay now sheds 4.3 GWh against Eskom's 390 (28.3 on 12e), mostly from interruptible load; Today 2026 costs R3.6bn more, Avon and Dedisa's must-run R5.0bn of it; the IRP presets cost R2.5-7.8bn less, from the engine fixes and the central costs (user, 16 Oct 2026, message 132, TODO 14et; builds 2026-10-12e to 16h)
+
 Settings. preset_check.js (scratch): each preset applied as the page applies it (applyState), twelve weather years x 20 outage
 draws (240 runs), seeds as pathcheck.js (71830529 + k x 104729 + year x 7919), profiles.json demand and CSP; target half of 0.002%
 of customer demand. replay2025.js (scratch): '2025, as modelled' as the page runs it (simulate(state, PROFILES)); its outages are
