@@ -4949,6 +4949,13 @@ running alongside): 820/825, eng5 5/6. The five known failures as on main and en
 87/87 after the decision above. Findings' values on 17g: July gas 788 to 688 GWh with 20 GW of iron-air (12.7%); Fossil-free 2040
 curtailment 113.1.
 
+Merged with main (#79, LCOE anchors) at 23:18 UTC, 17 Oct 2026, as build 2026-10-17h (e10dce3). c5f's pass-1 LP key on 17h is
+f689a33bfd, the same as on 17g: #79 changes the LCOE sliders and the replacement-cost figure, not the build problem, so the chain's
+runs on 17g stand for 17h. The response baseline was regenerated on 17h: against main's, the six storage cells above that #79 had
+not already made responsive (battHours to rePct, curtTWh and loleHrs; newBattMW to rePct and curtTWh; newVrfbMW to curtTWh);
+against 17g's, the five replacement-cost cells #79 recorded (carbonTaxRPerT responsive; newIronAirMW, newCoalMW, coalFlexPct and
+outageUnitLevel inert). Base replacement cost on 17h R1,603.41/MWh (main R1,604.53; 17g R1,531.89).
+
 Runs (to follow here): a frozen copy of build 2026-10-17g (b82bfd3; pass-1 LP key f689a33bfd; started 22:46 UTC; the 17e start
 at 22:23 UTC, LP key 71b0df1e44, was stopped at 22:30 for the demand add-back and its files set aside); c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run
 on c5e (30 plus s_roof05) and s_roof09 (ROOF_MW=900, c5e's pace), each at MAXP=3, two at a time, from scratch, each with its
