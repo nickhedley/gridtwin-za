@@ -6604,10 +6604,11 @@ const FIXED = {
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
 
-// TIME-OF-USE WINDOWS (user, 17 Oct 2026, messages 171-173): Eskom's 2026/27 tariff booklet, Appendix A (printed p.46), in force
-// since 1 April 2025, cross-checked against Eskom Distribution's webinar slide 4 (14 Oct 2026) (SOURCES 'Eskom Distribution and
-// NERSA'; RESULTS 'The code's time-of-use windows against Eskom's 2025/26 changes'). Megaflex (touBlockOf) and Homeflex (flexAt)
-// share them. Hours [start, end); every other hour is off-peak. Public holidays are not modelled: each takes its weekday's windows.
+// TIME-OF-USE WINDOWS (user, 17 Oct 2026, messages 171-173): the Eskom 2026/27 tariff booklet, Appendix A (printed p.46), in
+// force since 1 April 2025, cross-checked against slide 4 of the Eskom Distribution webinar of 14 Oct 2026. Sources: SOURCES.md,
+// the entry on Eskom Distribution and NERSA; RESULTS.md, the entry on the time-of-use windows against the 2025/26 changes.
+// Megaflex (touBlockOf) and Homeflex (flexAt) share them. Hours [start, end); every other hour is off-peak. Public holidays are
+// not modelled: each takes the windows of its weekday.
 const TOU_WINDOWS = {
   high: { peak: [[6, 8], [17, 20]], standard: [[8, 17], [20, 22]], satStandard: [[7, 12], [17, 19]], sunStandard: [[17, 19]] },          // June-August
   low:  { peak: [[7, 9], [18, 21]], standard: [[6, 7], [9, 18], [21, 22]], satStandard: [[7, 12], [18, 20]], sunStandard: [[18, 20]] }, // September-May

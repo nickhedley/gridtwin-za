@@ -40,8 +40,11 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (16 Oct 2026, build 2026-10-16h, central c5e, branch claude/c5e, ESK19679.csv present, two preset jobs running beside
-it): 819/824, node checks 732/737 plus audit 87/87; eng5 5/6. The same on 16g (branch claude/pack-c5d on main 8f10c8e) and 16e
+Expected (17 Oct 2026, build 2026-10-17a, branch claude/tou-171 on main a9691ab, ESK19679.csv present, preset searches
+running beside it): 820/825, node checks 733/738 plus audit 87/87; eng5 5/6. 17a moves the time-of-use windows to Eskom's
+2025/26 schedule and splits validate_consistency's Megaflex median check in two, both passing (message 183 (1); RESULTS
+'Time-of-use windows on Eskom's 2025/26 schedule'). On 16h (central c5e, branch claude/c5e): 819/824, node checks 732/737 plus
+audit 87/87; eng5 5/6. The same on 16g (branch claude/pack-c5d on main 8f10c8e) and 16e
 (main aa23aa5): 16g adds the s_tariffcf flag, off, and 16h makes 'run' the default; neither changes a check's status (RESULTS
 'Build 2026-10-16h'). 16e added one check, passing (validate_consistency
 'CCS at the default share cuts emissions part of the way', message 157 (3)). On build 16c (main e6da3eb, nothing else running) it

@@ -4087,6 +4087,58 @@ open-cycle in 2034, 250 in 2035, 500 in 2036 and 500 in 2037, 1,500 MW in all; e
 R2,228.5bn as solved, R2,237.0bn topped up (+R8.4bn: capex 7.2, fixed O&M 1.4, fuel 0.1, other -0.2), +R32.0bn against the null;
 CO2 1,349.2 to 1,349.4 Mt. Every top-up year is flagged: diesel open-cycle is excluded in this run, so the top-up prices the gap.
 
+### Time-of-use windows on Eskom's 2025/26 schedule (build 2026-10-17a): Megaflex and Homeflex share one sourced table; at 2025 conditions the high-season peak block's median rises from R754 to R992/MWh, so the high-season peak now separates on its median and the check is re-specified to say so (Nick's decision, message 183 (1)); 'high-season off-peak is the cheapest block' fails as before; Homeflex's average day 5.8% cheaper; suite 820/825 (user, 17 Oct 2026, messages 171 and 183 (1))
+
+The change. TOU_WINDOWS (beside FIXED) holds Eskom's windows from 1 April 2025, by season and day type, from the 2026/27 tariff
+booklet (Appendix A, printed p.46), cross-checked against Eskom Distribution's webinar slide 4 (RESULTS 'The code's time-of-use
+windows against Eskom's 2025/26 changes', which has the table; SOURCES 'Eskom Distribution and NERSA'). touBlockOf (Megaflex) and
+flexAt (Homeflex) both read it through touWindowBlock. Megaflex moves from the pre-2025 windows (one set for both seasons) to the
+seasonal ones with Sunday's two standard hours; Homeflex gains its evening standard hours, the low season's 06-07 and both weekend
+days, and the panel's average day weights five weekdays, a Saturday and a Sunday. Public holidays are not modelled, as before.
+nodal/eskom_tariff_components.json: homeflex.peak_to_standard_ratio relabelled high_season_peak_to_offpeak_ratio, 6, from the
+booklet's Megaflex rates (739.28 against 123.20 c/kWh; off-peak the same in both seasons), noting that NERSA's text calls it peak to
+standard. The booklet and the deck are cited, not reproduced or committed.
+
+touCompare at validate_consistency's 2025 settings (demand +4.6%, coal EAF 58%, imports 858 MW, exports 1,705 MW, nuclear 0.62),
+R/MWh, scratch probe toucmp.js on 16h and 17a. Weekday hours per block are unchanged (peak 5, standard 11, off-peak 8 a day);
+weekend hours stay grouped as 'weekend'.
+
+| Block | Hours | Mean 16h / 17a | Median 16h / 17a | 95th percentile 16h / 17a | Load-weighted 16h / 17a |
+|---|---|---|---|---|---|
+| high peak | 325 | 5,220 / 6,521 | 754 / 992 | 6,206 / 6,206 | 5,462 / 6,772 |
+| low peak | 980 | 1,688 / 2,084 | 750 / 751 | 6,206 / 6,206 | 1,756 / 2,146 |
+| high standard | 715 | 2,938 / 2,347 | 751 / 751 | 6,206 / 6,206 | 3,018 / 2,382 |
+| low standard | 2,156 | 1,310 / 1,130 | 749 / 749 | 6,206 / 6,206 | 1,334 / 1,150 |
+| high off-peak | 520 | 1,122 / 1,122 | 747 / 747 | 758 / 758 | 1,141 / 1,141 |
+| low off-peak | 1,568 | 908 / 908 | 745 / 745 | 755 / 755 | 922 / 922 |
+| weekend | 2,496 | 1,093 / 1,093 | 748 / 748 | 6,206 / 6,206 | 1,136 / 1,136 |
+
+Whether the panel's finding holds. The NERSA claim the checks guard: the blocks separate on the tail, not the level, and Megaflex
+charges high-season off-peak above blocks that model cheaper. Pre-2025 finding, kept as recorded (windows before 1 April 2025,
+measured on builds up to 2026-10-16h, last on 16h, 17 Oct 2026): every block's median within 5% of the others (1.3% on 16h;
+high-season peak R754/MWh), so the blocks separated on the tail only. On the 2025/26 windows (17a) the high-season peak block
+separates on its median too: R992 against R745-751 for every other block, because its 17-20 evening peak catches more of the
+winter hours where coal does not set the price. The other six blocks sit within 0.8% of each other at the median. The peak blocks
+now carry more of the scarcity hours (high peak mean +25%, low peak +23%) and the standard blocks less (high -20%, low -14%).
+Off-peak hours are unchanged (weekday 22-06), so low-season off-peak stays the cheapest block, and the check that wants
+high-season off-peak cheapest fails as it has since 14d.
+
+The check re-specified (Nick's decision, message 183 (1)): validate_consistency's 'the blocks barely separate a typical hour'
+becomes two checks, 'outside the high-season peak, the blocks barely separate a typical hour' (the other six medians within 5%;
+0.8% on 17a) and 'the high-season peak separates on its median' (above every other block's median by more than 5%; 32% on 17a).
+Both pass. The probe now returns each block's median by name.
+
+Homeflex's average day, unweighted (the rates over the windows; flex in the retail panel): R2.7008/kWh on 16h, R2.5430 on 17a
+(-5.8%): weekends move from weekday rates to mostly off-peak, while the evening standard hours move up from off-peak.
+
+Suite on 17a (branch claude/tou-171 on main a9691ab, ESK19679.csv present, preset searches and engine checks running beside it):
+820/825, node checks 733/738 plus audit 87/87; eng5 5/6. Against 16h (819/824): validate_consistency 80/81 to 81/82, the
+re-specified check adding one, both halves passing; one value moved, Northern Cape 3x solar wheeling coverage under monthly
+netting 58% to 57% (monthly netting reads the windows). The five known failures as on 16h. Two first-run failures, each
+established and rerun: the audit flagged 'SOURCES' inside a quoted span formed by an apostrophe in a new code comment (the
+comment reworded, 87/87); validate_solve's headroom check hit the solver's time limit with the machine fully loaded (LP solved
+in 135 s), and passed 9/9 on rerun (53 s).
+
 ### The code's time-of-use windows against Eskom's 2025/26 changes: Megaflex still on the pre-2025 windows; Homeflex has the new peaks but not the evening or low-season early standard hours, and no weekends; the '1:6' label is a peak to off-peak ratio (user, 17 Oct 2026, message 170 (2); build 2026-10-16h; report only, the fix is message 171)
 
 Eskom's windows for 2026/27, read from the tariff booklet (Appendix A, printed p.46) and cross-checked against Eskom Distribution's
