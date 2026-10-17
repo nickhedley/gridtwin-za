@@ -4298,6 +4298,28 @@ returns c5e's engine PV and CO2 to every digit; c5d as recorded in 'Generation b
 | Served demand (incl. rooftop) | 231.8 (96.7%) | 265.5 (96.5%) | 304.3 (96.4%) | 231.8 (96.7%) | 265.5 (96.6%) | 304.3 (96.5%) |
 | Energy balance residual | 2.0e-12 | 3.4e-13 | -6.1e-13 | 1.9e-12 | 5.1e-13 | -3.2e-13 |
 
+### Avon and Dedisa's must-run in the build LP capped at the independent peakers' diesel, as the engine does (build 2026-10-17b): c5e's pass-1 LP unchanged (key b7e3107906); the Fossil-free B start's LP equals its must-run-off run; no recorded run affected (user, 17 Oct 2026, message 182 (2); TODO 14fk)
+
+The change. The build LP's mdr_ row now forces min(the must-run, the independent peakers' diesel standing that year): existing
+diesel (DSL(y), after diesel retirements and any peaker retirement schedule) less Eskom's own tank-fed plant (FIXED.dslTankMW), the
+engine's rule in simulate ('_mdIpp'). Before, the row had no cap, so retiring diesel below the must-run level before Avon's
+contract ends (20 July 2031) made the LP infeasible. One difference remains: the engine's dieselAvailMW also counts new diesel
+open-cycle plant, which in the LP is a decision variable and is left out of the cap; it matters only when the independent
+peakers' existing diesel falls below the must-run level before 2031 and new diesel open-cycle is built, which no recorded run does.
+
+Checks (LPs dumped with DUMP_LP, pass 1):
+- c5e's settings (scratch env_central.sh) on 17b: key b7e3107906, as on 16h; the LP has 1,728 mdr_ rows, unchanged.
+- The Fossil-free 2040 B start (HORIZON=2040 COAL_DECOM=39692 DSL_DECOM=3400 DEMAND=legacy DEM=5 GAS_CAP=0 OCGT=0 OCGD=0) on
+  17b with no switch, against the same on the frozen 16h copy with the must-run off (MDR_OFF, scratch): key fd5b75b684 on both,
+  the LP files byte-identical; no mdr_ rows, since all diesel is retired. So the B start that ran on 16h with MDR_OFF is what the
+  fixed LP gives.
+
+Recorded runs that retired existing diesel before 2031, and so were affected: none besides that B start. Since build 14p, when the
+must-run entered the LP, no recorded pathway run set DSL_DECOM or a peaker retirement schedule (PEAK; FIXED.bldPeakerRet 0):
+c5b_14r, c5c, c5d, c5e and every sensitivity on them keep the 3,400 MW of existing diesel. The earlier Fossil-free B proposals with
+DSL_DECOM (builds 07s and 07t, RESULTS 'Build LP: coal-limit rounding made retiring all coal infeasible') predate the must-run. The hourly engine always capped it, so no engine
+check, preset or replay is affected.
+
 ### The 2025 replay against Eskom's 2025 like for like: 91.4 GWh shed or interrupted against Eskom's 459.5 GWh; with interruptible load capped at Eskom's 69.5 GWh it sheds 6.9 GWh instead of 4.3 (user, 17 Oct 2026, messages 174-176; build 2026-10-16h; report only)
 
 Settings. '2025, as modelled' as the page runs it (simulate(state, PROFILES)), build 2026-10-16h; scripts replay_dr.js and

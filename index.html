@@ -10871,6 +10871,11 @@ function bldBuildLP(opts){
   // life-extension variables that add back to it.
   const PK_ON = (S.bldPeakerRet | 0) > 0;
   const DSL = y => PK_ON ? Math.max(0, EX.diesel - BLD_PEAKERS.filter(p => y >= bldPeakerOffYear(p, S)).reduce((a, p) => a + p.mw, 0)) : EX.diesel;
+  // Avon and Dedisa's must-run is capped at the independent peakers' diesel standing in the year (user, 17 Oct 2026, message 182;
+  // TODO 14fk), the engine's rule (simulate, '_mdIpp'): existing diesel less Eskom's own tank-fed plant (dslTankMW). Before build
+  // 2026-10-17b the row had no cap, so retiring diesel before Avon's contract ends made the LP infeasible. New diesel open-cycle,
+  // a decision variable here, is left out of the cap; the engine's dieselAvailMW counts it.
+  const MDR_CAP = y => { const d = DSL(y); return Math.max(0, d - Math.min(d, Math.max(0, S.dslTankMW ?? FIXED.dslTankMW))); };
   const LEV = y => PK_ON ? BLD_PEAKERS.filter(p => bldPeakerExtOn(p, S, y)).map(p => 'le_' + p.id) : [];
   const LE_P = PK_ON ? BLD_PEAKERS.filter(p => bldPeakerExtOn(p, S, Y[Y.length - 1])) : [];
 
@@ -11301,7 +11306,7 @@ function bldBuildLP(opts){
           + ' <= ' + rhs.toFixed(1));
       }
       L.push(' dmax_' + k + ': gd_' + k + LEV(y).map(v => ' - ' + v).join('') + (OCGD_ON ? ' - ' + cum('ocgd',y).join(' - ') : '') + ' <= ' + DSL(y));
-      { const _mdr = avonDedisaMustRunMW(y, i, S); if (_mdr > 0) L.push(' mdr_' + k + ': gd_' + k + ' >= ' + _mdr.toFixed(1)); }   // Avon and Dedisa (message 88)
+      { const _mdr = Math.min(avonDedisaMustRunMW(y, i, S), MDR_CAP(y)); if (_mdr > 0) L.push(' mdr_' + k + ': gd_' + k + ' >= ' + _mdr.toFixed(1)); }   // Avon and Dedisa (message 88), within the independent peakers' diesel (message 182)
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       // Same power limits for vanadium and iron-air: neither can charge or
@@ -19586,7 +19591,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-17a';
+const BUILD_STAMP = '2026-10-17b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
