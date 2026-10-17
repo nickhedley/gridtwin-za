@@ -4506,10 +4506,32 @@ in 2026, no threshold, so an upper bound). Finding: keeping coal online through 
 in 2026 and, in this engine, saves about R1.7bn of diesel: coal held on at midday covers the evening peak that the engine's 4-hour
 blocks otherwise meet with diesel and storage after taking units off. So the engine's midday decommitment is not least cost in
 2026, and its cost should not be read as the economic dispatch SAWEM is designed to produce (pack limitation 23 now says so,
-Nick's wording, message 186 (2); the same test on c5e's 2030 and 2035 follows). Caveats: one year; the 0.75 floor is a proxy for commitment, applied all day; no start-up costs
+Nick's wording, message 186 (2); c5e's 2030 and 2035 below). Caveats: one year; the 0.75 floor is a proxy for commitment, applied all day; no start-up costs
 or ramp limits beyond the engine's; curtailment claims awaiting payment were about R2bn in mid-June 2026 and R1.5bn in late July, a
 backlog built up from April and May (Engineering News, 18 June and 27 July 2026; RESULTS 'The 2026 replay curtails almost nothing
 for oversupply'), against the bound here.
+
+c5e's 2030 and 2035 (user, 17 Oct 2026, message 186 (2)): the same floor on c5e's builds (YEARS=2030 and 2035, MSL=0.75, scratch
+copy c5e/msl), at K=20: the 20 draws (240 runs) c5e's own engine check used in those years, where its adaptive rule took a second
+batch. A first run at the default stopped at 120 runs and is not used. As run: the hooked copy's check (m130_c5e_a and _b).
+
+| c5e | 2030 as run | 2030, coal at least 0.75 | Change | 2035 as run | 2035, coal at least 0.75 | Change |
+|---|---|---|---|---|---|---|
+| Surplus curtailment, wind and solar, GWh | 15 | 1,193 | +1,178 | 4,046 | 9,130 | +5,084 |
+| of which REIPPPP's share, GWh | 4 | 350 | +346 | 588 | 1,327 | +739 |
+| Deemed energy, upper bound, R bn | 0.52 | 1.18 | +0.66 | 0.92 | 1.70 | +0.78 |
+| Engine cost, R bn | 237.35 | 235.00 | -2.36 | 244.69 | 246.68 | +1.99 |
+| Diesel, TWh | 0.85 | 0.37 | -0.48 | 0.16 | 0.11 | -0.05 |
+| Gas, TWh | 0.24 | 0.13 | -0.11 | 1.43 | 1.02 | -0.41 |
+| Storage discharge (batteries and pumped storage), TWh | 4.66 | 7.26 | +2.60 | 13.54 | 14.14 | +0.60 |
+| Coal, TWh | 123.74 | 126.10 | +2.36 | 80.01 | 85.81 | +5.80 |
+| CO2, Mt | 132.83 | 134.62 | +1.79 | 86.23 | 91.53 | +5.30 |
+| Mean unserved energy, GWh (target 2.19 in 2030, 2.46 in 2035) | 0.42 | 0.15 | -0.28 | 0.66 | 0.36 | -0.30 |
+
+The congestion stopgap is unchanged (912 GWh in 2030, 1,916 in 2035). Finding: holding coal on is still cheaper on the engine's own
+cost in 2030 (-R2.36bn; -R1.70bn with the deemed-energy bound added) and dearer in 2035 (+R1.99bn; +R2.77bn with it), where it
+curtails 5.1 TWh more wind and solar and adds 5.3 Mt of CO2. So the engine's midday decommitment is not least cost through 2030;
+the commitment rule is TODO 14ft. Caveats as for 2026.
 
 ### s_committed and s_be6 on c5e, by carrier and year: CO2 +81.7 and +67.8 Mt against the null (+18.6 and +22.6 on c5d) because existing coal makes up energy the optimiser no longer builds wind, solar and lithium for (user, 17 Oct 2026, message 181 (1); build 2026-10-16h)
 
