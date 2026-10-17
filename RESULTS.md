@@ -4362,6 +4362,31 @@ load reduction plus 69.5 interruptible load, ILS; IOS left out). ESK19679 totals
 
 ### Fixed presets and the 2025 replay, build by build from 12e to 16h: the replay now sheds 4.3 GWh against Eskom's 390 (28.3 on 12e), mostly from interruptible load; Today 2026 costs R5.0bn more from Avon and Dedisa's must-run; the IRP presets cost R1.2-7.8bn less, from the engine fixes and the central costs (user, 16 Oct 2026, message 132, TODO 14et; builds 2026-10-12e to 16h)
 
+### IRP presets' coal retirement read from IRP 2025 Figure 3's dates: 7,259 MW by the start of 2030 (was a typed 8,000) and 13,776 MW by the start of 2035 (was 16,000, which no IRP source supports) (user, 17 Oct 2026, message 185 (4); build 2026-10-17c on branch claude/presets-132)
+
+The change. 'IRP's 2030 targets', 'IRP's 2030 targets, grid delayed' and 'IRP path 2035' now read coalDecomMW from the per-unit
+dates the pathway uses as COAL_DATES (harness/coal_dates_irp2025.json: Nick Hedley's reading of Figure 3, plan p.12, 13 Oct 2026,
+50-year line, about +-250 MW), through irpFig3CoalRetiredMW, with the summation and scaling of bldCoalMW (rule 3). The page loads
+the file at start-up; the page's own coal schedule (UC_FLEET's dates) is unchanged (probe: 30,296 MW standing at the start of 2030
+either way; Figure 3 gives 32,433). Probe on this build: 7,259 MW retired by the start of 2030, 13,776 MW by the start of 2035.
+
+Why the numbers differ from the typed ones. The IRP's "8 GW by 2030" (plan p.40) is an end state, the units named to close by the
+financial year 2030; Figure 3 is an annual average, so the coal standing through 2030 is higher than at its end. No IRP source was
+found for 16,000 MW by 2035: the preset's comment based it on the MTSAO's "about 17 GW of coal and gas out by 2035", which
+is not coal alone.
+
+Recorded results that used the typed values (none is a pathway run: the pathway reads Figure 3 directly):
+- 'Fixed presets and the 2025 replay, build by build from 12e to 16h' (17 Oct 2026): the IRP presets' cost, CO2, curtailment and
+  shed rows, every build.
+- 'Preset inventory at build 2026-10-12e' (12 Oct 2026).
+- 'IRP presets rebuilt from Table 1; the 2030 presets had 300 MW of storage, not 3,724' (7 Oct 2026).
+- 'The IRP gas floor is now an annual minimum; IRP path 2035 still falls 13.5 TWh short of it' and 'The IRP gas floor is now 51%
+  on 6 GW, 2030-2040' (6 Oct 2026).
+- 'The two 2030 presets were priced at 2026' (23 Sep 2026).
+- validate_findings: the coal the model dispatches on 'IRP's 2030 targets' (110.9 TWh when measured, 22 Sep 2026), the battery
+  and pumped-storage value on 'IRP path 2035', and the grid-delayed preset's mirror of the 2030 one; their values on this build
+  are in the suite entry for the presets PR.
+
 ### Fixed presets and the 2025 replay, build by build from 12e to 16h: the replay now sheds 4.3 GWh against Eskom's 390 (28.3 on 12e), mostly from interruptible load; Today 2026 costs R3.6bn more, Avon and Dedisa's must-run R5.0bn of it; the IRP presets cost R2.5-7.8bn less, from the engine fixes and the central costs (user, 16 Oct 2026, message 132, TODO 14et; builds 2026-10-12e to 16h)
 
 Settings. preset_check.js (scratch): each preset applied as the page applies it (applyState), twelve weather years x 20 outage
