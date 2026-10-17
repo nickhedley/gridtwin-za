@@ -4562,6 +4562,29 @@ in 2026-30; on c5e coal is unchanged in 2026-27 and higher from 2028. Both runs 
 than their nulls; why c5d's early coal fell and c5e's did not is not traced. The larger solar cut on c5e (10.8 against 8.1 GW)
 goes with its null's larger solar and lithium build (27.9 GW and 13.0 GW against 24.7 and 12.2).
 
+### s_constr on c5e: floors at the projects confirmed under construction cost +R1.9bn of engine PV and cut CO2 12.5 Mt against the null, by bringing wind and solar forward to 2026-28; adequate after two passes (user, 17 Oct 2026, messages 164 (1), 183 (2) and 184; build 2026-10-16h; a sensitivity only)
+
+Settings. c5e's line on the frozen 16h copy (chain.sh, MAXP=3, from scratch), with the floors of 's_constr's floors, by project
+and year, from pages read' (MIN_BUILD=wind:2026:1131,wind:2027:2105.5,pv:2026:823,pv:2027:2081,pv:2028:3210;
+LI_MIN=2026:360:1440,2027:760.5:3059,2028:760.5:3719), 17 Oct 2026, 09:56-10:40 UTC; engine check pathcheck.js TF=0.5 LNG=1
+GRID=1. Against c5e's null (R2,235.7bn, 1,627.7 Mt, objective R1,434.4bn).
+
+| | s_constr | Against the null |
+|---|---|---|
+| Engine PV 2026-40, R bn | 2,237.7 | +1.9 |
+| CO2 2026-40, Mt | 1,615.2 | -12.5 (2026 -2.8, 2027 -8.1, 2028 -2.1, 2029-30 -2.2, after 2030 about 0) |
+| Optimiser objective, R bn | 1,436.9 | +2.5 (same direction as engine PV) |
+| Passes; adequacy | 2; every year, closest 2032 at 64% of target, zero stress-target slack | null: 2, closest 2031 at 52% |
+
+Build against the null, MW: new wind +435 in 2026, +784 in 2027, -2,124 in 2028, +926 in 2033-38 (+1 overall); utility solar
++469, +1,003 and +739 in 2026-28, -397 in 2029 and -1,826 in 2031-37 (-11 overall); lithium +94 MW / +395 MWh in 2027 and +660 MWh
+in 2028, less in 2033-36 (+2 MW and -39 MWh overall); CCGT +49, open-cycle on LNG -47. The floors bind exactly: wind 2,105.5 MW
+by 2027 and solar 3,210 MW by 2028. So the confirmed projects change when wind and solar arrive, not how much is built by 2040; the
+early arrival cuts 2026-28 coal burn by 12.8 TWh and costs R1.9bn in present value.
+
+Nick decides on the central's floors; per message 183 (2), none changes until each added project's financial close and
+commissioning year come from a page read, which 's_constr's floors' records project by project.
+
 ### s_constr's floors, by project and year, from pages read: wind 1,131 MW by 2026 and 2,105.5 by 2027; solar 823, 2,081 and 3,210 MW by 2026, 2027 and 2028; lithium 760.5 MW / 3,059 MWh by 2027 and 3,719 MWh by 2028 (user, 17 Oct 2026, messages 164 (1), 183 (2) and 184; a sensitivity only; the run follows)
 
 s_constr is a sensitivity on c5e's line, not a change to the central's committed floors (Nick's decision, message 183 (2)). The
