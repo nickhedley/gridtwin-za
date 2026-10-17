@@ -4360,8 +4360,6 @@ verdict from the engine (user, message 179): "2025 replay (16h): 91.4 GWh shed o
 load); 76.4 GWh with interruptible load capped at Eskom's 69.5 GWh (6.9 shed), against Eskom's 459.5 GWh in 2025 (390.0 manual
 load reduction plus 69.5 interruptible load, ILS; IOS left out). ESK19679 totals."
 
-### Fixed presets and the 2025 replay, build by build from 12e to 16h: the replay now sheds 4.3 GWh against Eskom's 390 (28.3 on 12e), mostly from interruptible load; Today 2026 costs R5.0bn more from Avon and Dedisa's must-run; the IRP presets cost R1.2-7.8bn less, from the engine fixes and the central costs (user, 16 Oct 2026, message 132, TODO 14et; builds 2026-10-12e to 16h)
-
 ### IRP presets' coal retirement read from IRP 2025 Figure 3's dates: 7,259 MW by the start of 2030 (was a typed 8,000) and 13,776 MW by the start of 2035 (was 16,000, which no IRP source supports) (user, 17 Oct 2026, message 185 (4); build 2026-10-17c on branch claude/presets-132)
 
 The change. 'IRP's 2030 targets', 'IRP's 2030 targets, grid delayed' and 'IRP path 2035' now read coalDecomMW from the per-unit
