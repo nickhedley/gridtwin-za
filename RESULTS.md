@@ -4556,6 +4556,43 @@ Pages that quote the old figures: the reviewer pack's section 2 (28-89 GWh of sh
 description quotes a result. Fossil-free 2040's curtailment (99.3 TWh on 240 runs; validate_findings' band 96.3 +/-15% on its own
 single run) waits for the re-search, as TODO 14ef records. Deep decarbonisation and Fossil-free are searched next, on 'run'.
 
+### Deep decarbonisation 2035 and Fossil-free 2040 re-searched on c5e's costs: Fossil-free meets half the standard as searched (1.80 against 1.80 GWh, R288.8bn a year); Deep's searched build sheds 3.46 against 1.90 GWh on independent draws and is topped up to 1.83 GWh, R230.1bn a year (build 2026-10-17i; user, 16-18 Oct 2026, messages 161 (3) and 195 (1))
+
+Settings. harness/ext/preset_search.js on build 2026-10-16h (c5e's costs: wind and solar capex on 'run', new utility solar on the
+tracking profile), least system cost meeting half the 0.002% standard (mean shed over twelve weather years and the outage
+draws), technology by technology at 2, 1 and 0.5 GW steps, rooftop fixed. Two starts each: A from the preset as it stood, B from
+the build optimiser's proposal for the preset's year (START). Search draws on seed 20260816 (the loop's): Deep 2 draws a step and
+40 to confirm (480 runs); Fossil-free 1 draw (it has no coal, and the draws vary only coal outages). Independent draws: the
+preset check's seeds (71830529 + k x 104729 + year x 7919), 20 draws x 12 weather years = 240 runs (scratch preset_check_17d.js;
+presets_17d.json on 17d, presets_17i.json on 17i). Outputs: harness/ext/search_deep_A_c5e.json, search_deep_B_c5e.json,
+search_ff_A_c5e.json, search_ff_B_c5e.json and topup_deep_c5e.json.
+
+| | Build (new wind / solar / lithium / iron-air / offshore, MW) | Search draws: shed / target, GWh; cost, R bn a year | Independent draws (240 runs): shed / target; worst run; cost |
+|---|---|---|---|
+| Deep, start A, searched | 25,500 / 26,000 / 10,000 (12 h) / 625 / 0 | 1.88 / 1.89 on 480 runs after two top-ups (the search's own build, 25,500 / 25,500 / 9,500, shed 2.81 on its confirm); 226.1 | 3.46 / 1.90; 174.1; 226.2 (17d) |
+| Deep, start B | 17,500 / 28,500 / 6,000 / 125 / 1,000 | 102.6 / 1.89; stalled; 40-draw confirm 105.5 and eight top-ups without meeting it | not a candidate |
+| Deep, set (topped up on the independent draws) | 26,500 / 27,500 / 10,500 / 625 / 0 | | 1.83 / 1.90; 138.3; 230.1 (17i) |
+| Fossil-free, start A, set | 34,000 / 41,000 / 14,000 (12 h) / 6,625 / 1,250 | 1.80 / 1.80; 288.5 | 1.80 / 1.80, the same to 13 digits (no coal); 20.5; 288.8 (17d and 17i) |
+| Fossil-free, start B | 43,500 / 68,875 / 18,375 / 250 / 0 | 1.66 / 1.80; 312.8 | not taken: R24.3bn a year dearer |
+
+The Deep top-up (preset_search.js TOPUP_ONLY=1, SEED=71830529, DRAWS=CONFIRM=20, the independent runs themselves; message 195
+(1)): each round tests every technology up one step (wind, solar and lithium 500 MW, iron-air 125, offshore 250) and takes the
+cheapest that meets the target, else the one removing most shed per rand. Rounds 1 to 5 took solar +500 (3.18 GWh, R226.5bn),
+solar +500 (2.85), solar +500 (2.65), wind +500 (2.35, R227.9bn) and lithium +500 (1.92, R229.3bn); round 6 met the target with
+wind +500: 1.83 GWh, R230.1bn, R3.9bn a year above the searched build. In round 6 solar +500 gave 1.91 (misses by 0.01), and
+iron-air, offshore and lithium steps met it at R230.5-231.1bn. The first attempt stopped at round 3 when the container restarted
+(17 Oct 2026, about 21:57 UTC); the restart repeated rounds 1-3 to the digit.
+
+Both presets on build 2026-10-17i (main merged), independent draws: Deep CO2 19.8 Mt, coal 17.7 TWh, diesel 0.13 TWh,
+curtailment 34.6 TWh (twelve-year mean); Fossil-free curtailment 91.3 TWh. On the default profiles, one run each (validate_findings'
+band): Deep 46.9 TWh, Fossil-free 114.9 TWh. The band is re-pinned to those (TODO 14ef; were 52.7 and 96.3, +/-15%). The two
+profile sets differ more for these solar-heavy builds than the 1 Oct comment records (Fossil-free 114.9 against 91.3; Deep 46.9
+against 34.6); recorded, not investigated.
+
+Both presets' captions read their GW from PRESETS; Deep's now says the search's build was topped up on independent outage draws.
+Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
+build the presets would be rescored.
+
 ### Build 2026-10-16h, central c5e: wind and solar capex backed out at the capacity factor each runs at by default; suite 819/824 as on 16g, no check changes status, four values move with the capex (user, 16 Oct 2026, message 161 (1); build 2026-10-16h)
 
 The change: FIXED.bldTariffCfBasis 'run' (was 'bid'). New wind R20,879/kW (was R17,773) and tracking solar R11,038/kW (was
