@@ -4718,6 +4718,30 @@ REIPPPP 4,042 plus H1 2026's wheeled 470 (Umsobomvu and the three Impofu farms) 
 satellite register (nodal/project_register.json) shows it as a map point with no capacity counted. Reviewer pack limitation 25;
 loaded with the next central (message 191 (2)), not now.
 
+One rule for all private solar (user, 17 Oct 2026, message 193 (1)). On the same footnote, the wheeled solar c5e's base already
+loads (by_source.private, from the H1 2026 monitor) is probably inside NTCSA's estimate too. The base already applies one rule:
+FIXED.rooftopMW is the August 2026 estimate, 9,430.1 MW (nodal/rooftop_mw_by_region.json, Week 37 report), less that wheeled
+solar, 488 MW, which is counted as utility solar instead (FIXED.pvUtilityMW 3,271 = REIPPPP 2,783 + 488); validate_capacity
+asserts the subtraction (made 15 Aug 2026 to remove the same double count). By plant, 2026:
+
+| Plant | MW | Route | How c5e's base counts it | If wheeled PV is inside the estimate (assumed) | If it is not |
+|---|---|---|---|---|---|
+| Mooi Plaats, Limpopo | 240 | wheeled | utility solar (by_source.private); taken off rooftop | once, as utility solar | utility solar, and 240 MW taken off rooftop that the estimate never held |
+| Bolobedu, Limpopo | 148 | wheeled | as Mooi Plaats | once, as utility solar | as Mooi Plaats, 148 MW |
+| ARM Platinum (Selemela 1), North West | 100 | wheeled | as Mooi Plaats | once, as utility solar | as Mooi Plaats, 100 MW |
+| Selemela 2 and 3, North West | 200 | wheeled | not loaded | once, inside rooftop | missing |
+| Damlaagte, Free State | 97.5 | wheeled | not loaded | once, inside rooftop | missing |
+| Springbok, Free State | about 150 | wheeled | not loaded | once, inside rooftop | missing |
+| Lephalale 1, PPC Slurry, PPC Dwaalboom | 88 | captive | not loaded (behind the meter) | inside rooftop | inside rooftop: no agreement with NTCSA of any kind |
+
+MW at stake in 2026: if wheeled PV is inside the estimate, none is missing or counted twice, and 447.5 MW of wheeled solar sits in
+the rooftop bucket (rooftop profile, netted off demand). If it is not, c5e's base is 935.5 MW short: 488 MW of rooftop taken off
+and 447.5 MW of wheeled solar missing. Plant built after August 2026 (SunCentral 1 and the other private solar in c5e's floors)
+is new build, outside the August estimate either way. Not traced here: c5e's rooftop growth after August 2026 is fixed at 900 MW
+a year (ROOF_MW in c5e's settings; its basis is not recorded in RESULTS); if that rate was read off the estimate's own growth, then on the first
+reading it would carry new wheeled solar that c5e also builds as utility solar. No model change before the note (pack
+limitation 25 gives both readings).
+
 Selemela 1 is a separate plant (Arup's project page, read 17 Oct 2026): 132 MWp near Lichtenburg, developed by SOLA, supplying
 African Rainbow Minerals' operations through wheeling, energised and grid-connected. Consistent, from a page read, with the H1
 2026 monitor's 'ARM Platinum', 100 MW of wheeled solar in North West, already in by_source.private (message 191 (3)).
