@@ -67,6 +67,8 @@ Build limits in c5, which c5b_14r, c5d and c5e keep (RESULTS 'c5 inputs, final';
 - new gas from 2030, at most 1,200 MW a year;
 - pumped hydro: Tubatse only, 1,500 MW from 2038.
 
+Against NTCSA's connection programme (13 GW of new renewables in 2024–30 through transformer upgrades and a further 24 GW by 2033; GreenCape MIR 2026, p.20, citing NTCSA 2024), c5e connects 15.5 GW of new wind and utility solar in 2026–30 and 33.1 GW in 2026–33; ITIPP adds 3,222 MW by August 2029, against c5e's 9.8 GW in 2026–29. NTCSA's periods start in 2024, and rooftop is outside both (RESULTS 'c5e's new wind and solar against NTCSA's connection programme').
+
 ---
 
 ## 2. The 2025 replay and the benchmarks
@@ -471,3 +473,4 @@ Each can be answered from this pack in 30–40 minutes. Each is tied to a decisi
 - Fixed presets and the 2025 replay, build by build from 12e to 16h … (branch claude/presets-132), 17 Oct 2026
 - Reviewer pack on c5e …, 17 Oct 2026
 - Degradation is not modelled …, 17 Oct 2026
+- c5e's new wind and solar against NTCSA's connection programme …, 17 Oct 2026

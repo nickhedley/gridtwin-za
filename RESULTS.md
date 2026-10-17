@@ -4396,6 +4396,22 @@ Also from the note, for reference only: wind capacity factors 35-45% (40%) and s
 stated), against the model's 42.5% and 28.7%; wind and solar levelised cost about a third lower by 2040 (Figure 1, p.v; NREL
 ATB 2019 learning), against the model's 3.89% a year solar capex decline, 43% lower by 2040, which has no source.
 
+### c5e's new wind and solar against NTCSA's connection programme: 15.5 GW connected in 2026-30 against NTCSA's 13 GW in 2024-30, and 33.1 GW in 2026-33 against 37 GW in 2024-33 (user, 17 Oct 2026, message 164 (3); build 2026-10-16h; report only)
+
+c5e's build (pathway_c5e.json, b_wind_ and b_pv_ summed from 2026), MW, against GreenCape's MIR 2026 (p.20, citing NTCSA 2024):
+
+| Period | c5e new wind | c5e new utility solar | c5e together | Programme |
+|---|---|---|---|---|
+| 2026-29 | 5,706 | 4,062 | 9,768 | ITIPP 3,222 MW by August 2029 |
+| 2026-30 | 8,206 | 7,339 | 15,545 | NTCSA 13 GW of new renewables 2024-30, through transformer upgrades |
+| 2031-33 | 10,480 | 7,118 | 17,598 | NTCSA a further 24 GW by 2033 |
+| 2026-33 | 18,686 | 14,457 | 33,143 | NTCSA 37 GW 2024-33 |
+
+Caveats: NTCSA's periods start in 2024, and what connected in 2024-25 is in the model's existing fleet, not its new build;
+rooftop (3,600 MW by 2030, 6,300 by 2033 in c5e) is outside both columns; the model limits build only by its yearly caps (wind
+2.5 GW a year to 2030 and 3.5 GW after, lithium 3 GW) and the freed-coal connections, not by grid capacity; what ITIPP's 3,222
+MW counts is as reported.
+
 ### Reviewer pack on c5e: c5e's worst 14 days exceed one LNG cargo every year from 2035 (3.04 in 2040), and 3 of its 33 stress-window-years exceed one; deemed energy upper bound R11.3bn (R6.5bn in present value) against c5d's R13.7bn; the 4-hour lithium energy cap binds in 2039; s_irpgas retires 6.2-6.5 GW of coal early from 2026 (user, 17 Oct 2026, message 161 (4), with 166, 177, 179 and 180 (1); build 2026-10-16h; report only)
 
 Settings. c5e's run and engine check as in 'New central c5e' (frozen copy of 16h; pathcheck.js TF=0.5 LNG=1 GRID=1). Deemed

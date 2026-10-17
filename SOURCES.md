@@ -1463,3 +1463,17 @@ here. Cited and summarised, not reproduced. A reference only; no input changed.
 - Cost path (Figure 1, p.v): wind and solar levelised cost about a third lower by 2040, on NREL ATB 2019 learning. Beside the
   model's 3.89% a year decline in solar capex, which has no source; not a source for the rate.
 
+## GreenCape: National Renewable Energy Market Intelligence Report 2026 (user, 16-17 Oct 2026, message 164)
+
+GreenCape, National Renewable Energy Market Intelligence Report 2026, May 2026. Copyright GreenCape, all rights reserved: cited
+and summarised, not reproduced. As given by Nick Hedley with pages; the report was not read here.
+
+- Figure 1 (p.14, end-March 2026): 2,159 MW wind, 2,368 MW solar PV and 888 MW battery storage under construction. NTCSA's
+  Generation Customer Connections Dashboard (Figure 2, p.15, March 2026): 5,354 MW of wind and solar in execution. Against the
+  committed floors (886 MW wind, 849 MW solar, 666 MW lithium): the s_constr comparison follows (message 164 (1)).
+- Rooftop (p.16): Eskom's estimate 7.4 GW in 2025. Figure 4 (p.17): about 10 GW by 2030, after installs slowed with
+  load-shedding. Behind s_roof05 (RESULTS 'New central c5e').
+- Connection programme (p.20, citing NTCSA 2024): 13 GW of new renewables in 2024-30 through transformer upgrades and a further
+  24 GW by 2033; ITIPP 3,222 MW by August 2029. Set against c5e's build in RESULTS 'c5e's new wind and solar against NTCSA's
+  connection programme' and the pack's build-limits note.
+
