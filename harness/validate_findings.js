@@ -557,13 +557,16 @@ setTimeout(()=>{
   {
     const c = probe(`
       const saved = JSON.parse(JSON.stringify(state));
-      Object.assign(state, PRESETS["IRP's 2030 targets"]);
+      applyState(PRESETS["IRP's 2030 targets"]);
       const P = { ...FIXED, ...state };
       const r = simulate(state, PROFILES);
       const avail = (P.coalInstalledMW - P.coalDecomMW) * P.coalEAFPct / 100 * 8760 / 1e6;
       const out = { coalTWh: r.E.coal / 1e6, availTWh: avail, co2: r.co2,
                     curtTWh: r.E.curtailed / 1e6 };
-      Object.assign(state, saved);
+      // Replaced, not merged (user, 18 Oct 2026, message 203 (3)): a merge cannot delete the preset's scenarioYear, which
+      // then ran every later probe at the preset's year. Same fix as validate_consistency's.
+      for (const k of Object.keys(state)) delete state[k];
+      Object.assign(state, saved); if (typeof retYearUser !== 'undefined') retYearUser = false;
       return out;
     `);
     if (c && !c.error){
@@ -579,11 +582,14 @@ setTimeout(()=>{
   {
     const r = probe(`
       const saved = JSON.parse(JSON.stringify(state));
-      Object.assign(state, PRESETS['Deep decarbonisation 2035']);
+      applyState(PRESETS['Deep decarbonisation 2035']);
       const P = { ...FIXED, ...state };
       const out = { wind: P.newWindMW, pv: P.newPvMW, batt: P.newBattMW,
                     hours: P.newBattHours, ccgt: P.newCcgtMW };
-      Object.assign(state, saved);
+      // Replaced, not merged (user, 18 Oct 2026, message 203 (3)): a merge cannot delete the preset's scenarioYear, which
+      // then ran every later probe at the preset's year. Same fix as validate_consistency's.
+      for (const k of Object.keys(state)) delete state[k];
+      Object.assign(state, saved); if (typeof retYearUser !== 'undefined') retYearUser = false;
       return out;
     `);
     if (r && !r.error){

@@ -934,9 +934,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <input id="retCap" type="checkbox" checked onchange="renderRetail()">
                 <span>Retail price cap</span>
               </label>
-              <label style="font-size:10.5px;color:var(--ink2)" title="The year the scenario's system is costed at. Technology costs decline to it, the existing asset base runs off toward it, one-off recoveries expire before it.">Scenario year
+              <label style="font-size:10.5px;color:var(--ink2)" title="The year the retail stack is priced at. It follows the scenario's own year, and a preset resets it. Moving it re-prices the retail lines only: new-build capital at that year's midpoint vintage, the existing asset base's run-off, recoveries and IPP contracts that expire before it. Dispatch, fuel, carbon and system cost stay at the scenario year, so any other year mixes two years, and the panel says so.">Scenario year
                 <input id="retYear" type="range" min="2025" max="2040" step="1" value="2026"
-                       oninput="renderRetail()" style="vertical-align:middle;width:110px">
+                       oninput="retYearUser=true;renderRetail()" style="vertical-align:middle;width:110px">
                 <span id="retYearVal" class="mono" style="font-size:11px">2026</span>
               </label>
             </div>
@@ -6214,8 +6214,10 @@ const FIXED = {
   //                     residential systems are sized. Anything generated beyond what is
   //                     self-consumed is exported.
   // billFeedInR         what an exported unit earns. Zero by default, because the table's rows
-  //                     are Eskom-direct and City Power households and no published export rate
-  //                     was found for either (searched 18 Oct 2026). R1.53 was Cape Town's
+  //                     are Eskom-direct households at the shadow rate and City Power households,
+  //                     and no export rate applies to either: Eskom's credit is Homeflex's
+  //                     gen-offset (booklet 2026/27 p.44), City Power's 2023 rate is unconfirmed
+  //                     (searched 18 Oct 2026). R1.53 was Cape Town's
   //                     2026/27 residential feed-in of R1.2418 plus its 28.75c incentive, applied
   //                     to rows that are not Cape Town's (audit, 18 Oct 2026). Set it to see what
   //                     an export credit would do: it is the difference between a rooftop system
@@ -13312,7 +13314,7 @@ function renderCapacityPayment(res){
   // year, energy is most of the answer and this number overstates the need badly. For iron-air
   // at a quarter of a cycle it is close to the whole answer. The ratio of the two columns is
   // the point rather than either figure alone.
-  const _vint = 2026 + ((+(document.getElementById('retYear') || {}).value || 2035) - 2026) / 2;
+  const _vint = 2026 + (retailYear() - 2026) / 2;
   const _capexPerKW = (tech) => (BLD_COST[tech] && BLD_LIFE[tech])
     ? bldAnnuity(BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, _vint - 2026), BLD_LIFE[tech], tech)
     : null;
@@ -15869,6 +15871,21 @@ function hourLabel(i){ return DAY_NM[Math.floor(i/24)%7] + ' ' + String(i%24).pa
 // Homepower household is already 45% fixed against Octopus's 24% (43% when written, on the
 // R3.5556 energy rate later corrected to R3.2206).
 let RETAIL_T = null;
+// THE RETAIL YEAR FOLLOWS THE SCENARIO (user, 18 Oct 2026, message 203 (3); retail audit M6). The panel priced at whatever
+// its year slider last showed, and only applyState moved the slider, so any path that set state.scenarioYear without a
+// preset button priced the retail stack at 2026 against an engine at 2035: the +14.6% against +2.7% on the re-searched Deep
+// decarbonisation 2035. The year now reads state.scenarioYear until the reader moves the slider; a preset resets that.
+let retYearUser = false;
+function retailYear(){
+  const sy = state.scenarioYear ?? FIXED.scenarioYear;
+  const el = document.getElementById('retYear');
+  if (!el) return sy;
+  if (!retYearUser && +el.value !== sy){
+    el.value = String(sy);
+    const v = document.getElementById('retYearVal'); if (v) v.textContent = el.value;
+  }
+  return +el.value;
+}
 fetch('nodal/eskom_tariff_components.json?v=' + (window.DATA_V || '7'))
   .then(r => r.ok ? r.json() : null)
   .then(d => { RETAIL_T = d; if (typeof renderRetail === 'function') renderRetail(); })
@@ -16634,7 +16651,7 @@ function retailHourly(){
   const stLbl = document.getElementById('retStrandedLbl');
   if (stLbl) stLbl.style.opacity = anyRetired ? '1' : '0.5';
   const yrEl = document.getElementById('retYear');
-  const year = yrEl ? +yrEl.value : 2035;
+  const year = retailYear();
   const yv = document.getElementById('retYearVal'); if (yv && yrEl) yv.textContent = yrEl.value;
 
   const hod = new Array(24).fill(0);
@@ -17052,7 +17069,15 @@ function renderRetail(){
       + `basis, or quote both and say why they differ.</div>`
     : '';
 
-  noteEl.innerHTML = capLine + shedWarn + rowsNote + billHtml + rooftopHtml + ppaNote +
+  // A YEAR OTHER THAN THE SCENARIO'S SAYS SO (audit section 5b): the slider re-prices the retail lines only, so a reader
+  // who moves it is comparing two years.
+  const _sy = state.scenarioYear ?? FIXED.scenarioYear;
+  const yearMix = (c.year !== _sy)
+    ? `<span style="display:block;margin:5px 0 8px;color:var(--warn,#B4531A)"><strong>Retail priced at ${c.year}; `
+      + `dispatch, fuel, carbon and system cost are at the scenario year, ${_sy}.</strong> The two mix years; `
+      + `move the slider back to ${_sy} to compare like with like.</span>`
+    : '';
+  noteEl.innerHTML = yearMix + capLine + shedWarn + rowsNote + billHtml + rooftopHtml + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue, its lines per kWh at NERSA's `
     + `${RETAIL_T.allowed_revenue_2026_27.sales_twh.toFixed(0)}&nbsp;TWh base and recovered over the scenario's `
@@ -18097,7 +18122,7 @@ const SLIDERS=[
   {id:'billGenPct',label:'\u2013 system size',min:0,max:250,step:10,def:FIXED.billGenPct,ctrlStyle:SUB_CTRL,fmt:v=>v+'% of annual use',
    note:'How large the system is, as a share of what the household uses in a year. 100% is how most residential systems are sized. Anything generated beyond what is used as it is generated is exported.'},
   {id:'billFeedInR',label:'\u2013 feed-in rate',min:0,max:4,step:0.05,def:FIXED.billFeedInR,ctrlStyle:SUB_CTRL,fmt:v=>'R'+v.toFixed(2)+'/kWh',
-   note:'What an exported unit earns. Zero by default: no published export rate was found for Eskom-direct or City Power households, the two in the table. For comparison, Cape Town pays R1.53 in 2026/27 (R1.2418 plus its 28.75c incentive), but only to its own customers.'},
+   note:'What an exported unit earns. Zero by default: the table prices Eskom-direct households at the shadow rate and City Power households at their block tariff, and no export rate applies to either. For comparison, Cape Town pays its own customers R1.53 in 2026/27 (R1.2418 plus its 28.75c incentive), and Eskom credits Homeflex customers by time-of-use period, up to what they use in that period (Tariffs and Charges Booklet 2026/27, p.44).'},
   {endsub:true},
 ];
 const PRESETS={
@@ -18660,6 +18685,7 @@ function applyState(overrides){
   // scenario looked 20-40% dearer than today by comparison. 22 Sep 2026. The slider still moves
   // freely afterwards.
   const _ry = document.getElementById('retYear');
+  retYearUser = false;
   if (_ry) { _ry.value = String(state.scenarioYear ?? FIXED.scenarioYear);
              const _ryv = document.getElementById('retYearVal'); if (_ryv) _ryv.textContent = _ry.value; }
   updateGroupBadges(); if(typeof updateVppTotal==='function') updateVppTotal();

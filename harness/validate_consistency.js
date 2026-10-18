@@ -101,6 +101,14 @@ const num = t => {
     d.body.appendChild(el);
     return w.__cc;
   };
+  // PRESETS IN, STATE BACK EXACTLY (user, 18 Oct 2026, message 203 (3); retail audit section 5c). Presets were applied with
+  // Object.assign(state, preset) and restored with Object.assign(state, keep), which cannot delete a key the preset added:
+  // scenarioYear (and bldPvTracking on tracking presets) stayed behind, and every later check ran the engine at the preset's
+  // year. Presets now go through applyState, as the buttons do, and state is replaced from the saved copy, not merged into.
+  // retYearUser goes back to false so the retail year follows the restored scenario year (index.html, retailYear).
+  const IO = `const __preset = n => applyState(PRESETS[n]);
+    const __restore = k => { for (const x of Object.keys(state)) delete state[x];
+      Object.assign(state, JSON.parse(JSON.stringify(k))); if (typeof retYearUser !== 'undefined') retYearUser = false; };`;
 
   // Render everything, then compare panels against the engine that fed them.
   const E = run(`
@@ -683,7 +691,7 @@ const num = t => {
   // Megaflex is public and unambiguous, so the classifier is checkable against arithmetic
   // rather than against itself: 52 weekends is exactly 2,496 hours, and the blocks must
   // partition the year with nothing left over.
-  const tou = run(`
+  const tou = run(`${IO}
     const tally = {}; let weekend = 0;
     for (let h = 0; h < 8760; h++){
       const t = touBlockOf(h);
@@ -697,7 +705,7 @@ const num = t => {
     const _keep = JSON.parse(JSON.stringify(state));
     Object.assign(state, { demandGrowthPct: 4.6, coalEAFPct: 58, importsMW: 858, exportsMW: 1705, nuclearCF: 0.62 }); run();
     const rows = touCompare(lastRes);
-    Object.assign(state, _keep); run();
+    __restore(_keep); run();
     const hp = rows.find(r => r.block === 'high peak');
     const lp = rows.find(r => r.block === 'low peak');
     // Anchor the calendar. Counting weekend hours proves nothing about ALIGNMENT: any
@@ -946,56 +954,66 @@ const num = t => {
             `the new-grid line must be described as what the code computes, the engine's `
             + `tiered transmission charge at the TDP's generation-integration average, and `
             + `not as a floor.`);
-      // ── THE PANEL MUST RESPOND, AND AGREE WITH THE SYSTEM COST ────────────
-      // RESTORED 10 Sep 2026. This check existed, then vanished when the surrounding block
-      // was replaced during the bottom-up rebuild, and nothing noticed because everything
-      // still passed. That is the disappearing-check failure STATE.md describes for eng5.
+      // ── THE PANEL AND THE SYSTEM COST AGREE ON THE LINES THEY SHARE ────────
+      // REPLACED 18 Oct 2026 (user, message 203 (3); retail audit sections 5 and 7). Restored 10 Sep 2026 as two checks: the
+      // panel moves more than 20% on a decarbonisation preset, and in the same direction as system cost. Neither is an
+      // invariant. The +14.6% against +2.7% on the re-searched Deep decarbonisation 2035 was the panel priced at 2026 against
+      // an engine at 2035 (audit M6); priced at one year the panel falls 2.9% while system cost rises 2.7%, for reasons that
+      // are by design: the panel carries the existing fleet's capital, recoveries and the network over sales, and system
+      // cost does not (RESULTS 'The shadow retail price and system cost move differently by design'). What must hold is that
+      // the lines both measures carry are the same rands: fuel, carbon, new transmission, IPP contracts, and new-build
+      // capital for the technologies the panel prices. Measured on both presets through applyState, all five agree to the
+      // rand (RESULTS 'Retail panel audit, part 3'). A year mismatch shows here first.
       //
-      // It also used to assert the price FALLS by more than 20%. That was the conclusion of
-      // a build with four missing or mis-scaled components. Corrected, Deep decarbonisation 2035 RAISES
-      // a bill by roughly two thirds - 97 GW of renewables and 30 GW of storage annualise
-      // R258bn a year over fewer kWh sold. A check that encodes a conclusion gets edited when
-      // the conclusion changes, so this one asserts only that the panel moves, and that it
-      // moves the same way as the model's own system cost.
-      //
-      // RUN ON FOSSIL-FREE 2040 from 18 Oct 2026 (user, message 199 and 200 (4); build 2026-10-17i), threshold and the
-      // same-direction check unchanged. The re-searched Deep decarbonisation 2035 moves the panel 14.6% (R3.785 to R4.338) and
-      // system cost 2.7% (R1,101 to R1,131/MWh); main's Deep moved them 28.7% and 28.2%, Fossil-free 49.4% and 35.6%. Cause,
-      // measured component by component (RESULTS 'The shadow retail price and system cost move differently'): the panel is a
-      // bill and carries what system cost leaves out by design, coal's sunk and stranded capital and the network over fewer
-      // kWh sold, and at its default year (2026) the 2026 IPP contract payments, which the 2035 engine has partly retired.
-      // The near-equal moves on main's Deep were a ratio of the two bases, not a property. Deep stays covered by the
-      // new-build capital check below.
-      const sc = run(`
-        const m = a => a.reduce((x, y) => x + y, 0) / a.length;
-        const before = m(retailHourly().dyn), avgBefore = lastRes.avgCost;
-        const keep = JSON.parse(JSON.stringify(state));
-        Object.assign(state, PRESETS['Fossil-free 2040']);
-        run();
-        const after = m(retailHourly().dyn), avgAfter = lastRes.avgCost;
-        Object.assign(state, keep); run();
-        return { before, after, avgBefore, avgAfter };
+      // The engine's new-build capital carries terms the panel leaves out, each subtracted by name so the comparison is like
+      // for like: behind-the-meter rooftop (the household pays it), onshore transmission (the panel's new-grid line), and
+      // pumped storage, coal, nuclear, coal-flex retrofit and open-cycle gas, which have no capital path in the panel
+      // (audit M10, TODO 14gc). That last group is a known gap, reported in the detail, not a reconciliation term.
+      const rc = run(`${IO}
+        const keep = JSON.parse(JSON.stringify(state)), out = {};
+        for (const nm of ['Deep decarbonisation 2035', 'Fossil-free 2040']){
+          __preset(nm); run();
+          const r = lastRes, c = retailHourly().comp, kWh = c.salesMWh * 1000;
+          const P = { ...FIXED, ...state };
+          const v = 2026 + Math.max(0, (P.scenarioYear ?? 2026) - 2026) / 2;
+          const at = t => bldAnnuity(bldCapex(t, v), BLD_LIFE[t], t) + bldFom(t, v);
+          let pvAdder = P.newPvMW;
+          if (P.repurpose) pvAdder = P.newPvMW - Math.min(P.newPvMW, Math.min(P.coalDecomMW, P.newPvMW + P.newBattMW));
+          const roof = (P.newRooftopMW || 0) * at('rooftop') * 1000;
+          const omitted = ((P.newPsMW || 0) * P.acapPs + (P.newCoalMW || 0) * P.acapCoal + (P.newNuclearMW || 0) * P.acapNuclear
+            + Math.max(0, P.coalInstalledMW - P.coalDecomMW) * (P.coalFlexPct ? 1 : 0) * P.acapCoalFlex
+            + ((P.newOcgtMW || 0) > 0 ? P.newOcgtMW * at('ocgt') : 0)
+            + ((P.newOcgdMW || 0) > 0 ? P.newOcgdMW * at('ocgd') : 0)) * 1000;
+          const txOn = txChargeFor(P.newWindMW, pvAdder, 0, P);
+          out[nm] = { retYear: c.year, scenYear: P.scenarioYear ?? FIXED.scenarioYear, omitted, lines: {
+            'fuel': [c.fuel * kWh, r.fuelCost], 'carbon': [c.carbon * kWh, r.carbonCost],
+            'new transmission': [c.newGrid * kWh, r.txCapexR],
+            'IPP contracts': [c.ipp * kWh, r.ppaCostR + r.otherIppCostR],
+            'new-build capital': [c.newCapR, r.newCapexR - roof - omitted - txOn] } };
+        }
+        __restore(keep); run();
+        return out;
       `);
-      if (sc && !sc.err && sc.before && sc.after){
-        const move = 100 * Math.abs(sc.after / sc.before - 1);
-        check('the shadow retail price responds to a decarbonisation scenario',
-              move > 20,
-              `R${sc.before.toFixed(2)} today against R${sc.after.toFixed(2)} on Fossil-free `
-              + `2040, ${move.toFixed(0)}% apart. Near zero means the panel is `
-              + `absorbing the effect it exists to show.`);
-        check('the retail price moves the same way as the system cost',
-              Math.sign(sc.after - sc.before) === Math.sign(sc.avgAfter - sc.avgBefore),
-              `retail R${sc.before.toFixed(2)} -> R${sc.after.toFixed(2)}, system cost `
-              + `R${sc.avgBefore.toFixed(0)} -> R${sc.avgAfter.toFixed(0)}/MWh. The same `
-              + `costs on two bases must not disagree in direction.`);
-      }
+      if (rc && !rc.err){
+        for (const [nm, x] of Object.entries(rc)){
+          const off = Object.entries(x.lines)
+            .filter(([, [a, b]]) => Math.abs(a - b) > Math.max(1e-6 * Math.abs(b), 1e6))
+            .map(([k, [a, b]]) => `${k} R${(a / 1e9).toFixed(3)}bn on the panel against R${(b / 1e9).toFixed(3)}bn in the engine`);
+          check(`the panel and the system cost agree on the lines they share (${nm})`,
+                x.retYear === x.scenYear && off.length === 0,
+                `retail year ${x.retYear}, scenario year ${x.scenYear}`
+                + (off.length ? '; ' + off.join('; ') : '; fuel, carbon, new transmission, IPP and new capital agree')
+                + `. Engine capital with no panel path (coal-flex, pumped storage, nuclear, coal, open-cycle gas): `
+                + `R${(x.omitted / 1e9).toFixed(2)}bn.`);
+        }
+      } else check('the panel and the system cost agree on the lines they share', false, rc ? rc.err : 'no result');
       // The build must land near the real tariff WITHOUT calibration - that agreement is
       // the only check the method has on itself.
       // MUST SET THE YEAR. Homepower's published rate is a 2026 figure, so the comparison
       // has to be made at scenario year 2026. Running at the panel's 2035 default compared a
       // bill with nine years of asset run-off against today's tariff and read R2.99 - which
       // looked like a component error and was a year mismatch.
-      const rn = run(`
+      const rn = run(`${IO}
         const yr = document.getElementById('retYear'); const keepY = yr.value;
         const keep = JSON.parse(JSON.stringify(state));
         yr.value = 2026; run();
@@ -1008,7 +1026,7 @@ const num = t => {
         const perKwhTotal = HPT.energy_r_per_kwh + HPT.fixed_r_per_month / 900;
         const out = d ? { dyn: m(d.dyn), flat: perKwhTotal, energyOnly: m(d.flat) }
                       : { err: 'no panel' };
-        yr.value = keepY; Object.assign(state, keep); run();
+        yr.value = keepY; __restore(keep); run();
         return out;
       `);
       if (rn && !rn.err && rn.flat){
@@ -1022,7 +1040,7 @@ const num = t => {
       // ── THE THREE VALIDATIONS FROM scope_retail_gaps.md ───────────────────
       // Added 10 Sep 2026 with the scenario year. Each checks against something outside the
       // panel, which is the only kind of check worth having here.
-      const vy = run(`
+      const vy = run(`${IO}
         const m = a => a.reduce((x, y) => x + y, 0) / a.length;
         const yr = document.getElementById('retYear'), st = document.getElementById('retStranded');
         const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value, keepS = st.checked;
@@ -1049,10 +1067,13 @@ const num = t => {
         const homepower = HPT2.energy_r_per_kwh + HPT2.fixed_r_per_month / 900;
         reset();
         Object.assign(state, { coalDecomMW: 32000, newWindMW: 20000, newPvMW: 25000,
-          newBattMW: 12000, newBattHours: 4, newCcgtMW: 8000, newRooftopMW: 5000, drShiftPct: 7.5 });
+          newBattMW: 12000, newBattHours: 4, newCcgtMW: 8000, newRooftopMW: 5000, drShiftPct: 7.5,
+          // At its own year from 18 Oct 2026 (message 203 (3)): the engine ran this build at 2026 while the panel priced
+          // it at 2035. The retail year now follows the scenario year, so the scenario year is set.
+          scenarioYear: 2035 });
         yr.value = 2035; run();
         const gasFirmed = m(retailHourly().dyn);
-        Object.assign(state, keep); yr.value = keepY; st.checked = keepS; run();
+        __restore(keep); yr.value = keepY; st.checked = keepS; run();
         return { at2026, homepower, gasFirmed };
       `);
       if (vy && !vy.err && vy.at2026){
@@ -1199,12 +1220,12 @@ const num = t => {
       // The modelled figure is generation less rooftop self-consumption, storage throughput
       // and exports - none of which is sold to a South African retail customer.
       {
-        const sd = run(`
+        const sd = run(`${IO}
           const yr = document.getElementById('retYear'); const keepY = yr.value;
           const keep = JSON.parse(JSON.stringify(state));
           yr.value = 2026; run();
           const c = retailComponents(0, true, 2026, false, 900);
-          yr.value = keepY; Object.assign(state, keep); run();
+          yr.value = keepY; __restore(keep); run();
           return { salesTWh: c.salesTWh };
         `);
         if (sd && !sd.err && sd.salesTWh){
@@ -1275,19 +1296,19 @@ const num = t => {
       // Found by building a breakdown for an analyst and noticing the two columns were
       // identical - not by the suite, which compared each basis only against itself.
       {
-        const bd = run(`
+        const bd = run(`${IO}
           const yr = document.getElementById('retYear'), B = document.getElementById('retBasis');
           if (!B) return { err: 'no basis control' };
           const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value;
           const grab = b => {
-            Object.assign(state, PRESETS['Deep decarbonisation 2035']);
+            __preset('Deep decarbonisation 2035');
             yr.value = '2035'; B.value = b; run();
             const n = document.getElementById('retNote').textContent.replace(/\s+/g, ' ');
             const i = n.indexOf('R/kWh:');
             return i < 0 ? '' : n.slice(i + 6, i + 160);
           };
           const reg = grab('reg'), mkt = grab('mkt');
-          Object.assign(state, keep); yr.value = kY; B.value = kB; run();
+          __restore(keep); yr.value = kY; B.value = kB; run();
           return { reg, mkt };
         `);
         if (bd && !bd.err && bd.reg){
@@ -1305,13 +1326,13 @@ const num = t => {
       // the week identical. Found by looking at the panel; nothing in the suite compared the
       // two series, so nothing caught it.
       {
-        const wb = run(`
+        const wb = run(`${IO}
           const m = a => a.reduce((x, y) => x + y, 0) / a.length;
           const yr = document.getElementById('retYear'), B = document.getElementById('retBasis');
           const H = document.getElementById('retH2GW');
           if (!B || !H) return { err: 'controls missing' };
           const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value, kH = H.value;
-          Object.assign(state, PRESETS['Deep decarbonisation 2035']); yr.value = '2035';
+          __preset('Deep decarbonisation 2035'); yr.value = '2035';
           B.value = 'reg'; H.value = '0'; run();
           const regArr = Array.from(retailHourly().week); const regWk = m(regArr);
           B.value = 'mkt'; run();
@@ -1320,7 +1341,7 @@ const num = t => {
           dev /= regArr.length;
           B.value = 'reg'; H.value = '20'; run();
           const h2Wk = m(retailHourly().week);
-          Object.assign(state, keep); yr.value = kY; B.value = kB; H.value = kH; run();
+          __restore(keep); yr.value = kY; B.value = kB; H.value = kH; run();
           return { regWk, mktWk, h2Wk, dev };
         `);
         if (wb && !wb.err && wb.regWk){
@@ -1355,7 +1376,7 @@ const num = t => {
       // of an hourly cost, and NERSA sets its peak-to-standard ratio at 1:6 by decision
       // rather than by measurement. Agreement within a factor of two is the right bar.
       {
-        const sh = run(`
+        const sh = run(`${IO}
           const yr = document.getElementById('retYear'); const keepY = yr.value;
           const keep = JSON.parse(JSON.stringify(state));
           // 2025 conditions since 22 Sep 2026, as for the TOU checks above.
@@ -1365,7 +1386,7 @@ const num = t => {
           const R = RETAIL_T.homeflex.rates_r_per_kwh_2026_27;
           const spreads = []; let d = null;
           for (let k = 0; k < 8; k++){
-            Object.assign(state, keep, { demandGrowthPct: 4.6, coalEAFPct: 58, importsMW: 858, exportsMW: 1705, nuclearCF: 0.62, outageSeed: 20260816 + k * 104729 });
+            __restore(keep); Object.assign(state, { demandGrowthPct: 4.6, coalEAFPct: 58, importsMW: 858, exportsMW: 1705, nuclearCF: 0.62, outageSeed: 20260816 + k * 104729 });
             yr.value = 2026; run(); d = retailHourly();
             if (d) spreads.push(Math.max(...d.week) / Math.min(...d.week));
           }
@@ -1374,7 +1395,7 @@ const num = t => {
                             hfHigh: R.high_season_peak / R.high_season_offpeak,
                             hfLow: R.low_season_peak / R.low_season_offpeak,
                             wk: d.wkMode } : { err: 'no panel' };
-          yr.value = keepY; Object.assign(state, keep); run();
+          yr.value = keepY; __restore(keep); run();
           return out;
         `);
         if (sh && !sh.err && sh.shadowSpread){
@@ -1483,12 +1504,12 @@ const num = t => {
       //
       // The panel reports 0.886. Any drift in a decline rate, a life, the discount rate or
       // the vintage convention shows here first.
-      const ncap = run(`
+      const ncap = run(`${IO}
         const yr = document.getElementById('retYear');
         const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value;
-        Object.assign(state, PRESETS['Deep decarbonisation 2035']); yr.value = 2035; run();
+        __preset('Deep decarbonisation 2035'); yr.value = 2035; run();
         const v = retailComponents(0.40, true, 2035);
-        Object.assign(state, keep); yr.value = keepY; run();
+        __restore(keep); yr.value = keepY; run();
         return { newCap: v.newCap, vintage: v.vintage };
       `);
       if (ncap && !ncap.err && ncap.newCap){
