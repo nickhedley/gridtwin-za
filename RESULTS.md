@@ -4590,6 +4590,66 @@ profile sets differ more for these solar-heavy builds than the 1 Oct comment rec
 against 34.6); recorded, not investigated.
 
 Both presets' captions read their GW from PRESETS; Deep's now says the search's build was topped up on independent outage draws.
+
+Two checks that read Deep, re-pinned with their causes (user, 18 Oct 2026, messages 199 and 200 (4); build 2026-10-17i):
+
+- validate_consistency 'new-build capital matches the hand computation': R0.965 to R0.718/kWh at 2035, tolerance 0.06
+  unchanged. Measured on 17i, each in a fresh page: main's Deep R1.009, main's Deep with tracking solar R0.997, the new Deep
+  R0.718. The whole move is the new build (less wind, solar, lithium and iron-air); tracking alone moves it R0.012.
+- validate_consistency 'the shadow retail price responds to a decarbonisation scenario' (more than 20%): now run on
+  Fossil-free 2040, threshold and the same-direction check unchanged, for the cause in the next section. Deep stays covered by
+  the capital check.
+
+The regional optimiser and the corridor-slip panel with a tracking-solar preset (user, 18 Oct 2026, message 200 (1)): the
+regional LP has no tracking profile, so on Deep or Fossil-free both tools now say 'The regional model does not include tracking
+solar yet, and this scenario uses it. Use the national model.' instead of stopping with an error the user could not act on
+(tracking is a preset key, not a control). validate_solve tests the regional LP on Deep with tracking off. Known limitation;
+regional tracking after the note (TODO 14fz).
+
+### The shadow retail price and system cost move differently by design: on the re-searched Deep decarbonisation 2035 the panel rises 14.6% and system cost 2.7%, because the panel carries sunk and stranded capital and the network over fewer kWh sold, and at its default year the 2026 IPP contracts (build 2026-10-17i; user, 18 Oct 2026, message 199)
+
+Settings. Build 2026-10-17i, page defaults against each preset, one simulate on the default profiles, each variant in a fresh
+page (an earlier probe that restored the state with Object.assign carried the preset's extra keys into the next variant and
+is discarded); retailHourly() at the panel's year control, default 2026, and lastRes.costDecomposition. Scratch
+probe_decomp.js.
+
+| | Today 2026 | main's Deep | new Deep | Fossil-free 2040 |
+|---|---|---|---|---|
+| Shadow retail price, R/kWh (panel year 2026) | 3.785 | 4.872 | 4.338 | 5.652 |
+| System cost, R/MWh (scenario year) | 1,101.0 | 1,411.3 | 1,130.7 | 1,492.9 |
+| Retail: Fuel, R/kWh | 0.551 | 0.080 | 0.094 | 0.041 |
+| Retail: Carbon, R/kWh | 0.037 | 0.003 | 0.004 | 0.000 |
+| Retail: Existing opex, R/kWh | 0.260 | 0.124 | 0.124 | 0.058 |
+| Retail: Existing capital, R/kWh | 0.307 | 0.320 | 0.320 | 0.339 |
+| Retail: Stranded coal capital, R/kWh | 0.000 | 0.096 | 0.096 | 0.248 |
+| Retail: IPP contracts, R/kWh | 0.255 | 0.237 | 0.255 | 0.233 |
+| Retail: Network, R/kWh | 0.269 | 0.347 | 0.332 | 0.371 |
+| Retail: New-build capital, R/kWh | 0.000 | 1.199 | 0.843 | 1.700 |
+| Retail: New grid, R/kWh | 0.000 | 0.066 | 0.051 | 0.074 |
+| Retail: Decommissioning, R/kWh | 0.000 | 0.017 | 0.017 | 0.027 |
+| Retail: Kept fixed items, R/kWh | 0.096 | 0.096 | 0.096 | 0.096 |
+| Retail: Imports, R/kWh | 0.041 | 0.041 | 0.041 | 0.041 |
+| Retail: kWh sold, TWh | 194.2 | 185.8 | 185.8 | 175.5 |
+| System: Energy (fuel), R/MWh | 547.0 | 78.8 | 92.0 | 39.9 |
+| System: Fixed O&M, R/MWh | 306.0 | 150.5 | 149.9 | 69.7 |
+| System: REIPPPP contracts, R/MWh | 194.8 | 95.7 | 104.8 | 45.6 |
+| System: Other IPP contracts, R/MWh | 58.6 | 20.0 | 19.9 | 21.0 |
+| System: New generation capital, R/MWh | 0.0 | 1,043.7 | 754.5 | 1,292.1 |
+| System: New transmission, R/MWh | 0.0 | 64.3 | 49.7 | 71.7 |
+| System: Carbon, R/MWh | 37.1 | 3.2 | 3.9 | 0.0 |
+| System: Export revenue, R/MWh | -44.7 | -46.2 | -46.0 | -48.5 |
+
+Moves against today: main's Deep, retail +R1.087/kWh (+28.7%) and system cost +R0.310/kWh (+28.2%); the new Deep +R0.553
+(+14.6%) and +R0.030 (+2.7%); Fossil-free +R1.867 (+49.4%) and +R0.392 (+35.6%). The near-equal percentages on main's Deep
+were a ratio of the two bases (the retail price is about 3.4 times the system cost), not a property: in every case the panel
+rises by several times as much in rand. What the panel carries and system cost does not, on the new Deep at cost level: coal's
+stranded and existing capital (+R0.110/kWh; system cost leaves sunk capital out by design, RESULTS 'Sunk capital stays out');
+the network over 4.3% fewer kWh sold (+R0.063; rooftop takes sales); IPP contracts at their 2026 payments (unchanged) where
+the 2035 engine has retired part of them (REIPPPP -R0.090, other IPP -R0.039); new-build capital at 2026 prices per kWh sold
+(R0.894 with the new grid) against the engine's 2035 capital per MWh served (R0.804). Fuel (-R0.456 against -R0.455) and
+fixed O&M (-R0.136 against -R0.156) fall alike. With the panel set to 2035 the IPP term matches and the gap narrows: retail
+R3.329 to R3.674 (+10.4%) against system cost +2.7%. Not a bug: two different measures. The new Deep's system cost barely
+rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 

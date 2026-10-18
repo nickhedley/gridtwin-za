@@ -103,6 +103,9 @@ const check = (name, ok, detail) => {
   run(`try {
     if (typeof PRESETS !== 'undefined' && PRESETS[${JSON.stringify(process.env.PRESET || 'Deep decarbonisation 2035')}])
       applyState(PRESETS[${JSON.stringify(process.env.PRESET || 'Deep decarbonisation 2035')}]);
+    // Known limitation (user, 18 Oct 2026, message 200 (1); TODO): the regional LP has no tracking-solar profile, and the
+    // page says so instead of building it. The regional LP is tested on the preset with tracking off.
+    state.bldPvTracking = 0;
     const rate = BLD_PACE[${JSON.stringify(PACE)}] || BLD_PACE.masterplan;
     const built = bldBuildRegionalLP({ growth:0.05, eaf:65, rate, carbonCap:null, state:state });
     window.__lp = built.lp;

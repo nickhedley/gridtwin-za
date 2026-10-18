@@ -10368,6 +10368,9 @@ function bldNetAnnuity(tech, year){
   return Math.max(0, gross - pay * (BLD_DERATE[tech] ?? 0));
 }
 // The cost entry a technology is built at: new utility solar takes the tracker line when bldPvTracking is on.
+// The regional model has no tracking-solar profile yet (user, 18 Oct 2026, message 200 (1): say so now, build it after the
+// note, TODO). The two tools that build the regional LP check this first and point to the national model.
+const BLD_REGIONAL_TRK_MSG = 'The regional model does not include tracking solar yet, and this scenario uses it. Use the national model.';
 function bldPvTrackingOn(){
   return typeof state !== 'undefined' && ((state.bldPvTracking ?? FIXED.bldPvTracking) | 0) > 0;
 }
@@ -11954,6 +11957,7 @@ async function runBuildOpt(){
     state:  state,
   };
   const useRegional = document.getElementById('bldRegional').value === '1';
+  if (useRegional && bldPvTrackingOn()){ st.textContent = BLD_REGIONAL_TRK_MSG; bldRunning = false; btn.disabled = false; btn.style.opacity = 1; return; }
   let built;
   if (useRegional){
     st.textContent = 'Loading regional data\u2026';
@@ -14616,6 +14620,7 @@ async function runDelayAnalysis(){
   const st  = document.getElementById('delayStatus');
   const slip = parseInt(document.getElementById('delaySlip').value, 10);
   if (!(await bldLoadTdp())){ st.textContent = 'TDP project data not loaded.'; return; }
+  if (bldPvTrackingOn()){ st.textContent = BLD_REGIONAL_TRK_MSG; return; }
   btn.disabled = true; btn.style.opacity = 0.6;
   st.textContent = 'Solving on-schedule case\u2026';
   await new Promise(r => setTimeout(r, 20));
