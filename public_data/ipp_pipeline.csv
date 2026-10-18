@@ -1,6 +1,6 @@
 # GridTwin ZA - IPP pipeline: allocated, unallocated and terminated
 # CC BY 4.0 - attribution required. gridtwinza.org
-# source fingerprint: gtza-06192db1e33eb439
+# source fingerprint: gtza-7880d7196cf8e96c
 # NOTE: terminated projects sit OUTSIDE the procured identity - IPP Office capacity
 # procured already excludes anything that never reached financial close.
 # NOTE: allocated + unallocated = 7,046 MW, matching the source reconciliation.

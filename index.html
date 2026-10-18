@@ -5400,7 +5400,11 @@ const FIXED = {
   //           wind inside hybrid projects is reported ONLY in Eskom's "Hybrid"
   //           line, never decomposed into the Wind line - which also confirms
   //           hybridMW cannot double-count against windMW or pvUtilityMW.
-  // = 4,612 MW. Three published sources, disjoint universes. The previous 4,458
+  // +    69 MW Msenge Emoyeni, private wheeled wind in commercial operation by
+  //           10 Oct 2024 (Sasol release), before the PFL monitor's window; added
+  //           17 Oct 2026 for central c5f (messages 190 (1) and 196 (2)) through
+  //           build_capacity.py's PRE2026_PRIVATE list.
+  // = 4,681 MW. Published sources, disjoint universes. The previous 4,458
   // was 3,600 + 858, where the 3,600 baseline had muddled provenance and the
   // 858 mixed grid-supply with wheeled - a figure that could not be decomposed.
   // validate_capacity.js asserts this equality; if you change windMW by hand it
@@ -5436,7 +5440,7 @@ const FIXED = {
   //
   // See nodal/private_pending_h2_2026.json. When the next PFL monitor lands, every megawatt
   // added to by_source.private must be SUBTRACTED from this constant in the same commit.
-  ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3271, rooftopMW:8942.1, cspMW:600,
+  ocgtDieselMW:3400, windMW:4681, pvUtilityMW:3271, rooftopMW:8942.1, cspMW:600,
   // Fixed O&M for the existing fleet, R/kW-yr. Added 18 Sep 2026; before that no
   // system-cost aggregate carried any operating cost for plant already built, so
   // retiring coal appeared to save only fuel and carbon.
@@ -9987,7 +9991,9 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // are the twelve-year means of the new-build profiles (bldTwelveYearMeans(1, true): modern-turbine wind uncorrected, tracking
 // solar), measured 16 Oct 2026 and held here because the weather years load after the sliders are built; validate_weather
 // recomputes them. They feed the LCOE chart and the replacement-cost figure, not dispatch or the build optimiser.
-const NEW_WIND_CF_12Y = 0.42507, NEW_PVTRK_CF_12Y = 0.28673;
+// Wind re-measured 17 Oct 2026 (build 2026-10-17e): 0.42507 to 0.42499, after Msenge Emoyeni's 69 MW reweighted the national
+// modern-wind map (nodal/profiles_wind_modern_map.json).
+const NEW_WIND_CF_12Y = 0.42499, NEW_PVTRK_CF_12Y = 0.28673;
 // The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
 BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
 BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };
@@ -10012,9 +10018,10 @@ FIXED.lcoePv = Math.round(bldLcoeAnchor(_anchorKey('pvtrk'), 'pv', 'pv', NEW_PVT
 //    NEW_PVTRK_CF_12Y is; validate_weather recomputes it) times the rooftop derate, which is what the engine's rooftop produces.
 //  - lithium: one full cycle a day, 365 a year, so a 4-hour kW discharges 4 x 365 kWh a year. Per MWh discharged; the charging
 //    energy is not costed. Central capex (BLD_COST.batt) and its fixed O&M share.
-//  - diesel open-cycle: a 10% capacity factor, Lazard's long-standing assumption for gas peaking plant in its levelised cost
-//    studies (newer editions 15-20%), on new open-cycle's central capex (bldOcgtCentralCost) and fixed O&M, plus fuel, variable
-//    O&M and carbon at the compliance rate, as the CCGT readout (dieselSrmcR).
+//  - diesel open-cycle: a 10% capacity factor, the bottom of Lazard's 15%-10% range for new-build gas peaking (Lazard, Levelized
+//    Cost of Energy+, June 2025, Appendix A, LCOE v18.0 key assumptions, p.37; read 18 Oct 2026, message 199 (1)). An international
+//    gas-peaker reference, not a South African diesel figure. On new open-cycle's central capex (bldOcgtCentralCost) and fixed
+//    O&M, plus fuel, variable O&M and carbon at the compliance rate, as the CCGT readout (dieselSrmcR).
 // c5e's 2030 engine check (pathway_c5e.json, TF=0.5, twelve weather years x 20 draws) is held for the captions only: lithium
 // 81.141 full cycles a year (1.142 TWh from 14,074 MWh), the diesel fleet 2.8529% (0.85 TWh from 3,400 MW), new wind 41.74%
 // (30.0 TWh from 8,206 MW); RESULTS 'LCOE anchors on reference parameters' has the run-based costs. Vanadium flow, iron-air,
@@ -13161,7 +13168,7 @@ function renderExternalComparison(){
   // CSIR Least-cost 2030, at CSIR's OWN assumptions - Table 1 of the report:
   // 285 TWh demand, 65% EAF, and the low end of their reported capacity range.
   const sc = { ...state,
-    newPvMW: 15000 - 3271, newWindMW: 20000 - 4612,
+    newPvMW: 15000 - FIXED.pvUtilityMW, newWindMW: 20000 - FIXED.windMW,   // CSIR's 15 GW of solar and 20 GW of wind in total
     demandGrowthPct: 30, coalEAFPct: 65 };
   let r;
   try { r = simulate(sc, PROFILES); } catch(e){ return; }
@@ -17974,7 +17981,7 @@ const SLIDERS=[
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R2.00/kWh \u2013 about 60&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the FY2026 reference of $18.50.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Typed; no source recorded (in the model since 1 Oct 2026). Wide range; SMRs higher.'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
-  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:20000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': new diesel open-cycle\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.ocgd+' years at 8% real, at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor (Lazard\u2019s reference for peaking plant), plus fuel, variable O&M and carbon. Floor is diesel\u2019s own running cost, R'+((dieselSrmcR(FIXED))/1000).toFixed(2)+'/kWh. c5e 2030: '+(C5E_2030_DSL_CF*100).toFixed(1)+'&#37;, R'+((bldLcoeDieselAt(C5E_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
+  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:20000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': new diesel open-cycle\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.ocgd+' years at 8% real, at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor, the bottom of Lazard\u2019s range for new gas peaking plant (Levelized Cost of Energy+, June 2025): an international gas-peaker reference, not South African diesel. Plus fuel, variable O&M and carbon. Floor is diesel\u2019s own running cost, R'+((dieselSrmcR(FIXED))/1000).toFixed(2)+'/kWh. c5e 2030: '+(C5E_2030_DSL_CF*100).toFixed(1)+'&#37;, R'+((bldLcoeDieselAt(C5E_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
   {endsub:true},
   {grp:'Storage and flexibility'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
@@ -19694,7 +19701,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-18c';
+const BUILD_STAMP = '2026-10-18e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
