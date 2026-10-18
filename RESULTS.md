@@ -4660,6 +4660,23 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
+
+Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
+script rerun on its own: findings 41/42, consistency 81/82, benchmarks 28/29, external 7/8, eng5 5/6, the same as in the suite. No check below changed status in message 203 or 205.
+
+| Check (script) | Value on 18i | Cause | First failed |
+|---|---|---|---|
+| 'EDMSA Scenario A CO2 2035 within 22 Mt of the published figure' (validate_external) | 83.6 against 124 Mt, gap -40.4 | Partly traced: the model's 2035 coal burn on EDMSA's build sits below EDMSA's; RESULTS 'EDMSA Scenario A CO2 2035' | Before the repository's history: already failing on its first build, 2026-10-01a |
+| 'with gas, 20 GW of 100-hour iron-air barely moves July' (validate_findings) | July gas 788 to 688 GWh, 12.7% | July gas moves 12.7% against a near-zero claim; sensitive to how much renewable energy is delivered; RESULTS 'Long-duration storage in a system that has gas' | Failing on 13h, the earliest suite record that names it |
+| 'high-season off-peak is the cheapest block modelled' (validate_consistency) | cheapest by mean: low-season off-peak | By mean, low-season off-peak is cheapest since the 14dr outage draw; medians within 1%. The NERSA-note premise in its message is contradicted by the 2026/27 booklet (message 205 (7)); TODO 14dy (replace after the note) and 14gd | 14d |
+| 'peakerSeasonRatio is physically plausible' (validate_benchmarks) | 1.7x | The model's Jan-Mar to Jul-Sep peaker output ratio sits outside 2.15-8.6x against Eskom's 4.3x in 2025: 9.3x on 14a (too high), 1.7-1.8x since (too low); not tuned, the check warns against fitting peaker output | 14a |
+| eng5 check 6, 'storage cuts unserved' | unserved 0.05, 0.04, 0.04, 0.04 GWh as storage rises: flat, not falling | Intended behaviour (user, 16 Oct 2026, message 141): since 15e spare gas charges the existing stores ahead of a forecast shortfall, so 30 GW of new batteries cut unserved 8.3% against the check's 10%; redesign after the note, TODO 14ew | Between 15a (6/6) and 15f (5/6); 15e by cause |
+
+Fixed during 205, not failing on 18i: validate_structure's orphan check (retailSalesMWh, which lost its caller with
+retailBaseSalesMWh on 18f; retailComponents now calls it) and validate_lint's undefined touBlockOf (the export credit's first
+draft on 18h; it now reads window.touBlockOf). lint and solve pass.
+
 ### Message 205 (3) to (7): NERSA's lines moved to 2026/27, today R4.224/kWh against Homepower's R4.151 (+1.7%); 56% of the sales-base uplift is the export gap; deemed energy on BW1-6 at each window's price; the cap R9.01 on a matched VAT basis; the off-peak check's message corrected (build 2026-10-18h; user, 18 Oct 2026, messages 204 and 205)
 
 Settings. Build 2026-10-18h (claude/retail-audit), presets through applyState, one simulate on the default profiles, retail year

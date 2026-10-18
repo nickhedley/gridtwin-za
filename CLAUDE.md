@@ -40,30 +40,21 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (17 Oct 2026, build 2026-10-17a, branch claude/tou-171 on main a9691ab, ESK19679.csv present, preset searches
-running beside it): 820/825, node checks 733/738 plus audit 87/87; eng5 5/6. The same on 17b (branch claude/mdr-cap rebased on main 75ccd5b; validate_solve's headroom check rerun
-alone after a time limit under load, RESULTS 'Avon and Dedisa's must-run in the build LP capped'). 17a moves the time-of-use windows to Eskom's
-2025/26 schedule and splits validate_consistency's Megaflex median check in two, both passing (message 183 (1); RESULTS
-'Time-of-use windows on Eskom's 2025/26 schedule'). On 16h (central c5e, branch claude/c5e): 819/824, node checks 732/737 plus
-audit 87/87; eng5 5/6. The same on 16g (branch claude/pack-c5d on main 8f10c8e) and 16e
-(main aa23aa5): 16g adds the s_tariffcf flag, off, and 16h makes 'run' the default; neither changes a check's status (RESULTS
-'Build 2026-10-16h'). 16e added one check, passing (validate_consistency
-'CCS at the default share cuts emissions part of the way', message 157 (3)). On build 16c (main e6da3eb, nothing else running) it
-was 818/823; on 15f 816/821; 16b added two checks, both passing (the LICENSE list, the LCOE anchors' capacity factors). 815/821 and eng5 6/6 on build 15d, branch claude/comply. eng5's one failure, check 6 'storage cuts
-unserved', is intended behaviour (user, 16 Oct 2026, message 141): since build 15e spare gas charges the existing stores ahead of
-a forecast shortfall (laGasCharge), which cuts unserved energy with no new batteries by 12%, so 30 GW of new batteries cut it
-8.3% against the check's 10% (RESULTS 'New central c5d'). The check is unchanged; its redesign waits for after the note (TODO
-14ew). Build 16a measured the same counts. The five known failures, by check name, each with its cause in RESULTS ('Scenario switch and load timing' lists them; values on
-15f in 'Build 2026-10-15f: suite and every check that changed status'):
+Expected (18 Oct 2026, build 2026-10-18i, branch claude/retail-audit, ESK19679.csv present, the c5f chain running beside it,
+each failing script rerun alone): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. The known failures, each with its
+cause and the build it first failed on in RESULTS 'Known failures on build 2026-10-18i' (message 205 (8)):
 
-1. validate_external: 'EDMSA Scenario A CO2 2035 within 22 Mt of the published figure' (cause only partly traced, RESULTS
-   'EDMSA Scenario A CO2 2035').
-2. validate_findings: 'with gas, 20 GW of 100-hour iron-air barely moves July'.
-3. validate_findings: 'preset curtailment sits within its weather band' (waits on the preset re-search, TODO 14ef).
-4. validate_consistency: 'high-season off-peak is the cheapest block modelled' (the Megaflex block).
-5. validate_benchmarks: 'peakerSeasonRatio is physically plausible'.
+1. validate_external: 'EDMSA Scenario A CO2 2035 within 22 Mt of the published figure' (cause partly traced; failing on the
+   repository's first build, 2026-10-01a).
+2. validate_findings: 'with gas, 20 GW of 100-hour iron-air barely moves July' (failing on 13h).
+3. validate_consistency: 'high-season off-peak is the cheapest block modelled' (from 14d; the user's decision to replace it
+   after the note, TODO 14dy; the NERSA-note premise in its message is contradicted by the 2026/27 booklet, TODO 14gd).
+4. validate_benchmarks: 'peakerSeasonRatio is physically plausible' (from 14a).
+5. eng5 check 6, 'storage cuts unserved': intended behaviour (user, 16 Oct 2026, message 141): since build 15e spare gas charges
+   the existing stores ahead of a forecast shortfall, so 30 GW of new batteries cut unserved 8.3% against the check's 10%; its
+   redesign waits for after the note (TODO 14ew).
 
-Pumped-storage output passes from 15f (the
+The preset curtailment band passes from the presets build (17i, TODO 14ef). Pumped-storage output passes from 15f (the
 storage fix). 'The build stamp is not stale' (validate_structure)
 fails whenever BUILD_STAMP is older than the day the suite runs. Without ESK19679.csv, validate_weather adds a
 failure (the missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind check.
