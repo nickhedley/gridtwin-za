@@ -4677,8 +4677,9 @@ eng5 check 6 measured both ways (user, 18 Oct 2026, message 206 (3); scratch p20
 at coal EAF 48%, mean of eight outage draws, 0, 10, 20 and 30 GW of new batteries): with spare gas pre-charging the existing
 stores (laGasCharge 1, the default since 15e) unserved goes 47.3, 43.4, 43.4, 43.4 GWh, an 8.3% cut against the check's 10%; on
 the earlier rule (laGasCharge 0) 53.3, 45.9, 45.9, 45.9 GWh, 13.9%. Pre-charging alone cuts 53.3 to 47.3 GWh (11.3%). Both are
-flat beyond 10 GW. Proposed correction, after the note (TODO 14gm): the monotonic part on the default rule, the 10% magnitude on
-the earlier rule.
+flat beyond 10 GW. A correction testing the 10% on the earlier rule was proposed and declined (user, message 207 (2)): it would test
+a setting the model no longer runs, so the check stays as it is until after the note (TODO 14gm). Why unserved energy stops falling
+beyond about 10 GW under both rules is to be explained before any battery-reliability claim (message 207 (3)).
 
 Fixed during 205, not failing on 18i: validate_structure's orphan check (retailSalesMWh, which lost its caller with
 retailBaseSalesMWh on 18f; retailComponents now calls it) and validate_lint's undefined touBlockOf (the export credit's first
