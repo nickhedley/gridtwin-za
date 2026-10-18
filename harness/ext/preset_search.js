@@ -12,7 +12,9 @@
 // Run from harness/:  PRESET='Deep decarbonisation 2035' DRAWS=2 CONFIRM=40 OUT=ext/search_deep.json node ext/preset_search.js
 const fs = require('fs'), path = require('path'); const { JSDOM } = require(process.cwd() + '/node_modules/jsdom');
 const ROOT = 'testroot', PRESET = process.env.PRESET || 'Deep decarbonisation 2035', OUT = process.env.OUT || 'ext/preset_search.json';
-const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), SEED = 20260816;
+// SEED (17 Oct 2026, message 195 (1)): the outage draws' base. 20260816, the build loop's own draws, unless set; 71830529 gives the
+// independent draws pathcheck.js and the preset check use.
+const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), SEED = +(process.env.SEED || 20260816);
 (async () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, url: 'file://' + path.resolve(ROOT) + '/index.html',
@@ -29,6 +31,10 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   // The preset applied the way the page applies it (applyState also sets derived fields), as pathcheck.js does.
   w.eval(`applyState(PRESETS[${JSON.stringify(PRESET)}])`);
   if (process.env.BATT_CASE) w.eval(`state.bldBattCase=${JSON.stringify(process.env.BATT_CASE)};`);
+  // PVTRK=1 (user, 16 Oct 2026, message 160 (2)): new utility solar on the tracking profile at tracker capex, as the central
+  // (c5d, c5e); the searched presets carry bldPvTracking 1.
+  if (process.env.PVTRK !== undefined) w.eval(`state.bldPvTracking=${+process.env.PVTRK};`);
+  console.log('solar', w.eval('bldPvTrackingOn()') ? 'tracking' : 'fixed-tilt', 'R/kW', Math.round(w.eval('bldCostEntry("pv").c2026')), 'basis', w.eval('bldTariffCfBasis()'));
   if (process.env.WIND_CORR) w.eval(`state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`);   // new-wind correction case
   console.log('wind', w.eval('bldWindModernOn()') ? 'modern' : 'legacy', 'R/kW', Math.round(w.eval('bldCostEntry("wind").c2026')), 'correction', w.eval('windNewCorr(state.bldWindCorr ?? FIXED.bldWindCorr)'));
   console.log('battery case', w.eval('bldBattCase()'), 'R/kW', Math.round(w.eval('bldCostEntry("batt").c2026')));
@@ -43,14 +49,15 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   // Mean shed (GWh), mean system cost (R bn) and mean served energy (TWh) over years x draws.
   const evaluate = (b, draws) => {
     const key = JSON.stringify(b) + '|' + draws; if (cache.has(key)) return cache.get(key);
-    const r = JSON.parse(w.eval(`(function(){ let sh=0, c=0, d=0, n=0;
+    const r = JSON.parse(w.eval(`(function(){ let sh=0, c=0, d=0, cu=0, n=0;
       for (const wy of ${JSON.stringify(years)}){ const nat = weatherYearNational(String(wy));
         for (let k = 0; k < ${draws}; k++){
           const x = simulate({ ...state, ...${JSON.stringify(held)}, ...${JSON.stringify(b)}, newBattHours: 12,
             outageSeed: ${SEED} + k*104729 + wy*7919 }, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
-          let dem = 0; for (let i = 0; i < x.loadS.length; i++) dem += x.loadS[i];
+          let dem = 0, chg = 0; for (let i = 0; i < x.loadS.length; i++){ dem += x.loadS[i]; chg += (x.chargePsMW ? x.chargePsMW[i] || 0 : 0) + (x.chargeBattMW ? x.chargeBattMW[i] || 0 : 0); }
+          cu += (dem - chg) / 1e6;
           sh += x.E.unserved / 1e3; c += x.systemCostR / 1e9; d += dem / 1e6; n++; } }
-      return JSON.stringify({ shed: sh/n, cost: c/n, served: d/n }); })()`));
+      return JSON.stringify({ shed: sh/n, cost: c/n, served: d/n, cust: cu/n }); })()`));
     cache.set(key, r); return r;
   };
   // START=<pathway json>: the build optimiser's proposal for the preset's year (cumulative build to the final year) as the
@@ -68,8 +75,10 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
     console.log('START from', process.env.START, JSON.stringify(base), 'held', JSON.stringify(held), 'proposal lithium', cum.batt, 'MW /', cum.battMWh, 'MWh');
   }
   const t0 = Date.now(), start = evaluate(base, DRAWS);
-  const target = 0.5 * 0.00002 * start.served * 1e3;   // GWh: half of 0.002% of served energy, fixed at the start
-  const log = [{ step: 'start', build: base, ...start }];
+  // Target on customer demand (served load less storage charging), the basis decided on 12 Oct 2026, as pathcheck.js; the 4 and
+  // 7 Oct searches used served energy. CUST=0 restores the served basis.
+  const target = 0.5 * 0.00002 * (process.env.CUST === '0' ? start.served : start.cust) * 1e3;   // GWh, fixed at the start
+  let log = [{ step: 'start', build: base, ...start }];
   // TRADES=1: a robustness check outside the greedy's fixed moves. Lithium cut 1 to 4 GW, made up with wind, solar
   // or iron-air in varying amounts; prints every trade that meets the target and is cheaper than the start.
   if (process.env.TRADES){
@@ -84,7 +93,15 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   }
   if (process.env.PROBE){ console.log('PROBE', JSON.stringify(start), 'target', target.toFixed(2)); process.exit(0); }
   console.log(stamp, PRESET, 'start', JSON.stringify(base), JSON.stringify(start), 'target', target.toFixed(2), 'GWh', ((Date.now() - t0) / 1000).toFixed(0) + ' s/eval');
-  let cur = { ...base }, curR = start;
+  let cur = { ...base }, curR = start, si0 = 0;
+  // CONTINUE=1 (17 Oct 2026): carry on from the last move recorded in OUT on the same build, preset and target, after a restart.
+  if (process.env.CONTINUE && fs.existsSync(OUT)){
+    const R0 = JSON.parse(fs.readFileSync(OUT, 'utf8'));
+    if (R0.stamp === stamp && R0.preset === PRESET && Math.abs(R0.target - target) < 1e-9 && R0.log && R0.log.length > 1){
+      const L = R0.log[R0.log.length - 1]; log = R0.log; cur = { ...L.build }; curR = { shed: L.shed, cost: L.cost, served: L.served, cust: L.cust }; si0 = L.stepIndex || 0;
+      console.log('CONTINUE from move', log.length - 1, 'step index', si0, JSON.stringify(cur), curR.cost.toFixed(1));
+    }
+  }
   const ok = (b) => TECH.every(t => b[t.k] >= 0 && (!t.cap || b[t.k] <= t.cap));
   // TOP-UP ROUNDS (7 Oct 2026, extends the 4 Oct method, which tested one round only and could end with no build):
   // each round tests every technology up by its smallest step on the CONFIRM runs; the cheapest that meets the target
@@ -104,6 +121,16 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
     }
     return null;
   };
+  // TOPUP_ONLY=1 (17 Oct 2026, message 195 (1)): no search. Score the preset as it stands on CONFIRM draws and, if it misses the
+  // target, run the top-up rounds above on the same runs. With SEED=71830529 and DRAWS=CONFIRM=20 these are the preset check's runs.
+  if (process.env.TOPUP_ONLY){
+    const c = evaluate(base, CONFIRM), out = { stamp, preset: PRESET, seed: SEED, draws: CONFIRM, target, start: { build: base, ...c }, log };
+    console.log('as set,', CONFIRM, 'draws, seed', SEED, ': shed', c.shed.toFixed(2), 'cost', c.cost.toFixed(1), 'target', target.toFixed(2));
+    out.final = c.shed > target ? topUp(base, c, out) : { build: base, ...c };
+    fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
+    console.log('done', JSON.stringify(out.final), ((Date.now() - t0) / 60000).toFixed(0) + ' min');
+    process.exit(0);
+  }
   // RESUME=<output json> (7 Oct 2026): skip the search; take its searched build and confirm result, run the top-ups.
   if (process.env.RESUME){
     const R = JSON.parse(fs.readFileSync(process.env.RESUME, 'utf8'));
@@ -116,7 +143,7 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
     console.log('done', JSON.stringify(out.final), ((Date.now() - t0) / 60000).toFixed(0) + ' min');
     process.exit(0);
   }
-  for (let si = 0; si < 3; si++){
+  for (let si = si0; si < 3; si++){
     for (;;){
       const cands = [];
       for (const t of TECH){ const s = t.steps[si];

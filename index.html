@@ -10375,6 +10375,9 @@ function bldNetAnnuity(tech, year){
   return Math.max(0, gross - pay * (BLD_DERATE[tech] ?? 0));
 }
 // The cost entry a technology is built at: new utility solar takes the tracker line when bldPvTracking is on.
+// The regional model has no tracking-solar profile yet (user, 18 Oct 2026, message 200 (1): say so now, build it after the
+// note, TODO). The two tools that build the regional LP check this first and point to the national model.
+const BLD_REGIONAL_TRK_MSG = 'The regional model does not include tracking solar yet, and this scenario uses it. Use the national model.';
 function bldPvTrackingOn(){
   return typeof state !== 'undefined' && ((state.bldPvTracking ?? FIXED.bldPvTracking) | 0) > 0;
 }
@@ -10441,6 +10444,16 @@ function bldCoalRawMW(year){
 }
 function bldCoalScale(){ return FIXED.coalInstalledMW / bldCoalRawMW(2026); }
 function bldCoalMW(year){ return bldCoalRawMW(year) * bldCoalScale(); }
+// IRP 2025 FIGURE 3 COAL (user, 17 Oct 2026, message 185 (4)): the per-unit dates the pathway reads as COAL_DATES
+// (harness/coal_dates_irp2025.json, Nick Hedley's reading of plan p.12, 13 Oct 2026, 50-year line, about +-250 MW), loaded at
+// start-up (P_FIG3) so the IRP presets read their coal retirement from them rather than typed values (rule 3). Retired by the
+// start of a year: coal installed less coal standing, with the same summation and scaling as bldCoalMW.
+let IRP_FIG3_UNIT_DATES = null;
+function irpFig3CoalRetiredMW(year){
+  if (!IRP_FIG3_UNIT_DATES) throw new Error('IRP 2025 Figure 3 coal dates not loaded (harness/coal_dates_irp2025.json)');
+  const keep = BLD_COAL_UNIT_DATES; BLD_COAL_UNIT_DATES = IRP_FIG3_UNIT_DATES;
+  try { return Math.round(FIXED.coalInstalledMW - bldCoalMW(year)); } finally { BLD_COAL_UNIT_DATES = keep; }
+}
 
 function bldRates(){
   const out = {};
@@ -11951,6 +11964,7 @@ async function runBuildOpt(){
     state:  state,
   };
   const useRegional = document.getElementById('bldRegional').value === '1';
+  if (useRegional && bldPvTrackingOn()){ st.textContent = BLD_REGIONAL_TRK_MSG; bldRunning = false; btn.disabled = false; btn.style.opacity = 1; return; }
   let built;
   if (useRegional){
     st.textContent = 'Loading regional data\u2026';
@@ -13939,7 +13953,22 @@ function simulateTwoPass(st, PROF, opts){
 // SOLAR TRACKING PROFILES (TODO 14aw). bldSolarTrk holds the regional tracking series; SOLAR_TRK_G the national
 // tracking/fixed ratio by month and hour (capacity-weighted over regions and the fetched years), which derives a
 // tracking twin for a profile that has none of its own (the default single-year PROFILES.solar).
-let bldSolarTrk = null, SOLAR_TRK_G = null;
+let bldSolarTrk = null, SOLAR_TRK_G = null, SOLAR_TRK_ERR = null;
+// The national map arrives at start-up from nodal/profiles_solar_tracking_map.json (build_solar_tracking.py, as for the
+// modern-wind map), so a preset with tracking solar runs before the weather years load (18 Oct 2026, build 2026-10-17i);
+// when the full files load, bldBuildSolarTrkRatio recomputes it and the page stops if the two disagree.
+function setSolarTrkMap(G, source){
+  if (!Array.isArray(G) || G.length !== 12 || G.some(r => !r || r.length !== 24)) throw new Error('solar tracking map from ' + source + ' is not 12 months x 24 hours');
+  if (SOLAR_TRK_G){
+    let d = 0;
+    for (let m = 0; m < 12; m++) for (let hh = 0; hh < 24; hh++) d = Math.max(d, Math.abs(G[m][hh] - SOLAR_TRK_G[m][hh]) / Math.max(1e-9, Math.abs(SOLAR_TRK_G[m][hh])));
+    if (d > 1e-9){ SOLAR_TRK_G = null;
+      SOLAR_TRK_ERR = 'solar tracking map disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun build_solar_tracking.py with MAP_ONLY=1';
+      throw new Error(SOLAR_TRK_ERR); }
+    return;
+  }
+  SOLAR_TRK_G = G.map(r => Array.from(r));
+}
 const _MSTART_H = [0,31,59,90,120,151,181,212,243,273,304,334].map(d => d * 24);
 function hourMonth(h){ let m = 11; while (m > 0 && h < _MSTART_H[m]) m--; return m; }
 function bldBuildSolarTrkRatio(){
@@ -13953,7 +13982,7 @@ function bldBuildSolarTrkRatio(){
       const m = hourMonth(h); num[m][h % 24] += w * T[y][h] / st; den[m][h % 24] += w * F[y][h] / sc;
     }
   }
-  SOLAR_TRK_G = num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1));
+  setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1)), 'the series');
 }
 // MODERN-TURBINE WIND (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
 // current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
@@ -14028,7 +14057,7 @@ function windModOf(wind){
 // The tracking twin of a fixed-tilt solar profile: its own if built with one, else derived from SOLAR_TRK_G.
 function solarTrkOf(solar){
   if (solar.trk) return solar.trk;
-  if (!SOLAR_TRK_G) throw new Error('solar tracking is on but nodal/profiles_solar_tracking.json is not loaded');
+  if (!SOLAR_TRK_G) throw new Error(SOLAR_TRK_ERR || 'solar tracking is on but nodal/profiles_solar_tracking_map.json is not loaded');
   const t = new Float64Array(solar.length);
   for (let h = 0; h < solar.length; h++) t[h] = Math.min(1, solar[h] * SOLAR_TRK_G[hourMonth(h % HOURS)][h % 24]);
   solar.trk = t; return t;
@@ -14598,6 +14627,7 @@ async function runDelayAnalysis(){
   const st  = document.getElementById('delayStatus');
   const slip = parseInt(document.getElementById('delaySlip').value, 10);
   if (!(await bldLoadTdp())){ st.textContent = 'TDP project data not loaded.'; return; }
+  if (bldPvTrackingOn()){ st.textContent = BLD_REGIONAL_TRK_MSG; return; }
   btn.disabled = true; btn.style.opacity = 0.6;
   st.textContent = 'Solving on-schedule case\u2026';
   await new Promise(r => setTimeout(r, 20));
@@ -18070,7 +18100,7 @@ const PRESETS={
   // national programme rather than a marginal one.
   // Table 1 build (see IRP's 2030 targets) with 40% of the new wind and solar unable to connect: wind 0.6 x 7,341,
   // solar 0.6 x 10,313; storage as planned. 7 Oct 2026.
-  'IRP\'s 2030 targets, grid delayed':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:4405,newPvMW:6188,
+  'IRP\'s 2030 targets, grid delayed':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),get coalDecomMW(){ return irpFig3CoalRetiredMW(2030); },newWindMW:4405,newPvMW:6188,
                 newRooftopMW:4500,newBattMW:3724,newBattHours:4,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,
                 congestionCurtailPct:10,scenarioYear:2030},
   // IRP 2025 (gazetted 28 Oct 2025), 2030 targets. Demand and EAF re-derived 22 Sep 2026 from
@@ -18098,14 +18128,15 @@ const PRESETS={
   // cumulative 2026-2030): wind 7,341, solar PV 10,313, gas 6,000 (3,000 Eskom 2029 + 3,000 IPP 2030), storage
   // 3,724 (3,430 IPP + 294 Eskom BESS, 4 h), distributed generation 4,500. Storage was 300 until 07f, a tenth
   // of the plan.
-  'IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:7341,newPvMW:10313,newRooftopMW:4500,newBattMW:3724,newBattHours:4,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},
+  'IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),get coalDecomMW(){ return irpFig3CoalRetiredMW(2030); },newWindMW:7341,newPvMW:10313,newRooftopMW:4500,newBattMW:3724,newBattHours:4,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},
   // IRP path 2035. The counterfactual the two transition presets should be read against: what
   // the published plan builds by 2035, on the same demand and the same weather, so a retail
   // comparison measures the transition rather than the passage of time. Comparing either of
   // them with Today 2026 flatters today, whose coal is largely paid off and still running.
   //
   // COAL. Eskom's Generation Continued Operations schedule retires 8.4 GW by 2030; the MTSAO
-  // puts about 17 GW of coal and gas out by 2035. 16 GW of coal here.
+  // puts about 17 GW of coal and gas out by 2035. 16 GW of coal here until 17 Oct 2026, a figure no IRP source supports; from build
+  // 2026-10-17c the coal retired by the start of 2035 on IRP 2025 Figure 3's dates (irpFig3CoalRetiredMW; message 185 (4)).
   // BUILD, from the IRP 2025 Table 1 itself (public_data/irp2025_extract.csv, cumulative 2026-2035), 7 Oct 2026:
   // wind 21,041, solar PV 17,513, gas 10,750 (3,000 Eskom + 7,750 IPP), storage 4,724 (4,430 IPP + 294 Eskom
   // BESS, 4 h), distributed generation 9,000 (900 MW a year). It replaces a straight-line interpolation between
@@ -18120,7 +18151,7 @@ const PRESETS={
   // preset runs at +20%, its published trajectory. So this preset's emissions are NOT
   // comparable with the IRP's own 142 Mt for 2035 - it is the IRP's build on this model's
   // demand, which is the comparison the retail panel needs.
-  'IRP path 2035':{demandGrowthPct:5,coalEAFPct:coalEafFromFleet(67),coalDecomMW:16000,newWindMW:21041,newPvMW:17513,
+  'IRP path 2035':{demandGrowthPct:5,coalEAFPct:coalEafFromFleet(67),get coalDecomMW(){ return irpFig3CoalRetiredMW(2035); },newWindMW:21041,newPvMW:17513,
                    newRooftopMW:9000,newBattMW:4724,newBattHours:4,newCcgtMW:10750,lcoeCcgt:2500,
                    ccgtForceLoad:1,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
@@ -18177,7 +18208,11 @@ const PRESETS={
   // Re-sized 4 Oct 2026, after the congestion fix and common-mode outages: least system cost
   // meeting half the 0.002% standard (mean shed about 2 GWh), searched technology by technology at
   // 2, 1 and 0.5 GW steps with rooftop fixed at expected uptake, then confirmed on 480 draws.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:32500,newPvMW:29500,newOffshoreMW:0,newRooftopMW:10800,newBattMW:19000,newBattHours:12,newIronAirMW:1125,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // Re-searched 17 Oct 2026 on c5e's costs (search A, seed 20260816, 480 runs: wind 25,500, solar 26,000, lithium 10,000,
+  // iron-air 625; mean shed 1.88 against 1.89 GWh, R226.1bn a year). On independent draws (seed 71830529, 240 runs) that build
+  // shed 3.46 against 1.90, so it was topped up on those draws (message 195 (1)), six rounds: wind 26,500, solar 27,500,
+  // lithium 10,500; 1.83 GWh, R230.1bn a year (harness/ext/topup_deep_c5e.json).
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:26500,newPvMW:27500,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:10500,newBattHours:12,newIronAirMW:625,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,
@@ -18189,7 +18224,7 @@ const PRESETS={
   // Offshore is flat from 5 to 8 GW within about R1bn. Derivation in RESULTS.md.
   // Re-sized 4 Oct 2026 by the same search; offshore held at ESMAP's 5 GW deployable by 2040
   // (5.25 GW was cheaper but not deployable). No coal, so twelve weather years fix the result.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:45000,newOffshoreMW:5000,newRooftopMW:16800,newBattMW:32000,newBattHours:12,newIronAirMW:2250,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:100,newWindMW:34000,newPvMW:41000,bldPvTracking:1,newOffshoreMW:1250,newRooftopMW:16800,newBattMW:14000,newBattHours:12,newIronAirMW:6625,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -18600,18 +18635,20 @@ function applyState(overrides){
   updateGroupBadges(); if(typeof updateVppTotal==='function') updateVppTotal();
 }
 const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'rooftopMW',
-                               'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn', 'demandYear'];
+                               'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn', 'demandYear',
+                               'bldPvTracking'];   // the searched presets run new utility solar on the tracking profile (message 161 (3))
 // ONE DESCRIPTION PER PRESET, read by the caption under the buttons, the hover tooltip and the screen-reader
 // description alike, so the text lives only here. Hover tooltips alone appeared late and never on touch
 // screens; the caption shows the hovered or focused preset, and the active one otherwise. 7 Oct 2026.
+const _gw = mw => String(+(mw / 1000).toFixed(1));   // preset captions read their GW from PRESETS
 const PRESET_DESC = {
   '2025, as modelled': 'The model re-run on 2025\u2019s fleet, demand, weather, imports and coal outages, to compare with what Eskom did. Not Eskom\u2019s data.',
   'Today 2026': 'The system as it runs today: the 2026 fleet, demand and coal availability. The page opens here.',
-  'IRP\'s 2030 targets': 'The IRP 2025\u2019s Table 1 build to 2030 (7.3 GW of new wind, 10.3 GW of new solar, 3.7 GW of storage, 6 GW of gas at its 51% floor), with 8 GW of coal retired, on the IRP\u2019s own demand growth.',
+  'IRP\'s 2030 targets': 'The IRP 2025\u2019s Table 1 build to 2030 (7.3 GW of new wind, 10.3 GW of new solar, 3.7 GW of storage, 6 GW of gas at its 51% floor), with coal retired on IRP 2025 Figure 3\u2019s dates, on the IRP\u2019s own demand growth.',
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
   'IRP path 2035': 'The IRP 2025\u2019s Table 1 build to 2035 (21.0 GW of new wind, 17.5 GW of new solar, 4.7 GW of storage, 10.75 GW of gas), on the transition presets\u2019 +5% demand, so the three compare like for like.',
-  'Deep decarbonisation 2035': '27 GW of coal retired by 2035 and no new gas: 32.5 GW wind, 29.5 GW solar, 19 GW of 12-hour batteries and 1.1 GW of iron-air, sized on the earlier battery cost; to be re-sized, so not yet shown to be the cheapest build meeting half the reliability standard.',
-  'Fossil-free 2040': 'No coal, diesel or gas by 2040: 35 GW wind, 45 GW solar, 5 GW offshore, 32 GW of 12-hour batteries and 2.3 GW of iron-air, sized on the earlier battery cost; to be re-sized, so not yet shown to be the cheapest build meeting half the reliability standard.',
+  'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035 and no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the preset search\u2019s cheapest build on the central costs, topped up until it meets half the reliability standard on independent outage draws.`)(PRESETS['Deep decarbonisation 2035']),
+  'Fossil-free 2040': (P => `No coal, diesel or gas by 2040: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newOffshoreMW)} GW offshore, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the cheapest build the preset search found that meets half the reliability standard on the central costs.`)(PRESETS['Fossil-free 2040']),
 };
 const presetsEl=document.getElementById('presets');
 const presetCaptionEl=document.getElementById('presetCaption');
@@ -19634,7 +19671,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-18a';
+const BUILD_STAMP = '2026-10-18d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20264,8 +20301,13 @@ const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) thr
 window.GTZA_READY = false;
 const P_TX = (typeof buildTxCurve === 'function') ? buildTxCurve().catch(() => {}) : Promise.resolve();
 // Modern-turbine wind map (bldWindModern, on by default): needed by any dispatch with new wind on the default profile.
+const P_FIG3 = fetch('harness/coal_dates_irp2025.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
+  .then(d => { if (d && d.units) IRP_FIG3_UNIT_DATES = d.units; }).catch(() => {});   // IRP presets' coal (message 185 (4))
 const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
   .then(d => { if (d){ setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; } }).catch(e => console.error('[GridTwin]', e.message));
+// Tracking-solar map (bldPvTracking, a preset key): needed by any dispatch with new tracking solar on the default profile.
+const P_STRK = fetch('nodal/profiles_solar_tracking_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
+  .then(d => { if (d) setSolarTrkMap(d.map, 'nodal/profiles_solar_tracking_map.json'); }).catch(e => console.error('[GridTwin]', e.message));
 // NUMBERS IN THE PROSE, FROM THE CODE (site text fixes, user 16 Oct 2026, message 138). Each <span data-num="key"> (or an
 // <option>) shows ABOUT_NUM[key](), so a constant is never typed a second time into the About text; an unknown key throws.
 const _numInt = v => Math.round(v).toLocaleString('en-US');
@@ -20309,7 +20351,7 @@ function fillAboutNums(){
     el.textContent = f();
   }
 }
-Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD]).then(() => {
+Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD, P_FIG3, P_STRK]).then(() => {
   fillAboutNums();
   // The methodology table's capex line is filled from BLD_COST, so it cannot drift from the constants (7 Oct 2026:
   // it still read R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965).

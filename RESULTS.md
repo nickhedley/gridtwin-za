@@ -4415,6 +4415,246 @@ verdict from the engine (user, message 179): "2025 replay (16h): 91.4 GWh shed o
 load); 76.4 GWh with interruptible load capped at Eskom's 69.5 GWh (6.9 shed), against Eskom's 459.5 GWh in 2025 (390.0 manual
 load reduction plus 69.5 interruptible load, ILS; IOS left out). ESK19679 totals."
 
+### IRP presets' coal retirement read from IRP 2025 Figure 3's dates: 7,259 MW by the start of 2030 (was a typed 8,000) and 13,776 MW by the start of 2035 (was 16,000, which no IRP source supports) (user, 17 Oct 2026, message 185 (4); build 2026-10-17c on branch claude/presets-132)
+
+The change. 'IRP's 2030 targets', 'IRP's 2030 targets, grid delayed' and 'IRP path 2035' now read coalDecomMW from the per-unit
+dates the pathway uses as COAL_DATES (harness/coal_dates_irp2025.json: Nick Hedley's reading of Figure 3, plan p.12, 13 Oct 2026,
+50-year line, about +-250 MW), through irpFig3CoalRetiredMW, with the summation and scaling of bldCoalMW (rule 3). The page loads
+the file at start-up; the page's own coal schedule (UC_FLEET's dates) is unchanged (probe: 30,296 MW standing at the start of 2030
+either way; Figure 3 gives 32,433). Probe on this build: 7,259 MW retired by the start of 2030, 13,776 MW by the start of 2035.
+
+Why the numbers differ from the typed ones. The IRP's "8 GW by 2030" (plan p.40) is an end state, the units named to close by the
+financial year 2030; Figure 3 is an annual average, so the coal standing through 2030 is higher than at its end. No IRP source was
+found for 16,000 MW by 2035: the preset's comment based it on the MTSAO's "about 17 GW of coal and gas out by 2035", which
+is not coal alone.
+
+Recorded results that used the typed values (none is a pathway run: the pathway reads Figure 3 directly):
+- 'Fixed presets and the 2025 replay, build by build from 12e to 16h' (17 Oct 2026): the IRP presets' cost, CO2, curtailment and
+  shed rows, every build.
+- 'Preset inventory at build 2026-10-12e' (12 Oct 2026).
+- 'IRP presets rebuilt from Table 1; the 2030 presets had 300 MW of storage, not 3,724' (7 Oct 2026).
+- 'The IRP gas floor is now an annual minimum; IRP path 2035 still falls 13.5 TWh short of it' and 'The IRP gas floor is now 51%
+  on 6 GW, 2030-2040' (6 Oct 2026).
+- 'The two 2030 presets were priced at 2026' (23 Sep 2026).
+- validate_findings: the coal the model dispatches on 'IRP's 2030 targets' (110.9 TWh when measured, 22 Sep 2026), the battery
+  and pumped-storage value on 'IRP path 2035', and the grid-delayed preset's mirror of the 2030 one; their values on this build
+  are in the suite entry for the presets PR.
+
+### Fixed presets and the 2025 replay, build by build from 12e to 16h: the replay now sheds 4.3 GWh against Eskom's 390 (28.3 on 12e), mostly from interruptible load; Today 2026 costs R3.6bn more, Avon and Dedisa's must-run R5.0bn of it; the IRP presets cost R2.5-7.8bn less, from the engine fixes and the central costs (user, 16 Oct 2026, message 132, TODO 14et; builds 2026-10-12e to 16h)
+
+Settings. preset_check.js (scratch): each preset applied as the page applies it (applyState), twelve weather years x 20 outage
+draws (240 runs), seeds as pathcheck.js (71830529 + k x 104729 + year x 7919), profiles.json demand and CSP; target half of 0.002%
+of customer demand. replay2025.js (scratch): '2025, as modelled' as the page runs it (simulate(state, PROFILES)); its outages are
+fixed by the preset, so 20 seeds give the same shed. Builds: main's merges 12e (0f1d9a2, the frozen c4 line; 13m, 04b5bcd,
+reproduces it to the digit), 14b, 14i, 14j, 14l, 14r, 15a, 15b, 15d, 15f, 16a, 16b, 16c, then 16h (branch claude/c5e). 13c and
+13d are main before c4 was merged, a side line not in this sequence. Run 16-17 Oct 2026, 18:38-01:03 UTC, two jobs at a time,
+beside the c5e chain. The method reproduces the 12e inventory: costs and CO2 within R0.1bn and 0.1 Mt, shed within 0.07 GWh
+(the draw set), the 2025 page run 28.3 GWh.
+
+Before and after, 12e to 16h (240 runs each; cost R bn a year, CO2 Mt, curtailment TWh, mean shed against target GWh):
+
+| Preset | Cost 12e / 16h | CO2 12e / 16h | Curtailment 12e / 16h | Shed / target 12e | Shed / target 16h |
+|---|---|---|---|---|---|
+| Today 2026 | 212.8 / 216.4 | 157.4 / 159.7 | 0.00 / 0.00 | 0.19 / 1.94 | 0.02 / 1.96 |
+| IRP 2030, delayed | 301.1 / 298.6 | 149.4 / 152.0 | 0.06 / 0.01 | 0.10 / 2.27 | 0.15 / 2.30 |
+| IRP 2030 | 307.5 / 300.6 | 128.3 / 129.7 | 2.72 / 0.11 | 0.00 / 2.27 | 0.00 / 2.30 |
+| IRP path 2035 | 287.3 / 279.5 | 64.3 / 56.5 | 38.27 / 27.37 | 0.00 / 1.90 | 0.00 / 1.92 |
+| 2025 (12 weather years) | 227.4 / 227.1 | 179.9 / 180.4 | 0.00 / 0.00 | 32.49 / 2.11 | 8.67 / 2.11 |
+| Deep 2035 | 325.2 / 281.9 | 30.6 / 15.8 | 68.74 / 42.15 | 0.03 / 1.87 | 0.00 / 1.90 |
+| Fossil-free 2040 | 386.5 / 349.1 | 0.0 / 0.0 | 110.41 / 99.26 | 0.00 / 1.78 | 0.00 / 1.80 |
+
+Step by step, Cost, R bn a year:
+
+| Step | Cause | Today 2026 | IRP 2030, delayed | IRP 2030 | IRP path 2035 | 2025 (12 weather years) |
+|---|---|---|---|---|---|---|
+| 12e to 14b | engine fixes, builds 13f-14a | -1.3 | -1.2 | -1.4 | +11.6 | -3.8 |
+| 14b to 14j | c5 inputs (14i, 14j) | -0.0 | +0.1 | +0.0 | -0.1 | +0.0 |
+| 14j to 14l | c5b demand (14k) and build (14l) | -0.1 | -2.0 | -3.4 | -8.4 | -0.8 |
+| 14l to 14r | reserve rule, Avon and Dedisa must-run, storage reserve in dispatch, interruptible load (14m-14r) | +5.0 | +3.8 | +2.7 | -0.0 | +5.7 |
+| 14r to 15d | 15a-15d | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+| 15d to 15f | central inputs (15e) and engine storage fix (15e-15f) | -0.0 | -4.4 | -6.9 | -16.3 | -1.3 |
+| 15f to 16c | 16a-16c | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+| 16c to 16h | c5e: capex on 'run' (16h) | +0.0 | +1.2 | +2.0 | +5.4 | +0.0 |
+
+Step by step, CO2, Mt:
+
+| Step | Cause | Today 2026 | IRP 2030, delayed | IRP 2030 | IRP path 2035 | 2025 (12 weather years) |
+|---|---|---|---|---|---|---|
+| 12e to 14b | engine fixes, builds 13f-14a | -0.1 | -0.9 | -2.9 | -12.3 | +0.6 |
+| 14b to 14j | c5 inputs (14i, 14j) | -0.0 | -0.1 | -0.0 | -0.0 | +0.0 |
+| 14j to 14l | c5b demand (14k) and build (14l) | +2.5 | +2.7 | +2.7 | +2.3 | -0.1 |
+| 14l to 14r | reserve rule, Avon and Dedisa must-run, storage reserve in dispatch, interruptible load (14m-14r) | -0.1 | -0.0 | -0.0 | -0.0 | -0.2 |
+| 14r to 15d | 15a-15d | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+| 15d to 15f | central inputs (15e) and engine storage fix (15e-15f) | +0.0 | +0.9 | +1.6 | +2.1 | +0.2 |
+| 15f to 16c | 16a-16c | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+| 16c to 16h | c5e: capex on 'run' (16h) | +0.0 | +0.0 | +0.0 | +0.0 | +0.0 |
+
+Step by step, Curtailment, TWh:
+
+| Step | Cause | Today 2026 | IRP 2030, delayed | IRP 2030 | IRP path 2035 | 2025 (12 weather years) |
+|---|---|---|---|---|---|---|
+| 12e to 14b | engine fixes, builds 13f-14a | -0.00 | -0.05 | -2.61 | -7.87 | +0.00 |
+| 14b to 14j | c5 inputs (14i, 14j) | +0.00 | +0.00 | +0.00 | +0.03 | +0.00 |
+| 14j to 14l | c5b demand (14k) and build (14l) | +0.00 | +0.00 | +0.02 | -0.34 | +0.00 |
+| 14l to 14r | reserve rule, Avon and Dedisa must-run, storage reserve in dispatch, interruptible load (14m-14r) | +0.00 | -0.00 | -0.00 | -0.00 | +0.00 |
+| 14r to 15d | 15a-15d | +0.00 | +0.00 | +0.00 | +0.00 | +0.00 |
+| 15d to 15f | central inputs (15e) and engine storage fix (15e-15f) | +0.00 | -0.00 | -0.02 | -2.72 | +0.00 |
+| 15f to 16c | 16a-16c | +0.00 | +0.00 | +0.00 | +0.00 | +0.00 |
+| 16c to 16h | c5e: capex on 'run' (16h) | +0.00 | +0.00 | +0.00 | +0.00 | +0.00 |
+
+2025 page run, by build:
+
+| Build | Shed, GWh | Pumped storage, TWh | Peakers (diesel), TWh | Coal, TWh |
+|---|---|---|---|---|
+| 12e | 28.3 | 2.32 | 2.25 | 168.6 |
+| 14b | 15.2 | 3.88 | 1.65 | 169.7 |
+| 14i | 15.2 | 3.88 | 1.65 | 169.7 |
+| 14j | 15.2 | 3.88 | 1.65 | 169.7 |
+| 14l | 15.8 | 3.77 | 1.76 | 169.5 |
+| 14r | 4.4 | 3.59 | 2.74 | 168.5 |
+| 15a | 4.4 | 3.59 | 2.74 | 168.5 |
+| 15b | 4.4 | 3.59 | 2.74 | 168.5 |
+| 15d | 4.4 | 3.59 | 2.74 | 168.5 |
+| 15f | 4.3 | 4.01 | 2.56 | 168.9 |
+| 16a | 4.3 | 4.01 | 2.56 | 168.9 |
+| 16b | 4.3 | 4.01 | 2.56 | 168.9 |
+| 16c | 4.3 | 4.01 | 2.56 | 168.9 |
+| 16h | 4.3 | 4.01 | 2.56 | 168.9 |
+
+
+What each step was, by switching features off on 16h (toggles.js, scratch; 2025 page run, and Today 2026 on twelve weather years
+x 5 draws):
+
+| Switched off | 2025 replay: shed, GWh | Pumped storage, TWh | Peakers, TWh | Today 2026: cost, R bn | Today 2026: peakers, TWh |
+|---|---|---|---|---|---|
+| Nothing (16h) | 4.3 | 4.01 | 2.56 | 216.4 | 0.91 |
+| Interruptible load (drInterruptMW 0) | 31.6 | 4.01 | 2.59 | 216.4 | 0.91 |
+| Avon and Dedisa must-run (avonDedisaMustRun 0) | 8.6 | 4.08 | 2.06 | 211.4 | 0.01 |
+| Operating reserve (reserveEnabled 0) | 2.6 | 3.96 | 1.98 | 216.6 | 0.90 |
+| Storage charged from spare coal and gas (laGasCharge 0) | 4.4 | 3.59 | 2.74 | 216.4 | 0.91 |
+| Pumped storage counted twice in reserve (psResOnce 0) | 4.3 | 4.01 | 2.55 | 216.4 | 0.90 |
+
+- 12e to 14b, the engine fixes (RESULTS 'Engine fixes (builds 2026-10-13f to 13h …)', 'Engine fix (B) against the same pass
+  marks (build 2026-10-14a)'): the 2025 replay's shed 28.3 to 15.2 GWh and pumped storage 2.32 to 3.88 TWh; IRP path 2035 +R11.6bn
+  and -12.3 Mt, its curtailment -7.9 TWh; IRP 2030's curtailment 2.72 to 0.10 TWh.
+- 14j to 14l, c5b's demand and build ('c5b demand inputs built', 'c5b build'): customer demand +2.4 to +2.9 TWh in every preset
+  but the replay, CO2 +2.3 to +2.7 Mt; cost down R2.0-8.4bn where there is new wind (fixed O&M at BW6's bids).
+- 14l to 14r: interruptible load takes 27.3 GWh off the replay's shed; Avon and Dedisa's must-run cuts it by 4.3 GWh and runs
+  0.5 TWh more diesel in the replay and 0.9 TWh more in Today 2026, R5.0bn a year; the operating reserve adds 1.7 GWh of shed.
+- 15d to 15f, the central inputs and the storage fix ('New central inputs', 'Engine storage fix'): the IRP presets' cost
+  -R4.4bn to -R16.3bn (new wind at BW5's tariff); storage charged from spare coal and gas lifts the replay's pumped storage from
+  3.59 to 4.01 TWh.
+- 16c to 16h, c5e: the presets with new wind +R1.2-5.4bn (wind capex R17,773 to R20,879/kW); the fixed presets' new solar is
+  fixed-tilt (the page default), which the basis does not touch.
+- 14b to 14j, 14r to 15d and 15f to 16c move nothing.
+
+2025, as modelled, against Eskom's 2025 (ESK19679, the author's analysis; RESULTS 'The backcast gap, re-measured'), page run on
+16h: coal 168.9 against 170.4 TWh (-0.9%), imports 6.57 and hydro 1.79 as Eskom's (inputs), peakers 2.56 against 3.36 TWh,
+pumped storage 4.01 against 4.49 TWh (inside the benchmark band, 3.37-5.62), shed 4.3 against 390 GWh, curtailment none against
+about 1.0-1.6%. The energy matches; the operation does not, as recorded since 3 Oct: Eskom shed to refill storage for the week
+ahead, which the model does not. On twelve weather years the preset sheds 8.7 GWh.
+
+Pages that quote the old figures: the reviewer pack's section 2 (28-89 GWh of shed), to be refreshed on c5e. No fixed preset's
+description quotes a result. Fossil-free 2040's curtailment (99.3 TWh on 240 runs; validate_findings' band 96.3 +/-15% on its own
+single run) waits for the re-search, as TODO 14ef records. Deep decarbonisation and Fossil-free are searched next, on 'run'.
+
+### Deep decarbonisation 2035 and Fossil-free 2040 re-searched on c5e's costs: Fossil-free meets half the standard as searched (1.80 against 1.80 GWh, R288.8bn a year); Deep's searched build sheds 3.46 against 1.90 GWh on independent draws and is topped up to 1.83 GWh, R230.1bn a year (build 2026-10-17i; user, 16-18 Oct 2026, messages 161 (3) and 195 (1))
+
+Settings. harness/ext/preset_search.js on build 2026-10-16h (c5e's costs: wind and solar capex on 'run', new utility solar on the
+tracking profile), least system cost meeting half the 0.002% standard (mean shed over twelve weather years and the outage
+draws), technology by technology at 2, 1 and 0.5 GW steps, rooftop fixed. Two starts each: A from the preset as it stood, B from
+the build optimiser's proposal for the preset's year (START). Search draws on seed 20260816 (the loop's): Deep 2 draws a step and
+40 to confirm (480 runs); Fossil-free 1 draw (it has no coal, and the draws vary only coal outages). Independent draws: the
+preset check's seeds (71830529 + k x 104729 + year x 7919), 20 draws x 12 weather years = 240 runs (scratch preset_check_17d.js;
+presets_17d.json on 17d, presets_17i.json on 17i). Outputs: harness/ext/search_deep_A_c5e.json, search_deep_B_c5e.json,
+search_ff_A_c5e.json, search_ff_B_c5e.json and topup_deep_c5e.json.
+
+| | Build (new wind / solar / lithium / iron-air / offshore, MW) | Search draws: shed / target, GWh; cost, R bn a year | Independent draws (240 runs): shed / target; worst run; cost |
+|---|---|---|---|
+| Deep, start A, searched | 25,500 / 26,000 / 10,000 (12 h) / 625 / 0 | 1.88 / 1.89 on 480 runs after two top-ups (the search's own build, 25,500 / 25,500 / 9,500, shed 2.81 on its confirm); 226.1 | 3.46 / 1.90; 174.1; 226.2 (17d) |
+| Deep, start B | 17,500 / 28,500 / 6,000 / 125 / 1,000 | 102.6 / 1.89; stalled; 40-draw confirm 105.5 and eight top-ups without meeting it | not a candidate |
+| Deep, set (topped up on the independent draws) | 26,500 / 27,500 / 10,500 / 625 / 0 | | 1.83 / 1.90; 138.3; 230.1 (17i) |
+| Fossil-free, start A, set | 34,000 / 41,000 / 14,000 (12 h) / 6,625 / 1,250 | 1.80 / 1.80; 288.5 | 1.80 / 1.80, the same to 13 digits (no coal); 20.5; 288.8 (17d and 17i) |
+| Fossil-free, start B | 43,500 / 68,875 / 18,375 / 250 / 0 | 1.66 / 1.80; 312.8 | not taken: R24.3bn a year dearer |
+
+The Deep top-up (preset_search.js TOPUP_ONLY=1, SEED=71830529, DRAWS=CONFIRM=20, the independent runs themselves; message 195
+(1)): each round tests every technology up one step (wind, solar and lithium 500 MW, iron-air 125, offshore 250) and takes the
+cheapest that meets the target, else the one removing most shed per rand. Rounds 1 to 5 took solar +500 (3.18 GWh, R226.5bn),
+solar +500 (2.85), solar +500 (2.65), wind +500 (2.35, R227.9bn) and lithium +500 (1.92, R229.3bn); round 6 met the target with
+wind +500: 1.83 GWh, R230.1bn, R3.9bn a year above the searched build. In round 6 solar +500 gave 1.91 (misses by 0.01), and
+iron-air, offshore and lithium steps met it at R230.5-231.1bn. The first attempt stopped at round 3 when the container restarted
+(17 Oct 2026, about 21:57 UTC); the restart repeated rounds 1-3 to the digit.
+
+Both presets on build 2026-10-17i (main merged), independent draws: Deep CO2 19.8 Mt, coal 17.7 TWh, diesel 0.13 TWh,
+curtailment 34.6 TWh (twelve-year mean); Fossil-free curtailment 91.3 TWh. On the default profiles, one run each (validate_findings'
+band): Deep 46.9 TWh, Fossil-free 114.9 TWh. The band is re-pinned to those (TODO 14ef; were 52.7 and 96.3, +/-15%). The two
+profile sets differ more for these solar-heavy builds than the 1 Oct comment records (Fossil-free 114.9 against 91.3; Deep 46.9
+against 34.6); recorded, not investigated.
+
+Both presets' captions read their GW from PRESETS; Deep's now says the search's build was topped up on independent outage draws.
+
+Two checks that read Deep, re-pinned with their causes (user, 18 Oct 2026, messages 199 and 200 (4); build 2026-10-17i):
+
+- validate_consistency 'new-build capital matches the hand computation': R0.965 to R0.718/kWh at 2035, tolerance 0.06
+  unchanged. Measured on 17i, each in a fresh page: main's Deep R1.009, main's Deep with tracking solar R0.997, the new Deep
+  R0.718. The whole move is the new build (less wind, solar, lithium and iron-air); tracking alone moves it R0.012.
+- validate_consistency 'the shadow retail price responds to a decarbonisation scenario' (more than 20%): now run on
+  Fossil-free 2040, threshold and the same-direction check unchanged, for the cause in the next section. Deep stays covered by
+  the capital check.
+
+The regional optimiser and the corridor-slip panel with a tracking-solar preset (user, 18 Oct 2026, message 200 (1)): the
+regional LP has no tracking profile, so on Deep or Fossil-free both tools now say 'The regional model does not include tracking
+solar yet, and this scenario uses it. Use the national model.' instead of stopping with an error the user could not act on
+(tracking is a preset key, not a control). validate_solve tests the regional LP on Deep with tracking off. Known limitation;
+regional tracking after the note (TODO 14fz).
+
+### The shadow retail price and system cost move differently by design: on the re-searched Deep decarbonisation 2035 the panel rises 14.6% and system cost 2.7%, because the panel carries sunk and stranded capital and the network over fewer kWh sold, and at its default year the 2026 IPP contracts (build 2026-10-17i; user, 18 Oct 2026, message 199)
+
+Settings. Build 2026-10-17i, page defaults against each preset, one simulate on the default profiles, each variant in a fresh
+page (an earlier probe that restored the state with Object.assign carried the preset's extra keys into the next variant and
+is discarded); retailHourly() at the panel's year control, default 2026, and lastRes.costDecomposition. Scratch
+probe_decomp.js.
+
+| | Today 2026 | main's Deep | new Deep | Fossil-free 2040 |
+|---|---|---|---|---|
+| Shadow retail price, R/kWh (panel year 2026) | 3.785 | 4.872 | 4.338 | 5.652 |
+| System cost, R/MWh (scenario year) | 1,101.0 | 1,411.3 | 1,130.7 | 1,492.9 |
+| Retail: Fuel, R/kWh | 0.551 | 0.080 | 0.094 | 0.041 |
+| Retail: Carbon, R/kWh | 0.037 | 0.003 | 0.004 | 0.000 |
+| Retail: Existing opex, R/kWh | 0.260 | 0.124 | 0.124 | 0.058 |
+| Retail: Existing capital, R/kWh | 0.307 | 0.320 | 0.320 | 0.339 |
+| Retail: Stranded coal capital, R/kWh | 0.000 | 0.096 | 0.096 | 0.248 |
+| Retail: IPP contracts, R/kWh | 0.255 | 0.237 | 0.255 | 0.233 |
+| Retail: Network, R/kWh | 0.269 | 0.347 | 0.332 | 0.371 |
+| Retail: New-build capital, R/kWh | 0.000 | 1.199 | 0.843 | 1.700 |
+| Retail: New grid, R/kWh | 0.000 | 0.066 | 0.051 | 0.074 |
+| Retail: Decommissioning, R/kWh | 0.000 | 0.017 | 0.017 | 0.027 |
+| Retail: Kept fixed items, R/kWh | 0.096 | 0.096 | 0.096 | 0.096 |
+| Retail: Imports, R/kWh | 0.041 | 0.041 | 0.041 | 0.041 |
+| Retail: kWh sold, TWh | 194.2 | 185.8 | 185.8 | 175.5 |
+| System: Energy (fuel), R/MWh | 547.0 | 78.8 | 92.0 | 39.9 |
+| System: Fixed O&M, R/MWh | 306.0 | 150.5 | 149.9 | 69.7 |
+| System: REIPPPP contracts, R/MWh | 194.8 | 95.7 | 104.8 | 45.6 |
+| System: Other IPP contracts, R/MWh | 58.6 | 20.0 | 19.9 | 21.0 |
+| System: New generation capital, R/MWh | 0.0 | 1,043.7 | 754.5 | 1,292.1 |
+| System: New transmission, R/MWh | 0.0 | 64.3 | 49.7 | 71.7 |
+| System: Carbon, R/MWh | 37.1 | 3.2 | 3.9 | 0.0 |
+| System: Export revenue, R/MWh | -44.7 | -46.2 | -46.0 | -48.5 |
+
+Moves against today: main's Deep, retail +R1.087/kWh (+28.7%) and system cost +R0.310/kWh (+28.2%); the new Deep +R0.553
+(+14.6%) and +R0.030 (+2.7%); Fossil-free +R1.867 (+49.4%) and +R0.392 (+35.6%). The near-equal percentages on main's Deep
+were a ratio of the two bases (the retail price is about 3.4 times the system cost), not a property: in every case the panel
+rises by several times as much in rand. What the panel carries and system cost does not, on the new Deep at cost level: coal's
+stranded and existing capital (+R0.110/kWh; system cost leaves sunk capital out by design, RESULTS 'Sunk capital stays out');
+the network over 4.3% fewer kWh sold (+R0.063; rooftop takes sales); IPP contracts at their 2026 payments (unchanged) where
+the 2035 engine has retired part of them (REIPPPP -R0.090, other IPP -R0.039); new-build capital at 2026 prices per kWh sold
+(R0.894 with the new grid) against the engine's 2035 capital per MWh served (R0.804). Fuel (-R0.456 against -R0.455) and
+fixed O&M (-R0.136 against -R0.156) fall alike. With the panel set to 2035 the IPP term matches and the gap narrows: retail
+R3.329 to R3.674 (+10.4%) against system cost +2.7%. Not a bug: two different measures. The new Deep's system cost barely
+rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
+Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
+build the presets would be rescored.
+
 ### Build 2026-10-16h, central c5e: wind and solar capex backed out at the capacity factor each runs at by default; suite 819/824 as on 16g, no check changes status, four values move with the capex (user, 16 Oct 2026, message 161 (1); build 2026-10-16h)
 
 The change: FIXED.bldTariffCfBasis 'run' (was 'bid'). New wind R20,879/kW (was R17,773) and tracking solar R11,038/kW (was

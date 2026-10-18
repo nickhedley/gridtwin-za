@@ -73,6 +73,7 @@ Data sources incorporated in this repository carry their own licences:
 - nodal/profiles_regional_SINGLECENTROID_backup.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
 - nodal/profiles_regional_multiyear.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
 - nodal/profiles_solar_tracking.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
+- nodal/profiles_solar_tracking_map.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
 - nodal/profiles_wind_modern.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
 - nodal/profiles_wind_modern_map.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
 - nodal/project_register.json: DERIVED DATA UNDER MIXED TERMS - not the CC BY-NC-ND 4.0 that covers GridTwin's own files, and the difference matters.

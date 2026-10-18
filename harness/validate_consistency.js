@@ -948,11 +948,20 @@ const num = t => {
       // R258bn a year over fewer kWh sold. A check that encodes a conclusion gets edited when
       // the conclusion changes, so this one asserts only that the panel moves, and that it
       // moves the same way as the model's own system cost.
+      //
+      // RUN ON FOSSIL-FREE 2040 from 18 Oct 2026 (user, message 199 and 200 (4); build 2026-10-17i), threshold and the
+      // same-direction check unchanged. The re-searched Deep decarbonisation 2035 moves the panel 14.6% (R3.785 to R4.338) and
+      // system cost 2.7% (R1,101 to R1,131/MWh); main's Deep moved them 28.7% and 28.2%, Fossil-free 49.4% and 35.6%. Cause,
+      // measured component by component (RESULTS 'The shadow retail price and system cost move differently'): the panel is a
+      // bill and carries what system cost leaves out by design, coal's sunk and stranded capital and the network over fewer
+      // kWh sold, and at its default year (2026) the 2026 IPP contract payments, which the 2035 engine has partly retired.
+      // The near-equal moves on main's Deep were a ratio of the two bases, not a property. Deep stays covered by the
+      // new-build capital check below.
       const sc = run(`
         const m = a => a.reduce((x, y) => x + y, 0) / a.length;
         const before = m(retailHourly().dyn), avgBefore = lastRes.avgCost;
         const keep = JSON.parse(JSON.stringify(state));
-        Object.assign(state, PRESETS['Deep decarbonisation 2035']);
+        Object.assign(state, PRESETS['Fossil-free 2040']);
         run();
         const after = m(retailHourly().dyn), avgAfter = lastRes.avgCost;
         Object.assign(state, keep); run();
@@ -962,8 +971,8 @@ const num = t => {
         const move = 100 * Math.abs(sc.after / sc.before - 1);
         check('the shadow retail price responds to a decarbonisation scenario',
               move > 20,
-              `R${sc.before.toFixed(2)} today against R${sc.after.toFixed(2)} on the Future `
-              + `electricity mix, ${move.toFixed(0)}% apart. Near zero means the panel is `
+              `R${sc.before.toFixed(2)} today against R${sc.after.toFixed(2)} on Fossil-free `
+              + `2040, ${move.toFixed(0)}% apart. Near zero means the panel is `
               + `absorbing the effect it exists to show.`);
         check('the retail price moves the same way as the system cost',
               Math.sign(sc.after - sc.before) === Math.sign(sc.avgAfter - sc.avgBefore),
@@ -1427,6 +1436,11 @@ const num = t => {
       // larger sales base), the existing batteries at 68 MW alone R1.205 (no change), all together R1.118. Deliberate input
       // changes, tolerance unchanged.
       //
+      // UPDATED 18 Oct 2026, R0.965 -> R0.718, build 2026-10-17i (user, messages 199 and 200 (4)). Deep decarbonisation 2035
+      // re-searched on c5e's costs and topped up (wind 32.5 -> 26.5 GW, solar 29.5 -> 27.5 GW tracking, lithium 19 -> 10.5 GW,
+      // iron-air 1.125 -> 0.625 GW). Measured on 17i, each in a fresh page: main's preset R1.009, main's preset with tracking
+      // R0.997, the new preset R0.718, so the whole move is the new build. Deliberate scenario change, tolerance unchanged.
+      //
       // UPDATED 15 Oct 2026, R1.118 -> R0.965. New wind central calibrated to BW5's tariff, R28,462 -> R17,773/kW (user,
       // message 125 (2); build 15e). Measured: the same build with BLD_COST.wind at the BW6 figure gives R1.118 exactly, so the
       // whole move is the wind input (retailComponents reads BLD_COST.wind, the central). Deliberate input change, tolerance unchanged.
@@ -1470,8 +1484,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 0.965) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.965 for Deep `
+              Math.abs(ncap.newCap - 0.718) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.718 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }
