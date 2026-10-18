@@ -4887,8 +4887,8 @@ back the wheeled wind running through the 2025 base year: Msenge Emoyeni (69 MW,
 capacity file) and Castle (89 MW, wheeled to Sibanye-Stillwater from about the end of March 2025; Mining Weekly, 1 Apr 2025), each
 on the model's 2025 wind shape (35.5% capacity factor): 0.426 TWh into the 2025 base and the Jan-Aug ratio's 2026 side, and hour
 by hour in September-December. Added a year in 2026: 0.491 TWh (Msenge 0.214, Castle 0.277; Mining Weekly put Castle at about
-0.309); domestic grid demand 2026 187.67 to 188.16 TWh, the Jan-Aug ratio 0.9519 to 0.9525. Castle is in the demand and not in
-the fleet, so c5f supplies its load from other plant. The 2025 backcast series (demand_2025) is unchanged: its preset runs
+0.309); domestic grid demand 2026 187.67 to 188.16 TWh, the Jan-Aug ratio 0.9519 to 0.9525. Castle is not in the base, but it
+is in the committed 2026 wind floor (below), so c5f supplies its load from Castle counted as new build. The 2025 backcast series (demand_2025) is unchanged: its preset runs
 Eskom's own wind fleet (windMW 3,900), without wheeled plant. Until this change (17e) the caveat was that c5f supplied Msenge's
 output against demand without its load.
 
@@ -4957,6 +4957,26 @@ runs on 17g stand for 17h. The response baseline was regenerated on 17h: against
 not already made responsive (battHours to rePct, curtTWh and loleHrs; newBattMW to rePct and curtTWh; newVrfbMW to curtTWh);
 against 17g's, the five replacement-cost cells #79 recorded (carbonTaxRPerT responsive; newIronAirMW, newCoalMW, coalFlexPct and
 outageUnitLevel inert). Base replacement cost on 17h R1,603.41/MWh (main R1,604.53; 17g R1,531.89).
+
+Castle wind (user, 18 Oct 2026, messages 200 (2) and 202 (2)). Commercial operation confirmed from pages read 18 Oct 2026:
+Sibanye-Stillwater SENS, 1 Apr 2025 ('has achieved commercial operation'; 89 MW; wheeled to its South African operations
+through Eskom) and Energize, 15 Apr 2025. Castle is not in the base (FIXED.windMW) of c5e or c5f, but it is one of the plants
+behind the committed 2026 wind floor of 696 MW (RESULTS 'c5b proposal', 14 Oct 2026: 'Castle 89 (operating since March 2025)'),
+which c5f's 1,131 MW floor contains; c5e built exactly 696 MW of new wind in 2026 and c5f exactly 1,131. So Castle is in both
+fleets from 2026 as new build. c5e left its load out of demand; c5f adds it back (0.277 TWh a year), so in c5f Castle serves its
+own load. Both charge Castle new-build capital, about R1.9bn overnight (89 MW at about R20,880/kW), though it has run since March
+2025; the effect on engine PV is not measured. Corrected with the next central: Castle moves from the floor to the base (base +89
+MW, 2026 wind floor 1,131 to 1,042 MW). Castle's load: the model adds 0.277 TWh a year (89 MW on the model's 2025 wind shape,
+35.5% capacity factor, as for every wheeled plant in the add-back); RESULTS 'the 2025 demand step' uses 0.31 TWh, Mining Weekly's
+'about 309 GWh a year' (1 Apr 2025), the owner's expected yield at about 39.6%; the published figure is the better estimate of
+Castle's own output, and the 0.03 TWh between them is the capacity factor.
+
+Floor plants that may have run before 2026 (message 202 (2c); research helper, 18 Oct 2026, web search; no page opened, so each
+rests on search snippets): none found besides Castle. Closest: Eskom's battery phase 1 at Skaapvlei, Paleisheuwel and Graafwater,
+'scheduled for commissioning in December 2025' (AfDB progress report, 2025), against the Minister's reply that no MW is added in
+FY27 (NW4150, PMG, 21 Sep 2026, already recorded); Wolf (84 MW, BW5), due in 2025/26 and still under construction (parliamentary
+reply, reported late September 2026); Ukuqala (75 MW), targeted for mid-2025 (Engineering News, July 2023), no later status found.
+No model change before the next central.
 
 Runs (to follow here): a frozen copy of build 2026-10-17g (b82bfd3; pass-1 LP key f689a33bfd; started 22:46 UTC; the 17e start
 at 22:23 UTC, LP key 71b0df1e44, was stopped at 22:30 for the demand add-back and its files set aside); c5f at MAXP=6 and its null at MAXP=3, then the 31 sensitivities run
