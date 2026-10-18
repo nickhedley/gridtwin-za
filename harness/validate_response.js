@@ -112,6 +112,12 @@ const CONTEXT = {
   drInterruptMW:    { coalEAFPct: 55, outageTraceYear: 2025 },   // interruptible load only fires in a shortage
   drInterruptCostR: { coalEAFPct: 55, drInterruptMW: 2000, outageTraceYear: 2025 },
   newBattHours:     { newBattMW: 20000 }, // duration is meaningless at zero new lithium
+  // newBattMW and newVrfbMW (user, 18 Oct 2026, message 199 (2)): at the 2026 defaults storage has almost no surplus to shift,
+  // so coal, CO2 and renewable share moved within about 1e-4 of their base and flipped on small fleet changes (RESULTS 'New
+  // central c5f'). Tested where storage has spare energy: 30 GW of new wind and 30 GW of new solar (syncMinMW's context), where
+  // about 58 TWh is curtailed without new storage. The 1e-4 threshold is unchanged.
+  newBattMW:        { newWindMW: 30000, newPvMW: 30000 },
+  newVrfbMW:        { newWindMW: 30000, newPvMW: 30000 },
   vppGeyserPoolMW:  { vppEnrolPct: 50 },  // pool size is irrelevant at zero enrolment
   syncMinMW:        { newWindMW: 30000, newPvMW: 30000 }, // only binds when VRE displaces synchronous plant
   costCcgt:         { newCcgtMW: 4000, coalEAFPct: 55 },  // gas must actually run
@@ -296,7 +302,9 @@ const BUILD_ONLY = {
       ccsPenaltyPct:     { pts: [0, 10, 25], ctx: CONTEXT.ccsPenaltyPct },
       ccsOpexR:          { pts: [0, 180, 400], ctx: CONTEXT.ccsOpexR },
       coalInstalledMW:   { pts: [0, 20000, 42000], ctx: {} },
-      battHours:         { pts: [0, 4, 12], ctx: { battPowerMW: 8000, newBattMW: 0 } },
+      // ctx with 30 GW of new wind and 30 GW of new solar from 18 Oct 2026 (message 199 (2), as newBattMW): at the 2026 defaults
+      // storage has no surplus to shift and renewable share flipped on rounding (9.4e-5 on 17e, 1.41e-4 on 17g).
+      battHours:         { pts: [0, 4, 12], ctx: { battPowerMW: 8000, newBattMW: 0, newWindMW: 30000, newPvMW: 30000 } },
       emisCoal:          { pts: [0, 0.5, 1.04], ctx: {} },
       psEff:             { pts: [0.5, 0.76, 0.95], ctx: {} },
     };
