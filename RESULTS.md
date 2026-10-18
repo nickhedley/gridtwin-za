@@ -4673,6 +4673,13 @@ script rerun on its own: findings 41/42, consistency 81/82, benchmarks 28/29, ex
 | 'peakerSeasonRatio is physically plausible' (validate_benchmarks) | 1.7x | The model's Jan-Mar to Jul-Sep peaker output ratio sits outside 2.15-8.6x against Eskom's 4.3x in 2025: 9.3x on 14a (too high), 1.7-1.8x since (too low); not tuned, the check warns against fitting peaker output | 14a |
 | eng5 check 6, 'storage cuts unserved' | unserved 0.05, 0.04, 0.04, 0.04 GWh as storage rises: flat, not falling | Intended behaviour (user, 16 Oct 2026, message 141): since 15e spare gas charges the existing stores ahead of a forecast shortfall, so 30 GW of new batteries cut unserved 8.3% against the check's 10%; redesign after the note, TODO 14ew | Between 15a (6/6) and 15f (5/6); 15e by cause |
 
+eng5 check 6 measured both ways (user, 18 Oct 2026, message 206 (3); scratch p206/probe_eng5.js; build 2026-10-18i, Today 2026
+at coal EAF 48%, mean of eight outage draws, 0, 10, 20 and 30 GW of new batteries): with spare gas pre-charging the existing
+stores (laGasCharge 1, the default since 15e) unserved goes 47.3, 43.4, 43.4, 43.4 GWh, an 8.3% cut against the check's 10%; on
+the earlier rule (laGasCharge 0) 53.3, 45.9, 45.9, 45.9 GWh, 13.9%. Pre-charging alone cuts 53.3 to 47.3 GWh (11.3%). Both are
+flat beyond 10 GW. Proposed correction, after the note (TODO 14gm): the monotonic part on the default rule, the 10% magnitude on
+the earlier rule.
+
 Fixed during 205, not failing on 18i: validate_structure's orphan check (retailSalesMWh, which lost its caller with
 retailBaseSalesMWh on 18f; retailComponents now calls it) and validate_lint's undefined touBlockOf (the export credit's first
 draft on 18h; it now reads window.touBlockOf). lint and solve pass.
@@ -4695,9 +4702,12 @@ total stays R409.5bn (MYPD6) plus R12bn. The note gives 2025/26 beside it and no
 
 Bills on 18h: 900 kWh R3,812 against Homepower's R3,736; 190 kWh R1,227 against R1,211. Rooftop table, Eskom rows: R3,812 to
 R1,268 (67%) and R1,227 to R690 (44%). Caveat: the factor carries the redetermination's R12bn, a 2026/27 recovery, into every
-later scenario year (12 of the R36.9bn the factor adds, about R0.08/kWh at today's sales), and the RCA schedule is keyed a year
-after the convention the move adopts (panel year 2026 as FY2026/27), so panel years 2027-2029 count the 2026/27 tranche twice.
-Neither touches the presets (2026, or after 2029). Both are M14 (TODO 14gh).
+later scenario year. CORRECTED 18 Oct 2026 (user, message 206 (1)): this said neither issue touches the presets; the first does.
+Measured on build 2026-10-18i (scratch p206/probe_tranche.js: each preset through applyState, the factor with and without the
+R12bn, retail at the scenario year, mean of the hourly curve): Today 2026 R0.083/kWh, where it belongs; Deep decarbonisation 2035
+R0.070, IRP path 2035 R0.072 and Fossil-free 2040 R0.067, where it does not. The second issue, the RCA schedule keyed a year after
+the convention the move adopts (panel year 2026 as FY2026/27), makes panel years 2027-2029 count the tranche twice and touches
+no preset. Both are M14 (TODO 14gh).
 
 (4) The export gap in M1, measured, no change. NERSA's 209.55 TWh is 194.61 domestic plus 14.94 exports (calendar 2025,
 ESK19679); the model's 194.74 is 188.17 domestic plus 6.57 firm exports (750 MW). The +R0.187/kWh of M1 is linear in the
