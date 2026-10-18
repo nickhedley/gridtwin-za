@@ -10014,9 +10014,10 @@ FIXED.lcoePv = Math.round(bldLcoeAnchor(_anchorKey('pvtrk'), 'pv', 'pv', NEW_PVT
 //    NEW_PVTRK_CF_12Y is; validate_weather recomputes it) times the rooftop derate, which is what the engine's rooftop produces.
 //  - lithium: one full cycle a day, 365 a year, so a 4-hour kW discharges 4 x 365 kWh a year. Per MWh discharged; the charging
 //    energy is not costed. Central capex (BLD_COST.batt) and its fixed O&M share.
-//  - diesel open-cycle: a 10% capacity factor, Lazard's long-standing assumption for gas peaking plant in its levelised cost
-//    studies (newer editions 15-20%), on new open-cycle's central capex (bldOcgtCentralCost) and fixed O&M, plus fuel, variable
-//    O&M and carbon at the compliance rate, as the CCGT readout (dieselSrmcR).
+//  - diesel open-cycle: a 10% capacity factor, the bottom of Lazard's 15%-10% range for new-build gas peaking (Lazard, Levelized
+//    Cost of Energy+, June 2025, Appendix A, LCOE v18.0 key assumptions, p.37; read 18 Oct 2026, message 199 (1)). An international
+//    gas-peaker reference, not a South African diesel figure. On new open-cycle's central capex (bldOcgtCentralCost) and fixed
+//    O&M, plus fuel, variable O&M and carbon at the compliance rate, as the CCGT readout (dieselSrmcR).
 // c5e's 2030 engine check (pathway_c5e.json, TF=0.5, twelve weather years x 20 draws) is held for the captions only: lithium
 // 81.141 full cycles a year (1.142 TWh from 14,074 MWh), the diesel fleet 2.8529% (0.85 TWh from 3,400 MW), new wind 41.74%
 // (30.0 TWh from 8,206 MW); RESULTS 'LCOE anchors on reference parameters' has the run-based costs. Vanadium flow, iron-air,
@@ -17920,7 +17921,7 @@ const SLIDERS=[
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R2.00/kWh \u2013 about 60&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the FY2026 reference of $18.50.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Typed; no source recorded (in the model since 1 Oct 2026). Wide range; SMRs higher.'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
-  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:20000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': new diesel open-cycle\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.ocgd+' years at 8% real, at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor (Lazard\u2019s reference for peaking plant), plus fuel, variable O&M and carbon. Floor is diesel\u2019s own running cost, R'+((dieselSrmcR(FIXED))/1000).toFixed(2)+'/kWh. c5e 2030: '+(C5E_2030_DSL_CF*100).toFixed(1)+'&#37;, R'+((bldLcoeDieselAt(C5E_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
+  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:20000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': new diesel open-cycle\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.ocgd+' years at 8% real, at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor, the bottom of Lazard\u2019s range for new gas peaking plant (Levelized Cost of Energy+, June 2025): an international gas-peaker reference, not South African diesel. Plus fuel, variable O&M and carbon. Floor is diesel\u2019s own running cost, R'+((dieselSrmcR(FIXED))/1000).toFixed(2)+'/kWh. c5e 2030: '+(C5E_2030_DSL_CF*100).toFixed(1)+'&#37;, R'+((bldLcoeDieselAt(C5E_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
   {endsub:true},
   {grp:'Storage and flexibility'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
@@ -19633,7 +19634,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-17h';
+const BUILD_STAMP = '2026-10-18a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
