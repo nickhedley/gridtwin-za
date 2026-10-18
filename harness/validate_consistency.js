@@ -1022,8 +1022,11 @@ const num = t => {
         // the CTS study it covers network and retail as well as energy, so the panel now
         // prices the WHOLE residential cost. Comparing that to Homepower's energy charge
         // alone omits the R536/month of fixed charges and reads 15% high.
+        // COMPARATOR CORRECTED 18 Oct 2026 (user, message 203 (7); Eskom Tariffs and Charges Booklet 2026/27, p.27): all three
+        // per-kWh charges, R3.5556 (energy R3.2206, network demand R0.3298, ancillary R0.0052), not the energy charge alone,
+        // which the 10 Sep 2026 change had kept. The check pinned a comparator R0.335/kWh low.
         const HPT = RETAIL_T.homepower4;
-        const perKwhTotal = HPT.energy_r_per_kwh + HPT.fixed_r_per_month / 900;
+        const perKwhTotal = Object.values(HPT.per_kwh_charges_r_per_kwh).reduce((a, b) => a + b, 0) + HPT.fixed_r_per_month / 900;
         const out = d ? { dyn: m(d.dyn), flat: perKwhTotal, energyOnly: m(d.flat) }
                       : { err: 'no panel' };
         yr.value = keepY; __restore(keep); run();
@@ -1063,8 +1066,9 @@ const num = t => {
         // includes a municipal margin against one that does not.
         reset(); yr.value = 2026; st.checked = true; run();
         const at2026 = m(retailHourly().dyn);
+        // All three per-kWh charges from 18 Oct 2026 (booklet 2026/27 p.27; see the 15% check above).
         const HPT2 = RETAIL_T.homepower4;
-        const homepower = HPT2.energy_r_per_kwh + HPT2.fixed_r_per_month / 900;
+        const homepower = Object.values(HPT2.per_kwh_charges_r_per_kwh).reduce((a, b) => a + b, 0) + HPT2.fixed_r_per_month / 900;
         reset();
         Object.assign(state, { coalDecomMW: 32000, newWindMW: 20000, newPvMW: 25000,
           newBattMW: 12000, newBattHours: 4, newCcgtMW: 8000, newRooftopMW: 5000, drShiftPct: 7.5,
@@ -1113,7 +1117,7 @@ const num = t => {
         check('at 2026 the panel reproduces the published tariff',
               Math.abs(vy.at2026 / vy.homepower - 1) < 0.08,
               `R${vy.at2026.toFixed(2)} at scenario year 2026 against Homepower's all-in `
-              + `R${vy.homepower.toFixed(2)}/kWh at 900 kWh - energy plus R536/month of fixed `
+              + `R${vy.homepower.toFixed(2)}/kWh at 900 kWh - its per-kWh charges plus R536/month of fixed `
               + `charges. Since the residential allocation came from Eskom's cost-to-serve `
               + `study it covers network and retail too, so the panel prices the WHOLE `
               + `residential cost and must be checked against the whole tariff. The year must `
@@ -1531,7 +1535,7 @@ const num = t => {
       // has moved. Retail-panel additions must not lift it above what developers accept.
       const nb = run(`
         const P = { ...FIXED, ...state };
-        const A = RETAIL_T.allowed_revenue_2026_27;
+        const A = RETAIL_T.allowed_revenue_2025_26;
         const fom = (A.new_build_fixed_om_r_per_kw_yr || {}).wind || 0;
         const used = (typeof retailComponents === 'function') ? 'panel' : 'none';
         return { acapWind: P.acapWind, perKwh: P.acapWind / (0.35 * 8760), fomInPanel: 0 };

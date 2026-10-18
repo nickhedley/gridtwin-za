@@ -66,9 +66,12 @@ console.log('\nTariff constants against their published sources\n');
   check('Homepower energy matches the NERSA progression',
         Math.abs(gap) < 5,
         `held R${held}, derived R${derived.toFixed(4)} from NERSA's 2024/25 base of R2.305 `
-        + `x ${G.toFixed(4)} x VAT. ${gap.toFixed(1)}% apart. This check exists because the `
-        + `held value was R3.5556 until 10 Sep 2026 - a web summary rather than the Schedule `
-        + `of Standard Prices - and was 10% wrong.`);
+        + `x ${G.toFixed(4)} x VAT. ${gap.toFixed(1)}% apart. The held figure is the energy charge `
+        + `alone; Homepower's three per-kWh charges are R3.5556 (Tariffs and Charges Booklet `
+        + `2026/27, p.27), which is what the panel compares against.`);
+  // MESSAGE CORRECTED 18 Oct 2026 (user, message 203 (7)). It said the R3.5556 held until 10 Sep 2026 was 10% wrong. The
+  // booklet shows R3.5556 is the sum of the per-kWh charges and R3.2206 the energy charge; the logic is unchanged, and whether
+  // NERSA's implied R2.305 includes network demand is not known (JSON homepower4.reconciliation_gap).
 }
 
 // ── 2. HOMEFLEX AND HOMELIGHT ARE IN CURRENT RANDS ─────────────────────────
@@ -76,24 +79,31 @@ console.log('\nTariff constants against their published sources\n');
 // unescalated understates by 22.6%. The test: a 2026/27 rate must exceed its 2024/25 base
 // by the cumulative approved increase.
 {
+  // REPLACED 18 Oct 2026 (user, message 203 (7); Eskom Tariffs and Charges Booklet 2026/27, p.29). This required each rate to
+  // equal NERSA's 2024/25 proposal grown by the approved increases, to within 2%. The booklet's published rates differ from
+  // that derivation: the Homeflex high-season peak is 11% above it (R8.4710 against R7.5386), and Homelight's held figures sat
+  // at the booklet's excluding-VAT rates while labelled inclusive. The check pinned a derived input, so it now tests what the
+  // booklet figures must satisfy: each rate is above its 2024/25 proposal (nothing was left unescalated) and within 25% of the
+  // proposal grown by the approved increases (no unit or VAT slip of that size). Looser than the old 2%, because the derivation
+  // was the error; the rates themselves are the booklet's.
   const hf = T.homeflex || {};
   const now = hf.rates_r_per_kwh_2026_27 || {};
   const orig = hf.rates_r_per_kwh_2024_25_original || {};
   const keys = Object.keys(orig);
-  const bad = keys.filter(k => Math.abs(now[k] / (orig[k] * G) - 1) > 0.02);
-  check('Homeflex rates are escalated to the current financial year',
-        keys.length > 0 && bad.length === 0,
-        `${bad.length} of ${keys.length} rates are not the 2024/25 figure grown by `
-        + `${G.toFixed(4)}: ${bad.join(', ')}. NERSA's proposed tariffs are in 2024/25 rand `
-        + `value and its own document says they are adjusted through the ERTSA process.`);
+  const inBand = (held, base) => held > base && Math.abs(held / (base * G) - 1) < 0.25;
+  const bad = keys.filter(k => !inBand(now[k], orig[k]));
+  check('Homeflex rates are the current year\'s, above their 2024/25 proposals',
+        keys.length > 0 && bad.length === 0 && /Booklet 2026\/2027/.test(hf.source || ''),
+        `${bad.length} of ${keys.length} rates fall outside (2024/25 proposal, proposal x ${G.toFixed(4)} x 1.25): `
+        + `${bad.join(', ')}; the source must name the 2026/27 booklet.`);
 
   for (const k of ['homelight20a', 'homelight60a']){
     const t = T[k] || {};
     const base = t.energy_r_per_kwh_2024_25, held = t.energy_r_per_kwh;
     if (base){
-      check(`${k} is escalated to the current financial year`,
-            Math.abs(held / (base * G) - 1) < 0.02,
-            `held R${held} against R${(base * G).toFixed(4)} = R${base} x ${G.toFixed(4)}.`);
+      check(`${k} holds the current year's rate, above its 2024/25 proposal`,
+            inBand(held, base) && /Booklet 2026\/2027/.test(t.source || ''),
+            `held R${held} against a 2024/25 proposal of R${base} (x ${G.toFixed(4)} = R${(base * G).toFixed(4)}).`);
     }
   }
 }
@@ -119,7 +129,7 @@ console.log('\nTariff constants against their published sources\n');
 
 // ── 4. ALLOWED REVENUE COMPONENTS SUM TO THE TOTAL ─────────────────────────
 {
-  const A = T.allowed_revenue_2026_27 || {};
+  const A = T.allowed_revenue_2025_26 || {};
   const C = A.components_r_per_kwh || {};
   const sum = Object.values(C).reduce((a, b) => a + b, 0);
   check('the allowed-revenue components sum to the stated total',
@@ -135,7 +145,7 @@ console.log('\nTariff constants against their published sources\n');
 
 // ── 5. THE CTS ALLOCATION IS THE RATIO IT CLAIMS ───────────────────────────
 {
-  const A = T.allowed_revenue_2026_27 || {};
+  const A = T.allowed_revenue_2025_26 || {};
   const c = A.cts_residential_detail || {};
   if (c.total_avg_unit_cost_c_per_kwh){
     const derived = c.total_avg_unit_cost_c_per_kwh / c.system_total_c_per_kwh;
@@ -180,7 +190,7 @@ console.log('\nTariff constants against their published sources\n');
 
   // The environmental levy reconciles two independent ways: from Eskom's revenue build-up,
   // and from the statutory 3.5 c/kWh on non-renewable generation.
-  const A = T.allowed_revenue_2026_27 || {};
+  const A = T.allowed_revenue_2025_26 || {};
   const held = (A.components_r_per_kwh || {}).environmental_levy;
   const fromStatutory = 0.035 * 161 / (A.sales_twh || 209.55);
   check('the environmental levy matches the statutory rate on coal generation',
@@ -292,23 +302,23 @@ console.log('\nTariff constants against their published sources\n');
         + `covers their network and surplus and is an upper bound, not a measure.`);
 }
 
-// ── 12. THE PRICE CAP IS ABOVE ANY PRICE THE PANEL PRODUCES ────────────────
-// Recorded 10 Sep 2026 after the cap toggle was found to change nothing. It sits at R12.84
-// and the dearest hour in any scenario is R11.29 - and every decarbonisation scenario LOWERS
-// the peak, so it binds nowhere. The toggle was removed; the cap is still applied so a future
-// scarcity spike stays bounded.
-//
-// If this check ever fails, the cap has started binding and the panel is clipping a real
-// result. That is worth knowing rather than silently truncating.
+// ── 12. THE PRICE CAP IS BUILT ON ITS STATED METHOD ────────────────────────
+// REPLACED 18 Oct 2026 (user, message 203 (5a); retail audit items 27 and 6, 'checks that would block a correct fix').
+// Recorded 10 Sep 2026 as 'the price cap sits above the dearest hour the panel produces', requiring cap > R11.5: that pinned
+// R12.84, built on Agile's earlier 100p cap and on Homepower's energy charge read as R3.5556. Octopus cut the cap to 70p from
+// July 2026, so the rebuilt cap (R9.46) fails it by construction. Clipping is not hidden: the panel already says when the cap
+// binds (THE CAP ANNOUNCES ITSELF in index.html). The check now asserts the held cap equals its stated derivation, Agile's cap
+// over Ofgem's in the same quarter times Homepower's per-kWh charges, within 0.5%.
 {
   const sp = T.shadow_tariff_parameters || {};
-  const cap = sp.cap_r_per_kwh || 0;
-  check('the price cap sits above the dearest hour the panel produces',
-        cap > 11.5,
-        `cap R${cap}/kWh against a peak of about R11.29 at defaults. The cap is 3.6x `
-        + `Homepower, so correcting Homepower moves it - it fell when Homepower was corrected `
-        + `down 10%. If the cap drops below the peak it starts clipping, and a clipped panel `
-        + `reports a bounded number as if it were a modelled one.`);
+  const ci = sp.cap_inputs || {};
+  const hpPerKwh = Object.values((T.homepower4 || {}).per_kwh_charges_r_per_kwh || {}).reduce((x, y) => x + y, 0);
+  const derived = (ci.agile_cap_p_per_kwh / ci.ofgem_cap_p_per_kwh) * hpPerKwh;
+  const cap = sp.cap_r_per_kwh;
+  check('the price cap is Agile\'s cap over Ofgem\'s, applied to Homepower',
+        cap > 0 && derived > 0 && Math.abs(cap / derived - 1) < 0.005,
+        `held R${cap}/kWh against ${ci.agile_cap_p_per_kwh}p / ${ci.ofgem_cap_p_per_kwh}p x R${hpPerKwh.toFixed(4)} = `
+        + `R${derived.toFixed(2)}. Rebuild the held figure from cap_inputs when any of the three moves.`);
 }
 
 // ── 13. CANVAS SIZING IS IDEMPOTENT ────────────────────────────────────────

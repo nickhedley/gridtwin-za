@@ -4826,6 +4826,82 @@ R1,158/MWh (67% to 68% of cost); 12-year capture wind 75.9-85.0% to 71.3-80.2% (
 values match main's (build 18a: grid delay and capture exactly, turn-up R1,156 against R1,158), so no published figure was
 measured with the leak; the presets branch alone carried it.
 
+### Retail panel audit, part 4: today's shadow rate is R3.970/kWh against Homepower's all-in R4.151 at 900 kWh, 4.4% under and inside the 8% band, after NERSA's lines are spread over the model's own sales (M1, +R0.187) and the comparator takes all three of Homepower's per-kWh charges (booklet 2026/27); NERSA's 2025/26 revenue is relabelled, not moved; the coal share now reads a key that exists (build 2026-10-18f; user, 18 Oct 2026, message 203 (4) and (7))
+
+Settings. Build 2026-10-18f (claude/retail-audit), Today 2026 through applyState, one simulate on the default profiles, retail
+year 2026, regulated basis, cap on; Deep decarbonisation 2035 and Fossil-free 2040 through applyState at their own years.
+Scratch probe_level.js, probe_sales.js, probe_cap.js. Eskom tariff figures from the Tariffs and Charges Booklet 2026/2027
+(non-local-authority, effective 1 April 2026), the user's copy, as summarised in the retail audit's addendum of 18 Oct 2026;
+the booklet stays local.
+
+(7) Tariff inputs, from the booklet. Homepower 4 (p.27): energy 322.06 c/kWh (with the legacy charge and 33.4% of the service and
+administration charge), ancillary 0.52, network demand 32.98: R3.5556/kWh in all, VAT inclusive. R3.2206 is the energy charge
+alone; the 10 Sep 2026 change kept it and dropped the other two, so the panel's Homepower line, its bill comparison and both
+level checks sat R0.335/kWh low. Homeflex 4 (p.29): high season 847.10, 259.19, 190.83; low season 394.55, 245.51, 190.83 c/kWh,
+plus legacy 28.50, ancillary 0.52 and network demand 32.98 in every hour; the derived rates held until now had the high-season
+peak 11% low and none of the three per-kWh charges. Homelight (p.29): 270.30 and 343.61 c/kWh VAT inclusive; the held R2.3496
+and R2.9868 were the excluding-VAT rates labelled inclusive. Megaflex (p.13, below 500 V, up to 300 km, excluding VAT): high
+season 739.28, 184.82, 123.20; low season 306.82, 172.50, 123.20; the 6:1 ratio is high season only. Gen-offset Homeflex export
+credit (p.44) recorded for the feed-in caption. The panel's Homepower and Homeflex lines are now their per-kWh charges, labelled
+so; fixed charges stay outside both. Homeflex's annual mean is R3.221/kWh and Homepower's R3.5556.
+
+(4a) M1, the sales base. Measured from ESK19679 (local): NERSA's 209.55 TWh is calendar-2025 RSA Contracted Demand, 194.62 TWh
+domestic plus 14.94 TWh of international exports. The model's sales are at the same level and scope (system sent-out, firm
+exports included): 194.74 TWh today, 188.16 domestic demand plus 6.57 TWh of firm exports (750 MW). The difference is volume,
+not level: 2026 demand fell and the model's firm exports are smaller. NERSA's lines (network, generation opex and capital, RCA,
+imports, levy, arrears) were rands per kWh at 209.55 recovered over 194.74 TWh, so they collected 92.9% of their rands: an
+under-recovery of 7.1%, R0.187/kWh at retail today. They are now spread over the scenario's own sales (nersaScale), which also
+removes a second simulate per render (retailBaseSalesMWh).
+
+(4b) M2, the revenue year. The block held NERSA's 2025/26 allowance (R384.61bn) under the key allowed_revenue_2026_27. 2026/27 is
+R409.5bn in the MYPD6 decision (IOL, Jan 2025; Engineering News, R410bn) plus R12bn from the February 2026 redetermination
+(NERSA statement of 8 Feb 2026, reported by Energize and IOL): about R421.5bn, 9.6% more. Relabelled (key allowed_revenue_2025_26,
+the note says 2025/26 and gives the 2026/27 figure), not moved: the 2026/27 component split and its RCA content are not
+published, and one factor on every line is an assumption. Measured as a sensitivity: scaling every NERSA line by 1.0959 adds
+R0.254/kWh, taking today to about R4.224.
+
+(4c) The level, Today 2026, R/kWh:
+
+| Step | Shadow, mean of the hourly curve | Shadow, load-weighted (bill rate) | Against R4.151 | Against R3.816 (old comparator) |
+|---|---|---|---|---|
+| Build 18e, before (4) and (7) | 3.783 | 3.795 | -8.9% | -0.9% |
+| After (4a), spread over the model's sales | 3.970 | 3.982 | -4.4% | +4.0% |
+| Sensitivity: (4b) as a uniform move to 2026/27 | about 4.224 | about 4.236 | +1.8% | +10.7% |
+
+Homepower's all-in at 900 kWh is its per-kWh charges, R3.5556, plus R536/900: R4.151. Both level checks pass after the change
+(within 8%, and within 15%); no re-tuning. With the audit's addendum, the corrected level sits within about 2% of the corrected
+comparator only if the revenue is also moved to 2026/27; as relabelled it is 4.4% under. Measured on 18f (bill_18f.out): bill
+table 900 kWh R3,584 against Homepower R3,736, 190 kWh R757 against R1,212; rooftop table Eskom rows R3,584 to R1,433 and R757 to
+R303.
+
+(4d) Coal share. retailComponents read A.coal_share_of_generation_assets, which did not exist, and fell back to a literal 0.8
+(rule 4). The key now exists at 0.8, with its basis: the pool it applies to is generation only, so coal's share of generation
+assets (about 80%) is the right concept; the JSON's 0.54 (whole company, 0.67 x 0.8) and 0.6 (all operating costs, network
+included) are shares of a different pool. Effect of the alternatives, none today (no coal retired): Deep decarbonisation 2035
+R3.831 at 0.8, R3.894 at 0.6 (+1.6%), R3.913 at 0.54 (+2.1%); Fossil-free 2040 R4.498, R4.595 (+2.2%), R4.625 (+2.8%).
+
+Checks changed, each pinning an input the booklet shows was wrong: validate_consistency's two level checks now compare against
+all three per-kWh charges (was the energy charge alone); validate_inputs 2 tested the derived Homeflex and Homelight rates against
+NERSA's proposals grown by the approved increases within 2%, which the booklet's rates do not satisfy (the derivation was the
+error), and now tests that each rate is above its 2024/25 proposal and within 25% of it grown, with the booklet named as source;
+validate_inputs 1 keeps its logic and drops its claim that R3.5556 was 10% wrong.
+
+### Retail panel audit, part 5 (a) and (c): the retail cap rebuilt on its stated method, R9.46/kWh (was R12.84); imports end with importsEndYear as in the engine (build 2026-10-18f; user, 18 Oct 2026, message 203 (5))
+
+Cap. Octopus Agile's cap over Ofgem's standard-variable cap in the same quarter, applied to Homepower's per-kWh charges: Agile
+70p from July 2026 (Octopus, 'Agile pricing explained', user, message 203 (5a)), Ofgem 26.32p for 1 Oct to 31 Dec 2026 (Ofgem's
+cap unit rates; UK electricity VAT removed for that period, so it is the price paid), R3.5556 (booklet p.27): 70 / 26.32 x 3.5556
+= R9.46. Oct-Dec 2026 because it is the quarter in which both caps apply; Jan-Mar 2026 (27.69p) gives R8.99 but pairs the new
+Agile cap with a quarter before it. Was R12.84 = 100 / 27.69 x R3.5556. Measured on 18f: the cap binds in no hour of the
+average day on Today 2026, Deep 2035, Fossil-free 2040 or IRP path 2035 (dearest hours R4.09, R3.94, R4.55, R4.62); it binds in
+two hours of Today's representative winter week, which the panel announces. Check changed: validate_inputs 12 required the cap
+above R11.5 and would have blocked the rebuild (audit section 6); it now checks the held cap against its derivation from the
+inputs it names (cap_inputs), within 0.5%. The tooltip reads the cap and its inputs.
+
+Imports. The retail line kept the full contract cost when importsEndYear zeroed imports in the engine (audit M13). It now applies
+the engine's rule at its own year. Deep decarbonisation 2035 with importsEndYear 2030: the imports line R0.046 to R0, engine
+imports 0 TWh. No effect at defaults (importsEndYear 0).
+
 ### Build 2026-10-16h, central c5e: wind and solar capex backed out at the capacity factor each runs at by default; suite 819/824 as on 16g, no check changes status, four values move with the capex (user, 16 Oct 2026, message 161 (1); build 2026-10-16h)
 
 The change: FIXED.bldTariffCfBasis 'run' (was 'bid'). New wind R20,879/kW (was R17,773) and tracking solar R11,038/kW (was

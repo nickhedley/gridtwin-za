@@ -930,7 +930,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
                 <span id="retStrandedLbl">Retired coal asset base still in tariffs</span>
               </label>
-              <label style="font-size:10.5px;color:var(--ink2)" title="A retail price cap of R12.84/kWh, the Octopus Agile cap scaled to South Africa. Real dynamic retail tariffs carry one; it is a consumer protection instrument and is separate from the wholesale offer cap already in the scarcity pricing. Unticked: the uncapped series. Where it binds, the panel says so under the chart.">
+              <label id="retCapLbl" style="font-size:10.5px;color:var(--ink2)" title="A retail price cap, the Octopus Agile cap scaled to South Africa; the figure and its basis are set when the panel draws.">
                 <input id="retCap" type="checkbox" checked onchange="renderRetail()">
                 <span>Retail price cap</span>
               </label>
@@ -16085,7 +16085,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   // The year is what the second review added: every reference model that projects a tariff
   // forward is anchored to one, and without it a 2035 build was being costed at 2026 prices
   // on a 2026 asset base with 2026 one-offs.
-  const A = RETAIL_T.allowed_revenue_2026_27;
+  const A = RETAIL_T.allowed_revenue_2025_26;
   const C = A.components_r_per_kwh;
   const Y = A.scenario_year || {};
   const P = { ...FIXED, ...state };
@@ -16147,18 +16147,25 @@ function retailComponents(markup, stranded, year, viaMuni){
   // generation remainder runs off and scales with the coal fleet. All of these are fixed rand
   // costs, so they are spread over the scenario's sales relative to today's. Before this the
   // run-off applied to the network too and fixed costs did not rise as sales fell.
-  const fixedScale = retailBaseSalesMWh() / salesMWh;
+  // ONE SALES BASE (user, 18 Oct 2026, message 203 (4a); retail audit M1). NERSA's lines below are rands per kWh at its
+  // 209.55 TWh, calendar 2025 RSA contracted demand with exports (ESK19679: 194.62 domestic plus 14.94 exports). The model's
+  // sales are at the same level and scope (system sent-out, firm exports included) but a smaller volume, 194.7 TWh today:
+  // 2026 demand fell (188.2 domestic) and the model's firm exports are 6.6 TWh. Charged per kWh at 209.55 and recovered over
+  // 194.7, every NERSA line collected 92.9% of the rands it claims. They are now spread over the scenario's own sales:
+  // fixed rands, as before, on one base. Until then fixedScale held them at today's per-kWh level (retailBaseSalesMWh).
+  const nersaScale = (A.sales_twh * 1e6) / salesMWh;
   const netBase = NETWORK_RETAIL_R / (A.sales_twh * 1e9);         // R/kWh at NERSA's base
   const pool = C.operating_costs + C.depreciation + C.return_on_assets;
   const genPool = Math.max(0, pool - netBase);                   // generation's share of the pool
   const genOpexBase = genPool * C.operating_costs / pool;
   const genAssetBase = genPool - genOpexBase;
-  const coalOfGen = A.coal_share_of_generation_assets ?? 0.8;    // coal_share_basis: ~80%
+  // The key exists from 18 Oct 2026; it was absent and the literal 0.8 stood in (rule 4; JSON coal_share_of_generation_basis).
+  const coalOfGen = A.coal_share_of_generation_assets;
   const floor = Y.existing_rab_runoff_floor_share ?? 0.35;
   const toYr = Y.existing_rab_runoff_to_year || 2045;
   const runoff = Math.max(floor, 1 - (1 - floor) * dy / Math.max(1, toYr - base));
-  const opex = genOpexBase * ((1 - coalOfGen) + coalOfGen * coalFrac) * fixedScale;
-  const genAssets = genAssetBase * runoff * fixedScale;
+  const opex = genOpexBase * ((1 - coalOfGen) + coalOfGen * coalFrac) * nersaScale;
+  const genAssets = genAssetBase * runoff * nersaScale;
   // MEGAWATTS RETIRED IS NOT VALUE RETIRED, corrected 23 Sep 2026. With stranded cost switched
   // off, the retired coal was removed from the asset base in proportion to MW - and the asset
   // base was ALSO being run down by the RAB run-off above, so the same reduction was counted
@@ -16309,7 +16316,10 @@ function retailComponents(markup, stranded, year, viaMuni){
   // also carried IPP OCGT diesel - already in the fuel line - and never expired. Other IPP
   // programmes and the peakers' capacity charges are not carried.
   const ipp = ((r.reipppOutputMWh || 0) * reipppRate(year) + otherIppR(year)) / salesMWh / 1000;
-  const imports = C.international_purchases *
+  // IMPORTS FOLLOW importsEndYear, AS THE ENGINE DOES (user, 18 Oct 2026, message 203 (5c); retail audit M13). The engine
+  // sets importsMW to zero after the end year; this line kept the full contract cost. It applies the same rule at its own year.
+  const importsLive = (P.importsEndYear > 0 && year > P.importsEndYear) ? 0 : 1;
+  const imports = C.international_purchases * nersaScale * importsLive *
                   ((P.importsMW || 0) / Math.max(1, FIXED.importsMW || 1));
 
   // ONE-OFFS WITH END DATES. The RCA tranche ends with MYPD6. Arrears are a transfer, not a
@@ -16322,9 +16332,9 @@ function retailComponents(markup, stranded, year, viaMuni){
   const lastSched = schedYears.length ? Math.max(...schedYears) : (Y.rca_ends_fy || 2028);
   const rcaBn = sched[String(year)];
   const rca = (year > lastSched) ? 0
-            : (rcaBn != null ? rcaBn * 1e9 / (A.sales_twh * 1e9) : C.rca_recoveries);
-  const arrears = Y.arrears_in_tariff ? C.arrear_debt : 0;
-  const fixedItems = rca + arrears + C.environmental_levy;
+            : (rcaBn != null ? rcaBn * 1e9 / (salesMWh * 1000) : C.rca_recoveries * nersaScale);
+  const arrears = Y.arrears_in_tariff ? C.arrear_debt * nersaScale : 0;
+  const fixedItems = rca + arrears + C.environmental_levy * nersaScale;
 
   // One method from 22 Sep 2026: the engine's own transmission charge (txRPerKWyr on new wind,
   // utility solar not on retired-coal sites, and offshore, plus offshore export grid) and its
@@ -16332,7 +16342,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   // the whole TDP over 56 GW, refurbishment and load strengthening included.
   const newGrid = (r.txCapexR || 0) / salesMWh / 1000;
   // Network and retail, both bases: today's rand amount over scenario sales, plus new transmission.
-  const network = netBase * fixedScale + newGrid;
+  const network = netBase * nersaScale + newGrid;
 
   // A municipal customer buys at a BULK tariff. Eskom's own retail distribution margin - the
   // last-mile network and customer service it would otherwise provide - is not in that bulk
@@ -16408,18 +16418,8 @@ function retailSalesMWh(r){
     ? Array.prototype.reduce.call(r.chargeMW, (a, b) => a + (+b || 0), 0) : 0;
   return Math.max(1, gen - (r.E.rooftop || 0) - (r.E.exported || 0) - chg);   // see retailComponents
 }
-// Sales at today's defaults: the base over which Eskom's fixed costs are spread today. Cached
-// per engine run, not for the session: a value cached at page load was taken on the synthetic
-// profiles before profiles.json arrived, and read 175.5 TWh against 187.1.
-let _retailBaseSales = null, _retailBaseKey = null;
-function retailBaseSalesMWh(){
-  if (_retailBaseSales && _retailBaseKey === lastRes) return _retailBaseSales;
-  _retailBaseKey = lastRes;
-  const st = {};
-  SLIDERS.forEach(s => { if (!s.grp) st[s.id] = s.toggle ? (s.def ? 1 : 0) : s.def; });
-  _retailBaseSales = retailSalesMWh(simulate(st, PROFILES));   // exactly as run() calls it
-  return _retailBaseSales;
-}
+// retailBaseSalesMWh (today's sales, a second simulate per render) removed 18 Oct 2026 with the one-base change in
+// retailComponents (message 203 (4a)).
 // The retail cost stack on either basis: the energy term that follows the hour, the flat term,
 // and the breakdown the panel lists. One function for the curve, the week and the breakdown -
 // they had three copies of the market rule until 22 Sep 2026 and two of them were stale.
@@ -16659,6 +16659,12 @@ function retailHourly(){
   const raw = retailRaw(lastRes.marginalP, markup, stranded, year, viaMuni);
   const comp = retailComponents(markup, stranded, year, viaMuni);
   const dyn = raw.map(v => capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
+  // The cap's tooltip reads the cap and its inputs (message 203 (5a)): it said R12.84 on Agile's earlier 100p cap.
+  const capLbl = document.getElementById('retCapLbl'), ci = sp.cap_inputs || {};
+  if (capLbl) capLbl.title = `A retail price cap of R${sp.cap_r_per_kwh.toFixed(2)}/kWh: Octopus Agile's ${ci.agile_cap_p_per_kwh}p cap `
+    + `(from ${ci.agile_cap_from}) over Ofgem's ${ci.ofgem_cap_p_per_kwh}p standard-variable cap (${ci.ofgem_period}), applied to Homepower's `
+    + `per-kWh charges. Real dynamic retail tariffs carry one; it is a consumer protection instrument and is separate from the `
+    + `wholesale offer cap already in the scarcity pricing. Unticked: the uncapped series. Where it binds, the panel says so under the chart.`;
 
   const hf = t.homeflex, R = hf.rates_r_per_kwh_2026_27 || {};
   // ALL SIX RATES, from the NERSA decision of 18 Feb 2025. The panel previously held only
@@ -16668,9 +16674,15 @@ function retailHourly(){
   // shifted the windows. The windows are Eskom's 2025/26 ones (TOU_WINDOWS), weekends included, from build 2026-10-17a
   // (message 171); before, the evening standard hours and the low season's 06-07 counted as off-peak, and every day as a weekday.
   // dow 0 Sunday ... 6 Saturday; a weekday when not given.
+  // PER-kWh CHARGES, NOT THE ENERGY CHARGE ALONE (user, 18 Oct 2026, message 203 (7); Eskom Tariffs and Charges Booklet
+  // 2026/27, pp.27 and 29). Homepower's energy charge, R3.2206, is one of three per-kWh charges, R3.5556 with ancillary and
+  // network demand; Homeflex adds legacy, ancillary and network demand, R0.62, to every hour's energy charge. Until then both
+  // lines carried the energy charge alone. Monthly fixed charges stay outside both lines.
+  const perKwhSum = o => Object.values(o).reduce((a, b) => a + b, 0);
+  const hfPerKwh = perKwhSum(hf.per_kwh_charges_r_per_kwh);
   const flexAt = (h, high, dow = 1) => {
     const s = high ? 'high' : 'low', b = touWindowBlock(s, dow, h);
-    return R[s + '_season_' + b];
+    return R[s + '_season_' + b] + hfPerKwh;
   };
 
   // A REPRESENTATIVE WEEK, hour by hour, on the same basis as the daily curve. The daily
@@ -16713,7 +16725,7 @@ function retailHourly(){
   }
 
   // The two tariffs a household can actually buy today, for comparison.
-  const flat = new Array(24).fill(hp.energy_r_per_kwh);
+  const flat = new Array(24).fill(perKwhSum(hp.per_kwh_charges_r_per_kwh));
   // The average day: high season a quarter of the year, each season's day five weekdays, a Saturday and a Sunday in seven.
   const flexDay = (h, high) => (5 * flexAt(h, high, 1) + flexAt(h, high, 6) + flexAt(h, high, 0)) / 7;
   const flex = hod.map((_, h) => 0.25 * flexDay(h, true) + 0.75 * flexDay(h, false));
@@ -16811,8 +16823,8 @@ function renderRetail(){
     + '<th style="text-align:right;padding:4px 6px">Cheapest hour</th>'
     + '<th style="text-align:right;padding:4px 6px">Dearest hour</th>'
     + '<th style="text-align:right;padding:4px 6px">Spread</th></tr>'
-    + [['Homepower, flat', d.flat, 'energy charge only; R536/month of fixed charges sit outside it'],
-       ['Homeflex, time of use', d.flex, 'energy charges only, averaged over the year (high season a quarter of it)'],
+    + [['Homepower, flat', d.flat, `per-kWh charges (energy, network demand, ancillary); R${Math.round(d.fixedPerMonth)}/month of fixed charges sit outside it`],
+       ['Homeflex, time of use', d.flex, 'per-kWh charges, averaged over the year (high season a quarter of it); fixed charges outside'],
        // NO 'Shadow dynamic' ROW. It was the simple mean of d.dyn, which is a step toward
        // the Agile rows rather than a tariff anyone could be on: nobody consumes flat across
        // 8,760 hours, so an unweighted average of an hourly price describes no customer. The
@@ -16960,9 +16972,9 @@ function renderRetail(){
     // Homepower collects as R/month. Adding Homepower's fixed charge on top counted it twice (900 kWh read R3,953 for
     // R3,417). Homepower's own bill sits beside it for comparison.
     const rate = hhRate;
-    const fixed = d.fixedPerMonth || 0, hpEnergy = mean(d.flat);
+    const fixed = d.fixedPerMonth || 0, hpPerKwh = mean(d.flat);
     const row = (kwh, label) => {
-      const shadow = kwh * rate, hp = kwh * hpEnergy + fixed;
+      const shadow = kwh * rate, hp = kwh * hpPerKwh + fixed;
       return `<tr><td style="padding:3px 6px">${label}</td>`
         + `<td class="mono" style="text-align:right;padding:3px 6px">${kwh}</td>`
         + `<td class="mono" style="text-align:right;padding:3px 6px;font-weight:700">R${Math.round(shadow).toLocaleString('en-US')}</td>`
@@ -16983,8 +16995,8 @@ function renderRetail(){
       + `<div style="font-size:10px;color:var(--ink2);line-height:1.5;margin-top:4px">`
       + `The shadow bill is kWh times the R${rate.toFixed(2)}/kWh of the \u201cDynamic pricing, habits unchanged\u201d row `
       + `above. That rate is all-in: it already carries the network and customer costs Homepower recovers through its `
-      + `R${Math.round(fixed)} monthly fixed charge, so no fixed charge is added. Homepower today is its energy charge, `
-      + `R${hpEnergy.toFixed(2)}/kWh, plus that fixed charge. Eskom has used 30 kWh a day for years; the average electrified `
+      + `R${Math.round(fixed)} monthly fixed charge, so no fixed charge is added. Homepower today is its per-kWh charges, `
+      + `R${hpPerKwh.toFixed(2)}/kWh (energy, network demand and ancillary), plus that fixed charge. Eskom has used 30 kWh a day for years; the average electrified `
       + `household uses about a fifth of that, and on Homepower pays the same fixed charge for it.</div></div>`;
   })();
   // WHAT ROOFTOP DOES TO THAT BILL, and what a municipal customer pays instead. Two things the
@@ -17079,8 +17091,9 @@ function renderRetail(){
     : '';
   noteEl.innerHTML = yearMix + capLine + shedWarn + rowsNote + billHtml + rooftopHtml + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
-    + `${c.year}. Built from NERSA's allowed revenue, its lines per kWh at NERSA's `
-    + `${RETAIL_T.allowed_revenue_2026_27.sales_twh.toFixed(0)}&nbsp;TWh base and recovered over the scenario's `
+    + `${c.year}. Built from NERSA's 2025/26 allowed revenue, `
+    + `R${RETAIL_T.allowed_revenue_2025_26.approved_total_r_bn.toFixed(1)}bn (2026/27's is about `
+    + `R${RETAIL_T.allowed_revenue_2025_26.next_year_total_r_bn.toFixed(1)}bn with the redetermination), its rands spread over the scenario's `
     + `${c.salesTWh.toFixed(0)}&nbsp;TWh of sales; allocated to that customer category with Eskom's cost-to-serve study, `
     + `generation at ${RES_FACTOR_GEN.toFixed(2)}&times;, network at ${RES_FACTOR_NET.toFixed(2)}&times; and `
     + `transmission at ${RES_FACTOR_TX.toFixed(2)}&times; the system average. Components before allocation, losses `
@@ -17101,8 +17114,10 @@ function renderRetail(){
         + ` The rest is still spilled. Hive's Coega project, the most advanced in Africa and `
         + `still pre-FID, is 1.2&nbsp;GW.<br><br>`
         : '')
-    + `<span style="color:var(--ink2)">Constant 2026 rands, so a scenario year and today sit on `
-    + `the same basis. The comparison holds today's tariff flat in real terms and that is `
+    + `<span style="color:var(--ink2)">Real terms, so a scenario year and today sit on the same basis; the rands `
+    + `are of different vintages: NERSA's lines 2025/26, about `
+    + `${Math.round(100 * (RETAIL_T.allowed_revenue_2025_26.next_year_total_r_bn / RETAIL_T.allowed_revenue_2025_26.approved_total_r_bn - 1))}% `
+    + `below 2026/27, fuel and new build 2026, the tariffs 2026/27. The comparison holds today's tariff flat in real terms and that is `
     + `<strong>generous to the status quo</strong>: NERSA has already approved 8.76% and 8.83% `
     + `against a 3% inflation target, and the CSIR measures 4.6% a year real over 2014&ndash;25. `
     + `The new-grid line is the engine's tiered connection charge on new wind and solar, at the `
@@ -17184,7 +17199,7 @@ function drawRetailWeek(cv, d){
   ctx.font = '9px ui-monospace,monospace'; ctx.textAlign = 'left';
   ctx.fillStyle = 'rgba(128,128,128,0.75)';
   ctx.fillText((d.wkMode === 'S' ? 'summer week \u00b7 Homeflex at low-season rates' : 'winter week \u00b7 Homeflex at high-season rates')
-               + ' \u00b7 shadow all-in, tariffs energy only',
+               + ' \u00b7 shadow all-in, tariffs without fixed charges',
                padL + 4, 9);
 }
 
@@ -17254,9 +17269,9 @@ function drawRetail(cv, d){
   line(d.flat, '#7A8A99', [2,3]);
   line(d.dyn,  '#0F5C32');
   ctx.font = '9px ui-monospace,monospace'; ctx.textAlign = 'left';
-  // The shadow line is all-in (it recovers network, customer and fixed costs per kWh); the two tariff lines are energy
-  // charges only, without Homepower's monthly fixed charges (user, 18 Oct 2026, message 203 (2b); audit section 4).
-  [['Shadow dynamic, all-in','#0F5C32'],['Homeflex, energy only','#C4783C'],['Homepower, energy only','#7A8A99']]
+  // The shadow line is all-in (it recovers network, customer and fixed costs per kWh); the two tariff lines are per-kWh
+  // charges, without the monthly fixed charges (user, 18 Oct 2026, message 203 (2b) and (7); audit section 4).
+  [['Shadow dynamic, all-in','#0F5C32'],['Homeflex, per kWh','#C4783C'],['Homepower, per kWh','#7A8A99']]
     .forEach((L, i) => { ctx.fillStyle = L[1];
       ctx.fillText('\u2014 ' + L[0], padL + 4 + i * 148, 9); });
 }
@@ -19727,7 +19742,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-18e';
+const BUILD_STAMP = '2026-10-18f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
