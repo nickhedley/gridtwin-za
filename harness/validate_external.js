@@ -31,6 +31,11 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 
 const ROOT = process.argv[2] || '.';
+// The existing fleet the CSIR scenarios top up to 20 GW of wind and 15 GW of utility solar, read from the page's FIXED rather than
+// typed, so a change to the base fleet (Msenge Emoyeni, 17 Oct 2026) keeps the scenario at CSIR's totals.
+const _fixedOf = k => { const m = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').match(new RegExp('[{,\\s]' + k + '\\s*:\\s*([0-9.]+)'));
+  if (!m) throw new Error('FIXED.' + k + ' not found in index.html'); return +m[1]; };
+const FIXED_WIND_MW = _fixedOf('windMW'), FIXED_PV_UTILITY_MW = _fixedOf('pvUtilityMW');
 let pass = 0, fail = 0;
 const rows = [], failures = [], notes = [];
 
@@ -103,8 +108,8 @@ const EXTERNAL = {
     band: 6,                 // percentage points - tightened once demand and
                              // EAF were sourced; see why, below
     scenario: {              // CSIR low end of its own 2030 capacity range
-      newPvMW: 15000 - 3271, // to 15 GW total utility solar
-      newWindMW: 20000 - 4612, // to 20 GW total wind
+      newPvMW: 15000 - FIXED_PV_UTILITY_MW, // to 15 GW total utility solar
+      newWindMW: 20000 - FIXED_WIND_MW, // to 20 GW total wind
       demandGrowthPct: 30,   // 285 TWh by 2030 - CSIR Table 1, Least-cost scenario
       coalEAFPct: 65,        // CSIR Table 1: 65% EAF in 2030
       bldWindModern: 0,      // the study's own basis: its wind on the current-turbine profile (user, 7 Oct 2026)
@@ -128,8 +133,8 @@ const EXTERNAL = {
     published: 40,           // % renewable, implied complement
     band: 8,
     scenario: {
-      newPvMW: 15000 - 3271,
-      newWindMW: 20000 - 4612,
+      newPvMW: 15000 - FIXED_PV_UTILITY_MW,
+      newWindMW: 20000 - FIXED_WIND_MW,
       demandGrowthPct: 30,   // 285 TWh by 2030 - CSIR Table 1, Least-cost scenario
       coalEAFPct: 65,        // CSIR Table 1: 65% EAF in 2030
       bldWindModern: 0,      // the study's own basis: its wind on the current-turbine profile (user, 7 Oct 2026)

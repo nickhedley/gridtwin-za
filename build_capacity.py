@@ -90,6 +90,19 @@ for region, v in pfl["by_region_wheeled"].items():
 assert round(total(private_online["solar_mw"]) + total(private_online["wind_mw"]), 1) \
     == pfl["totals"]["wheeled_mw"], "PFL regional split does not sum to its own total"
 
+# PRE-2026 PRIVATE WHEELED PLANT (user, 17 Oct 2026, messages 190 (1) and 196 (2)): plant that reached commercial operation
+# before the H1 2026 monitor's window, confirmed from the developer's or offtaker's own release, added to by_source.private.
+# Wind only: private solar without an NTCSA contract is taken to sit inside NTCSA's rooftop PV estimate (message 191 (1)), so
+# loading it here would count it twice.
+PRE2026_PRIVATE = [
+    dict(name="Msenge Emoyeni", tech="wind", mw=69.0, region="Eastern Cape", cod="2024-10",
+         route="wheeling to Sasolburg", owners="AIIM 62%, Reatile 38%",
+         source="Sasol release, 10 Oct 2024: commercial operation by 10 Oct 2024"),
+]
+for _x in PRE2026_PRIVATE:
+    assert _x["tech"] == "wind", "pre-2026 private solar sits in the rooftop estimate; do not load it here"
+    private_online["wind_mw"][_x["region"]] += _x["mw"]
+
 # ---------------------------------------------------------------------------
 # 1b. SUPPLY-AREA SPLIT. The IPP Office reports by PROVINCE; this model is keyed
 #     by Eskom TRANSMISSION SUPPLY AREA (see substations_compact.json meta -
@@ -287,8 +300,9 @@ regional = {
         " commercial operation 22 May 2026 - after the 31 March cutoff - confirmed by"
         " Engineering News and the PFL H1 2026 monitor, and listed as in-construction at"
         " the cutoff in ipp_pipeline.json.",
-        "source_private": "Alao, O. & Kruger, W. (2026), South African IPPs: financial close and commercial operations monitor, H1 2026 update, Power Futures Lab, UCT GSB (see nodal/pfl_private_h1_2026.json)",
-        "private_coverage": "h1-2026-only",
+        "source_private": "Alao, O. & Kruger, W. (2026), South African IPPs: financial close and commercial operations monitor, H1 2026 update, Power Futures Lab, UCT GSB (see nodal/pfl_private_h1_2026.json); plus pre-2026 private wheeled wind confirmed from releases (private_pre2026)",
+        "private_coverage": "h1-2026, plus pre-2026 private wind listed in private_pre2026",
+        "private_pre2026": PRE2026_PRIVATE,
         "as_at": "2026-03-31",
         "compiled": COMPILED,
         "REBUILD_NOTE": (

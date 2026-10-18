@@ -1,5 +1,31 @@
 # GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
 
+## Optimiser caches removed for the c5f chain (17 Oct 2026, 22:04 UTC; user, message 198)
+
+Twelve folders named lpcache were deleted, on Nick's say-so (message 198): c5e's frozen
+copy and the c5c-era and older copies. Only lpcache folders: every frozen copy's run outputs (pathway_*.json, pathcheck_*.json,
+topup_*.json), logs and settings files are kept, and RESULTS cites none of what was deleted. The caches only let a restarted run
+replay solves it had finished; c5e and anything older now re-solve from scratch if re-run. Listed sizes add to 6,163 MB; the disk
+gained 4,620 MB (6,028 MB free after, from 1,408), because the two prm copies' caches shared files.
+
+| Folder | Size, MB | Files |
+|---|---|---|
+| scratchpad/c5e/repo/harness/lpcache | 3,370 | 79 |
+| scratchpad/c5e/gen/harness/lpcache | 80 | 2 |
+| scratchpad/prm_c5c/repo/harness/lpcache | 747 | 18 |
+| scratchpad/prm0_c5c/repo/harness/lpcache | 747 | 18 |
+| scratchpad/tariffcf/repo/harness/lpcache | 80 | 2 |
+| scratchpad/c5line/lpcache | 102 | 3 |
+| gtza-14bh/harness/lpcache | 465 | 16 |
+| gtza-costm/harness/lpcache | 230 | 12 |
+| gtza-07s/harness/lpcache | 185 | 6 |
+| gtza-baselines/harness/lpcache | 101 | 4 |
+| gtza-cost/harness/lpcache | 37 | 2 |
+| gtza-grid/harness/lpcache | 19 | 1 |
+
+Scratchpad is /tmp/claude-0/-home-user/7f3311fb-be50-5c31-9fe8-354006007a62/scratchpad; the other folders are worktrees under
+/home/user. List as deleted: scratchpad/lpcache_delete_list.txt.
+
 ## Local run copies: optimiser caches removed (17 Oct 2026, 04:45 UTC; user, message 174 (2))
 
 To keep the c5e chain from running out of disk, the cached optimiser solutions (harness/lpcache, 2.39 GB) were removed from five
