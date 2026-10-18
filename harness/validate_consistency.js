@@ -778,11 +778,16 @@ const num = t => {
     // 14 Oct 2026). Means at these 2025 settings, R/MWh, 14a -> 14d: high off-peak 778 -> 914, low
     // off-peak 868 -> 792; shed 12 -> 37 GWh, more of it in the high season. Medians 743-750 on both.
     // This check guards a claim in the NERSA correction note.
+    // MESSAGE CORRECTED 18 Oct 2026 (user, message 205 (7); Eskom Tariffs and Charges Booklet 2026/27, pp.13 and 29). The check
+    // asserts a model ordering only: at 2025 conditions the high-season off-peak block has the lowest mean modelled price. Its
+    // message said the claim it guards is that Megaflex charges high-season off-peak above low-season off-peak; the 2026/27
+    // booklet gives off-peak the same in both seasons (Megaflex 123.20 c/kWh, Homeflex 190.83), so that premise does not hold
+    // for 2026/27. Logic unchanged; whether the check and the NERSA correction note stand is the user's (TODO 14gd).
     check('high-season off-peak is the cheapest block modelled',
           tou.cheapest === 'high offpeak',
-          `cheapest is "${tou.cheapest}" - the surviving NERSA claim is that Megaflex `
-          + `charges high-season off-peak above low-season off-peak and weekend while it `
-          + `is the cheapest block. If this moves, the correction note needs revisiting`);
+          `cheapest is "${tou.cheapest}". The check asserts the model's ordering only. The NERSA correction note's claim `
+          + `it guarded, that Megaflex charges high-season off-peak above low-season off-peak, does not hold for 2026/27: `
+          + `off-peak is 123.20 c/kWh in both seasons (Megaflex) and 190.83 (Homeflex), booklet pp.13 and 29 (TODO 14gd).`);
 
     check('every block has a tariff rank to compare against',
           tou.unranked === 0,

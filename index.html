@@ -16152,7 +16152,11 @@ function retailComponents(markup, stranded, year, viaMuni){
   // 2026 demand fell (188.2 domestic) and the model's firm exports are 6.6 TWh. Charged per kWh at 209.55 and recovered over
   // 194.7, every NERSA line collected 92.9% of the rands it claims. They are now spread over the scenario's own sales:
   // fixed rands, as before, on one base. Until then fixedScale held them at today's per-kWh level (retailBaseSalesMWh).
-  const nersaScale = (A.sales_twh * 1e6) / salesMWh;
+  // AND MOVED TO 2026/27 (user, 18 Oct 2026, message 205 (3); audit M2): every NERSA line by one factor, NERSA's 2026/27
+  // allowance over its 2025/26 (R421.5bn over R384.61bn, JSON total_2026_27_basis), as the 2025/26 lines are themselves one
+  // factor on Eskom's application. The comparator tariffs are 2026/27.
+  const revTo2026_27 = A.total_2026_27_r_bn / A.approved_total_r_bn;
+  const nersaScale = (A.sales_twh * 1e6) / salesMWh * revTo2026_27;
   const netBase = NETWORK_RETAIL_R / (A.sales_twh * 1e9);         // R/kWh at NERSA's base
   const pool = C.operating_costs + C.depreciation + C.return_on_assets;
   const genPool = Math.max(0, pool - netBase);                   // generation's share of the pool
@@ -16239,20 +16243,24 @@ function retailComponents(markup, stranded, year, viaMuni){
   // augmentation costs", ATB 2024). A separate 4% a year was added here until 22 Sep 2026.
   const battAug = 0 * battCapex;
 
-  // CURTAILMENT COMPENSATION. Deemed energy paid to IPPs curtailed beyond the PPA threshold.
-  //
-  // Recorded as unmodellable until 10 Sep 2026, wrongly. REIPPPP BW1-6 treat curtailment as a
-  // system event with a right to claim deemed energy, and the March 2024 Addendum removed the
-  // grid-unavailability gate in exchange for Eskom holding a 10% curtailment right. So: below
-  // 10% the IPP bears it, above 10% Eskom pays at the PPA price.
-  //
-  // The threshold is per project per year and this applies it to a system-wide share, which
-  // UNDERSTATES the payment - an average hides projects curtailed far above it.
-  const CC = RETAIL_T.curtailment_compensation || {};
+  // CURTAILMENT COMPENSATION: deemed energy paid to curtailed REIPPPP plant (user, 18 Oct 2026, message 205 (5); retail
+  // audit M8, items 34-35; Cliffe Dekker Hofmeyr, 20 Mar 2024). BW1-6 treat curtailment as a system event, compensated as
+  // deemed energy beyond the allowable grid unavailability period, at each window's own contract price. The period is not
+  // published, so it is taken as zero hours, an upper bound (RESULTS gives the no-compensation case beside it); the price is
+  // the model's REIPPPP table through reipppRate, each live window's cost over the contracted fleet's energy. New build gets
+  // none: its capital is recovered over kWh sold whether curtailed or not, so BW7's 10% right would repeat the double count
+  // removed on 22 Sep 2026. Until 18 Oct this applied BW7's 10% threshold to BW1-6 at R0.55/kWh, BW5-6's award midpoint.
+  const CC = RETAIL_T.curtailment_compensation;
   const curtMWh = (r.E.curtailed || r.E.vreCurtailed || 0);
   const vrePotential = (r.E.wind || 0) + (r.E.pv || 0) + (r.E.csp || 0) + curtMWh;
   const curtFrac = vrePotential > 0 ? curtMWh / vrePotential : 0;
-  const overThreshold = Math.max(0, curtFrac - (CC.threshold_pct || 10) / 100);
+  // Curtailment beyond the first allowable_grid_unavailability_hours hours of curtailment in the year (zero: all of it).
+  const agupH = CC.allowable_grid_unavailability_hours;
+  let compensableMWh = curtMWh;
+  if (agupH > 0 && r.curtailMW){
+    let n = 0; compensableMWh = 0;
+    for (let h = 0; h < 8760; h++){ const c = r.curtailMW[h] || 0; if (c > 0 && n++ >= agupH) compensableMWh += c; }
+  }
   // CAPTURE IS COMPUTED HOUR BY HOUR, not assumed. An electrolyser can only take surplus that
   // is there when it runs: min(curtailment, its capacity) in each hour. Short, shallow spills
   // are missed, which is why capturing everything needs far more plant than capturing most of
@@ -16283,8 +16291,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   // count worth R0.35/kWh on Deep decarbonisation 2035 and R0.43 on Fossil-free 2040.
   const vreDelivered = (r.E.wind || 0) + (r.E.pv || 0) + (r.E.csp || 0);
   const reipppShare = vreDelivered > 0 ? Math.min(1, (r.reipppOutputMWh || 0) / vreDelivered) : 0;
-  const curtComp = overThreshold * vrePotential * reipppShare * reipppLiveFrac(year)
-                   * (CC.ppa_price_r_per_kwh || 0.55) * 1000 / salesMWh / 1000 * fracRemaining;
+  const curtComp = compensableMWh * reipppShare * reipppRate(year) / (salesMWh * 1000) * fracRemaining;
 
   // HYDROGEN OFFTAKE as a REVENUE OFFSET, not as extra household sales.
   //
@@ -16660,8 +16667,8 @@ function retailHourly(){
   const dyn = raw.map(v => capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
   // The cap's tooltip reads the cap and its inputs (message 203 (5a)): it said R12.84 on Agile's earlier 100p cap.
   const capLbl = document.getElementById('retCapLbl'), ci = sp.cap_inputs || {};
-  if (capLbl) capLbl.title = `A retail price cap of R${sp.cap_r_per_kwh.toFixed(2)}/kWh: Octopus Agile's ${ci.agile_cap_p_per_kwh}p cap `
-    + `(from ${ci.agile_cap_from}) over Ofgem's ${ci.ofgem_cap_p_per_kwh}p standard-variable cap (${ci.ofgem_period}), applied to Homepower's `
+  if (capLbl) capLbl.title = `A retail price cap of R${sp.cap_r_per_kwh.toFixed(2)}/kWh: Octopus Agile's ${ci.agile_cap_p_per_kwh_incl_vat}p cap `
+    + `(from ${ci.agile_cap_from}; ${ci.agile_cap_as_paid_p_per_kwh}p as paid while UK electricity VAT is zero) over Ofgem's ${ci.ofgem_cap_p_per_kwh}p standard-variable cap (${ci.ofgem_period}), applied to Homepower's `
     + `per-kWh charges. Real dynamic retail tariffs carry one; it is a consumer protection instrument and is separate from the `
     + `wholesale offer cap already in the scarcity pricing. Unticked: the uncapped series. Where it binds, the panel says so under the chart.`;
 
@@ -17118,9 +17125,9 @@ function renderRetail(){
     : '';
   noteEl.innerHTML = yearMix + capLine + shedWarn + rowsNote + billHtml + rooftopHtml + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
-    + `${c.year}. Built from NERSA's 2025/26 allowed revenue, `
-    + `R${RETAIL_T.allowed_revenue_2025_26.approved_total_r_bn.toFixed(1)}bn (2026/27's is about `
-    + `R${RETAIL_T.allowed_revenue_2025_26.next_year_total_r_bn.toFixed(1)}bn with the redetermination), its rands spread over the scenario's `
+    + `${c.year}. Built from NERSA's 2026/27 allowed revenue, about `
+    + `R${RETAIL_T.allowed_revenue_2025_26.total_2026_27_r_bn.toFixed(1)}bn with the redetermination (2025/26: `
+    + `R${RETAIL_T.allowed_revenue_2025_26.approved_total_r_bn.toFixed(1)}bn, whose line split it scales), its rands spread over the scenario's `
     + `${c.salesTWh.toFixed(0)}&nbsp;TWh of sales; allocated to that customer category with Eskom's cost-to-serve study, `
     + `generation at ${RES_FACTOR_GEN.toFixed(2)}&times;, network at ${RES_FACTOR_NET.toFixed(2)}&times; and `
     + `transmission at ${RES_FACTOR_TX.toFixed(2)}&times; the system average. Components before allocation, losses `
@@ -17141,10 +17148,8 @@ function renderRetail(){
         + ` The rest is still spilled. Hive's Coega project, the most advanced in Africa and `
         + `still pre-FID, is 1.2&nbsp;GW.<br><br>`
         : '')
-    + `<span style="color:var(--ink2)">Real terms, so a scenario year and today sit on the same basis; the rands `
-    + `are of different vintages: NERSA's lines 2025/26, about `
-    + `${Math.round(100 * (RETAIL_T.allowed_revenue_2025_26.next_year_total_r_bn / RETAIL_T.allowed_revenue_2025_26.approved_total_r_bn - 1))}% `
-    + `below 2026/27, fuel and new build 2026, the tariffs 2026/27. The comparison holds today's tariff flat in real terms and that is `
+    + `<span style="color:var(--ink2)">Constant 2026/27 rands, so a scenario year and today sit on the same basis: NERSA's `
+    + `lines and the tariffs are 2026/27, fuel and new build 2026. The comparison holds today's tariff flat in real terms and that is `
     + `<strong>generous to the status quo</strong>: NERSA has already approved 8.76% and 8.83% `
     + `against a 3% inflation target, and the CSIR measures 4.6% a year real over 2014&ndash;25. `
     + `The new-grid line is the engine's tiered connection charge on new wind and solar, at the `
@@ -19769,7 +19774,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-18g';
+const BUILD_STAMP = '2026-10-18h';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

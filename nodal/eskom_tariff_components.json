@@ -120,9 +120,12 @@
   "description": "The four parameters the shadow dynamic tariff needs that Eskom does not publish. Each is sourced; two are South African observations and two are imported from markets that actually run dynamic tariffs.",
   "municipal_markup_pct": 40,
   "municipal_markup_basis": "Midpoint of the observed Cape Town range. A Cape Town household typically pays R3.80-5.20/kWh on the standard block against R3.22/kWh for an Eskom-direct Homepower customer, so 18-61%; the midpoint is 40%. For scale: PowerForum found Ekurhuleni at 86%, the highest in the country, and Steyn (2004) put cost-reflective distributor profit at 10-20% on roughly 10% technical losses. 40% therefore sits between what cost recovery justifies and what the worst case charges. EXPOSE THIS AS A SLIDER - the spread between metros is an order of magnitude and no single figure describes the country.",
-  "cap_r_per_kwh": 9.46,
+  "cap_r_per_kwh": 9.01,
   "cap_inputs": {
-   "agile_cap_p_per_kwh": 70,
+   "agile_cap_p_per_kwh_incl_vat": 70,
+   "uk_vat_on_electricity_pct": 0,
+   "agile_cap_as_paid_p_per_kwh": 66.67,
+   "vat_basis": "Agile's 70p includes VAT at 5% (retail audit item 27, Octopus 'Agile pricing explained'). The UK removed VAT from household electricity from 1 Oct 2026 to 31 Mar 2027 (Ofgem, 'Changes to energy price cap between 1 October and 31 December 2026'), and Ofgem's 26.32p excludes it, so the two are compared as paid: Agile's pre-VAT 66.67p (70 / 1.05) over 26.32p (user, message 205 (6)). On 70p against 26.32p, mixed bases, the cap was R9.46.",
    "agile_cap_from": "July 2026",
    "agile_source": "Octopus Energy, 'Agile pricing explained', revised for the July 2026 changes, read 18 Oct 2026 (user, message 203 (5a); retail audit source 10). Was 100p.",
    "ofgem_cap_p_per_kwh": 26.32,
@@ -131,7 +134,7 @@
    "homepower_r_per_kwh": "homepower4.per_kwh_charges_r_per_kwh, summed (R3.5556; booklet 2026/27 p.27)",
    "why_this_quarter": "The 70p cap applies from July 2026; Oct-Dec 2026 is the current quarter in which both caps apply. Jan-Mar 2026 (27.69p, R8.99) would pair the new Agile cap with a quarter before it."
   },
-  "cap_basis": "REBUILT 18 Oct 2026 on the stated method (user, message 203 (5a); retail audit item 27 and addendum): Octopus Agile's cap over Ofgem's standard-variable cap in the same quarter, 70 / 26.32 = 2.66, applied to Homepower 4's per-kWh charges, R3.5556: R9.46/kWh (cap_inputs). Was R12.84 = 100 / 27.69 x R3.5556, on Agile's earlier 100p cap and Ofgem's Jan-Mar 2026 rate. Octopus states the reason for a cap plainly: their wholesale can exceed 200 p/kWh at peak and without a cap 'the peak rates would get totally extortionate for a domestic customer'. Our shortage hours price at the value of lost load, around R80,000/MWh, so an uncapped pass-through would be absurd rather than merely high.",
+  "cap_basis": "REBUILT 18 Oct 2026 on the stated method (user, message 203 (5a); retail audit item 27 and addendum): Octopus Agile's cap over Ofgem's standard-variable cap in the same quarter, both as paid (cap_inputs.vat_basis), 66.67 / 26.32 = 2.53, applied to Homepower 4's per-kWh charges, R3.5556: R9.01/kWh. R9.46 on 70p, before the VAT basis was matched (message 205 (6)). Was R12.84 = 100 / 27.69 x R3.5556, on Agile's earlier 100p cap and Ofgem's Jan-Mar 2026 rate. Octopus states the reason for a cap plainly: their wholesale can exceed 200 p/kWh at peak and without a cap 'the peak rates would get totally extortionate for a domestic customer'. Our shortage hours price at the value of lost load, around R80,000/MWh, so an uncapped pass-through would be absurd rather than merely high.",
   "retail_margin_r_per_kwh": 0.3,
   "retail_margin_basis": "IMPORTED. South Africa has no competitive retail supply, so there is no domestic margin to observe. European dynamic tariffs - Tibber, aWATTar, Octopus - add 1 to 3 euro-cents per kWh plus a monthly fee. At roughly R20 to the euro that is R0.20 to R0.60; R0.30 is the low-middle. This is the single most assumption-laden number in the panel and should be labelled as such wherever it appears.",
   "peak_uplift_note": "Octopus adds 10-14 p/kWh between 16:00 and 19:00 on top of wholesale, because the network cost of the evening peak is real and separate from the energy cost. We do NOT add one: our transmission cost is already carried in txRPerKWyr and the Eskom network capacity charge is in the fixed component, so adding an uplift would double-count. Stated here because its absence is a deliberate choice, not an oversight.",
@@ -174,9 +177,9 @@
   },
   "approved_total_r_bn": 384.61,
   "revenue_year": "2025/26",
-  "relabelled": "RELABELLED 18 Oct 2026 (user, message 203 (4b); retail audit M2). This block was keyed allowed_revenue_2026_27 and holds NERSA's 2025/26 allowance, R384.61bn. 2026/27 is R409.5bn in the MYPD6 decision (IOL, Jan 2025; Engineering News gives R410bn) plus the R12bn the February 2026 redetermination allocates to 2026/27 (NERSA statement of 8 Feb 2026, reported by Energize and IOL): about R421.5bn, 9.6% more. Relabelled rather than moved: the 2026/27 component split and its RCA content are not published, and scaling every line by one factor is an assumption (RESULTS 'Retail panel audit, part 4' measures it as a sensitivity).",
-  "next_year_total_r_bn": 421.5,
-  "next_year_total_basis": "2026/27: R409.5bn (MYPD6, IOL Jan 2025) + R12bn (redetermination tranche, NERSA 8 Feb 2026); derived, two sources.",
+  "moved_to_2026_27": "MOVED 18 Oct 2026 (user, message 205 (3); retail audit M2). The lines below are NERSA's 2025/26 allowance split by Eskom's application at one factor (0.865, audit item 9); the panel moves every line to 2026/27 by one more, total_2026_27_r_bn / approved_total_r_bn = 1.096, which adds no new kind of assumption, and the comparator tariffs and the note's rands are 2026/27. The key keeps its 2025/26 name because the figures it holds are 2025/26's. Relabelled the same day (message 203 (4b)) and moved on the user's decision; the R12bn tranche inside the factor is a 2026/27 recovery, so it should not persist into later years, and the RCA schedule below is keyed a year later (TODO 14gh, M14).",
+  "total_2026_27_r_bn": 421.5,
+  "total_2026_27_basis": "2026/27: R409.5bn (MYPD6, IOL Jan 2025) + R12bn (redetermination tranche, NERSA 8 Feb 2026); derived, two sources. NERSA's statement of 8 Feb 2026 gives the R54,734m and its phasing but no 2026/27 total (web search, 18 Oct 2026), so the sum stands.",
   "applied_total_r_bn": 444.7,
   "approval_factor": 0.865,
   "total_r_per_kwh": 1.836,
@@ -673,14 +676,20 @@
  },
  "curtailment_compensation": {
   "description": "Deemed energy payments to curtailed IPPs. Previously recorded as unmodellable; it is not - the framework is published and specific.",
-  "rule": "Curtailment up to a threshold is uncompensated and the IPP bears it. Above the threshold Eskom pays deemed energy at the PPA price.",
-  "threshold_pct": 10,
-  "threshold_basis": "REIPPPP BW1-6 PPAs define curtailment as a system event, with a right to claim deemed energy for output the IPP was instructed not to deliver. The March 2024 Addendum DELETED the allowable grid unavailability period that previously gated those claims; in exchange Eskom holds a 10% curtailment right. Cliffe Dekker Hofmeyr corporate alert, 20 March 2024.",
+  "rule": "REIPPPP BW1-6: curtailment is a system event, compensated as deemed energy beyond the allowable grid unavailability period, at each window's own contract price (Cliffe Dekker Hofmeyr, 'Eskom clarifies the issue of curtailment for IPPs', 20 Mar 2024). New build: none (new_build_deemed_energy). Rewritten 18 Oct 2026 (user, message 205 (5); retail audit M8). Was: curtailment up to a 10% threshold uncompensated, above it deemed energy at R0.55/kWh, on BW1-6.",
+  "allowable_grid_unavailability_hours": 0,
+  "allowable_grid_unavailability_basis": "Not published. Taken as zero hours, so all curtailed REIPPPP output is compensated: an upper bound. RESULTS gives the no-compensation case beside it; TODO 14gk to source the period from the BW1-6 PPAs.",
+  "bw7_curtailment_right_pct": 10,
+  "bw7_basis": "The 10% curtailment right without compensation, and the deletion of the grid-unavailability gate, are BW7's (Cliffe Dekker Hofmeyr, 20 Mar 2024), not BW1-6's. Held until 18 Oct 2026 as threshold_pct and applied to BW1-6. Recorded, not read: the panel gives new build no deemed energy.",
+  "threshold_basis_until_18_oct_2026": "REIPPPP BW1-6 PPAs define curtailment as a system event, with a right to claim deemed energy for output the IPP was instructed not to deliver. The March 2024 Addendum DELETED the allowable grid unavailability period that previously gated those claims; in exchange Eskom holds a 10% curtailment right. Cliffe Dekker Hofmeyr corporate alert, 20 March 2024.",
   "congestion_framework_note": "A separate Congestion Curtailment Framework runs a 4% curtailment limit as a 2025-2028 pilot, unlocking about 1.1 GW of hosting capacity in the Western Cape and 400 MW in the Eastern Cape. Compensation there is confined to the pilot period. SAPVIA, Nov 2025. The panel uses the 10% PPA threshold because it applies to the contracted fleet the obligation actually sits on.",
   "ppa_price_r_per_kwh": 0.55,
+  "ppa_price_status": "Not read by the panel from 18 Oct 2026: deemed energy is priced at each window's own contract price (REIPPPP_WINDOWS through reipppRate; BW1-6 cost R1,908/MWh on average in FY2026). Still read by validate_findings' constraint-cost finding, which prices curtailed energy at it (TODO 14gk).",
   "ppa_price_basis": "Midpoint of REIPPPP BW5 at R0.50 and BW6 at R0.58, the awards the contracted fleet is priced on.",
   "real_world_check": "H1 2026: IPPs report project revenues 9 to 10% below budget, attributed to curtailed energy and to delays in reimbursement, with an Eskom backlog approaching R1 billion. Daily Maverick, 15 June 2026. So the mechanism is live and material at today's curtailment levels, not a theoretical provision.",
-  "caveat": "The threshold applies PER PROJECT PER YEAR and the model curtails system-wide, so applying it to an aggregate share is an approximation. It understates compensation, because a system-wide average hides projects curtailed far above it. Conservative in the same direction as the rest of the panel."
+  "caveat": "Curtailment is applied system-wide in proportion to REIPPPP's share of wind and solar output, and the allowable period is taken as zero, so this is an upper bound on what BW1-6 is paid; the true period would lower it.",
+  "new_build_deemed_energy": false,
+  "new_build_basis": "None (user, message 205 (5a)). New build's capital is recovered over kWh sold whether its output is curtailed or not, so a deemed-energy payment for it would count curtailed output twice; that double count, R0.35/kWh on Deep decarbonisation 2035, was removed on 22 Sep 2026."
  },
  "irp2025_anchor": {
   "description": "The Cabinet-approved IRP 2025 as an external check on the panel's SCENARIOS, not just its costing.",
@@ -797,7 +806,8 @@
    "standard": 172.5,
    "offpeak": 123.2
   },
+  "legacy_c_per_kwh": 24.78,
   "source": "Eskom, Tariffs and Charges Booklet 2026/2027, non-local-authority charges effective 1 April 2026, Megaflex, supply below 500 V, transmission zone up to 300 km, p.13, excluding VAT (the user's copy, figures as summarised in the retail audit's addendum of 18 Oct 2026; the booklet itself stays local).",
-  "note": "The 6:1 peak to off-peak ratio is high season only (2.5:1 in the low season); off-peak is the same in both seasons."
+  "note": "The 6:1 peak to off-peak ratio is high season only (2.5:1 in the low season); off-peak is the same in both seasons. Legacy charge 24.78 c/kWh in every hour (p.13). Nothing in the code reads homeflex.high_season_peak_to_offpeak_ratio (checked 18 Oct 2026, message 204 (4)); it is documentation."
  }
 }

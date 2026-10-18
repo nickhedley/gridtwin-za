@@ -4660,6 +4660,70 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### Message 205 (3) to (7): NERSA's lines moved to 2026/27, today R4.224/kWh against Homepower's R4.151 (+1.7%); 56% of the sales-base uplift is the export gap; deemed energy on BW1-6 at each window's price; the cap R9.01 on a matched VAT basis; the off-peak check's message corrected (build 2026-10-18h; user, 18 Oct 2026, messages 204 and 205)
+
+Settings. Build 2026-10-18h (claude/retail-audit), presets through applyState, one simulate on the default profiles, retail year
+at the scenario year, regulated basis, cap on; fresh page. Scratch p205/probe_205.out and bill_after3.out.
+
+(3) Revenue year, moved (user's decision). Every NERSA line is multiplied by NERSA's 2026/27 allowance over its 2025/26,
+R421.5bn / R384.61bn = 1.0959, the same kind of factor as the 0.865 that splits the 2025/26 lines from Eskom's application.
+NERSA's statement of 8 Feb 2026 gives the R54,734m and its phasing but no 2026/27 total (web search, 18 Oct 2026), so the
+total stays R409.5bn (MYPD6) plus R12bn. The note gives 2025/26 beside it and now says constant 2026/27 rands.
+
+| Today 2026, R/kWh | Mean of the hourly curve | Load-weighted (bill rate) | Against R4.151 |
+|---|---|---|---|
+| 18e, before 203 (4) | 3.783 | 3.795 | -8.9% |
+| After M1 (18f) | 3.970 | 3.982 | -4.4% |
+| After the move (18h) | 4.224 | 4.236 | +1.7% (+2.0% load-weighted) |
+
+Bills on 18h: 900 kWh R3,812 against Homepower's R3,736; 190 kWh R1,227 against R1,211. Rooftop table, Eskom rows: R3,812 to
+R1,268 (67%) and R1,227 to R690 (44%). Caveat: the factor carries the redetermination's R12bn, a 2026/27 recovery, into every
+later scenario year (12 of the R36.9bn the factor adds, about R0.08/kWh at today's sales), and the RCA schedule is keyed a year
+after the convention the move adopts (panel year 2026 as FY2026/27), so panel years 2027-2029 count the 2026/27 tranche twice.
+Neither touches the presets (2026, or after 2029). Both are M14 (TODO 14gh).
+
+(4) The export gap in M1, measured, no change. NERSA's 209.55 TWh is 194.61 domestic plus 14.94 exports (calendar 2025,
+ESK19679); the model's 194.74 is 188.17 domestic plus 6.57 firm exports (750 MW). The +R0.187/kWh of M1 is linear in the
+14.81 TWh gap: 8.37 TWh (56.5%, R0.106/kWh) is the export gap, revenue that export customers pay in reality and the model's
+smaller firm exports leave on the rest of the sales; 6.44 TWh (43.5%, R0.081) is lower 2026 domestic demand, which domestic
+customers would carry in reality too.
+
+(5) Deemed energy (user's decisions). BW1-6 curtailment is compensated beyond the allowable grid unavailability period, taken
+as zero hours because it is not published (an upper bound), at each window's own contract price: the model's REIPPPP table
+through reipppRate (R1,908/MWh in 2026, R1,060 in 2035, R531 in 2040, as windows expire). New build gets none: its capital is
+recovered over kWh sold whether curtailed or not, so BW7's 10% right would repeat the double count removed on 22 Sep 2026.
+Was: BW7's 10% threshold on BW1-6 at R0.55/kWh.
+
+| Preset | Curtailed | REIPPPP share of wind and solar | Old rule, retail R/kWh | Zero hours, window prices | No compensation |
+|---|---|---|---|---|---|
+| Today 2026 | 0 | 86.9% | 0 | 0 | 0 |
+| Deep decarbonisation 2035 | 46.7 TWh (23.4%) | 12.3% | 0.011 | 0.051 | 0 |
+| IRP path 2035 | 24.3 TWh (17.8%) | 16.2% | 0.006 | 0.035 | 0 |
+| Fossil-free 2040 | 114.6 TWh (42.1%) | 9.8% | 0.023 | 0.053 | 0 |
+
+Retail effect after allocation, losses and VAT (residentialRate on the line alone). Checks changed: validate_inputs 17's two
+checks pinned BW7's threshold on BW1-6 and a R0.45-0.65 price; they now check the unpublished period recorded as zero, the
+window pricing and no new-build payment. The R0.55 stays in the JSON because validate_findings' constraint-cost finding still
+reads it (TODO 14gk).
+
+(6) The cap's VAT basis. Agile's 70p includes VAT at 5% (retail audit item 27); Ofgem's 26.32p for Oct-Dec 2026 excludes VAT,
+which the UK removed from household electricity from 1 Oct 2026 to 31 Mar 2027 (Ofgem). So they were not on one basis. As paid
+that quarter, Agile's cap is 70 / 1.05 = 66.67p: 66.67 / 26.32 x R3.5556 = R9.01/kWh (the user's R9.05 rounds the 66.67p to
+67p). Was R9.46. validate_inputs 12 reads the as-paid figure.
+
+(7) The off-peak check. 'High-season off-peak is the cheapest block modelled' asserts a model ordering only: at 2025 conditions
+the high-season off-peak block has the lowest mean modelled price. It holds no tariff figures, and no code ranks off-peak by
+season (TARIFF_RANK is gone; touCompare's block list is a display order). Its message stated the NERSA correction note's claim
+that Megaflex charges high-season off-peak above low-season off-peak; the 2026/27 booklet gives 123.20 c/kWh (Megaflex, p.13)
+and 190.83 (Homeflex, p.29) in both seasons, so the message is corrected with the booklet as the cause. Logic and status
+unchanged (failing since 14d); TODO 14dy already holds the user's decision to replace it after the note.
+
+Message 204's other points. Homepower's comparator measured before any other 203 change (18e, row 1 of the table above):
+R3.783 against R4.151, -8.9%, outside the 8% band (the user's R3.785 and -8.8% are 18c's). Nothing in the code reads
+homeflex.high_season_peak_to_offpeak_ratio, so the 6:1 is applied nowhere, year-round or to Homeflex. Megaflex's legacy charge,
+24.78 c/kWh, is added to the JSON. TOU_WINDOWS confirmed against the booklet's Appendix A (p.46): every window, weekdays,
+Saturday and Sunday, both seasons; no change.
+
 ### The shadow bill split into Homepower's fixed charge and a per-kWh part: 190 kWh pays R1,179 against Homepower's R1,211 (was R757 with nothing fixed); the rooftop table's Eskom rows keep the fixed part and credit exports at Eskom's Gen-offset Homeflex rates by period, capped at purchases (build 2026-10-18g; user, 18 Oct 2026, messages 204 (7a) and 205 (2))
 
 Settings. Build 2026-10-18g (claude/retail-audit), Today 2026 at page defaults, retail year 2026, regulated basis, cap on,

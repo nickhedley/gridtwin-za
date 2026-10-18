@@ -313,11 +313,12 @@ console.log('\nTariff constants against their published sources\n');
   const sp = T.shadow_tariff_parameters || {};
   const ci = sp.cap_inputs || {};
   const hpPerKwh = Object.values((T.homepower4 || {}).per_kwh_charges_r_per_kwh || {}).reduce((x, y) => x + y, 0);
-  const derived = (ci.agile_cap_p_per_kwh / ci.ofgem_cap_p_per_kwh) * hpPerKwh;
+  // As paid: Agile's pre-VAT cap while UK electricity VAT is zero (cap_inputs.vat_basis; message 205 (6)).
+  const derived = (ci.agile_cap_as_paid_p_per_kwh / ci.ofgem_cap_p_per_kwh) * hpPerKwh;
   const cap = sp.cap_r_per_kwh;
   check('the price cap is Agile\'s cap over Ofgem\'s, applied to Homepower',
         cap > 0 && derived > 0 && Math.abs(cap / derived - 1) < 0.005,
-        `held R${cap}/kWh against ${ci.agile_cap_p_per_kwh}p / ${ci.ofgem_cap_p_per_kwh}p x R${hpPerKwh.toFixed(4)} = `
+        `held R${cap}/kWh against ${ci.agile_cap_as_paid_p_per_kwh}p / ${ci.ofgem_cap_p_per_kwh}p x R${hpPerKwh.toFixed(4)} = `
         + `R${derived.toFixed(2)}. Rebuild the held figure from cap_inputs when any of the three moves.`);
 }
 
@@ -412,16 +413,23 @@ console.log('\nTariff constants against their published sources\n');
 // The threshold is what makes this modellable rather than a guess. If it ever goes to zero the
 // panel starts charging for every curtailed kWh, which is not what the PPAs say.
 {
+  // REPLACED 18 Oct 2026 (user, message 205 (5); retail audit M8 and section 6, 'checks that would block a correct fix'). The two
+  // checks here required a 10% threshold traced to the March 2024 Addendum and a price of R0.45-0.65/kWh. The 10% right is BW7's,
+  // not BW1-6's (Cliffe Dekker Hofmeyr, 20 Mar 2024), and BW1-6's own contract prices are R1.4-1.9/kWh in the model's REIPPPP table,
+  // so both pinned a wrong input. They now check the rule the panel applies: BW1-6 compensated beyond the allowable grid
+  // unavailability period, recorded as not published and taken as zero; the price from the contract windows, not a held
+  // constant; and no deemed energy for new build, with its reason.
   const cc = T.curtailment_compensation || {};
-  check('the curtailment threshold is sourced',
-        cc.threshold_pct > 0 && /Addendum/i.test(cc.threshold_basis || ''),
-        `threshold ${cc.threshold_pct}% must trace to the PPA Addendum. Below it the IPP bears `
-        + `the curtailment; above it Eskom pays deemed energy. A zero threshold would charge `
-        + `consumers for curtailment the contracts do not compensate.`);
-  check('the PPA price used for deemed energy matches the awards',
-        cc.ppa_price_r_per_kwh >= 0.45 && cc.ppa_price_r_per_kwh <= 0.65,
-        `R${cc.ppa_price_r_per_kwh}/kWh against BW5 at R0.50 and BW6 at R0.58. Outside that `
-        + `band it is no longer the price the contracted fleet is paid.`);
+  check('BW1-6 deemed energy is gated by the allowable grid unavailability period, recorded as unpublished',
+        cc.allowable_grid_unavailability_hours === 0 && /Not published/.test(cc.allowable_grid_unavailability_basis || '')
+          && /Cliffe Dekker Hofmeyr/.test(cc.rule || ''),
+        `held ${cc.allowable_grid_unavailability_hours} hours. Zero is an upper bound until the period is sourced from the PPAs; `
+        + `a positive figure needs its source in allowable_grid_unavailability_basis.`);
+  check('deemed energy is priced at the contract windows and new build gets none',
+        /REIPPPP_WINDOWS/.test(cc.ppa_price_status || '') && cc.new_build_deemed_energy === false
+          && /double count|twice/.test(cc.new_build_basis || ''),
+        `the panel prices curtailed BW1-6 output at each window's own contract price (reipppRate), and new build's capital `
+        + `already pays for its curtailed output; a held price or a new-build payment would undo either.`);
   check('the real-world check on curtailment payments survives',
         /backlog/i.test(cc.real_world_check || ''),
         `H1 2026 has IPPs reporting revenue 9-10% below budget and an Eskom backlog approaching `

@@ -1522,3 +1522,8 @@ standing charge 54.83 p/day, excluding VAT, which the UK has removed from electr
 Octopus Energy, 'Agile pricing explained', revised for the July 2026 changes: the Agile cap lowered from 100p to 70p from July
 2026 (the user, message 203 (5a); retail audit source 10). The page could not be opened from this environment and web search did
 not surface the 70p figure; cited as the user and the audit read it. RESULTS 'Retail panel audit, part 5'.
+
+Cliffe Dekker Hofmeyr, 'Eskom clarifies the issue of "curtailment" for IPPs', corporate and commercial alert, 20 Mar 2024 (retail
+audit source 22): REIPPPP BW1-6 treat curtailment as a system event gated by the allowable grid unavailability period; the 10%
+curtailment right and the deletion of that gate are BW7's. The period's size is not given. Behind the deemed-energy rule
+(message 205 (5); RESULTS 'Message 205 (3) to (7)'; TODO 14gk).
