@@ -54,7 +54,7 @@ cause and the build it first failed on in RESULTS 'Known failures on build 2026-
    the existing stores ahead of a forecast shortfall, so 30 GW of new batteries cut unserved 8.3% against the check's 10%; its
    redesign waits for after the note (TODO 14ew).
 
-The preset curtailment band passes from the presets build (17i, TODO 14ef). Pumped-storage output passes from 15f (the
+Each is to be settled after the note by fixing the model, correcting the check with its cause, or withdrawing the finding (TODO 14gm); the iron-air finding stays out of the note and the pack until then. The preset curtailment band passes from the presets build (17i, TODO 14ef). Pumped-storage output passes from 15f (the
 storage fix). 'The build stamp is not stale' (validate_structure)
 fails whenever BUILD_STAMP is older than the day the suite runs. Without ESK19679.csv, validate_weather adds a
 failure (the missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind check.
