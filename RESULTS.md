@@ -4325,8 +4325,10 @@ c5e's 2030 dispatch, which gave R5,980 for lithium and R17,200 for diesel). Wind
 Inputs: lithium R13,699/kW at 4 h (BLD_COST.batt; BATT_COST_HOURS), fixed O&M 2.5% of capex (BLD_FOM_BATT_SHARE), 15 years;
 rooftop R17,000/kW, R495/kW-yr, 25 years; new diesel open-cycle R25,778/kW (BLD_COST.ccgt x EIA AEO2023's 867/1,176,
 bldOcgtCentralCost), R452.8/kW-yr, 30 years, plus fuel R6,100/MWh, VOM R70/MWh and carbon at R46/t x 0.78 t/MWh (dieselSrmcR,
-R6,206/MWh). (a) Lazard's long-standing capacity factor for gas peaking plant in its levelised cost studies; newer editions use
-15-20%; from search results, the pages not read. The c5e figures are held for the captions only (C5E_2030_*). Slider maxima
+R6,206/MWh). (a) Lazard, Levelized Cost of Energy+ (June 2025), Appendix A, LCOE v18.0 key assumptions, p.37: gas peaking (new
+build) 15%-10% capacity factor (read 18 Oct 2026; user, message 199 (1)); 10% is the bottom of that range. An international
+gas-peaker reference, not a South African diesel figure; the caption says so (build 2026-10-17f). It replaces this note's first
+version, which rested on search results only and gave newer editions as 15-20%. The c5e figures are held for the captions only (C5E_2030_*). Slider maxima
 widened (lithium R8.00/kWh, diesel R20.00/kWh) so c5e's run-based costs can be set on them.
 
 Typed and unsourced, captions say so: pumped storage R1,400, vanadium flow R2,100, iron-air R1,750, nuclear R1,650, CSP R2,000
