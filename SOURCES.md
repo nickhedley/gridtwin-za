@@ -1497,3 +1497,33 @@ given by Nick Hedley with pages; the report was not read here. Cited and summari
 - System non-synchronous penetration (SNSP): EirGrid's operating limit (p.21) and Figure 4 (p.22), Ireland 75%. For the SNSP
   measure on c5e (message 162 (1); RESULTS 'SNSP on c5e'; pack limitation 4).
 
+
+## Retail panel audit: tariffs, revenue and the retail cap (user, 18 Oct 2026, message 203 and the audit's addendum)
+
+Eskom, Tariffs and Charges Booklet 2026/2027, non-local-authority charges effective 1 April 2026. The user's local copy, figures
+as summarised in the retail audit's addendum of 18 Oct 2026; cited by page, not reproduced, not committed.
+- Homepower 4 (p.27): energy 322.06 c/kWh (with the legacy charge and 33.4% of the service and administration charge), ancillary
+  0.52, network demand 32.98 c/kWh, VAT inclusive; network capacity R10.44, service and administration R6.60, generation capacity
+  R0.82 a day. In nodal/eskom_tariff_components.json (homepower4.per_kwh_charges_r_per_kwh).
+- Homeflex 4 (p.29) time-of-use energy charges and per-kWh charges; Homelight 20A and 60A (p.29); Megaflex below 500 V up to
+  300 km (p.13, excluding VAT); gen-offset Homeflex export credit (p.44); time-of-use periods (Appendix A, p.46, matching
+  TOU_WINDOWS). RESULTS 'Retail panel audit, part 4'.
+
+NERSA allowed revenue: MYPD6 decision, January 2025: R384.6bn (2025/26), R409.5bn (2026/27), R436.9bn (2027/28) (IOL; Engineering
+News, 30 Jan 2025, gives R410bn and R437bn). Redetermination of the Generation RAB, approved 7 Feb 2026 (NERSA media statement of
+8 Feb 2026, as reported by Energize and IOL, 9 Feb 2026): R54,734m additional, R12bn in 2026/27, R23.01bn in 2027/28, R19.72bn
+deferred. Read as web search results, 18 Oct 2026. RESULTS 'Retail panel audit, part 4' (4b).
+
+Ofgem, energy price cap unit rates and standing charges, 1 Oct to 31 Dec 2026: electricity 26.32 p/kWh (Direct Debit average),
+standing charge 54.83 p/day, excluding VAT, which the UK has removed from electricity bills from 1 Oct 2026 to 31 Mar 2027 (Ofgem,
+'Changes to energy price cap between 1 October and 31 December 2026'). Retail audit source 12; confirmed by web search, 18 Oct
+2026 (the page itself could not be opened from this environment). Jan-Mar 2026: 27.69 p/kWh (Ofgem, 21 Nov 2025).
+
+Octopus Energy, 'Agile pricing explained', revised for the July 2026 changes: the Agile cap lowered from 100p to 70p from July
+2026 (the user, message 203 (5a); retail audit source 10). The page could not be opened from this environment and web search did
+not surface the 70p figure; cited as the user and the audit read it. RESULTS 'Retail panel audit, part 5'.
+
+Cliffe Dekker Hofmeyr, 'Eskom clarifies the issue of "curtailment" for IPPs', corporate and commercial alert, 20 Mar 2024 (retail
+audit source 22): REIPPPP BW1-6 treat curtailment as a system event gated by the allowable grid unavailability period; the 10%
+curtailment right and the deletion of that gate are BW7's. The period's size is not given. Behind the deemed-energy rule
+(message 205 (5); RESULTS 'Message 205 (3) to (7)'; TODO 14gk).
