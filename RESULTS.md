@@ -4653,6 +4653,109 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### Retail panel audit, part 1 (M11): the pathway's engine PV and the build LP both carry rooftop capital in full; the leak is only in avgCost and gridCost, R32.0bn (c5e) and R42.7bn (c5f) of present value; c5f's +R19.4bn engine PV against c5e is rooftop capital +R28.5bn and everything else -R9.1bn (build 2026-10-17g; user, 18 Oct 2026, message 203 (1); report only, no model change)
+
+Settings. Frozen copies of c5e and c5f (c5f at b82bfd3, build 2026-10-17g; settings in each copy's env and changes files), their
+pathcheck outputs (twelve weather years with outage draws, TF=0.5 LNG=1 GRID=1), 2026-2040, discounted at 8% to 2026. Rooftop
+annuities from probe_roofcap.js on 17g: capex R17,000/kW in 2026, 25-year life, fixed O&M R495/kW-yr. Scratch
+c5f/probe/roofcap_c5e.out and roofcap_c5f.out.
+
+What each cost term charges for new rooftop:
+- engine newCapexR: the cumulative new rooftop at acapAt('rooftop') for the year's midpoint vintage, annuity plus fixed O&M,
+  R2,087.5/kW-yr in 2026 falling to R1,701.3 in 2040;
+- engine btmCapexR: the same MW at the flat acapRooftop, R1,150/kW-yr; gridCapexR = newCapexR - btmCapexR, so the difference
+  stays in avgCost and in pathcheck's gridCost (cost less btmCapexR): the audit's M11;
+- build LP: rooftop in BLD_TECHS at bldNetAnnuityAt, each year's tranche at its own vintage, held to 2040.
+
+| Present value, R bn | c5e (900 MW a year) | c5f (1,200 MW a year) | c5f - c5e |
+|---|---|---|---|
+| Rooftop capital, engine (newCapexR) | 85.6 | 114.1 | +28.5 |
+| Rooftop capital, build LP | 84.7 | 112.9 | +28.2 |
+| Leak into avgCost and gridCost | 32.0 | 42.7 | +10.7 |
+| Engine PV (systemCostR, 'cost') | 2,235.7 | 2,255.1 | +19.4 |
+| gridCost | 2,182.2 | 2,183.7 | +1.5 |
+| gridCost with the leak removed | 2,150.2 | 2,141.0 | -9.2 |
+| Cumulative new rooftop by 2040, MW | 12,600 | 16,800 | +4,200 |
+
+The engine PV and the LP agree to within 1.4% on rooftop capital, so neither carries M11's gap; the pathway's verdicts and
+engine PV stand. c5f's +R19.4bn is rooftop capital (+R28.5bn) less everything else (-R9.1bn). The leak moves only the
+grid-side figures: with it removed, c5f's grid side is R9.2bn below c5e's rather than R1.5bn above. s_roof09 builds rooftop at
+c5e's 900 MW a year, so it equals c5e on these terms by construction.
+Caveat: no fix yet. Pricing btmCapexR at acapAt, as newCapexR does, waits on the user's decision after this report (TODO
+14gb); until then avgCost and gridCost carry the leak on every run with new rooftop.
+
+### Retail panel audit, part 2: the shadow rate is all-in, so the bill and rooftop tables no longer add Homepower's R536 fixed charge (900 kWh R3,953 to R3,417, 190 kWh R1,257 to R721); the feed-in rate defaults to R0 because no Eskom or City Power export rate was found; the audit's section 4 text corrected (build 2026-10-18c; user, 18 Oct 2026, message 203 (2); retail audit of 18 Oct 2026, M3 and section 4)
+
+Settings. Build 2026-10-18c (branch claude/retail-audit, from the presets build 2026-10-18b), Today 2026 at page defaults, one
+simulate on the default profiles, retail year 2026, regulated basis, cap on, rooftop controls at their defaults (system 100% of
+annual use, 60% self-consumed); each variant in a fresh page. Scratch probe_bill2.js (FEED=1.53 for the middle column below)
+and probe_delta.js. Shadow rate R3.796/kWh (the "Dynamic pricing, habits unchanged" row) before and after.
+
+Removed, not split: the shadow rate is the all-in rate the level check holds to Homepower's all-in R3.82 at 900 kWh, so it
+already recovers the network and customer costs the fixed charge pays for; a split would need a fixed-charge design that
+NERSA's numbers do not set.
+
+| Bill table | Before (18b) | After (18c) |
+|---|---|---|
+| 900 kWh, shadow | R3,417 + R536 = R3,953 | R3,417 |
+| 190 kWh, shadow | R721 + R536 = R1,257 | R721 |
+| 900 kWh, Homepower today (R3.2206 energy + R536) | not shown | R3,435 (fixed share 16%) |
+| 190 kWh, Homepower today | not shown | R1,148 (fixed share 47%) |
+
+At 900 kWh the shadow bill is 0.5% under Homepower today; at 190 kWh it is 37% under, because a flat all-in rate recovers per
+kWh what Homepower recovers as a fixed charge. The level check, at 900 kWh, cannot see this. Caveat: the shadow tariff has no
+fixed charge by construction; this is not a prediction that small households would pay less.
+
+| Rooftop table, no rooftop to with rooftop (saved) | Before: fixed added, feed R1.53 | Fixed removed, feed R1.53 | After: fixed removed, feed R0 |
+|---|---|---|---|
+| Eskom direct, 900 kWh | R3,953 to R1,352 (66%) | R3,417 to R816 (76%) | R3,417 to R1,367 (60%) |
+| Eskom direct, 190 kWh | R1,257 to R708 (44%) | R721 to R172 (76%) | R721 to R289 (60%) |
+| City Power, 900 kWh | R4,661 to R2,125 (54%) | unchanged | R4,661 to R2,676 (43%) |
+| City Power, 190 kWh | R2,112 to R1,618 (23%) | unchanged | R2,112 to R1,735 (18%) |
+
+The Eskom rows now save exactly the self-consumed share at both sizes, because every unit is priced at the same all-in rate;
+the panel's note says a tariff with a fixed charge would cut that saving. The size effect now shows only in the City Power
+rows, on a real tariff.
+
+Feed-in (203 (2c)). R1.53 is Cape Town's 2026/27 residential feed-in (R1.2418 plus its 28.75c incentive) and was applied to
+the Eskom and City Power rows. Searched 18 Oct 2026, web search snippets only: no Eskom Homepower export credit found; Homeflex
+export credits mentioned but not confirmed from a source; City Power approved 85.5c in 2023, apparently never paid. Nothing
+citable, so billFeedInR defaults to R0 and the control's caption gives Cape Town's R1.53 as a comparison only. The control
+still sets any rate.
+
+Text (203 (2b)), each checked against the code:
+
+| Where | Was | Now | Cause in the code |
+|---|---|---|---|
+| Intro | adds "losses, levies, a supplier margin and VAT" to the wholesale price | built from the modelled system: fuel and carbon from dispatch, the rest of NERSA's allowed revenue as a flat adder, allocated, grossed up for losses, plus VAT | the separate margin went on 22 Sep; the flat block is mostly generation capital, opex and IPP contracts |
+| Basis tooltip | market basis adds "only network and retail costs" | network and retail plus a contract levy for what the wholesale price does not recover | marketPriceSeries path adds the levy (CfDs, REIPPPP, vesting, stranded coal, decommissioning, RCA, imports) |
+| Electrolyser tooltip | "only surplus deep enough and long enough to fill the plant counts" | each hour takes curtailment up to capacity, partial hours included | capture is min(curtailment, capacity) hour by hour |
+| Homeflex table row | "winter rates only" | energy charges only, averaged over the year (high season a quarter of it) | d.flex is the annual average of all six rates |
+| Week chart caption | "Homeflex at winter rates" | low-season rates in the summer week, high-season in the winter week; shadow all-in, tariffs energy only | drawRetailWeek picks the season's rates |
+| Day chart legend | Shadow dynamic, Homeflex, Homepower flat | Shadow dynamic, all-in; Homeflex, energy only; Homepower, energy only | the shadow line carries fixed costs per kWh; the tariff lines do not |
+| Bill table | shadow plus Homepower's R536 | shadow all-in, with Homepower today beside it | above |
+| Rooftop note | exports at R1.53 for Eskom and City Power rows; "neither fixed charge falls" | R0 default; the Eskom rows carry no fixed charge | above |
+| Note | allocated "at 1.62x the system average" | generation 1.26x, network 4.02x, transmission 1.36x, read from RES_FACTOR_GEN, _NET and _TX | three factors since 22 Sep |
+| Note | NERSA's allowed revenue "over N TWh of sales" | lines per kWh at NERSA's 210 TWh base, recovered over the scenario's sales | the NERSA lines are divided by allowed_revenue_2026_27.sales_twh (209.55) |
+| Note | components "before losses and VAT" | before allocation, losses and VAT | retailStack lists components before the residential factors |
+| Delta line | "+R0.xx on your last change" (the component sum) | the household all-in change first, then the components labelled as before allocation, losses and VAT | the sum is pre-allocation; on Today plus 8 GW of wind the all-in rate moves R0.035/kWh against R0.03 in the components |
+| Hydrogen line | "below the 45-60%" when under 40%; 42% read "within the viable range" | one constant, H2_VIABLE_CF = [0.45, 0.60]: below, within or above | the test and the text used different numbers |
+| Note | "the new-grid line is a floor against the TDP" | the engine's tiered connection charge on new wind and solar at the TDP's generation-integration average | newGrid is r.txCapexR from txChargeFor since 22 Sep |
+
+Stale code comments corrected (not on the page): Octopus's peak uplift, the 200 kWh Homepower fixed share (45% on R3.2206), the
+stepped NREL curve (a continuous ORDC since 20 Sep), the 181 against 204 TWh sales, the "44% below Homepower" level comment and
+the growth slider said to be compounded in the panel (it never was). An unused shareShiftable variable, which added the fixed
+charge to the all-in rate the same way, was removed.
+
+Check changed, with its cause: validate_consistency 'the panel says the new-grid cost is a floor' passed on 'understated' or
+'floor' anywhere in the note and pinned a sentence that has been false since 22 Sep. It is now 'the panel says the new-grid
+line is the engine's tiered transmission charge', which requires that description and fails on "floor" in the new-grid sentence.
+
+Not in this part, each with the item that changes it: the cap tooltip (stale, R12.84 on Octopus's old 100p cap and R3.5556) with
+the cap rebuild, 203 (5a); the year slider's tooltip (misleading) with the year coupling, 203 (3); "constant 2026 rands" and
+"level carries about 10%" with the level work, 203 (4); Coega's "1.2 GW" (unsourced) and the JSON text in the TODO items, 203 (6).
+The review line at the top of the panel stays until the last commit of 203.
+
 ### Build 2026-10-16h, central c5e: wind and solar capex backed out at the capacity factor each runs at by default; suite 819/824 as on 16g, no check changes status, four values move with the capex (user, 16 Oct 2026, message 161 (1); build 2026-10-16h)
 
 The change: FIXED.bldTariffCfBasis 'run' (was 'bid'). New wind R20,879/kW (was R17,773) and tracking solar R11,038/kW (was
@@ -11464,6 +11567,10 @@ R115,000-575,000. The model's inertia payment is R100,000/MW-yr, at the bottom o
 
 ### The bill, not the rate, 23 Sep 2026
 
+> CORRECTED 18 Oct 2026 (build 2026-10-18c; retail audit M3): the Eskom bills below add Homepower's R536 fixed charge to a
+> shadow rate that is already all-in, so they count it twice. The mechanism stands for any tariff with a fixed charge (the
+> City Power rows show it on a real tariff); the Eskom figures do not. See 'Retail panel audit, part 2'.
+
 > A BRIEFING VERSION of this finding was issued on 23 Sep 2026 for use outside the project -
 > self-contained, with the model, the scenarios and the caveats written out. It is a snapshot,
 > not a second source of truth: if any of the numbers below move, it needs reissuing, and the
@@ -11606,6 +11713,10 @@ found it immediately; reading the two failures did not.
 Cape export-by-day pattern as the natural first regional validation test.
 
 ### Batch B: rooftop, municipal bills and a caveat the panel needed, 23 Sep 2026
+
+> CORRECTED 18 Oct 2026 (build 2026-10-18c; retail audit M3): the Eskom bills below add Homepower's R536 fixed charge to a
+> shadow rate that is already all-in, so they count it twice. The mechanism stands for any tariff with a fixed charge (the
+> City Power rows show it on a real tariff); the Eskom figures do not. See 'Retail panel audit, part 2'.
 
 Build `2026-09-23x`.
 

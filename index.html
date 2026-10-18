@@ -902,20 +902,22 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="ph"><h2>Shadow dynamic retail price</h2>
               <span class="tag">hypothetical &middot; no such tariff exists in South Africa</span>
             </div>
+            <div class="pb" id="retReview" style="padding:8px 12px 0;font-size:10.5px;font-weight:600;color:var(--ink)">Figures under review (18 Oct 2026).</div>
             <div class="pb" style="padding:8px 12px 0;font-size:10.5px;color:var(--ink2);line-height:1.55">
               What a household would pay by the hour if the retail price followed cost.
-              Built by adding the components a household pays to the modelled
-              wholesale price: transmission and distribution, losses, levies, a supplier
-              margin and VAT.
+              Built from the modelled system: fuel and carbon from its dispatch, and on the regulated
+              basis the rest of NERSA's allowed revenue (network and retail, generation capital and
+              opex, IPP contracts, new build) as a flat adder over sales; then allocated to a
+              residential customer, grossed up for losses, plus VAT.
             </div>
             <div class="pb" style="padding:8px 12px 2px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-              <label style="font-size:10.5px;color:var(--ink2)" title="Regulated: NERSA's allowed revenue, recovered as a flat adder over sales – South Africa today. Market-indexed: the household pays the hourly wholesale price including scarcity, with only network and retail costs added – what an Octopus Agile-type tariff does. SAWEM launches in April 2027 and NTCSA is standing up a market surveillance unit for it, so until then this basis is a counterfactual.">Basis
+              <label style="font-size:10.5px;color:var(--ink2)" title="Regulated: NERSA's allowed revenue, recovered as a flat adder over sales – South Africa today. Market-indexed: the household pays the hourly wholesale price including scarcity, plus network and retail and a contract levy for what the wholesale price does not pay (contracts for difference on new build, REIPPPP while its contracts run, curtailment payments, stranded coal when ticked, decommissioning, legacy items and a vesting contract for Eskom's fleet) – what an Octopus Agile-type tariff does. SAWEM launches in April 2027 and NTCSA is standing up a market surveillance unit for it, so until then this basis is a counterfactual.">Basis
                 <select id="retBasis" onchange="renderRetail()" style="font-size:10.5px">
                   <option value="reg" selected>Regulated (NERSA)</option>
                   <option value="mkt">Market-indexed (SAWEM, from Apr 2027)</option>
                 </select>
               </label>
-              <label style="font-size:10.5px;color:var(--ink2)" title="Electrolysers buying curtailed output at R1.05/kWh, derived from a $4/kg hydrogen target. Capture is computed hour by hour from the actual curtailment profile, so only surplus deep enough and long enough to fill the plant counts. The rest is still spilled at zero. Hive's Coega project, the most advanced in Africa, is 1.2 GW.">Electrolysers soaking up curtailment
+              <label style="font-size:10.5px;color:var(--ink2)" title="Electrolysers buying curtailed output at R1.05/kWh, derived from a $4/kg hydrogen target. Capture is computed hour by hour from the actual curtailment profile: in each hour the plant takes the curtailed energy up to its capacity, partial hours included. The rest is still spilled at zero. Hive's Coega project, the most advanced in Africa, is 1.2 GW.">Electrolysers soaking up curtailment
                 <select id="retH2GW" onchange="renderRetail()" style="font-size:10.5px">
                   <option value="0" selected>none</option>
                   <option value="2">2 GW</option>
@@ -6207,12 +6209,14 @@ const FIXED = {
   // billGenPct          system size, as a share of annual consumption. 100% is how most
   //                     residential systems are sized. Anything generated beyond what is
   //                     self-consumed is exported.
-  // billFeedInR         what an exported unit earns. R1.53 is Cape Town's 2026/27 residential
-  //                     feed-in of R1.2418 plus its 28.75c incentive - the most generous scheme
-  //                     in the country. Most Eskom-direct customers have none, so set it to zero
-  //                     to see that case: it is the difference between a rooftop system that pays
-  //                     and one that only avoids.
-  billSelfConsumePct: 60, billGenPct: 100, billFeedInR: 1.53,
+  // billFeedInR         what an exported unit earns. Zero by default, because the table's rows
+  //                     are Eskom-direct and City Power households and no published export rate
+  //                     was found for either (searched 18 Oct 2026). R1.53 was Cape Town's
+  //                     2026/27 residential feed-in of R1.2418 plus its 28.75c incentive, applied
+  //                     to rows that are not Cape Town's (audit, 18 Oct 2026). Set it to see what
+  //                     an export credit would do: it is the difference between a rooftop system
+  //                     that pays and one that only avoids.
+  billSelfConsumePct: 60, billGenPct: 100, billFeedInR: 0,
   // tariff of R1.2418 plus its 28.75c incentive, the clearest published residential rate in the
   // at the time-of-use energy charge less part of the generation capacity charge and the service
   // charge - and most municipalities pay nothing at all, so this sits between the two extremes
@@ -15847,14 +15851,16 @@ function hourLabel(i){ return DAY_NM[Math.floor(i/24)%7] + ' ' + String(i%24).pa
 //               + supplier margin
 //               then VAT, then capped
 //
-// NO PEAK UPLIFT. Octopus adds 10-14 p/kWh at 16:00-19:00 because the network cost of the
+// NO PEAK UPLIFT. Octopus adds a peak uplift at 16:00-19:00 (10-14 p/kWh when this was written,
+// 12-24p by the retail audit of 18 Oct 2026) because the network cost of the
 // evening peak is separate from the energy cost. Ours is already carried in txRPerKWyr and
 // in Eskom's network capacity charge, which sits in the FIXED component below. Adding an
 // uplift would double-count it. The absence is deliberate.
 //
 // THE FIXED CHARGE IS SHOWN ALONGSIDE AND IS NOT DYNAMIC. That is the honest limit on what
 // any dynamic tariff can shift, and it matters more here than in Britain: a 200 kWh
-// Homepower household is already 43% fixed against Octopus's 24%.
+// Homepower household is already 45% fixed against Octopus's 24% (43% when written, on the
+// R3.5556 energy rate later corrected to R3.2206).
 let RETAIL_T = null;
 fetch('nodal/eskom_tariff_components.json?v=' + (window.DATA_V || '7'))
   .then(r => r.ok ? r.json() : null)
@@ -15910,8 +15916,8 @@ const RETAIL_LOSS = 0.08;
 //   deficiency.
 //
 // WE FOLLOW PLEXOS, because our hourly dispatch is a merit-order heuristic rather than an LP -
-// there is no dual to read. The stepped curve below is the NREL shape, keyed to how deeply the
-// reserve requirement is missed.
+// there is no dual to read. Until 20 Sep 2026 the curve below was NREL's stepped shape, keyed to
+// how deeply the reserve requirement is missed; it is now a continuous ORDC (see below).
 //
 // AN EARLIER ATTEMPT read an ERCOT-style curve off reserveMW directly and fired in all 8,760
 // hours, recovering 5,000% of system cost. reserveMW is the reserve HELD - a policy input, not
@@ -16064,9 +16070,9 @@ function retailComponents(markup, stranded, year, viaMuni){
   year = Math.max(base, Math.min(2040, year || base));
   const dy = year - base;
 
-  // SALES at the scenario year. Generation less what is never sold, then grown. The growth
-  // slider is read as ANNUAL and compounded - a scenario year makes that the only honest
-  // reading, and it means the Future mix preset's 5% needs revisiting.
+  // SALES at the scenario year: the engine's generation less what is never sold. No growth is
+  // applied here; demand growth is already in the engine's run (retail audit, 18 Oct 2026: an
+  // earlier comment said the growth slider was compounded here, and it never was).
   const GEN_KEYS = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal',
                     'ps','batt','ccgt','diesel'];
   // CURTAILED ENERGY MONETISED. If spilled renewable output finds a buyer - electrolysers are
@@ -16270,8 +16276,8 @@ function retailComponents(markup, stranded, year, viaMuni){
   //
   // But it is a fixed number of RANDS, not a fixed rate per kWh, and REIPPPP contracts are
   // take-or-pay: Eskom pays for contracted energy whether or not it takes it. A scenario that
-  // sells fewer kWh therefore recovers the same obligation over a smaller base. The Future
-  // mix sells 181 TWh against today's 204, so the line rises about 13%.
+  // sells fewer kWh therefore recovers the same obligation over a smaller base. (The 181 against
+  // 204 TWh once quoted here is stale: today sells about 194, retail audit 18 Oct 2026.)
   // Eskom's IPP bill, scaled by the share of REIPPPP contracts still running in the year.
   // Same schedule as the engine's PPA charge. 22 Sep 2026; before that it never expired.
   // REIPPPP PPAs: the engine's charge, one source, re-timed from the engine's scenario year to
@@ -16393,6 +16399,10 @@ function retailBaseSalesMWh(){
 // The retail cost stack on either basis: the energy term that follows the hour, the flat term,
 // and the breakdown the panel lists. One function for the curve, the week and the breakdown -
 // they had three copies of the market rule until 22 Sep 2026 and two of them were stale.
+// The electrolyser capacity factor the literature treats as viable (the panel's note), one constant for the test and the
+// text: the note said 45-60% while the code tested below 40% (user, 18 Oct 2026, message 203 (2b); audit section 4).
+const H2_VIABLE_CF = [0.45, 0.60];
+const H2_VIABLE_BAND = Math.round(H2_VIABLE_CF[0] * 100) + '&ndash;' + Math.round(H2_VIABLE_CF[1] * 100) + '%';
 function retailStack(c, mkt){
   let varTarget = c.fuel + c.carbon;
   let parts = [['fuel and carbon', c.fuel + c.carbon], ['network and retail', c.network],
@@ -16778,7 +16788,7 @@ function renderRetail(){
     + '<th style="text-align:right;padding:4px 6px">Dearest hour</th>'
     + '<th style="text-align:right;padding:4px 6px">Spread</th></tr>'
     + [['Homepower, flat', d.flat, 'energy charge only; R536/month of fixed charges sit outside it'],
-       ['Homeflex, time of use', d.flex, 'winter rates only \u2013 the annual spread is narrower'],
+       ['Homeflex, time of use', d.flex, 'energy charges only, averaged over the year (high season a quarter of it)'],
        // NO 'Shadow dynamic' ROW. It was the simple mean of d.dyn, which is a step toward
        // the Agile rows rather than a tariff anyone could be on: nobody consumes flat across
        // 8,760 hours, so an unweighted average of an hourly price describes no customer. The
@@ -16808,7 +16818,6 @@ function renderRetail(){
        }).join('')
     + '</table>';
 
-  const shareShiftable = 100 * (mean(d.dyn) * 900) / (mean(d.dyn) * 900 + d.fixedPerMonth);
   // THE LEVEL IS NOT COMPARABLE TO A BILL, AND THE PANEL MUST SAY SO FIRST.
   // Our wholesale component is short-run marginal cost: fuel, carbon, start-up and
   // new-build capex. It excludes recovery of the EXISTING fleet, which the model treats as
@@ -16816,6 +16825,8 @@ function renderRetail(){
   // return on assets a year through the price. So the shadow mean lands about 44% below
   // Homepower and that gap is a BOUNDARY, not a verdict on what Eskom charges.
   // Read the SHAPE across hours, not the level against a bill.
+  // SUPERSEDED: the bottom-up rebuild put the existing fleet's recovery back in, and today now
+  // lands about 1% from Homepower's all-in rate (retail audit, 18 Oct 2026).
   const c = d.comp;
   // ── THE NOTE ─────────────────────────────────────────────────────────────
   // Trimmed from 731 words to about 150 on 10 Sep 2026. It had accumulated a paragraph per
@@ -16837,6 +16848,8 @@ function renderRetail(){
   const mktBasis = d.marketBasis;
   const items = retailStack(c, mktBasis ? marketPriceSeries(lastRes, { ...FIXED, ...state }) : null).parts;
   const preTot = items.reduce((a, b) => a + b[1], 0);
+  // What a household pays per kWh, all-in: the "Dynamic pricing, habits unchanged" row.
+  const hhRate = (d.agileFixed != null) ? d.agileFixed : mean(d.dyn);
 
   // ── WHAT YOUR LAST CHANGE DID ──────────────────────────────────────────────
   //
@@ -16849,6 +16862,10 @@ function renderRetail(){
   // answers the question actually being asked, which is what the control you just moved did.
   // It says nothing on first render, and nothing when the change is below a cent, so it stays
   // quiet unless it has something to say.
+  //
+  // The components are before allocation, losses and VAT, so a household's all-in rate moves
+  // about 1.6 to 2.1 times as far as their sum (audit, 18 Oct 2026). The line leads with the
+  // all-in change and labels the components as what they are.
   const prev = window.__retPrev;
   let deltaLine = '';
   if (prev && Math.abs(preTot - prev.tot) > 0.005) {
@@ -16859,13 +16876,14 @@ function renderRetail(){
       .slice(0, 3)
       .map(x => `${x[0]} ${x[1] > 0 ? '+' : '&minus;'}${Math.abs(x[1]).toFixed(2)}`);
     if (moved.length) {
-      const d = preTot - prev.tot;
+      const dh = hhRate - prev.hh, dc = preTot - prev.tot;
+      const sgn = v => (v > 0 ? '+' : '&minus;') + 'R' + Math.abs(v).toFixed(2);
       deltaLine = `<div style="font-size:10px;color:var(--ink2);margin:4px 0 8px">`
-        + `<strong>${d > 0 ? '+' : '&minus;'}R${Math.abs(d).toFixed(2)}</strong> on your last `
-        + `change &middot; ${moved.join(' &middot; ')}</div>`;
+        + `<strong>${sgn(dh)}/kWh</strong> on the household all-in rate on your last change. `
+        + `Components before allocation, losses and VAT, ${sgn(dc)}: ${moved.join(' &middot; ')}</div>`;
     }
   }
-  window.__retPrev = { tot: preTot, map: Object.fromEntries(items) };
+  window.__retPrev = { tot: preTot, hh: hhRate, map: Object.fromEntries(items) };
 
   // THE CAP ANNOUNCES ITSELF. A flat line at R12.84 presented as a shadow dynamic price is
   // what this panel was doing on Crisis 2023, market basis, until 16 Sep 2026.
@@ -16913,34 +16931,37 @@ function renderRetail(){
     // of d.dyn, which appears nowhere on screen - and which the table's own comment calls a
     // figure describing no customer, since nobody consumes flat across 8,760 hours. It is now
     // the load-weighted "Dynamic pricing, habits unchanged" row, so a reader can find it.
-    const rate = (d.agileFixed != null) ? d.agileFixed : mean(d.dyn);
-    const fixed = d.fixedPerMonth || 0;
+    // NO FIXED CHARGE ADDED (user, 18 Oct 2026, message 203 (2a); audit M3). The shadow rate is all-in: the level check
+    // compares it with Homepower's energy charge plus its fixed charges per kWh at 900 kWh, so it already recovers what
+    // Homepower collects as R/month. Adding Homepower's fixed charge on top counted it twice (900 kWh read R3,953 for
+    // R3,417). Homepower's own bill sits beside it for comparison.
+    const rate = hhRate;
+    const fixed = d.fixedPerMonth || 0, hpEnergy = mean(d.flat);
     const row = (kwh, label) => {
-      const total = kwh * rate + fixed;
+      const shadow = kwh * rate, hp = kwh * hpEnergy + fixed;
       return `<tr><td style="padding:3px 6px">${label}</td>`
         + `<td class="mono" style="text-align:right;padding:3px 6px">${kwh}</td>`
-        + `<td class="mono" style="text-align:right;padding:3px 6px">R${Math.round(kwh*rate).toLocaleString('en-US')}</td>`
-        + `<td class="mono" style="text-align:right;padding:3px 6px">R${Math.round(fixed).toLocaleString('en-US')}</td>`
-        + `<td class="mono" style="text-align:right;padding:3px 6px;font-weight:700">R${Math.round(total).toLocaleString('en-US')}</td>`
-        + `<td class="mono" style="text-align:center;padding:3px 6px;color:var(--ink2)">${Math.round(100*fixed/total)}%</td></tr>`;
+        + `<td class="mono" style="text-align:right;padding:3px 6px;font-weight:700">R${Math.round(shadow).toLocaleString('en-US')}</td>`
+        + `<td class="mono" style="text-align:right;padding:3px 6px">R${Math.round(hp).toLocaleString('en-US')}</td>`
+        + `<td class="mono" style="text-align:center;padding:3px 6px;color:var(--ink2)">${Math.round(100*fixed/hp)}%</td></tr>`;
     };
     return '<div style="margin:8px 0;padding:7px 9px;border-left:3px solid var(--veld,#4A6B7A);'
       + 'background:var(--panel2)"><strong>How this tariff translates into a monthly bill</strong>'
       + '<table class="mono" style="width:100%;font-size:10.5px;border-collapse:collapse;margin-top:4px">'
       + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:3px 6px">Household</th>'
       + '<th style="text-align:right;padding:3px 6px">kWh</th>'
-      + '<th style="text-align:right;padding:3px 6px">Energy</th>'
-      + '<th style="text-align:right;padding:3px 6px">Fixed</th>'
-      + '<th style="text-align:right;padding:3px 6px">Total</th>'
-      + '<th style="text-align:center;padding:3px 6px">Fixed share</th></tr>'
+      + '<th style="text-align:right;padding:3px 6px">Shadow, all-in</th>'
+      + '<th style="text-align:right;padding:3px 6px">Homepower today</th>'
+      + '<th style="text-align:center;padding:3px 6px">Homepower fixed share</th></tr>'
       + row(900, 'Eskom\u2019s reference household')
       + row(190, 'The average electrified household')
       + '</table>'
       + `<div style="font-size:10px;color:var(--ink2);line-height:1.5;margin-top:4px">`
-      + `At the R${rate.toFixed(2)}/kWh of the \u201cDynamic pricing, habits unchanged\u201d row `
-      + `above, plus Homepower\u2019s R${Math.round(fixed)} `
-      + `fixed charge. Eskom has used 30 kWh a day for years; the average electrified `
-      + `household uses about a fifth of that, and pays the same fixed charge for it.</div></div>`;
+      + `The shadow bill is kWh times the R${rate.toFixed(2)}/kWh of the \u201cDynamic pricing, habits unchanged\u201d row `
+      + `above. That rate is all-in: it already carries the network and customer costs Homepower recovers through its `
+      + `R${Math.round(fixed)} monthly fixed charge, so no fixed charge is added. Homepower today is its energy charge, `
+      + `R${hpEnergy.toFixed(2)}/kWh, plus that fixed charge. Eskom has used 30 kWh a day for years; the average electrified `
+      + `household uses about a fifth of that, and on Homepower pays the same fixed charge for it.</div></div>`;
   })();
   // WHAT ROOFTOP DOES TO THAT BILL, and what a municipal customer pays instead. Two things the
   // panel could not show: a household that generates its own power, and the half of South African
@@ -16953,8 +16974,7 @@ function renderRetail(){
   // nobody: fixed charges vary by a factor of 62 across distributors.
   const rooftopHtml = (() => {
     const t = RETAIL_T, muni = t.municipal && t.municipal.reference;
-    const rate = (d.agileFixed != null) ? d.agileFixed : mean(d.dyn);
-    const fixed = d.fixedPerMonth || 0;
+    const rate = hhRate;
     const selfPct = Math.max(0, Math.min(90, state.billSelfConsumePct)) / 100;
     const genPct = Math.max(0, state.billGenPct) / 100;
     const feed = Math.max(0, state.billFeedInR);
@@ -16975,8 +16995,9 @@ function renderRetail(){
       const selfUse = Math.min(kwh * selfPct, kwh * genPct);
       const exported = Math.max(0, kwh * genPct - selfUse);
       const grid = kwh - selfUse;
-      const now = (who === 'eskom') ? kwh * rate + fixed : muniEnergy(kwh) + muniFixed;
-      const after = ((who === 'eskom') ? grid * rate + fixed : muniEnergy(grid) + muniFixed)
+      // The Eskom rows add no fixed charge: the shadow rate is all-in (see the bill table).
+      const now = (who === 'eskom') ? kwh * rate : muniEnergy(kwh) + muniFixed;
+      const after = ((who === 'eskom') ? grid * rate : muniEnergy(grid) + muniFixed)
                   - exported * feed;
       return `<tr><td style="padding:3px 6px">${label}</td>`
         + `<td class="mono" style="text-align:right;padding:3px 6px">${kwh}</td>`
@@ -16998,10 +17019,12 @@ function renderRetail(){
       + '</table>'
       + `<div style="font-size:10px;color:var(--ink2);line-height:1.5;margin-top:4px">`
       + `A system sized at ${Math.round(genPct*100)}% of annual use, ${Math.round(selfPct*100)}% of it `
-      + `used as generated, exports at R${feed.toFixed(2)}/kWh. The Eskom rows move with the scenario; `
-      + `the City Power rows are that distributor\u2019s real block tariff today, for comparison. `
-      + `Neither fixed charge falls, which is why the saving is always well below the share of `
-      + `consumption displaced – and why it is smaller for the household that uses less.</div></div>`;
+      + `used as generated, exports at R${feed.toFixed(2)}/kWh. The Eskom rows move with the scenario `
+      + `and price every unit at the all-in shadow rate, so rooftop avoids the network and customer `
+      + `costs in it too; a tariff that recovered those through a fixed charge would cut the saving. `
+      + `The City Power rows are that distributor\u2019s real block tariff today, for comparison: its `
+      + `fixed charge does not fall, which is why the saving there is well below the share of `
+      + `consumption displaced, and smaller for the household that uses less.</div></div>`;
   })();
 
   // The market basis prices every hour at what the system would clear at, including hours it
@@ -17024,9 +17047,12 @@ function renderRetail(){
 
   noteEl.innerHTML = capLine + shedWarn + rowsNote + billHtml + rooftopHtml + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
-    + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
-    + `sales, allocated to that customer category at 1.62&times; the system average using `
-    + `Eskom's cost-to-serve study. Components before losses and VAT, R/kWh:`
+    + `${c.year}. Built from NERSA's allowed revenue, its lines per kWh at NERSA's `
+    + `${RETAIL_T.allowed_revenue_2026_27.sales_twh.toFixed(0)}&nbsp;TWh base and recovered over the scenario's `
+    + `${c.salesTWh.toFixed(0)}&nbsp;TWh of sales; allocated to that customer category with Eskom's cost-to-serve study, `
+    + `generation at ${RES_FACTOR_GEN.toFixed(2)}&times;, network at ${RES_FACTOR_NET.toFixed(2)}&times; and `
+    + `transmission at ${RES_FACTOR_TX.toFixed(2)}&times; the system average. Components before allocation, losses `
+    + `and VAT, R/kWh:`
     + '<span class="mono" style="font-size:10px;display:block;margin:5px 0 8px">'
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
@@ -17035,10 +17061,11 @@ function renderRetail(){
         ? `<strong>${c.h2GW}&nbsp;GW of electrolysers</strong> take `
         + `${c.h2SharePct.toFixed(0)}% of the curtailed energy at R1.05/kWh, derived from a `
         + `$4/kg hydrogen target. They run at a ${(c.h2CF*100).toFixed(0)}% capacity factor`
-        + (c.h2CF < 0.40
-            ? ` \u2013 <strong>below the 45&ndash;60% the literature treats as viable</strong>, `
+        + (c.h2CF < H2_VIABLE_CF[0]
+            ? ` \u2013 <strong>below the ${H2_VIABLE_BAND} the literature treats as viable</strong>, `
             + `so this is more plant than the surplus can keep busy.`
-            : `, within the viable range.`)
+            : c.h2CF <= H2_VIABLE_CF[1] ? `, within the ${H2_VIABLE_BAND} the literature treats as viable.`
+            : `, above the ${H2_VIABLE_BAND} the literature treats as viable.`)
         + ` The rest is still spilled. Hive's Coega project, the most advanced in Africa and `
         + `still pre-FID, is 1.2&nbsp;GW.<br><br>`
         : '')
@@ -17046,8 +17073,8 @@ function renderRetail(){
     + `the same basis. The comparison holds today's tariff flat in real terms and that is `
     + `<strong>generous to the status quo</strong>: NERSA has already approved 8.76% and 8.83% `
     + `against a 3% inflation target, and the CSIR measures 4.6% a year real over 2014&ndash;25. `
-    + `The new-grid line is a `
-    + `floor against the Transmission Development Plan. Homeflex is shown at its own seasonal `
+    + `The new-grid line is the engine's tiered connection charge on new wind and solar, at the `
+    + `Transmission Development Plan's generation-integration average. Homeflex is shown at its own seasonal `
     + `rates. Level carries about 10%.</span>`;
 
   const cv = document.getElementById('retChart');
@@ -17124,7 +17151,8 @@ function drawRetailWeek(cv, d){
   line(d.week, '#0F5C32', [], 2);
   ctx.font = '9px ui-monospace,monospace'; ctx.textAlign = 'left';
   ctx.fillStyle = 'rgba(128,128,128,0.75)';
-  ctx.fillText((d.wkMode === 'S' ? 'summer' : 'winter') + ' week \u00b7 Homeflex at winter rates',
+  ctx.fillText((d.wkMode === 'S' ? 'summer week \u00b7 Homeflex at low-season rates' : 'winter week \u00b7 Homeflex at high-season rates')
+               + ' \u00b7 shadow all-in, tariffs energy only',
                padL + 4, 9);
 }
 
@@ -17194,9 +17222,11 @@ function drawRetail(cv, d){
   line(d.flat, '#7A8A99', [2,3]);
   line(d.dyn,  '#0F5C32');
   ctx.font = '9px ui-monospace,monospace'; ctx.textAlign = 'left';
-  [['Shadow dynamic','#0F5C32'],['Homeflex','#C4783C'],['Homepower flat','#7A8A99']]
+  // The shadow line is all-in (it recovers network, customer and fixed costs per kWh); the two tariff lines are energy
+  // charges only, without Homepower's monthly fixed charges (user, 18 Oct 2026, message 203 (2b); audit section 4).
+  [['Shadow dynamic, all-in','#0F5C32'],['Homeflex, energy only','#C4783C'],['Homepower, energy only','#7A8A99']]
     .forEach((L, i) => { ctx.fillStyle = L[1];
-      ctx.fillText('\u2014 ' + L[0], padL + 4 + i * 104, 9); });
+      ctx.fillText('\u2014 ' + L[0], padL + 4 + i * 148, 9); });
 }
 
 let spWeekMode = 'W';
@@ -18060,7 +18090,7 @@ const SLIDERS=[
   {id:'billGenPct',label:'\u2013 system size',min:0,max:250,step:10,def:FIXED.billGenPct,ctrlStyle:SUB_CTRL,fmt:v=>v+'% of annual use',
    note:'How large the system is, as a share of what the household uses in a year. 100% is how most residential systems are sized. Anything generated beyond what is used as it is generated is exported.'},
   {id:'billFeedInR',label:'\u2013 feed-in rate',min:0,max:4,step:0.05,def:FIXED.billFeedInR,ctrlStyle:SUB_CTRL,fmt:v=>'R'+v.toFixed(2)+'/kWh',
-   note:'What an exported unit earns. R1.53 is Cape Town\u2019s 2026/27 residential feed-in of R1.2418 plus its 28.75c incentive, the most generous scheme in the country. Most Eskom-direct customers have no feed-in tariff.'},
+   note:'What an exported unit earns. Zero by default: no published export rate was found for Eskom-direct or City Power households, the two in the table. For comparison, Cape Town pays R1.53 in 2026/27 (R1.2418 plus its 28.75c incentive), but only to its own customers.'},
   {endsub:true},
 ];
 const PRESETS={
@@ -19664,7 +19694,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-18b';
+const BUILD_STAMP = '2026-10-18c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

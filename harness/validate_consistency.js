@@ -915,7 +915,7 @@ const num = t => {
             `the panel must state that it is built from allowed revenue rather than anchored, `
             + `and show the resulting figure against Homepower's actual rate. That agreement `
             + `is the only check the method has on itself.`);
-      // ── THE GRID COST IS A FLOOR AND MUST SAY SO ──────────────────────────
+      // ── THE GRID COST MUST SAY WHAT IT IS ──────────────────────────────────
       // Added 10 Sep 2026 after the panel was asked whether it included the grid for a
       // heavy renewables scenario. It did not - two faults at once.
       //
@@ -932,11 +932,20 @@ const num = t => {
       // TDP at R390bn for 56 GW. The model's own decomposition labels transmission partial,
       // so this is a known incompleteness - but a reader must be told, or the panel makes
       // heavy renewables look cheaper than the wires allow.
-      check('the panel says the new-grid cost is a floor',
-            t.includes('understated') || t.includes('floor'),
-            `the scenario grid cost is roughly a third of what the Transmission Development `
-            + `Plan implies. Without saying so, the panel understates the cost of exactly `
-            + `the scenario it exists to test.`);
+      //
+      // CHANGED 18 Oct 2026 (retail audit, section 4). From 22 Sep the new-grid line is the
+      // engine's own transmission charge, r.txCapexR from txChargeFor: new wind, solar and
+      // offshore tiered by regional headroom from txRPerKWyr, the TDP's generation-integration
+      // average. It is no longer a floor against the TDP, so the old pin ('understated' or
+      // 'floor' anywhere in the note) held a sentence that had become false, and would have
+      // passed on any other use of either word. It now pins the method the code uses.
+      check('the panel says the new-grid line is the engine\'s tiered transmission charge',
+            t.includes("new-grid line is the engine's tiered connection charge")
+              && t.includes('generation-integration average')
+              && !/new-grid[^.]*floor/.test(t),
+            `the new-grid line must be described as what the code computes, the engine's `
+            + `tiered transmission charge at the TDP's generation-integration average, and `
+            + `not as a floor.`);
       // ── THE PANEL MUST RESPOND, AND AGREE WITH THE SYSTEM COST ────────────
       // RESTORED 10 Sep 2026. This check existed, then vanished when the surrounding block
       // was replaced during the bottom-up rebuild, and nothing noticed because everything
