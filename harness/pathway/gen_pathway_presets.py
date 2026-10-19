@@ -131,6 +131,17 @@ for cfg in PRESETS:
         if new.count(anchor) != 1: raise SystemExit('anchor not found once')
         new = new.replace(anchor, blk + '\n' + anchor, 1)
     if 'gap_index' in cfg:
+        # IRP's 2030 targets' caption gives the same gap for 2030 (message 235 (3)), from the same index
+        g30 = demand_gap(cfg, 2030)
+        GB30 = "// BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
+        GE30 = "// END GENERATED IRP's 2030 targets demand gap"
+        g30blk = f"{GB30}\nconst IRP2030_DEMAND_GAP_PCT = {j(g30)};   // the IRP's demand path above the pathway's in 2030, customer demand plus firm exports\n{GE30}"
+        if GB30 in new:
+            a = new.index(GB30); b = new.index(GE30, a) + len(GE30); new = new[:a] + g30blk + new[b:]
+        else:
+            anchor = "const _gw = mw => String(+(mw / 1000).toFixed(1));"
+            if new.count(anchor) != 1: raise SystemExit('caption anchor not found once')
+            new = new.replace(anchor, g30blk + '\n' + anchor, 1)
         gap = demand_gap(cfg)
         GB = "// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
         GE = "// END GENERATED 'IRP path 2035' demand gap"
