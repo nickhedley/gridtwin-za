@@ -1,0 +1,14 @@
+{
+ "stamp": "2026-10-19d",
+ "presets": {
+  "Least-cost path 2035": {
+   "caption": "The model’s least-cost build to 2035: 23.4 GW of wind, 14.7 GW of tracking solar, 10.8 GW of rooftop solar, 8.6 GW of 3.5-hour batteries and 2.6 GW of gas, with 13.8 GW of coal retired, at demand 27% above 2026 plus 930 MW of smelter load. Figures are for one weather year; other years differ.",
+   "desc": "The model’s least-cost build to 2035: 23.4 GW of wind, 14.7 GW of tracking solar, 10.8 GW of rooftop solar, 8.6 GW of 3.5-hour batteries and 2.6 GW of gas, with 13.8 GW of coal retired, at demand 27% above 2026 plus 930 MW of smelter load. Figures are for one weather year; other years differ."
+  },
+  "IRP path 2035": {
+   "caption": "IRP 2025’s planned build to 2035, on the same costs and demand as Least-cost path 2035: 21 GW of wind, 17.5 GW of tracking solar, 8.1 GW of rooftop solar, 4.7 GW of 3.5-hour batteries and 10.8 GW of gas, with 6 GW of the gas run at an annual capacity factor of at least 51%, as the IRP assumes, and 13.8 GW of coal retired on the IRP’s dates. The IRP plans for demand 7.5% higher in 2035. Figures are for one weather year; other years differ.",
+   "desc": "IRP 2025’s planned build to 2035, on the same costs and demand as Least-cost path 2035: 21 GW of wind, 17.5 GW of tracking solar, 8.1 GW of rooftop solar, 4.7 GW of 3.5-hour batteries and 10.8 GW of gas, with 6 GW of the gas run at an annual capacity factor of at least 51%, as the IRP assumes, and 13.8 GW of coal retired on the IRP’s dates. The IRP plans for demand 7.5% higher in 2035. Figures are for one weather year; other years differ."
+  }
+ },
+ "errors": []
+}

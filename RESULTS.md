@@ -5026,7 +5026,9 @@ Average cost per MWh served (user, 19 Oct 2026, message 215 (1)): the row above 
 c5f), whose avgCost carries M11's rooftop leak: newCapexR prices new rooftop at acapAt while btmCapexR took out R1,150/kW-yr, so
 grid capital kept new rooftop x (acapAt - 1,150) (R1,966, 1,827 and 1,701/kW-yr at the engine's 2028, 2030.5 and 2033 vintages).
 The fixed-measure row takes each year's leak out over the energy served (c5f: 4,800, 10,800 and 16,800 MW of new rooftop; 219.2,
-245.5 and 277.1 TWh served). Check: on build 2026-10-19c, whose defaults equal c5f's, 'Least-cost path 2035' gives R927.61/MWh
+245.5 and 277.1 TWh served). Check: on build 2026-10-19c, with 'Least-cost path 2035' set to c5f's 2035 state and the page's lithium decline, LNG terminal
+charge and discount rate equal to c5f's (validate_pathway_presets; other page defaults differ from c5f's, message 232 (3), and the
+preset sets the ones the state carries), the preset gives R927.61/MWh
 served-weighted over the engine check's 240 runs, against the re-derived R928.
 
 c5f against c5e, split by s_roof09 (c5f with rooftop at c5e's 900 MW a year): s_roof09 sits R14.1bn below c5f and 7.9 Mt above
@@ -5366,6 +5368,69 @@ The shown figures equal the page's own result for the same state (lastRes, adequ
 
 Suite on 2026-10-19c (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 849/853, node checks 761/765 plus
 audit 88/88; eng5 5/6; as on 19b, the four known failures and eng5 check 6.
+
+### Public wording for the two 2035 captions and the slider notes, and a check that the page's visible text carries no internal labels (build 2026-10-19d; user, 19 Oct 2026, messages 235 (1)-(2) and 236)
+
+(1) The Least-cost path 2035 and IRP path 2035 captions now read for a public reader, every figure still read from PRESETS (and
+the IRP's 51% and 6 GW from FIXED.ccgtForceLoadPct and the preset's ccgtForceLoadMW). As shown on a fresh load (Chromium,
+harness/render/2026-10-19d/):
+
+- Least-cost path 2035: "The model’s least-cost build to 2035: 23.4 GW of wind, 14.7 GW of tracking solar, 10.8 GW of rooftop solar, 8.6 GW of 3.5-hour batteries and 2.6 GW of gas, with 13.8 GW of coal retired, at demand 27% above 2026 plus 930 MW of smelter load. Figures are for one weather year; other years differ."
+- IRP path 2035: "IRP 2025’s planned build to 2035, on the same costs and demand as Least-cost path 2035: 21 GW of wind, 17.5 GW of tracking solar, 8.1 GW of rooftop solar, 4.7 GW of 3.5-hour batteries and 10.8 GW of gas, with 6 GW of the gas run at an annual capacity factor of at least 51%, as the IRP assumes, and 13.8 GW of coal retired on the IRP’s dates. The IRP plans for demand 7.5% higher in 2035. Figures are for one weather year; other years differ."
+
+Two corrections to the wording given. The 51% is an annual minimum capacity factor on the first 6 GW of gas (FIXED's comment:
+IRP 2025, Gazette 53596, p.34; simulateGasAnnualFloor tops gas up in the highest net-load hours until the year's output reaches
+it), so "load factor or more" became "an annual capacity factor of at least 51%". "Demand 27% above 2026" leaves out the 930 MW
+smelter block both 2035 presets carry: growth is 26.7% on the 2026 profile (203.5 TWh), and with the block 2035 demand is 30.7%
+above 2026, so the caption adds "plus 930 MW of smelter load".
+
+(2) harness/validate_public_text.js (in the suite): on a fresh load, every text node in the body outside scripts, styles,
+noscript and templates (collapsed panels and slider notes included), the title, placeholder, aria-label and alt attributes, and
+every preset caption (PRESET_DESC); one check per label: run names (c5, c5a-c5z), s_ names, 'the note', 'provisional until',
+message numbers, TODO, RESULTS. Text written only after a later action (a build run, an export) is not scanned. On main before
+this change (build 2026-10-19c), 2,306 pieces of text: run names in 7 distinct texts (12 places), 'the note' and 'provisional
+until' in 2 each (6 places), none of the others:
+
+- the Least-cost path 2035 and IRP path 2035 captions ('c5f', 'provisional until the note'; each also the button's title): fixed
+  in (1);
+- six LCOE slider notes anchored on c5e: lcoeWind 'c5e 2030: new wind ran at 41.7%, R0.64/kWh'; lcoeRooftop 'c5e 2030: the
+  same'; lcoeVrfb and lcoeIronAir 'c5e builds none, so there are no measured cycles to anchor it on'; lcoeBatt 'c5e 2030: 81
+  cycles, R5.99/kWh delivered'; lcoeDiesel 'c5e 2030: 2.9%, R17.18/kWh'. Fixed in message 236, below.
+
+The Deep decarbonisation 2035, Fossil-free 2040 and IRP 2030 captions (on 214's branch, not main) follow the same rule in 214's
+pull request (235 (3)).
+
+Message 236 (a scan of the rendered page on 19c), in the same change:
+- (1) The four LCOE anchor notes now give the least-cost pathway's 2030 figures, worded 'In the model's least-cost pathway in
+  2030: ...', each from one constant (LCP_2030_LI_CYCLES, LCP_2030_DSL_CF, LCP_2030_WIND_CF, replacing C5E_2030_*): c5f's hooked
+  2026-30 engine check (build 2026-10-17g, twelve weather years x 20 draws), 2030 row: lithium 102.688 full cycles a year (1.644 TWh
+  discharged from 16,011 MWh, 15,719 new and 292 existing), the diesel fleet 2.7045% (0.805 TWh from 3,400 MW), new wind 41.707%
+  (26.47 TWh from 7,246 MW); rooftop 17.47% (21.03 TWh from 13,742 MW), the same as its resource factor. The same arithmetic on
+  c5e's hooked check gives the old constants exactly (81.141, 2.8529%, 41.740%). Shown (read from the page on 19d): wind
+  R0.64/kWh at 41.7%, lithium R4.73/kWh delivered at 103 full cycles, the diesel fleet R17.78/kWh at 2.7% (c5e's notes: R0.64,
+  R5.99, R17.18).
+- (2) Pumped storage, vanadium flow, iron-air, CSP and nuclear: 'Typed; no source recorded (in the model since 1 Oct 2026).'
+  is now 'An assumption; no published source.'; 'c5e builds none, so there are no measured cycles to anchor it on.' dropped.
+- (3) Change history dropped from the page (kept here, 'Page defaults aligned with the central', 19 Oct 2026): the gas fuel
+  slider's 'Was R2,003 ... until 19 Oct 2026.' and the assumptions table's 'Until 19 Oct 2026 the default was ...'.
+- (4) '(public_data/gas_price_cases.json)' dropped from the gas fuel slider and the assumptions table; the unit-commitment
+  paragraph's '(build 2026-10-14r)' is '(October 2026)'; the build panel's 'None - as in the central pathway' is 'None - as in
+  the least-cost pathway'; the coal-flexibility note's 'Placeholder until the coal flexibility option.' dropped.
+- (5) validate_public_text adds five labels: 'Typed;', 'no source recorded', 'in the model since', 'until <date> 2026', and .json
+  or .csv paths. One hit remained: the exports note's 'Exports ran about 1,750 MW until February 2026 and about 745 MW since, ...',
+  the power system's history (Mozal's suspension), not the model's. Decided (message 238 (1)): it stays, exempt from that one
+  label by its exact text with the reason in the check (EXEMPT), so change history dated by month alone is still caught; a further
+  check fails if the exemption stops matching the page. Error messages that show only when a file fails to load are not on a fresh
+  page; the six that name a path are TODO 14gy, after the note. With these, the check passes: 14/14.
+
+Also corrected in this change (message 232): the 215 (1) entry's check line said build 19c's defaults equal c5f's; they do not
+(message 232 (3) lists the differences). It now says what validate_pathway_presets establishes: the preset sets c5f's 2035
+state and the page's lithium decline, LNG terminal charge and discount rate equal c5f's.
+
+Suite on 2026-10-19d (claude/public-captions, ESK19679.csv present, Deep decarbonisation 2035's top-up running beside it): 863/867,
+node checks 775/779 plus audit 88/88 (rerun on its own after VOM joined the acronym list: the shorter gas row brought '+R35 VOM'
+under the audit's 400-character scan for the first time); eng5 5/6. The four known failures and eng5 check 6, as on 19c; the 14
+added checks are validate_public_text's, all passing. On 19c (main): 849/853.
 
 ### IRP's 2030 targets and its grid-delayed variant generated from the IRP engine check's 2030 state; the 2030 preset reproduces its 120 runs to the digit (build 2026-10-19e; user, 19 Oct 2026, message 232 (2))
 
