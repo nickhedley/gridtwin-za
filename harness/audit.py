@@ -249,7 +249,11 @@ US UK II III IV UCLF PCLF OCLF IRENA EV EVs VRE LDES GVA MVA kV DOE USD ZAR EUR 
 HVDC HVAC STATCOM FACTS SVC OHL MTS GCC ITP ERTT CORE JET
 LNG LPG CNG MMBtu GJ PJ TJ CF RTE SOC DOD SONI MCR
 CC BY SA NC ND VAT DUoS TNUoS LCOH FID WACC ORDC VoRS ESMAP OSW EBSA MARISMA LBNL NREL AEMO BESS
+VOM
 """.split())
+# VOM (variable operation and maintenance) added 19 Oct 2026 (build 2026-10-19d, message 236): the gas row of the assumptions
+# table lost its file path and change-history sentence, so the quoted span holding '+R35 VOM' fell under the 400-character
+# scan limit and was read for the first time. An acronym, like OCGT and LCOE beside it.
 
 def check_shouting(src):
     found = {}

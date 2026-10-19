@@ -5427,7 +5427,10 @@ Also corrected in this change (message 232): the 215 (1) entry's check line said
 (message 232 (3) lists the differences). It now says what validate_pathway_presets establishes: the preset sets c5f's 2035
 state and the page's lithium decline, LNG terminal charge and discount rate equal c5f's.
 
-Suite on 2026-10-19d: SUITE_COUNTS
+Suite on 2026-10-19d (claude/public-captions, ESK19679.csv present, Deep decarbonisation 2035's top-up running beside it): 863/867,
+node checks 775/779 plus audit 88/88 (rerun on its own after VOM joined the acronym list: the shorter gas row brought '+R35 VOM'
+under the audit's 400-character scan for the first time); eng5 5/6. The four known failures and eng5 check 6, as on 19c; the 14
+added checks are validate_public_text's, all passing. On 19c (main): 849/853.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
