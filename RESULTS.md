@@ -5398,6 +5398,57 @@ Captions (message 235 (3)): both in public wording, every figure read from PRESE
 the preset's ccgtForceLoadMW, and the IRP's demand above the pathway's in 2030, 7.2% (IRP2030_DEMAND_GAP_PCT, written by the
 generator from harness/pathway/irp2025/index_irpdem.json, as 2035's 7.5%). Scratch: m232/moves_old.json, moves_new.json.
 
+### Imports default at the measured April-August 2026 flow (0.927 on the 1,150 MW contract), held once; the synchronous floor read the global imports factor, not the scenario's (a found bug, fixed); tracking stays off by default (build 2026-10-19e; user, 19 Oct 2026, messages 234 and 237)
+
+(1) Imports (message 234 (1)). nodal/nodal_engine.js holds the measured mean flow, IMPORTS_AVG_MW = 1066, and IMPORTS_CF =
+IMPORTS_AVG_MW / IMPORTS_MW = 0.92696 (was 0.88); FIXED.importsCF reads it, and harness/pathway/pathway_perfail.js reads it
+through the page unless IMP_AVG_MW is set for a sensitivity (c5f set IMP_AVG_MW=1066, so its runs are unchanged).
+validate_structure's one-definition check accepts the derived form (each of IMPORTS_AVG_MW and IMPORTS_MW declared once as a
+number). Source: ESK19679 International Imports (Eskom data, local; the averages are ours, not Eskom's), April-August 2026,
+1,066.3 MW over 3,672 hours. Why April: the window was set with the export setting's (message 72, 14 Oct 2026, 'c5b demand inputs
+built'), the months after Mozal stopped in March 2026, the IRP tying Mozal's removal to Cahora Bassa supply. The imports
+themselves show no step in March: monthly means 794.7 MW in January, 941.7, 985.5 in March, 991.9 in April, 1,058.5, 962.2,
+1,089.7 and 1,223.4 in August, rising through the year, so the window ends on the year's highest month. January-August, kept in
+the record: 1,007.0 MW over 5,832 hours (0.876; the page's 0.88 of 22 Sep was this rounded, and the engine comment's 1,012 MW was
+0.88 x 1,150; RESULTS of 14 Oct gave 1,005).
+
+What moves (each preset as the page runs it, run(): one weather year on the default profiles; before and after):
+- Today 2026: system cost R215.450bn to R215.392bn; CO2 157.795 to 157.313 Mt; imports 8.865 to 9.338 TWh; coal 147.685 to
+  147.214 TWh; carbon intensity 711 to 709 g/kWh; replacement cost R314.24bn to R313.76bn (R1.60/kWh shown either way);
+  average cost R1,099.4 to R1,099.1/MWh (R1.10/kWh shown either way). Retail panel: the Homepower and Homeflex rows unchanged;
+  the dynamic-pricing rows R0.01/kWh lower at the mean (habits unchanged R4.24 to R4.23) and at the dearest hour (R4.34 to R4.33,
+  18:00), the cheapest hour moving from 03:00 to 02:00 at R4.20; the reference household's shadow bill (900 kWh) R3,812 to
+  R3,811 a month.
+- The generated presets (IRP's 2030 targets and its variant, IRP path 2035, Least-cost path 2035) and 2025, as modelled set
+  their own importsCF, so they move only through the floor below: IRP path 2035 R287.722bn to R287.699bn, CO2 74.518 to 74.474
+  Mt; the others unchanged.
+- Deep decarbonisation 2035 (no importsCF of its own): R231.461bn to R231.585bn, CO2 16.089 to 15.972 Mt; Fossil-free 2040:
+  R295.700bn to R295.932bn. Both are rescored on this default once their searches finish (message 234 (5)).
+
+(2) Tracking (message 234 (2); decided 237 (1), option C): fixed tilt stays the page default (bldPvTracking 0) until the regional
+model has a tracking profile (TODO 14gx); the presets keep tracking on. With tracking on, Today 2026 does not move on any figure,
+retail panel included (it builds no new utility solar); the regional build LP, Where To Build's default, and the delay analysis
+would refuse every scenario.
+
+(3) and (4): after the note, TODO 14gv (page defaults by model year) and 14gw (the build panel's settings).
+
+Found bug (message 237 (2)). The synchronous generation floor in simulate (syncPlantNonCoal) counted imports at the global
+IMPORTS_CF, not the scenario's importsCF, while dispatch used the scenario's; a slider, preset or run setting never reached the
+floor. Every pathway engine check ran the floor on 0.88 while dispatching imports at its own importsCF (c5f and the IRP check:
+0.927). Fixed: p.importsCF ?? FIXED.importsCF, as dispatch reads it. Measured on the engine checks' own runs (the page with the
+fix against the stored rows, validate_pathway_presets' runs at six decimals; scratch m234/vpp_sync.txt):
+
+| Preset, engine check | Runs | System cost, R bn: fixed / stored | CO2, Mt: fixed / stored | Unserved, GWh |
+|---|---|---|---|---|
+| IRP path 2035 | 120 | 293.354748 / 293.373971 (-0.0066%) | 83.885 / 83.922 (-0.044%) | 0 / 0 |
+| Least-cost path 2035 | 240 | 247.496321 / 247.496321 (0.0000%) | 85.138111 / 85.138111 (0.000%) | 0.732936 / 0.732936 |
+| IRP's 2030 targets | 120 | 274.574010 / 274.574067 (-0.00002%) | 114.862 / 114.863 | 0 / 0 |
+
+The floor binds where gas holds coal down (the IRP's 51% floor); in c5f's least-cost path it does not bind in 2035. No rerun of
+c5f: the note's figures stand with the bug noted. validate_pathway_presets passes 37/37 (IRP path 2035 within its 0.01%
+tolerance, no longer to the digit). Related, not changed: the regional model (nodal_engine.js) takes imports as the fixed 1,150 MW
+at the global factor in four places (TODO 14gz, after the note).
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
