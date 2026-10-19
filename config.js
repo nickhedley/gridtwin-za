@@ -17,11 +17,14 @@
 // console:
 //
 //   APIs & Services → Credentials → your key
-//     Application restrictions → Websites → nickhedley.github.io/*
-//     API restrictions        → Restrict key → Solar API only
+//     Application restrictions → Websites → gridtwinza.org/*, www.gridtwinza.org/*
+//     API restrictions        → Restrict key → Solar API, Maps JavaScript API,
+//                               Places API, Geocoding API (the rooftop tab's map
+//                               and address search use the same key; message 253 D4)
 //
-// Also set a daily quota (APIs & Services → Solar API → Quotas → Requests per
-// day). Google applies no spending cap by default, so the quota is the backstop.
+// Also set a daily quota on each of the four (APIs & Services → the API → Quotas →
+// Requests per day). Google applies no spending cap by default, so the quota is
+// the backstop.
 //
 // GitHub's secret scanner may flag this file. That alert is expected: the key is
 // intentionally public and protected by the restrictions above. Rotate the key
