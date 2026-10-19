@@ -1,12 +1,14 @@
 // Provenance (19 Oct 2026, messages 214 (2), 230 (3), 231): the rescore that wrote harness/ext/rescore_page_19c.json (VARIANTS=page),
-// run with the repository at build 2026-10-19c; its output path defaults to the session's scratch area (set OUT).
+// run with the repository at build 2026-10-19c; from 19e it reads the repository it sits in (or ROOT) and writes OUT (default
+// harness/ext/rescore.json).
 // Message 214 (2) / 227 (4): Deep decarbonisation 2035 and Fossil-free 2040 rescored on the aligned defaults (build 19b) and
 // the c5f base: twelve weather years x K independent outage draws (seeds 71830529 + k*104729 + year*7919, as pathcheck.js and
 // the preset check), mean unserved energy against half the 0.002% standard on customer demand (pathcheck's target), and cost.
 // Variants: page (as the page runs the preset); c5f5 (c5f's settings that are state, at the preset's own +5% demand); c5f
 // (the same with c5f's demand path for the preset's year and its smelter block).
-const fs=require('fs'),path=require('path');const {JSDOM}=require('/home/user/gtza-audit/harness/node_modules/jsdom');
-const ROOT='/home/user/gtza-audit', K=+(process.env.K||20), SEED=71830529, ONLY=process.env.ONLY||'';
+const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');
+// The repository this script sits in (harness/ext/), unless ROOT is set.
+const ROOT=process.env.ROOT||path.resolve(__dirname,'..','..'), K=+(process.env.K||20), SEED=71830529, ONLY=process.env.ONLY||'';
 const P=JSON.parse(fs.readFileSync(path.join(ROOT,'harness/pathway/c5f/pathway_c5f.json'),'utf8'));
 const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
 const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,url:'file://'+ROOT+'/index.html',
@@ -34,4 +36,4 @@ const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToB
      return JSON.stringify({n, shed:sh/n, cost:c/n, target:0.5*cu/n, co2:co/n, demandGrowthPct:state.demandGrowthPct, carbon:state.carbonTaxRPerT}); })()`));
    r.secs=Math.round((Date.now()-t0)/1000); r.pass=r.shed<=r.target; out.presets[name][v]=r;
    console.log(name, v, JSON.stringify(r)); } }
- fs.writeFileSync(process.env.OUT||'/tmp/claude-0/-home-user/7f3311fb-be50-5c31-9fe8-354006007a62/scratchpad/m214/rescore.json', JSON.stringify(out,null,1)); process.exit(0); })();
+ fs.writeFileSync(process.env.OUT||path.join(__dirname,'rescore.json'), JSON.stringify(out,null,1)); process.exit(0); })();

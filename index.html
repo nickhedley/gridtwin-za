@@ -18334,7 +18334,12 @@ const PRESETS={
   // Offshore is flat from 5 to 8 GW within about R1bn. Derivation in RESULTS.md.
   // Re-sized 4 Oct 2026 by the same search; offshore held at ESMAP's 5 GW deployable by 2040
   // (5.25 GW was cheaper but not deployable). No coal, so twelve weather years fix the result.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:100,newWindMW:34000,newPvMW:41000,bldPvTracking:1,newOffshoreMW:1250,newRooftopMW:16800,newBattMW:14000,newBattHours:12,newIronAirMW:6625,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  // REBUILT 19 Oct 2026 (build 2026-10-19e; user, messages 231 and 234 (5)) on c5f's demand for 2040 (C5F_DEMAND: growth and the
+  // 930 MW block), the aligned defaults (19b) and the c5e method's search with lithium trades, from the old build scaled by the
+  // demand ratio (1.4275): wind 50,500, solar 56,500, lithium 20,000 at 12 h, iron-air 13,000, offshore 1,750 MW, every other
+  // setting kept; no top-up needed on independent draws (harness/ext/search_ff_c5f.json, topup_ff_c5f.json). Its measured shed is
+  // PRESET_SCORES, rescored on the page as it runs it.
+  'Fossil-free 2040':{demandGrowthPct:C5F_DEMAND[2040].growthPct,demandBlockMW:C5F_DEMAND[2040].blockMW,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:100,newWindMW:50500,newPvMW:56500,bldPvTracking:1,newOffshoreMW:1750,newRooftopMW:16800,newBattMW:20000,newBattHours:12,newIronAirMW:13000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -19798,7 +19803,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-19c';
+const BUILD_STAMP = '2026-10-19e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
