@@ -5432,6 +5432,260 @@ node checks 775/779 plus audit 88/88 (rerun on its own after VOM joined the acro
 under the audit's 400-character scan for the first time); eng5 5/6. The four known failures and eng5 check 6, as on 19c; the 14
 added checks are validate_public_text's, all passing. On 19c (main): 849/853.
 
+### IRP's 2030 targets and its grid-delayed variant generated from the IRP engine check's 2030 state; the 2030 preset reproduces its 120 runs to the digit (build 2026-10-19e; user, 19 Oct 2026, message 232 (2))
+
+What changed. Both IRP 2030 presets are written by harness/pathway/gen_pathway_presets.py (now per preset year) from
+harness/pathway/irp2025/pathway_irp2025.json, as IRP path 2035 is, at 2030: the IRP engine check's 2030 state (its 2026-30 rows,
+harness/pathway/irp2025/pathcheck_irp2025_a.json, the hooked copy's rows less the generation hooks). 2030: wind 7,341 MW,
+tracking solar 10,313, rooftop 3,600, lithium 3,214 MW at 2.44 hours, CCGT 6,000 with the IRP's 51% floor, coal standing 32,433
+MW (7,259 retired on Figure 3's dates), demand +10.1384% and the 930 MW block, Cape wind 1,580 MW, gas R1,298.42/MWh, carbon on
+c5f's path; no reserve reference before 2031, as pathcheck.js sets it. The grid-delayed variant is the same state with 60% of
+its new wind and solar (4,405 and 6,188 MW, rounded to the MW) and congestion curtailment capped at 10% (the generator's 'delay'
+setting). Retired with the typed presets: coalEafFromFleet(67), lcoeCcgt 2500 (the replacement-cost readout now uses the derived
+R2,900), rooftop 4,500 MW and 3,724 MW of 4-hour storage (Table 1's own storage and distributed generation; the run takes
+s_be6_c5f's lithium and 900 MW of rooftop a year from 2027, build_irp.py).
+
+Check (validate_pathway_presets, now 37 checks): the page state after applyState("IRP's 2030 targets") equals the engine check's
+2030 state on 41 keys; every weather year x the row's 10 draws (120 runs): unserved 0.0000 against 0.0000 GWh (target 2.1969),
+system cost R274.574bn against R274.574bn (0.0000%), CO2 114.863 against 114.863 Mt (build 19c with this change, before message
+234's imports default). The variant: its state equals the 2030 preset's on 104 keys except newWindMW, newPvMW and
+congestionCurtailPct, with wind and solar held back by the same share (0.6001 after rounding).
+
+What moves on the page (each preset as the page runs it, run(): one weather year on the default profiles; the typed presets on
+c5f's 2030 demand, message 231 (2), against the generated ones):
+
+| Preset | System cost, R bn | Average cost, R/MWh | CO2, Mt | Gas, TWh | Coal, TWh | Replacement cost, R bn |
+|---|---|---|---|---|---|---|
+| IRP's 2030 targets | 275.86 to 271.43 | 1,223 to 1,199 | 113.96 to 108.47 | 26.81 to 26.74 | 94.88 to 89.36 | 345.54 to 348.05 |
+| IRP's 2030 targets, grid delayed | 274.63 to 272.40 | 1,221 to 1,211 | 137.15 to 134.20 | 26.81 to 26.81 | 118.05 to 114.74 | 366.17 to 368.89 |
+
+Captions (message 235 (3)): both in public wording, every figure read from PRESETS, the 51% and 6 GW from FIXED.ccgtForceLoadPct and
+the preset's ccgtForceLoadMW, and the IRP's demand above the pathway's in 2030, 7.2% (IRP2030_DEMAND_GAP_PCT, written by the
+generator from harness/pathway/irp2025/index_irpdem.json, as 2035's 7.5%). Scratch: m232/moves_old.json, moves_new.json.
+
+### Imports default at the measured April-August 2026 flow (0.927 on the 1,150 MW contract), held once; the synchronous floor read the global imports factor, not the scenario's (a found bug, fixed); tracking stays off by default (build 2026-10-19e; user, 19 Oct 2026, messages 234 and 237)
+
+(1) Imports (message 234 (1)). nodal/nodal_engine.js holds the measured mean flow, IMPORTS_AVG_MW = 1066, and IMPORTS_CF =
+IMPORTS_AVG_MW / IMPORTS_MW = 0.92696 (was 0.88); FIXED.importsCF reads it, and harness/pathway/pathway_perfail.js reads it
+through the page unless IMP_AVG_MW is set for a sensitivity (c5f set IMP_AVG_MW=1066, so its runs are unchanged).
+validate_structure's one-definition check accepts the derived form (each of IMPORTS_AVG_MW and IMPORTS_MW declared once as a
+number). Source: ESK19679 International Imports (Eskom data, local; the averages are ours, not Eskom's), April-August 2026,
+1,066.3 MW over 3,672 hours. Why April: the window was set with the export setting's (message 72, 14 Oct 2026, 'c5b demand inputs
+built'), the months after Mozal stopped in March 2026, the IRP tying Mozal's removal to Cahora Bassa supply. The imports
+themselves show no step in March: monthly means 794.7 MW in January, 941.7, 985.5 in March, 991.9 in April, 1,058.5, 962.2,
+1,089.7 and 1,223.4 in August, rising through the year, so the window ends on the year's highest month. January-August, kept in
+the record: 1,007.0 MW over 5,832 hours (0.876; the page's 0.88 of 22 Sep was this rounded, and the engine comment's 1,012 MW was
+0.88 x 1,150; RESULTS of 14 Oct gave 1,005).
+
+What moves (each preset as the page runs it, run(): one weather year on the default profiles; before and after):
+- Today 2026: system cost R215.450bn to R215.392bn; CO2 157.795 to 157.313 Mt; imports 8.865 to 9.338 TWh; coal 147.685 to
+  147.214 TWh; carbon intensity 711 to 709 g/kWh; replacement cost R314.24bn to R313.76bn (R1.60/kWh shown either way);
+  average cost R1,099.4 to R1,099.1/MWh (R1.10/kWh shown either way). Retail panel: the Homepower and Homeflex rows unchanged;
+  the dynamic-pricing rows R0.01/kWh lower at the mean (habits unchanged R4.24 to R4.23) and at the dearest hour (R4.34 to R4.33,
+  18:00), the cheapest hour moving from 03:00 to 02:00 at R4.20; the reference household's shadow bill (900 kWh) R3,812 to
+  R3,811 a month.
+- The generated presets (IRP's 2030 targets and its variant, IRP path 2035, Least-cost path 2035) and 2025, as modelled set
+  their own importsCF, so they move only through the floor below: IRP path 2035 R287.722bn to R287.699bn, CO2 74.518 to 74.474
+  Mt; the others unchanged.
+- Deep decarbonisation 2035 (no importsCF of its own): R231.461bn to R231.585bn, CO2 16.089 to 15.972 Mt; Fossil-free 2040:
+  R295.700bn to R295.932bn. Both are rescored on this default once their searches finish (message 234 (5)).
+
+(2) Tracking (message 234 (2); decided 237 (1), option C): fixed tilt stays the page default (bldPvTracking 0) until the regional
+model has a tracking profile (TODO 14gx); the presets keep tracking on. With tracking on, Today 2026 does not move on any figure,
+retail panel included (it builds no new utility solar); the regional build LP, Where To Build's default, and the delay analysis
+would refuse every scenario.
+
+(3) and (4): after the note, TODO 14gv (page defaults by model year) and 14gw (the build panel's settings).
+
+Found bug (message 237 (2)). The synchronous generation floor in simulate (syncPlantNonCoal) counted imports at the global
+IMPORTS_CF, not the scenario's importsCF, while dispatch used the scenario's; a slider, preset or run setting never reached the
+floor. Every pathway engine check ran the floor on 0.88 while dispatching imports at its own importsCF (c5f and the IRP check:
+0.927). Fixed: p.importsCF ?? FIXED.importsCF, as dispatch reads it. Measured on the engine checks' own runs (the page with the
+fix against the stored rows, validate_pathway_presets' runs at six decimals; scratch m234/vpp_sync.txt):
+
+| Preset, engine check | Runs | System cost, R bn: fixed / stored | CO2, Mt: fixed / stored | Unserved, GWh |
+|---|---|---|---|---|
+| IRP path 2035 | 120 | 293.354748 / 293.373971 (-0.0066%) | 83.885 / 83.922 (-0.044%) | 0 / 0 |
+| Least-cost path 2035 | 240 | 247.496321 / 247.496321 (0.0000%) | 85.138111 / 85.138111 (0.000%) | 0.732936 / 0.732936 |
+| IRP's 2030 targets | 120 | 274.574010 / 274.574067 (-0.00002%) | 114.862 / 114.863 | 0 / 0 |
+
+The floor binds where gas holds coal down (the IRP's 51% floor); in c5f's least-cost path it does not bind in 2035. No rerun of
+c5f: the note's figures stand with the bug noted. validate_pathway_presets passes 37/37 (IRP path 2035 within its 0.01%
+tolerance, no longer to the digit). Related, not changed: the regional model (nodal_engine.js) takes imports as the fixed 1,150 MW
+at the global factor in four places (TODO 14gz, after the note).
+
+### Deep decarbonisation 2035 and Fossil-free 2040 rebuilt on c5f's demand for their year; both meet half the reliability standard on 19e as the page runs them (Deep 2.27 against 2.42 GWh, R318.2bn; Fossil-free 2.16 against 2.72, R439.4bn); captions in public wording (build 2026-10-19e; user, 19 Oct 2026, messages 214, 231, 234 (5), 235 (3) and 241)
+
+Settings, both presets. c5f's demand for the preset's year (growth on the 2026 base and the 930 MW block, C5F_DEMAND, generated
+from c5f's build file: 2035 +26.7454%, 2040 +45.8896%), on build 2026-10-19c's defaults (lithium decline 3%, LNG terminal
+R530.5/kW-yr, gas R1,298.42/MWh, imports 0.88), every other preset setting kept, coal retirement included (Deep 27,000 MW and
+coal flexibility 1%; Fossil-free all coal and diesel retired). harness/ext/preset_search.js: OVERRIDE (the demand), BASE (the old
+build scaled by the ratio of the two years' demand: Deep 1.2452, Fossil-free 1.4275), FEASIBLE=1 (topped up to feasibility
+first, at the search's first step), EXT=1 (the c5e method's lithium trades), DRAWS and CONFIRM (Deep 2 and 40, Fossil-free 1
+and 0), CONTINUE; then TOPUP_ONLY on independent draws (SEED=71830529, DRAWS=CONFIRM=20: twelve weather years
+x 20, 240 runs), as Deep was on 17i. Scratch m214/run_search.sh and settings.json; logs harness/ext/search_*_c5f.json and
+topup_*_c5f.json. Then each preset is rescored as the page runs it on 19e (imports 0.927 and the synchronous floor reading the
+scenario's imports, messages 234 (1) and 237 (2)), twelve weather years x 20 independent draws, harness/ext/preset_rescore.js,
+VARIANTS=page (harness/ext/rescore_page_19e.json), which PRESET_SCORES is generated from.
+
+| | Deep decarbonisation 2035 | Fossil-free 2040 |
+|---|---|---|
+| Old build, +5% demand (MW) | wind 26,500, solar 27,500, lithium 10,500 at 12 h, iron-air 625 | wind 34,000, solar 41,000, lithium 14,000 at 12 h, iron-air 6,625, offshore 1,250 |
+| Scaled start | 33,000 / 34,250 / 13,125 / 750: 143.2 GWh, R284.5bn | 48,500 / 58,500 / 20,000 / 9,500 / 1,750: 116.0 GWh, R408.7bn |
+| Search (search's draws) | 43,000 / 36,750 / 14,625 / 1,750: 2.358 against 2.423 GWh, R313.51bn | 50,500 / 56,500 / 20,000 / 13,000 / 1,750: 2.596 against 2.720, R439.18bn |
+| Independent draws (19c) | 3.97 against 2.424: six top-up rounds (solar +2,000, iron-air +250): 43,000 / 38,750 / 14,625 / 2,000: 2.418 against 2.424, R318.07bn | 2.596 against 2.721: no top-up needed |
+| Rescored on 19e, as the page runs it | 2.270 against 2.424 GWh, R318.21bn, 15.99 Mt | 2.163 against 2.721 GWh, R439.41bn, 0 Mt |
+
+Fossil-free's search was run first without the lithium trades (search_ff_c5f_noext.json, kept); resumed with them, it found no
+cheaper move. With no coal its outage draws barely matter, so the search's own draws and the independent ones give the same
+shed. Imports at 0.927, and the floor reading them, lower both presets' shed on 19e and raise their cost: Deep +R0.13bn,
+Fossil-free +R0.23bn.
+
+Recorded, not quoted (message 231 (1)): before the rebuild, on 19b (harness/ext/rescore_19b.json), Deep's +5% build on c5f's
+2035 demand shed 1,163.4 GWh against 2.416 GWh, the expected result for a build sized for +5%; Fossil-free's on c5f's 2040
+demand 18,581 against 2.692. At +5% with c5f's other state settings (variant c5f5): Deep 1.839 against 1.901, Fossil-free 1.806
+against 1.808; as the page ran them (variant page): Deep 1.846 against 1.901, Fossil-free 2.078 against 1.808.
+
+Every preset's demand against c5f's for its year (message 231 (2)): Today 2026, the 2026 default (no growth, no block), as c5f;
+2025, as modelled, 2025's own (a backcast, not on c5f's path); both IRP 2030 presets +10.1384% and 930 MW, generated from the IRP
+engine check's 2030 state; IRP path 2035 and Least-cost path 2035 +26.7454% and 930 MW; Deep decarbonisation 2035 +26.7454% and
+930 MW (was +5%); Fossil-free 2040 +45.8896% and 930 MW (was +5%). All now on c5f's path.
+
+What moves on the page (each preset as the page runs it, run(): one weather year on the default profiles; build 19c to 19e):
+| Preset | System cost, R bn | Average cost, R/MWh | CO2, Mt | Unserved, GWh | Curtailment, TWh | Replacement cost, R bn |
+|---|---|---|---|---|---|---|
+| Today 2026 | 215.45 to 215.39 | 1,099 to 1,099 | 157.80 to 157.31 | 0 to 0 | 0 to 0 | 314.24 to 313.76 |
+| IRP's 2030 targets | 283.95 to 271.43 | 1,197 to 1,199 | 125.24 to 108.47 | 0 to 0 | 0.0 to 0.5 | 361.76 to 348.05 |
+| IRP's 2030 targets, grid delayed | 282.57 to 272.40 | 1,191 to 1,211 | 148.81 to 134.20 | 0 to 0 | 0 to 0 | 384.97 to 368.89 |
+| IRP path 2035 | 287.72 to 287.70 | 1,099 to 1,099 | 74.52 to 74.47 | 0 to 0 | 11.8 to 11.8 | 353.17 to 353.13 |
+| Least-cost path 2035 | 241.40, unchanged | 917 | 74.62 | 0 | 3.3 | 307.65 |
+| 2025, as modelled | 224.08, unchanged | 1,062 | 179.14 | 4.291 | 0 | 346.48 |
+| Deep decarbonisation 2035 | 231.46 to 316.42 | 1,110 to 1,220 | 16.09 to 13.19 | 0 to 0 | 46.7 to 84.8 | 277.10 to 334.59 |
+| Fossil-free 2040 | 295.70 to 438.95 | 1,478 to 1,490 | 0 to 0 | 0 to 0.540 | 114.6 to 128.0 | 291.11 to 399.56 |
+
+Main (build 2026-10-19d) against 19e; scratch m214/moves_main19d.json, moves_19e.json. The page's one weather year is the default
+profiles; Fossil-free's 0.54 GWh there sits within its twelve-year mean of 2.16 against 2.72.
+
+Captions (message 235 (3)): the Deep, Fossil-free and both IRP 2030 captions in public wording, every figure read from PRESETS;
+the reliability sentence on the two searched presets reads PRESET_SCORES and says the build meets half the standard only when its
+measured shed does. The before-and-after list is in the pull request. validate_public_text (message 241) now also fails on
+'undefined', 'NaN' or 'null' in visible text (17 checks); during this change it caught Deep's interim 'undefined MW of smelter
+load', before the preset carried its block. gen_preset_scores.py found its block by a marker that named the source file, so a
+new source added a second block (the page failed to load); it now matches the marker's fixed part and refuses two blocks.
+
+Build-rate limits (message 245). The least-cost pathway's build LP caps each year's new build: c5f ran on the default pace
+(BLD_PACE.deliverable: wind 2,500, solar 2,500, lithium 2,000, iron-air 150 MW a year), utility solar's cap growing 7% a year
+(bldPvRateGrowthPct), wind at 3,500 MW a year from 2031 and lithium at 3,000 from 2028 (its build file's windCap and liCap), and
+lithium energy at 4 hours of the power cap (liEnergyHours). Its own build sits on them where they bind: wind 2,500 MW in 2029-30
+and 3,500 in 2031-34, solar 3,277 in 2030 (2,500 x 1.07^4), lithium 3,000 MW and 12,000 MWh in 2030. Summed from 2026, against
+the searched presets (the searches have no build-rate limits):
+
+| MW unless stated | Deep 2035 | c5f's limit by 2035 | Fossil-free 2040 | c5f's limit by 2040 |
+|---|---|---|---|---|
+| Wind | 43,000 | 30,000 | 50,500 | 47,500 |
+| Utility solar (tracking) | 38,750 | 34,541 | 56,500 | 62,823 |
+| Lithium, power | 14,625 | 28,000 | 20,000 | 43,000 |
+| Lithium, energy (12 h), MWh | 175,500 | 112,000 | 240,000 | 172,000 |
+| Iron-air | 2,000 | 1,500 | 13,000 | 2,250 |
+| Offshore wind | 0 | none: not in c5f's build LP | 1,750 | none |
+| Rooftop | 10,800 | 20,000 | 16,800 | 30,000 |
+
+Deep exceeds the limits on wind, solar, iron-air and lithium energy; Fossil-free on wind, iron-air, lithium energy and offshore.
+Each caption names every technology over its limit in one sentence generated from the limits (message 246 (4); c5fBuildLimitMW
+from the pace, solar's growth and C5F_BUILD_CAPS, which the generator writes from c5f's build file): Deep 'It builds faster
+than the least-cost pathway's limits allow by 2035: wind 43 GW against 30, solar 38.75 GW against 34.54, lithium 175.5 GWh
+against 112, iron-air 2 GW against 1.5.'; Fossil-free 'It builds faster than the least-cost pathway's limits allow by 2040:
+wind 50.5 GW against 47.5, lithium 240 GWh against 172, iron-air 13 GW against 2.25; offshore wind is not among the pathway's
+options.' Re-searching both within the limits is TODO 14hb, after the note.
+
+Checks this change touched, each with its cause:
+- validate_findings 'the adequacy loop build is adequate in its stalled year' and validate_weather 'long-duration storage
+  dispatch stays close to the perfect-foresight benchmark' build their fixed scenarios on the Fossil-free preset and override
+  only the build, so moving the preset to c5f's 2040 demand ran them at +45.9% and 930 MW (3,876.9 and 1,333.1 GWh shed). Both
+  pin the +5% and no block they ran on from the repository's first build (1 Oct 2026), and pass as before.
+- validate_findings 'preset curtailment sits within its weather band': re-pinned for the rebuilt presets, as on 4 and 18 Oct
+  for earlier rebuilds, band unchanged at +/-15%: Deep 84.8 TWh on the default profiles (twelve-year mean 66.8, 51.6-77.7; was
+  46.9), Fossil-free 128.0 (96.7, 71.1-114.8; was 114.9). Deep's default-profile figure sits above its twelve-year range, the
+  offset between the profile sets recorded for Fossil-free on 1 Oct.
+- validate_findings 'the IRP build pushes coal below 70% of its available energy' (band 52-72%) read 48.4% on the generated IRP
+  2030 preset. Decided (message 246 (1)): correct the finding, not the model. On main's typed preset (IRP demand +20%, coal EAF
+  63.2% from the 67% fleet) 59.2%, 106.2 TWh, 125 Mt; the typed preset at c5f's 2030 demand (message 231 (2)) 52.9%, 94.9 TWh,
+  114 Mt; generated (page EAF 65%, imports 0.927) 48.4%, 89.4 TWh of 185 available, 108 Mt against the IRP's 160. The cause is
+  the preset's demand, now c5f's for 2030 rather than the IRP's. Re-derived the way the original was (the measured share +/- 10
+  points): 38-58%, renamed 'below 60%'; the 22 Sep entry 'Coal utilisation is where this model and the IRP disagree' carries the
+  update. The finding's point, coal well below what the IRP's 160 Mt implies, holds more strongly.
+- validate_invariants '[preset] market price mean is close to the engine's marginal price' (within 5%) failed on the rebuilt
+  Deep: market R0.354/kWh against engine R0.333, 6.4% above. Where the measures differ (one weather year, default profiles;
+  scratch m214/mktprice.js):
+
+  | Deep decarbonisation 2035 | Old build (19c) | Rebuilt (19e) |
+  |---|---|---|
+  | Engine price, mean, R/kWh | 0.415 | 0.333 |
+  | Market price, mean | 0.428 (+3.2%) | 0.354 (+6.4%) |
+  | Hours at a zero engine price | 41.1% | 52.5% |
+  | Engine price in priced hours | 0.711 | 0.709 |
+  | Curtailment, TWh | 46.7 | 84.8 |
+  | Hours with an adder above R1/kWh | 5 | 6 |
+  | Largest hourly adder, R/kWh | 35.2 | 72.4 |
+  | Tightest hour's available reserve against its requirement | 41% | 15% |
+
+  Cause: three hours carry R0.0199 of the R0.0212/kWh mean adder, day 188 at 18:00 and 19:00 (R30.8 and R72.4/kWh; reserve 43%
+  and 15% of the requirement) and day 219 at 18:00 (R71.1; 17%), winter evenings with no load shed, against a yearly mean pulled
+  down by zero-price hours (the engine's mean fell 20% while its priced hours held at R0.71). The scarcity adder works as designed.
+  Corrected (message 247), not widened: the two means are compared over the hours without a scarcity adder (the market price
+  within R1/MWh of the engine's, marketPriceSeries' own threshold, and no load shed), at 5% as before, beside the existing limit of
+  438 scarcity hours, which catches the defect the check was written for (22 Sep 2026: scarcity priced in every hour). Before and
+  after, all three presets:
+
+  | Preset | Whole year: market against engine, R/kWh | Outside scarcity hours | Scarcity hours |
+  |---|---|---|---|
+  | Today 2026 | 0.7573 against 0.7571 (+0.02%) | 0.7496 against 0.7496 (0.00%), 8,722 hours | 38 |
+  | Deep decarbonisation 2035 | 0.3537 against 0.3325 (+6.38%) | 0.3276 against 0.3276 (0.00%), 8,735 hours | 25 |
+  | Fossil-free 2040 | 0.2490 against 0.2391 (+4.13%) | 0.2391 against 0.2391 (0.00%), 8,758 hours | 1, and 1 hour shed |
+
+- validate_consistency 'new-build capital matches the hand computation' (Deep decarbonisation 2035's new-build capital in the
+  retail panel at 2035, within R0.06): re-pinned R0.718 to R0.904, as for every earlier Deep rebuild in the check's record.
+  Measured on 19e in one page: the old preset R0.737, the old build at the new demand R0.578, the new preset R0.904, so the move is
+  the new build (more capital, partly spread over more sales). Tolerance unchanged.
+
+Suite on 2026-10-19e (claude/presets-214, ESK19679.csv present, nothing running beside it): 880/884, node checks 792/796 plus
+audit 88/88; eng5 5/6. The four known failures and eng5 check 6, as on 19d (863/867); the 17 added checks are
+validate_pathway_presets' (23 to 37) and validate_public_text's (14 to 17). validate_invariants and validate_consistency were
+rerun on their own after message 247's correction and the capital re-pin, and the audit and eng5 on their own after the run
+reached the session's 30-minute limit for a background task; every other script is from the full run.
+
+### Check: how much load Today 2026 can add and still meet the reliability standard, against Eskom's claim of 3-5 GW of overcapacity: about 4 GW flat, 6 GW or more in daylight hours (build 2026-10-19e; user, 19 Oct 2026, message 243; a check, not for the note until Nick decides)
+
+Settings. Today 2026 on build 2026-10-19e (imports 0.927, the synchronous floor reading the scenario's imports), with an added
+load block from 0 to 6 GW in 500 MW steps: flat, every hour (demandBlockMW); and daytime, the same MW from 08:00 to 16:59 only,
+added to the demand series passed to the engine (no engine change: the engine's block is flat, so this is a stand-in for a load
+that can switch off outside daylight). Twelve weather years x 20 independent outage draws, 240 runs per block (seeds 71830529 +
+k x 104729 + year x 7919, as the preset checks). The standard is 0.002% of customer demand, the block included (load less
+storage charging, as harness/ext/preset_rescore.js); half of it is the presets' target. harness/ext/overcap_check.js, results
+harness/ext/overcap_19e.json. The claim (Bloomberg, Oct 2026) is quoted as given to the model, not read here.
+
+| Block, MW | Flat: shed, GWh (standard) | Worst year | Added cost, R bn | Added CO2, Mt | Daytime: shed, GWh (standard) | Worst year | Added cost | Added CO2 |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 0.016 (3.93) | 0.15 | - | - | 0.016 (3.93) | 0.15 | - | - |
+| 1,000 | 0.051 (4.10) | 0.60 | 5.88 | 8.93 | 0.042 (3.99) | 0.48 | 2.17 | 3.31 |
+| 2,000 | 0.250 (4.28) | 2.38 | 11.90 | 17.74 | 0.092 (4.06) | 0.78 | 4.40 | 6.64 |
+| 3,000 | 0.939 (4.45) | 5.39 | 18.24 | 26.40 | 0.225 (4.12) | 1.68 | 6.69 | 9.93 |
+| 3,500 | 2.020 (4.54) | 8.71 | 21.67 | 30.67 | 0.321 (4.16) | 2.08 | 7.86 | 11.55 |
+| 4,000 | 4.195 (4.63) | 15.75 | 25.38 | 34.91 | 0.503 (4.19) | 2.68 | 9.08 | 13.14 |
+| 4,500 | 8.719 (4.72), fails | 26.65 | 29.52 | 39.12 | 0.778 (4.22) | 3.33 | 10.37 | 14.71 |
+| 5,000 | 17.739 (4.80), fails | 44.60 | 34.19 | 43.31 | 1.284 (4.26) | 4.43 | 11.75 | 16.27 |
+| 5,500 | 34.043 (4.89), fails | 70.28 | 39.58 | 47.45 | 2.160 (4.29) | 6.05 | 13.27 | 17.80 |
+| 6,000 | 61.839 (4.98), fails | 113.03 | 45.88 | 51.54 | 3.597 (4.32) | 8.21 | 14.97 | 19.31 |
+
+- Flat: the largest block that meets the standard is 4,000 MW (4.20 GWh against 4.63; 4,500 MW sheds 8.72 against 4.72); at
+  half the standard, 3,500 MW (2.02 against 2.27). Serving 4 GW adds 35.0 TWh a year at R25.4bn and 34.9 Mt: R725/MWh and
+  1.00 t/MWh, coal at the margin. The worst weather year sheds 15.75 GWh, 3.4 times the year's standard.
+- Daytime (08:00-16:59): every block to 6,000 MW meets the standard (3.60 GWh against 4.32); at half the standard, 5,000 MW.
+  6 GW in daylight adds 19.6 TWh at R15.0bn and 19.3 Mt: R763/MWh and 0.98 t/MWh.
+- Caveats: one year's fleet (Today 2026's coal availability and outage model), the engine's dispatch rather than Eskom's; the
+  added cost is system cost (fuel, start-up, carbon and the like), not a tariff; 500 MW steps, so the flat limit lies between 4.0
+  and 4.5 GW. Recorded as a check; not for the note until Nick decides.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
@@ -12202,6 +12456,13 @@ about what that does to plant wear.
 This is the question to put to the IRP team rather than a discrepancy to reconcile: at their build,
 does their model keep coal at 80% utilisation, and if so, what stops the renewables displacing it?
 A findings check now pins our side at 52-72% so that drift toward their figure is noticed.
+
+Updated 19 Oct 2026 (build 2026-10-19e; user, message 246 (1)). The preset is now generated from the IRP engine check's 2030
+state on c5f's 2030 demand (+10.1% and the 930 MW block, not the IRP's +20%; messages 231 (2) and 232 (2)), at the page's coal
+EAF (65%) and imports (0.927): coal 89.4 TWh, 48% of the 185 TWh available, 108 Mt against the IRP's 160. Most of the move is
+the demand (the typed preset at c5f's demand: 94.9 TWh, 53%, 114 Mt). The band is re-derived as it was set, the measured share
++/- 10 points: 38-58% ('below 60%'). The disagreement with the IRP is wider, not narrower: the IRP's 160 Mt implies about 144
+TWh of coal at its own demand.
 
 ### Export levels: today's constant is right, and every scenario holds it flat, 22 Sep 2026
 

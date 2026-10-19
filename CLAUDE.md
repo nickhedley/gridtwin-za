@@ -41,9 +41,10 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_public_text.js testroot python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (19 Oct 2026, build 2026-10-19d, branch claude/public-captions, ESK19679.csv present):
-863/867, node checks 775/779 plus audit 88/88; eng5 5/6 (validate_pathway_presets: 23 checks, about 8 minutes;
-validate_public_text: 14 checks, internal labels in visible text, message 235). The known failures, each with its
+Expected (19 Oct 2026, build 2026-10-19e, branch claude/presets-214, ESK19679.csv present, nothing running beside it):
+880/884, node checks 792/796 plus audit 88/88; eng5 5/6 (validate_pathway_presets: 37 checks, about 12 minutes;
+validate_public_text: 17 checks, internal labels and missing values in visible text, messages 235 and 241). The full suite
+takes over 30 minutes: run it in parts or in the foreground. The known failures, each with its
 cause and the build it first failed on in RESULTS 'Known failures on build 2026-10-18i' (message 205 (8)):
 
 1. validate_external: 'EDMSA Scenario A CO2 2035 within 22 Mt of the published figure' (cause partly traced; failing on the

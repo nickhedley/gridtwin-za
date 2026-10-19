@@ -491,7 +491,10 @@ setTimeout(()=>{
       // Re-pinned 4 Oct 2026 for the re-sized presets (was 65.2 and 119.7, on the old builds).
       // Re-pinned 18 Oct 2026 on build 2026-10-17i for the presets re-searched on c5e's costs, Deep topped up on independent
       // draws (TODO 14ef; was 52.7 and 96.3). Measured on the default profiles as below; twelve-year means in RESULTS.
-      const PIN = { 'Deep decarbonisation 2035': 46.9, 'Fossil-free 2040': 114.9 };
+      // Re-pinned 19 Oct 2026 on build 2026-10-19e for the presets rebuilt at c5f's demand for their year (message 231; was 46.9
+      // and 114.9): twelve-year means 66.8 (51.6-77.7) and 96.7 (71.1-114.8), RESULTS 'Deep decarbonisation 2035 and Fossil-free
+      // 2040 rebuilt on c5f's demand'.
+      const PIN = { 'Deep decarbonisation 2035': 84.8, 'Fossil-free 2040': 128.0 };
       const bad = [];
       for (const [name, pinned] of Object.entries(PIN)){
         const got = curt[name];
@@ -554,6 +557,11 @@ setTimeout(()=>{
   // takes the model to 156 TWh and 175 Mt, so the difference is displacement, not the fleet.
   // The check exists so that if our dispatch drifts back toward the IRP's number, someone
   // notices it is a change rather than a confirmation.
+  // RE-DERIVED 19 Oct 2026 (build 2026-10-19e; user, message 246 (1)), the same way: the measured share +/- 10 points. The
+  // preset is now generated from the IRP engine check's 2030 state on c5f's 2030 demand (+10.1% and the 930 MW block, against
+  // the IRP's +20%; messages 231 (2) and 232 (2)), at the page's coal EAF and imports: 89.4 TWh of coal, 48% of 185 TWh
+  // available, 108 Mt against the IRP's 160, so the band moves from 52-72% to 38-58%. RESULTS 'Coal utilisation is where this
+  // model and the IRP disagree' (22 Sep 2026) carries the update.
   {
     const c = probe(`
       const saved = JSON.parse(JSON.stringify(state));
@@ -571,8 +579,8 @@ setTimeout(()=>{
     `);
     if (c && !c.error){
       const util = 100 * c.coalTWh / c.availTWh;
-      check('the IRP build pushes coal below 70% of its available energy',
-            util > 52 && util < 72,
+      check('the IRP build pushes coal below 60% of its available energy',
+            util > 38 && util < 58,
             `coal ${c.coalTWh.toFixed(1)} TWh, ${util.toFixed(0)}% of ${c.availTWh.toFixed(0)} TWh `
             + `available, ${c.co2.toFixed(0)} Mt CO2 against the IRP's 160; only `
             + `${c.curtTWh.toFixed(1)} TWh is spilled, so the coal is displaced rather than the wind`);
@@ -884,7 +892,9 @@ setTimeout(()=>{
     try {
       await w.eval('loadWeatherYears()');
       const a = probe(`
-        const st = { ...state, ...PRESETS['Fossil-free 2040'], newWindMW:14591, newPvMW:32738,
+        // Demand pinned at +5% and no block (19 Oct 2026, build 2026-10-19e): the preset moved to c5f's 2040 demand (message 231),
+        // and this check's build was the loop's at the preset's +5%, which it ran on from the repository's first build.
+        const st = { ...state, ...PRESETS['Fossil-free 2040'], demandGrowthPct:5, demandBlockMW:0, newWindMW:14591, newPvMW:32738,
           newRooftopMW:2000, newBattMW:13029, newCcgtMW:2848, newVrfbMW:500, newIronAirMW:150,
           newOffshoreMW:0, newNuclearMW:0, coalDecomMW:17939, newBattHours:5 };
         const nat = weatherYearNational('2016');

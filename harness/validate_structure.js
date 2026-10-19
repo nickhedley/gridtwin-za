@@ -307,8 +307,12 @@ const live = stripComments(src);
   // reintroduces a copy.
   {
     const eng = fs.readFileSync(path.join(ROOT, 'nodal', 'nodal_engine.js'), 'utf8');
-    const decl = eng.match(/const\s+IMPORTS_CF\s*=\s*([0-9.]+)/);
-    check('nodal_engine.js declares IMPORTS_CF', !!decl,
+    // From build 2026-10-19d (user, message 234 (1)) the value is held as the measured mean flow: IMPORTS_CF is
+    // IMPORTS_AVG_MW / IMPORTS_MW, each declared once as a number in the engine. Either form keeps one definition.
+    const decl = eng.match(/const\s+IMPORTS_CF\s*=\s*([0-9.]+|IMPORTS_AVG_MW\s*\/\s*IMPORTS_MW)\s*;/);
+    const lit = k => (eng.match(new RegExp('const\\s+' + k + '\\s*=\\s*[0-9.]+\\s*;', 'g')) || []).length === 1;
+    check('nodal_engine.js declares IMPORTS_CF', !!decl && (eng.match(/const\s+IMPORTS_CF\b/g) || []).length === 1
+          && (/^[0-9.]+$/.test(decl[1]) || (lit('IMPORTS_AVG_MW') && lit('IMPORTS_MW'))),
           'the engine must own the value - index.html reads it and cannot fall back');
     check('FIXED reads IMPORTS_CF rather than restating it',
           /importsCF\s*:\s*IMPORTS_CF/.test(src),

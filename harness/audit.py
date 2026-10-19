@@ -34,8 +34,10 @@ CHECKS = [
     ('Rooftop solar</button>',                                     'tab: rooftop solar'),
     # Presets & costs
     ("2030 targets",                                                 'IRP preset name'),
-    ('get coalDecomMW(){ return irpFig3CoalRetiredMW(2030); },newWindMW:7341,newPvMW:10313',
-                                                                   'IRP preset values (IRP 2025 Table 1, 7 Oct 2026; coal from Figure 3\'s dates, 17 Oct 2026)'),
+    # The IRP 2030 presets are generated from the IRP engine check's 2030 state from build 2026-10-19e (user, message 232 (2)),
+    # which retires coal on Figure 3's dates (7,259 MW by 2030, as irpFig3CoalRetiredMW gave; the function is gone with its caller).
+    ("// BEGIN GENERATED 'IRP's 2030 targets' (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/pathway_irp2025.json",
+                                                                   'IRP preset generated from the IRP engine check (Table 1, coal on Figure 3\'s dates)'),
     ('Deep decarbonisation 2035',                                     'deep decarbonisation preset'),
     ('costCoal:546',                                               'coal cost R546/MWh'),
     # costCcgt moved to the central gas case on build 2026-10-19b (user, message 227 (1)); was costCcgt:2003, the FY2026 JKM reference.

@@ -30,6 +30,11 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   const P0 = JSON.parse(w.eval(`JSON.stringify(PRESETS[${JSON.stringify(PRESET)}])`));
   // The preset applied the way the page applies it (applyState also sets derived fields), as pathcheck.js does.
   w.eval(`applyState(PRESETS[${JSON.stringify(PRESET)}])`);
+  // OVERRIDE=<json> (message 231, 19 Oct 2026): state keys set after the preset, e.g. c5f's demand for the preset's year
+  // ({"demandGrowthPct":26.7454,"demandBlockMW":930}), so the page preset need not change before the new build lands.
+  const OVERRIDE = process.env.OVERRIDE ? JSON.parse(process.env.OVERRIDE) : null;
+  if (OVERRIDE){ for (const k of Object.keys(OVERRIDE)) if (!w.eval(`${JSON.stringify(k)} in state || ${JSON.stringify(k)} in FIXED`)) throw new Error('OVERRIDE key unknown: ' + k);
+    w.eval(`Object.assign(state, ${JSON.stringify(OVERRIDE)});`); console.log('OVERRIDE', JSON.stringify(OVERRIDE)); }
   if (process.env.BATT_CASE) w.eval(`state.bldBattCase=${JSON.stringify(process.env.BATT_CASE)};`);
   // PVTRK=1 (user, 16 Oct 2026, message 160 (2)): new utility solar on the tracking profile at tracker capex, as the central
   // (c5d, c5e); the searched presets carry bldPvTracking 1.
@@ -64,7 +69,7 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   // starting point instead of the preset (user, 7 Oct 2026). Lithium is held at 12 hours with the proposal's energy;
   // anything the search does not move (vanadium flow, gas) is held at the proposal's value.
   let held = {};
-  const base = Object.fromEntries(TECH.map(t => [t.k, P0[t.k] || 0]));
+  let base = Object.fromEntries(TECH.map(t => [t.k, P0[t.k] || 0]));
   if (process.env.START){
     const S = JSON.parse(fs.readFileSync(process.env.START, 'utf8')).sched, cum = {};
     for (const y of Object.keys(S)) for (const [k, v] of Object.entries(S[y])) if (typeof v === 'number') cum[k] = (cum[k] || 0) + v;
@@ -74,11 +79,31 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
     held = { newVrfbMW: r5(cum.vrfb || 0), newCcgtMW: r5(cum.ccgt || 0) };
     console.log('START from', process.env.START, JSON.stringify(base), 'held', JSON.stringify(held), 'proposal lithium', cum.batt, 'MW /', cum.battMWh, 'MWh');
   }
-  const t0 = Date.now(), start = evaluate(base, DRAWS);
+  // BASE=<json> (message 231): the start build, e.g. the preset's build scaled by the demand ratio; keys must be searched ones.
+  if (process.env.BASE){ const B = JSON.parse(process.env.BASE); for (const k of Object.keys(B)){ if (!(k in base)) throw new Error('BASE key not searched: ' + k); base[k] = B[k]; }
+    console.log('BASE', JSON.stringify(base)); }
+  const t0 = Date.now(); let start = evaluate(base, DRAWS);
   // Target on customer demand (served load less storage charging), the basis decided on 12 Oct 2026, as pathcheck.js; the 4 and
   // 7 Oct searches used served energy. CUST=0 restores the served basis.
   const target = 0.5 * 0.00002 * (process.env.CUST === '0' ? start.served : start.cust) * 1e3;   // GWh, fixed at the start
   let log = [{ step: 'start', build: base, ...start }];
+  // FEASIBLE=1 (message 231): the greedy below accepts only moves that meet the target and cost less, so it needs a feasible
+  // start. From one that misses, top up on the search draws with the largest steps, each round taking the move that removes
+  // the most shed per rand (or the cheapest that meets the target), until the target is met (at most 30 rounds).
+  // A search resumed with CONTINUE takes its feasible start from its own log (below), so the rounds are not repeated.
+  if (process.env.FEASIBLE && start.shed > target && !(process.env.CONTINUE && fs.existsSync(OUT))){
+    let b = { ...base }, r = start;
+    for (let round = 1; round <= 30 && r.shed > target; round++){
+      const ups = TECH.map(t => ({ ...b, [t.k]: b[t.k] + t.steps[0] })).filter(x => TECH.every(t => x[t.k] >= 0 && (!t.cap || x[t.k] <= t.cap))).map(x => ({ build: x, ...evaluate(x, DRAWS) }));
+      const fit = ups.filter(u => u.shed <= target).sort((x, y) => x.cost - y.cost)[0];
+      const best = fit || ups.filter(u => u.shed < r.shed).sort((x, y) => (r.shed - y.shed) / Math.max(1e-6, y.cost - r.cost) - (r.shed - x.shed) / Math.max(1e-6, x.cost - r.cost))[0];
+      if (!best) throw new Error('FEASIBLE: no top-up reduces shed in round ' + round);
+      b = best.build; r = best; log.push({ step: 'feasible ' + round, build: b, shed: r.shed, cost: r.cost, served: r.served, cust: r.cust });
+      console.log('feasible round', round, JSON.stringify(b), 'shed', r.shed.toFixed(2), 'cost', r.cost.toFixed(1), 'target', target.toFixed(2));
+    }
+    if (r.shed > target) throw new Error('FEASIBLE: target not met in 30 rounds');
+    base = b; start = r;
+  }
   // TRADES=1: a robustness check outside the greedy's fixed moves. Lithium cut 1 to 4 GW, made up with wind, solar
   // or iron-air in varying amounts; prints every trade that meets the target and is cheaper than the start.
   if (process.env.TRADES){
@@ -124,7 +149,7 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   // TOPUP_ONLY=1 (17 Oct 2026, message 195 (1)): no search. Score the preset as it stands on CONFIRM draws and, if it misses the
   // target, run the top-up rounds above on the same runs. With SEED=71830529 and DRAWS=CONFIRM=20 these are the preset check's runs.
   if (process.env.TOPUP_ONLY){
-    const c = evaluate(base, CONFIRM), out = { stamp, preset: PRESET, seed: SEED, draws: CONFIRM, target, start: { build: base, ...c }, log };
+    const c = evaluate(base, CONFIRM), out = { stamp, preset: PRESET, override: OVERRIDE, seed: SEED, draws: CONFIRM, target, start: { build: base, ...c }, log };
     console.log('as set,', CONFIRM, 'draws, seed', SEED, ': shed', c.shed.toFixed(2), 'cost', c.cost.toFixed(1), 'target', target.toFixed(2));
     out.final = c.shed > target ? topUp(base, c, out) : { build: base, ...c };
     fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
@@ -161,10 +186,10 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
       if (!best) break;
       cur = best; curR = bestR; log.push({ step: 'move', stepIndex: si, build: cur, ...curR });
       console.log('move', si, JSON.stringify(cur), 'cost', curR.cost.toFixed(1), 'shed', curR.shed.toFixed(2));
-      fs.writeFileSync(OUT, JSON.stringify({ stamp, preset: PRESET, target, log }, null, 1));
+      fs.writeFileSync(OUT, JSON.stringify({ stamp, preset: PRESET, override: OVERRIDE, target, log }, null, 1));
     }
   }
-  const out = { stamp, preset: PRESET, draws: DRAWS, target, start: { build: base, ...start }, searched: { build: cur, ...curR }, log };
+  const out = { stamp, preset: PRESET, override: OVERRIDE, draws: DRAWS, target, start: { build: base, ...start }, searched: { build: cur, ...curR }, log };
   if (CONFIRM > DRAWS){
     const c = evaluate(cur, CONFIRM); out.confirm = { draws: CONFIRM, ...c };
     console.log('confirm', CONFIRM, 'draws: shed', c.shed.toFixed(2), 'cost', c.cost.toFixed(1));

@@ -4,7 +4,8 @@
  *
  * Readers cannot decode the project's own shorthand, so none of it may reach the page: run names (c5, c5a-c5z), sensitivity
  * names (s_...), 'the note', 'provisional until', message numbers, TODO and RESULTS; and, from message 236 (5), change history
- * and provenance notes: 'Typed;', 'no source recorded', 'in the model since', 'until <date> 2026', and .json or .csv paths.
+ * and provenance notes: 'Typed;', 'no source recorded', 'in the model since', 'until <date> 2026', and .json or .csv paths;
+ * and, from message 241, a value that failed to reach its text: 'undefined', 'NaN' or 'null'.
  * Error messages that show only when a file fails to load are not on a fresh page, so they are not scanned (TODO 14gu lists
  * them). Eskom Data Portal IDs (ESK19679) stay as citations; they carry no file extension. One sentence is exempt from one label
  * by its exact text (EXEMPT, with its reason); everything else on the page is held to every label.
@@ -38,6 +39,10 @@ const LABELS = [
   ["'in the model since'", /\bin the model since\b/i],
   ["'until <date> 2026'", /\buntil (?:\d{1,2} )?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? 2026\b/i],
   ['.json or .csv paths', /[\w./-]+\.(?:json|csv)\b/i],
+  // A value that failed to reach its text (message 241): a missing key or a failed sum prints as one of these.
+  ["'undefined'", /\bundefined\b/],
+  ["'NaN'", /\bNaN\b/],
+  ["'null'", /\bnull\b/],
 ];
 
 // Exempt sentences, each by its exact text, for one label only, with the reason. The pattern itself stays as it is, so change

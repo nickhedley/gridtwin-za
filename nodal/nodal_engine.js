@@ -234,10 +234,18 @@ const IMPORTS_MW = 1150;      // matches the single-node app's assumption
 // Before that, the same number sat in both files plus two `?? 0.41` fallbacks - four
 // copies. They never drifted, which was luck; a COMMENT about them did, still claiming
 // 0.85 five hours after the value was corrected.
-// 22 Sep 2026: 0.41 -> 0.88. ESK19679 International Imports, Jan-Aug 2026 mean 1,012 MW on
+// 22 Sep 2026: 0.41 -> 0.88. ESK19679 International Imports, Jan-Aug 2026 mean on
 // the 1,150 MW contract. Same source as the demand series, whose supply side counts these
 // flows; Eskom's audited purchases (4,090 GWh FY2026) are a narrower measure, 2.7 TWh lower.
-const IMPORTS_CF = 0.88;
+// 19 Oct 2026 (user, message 234 (1)): 0.88 -> 1,066 / 1,150 = 0.927, the central's (c5f ran
+// IMP_AVG_MW=1066). IMPORTS_AVG_MW is the measured mean flow, ESK19679 International Imports,
+// April-August 2026: 1,066.3 MW over 3,672 hours (Eskom data, local; the derivation is ours,
+// not Eskom's). The window is the post-Mozal one (Mozal stopped in March 2026), as for the
+// export setting; the January-August mean, 1,007 MW (0.876, rounded to 0.88), stays in RESULTS.
+// harness/pathway/pathway_perfail.js reads this through the page (FIXED.importsCF) unless
+// IMP_AVG_MW is set for a sensitivity.
+const IMPORTS_AVG_MW = 1066;
+const IMPORTS_CF = IMPORTS_AVG_MW / IMPORTS_MW;
 const IMPORTS_COST = 550;     // R/MWh, matches the single-node app's costImports
 
 // CSP has thermal storage in reality; like the single-node engine, treat its output as
