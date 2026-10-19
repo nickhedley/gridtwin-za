@@ -4843,6 +4843,79 @@ Running the chain. The container was reclaimed while the session sat idle and th
 minutes until the chain finished. One more restart came at 01:46 UTC on 19 Oct, 3 minutes after a wake and at 11 h 13 min of
 uptime, so not the idle cutoff; two engine-check groups were redone. TODO 14gn moves chains to GitHub's runners.
 
+### Least-cost path 2035 preset: c5f's 2035 on the page; on the engine check's 240 runs it gives c5f's 2035 unserved energy (0.7329 GWh) and CO2 (85.138 Mt) to the digit, and its cost to the digit once c5f's lithium decline and LNG terminal charge are added; as the page runs it, without them, cost is R2.577bn (1.04%) lower (build 2026-10-19a; user, 19 Oct 2026, messages 213 and 225)
+
+Settings. Preset 'Least-cost path 2035', beside 'IRP path 2035', written into index.html by harness/pathway/gen_preset_lcp2035.py
+from c5f's build file (harness/pathway/c5f/pathway_c5f.json; c5f's pathway on a frozen copy of b82bfd3, build 2026-10-17g),
+copied into the repository with its 2031-35 engine check (harness/pathway/c5f/pathcheck_c5f_b.json; TF=0.5 LNG=1 GRID=1). The
+generator builds 2035's state as pathcheck.js does: c5f's cumulative build to 2035 (wind 23,362 MW, tracking solar 14,736,
+rooftop 10,800, lithium 8,647 MW at 3.45 hours, CCGT 2,632; no OCGT, flow, iron-air, offshore, nuclear or pumped storage), coal
+standing 25,916 MW (13,776 MW retired against FIXED.coalInstalledMW), the pathway's demand (ESRG IRPDemandREF index, +26.7454% on
+2026, plus the 930 MW smelter block), Cape wind 1,580 MW at 4% curtailment, imports 1,150 MW at 0.927, the central gas fuel price
+for 2035 (R1,298.42/MWh), the carbon price on the run's path (the page's carbonTaxAt(2035) on 'kept2030', R61.31/t), the ASTR
+reserve reference from the run's 2030 fleet, and the run's recorded settings that are state (tracking solar, wind correction
+none, central wind, solar and OCGT cost cases, tariff basis 'run', integration charge share 1, grid cost on). Coal availability is
+the page default, as in the engine check (c5f's COAL_AVAIL applies to the optimiser's stress windows only). Caption: c5f,
+provisional until the note; the page shows one weather year, the note's figures twelve.
+
+Check: harness/validate_lcp2035.js, in the suite. It confirms the block is the generator's output, that the page state after
+applyState is the engine check's 2035 state on all 36 keys, then runs the preset on the engine check's profiles and draws (twelve
+weather years, 2014-2025, x 20 draws, seeds 71830529 + k x 104729 + year x 7919). Tolerances: unserved energy within 1% of
+2035's reliability target in the row (0.0242 GWh); system cost with c5f's two global cost settings within 0.01% (R0.025bn). Both
+measured gaps are zero to the digits shown. About 2.5 minutes.
+
+| 2035, mean of 240 runs | Page (preset) | c5f engine check | Gap |
+|---|---|---|---|
+| Unserved energy, GWh | 0.7329 | 0.7329 | 0.0000 |
+| Reliability target (half the standard), GWh | | 2.4244 | |
+| CO2, Mt | 85.138 | 85.138 | 0.000 |
+| System cost, R bn | 244.919 | 247.496 | -2.577 (-1.04%) |
+| plus c5f's lithium decline (3% a year; page 5%) | +1.181 | | |
+| plus the LNG terminal charge (R530.5/kW-yr x 2,632 MW) | +1.396 | | |
+| System cost with both, R bn | 247.496 | 247.496 | 0.000 |
+| Grid cost (system cost less rooftop capital), R bn | 225.186 | 235.076 | see below |
+
+The two settings are global cost tables, not state, so no preset carries them (message 225: report only). They move cost, not
+dispatch: on two runs each alone and together, unserved energy is unchanged and each adds the same amount. Lithium capex in 2035,
+4-hour basis: R8,634/kW on the page, R10,414/kW at c5f's 3%. Grid cost: with both settings the page gives R227.763bn, R7.313bn
+below the row, which is M11's fix (build 2026-10-18g): rooftop capital in the grid-cost measure is now R19.733bn (R1,827/kW-yr at
+the engine's 2030.5 vintage) against the flat R12.42bn (R1,150/kW-yr) the row was measured with; system cost is unchanged by it.
+
+Page changes. The 16 pathway keys the preset sets that were neither sliders nor reset by applyState join PRESET_NON_SLIDER_KEYS
+(newOcgtMW, newOcgdMW, demandBlockMW, windCapeMW, bldCapeCurtPct, carbonAllowancePath, carbonTaxFull, bldWindCorr, bldWindCase,
+bldPvCase, bldTariffCfBasis, bldGridIntVreShare, bldGridCost, bldOcgtCostCase, reserveVreRefWindMW, reserveVreRefPvMW). No other
+preset sets them; resetting them on every preset click also stops a build applied from the optimiser leaking into the next
+preset. newOcgtMW, newOcgdMW and windCapeMW get FIXED defaults of 0, the engine's own fallback (validate_structure: every preset
+key maps to a control or constant). Readouts round values the pathway sets off the slider steps (demand growth to 0.1%, carbon and
+gas to the rand, lithium hours to 0.1); state keeps the exact values.
+
+Not like for like on the page: IRP path 2035, beside it, runs at +5% demand, the page's R2,003/MWh gas and R46/t carbon, against
+this preset's +26.7%, R1,298 and R61.31 (TODO 14gq (3); for 214 and 14ay).
+
+Message 225, the two values (no change to page defaults until the user replies; TODO 14gs):
+
+- Lithium capex decline. Code: BLD_COST.batt, batt_high and batt_low, decl 0.0500, read by bldCapex for the engine (new lithium
+  capital and its fixed O&M, 2.5% of capex) and the build optimiser. Pathway: BATT_DECL (pathway_perfail.js), recorded as
+  P.battDecl and applied by pathcheck.js; 0.03 in c5f and in c5b, c5c and c5e before it (their settings lines). Sourced: the 3%. BLD_COST's comment cites BNEF's 2035
+  forecast, -25% for storage by 2035, about 3.1% a year over 2026-35 (3% gives -24%); no source for 5% is recorded (SOURCES
+  'Lithium capex decline', TODO 14cw). Proposal: decl 0.03 in BLD_COST with the BNEF citation, BATT_DECL kept only for
+  sensitivities (s_batt5 runs 5%).
+- LNG terminal charge. Code: none on the page; BLD_FOM.ccgt is R462/kW-yr and the page's gas fuel default (costCcgt R2,003/MWh,
+  USD 18.50/MMBtu delivered) already carries USD 2/MMBtu for regasification and transport. Pathway: GAS_CASE=central with
+  GAS_FOM_ADD=530.5 (pathway_perfail.js), added to BLD_FOM.ccgt and BLD_FOM.ocgt for new gas in the optimiser, recorded as
+  P.gas.fomAdd and applied by pathcheck.js, with the central fuel price R1,298.42/MWh (public_data/gas_price_cases.json). Sourced:
+  the range, R354-707/kW-yr on the send-out basis (SOURCES 'Gas price cases': Ngqura, Richards Bay, Standard Bank and ENN terminal
+  costs at 8% over 25 years); 530.5 is its midpoint, a choice rather than a figure from a source. Proposal: one page constant for
+  the terminal charge, read by the engine's gas fixed O&M and the optimiser alike, GAS_FOM_ADD defaulting to it; and the page's
+  gas fuel default moved to the central case's R1,298.42 with it, since adding the terminal to R2,003 would count regasification
+  twice (RESULTS 'Gas price cases built', 9 Oct 2026).
+- Deep decarbonisation 2035 and Fossil-free 2040 searches (harness/ext/preset_search.js, on c5e's costs): the lithium decline was
+  in both searches' objective (system cost on the page's tables, 5%), with 10.5 and 14 GW of 12-hour lithium; not in their
+  reliability test. The terminal charge was in neither: both presets have no new gas. Both go on 214's list of changed inputs
+  (TODO 14gr).
+
+Suite on 2026-10-19a (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 835/839, node checks 748/752 plus audit 87/87; eng5 5/6. On 2026-10-18i (suite19a): 821/826. The change: the stale-stamp check passes and the 13 new checks pass; the four failures are the known ones (validate_findings iron-air, validate_consistency off-peak, validate_benchmarks peakerSeasonRatio, validate_external EDMSA), and eng5 check 6 as before.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing

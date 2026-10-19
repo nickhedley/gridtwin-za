@@ -5313,7 +5313,9 @@ const FIXED = {
   // 400; NTCSA's updated GCCA of 31 Oct 2025, per Cliffe Dekker Hofmeyr, 3 Dec 2025; 3,470 MW at 10%). In the build LP, up to
   // bldCapeWindMW of new wind (cw_) avoids the integration charge (txRPerKWyr) and loses bldCapeCurtPct of its output; the
   // engine cuts the same share of that wind's output (windCapeMW). Provincial totals only; no substation figures. 0: off.
-  bldCapeWindMW:0, bldCapeCurtPct:4,
+  // windCapeMW: the engine's MW of new wind on the allowance, 0 unless a build or preset sets it (the engine's own fallback;
+  // a FIXED default since 19 Oct 2026, message 213, so 'Least-cost path 2035' sets a key that exists).
+  bldCapeWindMW:0, bldCapeCurtPct:4, windCapeMW:0,
   // FREED COAL CONNECTIONS BY TECHNOLOGY (user, 14 Oct 2026, message 74): technologies that may not take a connection freed
   // by retired coal (rp_). c5b: ['wind'], so solar, storage and gas may (Eskom's repowering pipeline at six stations: solar PV
   // 3,184 MW, batteries 700, gas 1,000 at Kriel, wind 168 at Arnot; Engineering News, 17 Jun 2025). Empty: all, as before.
@@ -6603,7 +6605,9 @@ const FIXED = {
   // bldTurbineCapMW: every new turbine together, CCGT, OCGT on LNG and OCGT on diesel, at most 2 GW a year (tcap_<y>, user,
   // 12 Oct), applied when an OCGT option is on; CCGT and OCGT on LNG keep their own 1.2 GW from 2030. bldOcgtCostCase:
   // 'central' (the CCGT capex x EIA AEO2023's CT/CC ratio, derived in bldCostEntry) or 'irp' (the IRP's R12,981/kW, the
-  // low case). All off by default; the engine reads newOcgtMW and newOcgdMW.
+  // low case). All off by default; the engine reads newOcgtMW and newOcgdMW, 0 unless a build or preset sets them (FIXED
+  // defaults since 19 Oct 2026, message 213, at the engine's own fallback).
+  newOcgtMW:0, newOcgdMW:0,
   bldOcgtOn:0, bldOcgdOn:0, bldOcgdRateMW:1000, bldOcgdFromYear:2028, bldTurbineCapMW:2000, bldOcgtCostCase:'central',
   // bldNuclearAdd (11 Oct 2026, TODO 14be step 7): new nuclear decided in advance, {year: MW}, e.g. IRP 2025 Table 1
   // (1,250 in 2036 and 2037, 1,350 in 2038 and 2039). The build LP counts it as supply from its year and the engine
@@ -17996,7 +18000,7 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 const SUB_CTRL = 'padding-left:16px;border-left:3px solid var(--alert2,#9E5C42);margin-left:6px;margin-top:-2px';
 const SLIDERS=[
   {grp:'Demand'},
-  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+'%',note:'Driven by electrification, economic growth, and new loads such as data centres (note: demand has been declining since 2012, due in part to a shrinking industrial sector).'},
+  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+(+(+v).toFixed(1))+'%',note:'Driven by electrification, economic growth, and new loads such as data centres (note: demand has been declining since 2012, due in part to a shrinking industrial sector).'},
   {grp:'Supply and build'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:FIXED.coalEAFPct,fmt:v=>v+'%',note:'Audited: FY2024 54.6&#37; &#183; FY2025 60.6&#37; &#183; FY2026 65.2&#37; &#183; Eskom target 70&#37;. 2023 crisis ran 50\u201355&#37;.'},
   {subgrp:'Outage settings'},
@@ -18056,7 +18060,7 @@ const SLIDERS=[
   {endsub:true},
   {grp:'Storage and flexibility'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
-  {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>v+'h',
+  {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>(+(+v).toFixed(1))+'h',
    note:`Hours of storage at rated power for new lithium only; the existing ${(FIXED.battPowerMW/1000).toFixed(2)} GW fleet stays at ${FIXED.battHours.toFixed(1)}h. South African utility procurement is 4h today, so that is the default. Longer durations add cell cost only; the inverter does not scale. In this model system cost is lowest with lithium at about 16 hours.`},
   {id:'newPsMW',label:'New pumped storage',min:0,max:FIXED.newPsMaxMW,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:`on ${(FIXED.psPowerMW/1000).toFixed(1)} GW existing. New additions modelled at ${FIXED.newPsHours} hours of storage (the duration of Eskom\u2019s planned 1,500 MW / 21 GWh Tubatse scheme in Limpopo).`},
@@ -18124,12 +18128,12 @@ const SLIDERS=[
   {id:'exportPriceR',label:'\u2013 export price received',min:150,max:1200,step:25,def:FIXED.exportPriceR,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',ctrlStyle:SUB_CTRL,
    note:'What a neighbouring utility pays for surplus South African energy. Defaults near SAPP system operation costs, which the draft SAPP Master Plan puts at USD 25\u201340/MWh through the horizon. Revenue offsets the system bill directly.'},
   {grp:'Prices and markets'},
-  {id:'carbonTaxRPerT',label:'Carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+v+'/t',note:'R46/t is the compliance rate: R308/t Phase 2 headline less allowances of up to 85&#37;. R308, R462 and R640 are policy prices, not forecasts \u2013 on the central path (allowances kept to 2030) the 2030 effective rate is R'+carbonTaxAt(2030, {...FIXED, carbonTaxPathOn:1, carbonAllowancePath:'kept2030'}).toFixed(1)+' in 2026 rands. The build optimiser\u2019s carbon cap gives the price that meets a cap.'},
+  {id:'carbonTaxRPerT',label:'Carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+Math.round(v)+'/t',note:'R46/t is the compliance rate: R308/t Phase 2 headline less allowances of up to 85&#37;. R308, R462 and R640 are policy prices, not forecasts \u2013 on the central path (allowances kept to 2030) the 2030 effective rate is R'+carbonTaxAt(2030, {...FIXED, carbonTaxPathOn:1, carbonAllowancePath:'kept2030'}).toFixed(1)+' in 2026 rands. The build optimiser\u2019s carbon cap gives the price that meets a cap.'},
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
    note:'Make the build optimiser meet an emissions ceiling in 2030, rather than only reporting whether it does. When turned on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
    ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC.'},
-  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R2,003 = $18.50/MMBtu delivered LNG &#215; R16.50/USD &#247; 0.293071 MWh/MMBtu &#247; 52&#37; efficiency. Each $1/MMBtu \u2248 R108/MWh. Fuel only; build cost is the Gas CCGT slider. The 2040 pathways\u2019 central gas case is lower, R1,298/MWh at the coast (public_data/gas_price_cases.json).'},
+  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+Math.round(v)+'/MWh',note:'R2,003 = $18.50/MMBtu delivered LNG &#215; R16.50/USD &#247; 0.293071 MWh/MMBtu &#247; 52&#37; efficiency. Each $1/MMBtu \u2248 R108/MWh. Fuel only; build cost is the Gas CCGT slider. The 2040 pathways\u2019 central gas case is lower, R1,298/MWh at the coast (public_data/gas_price_cases.json).'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. On: reserve is paid at the rate below.'},
   {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,ctrlStyle:SUB_CTRL,
@@ -18255,6 +18259,9 @@ const PRESETS={
   'IRP path 2035':{demandGrowthPct:5,coalEAFPct:coalEafFromFleet(67),get coalDecomMW(){ return irpFig3CoalRetiredMW(2035); },newWindMW:21041,newPvMW:17513,
                    newRooftopMW:9000,newBattMW:4724,newBattHours:4,newCcgtMW:10750,lcoeCcgt:2500,
                    ccgtForceLoad:1,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // BEGIN GENERATED 'Least-cost path 2035' (harness/pathway/gen_preset_lcp2035.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)
+  'Least-cost path 2035':{scenarioYear:2035,newWindMW:23362,newPvMW:14736,newRooftopMW:10800,newBattMW:8647,newBattHours:3.4504452411240893,newVrfbMW:0,newIronAirMW:0,newCcgtMW:2632,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:26.745400000000007,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"central",bldPvCase:"central",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",get carbonTaxRPerT(){ return carbonTaxAt(2035, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 25916)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 7246); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 9347); }},
+  // END GENERATED 'Least-cost path 2035'
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
   // (expected unserved energy at most 0.002% of demand, mean of twelve weather years), re-run
   // 22 Sep 2026 after the long-duration lookahead: 35 GW wind, 35 GW solar, 25 GW lithium at
@@ -18738,7 +18745,12 @@ function applyState(overrides){
 }
 const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'rooftopMW',
                                'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn', 'demandYear',
-                               'bldPvTracking'];   // the searched presets run new utility solar on the tracking profile (message 161 (3))
+                               'bldPvTracking',   // the searched presets run new utility solar on the tracking profile (message 161 (3))
+                               // The pathway settings 'Least-cost path 2035' carries from c5f's build file (message 213, 19 Oct 2026); no
+                               // other preset sets them, and resetting them also stops a build applied from the optimiser leaking into the next preset.
+                               'newOcgtMW', 'newOcgdMW', 'demandBlockMW', 'windCapeMW', 'bldCapeCurtPct', 'carbonAllowancePath', 'carbonTaxFull',
+                               'bldWindCorr', 'bldWindCase', 'bldPvCase', 'bldTariffCfBasis', 'bldGridIntVreShare', 'bldGridCost', 'bldOcgtCostCase',
+                               'reserveVreRefWindMW', 'reserveVreRefPvMW'];
 // ONE DESCRIPTION PER PRESET, read by the caption under the buttons, the hover tooltip and the screen-reader
 // description alike, so the text lives only here. Hover tooltips alone appeared late and never on touch
 // screens; the caption shows the hovered or focused preset, and the active one otherwise. 7 Oct 2026.
@@ -18749,6 +18761,7 @@ const PRESET_DESC = {
   'IRP\'s 2030 targets': 'The IRP 2025\u2019s Table 1 build to 2030 (7.3 GW of new wind, 10.3 GW of new solar, 3.7 GW of storage, 6 GW of gas at its 51% floor), with coal retired on IRP 2025 Figure 3\u2019s dates, on the IRP\u2019s own demand growth.',
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
   'IRP path 2035': 'The IRP 2025\u2019s Table 1 build to 2035 (21.0 GW of new wind, 17.5 GW of new solar, 4.7 GW of storage, 10.75 GW of gas), on the transition presets\u2019 +5% demand, so the three compare like for like.',
+  'Least-cost path 2035': (P => `c5f, provisional until the note: the least-cost pathway\u2019s build to 2035 (${_gw(P.newWindMW)} GW of new wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newRooftopMW)} GW of rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries, ${_gw(P.newCcgtMW)} GW of gas) with ${_gw(P.coalDecomMW)} GW of coal retired, on the pathway\u2019s demand (+${Math.round(P.demandGrowthPct)}% on 2026). The page shows one weather year; the note\u2019s figures are the mean of twelve.`)(PRESETS['Least-cost path 2035']),
   'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035 and no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the preset search\u2019s cheapest build on the central costs, topped up until it meets half the reliability standard on independent outage draws.`)(PRESETS['Deep decarbonisation 2035']),
   'Fossil-free 2040': (P => `No coal, diesel or gas by 2040: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newOffshoreMW)} GW offshore, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the cheapest build the preset search found that meets half the reliability standard on the central costs.`)(PRESETS['Fossil-free 2040']),
 };
@@ -18764,7 +18777,7 @@ function presetCaption(name){
 // Button order, set 4 Oct 2026; any preset not listed is appended. The page opens on the
 // defaults, which are Today 2026, so that button is marked active, whatever its position.
 const PRESET_ORDER = ['2025, as modelled', 'Today 2026', 'IRP\'s 2030 targets',
-  'IRP\'s 2030 targets, grid delayed', 'IRP path 2035', 'Deep decarbonisation 2035', 'Fossil-free 2040'];
+  'IRP\'s 2030 targets, grid delayed', 'IRP path 2035', 'Least-cost path 2035', 'Deep decarbonisation 2035', 'Fossil-free 2040'];
 [...PRESET_ORDER.filter(n => n in PRESETS), ...Object.keys(PRESETS).filter(n => !PRESET_ORDER.includes(n))].forEach((name)=>{
   const b=document.createElement('button');b.textContent=name; if(name==='Today 2026')b.classList.add('active');
   b.type='button'; b.dataset.preset=name;
@@ -19773,7 +19786,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-18i';
+const BUILD_STAMP = '2026-10-19a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
