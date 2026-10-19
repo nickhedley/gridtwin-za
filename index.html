@@ -14899,11 +14899,10 @@ function renderValidation(){
 
   const rows = A.structural.map(r => {
     const m = r.model();
-    if (r.actual == null) return '<tr style="border-bottom:1px solid var(--line2)">'
-      + `<td style="padding:4px 6px">${r.k}</td><td style="text-align:right;padding:4px 6px">${m.toFixed(1)}${r.unit}</td>`
-      + `<td style="text-align:right;padding:4px 6px">&ndash;</td><td></td>`
-      + `<td style="padding:4px 6px;font-size:9.5px;color:var(--ink2)">Benchmark loading.</td></tr>`;
-    const diff = m - r.actual;
+    // A benchmark read from a data file (Ember's, site review A33) is null until the file arrives: one row template, with
+    // the actual and the gap shown as dashes and the note saying so.
+    const wait = r.actual == null;
+    const diff = wait ? 0 : m - r.actual;
     const pct = r.actual ? Math.abs(diff) / r.actual * 100 : 0;
     // 5% is the point at which a calibration input is worth revisiting rather
     // than being ordinary rounding or a live slider setting. A row whose note explains the
@@ -14913,10 +14912,10 @@ function renderValidation(){
     return '<tr style="border-bottom:1px solid var(--line2)">'
       + `<td style="padding:4px 6px">${r.k}</td>`
       + `<td style="text-align:right;padding:4px 6px">${m.toFixed(1)}${r.unit}</td>`
-      + `<td style="text-align:right;padding:4px 6px">${r.actual}${r.unit}</td>`
+      + `<td style="text-align:right;padding:4px 6px">${wait ? '&ndash;' : r.actual + r.unit}</td>`
       + `<td style="text-align:right;padding:4px 6px;font-weight:700;color:${col}">`
-      + (diff >= 0 ? '+' : '') + diff.toFixed(1) + '</td>'
-      + `<td style="padding:4px 6px;font-size:9.5px;color:var(--ink2)">${typeof r.note === 'function' ? r.note() : r.note}</td></tr>`;
+      + (wait ? '&ndash;' : (diff >= 0 ? '+' : '') + diff.toFixed(1)) + '</td>'
+      + `<td style="padding:4px 6px;font-size:9.5px;color:var(--ink2)">${wait ? 'Benchmark loading.' : typeof r.note === 'function' ? r.note() : r.note}</td></tr>`;
   }).join('');
 
   const drifted = A.structural.filter(r => {
