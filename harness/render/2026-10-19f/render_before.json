@@ -1,0 +1,71 @@
+{
+ "fresh": {
+  "note": "tab opened, no site",
+  "zoom": 16,
+  "centre": {
+   "lat": -26.204108565902338,
+   "lng": 28.047301769256595
+  },
+  "nativeMax": null,
+  "imageryTileZooms": [
+   16
+  ],
+  "shownZoom": 16,
+  "shownTilesChecked": 12,
+  "shownTilesWithImagery": 12,
+  "shownTilesWithout": 0,
+  "errors": []
+ },
+ "rural": {
+  "note": "site query near De Aar, Northern Cape",
+  "zoom": 19,
+  "centre": {
+   "lat": -30.650000610229494,
+   "lng": 24.000001251697544
+  },
+  "nativeMax": null,
+  "imageryTileZooms": [
+   19
+  ],
+  "shownZoom": 19,
+  "shownTilesChecked": 12,
+  "shownTilesWithImagery": 0,
+  "shownTilesWithout": 12,
+  "errors": []
+ },
+ "offshore": {
+  "note": "site query 20 km off the Eastern Cape coast",
+  "zoom": 19,
+  "centre": {
+   "lat": -34.1999999709183,
+   "lng": 25.799999535083774
+  },
+  "nativeMax": null,
+  "imageryTileZooms": [
+   19
+  ],
+  "shownZoom": 19,
+  "shownTilesChecked": 12,
+  "shownTilesWithImagery": 0,
+  "shownTilesWithout": 12,
+  "errors": []
+ },
+ "address": {
+  "note": "Johannesburg address (Sandton City)",
+  "zoom": 19,
+  "centre": {
+   "lat": -26.107600890227822,
+   "lng": 28.05670022964478
+  },
+  "nativeMax": null,
+  "imageryTileZooms": [
+   16,
+   19
+  ],
+  "shownZoom": 19,
+  "shownTilesChecked": 12,
+  "shownTilesWithImagery": 12,
+  "shownTilesWithout": 0,
+  "errors": []
+ }
+}
