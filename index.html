@@ -2879,8 +2879,8 @@ let redzData = null;
   // Both search boxes only fired on Enter or the button, so nothing appeared
   // while typing and the search looked broken. Debounce at 350 ms: long enough
   // that a normal typist triggers one request per pause rather than one per
-  // keystroke, which also keeps us well inside Nominatim's 1 req/sec usage
-  // policy. Three characters minimum - shorter queries match half of South
+  // keystroke, which keeps us within Photon's fair use (Nominatim, used until
+  // message 253 D4, forbids type-ahead outright). Three characters minimum - shorter queries match half of South
   // Africa and the results are useless.
   function attachTypeahead(inputId, fn){
     const el = document.getElementById(inputId);
@@ -2898,7 +2898,9 @@ let redzData = null;
     });
   }
 
-  // ── Main address search (Nominatim / OpenStreetMap) ─────────────────────────
+  // ── Main address search (Photon, OpenStreetMap data; message 253 D4) ───────
+  // Type-ahead calls this on every pause (attachTypeahead), which Nominatim's policy forbids and Photon's allows. Photon's
+  // client, its credit line and the HTML escaping live in the rooftop script (window._rtPhoton), read at call time.
   async function mainGeocode() {
     const q = document.getElementById('mainSearch').value.trim();
     const resultsEl = document.getElementById('mainSearchResults');
@@ -2916,26 +2918,22 @@ let redzData = null;
     resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--ink2)">Searching…</div>';
 
     try {
-      const url = 'https://nominatim.openstreetmap.org/search'
-        + '?format=json&limit=6&countrycodes=za&addressdetails=1'
-        + '&q=' + encodeURIComponent(q);
-      const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      const results = await resp.json();
-
-      if (!results || results.length === 0) {
-        resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--ink2)">No results found. Try a suburb, town, or landmark.</div>';
+      const results = await window._rtPhoton(q);
+      if (document.getElementById('mainSearch').value.trim() !== q) return;   // typed past this query
+      if (!results.length) {
+        resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--ink2)">No results found. Try a suburb, town, or landmark.</div>' + window.RT_PHOTON_CREDIT;
         return;
       }
-
+      const esc = window._rtEsc;
       resultsEl.innerHTML = results.map(r =>
-        `<div onclick="mainGoTo(${r.lat},${r.lon})"
+        `<div onclick="mainGoTo(${r.lat},${r.lng})"
               style="padding:7px 14px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
               onmouseover="this.style.background='var(--bg2,#eee)'"
               onmouseout="this.style.background='transparent'">
-          <div style="font-weight:600">${(r.display_name||'').split(',')[0]}</div>
-          <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${(r.display_name||'').split(',').slice(1,4).join(',').trim()}</div>
+          <div style="font-weight:600">${esc(r.title)}</div>
+          <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${esc(r.sub)}</div>
         </div>`
-      ).join('');
+      ).join('') + window.RT_PHOTON_CREDIT;
     } catch (err) {
       resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--alert)">Search failed – check your connection and try again.</div>';
     }
@@ -5040,7 +5038,8 @@ function printPrefeas() {
       <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:inherit">Open-Meteo ERA5</a>
       and PVGIS (solar resource) &middot; NASA MERRA-2 (wind profiles) &middot;
       <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap</a>
-      contributors (geocoding, ODbL) &middot; Esri, Maxar and Earthstar Geographics (satellite imagery) &middot;
+      contributors (geocoding through Photon, ODbL) &middot; Google (the rooftop tab's satellite map, address search and roof
+      measurement, where its key loads) &middot; Esri, Maxar and Earthstar Geographics (satellite imagery otherwise) &middot;
       <a href="https://highs.dev/" target="_blank" rel="noopener" style="color:inherit">HiGHS</a>
       (MIT) for the in-browser optimiser.
       Source attributions belong to their respective owners; their inclusion here does not imply endorsement.
@@ -19833,7 +19832,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-19f';
+const BUILD_STAMP = '2026-10-19l';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21918,64 +21917,137 @@ function _rtApplianceProfile() {
 // ── Satellite Roof Tracer ─────────────────────────────────────────────────────
 let rtMap = null, rtTracing = false, rtPoints = [], rtMarkers = [], rtPolyline = null, rtPolygon = null, rtImagery = null;
 
+// GOOGLE SATELLITE MAP, ESRI AS THE FALLBACK (user, 19 Oct 2026, message 253 D4). Google's Maps Platform terms let Places
+// and Geocoding results, and Solar API content, be shown only on a Google map, so the rooftop map is Google's satellite map
+// (Maps JavaScript API, the same key as the Solar API) whenever that key loads. Without a key, or if Google rejects it, the
+// map is Esri's World Imagery as before, the address search is Photon (OpenStreetMap data) and the Solar API's roof faces
+// are not drawn on it. rtBackend says which map is up; the tracer and the roof outlines go through the small set of
+// functions below, so they work the same on either.
+let rtBackend = null, rtMapReady = null, _rtInfo = null;
+const RT_ZOOM_SAFE = 17, RT_ZOOM_ROOF = 19, _rtDepth = new Map();
+
+// Ground distance in metres between two [lat, lng] points (haversine), the same on either map.
+function rtDistanceM(a, b){
+  const R = 6371008.8, r = Math.PI / 180, dLat = (b[0] - a[0]) * r, dLng = (b[1] - a[1]) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function rtSetView(lat, lng, z){
+  if (!rtMap) return;
+  if (rtBackend === 'google'){ rtMap.setCenter({ lat, lng }); rtMap.setZoom(z); } else rtMap.setView([lat, lng], z);
+}
+function rtSetCursor(c){
+  if (!rtMap) return;
+  if (rtBackend === 'google') rtMap.setOptions({ draggableCursor: c || null }); else rtMap.getContainer().style.cursor = c;
+}
+function rtRemove(h){ if (!h) return; if (rtBackend === 'google') h.setMap(null); else if (rtMap) rtMap.removeLayer(h); }
+function rtAddVertex(pt){
+  if (rtBackend === 'google') return new google.maps.Marker({ map: rtMap, position: { lat: pt[0], lng: pt[1] }, clickable: false,
+    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 5, fillColor: '#F5C518', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 } });
+  return L.circleMarker(pt, { radius: 5, fillColor: '#F5C518', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(rtMap);
+}
+function rtAddLine(pts){
+  if (rtBackend === 'google') return new google.maps.Polyline({ map: rtMap, path: pts.map(p => ({ lat: p[0], lng: p[1] })), clickable: false,
+    strokeColor: '#F5C518', strokeWeight: 2.5 });
+  return L.polyline(pts, { color: '#F5C518', weight: 2.5, dashArray: '5 4' }).addTo(rtMap);
+}
+function rtAddPolygon(pts){
+  if (rtBackend === 'google') return new google.maps.Polygon({ map: rtMap, paths: pts.map(p => ({ lat: p[0], lng: p[1] })), clickable: false,
+    strokeColor: '#F5C518', strokeWeight: 2.5, fillColor: '#F5C518', fillOpacity: 0.28 });
+  return L.polygon(pts, { color: '#F5C518', weight: 2.5, fillColor: '#F5C518', fillOpacity: 0.28 }).addTo(rtMap);
+}
+
 // ESRI IMAGERY DEPTH (user, 19 Oct 2026, message 248). Esri's World Imagery reaches zoom 19 in cities but often only 18 in rural
 // areas and offshore; where a zoom has no imagery Esri serves 'Map data not yet available' tiles rather than an error, so a map
 // opened at 19 on a rural or offshore site query showed only those. Esri's tilemap service says whether a tile has imagery:
 // rtImageryZoom asks it for the deepest zoom up to 19 at a point (17 had imagery at every point tested; null, not cached, if the
 // service cannot be reached). The imagery layer's native zoom is capped at that depth, so a deeper view enlarges real imagery.
-const RT_ZOOM_SAFE = 17, RT_ZOOM_ROOF = 19, _rtDepth = new Map();
+// On Google's map, Google's MaxZoomService answers the same question.
 function rtImageryZoom(lat, lng){
-  const key = lat.toFixed(3) + ',' + lng.toFixed(3);
+  const key = rtBackend + ':' + lat.toFixed(3) + ',' + lng.toFixed(3);
   if (_rtDepth.has(key)) return _rtDepth.get(key);
-  const tile = z => { const n = 2 ** z, r = lat * Math.PI / 180;
-    return [Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n), Math.floor((lng + 180) / 360 * n)]; };
-  const has = z => { const [row, col] = tile(z);
-    return fetch('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/' + z + '/' + row + '/' + col + '/1/1?f=json')
-      .then(r => { if (!r.ok) throw new Error('tilemap ' + r.status); return r.json(); }).then(d => !!(d && d.data && d.data[0] === 1)); };
-  const p = (async () => { try { for (let z = RT_ZOOM_ROOF; z > RT_ZOOM_SAFE; z--) if (await has(z)) return z; return RT_ZOOM_SAFE; }
-                          catch (e) { _rtDepth.delete(key); return null; } })();
+  let p;
+  if (rtBackend === 'google'){
+    p = new Promise(res => { try { new google.maps.MaxZoomService().getMaxZoomAtLatLng({ lat, lng }, r => {
+          if (r && r.status === 'OK' && r.zoom) res(Math.max(RT_ZOOM_SAFE, Math.min(RT_ZOOM_ROOF, r.zoom))); else { _rtDepth.delete(key); res(null); } });
+        } catch (e) { _rtDepth.delete(key); res(null); } });
+  } else {
+    const tile = z => { const n = 2 ** z, r = lat * Math.PI / 180;
+      return [Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n), Math.floor((lng + 180) / 360 * n)]; };
+    const has = z => { const [row, col] = tile(z);
+      return fetch('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/' + z + '/' + row + '/' + col + '/1/1?f=json')
+        .then(r => { if (!r.ok) throw new Error('tilemap ' + r.status); return r.json(); }).then(d => !!(d && d.data && d.data[0] === 1)); };
+    p = (async () => { try { for (let z = RT_ZOOM_ROOF; z > RT_ZOOM_SAFE; z--) if (await has(z)) return z; return RT_ZOOM_SAFE; }
+                      catch (e) { _rtDepth.delete(key); return null; } })();
+  }
   _rtDepth.set(key, p);
   return p;
 }
-// Show a point at up to the zoom asked for: at once at the safe zoom, then as deep as Esri has imagery there.
+// Show a point at up to the zoom asked for: at once at the safe zoom, then as deep as there is imagery there.
 function rtShowAt(lat, lng, want){
   if (!rtMap) return Promise.resolve();
-  rtMap.setView([lat, lng], Math.min(want, RT_ZOOM_SAFE));
+  rtSetView(lat, lng, Math.min(want, RT_ZOOM_SAFE));
   return rtImageryZoom(lat, lng).then(z => {
     if (z == null) return;   // the depth is unknown: stay at the safe zoom, leave the layer as it is
-    if (rtImagery && rtImagery.options.maxNativeZoom !== z){ rtImagery.options.maxNativeZoom = z; rtImagery.redraw(); }
-    if (want > RT_ZOOM_SAFE) rtMap.setView([lat, lng], Math.min(want, z));
+    if (rtBackend === 'leaflet' && rtImagery && rtImagery.options.maxNativeZoom !== z){ rtImagery.options.maxNativeZoom = z; rtImagery.redraw(); }
+    if (want > RT_ZOOM_SAFE) rtSetView(lat, lng, Math.min(want, z));
   });
 }
 
+// Creates the map once and resolves when it is up: Google's when the key loads, else Esri's. Callers that need the map
+// (a search result, the tracer) wait on the promise this returns.
 function rtInitMap() {
-  if (rtMap) { setTimeout(() => rtMap.invalidateSize(), 100); return; }
+  if (rtMapReady){ if (rtMap && rtBackend === 'leaflet') setTimeout(() => rtMap.invalidateSize(), 100); return rtMapReady; }
   const el = document.getElementById('rtMap');
-  if (!el || typeof L === 'undefined') return;
-
-  // Centre on the last clicked resource location, else Johannesburg
-  const lat = (window._resourceData && window._resourceData.lat) || -26.2041;
-  const lng = (window._resourceData && window._resourceData.lng) || 28.0473;
-
-  // Zoom 19 is roof-level. With no location chosen yet that shows an anonymous
-  // patch of an arbitrary Johannesburg rooftop with nothing to orient by, which
-  // reads as a broken map. Open at 16 - streets and blocks visible, obviously a
-  // real place - and let rtGoTo() zoom to 19 once a location is actually picked.
-  // A site query opens at the safe zoom and goes to roof level only where Esri has imagery (rtShowAt, message 248).
+  if (!el) return Promise.resolve();
+  const key = _rtSolarKey();
+  rtMapReady = (key ? _rtGoogleGeocoder(key) : Promise.resolve(null))
+    .then(g => (g && window.google && google.maps && google.maps.Map) ? _rtInitGoogle(el) : _rtInitLeaflet(el))
+    .catch(e => { console.warn('[GridTwin] Google map failed (' + (e && e.message ? e.message : e) + '); using Esri imagery.'); return _rtInitLeaflet(el); });
+  return rtMapReady;
+}
+function _rtStart(){
+  // Centre on the last clicked resource location, else Johannesburg. Zoom 19 is roof-level; with no location chosen yet that
+  // shows an anonymous patch of roof with nothing to orient by, so open at 16 and let rtGoTo() zoom in once a place is picked.
+  // A site query opens at the safe zoom and goes to roof level only where there is imagery (rtShowAt, message 248).
   const hasSite = !!(window._resourceData && window._resourceData.lat);
-  rtMap = L.map('rtMap', { zoomControl: true, attributionControl: true })
-            .setView([lat, lng], hasSite ? RT_ZOOM_SAFE : 16);
-
-  // Esri World Imagery — free satellite tiles, no API key required. Its native zoom is capped where Esri has less depth.
+  return { lat: (window._resourceData && window._resourceData.lat) || -26.2041, lng: (window._resourceData && window._resourceData.lng) || 28.0473,
+           hasSite, zoom: hasSite ? RT_ZOOM_SAFE : 16 };
+}
+function _rtAfterInit(s){
+  if (s.hasSite) rtShowAt(s.lat, s.lng, RT_ZOOM_ROOF);
+  else { const hint = document.getElementById('rtMapHint'); if (hint) hint.style.display = ''; }   // so an unlocated map does not look like a failure
+}
+function _rtInitGoogle(el){
+  const s = _rtStart();
+  rtBackend = 'google';
+  // 'hybrid' is satellite with road and place names, the combination the Esri map built from three layers. tilt 0 keeps the
+  // view straight down, as tracing needs; clickableIcons off so a click on a labelled building measures it, not a pop-up.
+  rtMap = new google.maps.Map(el, { center: { lat: s.lat, lng: s.lng }, zoom: s.zoom, mapTypeId: 'hybrid', tilt: 0, maxZoom: 21,
+    clickableIcons: false, streetViewControl: false, rotateControl: false, fullscreenControl: false, mapTypeControl: false });
+  rtMap.addListener('click', e => rtMapClick(e.latLng.lat(), e.latLng.lng()));
+  // Google reports a rejected key after the map has loaded, by calling gm_authFailure and greying the map: fall back to Esri.
+  window.gm_authFailure = () => {
+    console.warn('[GridTwin] Google Maps rejected the API key (gm_authFailure); the rooftop map is using Esri imagery.');
+    if (rtBackend !== 'google') return;
+    rtMap = null; rtMarkers = []; rtPolyline = rtPolygon = rtSolarLayer = null; rtPoints = []; el.innerHTML = '';
+    for (const k of [..._rtDepth.keys()]) if (k.startsWith('google:')) _rtDepth.delete(k);
+    _rtInitLeaflet(el);
+  };
+  _rtAfterInit(s);
+}
+function _rtInitLeaflet(el){
+  if (typeof L === 'undefined') return;
+  const s = _rtStart();
+  rtBackend = 'leaflet';
+  rtMap = L.map(el, { zoomControl: true, attributionControl: true }).setView([s.lat, s.lng], s.zoom);
+  // Esri World Imagery: free satellite tiles, no API key. Its native zoom is capped where Esri has less depth.
   rtImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 21, maxNativeZoom: RT_ZOOM_ROOF,
     attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
   }).addTo(rtMap);
-
-  // Street/road names overlay - pure satellite imagery has no text at all, so
-  // without this there is nothing to visually confirm which property is which.
-  // Both are free Esri reference layers designed specifically to sit on top of
-  // an imagery basemap (the standard "hybrid" combination).
+  // Road and place names on top (Esri's reference layers, the standard 'hybrid' combination): pure imagery has no text, so
+  // there would be nothing to confirm which property is which.
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19, maxNativeZoom: 19, opacity: 0.9,
     attribution: 'Esri'
@@ -21983,18 +22055,12 @@ function rtInitMap() {
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19, maxNativeZoom: 19
   }).addTo(rtMap);
-
-  rtMap.on('click', rtMapClick);
+  rtMap.on('click', e => rtMapClick(e.latlng.lat, e.latlng.lng));
   // After a pan or zoom, cap the imagery's native zoom at the depth Esri has at the new centre (cached per location).
   rtMap.on('moveend', () => { if (rtMap.getZoom() < 18) return; const c = rtMap.getCenter();
     rtImageryZoom(c.lat, c.lng).then(z => { if (z != null && rtImagery && rtImagery.options.maxNativeZoom !== z){ rtImagery.options.maxNativeZoom = z; rtImagery.redraw(); } }); });
-  if (hasSite) rtShowAt(lat, lng, RT_ZOOM_ROOF);
-  if (!hasSite) {
-    // A one-off hint so an unlocated map does not look like a failure.
-    const hint = document.getElementById('rtMapHint');
-    if (hint) hint.style.display = '';
-  }
-  setTimeout(() => rtMap.invalidateSize(), 200);
+  _rtAfterInit(s);
+  setTimeout(() => rtMap && rtMap.invalidateSize(), 200);
 }
 
 function rtStartTrace() {
@@ -22005,37 +22071,32 @@ function rtStartTrace() {
   if (btn) { btn.textContent = 'Tracing… click corners'; btn.style.background = '#F5C518'; }
   document.getElementById('rtTraceInfo').innerHTML =
     'Click each corner of your roof. Click the <strong>first point</strong> again to close the shape.';
-  if (rtMap) rtMap.getContainer().style.cursor = 'crosshair';
+  rtSetCursor('crosshair');
 }
 
-function rtMapClick(e) {
+function rtMapClick(lat, lng) {
   // Not tracing: a click means "measure the building here". This is the reliable
   // route when the geocoder only resolves to street level, which is most of South
   // Africa - the user can see their own roof on the imagery even when no address
   // lookup can name it.
   if (!rtTracing) {
-    rtMeasureAt(e.latlng.lat, e.latlng.lng);
+    rtMeasureAt(lat, lng);
     return;
   }
-  const pt = [e.latlng.lat, e.latlng.lng];
+  const pt = [lat, lng];
 
   // If clicking near the first point and we have 3+ points, close the polygon
   if (rtPoints.length >= 3) {
     const first = rtPoints[0];
-    const dist = rtMap.distance(L.latLng(first[0], first[1]), e.latlng);
+    const dist = rtDistanceM(first, pt);
     if (dist < 4) { rtFinishTrace(); return; }
   }
 
   rtPoints.push(pt);
-  const m = L.circleMarker(pt, {
-    radius: 5, fillColor: '#F5C518', color: '#fff', weight: 2, fillOpacity: 1
-  }).addTo(rtMap);
-  rtMarkers.push(m);
+  rtMarkers.push(rtAddVertex(pt));
 
-  if (rtPolyline) rtMap.removeLayer(rtPolyline);
-  if (rtPoints.length > 1) {
-    rtPolyline = L.polyline(rtPoints, { color: '#F5C518', weight: 2.5, dashArray: '5 4' }).addTo(rtMap);
-  }
+  rtRemove(rtPolyline); rtPolyline = null;
+  if (rtPoints.length > 1) rtPolyline = rtAddLine(rtPoints);
   rtUpdateTraceInfo();
 }
 
@@ -22057,26 +22118,23 @@ function rtUpdateTraceInfo() {
 function rtUndoPoint() {
   if (rtPoints.length === 0) return;
   rtPoints.pop();
-  const m = rtMarkers.pop();
-  if (m) rtMap.removeLayer(m);
-  if (rtPolyline) { rtMap.removeLayer(rtPolyline); rtPolyline = null; }
-  if (rtPolygon) { rtMap.removeLayer(rtPolygon); rtPolygon = null; }
-  if (rtPoints.length > 1) {
-    rtPolyline = L.polyline(rtPoints, { color: '#F5C518', weight: 2.5, dashArray: '5 4' }).addTo(rtMap);
-  }
+  rtRemove(rtMarkers.pop());
+  rtRemove(rtPolyline); rtPolyline = null;
+  rtRemove(rtPolygon); rtPolygon = null;
+  if (rtPoints.length > 1) rtPolyline = rtAddLine(rtPoints);
   rtUpdateTraceInfo();
 }
 
 function rtClearTrace() {
   rtPoints = [];
-  rtMarkers.forEach(m => { if (rtMap) rtMap.removeLayer(m); });
+  rtMarkers.forEach(rtRemove);
   rtMarkers = [];
-  if (rtPolyline && rtMap) { rtMap.removeLayer(rtPolyline); rtPolyline = null; }
-  if (rtPolygon && rtMap)  { rtMap.removeLayer(rtPolygon);  rtPolygon = null; }
+  rtRemove(rtPolyline); rtPolyline = null;
+  rtRemove(rtPolygon); rtPolygon = null;
   rtTracing = false;
   const btn = document.getElementById('rtTraceBtn');
   if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--alert,#C4785A)'; btn.style.color = '#fff'; }
-  if (rtMap) rtMap.getContainer().style.cursor = '';
+  rtSetCursor('');
   const info = document.getElementById('rtTraceInfo');
   if (info) info.innerHTML = 'Click <strong>Start tracing</strong>, then click each corner of your roof. Click the first point again to close the shape.';
 }
@@ -22084,15 +22142,13 @@ function rtClearTrace() {
 function rtFinishTrace() {
   if (rtPoints.length < 3) return;
   rtTracing = false;
-  if (rtPolyline) { rtMap.removeLayer(rtPolyline); rtPolyline = null; }
-  rtPolygon = L.polygon(rtPoints, {
-    color: '#F5C518', weight: 2.5, fillColor: '#F5C518', fillOpacity: 0.28
-  }).addTo(rtMap);
+  rtRemove(rtPolyline); rtPolyline = null;
+  rtPolygon = rtAddPolygon(rtPoints);
 
   const areaM2 = rtPolygonArea(rtPoints);
   const btn = document.getElementById('rtTraceBtn');
   if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--alert,#C4785A)'; btn.style.color = '#fff'; }
-  if (rtMap) rtMap.getContainer().style.cursor = '';
+  rtSetCursor('');
 
   // THE FIELD TAKES THE MEASURED FOOTPRINT, NOT A REDUCED ONE. Corrected 1 Oct 2026.
   // This used to write areaM2 x 0.72, a usable factor for walkways, plant, setbacks and
@@ -22155,17 +22211,50 @@ document.addEventListener('keydown', e => {
 });
 
 
-// ── Address search (Nominatim / OpenStreetMap) ────────────────────────────────
+// ── Address search ────────────────────────────────────────────────────────────
 let rtSearchTimer = null;
 
+// PHOTON (komoot's geocoder over OpenStreetMap data; user, 19 Oct 2026, message 253 D4). Nominatim's usage policy forbids
+// type-ahead suggestions; Photon's public API allows them under fair use. Used by the site-resource search on the main map
+// and by the rooftop search whenever Google's map is not up. South Africa only (bounding box, then country code).
+const RT_PHOTON = 'https://photon.komoot.io/api/', RT_ZA_BBOX = '16.3,-35.0,33.0,-22.0';
+const RT_PHOTON_CREDIT = '<div style="padding:4px 10px;font-size:9px;color:var(--ink2)">Search by Photon &middot; &copy; '
+  + '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap</a> contributors</div>';
+const _rtEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+async function _rtPhoton(q) {
+  const r = await fetch(RT_PHOTON + '?limit=10&lang=en&bbox=' + RT_ZA_BBOX + '&q=' + encodeURIComponent(q));
+  if (!r.ok) throw new Error('Photon returned ' + r.status + (r.status === 429 ? ' (rate limited)' : ''));
+  const d = await r.json();
+  return (d.features || []).filter(f => f.properties && f.properties.countrycode === 'ZA' && f.geometry && f.geometry.coordinates)
+    .slice(0, 6).map(f => {
+      const p = f.properties, lng = +f.geometry.coordinates[0], lat = +f.geometry.coordinates[1];
+      // A house number is a house-level point; anything else is a street, suburb or place, flagged so the user clicks the roof.
+      const exact = !!p.housenumber;
+      const title = exact ? (p.housenumber + ' ' + (p.street || '')).trim() : (p.name || p.street || p.city || '');
+      const sub = [exact ? null : p.street, p.district || p.locality, p.city, p.state]
+        .filter((x, i, a) => x && x !== title && a.indexOf(x) === i).slice(0, 3).join(', ');
+      return { lat, lng, exact, title, sub };
+    });
+}
+window._rtPhoton = _rtPhoton;
+window._rtEsc = _rtEsc;
+window.RT_PHOTON_CREDIT = RT_PHOTON_CREDIT;
+function _rtPhotonList(results) {
+  return results.map(rr => `<div onclick="rtGoTo(${rr.lat},${rr.lng},${rr.exact})"
+            style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
+            onmouseover="this.style.background='var(--bg2,#eee)'"
+            onmouseout="this.style.background='transparent'">
+          <div style="font-weight:600">${_rtEsc(rr.title)}</div>
+          <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${rr.exact ? '' : '<span style="color:var(--alert,#C4785A);font-weight:600">street-level</span> – '}${_rtEsc(rr.sub)}</div>
+        </div>`).join('') + RT_PHOTON_CREDIT;
+}
 
 // ── Type-ahead address suggestions ───────────────────────────────────────────
-// Users expect a dropdown of predictions as they type - its absence made the
-// search feel broken even when it worked. Uses Google's Places Autocomplete
-// where a key is configured (far better South African address coverage), and
-// falls back to debounced Nominatim lookups otherwise, so the behaviour is the
-// same either way.
-let _rtAutoSvc = null, _rtPlacesSvc = null, _rtLastQuery = '';
+// Users expect a dropdown of predictions as they type - its absence made the search feel broken even when it worked. Google's
+// Places Autocomplete (far better South African address coverage) when Google's map is up, since Google's terms allow its
+// results only on a Google map; Photon otherwise. A session token groups the keystrokes and the chosen place into one
+// billed session.
+let _rtAutoSvc = null, _rtPlacesSvc = null, _rtLastQuery = '', _rtSession = null;
 
 async function _rtAutocomplete() {
   const inp = document.getElementById('rtSearch');
@@ -22180,96 +22269,70 @@ async function _rtAutocomplete() {
   const key = _rtSolarKey();
   if (key) {
     try {
-      const g = await _rtGoogleGeocoder(key);   // loads the Maps JS library once
-      if (g && window.google && window.google.maps && window.google.maps.places) {
+      await rtInitMap();   // loads the Maps JS library once and says which map is up
+      if (rtBackend === 'google' && window.google && window.google.maps && window.google.maps.places) {
         if (!_rtAutoSvc) _rtAutoSvc = new window.google.maps.places.AutocompleteService();
+        if (!_rtSession) _rtSession = new window.google.maps.places.AutocompleteSessionToken();
         _rtAutoSvc.getPlacePredictions({
           input: q,
           componentRestrictions: { country: 'za' },
+          sessionToken: _rtSession,
         }, (preds, status) => {
           // Ignore a response for a query the user has already typed past.
           if (inp.value.trim() !== _rtLastQuery) return;
           if (status !== window.google.maps.places.PlacesServiceStatus.OK || !preds || !preds.length) {
-            _rtAutocompleteOSM(q);
+            box.style.display = '';
+            box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
+              + 'No match for that address. <strong>Click your building on the map below</strong>, or paste GPS coordinates.</div>';
             return;
           }
           box.style.display = '';
           box.innerHTML = preds.slice(0, 6).map(p => {
             const main = (p.structured_formatting && p.structured_formatting.main_text) || p.description;
             const sub  = (p.structured_formatting && p.structured_formatting.secondary_text) || '';
-            return `<div onclick="rtPickPrediction('${p.place_id}')"
+            return `<div onclick="rtPickPrediction('${_rtEsc(p.place_id)}')"
                   style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
                   onmouseover="this.style.background='var(--bg2,#eee)'"
                   onmouseout="this.style.background='transparent'">
-                <div style="font-weight:600">${main}</div>
-                <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${sub}</div>
+                <div style="font-weight:600">${_rtEsc(main)}</div>
+                <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${_rtEsc(sub)}</div>
               </div>`;
           }).join('');
         });
         return;
       }
     } catch (e) {
-      console.warn('[GridTwin] Google Places autocomplete failed, using OpenStreetMap: '
+      console.warn('[GridTwin] Google Places autocomplete failed, using Photon: '
         + (e && e.message ? e.message : e));
     }
   } else {
-    console.info('[GridTwin] No Google key in config.js \u2013 address search is using '
-      + 'OpenStreetMap, which rarely resolves South African house numbers.');
+    console.info('[GridTwin] No Google key in config.js – address search is using '
+      + 'Photon (OpenStreetMap data), which rarely resolves South African house numbers.');
   }
-  _rtAutocompleteOSM(q);
+  _rtAutocompletePhoton(q);
 }
 
-// Debounced Nominatim suggestions - the no-key path. Kept deliberately simple:
-// Nominatim asks for at most one request per second, so this must stay throttled.
-async function _rtAutocompleteOSM(q) {
+// Photon suggestions, the path when Google's map is not up.
+async function _rtAutocompletePhoton(q) {
   const box = document.getElementById('rtSearchResults');
   try {
-    const url = 'https://nominatim.openstreetmap.org/search'
-      + '?format=json&limit=6&countrycodes=za&addressdetails=1&q=' + encodeURIComponent(q);
-    const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if (!r.ok){
-      console.warn('[GridTwin] Address search: OpenStreetMap returned ' + r.status
-        + (r.status === 429 ? ' (rate limited – Nominatim allows ~1 request/second)' : '')
-        + (r.status === 403 ? ' (blocked – check the referrer policy for this domain)' : ''));
-      box.style.display = '';
-      box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
-        + 'Address lookup unavailable right now. '
-        + '<strong>Click your building on the map below</strong>, or paste GPS coordinates.</div>';
-      return;
-    }
-    const results = await r.json();
+    const results = await _rtPhoton(q);
     const inp = document.getElementById('rtSearch');
     if (!inp || inp.value.trim() !== _rtLastQuery) return;   // stale response
-    if (!results || !results.length) {
-      box.style.display = '';
+    box.style.display = '';
+    if (!results.length) {
       box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
-        + 'No match for that address. South African address data is patchy \u2013 '
-        + '<strong>click your building on the map below</strong> instead.</div>';
+        + 'No match for that address. South African address data is patchy – '
+        + '<strong>click your building on the map below</strong> instead.</div>' + RT_PHOTON_CREDIT;
       return;
     }
-    box.style.display = '';
-    box.innerHTML = results.map(rr => {
-      const a = rr.address || {};
-      const exact = !!a.house_number;
-      const title = exact ? (a.house_number + ' ' + (a.road || '')).trim()
-                          : (rr.display_name || '').split(',')[0];
-      const sub = (rr.display_name || '').split(',').slice(1, 4).join(',').trim();
-      const note = exact ? '' :
-        '<span style="color:var(--alert,#C4785A);font-weight:600">street-level</span> \u2013 ';
-      return `<div onclick="rtGoTo(${rr.lat},${rr.lon},${exact})"
-            style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
-            onmouseover="this.style.background='var(--bg2,#eee)'"
-            onmouseout="this.style.background='transparent'">
-          <div style="font-weight:600">${title}</div>
-          <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${note}${sub}</div>
-        </div>`;
-    }).join('');
+    box.innerHTML = _rtPhotonList(results);
   } catch (e) {
-    // Network failure, cors block or bad JSON. Say so rather than vanishing.
+    // Network failure, cors block, rate limit or bad JSON. Say so rather than vanishing.
     console.warn('[GridTwin] Address search failed: ' + (e && e.message ? e.message : e));
     box.style.display = '';
     box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
-      + 'Address lookup unavailable. <strong>Click your building on the map below</strong>, '
+      + 'Address lookup unavailable right now. <strong>Click your building on the map below</strong>, '
       + 'or paste GPS coordinates from Google Maps.</div>';
   }
 }
@@ -22284,9 +22347,11 @@ function rtPickPrediction(placeId) {
     if (!_rtPlacesSvc) {
       _rtPlacesSvc = new window.google.maps.places.PlacesService(document.createElement('div'));
     }
+    const sessionToken = _rtSession; _rtSession = null;   // a chosen place ends the session
     _rtPlacesSvc.getDetails({
       placeId: placeId,
       fields: ['geometry', 'formatted_address'],
+      sessionToken,
     }, (place, status) => {
       if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place || !place.geometry) {
         if (box) box.style.display = 'none';
@@ -22324,25 +22389,6 @@ document.addEventListener('keydown', e => {
     if (b) b.style.display = 'none';
   }
 });
-
-// Suggest-as-you-type for the rooftop search, same 350 ms debounce as the main
-// map's. Defined here rather than reusing attachTypeahead because that lives
-// inside the site-resource iife and is not visible at this scope.
-(function(){
-  const el = document.getElementById('rtSearch');
-  if (!el) return;
-  let timer = null, lastQ = '';
-  el.addEventListener('input', () => {
-    const q = el.value.trim();
-    if (timer) clearTimeout(timer);
-    if (q.length < 3 || q === lastQ) return;
-    timer = setTimeout(() => { lastQ = q; if (typeof rtGeocode === 'function') rtGeocode(); }, 350);
-  });
-  el.addEventListener('keydown', e => {
-    if (e.key === 'Enter'){ if (timer) clearTimeout(timer); lastQ = el.value.trim(); }
-  });
-})();
-
 
 // Accepts the formats people actually paste from Google Maps and similar:
 //   -26.2041, 28.0473      -26.2041 28.0473      (-26.2041,28.0473)
@@ -22392,7 +22438,7 @@ function _rtGoogleGeocoder(key) {
       console.warn('[GridTwin] Google Maps js did not initialise within 8s - usually an '
         + 'API key problem (Maps JavaScript API not enabled, key not permitted for it, '
         + 'or billing inactive). Check the console for a Google auth error. '
-        + 'Using OpenStreetMap search instead.');
+        + 'Using Esri imagery and Photon search instead.');
       finish(null);
     }, 8000);
 
@@ -22400,7 +22446,7 @@ function _rtGoogleGeocoder(key) {
     window.gm_authFailure = () => {
       console.warn('[GridTwin] Google Maps rejected the API key (gm_authFailure). '
         + 'Check that Maps JavaScript API is enabled and allowed by the key restrictions. '
-        + 'Using OpenStreetMap search instead.');
+        + 'Using Esri imagery and Photon search instead.');
       clearTimeout(timer);
       finish(null);
     };
@@ -22413,11 +22459,11 @@ function _rtGoogleGeocoder(key) {
     };
     const s = document.createElement('script');
     s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key)
-          + '&libraries=geocoding,places&callback=' + cb + '&loading=async';
+          + '&libraries=maps,geocoding,places&callback=' + cb + '&loading=async';
     s.async = true;
     s.onerror = () => {
       console.warn('[GridTwin] Could not load the Google Maps js library - '
-        + 'check the key allows the Maps JavaScript API. Using OpenStreetMap search.');
+        + 'check the key allows the Maps JavaScript API. Using Esri imagery and Photon search.');
       clearTimeout(timer);
       finish(null);
     };
@@ -22441,7 +22487,7 @@ async function rtGeocode() {
     return;
   }
 
-  rtInitMap(); // ensure map exists
+  await rtInitMap(); // ensure the map exists, and know whose it is
 
   resultsEl.style.display = '';
   resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">Searching…</div>';
@@ -22449,7 +22495,7 @@ async function rtGeocode() {
   // Try Google Geocoding first when a key is configured. OpenStreetMap's South
   // African house-number coverage is poor, so most searches only resolve to a
   // street - which is the single biggest source of friction in this tool.
-  // Google's address data is far more complete here. Falls back to Nominatim on
+  // Google's address data is far more complete here. Falls back to Photon on
   // any failure, so the search box always works with or without a key.
   // Google geocoding via the Maps JavaScript API rather than the rest web service.
   // The REST endpoint rejects referrer-restricted keys outright ("API keys with
@@ -22458,10 +22504,11 @@ async function rtGeocode() {
   // and removing the restriction would leave a publicly-visible key wide open. The
   // JS library IS referrer-aware, so the key stays locked to this domain.
   //
-  // Falls back to OpenStreetMap whenever the library is unavailable or returns
-  // nothing, so search always works with or without a key.
+  // Falls back to Photon whenever the library is unavailable or returns nothing,
+  // so search always works with or without a key. Google's results are used only
+  // while Google's map is up (its terms; message 253 D4).
   const gkey = _rtSolarKey();
-  if (gkey) {
+  if (gkey && rtBackend === 'google') {
     try {
       const geocoder = await _rtGoogleGeocoder(gkey);
       if (geocoder) {
@@ -22522,38 +22569,12 @@ async function rtGeocode() {
   }
 
   try {
-    // Bias to South Africa; return up to 6 candidates
-    const url = 'https://nominatim.openstreetmap.org/search'
-      + '?format=json&limit=6&countrycodes=za&addressdetails=1'
-      + '&q=' + encodeURIComponent(q);
-    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    const results = await resp.json();
-
-    if (!results || results.length === 0) {
-      resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">No results found. Try a suburb, street name, or landmark.</div>';
+    const results = await _rtPhoton(q);
+    if (!results.length) {
+      resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">No results found. Try a suburb, street name, or landmark.</div>' + RT_PHOTON_CREDIT;
       return;
     }
-
-    // Nominatim's structured address object tells us whether it actually has a
-    // house-level point (house_number present) or only matched a street/suburb -
-    // OSM's South African address coverage is genuinely patchy at house level, so
-    // rather than imply false precision, flag street-level results explicitly.
-    resultsEl.innerHTML = results.map((r, i) => {
-      const addr = r.address || {};
-      const hasHouseNumber = !!addr.house_number;
-      const title = hasHouseNumber
-        ? (addr.house_number + ' ' + (addr.road || '')).trim()
-        : (r.display_name || '').split(',')[0];
-      const subtitle = (r.display_name || '').split(',').slice(hasHouseNumber ? 1 : 1, hasHouseNumber ? 4 : 4).join(',').trim();
-      const precisionNote = hasHouseNumber ? '' : '<span style="color:var(--alert,#C4785A);font-weight:600">street-level match</span> – ';
-      return `<div onclick="rtGoTo(${r.lat},${r.lon},${hasHouseNumber})"
-            style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
-            onmouseover="this.style.background='var(--bg2,#eee)'"
-            onmouseout="this.style.background='transparent'">
-        <div style="font-weight:600">${title}</div>
-        <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${precisionNote}${subtitle}</div>
-      </div>`;
-    }).join('');
+    resultsEl.innerHTML = _rtPhotonList(results);
   } catch (err) {
     resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--alert)">Search failed – check your connection and try again.</div>';
   }
@@ -22583,8 +22604,9 @@ async function rtGeocode() {
 //     window.GOOGLE_SOLAR_KEY = 'your-restricted-key-here';
 //
 // Restrict the key in the Google Cloud console before use: Application
-// restrictions -> Websites -> your domain, and API restrictions -> Solar API
-// only. A browser key is always visible in page source, so those restrictions
+// restrictions -> Websites -> your domains (gridtwinza.org/*, www.gridtwinza.org/*),
+// and API restrictions -> Solar API, Maps JavaScript API, Places API and
+// Geocoding API, the four this page calls (message 253 D4). A browser key is always visible in page source, so those restrictions
 // are what protect it, not secrecy.
 //
 // If config.js is absent or the key is blank, everything below simply no-ops and
@@ -22690,14 +22712,17 @@ async function _rtFetchGoogleSolar(lat, lng) {
 // which also makes the orientation figure self-explanatory.
 let rtSolarLayer = null;
 function _rtDrawMeasuredRoof(res) {
-  if (!rtMap || typeof L === 'undefined') return;
-  if (rtSolarLayer) { rtMap.removeLayer(rtSolarLayer); rtSolarLayer = null; }
-  if (!res) return;
+  if (rtSolarLayer) { rtSolarLayer.forEach(s => s.setMap(null)); rtSolarLayer = null; }
+  if (_rtInfo) _rtInfo.close();
+  // Solar API content is shown only on Google's map (its terms; message 253 D4). On the Esri fallback the measurement still
+  // feeds the calculator and the status box, but the faces are not drawn.
+  if (!res || !rtMap || rtBackend !== 'google') return;
 
   const shapes = [];
   const boxToBounds = b => (b && b.sw && b.ne)
-    ? [[b.sw.latitude, b.sw.longitude], [b.ne.latitude, b.ne.longitude]]
+    ? { south: b.sw.latitude, west: b.sw.longitude, north: b.ne.latitude, east: b.ne.longitude }
     : null;
+  if (!_rtInfo) _rtInfo = new google.maps.InfoWindow({ disableAutoPan: true });
 
   // Individual roof faces, coloured by their yield multiplier
   (res.segments || []).forEach((s, i) => {
@@ -22707,25 +22732,23 @@ function _rtDrawMeasuredRoof(res) {
     const good = Math.max(0, Math.min(1, (s.mult - 0.78) / 0.30));
     const col = good > 0.66 ? '#4A8C5C' : good > 0.33 ? '#F5C518' : '#C4785A';
     const compass = ['N','NE','E','SE','S','SW','W','NW'][Math.round(((s.az % 360) + 360) % 360 / 45) % 8];
-    shapes.push(
-      L.rectangle(bounds, { color: col, weight: 2, fillColor: col, fillOpacity: 0.30 })
-       .bindTooltip(Math.round(s.area) + ' m\u00b2 \u00b7 ' + Math.round(s.pitch) + '\u00b0 facing ' + compass
-                    + ' \u00b7 \u00d7' + s.mult.toFixed(2), { sticky: true })
-    );
+    const tip = Math.round(s.area) + ' m² · ' + Math.round(s.pitch) + '° facing ' + compass + ' · ×' + s.mult.toFixed(2);
+    const r = new google.maps.Rectangle({ map: rtMap, bounds, strokeColor: col, strokeWeight: 2, fillColor: col, fillOpacity: 0.30 });
+    r.addListener('mouseover', e => { _rtInfo.setContent(tip); _rtInfo.setPosition(e.latLng); _rtInfo.open({ map: rtMap }); });
+    r.addListener('mouseout', () => _rtInfo.close());
+    // A click on a face still measures or traces there, as a click on the map does.
+    r.addListener('click', e => rtMapClick(e.latLng.lat(), e.latLng.lng()));
+    shapes.push(r);
   });
 
-  // Whole-building outline, drawn on top as a dashed boundary
+  // Whole-building outline, drawn on top
   const bb = boxToBounds(res.boundingBox);
-  if (bb) {
-    shapes.push(L.rectangle(bb, {
-      color: '#22292B', weight: 2.5, dashArray: '6 4', fill: false,
-    }));
-  }
+  if (bb) shapes.push(new google.maps.Rectangle({ map: rtMap, bounds: bb, clickable: false, strokeColor: '#22292B', strokeWeight: 2.5, fillOpacity: 0 }));
 
   if (!shapes.length) return;
-  rtSolarLayer = L.layerGroup(shapes).addTo(rtMap);
+  rtSolarLayer = shapes;
   // Frame the building so it is obvious which one was measured
-  if (bb) rtMap.fitBounds(bb, { padding: [60, 60], maxZoom: 20 });
+  if (bb) { rtMap.fitBounds(bb, 60); google.maps.event.addListenerOnce(rtMap, 'idle', () => { if (rtMap.getZoom() > 20) rtMap.setZoom(20); }); }
 }
 
 function _rtApplyGoogleSolar(res) {
@@ -22787,12 +22810,12 @@ function _rtApplyGoogleSolar(res) {
       + ' \u00b7 <strong>' + usableM2 + ' m\u00b2</strong> usable for panels'
       + (res.maxPanels ? ' \u00b7 fits about <strong>' + res.maxPanels + '</strong> panels' : '')
       + '</div>'
-      + '<div style="font-size:10px;color:var(--ink2);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+      + (rtBackend !== 'google' ? '' : '<div style="font-size:10px;color:var(--ink2);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
       + '<span>Outlined below:</span>'
       + '<span><span style="display:inline-block;width:9px;height:9px;background:#4A8C5C;opacity:.5;border:1px solid #4A8C5C;vertical-align:middle"></span> good aspect</span>'
       + '<span><span style="display:inline-block;width:9px;height:9px;background:#F5C518;opacity:.5;border:1px solid #F5C518;vertical-align:middle"></span> moderate</span>'
       + '<span><span style="display:inline-block;width:9px;height:9px;background:#C4785A;opacity:.5;border:1px solid #C4785A;vertical-align:middle"></span> poor</span>'
-      + '</div>'
+      + '</div>')
       + '<div style="font-size:10px;color:var(--ink2);margin-top:3px">'
       + 'Orientation applied: <strong>\u00d7' + res.blendedMult.toFixed(2) + '</strong>, '
       + 'the area-weighted average of those faces.'
@@ -22837,14 +22860,14 @@ async function _rtFetchSiteData(lat, lng, contextHtml, skipRoof) {
 }
 
 function rtGoTo(lat, lng, exact) {
-  rtInitMap();
   const _h = document.getElementById('rtMapHint');
   if (_h) _h.style.display = 'none';
   lat = parseFloat(lat); lng = parseFloat(lng);
-  if (rtMap) {
+  rtInitMap().then(() => {
+    if (!rtMap) return;
     rtShowAt(lat, lng, RT_ZOOM_ROOF);
     rtClearTrace();
-  }
+  });
   document.getElementById('rtSearchResults').style.display = 'none';
 
   // Only auto-measure when the geocoder actually returned a house-level match.
