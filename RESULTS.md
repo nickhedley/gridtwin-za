@@ -4727,10 +4727,12 @@ storage on Table 1's schedule) +R36.3bn, +54.8 Mt; s_pvirp (solar capped at Tabl
 (3) Differences that are not policy choices:
 - Demand basis: both runs carry c5f's demand. The IRP's 'about 255 TWh in 2030' includes distributed PV: its reference demand
   (ESRG IRPDemandREF Mode 1, public_data/esrg_irp_demand_ref.json, the series c5f's growth index comes from) is 232.7 TWh of
-  domestic grid demand, 12.5 of distributed PV and 11.0 of exports in 2030, 256.2 in all. c5f's 2030 on the same basis is 237.9
-  (210.3 domestic grid, 21.0 rooftop, 6.6 firm exports), 7.1% below; domestic grid and distributed PV alone 231.4 against 245.2
-  (-5.6%), exports 6.6 against 11.0. (Corrected 19 Oct 2026: the first report set c5f's 216.9 TWh, without rooftop, against the
-  255, about 15% below, mixing bases.) The IRP's plan serves somewhat less demand here than it was sized for (curtailment 42.1 TWh
+  domestic grid demand, 12.5 of distributed PV and 11.0 of exports in 2030, 256.2 in all. c5f's 2030 on the same basis is 238.9
+  (211.3 domestic grid, 21.0 rooftop, 6.6 firm exports), 6.8% below; domestic grid and distributed PV alone 232.3 against 245.2
+  (-5.3%), exports 6.6 against 11.0. (Corrected 19 Oct 2026: the first report set c5f's 216.9 TWh, without rooftop, against the
+  255, about 15% below, mixing bases. Corrected again the same day (message 224 set-up): the second figures, 237.9 and -7.1%,
+  subtracted congestion curtailment, a generation term, from domestic load; c5f's customer demand in 2030 is the demand profile
+  (203.525 TWh) x 1.101384 plus the 930 MW block, 232.3 TWh, of which rooftop serves 21.0.) The IRP's plan serves somewhat less demand here than it was sized for (curtailment 42.1 TWh
   in 2040).
 - Coal utilisation: the IRP build's coal runs at a 33.6% capacity factor in 2030 here (c5f 42.6%); its 114.9 Mt in 2030 and
   83.9 Mt in 2035 compare with the IRP's own 168 and 142 Mt, which imply the coal fleet running far harder ('Coal utilisation is
