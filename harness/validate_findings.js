@@ -491,7 +491,10 @@ setTimeout(()=>{
       // Re-pinned 4 Oct 2026 for the re-sized presets (was 65.2 and 119.7, on the old builds).
       // Re-pinned 18 Oct 2026 on build 2026-10-17i for the presets re-searched on c5e's costs, Deep topped up on independent
       // draws (TODO 14ef; was 52.7 and 96.3). Measured on the default profiles as below; twelve-year means in RESULTS.
-      const PIN = { 'Deep decarbonisation 2035': 46.9, 'Fossil-free 2040': 114.9 };
+      // Re-pinned 19 Oct 2026 on build 2026-10-19e for the presets rebuilt at c5f's demand for their year (message 231; was 46.9
+      // and 114.9): twelve-year means 66.8 (51.6-77.7) and 96.7 (71.1-114.8), RESULTS 'Deep decarbonisation 2035 and Fossil-free
+      // 2040 rebuilt on c5f's demand'.
+      const PIN = { 'Deep decarbonisation 2035': 84.8, 'Fossil-free 2040': 128.0 };
       const bad = [];
       for (const [name, pinned] of Object.entries(PIN)){
         const got = curt[name];
@@ -884,7 +887,9 @@ setTimeout(()=>{
     try {
       await w.eval('loadWeatherYears()');
       const a = probe(`
-        const st = { ...state, ...PRESETS['Fossil-free 2040'], newWindMW:14591, newPvMW:32738,
+        // Demand pinned at +5% and no block (19 Oct 2026, build 2026-10-19e): the preset moved to c5f's 2040 demand (message 231),
+        // and this check's build was the loop's at the preset's +5%, which it ran on from the repository's first build.
+        const st = { ...state, ...PRESETS['Fossil-free 2040'], demandGrowthPct:5, demandBlockMW:0, newWindMW:14591, newPvMW:32738,
           newRooftopMW:2000, newBattMW:13029, newCcgtMW:2848, newVrfbMW:500, newIronAirMW:150,
           newOffshoreMW:0, newNuclearMW:0, coalDecomMW:17939, newBattHours:5 };
         const nat = weatherYearNational('2016');

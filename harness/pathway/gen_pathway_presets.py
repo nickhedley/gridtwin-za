@@ -109,7 +109,11 @@ def c5f_demand():
                'blockMW': max([mw for s, mw in blk.items() if int(s) <= y] or [0])} for y in (2026, 2030, 2035, 2040)}
     DB = "// BEGIN GENERATED C5F_DEMAND (harness/pathway/gen_pathway_presets.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)"
     DE = "// END GENERATED C5F_DEMAND"
-    return DB, DE, f"{DB}\n// c5f's demand by model year: growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))\nconst C5F_DEMAND = {j(yrs)};\n{DE}"
+    # c5f's wind build-rate cap (WIND_CAP, MW a year from WIND_CAP_FROM), recorded in its build file; the captions compare the
+    # searched presets' builds against c5f's limits (message 245).
+    wc = {'mw': P['windCap'], 'from': P['windCapFrom']}
+    return DB, DE, (f"{DB}\n// c5f's demand by model year: growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))\nconst C5F_DEMAND = {j(yrs)};\n"
+                    f"// c5f's wind build-rate cap, MW a year from the year given (WIND_CAP; message 245)\nconst C5F_WIND_CAP = {j(wc)};\n{DE}")
 
 
 html = open('index.html').read(); new = html
