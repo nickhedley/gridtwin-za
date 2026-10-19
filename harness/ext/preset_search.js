@@ -90,7 +90,8 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   // FEASIBLE=1 (message 231): the greedy below accepts only moves that meet the target and cost less, so it needs a feasible
   // start. From one that misses, top up on the search draws with the largest steps, each round taking the move that removes
   // the most shed per rand (or the cheapest that meets the target), until the target is met (at most 30 rounds).
-  if (process.env.FEASIBLE && start.shed > target){
+  // A search resumed with CONTINUE takes its feasible start from its own log (below), so the rounds are not repeated.
+  if (process.env.FEASIBLE && start.shed > target && !(process.env.CONTINUE && fs.existsSync(OUT))){
     let b = { ...base }, r = start;
     for (let round = 1; round <= 30 && r.shed > target; round++){
       const ups = TECH.map(t => ({ ...b, [t.k]: b[t.k] + t.steps[0] })).filter(x => TECH.every(t => x[t.k] >= 0 && (!t.cap || x[t.k] <= t.cap))).map(x => ({ build: x, ...evaluate(x, DRAWS) }));

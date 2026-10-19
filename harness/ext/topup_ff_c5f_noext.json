@@ -1,0 +1,53 @@
+{
+ "stamp": "2026-10-19c",
+ "preset": "Fossil-free 2040",
+ "override": {
+  "demandGrowthPct": 45.889599999999994,
+  "demandBlockMW": 930
+ },
+ "seed": 71830529,
+ "draws": 20,
+ "target": 2.7212470612438326,
+ "start": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 56500,
+   "newBattMW": 20000,
+   "newIronAirMW": 13000,
+   "newOffshoreMW": 1750
+  },
+  "shed": 2.596381533384977,
+  "cost": 439.18013103735643,
+  "served": 324.1461352650777,
+  "cust": 272.12470612438324
+ },
+ "log": [
+  {
+   "step": "start",
+   "build": {
+    "newWindMW": 50500,
+    "newPvMW": 56500,
+    "newBattMW": 20000,
+    "newIronAirMW": 13000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 2.596381533384977,
+   "cost": 439.18013103735643,
+   "served": 324.1461352650777,
+   "cust": 272.12470612438324
+  }
+ ],
+ "final": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 56500,
+   "newBattMW": 20000,
+   "newIronAirMW": 13000,
+   "newOffshoreMW": 1750
+  },
+  "shed": 2.596381533384977,
+  "cost": 439.18013103735643,
+  "served": 324.1461352650777,
+  "cust": 272.12470612438324
+ }
+}
