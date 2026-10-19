@@ -4705,6 +4705,19 @@ Neither run is short in any year; the IRP build's largest year is 0.7% of its ta
 R1,216 against c5f's R1,062; 2035 R1,129 against R957; 2040 R1,260 against R977 (frozen copy, with M11's rooftop leak in both).
 The IRP's gas runs at its 51% floor in 2030 (26.8 TWh), 28% in 2035 and 16% in 2040.
 
+Grid cost on the fixed measure (M11; excludes rooftop capital, of which c5f carries 8.7 GW more): IRP plan R2,487.4bn, c5f
+R2,141.0bn, +R346.4bn. Present-value cost per tonne of CO2 cut (user, message 222 (1)), cost difference over cumulative tonnes
+2026-40, the carbon tax taken out because it is a transfer, not a resource cost:
+
+| Against | Run | CO2 cut, Mt | Engine PV less carbon tax, R bn | R per tonne | Engine PV, R per tonne (with the tax) |
+|---|---|---|---|---|---|
+| c5f | IRP plan | 148.8 | +314.1 | 2,111 | 2,076 |
+| null_c5f | s_nogas4strict (with its top-up) | 215.7 | +34.6 | 160 | 134 |
+| null_c5f | s_carbonfull | 245.5 | +13.4 | 55 | 1,219 |
+
+s_carbonfull's engine PV is almost all the higher tax on the tonnes still emitted (R347.0bn against c5f's R61.1bn in present
+value), so only the column without the tax compares across the three.
+
 (2) Beside it, as an indicative split of the gap that does not add up: the single-element runs on c5f, each against c5f's null
 ('c5f run'): s_irpgas (IRP's gas) +R203.8bn engine PV, -40.0 Mt CO2; s_be7 (IRP's nuclear) +R35.4bn, -21.4 Mt; s_be6 (battery
 storage on Table 1's schedule) +R36.3bn, +54.8 Mt; s_pvirp (solar capped at Table 1) +R6.6bn, +11.9 Mt. They sum to +R282.1bn and
@@ -4712,9 +4725,13 @@ storage on Table 1's schedule) +R36.3bn, +54.8 Mt; s_pvirp (solar capped at Tabl
 +7.9 Mt for 900 MW a year to 2040) and the interactions between elements are not in any single run.
 
 (3) Differences that are not policy choices:
-- Demand basis: both runs carry c5f's demand, 216.9 TWh in 2030 on the IRP's basis (grid demand with losses, excluding pumping,
-  battery charging and auxiliaries, with cross-border sales: 210.3 TWh domestic plus 6.6 TWh firm exports; 237.9 with rooftop),
-  against the IRP's 255 TWh, so the IRP's plan serves less demand here than it was sized for (curtailment 42.1 TWh in 2040).
+- Demand basis: both runs carry c5f's demand. The IRP's 'about 255 TWh in 2030' includes distributed PV: its reference demand
+  (ESRG IRPDemandREF Mode 1, public_data/esrg_irp_demand_ref.json, the series c5f's growth index comes from) is 232.7 TWh of
+  domestic grid demand, 12.5 of distributed PV and 11.0 of exports in 2030, 256.2 in all. c5f's 2030 on the same basis is 237.9
+  (210.3 domestic grid, 21.0 rooftop, 6.6 firm exports), 7.1% below; domestic grid and distributed PV alone 231.4 against 245.2
+  (-5.6%), exports 6.6 against 11.0. (Corrected 19 Oct 2026: the first report set c5f's 216.9 TWh, without rooftop, against the
+  255, about 15% below, mixing bases.) The IRP's plan serves somewhat less demand here than it was sized for (curtailment 42.1 TWh
+  in 2040).
 - Coal utilisation: the IRP build's coal runs at a 33.6% capacity factor in 2030 here (c5f 42.6%); its 114.9 Mt in 2030 and
   83.9 Mt in 2035 compare with the IRP's own 168 and 142 Mt, which imply the coal fleet running far harder ('Coal utilisation is
   where this model and the IRP disagree').
