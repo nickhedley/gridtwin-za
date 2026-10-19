@@ -53,7 +53,10 @@ const PANEL_FILES = ['profiles.json', 'nodal/tdp_projects.json', 'nodal/region_h
   'nodal/profiles_offshore_regional.json', 'nodal/coal_availability_trace.json', 'nodal/regional_renewable_capacity.json',
   'nodal/headroom_summary.json', 'nodal/profiles_wind_modern_map.json', 'nodal/profiles_solar_tracking_map.json'];
 const PANEL_FILE_HASH = {};
-const PAGE_PARSED = new Promise(r => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', () => r()) : r());
+// The page's scripts, hashed once when parsing ends, so a script added later (an extension, a test harness) does not count.
+const PAGE_PARSED = new Promise(r => { const done = () => r(gtzaHash(Array.from(document.scripts, sc => sc.hasAttribute('src')
+  ? 'src ' + sc.getAttribute('src') : 'inline ' + gtzaHash(sc.text)).join('\n')));
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', done); else done(); });
 (function(){
   const f = window.fetch; if (typeof f !== 'function') return;
   window.fetch = function(u){
@@ -19923,8 +19926,7 @@ function panelKey(){
 const P_STORE = fetch('stored_panels.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null);
 // The page's fingerprint: its scripts as parsed, and each start-up engine file as it arrived. null if any is missing.
 async function pageFingerprint(){
-  await PAGE_PARSED;
-  const code = gtzaHash(Array.from(document.scripts, sc => sc.hasAttribute('src') ? 'src ' + sc.getAttribute('src') : 'inline ' + gtzaHash(sc.text)).join('\n'));
+  const code = await PAGE_PARSED;
   const files = await Promise.all(PANEL_FILES.map(f => PANEL_FILE_HASH[f] || null));
   if (files.some(h => !h)) return null;
   return gtzaHash(code + '\n' + PANEL_FILES.map((f, i) => f + ' ' + files[i]).join('\n'));

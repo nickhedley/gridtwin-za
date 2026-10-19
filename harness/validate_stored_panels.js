@@ -42,6 +42,9 @@ const sha = f => crypto.createHash('sha256').update(fs.readFileSync(path.join(RO
 // The repository-relative path of a URL the page asked for.
 const rel = u => decodeURIComponent(String(u && u.url || u).split('?')[0]).replace('file://' + ROOT + '/', '').replace(/^\.?\//, '');
 
+// Where two strings first differ, with some context either side.
+const firstSpot = (a, b) => { let i = 0; while (i < a.length && a[i] === b[i]) i++;
+  return JSON.stringify(a.slice(Math.max(0, i - 50), i + 70)) + '\n      cache ' + JSON.stringify((b || '').slice(Math.max(0, i - 50), i + 70)); };
 // Every number identical (Object.is, so -0 and NaN count), same keys, same order of array items.
 function firstDiff(a, b, at = ''){
   if (typeof a === 'number' && typeof b === 'number') return Object.is(a, b) ? null : at + ': ' + a + ' against ' + b;
@@ -140,7 +143,7 @@ function firstDiff(a, b, at = ''){
   if (WRITE){
     const fp = await call(`return await pageFingerprint();`);
     const files = {};
-    for (const f of [...read, 'index.html', ...await call(`return Array.from(document.scripts).filter(s => s.hasAttribute('src') && !/^https?:/.test(s.getAttribute('src'))).map(s => s.getAttribute('src').split('?')[0]);`)].sort())
+    for (const f of [...[...read].filter(f => f !== 'stored_panels.json'), 'index.html', ...await call(`return Array.from(document.scripts).filter(s => s.hasAttribute('src') && !/^https?:/.test(s.getAttribute('src'))).map(s => s.getAttribute('src').split('?')[0]);`)].sort())
       if (fs.existsSync(path.join(ROOT, f))) files[f] = sha(f);
     const out = {
       meta: { build: await call(`return BUILD_STAMP;`), written: new Date().toISOString(), by: 'harness/validate_stored_panels.js --write',
@@ -171,7 +174,7 @@ function firstDiff(a, b, at = ''){
   // 3.
   const changed = Object.keys(st.files || {}).filter(f => !fs.existsSync(path.join(ROOT, f)) || sha(f) !== st.files[f]);
   check('every file the panels were computed from is unchanged', changed.length === 0, changed.join(', ') + ': rerun with --write');
-  const unlisted = [...read].filter(f => !(f in (st.files || {})));
+  const unlisted = [...read].filter(f => f !== 'stored_panels.json' && !(f in (st.files || {})));
   check('the page read no file the stored list lacks', unlisted.length === 0, unlisted.join(', '));
 
   for (const S of STATES){
@@ -195,11 +198,16 @@ function firstDiff(a, b, at = ''){
       renderCaptureCurve(${JSON.stringify(F.capCurve)}); return a === document.getElementById('capCurveBody').innerHTML;`);
     check(`[${S.label}] capture curve drawn from the store matches a fresh one`, curve);
     // 7. The page after start-up then this scenario, run fresh, then again with this scenario's result from the session cache.
-    const page = `return gtzaHash(document.body.textContent + Array.from(document.querySelectorAll('[title]'), e => e.title).join('|'));`;
+    // Every element with an id, as text and title, so a difference names where it is.
+    const page = `return Array.from(document.querySelectorAll('[id]'), e => [e.id, e.textContent + ' | ' + (e.title || '')]);`;
     const viaFresh = await call(`RES_CACHE.clear(); ${enter(STATES[0])} ${enter(S)} return [RES_CACHE.size, (() => { ${page} })()];`);
-    const viaCache = await call(`${enter(STATES[0])} const hit = RES_CACHE.has(panelKey()); ${enter(S)} return [hit, (() => { ${page} })()];`);
-    check(`[${S.label}] a revisit drawn from the session cache matches a fresh run (whole page)`, viaFresh[0] > 0 && viaCache[1] === viaFresh[1],
-          viaFresh[0] > 0 ? 'page text differs' : 'nothing was cached');
+    const viaCache = await call(`${enter(STATES[0])} ${enter(S)} return [RES_CACHE.size, (() => { ${page} })()];`);
+    const A = new Map(viaFresh[1]), B = new Map(viaCache[1]);
+    const differ = [...A.keys()].filter(k => A.get(k) !== B.get(k));
+    const at = differ.slice().sort((x, y) => A.get(x).length - A.get(y).length)[0];   // the innermost, as a rule
+    check(`[${S.label}] a revisit drawn from the session cache matches a fresh run (whole page)`, viaFresh[0] > 0 && differ.length === 0,
+          viaFresh[0] === 0 ? 'nothing was cached' : differ.length + ' elements differ, e.g. ' + differ.slice(0, 6).join(', ')
+          + (at ? '\n      fresh ' + firstSpot(A.get(at), B.get(at)) : ''));
   }
   console.log(`\n${pass}/${pass + fail} stored-panel checks passed`);
   process.exit(fail ? 1 : 0);
