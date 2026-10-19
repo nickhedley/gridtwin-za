@@ -5493,7 +5493,8 @@ seasons, and the per-kVA network and capacity charges (for example, at 500 V to 
 off-peak to 720.19 peak in the high season, plus R12.27/kVA a month of generation capacity and R39.13 and R26.29/kVA of
 network capacity and demand). Proposed for Nick to choose.
 
-Suite on 2026-10-19f: SUITE_COUNTS
+Suite on 2026-10-19f (claude/rooftop-map, ESK19679.csv present, nothing running beside it): 863/867, node checks 775/779 plus
+audit 88/88; eng5 5/6; the four known failures and eng5 check 6, as on 19d.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
