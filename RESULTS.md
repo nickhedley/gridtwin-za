@@ -4195,6 +4195,7 @@ Adequacy caveat, for every verdict from the engine below: "2025 replay (16h): 91
 | New lithium 2026-40, MW | 12,976 | 12,239 | +737 |
 | New CCGT / open-cycle on LNG, MW | 8,195 / 214 | 8,939 / 31 | |
 | Average cost per MWh served 2030 / 2035 / 2040, R | 1,058 / 946 / 959 | 1,030 / 925 / 940 | |
+| c5e's on the fixed measure (M11; message 215 (1); c5d's not re-derived), R | 1,045 / 923 / 934 | | |
 | Passes; adequacy | 2; every year, closest 52% of target (2031) | 1; every year, closest 50% (2031) | |
 
 Without carbon tax payments engine PV is R2,173.6bn (payments R62.2bn in present value). In 2026-27 c5e builds only the committed
@@ -4702,7 +4703,8 @@ draws against half the 0.002% standard on customer demand; coal, gas and curtail
 | 2040 | 376.0 / 290.0 | 48.3 / 67.3 | 0.00 / 0.40 against 2.86 | 36.1 / 60.2 | 24.7 / 9.9 | 42.1 / 11.3 |
 
 Neither run is short in any year; the IRP build's largest year is 0.7% of its target (2028). Average cost per MWh served: 2030
-R1,216 against c5f's R1,062; 2035 R1,129 against R957; 2040 R1,260 against R977 (frozen copy, with M11's rooftop leak in both).
+R1,216 against c5f's R1,062; 2035 R1,129 against R957; 2040 R1,260 against R977 (frozen copy, with M11's rooftop leak in both); on
+the fixed measure (message 215 (1)) R1,203 against R1,044, R1,107 against R928 and R1,245 against R943.
 The IRP's gas runs at its 51% floor in 2030 (26.8 TWh), 28% in 2035 and 16% in 2040.
 
 Grid cost on the fixed measure (M11; excludes rooftop capital, of which c5f carries 8.7 GW more): IRP plan R2,487.4bn, c5f
@@ -5013,11 +5015,19 @@ Adequacy caveat as for c5e ('New central c5e').
 | New lithium 2026-40, MW | 13,154 | 12,977 | +177 |
 | New CCGT / open-cycle on LNG / diesel open-cycle, MW | 8,269 / 0 / 0 | 8,195 / 214 / 0 |  |
 | Average cost per MWh served 2030 / 2035 / 2040, R | 1,062 / 957 / 977 | 1,058 / 946 / 959 |  |
+| The same on the fixed measure (M11), R | 1,044 / 928 / 943 | 1,045 / 923 / 934 |  |
 | Passes; adequacy (closest year to target) | 2; every year, closest 70% of target (2033) | 2; every year, closest 52% (2031) |  |
 
 CO2 caveat (user, 19 Oct 2026, message 220): at Eskom's FY2026 factor (1.112 t CO2e per MWh sent out, Integrated Report 2026
 pp.75 and 9), c5f's CO2 is 4.2% higher (2030 135.4, 2035 88.7 Mt; +66 Mt over 2026-40) and carbon-tax costs R2.5bn higher in
 present value ('c5f's 2026 coal and CO2 against Eskom's FY2026'); emisCoal stays 1.04 for c5f and the note (TODO 14gp).
+
+Average cost per MWh served (user, 19 Oct 2026, message 215 (1)): the row above comes from the frozen copies (build 2026-10-17g for
+c5f), whose avgCost carries M11's rooftop leak: newCapexR prices new rooftop at acapAt while btmCapexR took out R1,150/kW-yr, so
+grid capital kept new rooftop x (acapAt - 1,150) (R1,966, 1,827 and 1,701/kW-yr at the engine's 2028, 2030.5 and 2033 vintages).
+The fixed-measure row takes each year's leak out over the energy served (c5f: 4,800, 10,800 and 16,800 MW of new rooftop; 219.2,
+245.5 and 277.1 TWh served). Check: on build 2026-10-19c, whose defaults equal c5f's, 'Least-cost path 2035' gives R927.61/MWh
+served-weighted over the engine check's 240 runs, against the re-derived R928.
 
 c5f against c5e, split by s_roof09 (c5f with rooftop at c5e's 900 MW a year): s_roof09 sits R14.1bn below c5f and 7.9 Mt above
 (objective -R13.0bn), so the rooftop change carries +R14.1bn of engine PV and -7.9 Mt of CO2; the rest (Msenge in the base,
