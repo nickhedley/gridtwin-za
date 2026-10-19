@@ -184,8 +184,8 @@ it loads or to an engine data file changes the fingerprint, and every visitor th
 message on the page. So every pull request that changes any of these does, after its last change to index.html (BUILD_STAMP
 bumped), from harness/:
 
-1. `node validate_stored_panels.js testroot --write` (about __WRITE__ minutes on this container with nothing beside it);
-2. `node validate_stored_panels.js testroot`, the check (about __CHECK__ minutes; it is part of the suite);
+1. `node validate_stored_panels.js testroot --write` (about 20 minutes on this container with nothing beside it);
+2. `node validate_stored_panels.js testroot`, the check (about 25 minutes; it is part of the suite);
 3. commit stored_panels.json with the change.
 
 After merging main into a branch, regenerate again: two branches that each regenerated do not combine, and main is stale after

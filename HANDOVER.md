@@ -5,7 +5,7 @@
 The page shows the risk panels for each preset and the start-up state from stored_panels.json, while its fingerprint matches
 (message 251). A change to index.html, a script it loads or an engine data file breaks the match, and every visitor silently
 computes the panels live again. Step in every such pull request, after the last change and the BUILD_STAMP bump, from harness/:
-`node validate_stored_panels.js testroot --write` (about __WRITE__ minutes), then the check without --write (about __CHECK__
+`node validate_stored_panels.js testroot --write` (about 20 minutes), then the check without --write (about 25
 minutes, part of the suite), and commit the file. Again after merging main in. RULES.md, 'Stored risk panels', has the detail.
 
 ## Optimiser caches removed for the c5f chain (17 Oct 2026, 22:04 UTC; user, message 198)
