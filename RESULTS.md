@@ -5460,7 +5460,7 @@ says have imagery:
 No page errors in any case. Not changed, for Nick (message 248): the tab's defaults, a R80,000 monthly bill at R2.50/kWh, are a
 business customer's (32,000 kWh a month); they predate the repository (build 2026-10-01a) with no record that a business default
 was intended. R2.50/kWh has no source in RESULTS or SOURCES and is typed in two places, the tab's tariff field and the C&I
-pre-feasibility module ('Avg industrial tariff 2026 = R2.50/kWh'); the retail panel's reference household is 900 kWh a month on
+pre-feasibility module ('Avg industrial tariff 2026 ≈ R2.50/kWh'); the retail panel's reference household is 900 kWh a month on
 Homepower at about R4.2/kWh.
 
 Suite on 2026-10-19f: SUITE_COUNTS
