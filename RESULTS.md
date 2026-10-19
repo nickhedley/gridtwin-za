@@ -5369,7 +5369,7 @@ The shown figures equal the page's own result for the same state (lastRes, adequ
 Suite on 2026-10-19c (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 849/853, node checks 761/765 plus
 audit 88/88; eng5 5/6; as on 19b, the four known failures and eng5 check 6.
 
-### Public wording for the two 2035 captions, and a check that the page's visible text carries no internal labels (build 2026-10-19d; user, 19 Oct 2026, message 235 (1) and (2))
+### Public wording for the two 2035 captions and the slider notes, and a check that the page's visible text carries no internal labels (build 2026-10-19d; user, 19 Oct 2026, messages 235 (1)-(2) and 236)
 
 (1) The Least-cost path 2035 and IRP path 2035 captions now read for a public reader, every figure still read from PRESETS (and
 the IRP's 51% and 6 GW from FIXED.ccgtForceLoadPct and the preset's ccgtForceLoadMW). As shown on a fresh load (Chromium,
@@ -5395,11 +5395,31 @@ until' in 2 each (6 places), none of the others:
   in (1);
 - six LCOE slider notes anchored on c5e: lcoeWind 'c5e 2030: new wind ran at 41.7%, R0.64/kWh'; lcoeRooftop 'c5e 2030: the
   same'; lcoeVrfb and lcoeIronAir 'c5e builds none, so there are no measured cycles to anchor it on'; lcoeBatt 'c5e 2030: 81
-  cycles, R5.99/kWh delivered'; lcoeDiesel 'c5e 2030: 2.9%, R17.18/kWh'. Open for Nick (TODO 14gu), so the check fails on 19d
-  with these five distinct texts.
+  cycles, R5.99/kWh delivered'; lcoeDiesel 'c5e 2030: 2.9%, R17.18/kWh'. Fixed in message 236, below.
 
 The Deep decarbonisation 2035, Fossil-free 2040 and IRP 2030 captions (on 214's branch, not main) follow the same rule in 214's
 pull request (235 (3)).
+
+Message 236 (a scan of the rendered page on 19c), in the same change:
+- (1) The four LCOE anchor notes now give the least-cost pathway's 2030 figures, worded 'In the model's least-cost pathway in
+  2030: ...', each from one constant (LCP_2030_LI_CYCLES, LCP_2030_DSL_CF, LCP_2030_WIND_CF, replacing C5E_2030_*): c5f's hooked
+  2026-30 engine check (build 2026-10-17g, twelve weather years x 20 draws), 2030 row: lithium 102.688 full cycles a year (1.644 TWh
+  discharged from 16,011 MWh, 15,719 new and 292 existing), the diesel fleet 2.7045% (0.805 TWh from 3,400 MW), new wind 41.707%
+  (26.47 TWh from 7,246 MW); rooftop 17.47% (21.03 TWh from 13,742 MW), the same as its resource factor. The same arithmetic on
+  c5e's hooked check gives the old constants exactly (81.141, 2.8529%, 41.740%). Shown (read from the page on 19d): wind
+  R0.64/kWh at 41.7%, lithium R4.73/kWh delivered at 103 full cycles, the diesel fleet R17.78/kWh at 2.7% (c5e's notes: R0.64,
+  R5.99, R17.18).
+- (2) Pumped storage, vanadium flow, iron-air, CSP and nuclear: 'Typed; no source recorded (in the model since 1 Oct 2026).'
+  is now 'An assumption; no published source.'; 'c5e builds none, so there are no measured cycles to anchor it on.' dropped.
+- (3) Change history dropped from the page (kept here, 'Page defaults aligned with the central', 19 Oct 2026): the gas fuel
+  slider's 'Was R2,003 ... until 19 Oct 2026.' and the assumptions table's 'Until 19 Oct 2026 the default was ...'.
+- (4) '(public_data/gas_price_cases.json)' dropped from the gas fuel slider and the assumptions table; the unit-commitment
+  paragraph's '(build 2026-10-14r)' is '(October 2026)'; the build panel's 'None - as in the central pathway' is 'None - as in
+  the least-cost pathway'; the coal-flexibility note's 'Placeholder until the coal flexibility option.' dropped.
+- (5) validate_public_text adds five labels: 'Typed;', 'no source recorded', 'in the model since', 'until <date> 2026', and .json
+  or .csv paths. One hit remains, for Nick (TODO 14gu (a)): the exports note's 'Exports ran about 1,750 MW until February 2026
+  and about 745 MW since', a fact about Mozal's exit rather than change history. Error messages that show only when a file fails
+  to load are not on a fresh page; the six that name a path are listed in TODO 14gu (c) for after the note.
 
 Also corrected in this change (message 232): the 215 (1) entry's check line said build 19c's defaults equal c5f's; they do not
 (message 232 (3) lists the differences). It now says what validate_pathway_presets establishes: the preset sets c5f's 2035

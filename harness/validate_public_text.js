@@ -3,7 +3,10 @@
  * validate_public_text.js: the page's visible text carries no internal labels (user, 19 Oct 2026, message 235 (2)).
  *
  * Readers cannot decode the project's own shorthand, so none of it may reach the page: run names (c5, c5a-c5z), sensitivity
- * names (s_...), 'the note', 'provisional until', message numbers, TODO and RESULTS.
+ * names (s_...), 'the note', 'provisional until', message numbers, TODO and RESULTS; and, from message 236 (5), change history
+ * and provenance notes: 'Typed;', 'no source recorded', 'in the model since', 'until <date> 2026', and .json or .csv paths.
+ * Error messages that show only when a file fails to load are not on a fresh page, so they are not scanned (TODO 14gu lists
+ * them). Eskom Data Portal IDs (ESK19679) stay as citations; they carry no file extension.
  *
  * What is scanned, on a fresh load (the page opens on Today 2026):
  *   - every text node in the document body outside script, style, noscript and template elements, collapsed and hidden
@@ -28,6 +31,12 @@ const LABELS = [
   ['message numbers', /\bmessages? \d+/i],
   ['TODO', /\bTODO\b/],
   ['RESULTS', /\bRESULTS\b/],
+  // Change history and provenance notes (message 236 (5)): what the page assumes now, not when or how it got there.
+  ["'Typed;'", /\bTyped;/],
+  ["'no source recorded'", /\bno source recorded\b/i],
+  ["'in the model since'", /\bin the model since\b/i],
+  ["'until <date> 2026'", /\buntil (?:\d{1,2} )?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? 2026\b/i],
+  ['.json or .csv paths', /[\w./-]+\.(?:json|csv)\b/i],
 ];
 
 let npass = 0, nfail = 0; const fails = [];
