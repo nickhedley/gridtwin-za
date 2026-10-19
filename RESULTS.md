@@ -4745,17 +4745,18 @@ storage on Table 1's schedule) +R36.3bn, +54.8 Mt; s_pvirp (solar capped at Tabl
   3.9% higher (2030 119.3, 2035 87.0 Mt; +56.5 Mt over 2026-40), c5f's 4.2% higher ('c5f's 2026 coal and CO2 against Eskom's
   FY2026').
 
-### The IRP plan's 148.8 Mt below c5f, by source: gas for coal 187.4 Mt and nuclear 110.4 Mt cut it; the IRP's lower wind (-63.6), rooftop (-73.3) and storage losses, and its coal held at part load, add back; generation by carrier 2030, 2035, 2040 and 2026-40 (user, 19 Oct 2026, message 223 (1); stored outputs only)
+### The IRP plan's 148.8 Mt below c5f, by source: gas for coal 187.4 Mt and nuclear 110.4 Mt cut it; the IRP's lower wind (-63.6), rooftop (-73.3) and storage losses, and its coal held at part load, add back; at the IRP's demand the same accounting gives +20.2 Mt, wind -212.1 against c5f re-optimised; generation by carrier, CO2 by source and curtailment by year (user, 19 Oct 2026, messages 223 (1), 229 (5) and 230 (2); stored outputs only)
 
-Settings. The IRP 2025 plan on c5f's inputs and c5f, both at c5f's demand, from the stored hooked engine checks (c5f/gen
-m130_irp2025_* and m130_c5f_*, build 2026-10-17g; cost and CO2 identical to the plain checks), mean over each year's runs. CO2
-by source with the engine's own formula (simulate): gas = (gas output + OCGT-on-LNG output x (heat-rate ratio 1.53 - 1)) x
-0.348 t/MWh, diesel x 0.78, coal the rest (coal output x the part-load heat-rate multiplier x 1.04). The split of the cut is
-an accounting, not a run: each carrier's extra output in the IRP plan displaces coal at that year's c5f coal factor (t CO2 per
-MWh of coal output); gas is net of its own CO2; the rest is the residual, broken down at the same factor. Other conventions
-(marginal rather than average coal, or an order of substitution) give other splits. Scratch m223/split.py.
+Settings. The IRP 2025 plan on c5f's inputs and c5f, at c5f's demand and at the IRP's (the pair), from the stored hooked engine
+checks (c5f/gen m130_irp2025_*, m130_c5f_*, m130_irp2025_irpdem_*, m130_c5f_irpdem_*; build 2026-10-17g; cost and CO2 identical
+to the plain checks), mean over each year's runs. CO2 by source with the engine's own formula (simulate): gas = (gas output +
+OCGT-on-LNG output x (heat-rate ratio 1.53 - 1)) x 0.348 t/MWh, diesel x 0.78, coal the rest (coal output x the part-load
+heat-rate multiplier x 1.04). The split is an accounting, not a run: each carrier's extra output in the IRP plan displaces coal
+at that year's c5f coal factor (t CO2 per MWh of coal output); gas is net of its own CO2; the rest is the residual, broken down
+at the same factor. Other conventions (marginal rather than average coal, or an order of substitution) give other splits.
+Scratch m223/split2.py.
 
-Generation, TWh (IRP / c5f):
+At c5f's demand. Generation, TWh (IRP / c5f):
 
 | | Coal | Gas | Nuclear | Wind | Utility solar | Rooftop | Pumped storage | Batteries | Curtailment |
 |---|---|---|---|---|---|---|---|---|---|
@@ -4768,8 +4769,8 @@ CO2 by source, Mt (IRP / c5f), and the split of the cut (c5f minus IRP), Mt:
 
 | | Coal | Gas | Diesel | Total | Gas for coal | Nuclear | Wind | The rest |
 |---|---|---|---|---|---|---|---|---|
-| 2030 | 105.3 / 129.3 | 9.3 / 0.1 | 0.3 / 0.6 | 114.9 / 130.0 | 19.2 | 0.0 | 0.3 | -4.3 |
-| 2035 | 74.6 / 84.5 | 9.3 / 0.5 | 0.0 / 0.1 | 83.9 / 85.1 | 18.4 | 0.0 | -12.5 | -4.6 |
+| 2030 | 105.3 / 129.3 | 9.3 / 0.1 | 0.3 / 0.6 | 114.9 / 130.0 | 19.2 | -0.0 | 0.3 | -4.3 |
+| 2035 | 74.6 / 84.5 | 9.3 / 0.5 | 0.0 / 0.1 | 83.9 / 85.1 | 18.4 | -0.0 | -12.5 | -4.6 |
 | 2040 | 39.7 / 63.7 | 8.6 / 3.4 | 0.0 / 0.2 | 48.3 / 67.3 | 10.5 | 31.8 | 5.1 | -28.4 |
 | 2026-40 | 1,352.2 / 1,589.3 | 101.1 / 10.6 | 2.8 / 5.1 | 1,456.2 / 1,605.0 | 187.4 | 110.4 | -63.6 | -85.4 |
 
@@ -4778,54 +4779,103 @@ CO2 by source, Mt (IRP / c5f), and the split of the cut (c5f minus IRP), Mt:
 - Nuclear: Table 1's 5,200 MW from 2036 adds 104 TWh, 110.4 Mt.
 - Wind: the IRP builds less wind than c5f over the period (1,027.5 against 1,087.0 TWh), so wind adds 63.6 Mt; the IRP is ahead in
   2027-29 and 2040, behind by up to 13 TWh a year in 2031-39 as c5f builds 3.5 GW a year.
-- The rest, -85.4 Mt: rooftop -73.3 (900 MW a year to 2035 against c5f's 1,200 to 2040), utility solar +36.0, storage losses
-  -18.3 (more cycling through pumped storage), coal factor -28.6 (the IRP's coal runs at part load beside the gas floor, so its
-  t/MWh is higher), diesel -0.9, residual 0.3.
-- Curtailment: 160.8 against 52.5 TWh over 2026-40, 42.1 against 11.3 in 2040.
-- Caveat: CO2 is the smokestack basis at emisCoal 1.04 (TODO 14gp: Eskom's FY2026 factor would add 4.2%); the value-chain
-  sensitivity is 223 (2).
+- The rest, -85.39 Mt: rooftop -73.31, pv +36.04, storage -18.25, coal factor -28.56, diesel -0.86, hybrid -0.18, residual -0.27. (Corrected 19 Oct 2026, message 230 (2): the first version gave the residual as +0.3 and left
+  out hybrid, so its parts summed to -84.8.) Rooftop: 900 MW a year to 2035 against c5f's 1,200 to 2040; storage: more cycling
+  through pumped storage; coal factor: the IRP's coal runs at part load beside the gas floor, so its t/MWh is higher.
 
-### Value-chain CO2e beside the smokestack figures: the IRP plan's cut against c5f narrows from 148.8 Mt to 130.1 (100-year central) and 127.4 (20-year central), 47.7 at the 20-year high; s_irpgas's 40.0 Mt cut is 0.6 Mt at the 20-year central and reverses at the high; s_nogas4strict's widens to 223-283 Mt (user, 19 Oct 2026, messages 223 (2) and 228; stored outputs only; smokestack stays central)
+At the IRP's demand (the pair; RESULTS 'The pair at the IRP's demand path'). Generation, TWh (IRP / c5f re-optimised):
 
-Settings. Upstream factors as the user gave them (message 228; SOURCES 'Upstream emission factors'): LNG production to
-regasification per MJ of gas burned (LHV), each plant at its own efficiency (CCGT 52% HHV, 6.248 GJ LHV per MWh; OCGT on LNG
-10,624 kJ/kWh HHV, 9.588 GJ LHV per MWh; 1.108 MJ HHV per MJ LHV), 100-year 17.7 / 18.6 / 53.8 and 20-year 27.1 / 29.6 / 99.1
-g CO2e/MJ (low / central / high); South African coal per MWh sent out, mine methane 100-year 4.2 / 34 / 83 and 20-year 12 / 95 /
-229 g CO2e/kWh, plus road and rail delivery 0 / 12.2 / 12.2 at both horizons. Coal central is a judgment (IPCC Tier 1 low end at
-25% underground); the coal low (9th inventory) and high (IEA) are secondary, via Swaniti 2025, unverified at source. Diesel
-carries smokestack CO2 only. Runs: c5f and the IRP plan from the hooked engine checks (CCGT and OCGT-on-LNG output separately);
-s_irpgas_c5f, s_detgas_c5f and s_nogas4strict_c5f from their engine checks, whose gas output is not split by plant, so it is
-taken at CCGT efficiency (open-cycle LNG output is 0-1.6% of gas where measured, so under 0.9% of their gas upstream);
-s_nogas4strict with its diesel top-up's CO2 (coal output from the solved run; the top-up adds 0.16 Mt). Smokestack CO2 at
-emisCoal 1.04 (TODO 14gp). Scratch m223/valuechain.py.
-
-| 2026-40, Mt CO2e | Gas, TWh | Coal, TWh | Smokestack | 100-yr low | 100-yr central | 100-yr high | 20-yr low | 20-yr central | 20-yr high |
+| | Coal | Gas | Nuclear | Wind | Utility solar | Rooftop | Pumped storage | Batteries | Curtailment |
 |---|---|---|---|---|---|---|---|---|---|
-| c5f | 30.3 | 1,487.9 | 1,605.0 | 1,614.6 | 1,677.2 | 1,756.8 | 1,628.0 | 1,770.1 | 1,982.6 |
-| IRP plan | 290.5 | 1,238.8 | 1,456.2 | 1,493.5 | 1,547.2 | 1,671.8 | 1,520.2 | 1,642.7 | 1,934.9 |
-| s_irpgas | 319.2 | 1,356.7 | 1,565.0 | 1,606.0 | 1,664.8 | 1,801.4 | 1,635.3 | 1,769.5 | 2,089.9 |
-| s_detgas | 161.4 | 1,503.5 | 1,674.1 | 1,698.3 | 1,762.4 | 1,871.5 | 1,719.5 | 1,865.2 | 2,136.7 |
-| s_nogas4strict (topped up) | 0 | 1,288.4 | 1,389.2 | 1,394.7 | 1,448.8 | 1,511.9 | 1,404.7 | 1,527.4 | 1,700.0 |
+| 2030 | 111.6 / 121.5 | 26.8 / 0.6 | 10.9 / 10.9 | 41.7 / 56.6 | 31.9 / 30.8 | 19.2 / 21.0 | 4.4 / 3.8 | 3.6 / 2.2 | 0.1 / 0.1 |
+| 2035 | 81.9 / 83.4 | 27.2 / 2.7 | 10.9 / 10.9 | 89.1 / 108.5 | 47.4 / 45.5 | 26.1 / 30.2 | 11.0 / 6.5 | 8.9 / 8.7 | 5.3 / 5.0 |
+| 2040 | 46.1 / 61.8 | 27.6 / 12.8 | 40.9 / 10.9 | 128.3 / 127.4 | 57.9 / 73.9 | 26.1 / 39.4 | 15.3 / 8.3 | 9.1 / 20.2 | 30.5 / 12.8 |
+| 2026-40 | 1,466.2 / 1,545.5 | 298.1 / 47.6 | 267.1 / 163.0 | 1,061.8 / 1,260.7 | 599.8 / 593.9 | 329.2 / 398.1 | 134.0 / 84.7 | 85.0 / 106.2 | 101.5 / 60.7 |
 
-Against c5f, Mt CO2e (run minus c5f):
+CO2 by source, Mt (IRP / c5f), and the split of the gap (c5f minus IRP: the IRP emits 20.2 Mt more), Mt:
 
-| | Smokestack | 100-yr low | 100-yr central | 100-yr high | 20-yr low | 20-yr central | 20-yr high |
-|---|---|---|---|---|---|---|---|
-| IRP plan | -148.8 | -121.1 | -130.1 | -85.0 | -107.7 | -127.4 | -47.7 |
-| s_irpgas | -40.0 | -8.6 | -12.5 | +44.6 | +7.3 | -0.6 | +107.3 |
-| s_detgas | +69.2 | +83.7 | +85.1 | +114.7 | +91.5 | +95.1 | +154.1 |
-| s_nogas4strict (topped up) | -215.7 | -219.9 | -228.5 | -244.9 | -223.3 | -242.7 | -282.6 |
+| | Coal | Gas | Diesel | Total | Gas for coal | Nuclear | Wind | The rest |
+|---|---|---|---|---|---|---|---|---|
+| 2030 | 121.3 / 129.7 | 9.3 / 0.2 | 0.4 / 0.6 | 131.0 / 130.5 | 18.9 | -0.0 | -16.0 | -3.4 |
+| 2035 | 88.9 / 88.8 | 9.5 / 0.9 | 0.0 / 0.1 | 98.3 / 89.9 | 17.6 | 0.0 | -20.7 | -5.3 |
+| 2040 | 50.0 / 65.3 | 9.6 / 4.5 | 0.0 / 0.2 | 59.6 / 69.9 | 10.5 | 31.7 | 1.0 | -32.9 |
+| 2026-40 | 1,581.0 / 1,646.2 | 103.8 / 16.7 | 3.4 / 5.1 | 1,688.2 / 1,667.9 | 179.7 | 110.1 | -212.1 | -98.0 |
 
-By year, central, Mt (smokestack / 100-year / 20-year): c5f 2030 130.0 / 135.6 / 143.0, 2035 85.1 / 88.9 / 93.9, 2040 67.3 /
-71.2 / 75.6; IRP plan 114.9 / 122.4 / 130.0, 83.9 / 90.2 / 96.1, 48.3 / 52.8 / 56.7; s_irpgas 123.4 / 131.5 / 139.8, 83.8 /
-90.2 / 96.3, 59.5 / 65.6 / 70.7; s_detgas 136.5 / 143.7 / 152.1, 91.8 / 97.1 / 103.0, 66.1 / 70.8 / 75.4; s_nogas4strict 127.0 /
-132.5 / 139.7, 68.5 / 71.4 / 75.3, 23.2 / 24.2 / 25.4.
+- The rest, -98.00 Mt: rooftop -73.10, pv +6.51, storage -12.94, coal factor -18.81, diesel -0.62, hybrid +1.23, residual -0.27.
+- Gas for coal and nuclear cut about as much as at c5f's demand (179.7 and 110.1 Mt); wind turns the result: c5f re-optimised
+  at the higher demand generates 198.9 TWh more wind over 2026-40 than the IRP plan (1,260.7 against 1,061.8), -212.1 Mt.
 
-Per MWh, central 100-year: LNG upstream 0.116 t CO2e per MWh from a CCGT (beside its 0.348 smokestack), coal 0.046 t per MWh
-sent out (beside about 1.07). Gas-for-coal swaps lose part of their benefit on the value-chain basis and all of it at the
-20-year central for s_irpgas; the no-gas build gains. Caveats: no LNG source covers a voyage to South Africa; the coal spread
-between the national inventory and independent estimates is 8-20x; the coal transport figure is calendar 2025 over FY2026's
-sent-out energy.
+Curtailment, TWh:
+
+| Year | c5f | IRP plan | c5f at IRP demand | IRP plan at IRP demand |
+|---|---|---|---|---|
+| 2026 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2027 | 0.0 | 0.1 | 0.0 | 0.0 |
+| 2028 | 0.0 | 0.2 | 0.0 | 0.1 |
+| 2029 | 0.1 | 0.3 | 0.1 | 0.1 |
+| 2030 | 0.0 | 0.2 | 0.1 | 0.1 |
+| 2031 | 0.4 | 0.4 | 0.5 | 0.2 |
+| 2032 | 0.8 | 1.0 | 1.4 | 0.4 |
+| 2033 | 1.7 | 2.5 | 2.4 | 1.1 |
+| 2034 | 3.3 | 5.3 | 4.1 | 2.4 |
+| 2035 | 4.3 | 10.6 | 5.0 | 5.3 |
+| 2036 | 5.2 | 15.9 | 6.3 | 8.9 |
+| 2037 | 6.6 | 19.4 | 7.7 | 10.7 |
+| 2038 | 8.3 | 27.0 | 9.1 | 16.8 |
+| 2039 | 10.5 | 35.9 | 11.3 | 24.8 |
+| 2040 | 11.3 | 42.1 | 12.8 | 30.5 |
+| 2026-40 | 52.5 | 160.8 | 60.7 | 101.5 |
+
+Caveat: CO2 is the smokestack basis at emisCoal 1.04 (TODO 14gp: Eskom's FY2026 factor would add 4.2%); the value-chain
+sensitivity follows.
+
+### Value-chain CO2e beside the smokestack figures: the IRP plan's cut against c5f narrows from 148.8 Mt to 130.1 (100-year central) and 127.4 (20-year central); with LNG high it is 72.8 or 62.4 Mt at 100 years and -14.4 or +9.3 Mt at 20 years (coal central or low); at the IRP's demand the IRP plan emits more on every basis; s_irpgas's 40.0 Mt cut is 0.6 Mt at the 20-year central; s_nogas4strict's widens (user, 19 Oct 2026, messages 223 (2), 228, 229 (5) and 230 (1); stored outputs only; smokestack stays central)
+
+Settings. Upstream factors as the user gave them (message 228; checked at source outside this session, recorded as given; SOURCES
+'Upstream emission factors'): LNG production to regasification per MJ of gas burned (LHV), each plant at its own efficiency
+(CCGT 52% HHV, 6.248 GJ LHV per MWh; OCGT on LNG 10,624 kJ/kWh HHV, 9.588 GJ LHV per MWh; 1.108 MJ HHV per MJ LHV), 100-year
+17.7 / 18.6 / 53.8 and 20-year 27.1 / 29.6 / 99.1 g CO2e/MJ (low / central / high); South African coal per MWh sent out, mine
+methane 100-year 4.2 / 34 / 83 and 20-year 12 / 95 / 229 g CO2e/kWh, plus road and rail delivery 0 / 12.2 / 12.2 at both
+horizons. The coal central is a judgment (IPCC Tier 1 low end at 25% underground); the coal low (9th inventory) and high (IEA)
+are secondary, via Swaniti 2025, unverified at source. Columns: low, central and 'all high' pair the same case for LNG and coal;
+'all high' is not the worst case for gas, because coal high and LNG high partly cancel between runs, so LNG high is also paired
+with coal central and with coal low (message 230 (1)). Diesel carries smokestack CO2 only. Runs: c5f, the IRP plan and the pair's
+two runs (at the IRP's demand) from the hooked engine checks (CCGT and OCGT-on-LNG output separately); s_irpgas_c5f, s_detgas_c5f
+and s_nogas4strict_c5f from their engine checks, whose gas output is not split by plant, so it is taken at CCGT efficiency
+(open-cycle LNG output is 0-1.6% of gas where measured, so under 0.9% of their gas upstream); s_nogas4strict with its diesel
+top-up's CO2 (coal output from the solved run; the top-up adds 0.16 Mt). Smokestack CO2 at emisCoal 1.04 (TODO 14gp). Scratch
+m223/valuechain.py.
+
+| 2026-40, Mt CO2e | Gas, TWh | Coal, TWh | Smokestack | 100-yr low | 100-yr central | 100-yr all high | 100-yr LNG high, coal central | 100-yr LNG high, coal low | 20-yr low | 20-yr central | 20-yr all high | 20-yr LNG high, coal central | 20-yr LNG high, coal low |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| c5f | 30.3 | 1,487.9 | 1,605.0 | 1,614.6 | 1,677.2 | 1,756.8 | 1,683.9 | 1,621.4 | 1,628.0 | 1,770.1 | 1,982.6 | 1,783.2 | 1,641.6 |
+| IRP plan | 290.5 | 1,238.8 | 1,456.2 | 1,493.5 | 1,547.2 | 1,671.8 | 1,611.1 | 1,559.0 | 1,520.2 | 1,642.7 | 1,934.9 | 1,768.9 | 1,650.9 |
+| c5f at IRP demand | 47.6 | 1,545.5 | 1,667.9 | 1,679.7 | 1,744.9 | 1,831.2 | 1,755.5 | 1,690.6 | 1,694.6 | 1,842.5 | 2,070.4 | 1,863.3 | 1,716.2 |
+| IRP plan at IRP demand | 298.1 | 1,466.2 | 1,688.2 | 1,727.3 | 1,790.6 | 1,928.0 | 1,856.1 | 1,794.6 | 1,756.3 | 1,900.5 | 2,226.4 | 2,030.0 | 1,890.4 |
+| s_irpgas | 319.2 | 1,356.7 | 1,565.0 | 1,606.0 | 1,664.8 | 1,801.4 | 1,735.0 | 1,678.0 | 1,635.3 | 1,769.5 | 2,089.9 | 1,908.1 | 1,778.9 |
+| s_detgas | 161.4 | 1,503.5 | 1,674.1 | 1,698.3 | 1,762.4 | 1,871.5 | 1,797.8 | 1,734.7 | 1,719.5 | 1,865.2 | 2,136.7 | 1,935.2 | 1,792.1 |
+| s_nogas4strict (topped up) | 0.0 | 1,288.4 | 1,389.2 | 1,394.7 | 1,448.8 | 1,511.9 | 1,448.8 | 1,394.7 | 1,404.7 | 1,527.4 | 1,700.0 | 1,527.4 | 1,404.7 |
+
+Against c5f, Mt CO2e (run minus c5f; the IRP plan at the IRP's demand against c5f re-optimised at that demand):
+
+| Against | Run | Smokestack | 100-yr low | 100-yr central | 100-yr all high | 100-yr LNG high, coal central | 100-yr LNG high, coal low | 20-yr low | 20-yr central | 20-yr all high | 20-yr LNG high, coal central | 20-yr LNG high, coal low |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| c5f | IRP plan | -148.8 | -121.1 | -130.1 | -85.0 | -72.8 | -62.4 | -107.7 | -127.4 | -47.7 | -14.4 | +9.3 |
+| c5f at IRP demand | IRP plan at IRP demand | +20.2 | +47.6 | +45.7 | +96.8 | +100.7 | +104.0 | +61.7 | +58.0 | +156.0 | +166.6 | +174.2 |
+| c5f | s_irpgas | -40.0 | -8.6 | -12.5 | +44.6 | +51.1 | +56.6 | +7.3 | -0.6 | +107.3 | +124.8 | +137.3 |
+| c5f | s_detgas | +69.2 | +83.7 | +85.1 | +114.7 | +113.9 | +113.3 | +91.5 | +95.1 | +154.1 | +152.0 | +150.5 |
+| c5f | s_nogas4strict (topped up) | -215.7 | -219.9 | -228.5 | -244.9 | -235.1 | -226.8 | -223.3 | -242.7 | -282.6 | -255.9 | -236.9 |
+
+By year, central, Mt (smokestack / 100-year / 20-year): c5f 2030 130.0 / 135.6 / 143.0, 2035 85.1 / 88.9 / 93.9, 2040 67.3 / 71.2 / 75.6; IRP plan 2030 114.9 / 122.4 / 130.0, 2035 83.9 / 90.2 / 96.1, 2040 48.3 / 52.8 / 56.7; c5f at IRP demand 2030 130.5 / 136.2 / 143.7, 2035 89.9 / 94.1 / 99.4, 2040 69.9 / 74.3 / 78.9; IRP plan at IRP demand 2030 131.0 / 139.3 / 147.9, 2035 98.3 / 105.3 / 112.1, 2040 59.6 / 65.0 / 69.7; s_irpgas 2030 123.4 / 131.5 / 139.8, 2035 83.8 / 90.2 / 96.3, 2040 59.5 / 65.6 / 70.7; s_detgas 2030 136.5 / 143.7 / 152.1, 2035 91.8 / 97.1 / 103.0, 2040 66.1 / 70.8 / 75.4; s_nogas4strict (topped up) 2030 127.0 / 132.5 / 139.7, 2035 68.5 / 71.4 / 75.3, 2040 23.2 / 24.2 / 25.4.
+
+- The IRP plan against c5f: its 148.8 Mt cut survives every pairing at 100 years (62.4 to 130.1 Mt) and every same-case pairing at
+  20 years (47.7 to 127.4); with LNG high it is -14.4 Mt against coal central and +9.3 Mt against coal low at 20 years, so on that
+  basis it no longer cuts emissions. At the IRP's demand it emits more than c5f re-optimised on every basis (+20.2 to +174.2 Mt).
+- s_irpgas (the IRP's gas on c5f): -40.0 Mt smokestack, -0.6 at the 20-year central, +7.3 to +137.3 at the 20-year low and highs.
+- Per MWh, central 100-year: LNG upstream 0.116 t CO2e per MWh from a CCGT (beside its 0.348 smokestack), coal 0.046 t per MWh
+  sent out (beside about 1.07).
+- Caveats: no LNG source covers a voyage to South Africa; the coal spread between the national inventory and independent
+  estimates is 8-20x; the coal delivery figure is calendar 2025 over FY2026's sent-out energy.
 
 ### The pair at the IRP's demand path: the IRP plan costs R243.4bn more than c5f re-optimised at the same demand (R309.0bn at c5f's demand), so about a fifth of the gap is the IRP being sized for higher demand; its CO2 advantage (-148.8 Mt) becomes +20.2 Mt; both meet the standard in every year with no top-up (user, 19 Oct 2026, messages 222 (2), 224 and 227 (3))
 
