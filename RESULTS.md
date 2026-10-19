@@ -4195,6 +4195,7 @@ Adequacy caveat, for every verdict from the engine below: "2025 replay (16h): 91
 | New lithium 2026-40, MW | 12,976 | 12,239 | +737 |
 | New CCGT / open-cycle on LNG, MW | 8,195 / 214 | 8,939 / 31 | |
 | Average cost per MWh served 2030 / 2035 / 2040, R | 1,058 / 946 / 959 | 1,030 / 925 / 940 | |
+| c5e's on the fixed measure (M11; message 215 (1); c5d's not re-derived), R | 1,045 / 923 / 934 | | |
 | Passes; adequacy | 2; every year, closest 52% of target (2031) | 1; every year, closest 50% (2031) | |
 
 Without carbon tax payments engine PV is R2,173.6bn (payments R62.2bn in present value). In 2026-27 c5e builds only the committed
@@ -4660,6 +4661,332 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### IRP 2025's Table 1 build priced on c5f's inputs (engine check only): engine PV R2,564.1bn, R309.0bn above c5f; CO2 1,456.2 Mt, 148.8 Mt below; no unserved energy in any year (user, 19 Oct 2026, messages 215 (3), 218 and 221; build 2026-10-17g)
+
+Framing (user, message 221): IRP 2025 is not a least-cost plan (gas forced in as an anchor offtaker, nuclear for industrial
+development, older cost assumptions). This run prices the IRP's plan on our inputs; it is not a calibration, and no model
+setting moves towards it.
+
+Settings. A pathway file built from c5f's own (every c5f setting, c5f's demand, its Figure 3 50-year coal path with no early
+retirement), with the build replaced (scratch m215/build_irp.py, BASEGAP=0 OTHER=omit ROOF_FROM=2027): Table 1's wind and
+utility solar by year, 2026-2040 (36,041 and 25,513 MW); distributed generation 900 MW a year 2027-2035 (8,100 MW, c5f's rooftop
+convention, user message 218 (c)); storage as s_be6_c5f built it (lithium 7,224 MW, 23,627 MWh, Table 1's storage column);
+gas as s_irpgas_c5f built it (17,250 MW: 15,307 CCGT and 1,943 open-cycle on LNG, Table 1's gas by year, with the 51% floor on
+6,000 MW of CCGT); nuclear 5,200 MW in 2036-39 as s_be7; pumped storage 1,332 MW in 2037 at c5f's 14 hours. Engine check only
+(pathcheck.js TF=0.5 LNG=1 GRID=1, three year groups, in the hooked copy c5f/gen, which returns the plain check's figures to
+every digit), 19 Oct 2026, 06:32-06:59 UTC, nothing else running; no optimiser, no top-up.
+
+Caveats (user, message 218): Table 1 runs on the model's own 2026 fleet, as c5f does; Table 1's end-2025 base (installed,
+under construction and deemed online) carries 663 MW more wind and 375 MW more utility solar than that fleet. Table 1's 367 MW
+of 'other private' (diesel, bioenergy; 35 MW in 2026, 332 MW in 2027) is left out. Table 1's 2041-42 additions are outside the
+horizon.
+
+(1) The IRP plan against c5f, by year (system cost and CO2 from each engine check; unserved energy is the mean over the check's
+draws against half the 0.002% standard on customer demand; coal, gas and curtailment from the same runs):
+
+| Year | System cost, R bn (IRP / c5f) | CO2, Mt (IRP / c5f) | Unserved, GWh: mean against target (IRP / c5f) | Coal, TWh (IRP / c5f) | Gas, TWh (IRP / c5f) | Curtailment, TWh (IRP / c5f) |
+|---|---|---|---|---|---|---|
+| 2026 | 219.4 / 218.8 | 147.1 / 152.8 | 0.00 / 0.00 against 1.96 | 136.9 / 142.5 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 2027 | 234.3 / 233.9 | 140.7 / 156.4 | 0.01 / 0.00 against 2.07 | 130.4 / 145.9 | 0.0 / 0.0 | 0.1 / 0.0 |
+| 2028 | 239.3 / 239.6 | 136.3 / 156.0 | 0.01 / 0.00 against 2.10 | 126.0 / 145.4 | 0.0 / 0.0 | 0.2 / 0.0 |
+| 2029 | 242.2 / 231.7 | 133.3 / 142.6 | 0.00 / 0.01 against 2.13 | 123.4 / 132.5 | 0.1 / 0.0 | 0.3 / 0.1 |
+| 2030 | 274.6 / 238.4 | 114.9 / 130.0 | 0.00 / 0.33 against 2.20 | 95.4 / 121.0 | 26.8 / 0.2 | 0.2 / 0.0 |
+| 2031 | 275.9 / 238.6 | 109.3 / 116.6 | 0.00 / 1.08 against 2.26 | 90.6 / 108.4 | 26.8 / 0.2 | 0.4 / 0.4 |
+| 2032 | 283.1 / 242.7 | 102.0 / 104.8 | 0.00 / 1.44 against 2.30 | 84.0 / 97.5 | 26.8 / 0.3 | 1.0 / 0.8 |
+| 2033 | 291.8 / 249.8 | 95.9 / 95.1 | 0.00 / 1.62 against 2.36 | 78.4 / 88.2 | 26.8 / 0.5 | 2.5 / 1.7 |
+| 2034 | 289.5 / 246.8 | 89.7 / 87.6 | 0.00 / 0.66 against 2.42 | 73.0 / 81.3 | 26.8 / 1.1 | 5.3 / 3.3 |
+| 2035 | 293.4 / 247.5 | 83.9 / 85.1 | 0.00 / 0.73 against 2.47 | 67.7 / 79.0 | 26.8 / 1.3 | 10.6 / 4.3 |
+| 2036 | 313.1 / 255.8 | 77.1 / 83.8 | 0.00 / 0.66 against 2.53 | 61.4 / 77.7 | 26.6 / 1.9 | 15.9 / 5.2 |
+| 2037 | 329.7 / 257.9 | 66.8 / 80.5 | 0.00 / 1.11 against 2.61 | 51.8 / 74.5 | 26.7 / 3.1 | 19.4 / 6.6 |
+| 2038 | 350.8 / 269.3 | 59.3 / 76.3 | 0.00 / 1.00 against 2.70 | 45.2 / 70.2 | 26.4 / 4.8 | 27.0 / 8.3 |
+| 2039 | 367.7 / 278.1 | 51.5 / 70.0 | 0.00 / 0.36 against 2.78 | 38.5 / 63.5 | 25.4 / 7.2 | 35.9 / 10.5 |
+| 2040 | 376.0 / 290.0 | 48.3 / 67.3 | 0.00 / 0.40 against 2.86 | 36.1 / 60.2 | 24.7 / 9.9 | 42.1 / 11.3 |
+
+Neither run is short in any year; the IRP build's largest year is 0.7% of its target (2028). Average cost per MWh served: 2030
+R1,216 against c5f's R1,062; 2035 R1,129 against R957; 2040 R1,260 against R977 (frozen copy, with M11's rooftop leak in both); on
+the fixed measure (message 215 (1)) R1,203 against R1,044, R1,107 against R928 and R1,245 against R943.
+The IRP's gas runs at its 51% floor in 2030 (26.8 TWh), 28% in 2035 and 16% in 2040.
+
+Grid cost on the fixed measure (M11; excludes rooftop capital, of which c5f carries 8.7 GW more): IRP plan R2,487.4bn, c5f
+R2,141.0bn, +R346.4bn. Present-value cost per tonne of CO2 cut (user, message 222 (1)), cost difference over cumulative tonnes
+2026-40, the carbon tax taken out because it is a transfer, not a resource cost:
+
+| Against | Run | CO2 cut, Mt | Engine PV less carbon tax, R bn | R per tonne | Engine PV, R per tonne (with the tax) |
+|---|---|---|---|---|---|
+| c5f | IRP plan | 148.8 | +314.1 | 2,111 | 2,076 |
+| null_c5f | s_nogas4strict (with its top-up) | 215.7 | +34.6 | 160 | 134 |
+| null_c5f | s_carbonfull | 245.5 | +13.4 | 55 | 1,219 |
+
+s_carbonfull's engine PV is almost all the higher tax on the tonnes still emitted (R347.0bn against c5f's R61.1bn in present
+value), so only the column without the tax compares across the three.
+The IRP's R2,111/t is at c5f's demand; at the IRP's demand its plan costs R243.4bn more and emits 20.2 Mt more than c5f
+re-optimised, so it has no abatement cost there (the pair, below; message 229 (4)).
+
+(2) Beside it, as an indicative split of the gap that does not add up: the single-element runs on c5f, each against c5f's null
+('c5f run'): s_irpgas (IRP's gas) +R203.8bn engine PV, -40.0 Mt CO2; s_be7 (IRP's nuclear) +R35.4bn, -21.4 Mt; s_be6 (battery
+storage on Table 1's schedule) +R36.3bn, +54.8 Mt; s_pvirp (solar capped at Table 1) +R6.6bn, +11.9 Mt. They sum to +R282.1bn and
++5.3 Mt against the whole plan's +R309.0bn and -148.8 Mt: the plan's wind schedule, its rooftop path (s_roof09 is -R14.1bn and
++7.9 Mt for 900 MW a year to 2040) and the interactions between elements are not in any single run.
+
+(3) Differences that are not policy choices:
+- Demand basis: both runs carry c5f's demand. The IRP's 'about 255 TWh in 2030' includes distributed PV: its reference demand
+  (ESRG IRPDemandREF Mode 1, public_data/esrg_irp_demand_ref.json, the series c5f's growth index comes from) is 232.7 TWh of
+  domestic grid demand, 12.5 of distributed PV and 11.0 of exports in 2030, 256.2 in all. c5f's 2030 on the same basis is 238.9
+  (211.3 domestic grid, 21.0 rooftop, 6.6 firm exports), 6.8% below; domestic grid and distributed PV alone 232.3 against 245.2
+  (-5.3%), exports 6.6 against 11.0. (Corrected 19 Oct 2026: the first report set c5f's 216.9 TWh, without rooftop, against the
+  255, about 15% below, mixing bases. Corrected again the same day (message 224 set-up): the second figures, 237.9 and -7.1%,
+  subtracted congestion curtailment, a generation term, from domestic load; c5f's customer demand in 2030 is the demand profile
+  (203.525 TWh) x 1.101384 plus the 930 MW block, 232.3 TWh, of which rooftop serves 21.0.) The IRP's plan serves somewhat less demand here than it was sized for (curtailment 42.1 TWh
+  in 2040).
+- Coal utilisation: the IRP build's coal runs at a 33.6% capacity factor in 2030 here (c5f 42.6%); its 114.9 Mt in 2030 and
+  83.9 Mt in 2035 compare with the IRP's own 168 and 142 Mt, which imply the coal fleet running far harder ('Coal utilisation is
+  where this model and the IRP disagree').
+- The 2026 base gap: 663 MW of wind and 375 MW of solar in Table 1's base and not in the model's fleet, and 367 MW of other
+  private plant left out (above).
+- CO2 factor: at Eskom's FY2026 factor (1.112 t CO2e per MWh sent out, Integrated Report 2026 pp.75 and 9) the IRP build's CO2 is
+  3.9% higher (2030 119.3, 2035 87.0 Mt; +56.5 Mt over 2026-40), c5f's 4.2% higher ('c5f's 2026 coal and CO2 against Eskom's
+  FY2026').
+
+### The IRP plan's 148.8 Mt below c5f, by source: gas for coal 187.4 Mt and nuclear 110.4 Mt cut it; the IRP's lower wind (-63.6), rooftop (-73.3) and storage losses, and its coal held at part load, add back; at the IRP's demand the same accounting gives +20.2 Mt, wind -212.1 against c5f re-optimised; generation by carrier, CO2 by source and curtailment by year (user, 19 Oct 2026, messages 223 (1), 229 (5) and 230 (2); stored outputs only)
+
+Settings. The IRP 2025 plan on c5f's inputs and c5f, at c5f's demand and at the IRP's (the pair), from the stored hooked engine
+checks (c5f/gen m130_irp2025_*, m130_c5f_*, m130_irp2025_irpdem_*, m130_c5f_irpdem_*; build 2026-10-17g; cost and CO2 identical
+to the plain checks), mean over each year's runs. CO2 by source with the engine's own formula (simulate): gas = (gas output +
+OCGT-on-LNG output x (heat-rate ratio 1.53 - 1)) x 0.348 t/MWh, diesel x 0.78, coal the rest (coal output x the part-load
+heat-rate multiplier x 1.04). The split is an accounting, not a run: each carrier's extra output in the IRP plan displaces coal
+at that year's c5f coal factor (t CO2 per MWh of coal output); gas is net of its own CO2; the rest is the residual, broken down
+at the same factor. Other conventions (marginal rather than average coal, or an order of substitution) give other splits.
+Scratch m223/split2.py.
+
+At c5f's demand. Generation, TWh (IRP / c5f):
+
+| | Coal | Gas | Nuclear | Wind | Utility solar | Rooftop | Pumped storage | Batteries | Curtailment |
+|---|---|---|---|---|---|---|---|---|---|
+| 2030 | 95.4 / 121.0 | 26.8 / 0.2 | 10.9 / 10.9 | 41.6 / 41.3 | 31.8 / 29.5 | 19.2 / 21.0 | 6.8 / 3.6 | 3.7 / 1.6 | 0.2 / 0.0 |
+| 2035 | 67.7 / 79.0 | 26.8 / 1.3 | 10.9 / 10.9 | 86.2 / 97.8 | 45.0 / 41.3 | 26.1 / 30.2 | 12.1 / 6.4 | 8.7 / 7.8 | 10.6 / 4.3 |
+| 2040 | 36.1 / 60.2 | 24.7 / 9.9 | 40.9 / 10.9 | 121.3 / 116.5 | 53.3 / 64.7 | 26.1 / 39.4 | 14.2 / 7.6 | 8.1 / 18.5 | 42.1 / 11.3 |
+| 2026-40 | 1,238.8 / 1,487.9 | 290.5 / 30.3 | 267.1 / 163.0 | 1,027.5 / 1,087.0 | 574.9 / 541.3 | 329.2 / 398.1 | 143.4 / 82.1 | 82.0 / 95.0 | 160.8 / 52.5 |
+
+CO2 by source, Mt (IRP / c5f), and the split of the cut (c5f minus IRP), Mt:
+
+| | Coal | Gas | Diesel | Total | Gas for coal | Nuclear | Wind | The rest |
+|---|---|---|---|---|---|---|---|---|
+| 2030 | 105.3 / 129.3 | 9.3 / 0.1 | 0.3 / 0.6 | 114.9 / 130.0 | 19.2 | -0.0 | 0.3 | -4.3 |
+| 2035 | 74.6 / 84.5 | 9.3 / 0.5 | 0.0 / 0.1 | 83.9 / 85.1 | 18.4 | -0.0 | -12.5 | -4.6 |
+| 2040 | 39.7 / 63.7 | 8.6 / 3.4 | 0.0 / 0.2 | 48.3 / 67.3 | 10.5 | 31.8 | 5.1 | -28.4 |
+| 2026-40 | 1,352.2 / 1,589.3 | 101.1 / 10.6 | 2.8 / 5.1 | 1,456.2 / 1,605.0 | 187.4 | 110.4 | -63.6 | -85.4 |
+
+- Gas for coal: the IRP's 51% floor runs 260 TWh more gas than c5f over 2026-40; at c5f's coal factor that cuts 187.4 Mt net
+  of the gas's own 90.5 Mt.
+- Nuclear: Table 1's 5,200 MW from 2036 adds 104 TWh, 110.4 Mt.
+- Wind: the IRP builds less wind than c5f over the period (1,027.5 against 1,087.0 TWh), so wind adds 63.6 Mt; the IRP is ahead in
+  2027-29 and 2040, behind by up to 13 TWh a year in 2031-39 as c5f builds 3.5 GW a year.
+- The rest, -85.39 Mt: rooftop -73.31, pv +36.04, storage -18.25, coal factor -28.56, diesel -0.86, hybrid -0.18, residual -0.27. (Corrected 19 Oct 2026, message 230 (2): the first version gave the residual as +0.3 and left
+  out hybrid, so its parts summed to -84.8.) Rooftop: 900 MW a year to 2035 against c5f's 1,200 to 2040; storage: more cycling
+  through pumped storage; coal factor: the IRP's coal runs at part load beside the gas floor, so its t/MWh is higher.
+
+At the IRP's demand (the pair; RESULTS 'The pair at the IRP's demand path'). Generation, TWh (IRP / c5f re-optimised):
+
+| | Coal | Gas | Nuclear | Wind | Utility solar | Rooftop | Pumped storage | Batteries | Curtailment |
+|---|---|---|---|---|---|---|---|---|---|
+| 2030 | 111.6 / 121.5 | 26.8 / 0.6 | 10.9 / 10.9 | 41.7 / 56.6 | 31.9 / 30.8 | 19.2 / 21.0 | 4.4 / 3.8 | 3.6 / 2.2 | 0.1 / 0.1 |
+| 2035 | 81.9 / 83.4 | 27.2 / 2.7 | 10.9 / 10.9 | 89.1 / 108.5 | 47.4 / 45.5 | 26.1 / 30.2 | 11.0 / 6.5 | 8.9 / 8.7 | 5.3 / 5.0 |
+| 2040 | 46.1 / 61.8 | 27.6 / 12.8 | 40.9 / 10.9 | 128.3 / 127.4 | 57.9 / 73.9 | 26.1 / 39.4 | 15.3 / 8.3 | 9.1 / 20.2 | 30.5 / 12.8 |
+| 2026-40 | 1,466.2 / 1,545.5 | 298.1 / 47.6 | 267.1 / 163.0 | 1,061.8 / 1,260.7 | 599.8 / 593.9 | 329.2 / 398.1 | 134.0 / 84.7 | 85.0 / 106.2 | 101.5 / 60.7 |
+
+CO2 by source, Mt (IRP / c5f), and the split of the gap (c5f minus IRP: the IRP emits 20.2 Mt more), Mt:
+
+| | Coal | Gas | Diesel | Total | Gas for coal | Nuclear | Wind | The rest |
+|---|---|---|---|---|---|---|---|---|
+| 2030 | 121.3 / 129.7 | 9.3 / 0.2 | 0.4 / 0.6 | 131.0 / 130.5 | 18.9 | -0.0 | -16.0 | -3.4 |
+| 2035 | 88.9 / 88.8 | 9.5 / 0.9 | 0.0 / 0.1 | 98.3 / 89.9 | 17.6 | 0.0 | -20.7 | -5.3 |
+| 2040 | 50.0 / 65.3 | 9.6 / 4.5 | 0.0 / 0.2 | 59.6 / 69.9 | 10.5 | 31.7 | 1.0 | -32.9 |
+| 2026-40 | 1,581.0 / 1,646.2 | 103.8 / 16.7 | 3.4 / 5.1 | 1,688.2 / 1,667.9 | 179.7 | 110.1 | -212.1 | -98.0 |
+
+- The rest, -98.00 Mt: rooftop -73.10, pv +6.51, storage -12.94, coal factor -18.81, diesel -0.62, hybrid +1.23, residual -0.27.
+- Gas for coal and nuclear cut about as much as at c5f's demand (179.7 and 110.1 Mt); wind turns the result: c5f re-optimised
+  at the higher demand generates 198.9 TWh more wind over 2026-40 than the IRP plan (1,260.7 against 1,061.8), -212.1 Mt.
+
+Curtailment, TWh:
+
+| Year | c5f | IRP plan | c5f at IRP demand | IRP plan at IRP demand |
+|---|---|---|---|---|
+| 2026 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2027 | 0.0 | 0.1 | 0.0 | 0.0 |
+| 2028 | 0.0 | 0.2 | 0.0 | 0.1 |
+| 2029 | 0.1 | 0.3 | 0.1 | 0.1 |
+| 2030 | 0.0 | 0.2 | 0.1 | 0.1 |
+| 2031 | 0.4 | 0.4 | 0.5 | 0.2 |
+| 2032 | 0.8 | 1.0 | 1.4 | 0.4 |
+| 2033 | 1.7 | 2.5 | 2.4 | 1.1 |
+| 2034 | 3.3 | 5.3 | 4.1 | 2.4 |
+| 2035 | 4.3 | 10.6 | 5.0 | 5.3 |
+| 2036 | 5.2 | 15.9 | 6.3 | 8.9 |
+| 2037 | 6.6 | 19.4 | 7.7 | 10.7 |
+| 2038 | 8.3 | 27.0 | 9.1 | 16.8 |
+| 2039 | 10.5 | 35.9 | 11.3 | 24.8 |
+| 2040 | 11.3 | 42.1 | 12.8 | 30.5 |
+| 2026-40 | 52.5 | 160.8 | 60.7 | 101.5 |
+
+Caveat: CO2 is the smokestack basis at emisCoal 1.04 (TODO 14gp: Eskom's FY2026 factor would add 4.2%); the value-chain
+sensitivity follows.
+
+### Value-chain CO2e beside the smokestack figures: the IRP plan's cut against c5f narrows from 148.8 Mt to 130.1 (100-year central) and 127.4 (20-year central); with LNG high it is 72.8 or 62.4 Mt at 100 years and -14.4 or +9.3 Mt at 20 years (coal central or low); at the IRP's demand the IRP plan emits more on every basis; s_irpgas's 40.0 Mt cut is 0.6 Mt at the 20-year central; s_nogas4strict's widens (user, 19 Oct 2026, messages 223 (2), 228, 229 (5) and 230 (1); stored outputs only; smokestack stays central)
+
+Settings. Upstream factors as the user gave them (message 228; checked at source outside this session, recorded as given; SOURCES
+'Upstream emission factors'): LNG production to regasification per MJ of gas burned (LHV), each plant at its own efficiency
+(CCGT 52% HHV, 6.248 GJ LHV per MWh; OCGT on LNG 10,624 kJ/kWh HHV, 9.588 GJ LHV per MWh; 1.108 MJ HHV per MJ LHV), 100-year
+17.7 / 18.6 / 53.8 and 20-year 27.1 / 29.6 / 99.1 g CO2e/MJ (low / central / high); South African coal per MWh sent out, mine
+methane 100-year 4.2 / 34 / 83 and 20-year 12 / 95 / 229 g CO2e/kWh, plus road and rail delivery 0 / 12.2 / 12.2 at both
+horizons. The coal central is a judgment (IPCC Tier 1 low end at 25% underground); the coal low (9th inventory) and high (IEA)
+are secondary, via Swaniti 2025, unverified at source. Columns: low, central and 'all high' pair the same case for LNG and coal;
+'all high' is not the worst case for gas, because coal high and LNG high partly cancel between runs, so LNG high is also paired
+with coal central and with coal low (message 230 (1)). Diesel carries smokestack CO2 only. Runs: c5f, the IRP plan and the pair's
+two runs (at the IRP's demand) from the hooked engine checks (CCGT and OCGT-on-LNG output separately); s_irpgas_c5f, s_detgas_c5f
+and s_nogas4strict_c5f from their engine checks, whose gas output is not split by plant, so it is taken at CCGT efficiency
+(open-cycle LNG output is 0-1.6% of gas where measured, so under 0.9% of their gas upstream); s_nogas4strict with its diesel
+top-up's CO2 (coal output from the solved run; the top-up adds 0.16 Mt). Smokestack CO2 at emisCoal 1.04 (TODO 14gp). Scratch
+m223/valuechain.py.
+
+| 2026-40, Mt CO2e | Gas, TWh | Coal, TWh | Smokestack | 100-yr low | 100-yr central | 100-yr all high | 100-yr LNG high, coal central | 100-yr LNG high, coal low | 20-yr low | 20-yr central | 20-yr all high | 20-yr LNG high, coal central | 20-yr LNG high, coal low |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| c5f | 30.3 | 1,487.9 | 1,605.0 | 1,614.6 | 1,677.2 | 1,756.8 | 1,683.9 | 1,621.4 | 1,628.0 | 1,770.1 | 1,982.6 | 1,783.2 | 1,641.6 |
+| IRP plan | 290.5 | 1,238.8 | 1,456.2 | 1,493.5 | 1,547.2 | 1,671.8 | 1,611.1 | 1,559.0 | 1,520.2 | 1,642.7 | 1,934.9 | 1,768.9 | 1,650.9 |
+| c5f at IRP demand | 47.6 | 1,545.5 | 1,667.9 | 1,679.7 | 1,744.9 | 1,831.2 | 1,755.5 | 1,690.6 | 1,694.6 | 1,842.5 | 2,070.4 | 1,863.3 | 1,716.2 |
+| IRP plan at IRP demand | 298.1 | 1,466.2 | 1,688.2 | 1,727.3 | 1,790.6 | 1,928.0 | 1,856.1 | 1,794.6 | 1,756.3 | 1,900.5 | 2,226.4 | 2,030.0 | 1,890.4 |
+| s_irpgas | 319.2 | 1,356.7 | 1,565.0 | 1,606.0 | 1,664.8 | 1,801.4 | 1,735.0 | 1,678.0 | 1,635.3 | 1,769.5 | 2,089.9 | 1,908.1 | 1,778.9 |
+| s_detgas | 161.4 | 1,503.5 | 1,674.1 | 1,698.3 | 1,762.4 | 1,871.5 | 1,797.8 | 1,734.7 | 1,719.5 | 1,865.2 | 2,136.7 | 1,935.2 | 1,792.1 |
+| s_nogas4strict (topped up) | 0.0 | 1,288.4 | 1,389.2 | 1,394.7 | 1,448.8 | 1,511.9 | 1,448.8 | 1,394.7 | 1,404.7 | 1,527.4 | 1,700.0 | 1,527.4 | 1,404.7 |
+
+Against c5f, Mt CO2e (run minus c5f; the IRP plan at the IRP's demand against c5f re-optimised at that demand):
+
+| Against | Run | Smokestack | 100-yr low | 100-yr central | 100-yr all high | 100-yr LNG high, coal central | 100-yr LNG high, coal low | 20-yr low | 20-yr central | 20-yr all high | 20-yr LNG high, coal central | 20-yr LNG high, coal low |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| c5f | IRP plan | -148.8 | -121.1 | -130.1 | -85.0 | -72.8 | -62.4 | -107.7 | -127.4 | -47.7 | -14.4 | +9.3 |
+| c5f at IRP demand | IRP plan at IRP demand | +20.2 | +47.6 | +45.7 | +96.8 | +100.7 | +104.0 | +61.7 | +58.0 | +156.0 | +166.6 | +174.2 |
+| c5f | s_irpgas | -40.0 | -8.6 | -12.5 | +44.6 | +51.1 | +56.6 | +7.3 | -0.6 | +107.3 | +124.8 | +137.3 |
+| c5f | s_detgas | +69.2 | +83.7 | +85.1 | +114.7 | +113.9 | +113.3 | +91.5 | +95.1 | +154.1 | +152.0 | +150.5 |
+| c5f | s_nogas4strict (topped up) | -215.7 | -219.9 | -228.5 | -244.9 | -235.1 | -226.8 | -223.3 | -242.7 | -282.6 | -255.9 | -236.9 |
+
+By year, central, Mt (smokestack / 100-year / 20-year): c5f 2030 130.0 / 135.6 / 143.0, 2035 85.1 / 88.9 / 93.9, 2040 67.3 / 71.2 / 75.6; IRP plan 2030 114.9 / 122.4 / 130.0, 2035 83.9 / 90.2 / 96.1, 2040 48.3 / 52.8 / 56.7; c5f at IRP demand 2030 130.5 / 136.2 / 143.7, 2035 89.9 / 94.1 / 99.4, 2040 69.9 / 74.3 / 78.9; IRP plan at IRP demand 2030 131.0 / 139.3 / 147.9, 2035 98.3 / 105.3 / 112.1, 2040 59.6 / 65.0 / 69.7; s_irpgas 2030 123.4 / 131.5 / 139.8, 2035 83.8 / 90.2 / 96.3, 2040 59.5 / 65.6 / 70.7; s_detgas 2030 136.5 / 143.7 / 152.1, 2035 91.8 / 97.1 / 103.0, 2040 66.1 / 70.8 / 75.4; s_nogas4strict (topped up) 2030 127.0 / 132.5 / 139.7, 2035 68.5 / 71.4 / 75.3, 2040 23.2 / 24.2 / 25.4.
+
+- The IRP plan against c5f: its 148.8 Mt cut survives every pairing at 100 years (62.4 to 130.1 Mt) and every same-case pairing at
+  20 years (47.7 to 127.4); with LNG high it is -14.4 Mt against coal central and +9.3 Mt against coal low at 20 years, so on that
+  basis it no longer cuts emissions. At the IRP's demand it emits more than c5f re-optimised on every basis (+20.2 to +174.2 Mt).
+- s_irpgas (the IRP's gas on c5f): -40.0 Mt smokestack, -0.6 at the 20-year central, +7.3 to +137.3 at the 20-year low and highs.
+- Per MWh, central 100-year: LNG upstream 0.116 t CO2e per MWh from a CCGT (beside its 0.348 smokestack), coal 0.046 t per MWh
+  sent out (beside about 1.07).
+- Caveats: no LNG source covers a voyage to South Africa; the coal spread between the national inventory and independent
+  estimates is 8-20x; the coal delivery figure is calendar 2025 over FY2026's sent-out energy.
+
+### The pair at the IRP's demand path: the IRP plan costs R243.4bn more than c5f re-optimised at the same demand (R309.0bn at c5f's demand), so about a fifth of the gap is the IRP being sized for higher demand; its CO2 advantage (-148.8 Mt) becomes +20.2 Mt; both meet the standard in every year with no top-up (user, 19 Oct 2026, messages 222 (2), 224 and 227 (3))
+
+Settings. Demand: each year the model's customer demand (the 2026 demand profile, 203.525 TWh, x the index, plus the 930 MW
+smelter block from 2027) plus its firm exports (745 MW held flat, 6.57 TWh a year as the engine delivers them) equals the IRP
+reference's domestic grid demand + distributed PV + exports (ESRG IRPDemandREF Mode 1, public_data/esrg_irp_demand_ref.json; 256.2
+TWh in 2030). Exports are folded into domestic demand: the model's firm exports stay at c5f's, and the gap to the IRP's 11.0 TWh is
+served as domestic load. Part of the IRP's export volume reflects the Mozal aluminium smelter in Mozambique, suspended in March
+2026 (South32; the Minerals Council's Electricity Update, March-April 2026, as cited in index.html beside exportsMW), whose loss
+halved Eskom's exports. Index against c5f's: +11.2% in 2026 (the IRP's 2026 level sits above the measured 2026 base, and c5f adds
+its smelter block only from 2027; kept, message 227 (3)), +7.2% in 2030, +7.5% in 2035, +7.7% in 2040 (scratch m224/gen_index.py,
+index_irpdem.json). (1) c5f's settings re-optimised at that demand: c5f's frozen code (b82bfd3, build 2026-10-17g) in a separate
+copy with one change, a DEMAND=index:<file> option; env_c5f.sh plus DEMAND=index:..., MAXP=6; adequate after its passes in 1,286 s;
+engine check TF=0.5 LNG=1 GRID=1 in three year groups (hooked copy c5f/gen, the plain check's cost and CO2). (2) The IRP plan's
+engine check at that demand: m215's build file with the demand index replaced, the same check. 19 Oct 08:02-08:46 UTC. Outputs,
+settings and scripts in gridtwin-data, branch claude/c5f-chain, c5f_chain/pair_irpdem (2b93d10).
+
+| 2026-40 | c5f | IRP plan | c5f at IRP demand | IRP plan at IRP demand |
+|---|---|---|---|---|
+| Engine PV, R bn | 2,255.1 | 2,564.1 | 2,429.3 | 2,672.7 |
+| Grid cost on the fixed measure (M11), R bn | 2,141.0 | 2,487.4 | 2,315.3 | 2,596.0 |
+| CO2, Mt | 1,605.0 | 1,456.2 | 1,667.9 | 1,688.2 |
+| Years over the standard | none | none | none | none |
+
+- IRP minus c5f: at c5f's demand +R309.0bn engine PV (+R346.4bn grid cost), -148.8 Mt; at the IRP's demand +R243.4bn (+R280.8bn),
+  +20.2 Mt. The R65.6bn difference is the part of the gap that comes from the IRP being sized for higher demand; R243.4bn remains.
+- Higher demand costs c5f R174.2bn and 63.0 Mt (it re-optimises), and the IRP plan R108.6bn and 232.0 Mt (its build is fixed, so
+  coal and gas run harder).
+- c5f's build at the IRP's demand, MW by 2035 (by 2040): wind 26,388 against 23,362 (32,540 against 29,396), utility solar 16,527
+  against 14,736 (29,628 against 25,594), lithium 9,430 against 8,647 (14,175 against 13,154), CCGT 4,273 against 2,632 (9,936
+  against 8,269), OCGT on LNG 163 against 0, pumped storage 230 by 2040; coal on the same Figure 3 path.
+- Unserved energy, GWh (target): 2026 c5f 0.10 (2.20), IRP 0.07 (2.20); 2030 0.46 (2.35) and 0.00 (2.37); 2035 0.57 (2.63) and
+  0.01 (2.67); 2040 0.49 (2.96) and 0.00 (3.10).
+
+Caveats: the index is set on the demand input (customer demand plus firm exports), so c5f's 2030 total on that basis is 238.9 TWh
+(see the correction in the IRP entry above); the IRP reference's own sent-out basis may differ by losses; the IRP plan keeps
+its Table 1 build and c5f's every other setting (base fleet, gas case, costs), so the R243.4bn is the IRP's choices priced on our
+inputs at its own demand, not a calibration (message 221).
+
+### c5f's 2026 coal and CO2 against Eskom's FY2026: 22.8 TWh less coal and 31.7 Mt less CO2, of which 6.4 Mt is the emission factor; Eskom's implied factor would add 66.4 Mt to c5f's 2026-40 CO2 (+4.2%) and R2.5bn to engine PV (user, 19 Oct 2026, messages 217 and 219; build 2026-10-17g; no model change)
+
+Eskom's figures, year to 31 March 2026 (Eskom Integrated Report 2026, Nick's copy, not committed; cited by page): greenhouse gas
+emissions 184.5 Mt CO2e (FY2025 205.1; p.75); coal-fired stations 165,431 GWh (FY2025 179,426; supply table p.9, where Eskom
+generation 184,966 GWh less pumping 5,762 gives net sent out 179,204); coal burnt 96.54 Mt (p.75); EAF 65.16% (p.12); open-cycle
+output about 1.1 TWh, Eskom and IPPs (p.12); sales 178 TWh. Calendar 2025 inventory, stationary combustion 188.1 Mt CO2e (p.79;
+the report says it is not directly comparable with its CO2 statistic). Hourly data: Eskom's ESK19679 (data portal, obtained on
+request; annual sums only, the analysis ours, not Eskom's): FY2026 thermal generation 165.38 TWh, within 0.03% of the report's
+coal-fired 165,431 GWh, so the report's coal figure is on the portal's sent-out basis.
+
+The model's factor (message 217 (a)). FIXED.emisCoal = 1.04 t CO2 per MWh sent out (CO2, not CO2e). The engine applies it to
+coalFuelMWh, coal output scaled by the part-load heat-rate multiplier, so c5f's effective factor in 2026 is 1.0672 (1.04 x
+1.0262) and 1.058-1.074 over 2026-40. The same constant sets coal's carbon-tax cost in the engine and the build LP (MCcoal =
+costCoal + vomCoal + carbon price x emisCoal). Its source is not recorded: a code comment calls it Eskom's per-sent-out figure;
+SOURCES records only Meridian's fleet file, 1.008 capacity-weighted (TODO 14gp).
+
+Eskom's implied factor: 184.5 Mt over 165.38 TWh is 1.1156 t CO2e/MWh sent out; less Eskom's own open-cycle output (0.81 TWh at
+the model's 0.78) it is 1.1118; on a CO2 basis about 1.107 (less 0.45% for CH4 and N2O: IPCC 2006 defaults for coal in energy
+industries, 1 kg CH4 and 1.5 kg N2O per TJ against about 95 t CO2, at AR5's 28 and 265). Coal burnt per MWh sent out: 0.584 t.
+
+Line by line, c5f's calendar 2026 (hooked engine check, c5f/gen) against Eskom's FY2026, with calendar 2025 and calendar 2026 at
+the Jan-Aug trend (each line's calendar 2025 total times its Jan-Aug 2026 over Jan-Aug 2025) from the hourly data. "Effect" is
+what the line does to c5f's coal against FY2026: more non-coal supply or less load means less coal.
+
+| Line, TWh | c5f 2026 | Eskom FY2026 | Eskom calendar 2025 | Eskom calendar 2026 at Jan-Aug trend | c5f less FY2026 | Effect on c5f coal against FY2026 |
+|---|---|---|---|---|---|---|
+| Coal (sent out) | 142.5 | 165.4 | 170.4 | 153.9 | -22.8 |  |
+| Nuclear | 10.9 | 11.6 | 10.2 | 11.2 | -0.7 | +0.7 |
+| Open-cycle (Eskom and IPP) | 0.9 | 2.0 | 3.4 | 1.0 | -1.1 | +1.1 |
+| Hydro | 2.9 | 2.4 | 1.8 | 3.0 | +0.5 | -0.5 |
+| Pumped storage, generation less pumping | -1.2 | -1.5 | -1.5 | -1.3 | +0.2 | -0.2 |
+| Wind | 19.0 | 11.6 | 11.3 | 10.9 | +7.3 | -7.3 |
+| Utility solar | 8.9 | 5.3 | 5.1 | 5.1 | +3.6 | -3.6 |
+| CSP and other renewables (model: CSP and RMIPPPP hybrid) | 3.3 | 1.8 | 1.7 | 2.0 | +1.5 | -1.5 |
+| Imports | 9.3 | 6.8 | 6.6 | 8.3 | +2.6 | -2.6 |
+| Exports | 6.6 | 14.5 | 14.9 | 8.7 | -7.9 | -7.9 |
+| Domestic grid load met (supply less exports) | 189.5 | 190.9 | 194.0 | 185.4 | -1.4 | -1.4 |
+
+The lines sum to -23.2 TWh against the -22.8 TWh coal gap (0.4 TWh is congestion loss and rounding). Causes, largest first:
+- Renewables and imports (-15.5 TWh): c5f runs its whole 2026 fleet from 1 January, including the wheeled private wind and
+  solar Eskom does not meter and the 2026 committed floors (1,131 MW of wind, 1,018 MW of solar; new wind alone 4.1 TWh); its
+  existing wind gives 14.8 TWh against the portal's 11.6 (the wind benchmark's documented x1.26 on capacity, SOURCES); imports
+  run at the measured April-August 2026 mean (1,066 MW).
+- Exports (-7.9 TWh): c5f carries firm exports only (6.6 TWh); the portal's FY2026 exports are 14.5 TWh, falling to about
+  8.7 TWh on the 2026 trend.
+- Domestic load (-1.4 TWh), and nuclear, open-cycle and pumped storage (+2.0 TWh together).
+- Calendar against financial year: Eskom's own coal is falling, 170.4 TWh in calendar 2025 and about 153.9 TWh for calendar 2026
+  on the Jan-Aug trend (-9.7%); against that, c5f's 2026 coal gap is -11.4 TWh, not -22.8.
+
+CO2: 152.8 Mt (c5f 2026) + 6.4 (factor: c5f's coal at 1.1118 instead of 1.0672) + 25.4 (the coal gap at Eskom's factor) - 0.1
+(open-cycle) = 184.5 Mt, Eskom's FY2026 figure.
+
+What Eskom's implied factor would do (message 217 (c) and 219; no model change): every year's coal CO2 scales by the ratio of
+Eskom's factor to c5f's 2026 effective one, 1.0418 on a CO2e basis (1.0371 on CO2). c5f's CO2 by year, Mt, as run and with
+the CO2e factor:
+
+2026 152.8->159.2; 2027 156.4->163.0; 2028 156.0->162.5; 2029 142.6->148.5; 2030 130.0->135.4; 2031 116.6->121.5; 2032 104.8->109.2; 2033 95.1->99.0; 2034 87.6->91.3; 2035 85.1->88.7; 2036 83.8->87.3; 2037 80.5->83.8; 2038 76.3->79.5; 2039 70.0->72.8; 2040 67.3->70.0
+
+On the CO2 basis: 2026 152.8->158.5; 2027 156.4->162.2; 2028 156.0->161.7; 2029 142.6->147.8; 2030 130.0->134.8; 2031 116.6->120.9; 2032 104.8->108.7; 2033 95.1->98.6; 2034 87.6->90.9; 2035 85.1->88.3; 2036 83.8->86.9; 2037 80.5->83.5; 2038 76.3->79.1; 2039 70.0->72.5; 2040 67.3->69.7.
+
+2026-40: +66.4 Mt on CO2e (+59.0 on CO2). Carbon-tax payments in engine PV: +R2.54bn (+R2.25bn on CO2), against c5f's R61.1bn
+and its engine PV of R2,255.1bn. The engine's carbon cost per coal MWh rises by about R2.1 at 2026's R46/t and R2.8 from 2030 at
+R61.3/t. In the build LP coal's marginal cost rises by the same R2-3/MWh, about 0.4% of R546 fuel + R80 VOM + carbon: the merit
+order does not change (coal stays far below gas and above wind and solar), and the value of displacing coal rises by that 0.4%.
+A build could move only at the margin: s_carbonfull's R410.5/t from 2030 adds about R370/MWh to coal and cut CO2 by 245.5 Mt, and
+a linear reading of that puts the corrected factor at under 2 Mt and a few hundred MW; only a run would say. Not run.
+
+This replaces the unsourced 'roughly 180 Mt on 170 TWh of coal' in 'The IRP emissions comparison, redone' (now Eskom's
+FY2026 figures with pages).
+
 ### c5f run: adequate after two passes, engine PV R2,255.1bn (+R19.4bn on c5e), CO2 1,605.0 Mt (-22.7); rooftop at 1,200 MW a year carries +R14.1bn and -7.9 Mt of that (s_roof09); 31 sensitivities and s_roof09 complete, three topped up (user, 17-19 Oct 2026, messages 196, 209-212; build 2026-10-17g)
 
 Settings. c5f's central settings as in 'New central c5f, set up on build 2026-10-17g' (scratch env_c5f.sh: c5e's with ROOF_MW=1200,
@@ -4688,7 +5015,19 @@ Adequacy caveat as for c5e ('New central c5e').
 | New lithium 2026-40, MW | 13,154 | 12,977 | +177 |
 | New CCGT / open-cycle on LNG / diesel open-cycle, MW | 8,269 / 0 / 0 | 8,195 / 214 / 0 |  |
 | Average cost per MWh served 2030 / 2035 / 2040, R | 1,062 / 957 / 977 | 1,058 / 946 / 959 |  |
+| The same on the fixed measure (M11), R | 1,044 / 928 / 943 | 1,045 / 923 / 934 |  |
 | Passes; adequacy (closest year to target) | 2; every year, closest 70% of target (2033) | 2; every year, closest 52% (2031) |  |
+
+CO2 caveat (user, 19 Oct 2026, message 220): at Eskom's FY2026 factor (1.112 t CO2e per MWh sent out, Integrated Report 2026
+pp.75 and 9), c5f's CO2 is 4.2% higher (2030 135.4, 2035 88.7 Mt; +66 Mt over 2026-40) and carbon-tax costs R2.5bn higher in
+present value ('c5f's 2026 coal and CO2 against Eskom's FY2026'); emisCoal stays 1.04 for c5f and the note (TODO 14gp).
+
+Average cost per MWh served (user, 19 Oct 2026, message 215 (1)): the row above comes from the frozen copies (build 2026-10-17g for
+c5f), whose avgCost carries M11's rooftop leak: newCapexR prices new rooftop at acapAt while btmCapexR took out R1,150/kW-yr, so
+grid capital kept new rooftop x (acapAt - 1,150) (R1,966, 1,827 and 1,701/kW-yr at the engine's 2028, 2030.5 and 2033 vintages).
+The fixed-measure row takes each year's leak out over the energy served (c5f: 4,800, 10,800 and 16,800 MW of new rooftop; 219.2,
+245.5 and 277.1 TWh served). Check: on build 2026-10-19c, whose defaults equal c5f's, 'Least-cost path 2035' gives R927.61/MWh
+served-weighted over the engine check's 240 runs, against the re-derived R928.
 
 c5f against c5e, split by s_roof09 (c5f with rooftop at c5e's 900 MW a year): s_roof09 sits R14.1bn below c5f and 7.9 Mt above
 (objective -R13.0bn), so the rooftop change carries +R14.1bn of engine PV and -7.9 Mt of CO2; the rest (Msenge in the base,
@@ -4696,6 +5035,9 @@ s_constr2's floors, the wheeled load added back, build 17g) carries +R5.3bn and 
 with 2,287 MW more utility solar, 171 MW of open-cycle on LNG and 175 MW less lithium. Engine PV counts rooftop capex as system
 cost and leaves out what households save on bills and any distribution effect (note (b) below). Grid cost on the fixed measure
 ('Rooftop capital fixed in the grid-cost measure', M11): c5f R9.1bn below c5e.
+Network caveat (user, 19 Oct 2026, message 216): the model charges new wind and utility solar the integration charge (R402/kW-yr)
+and rooftop nothing, and credits rooftop no avoided network losses (it nets off demand one for one) and no deferred network
+spend; neither side is sourced yet (TODO 14go), so the rooftop split above carries neither.
 
 c5f against IRP 2025 Table 1 (build from c5f's pathway file, CO2 from its engine check; script irp_c5f.py, as for c5e):
 
@@ -11756,8 +12098,9 @@ coal fleet running far harder. Whose coal utilisation is right is a real questio
 number to put to them, rather than a discrepancy to reconcile away.
 
 Scope, stated rather than adjusted for: the model's universe is Eskom contracted demand excluding
-exports, so its Today 2026 emissions are 155 Mt against Eskom's own roughly 180 Mt on 170 TWh of
-coal. The gap above is larger than that scope difference.
+exports, so its Today 2026 emissions are 155 Mt against Eskom's 184.5 Mt CO2e on 165,431 GWh of coal sent out in the
+year to 31 March 2026 (Eskom Integrated Report 2026, pp.75 and 9; replaced 19 Oct 2026, message 217: was an unsourced 'roughly
+180 Mt on 170 TWh'; reconciled in 'c5f's 2026 coal and CO2 against Eskom's FY2026'). The gap above is larger than that scope difference.
 
 Not comparable: the IRP path 2035 preset emits 62 Mt, but it runs at the transition presets'
 demand (+5%) rather than the IRP's own (+20%), by design, so it cannot be read against the IRP's
