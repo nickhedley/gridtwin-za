@@ -18202,8 +18202,8 @@ const SLIDERS=[
 // BEGIN GENERATED C5F_DEMAND (harness/pathway/gen_pathway_presets.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)
 // c5f's demand by model year: growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))
 const C5F_DEMAND = {"2026": {"growthPct": 0, "blockMW": 0}, "2030": {"growthPct": 10.138399999999992, "blockMW": 930}, "2035": {"growthPct": 26.745400000000007, "blockMW": 930}, "2040": {"growthPct": 45.889599999999994, "blockMW": 930}};
-// c5f's wind build-rate cap, MW a year from the year given (WIND_CAP; message 245)
-const C5F_WIND_CAP = {"mw": 3500, "from": 2031};
+// c5f's build-rate caps over the pace: MW a year from the year given; lithium energy in hours of its power cap (messages 245, 246 (4))
+const C5F_BUILD_CAPS = {"wind": {"mw": 3500, "from": 2031}, "batt": {"mw": 3000, "from": 2028}, "battEnergyHours": 4};
 // END GENERATED C5F_DEMAND
 const PRESETS={
   'Today 2026':{scenarioYear:2026,},
@@ -18774,22 +18774,29 @@ const PRESET_SCORES = {"Deep decarbonisation 2035": {"shed": 2.2701, "target": 2
 const _gw = mw => String(+(mw / 1000).toFixed(1));
 // The searched presets' reliability sentence, from PRESET_SCORES (their rescore as the page runs them, twelve weather years x
 // 20 outage draws other than the search's): it says the build meets half the standard only when the measured shed does.
-// The least-cost pathway's build-rate limits (user, 19 Oct 2026, message 245): the build LP's yearly caps as c5f ran them, summed
-// from 2026 to the preset's year: the pace it ran on (BLD_PACE.deliverable), utility solar's cap growing FIXED.bldPvRateGrowthPct a
-// year, and c5f's wind cap from its build file (C5F_WIND_CAP). c5f's own build sits on them where they bind (wind 2,500 MW in
-// 2029-30 and 3,500 in 2031-34; solar 3,277 in 2030, 2,500 x 1.07^4).
-const c5fBuildLimitMW = (t, y) => { let s = 0;
-  for (let yy = 2026; yy <= y; yy++) s += (t === 'wind' && yy >= C5F_WIND_CAP.from) ? C5F_WIND_CAP.mw
-    : BLD_PACE.deliverable[t] * (t === 'pv' ? Math.pow(1 + FIXED.bldPvRateGrowthPct / 100, yy - 2026) : 1);
+// The least-cost pathway's build-rate limits (user, 19 Oct 2026, messages 245 and 246 (4)): the build LP's yearly caps as c5f
+// ran them, summed from 2026 to the preset's year: the pace it ran on (BLD_PACE.deliverable), utility solar's cap growing
+// FIXED.bldPvRateGrowthPct a year, and the caps its build file records over the pace (C5F_BUILD_CAPS: wind from 2031, lithium
+// from 2028, lithium energy at its hours of the power cap). c5f's own build sits on them where they bind (wind 2,500 MW in
+// 2029-30 and 3,500 in 2031-34; solar 3,277 in 2030, 2,500 x 1.07^4; lithium 3,000 MW and 12,000 MWh in 2030).
+// t: a BLD_TECHS key, or 'battE' for lithium energy (MWh).
+const c5fBuildLimitMW = (t, y) => { const C = C5F_BUILD_CAPS, pace = BLD_PACE.deliverable; let s = 0;
+  for (let yy = 2026; yy <= y; yy++){
+    const cap = k => (C[k] && yy >= C[k].from) ? C[k].mw : pace[k];
+    s += t === 'battE' ? C.battEnergyHours * cap('batt')
+      : t === 'pv' ? pace.pv * Math.pow(1 + FIXED.bldPvRateGrowthPct / 100, yy - 2026) : cap(t); }
   return s; };
-// One caption line for a preset that builds more wind or solar by its year than those limits allow; empty otherwise.
-const _presetOverLimit = P => { const y = P.scenarioYear;
-  const over = [['wind', 'wind', P.newWindMW + (P.windCapeMW || 0)], ['solar', 'pv', P.newPvMW]]
-    .map(([n, t, mw]) => [n, mw, c5fBuildLimitMW(t, y)]).filter(([, mw, lim]) => mw > lim);
-  if (!over.length) return '';
-  const one = over.length === 1;
-  return ` Builds more ${over.map(o => o[0]).join(' and ')} by ${y} than the least-cost pathway\u2019s build-rate limit${one ? '' : 's'} allow${one ? 's' : ''} (`
-    + over.map(([n, mw, lim]) => (one ? '' : n + ' ') + _gw(mw) + ' against ' + _gw(lim) + ' GW').join(', ') + ').'; };
+// One caption sentence naming every technology a preset builds beyond those limits by its year; empty when none does. Offshore
+// wind is not among the pathway's options (not a BLD_TECHS technology).
+const _presetOverLimit = P => { const y = P.scenarioYear, f = v => String(+v.toFixed(2));
+  const items = [['wind', 'wind', P.newWindMW + (P.windCapeMW || 0), 'GW'], ['solar', 'pv', P.newPvMW, 'GW'], ['rooftop solar', 'rooftop', P.newRooftopMW, 'GW'],
+    ['lithium', 'batt', P.newBattMW, 'GW'], ['lithium', 'battE', P.newBattMW * P.newBattHours, 'GWh'], ['flow batteries', 'vrfb', P.newVrfbMW || 0, 'GW'],
+    ['iron-air', 'ironair', P.newIronAirMW || 0, 'GW'], ['gas', 'ccgt', (P.newCcgtMW || 0) + (P.newOcgtMW || 0), 'GW']]
+    .map(([n, t, v, u]) => [n, v, c5fBuildLimitMW(t, y), u]).filter(([, v, lim]) => v > lim)
+    .map(([n, v, lim, u]) => `${n} ${f(v / 1000)} ${u} against ${f(lim / 1000)}`);
+  const off = (P.newOffshoreMW || 0) > 0 ? 'offshore wind is not among the pathway\u2019s options' : '';
+  if (!items.length && !off) return '';
+  return ` It builds faster than the least-cost pathway\u2019s limits allow by ${y}` + (items.length ? ': ' + items.join(', ') + (off ? '; ' + off : '') : ': ' + off) + '.'; };
 const _presetMeets = n => { const S = PRESET_SCORES[n], f = v => v.toFixed(2), k = Math.round(S.runs / 12);
   return S.shed <= S.target
     ? `The cheapest build found that keeps expected unserved energy within half the reliability standard: ${f(S.shed)} GWh a year against ${f(S.target)} GWh, averaged over twelve weather years and ${k} outage patterns it was not chosen on.`
