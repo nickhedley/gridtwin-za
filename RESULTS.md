@@ -4760,6 +4760,10 @@ Adequacy caveat as for c5e ('New central c5e').
 | Average cost per MWh served 2030 / 2035 / 2040, R | 1,062 / 957 / 977 | 1,058 / 946 / 959 |  |
 | Passes; adequacy (closest year to target) | 2; every year, closest 70% of target (2033) | 2; every year, closest 52% (2031) |  |
 
+CO2 caveat (user, 19 Oct 2026, message 220): at Eskom's FY2026 factor (1.112 t CO2e per MWh sent out, Integrated Report 2026
+pp.75 and 9), c5f's CO2 is 4.2% higher (2030 135.4, 2035 88.7 Mt; +66 Mt over 2026-40) and carbon-tax costs R2.5bn higher in
+present value ('c5f's 2026 coal and CO2 against Eskom's FY2026'); emisCoal stays 1.04 for c5f and the note (TODO 14gp).
+
 c5f against c5e, split by s_roof09 (c5f with rooftop at c5e's 900 MW a year): s_roof09 sits R14.1bn below c5f and 7.9 Mt above
 (objective -R13.0bn), so the rooftop change carries +R14.1bn of engine PV and -7.9 Mt of CO2; the rest (Msenge in the base,
 s_constr2's floors, the wheeled load added back, build 17g) carries +R5.3bn and -14.9 Mt. s_roof09 replaces 4,200 MW of rooftop
