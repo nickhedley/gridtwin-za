@@ -5432,6 +5432,39 @@ node checks 775/779 plus audit 88/88 (rerun on its own after VOM joined the acro
 under the audit's 400-character scan for the first time); eng5 5/6. The four known failures and eng5 check 6, as on 19c; the 14
 added checks are validate_public_text's, all passing. On 19c (main): 849/853.
 
+### The rooftop tab's satellite map opened on 'Map data not yet available' tiles after a rural or offshore site query; it now opens only as deep as Esri has imagery (build 2026-10-19f; user, 19 Oct 2026, message 248)
+
+Cause. rtInitMap opened the map at zoom 19 on the last site-query location (window._resourceData) and rtGoTo went to 19 on an
+address result; Esri's World Imagery reaches 19 in cities but often only 18 in rural areas and offshore, and where a zoom has no
+imagery Esri serves 'Map data not yet available' tiles rather than an error. Esri's tilemap service, at four points (data 1 =
+imagery at that zoom): Sandton 16-19 all 1; near De Aar (-30.65, 24.0), offshore Eastern Cape (-34.2, 25.8) and near Beaufort
+West (-32.5, 22.3) 16-18 1, 19 0.
+
+Fix. rtImageryZoom asks the tilemap service for the deepest zoom up to 19 at a point (cached per location; null and uncached if
+the service cannot be reached); rtShowAt opens at zoom 17, then goes as deep as there is imagery, and caps the imagery layer's
+native zoom there, so a deeper view enlarges real imagery; the cap is re-checked at the centre after a pan or zoom. A fresh load
+with no site still opens at 16 over Johannesburg; an address result goes to 19 where Esri has it.
+
+Render check (Chromium, fresh page per case; harness/render/2026-10-19f/, render_rtmap.js). The site query (Open-Meteo) and the
+address search (Nominatim) cannot be reached from the test container, so the cases set what each sets when it succeeds:
+window._resourceData = {lat, lng}, and rtGoTo(lat, lng, true). Of the 12 imagery tiles shown, how many Esri's tilemap service
+says have imagery:
+
+| Case | Before (main, 19d): zoom, tiles with imagery | After (19f): zoom, tiles with imagery |
+|---|---|---|
+| Fresh load, no site | 16, 12 of 12 | 16, 12 of 12 |
+| Site query near De Aar | 19, 0 of 12 ('Map data not yet available') | 18, 12 of 12 |
+| Site query 20 km off the Eastern Cape coast | 19, 0 of 12 | 18, 12 of 12 (sea) |
+| Johannesburg address (Sandton City) | 19, 12 of 12 | 19, 12 of 12 |
+
+No page errors in any case. Not changed, for Nick (message 248): the tab's defaults, a R80,000 monthly bill at R2.50/kWh, are a
+business customer's (32,000 kWh a month); they predate the repository (build 2026-10-01a) with no record that a business default
+was intended. R2.50/kWh has no source in RESULTS or SOURCES and is typed in two places, the tab's tariff field and the C&I
+pre-feasibility module ('Avg industrial tariff 2026 = R2.50/kWh'); the retail panel's reference household is 900 kWh a month on
+Homepower at about R4.2/kWh.
+
+Suite on 2026-10-19f: SUITE_COUNTS
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
