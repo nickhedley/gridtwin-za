@@ -21194,9 +21194,9 @@ const RT_MODULE = { areaM2: 2.58, wp: 620 };
 // Eskom's Businessrate 3, non-local authority, 2026/27 (Tariffs and Charges Booklet 2026/2027, p.23), excluding VAT, which a
 // business reclaims. Was a typed R2.50/kWh with no source. The variable charges, c/kWh: energy, ancillary service, network
 // demand, and electrification and rural network subsidy; the fixed ones, R per point of delivery a day: network capacity,
-// service and administration, and generation capacity. The tab's one tariff both turns the bill into kWh and values solar
-// that is used on site, so the default is the all-in rate at the default bill: the fixed charges spread over the kWh the rest
-// of the bill buys.
+// service and administration, and generation capacity. The default tariff is the all-in rate at the default bill (the fixed
+// charges spread over the kWh the rest of the bill buys), which turns the bill into kWh; solar used on site is valued at the
+// variable rate, the all-in rate less the fixed charges (rtCalc, message 250 (1)).
 const RT_BIZRATE3_2026 = { energy: 242.90, ancillary: 0.45, networkDemand: 15.81, ruralSubsidy: 5.37,
                            networkCapacityRDay: 81.98, serviceAdminRDay: 15.99, generationCapacityRDay: 11.18 };
 const RT_DEFAULT_BILL = 80000;
@@ -21209,7 +21209,7 @@ const RT_DEFAULT_TARIFF = Math.round(rtBizrate3.allInRkWh(RT_DEFAULT_BILL) * 100
   if (b) b.value = RT_DEFAULT_BILL; if (t) t.value = RT_DEFAULT_TARIFF.toFixed(2);
   if (n) n.textContent = 'Eskom Businessrate 3, 2026/27, excluding VAT: ' + (rtBizrate3.varRkWh * 100).toFixed(2) + 'c/kWh plus R'
     + rtBizrate3.fixedRDay.toFixed(2) + ' a day, R' + RT_DEFAULT_TARIFF.toFixed(2) + '/kWh all-in at R'
-    + RT_DEFAULT_BILL.toLocaleString('en-US') + ' a month.'; }
+    + RT_DEFAULT_BILL.toLocaleString('en-US') + ' a month. Solar used on site saves the rate less the fixed charges.'; }
 // OBSTRUCTIONS ARE NOW THE USER'S TO STATE, 30 Sep 2026. Packing was a single
 // 0.69 covering walkways, edge setbacks, chimneys, vents, skylights and rooftop
 // plant at once - which is a property of the roof in front of you, not a constant.
@@ -21517,7 +21517,8 @@ function rtExportSheet(){
   L.push('  Exported                    ' + r(d.exportedKwh) + ' kWh a year');
   L.push('');
   L.push('THE CASE');
-  L.push('  Current bill                R' + r(d.bill) + ' a month at R' + d.tariff.toFixed(2) + '/kWh');
+  L.push('  Current bill                R' + r(d.bill) + ' a month at R' + d.tariff.toFixed(2) + '/kWh all-in');
+  L.push('  Saved per kWh used on site  R' + d.varRate.toFixed(2) + ', the tariff less the fixed charges');
   L.push('  Saving                      R' + r(d.annualSavings) + ' a year');
   L.push('  Simple payback              ' + r(d.simplePayback, 1) + ' years');
   L.push('  Tariff escalation assumed   ' + r(d.escal * 100, 1) + '% a year');
@@ -21547,6 +21548,12 @@ function rtCalc() {
   const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.80;
   const bill     = parseFloat(document.getElementById('rt_bill').value) || RT_DEFAULT_BILL;
   const tariff   = parseFloat(document.getElementById('rt_tariff').value) || RT_DEFAULT_TARIFF;
+  // TWO RATES (user, 19 Oct 2026, message 250 (1)). The tariff field is the all-in rate, which turns the bill into kWh; solar
+  // used on site saves only the variable rate, the all-in rate less Businessrate 3's fixed daily charges spread over the
+  // month's kWh, since those charges do not fall with solar. A tariff the user types is read as all-in, the booklet's fixed
+  // charges kept.
+  const fixedMonthR = rtBizrate3.fixedRDay * 365 / 12;
+  const varRate = Math.max(0, tariff - fixedMonthR / (bill / tariff));
   const battH    = parseFloat(document.getElementById('rt_batt').value) || 0;
   const escal    = parseFloat(document.getElementById('rt_escal').value) || 0.05;
 
@@ -21703,7 +21710,7 @@ function rtCalc() {
   const totalCapex = solarCapex + battCapex;
   // Exported energy is assumed to earn nothing (SA municipalities generally offer
   // little or no feed-in credit for small embedded generation) - conservative but
-  // defensible; only self-consumed energy offsets the bill at the full tariff.
+  // defensible; only self-consumed energy offsets the bill, at the variable rate (message 250 (1)).
   // ── Seasonal profile ───────────────────────────────────────────────────────
   // generation by month, relative to the annual average. Southern hemisphere:
   // peaks around Dec-Feb, troughs in Jun-Jul.
@@ -21730,7 +21737,7 @@ function rtCalc() {
   const monthlySelfKwh = monthlyGenKwh.map((g, i) =>
     Math.min(g * selfConsumeFrac, maxCoverageFrac * monthlyDemandKwh[i]));
 
-  const monthlySavings = monthlySelfKwh.map(k => Math.round(k * tariff));
+  const monthlySavings = monthlySelfKwh.map(k => Math.round(k * varRate));
 
   // Coverage is the sum of what is actually self-consumed each month against
   // total annual demand - not an annual average, which hides the fact that the
@@ -21743,7 +21750,7 @@ function rtCalc() {
 
   // Financials follow the seasonal figure, so savings, payback, IRR and NPV are
   // all consistent with the coverage headline and the monthly chart.
-  const annualSavings = selfConsumedKwh * tariff;
+  const annualSavings = selfConsumedKwh * varRate;
   const annualOpex    = totalCapex * 0.015;
   const annualNet     = annualSavings - annualOpex;
 
@@ -21807,7 +21814,7 @@ function rtCalc() {
     moduleWp: RT_MODULE.wp, moduleAreaM2: RT_MODULE.areaM2,
     tilt, shading, adjCF, location, annualKwh, usableKwh,
     selfConsumeFrac, exportedKwh, battKwh, totalCapex, annualSavings, simplePayback, co2T,
-    bill, tariff, escal, type
+    bill, tariff, varRate, escal, type
   };
 
   el.innerHTML =
@@ -21842,7 +21849,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by bracket, indicative and unsourced: ' + rtCostList() + ' (excluding battery). O&M 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The remainder falls in runs of dull winter days, which needs days of autonomy rather than one night\'s storage. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString('en-US') + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Grid-scale solar &amp; wind tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by bracket, indicative and unsourced: ' + rtCostList() + ' (excluding battery). O&M 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The remainder falls in runs of dull winter days, which needs days of autonomy rather than one night\'s storage. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed, each kWh saving R' + varRate.toFixed(2) + ', the tariff less the fixed charges ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString('en-US') + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Grid-scale solar &amp; wind tab for site-specific data.</div>';
 }
 
 
