@@ -4696,6 +4696,9 @@ s_constr2's floors, the wheeled load added back, build 17g) carries +R5.3bn and 
 with 2,287 MW more utility solar, 171 MW of open-cycle on LNG and 175 MW less lithium. Engine PV counts rooftop capex as system
 cost and leaves out what households save on bills and any distribution effect (note (b) below). Grid cost on the fixed measure
 ('Rooftop capital fixed in the grid-cost measure', M11): c5f R9.1bn below c5e.
+Network caveat (user, 19 Oct 2026, message 216): the model charges new wind and utility solar the integration charge (R402/kW-yr)
+and rooftop nothing, and credits rooftop no avoided network losses (it nets off demand one for one) and no deferred network
+spend; neither side is sourced yet (TODO 14go), so the rooftop split above carries neither.
 
 c5f against IRP 2025 Table 1 (build from c5f's pathway file, CO2 from its engine check; script irp_c5f.py, as for c5e):
 
