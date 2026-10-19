@@ -5614,9 +5614,9 @@ Checks this change touched, each with its cause:
   the preset's demand, now c5f's for 2030 rather than the IRP's. Re-derived the way the original was (the measured share +/- 10
   points): 38-58%, renamed 'below 60%'; the 22 Sep entry 'Coal utilisation is where this model and the IRP disagree' carries the
   update. The finding's point, coal well below what the IRP's 160 Mt implies, holds more strongly.
-- Under investigation, not changed (message 246 (2); 214's pull request does not merge until it is settled): validate_invariants
-  '[Deep decarbonisation 2035] market price mean is close to the engine's marginal price' (within 5%): market R0.354/kWh against
-  engine R0.333, 6.4% above. Where the measures differ (one weather year, default profiles; scratch m214/mktprice.js):
+- validate_invariants '[preset] market price mean is close to the engine's marginal price' (within 5%) failed on the rebuilt
+  Deep: market R0.354/kWh against engine R0.333, 6.4% above. Where the measures differ (one weather year, default profiles;
+  scratch m214/mktprice.js):
 
   | Deep decarbonisation 2035 | Old build (19c) | Rebuilt (19e) |
   |---|---|---|
@@ -5629,15 +5629,30 @@ Checks this change touched, each with its cause:
   | Largest hourly adder, R/kWh | 35.2 | 72.4 |
   | Tightest hour's available reserve against its requirement | 41% | 15% |
 
-  Three hours carry R0.0199 of the R0.0212/kWh mean adder: day 188 at 18:00 and 19:00 (R30.8 and R72.4/kWh; reserve 43% and
-  15% of the requirement) and day 219 at 18:00 (R71.1; 17%), winter evenings with no load shed. The scarcity adder works as
-  designed (LOLP x VOLL on thin reserve); the gap doubled because the zero-price hours grew (the yearly mean the 5% is taken of
-  fell 20% while the priced hours held at R0.71) and because two evening hours run much tighter on reserve. Proposal for Nick:
-  take the 5% against the engine's mean over priced hours, where the two measures can differ (Deep 3.0%, Fossil-free 2.0%,
-  Today 2026 0.03%), keeping the check's purpose (the 22 Sep defect priced scarcity in every hour) and the 438-hour count beside
-  it; or keep the yearly mean and record the cause.
+  Cause: three hours carry R0.0199 of the R0.0212/kWh mean adder, day 188 at 18:00 and 19:00 (R30.8 and R72.4/kWh; reserve 43%
+  and 15% of the requirement) and day 219 at 18:00 (R71.1; 17%), winter evenings with no load shed, against a yearly mean pulled
+  down by zero-price hours (the engine's mean fell 20% while its priced hours held at R0.71). The scarcity adder works as designed.
+  Corrected (message 247), not widened: the two means are compared over the hours without a scarcity adder (the market price
+  within R1/MWh of the engine's, marketPriceSeries' own threshold, and no load shed), at 5% as before, beside the existing limit of
+  438 scarcity hours, which catches the defect the check was written for (22 Sep 2026: scarcity priced in every hour). Before and
+  after, all three presets:
 
-Suite on 2026-10-19e: SUITE_COUNTS
+  | Preset | Whole year: market against engine, R/kWh | Outside scarcity hours | Scarcity hours |
+  |---|---|---|---|
+  | Today 2026 | 0.7573 against 0.7571 (+0.02%) | 0.7496 against 0.7496 (0.00%), 8,722 hours | 38 |
+  | Deep decarbonisation 2035 | 0.3537 against 0.3325 (+6.38%) | 0.3276 against 0.3276 (0.00%), 8,735 hours | 25 |
+  | Fossil-free 2040 | 0.2490 against 0.2391 (+4.13%) | 0.2391 against 0.2391 (0.00%), 8,758 hours | 1, and 1 hour shed |
+
+- validate_consistency 'new-build capital matches the hand computation' (Deep decarbonisation 2035's new-build capital in the
+  retail panel at 2035, within R0.06): re-pinned R0.718 to R0.904, as for every earlier Deep rebuild in the check's record.
+  Measured on 19e in one page: the old preset R0.737, the old build at the new demand R0.578, the new preset R0.904, so the move is
+  the new build (more capital, partly spread over more sales). Tolerance unchanged.
+
+Suite on 2026-10-19e (claude/presets-214, ESK19679.csv present, nothing running beside it): 880/884, node checks 792/796 plus
+audit 88/88; eng5 5/6. The four known failures and eng5 check 6, as on 19d (863/867); the 17 added checks are
+validate_pathway_presets' (23 to 37) and validate_public_text's (14 to 17). validate_invariants and validate_consistency were
+rerun on their own after message 247's correction and the capital re-pin, and the audit and eng5 on their own after the run
+reached the session's 30-minute limit for a background task; every other script is from the full run.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
