@@ -4932,8 +4932,8 @@ function printPrefeas() {
             </div>
             <div style="padding:10px">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:11px">
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Monthly bill (R)</label><input id="rt_bill" type="number" value="80000" min="500" max="5000000" step="1000" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label><input id="rt_tariff" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Monthly bill (R)</label><input id="rt_bill" type="number" min="500" max="5000000" step="1000" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label><input id="rt_tariff" type="number" min="0.5" max="10" step="0.01" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_tariff_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px"></div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Battery storage (kWh)</label>
         <div style="display:flex;gap:6px;align-items:center">
           <input id="rt_batt" type="number" value="0" min="0" max="200" step="0.5"
@@ -19833,7 +19833,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-19e';
+const BUILD_STAMP = '2026-10-19f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21190,6 +21190,26 @@ function _rtBatteryUplift(battHours, baseline, battKwh, annualDemandKwh, sizingR
 // fit; 0.69 is what reproduces the 165 this tool has always used, so no result
 // moves today, and it is now a number someone can argue with.
 const RT_MODULE = { areaM2: 2.58, wp: 620 };
+// THE DEFAULT CUSTOMER (user, 19 Oct 2026, message 249): a business, as the tab sits with the project tools; R80,000 a month on
+// Eskom's Businessrate 3, non-local authority, 2026/27 (Tariffs and Charges Booklet 2026/2027, p.23), excluding VAT, which a
+// business reclaims. Was a typed R2.50/kWh with no source. The variable charges, c/kWh: energy, ancillary service, network
+// demand, and electrification and rural network subsidy; the fixed ones, R per point of delivery a day: network capacity,
+// service and administration, and generation capacity. The tab's one tariff both turns the bill into kWh and values solar
+// that is used on site, so the default is the all-in rate at the default bill: the fixed charges spread over the kWh the rest
+// of the bill buys.
+const RT_BIZRATE3_2026 = { energy: 242.90, ancillary: 0.45, networkDemand: 15.81, ruralSubsidy: 5.37,
+                           networkCapacityRDay: 81.98, serviceAdminRDay: 15.99, generationCapacityRDay: 11.18 };
+const RT_DEFAULT_BILL = 80000;
+const rtBizrate3 = (() => { const T = RT_BIZRATE3_2026;
+  const varRkWh = (T.energy + T.ancillary + T.networkDemand + T.ruralSubsidy) / 100;
+  const fixedRDay = T.networkCapacityRDay + T.serviceAdminRDay + T.generationCapacityRDay;
+  return { varRkWh, fixedRDay, allInRkWh: bill => bill / ((bill - fixedRDay * 365 / 12) / varRkWh) }; })();
+const RT_DEFAULT_TARIFF = Math.round(rtBizrate3.allInRkWh(RT_DEFAULT_BILL) * 100) / 100;
+{ const b = document.getElementById('rt_bill'), t = document.getElementById('rt_tariff'), n = document.getElementById('rt_tariff_note');
+  if (b) b.value = RT_DEFAULT_BILL; if (t) t.value = RT_DEFAULT_TARIFF.toFixed(2);
+  if (n) n.textContent = 'Eskom Businessrate 3, 2026/27, excluding VAT: ' + (rtBizrate3.varRkWh * 100).toFixed(2) + 'c/kWh plus R'
+    + rtBizrate3.fixedRDay.toFixed(2) + ' a day, R' + RT_DEFAULT_TARIFF.toFixed(2) + '/kWh all-in at R'
+    + RT_DEFAULT_BILL.toLocaleString('en-US') + ' a month.'; }
 // OBSTRUCTIONS ARE NOW THE USER'S TO STATE, 30 Sep 2026. Packing was a single
 // 0.69 covering walkways, edge setbacks, chimneys, vents, skylights and rooftop
 // plant at once - which is a property of the roof in front of you, not a constant.
@@ -21525,8 +21545,8 @@ function rtCalc() {
   const sharePct = parseFloat(document.getElementById('rt_share').value) || 100;
   const tilt     = parseFloat(document.getElementById('rt_tilt').value) || 1.05;
   const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.80;
-  const bill     = parseFloat(document.getElementById('rt_bill').value) || 80000;
-  const tariff   = parseFloat(document.getElementById('rt_tariff').value) || 2.50;
+  const bill     = parseFloat(document.getElementById('rt_bill').value) || RT_DEFAULT_BILL;
+  const tariff   = parseFloat(document.getElementById('rt_tariff').value) || RT_DEFAULT_TARIFF;
   const battH    = parseFloat(document.getElementById('rt_batt').value) || 0;
   const escal    = parseFloat(document.getElementById('rt_escal').value) || 0.05;
 
@@ -21556,8 +21576,8 @@ function rtCalc() {
   // slider and the number field and still only cover part of the evening window,
   // which made the coverage ceiling look like an arbitrary wall.
   (function(){
-    const annualKwhForBatt = (parseFloat(document.getElementById('rt_bill').value)||80000)
-                             * 12 / (parseFloat(document.getElementById('rt_tariff').value)||2.50);
+    const annualKwhForBatt = (parseFloat(document.getElementById('rt_bill').value)||RT_DEFAULT_BILL)
+                             * 12 / (parseFloat(document.getElementById('rt_tariff').value)||RT_DEFAULT_TARIFF);
     const eveningKwh = annualKwhForBatt / 365 * RT_CRITICAL_DEMAND_FRACTION;
     // Allow up to 3x the evening window - enough to ride out consecutive dull
     // days, which is what the last few percent of coverage actually needs.
@@ -21896,7 +21916,37 @@ function _rtApplianceProfile() {
 }
 
 // ── Satellite Roof Tracer ─────────────────────────────────────────────────────
-let rtMap = null, rtTracing = false, rtPoints = [], rtMarkers = [], rtPolyline = null, rtPolygon = null;
+let rtMap = null, rtTracing = false, rtPoints = [], rtMarkers = [], rtPolyline = null, rtPolygon = null, rtImagery = null;
+
+// ESRI IMAGERY DEPTH (user, 19 Oct 2026, message 248). Esri's World Imagery reaches zoom 19 in cities but often only 18 in rural
+// areas and offshore; where a zoom has no imagery Esri serves 'Map data not yet available' tiles rather than an error, so a map
+// opened at 19 on a rural or offshore site query showed only those. Esri's tilemap service says whether a tile has imagery:
+// rtImageryZoom asks it for the deepest zoom up to 19 at a point (17 had imagery at every point tested; null, not cached, if the
+// service cannot be reached). The imagery layer's native zoom is capped at that depth, so a deeper view enlarges real imagery.
+const RT_ZOOM_SAFE = 17, RT_ZOOM_ROOF = 19, _rtDepth = new Map();
+function rtImageryZoom(lat, lng){
+  const key = lat.toFixed(3) + ',' + lng.toFixed(3);
+  if (_rtDepth.has(key)) return _rtDepth.get(key);
+  const tile = z => { const n = 2 ** z, r = lat * Math.PI / 180;
+    return [Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n), Math.floor((lng + 180) / 360 * n)]; };
+  const has = z => { const [row, col] = tile(z);
+    return fetch('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/' + z + '/' + row + '/' + col + '/1/1?f=json')
+      .then(r => { if (!r.ok) throw new Error('tilemap ' + r.status); return r.json(); }).then(d => !!(d && d.data && d.data[0] === 1)); };
+  const p = (async () => { try { for (let z = RT_ZOOM_ROOF; z > RT_ZOOM_SAFE; z--) if (await has(z)) return z; return RT_ZOOM_SAFE; }
+                          catch (e) { _rtDepth.delete(key); return null; } })();
+  _rtDepth.set(key, p);
+  return p;
+}
+// Show a point at up to the zoom asked for: at once at the safe zoom, then as deep as Esri has imagery there.
+function rtShowAt(lat, lng, want){
+  if (!rtMap) return Promise.resolve();
+  rtMap.setView([lat, lng], Math.min(want, RT_ZOOM_SAFE));
+  return rtImageryZoom(lat, lng).then(z => {
+    if (z == null) return;   // the depth is unknown: stay at the safe zoom, leave the layer as it is
+    if (rtImagery && rtImagery.options.maxNativeZoom !== z){ rtImagery.options.maxNativeZoom = z; rtImagery.redraw(); }
+    if (want > RT_ZOOM_SAFE) rtMap.setView([lat, lng], Math.min(want, z));
+  });
+}
 
 function rtInitMap() {
   if (rtMap) { setTimeout(() => rtMap.invalidateSize(), 100); return; }
@@ -21911,13 +21961,14 @@ function rtInitMap() {
   // patch of an arbitrary Johannesburg rooftop with nothing to orient by, which
   // reads as a broken map. Open at 16 - streets and blocks visible, obviously a
   // real place - and let rtGoTo() zoom to 19 once a location is actually picked.
+  // A site query opens at the safe zoom and goes to roof level only where Esri has imagery (rtShowAt, message 248).
   const hasSite = !!(window._resourceData && window._resourceData.lat);
   rtMap = L.map('rtMap', { zoomControl: true, attributionControl: true })
-            .setView([lat, lng], hasSite ? 19 : 16);
+            .setView([lat, lng], hasSite ? RT_ZOOM_SAFE : 16);
 
-  // Esri World Imagery — free satellite tiles, no API key required
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 21, maxNativeZoom: 19,
+  // Esri World Imagery — free satellite tiles, no API key required. Its native zoom is capped where Esri has less depth.
+  rtImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 21, maxNativeZoom: RT_ZOOM_ROOF,
     attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
   }).addTo(rtMap);
 
@@ -21934,6 +21985,10 @@ function rtInitMap() {
   }).addTo(rtMap);
 
   rtMap.on('click', rtMapClick);
+  // After a pan or zoom, cap the imagery's native zoom at the depth Esri has at the new centre (cached per location).
+  rtMap.on('moveend', () => { if (rtMap.getZoom() < 18) return; const c = rtMap.getCenter();
+    rtImageryZoom(c.lat, c.lng).then(z => { if (z != null && rtImagery && rtImagery.options.maxNativeZoom !== z){ rtImagery.options.maxNativeZoom = z; rtImagery.redraw(); } }); });
+  if (hasSite) rtShowAt(lat, lng, RT_ZOOM_ROOF);
   if (!hasSite) {
     // A one-off hint so an unlocated map does not look like a failure.
     const hint = document.getElementById('rtMapHint');
@@ -22787,7 +22842,7 @@ function rtGoTo(lat, lng, exact) {
   if (_h) _h.style.display = 'none';
   lat = parseFloat(lat); lng = parseFloat(lng);
   if (rtMap) {
-    rtMap.setView([lat, lng], 19);
+    rtShowAt(lat, lng, RT_ZOOM_ROOF);
     rtClearTrace();
   }
   document.getElementById('rtSearchResults').style.display = 'none';

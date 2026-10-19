@@ -5686,6 +5686,70 @@ harness/ext/overcap_19e.json. The claim (Bloomberg, Oct 2026) is quoted as given
   added cost is system cost (fuel, start-up, carbon and the like), not a tariff; 500 MW steps, so the flat limit lies between 4.0
   and 4.5 GW. Recorded as a check; not for the note until Nick decides.
 
+### The rooftop tab's satellite map opened on 'Map data not yet available' tiles after a rural or offshore site query; it now opens only as deep as Esri has imagery; the tab's default tariff is Businessrate 3 (build 2026-10-19f; user, 19 Oct 2026, messages 248 and 249)
+
+Cause. rtInitMap opened the map at zoom 19 on the last site-query location (window._resourceData) and rtGoTo went to 19 on an
+address result; Esri's World Imagery reaches 19 in cities but often only 18 in rural areas and offshore, and where a zoom has no
+imagery Esri serves 'Map data not yet available' tiles rather than an error. Esri's tilemap service, at four points (data 1 =
+imagery at that zoom): Sandton 16-19 all 1; near De Aar (-30.65, 24.0), offshore Eastern Cape (-34.2, 25.8) and near Beaufort
+West (-32.5, 22.3) 16-18 1, 19 0.
+
+Fix. rtImageryZoom asks the tilemap service for the deepest zoom up to 19 at a point (cached per location; null and uncached if
+the service cannot be reached); rtShowAt opens at zoom 17, then goes as deep as there is imagery, and caps the imagery layer's
+native zoom there, so a deeper view enlarges real imagery; the cap is re-checked at the centre after a pan or zoom. A fresh load
+with no site still opens at 16 over Johannesburg; an address result goes to 19 where Esri has it.
+
+Render check (Chromium, fresh page per case; harness/render/2026-10-19f/, render_rtmap.js). The site query (Open-Meteo) and the
+address search (Nominatim) cannot be reached from the test container, so the cases set what each sets when it succeeds:
+window._resourceData = {lat, lng}, and rtGoTo(lat, lng, true). Of the 12 imagery tiles shown, how many Esri's tilemap service
+says have imagery:
+
+| Case | Before (main, 19d): zoom, tiles with imagery | After (19f): zoom, tiles with imagery |
+|---|---|---|
+| Fresh load, no site | 16, 12 of 12 | 16, 12 of 12 |
+| Site query near De Aar | 19, 0 of 12 ('Map data not yet available') | 18, 12 of 12 |
+| Site query 20 km off the Eastern Cape coast | 19, 0 of 12 | 18, 12 of 12 (sea) |
+| Johannesburg address (Sandton City) | 19, 12 of 12 | 19, 12 of 12 |
+
+No page errors in any case.
+
+The tab's default customer (message 248, decided in 249). The defaults, a R80,000 monthly bill at R2.50/kWh, are a business
+customer's; they predate the repository (build 2026-10-01a). Decided: keep a business default, as the tab sits with the project
+tools (249 (1)); replace the unsourced R2.50/kWh with Eskom's Businessrate 3, non-local authority, 2026/27 (Tariffs and Charges
+Booklet 2026/2027, p.23), excluding VAT, which a business reclaims (249 (2)): energy 242.90, ancillary service 0.45, network demand
+15.81, and electrification and rural network subsidy 5.37 c/kWh, 264.53 in all; network capacity R81.98, service and
+administration R15.99 and generation capacity R11.18 per point of delivery a day, R109.15 in all. One constant
+(RT_BIZRATE3_2026) holds the seven charges; the default tariff is computed from them as the all-in rate at the default bill
+(RT_DEFAULT_BILL, R80,000): the fixed R3,320 a month spread over the 28,986 kWh the rest of the bill buys, R2.76/kWh. The bill and
+tariff fields read the two constants (each was typed three times), and a note under the tariff field gives the source.
+
+What moves at the tab's defaults (2,000 m2 roof, 331.1 kWp, the national solar average):
+
+| At the defaults | R2.50/kWh | Businessrate 3, R2.76/kWh |
+|---|---|---|
+| Estimated use | 32,000 kWh a month | 28,986 |
+| Generation against the site's annual use | 1.1 times | 1.3 times |
+| Self-consumed share of generation | 58% | 54% (188 MWh a year exported, no credit; was 162) |
+| Annual savings | R635k | R647k |
+| Simple payback | 6.3 years | 6.2 |
+| IRR, 25 years at 5% escalation | 21.3% | 21.6% |
+| NPV at 10% | R4.7m | R4.9m |
+
+Savings rise 1.9% on a tariff 10.4% higher: the same bill buys fewer kWh, so more of the system's output is exported unpaid.
+For Nick: the tab's one tariff does two jobs, turning the bill into kWh (where the all-in rate is right) and valuing solar used on
+site (where the variable rate, R2.6453, is right, since fixed charges do not fall with solar); at the default bill the two differ
+by 4.3%.
+
+Not changed (249 (2)): the C&I pre-feasibility module's 'Avg industrial tariff 2026 ≈ R2.50/kWh' is a larger customer's and does
+not share Businessrate 3, which is for supplies up to 100 kVA. Megaflex (booklet p.13) is the tariff for it, but pricing an
+average needs a reference customer: transmission zone, supply voltage, a load shape across Eskom's time-of-use periods and
+seasons, and the per-kVA network and capacity charges (for example, at 500 V to 66 kV within 300 km, energy runs from 120.03 c/kWh
+off-peak to 720.19 peak in the high season, plus R12.27/kVA a month of generation capacity and R39.13 and R26.29/kVA of
+network capacity and demand). Proposed for Nick to choose.
+
+Suite on 2026-10-19f (claude/rooftop-map, ESK19679.csv present, nothing running beside it): 863/867, node checks 775/779 plus
+audit 88/88; eng5 5/6; the four known failures and eng5 check 6, as on 19d.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
