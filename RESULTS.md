@@ -4743,6 +4743,44 @@ storage on Table 1's schedule) +R36.3bn, +54.8 Mt; s_pvirp (solar capped at Tabl
   3.9% higher (2030 119.3, 2035 87.0 Mt; +56.5 Mt over 2026-40), c5f's 4.2% higher ('c5f's 2026 coal and CO2 against Eskom's
   FY2026').
 
+### The pair at the IRP's demand path: the IRP plan costs R243.4bn more than c5f re-optimised at the same demand (R309.0bn at c5f's demand), so about a fifth of the gap is the IRP being sized for higher demand; its CO2 advantage (-148.8 Mt) becomes +20.2 Mt; both meet the standard in every year with no top-up (user, 19 Oct 2026, messages 222 (2), 224 and 227 (3))
+
+Settings. Demand: each year the model's customer demand (the 2026 demand profile, 203.525 TWh, x the index, plus the 930 MW
+smelter block from 2027) plus its firm exports (745 MW held flat, 6.57 TWh a year as the engine delivers them) equals the IRP
+reference's domestic grid demand + distributed PV + exports (ESRG IRPDemandREF Mode 1, public_data/esrg_irp_demand_ref.json; 256.2
+TWh in 2030). Exports are folded into domestic demand: the model's firm exports stay at c5f's, and the gap to the IRP's 11.0 TWh is
+served as domestic load. Part of the IRP's export volume reflects the Mozal aluminium smelter in Mozambique, suspended in March
+2026 (South32; the Minerals Council's Electricity Update, March-April 2026, as cited in index.html beside exportsMW), whose loss
+halved Eskom's exports. Index against c5f's: +11.2% in 2026 (the IRP's 2026 level sits above the measured 2026 base, and c5f adds
+its smelter block only from 2027; kept, message 227 (3)), +7.2% in 2030, +7.5% in 2035, +7.7% in 2040 (scratch m224/gen_index.py,
+index_irpdem.json). (1) c5f's settings re-optimised at that demand: c5f's frozen code (b82bfd3, build 2026-10-17g) in a separate
+copy with one change, a DEMAND=index:<file> option; env_c5f.sh plus DEMAND=index:..., MAXP=6; adequate after its passes in 1,286 s;
+engine check TF=0.5 LNG=1 GRID=1 in three year groups (hooked copy c5f/gen, the plain check's cost and CO2). (2) The IRP plan's
+engine check at that demand: m215's build file with the demand index replaced, the same check. 19 Oct 08:02-08:46 UTC. Outputs,
+settings and scripts in gridtwin-data, branch claude/c5f-chain, c5f_chain/pair_irpdem (2b93d10).
+
+| 2026-40 | c5f | IRP plan | c5f at IRP demand | IRP plan at IRP demand |
+|---|---|---|---|---|
+| Engine PV, R bn | 2,255.1 | 2,564.1 | 2,429.3 | 2,672.7 |
+| Grid cost on the fixed measure (M11), R bn | 2,141.0 | 2,487.4 | 2,315.3 | 2,596.0 |
+| CO2, Mt | 1,605.0 | 1,456.2 | 1,667.9 | 1,688.2 |
+| Years over the standard | none | none | none | none |
+
+- IRP minus c5f: at c5f's demand +R309.0bn engine PV (+R346.4bn grid cost), -148.8 Mt; at the IRP's demand +R243.4bn (+R280.8bn),
+  +20.2 Mt. The R65.6bn difference is the part of the gap that comes from the IRP being sized for higher demand; R243.4bn remains.
+- Higher demand costs c5f R174.2bn and 63.0 Mt (it re-optimises), and the IRP plan R108.6bn and 232.0 Mt (its build is fixed, so
+  coal and gas run harder).
+- c5f's build at the IRP's demand, MW by 2035 (by 2040): wind 26,388 against 23,362 (32,540 against 29,396), utility solar 16,527
+  against 14,736 (29,628 against 25,594), lithium 9,430 against 8,647 (14,175 against 13,154), CCGT 4,273 against 2,632 (9,936
+  against 8,269), OCGT on LNG 163 against 0, pumped storage 230 by 2040; coal on the same Figure 3 path.
+- Unserved energy, GWh (target): 2026 c5f 0.10 (2.20), IRP 0.07 (2.20); 2030 0.46 (2.35) and 0.00 (2.37); 2035 0.57 (2.63) and
+  0.01 (2.67); 2040 0.49 (2.96) and 0.00 (3.10).
+
+Caveats: the index is set on the demand input (customer demand plus firm exports), so c5f's 2030 total on that basis is 238.9 TWh
+(see the correction in the IRP entry above); the IRP reference's own sent-out basis may differ by losses; the IRP plan keeps
+its Table 1 build and c5f's every other setting (base fleet, gas case, costs), so the R243.4bn is the IRP's choices priced on our
+inputs at its own demand, not a calibration (message 221).
+
 ### c5f's 2026 coal and CO2 against Eskom's FY2026: 22.8 TWh less coal and 31.7 Mt less CO2, of which 6.4 Mt is the emission factor; Eskom's implied factor would add 66.4 Mt to c5f's 2026-40 CO2 (+4.2%) and R2.5bn to engine PV (user, 19 Oct 2026, messages 217 and 219; build 2026-10-17g; no model change)
 
 Eskom's figures, year to 31 March 2026 (Eskom Integrated Report 2026, Nick's copy, not committed; cited by page): greenhouse gas
