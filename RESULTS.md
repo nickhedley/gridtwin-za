@@ -5750,6 +5750,46 @@ network capacity and demand). Proposed for Nick to choose.
 Suite on 2026-10-19f (claude/rooftop-map, ESK19679.csv present, nothing running beside it): 863/867, node checks 775/779 plus
 audit 88/88; eng5 5/6; the four known failures and eng5 check 6, as on 19d.
 
+### Site review batch 2: display logic and small code fixes on 17 findings; Deep decarbonisation 2035 rescored on outage patterns it was not chosen on, 1.49 GWh a year against 2.42 (build 2026-10-19i; user, 19 Oct 2026, message 252)
+
+Each finding was confirmed in the code on build 2026-10-19f before it was changed (site review of 19 Oct 2026, Nick's copy).
+
+A1 (Deep's reliability claimed out of sample). Deep decarbonisation 2035 was topped up on the outage draws of seed 71830529
+and then scored on the same draws, so its 2.27 GWh was in sample. Rescored on build 19i on a fresh, disjoint seed set:
+`SEED=120000017 ONLY=Deep VARIANTS=page node harness/ext/preset_rescore.js` (twelve weather years x 20 draws, seeds
+120000017 + k x 104729 + year x 7919; output harness/ext/rescore_page_19i_deep_fresh.json, 128 s). Mean unserved 1.49 GWh a
+year against a target of 2.42 (half the 0.002% standard on customer demand), cost R318.2bn, CO2 16.0 Mt: it meets the
+target out of sample. PRESET_SCORES now takes each preset from its own rescore (gen_preset_scores.py): Deep from the fresh
+run, Fossil-free 2040 from 19e's (it had no top-up, so its draws were never used to choose it). The caption's 'outage patterns
+it was not chosen on' is now true for both. Caveat: 1.49 on fresh draws against 2.27 on the tuning draws is a wide gap for 240
+runs each; the score is a mean over few rare shortfall events.
+
+Fixed, each as the review proposed unless stated:
+- A7: the inherited-scenario line rounded, and stated against 2026 and the scenario's own year (it said 'to 2030').
+- A8: the adequacy text now describes what is computed (storage at full rating, against the month's peak grid demand with
+  charging; a high-renewable year can show a negative margin and still serve all load) and says 'in this scenario', not 'Today'.
+- A21: the cap note reports the week's uncapped peak beside the week's capped hours.
+- A22: 'on your last change' only after the engine has settled (start-up rendered twice and read as a change).
+- A24: 'almost nothing to arbitrage' judged on the benchmark battery's own cycles (under 30 a year), not on p95 less median.
+- A25: battery durations rounded.
+- A26: gas is gated on running at all, not on storage cycles, so the least-cost build's CCGT no longer reads 'not needed here'.
+- A29: the published-models comparison runs as validate_external does (current-turbine wind profile, bands 22 Mt and 12 TWh),
+  and the narrative counts the rows outside their band instead of saying it 'lands close'.
+- A30: the Eskom 2025-26 rows show only when the 2026 scenario is on screen.
+- A32: coal installed compared with 39.692 GW, the figure the page uses.
+- A39: 3D map headroom read from nodal/region_headroom_lookup.json, as the main page; tooltips no longer print 'undefined'.
+- A41: the pre-feasibility report's labels read the rates its arithmetic uses (life, discount rate, O&M share, from
+  calcFinancials), and name wind or hybrid reports as such.
+- A42: corridor upgrade cost from the model's own 400 kV line cost (BLD_GRID.line400); the grid-enhancing-technology line from
+  the model's own constants.
+- A44: KwaZulu-Natal generators in the KwaZulu-Natal zone (5.08), booklet p.38.
+- A46: the sentence names the months with the highest and lowest savings, computed from the chart's own series.
+- A49: the 3D page's 'Main model' link goes up one level.
+- B3 (two ensembles write the header's expected shed): timing only, no change (message 254 (4)). The review file is Nick's
+  copy and is not in the repository, so this is recorded here and in the pull request.
+
+Suite on 2026-10-19i: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:05-22:55 UTC with other jobs beside it. Audit first read 87/88: the A29 narrative put the variable name ROWS inside a page string, which the shouting check counts; the count is now computed before the string (the check is unchanged), and audit, validate_structure, validate_outputs, validate_external and validate_public_text were rerun on the final commit. Render check in Chromium (fresh load; start-up, Fossil-free 2040, Least-cost path 2035): 7/7, Deep's caption reads 1.49 against 2.42, the Eskom 2025-26 generation rows are left out on 2040 and the panel says so, no undefined or NaN, no page errors.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing

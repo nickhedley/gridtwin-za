@@ -13259,6 +13259,8 @@ function renderExternalComparison(){
       + '<td class="mono" style="text-align:right;padding:4px 6px;color:var(--ink2)">&plusmn;' + x.band + '</td></tr>';
   }).join('');
 
+   // Rows outside their band, counted for the narrative (site review A29).
+   const nOutside = ROWS.filter(x => Math.abs(x.model - x.pub) > x.band).length, nRows = ROWS.length;
   host.innerHTML =
       '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:8px">'
     + 'Run against two independently built published models, each at its own stated '
@@ -13278,7 +13280,7 @@ function renderExternalComparison(){
     + rows + '</table>'
     + '<div style="font-size:10.5px;color:var(--ink2);line-height:1.6;margin-top:9px;'
       + 'padding:7px 10px;background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
-    + `On this build the model lands outside the band on ${ROWS.filter(x => Math.abs(x.model - x.pub) > x.band).length} of ${ROWS.length} rows. `
+    + `On this build the model lands outside the band on ${nOutside} of ${nRows} rows. `
     + (ed && Math.abs(ed.co2 - 124) > 22 ? 'The CO\u2082 gap to EDMSA is under investigation and is not explained yet. ' : '')
     + 'Nobody has run GridTwin and PLEXOS on identical inputs and compared line by line, so a row inside its band has not '
     + 'proved the model right, and one outside is a problem worth finding.</div>'
