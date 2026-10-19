@@ -5367,6 +5367,37 @@ The shown figures equal the page's own result for the same state (lastRes, adequ
 Suite on 2026-10-19c (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 849/853, node checks 761/765 plus
 audit 88/88; eng5 5/6; as on 19b, the four known failures and eng5 check 6.
 
+### IRP's 2030 targets and its grid-delayed variant generated from the IRP engine check's 2030 state; the 2030 preset reproduces its 120 runs to the digit (build 2026-10-19e; user, 19 Oct 2026, message 232 (2))
+
+What changed. Both IRP 2030 presets are written by harness/pathway/gen_pathway_presets.py (now per preset year) from
+harness/pathway/irp2025/pathway_irp2025.json, as IRP path 2035 is, at 2030: the IRP engine check's 2030 state (its 2026-30 rows,
+harness/pathway/irp2025/pathcheck_irp2025_a.json, the hooked copy's rows less the generation hooks). 2030: wind 7,341 MW,
+tracking solar 10,313, rooftop 3,600, lithium 3,214 MW at 2.44 hours, CCGT 6,000 with the IRP's 51% floor, coal standing 32,433
+MW (7,259 retired on Figure 3's dates), demand +10.1384% and the 930 MW block, Cape wind 1,580 MW, gas R1,298.42/MWh, carbon on
+c5f's path; no reserve reference before 2031, as pathcheck.js sets it. The grid-delayed variant is the same state with 60% of
+its new wind and solar (4,405 and 6,188 MW, rounded to the MW) and congestion curtailment capped at 10% (the generator's 'delay'
+setting). Retired with the typed presets: coalEafFromFleet(67), lcoeCcgt 2500 (the replacement-cost readout now uses the derived
+R2,900), rooftop 4,500 MW and 3,724 MW of 4-hour storage (Table 1's own storage and distributed generation; the run takes
+s_be6_c5f's lithium and 900 MW of rooftop a year from 2027, build_irp.py).
+
+Check (validate_pathway_presets, now 37 checks): the page state after applyState("IRP's 2030 targets") equals the engine check's
+2030 state on 41 keys; every weather year x the row's 10 draws (120 runs): unserved 0.0000 against 0.0000 GWh (target 2.1969),
+system cost R274.574bn against R274.574bn (0.0000%), CO2 114.863 against 114.863 Mt (build 19c with this change, before message
+234's imports default). The variant: its state equals the 2030 preset's on 104 keys except newWindMW, newPvMW and
+congestionCurtailPct, with wind and solar held back by the same share (0.6001 after rounding).
+
+What moves on the page (each preset as the page runs it, run(): one weather year on the default profiles; the typed presets on
+c5f's 2030 demand, message 231 (2), against the generated ones):
+
+| Preset | System cost, R bn | Average cost, R/MWh | CO2, Mt | Gas, TWh | Coal, TWh | Replacement cost, R bn |
+|---|---|---|---|---|---|---|
+| IRP's 2030 targets | 275.86 to 271.43 | 1,223 to 1,199 | 113.96 to 108.47 | 26.81 to 26.74 | 94.88 to 89.36 | 345.54 to 348.05 |
+| IRP's 2030 targets, grid delayed | 274.63 to 272.40 | 1,221 to 1,211 | 137.15 to 134.20 | 26.81 to 26.81 | 118.05 to 114.74 | 366.17 to 368.89 |
+
+Captions (message 235 (3)): both in public wording, every figure read from PRESETS, the 51% and 6 GW from FIXED.ccgtForceLoadPct and
+the preset's ccgtForceLoadMW, and the IRP's demand above the pathway's in 2030, 7.2% (IRP2030_DEMAND_GAP_PCT, written by the
+generator from harness/pathway/irp2025/index_irpdem.json, as 2035's 7.5%). Scratch: m232/moves_old.json, moves_new.json.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing

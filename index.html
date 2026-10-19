@@ -8226,7 +8226,9 @@ function simulate(u, prof, outPath, _soc0){
     // always-synchronous plant. Only the grid-forming share of battery power qualifies.
     const syncGfm = battPower * (p.syncGfmShare ?? SYNC_GFM_SHARE)
                   + (p.syncCondenserMW ?? SYNC_CONDENSER_MW);
-    const syncPlantNonCoal=p.nuclearMW+p.hydroMW+p.importsMW*IMPORTS_CF+syncGfm;
+    // Imports at the scenario's importsCF, as dispatch has them (user, 19 Oct 2026, message 237 (2)): until build 2026-10-19e this
+    // read the global IMPORTS_CF, so a slider or preset change to importsCF never reached the floor (RESULTS, 19 Oct 2026).
+    const syncPlantNonCoal=p.nuclearMW+p.hydroMW+p.importsMW*(p.importsCF ?? FIXED.importsCF)+syncGfm;
     const syncDeficit=Math.max(0,(p.syncFloorMW||0)-syncPlantNonCoal);
     // The floor can still go unmet when there is no coal left to lift and not enough
     // grid-forming capacity. Record it rather than let it pass silently.
@@ -18224,8 +18226,8 @@ const PRESETS={
   // needs 1,450 km a year and the current pace is behind it.
   //
   // WHAT THE SCENARIO DOES. Two existing controls, no engine change:
-  //   congestionCurtailPct 4 -> 10   the curtailment ceiling doubles and more, because
-  //                                  corridors that should have been reinforced were not
+  //   congestionCurtailPct -> 10     the curtailment ceiling rises from the page default (FIXED.congestionCurtailPct, 1.3% now; 4% when this
+  //                                  was written) to 10%, because corridors that should have been reinforced were not
   //   newWindMW, newPvMW cut         the build that the delayed corridor would have carried
   //                                  does not connect - this is the effect Aurora describes,
   //                                  where developers hold back on augmentations that slip
