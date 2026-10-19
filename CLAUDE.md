@@ -38,7 +38,8 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_consistency.js testroot node validate_benchmarks.js testroot
     node validate_external.js testroot    node validate_solve.js testroot
     node validate_outputs.js testroot     node validate_pathway_presets.js testroot
-    python3 audit.py testroot/index.html  node eng5.js
+    node validate_public_text.js testroot python3 audit.py testroot/index.html
+    node eng5.js
 
 Expected (19 Oct 2026, build 2026-10-19c, branch claude/lcp2035-preset, ESK19679.csv present, nothing running beside it):
 849/853, node checks 761/765 plus audit 88/88; eng5 5/6 (validate_pathway_presets: 23 checks, about 7.5 minutes). The known failures, each with its

@@ -5026,7 +5026,9 @@ Average cost per MWh served (user, 19 Oct 2026, message 215 (1)): the row above 
 c5f), whose avgCost carries M11's rooftop leak: newCapexR prices new rooftop at acapAt while btmCapexR took out R1,150/kW-yr, so
 grid capital kept new rooftop x (acapAt - 1,150) (R1,966, 1,827 and 1,701/kW-yr at the engine's 2028, 2030.5 and 2033 vintages).
 The fixed-measure row takes each year's leak out over the energy served (c5f: 4,800, 10,800 and 16,800 MW of new rooftop; 219.2,
-245.5 and 277.1 TWh served). Check: on build 2026-10-19c, whose defaults equal c5f's, 'Least-cost path 2035' gives R927.61/MWh
+245.5 and 277.1 TWh served). Check: on build 2026-10-19c, with 'Least-cost path 2035' set to c5f's 2035 state and the page's lithium decline, LNG terminal
+charge and discount rate equal to c5f's (validate_pathway_presets; other page defaults differ from c5f's, message 232 (3), and the
+preset sets the ones the state carries), the preset gives R927.61/MWh
 served-weighted over the engine check's 240 runs, against the re-derived R928.
 
 c5f against c5e, split by s_roof09 (c5f with rooftop at c5e's 900 MW a year): s_roof09 sits R14.1bn below c5f and 7.9 Mt above
@@ -5366,6 +5368,44 @@ The shown figures equal the page's own result for the same state (lastRes, adequ
 
 Suite on 2026-10-19c (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 849/853, node checks 761/765 plus
 audit 88/88; eng5 5/6; as on 19b, the four known failures and eng5 check 6.
+
+### Public wording for the two 2035 captions, and a check that the page's visible text carries no internal labels (build 2026-10-19d; user, 19 Oct 2026, message 235 (1) and (2))
+
+(1) The Least-cost path 2035 and IRP path 2035 captions now read for a public reader, every figure still read from PRESETS (and
+the IRP's 51% and 6 GW from FIXED.ccgtForceLoadPct and the preset's ccgtForceLoadMW). As shown on a fresh load (Chromium,
+harness/render/2026-10-19d/):
+
+- Least-cost path 2035: "CAPTION_LCP"
+- IRP path 2035: "CAPTION_IRP"
+
+Two corrections to the wording given. The 51% is an annual minimum capacity factor on the first 6 GW of gas (FIXED's comment:
+IRP 2025, Gazette 53596, p.34; simulateGasAnnualFloor tops gas up in the highest net-load hours until the year's output reaches
+it), so "load factor or more" became "an annual capacity factor of at least 51%". "Demand 27% above 2026" leaves out the 930 MW
+smelter block both 2035 presets carry: growth is 26.7% on the 2026 profile (203.5 TWh), and with the block 2035 demand is 30.7%
+above 2026, so the caption adds "plus 930 MW of smelter load".
+
+(2) harness/validate_public_text.js (in the suite): on a fresh load, every text node in the body outside scripts, styles,
+noscript and templates (collapsed panels and slider notes included), the title, placeholder, aria-label and alt attributes, and
+every preset caption (PRESET_DESC); one check per label: run names (c5, c5a-c5z), s_ names, 'the note', 'provisional until',
+message numbers, TODO, RESULTS. Text written only after a later action (a build run, an export) is not scanned. On main before
+this change (build 2026-10-19c), 2,306 pieces of text: run names in 7 distinct texts (12 places), 'the note' and 'provisional
+until' in 2 each (6 places), none of the others:
+
+- the Least-cost path 2035 and IRP path 2035 captions ('c5f', 'provisional until the note'; each also the button's title): fixed
+  in (1);
+- six LCOE slider notes anchored on c5e: lcoeWind 'c5e 2030: new wind ran at 41.7%, R0.64/kWh'; lcoeRooftop 'c5e 2030: the
+  same'; lcoeVrfb and lcoeIronAir 'c5e builds none, so there are no measured cycles to anchor it on'; lcoeBatt 'c5e 2030: 81
+  cycles, R5.99/kWh delivered'; lcoeDiesel 'c5e 2030: 2.9%, R17.18/kWh'. Open for Nick (TODO 14gu), so the check fails on 19d
+  with these five distinct texts.
+
+The Deep decarbonisation 2035, Fossil-free 2040 and IRP 2030 captions (on 214's branch, not main) follow the same rule in 214's
+pull request (235 (3)).
+
+Also corrected in this change (message 232): the 215 (1) entry's check line said build 19c's defaults equal c5f's; they do not
+(message 232 (3) lists the differences). It now says what validate_pathway_presets establishes: the preset sets c5f's 2035
+state and the page's lithium decline, LNG terminal charge and discount rate equal c5f's.
+
+Suite on 2026-10-19d: SUITE_COUNTS
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
