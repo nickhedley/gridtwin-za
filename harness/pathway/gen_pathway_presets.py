@@ -81,7 +81,24 @@ def demand_gap(cfg):
     return 100 * (tot(I['years'][str(Y)]) / tot(P['demand']['index'][str(Y)]) - 1)
 
 
+def c5f_demand():
+    # c5f's demand for the presets' years (message 231 (2)): growth on the 2026 base and the smelter block, from its build file,
+    # read by every preset that runs on the pathway's demand.
+    P = json.load(open('harness/pathway/c5f/pathway_c5f.json')); blk = P['demand'].get('block') or {}
+    yrs = {y: {'growthPct': (P['demand']['index'][str(y)] - 1) * 100,
+               'blockMW': max([mw for s, mw in blk.items() if int(s) <= y] or [0])} for y in (2026, 2030, 2035, 2040)}
+    DB = "// BEGIN GENERATED C5F_DEMAND (harness/pathway/gen_pathway_presets.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)"
+    DE = "// END GENERATED C5F_DEMAND"
+    return DB, DE, f"{DB}\n// c5f's demand by model year: growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))\nconst C5F_DEMAND = {j(yrs)};\n{DE}"
+
+
 html = open('index.html').read(); new = html
+DB, DE, dblk = c5f_demand()
+if DB in new:
+    a = new.index(DB); b = new.index(DE, a) + len(DE); new = new[:a] + dblk + new[b:]
+else:
+    if new.count('const PRESETS={') != 1: raise SystemExit('PRESETS not found once')
+    new = new.replace('const PRESETS={', dblk + '\nconst PRESETS={', 1)
 for cfg in PRESETS:
     BEGIN, END, blk, f, coal = block(cfg)
     if BEGIN in new:
