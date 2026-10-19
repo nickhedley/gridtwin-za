@@ -10490,16 +10490,6 @@ function bldCoalRawMW(year){
 }
 function bldCoalScale(){ return FIXED.coalInstalledMW / bldCoalRawMW(2026); }
 function bldCoalMW(year){ return bldCoalRawMW(year) * bldCoalScale(); }
-// IRP 2025 FIGURE 3 COAL (user, 17 Oct 2026, message 185 (4)): the per-unit dates the pathway reads as COAL_DATES
-// (harness/coal_dates_irp2025.json, Nick Hedley's reading of plan p.12, 13 Oct 2026, 50-year line, about +-250 MW), loaded at
-// start-up (P_FIG3) so the IRP presets read their coal retirement from them rather than typed values (rule 3). Retired by the
-// start of a year: coal installed less coal standing, with the same summation and scaling as bldCoalMW.
-let IRP_FIG3_UNIT_DATES = null;
-function irpFig3CoalRetiredMW(year){
-  if (!IRP_FIG3_UNIT_DATES) throw new Error('IRP 2025 Figure 3 coal dates not loaded (harness/coal_dates_irp2025.json)');
-  const keep = BLD_COAL_UNIT_DATES; BLD_COAL_UNIT_DATES = IRP_FIG3_UNIT_DATES;
-  try { return Math.round(FIXED.coalInstalledMW - bldCoalMW(year)); } finally { BLD_COAL_UNIT_DATES = keep; }
-}
 
 function bldRates(){
   const out = {};
@@ -20448,8 +20438,6 @@ const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) thr
 window.GTZA_READY = false;
 const P_TX = (typeof buildTxCurve === 'function') ? buildTxCurve().catch(() => {}) : Promise.resolve();
 // Modern-turbine wind map (bldWindModern, on by default): needed by any dispatch with new wind on the default profile.
-const P_FIG3 = fetch('harness/coal_dates_irp2025.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
-  .then(d => { if (d && d.units) IRP_FIG3_UNIT_DATES = d.units; }).catch(() => {});   // IRP presets' coal (message 185 (4))
 const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
   .then(d => { if (d){ setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; } }).catch(e => console.error('[GridTwin]', e.message));
 // Tracking-solar map (bldPvTracking, a preset key): needed by any dispatch with new tracking solar on the default profile.
@@ -20499,7 +20487,7 @@ function fillAboutNums(){
     el.textContent = f();
   }
 }
-Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD, P_FIG3, P_STRK]).then(() => {
+Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD, P_STRK]).then(() => {
   fillAboutNums();
   // The methodology table's capex line is filled from BLD_COST, so it cannot drift from the constants (7 Oct 2026:
   // it still read R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965).
