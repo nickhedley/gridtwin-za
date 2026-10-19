@@ -14,7 +14,10 @@ B = f"// BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from {S
 E = "// END GENERATED PRESET_SCORES"
 blk = f"{B}\nconst PRESET_SCORES = {json.dumps(sc)};\n{E}"
 html = open('index.html').read()
-if B in html: a = html.index(B); b = html.index(E, a) + len(E); new = html[:a] + blk + html[b:]
+# Find the block by the marker's fixed part, so a change of source replaces the block rather than adding a second one.
+BP = "// BEGIN GENERATED PRESET_SCORES ("
+if html.count(BP) > 1: raise SystemExit('PRESET_SCORES block found more than once')
+if BP in html: a = html.index(BP); b = html.index(E, a) + len(E); new = html[:a] + blk + html[b:]
 else:
     anchor = "const _gw = mw => String(+(mw / 1000).toFixed(1));"
     if html.count(anchor) != 1: raise SystemExit('anchor not found once')

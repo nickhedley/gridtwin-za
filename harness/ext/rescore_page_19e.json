@@ -4,6 +4,19 @@
  "terminal": 530.5,
  "K": 20,
  "presets": {
+  "Deep decarbonisation 2035": {
+   "page": {
+    "n": 240,
+    "shed": 2.2700652343646954,
+    "cost": 318.206584535459,
+    "target": 2.4244950507712617,
+    "co2": 15.994643351988461,
+    "demandGrowthPct": 26.745400000000007,
+    "carbon": 46,
+    "secs": 135,
+    "pass": true
+   }
+  },
   "Fossil-free 2040": {
    "page": {
     "n": 240,
@@ -13,7 +26,7 @@
     "co2": 0,
     "demandGrowthPct": 45.889599999999994,
     "carbon": 46,
-    "secs": 111,
+    "secs": 115,
     "pass": true
    }
   }
