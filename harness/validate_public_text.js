@@ -6,7 +6,8 @@
  * names (s_...), 'the note', 'provisional until', message numbers, TODO and RESULTS; and, from message 236 (5), change history
  * and provenance notes: 'Typed;', 'no source recorded', 'in the model since', 'until <date> 2026', and .json or .csv paths.
  * Error messages that show only when a file fails to load are not on a fresh page, so they are not scanned (TODO 14gu lists
- * them). Eskom Data Portal IDs (ESK19679) stay as citations; they carry no file extension.
+ * them). Eskom Data Portal IDs (ESK19679) stay as citations; they carry no file extension. One sentence is exempt from one label
+ * by its exact text (EXEMPT, with its reason); everything else on the page is held to every label.
  *
  * What is scanned, on a fresh load (the page opens on Today 2026):
  *   - every text node in the document body outside script, style, noscript and template elements, collapsed and hidden
@@ -37,6 +38,14 @@ const LABELS = [
   ["'in the model since'", /\bin the model since\b/i],
   ["'until <date> 2026'", /\buntil (?:\d{1,2} )?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? 2026\b/i],
   ['.json or .csv paths', /[\w./-]+\.(?:json|csv)\b/i],
+];
+
+// Exempt sentences, each by its exact text, for one label only, with the reason. The pattern itself stays as it is, so change
+// history dated by month alone is still caught; an exemption that no longer matches the page fails its own check.
+const EXEMPT = [
+  { label: "'until <date> 2026'",
+    text: 'Exports ran about 1,750 MW until February 2026 and about 745 MW since, a step of roughly 1 GW caused by the suspension of South32\u2019s Mozal aluminium smelter in Mozambique over tariff terms.',
+    reason: "the power system's history (Mozal's suspension), not the model's (user, 19 Oct 2026, message 238 (1))" },
 ];
 
 let npass = 0, nfail = 0; const fails = [];
@@ -81,13 +90,19 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
     const g = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
     // The same text shown in several places (a caption is also its button's title) is listed once, with every place.
     const hits = new Map();
-    for (const it of items){ const m = it.t.match(g); if (!m) continue;
-      const i = it.t.search(re), key = `[${[...new Set(m)].join(', ')}] ...${it.t.slice(Math.max(0, i - 60), i + 60)}...`;
+    const ex = EXEMPT.filter(e => e.label === name);
+    for (const it of items){ const t = ex.reduce((x, e) => x.split(e.text).join(' '), it.t); const m = t.match(g); if (!m) continue;
+      const i = t.search(re), key = `[${[...new Set(m)].join(', ')}] ...${t.slice(Math.max(0, i - 60), i + 60)}...`;
       if (!hits.has(key)) hits.set(key, []); hits.get(key).push(it.src); }
     const n = [...hits.values()].reduce((a, b) => a + b.length, 0);
     console.log(`\n${name}: ${hits.size} distinct text${hits.size === 1 ? '' : 's'}, ${n} place${n === 1 ? '' : 's'}`);
     for (const [k, v] of hits) console.log(`  ${k}\n      in ${v.join('; ')}`);
     check(`visible text carries no ${name}`, hits.size === 0, `${hits.size} distinct text${hits.size === 1 ? '' : 's'}, listed above`);
+  }
+  for (const e of EXEMPT){
+    const n = items.filter(it => it.t.includes(e.text)).length;
+    console.log(`\nexempt from ${e.label} (${e.reason}): ${n} place${n === 1 ? '' : 's'}\n  ${e.text}`);
+    check(`the exemption from ${e.label} still matches visible text`, n > 0, 'stale: remove it from EXEMPT or update its text');
   }
   console.log(`\n${npass}/${npass + nfail} public text checks pass`);
   if (fails.length){ console.log('\nFAILURES:'); fails.forEach(f => console.log(f)); }

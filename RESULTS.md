@@ -5417,9 +5417,11 @@ Message 236 (a scan of the rendered page on 19c), in the same change:
   paragraph's '(build 2026-10-14r)' is '(October 2026)'; the build panel's 'None - as in the central pathway' is 'None - as in
   the least-cost pathway'; the coal-flexibility note's 'Placeholder until the coal flexibility option.' dropped.
 - (5) validate_public_text adds five labels: 'Typed;', 'no source recorded', 'in the model since', 'until <date> 2026', and .json
-  or .csv paths. One hit remains, for Nick (TODO 14gu (a)): the exports note's 'Exports ran about 1,750 MW until February 2026
-  and about 745 MW since', a fact about Mozal's exit rather than change history. Error messages that show only when a file fails
-  to load are not on a fresh page; the six that name a path are listed in TODO 14gu (c) for after the note.
+  or .csv paths. One hit remained: the exports note's 'Exports ran about 1,750 MW until February 2026 and about 745 MW since, ...',
+  the power system's history (Mozal's suspension), not the model's. Decided (message 238 (1)): it stays, exempt from that one
+  label by its exact text with the reason in the check (EXEMPT), so change history dated by month alone is still caught; a further
+  check fails if the exemption stops matching the page. Error messages that show only when a file fails to load are not on a fresh
+  page; the six that name a path are TODO 14gy, after the note. With these, the check passes: 14/14.
 
 Also corrected in this change (message 232): the 215 (1) entry's check line said build 19c's defaults equal c5f's; they do not
 (message 232 (3) lists the differences). It now says what validate_pathway_presets establishes: the preset sets c5f's 2035
