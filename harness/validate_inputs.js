@@ -457,6 +457,28 @@ console.log('\nTariff constants against their published sources\n');
         + `written down.`);
 }
 
+// ── GAS: THE PAGE DEFAULTS ARE THE CENTRAL GAS CASE (user, 19 Oct 2026, message 227 (1)) ─────────────────
+// FIXED.costCcgt is the central case's fuel cost and FIXED.bldGasTerminalRkW the midpoint of the terminal range, both from
+// public_data/gas_price_cases.json (build_gas_cases.py). The fuel cost is recomputed from the case's coast price, the
+// regasification and exchange rate in the file's meta and the page's efficiency, not restated.
+{
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const num = re => { const m = html.match(re); return m ? +m[1] : NaN; };
+  const held = num(/\n\s*costCcgt:([0-9.]+),/), eff = num(/effCcgtHHV:([0-9.]+)/), term = num(/\n\s*bldGasTerminalRkW:([0-9.]+),/);
+  const G = JSON.parse(fs.readFileSync(path.join(ROOT, 'public_data', 'gas_price_cases.json'), 'utf8'));
+  const what = G.meta.what || '', usd = +G.meta.conversions['R per USD'];
+  const regas = +((what.match(/add USD ([0-9.]+)\/MMBtu variable regasification/) || [])[1]);
+  const rng = (what.match(/R([0-9]+)-([0-9]+)\/kW-yr/) || []).slice(1).map(Number);
+  const c = G.cases.central.years, ys = Object.keys(c);
+  const derived = (c['2026'].coast_usd_mmbtu + regas) * usd / 0.293071 / eff;
+  check('the central gas case\'s fuel cost follows from its coast price, regasification and exchange rate',
+        Math.abs(derived - c['2026'].fuel_r_mwh) < 0.01, `derived R${derived.toFixed(2)}, file R${c['2026'].fuel_r_mwh}`);
+  check('the page\'s gas fuel default (costCcgt) is the central case, flat in every year',
+        ys.every(y => Math.abs(c[y].fuel_r_mwh - held) < 0.005), `costCcgt R${held} against the case's R${c['2026'].fuel_r_mwh}`);
+  check('the page\'s LNG terminal charge is the midpoint of the sourced range',
+        rng.length === 2 && Math.abs(term - (rng[0] + rng[1]) / 2) < 1e-9, `bldGasTerminalRkW R${term} against R${rng.join('-')}`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');

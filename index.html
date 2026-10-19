@@ -1135,7 +1135,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <table class="mono" style="font-size:11.5px">
           <tr><td>Coal</td><td>R546/MWh fuel (Eskom FY2025 primary energy) &middot; +R80 VOM &middot; 1.04&nbsp;tCO&#8322;/MWh &middot; <span data-num="coalGW"></span>&nbsp;GW installed (Eskom FY2026 nominal) &middot; real per-unit retirement dates to 2051</td></tr>
           <tr><td>Diesel OCGT</td><td>R<span data-num="costDiesel"></span>/MWh fuel &middot; +R70 VOM &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
-          <tr><td>Gas CCGT</td><td>R<span data-num="costCcgt"></span>/MWh fuel &middot; +R35 VOM &middot; 0.348&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.50/USD &divide; 0.293071&nbsp;MWh/MMBtu &divide; 52% efficiency. Carbon added separately. This is the app&rsquo;s default only: the 2040 pathways, their central run among them, use the central gas case (R1,298/MWh at the coast in 2026, 13.25% of Brent at USD&nbsp;80) plus the LNG terminal as a fixed cost. Spot ($23/MMBtu) is about R2,490/MWh; pre-Hormuz consensus ($12) about R1,300. The national model treats gas plants as coastal (Richards Bay): no inland transport is charged. The inland adder (the Lilly pipeline at R9.00/GJ, NERSA 2025/26, once its flow is reversed; about USD&nbsp;2.8/GJ by truck before then, from an undated source) goes into the regional optimiser. The 2040 pathways also run five gas price cases (low, central, Brent USD&nbsp;100, high, and IRP 2025 as published), each delivered at the coast; all but the IRP case carry the LNG terminal as a fixed cost per kW of new gas. Shipping is their least-sourced input: a 2018 charter breakeven adjusted with US inflation and an estimated sea distance, and charter rates have likely risen since the Hormuz disruption.</td></tr>
+          <tr><td>Gas CCGT</td><td>R<span data-num="costCcgt"></span>/MWh fuel &middot; +R35 VOM &middot; 0.348&nbsp;tCO&#8322;/MWh &middot; LNG-fired, the central gas case (public_data/gas_price_cases.json): 13.25% of Brent at USD&nbsp;80 in 2024 dollars, USD&nbsp;11.74/MMBtu at the coast with shipping, plus USD&nbsp;0.25 of regasification, &times; R16.50/USD &divide; 0.293071&nbsp;MWh/MMBtu &divide; 52% efficiency, the same in every year. The LNG terminal is a fixed R<span data-num="gasTerminalRkW"></span>/kW-yr on new gas burning LNG, the midpoint of the sourced R354&ndash;707 range (a choice). Carbon added separately. Until 19 Oct 2026 the default was the FY2026 JKM reference, $18.50/MMBtu delivered with $2 of regasification and transport (R2,003/MWh) and no terminal charge. Spot ($23/MMBtu) is about R2,490/MWh; pre-Hormuz consensus ($12) about R1,300. The national model treats gas plants as coastal (Richards Bay): no inland transport is charged. The inland adder (the Lilly pipeline at R9.00/GJ, NERSA 2025/26, once its flow is reversed; about USD&nbsp;2.8/GJ by truck before then, from an undated source) goes into the regional optimiser. The 2040 pathways also run five gas price cases (low, central, Brent USD&nbsp;100, high, and IRP 2025 as published), each delivered at the coast; all but the IRP case carry the LNG terminal as a fixed cost per kW of new gas. Shipping is their least-sourced input: a 2018 charter breakeven adjusted with US inflation and an estimated sea distance, and charter rates have likely risen since the Hormuz disruption.</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; <span data-num="importsMW"></span>&nbsp;MW must-take at <span data-num="importsCF"></span>% &middot; the contract ends in 2030; the model keeps the imports to its horizon unless an end year is set</td></tr>
           <tr><td>Variable O&amp;M</td><td>Applied, and shown above per source. Thermal only:
             wind, solar and battery carry their O&amp;M as fixed R/kW-yr instead, which is the
@@ -5313,7 +5313,9 @@ const FIXED = {
   // 400; NTCSA's updated GCCA of 31 Oct 2025, per Cliffe Dekker Hofmeyr, 3 Dec 2025; 3,470 MW at 10%). In the build LP, up to
   // bldCapeWindMW of new wind (cw_) avoids the integration charge (txRPerKWyr) and loses bldCapeCurtPct of its output; the
   // engine cuts the same share of that wind's output (windCapeMW). Provincial totals only; no substation figures. 0: off.
-  bldCapeWindMW:0, bldCapeCurtPct:4,
+  // windCapeMW: the engine's MW of new wind on the allowance, 0 unless a build or preset sets it (the engine's own fallback;
+  // a FIXED default since 19 Oct 2026, message 213, so 'Least-cost path 2035' sets a key that exists).
+  bldCapeWindMW:0, bldCapeCurtPct:4, windCapeMW:0,
   // FREED COAL CONNECTIONS BY TECHNOLOGY (user, 14 Oct 2026, message 74): technologies that may not take a connection freed
   // by retired coal (rp_). c5b: ['wind'], so solar, storage and gas may (Eskom's repowering pipeline at six stations: solar PV
   // 3,184 MW, batteries 700, gas 1,000 at Kriel, wind 168 at Arnot; Engineering News, 17 Jun 2025). Empty: all, as before.
@@ -6404,7 +6406,13 @@ const FIXED = {
   //   costImports 550  Cahora Bassa & international purchases at contracted
   //                    rates (these DO embed the supplier's O&M and return -
   //                    contracted price, not a cost build-up).
-  //   costCcgt 2003    Derived from the FY2026 JKM reference (14 Aug 2026):
+  //   costCcgt 1298.42 FROM 19 Oct 2026 (user, message 227 (1)): the central gas case's fuel cost, R/MWh of electricity
+  //                    (public_data/gas_price_cases.json, case 'central', every year 2026-40: LNG at 13.25% of Brent USD 80 in
+  //                    2024 dollars, USD 11.74/MMBtu at the coast with shipping, plus USD 0.25/MMBtu variable regasification,
+  //                    at R16.50/USD and 52% HHV; SOURCES 'Gas price cases'), the price every central since c5b ran on. The LNG
+  //                    terminal is a separate fixed charge on new gas (bldGasTerminalRkW), so the USD 2/MMBtu of regasification
+  //                    and transport inside the old R2,003 is not counted twice. validate_inputs checks it against the file.
+  //   costCcgt 2003    SUPERSEDED 19 Oct 2026 (kept as the record). Derived from the FY2026 JKM reference (14 Aug 2026):
   //                    JKM realised Jan-Aug 2026 averaged ~$15.5 (low-teens
   //                    January, $18.75 April shoulder, $21.2 August on the
   //                    Hormuz disruption; 52wk range $9.46-22.35), blended
@@ -6439,7 +6447,7 @@ const FIXED = {
   costCoal:546, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   // emisCcgt 0.348 t/MWh from 9 Oct 2026 (was 0.37, which implied 48.9% efficiency): natural gas 53.06 kg CO2 per
   // MMBtu (HHV; US EPA GHG Emission Factors Hub) / 0.293071 MWh per MMBtu / 0.52, the efficiency costCcgt uses.
-  costCcgt:2003, emisCcgt:0.348, costDiesel:6100, emisDiesel:0.78,
+  costCcgt:1298.42, emisCcgt:0.348, costDiesel:6100, emisDiesel:0.78,
   // Variable O&M, R/MWh, thermal only - added 14 Aug 2026 following the
   // professional convention (NREL ATB 2022/2024, used by ReEDS/GenX; EIA AEO):
   // per-MWh VOM for thermal plant, zero for wind/solar/battery, whose O&M is
@@ -6603,7 +6611,15 @@ const FIXED = {
   // bldTurbineCapMW: every new turbine together, CCGT, OCGT on LNG and OCGT on diesel, at most 2 GW a year (tcap_<y>, user,
   // 12 Oct), applied when an OCGT option is on; CCGT and OCGT on LNG keep their own 1.2 GW from 2030. bldOcgtCostCase:
   // 'central' (the CCGT capex x EIA AEO2023's CT/CC ratio, derived in bldCostEntry) or 'irp' (the IRP's R12,981/kW, the
-  // low case). All off by default; the engine reads newOcgtMW and newOcgdMW.
+  // low case). All off by default; the engine reads newOcgtMW and newOcgdMW, 0 unless a build or preset sets them (FIXED
+  // defaults since 19 Oct 2026, message 213, at the engine's own fallback).
+  newOcgtMW:0, newOcgdMW:0,
+  // LNG TERMINAL CHARGE (user, 19 Oct 2026, message 227 (1)): a fixed charge on new gas burning LNG, CCGT and OCGT on LNG (not
+  // OCGT on diesel), R/kW-yr on the send-out basis, added to their fixed O&M by bldFom for the engine and the build optimiser
+  // alike. R530.5 is the midpoint of the sourced range R354-707/kW-yr (SOURCES 'Gas price cases': Ngqura, Richards Bay, Standard
+  // Bank and ENN terminal costs at 8% over 25 years), a choice rather than a figure from a source; the centrals since c4 ran on
+  // it (GAS_FOM_ADD=530.5). 0 for the IRP's gas case, which carries none. costCcgt carries no regasification beyond USD 0.25/MMBtu.
+  bldGasTerminalRkW:530.5,
   bldOcgtOn:0, bldOcgdOn:0, bldOcgdRateMW:1000, bldOcgdFromYear:2028, bldTurbineCapMW:2000, bldOcgtCostCase:'central',
   // bldNuclearAdd (11 Oct 2026, TODO 14be step 7): new nuclear decided in advance, {year: MW}, e.g. IRP 2025 Table 1
   // (1,250 in 2036 and 2037, 1,350 in 2038 and 2039). The build LP counts it as supply from its year and the engine
@@ -7104,7 +7120,7 @@ function simulate(u, prof, outPath, _soc0){
   //     charge if   cost_now  <  reservationPrice(tier, hour) * efficiency
   //
   // A 45%-efficient store charging at R690/MWh must expect better than R1,533 to
-  // break even; against gas clearing near R2,003 (costCcgt) it often will, but now it can
+  // break even; against gas clearing near costCcgt (R1,298 fuel from 19 Oct 2026; R2,003 when written) it often will, but now it can
   // decline the trade when it would not. Efficiency ordering is unchanged - the gate
   // sits in front of it, so a tier that fails the test is simply skipped.
   //
@@ -7399,7 +7415,7 @@ function simulate(u, prof, outPath, _soc0){
   //
   // CONE IS DERIVED from BLD_COST.ccgt through bldNetAnnuity, the same function the build LP
   // uses, rather than being a second constant. Rule 6.
-  const _pnmSrmc = (p.costCcgt ?? 2003) + (p.vomCcgt ?? 35);
+  const _pnmSrmc = (p.costCcgt ?? FIXED.costCcgt) + (p.vomCcgt ?? 35);
   const _pnmCone = (typeof bldNetAnnuity === 'function')
     ? bldNetAnnuity('ccgt', 2026 + Math.max(0, (p.scenarioYear ?? 2026) - 2026) / 2) * 1000
     : 350000;
@@ -7812,7 +7828,7 @@ function simulate(u, prof, outPath, _soc0){
   // This is the charge-from-coal path, so it does not need a renewable surplus to
   // exist - the question is whether cheap energy is available, not whether energy is
   // being spilled. That distinction matters in a system like South Africa's where the
-  // price floor is coal at ~R690/MWh and gas clears near R2,003 (costCcgt): a 45%-efficient store
+  // price floor is coal at ~R690/MWh and gas clears near costCcgt (R2,003 when written; R1,298 fuel from 19 Oct 2026): a 45%-efficient store
   // charging at R690 delivers at ~R1,533, which is in the money against gas.
   //
   // Capped at 168 hours (one week). Beyond that the perfect-foresight assumption does
@@ -9021,10 +9037,10 @@ function simulate(u, prof, outPath, _soc0){
   // the average vintage later and the cost slightly lower, so this is mildly conservative.
   const _vint = 2026 + Math.max(0, (p.scenarioYear ?? 2026) - 2026) / 2;
   // Open-cycle gas has no acap* fallback: its capex comes through bldCostEntry (which refuses an unset central).
-  const acapOc = tech => bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint);
+  const acapOc = tech => bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint, p);
   const acapAt = (tech, flat) => (typeof BLD_COST === 'undefined' || !BLD_COST[tech])
     ? flat
-    : bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint);
+    : bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint, p);
   const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
   // report it against NERSA's "transmission network charges" component. It is a BUILD
@@ -9773,6 +9789,7 @@ const BW6_WIND_BID_CF = 0.3724, BW6_PV_TRK_BID_CF = 0.3013;
 const BATT_BW3_BID = 9.5e9 / 2464e3;
 const BATT_EQUIP_BID = 165 * Math.pow(117/165, 5/12) * 16.5;
 const BATT_COST_HOURS = 4;   // the lithium capex below is per kW of a 4-hour system
+const LI_DECL = 0.03;        // lithium capex decline a year, real, from 2026 (BNEF -25% by 2035; message 227 (1)); see BLD_COST.batt
 const BLD_COST = {
   // WIND ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14av). BW6 wind compliant bids, R26,647/kW
   // (IPP Office REIPPPP historical data note, 7 Nov 2025, January 2024 rands; no wind was awarded in BW6) x SA CPI
@@ -9820,9 +9837,12 @@ const BLD_COST = {
   // Cases (bldBattCase): 'high' BW3 as bid (R3,990/kWh in 2026 rands); 'low' global turnkey equipment only
   // (R2,026/kWh, excludes EPC and connection). Replace with the first section 34 determination's bid prices when
   // published (TODO 14au).
-  batt:    { c2026: BATT_COST_HOURS * (BATT_EQUIP_BID * Math.pow(117/165, 8/12) + (BATT_BW3_BID - BATT_EQUIP_BID) * 1.035), decl:  0.0500, connIncl: true },
-  batt_high: { c2026: BATT_COST_HOURS * BATT_BW3_BID * 1.035, decl: 0.0500, connIncl: true },
-  batt_low:  { c2026: 8105, decl: 0.0500, connIncl: false },
+  // Lithium capex decline LI_DECL, the same in all three cases (user, 19 Oct 2026, message 227 (1)): 3% a year real, BNEF's
+  // 2035 forecast cited above (-25% for storage by 2035, about 3.1% a year over 2026-35; 3% gives -24%), the decline every
+  // central since c5b ran on (BATT_DECL=0.03). Was 5%, with no recorded source (TODO 14cw). BATT_DECL is now for sensitivities.
+  batt:    { c2026: BATT_COST_HOURS * (BATT_EQUIP_BID * Math.pow(117/165, 8/12) + (BATT_BW3_BID - BATT_EQUIP_BID) * 1.035), decl: LI_DECL, connIncl: true },
+  batt_high: { c2026: BATT_COST_HOURS * BATT_BW3_BID * 1.035, decl: LI_DECL, connIncl: true },
+  batt_low:  { c2026: 8105, decl: LI_DECL, connIncl: false },
   // long-duration storage, added Aug 2026. Both are priced per kW of power at
   // their own duration, like the lithium line above (R10,500/kW = 4h).
   //
@@ -9912,10 +9932,7 @@ let BLD_DISC = BLD_DISC_CENTRAL;
 // ONE RATE AND ONE LIFE EVERYWHERE (11 Oct 2026, user). Panels that annualise capital read BLD_DISC and BLD_LIFE
 // rather than carrying their own: the gas LCOE readout was 9% over 25 years against the optimiser's 8% over 30, the
 // CCS panel 9%, the site revenue NPV 10%. Derived here because FIXED is declared before BLD_COST and BLD_DISC.
-//   lcoeCcgt: capital at a 30% capacity factor (the assumption the old hand-derived R3,340 made) plus fuel
-//   (costCcgt) and carbon at the compliance rate; fixed and variable O&M left out, as before. Recomputes with them.
-FIXED.lcoeCcgt = Math.round(bldAnnuity(BLD_COST.ccgt.c2026, BLD_LIFE.ccgt) / (0.30 * 8.76)
-  + FIXED.costCcgt + FIXED.carbonTaxRPerT * FIXED.emisCcgt);
+//   lcoeCcgt: derived below, beside the lithium and diesel readouts (bldLcoeCcgtAt; message 229 (1)).
 //   ccsWaccPct: the CCS panel's return on the retrofit, the same 8% real. Its 20-year life (ccsLifeYrs) is kept
 //   because it is a retrofit's remaining life on an existing coal unit, which BLD_LIFE (new build) does not cover.
 FIXED.ccsWaccPct = BLD_DISC * 100;
@@ -9934,7 +9951,7 @@ const BLD_FOM = {
   // January 2024 rands (IPP Office REIPPPP historical data note, 7 Nov 2025), the same bid set as their capex, in 2026 rands.
   // Was 693 and 396 ('from NREL ATB', edition not recorded). Caveat: what the bid figure includes is not defined.
   wind: 367 * CPI_JAN24_TO_JAN26, pv: 269 * CPI_JAN24_TO_JAN26, rooftop: 495, offshore: 1403, ccgt: 462,
-  ocgt: FIXED.fomOcgtRkW, ocgd: FIXED.fomOcgtRkW,   // IRP 2025 workbook, 9F.05 (FIXED); the LNG terminal charge adds to ocgt only
+  ocgt: FIXED.fomOcgtRkW, ocgd: FIXED.fomOcgtRkW,   // IRP 2025 workbook, 9F.05 (FIXED); the LNG terminal charge (bldFom) adds to ccgt and ocgt, not ocgd
   batt: null,          // computed from capex, see bldFom()
   vrfb: 165, ironair: 165, // PNNL 2019, $10/kW-yr; see the note above
   // Nothing chemistry-specific exists for iron-air at fleet scale, checked again 23 Sep 2026.
@@ -9943,12 +9960,21 @@ const BLD_FOM = {
   // a year on Deep decarbonisation 2035 - it comes to about R5m a year against R165m of fixed
   // O&M. The fixed figure is what matters; the throughput one is noise.
 };
+// The LNG terminal charge on new CCGT and OCGT on LNG, R/kW-yr (FIXED.bldGasTerminalRkW): the scenario's own (S, else the page
+// state) where set, so the engine (which passes its scenario) and the build optimiser (the page state) charge the same.
+function bldGasTerminalRkW(S){
+  let src = S || null;
+  if (!src) try { src = state; } catch (e) { /* state is declared later in the file; at load, FIXED */ }
+  const v = (src && src.bldGasTerminalRkW != null) ? +src.bldGasTerminalRkW : +FIXED.bldGasTerminalRkW;
+  if (!(v >= 0)) throw new Error('bldGasTerminalRkW must be 0 or more: ' + v);
+  return v;
+}
 // Fixed O&M for a technology in a given year, R/kW-yr. Declines with capex where it is
 // expressed as a share of capex, flat otherwise - which is the ATB's own treatment.
 const BLD_FOM_BATT_SHARE = 0.025;   // lithium fixed O&M, a share of its capex a year
-function bldFom(tech, year){
+function bldFom(tech, year, S){
   if (tech === 'batt') return bldCapex('batt', year) * BLD_FOM_BATT_SHARE;
-  return BLD_FOM[tech] || 0;
+  return (BLD_FOM[tech] || 0) + ((tech === 'ccgt' || tech === 'ocgt') ? bldGasTerminalRkW(S) : 0);
 }
 // CAPEX CALIBRATED TO AWARDED TARIFFS (user, 15 Oct 2026, message 125 (2)). New wind and new tracking solar take the capex
 // at which a project earning the awarded tariff, at the bids' capacity factor, recovers its capital and the model's fixed
@@ -10043,6 +10069,14 @@ const bldLcoeDieselAt = cf => bldLcoeAt(bldOcgtCentralCost().c2026, BLD_FOM.ocgd
 FIXED.lcoeBatt = Math.round(bldLcoeBattAt(LI_REF_CYCLES) / 20) * 20;
 FIXED.lcoeRooftop = Math.round(bldLcoeAt(BLD_COST.rooftop.c2026, BLD_FOM.rooftop, BLD_LIFE.rooftop, FIXED_PV_CF_12Y * FIXED.rooftopDerate * 8.76) / 10) * 10;
 FIXED.lcoeDiesel = Math.round(bldLcoeDieselAt(DSL_REF_CF) / 50) * 50;
+// Gas CCGT readout (user, 19 Oct 2026, message 229 (1)), as lithium and diesel: capital and fixed O&M through bldLcoeAt at a
+// 30% capacity factor (the assumption the old hand-derived R3,340 made), fixed O&M from bldFom so it carries the LNG terminal
+// charge (moved out of the fuel price on build 19b), plus fuel (costCcgt), variable O&M (vomCcgt) and carbon at the compliance
+// rate. Until 19c fixed O&M, the terminal and VOM were left out (R2,496 on 19b). Rounded to the slider's step.
+const GAS_LCOE_REF_CF = 0.30;
+const bldLcoeCcgtAt = cf => bldLcoeAt(BLD_COST.ccgt.c2026, bldFom('ccgt', 2026, FIXED), BLD_LIFE.ccgt, cf * 8.76)
+  + FIXED.costCcgt + FIXED.vomCcgt + FIXED.carbonTaxRPerT * FIXED.emisCcgt;
+FIXED.lcoeCcgt = Math.round(bldLcoeCcgtAt(GAS_LCOE_REF_CF) / 20) * 20;
 // OPTIMISER GRID COST, TODO 14ar (7 Oct 2026, user decisions). Until now the build LP charged no grid cost to
 // any technology, while the engine added txRPerKWyr to new wind, solar and offshore afterwards, so the optimiser
 // chose them without it. Each new resource now pays, in the LP:
@@ -16049,7 +16083,7 @@ function marketPriceSeries(r, P){
 
   // Peaker net margin: what a marginal peaker earns above its own running cost, R/MW-yr.
   // Threshold is 3 x the annualised cost of that peaker.
-  const peakerSrmc = (P.costCcgt ?? 2003) + (P.vomCcgt ?? 35);
+  const peakerSrmc = (P.costCcgt ?? FIXED.costCcgt) + (P.vomCcgt ?? 35);
   const cone = (typeof bldNetAnnuity === 'function')
     ? bldNetAnnuity('ccgt', 2026 + Math.max(0, (P.scenarioYear ?? 2026) - 2026) / 2) * 1000
     : 350000;                                          // R/MW-yr fallback
@@ -17996,7 +18030,7 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 const SUB_CTRL = 'padding-left:16px;border-left:3px solid var(--alert2,#9E5C42);margin-left:6px;margin-top:-2px';
 const SLIDERS=[
   {grp:'Demand'},
-  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+'%',note:'Driven by electrification, economic growth, and new loads such as data centres (note: demand has been declining since 2012, due in part to a shrinking industrial sector).'},
+  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+(+(+v).toFixed(1))+'%',note:'Driven by electrification, economic growth, and new loads such as data centres (note: demand has been declining since 2012, due in part to a shrinking industrial sector).'},
   {grp:'Supply and build'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:FIXED.coalEAFPct,fmt:v=>v+'%',note:'Audited: FY2024 54.6&#37; &#183; FY2025 60.6&#37; &#183; FY2026 65.2&#37; &#183; Eskom target 70&#37;. 2023 crisis ran 50\u201355&#37;.'},
   {subgrp:'Outage settings'},
@@ -18049,14 +18083,14 @@ const SLIDERS=[
   {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. Typed; no source recorded (in the model since 1 Oct 2026). c5e builds none, so there are no measured cycles to anchor it on.'},
   {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:8000,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeBatt/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.batt+' years at 8% real, at one full cycle a day ('+LI_REF_CYCLES+' a year). Per kWh discharged; the charging energy is not costed. c5e 2030: '+Math.round(C5E_2030_LI_CYCLES)+' cycles, R'+((bldLcoeBattAt(C5E_2030_LI_CYCLES))/1000).toFixed(2)+'/kWh delivered.'},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:'Typed; no source recorded (in the model since 1 Oct 2026).'},
-  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R2.00/kWh \u2013 about 60&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the FY2026 reference of $18.50.'},
+  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R'+(FIXED.costCcgt/1000).toFixed(2)+'/kWh \u2013 about '+Math.round(100*FIXED.costCcgt/FIXED.lcoeCcgt)+'&#37; of this figure \u2013 so the balance is capital, fixed O&M and the LNG terminal charge, which fall per MWh as utilisation rises, plus variable O&M and carbon. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the central case\u2019s USD 11.74 at the coast.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Typed; no source recorded (in the model since 1 Oct 2026). Wide range; SMRs higher.'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:20000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': new diesel open-cycle\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.ocgd+' years at 8% real, at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor, the bottom of Lazard\u2019s range for new gas peaking plant (Levelized Cost of Energy+, June 2025): an international gas-peaker reference, not South African diesel. Plus fuel, variable O&M and carbon. Floor is diesel\u2019s own running cost, R'+((dieselSrmcR(FIXED))/1000).toFixed(2)+'/kWh. c5e 2030: '+(C5E_2030_DSL_CF*100).toFixed(1)+'&#37;, R'+((bldLcoeDieselAt(C5E_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
   {endsub:true},
   {grp:'Storage and flexibility'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
-  {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>v+'h',
+  {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>(+(+v).toFixed(1))+'h',
    note:`Hours of storage at rated power for new lithium only; the existing ${(FIXED.battPowerMW/1000).toFixed(2)} GW fleet stays at ${FIXED.battHours.toFixed(1)}h. South African utility procurement is 4h today, so that is the default. Longer durations add cell cost only; the inverter does not scale. In this model system cost is lowest with lithium at about 16 hours.`},
   {id:'newPsMW',label:'New pumped storage',min:0,max:FIXED.newPsMaxMW,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:`on ${(FIXED.psPowerMW/1000).toFixed(1)} GW existing. New additions modelled at ${FIXED.newPsHours} hours of storage (the duration of Eskom\u2019s planned 1,500 MW / 21 GWh Tubatse scheme in Limpopo).`},
@@ -18124,12 +18158,12 @@ const SLIDERS=[
   {id:'exportPriceR',label:'\u2013 export price received',min:150,max:1200,step:25,def:FIXED.exportPriceR,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',ctrlStyle:SUB_CTRL,
    note:'What a neighbouring utility pays for surplus South African energy. Defaults near SAPP system operation costs, which the draft SAPP Master Plan puts at USD 25\u201340/MWh through the horizon. Revenue offsets the system bill directly.'},
   {grp:'Prices and markets'},
-  {id:'carbonTaxRPerT',label:'Carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+v+'/t',note:'R46/t is the compliance rate: R308/t Phase 2 headline less allowances of up to 85&#37;. R308, R462 and R640 are policy prices, not forecasts \u2013 on the central path (allowances kept to 2030) the 2030 effective rate is R'+carbonTaxAt(2030, {...FIXED, carbonTaxPathOn:1, carbonAllowancePath:'kept2030'}).toFixed(1)+' in 2026 rands. The build optimiser\u2019s carbon cap gives the price that meets a cap.'},
+  {id:'carbonTaxRPerT',label:'Carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+Math.round(v)+'/t',note:'R46/t is the compliance rate: R308/t Phase 2 headline less allowances of up to 85&#37;. R308, R462 and R640 are policy prices, not forecasts \u2013 on the central path (allowances kept to 2030) the 2030 effective rate is R'+carbonTaxAt(2030, {...FIXED, carbonTaxPathOn:1, carbonAllowancePath:'kept2030'}).toFixed(1)+' in 2026 rands. The build optimiser\u2019s carbon cap gives the price that meets a cap.'},
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
    note:'Make the build optimiser meet an emissions ceiling in 2030, rather than only reporting whether it does. When turned on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
    ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC.'},
-  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R2,003 = $18.50/MMBtu delivered LNG &#215; R16.50/USD &#247; 0.293071 MWh/MMBtu &#247; 52&#37; efficiency. Each $1/MMBtu \u2248 R108/MWh. Fuel only; build cost is the Gas CCGT slider. The 2040 pathways\u2019 central gas case is lower, R1,298/MWh at the coast (public_data/gas_price_cases.json).'},
+  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+Math.round(v)+'/MWh',note:'R'+Math.round(FIXED.costCcgt).toLocaleString('en-US')+': the central gas case (public_data/gas_price_cases.json), LNG at 13.25&#37; of Brent USD 80 with shipping and USD 0.25/MMBtu of regasification, &#247; 0.293071 MWh/MMBtu &#247; 52&#37; efficiency, at R16.50/USD. Each $1/MMBtu \u2248 R108/MWh. Fuel only: the LNG terminal is a fixed R'+FIXED.bldGasTerminalRkW+'/kW-yr on new gas, and build cost is the Gas CCGT slider. Was R2,003 ($18.50/MMBtu delivered, the FY2026 Japan-Korea Marker reference) until 19 Oct 2026.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. On: reserve is paid at the rate below.'},
   {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,ctrlStyle:SUB_CTRL,
@@ -18230,31 +18264,17 @@ const PRESETS={
   // 3,724 (3,430 IPP + 294 Eskom BESS, 4 h), distributed generation 4,500. Storage was 300 until 07f, a tenth
   // of the plan.
   'IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),get coalDecomMW(){ return irpFig3CoalRetiredMW(2030); },newWindMW:7341,newPvMW:10313,newRooftopMW:4500,newBattMW:3724,newBattHours:4,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},
-  // IRP path 2035. The counterfactual the two transition presets should be read against: what
-  // the published plan builds by 2035, on the same demand and the same weather, so a retail
-  // comparison measures the transition rather than the passage of time. Comparing either of
-  // them with Today 2026 flatters today, whose coal is largely paid off and still running.
-  //
-  // COAL. Eskom's Generation Continued Operations schedule retires 8.4 GW by 2030; the MTSAO
-  // puts about 17 GW of coal and gas out by 2035. 16 GW of coal here until 17 Oct 2026, a figure no IRP source supports; from build
-  // 2026-10-17c the coal retired by the start of 2035 on IRP 2025 Figure 3's dates (irpFig3CoalRetiredMW; message 185 (4)).
-  // BUILD, from the IRP 2025 Table 1 itself (public_data/irp2025_extract.csv, cumulative 2026-2035), 7 Oct 2026:
-  // wind 21,041, solar PV 17,513, gas 10,750 (3,000 Eskom + 7,750 IPP), storage 4,724 (4,430 IPP + 294 Eskom
-  // BESS, 4 h), distributed generation 9,000 (900 MW a year). It replaces a straight-line interpolation between
-  // older 2030 and 2039 figures (wind 22.2, solar 18.9, storage 6.1, gas 11.6, rooftop 10.8 GW).
-  // GAS RUNS AT 51% ON THE FIRST 6 GW. The IRP 2025 sets a 51% minimum annual capacity factor on
-  // 6 GW of CCGT, 2030-2040, which is what ccgtForceLoad does here; the other 4.75 GW runs on merit. At
-  // build 06g the floor is not reachable: of its 26.8 TWh, 13.5 goes unmet even topped up in every hour,
-  // recorded as ccgtFloorUnmetMWh (15.6 TWh on the hourly sensitivity, ccgtForceHourly).
-  //
-  // DEMAND IS THE TRANSITION PRESETS', NOT THE IRP'S. It runs at the same +5% as Deep
-  // decarbonisation 2035 and Fossil-free 2040 so the three can be compared; the IRP's own 2030
-  // preset runs at +20%, its published trajectory. So this preset's emissions are NOT
-  // comparable with the IRP's own 142 Mt for 2035 - it is the IRP's build on this model's
-  // demand, which is the comparison the retail panel needs.
-  'IRP path 2035':{demandGrowthPct:5,coalEAFPct:coalEafFromFleet(67),get coalDecomMW(){ return irpFig3CoalRetiredMW(2035); },newWindMW:21041,newPvMW:17513,
-                   newRooftopMW:9000,newBattMW:4724,newBattHours:4,newCcgtMW:10750,lcoeCcgt:2500,
-                   ccgtForceLoad:1,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // IRP path 2035 (from build 2026-10-19b; user, message 227 (2)): the IRP 2025's Table 1 build to 2035 priced on c5f's inputs,
+  // the engine check of 19 Oct 2026 (RESULTS 'IRP 2025's Table 1 build priced on c5f's inputs'), so it compares like for like
+  // with 'Least-cost path 2035': the same demand, gas price, carbon path and coal dates. Until 19a it was typed: Table 1's
+  // build at the transition presets' +5% demand, the page's R2,003 gas and R46/t carbon, lcoeCcgt 2500, reserve and inertia
+  // pricing on (git history). The IRP's own 51% gas floor on 6 GW applies, as in the run.
+  // BEGIN GENERATED 'IRP path 2035' (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/pathway_irp2025.json; do not edit by hand)
+  'IRP path 2035':{scenarioYear:2035,newWindMW:21041.0,newPvMW:17513.0,newRooftopMW:8100,newBattMW:4724,newBattHours:3.472904318374259,newVrfbMW:0,newIronAirMW:0,newCcgtMW:10442,newOcgtMW:308,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:26.745400000000007,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"central",bldPvCase:"central",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",ccgtForceLoad:1,ccgtForceLoadMW:6000,get carbonTaxRPerT(){ return carbonTaxAt(2035, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 25916)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 7341.0); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 10313.0); }},
+  // END GENERATED 'IRP path 2035'
+  // BEGIN GENERATED 'Least-cost path 2035' (harness/pathway/gen_pathway_presets.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)
+  'Least-cost path 2035':{scenarioYear:2035,newWindMW:23362,newPvMW:14736,newRooftopMW:10800,newBattMW:8647,newBattHours:3.4504452411240893,newVrfbMW:0,newIronAirMW:0,newCcgtMW:2632,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:26.745400000000007,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"central",bldPvCase:"central",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",get carbonTaxRPerT(){ return carbonTaxAt(2035, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 25916)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 7246); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 9347); }},
+  // END GENERATED 'Least-cost path 2035'
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
   // (expected unserved energy at most 0.002% of demand, mean of twelve weather years), re-run
   // 22 Sep 2026 after the long-duration lookahead: 35 GW wind, 35 GW solar, 25 GW lithium at
@@ -18738,17 +18758,27 @@ function applyState(overrides){
 }
 const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'rooftopMW',
                                'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn', 'demandYear',
-                               'bldPvTracking'];   // the searched presets run new utility solar on the tracking profile (message 161 (3))
+                               'bldPvTracking',   // the searched presets run new utility solar on the tracking profile (message 161 (3))
+                               // The pathway settings 'Least-cost path 2035' carries from c5f's build file (message 213, 19 Oct 2026); no
+                               // other preset sets them, and resetting them also stops a build applied from the optimiser leaking into the next preset.
+                               'newOcgtMW', 'newOcgdMW', 'demandBlockMW', 'windCapeMW', 'bldCapeCurtPct', 'carbonAllowancePath', 'carbonTaxFull',
+                               'bldWindCorr', 'bldWindCase', 'bldPvCase', 'bldTariffCfBasis', 'bldGridIntVreShare', 'bldGridCost', 'bldOcgtCostCase',
+                               'reserveVreRefWindMW', 'reserveVreRefPvMW',
+                               'ccgtForceLoadMW'];   // the gas floor's MW, set by 'IRP path 2035' from its run (message 227 (2))
 // ONE DESCRIPTION PER PRESET, read by the caption under the buttons, the hover tooltip and the screen-reader
 // description alike, so the text lives only here. Hover tooltips alone appeared late and never on touch
 // screens; the caption shows the hovered or focused preset, and the active one otherwise. 7 Oct 2026.
+// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)
+const IRP2035_DEMAND_GAP_PCT = 7.5137236790951745;   // Table 1's demand path above the pathway's in 2035, customer demand plus firm exports
+// END GENERATED 'IRP path 2035' demand gap
 const _gw = mw => String(+(mw / 1000).toFixed(1));   // preset captions read their GW from PRESETS
 const PRESET_DESC = {
   '2025, as modelled': 'The model re-run on 2025\u2019s fleet, demand, weather, imports and coal outages, to compare with what Eskom did. Not Eskom\u2019s data.',
   'Today 2026': 'The system as it runs today: the 2026 fleet, demand and coal availability. The page opens here.',
   'IRP\'s 2030 targets': 'The IRP 2025\u2019s Table 1 build to 2030 (7.3 GW of new wind, 10.3 GW of new solar, 3.7 GW of storage, 6 GW of gas at its 51% floor), with coal retired on IRP 2025 Figure 3\u2019s dates, on the IRP\u2019s own demand growth.',
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
-  'IRP path 2035': 'The IRP 2025\u2019s Table 1 build to 2035 (21.0 GW of new wind, 17.5 GW of new solar, 4.7 GW of storage, 10.75 GW of gas), on the transition presets\u2019 +5% demand, so the three compare like for like.',
+  'IRP path 2035': (P => `IRP 2025\u2019s Table 1 build to 2035 on c5f\u2019s inputs, provisional until the note: ${_gw(P.newWindMW)} GW of new wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newRooftopMW)} GW of rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries and ${_gw(P.newCcgtMW + P.newOcgtMW)} GW of gas at the IRP\u2019s 51% floor, with ${_gw(P.coalDecomMW)} GW of coal retired on Figure 3\u2019s dates, on the pathway\u2019s demand (+${Math.round(P.demandGrowthPct)}% on 2026), as Least-cost path 2035. Table 1 is sized for demand ${(+IRP2035_DEMAND_GAP_PCT.toFixed(1))}% above this pathway\u2019s in 2035. The page shows one weather year; the note\u2019s figures are the mean of twelve.`)(PRESETS['IRP path 2035']),
+  'Least-cost path 2035': (P => `c5f, provisional until the note: the least-cost pathway\u2019s build to 2035 (${_gw(P.newWindMW)} GW of new wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newRooftopMW)} GW of rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries, ${_gw(P.newCcgtMW)} GW of gas) with ${_gw(P.coalDecomMW)} GW of coal retired, on the pathway\u2019s demand (+${Math.round(P.demandGrowthPct)}% on 2026). The page shows one weather year; the note\u2019s figures are the mean of twelve.`)(PRESETS['Least-cost path 2035']),
   'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035 and no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the preset search\u2019s cheapest build on the central costs, topped up until it meets half the reliability standard on independent outage draws.`)(PRESETS['Deep decarbonisation 2035']),
   'Fossil-free 2040': (P => `No coal, diesel or gas by 2040: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newOffshoreMW)} GW offshore, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the cheapest build the preset search found that meets half the reliability standard on the central costs.`)(PRESETS['Fossil-free 2040']),
 };
@@ -18764,7 +18794,7 @@ function presetCaption(name){
 // Button order, set 4 Oct 2026; any preset not listed is appended. The page opens on the
 // defaults, which are Today 2026, so that button is marked active, whatever its position.
 const PRESET_ORDER = ['2025, as modelled', 'Today 2026', 'IRP\'s 2030 targets',
-  'IRP\'s 2030 targets, grid delayed', 'IRP path 2035', 'Deep decarbonisation 2035', 'Fossil-free 2040'];
+  'IRP\'s 2030 targets, grid delayed', 'IRP path 2035', 'Least-cost path 2035', 'Deep decarbonisation 2035', 'Fossil-free 2040'];
 [...PRESET_ORDER.filter(n => n in PRESETS), ...Object.keys(PRESETS).filter(n => !PRESET_ORDER.includes(n))].forEach((name)=>{
   const b=document.createElement('button');b.textContent=name; if(name==='Today 2026')b.classList.add('active');
   b.type='button'; b.dataset.preset=name;
@@ -19773,7 +19803,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-18i';
+const BUILD_STAMP = '2026-10-19c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20416,6 +20446,7 @@ const _numInt = v => Math.round(v).toLocaleString('en-US');
 const _eskomRow = k => { const x = ESKOM_ACTUALS.structural.find(q => q.k === k); if (!x) throw new Error('ESKOM_ACTUALS has no row ' + k); return x.actual; };
 const ABOUT_NUM = {
   costCcgt: () => _numInt(FIXED.costCcgt),
+  gasTerminalRkW: () => String(+FIXED.bldGasTerminalRkW.toFixed(1)),
   costDiesel: () => _numInt(FIXED.costDiesel),
   drInterruptMW: () => _numInt(FIXED.drInterruptMW),
   reserveOperatingMW: () => _numInt(FIXED.reserveOperatingMW),

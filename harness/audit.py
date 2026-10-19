@@ -38,7 +38,9 @@ CHECKS = [
                                                                    'IRP preset values (IRP 2025 Table 1, 7 Oct 2026; coal from Figure 3\'s dates, 17 Oct 2026)'),
     ('Deep decarbonisation 2035',                                     'deep decarbonisation preset'),
     ('costCoal:546',                                               'coal cost R546/MWh'),
-    ('costCcgt:2003',                                              'CCGT dispatch R2003/MWh, FY2026 JKM reference'),
+    # costCcgt moved to the central gas case on build 2026-10-19b (user, message 227 (1)); was costCcgt:2003, the FY2026 JKM reference.
+    ('costCcgt:1298.42',                                           'CCGT dispatch R1,298.42/MWh, the central gas case (gas_price_cases.json)'),
+    ('bldGasTerminalRkW:530.5',                                    'LNG terminal R530.5/kW-yr on new gas, the midpoint of R354-707 (message 227 (1))'),
     # Engine features
     ('ccgtForceLoad',                                              'gas load factor toggle'),
     ('curtailFuelCost',                                            'curtailment cost fix'),
