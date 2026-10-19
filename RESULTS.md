@@ -4660,6 +4660,76 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### c5f's 2026 coal and CO2 against Eskom's FY2026: 22.8 TWh less coal and 31.7 Mt less CO2, of which 6.4 Mt is the emission factor; Eskom's implied factor would add 66.4 Mt to c5f's 2026-40 CO2 (+4.2%) and R2.5bn to engine PV (user, 19 Oct 2026, messages 217 and 219; build 2026-10-17g; no model change)
+
+Eskom's figures, year to 31 March 2026 (Eskom Integrated Report 2026, Nick's copy, not committed; cited by page): greenhouse gas
+emissions 184.5 Mt CO2e (FY2025 205.1; p.75); coal-fired stations 165,431 GWh (FY2025 179,426; supply table p.9, where Eskom
+generation 184,966 GWh less pumping 5,762 gives net sent out 179,204); coal burnt 96.54 Mt (p.75); EAF 65.16% (p.12); open-cycle
+output about 1.1 TWh, Eskom and IPPs (p.12); sales 178 TWh. Calendar 2025 inventory, stationary combustion 188.1 Mt CO2e (p.79;
+the report says it is not directly comparable with its CO2 statistic). Hourly data: Eskom's ESK19679 (data portal, obtained on
+request; annual sums only, the analysis ours, not Eskom's): FY2026 thermal generation 165.38 TWh, within 0.03% of the report's
+coal-fired 165,431 GWh, so the report's coal figure is on the portal's sent-out basis.
+
+The model's factor (message 217 (a)). FIXED.emisCoal = 1.04 t CO2 per MWh sent out (CO2, not CO2e). The engine applies it to
+coalFuelMWh, coal output scaled by the part-load heat-rate multiplier, so c5f's effective factor in 2026 is 1.0672 (1.04 x
+1.0262) and 1.058-1.074 over 2026-40. The same constant sets coal's carbon-tax cost in the engine and the build LP (MCcoal =
+costCoal + vomCoal + carbon price x emisCoal). Its source is not recorded: a code comment calls it Eskom's per-sent-out figure;
+SOURCES records only Meridian's fleet file, 1.008 capacity-weighted (TODO 14gp).
+
+Eskom's implied factor: 184.5 Mt over 165.38 TWh is 1.1156 t CO2e/MWh sent out; less Eskom's own open-cycle output (0.81 TWh at
+the model's 0.78) it is 1.1118; on a CO2 basis about 1.107 (less 0.45% for CH4 and N2O: IPCC 2006 defaults for coal in energy
+industries, 1 kg CH4 and 1.5 kg N2O per TJ against about 95 t CO2, at AR5's 28 and 265). Coal burnt per MWh sent out: 0.584 t.
+
+Line by line, c5f's calendar 2026 (hooked engine check, c5f/gen) against Eskom's FY2026, with calendar 2025 and calendar 2026 at
+the Jan-Aug trend (each line's calendar 2025 total times its Jan-Aug 2026 over Jan-Aug 2025) from the hourly data. "Effect" is
+what the line does to c5f's coal against FY2026: more non-coal supply or less load means less coal.
+
+| Line, TWh | c5f 2026 | Eskom FY2026 | Eskom calendar 2025 | Eskom calendar 2026 at Jan-Aug trend | c5f less FY2026 | Effect on c5f coal against FY2026 |
+|---|---|---|---|---|---|---|
+| Coal (sent out) | 142.5 | 165.4 | 170.4 | 153.9 | -22.8 |  |
+| Nuclear | 10.9 | 11.6 | 10.2 | 11.2 | -0.7 | +0.7 |
+| Open-cycle (Eskom and IPP) | 0.9 | 2.0 | 3.4 | 1.0 | -1.1 | +1.1 |
+| Hydro | 2.9 | 2.4 | 1.8 | 3.0 | +0.5 | -0.5 |
+| Pumped storage, generation less pumping | -1.2 | -1.5 | -1.5 | -1.3 | +0.2 | -0.2 |
+| Wind | 19.0 | 11.6 | 11.3 | 10.9 | +7.3 | -7.3 |
+| Utility solar | 8.9 | 5.3 | 5.1 | 5.1 | +3.6 | -3.6 |
+| CSP and other renewables (model: CSP and RMIPPPP hybrid) | 3.3 | 1.8 | 1.7 | 2.0 | +1.5 | -1.5 |
+| Imports | 9.3 | 6.8 | 6.6 | 8.3 | +2.6 | -2.6 |
+| Exports | 6.6 | 14.5 | 14.9 | 8.7 | -7.9 | -7.9 |
+| Domestic grid load met (supply less exports) | 189.5 | 190.9 | 194.0 | 185.4 | -1.4 | -1.4 |
+
+The lines sum to -23.2 TWh against the -22.8 TWh coal gap (0.4 TWh is congestion loss and rounding). Causes, largest first:
+- Renewables and imports (-15.5 TWh): c5f runs its whole 2026 fleet from 1 January, including the wheeled private wind and
+  solar Eskom does not meter and the 2026 committed floors (1,131 MW of wind, 1,018 MW of solar; new wind alone 4.1 TWh); its
+  existing wind gives 14.8 TWh against the portal's 11.6 (the wind benchmark's documented x1.26 on capacity, SOURCES); imports
+  run at the measured April-August 2026 mean (1,066 MW).
+- Exports (-7.9 TWh): c5f carries firm exports only (6.6 TWh); the portal's FY2026 exports are 14.5 TWh, falling to about
+  8.7 TWh on the 2026 trend.
+- Domestic load (-1.4 TWh), and nuclear, open-cycle and pumped storage (+2.0 TWh together).
+- Calendar against financial year: Eskom's own coal is falling, 170.4 TWh in calendar 2025 and about 153.9 TWh for calendar 2026
+  on the Jan-Aug trend (-9.7%); against that, c5f's 2026 coal gap is -11.4 TWh, not -22.8.
+
+CO2: 152.8 Mt (c5f 2026) + 6.4 (factor: c5f's coal at 1.1118 instead of 1.0672) + 25.4 (the coal gap at Eskom's factor) - 0.1
+(open-cycle) = 184.5 Mt, Eskom's FY2026 figure.
+
+What Eskom's implied factor would do (message 217 (c) and 219; no model change): every year's coal CO2 scales by the ratio of
+Eskom's factor to c5f's 2026 effective one, 1.0418 on a CO2e basis (1.0371 on CO2). c5f's CO2 by year, Mt, as run and with
+the CO2e factor:
+
+2026 152.8->159.2; 2027 156.4->163.0; 2028 156.0->162.5; 2029 142.6->148.5; 2030 130.0->135.4; 2031 116.6->121.5; 2032 104.8->109.2; 2033 95.1->99.0; 2034 87.6->91.3; 2035 85.1->88.7; 2036 83.8->87.3; 2037 80.5->83.8; 2038 76.3->79.5; 2039 70.0->72.8; 2040 67.3->70.0
+
+On the CO2 basis: 2026 152.8->158.5; 2027 156.4->162.2; 2028 156.0->161.7; 2029 142.6->147.8; 2030 130.0->134.8; 2031 116.6->120.9; 2032 104.8->108.7; 2033 95.1->98.6; 2034 87.6->90.9; 2035 85.1->88.3; 2036 83.8->86.9; 2037 80.5->83.5; 2038 76.3->79.1; 2039 70.0->72.5; 2040 67.3->69.7.
+
+2026-40: +66.4 Mt on CO2e (+59.0 on CO2). Carbon-tax payments in engine PV: +R2.54bn (+R2.25bn on CO2), against c5f's R61.1bn
+and its engine PV of R2,255.1bn. The engine's carbon cost per coal MWh rises by about R2.1 at 2026's R46/t and R2.8 from 2030 at
+R61.3/t. In the build LP coal's marginal cost rises by the same R2-3/MWh, about 0.4% of R546 fuel + R80 VOM + carbon: the merit
+order does not change (coal stays far below gas and above wind and solar), and the value of displacing coal rises by that 0.4%.
+A build could move only at the margin: s_carbonfull's R410.5/t from 2030 adds about R370/MWh to coal and cut CO2 by 245.5 Mt, and
+a linear reading of that puts the corrected factor at under 2 Mt and a few hundred MW; only a run would say. Not run.
+
+This replaces the unsourced 'roughly 180 Mt on 170 TWh of coal' in 'The IRP emissions comparison, redone' (now Eskom's
+FY2026 figures with pages).
+
 ### c5f run: adequate after two passes, engine PV R2,255.1bn (+R19.4bn on c5e), CO2 1,605.0 Mt (-22.7); rooftop at 1,200 MW a year carries +R14.1bn and -7.9 Mt of that (s_roof09); 31 sensitivities and s_roof09 complete, three topped up (user, 17-19 Oct 2026, messages 196, 209-212; build 2026-10-17g)
 
 Settings. c5f's central settings as in 'New central c5f, set up on build 2026-10-17g' (scratch env_c5f.sh: c5e's with ROOF_MW=1200,
@@ -11577,8 +11647,9 @@ coal fleet running far harder. Whose coal utilisation is right is a real questio
 number to put to them, rather than a discrepancy to reconcile away.
 
 Scope, stated rather than adjusted for: the model's universe is Eskom contracted demand excluding
-exports, so its Today 2026 emissions are 155 Mt against Eskom's own roughly 180 Mt on 170 TWh of
-coal. The gap above is larger than that scope difference.
+exports, so its Today 2026 emissions are 155 Mt against Eskom's 184.5 Mt CO2e on 165,431 GWh of coal sent out in the
+year to 31 March 2026 (Eskom Integrated Report 2026, pp.75 and 9; replaced 19 Oct 2026, message 217: was an unsourced 'roughly
+180 Mt on 170 TWh'; reconciled in 'c5f's 2026 coal and CO2 against Eskom's FY2026'). The gap above is larger than that scope difference.
 
 Not comparable: the IRP path 2035 preset emits 62 Mt, but it runs at the transition presets'
 demand (+5%) rather than the IRP's own (+20%), by design, so it cannot be read against the IRP's
