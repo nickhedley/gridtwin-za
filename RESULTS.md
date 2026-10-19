@@ -4845,7 +4845,7 @@ uptime, so not the idle cutoff; two engine-check groups were redone. TODO 14gn m
 
 ### Least-cost path 2035 preset: c5f's 2035 on the page; on the engine check's 240 runs it gives c5f's 2035 unserved energy (0.7329 GWh) and CO2 (85.138 Mt) to the digit, and its cost to the digit once c5f's lithium decline and LNG terminal charge are added; as the page runs it, without them, cost is R2.577bn (1.04%) lower (build 2026-10-19a; user, 19 Oct 2026, messages 213 and 225)
 
-Settings. Preset 'Least-cost path 2035', beside 'IRP path 2035', written into index.html by harness/pathway/gen_preset_lcp2035.py
+Settings. Preset 'Least-cost path 2035', beside 'IRP path 2035', written into index.html by harness/pathway/gen_pathway_presets.py (gen_preset_lcp2035.py on 19a)
 from c5f's build file (harness/pathway/c5f/pathway_c5f.json; c5f's pathway on a frozen copy of b82bfd3, build 2026-10-17g),
 copied into the repository with its 2031-35 engine check (harness/pathway/c5f/pathcheck_c5f_b.json; TF=0.5 LNG=1 GRID=1). The
 generator builds 2035's state as pathcheck.js does: c5f's cumulative build to 2035 (wind 23,362 MW, tracking solar 14,736,
@@ -4858,7 +4858,7 @@ none, central wind, solar and OCGT cost cases, tariff basis 'run', integration c
 the page default, as in the engine check (c5f's COAL_AVAIL applies to the optimiser's stress windows only). Caption: c5f,
 provisional until the note; the page shows one weather year, the note's figures twelve.
 
-Check: harness/validate_lcp2035.js, in the suite. It confirms the block is the generator's output, that the page state after
+Check: harness/validate_pathway_presets.js (validate_lcp2035.js on 19a), in the suite. It confirms the block is the generator's output, that the page state after
 applyState is the engine check's 2035 state on all 36 keys, then runs the preset on the engine check's profiles and draws (twelve
 weather years, 2014-2025, x 20 draws, seeds 71830529 + k x 104729 + year x 7919). Tolerances: unserved energy within 1% of
 2035's reliability target in the row (0.0242 GWh); system cost with c5f's two global cost settings within 0.01% (R0.025bn). Both
@@ -4915,6 +4915,79 @@ Message 225, the two values (no change to page defaults until the user replies; 
   (TODO 14gr).
 
 Suite on 2026-10-19a (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 835/839, node checks 748/752 plus audit 87/87; eng5 5/6. On 2026-10-18i (suite19a): 821/826. The change: the stale-stamp check passes and the 13 new checks pass; the four failures are the known ones (validate_findings iron-air, validate_consistency off-peak, validate_benchmarks peakerSeasonRatio, validate_external EDMSA), and eng5 check 6 as before.
+
+### Page defaults aligned with the central (lithium decline 3%, LNG terminal R530.5/kW-yr, gas fuel R1,298.42/MWh) and IRP path 2035 regenerated from the IRP engine check; both 2035 presets reproduce their runs to the digit (build 2026-10-19b; user, 19 Oct 2026, message 227 (1) and (2))
+
+(1) One source each (message 225's proposal, decided in 227 (1)):
+- Lithium capex decline: LI_DECL = 0.03 in index.html, used by BLD_COST.batt, batt_high and batt_low (was 0.0500 typed three
+  times, with no recorded source). BNEF's 2035 forecast, cited in BLD_COST's own comment: -25% for storage by 2035, about 3.1%
+  a year over 2026-35; 3% gives -24% and is what every central since c5b ran on (BATT_DECL=0.03). BATT_DECL is now for
+  sensitivities only (s_batt5: 0.05).
+- LNG terminal charge: FIXED.bldGasTerminalRkW = 530.5 R/kW-yr on new gas burning LNG (CCGT and OCGT on LNG, not OCGT on diesel),
+  added to their fixed O&M by bldFom, which the engine (simulate, passing its scenario) and the build optimiser (the page state)
+  both read. R530.5 is the midpoint of the sourced range R354-707/kW-yr (SOURCES 'Gas price cases': Ngqura, Richards Bay,
+  Standard Bank and ENN terminal costs, 8% over 25 years), a choice rather than a figure from a source.
+- Gas fuel default: FIXED.costCcgt 1298.42 R/MWh, the central case (public_data/gas_price_cases.json: LNG at 13.25% of Brent USD
+  80 in 2024 dollars, USD 11.74/MMBtu at the coast with shipping, plus USD 0.25 of regasification, R16.50/USD, 52% HHV), so
+  regasification is not counted twice: the old R2,003 (USD 18.50/MMBtu delivered, FY2026 JKM reference) carried USD 2 of
+  regasification and transport. The hard-coded 2003 fallbacks in the price panel and the peaker SRMC now read FIXED.costCcgt; the
+  gas assumptions text, the fuel slider's note and the gas LCOE note read their figures from the code. lcoeCcgt, derived from
+  costCcgt, moves from R3,201 to R2,496/MWh.
+- Harness: pathway_perfail.js sets the terminal (GAS_FOM_ADD sets state.bldGasTerminalRkW; the IRP gas case sets 0) instead of
+  adding to BLD_FOM, and records the decline and terminal it used (battDecl, gas.fomAdd) whether or not they were given.
+  pathcheck.js sets the run's terminal (0 included) and decline; a run that recorded none (before 19b without BATT_DECL, or before
+  09f without gas settings) needs BATT_DECL, or GAS_FUEL_R and GAS_FOM_ADD, to be checked as built, and is refused otherwise.
+  validate_inputs adds three checks: the central case's fuel cost recomputed from its coast price, regasification and exchange
+  rate; costCcgt equal to it in every year; the terminal equal to the range's midpoint.
+
+(2) IRP path 2035, regenerated by the same script (harness/pathway/gen_pathway_presets.py, which now writes both presets) from the
+IRP engine check of 19 Oct 2026 (message 215 (3)): harness/pathway/irp2025/pathway_irp2025.json, with build_irp.py beside it for
+provenance, and its 2031-35 engine check (pathcheck_irp2025_b.json, the hooked copy's rows less the generation hooks; cost and CO2
+identical to the plain check). 2035: wind 21,041 MW, tracking solar 17,513, rooftop 8,100, lithium 4,724 MW at 3.47 hours, CCGT
+10,442 and OCGT on LNG 308 (Table 1's 10,750 MW of gas as s_irpgas built it) with the IRP's 51% floor on 6 GW, coal standing
+25,916 MW (13,776 retired on Figure 3's dates), demand +26.7454% plus the 930 MW block, Cape wind 1,580 MW at 4%, gas R1,298.42,
+carbon R61.31 (carbonTaxAt on 'kept2030'); nuclear from 2036 and pumped storage from 2037, so none in 2035. It replaces the typed
+preset (Table 1 at +5% demand, R2,003 gas, R46/t carbon, rooftop 9,000, CCGT 10,750, lcoeCcgt 2500, reserve and inertia pricing
+on). Both generated presets leave reserve and inertia pricing at the page default (off), as the engine checks ran; Deep
+decarbonisation 2035 and Fossil-free 2040 still set them on (for 214). Its caption reads its figures from PRESETS and says
+provisional until the note; the page shows one weather year, the note's figures twelve.
+
+Check: harness/validate_pathway_presets.js (validate_lcp2035.js on 19a), in the suite, both presets: the blocks are the
+generator's output; the page state is the engine check's 2035 state (37 keys for Least-cost, 41 for IRP, with the gas floor's
+MW, share and years); the page's lithium decline, terminal charge and discount rate are the run's; then every weather year x
+the row's own draws (20 for Least-cost, 240 runs; 10 for IRP, 120 runs: its check stopped at 10 draws), seeds 71830529 + k x
+104729 + year x 7919. Tolerances as before: unserved within 1% of the target, cost within 0.01%. About 8 minutes (the IRP preset's
+gas floor re-runs each draw).
+
+| 2035, engine check's runs | Least-cost path 2035: page / run | IRP path 2035: page / run |
+|---|---|---|
+| Runs | 240 / 240 | 120 / 120 |
+| Unserved energy, GWh (target) | 0.7329 / 0.7329 (2.4244) | 0.0000 / 0.0000 (2.4660) |
+| System cost, R bn | 247.496 / 247.496 | 293.374 / 293.374 |
+| CO2, Mt | 85.138 / 85.138 | 83.922 / 83.922 |
+| Grid cost, R bn (run on 17g, before M11's fix) | 227.763 / 235.076 | 278.574 / 284.059 |
+
+The grid-cost gaps are M11's fix: rooftop capital in the grid-cost measure at R1,827/kW-yr (the 2030.5 vintage) against the
+flat R1,150: 10,800 MW x R677 = R7.313bn and 8,100 MW x R677 = R5.485bn.
+
+What moves on the page (each preset as the page runs it, run(): one weather year on the default profiles; build 19a to 19b):
+
+| Preset | System cost, R bn | Average cost, R/MWh | CO2, Mt | Gas, TWh |
+|---|---|---|---|---|
+| Today 2026 | 215.45, unchanged | 1,099 | 157.80 | 0 |
+| 2025, as modelled | 224.08, unchanged | 1,062 | 179.14 | 0 |
+| IRP's 2030 targets | 299.38 to 283.95 (-15.43) | 1,265 to 1,197 | 125.24 | 26.81 |
+| IRP's 2030 targets, grid delayed | 297.99 to 282.57 (-15.43) | 1,259 to 1,191 | 148.81 | 26.81 |
+| IRP path 2035 (regenerated) | 274.01 to 287.72 (+13.71) | 1,327 to 1,099 | 48.20 to 74.52 | 22.42 to 26.61 |
+| Least-cost path 2035 | 238.83 to 241.40 (+2.58) | 906 to 917 | 74.62 | 1.08 |
+| Deep decarbonisation 2035 | 227.57 to 231.46 (+3.89) | 1,090 to 1,110 | 16.09 | 0 |
+| Fossil-free 2040 | 288.41 to 295.70 (+7.29) | 1,437 to 1,478 | 0 | 0 |
+
+The IRP 2030 presets' fall is the gas price on 26.8 TWh less the terminal on their 6 GW and the dearer lithium; Deep and
+Fossil-free's rise is their 12-hour lithium at the 3% decline (10.5 and 14 GW); IRP path 2035's change is mostly its new demand
+(+26.7% against +5%). Scratch: m227/moves.js on both builds.
+
+Suite on 2026-10-19b (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 849/853, node checks 761/765 plus audit 88/88; eng5 5/6. audit.py pinned the old gas price (costCcgt:2003): repinned to the decided costCcgt:1298.42, with a new pin on the terminal charge (88 items, was 87), and the fuel slider's note spells out the Japan-Korea Marker (the all-caps check); audit, lint and structure rerun alone on the final text. validate_inputs 36/36 (three new), validate_pathway_presets 23/23 (was validate_lcp2035, 13); the four failures are the known ones (iron-air, off-peak, peakerSeasonRatio, EDMSA) and eng5 check 6. validate_outputs (42/42) and validate_response (87/87) do not move: their presets and the default page carry no new lithium or gas that the change prices differently within their tolerances.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
