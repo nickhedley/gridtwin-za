@@ -4989,6 +4989,42 @@ Fossil-free's rise is their 12-hour lithium at the 3% decline (10.5 and 14 GW); 
 
 Suite on 2026-10-19b (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 849/853, node checks 761/765 plus audit 88/88; eng5 5/6. audit.py pinned the old gas price (costCcgt:2003): repinned to the decided costCcgt:1298.42, with a new pin on the terminal charge (88 items, was 87), and the fuel slider's note spells out the Japan-Korea Marker (the all-caps check); audit, lint and structure rerun alone on the final text. validate_inputs 36/36 (three new), validate_pathway_presets 23/23 (was validate_lcp2035, 13); the four failures are the known ones (iron-air, off-peak, peakerSeasonRatio, EDMSA) and eng5 check 6. validate_outputs (42/42) and validate_response (87/87) do not move: their presets and the default page carry no new lithium or gas that the change prices differently within their tolerances.
 
+### Gas LCOE readout with fixed O&M, the LNG terminal and VOM (R2,496 to R2,900/MWh); IRP path 2035's caption gives the demand Table 1 is sized for (7.5% above the pathway's in 2035); render check on a fresh page load (build 2026-10-19c; user, 19 Oct 2026, message 229 (1)-(3))
+
+(1) FIXED.lcoeCcgt is now derived as the lithium and diesel readouts are (bldLcoeCcgtAt): capital and fixed O&M through
+bldLcoeAt at a 30% capacity factor, fixed O&M from bldFom('ccgt', 2026, FIXED) so it carries the LNG terminal charge that build
+19b moved out of the fuel price, plus fuel (costCcgt R1,298.42), variable O&M (vomCcgt R35) and carbon at the compliance rate;
+rounded to the slider's R20 step. R2,496 on 19b (capital, fuel and carbon only) to R2,900 on 19c: fixed O&M R462/kW-yr is R176
+and the terminal R530.5/kW-yr R202 per MWh at 30%, VOM R35. The slider note reads its fuel share from the code: R1.30/kWh, about
+45% (was about 52%). The readout feeds the replacement cost only (lcoeOf; not system cost or dispatch). Replacement cost by
+preset, one weather year as the page runs it, 19b to 19c: IRP path 2035 R342.42bn to R353.17bn (R1,379 to R1,423/MWh);
+Least-cost path 2035 R307.21bn to R307.65bn (R1,271 to R1,273/MWh); every other preset unchanged (Today 2026 R314.24bn, 2025 as
+modelled R346.48bn, Deep decarbonisation 2035 R277.10bn and Fossil-free 2040 R291.11bn carry no gas; IRP's 2030 targets R361.76bn
+and its grid-delayed variant R384.97bn type their own lcoeCcgt 2500, on 214's list, TODO 14gr). System cost unchanged.
+
+(2) IRP path 2035's caption adds one line read from the code: "Table 1 is sized for demand 7.5% above this pathway's in 2035."
+IRP2035_DEMAND_GAP_PCT (7.514) is written by gen_pathway_presets.py from the pair's index
+(harness/pathway/irp2025/index_irpdem.json, with gen_index.py beside it for provenance): customer demand plus firm exports on the
+IRP's path against the same on the build file's own index in 2035 (293.2 against 272.7 TWh).
+
+(3) Render check, Chromium on a fresh page load served over HTTP, no manual run(): each 2035 preset clicked as a user would, the
+page's own dispatch and adequacy ensemble left to finish (scratch m229/render.js, gasshot.js; screenshots in
+harness/render/2026-10-19c/). No page errors. The page shows one weather year (system cost and carbon intensity) and its own
+Monte Carlo expected shed; validate_pathway_presets' figures are the mean of the engine check's runs (twelve weather years x its
+draws), so they differ by basis, as the captions say.
+
+| 2035 preset | Shown: system cost, R bn/yr | Shown: carbon intensity, g/kWh | Shown: expected shed, GWh/yr | Same state in the engine (one year): system cost / CO2 / unserved | validate_pathway_presets, run mean: system cost / CO2 / unserved |
+|---|---|---|---|---|---|
+| Least-cost path 2035 | 241 | 250 | 1.1 | 241.40 / 74.62 Mt / 0.000 GWh | 247.50 / 85.14 Mt / 0.733 GWh |
+| IRP path 2035 | 288 | 236 | 0 | 287.72 / 74.52 Mt / 0.000 GWh | 293.37 / 83.92 Mt / 0.000 GWh |
+| Deep decarbonisation 2035 | 231 | 54 | 0.2 | 231.46 / 16.09 Mt / 0.000 GWh | (not in the check; 214) |
+
+The shown figures equal the page's own result for the same state (lastRes, adequacyEnsemble: expected unserved 1.079, 0 and
+0.165 GWh). Gas readout shown: R2.90/kWh (FIXED.lcoeCcgt 2,900), with fuel at R1.30/kWh, about 45%.
+
+Suite on 2026-10-19c (claude/lcp2035-preset, ESK19679.csv present, nothing running beside it): 849/853, node checks 761/765 plus
+audit 88/88; eng5 5/6; as on 19b, the four known failures and eng5 check 6.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing

@@ -20,6 +20,7 @@ import json, sys
 Y = 2035
 PRESETS = [
     {'name': 'IRP path 2035', 'build': 'harness/pathway/irp2025/pathway_irp2025.json', 'check': 'harness/pathway/irp2025/pathcheck_irp2025_b.json',
+     'gap_index': 'harness/pathway/irp2025/index_irpdem.json',
      # first generation replaces the hand-written preset and its comment block, from this line to the end of the preset
      'first_from': "  // IRP path 2035. The counterfactual the two transition presets should be read against: what",
      'first_to': "ccgtForceLoad:1,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},\n",
@@ -71,6 +72,15 @@ def block(cfg):
     return BEGIN, END, f"{BEGIN}\n  '{n.replace(chr(39), chr(92) + chr(39))}':{{{body}}},\n{END}", f, S[str(Y)]['coalMW']
 
 
+def demand_gap(cfg):
+    # How far the IRP's demand path sits above the pathway's in 2035 (message 229 (2)): customer demand plus firm exports on
+    # the pair's index (harness/pathway/irp2025/index_irpdem.json, message 224) against the same on the build file's own index.
+    P = json.load(open(cfg['build'])); I = json.load(open(cfg['gap_index'])); m = I['meta']
+    blk = max(((int(y), mw) for y, mw in (P['demand'].get('block') or {}).items() if int(y) <= Y), default=(0, 0))[1] * 8.76 / 1000
+    tot = lambda ix: m['base_TWh'] * ix + blk + m['firm_exports_TWh']
+    return 100 * (tot(I['years'][str(Y)]) / tot(P['demand']['index'][str(Y)]) - 1)
+
+
 html = open('index.html').read(); new = html
 for cfg in PRESETS:
     BEGIN, END, blk, f, coal = block(cfg)
@@ -83,6 +93,17 @@ for cfg in PRESETS:
         anchor = "  // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard"
         if new.count(anchor) != 1: raise SystemExit('anchor not found once')
         new = new.replace(anchor, blk + '\n' + anchor, 1)
+    if 'gap_index' in cfg:
+        gap = demand_gap(cfg)
+        GB = "// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
+        GE = "// END GENERATED 'IRP path 2035' demand gap"
+        gblk = f"{GB}\nconst IRP2035_DEMAND_GAP_PCT = {j(gap)};   // Table 1's demand path above the pathway's in 2035, customer demand plus firm exports\n{GE}"
+        if GB in new:
+            a = new.index(GB); b = new.index(GE, a) + len(GE); new = new[:a] + gblk + new[b:]
+        else:
+            anchor = "const _gw = mw => String(+(mw / 1000).toFixed(1));"
+            if new.count(anchor) != 1: raise SystemExit('caption anchor not found once')
+            new = new.replace(anchor, gblk + '\n' + anchor, 1)
     if '--check' not in sys.argv:
         print('written:', cfg['name'], {k: round(f[k], 4) if isinstance(f[k], float) else f[k] for k in ('newWindMW', 'newPvMW', 'newRooftopMW', 'newBattMW', 'newCcgtMW', 'newOcgtMW', 'newNuclearMW', 'demandGrowthPct', 'costCcgt')}, 'coal standing', coal, 'gas floor', f.get('ccgtForceLoad', 0))
 if '--check' in sys.argv:

@@ -9932,10 +9932,7 @@ let BLD_DISC = BLD_DISC_CENTRAL;
 // ONE RATE AND ONE LIFE EVERYWHERE (11 Oct 2026, user). Panels that annualise capital read BLD_DISC and BLD_LIFE
 // rather than carrying their own: the gas LCOE readout was 9% over 25 years against the optimiser's 8% over 30, the
 // CCS panel 9%, the site revenue NPV 10%. Derived here because FIXED is declared before BLD_COST and BLD_DISC.
-//   lcoeCcgt: capital at a 30% capacity factor (the assumption the old hand-derived R3,340 made) plus fuel
-//   (costCcgt) and carbon at the compliance rate; fixed and variable O&M left out, as before. Recomputes with them.
-FIXED.lcoeCcgt = Math.round(bldAnnuity(BLD_COST.ccgt.c2026, BLD_LIFE.ccgt) / (0.30 * 8.76)
-  + FIXED.costCcgt + FIXED.carbonTaxRPerT * FIXED.emisCcgt);
+//   lcoeCcgt: derived below, beside the lithium and diesel readouts (bldLcoeCcgtAt; message 229 (1)).
 //   ccsWaccPct: the CCS panel's return on the retrofit, the same 8% real. Its 20-year life (ccsLifeYrs) is kept
 //   because it is a retrofit's remaining life on an existing coal unit, which BLD_LIFE (new build) does not cover.
 FIXED.ccsWaccPct = BLD_DISC * 100;
@@ -9966,7 +9963,8 @@ const BLD_FOM = {
 // The LNG terminal charge on new CCGT and OCGT on LNG, R/kW-yr (FIXED.bldGasTerminalRkW): the scenario's own (S, else the page
 // state) where set, so the engine (which passes its scenario) and the build optimiser (the page state) charge the same.
 function bldGasTerminalRkW(S){
-  const src = S || (typeof state !== 'undefined' ? state : null);
+  let src = S || null;
+  if (!src) try { src = state; } catch (e) { /* state is declared later in the file; at load, FIXED */ }
   const v = (src && src.bldGasTerminalRkW != null) ? +src.bldGasTerminalRkW : +FIXED.bldGasTerminalRkW;
   if (!(v >= 0)) throw new Error('bldGasTerminalRkW must be 0 or more: ' + v);
   return v;
@@ -10071,6 +10069,14 @@ const bldLcoeDieselAt = cf => bldLcoeAt(bldOcgtCentralCost().c2026, BLD_FOM.ocgd
 FIXED.lcoeBatt = Math.round(bldLcoeBattAt(LI_REF_CYCLES) / 20) * 20;
 FIXED.lcoeRooftop = Math.round(bldLcoeAt(BLD_COST.rooftop.c2026, BLD_FOM.rooftop, BLD_LIFE.rooftop, FIXED_PV_CF_12Y * FIXED.rooftopDerate * 8.76) / 10) * 10;
 FIXED.lcoeDiesel = Math.round(bldLcoeDieselAt(DSL_REF_CF) / 50) * 50;
+// Gas CCGT readout (user, 19 Oct 2026, message 229 (1)), as lithium and diesel: capital and fixed O&M through bldLcoeAt at a
+// 30% capacity factor (the assumption the old hand-derived R3,340 made), fixed O&M from bldFom so it carries the LNG terminal
+// charge (moved out of the fuel price on build 19b), plus fuel (costCcgt), variable O&M (vomCcgt) and carbon at the compliance
+// rate. Until 19c fixed O&M, the terminal and VOM were left out (R2,496 on 19b). Rounded to the slider's step.
+const GAS_LCOE_REF_CF = 0.30;
+const bldLcoeCcgtAt = cf => bldLcoeAt(BLD_COST.ccgt.c2026, bldFom('ccgt', 2026, FIXED), BLD_LIFE.ccgt, cf * 8.76)
+  + FIXED.costCcgt + FIXED.vomCcgt + FIXED.carbonTaxRPerT * FIXED.emisCcgt;
+FIXED.lcoeCcgt = Math.round(bldLcoeCcgtAt(GAS_LCOE_REF_CF) / 20) * 20;
 // OPTIMISER GRID COST, TODO 14ar (7 Oct 2026, user decisions). Until now the build LP charged no grid cost to
 // any technology, while the engine added txRPerKWyr to new wind, solar and offshore afterwards, so the optimiser
 // chose them without it. Each new resource now pays, in the LP:
@@ -18077,7 +18083,7 @@ const SLIDERS=[
   {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. Typed; no source recorded (in the model since 1 Oct 2026). c5e builds none, so there are no measured cycles to anchor it on.'},
   {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:8000,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeBatt/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.batt+' years at 8% real, at one full cycle a day ('+LI_REF_CYCLES+' a year). Per kWh discharged; the charging energy is not costed. c5e 2030: '+Math.round(C5E_2030_LI_CYCLES)+' cycles, R'+((bldLcoeBattAt(C5E_2030_LI_CYCLES))/1000).toFixed(2)+'/kWh delivered.'},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:'Typed; no source recorded (in the model since 1 Oct 2026).'},
-  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R'+(FIXED.costCcgt/1000).toFixed(2)+'/kWh \u2013 about '+Math.round(100*FIXED.costCcgt/FIXED.lcoeCcgt)+'&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the central case\u2019s USD 11.74 at the coast.'},
+  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R'+(FIXED.costCcgt/1000).toFixed(2)+'/kWh \u2013 about '+Math.round(100*FIXED.costCcgt/FIXED.lcoeCcgt)+'&#37; of this figure \u2013 so the balance is capital, fixed O&M and the LNG terminal charge, which fall per MWh as utilisation rises, plus variable O&M and carbon. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the central case\u2019s USD 11.74 at the coast.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Typed; no source recorded (in the model since 1 Oct 2026). Wide range; SMRs higher.'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:20000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': new diesel open-cycle\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.ocgd+' years at 8% real, at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor, the bottom of Lazard\u2019s range for new gas peaking plant (Levelized Cost of Energy+, June 2025): an international gas-peaker reference, not South African diesel. Plus fuel, variable O&M and carbon. Floor is diesel\u2019s own running cost, R'+((dieselSrmcR(FIXED))/1000).toFixed(2)+'/kWh. c5e 2030: '+(C5E_2030_DSL_CF*100).toFixed(1)+'&#37;, R'+((bldLcoeDieselAt(C5E_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
@@ -18762,13 +18768,16 @@ const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'roofto
 // ONE DESCRIPTION PER PRESET, read by the caption under the buttons, the hover tooltip and the screen-reader
 // description alike, so the text lives only here. Hover tooltips alone appeared late and never on touch
 // screens; the caption shows the hovered or focused preset, and the active one otherwise. 7 Oct 2026.
+// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)
+const IRP2035_DEMAND_GAP_PCT = 7.5137236790951745;   // Table 1's demand path above the pathway's in 2035, customer demand plus firm exports
+// END GENERATED 'IRP path 2035' demand gap
 const _gw = mw => String(+(mw / 1000).toFixed(1));   // preset captions read their GW from PRESETS
 const PRESET_DESC = {
   '2025, as modelled': 'The model re-run on 2025\u2019s fleet, demand, weather, imports and coal outages, to compare with what Eskom did. Not Eskom\u2019s data.',
   'Today 2026': 'The system as it runs today: the 2026 fleet, demand and coal availability. The page opens here.',
   'IRP\'s 2030 targets': 'The IRP 2025\u2019s Table 1 build to 2030 (7.3 GW of new wind, 10.3 GW of new solar, 3.7 GW of storage, 6 GW of gas at its 51% floor), with coal retired on IRP 2025 Figure 3\u2019s dates, on the IRP\u2019s own demand growth.',
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
-  'IRP path 2035': (P => `IRP 2025\u2019s Table 1 build to 2035 on c5f\u2019s inputs, provisional until the note: ${_gw(P.newWindMW)} GW of new wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newRooftopMW)} GW of rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries and ${_gw(P.newCcgtMW + P.newOcgtMW)} GW of gas at the IRP\u2019s 51% floor, with ${_gw(P.coalDecomMW)} GW of coal retired on Figure 3\u2019s dates, on the pathway\u2019s demand (+${Math.round(P.demandGrowthPct)}% on 2026), as Least-cost path 2035. The page shows one weather year; the note\u2019s figures are the mean of twelve.`)(PRESETS['IRP path 2035']),
+  'IRP path 2035': (P => `IRP 2025\u2019s Table 1 build to 2035 on c5f\u2019s inputs, provisional until the note: ${_gw(P.newWindMW)} GW of new wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newRooftopMW)} GW of rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries and ${_gw(P.newCcgtMW + P.newOcgtMW)} GW of gas at the IRP\u2019s 51% floor, with ${_gw(P.coalDecomMW)} GW of coal retired on Figure 3\u2019s dates, on the pathway\u2019s demand (+${Math.round(P.demandGrowthPct)}% on 2026), as Least-cost path 2035. Table 1 is sized for demand ${(+IRP2035_DEMAND_GAP_PCT.toFixed(1))}% above this pathway\u2019s in 2035. The page shows one weather year; the note\u2019s figures are the mean of twelve.`)(PRESETS['IRP path 2035']),
   'Least-cost path 2035': (P => `c5f, provisional until the note: the least-cost pathway\u2019s build to 2035 (${_gw(P.newWindMW)} GW of new wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newRooftopMW)} GW of rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries, ${_gw(P.newCcgtMW)} GW of gas) with ${_gw(P.coalDecomMW)} GW of coal retired, on the pathway\u2019s demand (+${Math.round(P.demandGrowthPct)}% on 2026). The page shows one weather year; the note\u2019s figures are the mean of twelve.`)(PRESETS['Least-cost path 2035']),
   'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035 and no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the preset search\u2019s cheapest build on the central costs, topped up until it meets half the reliability standard on independent outage draws.`)(PRESETS['Deep decarbonisation 2035']),
   'Fossil-free 2040': (P => `No coal, diesel or gas by 2040: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW of tracking solar, ${_gw(P.newOffshoreMW)} GW offshore, ${_gw(P.newBattMW)} GW of ${P.newBattHours}-hour batteries and ${_gw(P.newIronAirMW)} GW of iron-air: the cheapest build the preset search found that meets half the reliability standard on the central costs.`)(PRESETS['Fossil-free 2040']),
@@ -19794,7 +19803,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-19b';
+const BUILD_STAMP = '2026-10-19c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

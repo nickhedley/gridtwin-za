@@ -1,0 +1,28 @@
+{
+ "meta": {
+  "what": "Demand index for the IRP-demand pair (message 224): model customer demand + firm exports = ESRG IRPDemandREF domestic grid + distributed PV + exports, each year; exports folded into domestic demand.",
+  "base_TWh": 203.52484806199925,
+  "firm_exports_TWh": 6.574145935095565,
+  "block": {
+   "2027": 930
+  },
+  "source": "public_data/esrg_irp_demand_ref.json (ESRG, CC BY 4.0)"
+ },
+ "years": {
+  "2026": 1.1156124484403855,
+  "2027": 1.0983148062432637,
+  "2028": 1.1201293416293683,
+  "2029": 1.1456186125925858,
+  "2030": 1.1864760316211798,
+  "2031": 1.2261792918223045,
+  "2032": 1.2577837866112678,
+  "2033": 1.2937656338880639,
+  "2034": 1.3342344025835258,
+  "2035": 1.3681216653215826,
+  "2036": 1.4043408300584326,
+  "2037": 1.4468044411717416,
+  "2038": 1.4920229984517668,
+  "2039": 1.5362013878996292,
+  "2040": 1.577517227611931
+ }
+}
