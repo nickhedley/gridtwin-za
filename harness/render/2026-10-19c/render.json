@@ -1,0 +1,89 @@
+{
+ "stamp": "2026-10-19c",
+ "gas": {
+  "readout": "R2.90",
+  "lcoeCcgt": 2900,
+  "costCcgt": 1298.42
+ },
+ "presets": {
+  "Least-cost path 2035": {
+   "active": "Least-cost path 2035",
+   "caption": "c5f, provisional until the note: the least-cost pathway’s build to 2035 (23.4 GW of new wind, 14.7 GW of tracking solar, 10.8 GW of rooftop, 8.6 GW of 3.5-hour batteries, 2.6 GW of gas) with 13.8 GW of coal retired, on the pathway’s demand (+27% on 2026). The page shows one weather year; the note’s figures are the mean of twelve.",
+   "board": {
+    "status": "Stable",
+    "shed": "1.1 GWh",
+    "peak": "38.4 GW"
+   },
+   "kpis": {
+    "systemCost": "241 R bn/yr",
+    "carbonIntensity": "250 gCO₂/kWh",
+    "replacement": "1.27 R/kWh",
+    "avg": "0.92 R/kWh"
+   },
+   "model": {
+    "totalCostBn": 241.40260749234838,
+    "systemCostBn": 241.40260749234838,
+    "co2Mt": 74.62347198717616,
+    "unservedGWh": 3.637978807091713e-15,
+    "replAvg": 1272.5172668690548,
+    "eueGWh": 1.0789549218006018,
+    "scenarioYear": 2035,
+    "demandGrowthPct": 26.745400000000007
+   },
+   "gasReadout": "R2.90"
+  },
+  "IRP path 2035": {
+   "active": "IRP path 2035",
+   "caption": "IRP 2025’s Table 1 build to 2035 on c5f’s inputs, provisional until the note: 21 GW of new wind, 17.5 GW of tracking solar, 8.1 GW of rooftop, 4.7 GW of 3.5-hour batteries and 10.8 GW of gas at the IRP’s 51% floor, with 13.8 GW of coal retired on Figure 3’s dates, on the pathway’s demand (+27% on 2026), as Least-cost path 2035. Table 1 is sized for demand 7.5% above this pathway’s in 2035. The page shows one weather year; the note’s figures are the mean of twelve.",
+   "board": {
+    "status": "Stable",
+    "shed": "0 GWh",
+    "peak": "38.4 GW"
+   },
+   "kpis": {
+    "systemCost": "288 R bn/yr",
+    "carbonIntensity": "236 gCO₂/kWh",
+    "replacement": "1.42 R/kWh",
+    "avg": "1.10 R/kWh"
+   },
+   "model": {
+    "totalCostBn": 287.7218787123945,
+    "systemCostBn": 287.7218787123945,
+    "co2Mt": 74.51815175463402,
+    "unservedGWh": 0,
+    "replAvg": 1422.6899970410936,
+    "eueGWh": 0,
+    "scenarioYear": 2035,
+    "demandGrowthPct": 26.745400000000007
+   },
+   "gasReadout": "R2.90"
+  },
+  "Deep decarbonisation 2035": {
+   "active": "Deep decarbonisation 2035",
+   "caption": "27 GW of coal retired by 2035 and no new gas: 26.5 GW wind, 27.5 GW of tracking solar, 10.5 GW of 12-hour batteries and 0.6 GW of iron-air: the preset search’s cheapest build on the central costs, topped up until it meets half the reliability standard on independent outage draws.",
+   "board": {
+    "status": "Stable",
+    "shed": "0.2 GWh",
+    "peak": "31.2 GW"
+   },
+   "kpis": {
+    "systemCost": "231 R bn/yr",
+    "carbonIntensity": "54 gCO₂/kWh",
+    "replacement": "1.45 R/kWh",
+    "avg": "1.11 R/kWh"
+   },
+   "model": {
+    "totalCostBn": 231.46101586324417,
+    "systemCostBn": 231.46101586324417,
+    "co2Mt": 16.088662343892217,
+    "unservedGWh": 0,
+    "replAvg": 1452.828537312707,
+    "eueGWh": 0.16483212583202436,
+    "scenarioYear": 2035,
+    "demandGrowthPct": 5
+   },
+   "gasReadout": "R2.90"
+  }
+ },
+ "errors": []
+}

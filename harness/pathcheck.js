@@ -52,6 +52,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // COSTSET (7 Oct 2026): the same cost set as the pathway run; see pathway/costset.js.
  require('./pathway/costset.js')(w, process.env.COSTSET);
  // The pathway's lithium capex decline (BATT_DECL, 13 Oct 2026) when it recorded one, so the check prices lithium as the optimiser did.
+ // From build 2026-10-19b the page's own rate is 3% (was 5%) and runs record the rate they used. A run recorded before 19b
+ // with no battDecl was built at 5%: give BATT_DECL so the check prices lithium as its optimiser did (refused otherwise,
+ // unless COSTSET, whose table replaces the decline).
+ if (P.battDecl==null && !process.env.COSTSET){ if (process.env.BATT_DECL===undefined) throw new Error('the run records no battDecl: it was built at the page default of its build (5% before 2026-10-19b); pass BATT_DECL'); P.battDecl=+process.env.BATT_DECL; }
+ else if (P.battDecl!=null && process.env.BATT_DECL!==undefined && +process.env.BATT_DECL!==+P.battDecl) throw new Error('BATT_DECL '+process.env.BATT_DECL+' disagrees with the run\'s battDecl '+P.battDecl);
  if (P.battDecl!=null) { if (process.env.COSTSET) throw new Error('BATT_DECL with COSTSET: the cost set replaces the decline'); const d=+P.battDecl; if (!(d>-0.5 && d<0.5)) throw new Error('BATT_DECL out of range: '+d); w.eval(`for (const k of ['batt','batt_high','batt_low']){ if(!BLD_COST[k] || !('decl' in BLD_COST[k])) throw new Error('BLD_COST.'+k+'.decl missing'); BLD_COST[k].decl=${d}; }`); }
  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): the same overrides as pathway_perfail.js.
  // From build 2026-10-09f the pathway records its gas settings (P.gas): they are applied here, by year for a GAS_CASE,
@@ -66,9 +71,14 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (P.gasFloor && P.gasFloor.engine && P.gasFloor.mw > 0) w.eval(`state.ccgtForceLoadMW=${+P.gasFloor.mw};`);
  const PG=P.gas||null;
  if (PG && (process.env.GAS_FUEL_R || process.env.GAS_FOM_ADD)) throw new Error('the pathway recorded its gas settings (P.gas); do not pass GAS_FUEL_R or GAS_FOM_ADD');
+ // From build 2026-10-19b the page's gas defaults are the central case (costCcgt R1,298.42, terminal R530.5/kW-yr); a run with no
+ // P.gas (before build 2026-10-09f) was built at R2,003 and no terminal, so both must be given to check it as built.
+ if (!PG && (process.env.GAS_FUEL_R===undefined || process.env.GAS_FOM_ADD===undefined)) throw new Error('the run records no gas settings (before build 2026-10-09f): pass GAS_FUEL_R and GAS_FOM_ADD (2003 and 0 as it was built)');
  const GFR=PG ? PG.fuelRFlat : (process.env.GAS_FUEL_R ? +process.env.GAS_FUEL_R : null), GFA=PG ? PG.fomAdd : +(process.env.GAS_FOM_ADD||0);
  if (GFR!=null) w.eval(`if(!('costCcgt' in state)) throw new Error('costCcgt missing'); state.costCcgt=${GFR};`);
- if (GFA) w.eval(`if(!('ccgt' in BLD_FOM)) throw new Error('BLD_FOM.ccgt missing'); BLD_FOM.ccgt+=${GFA}; BLD_FOM.ocgt+=${GFA};`);
+ // The LNG terminal charge is the page constant bldGasTerminalRkW from build 2026-10-19b (was an addition to BLD_FOM): set to
+ // the run's own, 0 included, so a run without one is not charged the new default.
+ w.eval(`if(!('bldGasTerminalRkW' in FIXED)) throw new Error('FIXED.bldGasTerminalRkW missing'); state.bldGasTerminalRkW=${+GFA};`);
  const Y=Object.keys(P.sched).map(Number); const cum={wind:0,pv:0,rooftop:0,batt:0,battMWh:0,vrfb:0,ironair:0,ccgt:0,off:0,phes:0,phel:0,ocgt:0,ocgd:0};
  // Open-cycle gas (build 2026-10-11f): the pathway's capex case, so the engine charges what the optimiser charged.
  if (P.ocgt && P.ocgt.costCase) w.eval(`state.bldOcgtCostCase=${JSON.stringify(P.ocgt.costCase)};`);
