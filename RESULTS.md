@@ -5750,6 +5750,74 @@ network capacity and demand). Proposed for Nick to choose.
 Suite on 2026-10-19f (claude/rooftop-map, ESK19679.csv present, nothing running beside it): 863/867, node checks 775/779 plus
 audit 88/88; eng5 5/6; the four known failures and eng5 check 6, as on 19d.
 
+### Site speed, step 1 and 2: stored risk panels, a session cache, panels computed only on screen and cancelled when a control moves; a fresh load is free in 4 s instead of 55, a preset click in 0.5-2.2 s instead of 37-201 s; no figure changes (build 2026-10-19g; user, 19 Oct 2026, messages 226, 242, 251, 254-256)
+
+What changed (index.html; branch claude/site-speed):
+- Stored risk panels. stored_panels.json holds the Monte Carlo risk panel, the adequacy board and the capture curve for the
+  start-up state and every preset, computed by the page's own code (harness/validate_stored_panels.js --write). The page uses
+  an entry only for the exact scenario (every key of state, FIXED and whether the measured profiles loaded) and only while its
+  fingerprint matches: a hash of the page's scripts as parsed and of the nine start-up engine files as they arrive.
+- Session cache: panels and main results computed live are kept for the session (main results as a copy taken before anything
+  draws on them, since drawDispatch adds stack.curtailment to the result; up to eight scenarios).
+- Panels run only when on screen (IntersectionObserver): Monte Carlo, adequacy, capture curve, heat stress, and the external
+  comparison, which sits in a closed section yet ran the engine twice on every change. A panel owed while off screen is dimmed.
+  Without IntersectionObserver (old browsers, the test harnesses) every panel counts as on screen, as before.
+- A control that moves cancels the panel runs in flight before their next draw (one draw at a time, was 12 and 8).
+- The first capture curve, and the other panels, wait until every engine input has settled (TODO 14ds (e)).
+- The weather-year files load once for both ensembles; the 9 MB weather file is no longer fetched at start-up for the P50/P90
+  table, which fills only after a site query.
+
+Measured on Cloudflare: before, the live site (main, build 2026-10-19f); after, the branch preview
+(claude-site-speed-gridtwin-za.hedley-nick.workers.dev, build 2026-10-19g, stored panels used). Chromium 141 headless in this
+session's 4-core container, through its network proxy; 1400 x 900; each case in a fresh browser context; 'free' is the end of the
+last long task (over 50 ms) before the status line hides and stays hidden for 3 s; 'longest' is the longest single long task,
+the worst wait a click or key sees. Scripts and raw outputs: scratchpad m251/tools/measure2.js, verify.js; m251/t/*.json.
+
+| Case | Main, normal speed | Branch, normal speed | Main, CPU 4x slower | Branch, CPU 4x slower |
+|---|---|---|---|---|
+| Fresh load: first results / free / longest, s | 2.6 / 55.0 / 4.5 | 2.4 / 4.1 / 0.9 | 5.1 / 235.8 / 19.3 | 5.8 / 12.7 / 3.9 |
+| Fresh load: bytes as Cloudflare serves them | 7.73 MB, 103 requests | 3.26 MB, 79 requests | | |
+| IRP path 2035 click: results / free / longest, s | 12.9 / 200.6 / 20.3 | 2.2 / 2.2 / 2.2 | 55.5 / 898.2 / 90.8 | 11.1 / 11.1 / 11.0 |
+| Slider moved, then the risk panel scrolled into view: free / longest, s | 44.9 / 4.4 | 43.1 / 0.7 | not run (256 (2)) | 200.1 / 3.1 |
+
+Preset clicks at normal speed (results / free / longest, s):
+
+| Preset | Main | Branch |
+|---|---|---|
+| 2025, as modelled | 4.1 / 54.2 / 5.7 | 0.9 / 0.9 / 0.9 |
+| Today 2026 | 3.2 / 47.5 / 4.8 | 0.6 / 0.6 / 0.6 |
+| IRP's 2030 targets | 9.4 / 138.4 / 13.6 | 1.7 / 1.7 / 1.7 |
+| IRP's 2030 targets, grid delayed | 9.1 / 140.5 / 13.6 | 1.6 / 1.6 / 1.6 |
+| IRP path 2035 | 12.9 / 200.6 / 20.3 | 2.2 / 2.2 / 2.2 |
+| Least-cost path 2035 | 2.8 / 43.9 / 4.3 | 0.6 / 0.6 / 0.6 |
+| Deep decarbonisation 2035 | 3.0 / 43.3 / 4.8 | 0.5 / 0.5 / 0.5 |
+| Fossil-free 2040 | 2.5 / 37.4 / 4.0 | 0.5 / 0.5 / 0.5 |
+
+At four times slower the branch's clicks freeze 2.4 to 11.0 s (IRP path 2035 the longest). Step 1 alone (the branch with
+IntersectionObserver removed, normal speed): fresh load free 8.5 s, longest 3.6 s; clicks 2.6 to 11.4 s, because heat stress
+and the external comparison still ran in every run(). After a slider move the risk panel computes live, one draw per task, so
+the page stays usable but the panel takes as long as before; the web worker (251 (3)) is what moves that work off the page.
+
+Checks.
+- validate_stored_panels.js (86 checks, in the suite): every stored panel equals a fresh computation to the digit for the
+  start-up state and all eight presets; the fingerprint matches; each file the panels were computed from is unchanged; the page
+  draws the stored panels exactly as fresh ones; a revisit from the session cache draws every element as a fresh run; and the
+  main results are identical whether or not the weather years have loaded (the stored panels mean they may never load).
+- On the preview (verify.js): the page used the stored panels with no live draw; stored_panels.json is 85 kB raw, 15.5 kB as
+  Cloudflare serves it (zstd), and arrived 1.4-1.8 s into the load, before the panels needed it; profiles.json served with one
+  trailing space (same numbers, different file) made the fingerprint miss and the panels compute live; a preset then one slider
+  moved: the preset from the store, then the risk panel live; a reload after moving a slider restores the scenario from the URL,
+  no stored entry matches, and the panels compute live.
+- Found and fixed while checking: the page first hashed its scripts when asked, so a script added later (an extension, a test
+  harness) changed the fingerprint; it now hashes them once when parsing ends. On main, the board's last word was the adequacy
+  ensemble's because the two runs alternated draw by draw; the stored panels keep that order (Monte Carlo, then adequacy).
+- The site review's B3 (two ensembles writing the board) is timing only: no change (recorded in the review file with batch 2).
+
+Rule from this (message 255 (4)): every pull request that changes index.html regenerates stored_panels.json (RULES.md, HANDOVER).
+Writing takes about 20 minutes, the check about 25.
+
+Suite on 2026-10-19g: 966/970 with ESK19679.csv present: node checks 878/882 (validate_stored_panels 86/86 among them) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 19 Oct 2026 about 21:00-23:00 UTC, with other jobs beside it; the failing scripts give the same failures as main.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
