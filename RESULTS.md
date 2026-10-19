@@ -4717,6 +4717,8 @@ R2,141.0bn, +R346.4bn. Present-value cost per tonne of CO2 cut (user, message 22
 
 s_carbonfull's engine PV is almost all the higher tax on the tonnes still emitted (R347.0bn against c5f's R61.1bn in present
 value), so only the column without the tax compares across the three.
+The IRP's R2,111/t is at c5f's demand; at the IRP's demand its plan costs R243.4bn more and emits 20.2 Mt more than c5f
+re-optimised, so it has no abatement cost there (the pair, below; message 229 (4)).
 
 (2) Beside it, as an indicative split of the gap that does not add up: the single-element runs on c5f, each against c5f's null
 ('c5f run'): s_irpgas (IRP's gas) +R203.8bn engine PV, -40.0 Mt CO2; s_be7 (IRP's nuclear) +R35.4bn, -21.4 Mt; s_be6 (battery
