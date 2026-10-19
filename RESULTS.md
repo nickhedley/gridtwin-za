@@ -5750,6 +5750,38 @@ network capacity and demand). Proposed for Nick to choose.
 Suite on 2026-10-19f (claude/rooftop-map, ESK19679.csv present, nothing running beside it): 863/867, node checks 775/779 plus
 audit 88/88; eng5 5/6; the four known failures and eng5 check 6, as on 19d.
 
+### The rooftop tab took system losses three times; it now takes them once, and yields at the defaults rise 20-45% (build 2026-10-19j; user, 19 Oct 2026, message 252, site review A47)
+
+Cause (confirmed in the code on build 2026-10-19f): rtCalc multiplied the site's capacity factor, which already carries the
+system losses (Open-Meteo yield at a performance ratio of 0.80; the 0.21 fallback is PVGIS with its losses), by 'Shading &
+losses' (default 0.80) and again by a per-type 'system/inverter' factor (usagePct, 0.80 to 0.90).
+
+What changed (index.html, rtCalc and RT_TYPES): the capacity factor carries the system losses; the control is shading only
+(Minimal 97%, Moderate 93% default, Heavy 85%; indicative, unsourced, as the old values were); usagePct is removed. The 0.21
+fallback is PVGIS at a tilt equal to the latitude, so it is divided by the 25-degree orientation factor (1.08) to bring it to a
+flat roof before the orientation control applies, since that control is relative to flat.
+
+Before (build 2026-10-19f, main) and after (2026-10-19j), every other control at its default (typical obstructions, flat roof,
+15-degree north orientation, 5% escalation, no battery, default bill and tariff); 'fallback' is no site queried, 'site' a site
+whose capacity factor is 20%. Computed by rtCalc itself in jsdom (scratchpad b1/rt.js), read from window._rtSheet:
+
+| Roof area, bracket | Case | kWp | CF before / after | Yield MWh/yr before / after | Savings R k/yr before / after | Payback yr before / after |
+|---|---|---|---|---|---|---|
+| 60 m2, home | fallback | 9.9 | 17.6% / 19.0% | 14 / 16 | 13 / 16 | 15.8 / 12.7 |
+| 400 m2, small C&I | fallback | 65.7 | 17.6% / 19.0% | 89 / 109 | 134 / 165 | 7.0 / 5.6 |
+| 2,000 m2, large C&I | fallback | 331.1 | 17.6% / 19.0% | 435 / 551 | 647 / 671 | 6.2 / 5.9 |
+| 12,000 m2, industrial | fallback | 1,989.6 | 17.6% / 19.0% | 2,460 / 3,309 | 682 / 682 | 47.5 / 47.5 |
+| 60 m2, home | site 20% | 9.9 | 16.8% / 19.5% | 13 / 17 | 13 / 16 | 16.8 / 12.3 |
+| 400 m2, small C&I | site 20% | 65.7 | 16.8% / 19.5% | 85 / 112 | 128 / 169 | 7.4 / 5.5 |
+| 2,000 m2, large C&I | site 20% | 331.1 | 16.8% / 19.5% | 414 / 566 | 641 / 672 | 6.2 / 5.9 |
+| 12,000 m2, industrial | site 20% | 1,989.6 | 16.8% / 19.5% | 2,342 / 3,404 | 682 / 682 | 47.5 / 47.5 |
+
+The CF column is after orientation and shading (the yield is kWp x CF x 8,760, after usagePct before). The industrial case does
+not move: the default bill caps self-consumption, so the extra yield is exported, which earns nothing in the tab. Caveat: the
+shading values are indicative; the change only removes the double count.
+
+Suite on 2026-10-19j: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:00-22:50 UTC with other jobs beside it. Render check in Chromium (fresh load, rooftop tab): 5/5, the shading control's three values and label, the default capacity factor 19.0%, no undefined or NaN, no page errors.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
