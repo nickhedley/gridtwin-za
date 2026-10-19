@@ -1475,6 +1475,11 @@ const num = t => {
       // larger sales base), the existing batteries at 68 MW alone R1.205 (no change), all together R1.118. Deliberate input
       // changes, tolerance unchanged.
       //
+      // UPDATED 19 Oct 2026, R0.718 -> R0.904. Deep decarbonisation 2035 rebuilt at c5f's 2035 demand (+26.7% and the 930 MW
+      // block; wind 43 GW, solar 38.75, lithium 14.6 at 12 h, iron-air 2; user, messages 231 and 234 (5); build 19e). Measured on
+      // 19e in one page: the old preset R0.737, the old build at the new demand R0.578, the new preset R0.904, so the move is the
+      // new build (more capital, partly spread over more sales). Deliberate scenario change, tolerance unchanged.
+      //
       // UPDATED 18 Oct 2026, R0.965 -> R0.718, build 2026-10-17i (user, messages 199 and 200 (4)). Deep decarbonisation 2035
       // re-searched on c5e's costs and topped up (wind 32.5 -> 26.5 GW, solar 29.5 -> 27.5 GW tracking, lithium 19 -> 10.5 GW,
       // iron-air 1.125 -> 0.625 GW). Measured on 17i, each in a fresh page: main's preset R1.009, main's preset with tracking
@@ -1523,8 +1528,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 0.718) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.718 for Deep `
+              Math.abs(ncap.newCap - 0.904) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.904 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

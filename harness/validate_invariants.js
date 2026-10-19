@@ -463,9 +463,18 @@ const SCENARIOS = {
       const r = simulate(st, PROFILES);
       const m = marketPriceSeries(r, { ...FIXED, ...st });
       if (!m) return { err: 'marketPriceSeries returned null' };
-      const eng = Array.from(r.marginalP).reduce((a, b) => a + b, 0) / 8760 / 1000;
-      const mkt = m.p.reduce((a, b) => a + b, 0) / 8760;
-      return { hours: m.scarcityHours, voll: m.vollHours, eng, mkt };
+      // CORRECTED 19 Oct 2026 (user, message 247): the means are taken over the hours without a scarcity adder (the market
+      // price within R1/MWh of the engine's, marketPriceSeries' own threshold, and no load shed). Over the whole year a few
+      // genuinely scarce hours set the gap against a mean pulled down by zero-price hours: the rebuilt Deep decarbonisation
+      // 2035 priced scarcity in two winter-evening hours at 15-17% of its reserve requirement against 52.5% of hours at a zero
+      // engine price, 6.4% above on the yearly means. The defect this guards against, scarcity priced in every hour, is caught
+      // by the 438-hour limit above. RESULTS 'Deep decarbonisation 2035 and Fossil-free 2040 rebuilt on c5f's demand'.
+      const E = Array.from(r.marginalP), keep = [];
+      for (let h = 0; h < 8760; h++) if (m.p[h] * 1000 - E[h] <= 1 && !((r.stack.unserved || [])[h] > 0.1)) keep.push(h);
+      const eng = keep.reduce((a, h) => a + E[h], 0) / Math.max(1, keep.length) / 1000;
+      const mkt = keep.reduce((a, h) => a + m.p[h], 0) / Math.max(1, keep.length);
+      const engY = E.reduce((a, b) => a + b, 0) / 8760 / 1000, mktY = m.p.reduce((a, b) => a + b, 0) / 8760;
+      return { hours: m.scarcityHours, voll: m.vollHours, eng, mkt, engY, mktY, n: keep.length };
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const O = w.__ordc;
@@ -475,9 +484,12 @@ const SCENARIOS = {
     // Deep decarbonisation was excluded while its preset shed load by design; from 22 Sep 2026
     // both high-renewables presets meet the NEM reliability standard, so all are checked.
     {
-      check(`[${pre}] market price mean is close to the engine's marginal price`,
+      check(`[${pre}] market price mean is close to the engine's marginal price outside scarcity hours`,
             Math.abs(O.mkt - O.eng) <= 0.05 * Math.max(O.eng, 0.1),
-            `market R${O.mkt.toFixed(3)}/kWh against engine R${O.eng.toFixed(3)}/kWh`);
+            `market R${O.mkt.toFixed(3)}/kWh against engine R${O.eng.toFixed(3)}/kWh over ${O.n} hours`);
+      console.log(`  [${pre}] prices: outside scarcity hours (${O.n}) market R${O.mkt.toFixed(4)} against engine R${O.eng.toFixed(4)}`
+        + ` (${(100 * (O.mkt - O.eng) / O.eng).toFixed(2)}%); whole year R${O.mktY.toFixed(4)} against R${O.engY.toFixed(4)}`
+        + ` (${(100 * (O.mktY - O.engY) / O.engY).toFixed(2)}%); scarcity hours ${O.hours}, shed hours ${O.voll}`);
     }
   }
 

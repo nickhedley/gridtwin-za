@@ -1,0 +1,34 @@
+{
+ "stamp": "2026-10-19c",
+ "decl": 0.03,
+ "terminal": 530.5,
+ "K": 20,
+ "presets": {
+  "Deep decarbonisation 2035": {
+   "page": {
+    "n": 240,
+    "shed": 1.8459923525980568,
+    "cost": 234.14126109626167,
+    "target": 1.9005002014472452,
+    "co2": 19.93109527035116,
+    "demandGrowthPct": 5,
+    "carbon": 46,
+    "secs": 134,
+    "pass": true
+   }
+  },
+  "Fossil-free 2040": {
+   "page": {
+    "n": 240,
+    "shed": 2.0776695847163213,
+    "cost": 296.1007240951169,
+    "target": 1.807865672205555,
+    "co2": 0,
+    "demandGrowthPct": 5,
+    "carbon": 46,
+    "secs": 108,
+    "pass": false
+   }
+  }
+ }
+}

@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""gen_pathway_presets.py: writes the two 2035 pathway presets into index.html from their build files, so they sit on one
-basis (user, 19 Oct 2026, messages 213 and 227 (2)):
+"""gen_pathway_presets.py: writes the pathway presets into index.html from their build files, so they sit on one basis
+(user, 19 Oct 2026, messages 213, 227 (2) and 232 (2)):
+
+  "IRP's 2030 targets"    the IRP engine check's 2030 state (below; check harness/pathway/irp2025/pathcheck_irp2025_a.json)
+  "..., grid delayed"     the same state with 60% of its new wind and solar connected and curtailment capped at 10%
 
   'Least-cost path 2035'  c5f's pathway (harness/pathway/c5f/pathway_c5f.json; frozen copy of b82bfd3, build 2026-10-17g)
   'IRP path 2035'         IRP 2025's Table 1 build on c5f's inputs (harness/pathway/irp2025/pathway_irp2025.json, written by
                           build_irp.py beside it), the engine check of 19 Oct 2026 (message 215 (3))
 
-Nothing in a block is typed: every value is read from the build file, the way pathcheck.js builds 2035's state: cumulative
-new build to 2035, coal standing in 2035 (retired = FIXED.coalInstalledMW less it), nuclear decided in advance to 2035, the
-pathway's demand index and smelter block, Cape wind, the ASTR reserve reference (FIXED fleet plus the run's wind and solar to
-2030), 2035's gas fuel price, the 51% gas floor where the run applied it in the engine, the carbon price (the page's
-carbonTaxAt on the run's path) and the run's recorded settings that are state. The run's lithium decline and LNG terminal
+Nothing in a block is typed: every value is read from the build file, the way pathcheck.js builds a year's state: cumulative
+new build to the preset's year, coal standing in that year (retired = FIXED.coalInstalledMW less it), nuclear decided in
+advance to that year, the pathway's demand index and smelter block, Cape wind, the ASTR reserve reference (FIXED fleet plus
+the run's wind and solar to 2030; after 2030 only, as pathcheck.js sets it), that year's gas fuel price, the 51% gas floor
+where the run applied it in the engine, the carbon price (the page's carbonTaxAt on the run's path) and the run's recorded
+settings that are state. The run's lithium decline and LNG terminal
 charge are global cost settings, not state: from build 2026-10-19b the page defaults equal c5f's (message 227 (1)), and
 validate_pathway_presets.js checks they still do.
 
@@ -18,7 +22,19 @@ validate_pathway_presets.js checks they still do.
 """
 import json, sys
 Y = 2035
+PRE2030 = ("  // IRP's 2030 targets and its grid-delayed variant (from build 2026-10-19d; user, message 232 (2)): generated from the IRP\n"
+           "  // engine check's 2030 state (harness/pathway/irp2025/, as IRP path 2035), so their demand, gas price, carbon path, coal dates\n"
+           "  // and coal availability are c5f's; the typed preset before it (IRP demand +20%, coalEafFromFleet(67), lcoeCcgt 2500, 4,500 MW\n"
+           "  // rooftop and 3,724 MW of storage) is in git history. The build is the run's (build_irp.py): Table 1's wind and solar by year,\n"
+           "  // s_irpgas_c5f's gas and 51% floor, rooftop 900 MW a year from 2027, s_be6_c5f's lithium. The variant connects 60% of the\n"
+           "  // state's new wind and solar and caps congestion curtailment at 10%, as before.\n")
 PRESETS = [
+    {'name': "IRP's 2030 targets", 'year': 2030, 'build': 'harness/pathway/irp2025/pathway_irp2025.json', 'check': 'harness/pathway/irp2025/pathcheck_irp2025_a.json',
+     'first_from': "  // DEMAND FROM 19 OCT 2026 (user, message 231 (2)): both 2030 presets run on c5f's demand for 2030", 'first_to': "lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},\n", 'preamble': PRE2030},
+    # 'grid delayed': 40% of the new wind and solar cannot connect and curtailment is 10% (the variant's own definition, 7 Oct 2026)
+    {'name': "IRP's 2030 targets, grid delayed", 'year': 2030, 'build': 'harness/pathway/irp2025/pathway_irp2025.json', 'check': 'harness/pathway/irp2025/pathcheck_irp2025_a.json',
+     'delay': {'share': 0.6, 'congestionCurtailPct': 10},
+     'first_from': "  'IRP\\'s 2030 targets, grid delayed':{demandGrowthPct:C5F_DEMAND[2030].growthPct,", 'first_to': "congestionCurtailPct:10,scenarioYear:2030},\n", 'preamble': ''},
     {'name': 'IRP path 2035', 'build': 'harness/pathway/irp2025/pathway_irp2025.json', 'check': 'harness/pathway/irp2025/pathcheck_irp2025_b.json',
      'gap_index': 'harness/pathway/irp2025/index_irpdem.json',
      # first generation replaces the hand-written preset and its comment block, from this line to the end of the preset
@@ -35,6 +51,7 @@ j = lambda v: json.dumps(v)
 
 
 def block(cfg):
+    Y = cfg.get('year', 2035)
     P = json.load(open(cfg['build']))
     R = [r for r in json.load(open(cfg['check'])) if r['y'] == Y][0]
     S = P['sched']; yrs = sorted(int(y) for y in S)
@@ -43,7 +60,7 @@ def block(cfg):
     blk = P['demand'].get('block') or {}
     blkMW = max(((int(y), mw) for y, mw in blk.items() if int(y) <= Y), default=(0, 0))[1]
     nuc = sum(mw for y, mw in (P.get('nuclearAdd') or {}).items() if int(y) <= Y)
-    if ps: raise SystemExit(cfg['name'] + ': pumped storage built by 2035: carry PHES hours and acapPs before using the generator')
+    if ps: raise SystemExit(cfg['name'] + f': pumped storage built by {Y}: carry PHES hours and acapPs before using the generator')
     if P['gas'].get('fuelRFlat') is not None or P.get('gasFinPremium') or P.get('importsEndYear') or P.get('comply'):
         raise SystemExit(cfg['name'] + ': a recorded setting this generator does not carry is set: extend it first')
     f = {'scenarioYear': Y,
@@ -62,17 +79,20 @@ def block(cfg):
         f['ccgtForceLoad'] = 1
         if gf.get('mw', 0) > 0: f['ccgtForceLoadMW'] = gf['mw']
     w30, p30 = cum('wind', 2030), cum('pv', 2030)
+    if 'delay' in cfg:   # a variant: a share of the state's new wind and solar connects, the rest is held back (grid delayed)
+        D = cfg['delay']; f['newWindMW'] = round(D['share'] * f['newWindMW']); f['newPvMW'] = round(D['share'] * f['newPvMW'])
+        f['congestionCurtailPct'] = D['congestionCurtailPct']
     body = ','.join(f'{k}:{j(v)}' for k, v in f.items())
     # The carbon price is the page's own carbonTaxAt on the run's path, as pathcheck.js prices it, so its value is not copied here.
     body += (f",get carbonTaxRPerT(){{ return carbonTaxAt({Y}, {{...FIXED, carbonAllowancePath:{j(f['carbonAllowancePath'])}, carbonTaxFull:{f['carbonTaxFull']}}}); }}"
              f",get coalDecomMW(){{ return Math.max(0, Math.round(FIXED.coalInstalledMW - {j(S[str(Y)]['coalMW'])})); }}"
-             f",get reserveVreRefWindMW(){{ return Math.round(FIXED.windMW + {j(w30)}); }},get reserveVreRefPvMW(){{ return Math.round(FIXED.pvUtilityMW + {j(p30)}); }}")
+             + (f",get reserveVreRefWindMW(){{ return Math.round(FIXED.windMW + {j(w30)}); }},get reserveVreRefPvMW(){{ return Math.round(FIXED.pvUtilityMW + {j(p30)}); }}" if Y > 2030 else ''))
     n = cfg['name']; BEGIN = f"  // BEGIN GENERATED '{n}' (harness/pathway/gen_pathway_presets.py from {cfg['build']}; do not edit by hand)"
     END = f"  // END GENERATED '{n}'"
     return BEGIN, END, f"{BEGIN}\n  '{n.replace(chr(39), chr(92) + chr(39))}':{{{body}}},\n{END}", f, S[str(Y)]['coalMW']
 
 
-def demand_gap(cfg):
+def demand_gap(cfg, Y=2035):
     # How far the IRP's demand path sits above the pathway's in 2035 (message 229 (2)): customer demand plus firm exports on
     # the pair's index (harness/pathway/irp2025/index_irpdem.json, message 224) against the same on the build file's own index.
     P = json.load(open(cfg['build'])); I = json.load(open(cfg['gap_index'])); m = I['meta']
@@ -81,9 +101,32 @@ def demand_gap(cfg):
     return 100 * (tot(I['years'][str(Y)]) / tot(P['demand']['index'][str(Y)]) - 1)
 
 
+def c5f_demand():
+    # c5f's demand for the presets' years (message 231 (2)): growth on the 2026 base and the smelter block, from its build file,
+    # read by every preset that runs on the pathway's demand.
+    P = json.load(open('harness/pathway/c5f/pathway_c5f.json')); blk = P['demand'].get('block') or {}
+    yrs = {y: {'growthPct': (P['demand']['index'][str(y)] - 1) * 100,
+               'blockMW': max([mw for s, mw in blk.items() if int(s) <= y] or [0])} for y in (2026, 2030, 2035, 2040)}
+    DB = "// BEGIN GENERATED C5F_DEMAND (harness/pathway/gen_pathway_presets.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)"
+    DE = "// END GENERATED C5F_DEMAND"
+    # c5f's build-rate caps that override the pace, recorded in its build file (WIND_CAP, LI_CAP, MW a year from the year given;
+    # lithium energy at liEnergyHours of the power cap); the captions compare the searched presets' builds with c5f's limits
+    # (messages 245 and 246 (4)).
+    caps = {'wind': {'mw': P['windCap'], 'from': P['windCapFrom']}, 'batt': {'mw': P['liCap'], 'from': P['liCapFrom']},
+            'battEnergyHours': P['liEnergyHours']}
+    return DB, DE, (f"{DB}\n// c5f's demand by model year: growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))\nconst C5F_DEMAND = {j(yrs)};\n"
+                    f"// c5f's build-rate caps over the pace: MW a year from the year given; lithium energy in hours of its power cap (messages 245, 246 (4))\nconst C5F_BUILD_CAPS = {j(caps)};\n{DE}")
+
+
 html = open('index.html').read(); new = html
+DB, DE, dblk = c5f_demand()
+if DB in new:
+    a = new.index(DB); b = new.index(DE, a) + len(DE); new = new[:a] + dblk + new[b:]
+else:
+    if new.count('const PRESETS={') != 1: raise SystemExit('PRESETS not found once')
+    new = new.replace('const PRESETS={', dblk + '\nconst PRESETS={', 1)
 for cfg in PRESETS:
-    BEGIN, END, blk, f, coal = block(cfg)
+    BEGIN, END, blk, f, coal = block(cfg); Y = cfg.get('year', 2035)
     if BEGIN in new:
         a = new.index(BEGIN); b = new.index(END, a) + len(END); new = new[:a] + blk + new[b:]
     elif 'first_from' in cfg:
@@ -94,6 +137,17 @@ for cfg in PRESETS:
         if new.count(anchor) != 1: raise SystemExit('anchor not found once')
         new = new.replace(anchor, blk + '\n' + anchor, 1)
     if 'gap_index' in cfg:
+        # IRP's 2030 targets' caption gives the same gap for 2030 (message 235 (3)), from the same index
+        g30 = demand_gap(cfg, 2030)
+        GB30 = "// BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
+        GE30 = "// END GENERATED IRP's 2030 targets demand gap"
+        g30blk = f"{GB30}\nconst IRP2030_DEMAND_GAP_PCT = {j(g30)};   // the IRP's demand path above the pathway's in 2030, customer demand plus firm exports\n{GE30}"
+        if GB30 in new:
+            a = new.index(GB30); b = new.index(GE30, a) + len(GE30); new = new[:a] + g30blk + new[b:]
+        else:
+            anchor = "const _gw = mw => String(+(mw / 1000).toFixed(1));"
+            if new.count(anchor) != 1: raise SystemExit('caption anchor not found once')
+            new = new.replace(anchor, g30blk + '\n' + anchor, 1)
         gap = demand_gap(cfg)
         GB = "// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
         GE = "// END GENERATED 'IRP path 2035' demand gap"
@@ -105,7 +159,7 @@ for cfg in PRESETS:
             if new.count(anchor) != 1: raise SystemExit('caption anchor not found once')
             new = new.replace(anchor, gblk + '\n' + anchor, 1)
     if '--check' not in sys.argv:
-        print('written:', cfg['name'], {k: round(f[k], 4) if isinstance(f[k], float) else f[k] for k in ('newWindMW', 'newPvMW', 'newRooftopMW', 'newBattMW', 'newCcgtMW', 'newOcgtMW', 'newNuclearMW', 'demandGrowthPct', 'costCcgt')}, 'coal standing', coal, 'gas floor', f.get('ccgtForceLoad', 0))
+        print('written:', cfg['name'], Y, {k: round(f[k], 4) if isinstance(f[k], float) else f[k] for k in ('newWindMW', 'newPvMW', 'newRooftopMW', 'newBattMW', 'newCcgtMW', 'newOcgtMW', 'newNuclearMW', 'demandGrowthPct', 'costCcgt')}, 'coal standing', coal, 'gas floor', f.get('ccgtForceLoad', 0))
 if '--check' in sys.argv:
     print('index.html blocks match the generator' if new == html else 'index.html blocks DIFFER from the generator'); sys.exit(0 if new == html else 1)
 open('index.html', 'w').write(new)

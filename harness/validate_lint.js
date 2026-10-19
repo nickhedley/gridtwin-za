@@ -43,7 +43,7 @@ const TMP_CFG = path.join(__dirname, '.lint.config.js');
 // genuinely defined outside the inline scripts - not to silence a finding.
 const EXTERNAL = [
   // defined in nodal/nodal_engine.js and nodal/nodal_dispatch.js, loaded by <script src>
-  'IMPORTS_CF', 'CORRIDORS', 'REGIONS', 'getNodalMIPInputs', 'loadHeadroomLookup', 'loadFirmHeadroomLookup',
+  'IMPORTS_CF', 'IMPORTS_AVG_MW', 'CORRIDORS', 'REGIONS', 'getNodalMIPInputs', 'loadHeadroomLookup', 'loadFirmHeadroomLookup',
   'FIRM_TECHS', 'substationData', 'CARRIER_NM', 'BTM_BATT_R_PER_KWH', 'BTM_DISPLACED_EF',
   // the operating Eskom battery sites and their regional shares (nodal_engine.js, 14 Oct 2026), read by FIXED
   'EXISTING_BATT_MW', 'EXISTING_BATT_MWH', 'BATT_SHARE_BY_REGION',

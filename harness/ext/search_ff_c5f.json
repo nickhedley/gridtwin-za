@@ -1,0 +1,221 @@
+{
+ "stamp": "2026-10-19c",
+ "preset": "Fossil-free 2040",
+ "override": {
+  "demandGrowthPct": 45.889599999999994,
+  "demandBlockMW": 930
+ },
+ "draws": 1,
+ "target": 2.720154612360148,
+ "start": {
+  "build": {
+   "newWindMW": 48500,
+   "newPvMW": 58500,
+   "newBattMW": 20000,
+   "newIronAirMW": 9500,
+   "newOffshoreMW": 1750
+  },
+  "shed": 116.04379900064856,
+  "cost": 408.66326316880117,
+  "served": 325.9631484910662,
+  "cust": 272.0154612360148
+ },
+ "searched": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 56500,
+   "newBattMW": 20000,
+   "newIronAirMW": 13000,
+   "newOffshoreMW": 1750
+  },
+  "shed": 2.59638153338498,
+  "cost": 439.18013103735615,
+  "served": 324.14613526507827,
+  "cust": 272.12470612438364
+ },
+ "log": [
+  {
+   "step": "start",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 58500,
+    "newBattMW": 20000,
+    "newIronAirMW": 9500,
+    "newOffshoreMW": 1750
+   },
+   "shed": 116.04379900064856,
+   "cost": 408.66326316880117,
+   "served": 325.9631484910662,
+   "cust": 272.0154612360148
+  },
+  {
+   "step": "feasible 1",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 60500,
+    "newBattMW": 20000,
+    "newIronAirMW": 9500,
+    "newOffshoreMW": 1750
+   },
+   "shed": 62.434336931030174,
+   "cost": 410.72094130873296,
+   "served": 325.80050680170723,
+   "cust": 272.0367852619888
+  },
+  {
+   "step": "feasible 2",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 62500,
+    "newBattMW": 20000,
+    "newIronAirMW": 9500,
+    "newOffshoreMW": 1750
+   },
+   "shed": 31.8567720303429,
+   "cost": 413.0056725362165,
+   "served": 325.60232938547125,
+   "cust": 272.05762561445766
+  },
+  {
+   "step": "feasible 3",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 62500,
+    "newBattMW": 20000,
+    "newIronAirMW": 10000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 23.934920018752425,
+   "cost": 417.15133872104644,
+   "served": 325.7021494090179,
+   "cust": 272.0724876197199
+  },
+  {
+   "step": "feasible 4",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 62500,
+    "newBattMW": 20000,
+    "newIronAirMW": 10500,
+    "newOffshoreMW": 1750
+   },
+   "shed": 17.88062359003445,
+   "cost": 421.33083201074015,
+   "served": 325.7741209229175,
+   "cust": 272.08316649258455
+  },
+  {
+   "step": "feasible 5",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 62500,
+    "newBattMW": 20000,
+    "newIronAirMW": 11000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 14.052443220228774,
+   "cost": 425.53486912129364,
+   "served": 325.8364758217862,
+   "cust": 272.092957267101
+  },
+  {
+   "step": "feasible 6",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 62500,
+    "newBattMW": 20000,
+    "newIronAirMW": 11500,
+    "newOffshoreMW": 1750
+   },
+   "shed": 10.49875543848484,
+   "cost": 429.7435458990642,
+   "served": 325.89340335433053,
+   "cust": 272.1021836905134
+  },
+  {
+   "step": "feasible 7",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 62500,
+    "newBattMW": 20000,
+    "newIronAirMW": 12000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 6.993012171316525,
+   "cost": 433.95036950610273,
+   "served": 325.95103935869946,
+   "cust": 272.11197975634053
+  },
+  {
+   "step": "feasible 8",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 62500,
+    "newBattMW": 20000,
+    "newIronAirMW": 12500,
+    "newOffshoreMW": 1750
+   },
+   "shed": 3.674989906974455,
+   "cost": 438.16827724688545,
+   "served": 326.0014451254645,
+   "cust": 272.11941669512385
+  },
+  {
+   "step": "feasible 9",
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 64500,
+    "newBattMW": 20000,
+    "newIronAirMW": 12500,
+    "newOffshoreMW": 1750
+   },
+   "shed": 2.2861427141287285,
+   "cost": 440.80668211431885,
+   "served": 325.72373315996543,
+   "cust": 272.1259179230382
+  },
+  {
+   "step": "move",
+   "stepIndex": 0,
+   "build": {
+    "newWindMW": 48500,
+    "newPvMW": 60500,
+    "newBattMW": 20000,
+    "newIronAirMW": 13000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 2.022451741178707,
+   "cost": 439.77136816063086,
+   "served": 326.36014561864505,
+   "cust": 272.12054785705567
+  },
+  {
+   "step": "move",
+   "stepIndex": 0,
+   "build": {
+    "newWindMW": 50500,
+    "newPvMW": 56500,
+    "newBattMW": 20000,
+    "newIronAirMW": 13000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 2.59638153338498,
+   "cost": 439.18013103735615,
+   "served": 324.14613526507827,
+   "cust": 272.12470612438364
+  }
+ ],
+ "final": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 56500,
+   "newBattMW": 20000,
+   "newIronAirMW": 13000,
+   "newOffshoreMW": 1750
+  },
+  "shed": 2.59638153338498,
+  "cost": 439.18013103735615,
+  "served": 324.14613526507827,
+  "cust": 272.12470612438364
+ }
+}

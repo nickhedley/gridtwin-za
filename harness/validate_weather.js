@@ -163,7 +163,9 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
       if (!bldWeatherYears) return { missing: true };
       const n = weatherYearNational('2020');
       const prof = { demand: PROFILES.demand, solar: n.solar, wind: n.wind, csp: PROFILES.csp, real: true };
-      const st = { ...state, ...PRESETS['Fossil-free 2040'], newRooftopMW: 16800, newBattHours: 8,
+      // Demand pinned at +5% and no block (19 Oct 2026, build 2026-10-19e): the preset moved to c5f's 2040 demand (message 231),
+      // and the benchmark build was sized at the preset's +5%, which this check ran on from the repository's first build.
+      const st = { ...state, ...PRESETS['Fossil-free 2040'], demandGrowthPct: 5, demandBlockMW: 0, newRooftopMW: 16800, newBattHours: 8,
                    newOffshoreMW: 10000, newWindMW: 30000, newPvMW: 55000,
                    newBattMW: 35000, newIronAirMW: 2000 };
       const q = simulate(st, prof);

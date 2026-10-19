@@ -113,7 +113,8 @@ if (process.env.ROOF_MW!==undefined && !(+process.env.ROOF_MW>=0)) throw new Err
 const DEM_BLOCK=process.env.DEM_BLOCK ? Object.fromEntries(process.env.DEM_BLOCK.split(',').map(q=>{ const [y,mw]=q.split(':'); if(!(+y>=2026&&+y<=2050&&+mw>=0&&mw!==undefined&&mw!=='')) throw new Error('DEM_BLOCK: '+q); return [+y,+mw]; })) : null;
 // IMP_AVG_MW (user, 14 Oct 2026, message 72): the average imported flow, MW; sets importsCF = IMP_AVG_MW / importsMW so the
 // contract capacity (importsMW) stays as it is. c5b: 1066, the measured April-August 2026 mean (ESK19679, local; a single
-// calibration constant). Recorded as importsMW and importsCF.
+// calibration constant). Recorded as importsMW and importsCF. From build 2026-10-19d (message 234 (1)) the page's default is
+// that mean (nodal_engine.js IMPORTS_AVG_MW, read here through FIXED.importsCF), so unset runs on it; set it for a sensitivity.
 if (process.env.IMP_AVG_MW!==undefined && !(+process.env.IMP_AVG_MW>0)) throw new Error('IMP_AVG_MW: '+process.env.IMP_AVG_MW);
 // CAPE_WIND (user, 14 Oct 2026, messages 68 and 71): "MW[:pct]", new wind on the Cape curtailment allowance (FIXED.bldCapeWindMW,
 // bldCapeCurtPct; c5b 1580:4, s_cape10 3470:10). Recorded as capeWind; each year's MW on it as sched[y].cw.
