@@ -5654,6 +5654,38 @@ validate_pathway_presets' (23 to 37) and validate_public_text's (14 to 17). vali
 rerun on their own after message 247's correction and the capital re-pin, and the audit and eng5 on their own after the run
 reached the session's 30-minute limit for a background task; every other script is from the full run.
 
+### Check: how much load Today 2026 can add and still meet the reliability standard, against Eskom's claim of 3-5 GW of overcapacity: about 4 GW flat, 6 GW or more in daylight hours (build 2026-10-19e; user, 19 Oct 2026, message 243; a check, not for the note until Nick decides)
+
+Settings. Today 2026 on build 2026-10-19e (imports 0.927, the synchronous floor reading the scenario's imports), with an added
+load block from 0 to 6 GW in 500 MW steps: flat, every hour (demandBlockMW); and daytime, the same MW from 08:00 to 16:59 only,
+added to the demand series passed to the engine (no engine change: the engine's block is flat, so this is a stand-in for a load
+that can switch off outside daylight). Twelve weather years x 20 independent outage draws, 240 runs per block (seeds 71830529 +
+k x 104729 + year x 7919, as the preset checks). The standard is 0.002% of customer demand, the block included (load less
+storage charging, as harness/ext/preset_rescore.js); half of it is the presets' target. harness/ext/overcap_check.js, results
+harness/ext/overcap_19e.json. The claim (Bloomberg, Oct 2026) is quoted as given to the model, not read here.
+
+| Block, MW | Flat: shed, GWh (standard) | Worst year | Added cost, R bn | Added CO2, Mt | Daytime: shed, GWh (standard) | Worst year | Added cost | Added CO2 |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 0.016 (3.93) | 0.15 | - | - | 0.016 (3.93) | 0.15 | - | - |
+| 1,000 | 0.051 (4.10) | 0.60 | 5.88 | 8.93 | 0.042 (3.99) | 0.48 | 2.17 | 3.31 |
+| 2,000 | 0.250 (4.28) | 2.38 | 11.90 | 17.74 | 0.092 (4.06) | 0.78 | 4.40 | 6.64 |
+| 3,000 | 0.939 (4.45) | 5.39 | 18.24 | 26.40 | 0.225 (4.12) | 1.68 | 6.69 | 9.93 |
+| 3,500 | 2.020 (4.54) | 8.71 | 21.67 | 30.67 | 0.321 (4.16) | 2.08 | 7.86 | 11.55 |
+| 4,000 | 4.195 (4.63) | 15.75 | 25.38 | 34.91 | 0.503 (4.19) | 2.68 | 9.08 | 13.14 |
+| 4,500 | 8.719 (4.72), fails | 26.65 | 29.52 | 39.12 | 0.778 (4.22) | 3.33 | 10.37 | 14.71 |
+| 5,000 | 17.739 (4.80), fails | 44.60 | 34.19 | 43.31 | 1.284 (4.26) | 4.43 | 11.75 | 16.27 |
+| 5,500 | 34.043 (4.89), fails | 70.28 | 39.58 | 47.45 | 2.160 (4.29) | 6.05 | 13.27 | 17.80 |
+| 6,000 | 61.839 (4.98), fails | 113.03 | 45.88 | 51.54 | 3.597 (4.32) | 8.21 | 14.97 | 19.31 |
+
+- Flat: the largest block that meets the standard is 4,000 MW (4.20 GWh against 4.63; 4,500 MW sheds 8.72 against 4.72); at
+  half the standard, 3,500 MW (2.02 against 2.27). Serving 4 GW adds 35.0 TWh a year at R25.4bn and 34.9 Mt: R725/MWh and
+  1.00 t/MWh, coal at the margin. The worst weather year sheds 15.75 GWh, 3.4 times the year's standard.
+- Daytime (08:00-16:59): every block to 6,000 MW meets the standard (3.60 GWh against 4.32); at half the standard, 5,000 MW.
+  6 GW in daylight adds 19.6 TWh at R15.0bn and 19.3 Mt: R763/MWh and 0.98 t/MWh.
+- Caveats: one year's fleet (Today 2026's coal availability and outage model), the engine's dispatch rather than Eskom's; the
+  added cost is system cost (fuel, start-up, carbon and the like), not a tariff; 500 MW steps, so the flat limit lies between 4.0
+  and 4.5 GW. Recorded as a check; not for the note until Nick decides.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
