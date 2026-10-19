@@ -4932,8 +4932,8 @@ function printPrefeas() {
             </div>
             <div style="padding:10px">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:11px">
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Monthly bill (R)</label><input id="rt_bill" type="number" value="80000" min="500" max="5000000" step="1000" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label><input id="rt_tariff" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Monthly bill (R)</label><input id="rt_bill" type="number" min="500" max="5000000" step="1000" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label><input id="rt_tariff" type="number" min="0.5" max="10" step="0.01" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_tariff_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px"></div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Battery storage (kWh)</label>
         <div style="display:flex;gap:6px;align-items:center">
           <input id="rt_batt" type="number" value="0" min="0" max="200" step="0.5"
@@ -21164,6 +21164,26 @@ function _rtBatteryUplift(battHours, baseline, battKwh, annualDemandKwh, sizingR
 // fit; 0.69 is what reproduces the 165 this tool has always used, so no result
 // moves today, and it is now a number someone can argue with.
 const RT_MODULE = { areaM2: 2.58, wp: 620 };
+// THE DEFAULT CUSTOMER (user, 19 Oct 2026, message 249): a business, as the tab sits with the project tools; R80,000 a month on
+// Eskom's Businessrate 3, non-local authority, 2026/27 (Tariffs and Charges Booklet 2026/2027, p.23), excluding VAT, which a
+// business reclaims. Was a typed R2.50/kWh with no source. The variable charges, c/kWh: energy, ancillary service, network
+// demand, and electrification and rural network subsidy; the fixed ones, R per point of delivery a day: network capacity,
+// service and administration, and generation capacity. The tab's one tariff both turns the bill into kWh and values solar
+// that is used on site, so the default is the all-in rate at the default bill: the fixed charges spread over the kWh the rest
+// of the bill buys.
+const RT_BIZRATE3_2026 = { energy: 242.90, ancillary: 0.45, networkDemand: 15.81, ruralSubsidy: 5.37,
+                           networkCapacityRDay: 81.98, serviceAdminRDay: 15.99, generationCapacityRDay: 11.18 };
+const RT_DEFAULT_BILL = 80000;
+const rtBizrate3 = (() => { const T = RT_BIZRATE3_2026;
+  const varRkWh = (T.energy + T.ancillary + T.networkDemand + T.ruralSubsidy) / 100;
+  const fixedRDay = T.networkCapacityRDay + T.serviceAdminRDay + T.generationCapacityRDay;
+  return { varRkWh, fixedRDay, allInRkWh: bill => bill / ((bill - fixedRDay * 365 / 12) / varRkWh) }; })();
+const RT_DEFAULT_TARIFF = Math.round(rtBizrate3.allInRkWh(RT_DEFAULT_BILL) * 100) / 100;
+{ const b = document.getElementById('rt_bill'), t = document.getElementById('rt_tariff'), n = document.getElementById('rt_tariff_note');
+  if (b) b.value = RT_DEFAULT_BILL; if (t) t.value = RT_DEFAULT_TARIFF.toFixed(2);
+  if (n) n.textContent = 'Eskom Businessrate 3, 2026/27, excluding VAT: ' + (rtBizrate3.varRkWh * 100).toFixed(2) + 'c/kWh plus R'
+    + rtBizrate3.fixedRDay.toFixed(2) + ' a day, R' + RT_DEFAULT_TARIFF.toFixed(2) + '/kWh all-in at R'
+    + RT_DEFAULT_BILL.toLocaleString('en-US') + ' a month.'; }
 // OBSTRUCTIONS ARE NOW THE USER'S TO STATE, 30 Sep 2026. Packing was a single
 // 0.69 covering walkways, edge setbacks, chimneys, vents, skylights and rooftop
 // plant at once - which is a property of the roof in front of you, not a constant.
@@ -21499,8 +21519,8 @@ function rtCalc() {
   const sharePct = parseFloat(document.getElementById('rt_share').value) || 100;
   const tilt     = parseFloat(document.getElementById('rt_tilt').value) || 1.05;
   const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.80;
-  const bill     = parseFloat(document.getElementById('rt_bill').value) || 80000;
-  const tariff   = parseFloat(document.getElementById('rt_tariff').value) || 2.50;
+  const bill     = parseFloat(document.getElementById('rt_bill').value) || RT_DEFAULT_BILL;
+  const tariff   = parseFloat(document.getElementById('rt_tariff').value) || RT_DEFAULT_TARIFF;
   const battH    = parseFloat(document.getElementById('rt_batt').value) || 0;
   const escal    = parseFloat(document.getElementById('rt_escal').value) || 0.05;
 
@@ -21530,8 +21550,8 @@ function rtCalc() {
   // slider and the number field and still only cover part of the evening window,
   // which made the coverage ceiling look like an arbitrary wall.
   (function(){
-    const annualKwhForBatt = (parseFloat(document.getElementById('rt_bill').value)||80000)
-                             * 12 / (parseFloat(document.getElementById('rt_tariff').value)||2.50);
+    const annualKwhForBatt = (parseFloat(document.getElementById('rt_bill').value)||RT_DEFAULT_BILL)
+                             * 12 / (parseFloat(document.getElementById('rt_tariff').value)||RT_DEFAULT_TARIFF);
     const eveningKwh = annualKwhForBatt / 365 * RT_CRITICAL_DEMAND_FRACTION;
     // Allow up to 3x the evening window - enough to ride out consecutive dull
     // days, which is what the last few percent of coverage actually needs.

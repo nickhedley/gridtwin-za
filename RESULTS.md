@@ -5432,7 +5432,7 @@ node checks 775/779 plus audit 88/88 (rerun on its own after VOM joined the acro
 under the audit's 400-character scan for the first time); eng5 5/6. The four known failures and eng5 check 6, as on 19c; the 14
 added checks are validate_public_text's, all passing. On 19c (main): 849/853.
 
-### The rooftop tab's satellite map opened on 'Map data not yet available' tiles after a rural or offshore site query; it now opens only as deep as Esri has imagery (build 2026-10-19f; user, 19 Oct 2026, message 248)
+### The rooftop tab's satellite map opened on 'Map data not yet available' tiles after a rural or offshore site query; it now opens only as deep as Esri has imagery; the tab's default tariff is Businessrate 3 (build 2026-10-19f; user, 19 Oct 2026, messages 248 and 249)
 
 Cause. rtInitMap opened the map at zoom 19 on the last site-query location (window._resourceData) and rtGoTo went to 19 on an
 address result; Esri's World Imagery reaches 19 in cities but often only 18 in rural areas and offshore, and where a zoom has no
@@ -5457,11 +5457,41 @@ says have imagery:
 | Site query 20 km off the Eastern Cape coast | 19, 0 of 12 | 18, 12 of 12 (sea) |
 | Johannesburg address (Sandton City) | 19, 12 of 12 | 19, 12 of 12 |
 
-No page errors in any case. Not changed, for Nick (message 248): the tab's defaults, a R80,000 monthly bill at R2.50/kWh, are a
-business customer's (32,000 kWh a month); they predate the repository (build 2026-10-01a) with no record that a business default
-was intended. R2.50/kWh has no source in RESULTS or SOURCES and is typed in two places, the tab's tariff field and the C&I
-pre-feasibility module ('Avg industrial tariff 2026 ≈ R2.50/kWh'); the retail panel's reference household is 900 kWh a month on
-Homepower at about R4.2/kWh.
+No page errors in any case.
+
+The tab's default customer (message 248, decided in 249). The defaults, a R80,000 monthly bill at R2.50/kWh, are a business
+customer's; they predate the repository (build 2026-10-01a). Decided: keep a business default, as the tab sits with the project
+tools (249 (1)); replace the unsourced R2.50/kWh with Eskom's Businessrate 3, non-local authority, 2026/27 (Tariffs and Charges
+Booklet 2026/2027, p.23), excluding VAT, which a business reclaims (249 (2)): energy 242.90, ancillary service 0.45, network demand
+15.81, and electrification and rural network subsidy 5.37 c/kWh, 264.53 in all; network capacity R81.98, service and
+administration R15.99 and generation capacity R11.18 per point of delivery a day, R109.15 in all. One constant
+(RT_BIZRATE3_2026) holds the seven charges; the default tariff is computed from them as the all-in rate at the default bill
+(RT_DEFAULT_BILL, R80,000): the fixed R3,320 a month spread over the 28,986 kWh the rest of the bill buys, R2.76/kWh. The bill and
+tariff fields read the two constants (each was typed three times), and a note under the tariff field gives the source.
+
+What moves at the tab's defaults (2,000 m2 roof, 331.1 kWp, the national solar average):
+
+| At the defaults | R2.50/kWh | Businessrate 3, R2.76/kWh |
+|---|---|---|
+| Estimated use | 32,000 kWh a month | 28,986 |
+| Generation against the site's annual use | 1.1 times | 1.3 times |
+| Self-consumed share of generation | 58% | 54% (188 MWh a year exported, no credit; was 162) |
+| Annual savings | R635k | R647k |
+| Simple payback | 6.3 years | 6.2 |
+| IRR, 25 years at 5% escalation | 21.3% | 21.6% |
+| NPV at 10% | R4.7m | R4.9m |
+
+Savings rise 1.9% on a tariff 10.4% higher: the same bill buys fewer kWh, so more of the system's output is exported unpaid.
+For Nick: the tab's one tariff does two jobs, turning the bill into kWh (where the all-in rate is right) and valuing solar used on
+site (where the variable rate, R2.6453, is right, since fixed charges do not fall with solar); at the default bill the two differ
+by 4.3%.
+
+Not changed (249 (2)): the C&I pre-feasibility module's 'Avg industrial tariff 2026 ≈ R2.50/kWh' is a larger customer's and does
+not share Businessrate 3, which is for supplies up to 100 kVA. Megaflex (booklet p.13) is the tariff for it, but pricing an
+average needs a reference customer: transmission zone, supply voltage, a load shape across Eskom's time-of-use periods and
+seasons, and the per-kVA network and capacity charges (for example, at 500 V to 66 kV within 300 km, energy runs from 120.03 c/kWh
+off-peak to 720.19 peak in the high season, plus R12.27/kVA a month of generation capacity and R39.13 and R26.29/kVA of
+network capacity and demand). Proposed for Nick to choose.
 
 Suite on 2026-10-19f: SUITE_COUNTS
 
