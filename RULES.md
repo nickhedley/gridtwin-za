@@ -175,6 +175,26 @@ not comparable.
 
 ---
 
+## Stored risk panels: regenerate them in every pull request that changes the page (user, 19 Oct 2026, message 255 (4))
+
+stored_panels.json holds the Monte Carlo risk panel, the adequacy board and the capture curve for each preset and for the
+start-up state (message 251). The page uses an entry only for the exact scenario it was computed for, and only while the page's
+fingerprint (a hash of its scripts and of its start-up engine files) equals the one stored. Any change to index.html, to a script
+it loads or to an engine data file changes the fingerprint, and every visitor then computes the panels live, slowly, with no
+message on the page. So every pull request that changes any of these does, after its last change to index.html (BUILD_STAMP
+bumped), from harness/:
+
+1. `node validate_stored_panels.js testroot --write` (about __WRITE__ minutes on this container with nothing beside it);
+2. `node validate_stored_panels.js testroot`, the check (about __CHECK__ minutes; it is part of the suite);
+3. commit stored_panels.json with the change.
+
+After merging main into a branch, regenerate again: two branches that each regenerated do not combine, and main is stale after
+the second of two merges until someone does. validate_stored_panels.js fails when the stored fingerprint does not match the
+page, when a file the panels were computed from has changed, or when a stored panel differs from a fresh computation in any
+digit. Never edit stored_panels.json by hand.
+
+---
+
 ## Captions say what a control is, not what to do with it (user, 16 Oct 2026, message 156)
 
 A caption states what the control is, its default and the basis for the default. It does not tell the reader what to do with
