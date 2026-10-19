@@ -18324,7 +18324,13 @@ const PRESETS={
   // iron-air 625; mean shed 1.88 against 1.89 GWh, R226.1bn a year). On independent draws (seed 71830529, 240 runs) that build
   // shed 3.46 against 1.90, so it was topped up on those draws (message 195 (1)), six rounds: wind 26,500, solar 27,500,
   // lithium 10,500; 1.83 GWh, R230.1bn a year (harness/ext/topup_deep_c5e.json).
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:26500,newPvMW:27500,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:10500,newBattHours:12,newIronAirMW:625,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // REBUILT 19 Oct 2026 (build 2026-10-19e; user, messages 231 and 234 (5)) on c5f's demand for 2035 (C5F_DEMAND: growth and the
+  // 930 MW block), the aligned defaults (19b) and the c5e method's search with lithium trades, from the old build scaled by the
+  // demand ratio (1.2452): search wind 43,000, solar 36,750, lithium 14,625, iron-air 1,750 (2.36 GWh on the search's draws,
+  // R313.5bn); on independent draws (seed 71830529, 240 runs) 3.97 against 2.42, so topped up, six rounds: solar 38,750 and
+  // iron-air 2,000 MW; 2.418 against 2.424 GWh, R318.07bn a year (harness/ext/search_deep_c5f.json, topup_deep_c5f.json). Every
+  // other setting kept, coal retirement included. Its measured shed is PRESET_SCORES, rescored on the page as it runs it.
+  'Deep decarbonisation 2035':{demandGrowthPct:C5F_DEMAND[2035].growthPct,demandBlockMW:C5F_DEMAND[2035].blockMW,coalDecomMW:27000,coalFlexPct:1,newWindMW:43000,newPvMW:38750,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:14625,newBattHours:12,newIronAirMW:2000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,

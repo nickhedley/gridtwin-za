@@ -7,7 +7,7 @@ page runs the preset.
   python3 harness/ext/gen_preset_scores.py [--check]   (from the repository root)
 """
 import json, sys
-SRC = 'harness/ext/rescore_page_19c.json'
+SRC = 'harness/ext/rescore_page_19e.json'   # 214's builds on 19e (message 234 (5)); 19c's is kept as the record
 R = json.load(open(SRC))
 sc = {n: {'shed': round(v['page']['shed'], 4), 'target': round(v['page']['target'], 4), 'runs': v['page']['n'], 'build': R['stamp']} for n, v in R['presets'].items()}
 B = f"// BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from {SRC}; do not edit by hand)"
