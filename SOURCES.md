@@ -1527,3 +1527,26 @@ Cliffe Dekker Hofmeyr, 'Eskom clarifies the issue of "curtailment" for IPPs', co
 audit source 22): REIPPPP BW1-6 treat curtailment as a system event gated by the allowable grid unavailability period; the 10%
 curtailment right and the deletion of that gate are BW7's. The period's size is not given. Behind the deemed-energy rule
 (message 205 (5); RESULTS 'Message 205 (3) to (7)'; TODO 14gk).
+
+## Upstream emission factors: LNG and South African coal for power (user, 19 Oct 2026, message 228; researched outside the session, file upstream-factors-2026-10-19.md)
+
+Applied in RESULTS 'Value-chain CO2e beside the smokestack figures' (message 223 (2)). Smokestack stays the central basis.
+- LNG, production to regasification, g CO2e per MJ of gas burned (LHV):
+  - 100-year: low 17.7 (ifeu 2023, Münter and Liebich, Analysis of the greenhouse gas intensities of LNG imports to Germany,
+    Qatar to Germany, Table 13 p.37, AR5); central 18.6 (IEA 2026 update of Assessing Emissions from LNG Supply and Abatement
+    Options, global average, report web page); high 53.8 (Howarth 2024, Energy Science & Engineering 12: 4843-4859, US,
+    Table 4 p.4855, recomputed at GWP 29.8 from its CO2 and methane columns).
+  - 20-year: low 27.1 (ifeu Table 14 p.39); central 29.6 (IEA 2025 p.5, 19.4 g/MJ at 70% CO2 and 30% methane, re-weighted at
+    82.5; derived); high 99.1 (Howarth Table 4).
+  - No source covers a voyage to South Africa (the shipping stage is for Europe or world-average voyages); Mozambique has no
+    full-chain figure.
+- South African coal, g CO2e per kWh sent out:
+  - Mine methane, 100-year 4.2 / 34 / 83, 20-year 12 / 95 / 229. Low: the draft 9th National Inventory (2000-2022), 1,652 kt
+    CO2e from coal mining over 231.2 Mt, as quoted by Swaniti and UCT, A Climate Blindspot? Coal Mine Methane in South Africa
+    (Sep 2025) p.9: secondary, not verified at source. Central: IPCC 2019 Refinement Vol 2 Ch 4 Tier 1 low end at 25%
+    underground (GEM via Swaniti p.24): a judgment. High: IEA Global Methane Tracker about 1.1 Mt CH4 for 2022, via Swaniti
+    p.10: secondary, not verified at source.
+  - Delivery to station by road and rail: 0 / 12.2 / 12.2, from Eskom's Integrated Report 2026 p.79 (2,021,712 t CO2e, calendar
+    2025) over 165,431 GWh sent out (p.9); spread over all coal, conveyor-fed stations included. Nick's copy; cited by page.
+- Conversions: 1.108 MJ HHV per MJ LHV (NETL 2024, DOE LNG Export Study Appendix C, p. C-12, fn 14); the model's CCGT at 52%
+  HHV burns 6.248 GJ LHV per MWh (57.6% LHV), its OCGT at 10,624 kJ/kWh HHV 9.588 GJ LHV per MWh.
