@@ -5,7 +5,34 @@
   "demandGrowthPct": 45.889599999999994,
   "demandBlockMW": 930
  },
+ "draws": 1,
  "target": 2.720154612360148,
+ "start": {
+  "build": {
+   "newWindMW": 48500,
+   "newPvMW": 58500,
+   "newBattMW": 20000,
+   "newIronAirMW": 9500,
+   "newOffshoreMW": 1750
+  },
+  "shed": 116.04379900064856,
+  "cost": 408.66326316880117,
+  "served": 325.9631484910662,
+  "cust": 272.0154612360148
+ },
+ "searched": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 56500,
+   "newBattMW": 20000,
+   "newIronAirMW": 13000,
+   "newOffshoreMW": 1750
+  },
+  "shed": 2.59638153338498,
+  "cost": 439.18013103735615,
+  "served": 324.14613526507827,
+  "cust": 272.12470612438364
+ },
  "log": [
   {
    "step": "start",
@@ -177,5 +204,18 @@
    "served": 324.14613526507827,
    "cust": 272.12470612438364
   }
- ]
+ ],
+ "final": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 56500,
+   "newBattMW": 20000,
+   "newIronAirMW": 13000,
+   "newOffshoreMW": 1750
+  },
+  "shed": 2.59638153338498,
+  "cost": 439.18013103735615,
+  "served": 324.14613526507827,
+  "cust": 272.12470612438364
+ }
 }

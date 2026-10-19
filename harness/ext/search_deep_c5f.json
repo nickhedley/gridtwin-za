@@ -175,6 +175,21 @@
    "cost": 314.7382271433914,
    "served": 276.76494428100324,
    "cust": 242.4454493097504
+  },
+  {
+   "step": "move",
+   "stepIndex": 0,
+   "build": {
+    "newWindMW": 44000,
+    "newPvMW": 36250,
+    "newBattMW": 14125,
+    "newIronAirMW": 1750,
+    "newOffshoreMW": 0
+   },
+   "shed": 2.334218068264693,
+   "cost": 313.0881638297382,
+   "served": 275.4752517730454,
+   "cust": 242.44453427554308
   }
  ]
 }
