@@ -5750,6 +5750,41 @@ network capacity and demand). Proposed for Nick to choose.
 Suite on 2026-10-19f (claude/rooftop-map, ESK19679.csv present, nothing running beside it): 863/867, node checks 775/779 plus
 audit 88/88; eng5 5/6; the four known failures and eng5 check 6, as on 19d.
 
+### The rooftop tab's map is Google's satellite map when the key loads, Esri's otherwise; address search moves from Nominatim to Photon; Google's search results and roof outlines appear only beside Google's map (build 2026-10-19l; user, 19 Oct 2026, message 253 D4)
+
+Why: Google's Maps Platform service terms (last modified 15 Oct 2026; Geocoding section 6.2, Places section 14.2) allow their
+results only with a Google map, and the rooftop tab showed Google Places and Geocoding results on an Esri map. Nominatim's
+usage policy forbids type-ahead suggestions, which both search boxes made on every pause. Photon (photon.komoot.io, OpenStreetMap
+data) allows type-ahead under fair use.
+
+What changed (index.html, the rooftop map and both searches; config.js comment):
+- The rooftop map loads the Maps JavaScript API with the existing key (libraries maps, geocoding, places) and shows Google's
+  satellite map with labels, straight down. The tracer, roof outlines and imagery-depth check work on either map through one
+  small set of functions; ground distance is computed the same way on both (haversine).
+- Fallback: no key, a load failure, or a key Google rejects (gm_authFailure, also after the map has loaded) opens Esri World
+  Imagery as before. On Esri, the search is Photon's and the Solar API's roof faces are not drawn (the measurement still feeds
+  the calculator, and the legend shows only where faces are drawn; a decision for Nick, TODO 14he).
+- Rooftop type-ahead: Google Places Autocomplete only when Google's map is up, with a session token so the keystrokes and the
+  chosen place bill as one session; Photon otherwise. The second type-ahead, which geocoded on every pause beside the first, is
+  removed; Enter and Search still geocode.
+- Site-resource search on the main map (an Esri map): Photon for type-ahead and search, South Africa only (bounding box, then
+  country code), with 'Search by Photon, (c) OpenStreetMap contributors' under the results. Place names are now HTML-escaped.
+- Footer credits name Google (the rooftop map, search and roof measurement where the key loads) and Photon.
+- config.js: the key-restriction note names gridtwinza.org and the four APIs.
+
+Cost (Google's price list, per month, as researched 19 Oct 2026): dynamic maps 10,000 loads free then $7 per 1,000;
+autocomplete 10,000 requests free then $2.83 per 1,000; geocoding 10,000 free; Solar building insights 10,000 free then $10
+per 1,000. About $0 at 1,000 rooftop sessions a month, about $140 at 10,000.
+
+Checked: harness/validate_rooftop_map.js, 31/31 in Chromium, three cases (Google's map through a stand-in for Google's library,
+ext/gmaps_stub.js; no key; a key rejected after loading): the right map in each; satellite with labels; type-ahead from Places
+on Google's map and from Photon otherwise, with the credit, South African results only, names escaped; no Nominatim request; a
+pick measures the roof; faces drawn only on Google's map; a traced 20 m x 10 m rectangle gives 200 m2; clearing removes the
+trace; the main search goes to Photon; no page errors. Not checked live: this session's network blocks Photon, and the key is
+restricted to other sites (TODO 14he lists the live checks and Nick's console steps).
+
+Suite on 2026-10-19l: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 21:50-22:40 UTC with other jobs beside it. validate_rooftop_map.js 31/31 (not in the suite list: it needs Chromium).
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
