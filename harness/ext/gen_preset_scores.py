@@ -7,9 +7,15 @@ page runs the preset.
   python3 harness/ext/gen_preset_scores.py [--check]   (from the repository root)
 """
 import json, sys
-SRC = 'harness/ext/rescore_page_19e.json'   # 214's builds on 19e (message 234 (5)); 19c's is kept as the record
-R = json.load(open(SRC))
-sc = {n: {'shed': round(v['page']['shed'], 4), 'target': round(v['page']['target'], 4), 'runs': v['page']['n'], 'build': R['stamp']} for n, v in R['presets'].items()}
+# Each preset from its own rescore. Deep decarbonisation 2035 was topped up on the draws of seed 71830529, so its score comes
+# from a fresh, disjoint seed set (site review A1, message 252: SEED=120000017 ONLY=Deep VARIANTS=page on build 19i); Fossil-free
+# 2040 had no top-up, so 214's rescore on 19e stands (message 234 (5)). 19c's is kept as the record.
+SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_19i_deep_fresh.json', 'Fossil-free 2040': 'harness/ext/rescore_page_19e.json'}
+sc = {}
+for n, src in SRCS.items():
+    R = json.load(open(src)); v = R['presets'][n]['page']
+    sc[n] = {'shed': round(v['shed'], 4), 'target': round(v['target'], 4), 'runs': v['n'], 'build': R['stamp'], 'seed': R.get('seed', 71830529)}
+SRC = ' and '.join(sorted(set(SRCS.values())))
 B = f"// BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from {SRC}; do not edit by hand)"
 E = "// END GENERATED PRESET_SCORES"
 blk = f"{B}\nconst PRESET_SCORES = {json.dumps(sc)};\n{E}"
