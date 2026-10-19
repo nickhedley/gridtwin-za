@@ -4959,7 +4959,7 @@ function printPrefeas() {
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Obstructions</label><select id="rt_obstruction" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="clear">Clear – few penetrations</option><option value="typical" selected>Typical – vents, chimneys, walkways</option><option value="cluttered">Cluttered – HVAC plant, skylights</option><option value="heavy">Heavily obstructed – plant rooms, ducting</option></select><div id="rt_obs_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px"></div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof form</label><select id="rt_form" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="flat" selected>Flat roof – whole measured area</option><option value="mono">Single pitch facing north</option><option value="dual">Dual pitch – north plane only</option><option value="complex">Complex or multi-facet roof</option></select><div id="rt_form_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px"></div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof – 100%</option><option value="1.05" selected>15deg north-facing – 105%</option><option value="1.08">25deg north (optimal) – 108%</option><option value="0.92">East/west-facing – 92%</option><option value="0.78">South-facing – 78%</option><option value="0.95">Mixed / multiple orientations – 95%</option></select><div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Pick the direction your panels will face, not the shape of the whole roof – installers typically concentrate panels on the best-facing section rather than spreading them evenly, so in most cases you should use a single-orientation option even on a geometrically complex roof. Only choose “Mixed” if panels will be split across clearly different directions (e.g. a deliberate east+west array).</div></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading &amp; losses</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.85">Minimal – 85%</option><option value="0.80" selected>Moderate – 80%</option><option value="0.70">Heavy – 70%</option></select></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.97">Minimal – 97%</option><option value="0.93" selected>Moderate – 93%</option><option value="0.85">Heavy – 85%</option></select></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
               </div>
             </div>
@@ -19833,7 +19833,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-19f';
+const BUILD_STAMP = '2026-10-19j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21084,7 +21084,6 @@ document.getElementById('siteResetBtn').addEventListener('click', ()=>{
 <script>
 
 const RT_TYPES = {
-  // usagePct: system/inverter losses only (not a self-consumption factor - see below).
   // selfConsumeNoStorage: realistic fraction of solar generation actually used on-site
   // with NO battery, i.e. only the portion that coincides with a load being drawn at
   // that moment. The rest is exported. Depends on how well each load profile overlaps
@@ -21099,10 +21098,10 @@ const RT_TYPES = {
   // with cost per kW dropping as systems scale up. Smaller systems carry proportionally
   // more fixed cost (site visit, COC, small-order component pricing), which is why the
   // per-Wp figure falls as system size (and hence inferred bracket) increases.
-  home:       { wpPerM2: 150, usagePct: 0.90, costRwp: 17.0, label: 'Home / small office',       selfConsumeNoStorage: 0.35 },
-  smeci:      { wpPerM2: 160, usagePct: 0.88, costRwp: 13.0, label: 'Small C&I',                 selfConsumeNoStorage: 0.55 },
-  lci:        { wpPerM2: 170, usagePct: 0.85, costRwp: 11.0, label: 'Large C&I',                 selfConsumeNoStorage: 0.65 },
-  industrial: { wpPerM2: 175, usagePct: 0.80, costRwp: 9.5,  label: 'Industrial / warehouse',     selfConsumeNoStorage: 0.60 },
+  home:       { wpPerM2: 150, costRwp: 17.0, label: 'Home / small office',       selfConsumeNoStorage: 0.35 },
+  smeci:      { wpPerM2: 160, costRwp: 13.0, label: 'Small C&I',                 selfConsumeNoStorage: 0.55 },
+  lci:        { wpPerM2: 170, costRwp: 11.0, label: 'Large C&I',                 selfConsumeNoStorage: 0.65 },
+  industrial: { wpPerM2: 175, costRwp: 9.5,  label: 'Industrial / warehouse',     selfConsumeNoStorage: 0.60 },
 };
 
 // The brackets' installed costs as one line, for the rooftop tab's note (one list, from RT_TYPES).
@@ -21544,7 +21543,7 @@ function rtCalc() {
   const area     = parseFloat(document.getElementById('rt_area').value) || 2000;
   const sharePct = parseFloat(document.getElementById('rt_share').value) || 100;
   const tilt     = parseFloat(document.getElementById('rt_tilt').value) || 1.05;
-  const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.80;
+  const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.93;
   const bill     = parseFloat(document.getElementById('rt_bill').value) || RT_DEFAULT_BILL;
   const tariff   = parseFloat(document.getElementById('rt_tariff').value) || RT_DEFAULT_TARIFF;
   const battH    = parseFloat(document.getElementById('rt_batt').value) || 0;
@@ -21612,11 +21611,17 @@ function rtCalc() {
   // Battery dropdown shows real kWh for this system size, not abstract hours.
   _rtBuildApplianceInputs();
 
-  const baseCF = (window._resourceData && window._resourceData.solar) ? window._resourceData.solar.annualCF : 0.21;
+  // ONE LOSS FACTOR (site review A47, 19 Oct 2026). System losses were taken three times: in the site's capacity factor
+  // (Open-Meteo's performance ratio of 0.80; the fallback is PVGIS with its losses), again as 'Shading & losses' (0.80) and
+  // again as a per-type 'system/inverter' factor (0.80-0.90). Now the capacity factor carries the system losses, the
+  // control is shading only, and nothing else is taken. The fallback is PVGIS at a tilt equal to the latitude, so it is
+  // brought to a flat roof before the orientation factor applies (that factor is relative to flat).
+  const RT_FALLBACK_CF = 0.21, RT_FALLBACK_TILT = 1.08;
+  const baseCF = (window._resourceData && window._resourceData.solar) ? window._resourceData.solar.annualCF : RT_FALLBACK_CF / RT_FALLBACK_TILT;
   const location = (window._resourceData && window._resourceData.windRegion) ? window._resourceData.windRegion : 'SA national average';
   const adjCF = baseCF * tilt * shading;
   const annualKwh = kwp * adjCF * 8760;
-  const usableKwh = annualKwh * t.usagePct; // after system/inverter losses only
+  const usableKwh = annualKwh;   // system losses are in the capacity factor (A47)
   const monthlyKwh = bill / tariff;
   const annualDemandKwh = monthlyKwh * 12;
   // battH is now the battery size in kWh, entered directly by the user
