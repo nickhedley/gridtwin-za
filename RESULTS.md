@@ -6057,6 +6057,11 @@ duration (A8's duration rule is TODO 14ia).
 
 Caveat: the prose ceiling (audit.py) now reads 4,243 of 4,250 words; other wording PRs will need room.
 
+Suite minus validate_stored_panels on 2026-10-21d (stored panels not regenerated, message 266; ESK19679.csv present), 20 Oct
+2026 21:07-22:18 UTC with another branch's suite and other jsdom work beside it: 966/970, node checks 878/882 (validate_links
+48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Render check
+in Chromium (fresh load; start-up and the four note presets; the risk panel on screen for Least-cost path 2035): 25/25.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
