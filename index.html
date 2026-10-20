@@ -9540,6 +9540,16 @@ const _coalMeritCurve = (() => {
   return units.map(u => { cum += u.cap; return { upTo: cum, mc: u.mc }; });
 })();
 
+// CARBON INTENSITY (user, 20 Oct 2026, message 263 (3)): grams per kWh of electricity supplied, generation and imports. It
+// divided by every energy total, so storage output, exports and curtailment (counted twice, as curtailed and vreCurtailed) were
+// in the denominator: IRP path 2035 read 236 g/kWh against 268, Least-cost path 2035 250 against 271.
+function carbonIntensityG(r){
+  if (!r || !r.E || !(r.co2 > 0)) return 0;
+  const E = r.E, supplied = ['coal', 'nuclear', 'hydro', 'wind', 'pv', 'csp', 'hybrid', 'rooftop', 'ccgt', 'diesel', 'imports']
+    .reduce((s, k) => s + (E[k] || 0), 0);
+  return r.co2 * 1e9 / Math.max(1, supplied);
+}
+
 function coalMarginalCost(outputMW){
   if (!(outputMW > 0)) return _coalMeritCurve.length ? _coalMeritCurve[0].mc : 546;
   for (const s of _coalMeritCurve) if (outputMW <= s.upTo) return s.mc;
@@ -15829,7 +15839,10 @@ function renderLocationalBess(){
  * the three read together: what was dispatched, what it priced at, and what a
  * battery would have done about it.
  */
-function weekStartHour(){ return (typeof weekMode !== 'undefined' && weekMode === 'S') ? 7848 : 3264; }
+// The representative weeks' first hours, for every chart that shows them (the engine keeps its own copy for the state of charge
+// it records at these hours).
+const WEEK_HOUR = { W: 3264, S: 7848 };
+function weekStartHour(){ return (typeof weekMode !== 'undefined' && weekMode === 'S') ? WEEK_HOUR.S : WEEK_HOUR.W; }
 
 /* The old uncoloured `priceWeek` canvas inside the shadow-price box was removed:
  * it drew the same r.marginalP series as the chart below, but followed the DISPATCH
@@ -15894,8 +15907,20 @@ function attachChartHover(canvas){
     t.style.left = left + 'px'; t.style.top = top + 'px';
   });
 }
-const DAY_NM = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-function hourLabel(i){ return DAY_NM[Math.floor(i/24)%7] + ' ' + String(i%24).padStart(2,'0') + ':00'; }
+// The representative weeks' dates (user, 20 Oct 2026, message 263 (3)). The hourly profiles are on the 2025 calendar
+// (profiles.json meta.year; 1 January 2025 a Wednesday), so the winter week, from hour 3264, is Saturday 17 to Friday 23 May;
+// the tooltips called its first day Monday. h is the hour of the year (each chart passes its own week's start plus the hour).
+const PROFILE_CAL_YEAR = 2025, DAY_NM = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MON_NM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const _profDate = h => new Date(Date.UTC(PROFILE_CAL_YEAR, 0, 1) + Math.floor(h / 24) * 86400000);
+function hourLabel(h){ const d = _profDate(h);
+  return DAY_NM[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + MON_NM[d.getUTCMonth()] + ' ' + String(h % 24).padStart(2, '0') + ':00'; }
+// '17\u201323 May' for the week starting at hour h.
+function weekDates(h){ const a = _profDate(h), b = _profDate(h + 167);
+  return a.getUTCDate() + (a.getUTCMonth() === b.getUTCMonth() ? '' : ' ' + MON_NM[a.getUTCMonth()]) + '\u2013' + b.getUTCDate() + ' ' + MON_NM[b.getUTCMonth()]; }
+for (const [id, k] of [['wkW', 'W'], ['wkS', 'S'], ['spW', 'W'], ['spS', 'S']]){
+  const b = document.getElementById(id); if (b) b.textContent = (k === 'W' ? 'Winter week, ' : 'Summer week, ') + weekDates(WEEK_HOUR[k]);
+}
 
 // ── SHADOW DYNAMIC RETAIL PRICE ────────────────────────────────────────────
 // What a household would pay by the hour if the retail price followed cost. No such
@@ -16746,7 +16771,7 @@ function retailHourly(){
   // hours as the wholesale panel's week so the two line up.
   const wkSel = document.querySelector('input[name="retWeek"]:checked');
   const wkMode = wkSel ? wkSel.value : 'W';
-  const wkStart = (wkMode === 'S') ? 7848 : 3264;
+  const wkStart = WEEK_HOUR[wkMode === 'S' ? 'S' : 'W'];
   // THE WEEK MUST FOLLOW THE BASIS TOO.
   //
   // It read marginalP and the regulated flat block regardless, so switching to a market basis
@@ -17387,7 +17412,7 @@ function drawShadowPriceWeek(r){
   const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,W,H);
 
-  const start = (spWeekMode === 'S') ? 7848 : 3264, N = 168;
+  const start = WEEK_HOUR[spWeekMode === 'S' ? 'S' : 'W'], N = 168;
   const p = r.marginalP, tech = r.marginalTech;
   const win = [], wt = [];
   for (let i = 0; i < N; i++){ win.push(p[start+i] || 0); wt.push(tech[start+i] || 'none'); }
@@ -17435,7 +17460,7 @@ function drawShadowPriceWeek(r){
   // arrays the bars were drawn from, so the tooltip cannot disagree with them.
   c.__hit = { padL, bw, N, resolve: i => {
     const t = wt[i], v = win[i];
-    return '<strong>' + hourLabel(i) + '</strong><br>'
+    return '<strong>' + hourLabel(start + i) + '</strong><br>'
          + 'Price <strong>R' + Math.round(v).toLocaleString('en-US') + '</strong>/MWh<br>'
          + '<span style="color:' + spTechColour(t) + '">&#9632;</span> '
          + (SP_TECH_LABEL[t] || t)
@@ -17556,7 +17581,7 @@ function drawBessWeek(r){
     const state = a === 1 ? '<span style="color:#4A8C5C">&#9632;</span> Discharging (selling)'
                 : a === -1 ? '<span style="color:#B0655A">&#9632;</span> Charging (buying)'
                 : '<span style="opacity:.6">&#9632;</span> Idle';
-    return '<strong>' + hourLabel(i) + '</strong><br>'
+    return '<strong>' + hourLabel(start + i) + '</strong><br>'
          + 'Price <strong>R' + Math.round(v).toLocaleString('en-US') + '</strong>/MWh<br>' + state;
   } };
   attachChartHover(c);
@@ -19435,7 +19460,7 @@ function drawDispatch(r){
   c.width=W*dpr; c.height=H*dpr;
   const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,W,H);
-  const start=weekMode==='W'? 3264 : 7848; // representative weeks: closest to seasonal median demand+VRE (winter ~mid-May, summer ~late-Nov)
+  const start=WEEK_HOUR[weekMode==='W'?'W':'S']; // representative weeks: closest to seasonal median demand+VRE (winter ~mid-May, summer ~late-Nov)
   const N=168;
   let maxY=0;
   // Curtailment: wire curtailMW (single-node) into the stack so the renderer can draw it
@@ -19459,7 +19484,7 @@ function drawDispatch(r){
     const dem = r.loadS[start+i] || 0;
     const nm = k => (typeof CARRIER_NM !== 'undefined' && CARRIER_NM[k]) ? CARRIER_NM[k]
                   : k.charAt(0).toUpperCase() + k.slice(1);
-    return '<strong>' + hourLabel(i) + '</strong><br>'
+    return '<strong>' + hourLabel(start + i) + '</strong><br>'
       + 'Demand <strong>' + (dem/1000).toFixed(2) + ' GW</strong>'
       + '<div style="margin-top:4px">'
       + rows.map(o => '<span style="color:' + (COLORS[o.k]||'#999') + '">&#9632;</span> '
@@ -19726,7 +19751,7 @@ function render(r){
      sub:(r.unservedCostR>5e8?('+R'+(r.unservedCostR/1e9).toFixed(0)+'bn load shed'):undefined)},
     {k:'Avg energy cost*',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
     {k:'Replacement cost',v:(r.replAvg/1000).toFixed(2),u:'R/kWh'},
-    {k:'Carbon intensity',v:Math.round(r.co2>0&&r.E?r.co2*1e9/Math.max(1,Object.values(r.E).reduce((s,v)=>s+v,0)-r.E.curtailed):0).toLocaleString('en-US'),u:'gCO₂/kWh',uLong:true},
+    {k:'Carbon intensity',v:Math.round(carbonIntensityG(r)).toLocaleString('en-US'),u:'gCO₂/kWh',uLong:true},
     // ONE tile, both denominators. They are meaningless apart - see the comment above -
     // and splitting them across two tiles invited someone to read one and quote it.
     // It also keeps the grid at eight columns; a ninth orphaned curtailment.
@@ -20852,7 +20877,7 @@ function renderComparison() {
   const rows = [
     {label:'System cost',      a:(p.totalCost/1e9).toFixed(0),  b:(r.totalCost/1e9).toFixed(0),  d:delta(p.totalCost/1e9,  r.totalCost/1e9,  0,' Rbn', true), unit:'R bn/yr'},
     {label:'Avg energy cost',  a:(p.avgCost/1000).toFixed(2),    b:(r.avgCost/1000).toFixed(2),    d:delta(p.avgCost/1000,   r.avgCost/1000,   2,' R/kWh', true), unit:'R/kWh'},
-    {label:'Carbon intensity', a:Math.round(p.co2>0?p.co2*1e9/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0)-pE.curtailed):0), b:Math.round(r.co2>0?r.co2*1e9/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0)-rE.curtailed):0), d:delta(Math.round(p.co2>0?p.co2*1e9/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0)-pE.curtailed):0),Math.round(r.co2>0?r.co2*1e9/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0)-rE.curtailed):0),0,' g/kWh',true), unit:'gCO₂/kWh'},
+    {label:'Carbon intensity', a:Math.round(carbonIntensityG(p)), b:Math.round(carbonIntensityG(r)), d:delta(Math.round(carbonIntensityG(p)),Math.round(carbonIntensityG(r)),0,' g/kWh',true), unit:'gCO₂/kWh'},
     {label:'Renewables share', a:((pE.wind+pE.pv+pE.csp+pE.rooftop+pE.hydro)/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0))*100).toFixed(0), b:((rE.wind+rE.pv+rE.csp+rE.rooftop+rE.hydro)/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0))*100).toFixed(0), d:delta((pE.wind+pE.pv+pE.csp+pE.rooftop+pE.hydro)/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0))*100,(rE.wind+rE.pv+rE.csp+rE.rooftop+rE.hydro)/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0))*100,0,'%',false), unit:'%'},
     {label:'Curtailment',      a:(pE.curtailed/1e6).toFixed(1),  b:(rE.curtailed/1e6).toFixed(1),  d:delta(pE.curtailed/1e6, rE.curtailed/1e6, 1,' TWh', true), unit:'TWh/yr'},
     {label:'Expected shed',    a:(p.shedMWh/1000).toFixed(0),    b:(r.shedMWh/1000).toFixed(0),    d:delta(p.shedMWh/1000,   r.shedMWh/1000,   0,' GWh', true), unit:'GWh/yr'},

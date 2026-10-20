@@ -5359,9 +5359,9 @@ draws), so they differ by basis, as the captions say.
 
 | 2035 preset | Shown: system cost, R bn/yr | Shown: carbon intensity, g/kWh | Shown: expected shed, GWh/yr | Same state in the engine (one year): system cost / CO2 / unserved | validate_pathway_presets, run mean: system cost / CO2 / unserved |
 |---|---|---|---|---|---|
-| Least-cost path 2035 | 241 | 250 | 1.1 | 241.40 / 74.62 Mt / 0.000 GWh | 247.50 / 85.14 Mt / 0.733 GWh |
-| IRP path 2035 | 288 | 236 | 0 | 287.72 / 74.52 Mt / 0.000 GWh | 293.37 / 83.92 Mt / 0.000 GWh |
-| Deep decarbonisation 2035 | 231 | 54 | 0.2 | 231.46 / 16.09 Mt / 0.000 GWh | (not in the check; 214) |
+| Least-cost path 2035 | 241 | 250 (271 on generation and imports; corrected 20 Oct 2026, message 263 (3)) | 1.1 | 241.40 / 74.62 Mt / 0.000 GWh | 247.50 / 85.14 Mt / 0.733 GWh |
+| IRP path 2035 | 288 | 236 (268 on generation and imports; corrected 20 Oct 2026, message 263 (3)) | 0 | 287.72 / 74.52 Mt / 0.000 GWh | 293.37 / 83.92 Mt / 0.000 GWh |
+| Deep decarbonisation 2035 | 231 | 54 (on the old basis, which divided by storage output, exports and curtailment too; message 263 (3)) | 0.2 | 231.46 / 16.09 Mt / 0.000 GWh | (not in the check; 214) |
 
 The shown figures equal the page's own result for the same state (lastRes, adequacyEnsemble: expected unserved 1.079, 0 and
 0.165 GWh). Gas readout shown: R2.90/kWh (FIXED.lcoeCcgt 2,900), with fuel at R1.30/kWh, about 45%.
@@ -5479,7 +5479,7 @@ the record: 1,007.0 MW over 5,832 hours (0.876; the page's 0.88 of 22 Sep was th
 
 What moves (each preset as the page runs it, run(): one weather year on the default profiles; before and after):
 - Today 2026: system cost R215.450bn to R215.392bn; CO2 157.795 to 157.313 Mt; imports 8.865 to 9.338 TWh; coal 147.685 to
-  147.214 TWh; carbon intensity 711 to 709 g/kWh; replacement cost R314.24bn to R313.76bn (R1.60/kWh shown either way);
+  147.214 TWh; carbon intensity 711 to 709 g/kWh (on the old basis; 744 on generation and imports, message 263 (3)); replacement cost R314.24bn to R313.76bn (R1.60/kWh shown either way);
   average cost R1,099.4 to R1,099.1/MWh (R1.10/kWh shown either way). Retail panel: the Homepower and Homeflex rows unchanged;
   the dynamic-pricing rows R0.01/kWh lower at the mean (habits unchanged R4.24 to R4.23) and at the dearest hour (R4.34 to R4.33,
   18:00), the cheapest hour moving from 03:00 to 02:00 at R4.20; the reference household's shadow bill (900 kWh) R3,812 to
@@ -5789,6 +5789,18 @@ Fixed, each as the review proposed unless stated:
 
   The audit of 20 Oct measured 31.0% and 56.9 Mt on IRP path 2035 and 51.4% after, on main, where this branch's wind basis
   (A29, bldWindModern 0) is absent; this branch's figures differ by that.
+- Message 263 (3): the carbon intensity tile (and its column in the scenario comparison) divides CO2 by generation and imports
+  (carbonIntensityG); it divided by every energy total, so storage output, exports and curtailment (twice, as curtailed and
+  vreCurtailed) were in it. Each preset as a click applies it, simulate(state, PROFILES), g/kWh before / after: 2025, as
+  modelled 742 / 807; Today 2026 709 / 744; IRP's 2030 targets 414 / 448; grid delayed 527 / 558; IRP path 2035 236 / 268;
+  Least-cost path 2035 250 / 271; Deep decarbonisation 2035 34 / 48; Fossil-free 2040 0 / 0. The audit measured 268 and 271.
+  The RESULTS figures that quoted 236, 250, 54 and 709 now say which basis they are on.
+- Message 263 (3), dates: the hourly profiles are on the 2025 calendar (profiles.json meta.year; 1 January a Wednesday), so the
+  winter week (from hour 3264) is Saturday 17 to Friday 23 May and the summer week (from 7848) Monday 24 to Sunday 30 November.
+  The week buttons now give the dates ('Winter week, 17-23 May'), and the dispatch, price and battery tooltips the day and date
+  ('Sat 17 May 06:00'); they called the first day Monday. The charts' week start hours are one constant (WEEK_HOUR). Found while
+  checking: astrPeakHour (the reserve product's peak hours) uses the 2026 calendar (1 January a Thursday) with 2026's public
+  holidays, while the profiles are 2025's; not changed here (TODO 14hf).
 - A30: the Eskom 2025-26 rows show only when the 2026 scenario is on screen.
 - A32: coal installed compared with 39.692 GW, the figure the page uses.
 - A39: 3D map headroom read from nodal/region_headroom_lookup.json, as the main page; tooltips no longer print 'undefined'.
