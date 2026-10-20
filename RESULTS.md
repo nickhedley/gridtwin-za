@@ -5818,6 +5818,36 @@ Writing takes about 20 minutes, the check about 25.
 
 Suite on 2026-10-19g: 966/970 with ESK19679.csv present: node checks 878/882 (validate_stored_panels 86/86 among them) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 19 Oct 2026 about 21:00-23:00 UTC, with other jobs beside it; the failing scripts give the same failures as main.
 
+### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20d; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
+
+Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
+to it again, in the four places that price coal from coalMarginalCost (the price's coal block, the storage charge cost, the
+storage pricing pass and the marginal price itself). Confirmed against the fleet file's source columns
+(fleet_by_region_v2.csv, PyPSA-RSA, in the repository's history): Arnot, heat rate 12.744 GJ/MWh x fuel R45.18/GJ = R575.77,
+plus variable O&M R88.37/MWh = R664.14, its marginal_cost to the cent (664.1402453697383). The fleet-average fuel cost
+(costCoal + vomCoal, in the system cost) is a different figure and keeps its VOM.
+
+Before (main, build 2026-10-19g) and after (2026-10-20d), each preset as a click applies it, simulate(state, PROFILES) in
+jsdom, mean of the 8,760 hourly prices, R/MWh:
+
+| Preset | Average price before / after | Excluding shortage hours | Dispatch, system cost, CO2 |
+|---|---|---|---|
+| 2025, as modelled | 1,609.7 / 1,540.9 | 1,521.9 / 1,453.1 | identical |
+| Today 2026 | 757.1 / 677.3 | 757.1 / 677.3 | identical |
+| IRP's 2030 targets | 1,042.1 / 1,006.4 | 1,042.1 / 1,006.4 | identical |
+| IRP's 2030 targets, grid delayed | 1,061.6 / 1,021.5 | 1,061.6 / 1,021.5 | identical |
+| IRP path 2035 | 895.3 / 880.3 | 895.3 / 880.3 | identical |
+| Least-cost path 2035 | 765.5 / 701.1 | 765.5 / 701.1 | identical |
+| Deep decarbonisation 2035 | 332.5 / 303.5 | 332.5 / 303.5 | identical |
+| Fossil-free 2040 | 239.1 / 239.1 | 239.1 / 239.1 | identical (no coal) |
+
+'Identical' is every hour of every technology's dispatch (hashed), the system cost and the CO2. The audit measured the same
+two figures it quoted (R757 to R677, R765 to R701). Everything read from the hourly price moves with it: capture prices and
+rates, battery and storage revenue, the shadow retail price and the price panel. Caveat: the price is the model's shadow
+price, not a market price.
+
+Suite on 2026-10-20d: __SUITE__
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
