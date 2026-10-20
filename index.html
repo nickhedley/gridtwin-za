@@ -1172,7 +1172,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         subject to an emissions ceiling rather than only reporting against the NDC, which is
         how the IRP poses the question. When the cap binds, the model reports what the last tonne
         cost to avoid.</p>
-        <p style="margin-bottom:8px">The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s highest reported evening peak (<span data-num="eskomPeak"></span>&nbsp;GW) because it is driven by the 2025 demand series and includes storage charging; the System adequacy and validation panels show the gap.</p>
+        <p style="margin-bottom:8px">The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s highest reported evening peak (<span data-num="eskomPeak"></span>&nbsp;GW) because it is driven by the 2025 demand series and includes firm exports (it leaves storage charging out); the System adequacy and validation panels show the gap.</p>
 
         <p style="margin-bottom:8px"><strong>How dispatch works:</strong> merit order – rooftop PV nets off demand &rarr; wind / utility solar / CSP &rarr; nuclear, hydro, Cahora Bassa imports &rarr; coal &rarr; pumped storage &amp; batteries &rarr; gas CCGT &rarr; diesel OCGT &rarr; interruptible load &rarr; unserved energy. Ahead of a forecast shortfall, spare coal and gas charge the stores. One stage of load shedding &asymp; 1,000&nbsp;MW of unserved demand.</p>
 
@@ -1189,7 +1189,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             imports get no adder &ndash; hydro has no fuel so its R30/MWh already is consumables, and
             the import price is contracted and embeds the supplier&rsquo;s own O&amp;M.</td></tr>
           <tr><td>Existing fleet</td><td>Wind <span data-num="windFleet">4.7&nbsp;GW</span> &middot; Utility solar 3.27&nbsp;GW (grid-contracted 2.78 + wheeled 0.49) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop <span data-num="rooftopGW"></span>&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries <span data-num="battGW"></span>&nbsp;GW &middot; Pumped storage <span data-num="psGW"></span>&nbsp;GW</td></tr>
-          <tr><td>New-build capex</td><td>Wind R<span id="capexWind">&ndash;</span> &middot; PV R<span id="capexPv">&ndash;</span> &middot; Rooftop R<span id="capexRooftop">&ndash;</span> &middot; Battery&nbsp;(4h) R<span id="capexBatt">&ndash;</span> (BESIPPPP bid window 3 aged to 2026; inclusions not stated) &middot; CCGT R<span id="capexCcgt">&ndash;</span> /kW, 2026. Declining per BNEF to 2035 (solar &minus;30%, storage &minus;25%, onshore wind &minus;23%); CCGT rises, having hit a record high in 2025</td></tr>
+          <tr><td>New-build capex</td><td>Wind R<span id="capexWind">&ndash;</span> &middot; PV R<span id="capexPv">&ndash;</span> &middot; Rooftop R<span id="capexRooftop">&ndash;</span> (no recorded source) &middot; Battery&nbsp;(4h) R<span id="capexBatt">&ndash;</span> (BESIPPPP bid window 3 aged to 2026; inclusions not stated) &middot; CCGT R<span id="capexCcgt">&ndash;</span> /kW, 2026. Declining per BNEF to 2035 (solar &minus;30%, storage &minus;25%, onshore wind &minus;23%); CCGT rises, having hit a record high in 2025</td></tr>
           <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region &middot; 11 Renewable Energy Development Zones (GN&nbsp;114 / Gazette&nbsp;41445 2018 and GN&nbsp;142/144/145 / Gazette&nbsp;44191 2021), held as centre points and equivalent-area radii rather than gazetted polygons. Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &ndash; they are not published by Eskom or NTCSA.</td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
           <tr><td>Renewables vs Non-fossil</td><td>&ldquo;Renewables&rdquo; = wind + utility solar + rooftop PV + CSP + hydro. &ldquo;Non-fossil&rdquo; adds nuclear and (mostly-hydro) imports.</td></tr>
@@ -1287,7 +1287,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         errors cannot cancel and hide each other, hour-by-hour energy balance invariants across
         eleven scenarios, cross-panel consistency so two panels cannot report different numbers for
         the same thing, and a sweep asserting that every control still moves something. The two
-        panels above show the reconciliations themselves.</p>
+        panels above run the same kinds of comparison on the page: the Eskom panel sets the
+        &lsquo;2025, as modelled&rsquo; run against 2025, and the published-models panel runs each study from
+        the start-up settings. The suite&rsquo;s runs use their own settings, so its figures differ slightly.</p>
 
         <div style="font-weight:700;color:var(--ink);margin-top:11px">Data and licences</div>
         <p>Every data file the model uses is in the public repository, because the model runs in your
@@ -13273,8 +13275,8 @@ function renderCurtailmentForecast(){
  * is that an independently built model using different data and a different
  * solver arrives near a published result when asked the same question.
  *
- * Mirrors validate_external.js, which asserts the same comparison on every
- * change - so the panel cannot drift away from the harness silently.
+ * Built as validate_external.js builds its runs (the start-up state, the studies' wind basis), but nothing compares the
+ * panel's output with the harness's, so the two can drift (mechanics audit G7-M6, fix 6; this comment once said they could not).
  */
 function renderExternalComparison(){
   const host = document.getElementById('externalBody');
@@ -13318,7 +13320,9 @@ function renderExternalComparison(){
 
   const ROWS = [
     { name: 'Coal share, 2030',  model: coalShare, pub: 55, band: 6, src: 'CSIR' },
-    { name: 'Renewable share',   model: reShare,   pub: 40, band: 8, src: 'CSIR' },
+    // Not a published figure (mechanics audit G7-M9): the complement of CSIR's coal share less nuclear, hydro and imports, as
+    // validate_external derives it.
+    { name: 'Renewable share',   model: reShare,   pub: 40, band: 8, src: 'CSIR, derived from its coal share' },
   ];
   if (ed){
     // Bands as validate_external sets them, with their reasons there (site review A29).
@@ -14876,22 +14880,56 @@ fetch('public_data/ember_za.json').then(r => r.ok ? r.json() : null).then(d => {
   if (typeof renderValidation === 'function') renderValidation();
 }).catch(() => {});
 const emberNote = () => 'Ember, calendar 2025' + (EMBER_2025 && EMBER_2025.released ? ' (monthly data released ' + EMBER_2025.released + ')' : '');
+// THE GENERATION ROWS READ '2025, AS MODELLED' (mechanics audit G7-M1, fix 2; user, 20 Oct 2026, message 264). They set
+// the run on screen, a 2026 system, against calendar 2025, and explained the gap as Ember's gross against the model's sent-out.
+// Ember's monthly South African data are Eskom's own, sent out, with coal topped up from Stats SA (Ember's methodology; its
+// 2025 nuclear, 10.21 TWh, is Eskom's sent-out 10.2): on Today 2026 the coal row read -38 TWh where the 2025 system run
+// against 2025 is within 1%. The rows now read the 2025 preset's own run, built as a click applies it, once a page, whatever
+// is on screen; coal is set against Eskom's own 2025 sent-out, wind, solar and nuclear against Ember's calendar 2025.
+// Eskom's 2025 coal sent out, TWh: the author's sum of ESK19679, Eskom's hourly data, for 2025 (the RESULTS entry on the backcast gap,
+// re-measured; one annual total, published with Eskom credited and the analysis ours, as the data terms allow).
+const ESKOM_2025_COAL_TWH = 170.4;
+let _run2025 = null;
+function run2025AsModelled(){
+  if (_run2025) return _run2025;
+  const o = PRESETS['2025, as modelled'], s = {};
+  SLIDERS.forEach(x => { if (x.grp || !x.id) return; s[x.id] = (x.id in o) ? o[x.id] : (x.toggle ? (x.def ? 1 : 0) : x.def); });
+  for (const k of PRESET_NON_SLIDER_KEYS) s[k] = (k in o) ? o[k] : FIXED[k];
+  _run2025 = simulate(s, PROFILES);
+  return _run2025;
+}
+const _e25 = k => _run2025 && _run2025.E ? _run2025.E[k] / 1e6 : null;
+// Eskom's energy availability factor, whole fleet, calendar 2026 to Week 32 (Eskom weekly System Status report).
+const ESKOM_FLEET_EAF_PCT = 67.95;
 const ESKOM_ACTUALS = {
   asOf: 'Week 32, 9 August 2026',
   source: 'Eskom weekly System Status reports',
   url: 'https://www.eskom.co.za/dataportal/',
   structural: [
+    // Coal only against coal only (mechanics audit G7-M7, fix 4): Eskom's 67.95% is the whole fleet, the slider coal alone,
+    // so the gap read -3.0 where it is +0.7. Eskom's figure is converted as the presets convert it (coalEafFromFleet).
     { k: 'Coal fleet EAF',        model: () => state.coalEAFPct,
-      actual: 67.95, unit: '%',
-      note: 'Calendar year to date, Week 32 2026 (2025 full year: 62.44%). Week 32 alone was '
-          + '72.15%, and the year has run above 70% since Week 27.' },
-    { k: 'OCGT load factor',      model: () => (lastRes && lastRes.E)
-        ? 100 * lastRes.E.diesel / Math.max(1, dieselAvailMW({ ...FIXED, ...state }) * 8760) : 0,
+      get actual(){ return +coalEafFromFleet(ESKOM_FLEET_EAF_PCT).toFixed(1); }, unit: '%',
+      note: () => 'Coal only: Eskom\u2019s whole-fleet ' + ESKOM_FLEET_EAF_PCT + '% (calendar year to date, Week 32 2026; '
+          + '2025 full year 62.44%) less nuclear, hydro, pumped storage and open-cycle plant at their own availability, as the presets '
+          + 'convert it. Week 32 alone was 72.15%, and the year has run above 70% since Week 27.' },
+    // One boundary (mechanics audit G7-M4, fix 3): the row divided all open-cycle output, Avon and Dedisa's contracted running
+    // included (0.899 of Today 2026's 0.913 TWh), by the 3,400 MW fleet that includes them, and read 3.1% against Eskom's 1.17%.
+    // Now Eskom's own turbines only, the fleet less Avon and Dedisa, and their merit-order running; the pair is in the note.
+    { k: 'OCGT load factor',      model: () => {
+        if (!(lastRes && lastRes.E)) return 0;
+        const P = { ...FIXED, ...state }, own = dieselAvailMW(P) - P.avonMW - P.dedisaMW;
+        return 100 * Math.max(0, lastRes.E.diesel - (lastRes.avonDedisaMustRunMWh || 0)) / Math.max(1, own * 8760); },
       actual: 1.17, unit: '%',
-      note: 'Financial year to date 2026; diesel spend R948m against R5.73bn last year. The model\u2019s figure is '
-          + 'what it dispatches, including Avon and Dedisa\u2019s contracted running, which the model applies as Eskom reports it. '
-          + 'Eskom also runs open-cycle turbines for reserve, unit-level trips and network '
-          + 'constraints that a national single-node model does not represent, so a gap here is expected.', expectedGap: true },
+      note: () => {
+        const P = { ...FIXED, ...state }, own = dieselAvailMW(P) - P.avonMW - P.dedisaMW;
+        const md = lastRes && lastRes.avonDedisaMustRunMWh ? lastRes.avonDedisaMustRunMWh / 1e6 : 0;
+        return 'Financial year to date 2026; diesel spend R948m against R5.73bn last year. The model\u2019s figure is Eskom\u2019s own '
+          + 'open-cycle turbines, ' + Math.round(own).toLocaleString('en-US') + ' MW, on merit. Avon and Dedisa (' + P.avonMW + ' and '
+          + P.dedisaMW + ' MW, independent) run ' + md.toFixed(2) + ' TWh on their contracts, as Eskom reports, and are left out of '
+          + 'both sides; whether Eskom\u2019s 1.17% includes them is not stated in the weekly report. Eskom also runs open-cycle '
+          + 'turbines for reserve, unit-level trips and network constraints that a national single-node model does not represent, '
+          + 'so a gap here is expected.'; }, expectedGap: true },
     { k: 'Rooftop PV installed',  model: () => (FIXED.rooftopMW/1000),
       actual: 9.1, unit: 'GW',
       note: 'NTCSA, June 2026, grew 35% y/y. The model reads lower by design: Eskom\u2019s '
@@ -14904,11 +14942,12 @@ const ESKOM_ACTUALS = {
           + 'sits awkwardly beside 8-9 GW of rooftop plus 2.8 GW of operational REIPPPP/RMIPPPP.', expectedGap: true },
     { k: 'Winter peak demand',    model: () => Math.round((lastRes && lastRes.peak ? lastRes.peak : 0)/100)/10,
       actual: 28.7, unit: 'GW',
-      note: 'Eskom\u2019s highest observed peak – the 28,699 MW "peak-in-the-peak" of late June '
+      note: () => 'Eskom\u2019s highest observed peak – the 28,699 MW "peak-in-the-peak" of late June '
           + '2026; routine winter evenings ran 24.9-27.2 GW. Compare these carefully: Eskom quotes '
           + 'peak demand against Eskom fleet availability, with IPP renewables and imports serving '
           + 'load on top, so its figure is not total system demand, and the gap shown is partly '
-          + 'definitional.', expectedGap: true },
+          + 'definitional. The model\u2019s peak is demand less storage charging and includes '
+          + Math.round(state.exportsMW ?? FIXED.exportsMW).toLocaleString('en-US') + ' MW of firm exports.', expectedGap: true },
     { k: 'Coal installed',        model: () => FIXED.coalInstalledMW/1000,
       actual: 39.692, unit: 'GW', note: 'Nominal fleet capacity before EAF, Eskom Integrated Report FY2026 (the 42 GW once '
           + 'compared here is an older nameplate figure).' },
@@ -14923,36 +14962,27 @@ const ESKOM_ACTUALS = {
           + 'by design: it adds 0.49 GW of privately wheeled ground-mounted plant that Eskom '
           + 'books under Rooftop, and its REIPPPP figure is the 31 Mar 2026 reporting date '
           + '(Eskom\u2019s Aug line adds Graspan +75 MW and ~42 MW of later CODs).', expectedGap: true },
-    { k: 'Coal generation',       model: () => (lastRes && lastRes.E) ? lastRes.E.coal/1e6 : 0,
-      get actual(){ return EMBER_2025 ? +EMBER_2025.coal.toFixed(1) : null; }, unit: 'TWh/yr',
-      note: () => emberNote() + '. Ember reports gross generation; this model produces '
-          + 'sent-out, because its cost coefficients are per MWh sent out (R546/MWh, Eskom\u2019s primary energy cost; '
-          + '' + FIXED.emisCoal + ' tCO2/MWh, our figure, below the 1.11 that Eskom\u2019s FY2026 report implies). Converting Ember to sent-out at '
-          + 'standard auxiliary rates – coal 7.7%, nuclear 5%, renewables nil, since only thermal '
-          + 'plant carries meaningful house load for mills, fans and flue-gas desulphurisation – puts Ember\u2019s coal at '
-          + (EMBER_2025 ? (EMBER_2025.coal * (1 - 0.077)).toFixed(1) : '\u2013') + ' TWh sent-out, the figure to compare with the model\u2019s. '
-          + 'Higher renewables in the model (rooftop and privately wheeled wind, in the rows below) explain part of the '
-          + 'remaining gap; the rest is not yet explained.', expectedGap: true },
-    { k: 'Wind generation',       model: () => (lastRes && lastRes.E) ? lastRes.E.wind/1e6 : 0,
+    { k: 'Coal generation, 2025',  model: () => _e25('coal'),
+      actual: ESKOM_2025_COAL_TWH, unit: 'TWh/yr',
+      note: () => 'The model\u2019s \u20182025, as modelled\u2019 run against Eskom\u2019s own 2025 coal, sent out (our sum of Eskom\u2019s '
+          + 'hourly data, ESK19679; the analysis is ours, not Eskom\u2019s). Ember\u2019s calendar 2025 coal, '
+          + (EMBER_2025 ? EMBER_2025.coal.toFixed(1) : '\u2013') + ' TWh, is higher because Ember tops Eskom\u2019s figure up from Stats SA '
+          + 'to cover coal plant outside Eskom\u2019s data, which this model leaves out with the load it serves.' },
+    { k: 'Wind generation, 2025', model: () => _e25('wind'),
       get actual(){ return EMBER_2025 ? +EMBER_2025.wind.toFixed(1) : null; }, unit: 'TWh/yr',
-      note: () => emberNote() + '. The model reads high for two reasons: '
-          + 'it counts ' + Math.round(FIXED.windMW - ESKOM_WIND_LINE_MW) + ' MW of privately wheeled wind that Ember does not put in its Wind line '
-          + '(about ' + ((lastRes && lastRes.E) ? (lastRes.E.wind * (FIXED.windMW - ESKOM_WIND_LINE_MW) / Math.max(1, FIXED.windMW + (state.newWindMW || 0)) / 1e6).toFixed(1) : '\u2013') + ' TWh), and Ember reports metered output, already net of the network curtailment '
-          + 'Eskom applies to Cape wind, which a single-node model cannot see. Availability and losses '
-          + 'are inside the metered profiles; curtailment is left to the nodal engine.', expectedGap: true },
-    { k: 'Solar generation',      model: () => (lastRes && lastRes.E)
-        ? (lastRes.E.pv + lastRes.E.rooftop + lastRes.E.csp)/1e6 : 0,
+      note: () => '\u20182025, as modelled\u2019 against ' + emberNote() + ', which takes South Africa\u2019s monthly figures from Eskom, '
+          + 'sent out. The run counts ' + Math.round(PRESETS['2025, as modelled'].windMW - ESKOM_WIND_LINE_MW).toLocaleString('en-US')
+          + ' MW of privately wheeled wind beside Eskom\u2019s wind line, and Ember reports metered output, already net of the network '
+          + 'curtailment Eskom applies to Cape wind, which a single-node model cannot see.', expectedGap: true },
+    { k: 'Solar generation, 2025', model: () => _run2025 && _run2025.E ? (_run2025.E.pv + _run2025.E.rooftop + _run2025.E.csp) / 1e6 : null,
       get actual(){ return EMBER_2025 ? +EMBER_2025.solar.toFixed(1) : null; }, unit: 'TWh/yr',
-      note: () => emberNote() + ', all solar. The model includes ' + (FIXED.rooftopMW/1000).toFixed(1) + ' GW of behind-the-meter '
-          + 'rooftop at ' + ((lastRes && lastRes.E) ? (100 * lastRes.E.rooftop / ((FIXED.rooftopMW + (state.newRooftopMW || 0)) * 8760)).toFixed(1) : '\u2013') + '% capacity factor; Ember is widely understood to under-capture '
-          + 'behind-the-meter generation, so neither figure is a clean benchmark for the other. '
-          + 'Treat a gap here as a question about rooftop, not about utility solar.', expectedGap: true },
-    { k: 'Nuclear generation',    model: () => (lastRes && lastRes.E) ? lastRes.E.nuclear/1e6 : 0,
+      note: () => '\u20182025, as modelled\u2019 against ' + emberNote() + ', all solar. Ember estimates rooftop from Eskom\u2019s distributed '
+          + 'capacity data; the run carries ' + (PRESETS['2025, as modelled'].rooftopMW / 1000).toFixed(1) + ' GW of rooftop at its own '
+          + 'yield, so treat a gap here as a question about rooftop, not about utility solar.', expectedGap: true },
+    { k: 'Nuclear generation, 2025', model: () => _e25('nuclear'),
       get actual(){ return EMBER_2025 ? +EMBER_2025.nuclear.toFixed(1) : null; }, unit: 'TWh/yr',
-      note: () => emberNote() + ' – gross, so compare against ' + (EMBER_2025 ? (EMBER_2025.nuclear * 0.95).toFixed(2) : '\u2013') + ' TWh sent-out. '
-          + 'Koeberg\u2019s default is ' + Math.round(FIXED.nuclearCF * 100) + '% sent-out (the Koeberg slider gives '
-          + 'its basis). Every other carrier is on the same basis: coal through its per-sent-out coefficients, '
-          + 'wind and solar through their metered profiles, imports at the border.', expectedGap: true },
+      note: () => '\u20182025, as modelled\u2019 against ' + emberNote() + ', which equals Eskom\u2019s sent-out 10.2 TWh: no '
+          + 'auxiliary conversion applies. The preset runs Koeberg at 2025\u2019s measured ' + Math.round(PRESETS['2025, as modelled'].nuclearCF * 100) + '%.' },
     { k: 'Hybrid (RMIPPPP)',      model: () => FIXED.hybridMW/1000,
       actual: 0.335, unit: 'GW',
       note: 'Eskom Week 32 "Hybrid" – firm dispatchable solar+wind+battery portfolios, '
@@ -14969,7 +14999,10 @@ function renderValidation(){
   // Rows that read this run's output compare like with like only on a 2026 scenario (site review A30: on Fossil-free 2040
   // the panel set coal 0.0 against 177.7 TWh and called the gap expected). On other years they are left out and the
   // panel says so; the input rows stay.
-  const THIS_RUN = ['OCGT load factor', 'Winter peak demand', 'Coal generation', 'Wind generation', 'Solar generation', 'Nuclear generation'];
+  // The generation rows read '2025, as modelled' instead (mechanics audit G7-M1), so they show on every scenario; its run is
+  // made once, when the panel is first on screen, and the rows wait for it.
+  const THIS_RUN = ['OCGT load factor', 'Winter peak demand'];
+  if (!_run2025) panelWhenSeen('validation', () => { try { run2025AsModelled(); } catch(e){ console.error('validation 2025 run:', e); } renderValidation(); });
   const on2026 = (state.scenarioYear ?? FIXED.scenarioYear) === 2026;
   const A = { ...ESKOM_ACTUALS, structural: ESKOM_ACTUALS.structural.filter(r => on2026 || !THIS_RUN.includes(r.k)) };
 
@@ -14977,7 +15010,7 @@ function renderValidation(){
     const m = r.model();
     // A benchmark read from a data file (Ember's, site review A33) is null until the file arrives: one row template, with
     // the actual and the gap shown as dashes and the note saying so.
-    const wait = r.actual == null;
+    const wait = r.actual == null || m == null;
     const diff = wait ? 0 : m - r.actual;
     const pct = r.actual ? Math.abs(diff) / r.actual * 100 : 0;
     // 5% is the point at which a calibration input is worth revisiting rather
@@ -14987,22 +15020,23 @@ function renderValidation(){
     const col = drift ? 'var(--alert,#C4785A)' : r.expectedGap && pct > 5 ? 'var(--steel,#4A6B7A)' : 'var(--ok,#4A8C5C)';
     return '<tr style="border-bottom:1px solid var(--line2)">'
       + `<td style="padding:4px 6px">${r.k}</td>`
-      + `<td style="text-align:right;padding:4px 6px">${m.toFixed(1)}${r.unit}</td>`
+      + `<td style="text-align:right;padding:4px 6px">${m == null ? '&ndash;' : m.toFixed(1) + r.unit}</td>`
       + `<td style="text-align:right;padding:4px 6px">${wait ? '&ndash;' : r.actual + r.unit}</td>`
       + `<td style="text-align:right;padding:4px 6px;font-weight:700;color:${col}">`
       + (wait ? '&ndash;' : (diff >= 0 ? '+' : '') + diff.toFixed(1)) + '</td>'
-      + `<td style="padding:4px 6px;font-size:9.5px;color:var(--ink2)">${wait ? 'Benchmark loading.' : typeof r.note === 'function' ? r.note() : r.note}</td></tr>`;
+      + `<td style="padding:4px 6px;font-size:9.5px;color:var(--ink2)">${m == null ? 'Running the 2025 case.' : wait ? 'Benchmark loading.' : typeof r.note === 'function' ? r.note() : r.note}</td></tr>`;
   }).join('');
 
   const drifted = A.structural.filter(r => {
     const m = r.model();
-    return r.actual && !r.expectedGap && Math.abs(m - r.actual) / r.actual * 100 > 5;
+    return r.actual && m != null && !r.expectedGap && Math.abs(m - r.actual) / r.actual * 100 > 5;
   });
 
   host.innerHTML =
       '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:8px;line-height:1.45">'
     + `Model inputs against Eskom&rsquo;s published figures as at <strong>${A.asOf}</strong>. `
-    + (on2026 ? '' : 'The generation, peak and open-cycle rows compare a 2026 run with Eskom&rsquo;s data, so they are shown for 2026 scenarios only. ')
+    + 'Generation rows: the &lsquo;2025, as modelled&rsquo; run against 2025, on every scenario. '
+    + (on2026 ? '' : 'The peak and open-cycle rows compare this run with 2026 data, so show on 2026 scenarios only. ')
     + 'A gap here means the model needs updating.</div>'
     + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
@@ -19991,7 +20025,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-20i';
+const BUILD_STAMP = '2026-10-21c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20209,6 +20243,7 @@ watchPanel('mc', [document.getElementById('riskHead') && document.getElementById
 watchPanel('capCurve', [document.getElementById('capCurvePanel')]);
 watchPanel('heat', [document.getElementById('nav-heat')]);
 watchPanel('external', [document.getElementById('externalBody')]);
+watchPanel('validation', [document.getElementById('validationBody')]);
 
 /* --- Shared weather-year profile builder --- */
 // ONE definition, used by BOTH ensembles. Extracted 31 Aug 2026 after an audit found
@@ -20754,7 +20789,7 @@ function run(){cancelPanels();const gen=++_runGen;
   }
   lastRes=simulateCached();finishRun();
 }
-function finishRun(){window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){panelWhenSeen('external',()=>{try{renderExternalComparison();}catch(e){console.error('external:',e);}});}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')panelWhenSeen('heat',()=>window.renderHeat());if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();hideCalc();}
+function finishRun(){window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){panelWhenSeen('external',()=>{try{renderExternalComparison();}catch(e){console.error('external:',e);}});}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')panelWhenSeen('heat',()=>window.renderHeat());if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof renderCapexLine==='function')renderCapexLine();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();hideCalc();}
 function scheduleRun(){cancelPanels();if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 // As scheduleRun, but after the next paint (rAF fires before painting; the timeout after it), so a status set on click is seen.
 function scheduleRunAfterPaint(){cancelPanels();if(rafPending)return;rafPending=true;requestAnimationFrame(()=>setTimeout(()=>{rafPending=false;run();},0));}
@@ -20961,14 +20996,24 @@ function fillAboutNums(){
     el.textContent = f();
   }
 }
+// The capex line in the assumptions table, filled from BLD_COST so it cannot drift from the constants (7 Oct 2026: it still read
+// R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965). Solar shows the line the scenario on screen builds on
+// (mechanics audit G7-M8, fix 7): every 2030-40 preset sets single-axis tracking, costed on its own line, which the table never
+// showed. Called at start-up and after every run.
+function renderCapexLine(){
+  for (const [id, t] of [['capexWind','wind'],['capexRooftop','rooftop'],['capexBatt','batt'],['capexCcgt','ccgt']]){
+    const el = document.getElementById(id);
+    if (el && BLD_COST[t]) el.textContent = Math.round(BLD_COST[t].c2026).toLocaleString('en-US');
+  }
+  const pv = document.getElementById('capexPv');
+  if (pv && BLD_COST.pv) pv.textContent = Math.round(BLD_COST.pv.c2026).toLocaleString('en-US') + ' fixed tilt (no recorded source)'
+    + (bldPvTrackingOn() ? ', R' + Math.round(bldCostEntry('pv').c2026).toLocaleString('en-US') + ' single-axis tracking, as this scenario builds it' : '');
+}
 Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD, P_STRK]).then(() => {
   fillAboutNums();
   // The methodology table's capex line is filled from BLD_COST, so it cannot drift from the constants (7 Oct 2026:
   // it still read R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965).
-  for (const [id, t] of [['capexWind','wind'],['capexPv','pv'],['capexRooftop','rooftop'],['capexBatt','batt'],['capexCcgt','ccgt']]){
-    const el = document.getElementById(id);
-    if (el && BLD_COST[t]) el.textContent = Math.round(BLD_COST[t].c2026).toLocaleString('en-US');
-  }
+  renderCapexLine();
   // The worker starts with the settled inputs; the first full run waits for it (up to 5 s), then computes there.
   engineWorkerStart().then(() => { window.GTZA_READY = true; run(); });
 });
