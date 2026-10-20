@@ -5942,6 +5942,12 @@ and a larger-customer tariff wait for after the note (TODO 14hq).
 Checks on this branch (jsdom; ESK19679.csv present): validate_outputs 44/44 (42 plus the two new), validate_lint 3/3,
 validate_structure 27/27, validate_public_text 17/17, audit 88/88. Measured 20 Oct 2026 about 18:45-18:55 UTC.
 
+Suite on 2026-10-21h without validate_stored_panels (stored panels not regenerated, message 266), ESK19679.csv present:
+968/972: node checks 880/884 (validate_outputs 44/44, links 48/48, worker 38/38) plus audit 88/88; eng5 5/6. The failures are
+the four known ones and eng5 check 6. Run 20 Oct 2026 20:16-23:50 UTC in three parts (two background runs stopped at their
+time limit; validate_links, then validate_worker, the audit and eng5 run again), with other branches' suites beside it.
+Render check in Chromium (rooftop and site tabs, Google and network calls stubbed): 12/12.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
