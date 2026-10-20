@@ -6065,6 +6065,11 @@ Not done, and why: the published-models panel's denominator (G7 fix 1c) changes 
 together and is left for after the note (TODO 14hp); fix 1's other parts are in #97 (message 262). A35 (existing wind 4.7 GW
 from one constant) was already done in #93. Fixes 8-12 are after the note (TODO 14hp).
 
+Suite on 2026-10-21c without validate_stored_panels (stored panels not regenerated, message 266; ESK19679.csv present): 966/970,
+node checks 878/882 plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 20 Oct 2026
+20:55-22:20 UTC with other branches' suites beside it (two at a time overnight, message 270); the runner was stopped at its time
+limit during validate_response and resumed from there. Render check in Chromium (fresh load, the four note presets): 25/25.
+
 ### Coal marginal cost's rand year, a sensitivity: indexing PyPSA-RSA's marginal_cost from 2024 rands to 2026 raises the average price 1-6% on the four note presets, from 2023 rands 2-11%; dispatch, system cost and CO2 unchanged (build 2026-10-20f, main 51150a8; user, 20 Oct 2026, message 268 (5); measure only, no model change until Meridian answers, TODO 14hu)
 
 Why: PyPSA-RSA states no currency year (config.yaml at commit 89872c1: USD_to_ZAR 18.24, EUR_to_ZAR 17.83, no year given,
