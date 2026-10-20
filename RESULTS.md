@@ -5919,6 +5919,104 @@ are the four known ones and eng5 check 6. In the suite run the disk filled (the 
 since deleted): validate_worker's browser crashed on load and validate_capacity left its generator check pending; both were
 rerun alone with space free, 38/38 and 33/33.
 
+### Site review batch 1: wording and labels on 30 findings, the hourly CSV hidden, the household profile's terms stated, and the gas-floor price label (build 2026-10-19h; user, 19 Oct 2026, messages 252, 253, 258)
+
+What changed. The advisor's site review of 19 Oct (201 findings on build 19e) proposed a first batch of wording and label
+fixes. Each was checked against the code before it was changed. Wording only, plus three display details noted below; no model
+figure moves. Branch claude/review-batch1 from main (build 19f).
+
+- A2: preset captions name the standard: half of the Australian market's reliability standard (at most 0.002% of demand
+  unserved, stricter than NTCSA's adequacy test).
+- A3: the imports note says the default is the 1,150 MW Cahora Bassa contract (read from FIXED), kept to 2040 in every
+  scenario; the 1,920 MW HVDC and the 400 kV lines are the physical links. Confirmed: no preset sets importsEndYear.
+- A4: the open-cycle fleet is the system's 3,400 MW, Eskom's own plus Avon (670) and Dedisa (335), each read from FIXED; the
+  diesel budget is the fleet's, not Eskom's.
+- A5: the coal availability note gives the coal-only estimates (2023 49.7, 2025 58.4, FY2026 61.4, January to August 2026
+  65.3; the default rounds the last) beside Eskom's audited whole-fleet EAF, from one table (EAF_HISTORY) that the FIXED
+  comment now points to.
+- A6: '2025, as modelled' says it is from Eskom data, the modelling ours, and not a validation (coal close, shedding far
+  less than Eskom's 2025).
+- A9: 'Where to build' no longer calls headroom free: inside it a project pays the shallow connection rate (TX_SHALLOW 0.25 of
+  the base, txTierCharge), as the result box already said; the portfolio's 'free' reads 'reduced charge'; the headroom is
+  dated GCCA 2025 (October 2023) with the October 2025 Cape wind update.
+- A10: heat stress: leaving solar and line effects out understates the stress (was 'conservative'); the heat applies to every
+  hour; the added column is signed (a change that rounds to nothing reads 0.0, not '+-0.0').
+- A11: the levelised cost tag no longer says 'sourced constants'.
+- A12: the carbon budget's scale shows Eskom's FY2026 184.5 Mt CO2e (Integrated Report 2026, p.75) instead of 'about 200 Mt
+  today'; the unsourced 42% share is dropped; a line says the model's 2026 reads below Eskom's reported figure and why. The
+  140 Mt electricity-sector target, credited to the Energy Council of South Africa with no publication found, is dropped with
+  the verdict against it (user, 20 Oct 2026, message 260 (4): drop it unless it is our own result; it is not). The panel now
+  sets the scenario against Eskom's FY2026 and states the NDC's national ranges, with no sector share assumed. The carbon-cap
+  control keeps 140 Mt as its default, labelled an illustrative ceiling, not a published allocation (the cap is off by
+  default, so no figure moves).
+- A13: the permitted-capacity panel no longer says 'not built' (the register keeps built plant as Approved); time since
+  approval is the most a project can have been ready, not the least; the source names the 2026 Q1 release.
+- A14: the queue panel judges NTCSA's October 2025 list by its own date ('due to commission by 2025'; whether they have since
+  connected is not published).
+- A15: the build pace note no longer contradicts itself.
+- A17: the price-setting chart and the price footnote say storage can set a price below the running cost of the plant shown
+  (a known limitation, TODO 14an).
+- A18: shortage hours are priced at the R87,000/MWh price ceiling, which is not a cost; the model counts unserved energy at
+  R9,530/MWh in system cost (both read from FIXED).
+- A19: 'Zero-price hours' is 'Hours at or below zero' (the count includes negative hours).
+- A20: 'Cost of generation' is 'Average price' (it is the mean shadow price outside shortage hours).
+- A23: the retail rooftop note no longer says every row saves less than the share displaced.
+- A27, A28: carbon capture: the station's cut per MWh sold and the fleet's are given separately; the unsourced 67-72%
+  lifecycle figure is dropped; the existing-fleet row is split into a retrofitted station and the fleet average.
+- A31: the open-cycle note includes Avon and Dedisa's contracted running, which the model applies; 'a least-cost model would
+  never do that' is gone.
+- A33: the Ember rows read calendar 2025 from public_data/ember_za.json, the file validate_benchmarks reads (coal 185.6,
+  wind 11.3, solar 18.6, nuclear 10.2 TWh), with the release date, instead of typed figures from an older release; the
+  sent-out conversions are computed (coal 171.3, nuclear 9.70 TWh).
+- A34: 1.04 tCO2/MWh is our figure, below the 1.11 that Eskom's FY2026 report implies; the remaining coal gap is 'not yet
+  explained', not 'not a model error'.
+- A35: the wind fleet in the assumptions table and the comparison notes is computed from FIXED.windMW (4.7 GW, 538 MW
+  private wheeled, was typed as 4.6 GW and 470 MW).
+- A36, A37, A40, A43, A45, A48: the full model's inputs differ from the instant engine's; the footer says the analysis of
+  Eskom data is ours, not Eskom's; no day-ahead market exists yet; GCCA spelled out and dated; the pre-feasibility notes no
+  longer quote an unsourced PPA range, a stale capture range or a 'negotiated' TUoS; the licence line says registration or
+  licence by offtake.
+- A50 / D4 credit: 'Source: Includes solar data from Google' under the rooftop measurement.
+- D1: the dispatch panel's hourly CSV button is hidden until Eskom consents or the open profiles replace profiles.json.
+  The PPA export stays (message 260 (4): hide it only if it carries an hourly series derived from Eskom data): its columns are
+  the model's hourly shadow price (model output) and per-unit wind and solar for the chosen region from
+  nodal/profiles_regional.json (Renewables.ninja and PVGIS), with no demand or other Eskom-derived series. Its header says
+  'data CC BY 4.0', which does not fit the Renewables.ninja columns (CC BY-NC 4.0); left for D3, the licence wording.
+- D2: nodal/residential_profile.json states its terms (Eskom-derived, non-commercial, consent requested) in the file and in
+  LICENSE; TODO 14bz lists it for replacement after the note.
+- 258: wherever the IRP gas floor is active, the price panel says 'Gas run to meet the plan's 51% minimum sets the price in
+  about N hours; this rule is under review', rounded to 100. N is ccgtFloorPriceH (message 260 (4)): the hours gas sets the
+  price (marginalTech 'ccgt') with the floor on and not with it off, so priced by gas only because of the 51% minimum; the
+  floor-off run is simulateGasAnnualFloor's own merit run (ccgtForceLoad 0). simulate(state, PROFILES) after applyState,
+  jsdom, build 2026-10-19h, unchanged on 2026-10-20h (main with #100 and #101 merged in):
+
+  | Preset | Gas-priced, floor on | Gas-priced, floor off | Only because of the floor (N) | Label | Floor top-up hours |
+  |---|---|---|---|---|---|
+  | IRP's 2030 targets | 4,550 | 179 | 4,372 | about 4,400 | 4,551 |
+  | IRP path 2035 | 4,984 | 676 | 4,312 | about 4,300 | 5,087 |
+  | IRP's 2030 targets, grid delayed | 4,496 | 404 | 4,093 | about 4,100 | 4,493 |
+
+  N matches the battery audit's 4,372 and 4,312. The first version of this label counted the floor's top-up hours
+  (ccgtFloorTopUpH), which includes hours gas would have set the price anyway. No label on Today 2026 or Least-cost path 2035
+  (no floor). The label stays on the grid-delayed preset (Nick, message 260 (4)). Decision recorded in TODO 14hd: after the note those hours are priced at the next unit on merit (PJM, 'Gaps in
+  current pricing methodology', 15 Feb 2018; LP dual practice).
+
+Where a finding was not applied as suggested, and why:
+- A43's date: the review gives November 2023 (a law firm's alert of 8 Nov 2023); our headroom file records October 2023;
+  the page uses October 2023.
+- A48: the nersaCategory registration text is unchanged; whether a grid sale under a procurement programme needs a licence
+  is for NERSA to confirm.
+- A11's per-bar tooltips and A50's Places and Geocoding question are left to batch 2 and the D4 pull request.
+
+Suite on 2026-10-19h: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6. The failures are the four known ones (EDMSA Scenario A CO2 2035, iron-air July, high-season off-peak, peakerSeasonRatio) and eng5 check 6. Run 19 Oct 2026 about 21:00-22:30 UTC with other jobs beside it; the four failing scripts were rerun after the A33 row fix with the same result, and audit, validate_structure, validate_outputs and validate_public_text pass on the final commit. Audit first read 87/88: the prose ceiling counted 120 words of code, because a second 9.5px note cell in the Eskom benchmark rows moved its match; one row template now (the check is unchanged). Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets): 9/9.
+
+Suite on 2026-10-20h (main 51150a8, with #100 and #101, merged in; stored panels regenerated for 20h, fingerprint 008667dbfd1637):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 20 Oct 2026
+16:20-18:07 UTC; a one-minute jsdom price measurement ran beside validate_links (17:24-17:25 UTC), which passed; the failing
+scripts ran with nothing beside them. Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets and
+its grid-delayed variant, labels about 4,300, 4,400 and 4,100 hours): 11/11.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
