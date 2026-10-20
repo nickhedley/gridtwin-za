@@ -5851,7 +5851,7 @@ Suite on 2026-10-19k: 966/970 with ESK19679.csv present: node checks 878/882 (va
 regenerated on 19k, fingerprint 036254fe61e3e6) plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct
 2026 about 22:20-23:00 UTC with one other job beside it for the first half.
 
-### A link or a reload with new wind never computed; a link now runs only after every start-up file has loaded, and carries the preset (build 2026-10-20c; user, 20 Oct 2026, message 263 (1), from the mechanics audit G1-M1)
+### A link or a reload with new wind never computed; a link now runs only after every start-up file has loaded, and carries the preset (build 2026-10-20e, with #98's web worker merged in; user, 20 Oct 2026, messages 263 (1) and 265, from the mechanics audit G1-M1)
 
 Cause (reproduced in Chromium on main 38edbbb): the page ran the engine once while it was still loading (an early run on
 the synthetic profiles, for first numbers). A link's scenario was applied before that run, so with new wind the run called the
@@ -5878,7 +5878,12 @@ hashed); a preset then a slider moved, reloaded, equals the two steps by hand an
 that never computes skips its comparison): the reload after a click throws the wind-map error on six of the eight presets (every
 preset with new wind), as the audit found; the ?preset= links reproduce nothing; ?newWindMW=1000 never computes.
 
-Suite on 2026-10-20c: __SUITE__
+The web worker (#98, merged into this branch from main) has no start-up run of its own: its first full run waits for the worker,
+which starts after every start-up file has loaded; the guarded early run above is the only one before that (message 265).
+
+Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing beside it): 1,052/1,056, node checks 964/968
+(validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
+88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
