@@ -13203,9 +13203,15 @@ function renderExternalComparison(){
   const host = document.getElementById('externalBody');
   if (!host || typeof simulate !== 'function') return;
 
+  // Both studies are built from the start-up state (the sliders' defaults; every other input from FIXED, as simulate fills it),
+  // whatever preset is on screen (user, 20 Oct 2026, message 262). Built from the on-screen state, IRP path 2035 reported
+  // CSIR's 2030 coal share at 31.0% and EDMSA's 2035 CO2 at 56.9 Mt. The start-up state has no keys beyond the sliders.
+  const base = {};
+  SLIDERS.forEach(s => { if (s.grp || s.subgrp || s.endsub || !s.id) return; base[s.id] = s.toggle ? (s.def ? 1 : 0) : s.def; });
   // CSIR Least-cost 2030, at CSIR's OWN assumptions - Table 1 of the report:
-  // 285 TWh demand, 65% EAF, and the low end of their reported capacity range.
-  const sc = { ...state,
+  // 285 TWh demand, 65% EAF, and the low end of their reported capacity range. CSIR's 285 TWh is national; on the model's
+  // basis it is about 257.7 TWh, which +30% on the 2026 base gives (message 262), so demand is not solved to 285.
+  const sc = { ...base,
     newPvMW: 15000 - FIXED.pvUtilityMW, newWindMW: 20000 - FIXED.windMW,   // CSIR's 15 GW of solar and 20 GW of wind in total
     demandGrowthPct: 30, coalEAFPct: 65,
     // The studies' own wind basis, as validate_external runs them (current-turbine profile; user, 7 Oct 2026; site review A29).
@@ -13228,7 +13234,7 @@ function renderExternalComparison(){
   const gA = Math.round(100 * (Math.pow(1.02, 9) - 1));
   let ed = null;
   try {
-    ed = simulate({ ...state, coalEAFPct: 70, demandGrowthPct: gA,
+    ed = simulate({ ...base, coalEAFPct: 70, demandGrowthPct: gA,
       newWindMW: 20000, newPvMW: 25000, newBattMW: 8000, newBattHours: 4,
       newCcgtMW: 4000, coalDecomMW: 4100, bldWindModern: 0 }, PROFILES);
   } catch(e){ ed = null; }
