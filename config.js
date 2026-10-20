@@ -19,7 +19,7 @@
 //   APIs & Services → Credentials → your key
 //     Application restrictions → Websites → gridtwinza.org/*, www.gridtwinza.org/*
 //     API restrictions        → Restrict key → Solar API, Maps JavaScript API,
-//                               Places API, Geocoding API (the rooftop tab's map
+//                               Places API (New), Geocoding API (the rooftop tab's map
 //                               and address search use the same key; message 253 D4)
 //
 // Also set a daily quota on each of the four (APIs & Services → the API → Quotas →

@@ -5764,7 +5764,9 @@ What changed (index.html, the rooftop map and both searches; config.js comment):
 - Fallback: no key, a load failure, or a key Google rejects (gm_authFailure, also after the map has loaded) opens Esri World
   Imagery as before. On Esri, the search is Photon's and the Solar API's roof faces are not drawn (the measurement still feeds
   the calculator, and the legend shows only where faces are drawn; a decision for Nick, TODO 14he).
-- Rooftop type-ahead: Google Places Autocomplete only when Google's map is up, with a session token so the keystrokes and the
+- Rooftop type-ahead: Google's place suggestions (Places API (New): AutocompleteSuggestion and Place.fetchFields, since the
+  legacy AutocompleteService and PlacesService closed to new projects on 1 March 2025; message 260 (7)) only when Google's map
+  is up, with a session token so the keystrokes and the
   chosen place bill as one session; Photon otherwise. The second type-ahead, which geocoded on every pause beside the first, is
   removed; Enter and Search still geocode.
 - Site-resource search on the main map (an Esri map): Photon for type-ahead and search, South Africa only (bounding box, then

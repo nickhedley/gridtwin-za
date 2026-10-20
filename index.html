@@ -22251,10 +22251,11 @@ function _rtPhotonList(results) {
 
 // ── Type-ahead address suggestions ───────────────────────────────────────────
 // Users expect a dropdown of predictions as they type - its absence made the search feel broken even when it worked. Google's
-// Places Autocomplete (far better South African address coverage) when Google's map is up, since Google's terms allow its
-// results only on a Google map; Photon otherwise. A session token groups the keystrokes and the chosen place into one
-// billed session.
-let _rtAutoSvc = null, _rtPlacesSvc = null, _rtLastQuery = '', _rtSession = null;
+// place suggestions (far better South African address coverage) when Google's map is up, since Google's terms allow its
+// results only on a Google map; Photon otherwise. Places API (New), through the Maps JavaScript API's AutocompleteSuggestion
+// and Place classes (message 260 (7)): Google closed the legacy AutocompleteService and PlacesService to new projects on
+// 1 March 2025. A session token groups the keystrokes and the chosen place into one billed session.
+let _rtLastQuery = '', _rtSession = null, _rtPreds = [];
 
 async function _rtAutocomplete() {
   const inp = document.getElementById('rtSearch');
@@ -22270,39 +22271,32 @@ async function _rtAutocomplete() {
   if (key) {
     try {
       await rtInitMap();   // loads the Maps JS library once and says which map is up
-      if (rtBackend === 'google' && window.google && window.google.maps && window.google.maps.places) {
-        if (!_rtAutoSvc) _rtAutoSvc = new window.google.maps.places.AutocompleteService();
-        if (!_rtSession) _rtSession = new window.google.maps.places.AutocompleteSessionToken();
-        _rtAutoSvc.getPlacePredictions({
-          input: q,
-          componentRestrictions: { country: 'za' },
-          sessionToken: _rtSession,
-        }, (preds, status) => {
-          // Ignore a response for a query the user has already typed past.
-          if (inp.value.trim() !== _rtLastQuery) return;
-          if (status !== window.google.maps.places.PlacesServiceStatus.OK || !preds || !preds.length) {
-            box.style.display = '';
-            box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
-              + 'No match for that address. <strong>Click your building on the map below</strong>, or paste GPS coordinates.</div>';
-            return;
-          }
-          box.style.display = '';
-          box.innerHTML = preds.slice(0, 6).map(p => {
-            const main = (p.structured_formatting && p.structured_formatting.main_text) || p.description;
-            const sub  = (p.structured_formatting && p.structured_formatting.secondary_text) || '';
-            return `<div onclick="rtPickPrediction('${_rtEsc(p.place_id)}')"
-                  style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
-                  onmouseover="this.style.background='var(--bg2,#eee)'"
-                  onmouseout="this.style.background='transparent'">
-                <div style="font-weight:600">${_rtEsc(main)}</div>
-                <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${_rtEsc(sub)}</div>
-              </div>`;
-          }).join('');
-        });
+      const P = window.google && window.google.maps && window.google.maps.places;
+      if (rtBackend === 'google' && P && P.AutocompleteSuggestion) {
+        if (!_rtSession) _rtSession = new P.AutocompleteSessionToken();
+        const { suggestions } = await P.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+          input: q, includedRegionCodes: ['za'], sessionToken: _rtSession });
+        // Ignore a response for a query the user has already typed past.
+        if (inp.value.trim() !== _rtLastQuery) return;
+        _rtPreds = (suggestions || []).map(s => s.placePrediction).filter(Boolean).slice(0, 6);
+        box.style.display = '';
+        if (!_rtPreds.length) {
+          box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
+            + 'No match for that address. <strong>Click your building on the map below</strong>, or paste GPS coordinates.</div>';
+          return;
+        }
+        const txt = t => (t && t.text) || '';
+        box.innerHTML = _rtPreds.map((p, i) => `<div onclick="rtPickPrediction(${i})"
+                style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
+                onmouseover="this.style.background='var(--bg2,#eee)'"
+                onmouseout="this.style.background='transparent'">
+              <div style="font-weight:600">${_rtEsc(txt(p.mainText) || txt(p.text))}</div>
+              <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${_rtEsc(txt(p.secondaryText))}</div>
+            </div>`).join('');
         return;
       }
     } catch (e) {
-      console.warn('[GridTwin] Google Places autocomplete failed, using Photon: '
+      console.warn('[GridTwin] Google place suggestions failed, using Photon: '
         + (e && e.message ? e.message : e));
     }
   } else {
@@ -22337,38 +22331,26 @@ async function _rtAutocompletePhoton(q) {
   }
 }
 
-// Resolve a chosen prediction to coordinates. Places gives us a place_id rather
-// than a location, so this second lookup is required.
-function rtPickPrediction(placeId) {
+// Resolve a chosen suggestion to coordinates (Places API (New): the suggestion's Place, then its fields). The fetch ends the
+// session the token opened.
+async function rtPickPrediction(i) {
   const box = document.getElementById('rtSearchResults');
   const inp = document.getElementById('rtSearch');
-  if (box) box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">Locating\u2026</div>';
+  const pred = _rtPreds[i];
+  if (!pred) return;
+  if (box) box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">Locating…</div>';
   try {
-    if (!_rtPlacesSvc) {
-      _rtPlacesSvc = new window.google.maps.places.PlacesService(document.createElement('div'));
-    }
-    const sessionToken = _rtSession; _rtSession = null;   // a chosen place ends the session
-    _rtPlacesSvc.getDetails({
-      placeId: placeId,
-      fields: ['geometry', 'formatted_address'],
-      sessionToken,
-    }, (place, status) => {
-      if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place || !place.geometry) {
-        if (box) box.style.display = 'none';
-        console.warn('[GridTwin] Could not resolve that suggestion (' + status + ').');
-        return;
-      }
-      const loc = place.geometry.location;
-      const lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
-      const lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
-      if (inp && place.formatted_address) inp.value = place.formatted_address;
-      // A Places result with a precise viewport is house-level; rooftop-equivalent.
-      const exact = !!(place.geometry.location_type === 'ROOFTOP' || place.geometry.viewport);
-      rtGoTo(lat, lng, exact);
-    });
+    const place = pred.toPlace();
+    _rtSession = null;
+    await place.fetchFields({ fields: ['location', 'formattedAddress', 'types'] });
+    if (!place.location) throw new Error('no location');
+    if (inp && place.formattedAddress) inp.value = place.formattedAddress;
+    // A street address or a building is house-level; a street, suburb or town is not, and the roof is then the nearest one.
+    const exact = (place.types || []).some(t => t === 'street_address' || t === 'premise' || t === 'subpremise');
+    rtGoTo(place.location.lat(), place.location.lng(), exact);
   } catch (e) {
     if (box) box.style.display = 'none';
-    console.warn('[GridTwin] Places lookup failed: ' + e.message);
+    console.warn('[GridTwin] Could not resolve that suggestion: ' + (e && e.message ? e.message : e));
   }
 }
 window.rtPickPrediction = rtPickPrediction;
@@ -22605,7 +22587,7 @@ async function rtGeocode() {
 //
 // Restrict the key in the Google Cloud console before use: Application
 // restrictions -> Websites -> your domains (gridtwinza.org/*, www.gridtwinza.org/*),
-// and API restrictions -> Solar API, Maps JavaScript API, Places API and
+// and API restrictions -> Solar API, Maps JavaScript API, Places API (New) and
 // Geocoding API, the four this page calls (message 253 D4). A browser key is always visible in page source, so those restrictions
 // are what protect it, not secrecy.
 //
