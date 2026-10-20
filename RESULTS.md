@@ -5757,7 +5757,9 @@ system losses (Open-Meteo yield at a performance ratio of 0.80; the 0.21 fallbac
 losses' (default 0.80) and again by a per-type 'system/inverter' factor (usagePct, 0.80 to 0.90).
 
 What changed (index.html, rtCalc and RT_TYPES): the capacity factor carries the system losses; the control is shading only
-(Minimal 97%, Moderate 93% default, Heavy 85%; indicative, unsourced, as the old values were); usagePct is removed. The 0.21
+(Minimal 97%: PVWatts' default 3% shading loss, A. P. Dobos, 'PVWatts Version 5 Manual', NREL/TP-6A20-62641, 2014,
+doi 10.2172/1158421, the same default in pvlib's pvwatts_losses, page not checked here because nrel.gov is blocked from this
+session; Moderate 93%, the default, and Heavy 85%: our assumptions, labelled so on the control; message 260 (5)); usagePct is removed. The 0.21
 fallback is PVGIS at a tilt equal to the latitude, so it is divided by the 25-degree orientation factor (1.08) to bring it to a
 flat roof before the orientation control applies, since that control is relative to flat.
 
@@ -5777,8 +5779,9 @@ whose capacity factor is 20%. Computed by rtCalc itself in jsdom (scratchpad b1/
 | 12,000 m2, industrial | site 20% | 1,989.6 | 16.8% / 19.5% | 2,342 / 3,404 | 682 / 682 | 47.5 / 47.5 |
 
 The CF column is after orientation and shading (the yield is kWp x CF x 8,760, after usagePct before). The industrial case does
-not move: the default bill caps self-consumption, so the extra yield is exported, which earns nothing in the tab. Caveat: the
-shading values are indicative; the change only removes the double count.
+not move: the default bill caps self-consumption, so the extra yield is exported, which earns nothing in the tab. Caveats: the
+93% default is an assumption; the site capacity factor's 0.80 performance ratio is already more than PVWatts' 14% total
+loss, of which 3% is shading, so the minimal setting may still count some shading twice.
 
 Suite on 2026-10-19j: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:00-22:50 UTC with other jobs beside it. Render check in Chromium (fresh load, rooftop tab): 5/5, the shading control's three values and label, the default capacity factor 19.0%, no undefined or NaN, no page errors.
 
