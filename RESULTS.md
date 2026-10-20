@@ -5913,7 +5913,11 @@ two figures it quoted (R757 to R677, R765 to R701). Everything read from the hou
 rates, battery and storage revenue, the shadow retail price and the price panel. Caveat: the price is the model's shadow
 price, not a market price.
 
-Suite on 2026-10-20f: __SUITE__
+Suite on 2026-10-20f (main with #100 merged in, ESK19679.csv present): 1,052/1,056, node checks 964/968 (validate_stored_panels
+86/86 on stored panels regenerated for 20f, validate_links 48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures
+are the four known ones and eng5 check 6. In the suite run the disk filled (the allowance was spent by old lpcache folders,
+since deleted): validate_worker's browser crashed on load and validate_capacity left its generator check pending; both were
+rerun alone with space free, 38/38 and 33/33.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
