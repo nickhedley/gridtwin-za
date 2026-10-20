@@ -8307,7 +8307,7 @@ function simulate(u, prof, outPath, _soc0){
         const _tgt = _laReq(h, 0, coalGen, rampAllowedMW), _sNow = _laSoc();
         let w = Math.min(Math.max(0, _laP - btChg), _tgt - _sNow, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen);
         if (w > 1e-6){
-          const _cc = coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC + p.vomCoal;
+          const _cc = coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC;
           w = _chargeGroup(w, h, _cc, _shortTiers);
           if (w > 0){ coalGen += w; addCharge(h, 'batt', w, _cc); syncBattSoc(); chargeMW[h] += w; }
         }
@@ -8667,7 +8667,7 @@ function simulate(u, prof, outPath, _soc0){
         const psTargetCeiling=Math.max(0, Math.min(psEnergyTot*0.85, _offPeak ? Math.max(anticipatedShortfall[h], psDailyFloor) : anticipatedShortfall[h])
           - (_laOn && !p._laNoPs ? _laPsRefill(h) : 0));   // look-ahead (B): less what the coming surplus will pump in
         const battTargetCeiling=Math.min(battEnergy*0.8, _offPeak ? Math.max(anticipatedShortfall[h], battDailyFloor) : anticipatedShortfall[h]);
-        const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
+        const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC;  // this charge is bought from coal
         // Within the pump rating left this hour (15 Oct 2026): forced coal or must-run gas may already have pumped this hour, and this
         // added up to 80% of the rating again (c5b_14r's 15 stress weeks: 243 hours, 386 GWh above the rating).
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,Math.max(0,psPowerTot-chargePsMW[h]),psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
@@ -8795,7 +8795,7 @@ function simulate(u, prof, outPath, _soc0){
         for (const src of ['coal', 'gas']){
           const head = src === 'coal' ? _cHead : _gHead, w0 = Math.min(want - got, head);
           if (w0 <= 1e-6) continue;
-          const cost = src === 'coal' ? coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC + p.vomCoal : _gC;
+          const cost = src === 'coal' ? coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC : _gC;
           let w = 0;
           if (group === 'ps'){ w = w0; psSoc += w * psEffTot; }
           else { w = _chargeGroup(w0, h, cost, _shortTiers); syncBattSoc(); }
@@ -8845,7 +8845,7 @@ function simulate(u, prof, outPath, _soc0){
       : ((stack.diesel[h]||0) - _mdArr[h] > 1) ? p.costDiesel + cD + p.vomDiesel
       : ((stack.ccgt[h]||0) > 1)         ? (_ocMW > 1 ? (p.costCcgt + cG)*_ocK + p.vomOcgt : p.costCcgt + cG + p.vomCcgt)
       : ((curtailMW[h]||0) > 1)          ? 0
-      : (coalGen > 1)                    ? coalMarginalCost(coalGen) * partLoadF[h] * ccsCostMult + ccsCostAdd + cC * partLoadF[h] + p.vomCoal
+      : (coalGen > 1)                    ? coalMarginalCost(coalGen) * partLoadF[h] * ccsCostMult + ccsCostAdd + cC * partLoadF[h]
       : (imp > 1)                        ? p.costImports
       : (hyd > 1)                        ? p.costHydro
       : (nuc > 1)                        ? p.costNuclear + p.vomNuclear
@@ -9583,6 +9583,10 @@ const _coalMeritCurve = (() => {
   return units.map(u => { cum += u.cap; return { upTo: cum, mc: u.mc }; });
 })();
 
+// VOM IS IN marginal_cost (user, 20 Oct 2026, message 263 (2)). PyPSA-RSA's marginal cost is heat rate x fuel price plus
+// variable O&M: Arnot, 12.744 GJ/MWh x R45.18/GJ + R88.37/MWh = R664.14, its marginal_cost to the cent (fleet_by_region_v2.csv,
+// in the repository's history). The price added p.vomCoal to it a second time in four places; no longer. The fleet-average
+// fuel cost (p.costCoal + p.vomCoal) is a different figure and keeps its VOM.
 function coalMarginalCost(outputMW){
   if (!(outputMW > 0)) return _coalMeritCurve.length ? _coalMeritCurve[0].mc : 546;
   for (const s of _coalMeritCurve) if (outputMW <= s.upTo) return s.mc;
@@ -19903,7 +19907,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-20e';
+const BUILD_STAMP = '2026-10-20f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
