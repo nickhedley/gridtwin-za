@@ -5851,6 +5851,40 @@ Suite on 2026-10-19k: 966/970 with ESK19679.csv present: node checks 878/882 (va
 regenerated on 19k, fingerprint 036254fe61e3e6) plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct
 2026 about 22:20-23:00 UTC with one other job beside it for the first half.
 
+### A link or a reload with new wind never computed; a link now runs only after every start-up file has loaded, and carries the preset (build 2026-10-20e, with #98's web worker merged in; user, 20 Oct 2026, messages 263 (1) and 265, from the mechanics audit G1-M1)
+
+Cause (reproduced in Chromium on main 38edbbb): the page ran the engine once while it was still loading (an early run on
+the synthetic profiles, for first numbers). A link's scenario was applied before that run, so with new wind the run called the
+modern wind map before nodal/profiles_wind_modern_map.json had loaded and threw ('modern wind is on but
+nodal/profiles_wind_modern_map.json is not loaded'); the throw stopped the rest of the page's start-up, so GTZA_READY never
+came and the page never computed. ?newWindMW=1000: not computed after 90 s; ?newPvMW=1000: computed in 3.4 s. A link also
+carried slider values only (and a link's 0 read as the slider's default), so a 2035 preset reopened at 2026.
+
+What changed (index.html):
+- A link that carries a scenario skips the early run; its scenario runs once every start-up file has loaded. The early run, on
+  a plain visit, can no longer stop the start-up (caught and logged).
+- ?preset=<name> applies the preset as a click does (every non-slider key, the year included), then any slider values in the
+  link on top. The page remembers the preset a scenario started from (basePreset), so after a click the address carries the
+  preset and only the sliders that differ from it; moving a slider keeps the preset in the address.
+- A link's 0 is kept; select controls are read from links too.
+
+After, in Chromium on this branch: ?newWindMW=1000 computed in 2.5 s; ?preset=IRP path 2035 in 4.6 s at 2035; ?preset=
+Fossil-free 2040&demandGrowthPct=10 in 2.4 s at 2040; a plain visit in 3.4 s.
+
+New check, harness/validate_links.js (48 checks, about 5 minutes, in the suite list): for every preset, a fresh ?preset= link
+and a reload of the address a click leaves each equal the click (every key of state, and every number of simulate's result,
+hashed); a preset then a slider moved, reloaded, equals the two steps by hand and stays at 2035; ?newWindMW=1000 and
+?newPvMW=1000 compute and equal the start-up page with the slider moved. 48/48 on this branch. On main 38edbbb, 13/39 (a page
+that never computes skips its comparison): the reload after a click throws the wind-map error on six of the eight presets (every
+preset with new wind), as the audit found; the ?preset= links reproduce nothing; ?newWindMW=1000 never computes.
+
+The web worker (#98, merged into this branch from main) has no start-up run of its own: its first full run waits for the worker,
+which starts after every start-up file has loaded; the guarded early run above is the only one before that (message 265).
+
+Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing beside it): 1,052/1,056, node checks 964/968
+(validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
+88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
