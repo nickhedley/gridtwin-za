@@ -6110,6 +6110,15 @@ Fixed, each as the review proposed unless stated:
 
 Suite on 2026-10-19i: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:05-22:55 UTC with other jobs beside it. Audit first read 87/88: the A29 narrative put the variable name ROWS inside a page string, which the shouting check counts; the count is now computed before the string (the check is unchanged), and audit, validate_structure, validate_outputs, validate_external and validate_public_text were rerun on the final commit. Render check in Chromium (fresh load; start-up, Fossil-free 2040, Least-cost path 2035): 7/7, Deep's caption reads 1.49 against 2.42, the Eskom 2025-26 generation rows are left out on 2040 and the panel says so, no undefined or NaN, no page errors.
 
+Suite on 2026-10-20i (main 2116c10, with #93, merged in; stored panels regenerated for 20i, fingerprint 0c85cbeacc414c):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48, validate_worker
+38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 20 Oct 2026 18:45-21:15 UTC, with
+two other branches' suites and jsdom measurements beside it throughout; the first run stopped at its time limit during
+validate_worker, which was run again on its own from 20:41 UTC (38/38), then the audit and eng5. Carbon intensity and the
+external comparison re-measured on the merge: unchanged (Today 744, IRP path 2035 268, Least-cost 271, Deep 48 g/kWh; IRP path
+2035 coal 50.9%, CO2 83.2 Mt). Render check in Chromium (fresh load): 9/9, adding the carbon intensity tile (744 on Today 2026)
+and the week buttons (Winter week, 17-23 May; Summer week, 24-30 Nov).
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
