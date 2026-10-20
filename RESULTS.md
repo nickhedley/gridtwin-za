@@ -5941,6 +5941,11 @@ at start-up, both provincial views, the register counts, the full-model card and
 where the page loads HiGHS, is blocked here, so the solve itself was not run), no undefined or NaN on the four note presets,
 no page errors.
 
+Suite on 2026-10-21g without validate_stored_panels (stored panels not regenerated, message 266), ESK19679.csv present:
+965/970 node checks plus audit 88/88; eng5 5/6. The failures are the four known ones (EDMSA Scenario A CO2 2035, iron-air
+July, high-season off-peak, peakerSeasonRatio) and eng5 check 6. Run 20 Oct 2026 20:16-23:28 UTC with up to three other
+branches' suites beside it; the four failing checks are the known ones, so no rerun alone.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
