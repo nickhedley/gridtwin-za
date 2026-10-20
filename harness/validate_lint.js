@@ -59,7 +59,7 @@ const BROWSER = [
   'WeakMap','Promise','Error','TypeError','isFinite','isNaN','parseInt','parseFloat',
   'encodeURIComponent','decodeURIComponent','requestAnimationFrame','cancelAnimationFrame',
   'navigator','location','history','localStorage','sessionStorage','Worker','Blob','URL',
-  'URLSearchParams','FileReader','Image','devicePixelRatio','ResizeObserver','self',
+  'URLSearchParams','FileReader','Image','devicePixelRatio','ResizeObserver','IntersectionObserver','self',
   'Float64Array','Float32Array','Int32Array','Uint8Array','Uint16Array','ArrayBuffer',
   'MouseEvent','KeyboardEvent','Event','CustomEvent','Element','HTMLElement','Node',
   'structuredClone','performance','alert','confirm','prompt','getComputedStyle','matchMedia',
