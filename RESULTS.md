@@ -5841,8 +5841,9 @@ Fossil-free 2040&demandGrowthPct=10 in 2.4 s at 2040; a plain visit in 3.4 s.
 New check, harness/validate_links.js (48 checks, about 5 minutes, in the suite list): for every preset, a fresh ?preset= link
 and a reload of the address a click leaves each equal the click (every key of state, and every number of simulate's result,
 hashed); a preset then a slider moved, reloaded, equals the two steps by hand and stays at 2035; ?newWindMW=1000 and
-?newPvMW=1000 compute and equal the start-up page with the slider moved. 48/48 on this branch; on main it fails (the preset
-links reproduce nothing, a reload after a click loses the non-slider keys, and the wind link never computes).
+?newPvMW=1000 compute and equal the start-up page with the slider moved. 48/48 on this branch. On main 38edbbb, 13/39 (a page
+that never computes skips its comparison): the reload after a click throws the wind-map error on six of the eight presets (every
+preset with new wind), as the audit found; the ?preset= links reproduce nothing; ?newWindMW=1000 never computes.
 
 Suite on 2026-10-20c: __SUITE__
 
