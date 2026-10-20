@@ -5775,6 +5775,20 @@ Fixed, each as the review proposed unless stated:
 - A26: gas is gated on running at all, not on storage cycles, so the least-cost build's CCGT no longer reads 'not needed here'.
 - A29: the published-models comparison runs as validate_external does (current-turbine wind profile, bands 22 Mt and 12 TWh),
   and the narrative counts the rows outside their band instead of saying it 'lands close'.
+- Message 262 (A29 continued): both studies are built from the start-up state (the sliders' defaults; every other input from
+  FIXED, as simulate fills it), whatever preset is on screen; they were built from the on-screen state. Demand is not solved to
+  CSIR's 285 TWh, which is national; on the model's basis it is about 257.7 TWh, which +30% on the 2026 base gives. Measured
+  in jsdom on this branch (applyState(preset), then renderExternalComparison):
+
+  | Row (published, band) | Today 2026 before / after | IRP path 2035 before / after |
+  |---|---|---|
+  | CSIR coal share 2030 (55%, ±6) | 50.9% / 50.9% | 33.7% / 50.9% |
+  | CSIR renewable share (40%, ±8) | 43.3% / 43.3% | 47.9% / 43.3% |
+  | EDMSA CO2 2035 (124 Mt, ±22) | 83.2 / 83.2 | 64.0 / 83.2 |
+  | EDMSA wind 2035 (64 TWh, ±12) | 75.2 / 75.2 | 70.2 / 75.2 |
+
+  The audit of 20 Oct measured 31.0% and 56.9 Mt on IRP path 2035 and 51.4% after, on main, where this branch's wind basis
+  (A29, bldWindModern 0) is absent; this branch's figures differ by that.
 - A30: the Eskom 2025-26 rows show only when the 2026 scenario is on screen.
 - A32: coal installed compared with 39.692 GW, the figure the page uses.
 - A39: 3D map headroom read from nodal/region_headroom_lookup.json, as the main page; tooltips no longer print 'undefined'.
