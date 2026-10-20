@@ -46,3 +46,16 @@ jobs:
 
       - name: Run stress suite
         run: node stress_suite.js
+
+      # The stored risk panels (stored_panels.json) belong to one exact page: any change to index.html or to an engine file
+      # changes the page's fingerprint, and every visitor then computes the panels live, slowly, with no message (RULES.md,
+      # 'Stored risk panels'). This step checks the fingerprint and the file hashes only, no panel computed: about 15 s plus
+      # the jsdom install (user, 20 Oct 2026, message 260 (2)). If it fails, run from harness/
+      #   node validate_stored_panels.js testroot --write
+      # and commit stored_panels.json. The full check (about 25 minutes) stays a local step.
+      - name: Stored risk panels match the page (fingerprint only)
+        working-directory: harness
+        run: |
+          npm install --no-save --no-audit --no-fund jsdom@29.1.1
+          ln -sfn .. testroot
+          node validate_stored_panels.js testroot --fingerprint
