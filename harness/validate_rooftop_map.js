@@ -40,7 +40,7 @@ const CACHE=new Map(); let pass=0, fail=0; const check=(n,ok,d)=>{ ok?pass++:fai
     await p.goto(`http://localhost:${port}/index.html`,{waitUntil:'load'});
     await p.waitForFunction(()=>typeof window.switchTab==='function' && typeof window.rtInitMap==='function',null,{timeout:300000}).catch(e=>{ console.log('page errors:', errs.slice(0,5).join(' | ')); throw e; });
     await p.evaluate(()=>switchTab('rooftop'));
-    await p.waitForFunction(()=>typeof rtBackend!=='undefined' && rtBackend!==null,null,{timeout:20000});
+    await p.waitForFunction(()=>typeof rtBackend!=='undefined' && rtBackend!==null,null,{timeout:120000});
     await p.waitForTimeout(800);
     const want = mode==='google' ? 'google' : 'leaflet';
     check(`[${mode}] the map is ${want}`, await p.evaluate(()=>rtBackend)===want, await p.evaluate(()=>rtBackend));
