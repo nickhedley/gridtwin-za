@@ -5851,6 +5851,74 @@ Suite on 2026-10-19k: 966/970 with ESK19679.csv present: node checks 878/882 (va
 regenerated on 19k, fingerprint 036254fe61e3e6) plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct
 2026 about 22:20-23:00 UTC with one other job beside it for the first half.
 
+### A link or a reload with new wind never computed; a link now runs only after every start-up file has loaded, and carries the preset (build 2026-10-20e, with #98's web worker merged in; user, 20 Oct 2026, messages 263 (1) and 265, from the mechanics audit G1-M1)
+
+Cause (reproduced in Chromium on main 38edbbb): the page ran the engine once while it was still loading (an early run on
+the synthetic profiles, for first numbers). A link's scenario was applied before that run, so with new wind the run called the
+modern wind map before nodal/profiles_wind_modern_map.json had loaded and threw ('modern wind is on but
+nodal/profiles_wind_modern_map.json is not loaded'); the throw stopped the rest of the page's start-up, so GTZA_READY never
+came and the page never computed. ?newWindMW=1000: not computed after 90 s; ?newPvMW=1000: computed in 3.4 s. A link also
+carried slider values only (and a link's 0 read as the slider's default), so a 2035 preset reopened at 2026.
+
+What changed (index.html):
+- A link that carries a scenario skips the early run; its scenario runs once every start-up file has loaded. The early run, on
+  a plain visit, can no longer stop the start-up (caught and logged).
+- ?preset=<name> applies the preset as a click does (every non-slider key, the year included), then any slider values in the
+  link on top. The page remembers the preset a scenario started from (basePreset), so after a click the address carries the
+  preset and only the sliders that differ from it; moving a slider keeps the preset in the address.
+- A link's 0 is kept; select controls are read from links too.
+
+After, in Chromium on this branch: ?newWindMW=1000 computed in 2.5 s; ?preset=IRP path 2035 in 4.6 s at 2035; ?preset=
+Fossil-free 2040&demandGrowthPct=10 in 2.4 s at 2040; a plain visit in 3.4 s.
+
+New check, harness/validate_links.js (48 checks, about 5 minutes, in the suite list): for every preset, a fresh ?preset= link
+and a reload of the address a click leaves each equal the click (every key of state, and every number of simulate's result,
+hashed); a preset then a slider moved, reloaded, equals the two steps by hand and stays at 2035; ?newWindMW=1000 and
+?newPvMW=1000 compute and equal the start-up page with the slider moved. 48/48 on this branch. On main 38edbbb, 13/39 (a page
+that never computes skips its comparison): the reload after a click throws the wind-map error on six of the eight presets (every
+preset with new wind), as the audit found; the ?preset= links reproduce nothing; ?newWindMW=1000 never computes.
+
+The web worker (#98, merged into this branch from main) has no start-up run of its own: its first full run waits for the worker,
+which starts after every start-up file has loaded; the guarded early run above is the only one before that (message 265).
+
+Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing beside it): 1,052/1,056, node checks 964/968
+(validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
+88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
+
+### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
+
+Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
+to it again, in the four places that price coal from coalMarginalCost (the price's coal block, the storage charge cost, the
+storage pricing pass and the marginal price itself). Confirmed against the fleet file's source columns
+(fleet_by_region_v2.csv, PyPSA-RSA, in the repository's history): Arnot, heat rate 12.744 GJ/MWh x fuel R45.18/GJ = R575.77,
+plus variable O&M R88.37/MWh = R664.14, its marginal_cost to the cent (664.1402453697383). The fleet-average fuel cost
+(costCoal + vomCoal, in the system cost) is a different figure and keeps its VOM.
+
+Before (main, build 2026-10-19g) and after (2026-10-20d, the same engine as 20f), each preset as a click applies it, simulate(state, PROFILES) in
+jsdom, mean of the 8,760 hourly prices, R/MWh:
+
+| Preset | Average price before / after | Excluding shortage hours | Dispatch, system cost, CO2 |
+|---|---|---|---|
+| 2025, as modelled | 1,609.7 / 1,540.9 | 1,521.9 / 1,453.1 | identical |
+| Today 2026 | 757.1 / 677.3 | 757.1 / 677.3 | identical |
+| IRP's 2030 targets | 1,042.1 / 1,006.4 | 1,042.1 / 1,006.4 | identical |
+| IRP's 2030 targets, grid delayed | 1,061.6 / 1,021.5 | 1,061.6 / 1,021.5 | identical |
+| IRP path 2035 | 895.3 / 880.3 | 895.3 / 880.3 | identical |
+| Least-cost path 2035 | 765.5 / 701.1 | 765.5 / 701.1 | identical |
+| Deep decarbonisation 2035 | 332.5 / 303.5 | 332.5 / 303.5 | identical |
+| Fossil-free 2040 | 239.1 / 239.1 | 239.1 / 239.1 | identical (no coal) |
+
+'Identical' is every hour of every technology's dispatch (hashed), the system cost and the CO2. The audit measured the same
+two figures it quoted (R757 to R677, R765 to R701). Everything read from the hourly price moves with it: capture prices and
+rates, battery and storage revenue, the shadow retail price and the price panel. Caveat: the price is the model's shadow
+price, not a market price.
+
+Suite on 2026-10-20f (main with #100 merged in, ESK19679.csv present): 1,052/1,056, node checks 964/968 (validate_stored_panels
+86/86 on stored panels regenerated for 20f, validate_links 48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures
+are the four known ones and eng5 check 6. In the suite run the disk filled (the allowance was spent by old lpcache folders,
+since deleted): validate_worker's browser crashed on load and validate_capacity left its generator check pending; both were
+rerun alone with space free, 38/38 and 33/33.
+
 ### Site review batch 1: wording and labels on 30 findings, the hourly CSV hidden, the household profile's terms stated, and the gas-floor price label (build 2026-10-19h; user, 19 Oct 2026, messages 252, 253, 258)
 
 What changed. The advisor's site review of 19 Oct (201 findings on build 19e) proposed a first batch of wording and label
