@@ -6010,6 +6010,13 @@ Where a finding was not applied as suggested, and why:
 
 Suite on 2026-10-19h: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6. The failures are the four known ones (EDMSA Scenario A CO2 2035, iron-air July, high-season off-peak, peakerSeasonRatio) and eng5 check 6. Run 19 Oct 2026 about 21:00-22:30 UTC with other jobs beside it; the four failing scripts were rerun after the A33 row fix with the same result, and audit, validate_structure, validate_outputs and validate_public_text pass on the final commit. Audit first read 87/88: the prose ceiling counted 120 words of code, because a second 9.5px note cell in the Eskom benchmark rows moved its match; one row template now (the check is unchanged). Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets): 9/9.
 
+Suite on 2026-10-20h (main 51150a8, with #100 and #101, merged in; stored panels regenerated for 20h, fingerprint 008667dbfd1637):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 20 Oct 2026
+16:20-18:07 UTC; a one-minute jsdom price measurement ran beside validate_links (17:24-17:25 UTC), which passed; the failing
+scripts ran with nothing beside them. Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets and
+its grid-delayed variant, labels about 4,300, 4,400 and 4,100 hours): 11/11.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
