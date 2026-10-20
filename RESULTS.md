@@ -5818,6 +5818,34 @@ Writing takes about 20 minutes, the check about 25.
 
 Suite on 2026-10-19g: 966/970 with ESK19679.csv present: node checks 878/882 (validate_stored_panels 86/86 among them) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 19 Oct 2026 about 21:00-23:00 UTC, with other jobs beside it; the failing scripts give the same failures as main.
 
+### A link or a reload with new wind never computed; a link now runs only after every start-up file has loaded, and carries the preset (build 2026-10-20c; user, 20 Oct 2026, message 263 (1), from the mechanics audit G1-M1)
+
+Cause (reproduced in Chromium on main 38edbbb): the page ran the engine once while it was still loading (an early run on
+the synthetic profiles, for first numbers). A link's scenario was applied before that run, so with new wind the run called the
+modern wind map before nodal/profiles_wind_modern_map.json had loaded and threw ('modern wind is on but
+nodal/profiles_wind_modern_map.json is not loaded'); the throw stopped the rest of the page's start-up, so GTZA_READY never
+came and the page never computed. ?newWindMW=1000: not computed after 90 s; ?newPvMW=1000: computed in 3.4 s. A link also
+carried slider values only (and a link's 0 read as the slider's default), so a 2035 preset reopened at 2026.
+
+What changed (index.html):
+- A link that carries a scenario skips the early run; its scenario runs once every start-up file has loaded. The early run, on
+  a plain visit, can no longer stop the start-up (caught and logged).
+- ?preset=<name> applies the preset as a click does (every non-slider key, the year included), then any slider values in the
+  link on top. The page remembers the preset a scenario started from (basePreset), so after a click the address carries the
+  preset and only the sliders that differ from it; moving a slider keeps the preset in the address.
+- A link's 0 is kept; select controls are read from links too.
+
+After, in Chromium on this branch: ?newWindMW=1000 computed in 2.5 s; ?preset=IRP path 2035 in 4.6 s at 2035; ?preset=
+Fossil-free 2040&demandGrowthPct=10 in 2.4 s at 2040; a plain visit in 3.4 s.
+
+New check, harness/validate_links.js (48 checks, about 5 minutes, in the suite list): for every preset, a fresh ?preset= link
+and a reload of the address a click leaves each equal the click (every key of state, and every number of simulate's result,
+hashed); a preset then a slider moved, reloaded, equals the two steps by hand and stays at 2035; ?newWindMW=1000 and
+?newPvMW=1000 compute and equal the start-up page with the slider moved. 48/48 on this branch; on main it fails (the preset
+links reproduce nothing, a reload after a click loses the non-slider keys, and the wind link never computes).
+
+Suite on 2026-10-20c: __SUITE__
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing

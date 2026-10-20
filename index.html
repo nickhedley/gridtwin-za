@@ -18906,12 +18906,15 @@ const PRESET_ORDER = ['2025, as modelled', 'Today 2026', 'IRP\'s 2030 targets',
   // recalculation now waits for one paint, so 'Calculating…' and the active button show first. Same state, same run():
   // results unchanged.
   b.addEventListener('click',()=>{
-    applyState(PRESETS[name]);
+    applyState(PRESETS[name]); basePreset = name;
     setPresetActive(b); showCalc(); scheduleRunAfterPaint();
   });
   presetsEl.appendChild(b);
 });
 function setPresetActive(btn){presetsEl.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===btn)); presetCaption(null);}
+// The preset the scenario on screen started from (user, 20 Oct 2026, message 263 (1)): set by a preset click or a ?preset= link,
+// kept when a slider then moves, so a link carries the preset (its year and every non-slider setting) plus the changes.
+let basePreset = null;
 presetCaption(null);
 
 /* lamps */
@@ -19894,7 +19897,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-19g';
+const BUILD_STAMP = '2026-10-20c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20462,21 +20465,40 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
 /* --- URL state: read on load, write on change, share button --- */
 const urlParams=new URLSearchParams(location.search);
 if(urlParams.get('embed')==='1') document.body.classList.add('embed');
+// A link's preset (message 263 (1)): applied as a click applies it, then any slider values in the link on top.
+const urlPreset = urlParams.get('preset');
+if (urlPreset && PRESETS[urlPreset]){
+  applyState(PRESETS[urlPreset]); basePreset = urlPreset;
+  setPresetActive(Array.from(presetsEl.querySelectorAll('button')).find(x => x.dataset.preset === urlPreset) || null);
+}
+// The value a slider has in the scenario the link starts from: the preset's, else the default.
+const sliderBase = s => { const P = basePreset && PRESETS[basePreset]; return (P && s.id in P) ? P[s.id] : (s.toggle ? (s.def ? 1 : 0) : s.def); };
 SLIDERS.forEach(s=>{
   if(s.grp||!urlParams.has(s.id))return;
+  if(s.select){
+    if (!s.select.includes(urlParams.get(s.id))) return;
+    state[s.id]=urlParams.get(s.id); document.getElementById('in_'+s.id).value=state[s.id]; setPresetActive(null); return;
+  }
   if(s.toggle){
     const v=urlParams.get(s.id)==='1'?1:0;
     state[s.id]=v; document.getElementById('in_'+s.id).checked=!!v; setPresetActive(null); return;
   }
-  const v=Math.min(s.max,Math.max(s.min,+urlParams.get(s.id)||s.def));
+  // A number, kept when it is 0 (+x||s.def turned a link's 0 into the default).
+  const raw=Number(urlParams.get(s.id));
+  const v=Math.min(s.max,Math.max(s.min,Number.isFinite(raw)?raw:s.def));
   state[s.id]=v;
   document.getElementById('in_'+s.id).value=v;
   document.getElementById('cv_'+s.id).textContent=s.fmt(v);
   setPresetActive(null);
 });
+// A link that carries a scenario runs it only once every start-up file has loaded (the run in the start-up block below):
+// the early run on the synthetic profiles threw on new wind before the wind map loaded, and the throw stopped the page's
+// start-up, so ?newWindMW=1000 never computed (message 263 (1)).
+const URL_SCENARIO = !!(urlPreset && PRESETS[urlPreset]) || SLIDERS.some(s => !s.grp && urlParams.has(s.id));
 function syncURL(){
   const q=new URLSearchParams();
-  SLIDERS.forEach(s=>{if(s.grp)return; const def=s.toggle?(s.def?1:0):s.def; if(state[s.id]!==def)q.set(s.id,state[s.id]);});
+  if (basePreset) q.set('preset', basePreset);
+  SLIDERS.forEach(s=>{if(s.grp)return; if(state[s.id]!==sliderBase(s))q.set(s.id,state[s.id]);});
   if(document.body.classList.contains('embed'))q.set('embed','1');
   // preserve what does not belong to the scenario. This used to replace the
   // whole URL with location.pathname whenever the scenario was at defaults,
@@ -20538,7 +20560,9 @@ function updateCalc(){
 function showCalc(){ calcOwed.run = ++calcGen; updateCalc(); }
 function hideCalc(){ delete calcOwed.run; updateCalc(); }
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
-run();
+// The early run, on the synthetic profiles, for first numbers before the files land. Not for a link's scenario, which waits
+// for every start-up file; and never allowed to stop the rest of the start-up (message 263 (1)).
+if (!URL_SCENARIO){ try { run(); } catch (e) { console.error('[GridTwin] early run:', e); hideCalc(); } }
 bldInitRates();
 bldShowInherit();
 
