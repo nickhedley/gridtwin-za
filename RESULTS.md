@@ -5885,6 +5885,63 @@ Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing bes
 (validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
 
+### Site tools (audit PR 6): the site panel's wind tile now reads the file its P50 row reads, KwaZulu-Natal 21.6% to 32.9%; P90 and 'twelve years' wording; the rooftop tab names its default customer and warns above its 100 kVA supply (build 2026-10-21h; user, 20 Oct 2026, messages 264 and 270; audit G8 fixes 1, 2 and 4)
+
+Prepared overnight on main 2116c10, not merged: stored panels not regenerated (message 266). No engine number moves: neither
+panel reads the scenario (audit G8 section 1).
+
+Fix 1 (G8-M5). The tile and the monthly wind bars read nodal/profiles_regional.json (one centroid per supply area, 2023 only,
+not bias-corrected); the P50/P90 table beneath read nodal/profiles_regional_multiyear.json (several sites per area, x1.0753 to
+Eskom's observed 2022-2023 national level, 2014-2025). Both now read the twelve-year file: the tile is the P50 of the twelve
+annual means, as the table computes it, and the bars are each month's twelve-year mean; until the file has loaded the tile
+reads an ellipsis, and if it cannot load the single-site 2023 figure is shown and labelled as that. Source lines say which.
+Measured in jsdom (renderPanel with a placeholder solar figure, each supply area, scratchpad overnight/a6/g8.js; before is
+windCFForRegion, which the tile showed):
+
+| Supply area | Tile before (2023, one site) | Tile after (P50) | P50 row beneath |
+|---|---|---|---|
+| Eastern Cape | 36.7% | 36.2% | 36.2% |
+| Free State | 26.8% | 31.1% | 31.1% |
+| Gauteng | 24.7% | 22.8% | 22.8% |
+| Hydra Central | 42.5% | 41.4% | 41.4% |
+| Kwazulu Natal | 21.6% | 32.9% | 32.9% |
+| Limpopo | 23.5% | 22.1% | 22.1% |
+| Mpumalanga | 25.5% | 24.9% | 24.9% |
+| North West | 33.2% | 29.7% | 29.7% |
+| Northern Cape | 37.9% | 40.3% | 40.3% |
+| Western Cape | 36.5% | 34.1% | 34.1% |
+
+The tile equals the P50 row to the digit in all ten areas (the audit's check: within 0.1 point). validate_outputs gains this
+check. Outside this panel the single-site file is still read by the pre-feasibility tab, wheelCoverage and the regional build
+LP (TODO 14hy).
+
+Fix 2 (G8-M9, M10). The P50/P90 note read "Capacity factor across twelve weather years (2014-2025) ... P90 is the level
+exceeded in nine years out of ten - the number debt is sized against". It now reads: "Capacity factor by weather year for the Kwazulu Natal supply area: twelve years for wind (2014–2025), ten measured years for solar (2014–2023; 2024 and 2025 are 2023’s level rescaled, not measured). P90 here is the weather spread alone, the level nine years in ten beat; a lender’s P90 also counts resource and model uncertainty and sits lower." Solar 2024 and 2025
+equal 2023's level in every area (file meta 'solar_borrowed_years'); they stay in the computation (P90 effect negligible,
+audit G8-M10) and are named. The section footnote's "Wind interpolated from regional MERRA-2 profiles" now says the wind is
+the supply area's, from twelve weather years.
+
+Fix 4 (G8-M2, text only). The tariff note adds: "The default customer is a business on Businessrate 3, a supply of up to 100
+kVA; for a larger site enter your own bill and tariff." The result carries a warning when the tariff is still the default and
+the system is above 100 kWp (RT_BIZRATE3_MAX_KVA, Businessrate's 100 kVA, booklet 2026/27; compared with kWp, so about).
+Measured (rtCalc, fallback CF 0.21, other inputs at their defaults):
+
+| Roof | Bill, tariff | kWp | Payback, years | Warning before / after |
+|---|---|---|---|---|
+| 2,000 m2 | R80,000, default R2.76 | 331.1 | 6.15 (unchanged) | no / yes |
+| 12,000 m2 | R80,000, default R2.76 | 1,989.6 | 47.48 (unchanged) | no / yes |
+| 12,000 m2 | R900,000, default R2.76 | 1,989.6 | 4.39 (unchanged) | no / yes |
+| 50 m2 | R3,000, R4.15 | 8.1 | 11.45 (unchanged) | no / no |
+| 400 m2 | R80,000, default R2.76 | 65.7 | 7.02 (unchanged) | no / no |
+
+The default roof (331 kWp) now carries the warning too: it is about three times the default customer's supply. With a bill
+that matches the industrial roof (R900,000 a month) payback is 4.39 years as is; the audit's 2.9 needs the losses fix in #96.
+validate_outputs gains a check (12,000 m2 on the default customer warns; the 37.6 m2 anchor does not). A cap per NRS 097-2-3
+and a larger-customer tariff wait for after the note (TODO 14hq).
+
+Checks on this branch (jsdom; ESK19679.csv present): validate_outputs 44/44 (42 plus the two new), validate_lint 3/3,
+validate_structure 27/27, validate_public_text 17/17, audit 88/88. Measured 20 Oct 2026 about 18:45-18:55 UTC.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)

@@ -1660,7 +1660,23 @@ function initResourceQuery(){
     // Speaks only when the live feed departs from the satellite reference by more than
     // 25%. Silent the rest of the time, which is almost always.
     const _xc = (typeof solarCrossCheck === 'function') ? solarCrossCheck(lat, lng, solar.annualCF) : null;
-    const windPct  = windCF ? (windCF*100).toFixed(1) : '–';
+    // ONE WIND SERIES IN THIS PANEL (user, 20 Oct 2026, message 264, audit G8-M5). The tile and the monthly bars read
+    // profiles_regional.json (one centroid per supply area, 2023 only, not bias-corrected) while the P50/P90 table beneath read
+    // the multi-site, bias-corrected twelve years: KwaZulu-Natal showed 21.6% on the tile over a P50 of 32.9%. Both now come
+    // from the twelve-year file; the panel draws again when it has loaded. If it cannot load, the single-site 2023 figure is
+    // shown and labelled as that.
+    const _wy = windFromMultiyear(windRegion);
+    if (_wy){ windCF = _wy.p50; windMonthly = _wy.monthly; }
+    else if (!p90Failed) loadP90().then(() => { p90Failed = !p90Data; if (window._resourceData && window._resourceData.lat === lat
+      && window._resourceData.lng === lng) renderPanel(lat, lng, solar, windRegion, windCF, windMonthly); });
+    const windPct  = _wy ? (windCF*100).toFixed(1) : !p90Failed ? '\u2026' : windCF ? (windCF*100).toFixed(1) : '–';
+    const windLabel = _wy ? 'Wind CF (P50, regional)' : 'Wind CF (2023, one site)';
+    const windSource = _wy
+      ? `Wind: P50 of twelve weather years (2014\u20132025) for the ${windRegion} supply area, several sites, scaled `
+        + 'so the national mean matches Eskom\u2019s observed 2022\u20132023 output (Renewables.ninja, MERRA-2), as in the '
+        + 'P50/P90 table below; bars are the '
+        + 'twelve-year monthly means.'
+      : `Wind: 2023 at one site for the ${windRegion} supply area (Renewables.ninja, MERRA-2), not bias-corrected.`;
 
     let html = (_xc ? `
       <div style="font-size:10.5px;padding:6px 9px;margin-bottom:8px;background:var(--panel2);
@@ -1677,7 +1693,7 @@ function initResourceQuery(){
         </div>
         <div style="background:var(--bg2);border-radius:4px;padding:8px;text-align:center">
           <div style="font-size:20px;font-weight:700;color:#3EA055">${windPct}%</div>
-          <div style="font-size:10px;color:var(--ink2)">Wind CF (regional)</div>
+          <div style="font-size:10px;color:var(--ink2)">${windLabel}</div>
         </div>
       </div>
       <div style="font-size:10px;font-weight:600;margin-bottom:4px;color:var(--ink2)">Monthly capacity factor</div>
@@ -1689,7 +1705,7 @@ function initResourceQuery(){
         <span style="font-size:9px;color:var(--ink2);margin-left:6px">Open-Meteo ERA5 · 2024 · CC BY 4.0</span>
       </div>
       <div style="font-size:9px;color:var(--ink2);margin-top:6px">
-        Solar: ${solar.source}. Wind: regional MERRA-2 average (${windRegion}).
+        Solar: ${solar.source}. ${windSource}
       </div>
       <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Resource risk &ndash; P50 / P90</div>
@@ -2162,18 +2178,36 @@ let redzData = null;
 
   // ── P50 / P90 from ten real weather years ─────────────────────────────────
   // Every lender asks for these. P50 is the median year; P90 is the level
-  // exceeded in nine years out of ten, and it is what debt gets sized against.
+  // exceeded in nine years out of ten. It is the weather spread alone: a lender's P90 adds resource-model and simulation
+  // uncertainty and sits lower (audit G8-M9, message 264; Solargis, 24 Sep 2025).
   // Ten years is a short record - a bank will want twenty and its own
   // consultant - but it is a real distribution from real weather rather than a
   // rule-of-thumb haircut on a single year, which is what most desktop studies
   // still use.
   // Fetched on first use, when a site query asks for P50/P90 (message 251): the multi-year file is the largest the page
   // reads (9 MB), and every fresh load fetched it for this table, which stays empty until a site is chosen.
-  let p90Data = null, p90Loading = null;
+  let p90Data = null, p90Loading = null, p90Failed = false;
   const loadP90 = () => p90Loading || (p90Loading = fetch('nodal/profiles_regional_multiyear.json?v=' + (window.DATA_V || '7'))
     .then(r => r.ok ? r.json() : null)
     .then(d => { p90Data = d; })
     .catch(() => {}));
+
+  // The site panel's wind tile and monthly bars (audit G8-M5): the P50 of the twelve annual means, as the table computes it,
+  // and each month's mean over all twelve years. Null until the file has loaded.
+  function windFromMultiyear(reg){
+    const byYear = p90Data && p90Data.wind_pu && p90Data.wind_pu[reg];
+    if (!byYear) return null;
+    const sc = p90Data.scale || 1, years = Object.keys(byYear).sort();
+    const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+    const mSum = new Array(12).fill(0), mN = new Array(12).fill(0), annual = [];
+    for (const y of years){
+      const s = byYear[y]; let t = 0, h = 0;
+      for (let i = 0; i < s.length; i++) t += s[i];
+      annual.push(t / s.length / sc);
+      daysInMonth.forEach((d, m) => { for (let k = 0; k < d * 24 && h < s.length; k++, h++){ mSum[m] += s[h]; mN[m]++; } });
+    }
+    return { p50: exceedance(annual.slice().sort((a, b) => a - b), 0.50), monthly: mSum.map((v, m) => v / Math.max(1, mN[m]) / sc) };
+  }
 
   // Exceedance level from a sample: the value that the series beats in `pct` of
   // years. Linear interpolation between order statistics - with ten points the
@@ -2228,9 +2262,10 @@ let redzData = null;
           + `${(r.p90/r.p50*100).toFixed(1)}%</td></tr>`).join('')
       + '</table>'
       + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
-      + `Capacity factor across twelve weather years (2014\u20132025) for the ${reg} supply area. `
-      + '<strong>P90</strong> is the level exceeded in nine years out of ten \u2013 the number debt is '
-      + 'sized against. '
+      + `Capacity factor by weather year for the ${reg} supply area: twelve years for wind (2014\u20132025), ten measured `
+      + 'years for solar (2014\u20132023; 2024 and 2025 are 2023\u2019s level rescaled, not measured). '
+      + '<strong>P90</strong> here is the weather spread alone, the level nine years in ten beat; a lender\u2019s P90 also '
+      + 'counts resource and model uncertainty and sits lower. '
       + rows.map(r => `${r.tech} ran worst in ${r.worst}, best in ${r.best}`).join('; ') + '. '
       + 'Regional averages, not a site measurement: your own P90 depends on terrain and turbine or '
       + 'module choice, and a lender will want twenty years and their own resource consultant.</div>';
@@ -3146,6 +3181,7 @@ let redzData = null;
   window.calcWheeling = calcWheeling;
   window.renderCapture = renderCapture;
   window.renderP90 = renderP90;
+  window.renderResourcePanel = renderPanel;   // reachable by a harness (audit G8-M5 check)
   attachTypeahead('mainSearch', mainGeocode);
   window.runPrefeas = runPrefeas;
   window.printPrefeas = printPrefeas;
@@ -4788,7 +4824,7 @@ function printPrefeas() {
     </div>
     <div style="padding:12px 14px 0;font-size:11px;color:var(--ink2)">
       Click anywhere on the map to fetch the hourly solar and wind resource for that location.
-      Solar from Open-Meteo ERA5 reanalysis (CC BY 4.0). Wind interpolated from regional MERRA-2 profiles.
+      Solar from Open-Meteo ERA5 reanalysis (CC BY 4.0). Wind is the supply area's, not the site's: twelve weather years from Renewables.ninja (MERRA-2), several sites per area.
       Annual capacity factor shown alongside a monthly chart and CSV download.
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:0;row-gap:2px;border-bottom:1.5px solid var(--ink);padding:0 14px;margin-top:10px">
@@ -19940,7 +19976,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-20h';
+const BUILD_STAMP = '2026-10-21h';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21598,6 +21634,11 @@ const RT_MODULE = { areaM2: 2.58, wp: 620 };
 const RT_BIZRATE3_2026 = { energy: 242.90, ancillary: 0.45, networkDemand: 15.81, ruralSubsidy: 5.37,
                            networkCapacityRDay: 81.98, serviceAdminRDay: 15.99, generationCapacityRDay: 11.18 };
 const RT_DEFAULT_BILL = 80000;
+// Businessrate is for supplies of up to 100 kVA (the same booklet; RESULTS, build 2026-10-19f). The tab does not check a system
+// against the supply it connects to (audit G8-M2, message 264): the default 331 kWp roof is about three times this, the
+// industrial row about twenty. It now says so (G8 fix 4); a cap per NRS 097-2-3 and a larger-customer tariff wait for after
+// the note (TODO 14hq).
+const RT_BIZRATE3_MAX_KVA = 100;
 const rtBizrate3 = (() => { const T = RT_BIZRATE3_2026;
   const varRkWh = (T.energy + T.ancillary + T.networkDemand + T.ruralSubsidy) / 100;
   const fixedRDay = T.networkCapacityRDay + T.serviceAdminRDay + T.generationCapacityRDay;
@@ -21607,7 +21648,8 @@ const RT_DEFAULT_TARIFF = Math.round(rtBizrate3.allInRkWh(RT_DEFAULT_BILL) * 100
   if (b) b.value = RT_DEFAULT_BILL; if (t) t.value = RT_DEFAULT_TARIFF.toFixed(2);
   if (n) n.textContent = 'Eskom Businessrate 3, 2026/27, excluding VAT: ' + (rtBizrate3.varRkWh * 100).toFixed(2) + 'c/kWh plus R'
     + rtBizrate3.fixedRDay.toFixed(2) + ' a day, R' + RT_DEFAULT_TARIFF.toFixed(2) + '/kWh all-in at R'
-    + RT_DEFAULT_BILL.toLocaleString('en-US') + ' a month.'; }
+    + RT_DEFAULT_BILL.toLocaleString('en-US') + ' a month. The default customer is a business on Businessrate 3, a supply of up to '
+    + RT_BIZRATE3_MAX_KVA + ' kVA; for a larger site enter your own bill and tariff.'; }
 // OBSTRUCTIONS ARE NOW THE USER'S TO STATE, 30 Sep 2026. Packing was a single
 // 0.69 covering walkways, edge setbacks, chimneys, vents, skylights and rooftop
 // plant at once - which is a property of the roof in front of you, not a constant.
@@ -22208,7 +22250,14 @@ function rtCalc() {
     bill, tariff, escal, type
   };
 
+  // A system larger than the default customer's supply could not be connected to it (audit G8-M2): said, not capped.
+  const rtOverSupply = Math.abs(tariff - RT_DEFAULT_TARIFF) < 0.005 && kwp > RT_BIZRATE3_MAX_KVA;
   el.innerHTML =
+    (rtOverSupply ? '<div style="font-size:10.5px;padding:6px 9px;margin-bottom:10px;background:var(--panel2);'
+      + 'border-left:3px solid var(--alert,#C4785A);line-height:1.5">' + kwp.toLocaleString('en-US') + ' kWp is more than the '
+      + RT_BIZRATE3_MAX_KVA + ' kVA supply of the default customer, a business on Eskom\u2019s Businessrate 3, so it could not be '
+      + 'connected as entered. For a site this size enter your own bill and tariff: '
+      + 'above about ' + RT_BIZRATE3_MAX_KVA + ' kWp the customer is on a larger tariff.</div>' : '') +
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:16px">' +
     '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:#F5C518">' + kwp.toLocaleString('en-US') + ' kWp</div><div style="font-size:9.5px;color:var(--ink2)">System size &middot; ' + panels.toLocaleString('en-US') + ' panels</div></div>' +
     '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:#3EA055">' + Math.round(annualKwh/1000).toLocaleString('en-US') + ' MWh</div><div style="font-size:9.5px;color:var(--ink2)">Annual yield &middot; ' + (adjCF*100).toFixed(1) + '% CF</div></div>' +

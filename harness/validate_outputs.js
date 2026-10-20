@@ -576,6 +576,41 @@ function probe(w, src) {
     expected: 'increase', tol: null, pass: cov > covNoBatt + 20,
     source: 'Physical: storage shifts midday surplus into the evening peak', unit: '' });
 
+  // The rooftop tab says when a system is larger than the default customer's supply (audit G8-M2, message 264): a 12,000 m2
+  // roof on the default Businessrate 3 customer (up to 100 kVA) carries the warning; the 6.2 kWp anchor above does not.
+  set('rt_batt', 0); set('rt_area', 12000); set('rt_bill', w.eval('RT_DEFAULT_BILL')); set('rt_tariff', w.eval('RT_DEFAULT_TARIFF.toFixed(2)'));
+  w.rtCalc();
+  const bigWarn = /could not be connected/.test(doc.getElementById('rt_result').textContent);
+  set('rt_area', 37.6); set('rt_bill', 2000); set('rt_tariff', 2.50); w.rtCalc();
+  const smallWarn = /could not be connected/.test(doc.getElementById('rt_result').textContent);
+  results.push({ name: 'Rooftop warns when the system exceeds the default customer\u2019s supply', actual: `12,000 m2 ${bigWarn}, 37.6 m2 ${smallWarn}`,
+    expected: 'true, false', tol: null, pass: bigWarn && !smallWarn,
+    source: 'Eskom Businessrate 3 is for supplies of up to 100 kVA (Tariffs and Charges Booklet 2026/27); audit G8-M2', unit: '' });
+
+  // The site panel's wind tile reads the same twelve-year file as the P50/P90 table beneath it (audit G8-M5, message 264):
+  // it showed 21.6% for KwaZulu-Natal over a P50 of 32.9%.
+  if (typeof w.renderResourcePanel === 'function'){
+    const solar = { annualCF: 0.2, monthly: new Array(12).fill(0.2), hourly: [], source: 'harness' };
+    let worst = -1, worstReg = '', n = 0;
+    for (const reg of ['Eastern Cape', 'Free State', 'Gauteng', 'Hydra Central', 'Kwazulu Natal', 'Limpopo', 'Mpumalanga',
+                       'North West', 'Northern Cape', 'Western Cape']){
+      w._resourceData = { lat: -28, lng: 30, solar, windRegion: reg };
+      w.renderResourcePanel(-28, 30, solar, reg, w.windCFForRegion(reg), w.windMonthlyForRegion(reg));
+      const panel = () => doc.getElementById('rpanel_resource').textContent;
+      for (let i = 0; i < 400 && !/Wind CF \(P50/.test(panel()); i++) await new Promise(r => setTimeout(r, 50));
+      for (let i = 0; i < 100 && !doc.querySelector('#p90Result tr'); i++) await new Promise(r => setTimeout(r, 50));
+      const tile = parseFloat((panel().match(/([\d.]+)%\s*Wind CF \(P50/) || [])[1]);
+      const row = [...doc.querySelectorAll('#p90Result tr')].map(r => [...r.children].map(c => c.textContent)).find(r => r[0] === 'Wind');
+      const p50 = row ? parseFloat(row[2]) : NaN;
+      const d = Math.abs(tile - p50);
+      if (!(d <= worst)){ worst = Number.isFinite(d) ? d : Infinity; worstReg = reg; }
+      n++;
+    }
+    check(`Site panel wind tile against its P50 row, worst of ${n} supply areas (${worstReg})`, worst, 0, 0.1,
+      'One wind series in the panel: nodal/profiles_regional_multiyear.json; audit G8-M5', ' points');
+  } else results.push({ name: 'Site panel wind tile against its P50 row', actual: 'renderResourcePanel not exposed', expected: 'exposed',
+    tol: null, pass: false, source: 'audit G8-M5', unit: '' });
+
   // ───────────────────────────────────────────────────────────────────────────
   // 6. SCENARIO RESPONSES — direction of travel must be right
   // ───────────────────────────────────────────────────────────────────────────
