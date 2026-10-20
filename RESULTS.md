@@ -5818,6 +5818,39 @@ Writing takes about 20 minutes, the check about 25.
 
 Suite on 2026-10-19g: 966/970 with ESK19679.csv present: node checks 878/882 (validate_stored_panels 86/86 among them) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 19 Oct 2026 about 21:00-23:00 UTC, with other jobs beside it; the failing scripts give the same failures as main.
 
+### Site speed, step 3: the engine runs in a web worker; a preset click or a moved control no longer freezes the page (longest task 0.1 s, 0.4 s at four times slower); the outputs are identical to the digit (build 2026-10-19k; user, 19 Oct 2026, messages 251 (3), 255 (1))
+
+What changed (index.html; branch claude/site-worker, on claude/site-speed): simulate() and the three risk-panel computations
+(Monte Carlo draws, the adequacy ensemble, the capture curve) run in a web worker built from the page's own source: 59 engine
+functions sent as text, about 60 data tables cloned, nodal/nodal_engine.js and nodal/capacity_siting.js loaded inside it. The
+page draws what the worker returns. A moved control cancels the worker's panel runs as it did the page's. On any worker error,
+or if the worker is not ready within 5 s, the page computes on its own thread as before. Heat stress and the external
+comparison still compute on the page's thread when they come on screen.
+
+Checked: harness/validate_worker.js (Chromium; not in the suite list, it needs a browser; about 20 minutes): start-up and all
+eight presets, simulate() in the worker against the page's own, and the Monte Carlo draws, adequacy ensemble and capture curve,
+compared as the JSON of every number: 38/38 identical, no page errors.
+
+Measured on the branch previews, Chromium in this session's 4-core container through its proxy, nothing else running, each
+case in a fresh browser context; 'free' is the end of the last task over 50 ms, 'longest' the longest single task (scripts
+scratchpad m251/tools/measure2.js; outputs m251/t/worker_1x.json, worker_4x.json; step 2's from branch_1x.json, branch_4x.json):
+
+| Case | Step 2, normal | Worker, normal | Step 2, CPU 4x slower | Worker, CPU 4x slower |
+|---|---|---|---|---|
+| Fresh load: first results / free / longest, s | 2.4 / 4.1 / 0.9 | 2.5 / 4.3 / 0.8 | 5.8 / 12.7 / 3.9 | 5.1 / 9.0 / 3.5 |
+| Preset clicks: free, s (range over eight) | 0.5-2.2 | 0.6-2.4 | 2.5-11.1 | 0.9-3.2 |
+| Preset clicks: longest, s | 0.5-2.2 | 0.1 | 2.4-11.0 | 0.4 |
+| Slider moved, then the risk panel scrolled into view: free / longest, s | 43.1 / 0.7 | 0.8 / 0.1 | 200.1 / 3.1 | 1.2 / 0.4 |
+
+Stored panels used on every load; 3.26 MB and 82 requests (79 before: the worker's two engine files and its blob). At normal
+speed a click's results arrive in about the same time, since the work is the same; the page stays responsive throughout. One
+freeze over 2 s remains: the fresh load at four times slower, 3.5 s, from start-up work before the worker is ready (parsing and
+the first draw), not from the engine.
+
+Suite on 2026-10-19k: 966/970 with ESK19679.csv present: node checks 878/882 (validate_stored_panels 86/86, stored panels
+regenerated on 19k, fingerprint 036254fe61e3e6) plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct
+2026 about 22:20-23:00 UTC with one other job beside it for the first half.
+
 ### A link or a reload with new wind never computed; a link now runs only after every start-up file has loaded, and carries the preset (build 2026-10-20c; user, 20 Oct 2026, message 263 (1), from the mechanics audit G1-M1)
 
 Cause (reproduced in Chromium on main 38edbbb): the page ran the engine once while it was still loading (an early run on
