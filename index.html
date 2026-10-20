@@ -467,7 +467,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote"><strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure, and shown beneath system cost when it occurs. Replacement cost instead prices every MWh at full lifecycle cost, as if the mix were built new today. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
+    <p class="kpinote"><strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Existing REIPPPP plant is charged both its contract price and fixed O&amp;M, so that O&amp;M is counted twice: about 1% of avg energy cost on the presets (0.8&ndash;1.5%), a known overstatement still to be removed. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure in constant 2020 rands, not escalated, and shown beneath system cost when it occurs. Replacement cost instead prices every MWh at full lifecycle cost, as if the mix were built new today. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -5781,7 +5781,8 @@ const FIXED = {
   // Cost of energy shed, for system cost only; not a price. Eskom's Cost of Loadshedding
   // study, R9.53/kWh (Eskom COUE methodology review and 2020 update, NERSA 2022). The
   // COUE of R87.85/kWh (IRP) values short unplanned outages; load shedding is scheduled
-  // and partly mitigated, so the lower figure applies. 22 Sep 2026.
+  // and partly mitigated, so the lower figure applies. 22 Sep 2026. In constant 2020 prices (Nova Economics for Eskom;
+  // Polity, 20 Jan 2022), used unescalated; the page says so (user, 20 Oct 2026, message 264; audit G1-M11).
   costUnservedR:9530,
   // Scarcity circuit breaker. ERCOT drops its offer cap from high to low for the rest of the
   // year once cumulative peaker net margin exceeds 3x the cost of new entry; their low cap is
@@ -19609,8 +19610,7 @@ const fmtTWh=v=>(v/1e6).toFixed(1);
 // lole  = hours/year with any unserved energy (loss-of-load expectation).
 // EUE   = unserved energy for the year (expected unserved energy).
 // Reserve margin = (firm available capacity − monthly peak) / monthly peak,
-// where firm = coal×EAF + nuclear×0.9 + hydro + imports×0.85 + peakers +
-// storage power + hybrid (available in its window at evening peak). Wind/solar
+// where firm is firmCapacityMW below. Wind/solar
 // are excluded from firm capacity by convention - they appear in the demand
 // side as reduced residual load, matching how Eskom's weekly report frames OR.
 const MONTH_N=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -19661,15 +19661,28 @@ const MONTH_D=[31,28,31,30,31,30,31,31,30,31,30,31];
 // They had a bespoke binder until 17 Aug 2026; two handlers on one shared
 // tooltip element fought each other, so the bars only responded to a click.
 
+// FIRM CAPACITY ON THE ENGINE'S OWN BASIS (user, 20 Oct 2026, message 264; audit G1-M5). It credited Koeberg at 0.90 and
+// hydro at its full rating while the engine runs them flat at nuclearCF (0.66) and hydroCF (0.55), 0.72 GW too much on every
+// preset, and it left out the new vanadium, iron-air and pumped storage the engine dispatches (13 GW on Fossil-free 2040).
+// Coal, new coal included, at the availability slider; imports at importsCF; diesel (new OCGT on diesel included), gas and
+// every store at full power, long-duration included; hybrids at their evening factor. One function, so the harness checks
+// the panel's own figure (validate_consistency).
+function firmCapacityMW(p){
+  return (Math.max(0, p.coalInstalledMW - (p.coalDecomMW || 0)) + (p.newCoalMW || 0)) * ((p.coalEAFPct ?? FIXED.coalEAFPct) / 100)
+    + (p.nuclearMW + (p.newNuclearMW || 0)) * (p.nuclearCF ?? FIXED.nuclearCF)
+    + p.hydroMW * (p.hydroCF ?? FIXED.hydroCF)
+    + p.importsMW * (p.importsCF ?? FIXED.importsCF)
+    + dieselAvailMW(p) + (p.ccgtMW || 0) + (p.newCcgtMW || 0) + (p.newOcgtMW || 0)
+    + p.psPowerMW + Math.max(0, Math.min(p.newPsMaxMW ?? FIXED.newPsMaxMW, p.newPsMW || 0))
+    + p.battPowerMW + (p.newBattMW || 0) + (p.newVrfbMW || 0) + (p.newIronAirMW || 0)
+    + p.hybridMW * p.hybridCF;
+}
+
 function renderAdequacy(r){
   const el=document.getElementById('adequacyBody');
   if(!el||!r||!r.stack) return;
   const p={...FIXED,...state};
-  const firm=(p.coalInstalledMW-(p.coalDecomMW||0))*((p.coalEAFPct??FIXED.coalEAFPct)/100)
-    +(p.nuclearMW+(p.newNuclearMW||0))*0.90+p.hydroMW+p.importsMW*(p.importsCF ?? FIXED.importsCF)
-    +dieselAvailMW(p)+(p.ccgtMW||0)+(p.newCcgtMW||0)+(p.newOcgtMW||0)
-    +p.psPowerMW+p.battPowerMW+(p.newBattMW||0)
-    +p.hybridMW*p.hybridCF;
+  const firm=firmCapacityMW(p);
   let lolh=0, lole=0, dayShort=false, h0=0; const mPeak=new Array(12).fill(0);
   for(let m=0;m<12;m++){
     const hrs=MONTH_D[m]*24;
@@ -19689,7 +19702,7 @@ function renderAdequacy(r){
       <div><div style="font-size:19px;font-weight:700;color:${lolh>0?'var(--alert,#C4785A)':'var(--ok,#4A8C5C)'}">${lolh.toLocaleString('en-US')}</div>
         <div style="font-size:9.5px;color:var(--ink2)">LOLH &middot; h/yr with unserved load</div></div>
       <div><div style="font-size:19px;font-weight:700;color:${eueGWh>0.5?'var(--alert,#C4785A)':'var(--ok,#4A8C5C)'}">${eueGWh<0.05?'0':eueGWh.toFixed(1)}</div>
-        <div style="font-size:9.5px;color:var(--ink2)">EUE &middot; GWh/yr unserved</div></div>
+        <div style="font-size:9.5px;color:var(--ink2)">EUE &middot; GWh/yr unserved, this weather year, one outage draw</div></div>
       <div><div style="font-size:19px;font-weight:700;color:${rmCol(rm[worst])}">${rm[worst].toFixed(0)}%</div>
         <div style="font-size:9.5px;color:var(--ink2)">Min reserve margin (${MONTH_N[worst]})</div></div>
     </div>
@@ -19710,8 +19723,10 @@ function renderAdequacy(r){
         + '&nbsp;MW</strong> average, '
         + Math.round(Math.max.apply(null, Array.from(r.reserveMW))).toLocaleString('en-US')
         + '&nbsp;MW peak \u2013 held back, not dispatched, to cover a trip or a forecast error.<br>' : ''}
-      Today, firm capacity of ${(firm/1000).toFixed(1)} GW is what can be relied on at peak: coal after
-      EAF losses, plus nuclear, hydro, imports, peakers, storage and hybrid plants. Wind and solar do not
+      Firm capacity of ${(firm/1000).toFixed(1)} GW is what can be relied on at peak: coal after
+      EAF losses, nuclear and hydro at the output the model runs them at, imports, peakers, every store at full
+      power (long-duration included) and hybrid plants. The EUE here is the single run behind every other panel;
+      the board&rsquo;s expected shed is the mean of ${ADEQ_N} outage draws. Wind and solar do not
       count as firm &ndash; instead they lower the load that firm plants have to meet, which is how
       Eskom&rsquo;s weekly report treats them.
       NTCSA&rsquo;s medium-term test is unserved energy under 20 GWh a year and an OCGT capacity factor
@@ -19940,7 +19955,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-20h';
+const BUILD_STAMP = '2026-10-21d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20553,9 +20568,13 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
   const cmSeen = adjRuns.reduce((a, r) => a + (r.cmEvents || 0), 0);
   const fidelity = '<div style="font-size:9.5px;color:var(--ink2);margin:4px 0 8px">'
     + '<strong>Adequacy screen, not a regulatory study.</strong> Chronological Monte Carlo, '
-    + 'single-area. Independent outages plus a winter common-mode derate on coal ('
-    + cmSeen + ' events). Not modelled: unit commitment, transmission deliverability, '
-    + 'maintenance scheduling, emergency procedures.</div>';
+    + 'single-area. Coal availability follows one smooth daily fleet path around the availability setting, plus a winter '
+    + 'common-mode derate (' + cmSeen + ' events): no unit trips and no maintenance season, so where coal retires this panel '
+    + 'can read lower than the board\u2019s expected shed, which draws unit outages. Not modelled: unit commitment, '
+    + 'transmission deliverability, emergency procedures.</div>';
+  // TWO RISK FIGURES, TWO OUTAGE MODELS (user, 20 Oct 2026, message 264; audit G1-M6). On Least-cost path 2035 the board's
+  // 48 unit-level draws read 1.1 GWh expected (17% of draws shed) and this panel 0 GWh. Said here before 6 Nov; one outage
+  // model for both is after the note.
   document.getElementById('riskHead').innerHTML= nodalCallout + fidelity +
     // ZERO EVENTS IS NOT ZERO PROBABILITY.
     //
@@ -20583,9 +20602,9 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
   // weather-and-outage mean in a cell sitting beside a status word derived from the
   // scenario's OWN weather. One owner per cell.
   //
-  // The adequacy ensemble owns the board because it holds weather FIXED and so is
-  // consistent with every other panel on the page. This mean stays in the risk panel
-  // below, where it is labelled as an ensemble across weather years and belongs.
+  // The adequacy ensemble owns the board. Both ensembles now vary weather (they share one weather-profile builder); the
+  // board's draws unit-level outages with the maintenance season, this one a smooth fleet path (audit G1-M6, 20 Oct 2026).
+  // This mean stays in the risk panel below, where it is labelled and belongs.
   // THESE TWO CELLS RUN ON DIFFERENT WEATHER, and the board does not otherwise say so.
   // The lamps and status word come from the DETERMINISTIC run on the default profile;
   // this cell is the mean of 60 Monte Carlo years that substitute REAL weather years for

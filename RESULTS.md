@@ -6017,6 +6017,46 @@ validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four kno
 scripts ran with nothing beside them. Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets and
 its grid-delayed variant, labels about 4,300, 4,400 and 4,100 hours): 11/11.
 
+### Engine display (audit PR 2): firm capacity on the engine's own basis, Today 35.6 to 34.9 GW and minimum reserve margin 20.0% to 17.5%; the two risk figures and the cost note's caveats stated (build 2026-10-21d, prepared on main 2116c10; user, 20 Oct 2026, messages 264 and 270; audit G1 fixes 5, 7, 11 and the G1-M3 caveat)
+
+What changed (index.html):
+- System adequacy: firm capacity is firmCapacityMW(p), one function: Koeberg at nuclearCF (was 0.90), hydro at hydroCF (was
+  its full rating), new vanadium, iron-air and pumped storage added at full power (were left out), new coal at the availability
+  setting. The panel no longer opens "Today," on every preset, says what counts, and labels its EUE tile "this weather year,
+  one outage draw" against the board's 48-draw expectation (G1-M5, A8 wording).
+- Load shedding risk: the fidelity line says coal follows one smooth daily fleet path with no unit trips or maintenance season,
+  so where coal retires the panel can read lower than the board (G1-M6). The stale comment that the board's ensemble holds
+  weather fixed is corrected.
+- Cost note: existing REIPPPP plant's fixed O&M is counted twice, about 1% of avg energy cost (0.8-1.5% on the presets),
+  stated as a known overstatement (G1-M3; the fix and the central's rerun are TODO 14hk). The R9.53/kWh cost of load
+  shedding is stated as constant 2020 rands, not escalated (G1-M11).
+- validate_consistency computes firm capacity with the panel's own function; its copy used hydro 0.5, imports 0.9, the whole
+  diesel fleet and FIXED storage and protected nothing (audit G1 section 5).
+
+Measured 20 Oct 2026 19:00 UTC, jsdom, applyState(PRESETS[name]) then simulate(state, PROFILES); old formula and
+firmCapacityMW on the same run; minimum over the twelve monthly peaks of r.loadS; scratchpad overnight/a2/firm.js:
+
+| Preset | Firm capacity, GW: before / after | Minimum reserve margin: before / after | REIPPPP fixed O&M on live windows, R bn / share of avg energy cost |
+|---|---|---|---|
+| Today 2026 | 35.64 / 34.91 | 20.0% / 17.5% | 3.27 / 1.52% (R16.7/MWh) |
+| IRP's 2030 targets | 40.13 / 39.41 | 7.9% / 6.0% | 3.27 / 1.21% (R14.5/MWh) |
+| IRP path 2035 | 42.16 / 41.43 | -4.4% / -6.1% | 2.43 / 0.84% (R9.3/MWh) |
+| Least-cost path 2035 | 37.96 / 37.24 | -11.1% / -12.8% | 2.43 / 1.01% (R9.2/MWh) |
+| Deep decarbonisation 2035 | 32.71 / 33.99 (2,000 MW long-duration added) | -37.4% / -35.0% | 2.43 / 0.77% |
+| Fossil-free 2040 | 26.44 / 38.71 (13,000 MW long-duration added) | -63.6% / -46.7% | 1.75 / 0.40% |
+
+Dispatch, cost, CO2 and every engine output are unchanged (display and harness only). The double count is (reipppWindMW x
+BLD_FOM.wind + reipppSolarMW x BLD_FOM.pv + cspMW x fomCsp) x reipppLiveFrac(year), over totalCost; it matches the audit's
+R3.27bn and R2.43bn.
+
+Where this differs from the audit: G1 fix 7 in the audit's PR 2 list is the risk-basis wording (fix list item 7), done here as
+wording only, the smaller change before 6 Nov; one outage model for both is TODO 14ia. The dispatch week (fix list item 6) is
+in #97 (message 263 (3)), not on main, so it is not repeated here. The audit lists new OCGT on diesel as missing from firm
+capacity; it was already counted, through dieselAvailMW (11 Oct 2026). Storage still counts at full power whatever its
+duration (A8's duration rule is TODO 14ia).
+
+Caveat: the prose ceiling (audit.py) now reads 4,243 of 4,250 words; other wording PRs will need room.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
