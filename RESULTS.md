@@ -5757,9 +5757,10 @@ system losses (Open-Meteo yield at a performance ratio of 0.80; the 0.21 fallbac
 losses' (default 0.80) and again by a per-type 'system/inverter' factor (usagePct, 0.80 to 0.90).
 
 What changed (index.html, rtCalc and RT_TYPES): the capacity factor carries the system losses; the control is shading only
-(Minimal 97%: PVWatts' default 3% shading loss, A. P. Dobos, 'PVWatts Version 5 Manual', NREL/TP-6A20-62641, 2014,
-doi 10.2172/1158421, the same default in pvlib's pvwatts_losses, page not checked here because nrel.gov is blocked from this
-session; Moderate 93%, the default, and Heavy 85%: our assumptions, labelled so on the control; message 260 (5)); usagePct is removed. The 0.21
+(messages 260 (5) and 261 (1)): Minimal 100%, no shading beyond the base yield's losses, because the base already carries 20%
+(a performance ratio of 0.80), above PVWatts' 14% default total, which includes its 3% shading (A. P. Dobos, 'PVWatts Version 5
+Manual', NREL/TP-6A20-62641, 2014; pvlib's pvwatts_losses); Moderate 93%, the default, and Heavy 85%: our assumptions, applied
+to the base and labelled so on the control. usagePct is removed. The 0.21
 fallback is PVGIS at a tilt equal to the latitude, so it is divided by the 25-degree orientation factor (1.08) to bring it to a
 flat roof before the orientation control applies, since that control is relative to flat.
 
@@ -5778,12 +5779,16 @@ whose capacity factor is 20%. Computed by rtCalc itself in jsdom (scratchpad b1/
 | 2,000 m2, large C&I | site 20% | 331.1 | 16.8% / 19.5% | 414 / 566 | 641 / 672 | 6.2 / 5.9 |
 | 12,000 m2, industrial | site 20% | 1,989.6 | 16.8% / 19.5% | 2,342 / 3,404 | 682 / 682 | 47.5 / 47.5 |
 
-The CF column is after orientation and shading (the yield is kWp x CF x 8,760, after usagePct before). The industrial case does
-not move: the default bill caps self-consumption, so the extra yield is exported, which earns nothing in the tab. Caveats: the
-93% default is an assumption; the site capacity factor's 0.80 performance ratio is already more than PVWatts' 14% total
-loss, of which 3% is shading, so the minimal setting may still count some shading twice.
+The same cases at Minimal shading (100%) on this build, re-measured 20 Oct 2026 (the 'before' build's Minimal was 85% for
+shading and losses together, so it has no like-for-like column): CF 20.4% (fallback) and 21.0% (site); yield 18, 118, 592 and
+3,558 MWh/yr (fallback) and 18, 121, 609 and 3,660 (site); savings R17k, 177k, 675k and 682k (fallback) and 17k, 182k, 677k and
+682k (site); payback 11.7, 5.2, 5.9 and 47.5 years (fallback) and 11.3, 5.1, 5.9 and 47.5 (site), in the table's order.
 
-Suite on 2026-10-19j: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:00-22:50 UTC with other jobs beside it. Render check in Chromium (fresh load, rooftop tab): 5/5, the shading control's three values and label, the default capacity factor 19.0%, no undefined or NaN, no page errors.
+The CF column is after orientation and shading (the yield is kWp x CF x 8,760, after usagePct before). The industrial case does
+not move: the default bill caps self-consumption, so the extra yield is exported, which earns nothing in the tab. Caveat: the
+93% default and the 85% are assumptions.
+
+Suite on 2026-10-19j: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:00-22:50 UTC with other jobs beside it. Render check in Chromium (fresh load, rooftop tab): 5/5, the shading control's three values and label, the default capacity factor 19.0% (on 19j; rerun on the final build), no undefined or NaN, no page errors.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
