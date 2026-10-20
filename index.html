@@ -6939,7 +6939,12 @@ function simulateGasAnnualFloor(u, prof, outPath){
       got = fleet(r);
     }
   }
-  return {...r, ccgtFloorUnmetMWh: Math.max(0, target - got), ccgtFloorTargetMWh: target, ccgtFloorFleetMWh: got, ccgtFloorTopUpH: k};
+  // ccgtFloorPriceH (user, 20 Oct 2026, message 260 (4)): the hours gas sets the price with the floor on and not with it off,
+  // the hours priced by gas only because of the 51% minimum. ccgtFloorTopUpH is the hours the floor run tops gas up.
+  let priceH = 0;
+  if (r !== merit) for (let h = 0; h < N; h++) if (r.marginalTech[h] === 'ccgt' && merit.marginalTech[h] !== 'ccgt') priceH++;
+  return {...r, ccgtFloorUnmetMWh: Math.max(0, target - got), ccgtFloorTargetMWh: target, ccgtFloorFleetMWh: got, ccgtFloorTopUpH: k,
+          ccgtFloorPriceH: priceH};
 }
 
 function simulate(u, prof, outPath, _soc0){
@@ -14548,64 +14553,46 @@ async function exportTdpProjects(){
 
 /* ==================== CARBON BUDGET =======================================
  * The model already computes annual CO2 but never compared it to anything, so a
- * scenario's emissions were a number without a verdict. South Africa's NDC
- * commits to 350-420 MtCO2e nationally by 2030; the Energy Council puts the
- * implied electricity-sector requirement at roughly 140 Mt, down from about
- * 200 Mt today. That is the line a scenario either clears or does not.
+ * scenario's emissions were a number without a reference. South Africa's NDC
+ * commits to 350-420 MtCO2e nationally by 2030. No published electricity-sector
+ * share is used: the 140 Mt once quoted here (credited to the Energy Council of
+ * South Africa) had no source we could find, so it and the verdict against it are
+ * dropped (user, 20 Oct 2026, message 260 (4)). The reference is Eskom's own
+ * reported FY2026 emissions.
  */
 const NDC = {
   // National NDC range, updated 2021 (South African Government, lodged at COP26).
   nationalLo: 350, nationalHi: 420,
-  // Electricity sector allocation. The Energy Council of South Africa states the
-  // power sector must fall from ~200 Mt/yr to ~140 Mt/yr to meet the NDC range.
-  // The 42% share once quoted here had no source (site review A12, 19 Oct 2026) and is dropped. The scale shows Eskom's
-  // reported FY2026 emissions instead of the Energy Council's 'about 200 Mt today', which matches FY2025.
-  powerToday: 200, powerTarget2030: 140,
+  // No electricity-sector allocation: the 42% share (site review A12) and the 140 Mt (message 260 (4)) had no source.
   eskomFY2026: 184.5,   // Mt CO2e, Eskom Integrated Report 2026, p.75 (RESULTS 'Eskom's FY2026 emissions')
-  source: 'NDC 2021 (350-420 MtCO\u2082e national by 2030); electricity-sector figure ' +
-          'from the Energy Council of South Africa. South Africa\u2019s second NDC (October 2025) sets ' +
-          '320-380 MtCO\u2082e of net national emissions in 2035; the 140 Mt sector figure is against the 2021 ' +
-          'NDC\u2019s 2030 range.',
+  source: 'South Africa\u2019s NDC sets 350-420 MtCO\u2082e of national emissions by 2030 (2021) and 320-380 Mt net in ' +
+          '2035 (second NDC, October 2025). Neither sets an electricity-sector share, and none is assumed here.',
 };
 
 function renderCarbonBudget(res){
   const el = document.getElementById('carbonBudget');
   if (!el || !res) return;
   const mt = res.co2;                       // Mt CO2 for the scenario year
-  const target = NDC.powerTarget2030;
-  const gap = mt - target;
-  const pctOfTarget = mt / target * 100;
-
-  // Verdict, stated plainly rather than left for the reader to compute.
-  const meets = mt <= target;
-  const close = !meets && gap <= target * 0.15;
-  const col = meets ? 'var(--ok,#4A8C5C)' : close ? '#C8A028' : 'var(--alert,#C4785A)';
-  const verdict = meets
-    ? 'Within the electricity sector\u2019s share of the NDC'
-    : close
-      ? `${gap.toFixed(0)}\u00a0Mt above the sector target \u2013 close, but short`
-      : `${gap.toFixed(0)}\u00a0Mt above the sector target`;
-
-  // Scale bar: today's ~200 Mt at one end, the 140 Mt target marked on it.
-  const scaleMax = Math.max(NDC.powerToday, mt) * 1.05;
+  const ref = NDC.eskomFY2026;
+  // Scale bar: this scenario against Eskom's reported FY2026, the one published electricity figure the panel uses.
+  const scaleMax = Math.max(ref, mt) * 1.05;
   const pos = v => Math.min(100, v / scaleMax * 100);
 
   el.innerHTML =
       `<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">`
-    + `<div><span style="font-size:19px;font-weight:700;color:${col}">${mt.toFixed(0)} Mt</span>`
+    + `<div><span style="font-size:19px;font-weight:700;color:var(--ink)">${mt.toFixed(0)} Mt</span>`
     + `<span style="font-size:10.5px;color:var(--ink2)"> CO\u2082 from electricity, this scenario</span></div>`
-    + `<div style="font-size:10.5px;color:${col};font-weight:600">${verdict}</div></div>`
+    + `<div style="font-size:10.5px;color:var(--ink2);font-weight:600">${(mt / ref * 100).toFixed(0)}% of Eskom\u2019s FY2026</div></div>`
     // bar
     + `<div style="position:relative;height:9px;background:var(--line2);margin:8px 0 4px;border-radius:2px">`
-    + `<div style="position:absolute;left:0;top:0;bottom:0;width:${pos(mt)}%;background:${col};border-radius:2px"></div>`
-    + `<div style="position:absolute;left:${pos(target)}%;top:-3px;bottom:-3px;width:2px;background:var(--ink)"></div>`
+    + `<div style="position:absolute;left:0;top:0;bottom:0;width:${pos(mt)}%;background:var(--steel,#4A6B7A);border-radius:2px"></div>`
+    + `<div style="position:absolute;left:${pos(ref)}%;top:-3px;bottom:-3px;width:2px;background:var(--ink)"></div>`
     + `</div>`
     + `<div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--ink2)">`
-    + `<span>0</span><span style="margin-left:auto">NDC sector target ${target} Mt &nbsp;\u00b7&nbsp; Eskom FY2026: ${NDC.eskomFY2026} Mt CO\u2082e (Integrated Report 2026)</span></div>`
+    + `<span>0</span><span style="margin-left:auto">Eskom FY2026: ${ref} Mt CO\u2082e (Integrated Report 2026)</span></div>`
     + `<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.45">`
-    + `This scenario runs at <strong>${pctOfTarget.toFixed(0)}%</strong> of the electricity sector\u2019s `
-    + `2030 allowance. The model\u2019s 2026 reads below Eskom\u2019s reported emissions, partly because of wheeled `
-    + `renewables, exports and Eskom\u2019s April-to-March year. ${NDC.source} Figures are annual, not a cumulative budget \u2013 the model `
+    + `The model\u2019s 2026 reads below Eskom\u2019s reported emissions, partly because of wheeled renewables, exports and `
+    + `Eskom\u2019s April-to-March year. ${NDC.source} Figures are annual, not a cumulative budget \u2013 the model `
     + `solves one year at a time.</div>`;
 }
 
@@ -15052,12 +15039,13 @@ function renderPricePanel(r){
     + `</div>`
 
     // GAS RUN FOR THE IRP'S ANNUAL MINIMUM (user, 19 Oct 2026, message 258): labelled before 6 Nov; after the note, those
-    // hours are priced at the next unit on merit (TODO 14hd). ccgtFloorTopUpH counts the hours the floor run tops up.
-    + ((r.ccgtFloorTopUpH || 0) > 0
+    // hours are priced at the next unit on merit (TODO 14hd). ccgtFloorPriceH counts the hours gas sets the price only because
+    // of the floor (gas-priced with it on, not with it off; message 260 (4)).
+    + ((r.ccgtFloorPriceH || 0) > 0
         ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
           + 'padding:8px 11px;margin-bottom:11px;font-size:10.5px;line-height:1.55">'
           + `Gas run to meet the plan\u2019s ${state.ccgtForceLoadPct ?? FIXED.ccgtForceLoadPct}% minimum sets the price in about `
-          + `${(Math.round(r.ccgtFloorTopUpH / 100) * 100).toLocaleString('en-US')} hours; this rule is under review.</div>`
+          + `${(Math.round(r.ccgtFloorPriceH / 100) * 100).toLocaleString('en-US')} hours; this rule is under review.</div>`
         : '')
     + (s.scarcityHours > 0
         ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
@@ -18201,7 +18189,7 @@ const SLIDERS=[
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
    note:'Make the build optimiser meet an emissions ceiling in 2030, rather than only reporting whether it does. When turned on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
-   ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC.'},
+   ctrlStyle:SUB_CTRL,note:'140 Mt by default: an illustrative ceiling, not a published sector allocation.'},
   {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+Math.round(v)+'/MWh',note:'R'+Math.round(FIXED.costCcgt).toLocaleString('en-US')+': the central gas case, LNG at 13.25&#37; of Brent USD 80 with shipping and USD 0.25/MMBtu of regasification, &#247; 0.293071 MWh/MMBtu &#247; 52&#37; efficiency, at R16.50/USD. Each $1/MMBtu \u2248 R108/MWh. Fuel only: the LNG terminal is a fixed R'+FIXED.bldGasTerminalRkW+'/kW-yr on new gas, and build cost is the Gas CCGT slider.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. On: reserve is paid at the rate below.'},

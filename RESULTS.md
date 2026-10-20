@@ -5775,7 +5775,11 @@ figure moves. Branch claude/review-batch1 from main (build 19f).
 - A11: the levelised cost tag no longer says 'sourced constants'.
 - A12: the carbon budget's scale shows Eskom's FY2026 184.5 Mt CO2e (Integrated Report 2026, p.75) instead of 'about 200 Mt
   today'; the unsourced 42% share is dropped; a line says the model's 2026 reads below Eskom's reported figure and why. The
-  Energy Council's 140 Mt target is unchanged and still has no recorded publication (decision for Nick).
+  140 Mt electricity-sector target, credited to the Energy Council of South Africa with no publication found, is dropped with
+  the verdict against it (user, 20 Oct 2026, message 260 (4): drop it unless it is our own result; it is not). The panel now
+  sets the scenario against Eskom's FY2026 and states the NDC's national ranges, with no sector share assumed. The carbon-cap
+  control keeps 140 Mt as its default, labelled an illustrative ceiling, not a published allocation (the cap is off by
+  default, so no figure moves).
 - A13: the permitted-capacity panel no longer says 'not built' (the register keeps built plant as Approved); time since
   approval is the most a project can have been ready, not the least; the source names the 2026 Q1 release.
 - A14: the queue panel judges NTCSA's October 2025 list by its own date ('due to commission by 2025'; whether they have since
@@ -5805,14 +5809,27 @@ figure moves. Branch claude/review-batch1 from main (build 19f).
   licence by offtake.
 - A50 / D4 credit: 'Source: Includes solar data from Google' under the rooftop measurement.
 - D1: the dispatch panel's hourly CSV button is hidden until Eskom consents or the open profiles replace profiles.json.
+  The PPA export stays (message 260 (4): hide it only if it carries an hourly series derived from Eskom data): its columns are
+  the model's hourly shadow price (model output) and per-unit wind and solar for the chosen region from
+  nodal/profiles_regional.json (Renewables.ninja and PVGIS), with no demand or other Eskom-derived series. Its header says
+  'data CC BY 4.0', which does not fit the Renewables.ninja columns (CC BY-NC 4.0); left for D3, the licence wording.
 - D2: nodal/residential_profile.json states its terms (Eskom-derived, non-commercial, consent requested) in the file and in
   LICENSE; TODO 14bz lists it for replacement after the note.
 - 258: wherever the IRP gas floor is active, the price panel says 'Gas run to meet the plan's 51% minimum sets the price in
-  about N hours; this rule is under review', N the hours the floor run tops up (ccgtFloorTopUpH), rounded to 100:
-  IRP's 2030 targets 4,551 hours (label 'about 4,600'), IRP path 2035 5,087 ('about 5,100'), and IRP's 2030 targets,
-  grid delayed 4,493 ('about 4,500'); no label on Today 2026 or Least-cost path 2035 (no floor; key absent, confirmed). Nick's
-  figure was about 4,300; the label reads the model's own count (simulate(state, PROFILES) after applyState, jsdom, script
-  scratchpad b1/n258.js). The label also shows on the grid-delayed preset, which carries the same floor. Decision recorded in TODO 14hd: after the note those hours are priced at the next unit on merit (PJM, 'Gaps in
+  about N hours; this rule is under review', rounded to 100. N is ccgtFloorPriceH (message 260 (4)): the hours gas sets the
+  price (marginalTech 'ccgt') with the floor on and not with it off, so priced by gas only because of the 51% minimum; the
+  floor-off run is simulateGasAnnualFloor's own merit run (ccgtForceLoad 0). simulate(state, PROFILES) after applyState,
+  jsdom, build 2026-10-19h:
+
+  | Preset | Gas-priced, floor on | Gas-priced, floor off | Only because of the floor (N) | Label | Floor top-up hours |
+  |---|---|---|---|---|---|
+  | IRP's 2030 targets | 4,550 | 179 | 4,372 | about 4,400 | 4,551 |
+  | IRP path 2035 | 4,984 | 676 | 4,312 | about 4,300 | 5,087 |
+  | IRP's 2030 targets, grid delayed | 4,496 | 404 | 4,093 | about 4,100 | 4,493 |
+
+  N matches the battery audit's 4,372 and 4,312. The first version of this label counted the floor's top-up hours
+  (ccgtFloorTopUpH), which includes hours gas would have set the price anyway. No label on Today 2026 or Least-cost path 2035
+  (no floor). The label stays on the grid-delayed preset (Nick, message 260 (4)). Decision recorded in TODO 14hd: after the note those hours are priced at the next unit on merit (PJM, 'Gaps in
   current pricing methodology', 15 Feb 2018; LP dual practice).
 
 Where a finding was not applied as suggested, and why:
