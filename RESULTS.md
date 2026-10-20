@@ -5750,6 +5750,273 @@ network capacity and demand). Proposed for Nick to choose.
 Suite on 2026-10-19f (claude/rooftop-map, ESK19679.csv present, nothing running beside it): 863/867, node checks 775/779 plus
 audit 88/88; eng5 5/6; the four known failures and eng5 check 6, as on 19d.
 
+### Site speed, step 1 and 2: stored risk panels, a session cache, panels computed only on screen and cancelled when a control moves; a fresh load is free in 4 s instead of 55, a preset click in 0.5-2.2 s instead of 37-201 s; no figure changes (build 2026-10-19g; user, 19 Oct 2026, messages 226, 242, 251, 254-256)
+
+What changed (index.html; branch claude/site-speed):
+- Stored risk panels. stored_panels.json holds the Monte Carlo risk panel, the adequacy board and the capture curve for the
+  start-up state and every preset, computed by the page's own code (harness/validate_stored_panels.js --write). The page uses
+  an entry only for the exact scenario (every key of state, FIXED and whether the measured profiles loaded) and only while its
+  fingerprint matches: a hash of the page's scripts as parsed and of the nine start-up engine files as they arrive.
+- Session cache: panels and main results computed live are kept for the session (main results as a copy taken before anything
+  draws on them, since drawDispatch adds stack.curtailment to the result; up to eight scenarios).
+- Panels run only when on screen (IntersectionObserver): Monte Carlo, adequacy, capture curve, heat stress, and the external
+  comparison, which sits in a closed section yet ran the engine twice on every change. A panel owed while off screen is dimmed.
+  Without IntersectionObserver (old browsers, the test harnesses) every panel counts as on screen, as before.
+- A control that moves cancels the panel runs in flight before their next draw (one draw at a time, was 12 and 8).
+- The first capture curve, and the other panels, wait until every engine input has settled (TODO 14ds (e)).
+- The weather-year files load once for both ensembles; the 9 MB weather file is no longer fetched at start-up for the P50/P90
+  table, which fills only after a site query.
+
+Measured on Cloudflare: before, the live site (main, build 2026-10-19f); after, the branch preview
+(claude-site-speed-gridtwin-za.hedley-nick.workers.dev, build 2026-10-19g, stored panels used). Chromium 141 headless in this
+session's 4-core container, through its network proxy; 1400 x 900; each case in a fresh browser context; 'free' is the end of the
+last long task (over 50 ms) before the status line hides and stays hidden for 3 s; 'longest' is the longest single long task,
+the worst wait a click or key sees. Scripts and raw outputs: scratchpad m251/tools/measure2.js, verify.js; m251/t/*.json.
+
+| Case | Main, normal speed | Branch, normal speed | Main, CPU 4x slower | Branch, CPU 4x slower |
+|---|---|---|---|---|
+| Fresh load: first results / free / longest, s | 2.6 / 55.0 / 4.5 | 2.4 / 4.1 / 0.9 | 5.1 / 235.8 / 19.3 | 5.8 / 12.7 / 3.9 |
+| Fresh load: bytes as Cloudflare serves them | 7.73 MB, 103 requests | 3.26 MB, 79 requests | | |
+| IRP path 2035 click: results / free / longest, s | 12.9 / 200.6 / 20.3 | 2.2 / 2.2 / 2.2 | 55.5 / 898.2 / 90.8 | 11.1 / 11.1 / 11.0 |
+| Slider moved, then the risk panel scrolled into view: free / longest, s | 44.9 / 4.4 | 43.1 / 0.7 | not run (256 (2)) | 200.1 / 3.1 |
+
+Preset clicks at normal speed (results / free / longest, s):
+
+| Preset | Main | Branch |
+|---|---|---|
+| 2025, as modelled | 4.1 / 54.2 / 5.7 | 0.9 / 0.9 / 0.9 |
+| Today 2026 | 3.2 / 47.5 / 4.8 | 0.6 / 0.6 / 0.6 |
+| IRP's 2030 targets | 9.4 / 138.4 / 13.6 | 1.7 / 1.7 / 1.7 |
+| IRP's 2030 targets, grid delayed | 9.1 / 140.5 / 13.6 | 1.6 / 1.6 / 1.6 |
+| IRP path 2035 | 12.9 / 200.6 / 20.3 | 2.2 / 2.2 / 2.2 |
+| Least-cost path 2035 | 2.8 / 43.9 / 4.3 | 0.6 / 0.6 / 0.6 |
+| Deep decarbonisation 2035 | 3.0 / 43.3 / 4.8 | 0.5 / 0.5 / 0.5 |
+| Fossil-free 2040 | 2.5 / 37.4 / 4.0 | 0.5 / 0.5 / 0.5 |
+
+At four times slower the branch's clicks freeze 2.4 to 11.0 s (IRP path 2035 the longest). Step 1 alone (the branch with
+IntersectionObserver removed, normal speed): fresh load free 8.5 s, longest 3.6 s; clicks 2.6 to 11.4 s, because heat stress
+and the external comparison still ran in every run(). After a slider move the risk panel computes live, one draw per task, so
+the page stays usable but the panel takes as long as before; the web worker (251 (3)) is what moves that work off the page.
+
+Checks.
+- validate_stored_panels.js (86 checks, in the suite): every stored panel equals a fresh computation to the digit for the
+  start-up state and all eight presets; the fingerprint matches; each file the panels were computed from is unchanged; the page
+  draws the stored panels exactly as fresh ones; a revisit from the session cache draws every element as a fresh run; and the
+  main results are identical whether or not the weather years have loaded (the stored panels mean they may never load).
+- On the preview (verify.js): the page used the stored panels with no live draw; stored_panels.json is 85 kB raw, 15.5 kB as
+  Cloudflare serves it (zstd), and arrived 1.4-1.8 s into the load, before the panels needed it; profiles.json served with one
+  trailing space (same numbers, different file) made the fingerprint miss and the panels compute live; a preset then one slider
+  moved: the preset from the store, then the risk panel live; a reload after moving a slider restores the scenario from the URL,
+  no stored entry matches, and the panels compute live.
+- Found and fixed while checking: the page first hashed its scripts when asked, so a script added later (an extension, a test
+  harness) changed the fingerprint; it now hashes them once when parsing ends. On main, the board's last word was the adequacy
+  ensemble's because the two runs alternated draw by draw; the stored panels keep that order (Monte Carlo, then adequacy).
+- The site review's B3 (two ensembles writing the board) is timing only: no change (recorded in the review file with batch 2).
+
+Rule from this (message 255 (4)): every pull request that changes index.html regenerates stored_panels.json (RULES.md, HANDOVER).
+Writing takes about 20 minutes, the check about 25.
+
+Suite on 2026-10-19g: 966/970 with ESK19679.csv present: node checks 878/882 (validate_stored_panels 86/86 among them) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 19 Oct 2026 about 21:00-23:00 UTC, with other jobs beside it; the failing scripts give the same failures as main.
+
+### Site speed, step 3: the engine runs in a web worker; a preset click or a moved control no longer freezes the page (longest task 0.1 s, 0.4 s at four times slower); the outputs are identical to the digit (build 2026-10-19k; user, 19 Oct 2026, messages 251 (3), 255 (1))
+
+What changed (index.html; branch claude/site-worker, on claude/site-speed): simulate() and the three risk-panel computations
+(Monte Carlo draws, the adequacy ensemble, the capture curve) run in a web worker built from the page's own source: 59 engine
+functions sent as text, about 60 data tables cloned, nodal/nodal_engine.js and nodal/capacity_siting.js loaded inside it. The
+page draws what the worker returns. A moved control cancels the worker's panel runs as it did the page's. On any worker error,
+or if the worker is not ready within 5 s, the page computes on its own thread as before. Heat stress and the external
+comparison still compute on the page's thread when they come on screen.
+
+Checked: harness/validate_worker.js (Chromium; not in the suite list, it needs a browser; about 20 minutes): start-up and all
+eight presets, simulate() in the worker against the page's own, and the Monte Carlo draws, adequacy ensemble and capture curve,
+compared as the JSON of every number: 38/38 identical, no page errors.
+
+Measured on the branch previews, Chromium in this session's 4-core container through its proxy, nothing else running, each
+case in a fresh browser context; 'free' is the end of the last task over 50 ms, 'longest' the longest single task (scripts
+scratchpad m251/tools/measure2.js; outputs m251/t/worker_1x.json, worker_4x.json; step 2's from branch_1x.json, branch_4x.json):
+
+| Case | Step 2, normal | Worker, normal | Step 2, CPU 4x slower | Worker, CPU 4x slower |
+|---|---|---|---|---|
+| Fresh load: first results / free / longest, s | 2.4 / 4.1 / 0.9 | 2.5 / 4.3 / 0.8 | 5.8 / 12.7 / 3.9 | 5.1 / 9.0 / 3.5 |
+| Preset clicks: free, s (range over eight) | 0.5-2.2 | 0.6-2.4 | 2.5-11.1 | 0.9-3.2 |
+| Preset clicks: longest, s | 0.5-2.2 | 0.1 | 2.4-11.0 | 0.4 |
+| Slider moved, then the risk panel scrolled into view: free / longest, s | 43.1 / 0.7 | 0.8 / 0.1 | 200.1 / 3.1 | 1.2 / 0.4 |
+
+Stored panels used on every load; 3.26 MB and 82 requests (79 before: the worker's two engine files and its blob). At normal
+speed a click's results arrive in about the same time, since the work is the same; the page stays responsive throughout. One
+freeze over 2 s remains: the fresh load at four times slower, 3.5 s, from start-up work before the worker is ready (parsing and
+the first draw), not from the engine.
+
+Suite on 2026-10-19k: 966/970 with ESK19679.csv present: node checks 878/882 (validate_stored_panels 86/86, stored panels
+regenerated on 19k, fingerprint 036254fe61e3e6) plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct
+2026 about 22:20-23:00 UTC with one other job beside it for the first half.
+
+### A link or a reload with new wind never computed; a link now runs only after every start-up file has loaded, and carries the preset (build 2026-10-20e, with #98's web worker merged in; user, 20 Oct 2026, messages 263 (1) and 265, from the mechanics audit G1-M1)
+
+Cause (reproduced in Chromium on main 38edbbb): the page ran the engine once while it was still loading (an early run on
+the synthetic profiles, for first numbers). A link's scenario was applied before that run, so with new wind the run called the
+modern wind map before nodal/profiles_wind_modern_map.json had loaded and threw ('modern wind is on but
+nodal/profiles_wind_modern_map.json is not loaded'); the throw stopped the rest of the page's start-up, so GTZA_READY never
+came and the page never computed. ?newWindMW=1000: not computed after 90 s; ?newPvMW=1000: computed in 3.4 s. A link also
+carried slider values only (and a link's 0 read as the slider's default), so a 2035 preset reopened at 2026.
+
+What changed (index.html):
+- A link that carries a scenario skips the early run; its scenario runs once every start-up file has loaded. The early run, on
+  a plain visit, can no longer stop the start-up (caught and logged).
+- ?preset=<name> applies the preset as a click does (every non-slider key, the year included), then any slider values in the
+  link on top. The page remembers the preset a scenario started from (basePreset), so after a click the address carries the
+  preset and only the sliders that differ from it; moving a slider keeps the preset in the address.
+- A link's 0 is kept; select controls are read from links too.
+
+After, in Chromium on this branch: ?newWindMW=1000 computed in 2.5 s; ?preset=IRP path 2035 in 4.6 s at 2035; ?preset=
+Fossil-free 2040&demandGrowthPct=10 in 2.4 s at 2040; a plain visit in 3.4 s.
+
+New check, harness/validate_links.js (48 checks, about 5 minutes, in the suite list): for every preset, a fresh ?preset= link
+and a reload of the address a click leaves each equal the click (every key of state, and every number of simulate's result,
+hashed); a preset then a slider moved, reloaded, equals the two steps by hand and stays at 2035; ?newWindMW=1000 and
+?newPvMW=1000 compute and equal the start-up page with the slider moved. 48/48 on this branch. On main 38edbbb, 13/39 (a page
+that never computes skips its comparison): the reload after a click throws the wind-map error on six of the eight presets (every
+preset with new wind), as the audit found; the ?preset= links reproduce nothing; ?newWindMW=1000 never computes.
+
+The web worker (#98, merged into this branch from main) has no start-up run of its own: its first full run waits for the worker,
+which starts after every start-up file has loaded; the guarded early run above is the only one before that (message 265).
+
+Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing beside it): 1,052/1,056, node checks 964/968
+(validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
+88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
+
+### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
+
+Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
+to it again, in the four places that price coal from coalMarginalCost (the price's coal block, the storage charge cost, the
+storage pricing pass and the marginal price itself). Confirmed against the fleet file's source columns
+(fleet_by_region_v2.csv, PyPSA-RSA, in the repository's history): Arnot, heat rate 12.744 GJ/MWh x fuel R45.18/GJ = R575.77,
+plus variable O&M R88.37/MWh = R664.14, its marginal_cost to the cent (664.1402453697383). The fleet-average fuel cost
+(costCoal + vomCoal, in the system cost) is a different figure and keeps its VOM.
+
+Before (main, build 2026-10-19g) and after (2026-10-20d, the same engine as 20f), each preset as a click applies it, simulate(state, PROFILES) in
+jsdom, mean of the 8,760 hourly prices, R/MWh:
+
+| Preset | Average price before / after | Excluding shortage hours | Dispatch, system cost, CO2 |
+|---|---|---|---|
+| 2025, as modelled | 1,609.7 / 1,540.9 | 1,521.9 / 1,453.1 | identical |
+| Today 2026 | 757.1 / 677.3 | 757.1 / 677.3 | identical |
+| IRP's 2030 targets | 1,042.1 / 1,006.4 | 1,042.1 / 1,006.4 | identical |
+| IRP's 2030 targets, grid delayed | 1,061.6 / 1,021.5 | 1,061.6 / 1,021.5 | identical |
+| IRP path 2035 | 895.3 / 880.3 | 895.3 / 880.3 | identical |
+| Least-cost path 2035 | 765.5 / 701.1 | 765.5 / 701.1 | identical |
+| Deep decarbonisation 2035 | 332.5 / 303.5 | 332.5 / 303.5 | identical |
+| Fossil-free 2040 | 239.1 / 239.1 | 239.1 / 239.1 | identical (no coal) |
+
+'Identical' is every hour of every technology's dispatch (hashed), the system cost and the CO2. The audit measured the same
+two figures it quoted (R757 to R677, R765 to R701). Everything read from the hourly price moves with it: capture prices and
+rates, battery and storage revenue, the shadow retail price and the price panel. Caveat: the price is the model's shadow
+price, not a market price.
+
+Suite on 2026-10-20f (main with #100 merged in, ESK19679.csv present): 1,052/1,056, node checks 964/968 (validate_stored_panels
+86/86 on stored panels regenerated for 20f, validate_links 48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures
+are the four known ones and eng5 check 6. In the suite run the disk filled (the allowance was spent by old lpcache folders,
+since deleted): validate_worker's browser crashed on load and validate_capacity left its generator check pending; both were
+rerun alone with space free, 38/38 and 33/33.
+
+### Site review batch 1: wording and labels on 30 findings, the hourly CSV hidden, the household profile's terms stated, and the gas-floor price label (build 2026-10-19h; user, 19 Oct 2026, messages 252, 253, 258)
+
+What changed. The advisor's site review of 19 Oct (201 findings on build 19e) proposed a first batch of wording and label
+fixes. Each was checked against the code before it was changed. Wording only, plus three display details noted below; no model
+figure moves. Branch claude/review-batch1 from main (build 19f).
+
+- A2: preset captions name the standard: half of the Australian market's reliability standard (at most 0.002% of demand
+  unserved, stricter than NTCSA's adequacy test).
+- A3: the imports note says the default is the 1,150 MW Cahora Bassa contract (read from FIXED), kept to 2040 in every
+  scenario; the 1,920 MW HVDC and the 400 kV lines are the physical links. Confirmed: no preset sets importsEndYear.
+- A4: the open-cycle fleet is the system's 3,400 MW, Eskom's own plus Avon (670) and Dedisa (335), each read from FIXED; the
+  diesel budget is the fleet's, not Eskom's.
+- A5: the coal availability note gives the coal-only estimates (2023 49.7, 2025 58.4, FY2026 61.4, January to August 2026
+  65.3; the default rounds the last) beside Eskom's audited whole-fleet EAF, from one table (EAF_HISTORY) that the FIXED
+  comment now points to.
+- A6: '2025, as modelled' says it is from Eskom data, the modelling ours, and not a validation (coal close, shedding far
+  less than Eskom's 2025).
+- A9: 'Where to build' no longer calls headroom free: inside it a project pays the shallow connection rate (TX_SHALLOW 0.25 of
+  the base, txTierCharge), as the result box already said; the portfolio's 'free' reads 'reduced charge'; the headroom is
+  dated GCCA 2025 (October 2023) with the October 2025 Cape wind update.
+- A10: heat stress: leaving solar and line effects out understates the stress (was 'conservative'); the heat applies to every
+  hour; the added column is signed (a change that rounds to nothing reads 0.0, not '+-0.0').
+- A11: the levelised cost tag no longer says 'sourced constants'.
+- A12: the carbon budget's scale shows Eskom's FY2026 184.5 Mt CO2e (Integrated Report 2026, p.75) instead of 'about 200 Mt
+  today'; the unsourced 42% share is dropped; a line says the model's 2026 reads below Eskom's reported figure and why. The
+  140 Mt electricity-sector target, credited to the Energy Council of South Africa with no publication found, is dropped with
+  the verdict against it (user, 20 Oct 2026, message 260 (4): drop it unless it is our own result; it is not). The panel now
+  sets the scenario against Eskom's FY2026 and states the NDC's national ranges, with no sector share assumed. The carbon-cap
+  control keeps 140 Mt as its default, labelled an illustrative ceiling, not a published allocation (the cap is off by
+  default, so no figure moves).
+- A13: the permitted-capacity panel no longer says 'not built' (the register keeps built plant as Approved); time since
+  approval is the most a project can have been ready, not the least; the source names the 2026 Q1 release.
+- A14: the queue panel judges NTCSA's October 2025 list by its own date ('due to commission by 2025'; whether they have since
+  connected is not published).
+- A15: the build pace note no longer contradicts itself.
+- A17: the price-setting chart and the price footnote say storage can set a price below the running cost of the plant shown
+  (a known limitation, TODO 14an).
+- A18: shortage hours are priced at the R87,000/MWh price ceiling, which is not a cost; the model counts unserved energy at
+  R9,530/MWh in system cost (both read from FIXED).
+- A19: 'Zero-price hours' is 'Hours at or below zero' (the count includes negative hours).
+- A20: 'Cost of generation' is 'Average price' (it is the mean shadow price outside shortage hours).
+- A23: the retail rooftop note no longer says every row saves less than the share displaced.
+- A27, A28: carbon capture: the station's cut per MWh sold and the fleet's are given separately; the unsourced 67-72%
+  lifecycle figure is dropped; the existing-fleet row is split into a retrofitted station and the fleet average.
+- A31: the open-cycle note includes Avon and Dedisa's contracted running, which the model applies; 'a least-cost model would
+  never do that' is gone.
+- A33: the Ember rows read calendar 2025 from public_data/ember_za.json, the file validate_benchmarks reads (coal 185.6,
+  wind 11.3, solar 18.6, nuclear 10.2 TWh), with the release date, instead of typed figures from an older release; the
+  sent-out conversions are computed (coal 171.3, nuclear 9.70 TWh).
+- A34: 1.04 tCO2/MWh is our figure, below the 1.11 that Eskom's FY2026 report implies; the remaining coal gap is 'not yet
+  explained', not 'not a model error'.
+- A35: the wind fleet in the assumptions table and the comparison notes is computed from FIXED.windMW (4.7 GW, 538 MW
+  private wheeled, was typed as 4.6 GW and 470 MW).
+- A36, A37, A40, A43, A45, A48: the full model's inputs differ from the instant engine's; the footer says the analysis of
+  Eskom data is ours, not Eskom's; no day-ahead market exists yet; GCCA spelled out and dated; the pre-feasibility notes no
+  longer quote an unsourced PPA range, a stale capture range or a 'negotiated' TUoS; the licence line says registration or
+  licence by offtake.
+- A50 / D4 credit: 'Source: Includes solar data from Google' under the rooftop measurement.
+- D1: the dispatch panel's hourly CSV button is hidden until Eskom consents or the open profiles replace profiles.json.
+  The PPA export stays (message 260 (4): hide it only if it carries an hourly series derived from Eskom data): its columns are
+  the model's hourly shadow price (model output) and per-unit wind and solar for the chosen region from
+  nodal/profiles_regional.json (Renewables.ninja and PVGIS), with no demand or other Eskom-derived series. Its header says
+  'data CC BY 4.0', which does not fit the Renewables.ninja columns (CC BY-NC 4.0); left for D3, the licence wording.
+- D2: nodal/residential_profile.json states its terms (Eskom-derived, non-commercial, consent requested) in the file and in
+  LICENSE; TODO 14bz lists it for replacement after the note.
+- 258: wherever the IRP gas floor is active, the price panel says 'Gas run to meet the plan's 51% minimum sets the price in
+  about N hours; this rule is under review', rounded to 100. N is ccgtFloorPriceH (message 260 (4)): the hours gas sets the
+  price (marginalTech 'ccgt') with the floor on and not with it off, so priced by gas only because of the 51% minimum; the
+  floor-off run is simulateGasAnnualFloor's own merit run (ccgtForceLoad 0). simulate(state, PROFILES) after applyState,
+  jsdom, build 2026-10-19h, unchanged on 2026-10-20h (main with #100 and #101 merged in):
+
+  | Preset | Gas-priced, floor on | Gas-priced, floor off | Only because of the floor (N) | Label | Floor top-up hours |
+  |---|---|---|---|---|---|
+  | IRP's 2030 targets | 4,550 | 179 | 4,372 | about 4,400 | 4,551 |
+  | IRP path 2035 | 4,984 | 676 | 4,312 | about 4,300 | 5,087 |
+  | IRP's 2030 targets, grid delayed | 4,496 | 404 | 4,093 | about 4,100 | 4,493 |
+
+  N matches the battery audit's 4,372 and 4,312. The first version of this label counted the floor's top-up hours
+  (ccgtFloorTopUpH), which includes hours gas would have set the price anyway. No label on Today 2026 or Least-cost path 2035
+  (no floor). The label stays on the grid-delayed preset (Nick, message 260 (4)). Decision recorded in TODO 14hd: after the note those hours are priced at the next unit on merit (PJM, 'Gaps in
+  current pricing methodology', 15 Feb 2018; LP dual practice).
+
+Where a finding was not applied as suggested, and why:
+- A43's date: the review gives November 2023 (a law firm's alert of 8 Nov 2023); our headroom file records October 2023;
+  the page uses October 2023.
+- A48: the nersaCategory registration text is unchanged; whether a grid sale under a procurement programme needs a licence
+  is for NERSA to confirm.
+- A11's per-bar tooltips and A50's Places and Geocoding question are left to batch 2 and the D4 pull request.
+
+Suite on 2026-10-19h: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6. The failures are the four known ones (EDMSA Scenario A CO2 2035, iron-air July, high-season off-peak, peakerSeasonRatio) and eng5 check 6. Run 19 Oct 2026 about 21:00-22:30 UTC with other jobs beside it; the four failing scripts were rerun after the A33 row fix with the same result, and audit, validate_structure, validate_outputs and validate_public_text pass on the final commit. Audit first read 87/88: the prose ceiling counted 120 words of code, because a second 9.5px note cell in the Eskom benchmark rows moved its match; one row template now (the check is unchanged). Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets): 9/9.
+
+Suite on 2026-10-20h (main 51150a8, with #100 and #101, merged in; stored panels regenerated for 20h, fingerprint 008667dbfd1637):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 20 Oct 2026
+16:20-18:07 UTC; a one-minute jsdom price measurement ran beside validate_links (17:24-17:25 UTC), which passed; the failing
+scripts ran with nothing beside them. Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets and
+its grid-delayed variant, labels about 4,300, 4,400 and 4,100 hours): 11/11.
+
 ### Coal marginal cost's rand year, a sensitivity: indexing PyPSA-RSA's marginal_cost from 2024 rands to 2026 raises the average price 1-6% on the four note presets, from 2023 rands 2-11%; dispatch, system cost and CO2 unchanged (build 2026-10-20f, main 51150a8; user, 20 Oct 2026, message 268 (5); measure only, no model change until Meridian answers, TODO 14hu)
 
 Why: PyPSA-RSA states no currency year (config.yaml at commit 89872c1: USD_to_ZAR 18.24, EUR_to_ZAR 17.83, no year given,
