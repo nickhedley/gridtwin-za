@@ -31,6 +31,9 @@ Renewables.ninja-derived profiles; and PyPSA-RSA's AGPL-3.0-or-later, whose term
 being confirmed with Meridian. Analysis derived from Eskom data is ours, not Eskom's.
 (Wording approved by Nick Hedley, 20 Oct 2026, message 261 (2).)
 
+Files in public_data/ and in the repository's root that carry no licence field of their own are CC BY-NC-ND 4.0, except
+any derived from the sources listed below, which carry that source's terms (message 267 (2)).
+
 Full licence text: https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode
 
 For commercial licensing enquiries about the original work described above, contact
