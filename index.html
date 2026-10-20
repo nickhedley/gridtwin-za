@@ -33,6 +33,41 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title>GridTwin ZA – Interactive South African Power System Model</title>
 <meta name="description" content="Interactive digital twin of the South African power system – adjust the fleet, demand and policy, and watch the grid re-dispatch live. Calibrated to 2026 Eskom data.">
+<script>
+// FINGERPRINT FOR THE STORED RISK PANELS (message 251). stored_panels.json holds the risk panels for each preset and for
+// the start-up state, computed by harness/validate_stored_panels.js. The page uses them only when this fingerprint, of the
+// page's own scripts and of the start-up engine files as they arrived, equals the one they were computed under; otherwise it
+// computes the panels live, as before. The engine files are hashed as fetched, so this wrapper must run before any fetch.
+// A fetch with no clone() (the test harnesses' own) leaves its file unhashed, and the stored panels then go unused.
+// gtzaHash is cyrb53 (bryc, public domain): a 53-bit string hash, a guard against stale data, not a security measure.
+function gtzaHash(s){
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++){ const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0');
+}
+// The engine's start-up inputs. The weather-year files load later, only when a panel is computed live; the suite's check
+// covers them (and every other file the computation reads) by SHA-256.
+const PANEL_FILES = ['profiles.json', 'nodal/tdp_projects.json', 'nodal/region_headroom_lookup.json',
+  'nodal/profiles_offshore_regional.json', 'nodal/coal_availability_trace.json', 'nodal/regional_renewable_capacity.json',
+  'nodal/headroom_summary.json', 'nodal/profiles_wind_modern_map.json', 'nodal/profiles_solar_tracking_map.json'];
+const PANEL_FILE_HASH = {};
+// The page's scripts, hashed once when parsing ends, so a script added later (an extension, a test harness) does not count.
+const PAGE_PARSED = new Promise(r => { const done = () => r(gtzaHash(Array.from(document.scripts, sc => sc.hasAttribute('src')
+  ? 'src ' + sc.getAttribute('src') : 'inline ' + gtzaHash(sc.text)).join('\n')));
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', done); else done(); });
+(function(){
+  const f = window.fetch; if (typeof f !== 'function') return;
+  window.fetch = function(u){
+    const p = f.apply(this, arguments);
+    const k = String(u && u.url || u).split('?')[0].replace(/^(?:[a-z]+:)?\/\/[^/]*\//, '').replace(/^\.?\//, '');
+    if (PANEL_FILES.includes(k) && !(k in PANEL_FILE_HASH))
+      PANEL_FILE_HASH[k] = p.then(r => (r && r.ok && typeof r.clone === 'function') ? r.clone().text().then(gtzaHash) : null).catch(() => null);
+    return p;
+  };
+})();
+</script>
 <!-- Optional local config: API keys. Absent by default; the app works without it. -->
 <script src="config.js" onerror="void 0"></script>
 <meta name="author" content="Nick Hedley">
@@ -230,6 +265,8 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 .calc-spin{flex:none; width:11px; height:11px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; will-change:transform; animation:calc-spin .8s linear infinite}
 @keyframes calc-spin{to{transform:rotate(360deg)}}
 .presets.busy button{transition:none}  /* a fade started on click would freeze mid-way while the engine runs */
+/* A panel owed while off screen (message 251): dimmed until it runs, so an earlier scenario's figures are not read as current */
+.panel.panel-owed .pb, .pb.panel-owed, .board.panel-owed #statusWord, .board.panel-owed #lamps, .board.panel-owed #bdShed{opacity:.45}
 
 /* KPI strip */
 .kpis{display:grid; grid-template-columns:repeat(8,1fr); gap:12px; margin-bottom:0}
@@ -2121,11 +2158,13 @@ let redzData = null;
   // consultant - but it is a real distribution from real weather rather than a
   // rule-of-thumb haircut on a single year, which is what most desktop studies
   // still use.
-  let p90Data = null;
-  fetch('nodal/profiles_regional_multiyear.json?v=' + (window.DATA_V || '7'))
+  // Fetched on first use, when a site query asks for P50/P90 (message 251): the multi-year file is the largest the page
+  // reads (9 MB), and every fresh load fetched it for this table, which stays empty until a site is chosen.
+  let p90Data = null, p90Loading = null;
+  const loadP90 = () => p90Loading || (p90Loading = fetch('nodal/profiles_regional_multiyear.json?v=' + (window.DATA_V || '7'))
     .then(r => r.ok ? r.json() : null)
-    .then(d => { p90Data = d; if (typeof renderP90 === 'function') renderP90(); })
-    .catch(() => {});
+    .then(d => { p90Data = d; })
+    .catch(() => {}));
 
   // Exceedance level from a sample: the value that the series beats in `pct` of
   // years. Linear interpolation between order statistics - with ten points the
@@ -2142,6 +2181,7 @@ let redzData = null;
     const el = document.getElementById('p90Result');
     if (!el) return;
     const reg = region || (window._resourceData && window._resourceData.windRegion) || null;
+    if (reg && !p90Loading) loadP90().then(() => renderP90(region));
     if (!p90Data || !reg || !p90Data.solar_pu[reg]){ el.innerHTML = ''; return; }
     const sc = p90Data.scale || 1;
     const rows = [];
@@ -13631,8 +13671,13 @@ let bldWxWeights = null;
 // data; null until then, in which case the flat txRPerKWyr applies. See buildTxCurve().
 let bldTxCurve = null;
 
+// One load for every caller (message 251): the Monte Carlo and adequacy runs start 50 ms apart and each fetched the files.
+let _wxLoading = null;
 async function loadWeatherYears(){
   if (bldWeatherYears !== null) return bldWeatherYears;
+  return _wxLoading || (_wxLoading = _loadWeatherYears());
+}
+async function _loadWeatherYears(){
   try {
     const r = await fetch('nodal/profiles_regional_multiyear.json?v=' + (window.DATA_V || '7'));
     if (!r.ok) { bldWeatherYears = false; return false; }
@@ -15291,7 +15336,8 @@ function bessSaturationCurve(r){
 //
 // cost: this re-runs simulate() once per point, so it is deliberately short (5 points)
 // and only redraws when the panel is visible.
-function captureCurve(res){
+// Async from message 251: one simulate() per point, yielding between points; null once alive() turns false.
+async function captureCurve(alive){
   const base = { ...state };
   const wNow = (FIXED.windMW + (state.newWindMW || 0)) / 1000;
   const sNow = (FIXED.pvUtilityMW + (state.newPvMW || 0)) / 1000;
@@ -15302,7 +15348,9 @@ function captureCurve(res){
   const totals = [8, 25, 45, 70, 110];
   const battPerVre = bNow > 0.9 ? bNow / (wNow + sNow) : 0.35;  // scale storage unless set
   const pts = [];
-  for (const tot of totals){
+  for (const [i, tot] of totals.entries()){
+    if (i) await panelYield();
+    if (!alive()) return null;
     const w = tot * ratio, sv = tot * (1 - ratio);
     let r;
     try {
@@ -15339,16 +15387,30 @@ function captureCurve(res){
 // run() on every slider input would make the whole interface stutter - run() fires on
 // each `input` event, not on release. This defers until the user stops moving things
 // for 400 ms, and skips entirely while the panel is scrolled out of view.
-let _capCurveTimer = null;
+// From message 251: stored or cached first, computed only on screen, cancelled with the other panels, and not before every
+// engine input has settled (TODO 14ds (e): the curve on the early run cost about 2.5 s and was redrawn unread).
+let _capCurveTimer = null, capToken = 0;
 function scheduleCaptureCurve(){
+  if (!window.GTZA_READY) return;
   if (_capCurveTimer) clearTimeout(_capCurveTimer);
-  _capCurveTimer = setTimeout(calcTrack('capCurve', () => {
+  _capCurveTimer = setTimeout(calcTrack('capCurve', async () => {
     _capCurveTimer = null;
     const host = document.getElementById('capCurveBody');
     if (!host || !lastRes) return;
     const panel = document.getElementById('capCurvePanel');
     if (panel && panel.offsetParent === null) return;   // hidden tab, do not spend the CPU
-    try { renderCaptureCurve(lastRes); }
+    const token = ++capToken, key = panelKey();
+    let c = await panelGet(key, 'capCurve');
+    if (token !== capToken) return;
+    if (!c){
+      if (!panelOnScreen('capCurve')){ panelOwe('capCurve', scheduleCaptureCurve); return; }
+      try { c = await captureCurve(() => token === capToken); }
+      catch (e) { console.error('captureCurve:', e); return; }
+      if (!c || panelKey() !== key) return;
+      panelPut(key, 'capCurve', c);
+    }
+    panelOwe('capCurve', null);
+    try { renderCaptureCurve(c); }
     catch (e) { console.error('captureCurve:', e); }
   }), 400);
 }
@@ -15416,9 +15478,8 @@ function hybridUplift(gen, price, plantMW, frac, hours){
   return { bare: b, with: a, pct: b > 0 ? 100*(a/b - 1) : 0 };
 }
 
-function renderCaptureCurve(res){
+function renderCaptureCurve(c){
   const host = document.getElementById('capCurveBody'); if (!host) return;
-  const c = captureCurve(res);
   if (!c.pts.length){ host.innerHTML = '<div style="font-size:11px;color:var(--ink2)">Not available.</div>'; return; }
   const col = v => v >= 80 ? 'var(--ok,#4A8C5C)' : v >= 50 ? '#C9A227' : 'var(--alert,#C4785A)';
   const bar = (v) => '<span style="display:inline-block;height:7px;width:' + Math.max(1, Math.min(100, v)) + 'px;'
@@ -19833,11 +19894,122 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-19f';
+const BUILD_STAMP = '2026-10-19g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
 let nodalNationalShedGwh=null; // national engine shed at same scenario — used to compute corridor correction factor
+
+/* --- Stored risk panels, the session cache, panels run when seen (message 251; TODO 14ds) --- */
+// The Monte Carlo panel, the adequacy board and the capture curve were about nine-tenths of the engine time of a preset
+// click (RESULTS 'Scenario switch and load timing'). Each is a deterministic function of the scenario: seeded outage draws
+// over the twelve weather years. So:
+//   - stored_panels.json holds them for every preset and for the start-up state, computed by this page's own code
+//     (harness/validate_stored_panels.js, which also checks them against a fresh computation to the digit). They are used
+//     only for the exact scenario they were computed for, and only while the fingerprint matches (gtzaHash, in the head);
+//   - panels and main results computed live are kept for the session, so returning to a scenario shows them at once;
+//   - a panel off screen is owed, not computed, and runs when it scrolls into view (watched with IntersectionObserver;
+//     without one, in old browsers and the test harnesses, every panel counts as on screen, as before);
+//   - a control that moves cancels the runs in flight before the next draw (cancelPanels), so a drag never queues work.
+// A panel's key is the whole scenario: state, FIXED, and whether the measured profiles have loaded.
+const PANEL_CACHE = new Map();      // key -> { deps, mc, adequacy, capCurve }, this session
+const PANEL_CACHE_MAX = 200;
+// The engine's loaded inputs, by identity. Each is replaced, never altered in place, when it loads, so an entry computed
+// with these same objects is still current; one computed before any of them changed is not used.
+const engineInputs = () => [PROFILES, OFFSHORE_PU, COAL_TRACE, TDP_PROJECTS, HEADROOM_LOOKUP, bldTxCurve, WIND_MOD_MAP, SOLAR_TRK_G];
+const sameInputs = deps => { const b = engineInputs(); return !!deps && deps.length === b.length && deps.every((x, i) => x === b[i]); };
+function canonJSON(o){ return JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v) && !ArrayBuffer.isView(v))
+  ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v); }
+function panelKey(){
+  return gtzaHash(canonJSON(state) + '\n' + canonJSON(FIXED) + '\n' + (window.GTZA_READY ? (_profilesReal ? 'measured' : 'synthetic') : 'early'));
+}
+const P_STORE = fetch('stored_panels.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null);
+// The page's fingerprint: its scripts as parsed, and each start-up engine file as it arrived. null if any is missing.
+async function pageFingerprint(){
+  const code = await PAGE_PARSED;
+  const files = await Promise.all(PANEL_FILES.map(f => PANEL_FILE_HASH[f] || null));
+  if (files.some(h => !h)) return null;
+  return gtzaHash(code + '\n' + PANEL_FILES.map((f, i) => f + ' ' + files[i]).join('\n'));
+}
+let _panelStore = null;
+function panelStore(){
+  return _panelStore || (_panelStore = (async () => {
+    const st = await P_STORE;
+    if (!st || !Array.isArray(st.entries)) return null;
+    const fp = await pageFingerprint();
+    if (fp !== st.fingerprint){
+      console.info('[GridTwin] stored risk panels not used: computed for fingerprint ' + st.fingerprint + ', this page is ' + fp);
+      return null;
+    }
+    return new Map(st.entries.map(e => [e.key, e]));
+  })());
+}
+// A copy, so nothing that draws a panel can alter the stored or cached figures. JSON keeps every finite number exactly.
+const panelCopy = v => v == null ? null : JSON.parse(JSON.stringify(v));
+async function panelGet(key, kind){
+  const c = PANEL_CACHE.get(key);
+  if (c && c[kind] && sameInputs(c.deps)) return panelCopy(c[kind]);
+  const m = await panelStore();
+  const e = m && m.get(key);
+  return e && e[kind] ? panelCopy(e[kind]) : null;
+}
+function panelPut(key, kind, v){
+  if (!PANEL_CACHE.has(key) || !sameInputs(PANEL_CACHE.get(key).deps)){
+    PANEL_CACHE.delete(key);
+    if (PANEL_CACHE.size >= PANEL_CACHE_MAX) PANEL_CACHE.delete(PANEL_CACHE.keys().next().value);
+    PANEL_CACHE.set(key, { deps: engineInputs() });
+  }
+  PANEL_CACHE.get(key)[kind] = panelCopy(v);
+}
+// Main results this session. A copy of simulate()'s result as it returned, before anything drew from it (drawDispatch adds
+// stack.curtailment), handed out as a fresh copy each time, so a revisited scenario draws exactly as a fresh run would.
+// Eight scenarios, about 3 MB each. Not before every engine input has settled, nor without structuredClone.
+const RES_CACHE = new Map(), RES_CACHE_MAX = 8;
+function simulateCached(){
+  if (!window.GTZA_READY || typeof structuredClone !== 'function') return simulate(state, PROFILES);
+  const key = panelKey(), hit = RES_CACHE.get(key);
+  if (hit && sameInputs(hit.deps)){ RES_CACHE.delete(key); RES_CACHE.set(key, hit); return structuredClone(hit.res); }
+  const r = simulate(state, PROFILES);
+  RES_CACHE.delete(key);
+  if (RES_CACHE.size >= RES_CACHE_MAX) RES_CACHE.delete(RES_CACHE.keys().next().value);
+  try { RES_CACHE.set(key, { deps: engineInputs(), res: structuredClone(r) }); } catch (e) { /* not cloneable: not cached */ }
+  return r;
+}
+// One draw at a time, so input waits at most one draw.
+const panelYield = () => new Promise(res => setTimeout(res, 0));
+// Bumping the tokens stops every run in flight at its next draw. The schedules that follow (run()) start the new ones.
+function cancelPanels(){ mcToken++; adeqToken++; capToken++; }
+
+const PANEL_SEEN = {}, PANEL_OWED = {}, PANEL_ELS = {};
+const _panelIO = (typeof IntersectionObserver === 'function') ? new IntersectionObserver(es => {
+  for (const e of es){
+    const n = e.target.dataset.panel; if (!n) continue;
+    e.target._panelSeen = e.isIntersecting;
+    PANEL_SEEN[n] = PANEL_ELS[n].some(el => el._panelSeen);
+    if (PANEL_SEEN[n] && PANEL_OWED[n]){ const f = PANEL_OWED[n]; panelOwe(n, null); setTimeout(f, 0); }
+  }
+}, { rootMargin: '200px 0px' }) : null;
+function watchPanel(name, els){
+  PANEL_ELS[name] = els.filter(Boolean);
+  if (_panelIO) for (const el of PANEL_ELS[name]){ el.dataset.panel = name; _panelIO.observe(el); }
+}
+function panelOnScreen(name){ return !_panelIO || !!PANEL_SEEN[name]; }
+// An owed panel is dimmed until it runs, so figures from an earlier scenario are not read as current.
+function panelOwe(name, fn){
+  if (fn) PANEL_OWED[name] = fn; else delete PANEL_OWED[name];
+  for (const el of PANEL_ELS[name] || []) el.classList.toggle('panel-owed', !!fn);
+}
+// For the panels run() itself draws (heat stress, the external comparison): now if on screen, else when it scrolls into view.
+// Nothing before every engine input has settled; the run that follows then draws them.
+function panelWhenSeen(name, fn){
+  if (!window.GTZA_READY) return;
+  if (panelOnScreen(name)){ panelOwe(name, null); fn(); } else panelOwe(name, fn);
+}
+watchPanel('adequacy', [document.querySelector('.board')]);
+watchPanel('mc', [document.getElementById('riskHead') && document.getElementById('riskHead').closest('.panel')]);
+watchPanel('capCurve', [document.getElementById('capCurvePanel')]);
+watchPanel('heat', [document.getElementById('nav-heat')]);
+watchPanel('external', [document.getElementById('externalBody')]);
 
 /* --- Shared weather-year profile builder --- */
 // ONE definition, used by BOTH ensembles. Extracted 31 Aug 2026 after an audit found
@@ -19975,27 +20147,44 @@ function applyAdequacyToBoard(){
 // single draw. Closing the gap properly needs hundreds of draws; instead the board
 // REPORTS its own uncertainty, which is the honest response to a heavy tail.
 const ADEQ_N = 48;
-let adequacyEnsemble = null;   // {medUnservedGWh, medStage, medHours, lo, hi, n}
-let adeqToken = 0, adeqTimer = null;
-function scheduleAdequacy(){ clearTimeout(adeqTimer); adeqTimer = setTimeout(calcTrack('adequacy', runAdequacy), 400); }
+let adequacyEnsemble = null;   // {eueGWh, lole, pShed, worstStage, medStage, p90Stage, cleanShare, lo, hi, n, weatherVaried, seGWh}
+let adeqToken = 0, adeqTimer = null, adequacyKey = null;
+// Not before every engine input has settled: the early run's ensemble was replaced unread (message 251).
+function scheduleAdequacy(){ if (!window.GTZA_READY) return; clearTimeout(adeqTimer); adeqTimer = setTimeout(calcTrack('adequacy', runAdequacy), 400); }
+// Stored or already computed this session: shown at once. Otherwise computed while the board is on screen, and owed until
+// it is (message 251).
 async function runAdequacy(){
-  const token = ++adeqToken;
+  const token = ++adeqToken, key = panelKey();
+  let e = await panelGet(key, 'adequacy');
+  if (token !== adeqToken) return;
+  if (!e){
+    if (!panelOnScreen('adequacy')){ panelOwe('adequacy', scheduleAdequacy); return; }
+    e = await adequacyDraws(() => token === adeqToken);
+    if (!e || panelKey() !== key) return;
+    panelPut(key, 'adequacy', e);
+  }
+  panelOwe('adequacy', null);
+  adequacyEnsemble = e; adequacyKey = key;
+  if (typeof applyAdequacyToBoard === 'function') applyAdequacyToBoard();
+}
+// The ensemble over ADEQ_N draws, or null once alive() turns false (a newer scenario superseded it).
+async function adequacyDraws(alive){
   const runs = [];
   // Weather years, if the multi-year file loaded. Degrades to the default profile alone,
   // in which case this reports outage risk only and the tooltip still holds.
   const _wx = await weatherProfileFactory();
   const wxYears = _wx.years, profileFor = _wx.profileFor;
   for (let i = 0; i < ADEQ_N; i++){
-    if (token !== adeqToken) return;                    // a newer scenario superseded this
+    if (!alive()) return null;                          // a newer scenario superseded this
     // Seeds spaced by a large odd stride so consecutive draws are not correlated.
     const wy = wxYears ? wxYears[i % wxYears.length] : null;
     const r = simulate({ ...state, outageSeed: 20260816 + i * 7919 }, profileFor(wy));
     let hrs = 0;
     for (let h = 0; h < HOURS; h++) if (r.stack.unserved[h] > 1) hrs++;
     runs.push({ gwh: (r.E.unserved || 0) / 1000, stage: r.maxStage, hrs });
-    if (i % 8 === 7) await new Promise(res => setTimeout(res, 0));   // yield to the UI
+    await panelYield();
   }
-  if (token !== adeqToken) return;
+  if (!alive()) return null;
   // EXPECTATIONS, NOT MEDIANS. The first version of this reported the median and it
   // understated as badly as the single draw overstated: across ten measured seeds the
   // median unserved was 0.28 GWh against a MEAN of 1.23, and five of ten draws shed
@@ -20009,7 +20198,7 @@ async function runAdequacy(){
   const mean = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
   const med  = arr => { const a = arr.slice().sort((x, y) => x - y); return a[(a.length - 1) >> 1]; };
   const g = runs.map(r => r.gwh);
-  adequacyEnsemble = {
+  return {
     eueGWh: mean(g),                       // expected unserved energy
     lole: mean(runs.map(r => r.hrs)),      // expected hours short per year
     pShed: runs.filter(r => r.hrs > 0).length / runs.length,
@@ -20030,15 +20219,43 @@ async function runAdequacy(){
       return sd / Math.sqrt(g.length);
     })(),
   };
-  if (typeof applyAdequacyToBoard === 'function') applyAdequacyToBoard();
 }
 
 /* --- Monte Carlo outage risk (60 synthetic years, chunked async) --- */
 let mcToken=0, mcTimer=null;
 const MC_N=60;
-function scheduleMC(){clearTimeout(mcTimer); mcTimer=setTimeout(calcTrack('mc', runMC),350);}
+function scheduleMC(){if(!window.GTZA_READY)return; clearTimeout(mcTimer); mcTimer=setTimeout(calcTrack('mc', runMC),350);}
+// As runAdequacy: stored or cached first, then computed while the panel is on screen (message 251).
 async function runMC(){
-  const token=++mcToken;
+  const token=++mcToken, key=panelKey();
+  let p = await panelGet(key, 'mc');
+  if(token!==mcToken)return;
+  if(!p){
+    if(!panelOnScreen('mc')){ panelOwe('mc', scheduleMC); return; }
+    p = await mcDraws(() => token===mcToken);
+    if(!p || panelKey()!==key)return;
+    panelPut(key, 'mc', p);
+  }
+  panelOwe('mc', null);
+  // Corridor correction factor: if a nodal run exists for this scenario,
+  // scale all MC shed values by (nodal_unserved / national_unserved).
+  // This approximates network constraints (corridor congestion, regional demand
+  // imbalances) without running the full nodal engine 60 times.
+  // Only applied when national shed > 1 GWh to avoid division near zero.
+  let corridorFactor = 1.0;
+  if(nodalUnservedGwh !== null && nodalNationalShedGwh !== null
+     && nodalNationalShedGwh > 1) {
+    corridorFactor = nodalUnservedGwh / nodalNationalShedGwh;
+    // Cap factor: don't amplify beyond 5× or reduce to zero
+    corridorFactor = Math.max(0.1, Math.min(5.0, corridorFactor));
+  }
+  renderRisk(p.runs, corridorFactor, p.wxYears);
+  // The adequacy ensemble has the board's last word. Both write the status word and the expected-shed cell's title, and
+  // with the two runs interleaved draw by draw the ensemble always finished last; shown together, it is applied last.
+  if(adequacyEnsemble && adequacyKey===key && typeof applyAdequacyToBoard==='function') applyAdequacyToBoard();
+}
+// The MC_N draws, or null once alive() turns false.
+async function mcDraws(alive){
   const mean=state.coalEAFPct/100, vol=state.outVolPct/100;
   // Common-mode parameters. Onset is per inactive day across the 92-day winter window; at
   // 0.2% that is roughly a 17% chance of at least one event in a simulated year.
@@ -20066,9 +20283,9 @@ async function runMC(){
   // x 8760 hours, and MC_N draws would otherwise rebuild the same few repeatedly.
   const profileFor = _wx.profileFor;
 
-  for(let i=0;i<MC_N;i+=12){
-    if(token!==mcToken)return;
-    for(let j=i;j<Math.min(MC_N,i+12);j++){
+  for(let j=0;j<MC_N;j++){
+    if(!alive())return null;
+    {
       // ── COMMON-MODE STRESS ────────────────────────────────────────────────
       // Adopted 10 Sep 2026 from Eshan Singh's Grid Reliability Lab, which models a
       // summer-only regional event applying ONE SHARED derate to sensitive firm resources,
@@ -20109,22 +20326,10 @@ async function runMC(){
       runs.push({shed:r.shedMWh, stage:r.maxStage, hrs:r.shedHours.slice(1).reduce((a,b)=>a+b,0),
                  diesel:r.E.diesel, wxYear:wy, cmEvents:cmEvents.length});
     }
-    await new Promise(res=>setTimeout(res,0));
+    await panelYield();
   }
-  if(token!==mcToken)return;
-  // Corridor correction factor: if a nodal run exists for this scenario,
-  // scale all MC shed values by (nodal_unserved / national_unserved).
-  // This approximates network constraints (corridor congestion, regional demand
-  // imbalances) without running the full nodal engine 60 times.
-  // Only applied when national shed > 1 GWh to avoid division near zero.
-  let corridorFactor = 1.0;
-  if(nodalUnservedGwh !== null && nodalNationalShedGwh !== null
-     && nodalNationalShedGwh > 1) {
-    corridorFactor = nodalUnservedGwh / nodalNationalShedGwh;
-    // Cap factor: don't amplify beyond 5× or reduce to zero
-    corridorFactor = Math.max(0.1, Math.min(5.0, corridorFactor));
-  }
-  renderRisk(runs, corridorFactor, wxYears);
+  if(!alive())return null;
+  return { runs, wxYears };
 }
 function renderRisk(runs, corridorFactor=1.0, wxYears=null){
   const N=runs.length;
@@ -20310,10 +20515,10 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();hideCalc();}
-function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
+function run(){cancelPanels();lastRes=simulateCached();window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){panelWhenSeen('external',()=>{try{renderExternalComparison();}catch(e){console.error('external:',e);}});}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')panelWhenSeen('heat',()=>window.renderHeat());if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();hideCalc();}
+function scheduleRun(){cancelPanels();if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 // As scheduleRun, but after the next paint (rAF fires before painting; the timeout after it), so a status set on click is seen.
-function scheduleRunAfterPaint(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>setTimeout(()=>{rafPending=false;run();},0));}
+function scheduleRunAfterPaint(){cancelPanels();if(rafPending)return;rafPending=true;requestAnimationFrame(()=>setTimeout(()=>{rafPending=false;run();},0));}
 // The status line follows every task a click queues (user, 15 Oct 2026, message 111): 'Calculating…' until run() has drawn
 // the results, then 'Updating risk panels…' until the capture curve, adequacy and Monte Carlo have finished, so the page
 // never looks idle while it is blocked. A task rescheduled before it ends is owed again; only its latest schedule clears it.
@@ -24028,7 +24233,7 @@ window.cancelMIP = cancelMIP;
   const paint = () => {
     try { if (window.renderH2) window.renderH2(window.lastRes); } catch(e){ console.error('h2 first paint:', e); }
     try { if (window.renderGets) window.renderGets(); } catch(e){ console.error('gets first paint:', e); }
-    try { if (window.renderHeat) window.renderHeat(); } catch(e){ console.error('heat first paint:', e); }
+    try { if (window.renderHeat) panelWhenSeen('heat', () => window.renderHeat()); } catch(e){ console.error('heat first paint:', e); }
   };
   paint();
   // Again once the async regional profiles land, because the electrolyser siting line
