@@ -2,11 +2,15 @@
 <!--
   ============================================================================
   GridTwin ZA - Interactive South African Power System Model
-  Copyright (c) 2026 Nick Hedley. All rights reserved.
+  Copyright (c) 2026 Nick Hedley.
 
-  Licensed under Creative Commons Attribution-NonCommercial-NoDerivatives 4.0
-  International (CC BY-NC-ND 4.0).
+  The model logic, calibration, cost assumptions, code and presentation are licensed under
+  Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0):
+  you may share them with attribution for non-commercial purposes; commercial use or
+  distributing modified versions needs written permission.
   https://creativecommons.org/licenses/by-nc-nd/4.0/
+  Our compilations of public facts are CC BY 4.0; files derived from other people's data keep
+  their sources' terms, stated in each file and listed in LICENSE (user, 20 Oct 2026, D3).
 
   You may view, share and link to this work with attribution. You may NOT:
     - use it commercially, in whole or in part
@@ -79,7 +83,7 @@ const PAGE_PARSED = new Promise(r => { const done = () => r(gtzaHash(Array.from(
 <meta name="author" content="Nick Hedley">
 <meta name="copyright" content="© 2026 Nick Hedley">
 <link rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
-<meta name="dcterms.rights" content="© 2026 Nick Hedley. cc by-nc-nd 4.0. Commercial use or derivative works require written permission.">
+<meta name="dcterms.rights" content="© 2026 Nick Hedley. The model, code and presentation are CC BY-NC-ND 4.0. Our compilations of public facts are CC BY 4.0. Data derived from Eskom, NTCSA, Renewables.ninja or PyPSA-RSA keeps its source&#39;s terms; each file states its own.">
 <meta name="dcterms.license" content="https://creativecommons.org/licenses/by-nc-nd/4.0/">
 <meta property="og:title" content="GridTwin ZA – Interactive SA Grid Model">
 <meta property="og:description" content="An hourly dispatch model of the South African grid: coal EAF, renewables, storage, load shedding stages, cost and CO₂ – re-solved live in your browser.">
@@ -1291,9 +1295,18 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
         <div style="font-weight:700;color:var(--ink);margin-top:11px">Data and licences</div>
         <p>Every data file the model uses is in the public repository, because the model runs in your
-        browser. Each file states its own licence, and LICENSE lists them by file. The model, code and
-        presentation are CC BY-NC-ND 4.0. If you are building something similar, get in touch to compare
-        notes.</p>
+        browser. The model logic, calibration, cost assumptions, code and presentation are &copy; 2026 Nick Hedley and licensed under
+        <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
+        you may share them with attribution for non-commercial purposes; commercial use or distributing modified versions needs
+        written permission. Our compilations of public facts (project names, capacities, technologies, locations and dates) are
+        licensed under CC BY 4.0. Files derived from other people's data carry the most restrictive terms among their inputs, stated
+        in each file and listed in
+        <a href="https://github.com/nickhedley/gridtwin-za/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">LICENSE</a>:
+        Eskom's website terms for Eskom-derived data (non-commercial; publication needs Eskom's consent, which has been requested);
+        NTCSA's website terms for GCCA-derived data (non-commercial; publication needs NTCSA's consent); CC BY-NC 4.0 for
+        Renewables.ninja-derived profiles; and PyPSA-RSA's AGPL-3.0-or-later, whose terms for our use are being confirmed with
+        Meridian. Analysis derived from Eskom data is ours, not Eskom's. LICENSE lists each file in nodal/ with its licence; public_data/README.md covers that folder. If you are building something
+        similar, get in touch to compare notes.</p>
 
       </div>
 </details></div>
@@ -5091,6 +5104,9 @@ function printPrefeas() {
       DMRE / IPP Office (REIPPPP project pipeline) &middot;
       <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:inherit">Open-Meteo ERA5</a>
       and PVGIS (solar resource) &middot; NASA MERRA-2 (wind profiles) &middot;
+      <a href="https://www.renewables.ninja/" target="_blank" rel="noopener" style="color:inherit">Renewables.ninja</a>
+      (regional wind and solar profiles, CC BY-NC 4.0) &middot; Ember (2025 generation) &middot; UCT ESRG (hourly demand model, CC BY 4.0)
+      &middot; ANU RE100 (pumped hydro atlas, CC BY 4.0) &middot; DFFE (environmental authorisations) &middot;
       <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap</a>
       contributors (geocoding, ODbL) &middot; Esri, Maxar and Earthstar Geographics (satellite imagery) &middot;
       <a href="https://highs.dev/" target="_blank" rel="noopener" style="color:inherit">HiGHS</a>
@@ -5106,15 +5122,17 @@ function printPrefeas() {
     </div>
 
     <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
-      &copy; 2026 Nick Hedley. GridTwin ZA &ndash; model, code, calibration and presentation.
-      <strong>Each data file in nodal/ states its own licence.</strong> Our compilations of
-      uncopyrightable facts are CC BY 4.0 &ndash; attribution only, reuse and modification permitted.
-      Files derived from NTCSA, Eskom, PyPSA-RSA and other sources stay under those sources' terms
-      (see <a href="https://github.com/nickhedley/gridtwin-za/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">LICENSE</a>). The model, code and presentation are licensed under
+      GridTwin ZA. The model logic, calibration, cost assumptions, code and presentation are &copy; 2026 Nick Hedley and licensed under
       <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
-      you may share it with attribution, but not use it commercially or distribute modified versions.
-      <strong>Commercial use, redistribution of derivatives, or incorporation into another product requires written permission.</strong>
-      The underlying public datasets above remain under their own licences and are not covered by this notice.
+      you may share them with attribution for non-commercial purposes; commercial use or distributing modified versions needs
+      written permission. Our compilations of public facts (project names, capacities, technologies, locations and dates) are
+      licensed under CC BY 4.0. Files derived from other people's data carry the most restrictive terms among their inputs, stated
+      in each file and listed in
+      <a href="https://github.com/nickhedley/gridtwin-za/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">LICENSE</a>:
+      Eskom's website terms for Eskom-derived data (non-commercial; publication needs Eskom's consent, which has been requested);
+      NTCSA's website terms for GCCA-derived data (non-commercial; publication needs NTCSA's consent); CC BY-NC 4.0 for
+      Renewables.ninja-derived profiles; and PyPSA-RSA's AGPL-3.0-or-later, whose terms for our use are being confirmed with
+      Meridian. Analysis derived from Eskom data is ours, not Eskom's.
     </div>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.18);
                 font-size:11.5px;line-height:1.6">
@@ -21036,7 +21054,8 @@ async function exportPpaTimeseries(){
   rows.push('# wind_pu and solar_pu are per-unit hourly output for this region,');
   rows.push('# from PVGIS and Renewables.ninja. Multiply by installed MW.');
   rows.push('#');
-  rows.push('# Source: gridtwinza.org – data CC BY 4.0, attribution required');
+  rows.push('# Source: gridtwinza.org. price_r_per_mwh: model output, CC BY-NC-ND 4.0 with the model. wind_pu and solar_pu:');
+  rows.push('# derived from Renewables.ninja, CC BY-NC 4.0 (non-commercial, attribution required).');
   rows.push('hour,price_r_per_mwh' + (wind ? ',wind_pu' : '') + (solar ? ',solar_pu' : ''));
 
   const N = Math.min(8760, mp.length);
