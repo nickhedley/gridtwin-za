@@ -5942,7 +5942,7 @@ where the page loads HiGHS, is blocked here, so the solve itself was not run), n
 no page errors.
 
 Suite on 2026-10-21g without validate_stored_panels (stored panels not regenerated, message 266), ESK19679.csv present:
-965/970 node checks plus audit 88/88; eng5 5/6. The failures are the four known ones (EDMSA Scenario A CO2 2035, iron-air
+972/976: node checks 884/888 (validate_outputs 48/48 with its 6 new checks, links 48/48, worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones (EDMSA Scenario A CO2 2035, iron-air
 July, high-season off-peak, peakerSeasonRatio) and eng5 check 6. Run 20 Oct 2026 20:16-23:28 UTC with up to three other
 branches' suites beside it; the four failing checks are the known ones, so no rerun alone.
 
