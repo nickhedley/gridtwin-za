@@ -5885,6 +5885,60 @@ Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing bes
 (validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
 
+### Audit PR 3, market panels: stale tables cleared on a scenario change, capture projections start at the scenario's own build, the capacity panel pays open cycle as the engine does, and the wording says what each panel computes (build 2026-10-21e; user, 20 Oct 2026, messages 264 and 270; mechanics audit of 20 Oct 2026, section 3 PR 3)
+
+Prepared overnight from main 2116c10; stored panels not regenerated (message 266), so not merge-ready until main and the stored
+panels are brought in. Each finding confirmed in the code first. Settings: each preset as a click applies it
+(applyState(PRESETS[name]), with capacityPaymentOn true for the capacity rows), run(), then the panel's own function, in jsdom
+(scratchpad overnight/a3/m.js, before on main's index.html, after on this branch) and in Chromium (overnight/a3/render.js,
+29/29). Measured 20 Oct 2026 about 19:00 UTC. Model results (dispatch, prices, cost, CO2) are unchanged: only what the panels
+show moves.
+
+| Panel, preset | Before (main, 2026-10-20h) | After (2026-10-21e) |
+|---|---|---|
+| Capacity payments total, IRP path 2035 (engine R3.957bn) | R3.87bn, no open-cycle row | R3.95bn; 'Gas open cycle, LNG' R0.08bn, break-even R735/kWh (959 MWh a year) |
+| Capacity payments total, the other three note presets | equal to the engine to rounding | unchanged |
+| CCGT break-even, IRP path 2035 | R1.22/kWh on E.ccgt (26.61 TWh) | R1.22/kWh on E.ccgt less open cycle (959 MWh): no visible change |
+| Capture projections, Least-cost path 2035 | rows 8, 25, 45, 70, 110 GW; 8 GW solar R6,095/MWh at 49.0% (the audit: 2,108 hours short) | rows 46.0 (this scenario), 70, 110 GW; 0 short hours; solar 81.1% |
+| Capture projections, IRP path 2035 | 8, 25, 45, 70, 110 GW | 46.5 (this scenario), 70, 110; solar 44.3% |
+| Capture projections, IRP's 2030 targets | 8, 25, 45, 70, 110 GW | 25.6 (this scenario), 45, 70, 110; solar 67.7% |
+| Capture projections, Today 2026 | 8 to 110 GW | unchanged rows (the scenario's own 8.0 GW is the first) |
+| Capture price forecast, run on IRP's 2030 targets, then Today 2026 clicked | IRP's 2030 table still shown under Today | cleared; the prompt with the build panel's pace |
+| Capture price forecast years, IRP path 2035 and Least-cost path 2035 | 2026-2030 | 2035-2039 (site review B54) |
+| Capture price forecast headline, IRP path 2035 | 'wind falls -8%' (wind rises) | 'From 2035 to 2039, solar capture falls from 35% to 12%; wind rises from 104% to 111%' |
+| Battery break-even box, Today 2026 (11 cycles) | 13.6% uplift to break even | 13.6% for the loss alone, about 38% with the engine's R165/MWh wear at the median price |
+
+Changed (audit fix numbers): G3 fix 1 (forecast cleared when panelKey changes; the pace stated from bldRates; years from
+the scenario's year); G3 fix 2 (the projections walk starts at the scenario's own wind and solar; a row short of supply for
+more than 24 hours shows as short, not as a capture rate); G3 fix 3, label only (regional wind and solar weather years read
+from nodal/profiles_regional.json's meta, against profiles.json's year; regional wind in a fixed order, not ranked); G3 fix 4
+(the curtailment columns are the national rate on each region's timing; 'Add roughly that much to every column' removed; the
+full run's extra curtailment shown only on its own scenario and not added; 'about half a second' now 'a few seconds'); G3
+fix 5 (the full network audit button hidden until rebuilt, TODO 14hl); G3 fix 6, wording (each panel's capture basis
+stated: per MWh available in the regional panel, per MWh delivered in the forecast and projections); G3 fix 7 and G4 fix 1,
+label (one gasFloorNote, from ccgtFloorPriceH, on the price, curtailment forecast, capture forecast, regional capture,
+projections and battery benchmark panels); G2 fix 4 (open-cycle rows on LNG and diesel, priced at bldCostEntry's open-cycle
+capex; the CCGT row's output is combined cycle only); G4 fix 3 (method: an upper bound for one cycle a day, gross of wear;
+break-even with wear); G4 fix 4 (the locational table cleared when the scenario moves); G4 fix 6 heading ('Battery revenue
+as the fleet grows', and with reserve unpriced it says the chart is flat). Also the curtailment forecast table, never
+cleared (G3-M9), is reset on a scenario change.
+
+Where this differs from the audit:
+- G4 fix 2 (A24, 'almost nothing to arbitrage' judged on cycles) is already in #97 (site review batch 2) and is not repeated
+  here; on main the IRP path 2035 benchmark still prints it beside R1,508k/MW/yr until #97 merges.
+- G2-M5: gas burnt to charge storage stays in the CCGT row's output. It is that plant's generation; only the open-cycle units'
+  output (r.ocgtMWh) is taken out. On IRP path 2035 the open cycle runs 959 MWh a year, so the CCGT break-even does not move
+  at two decimals; the audit's 'misleading' is real for the missing row, small for the denominator.
+- G3 fix 3 recommends aligning the regional profiles' year if the region panel is linked from the note; D8 (presets only)
+  makes it label-only here.
+- G3 fix 7 quotes 'up to 15-23 points' of solar capture; the page says the direction without the figure, because the
+  figure belongs to two presets and the note shows on any scenario with the floor running.
+- New open cycle on diesel has no output of its own in the result (it is inside E.diesel), so its row shows no cycles or
+  break-even (TODO 14ib).
+
+Not changed (after the note, TODO 14hj, 14hl, 14hm): missing money on the capacity panel; the network audit's rebuild;
+regional profiles in the price's year; battery wear in revenue, reserve and inertia units, arbitrage at several fleet sizes.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)

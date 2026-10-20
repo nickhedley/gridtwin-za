@@ -1020,9 +1020,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                         style="padding:5px 12px;background:var(--ink);color:var(--panel);border:none;
                                cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;
                                font-weight:600;letter-spacing:.04em;border-radius:2px">Run forecast</button>
-                <span style="font-size:10px;color:var(--ink2)">six dispatch solves, about half a second</span>
+                <span style="font-size:10px;color:var(--ink2)">six dispatch solves, a few seconds</span>
               </div>
-              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;
+              <!-- HIDDEN (mechanics audit of 20 Oct 2026, G3-M3, fix 5; message 264): the full network audit measures each level
+                   against the scenario's net load before the added build, and repeats each representative day's dispatch against
+                   the next six days' load, so it is off by a factor of 2 to 7 either way. Hidden until rebuilt (TODO 14hl). -->
+              <div style="display:none;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;
                           padding-top:8px;border-top:1px solid var(--line2)">
                 <button id="curtAuditBtn" onclick="runCurtailmentAudit()"
                         style="padding:5px 12px;background:var(--alert,#C4785A);color:#fff;border:none;
@@ -1045,7 +1048,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture price forecast</h2><span class="tag">modelled &middot; energy-only shadow price &middot; PPA value to 2030</span></div>
+            <div class="ph"><h2>Capture price forecast</h2><span class="tag">modelled &middot; energy-only shadow price &middot; PPA value over five years</span></div>
             <div class="pb" id="capFcBody"></div>
           </div>
 
@@ -1076,7 +1079,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" id="bessSatPanel" style="margin-top:18px">
-          <div class="ph"><h2>Battery revenue projections</h2><span class="tag">modelled &middot; revenue per MW</span></div>
+          <div class="ph"><h2>Battery revenue as the fleet grows</h2><span class="tag">modelled &middot; revenue per MW &middot; at this scenario&rsquo;s year</span></div>
           <div class="pb" id="bessSatBody"></div>
           </div>
 
@@ -13200,6 +13203,17 @@ function curtailmentForecast(techFilter){
   return out;
 }
 
+// THE TABLE BELONGS TO THE SCENARIO IT WAS RUN ON (mechanics audit of 20 Oct 2026, G3-M9; message 264): it was never
+// cleared, so a table from another preset stayed on screen under the new one. finishRun resets it when the scenario moves.
+let curtForecastKey = null;
+const CURT_FORECAST_PROMPT = '<div class="muted" style="font-size:11px">Press <strong>Run forecast</strong> to project curtailment against build-out.</div>';
+function resetCurtailmentForecast(){
+  const host = document.getElementById('curtForecastBody');
+  if (!host || curtForecastKey === null || curtForecastKey === panelKey()) return;
+  curtForecastKey = null;
+  host.innerHTML = CURT_FORECAST_PROMPT;
+}
+
 function renderCurtailmentForecast(){
   const host = document.getElementById('curtForecastBody');
   if (!host) return;
@@ -13208,6 +13222,7 @@ function renderCurtailmentForecast(){
   // Deferred so the "running" message paints before the six solves block the thread.
   setTimeout(() => {
     const rows = curtailmentForecast(tech);
+    curtForecastKey = panelKey();
     if (!rows){ host.innerHTML = '<div class="muted">Regional profiles unavailable.</div>'; return; }
     const REG = Object.keys(rows[0].regions);
     const head = '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
@@ -13226,18 +13241,33 @@ function renderCurtailmentForecast(){
       + rows.map(r => cell(r.regions[g].curt)).join('') + '</tr>').join('');
 
 
+    // WHAT THE COLUMNS ARE (mechanics audit of 20 Oct 2026, G3-M2, M8, fix 4; message 264): the engine is single-node, so a
+    // region's column is the national curtailment share in each hour applied to that region's timing, on regional profiles
+    // from other weather years than the national price; and it counts curtailment for oversupply only, not the congestion
+    // stopgap or the Cape wind cap, which the engine takes off before dispatch.
+    const congTWh = (lastRes && lastRes.congestTot ? lastRes.congestTot : 0) / 1e6;
+    const congPct = (state.congestionCurtailOn ?? FIXED.congestionCurtailOn) ? (state.congestionCurtailPct ?? FIXED.congestionCurtailPct) : 0;
+    const oversupplyOnly = 'Oversupply only: the congestion stopgap (' + congPct + '% of utility wind and solar, '
+      + congTWh.toFixed(1) + ' TWh here) and the Cape wind cap come off before dispatch and are not counted.';
     host.innerHTML =
         '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:6px">'
       + 'The table below shows the results of a dispatch engine run at a ladder of national build levels '
-      + 'on top of the current scenario, split 55:45 solar to wind. It shows the share of each '
-      + 'region\u2019s output that would be curtailed under different new-build levels. Columns are GW '
-      + 'of extra wind and solar.</p>'
+      + 'on top of the current scenario, split 55:45 solar to wind. Columns are GW of extra wind and solar. '
+      + 'The engine has one national node, so each region\u2019s figure is the national curtailment rate in each hour '
+      + 'applied to that region\u2019s ' + (tech === 'wind' ? 'wind' : 'solar') + ' timing: regions differ by when they '
+      + 'generate, not by local grid limits. The regional profiles are from other weather years than the national '
+      + 'series the price is formed on (' + regionalYearsText() + ').</p>'
       + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">' + head + body + '</table>'
+      + gasFloorNote(lastRes, 'Its output adds to the midday surplus, so curtailment here is higher on this preset than without the minimum.', 'margin-top:8px')
       + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
+      + oversupplyOnly
       + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Why this shows almost no curtailment today, when Eskom is already curtailing:</strong> NTCSA attributes today\u2019s curtailment to coal kept online through daylight to cover the morning and evening peaks. The instant engine takes coal units off over midday in 4-hour blocks instead, so it understates midday oversupply curtailment: its 2026 replay curtails almost nothing, against NTCSA\u2019s report of up to 3 GW on a winter day.</div>'
-      + (mipNetworkOffsetTWh > 0.1
-          ? '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--ok,#4A8C5C)"><strong>Calibrated to your last full model run.</strong> That solve found '
-            + mipNetworkOffsetTWh.toFixed(1) + ' TWh of curtailment the single-node engine cannot see, because it is caused by corridors filling rather than by national oversupply. Add roughly that much to every column above \u2013 it is a floor that exists today and grows as build concentrates in the same regions.</div>'
+      // NOT ADDED TO THE COLUMNS (mechanics audit of 20 Oct 2026, G3-M3, fix 4; message 264). The note said to add the full
+      // run's extra curtailment, in TWh, to columns in percent; the figure carries the representative-day repeat and stayed
+      // on screen through later scenario changes. Shown only for the scenario it was run on, and not added.
+      + (mipNetworkOffsetTWh > 0.1 && mipNetworkOffsetKey === panelKey()
+          ? '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--line2)">Your last full model run on this scenario found '
+            + mipNetworkOffsetTWh.toFixed(1) + ' TWh more curtailment than the single-node engine. That figure is not verified (the run repeats representative days against other days\u2019 load) and is not included in the columns above.</div>'
           : '')
       + '</div>';
   }, 30);
@@ -13365,9 +13395,18 @@ function renderCapacityPayment(res){
   const _hoursFor = { batt: (state.newBattHours || FIXED.battHours || 4),
                       vrfb: (state.newVrfbHours ?? 8), ironair: (state.newIronAirHours ?? 100),
                       ps: (FIXED.psPowerMW > 0 ? FIXED.psEnergyMWh / FIXED.psPowerMW : null) };
+  // OPEN CYCLE PAID, AND SHOWN (mechanics audit of 20 Oct 2026, G2-M5, fix 4; message 264). The engine pays new open-cycle
+  // gas (on LNG and on diesel) at the CCGT de-rate (_capParts), and the panel had no row for it, so its total fell short of
+  // the engine's on IRP path 2035 (308 MW, R0.083bn at R300). The CCGT row divided by r.E.ccgt, which also holds the
+  // open-cycle units' output on LNG (r.ocgtMWh); it now takes the combined-cycle share only. Open cycle on diesel has no
+  // output of its own in the result (it sits in E.diesel), so its cycles and break-even are not shown.
   const rows = [
     { nm:'Gas CCGT', tech:'ccgt',  mw: state.newCcgtMW || 0,    der: FIXED.derateCcgt,
-      mwh: (r.E.ccgt || 0) },
+      mwh: Math.max(0, (r.E.ccgt || 0) - (r.ocgtMWh || 0)) },
+    { nm:'Gas open cycle, LNG', tech:'ocgt', mw: state.newOcgtMW || 0, der: FIXED.derateCcgt,
+      mwh: (r.ocgtMWh || 0) },
+    { nm:'Gas open cycle, diesel', tech:'ocgt', mw: state.newOcgdMW || 0, der: FIXED.derateCcgt,
+      mwh: null, cost: 'ocgd' },
     // DURATION READS THE CONTROL, not a hardcoded string. Corrected 17 Sep 2026: this said
     // "(4h)" while newBattHours is a live slider, so Deep decarbonisation 2035 displayed 4h on a
     // 6h fleet and a user moving the slider to 10h still saw 4h. Same fault as the pumped
@@ -13412,15 +13451,17 @@ function renderCapacityPayment(res){
   // at a quarter of a cycle it is close to the whole answer. The ratio of the two columns is
   // the point rather than either figure alone.
   const _vint = 2026 + (retailYear() - 2026) / 2;
-  const _capexPerKW = (tech) => (BLD_COST[tech] && BLD_LIFE[tech])
-    ? bldAnnuity(BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, _vint - 2026), BLD_LIFE[tech], tech)
+  // Open cycle's capex comes from bldCostEntry (its cost case), as the build LP takes it.
+  const _costOf = (tech) => (tech === 'ocgt' || tech === 'ocgd') ? bldCostEntry(tech) : BLD_COST[tech];
+  const _capexPerKW = (tech) => (_costOf(tech) && BLD_LIFE[tech])
+    ? bldAnnuity(_costOf(tech).c2026 * Math.pow(1 - _costOf(tech).decl, _vint - 2026), BLD_LIFE[tech], tech)
     : null;
   const body = rows.map(x => {
     const revR = x.mw * x.der * 1000 * capPayRate(x.tech);
     const perMWh = x.mwh > 1 ? revR / x.mwh : null;
     const hrs = _hoursFor[x.tech];
     const cycles = (hrs && x.mw > 0) ? (x.mwh / (x.mw * hrs)) : null;
-    const capexKW = _capexPerKW(x.tech);
+    const capexKW = _capexPerKW(x.cost || x.tech);
     // Paid on de-rated MW, so the rate needed is the annuity grossed up by the de-rate.
     // GATED on the asset actually doing something. A rate to procure storage the system does
     // not need is a cost with no value beside it, and the figure does not vary with the
@@ -13439,8 +13480,9 @@ function renderCapacityPayment(res){
     // and never run. Those were briefly collapsed into one message on 16 Sep 2026, which
     // labelled 5.2 TWh of pumped storage discharge as "paid, never runs".
     const noCapex = (capexKW == null);
-    const neverRuns = (x.mwh <= 1);
-    const breakEven = (!noCapex && !neverRuns)
+    const noOutput = (x.mwh == null);   // output not separable in the result (open cycle on diesel)
+    const neverRuns = (!noOutput && x.mwh <= 1);
+    const breakEven = (!noCapex && !neverRuns && !noOutput)
       ? (capexKW * x.mw * 1000) / x.mwh / 1000 : null;
     return '<tr>'
       + '<td style="padding:3px 5px">' + x.nm + '</td>'
@@ -13449,7 +13491,8 @@ function renderCapacityPayment(res){
       + '<td class="mono" style="text-align:right;padding:3px 5px">' + (x.mw*x.der/1000).toFixed(1) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px">R' + (revR/1e9).toFixed(2) + 'bn</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px;font-weight:600">'
-        + (neverRuns ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
+        + (noOutput ? '<span style="color:var(--ink2)">\u2013</span>'
+           : neverRuns ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
            : noCapex ? '<span style="color:var(--ink2)">existing plant</span>'
            : 'R' + (breakEven >= 100 ? breakEven.toFixed(0) : breakEven.toFixed(2))) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px;color:var(--ink2)">'
@@ -13536,8 +13579,13 @@ function renderRegionalCapture(res){
          + '<div style="background:' + col + ';width:' + w + '%;height:100%;border-radius:1px"></div></div>';
   };
 
+  // WIND IS NOT RANKED (mechanics audit of 20 Oct 2026, G3-M1, fix 3; message 264): regional wind is from another weather
+  // year than the national wind the price is formed on, and aligning the year reorders the regions, so the order would
+  // claim more than the data holds. Wind keeps a fixed order; solar, shape-dominated (under 2 points from the year), is
+  // still ranked.
   const section = (tech, col) => {
-    const rs = rows.filter(x => x.tech === tech).sort((a,b) => b.capturedPct - a.capturedPct);
+    const rs = rows.filter(x => x.tech === tech);
+    if (tech !== 'wind') rs.sort((a,b) => b.capturedPct - a.capturedPct);
     return '<div style="font-family:\'Saira Condensed\',sans-serif;font-size:11.5px;font-weight:600;'
       + 'letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:10px 0 5px">'
       + (tech === 'wind' ? 'Wind' : 'Solar PV') + '</div>'
@@ -13576,7 +13624,14 @@ function renderRegionalCapture(res){
   // panel-is-filled check counting characters passed it.
   host.innerHTML =
       '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:2px">'
-    + 'Capture rate is earnings per MWh as a share of the average MWh. 100&#37; means no cannibalisation. Weighted by each hour\u2019s output.</p>'
+    + 'Capture rate is earnings per MWh as a share of the average MWh. 100&#37; means no cannibalisation. Weighted by each hour\u2019s output. '
+    // THE BASIS, STATED (mechanics audit G3-M4, fix 6): this panel's Captured is per MWh available, the forecast and the
+    // projections per MWh delivered.
+    + '<strong>Captured</strong> is per MWh the site could produce: curtailed output stays in and earns nothing, so it reads '
+    + 'lower than the per-MWh-delivered capture in the forecast and projections panels. <strong>R/MWh</strong> is before curtailment. '
+    + 'Regions differ by the timing of their output against one national price; the regional profiles are from other weather '
+    + 'years than the national series (' + regionalYearsText() + '), so regional wind is shown in a fixed order, not ranked.</p>'
+    + gasFloorNote(r, 'Capture rates here carry those hours: solar\u2019s reads lower than it would if that gas did not set the price.', 'margin:6px 0 2px')
     + section('wind', 'var(--veld,#7DC47A)')
     + section('solar', '#F5C518')
     + '';   // spread() intentionally not printed: the per-region table above already shows
@@ -15009,6 +15064,19 @@ function renderValidation(){
  * competitive market would clear at, given this dispatch. Labelled as such
  * throughout - presenting them as observed prices would be wrong.
  */
+// GAS RUN FOR THE IRP'S ANNUAL MINIMUM SETS THE PRICE (user, 19 Oct 2026, message 258; the label, before 6 Nov). One note for
+// every panel that reads the hourly price: the price panel, and from the mechanics audit of 20 Oct (message 264, PR 3; audit
+// G3 fix 7, G4 fix 1) the capture, curtailment and battery panels. ccgtFloorPriceH counts the hours gas sets the price only
+// because of the floor (gas-priced with it on, not with it off; message 260 (4)). Empty where the floor does not run.
+function gasFloorNote(r, tail, css){
+  if (!r || !((r.ccgtFloorPriceH || 0) > 0)) return '';
+  return '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
+    + 'padding:8px 11px;font-size:10.5px;line-height:1.55;' + (css || '') + '">'
+    + `Gas run to meet the plan\u2019s ${state.ccgtForceLoadPct ?? FIXED.ccgtForceLoadPct}% minimum sets the price in about `
+    + `${(Math.round(r.ccgtFloorPriceH / 100) * 100).toLocaleString('en-US')} hours; this rule is under review.`
+    + (tail ? ' ' + tail : '') + '</div>';
+}
+
 function renderPricePanel(r){
   const host = document.getElementById('priceBody');
   if (!host || !r || !r.priceStats) return;
@@ -15094,14 +15162,8 @@ function renderPricePanel(r){
     + `</div>`
 
     // GAS RUN FOR THE IRP'S ANNUAL MINIMUM (user, 19 Oct 2026, message 258): labelled before 6 Nov; after the note, those
-    // hours are priced at the next unit on merit (TODO 14hd). ccgtFloorPriceH counts the hours gas sets the price only because
-    // of the floor (gas-priced with it on, not with it off; message 260 (4)).
-    + ((r.ccgtFloorPriceH || 0) > 0
-        ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
-          + 'padding:8px 11px;margin-bottom:11px;font-size:10.5px;line-height:1.55">'
-          + `Gas run to meet the plan\u2019s ${state.ccgtForceLoadPct ?? FIXED.ccgtForceLoadPct}% minimum sets the price in about `
-          + `${(Math.round(r.ccgtFloorPriceH / 100) * 100).toLocaleString('en-US')} hours; this rule is under review.</div>`
-        : '')
+    // hours are priced at the next unit on merit (TODO 14hd).
+    + gasFloorNote(r, '', 'margin-bottom:11px')
     + (s.scarcityHours > 0
         ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
           + 'padding:8px 11px;margin-bottom:11px;font-size:10.5px;line-height:1.55">'
@@ -15383,7 +15445,12 @@ async function captureCurve(alive){
   // Walk total installed VRE from today to roughly the no-gas frontier, holding the
   // user's own wind:solar RATIO so the curve describes THEIR pipeline, not a generic one.
   const ratio = (wNow + sNow) > 0 ? wNow / (wNow + sNow) : 0.45;
-  const totals = [8, 25, 45, 70, 110];
+  // THE WALK STARTS AT THE SCENARIO'S OWN BUILD (mechanics audit of 20 Oct 2026, G3-M6, fix 2; message 264). Points below it
+  // took wind and solar out of the scenario while keeping its demand and coal retirements, so they ran short: on Least-cost
+  // path 2035 the 8 GW row was 2,108 hours short and showed solar at R6,193/MWh. Ladder points within 3 GW of the
+  // scenario's own total are dropped as duplicates.
+  const nowTot = wNow + sNow;
+  const totals = [nowTot, ...[8, 25, 45, 70, 110].filter(t => t > nowTot + 3)];
   const battPerVre = bNow > 0.9 ? bNow / (wNow + sNow) : 0.35;  // scale storage unless set
   const pts = [];
   for (const [i, tot] of totals.entries()){
@@ -15406,6 +15473,8 @@ async function captureCurve(alive){
       return { pct: (g > 0 && mp > 0) ? 100 * (rev / g) / mp : null, achieved: g > 0 ? rev / g : 0 };
     };
     const cw = cap(r.stack.wind), cs = cap(r.stack.pv);
+    let shortH = 0;
+    if (r.stack.unserved) for (let h = 0; h < HOURS; h++) if (r.stack.unserved[h] > 1) shortH++;
     // What a co-located battery at half the plant's capacity would add, on top of
     // whatever system storage this build already carries. Answers the question the
     // capture rate raises: can a project protect itself?
@@ -15416,7 +15485,7 @@ async function captureCurve(alive){
                windR: cw.achieved, solarR: cs.achieved,
                solarHybridR: hs.with, solarHybridPct: hs.pct,
                windHybridR: hw.with, windHybridPct: hw.pct,
-               curtTWh: (r.E.curtailed || 0) / 1e6 });
+               curtTWh: (r.E.curtailed || 0) / 1e6, shortH, own: i === 0 });
   }
   return { pts, nowGW: wNow + sNow, ratio, battScaled: bNow <= 0.9 };
 }
@@ -15522,10 +15591,17 @@ function renderCaptureCurve(c){
   const col = v => v >= 80 ? 'var(--ok,#4A8C5C)' : v >= 50 ? '#C9A227' : 'var(--alert,#C4785A)';
   const bar = (v) => '<span style="display:inline-block;height:7px;width:' + Math.max(1, Math.min(100, v)) + 'px;'
     + 'background:' + col(v) + ';vertical-align:middle;border-radius:1px"></span>';
+  // A ROW THE SYSTEM CANNOT SERVE IS NOT A MARKET PRICE (mechanics audit G3-M6): its average is set by shortage hours at the
+  // value of lost load. Shown as short rather than as a capture rate; the regional panel blanks itself on the same ground.
+  const SHORT_ROW_H = 24;
   const rows = c.pts.map(p => {
-    const here = Math.abs(p.totGW - c.nowGW) < 6;
+    const here = p.own != null ? p.own : Math.abs(p.totGW - c.nowGW) < 6;
+    const gw = Number.isInteger(p.totGW) ? String(p.totGW) : p.totGW.toFixed(1);
+    if ((p.shortH || 0) > SHORT_ROW_H)
+      return '<tr><td class="mono">' + gw + ' GW</td><td colspan="6" style="color:var(--alert,#C4785A);font-size:10px">'
+        + 'short of supply in ' + nHours(p.shortH) + ': capture rates not meaningful</td></tr>';
     return '<tr style="' + (here ? 'font-weight:600' : '') + '">'
-      + '<td class="mono">' + p.totGW + ' GW' + (here ? ' <span style="color:var(--ink2)">&larr; about here</span>' : '') + '</td>'
+      + '<td class="mono">' + gw + ' GW' + (here ? ' <span style="color:var(--ink2)">&larr; ' + (p.own != null ? 'this scenario' : 'about here') + '</span>' : '') + '</td>'
       + '<td class="mono" style="text-align:right">' + p.windPct.toFixed(0) + '&#37; ' + bar(p.windPct) + '</td>'
       + '<td class="mono" style="text-align:right">R' + p.windR.toFixed(0) + '</td>'
       + '<td class="mono" style="text-align:right">' + p.solarPct.toFixed(0) + '&#37; ' + bar(p.solarPct) + '</td>'
@@ -15542,9 +15618,10 @@ function renderCaptureCurve(c){
     + '<th style="text-align:left">wind + solar</th><th colspan="2">wind capture</th>'
     + '<th colspan="2">solar capture</th><th>solar + 4h battery</th>'
     + '<th>curtailed TWh</th></tr>' + rows + '</table>'
+    + gasFloorNote(lastRes, 'Every row carries it: solar\u2019s capture reads lower than it would if that gas did not set the price.', 'margin-top:6px')
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
-    + 'Capture rate is what a technology earns per MWh as a share of what the average MWh earns. '
-    + '100&#37; means no cannibalisation. Held at your current wind:solar ratio of '
+    + 'Capture rate is what a technology earns per MWh delivered as a share of what the average MWh earns. '
+    + '100&#37; means no cannibalisation. Starts at this scenario\u2019s own build, demand and coal held. Held at your current wind:solar ratio of '
     + (100 * c.ratio).toFixed(0) + ':' + (100 * (1 - c.ratio)).toFixed(0) + '. '
     + (c.battScaled ? 'Storage is scaled with the build at roughly 0.35&#215; wind and solar, because it is the main thing protecting solar revenue \u2013 without it solar capture falls several times further. '
                     : 'Using the storage you have set. ')
@@ -15567,10 +15644,17 @@ function renderBessSaturation(r){
   const max = Math.max(...c.pts.map(p => p.tot)) || 1;
   const R = v => 'R' + Math.round(v/1000) + 'k';
 
+  // RETITLED (mechanics audit of 20 Oct 2026, G4-M6, fix 6 heading; message 264): a walk over fleet size at the scenario's
+  // year, not over time; and with reserve unpriced, as on every note preset, every bar is the same, so the opening says so.
+  const ancOn = c.pts.some(p => p.anc > 0);
   let html = '<div style="font-size:10.5px;color:var(--ink2);line-height:1.55;margin-bottom:9px">'
-    + 'What one MW of battery earns as the national fleet grows. The reserve pot is '
-    + 'fixed by system need, not by how many batteries want to serve it, so each new '
-    + 'MW earns less than the last.</div>';
+    + (ancOn
+        ? 'What one MW of battery earns as the national fleet grows, at this scenario\u2019s year. The reserve pot is '
+          + 'fixed by system need, not by how many batteries want to serve it, so each new '
+          + 'MW earns less than the last from it.'
+        : 'What one MW of battery earns as the national fleet grows, at this scenario\u2019s year. With reserve unpriced, '
+          + 'as here, this chart is flat: arbitrage itself falls as batteries are added, which the chart does not model.')
+    + '</div>';
 
   html += c.pts.map(p => {
     const w = 100 * p.tot / max;
@@ -15758,6 +15842,9 @@ function renderBess(r){
   const R = v => 'R' + Math.round(v).toLocaleString('en-US');
   const k = v => 'R' + (v/1000).toFixed(0) + 'k';
 
+  // METHOD, NOT A CEILING (mechanics audit of 20 Oct 2026, G4-M4, fix 3; message 264): a full-year chronological optimum with
+  // no cycle cap is 9-14% above this on the note presets; the sorted daily method is within 4% of a chronological one-cycle
+  // optimum there. Gross of wear, as Modo's indices are.
   host.innerHTML =
       (_sum && _sum.hyb && _sum.hyb.bare > 0
         ? '<div style="padding:7px 9px;margin-bottom:8px;background:var(--panel2);border-left:3px solid var(--ok,#4A8C5C);font-size:10px;line-height:1.5">'
@@ -15773,6 +15860,9 @@ function renderBess(r){
         ? ' <strong>This scenario shows almost nothing to arbitrage</strong> (see Price formation in About).'
         : '')
     + '</div>'
+    // On the IRP presets most of the revenue rides on those hours (audit G4-M1: with the minimum off a 4-hour battery earns
+    // 49% less on IRP path 2035 and 72% less on IRP's 2030 targets, RESULTS); the note says so without quoting a preset.
+    + gasFloorNote(r, 'Much of the arbitrage below comes from those hours, so it reads higher than it would if that gas did not set the price.', 'margin-bottom:9px')
     + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
     + '<th style="text-align:left;padding:4px 6px">Duration</th>'
@@ -15797,14 +15887,21 @@ function renderBess(r){
         ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
           + 'padding:8px 11px;margin-top:9px;font-size:10.5px;line-height:1.55">'
           + `<strong>Only ${best.cycles} profitable cycles a year in this scenario.</strong> `
-          + `A round trip at ${Math.round(100 * FIXED.battEff)}% efficiency needs a ${(100 * (1 / FIXED.battEff - 1)).toFixed(1)}% price uplift to break even, `
+          // WITH WEAR (mechanics audit of 20 Oct 2026, G4-M3, fix 3; message 264): the engine's own storage bid carries
+          // battCycleCostR per MWh discharged, which the uplift ignored. Charging at the scenario's median price C, a cycle
+          // pays when the discharge price exceeds C / efficiency + wear, an uplift of (1 / efficiency - 1) + wear / C.
+          + `A round trip at ${Math.round(100 * FIXED.battEff)}% efficiency needs a ${(100 * (1 / FIXED.battEff - 1)).toFixed(1)}% price uplift to cover the loss alone, `
+          + (_sp[Math.floor(0.5*8759)] > 0
+              ? `and about ${(100 * (1 / FIXED.battEff - 1 + FIXED.battCycleCostR / _sp[Math.floor(0.5*8759)])).toFixed(0)}% once cell wear (R${FIXED.battCycleCostR}/MWh, the engine\u2019s own figure) is counted, charging at this scenario\u2019s median price, `
+              : '')
           + 'so arbitrage between coal hours never clears (see Price formation in About).</div>'
         : '')
 
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
     + '<strong>Method:</strong> Perfect-foresight daily arbitrage, one cycle a day, charging in the '
-    + 'cheapest hours and discharging in the most expensive, at 88% round-trip efficiency. Perfect '
-    + 'foresight is a ceiling, not a forecast. Spread is averaged over every day of the year, '
+    + 'cheapest hours and discharging in the most expensive, at ' + Math.round(100 * FIXED.battEff) + '% round-trip efficiency. '
+    + 'An upper bound for one cycle a day, not a forecast; cycling more often could earn more. Gross of cell wear. '
+    + 'Spread is averaged over every day of the year, '
     + 'including days not worth cycling.'
     + '<br><br>SAWEM, South Africa\u2019s first wholesale '
     + 'market, is due to open in April 2027. Until it does there are no published prices to benchmark, so '
@@ -15827,7 +15924,7 @@ function renderBess(r){
  * scarcity, and otherwise it pays the system marginal cost. That is the same
  * logic as the national series, applied region by region.
  */
-let bessLocational = null;
+let bessLocational = null, bessLocationalKey = null;   // the scenario (panelKey) of the full run it came from (message 264)
 
 function computeLocationalBess(curt, uns, regions, systemPrice){
   if (!curt || !regions || !regions.length || !systemPrice) return null;
@@ -15863,10 +15960,13 @@ function computeLocationalBess(curt, uns, regions, systemPrice){
 function renderLocationalBess(){
   const host = document.getElementById('bessLocBody');
   if (!host) return;
-  if (typeof window!=='undefined' && window.bessLocational) bessLocational = window.bessLocational;
+  // CLEARED WHEN THE SCENARIO MOVES (mechanics audit of 20 Oct 2026, G4-M2, fix 4; message 264): set by a full run and
+  // never cleared, the table stayed on screen, unlabelled, through later preset and slider changes. (window.bessLocational,
+  // read here before, is never set anywhere.)
+  if (bessLocational && bessLocationalKey !== panelKey()){ bessLocational = null; bessLocationalKey = null; }
   if (!bessLocational){
     host.innerHTML = '<p style="font-size:10.5px;color:var(--ink2);line-height:1.5">'
-      + 'Shown after a full model run.</p>';
+      + 'Shown after a full model run on this scenario.</p>';
     return;
   }
   const rows = Object.entries(bessLocational)
@@ -17869,7 +17969,7 @@ function renderQueuePressure(){
  * engine run five times, not a new model - which is the point: the forecast and
  * the dispatch cannot disagree, because they are the same code.
  */
-let captureForecast = null;
+let captureForecast = null, captureForecastKey = null;
 
 function runCaptureForecast(){
   const host = document.getElementById('capFcBody');
@@ -17880,8 +17980,11 @@ function runCaptureForecast(){
       const rate = (typeof bldRates === 'function') ? bldRates() : { wind: 2200, pv: 1500 };
       const base = { ...state };
       const rows = [];
+      // YEARS FROM THE SCENARIO'S OWN YEAR (site review B54; mechanics audit of 20 Oct 2026, G3-M7; message 264): the rows
+      // read 2026-2030 on the 2035 presets.
+      const y0 = state.scenarioYear || FIXED.scenarioYear || 2026;
       for (let i = 0; i < 5; i++){
-        const yr = 2026 + i;
+        const yr = y0 + i;
         const s = { ...base,
           newWindMW: (base.newWindMW || 0) + rate.wind * (i + 1),
           newPvMW:   (base.newPvMW   || 0) + rate.pv   * (i + 1),
@@ -17895,7 +17998,8 @@ function runCaptureForecast(){
                     pvPct:   ps.avg > 0 ? ps.capture.pv/ps.avg   : 1,
                     addedWind: rate.wind*(i+1), addedPv: rate.pv*(i+1) });
       }
-      captureForecast = rows;
+      captureForecast = rows; captureForecastKey = panelKey();
+      captureForecast.rate = rate;
       renderCaptureForecast();
     } catch (e){
       host.innerHTML = '<p style="font-size:11px;color:var(--alert)">Forecast failed: ' + e.message + '</p>';
@@ -17906,9 +18010,15 @@ function runCaptureForecast(){
 function renderCaptureForecast(){
   const host = document.getElementById('capFcBody');
   if (!host) return;
+  // CLEARED WHEN THE SCENARIO MOVES (mechanics audit of 20 Oct 2026, G3-M7, fix 1; message 264): computed once and never
+  // cleared, the table showed IRP's 2030 targets' forecast under Today 2026 after a preset change.
+  if (captureForecast && captureForecastKey !== panelKey()){ captureForecast = null; captureForecastKey = null; }
+  const pace = (captureForecast && captureForecast.rate) || ((typeof bldRates === 'function') ? bldRates() : null);
+  const paceTxt = pace ? ((pace.wind || 0) / 1000).toFixed(1) + ' GW of wind and ' + ((pace.pv || 0) / 1000).toFixed(1) + ' GW of solar a year' : 'the build panel\u2019s pace';
   if (!captureForecast){
     host.innerHTML = '<p style="font-size:10.5px;color:var(--ink2);line-height:1.5">'
-      + 'Projects this scenario\u2019s build rates forward to 2030 and re-runs the dispatch for each year, '
+      + 'Adds wind and solar to this scenario year by year, at the build panel\u2019s pace (' + paceTxt + '), '
+      + 'and re-runs the dispatch for each of five years, '
       + 'to show what a wind or solar PPA is worth as the build-out cannibalises its own price. '
       + '<button onclick="runCaptureForecast()" style="font-size:10px;padding:3px 10px;margin-left:4px;'
       + 'border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px">'
@@ -17917,7 +18027,9 @@ function renderCaptureForecast(){
   }
   const R = v => 'R' + Math.round(v).toLocaleString('en-US');
   const first = captureForecast[0], last = captureForecast[captureForecast.length-1];
-  const drop = t => first[t+'Pct'] > 0 ? (1 - last[t+'Pct']/first[t+'Pct']) * 100 : 0;
+  const mv = t => { const a = 100 * first[t+'Pct'], b = 100 * last[t+'Pct'];
+                    return (Math.round(b) < Math.round(a) ? 'falls' : Math.round(b) > Math.round(a) ? 'rises' : 'holds at')
+                      + (Math.round(b) === Math.round(a) ? ' ' + b.toFixed(0) + '%' : ' from ' + a.toFixed(0) + '% to ' + b.toFixed(0) + '%'); };
 
   host.innerHTML =
       '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
@@ -17935,12 +18047,15 @@ function renderCaptureForecast(){
         + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:${r.pvPct<0.6?'var(--alert,#C4785A)':'inherit'}">${R(r.pv)} <span style="font-weight:400;color:var(--ink2);font-size:9px">${(r.pvPct*100).toFixed(0)}%</span></td></tr>`).join('')
     + '</table>'
     + `<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
-    + `<strong>Solar capture falls ${drop('pv').toFixed(0)}% by ${last.yr}; wind falls ${drop('wind').toFixed(0)}%.</strong> `
+    // In points, first row to last, and the direction as measured (mechanics audit G3-M7: 'wind falls -8%' printed when
+    // wind rose).
+    + `<strong>From ${first.yr} to ${last.yr}, solar capture ${mv('pv')}; wind ${mv('wind')}.</strong> `
     + '</div>'
+    + gasFloorNote(lastRes, 'Capture rates here carry those hours: solar\u2019s reads lower than it would if that gas did not set the price.', 'margin-top:9px')
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
-    + 'Adds this scenario\u2019s build rates cumulatively and re-runs the full dispatch for each year, with '
-    + 'demand held at this scenario\u2019s level. The forecast uses the same engine as the rest of this page '
-    + 'and assumes the build happens at the rate set.</div>';
+    + 'Adds wind and solar cumulatively at the build panel\u2019s pace (' + paceTxt + '), not this scenario\u2019s own rate, '
+    + 'and re-runs the full dispatch for each year, with demand, coal and storage held at this scenario\u2019s level. '
+    + 'Capture is per MWh delivered. Same engine as the rest of this page.</div>';
 }
 
 
@@ -18583,6 +18698,18 @@ fetch('nodal/profiles_regional.json').then(r => r.json()).then(d => {
       window.renderRegionalCapture(window.lastRes);
   } catch (e) { console.error('capture repaint:', e); }
 }).catch(() => { regionalProfiles = null; });
+
+// THE WEATHER YEARS BEHIND THE REGIONAL PANELS (mechanics audit of 20 Oct 2026, G3-M1, fix 3; message 264), read from the
+// files' own notes: regional wind and solar (nodal/profiles_regional.json) are not the year of the national series the
+// price is formed on (profiles.json), so same-hour weather is lost; daily correlation of regional with national wind is
+// 0.05-0.09 (audit, probe4). Labelled before 6 Nov; the profiles move to the price's year after the note (TODO 14hl).
+function regionalYearsText(){
+  const m = (regionalProfiles && regionalProfiles.meta) || {};
+  const yr = (s, re) => { const x = re.exec(String(s || '')); return x ? x[1] : 'another year'; };
+  const wind = yr(m.source, /calendar year (\d{4})/), solar = yr(m.solar_source_pvgis, /year (\d{4})/);
+  const nat = (typeof _profilesYear !== 'undefined' && _profilesYear) || 'the measured year';
+  return 'regional wind ' + wind + ', regional solar ' + solar + '; national series ' + nat;
+}
 
 function captureRate(tech, region, res){
   if (!regionalProfiles || !res || !res.marginalP) return null;
@@ -19940,7 +20067,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-20h';
+const BUILD_STAMP = '2026-10-21e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20703,7 +20830,8 @@ function run(){cancelPanels();const gen=++_runGen;
   }
   lastRes=simulateCached();finishRun();
 }
-function finishRun(){window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){panelWhenSeen('external',()=>{try{renderExternalComparison();}catch(e){console.error('external:',e);}});}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')panelWhenSeen('heat',()=>window.renderHeat());if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();hideCalc();}
+function finishRun(){window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){panelWhenSeen('external',()=>{try{renderExternalComparison();}catch(e){console.error('external:',e);}});}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function')renderCaptureForecast()
+if(typeof resetCurtailmentForecast==='function')resetCurtailmentForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')panelWhenSeen('heat',()=>window.renderHeat());if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();hideCalc();}
 function scheduleRun(){cancelPanels();if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 // As scheduleRun, but after the next paint (rAF fires before painting; the timeout after it), so a status set on click is seen.
 function scheduleRunAfterPaint(){cancelPanels();if(rafPending)return;rafPending=true;requestAnimationFrame(()=>setTimeout(()=>{rafPending=false;run();},0));}
@@ -20834,10 +20962,10 @@ function showProfileNotice(reason){
   if (badge){ badge.textContent = 'synthetic'; badge.style.color = ''; badge.classList.add('warn'); }
   console.error('[GridTwin] profiles.json not loaded, synthetic profiles in use: ' + reason);
 }
-let _profilesReal = false;
+let _profilesReal = false, _profilesYear = null;   // the year in profiles.json's meta, for the regional panels' label (message 264)
 const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(data=>{
   if(!data||!data.demand||data.demand.length!==HOURS) throw new Error('no ' + HOURS + '-hour demand series in the file');
-  PROFILES=buildProfiles(data); _profilesReal = true;
+  PROFILES=buildProfiles(data); _profilesReal = true; _profilesYear = (data.meta && data.meta.year) || null;
   const badge=document.getElementById('bdData');
   if(badge){badge.textContent=((data.meta&&data.meta.year)?data.meta.year:'real')+' Eskom'; badge.style.color='#8FD08A';}
   const foot=document.querySelector('.foot');
@@ -23322,6 +23450,7 @@ function mipReserveFrac(){
 }
 
 let mipNetworkOffsetTWh = 0;   // set by the last full model run
+let mipNetworkOffsetKey = null;   // the scenario (panelKey) it was set on (mechanics audit G3-M3; message 264)
 let mipWorker = null, mipRunning = false;
 let mipActiveRes = null;   // set once an optimal solution has been applied
 let mipInputs = null;      // regional system handed to the optimiser
@@ -24162,6 +24291,7 @@ function applyMIPResult(m, mode, quiet) {
   // the network-driven component. Recorded so the curtailment forecast, which
   // cannot practically run the MIP six times, can at least show it as a floor.
   mipNetworkOffsetTWh = Math.max(0, (curtMWh/1e6) - ((lastRes.E.curtailed||0)/1e6));
+  mipNetworkOffsetKey = panelKey();
 
   // Corridor congestion summary
   const cors = (mipInputs && mipInputs.corridors) || [];
@@ -24248,6 +24378,7 @@ function applyMIPResult(m, mode, quiet) {
   try {
     if (nRegions && lastRes && lastRes.marginalP) {
       bessLocational = computeLocationalBess(curt, uns, mipInputs.regions, lastRes.marginalP);
+      bessLocationalKey = panelKey();
       if (typeof renderLocationalBess === 'function') renderLocationalBess();
     }
   } catch (e) { /* benchmark is supplementary; never break the dispatch view */ }
