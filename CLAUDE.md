@@ -39,7 +39,11 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_external.js testroot    node validate_solve.js testroot
     node validate_outputs.js testroot     node validate_pathway_presets.js testroot
     node validate_public_text.js testroot node validate_stored_panels.js testroot
-    python3 audit.py testroot/index.html  node eng5.js
+    node validate_worker.js testroot      python3 audit.py testroot/index.html
+    node eng5.js
+
+validate_worker.js (user, 20 Oct 2026, message 260 (3)) runs the page in Chromium (/opt/pw-browsers) and checks the engine's
+web worker against the page's own engine on start-up and every preset, to the digit: 38 checks, about 20 minutes.
 
 Every pull request that changes index.html first regenerates the stored risk panels:
 `node validate_stored_panels.js testroot --write` (RULES.md, 'Stored risk panels').

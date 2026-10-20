@@ -54,7 +54,13 @@ const PANEL_FILES = ['profiles.json', 'nodal/tdp_projects.json', 'nodal/region_h
   'nodal/headroom_summary.json', 'nodal/profiles_wind_modern_map.json', 'nodal/profiles_solar_tracking_map.json'];
 const PANEL_FILE_HASH = {};
 // The page's scripts, hashed once when parsing ends, so a script added later (an extension, a test harness) does not count.
-const PAGE_PARSED = new Promise(r => { const done = () => r(gtzaHash(Array.from(document.scripts, sc => sc.hasAttribute('src')
+// Only the page's own: a script loaded from another site, or one Cloudflare adds (data-cf-* attributes, /cdn-cgi/), is left
+// out. On gridtwinza.org Cloudflare adds its Web Analytics beacon (static.cloudflareinsights.com) to the page browsers get,
+// with a version in its address, so every visitor's fingerprint missed the stored panels (found 20 Oct 2026, message 260).
+// The external libraries' addresses are in index.html, which the stored file's own hash list covers.
+const _ownScript = sc => !/^(?:[a-z]+:)?\/\//i.test(sc.getAttribute('src') || '') && !/\/cdn-cgi\//.test(sc.getAttribute('src') || '')
+  && !Array.from(sc.attributes).some(a => /^data-cf/i.test(a.name));
+const PAGE_PARSED = new Promise(r => { const done = () => r(gtzaHash(Array.from(document.scripts).filter(_ownScript).map(sc => sc.hasAttribute('src')
   ? 'src ' + sc.getAttribute('src') : 'inline ' + gtzaHash(sc.text)).join('\n')));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', done); else done(); });
 (function(){
@@ -19894,7 +19900,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-19k';
+const BUILD_STAMP = '2026-10-20b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
