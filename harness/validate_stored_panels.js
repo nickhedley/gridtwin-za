@@ -25,6 +25,7 @@
  *   node validate_stored_panels.js [root]            check
  *   node validate_stored_panels.js [root] --write    compute and write stored_panels.json (and check 6); then run the
  *                                                    check, which loads the page afresh so it reads the new file
+ *   node validate_stored_panels.js [root] --fingerprint   checks 1 to 3 only, in seconds (the GitHub check)
  *
  * Rerun with --write after any change to index.html or to a file the panels read (check 3 names it). Takes about 10 to 20
  * minutes: 113 or more engine runs per state (60 Monte Carlo draws, 48 adequacy draws, five capture curve points; the IRP
@@ -34,6 +35,7 @@ const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const { JSDOM } = require('jsdom');
 const ROOT = path.resolve(process.argv[2] || 'testroot');
 const WRITE = process.argv.includes('--write');
+const FP_ONLY = process.argv.includes('--fingerprint');
 const STORE = path.join(ROOT, 'stored_panels.json');
 
 let pass = 0, fail = 0;
@@ -110,6 +112,28 @@ function firstDiff(a, b, at = ''){
     ${S.preset ? `applyState(PRESETS[${JSON.stringify(S.preset)}]);` : ''} run();`;
   const resultDigest = `const r = simulate(state, PROFILES);
     return gtzaHash(JSON.stringify(r, (k, v) => ArrayBuffer.isView(v) ? Array.from(v) : (typeof v === 'number' && !Number.isFinite(v) ? String(v) : v)));`;
+
+  // --fingerprint (user, 20 Oct 2026, message 260 (2)): checks 1 to 3 only, no panel computed; about 15 seconds. The GitHub
+  // stress-suite workflow runs it on every pull request and on main, so a change to index.html or to an engine file that did
+  // not regenerate stored_panels.json shows as a failed check. A stored panel that is wrong but carries a matching fingerprint
+  // passes it; only the full check finds that.
+  if (FP_ONLY){
+    const st = fs.existsSync(STORE) ? JSON.parse(fs.readFileSync(STORE, 'utf8')) : null;
+    check('stored_panels.json exists', !!st);
+    if (st){
+      const labels = new Set((st.entries || []).filter(e => e.mc && e.adequacy && e.capCurve).map(e => e.label));
+      const missing = STATES.filter(S => !labels.has(S.label));
+      check('one entry per preset and for the start-up state, each with all three panels', missing.length === 0,
+            'missing: ' + missing.map(S => S.label).join(', '));
+      const fp = await call(`return await pageFingerprint();`);
+      check('the page\'s fingerprint equals the stored one (a browser uses the stored panels)', fp === st.fingerprint,
+            'page ' + fp + ', stored ' + st.fingerprint + ': run node validate_stored_panels.js testroot --write and commit the file');
+      const changed = Object.keys(st.files || {}).filter(f => !fs.existsSync(path.join(ROOT, f)) || sha(f) !== st.files[f]);
+      check('every file the panels were computed from is unchanged', changed.length === 0, changed.join(', ') + ': rerun with --write');
+    }
+    console.log(`\n${pass}/${pass + fail} stored-panel fingerprint checks passed`);
+    process.exit(fail ? 1 : 0);
+  }
 
   // 6, first half: every state's main result before the weather years load.
   const before = {};

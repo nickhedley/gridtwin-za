@@ -189,7 +189,9 @@ bumped), from harness/:
 3. commit stored_panels.json with the change.
 
 After merging main into a branch, regenerate again: two branches that each regenerated do not combine, and main is stale after
-the second of two merges until someone does. validate_stored_panels.js fails when the stored fingerprint does not match the
+the second of two merges until someone does. GitHub checks the fingerprint on every pull request and on main (the stress-suite workflow runs
+`node validate_stored_panels.js testroot --fingerprint`, about 15 seconds; user, 20 Oct 2026, message 260 (2)): a red 'Stored
+risk panels' step means step 1 was skipped. It does not replace step 2. validate_stored_panels.js fails when the stored fingerprint does not match the
 page, when a file the panels were computed from has changed, or when a stored panel differs from a fresh computation in any
 digit. Never edit stored_panels.json by hand.
 
