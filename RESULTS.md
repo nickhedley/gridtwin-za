@@ -5988,7 +5988,7 @@ figure moves. Branch claude/review-batch1 from main (build 19f).
   about N hours; this rule is under review', rounded to 100. N is ccgtFloorPriceH (message 260 (4)): the hours gas sets the
   price (marginalTech 'ccgt') with the floor on and not with it off, so priced by gas only because of the 51% minimum; the
   floor-off run is simulateGasAnnualFloor's own merit run (ccgtForceLoad 0). simulate(state, PROFILES) after applyState,
-  jsdom, build 2026-10-19h:
+  jsdom, build 2026-10-19h, unchanged on 2026-10-20h (main with #100 and #101 merged in):
 
   | Preset | Gas-priced, floor on | Gas-priced, floor off | Only because of the floor (N) | Label | Floor top-up hours |
   |---|---|---|---|---|---|
