@@ -5750,6 +5750,33 @@ network capacity and demand). Proposed for Nick to choose.
 Suite on 2026-10-19f (claude/rooftop-map, ESK19679.csv present, nothing running beside it): 863/867, node checks 775/779 plus
 audit 88/88; eng5 5/6; the four known failures and eng5 check 6, as on 19d.
 
+### Coal marginal cost's rand year, a sensitivity: indexing PyPSA-RSA's marginal_cost from 2024 rands to 2026 raises the average price 1-6% on the four note presets, from 2023 rands 2-11%; dispatch, system cost and CO2 unchanged (build 2026-10-20f, main 51150a8; user, 20 Oct 2026, message 268 (5); measure only, no model change until Meridian answers, TODO 14hu)
+
+Why: PyPSA-RSA states no currency year (config.yaml at commit 89872c1: USD_to_ZAR 18.24, EUR_to_ZAR 17.83, no year given,
+checked 20 Oct 2026; the user reads the ME IRP 2024 workbook's coal fuel series as rising to 2024 and flat after). The model
+uses UC_FLEET's marginal_cost as 2026 rands. If they are 2023 or 2024 rands, the coal price is understated by the CPI since.
+
+Settings: every marginal_cost in UC_FLEET and MIP_FLEET (62 values; Arnot* R664.14) multiplied by the factor in the page text
+before load; each preset as a click applies it (applyState(PRESETS[name])), simulate(state, PROFILES) in jsdom; script
+scratchpad cpi/mc.js. Factors, January to January, Stats SA headline CPI as already used in the model (SOURCES 'SA CPI,
+January 2024 to January 2026'; 5.3% y/y January 2024 as in BLD_COST's wind_high note): 2024 rands x 1.032 x 1.035 = 1.0681
+(CPI_JAN24_TO_JAN26); 2023 rands x 1.053 x 1.0681 = 1.1247. The Stats SA site is not reachable from the cloud environment,
+so the rates are as reported, not read from the P0141 tables; an annual-average basis would differ slightly. R/MWh, mean of
+the 8,760 hourly prices; coal-set price is the mean over hours whose marginalTech is 'coal'.
+
+| Preset | Average price: as now / 2024 rands / 2023 rands | Coal-set price: as now / 2024 / 2023 | Coal-set hours (coal at a negative price, not counted) |
+|---|---|---|---|
+| Today 2026 | 677.3 / 719.2 (+6.2%) / 754.1 (+11.3%) | 665.8 / 707.8 / 742.7 | 8,730 (0) |
+| IRP's 2030 targets | 1,006.4 / 1,025.3 (+1.9%) / 1,041.1 (+3.4%) | 686.0 / 728.1 / 763.1 | 3,115 (295) |
+| IRP path 2035 | 880.3 / 888.2 (+0.9%) / 894.7 (+1.6%) | 681.5 / 723.3 / 758.0 | 1,218 (781) |
+| Least-cost path 2035 | 701.1 / 734.7 (+4.8%) / 762.5 (+8.8%) | 676.9 / 718.5 / 753.0 | 5,394 (224) |
+
+Dispatch (every hour of every technology, hashed), system cost and CO2 are identical in all three: the merit order within coal
+is unchanged by a common factor, and the system cost prices coal from FIXED.costCoal, not from marginal_cost. Only what reads
+the hourly price moves (capture prices, storage revenue, the shadow retail price, the price panel). The effect is smallest on
+IRP path 2035, where coal sets the price in 1,218 hours. Caveat: the price is the model's shadow price, not a market price;
+start-up costs (startup_cost) carry the same unknown year and were not indexed here.
+
 ### Site review batch 2: display logic and small code fixes on 17 findings; Deep decarbonisation 2035 rescored on outage patterns it was not chosen on, 1.49 GWh a year against 2.42 (build 2026-10-19i; user, 19 Oct 2026, message 252)
 
 Each finding was confirmed in the code on build 2026-10-19f before it was changed (site review of 19 Oct 2026, Nick's copy).
