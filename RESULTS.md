@@ -5885,6 +5885,62 @@ Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing bes
 (validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
 
+### Network panels, audit PR 5: the full model's results marked not comparable with the presets, Permitted but not built counts renewable generation only (1,778 projects and 91 GW five years and older to 847 and 78 GW), and the provincial mix rebuilt from the engine (coal 160.7 to 147.2 TWh) (build 2026-10-21g; user, 20 Oct 2026, message 264, audit G6 fixes 1-7, decision D7)
+
+Base: main 2116c10 (build 2026-10-20h). Stored panels not regenerated (message 266). Measured 20 Oct 2026, about 19:00 UTC, in
+jsdom (start-up state, Today 2026) and Chromium (render check). Each finding was confirmed in the code first.
+
+Permitted but not built (D7, G6-M10). The panel now counts reeaGenerationRecords: wind, solar PV, CSP and hydro records with
+capacity above zero, whose name is not a gas or coal plant, a power line or grid connection on its own, or a battery on its
+own, and identical rows (name, MW, decision date, centroid) once. DFFE REEA 2026 Q1 (nodal/reea_projects.json, unchanged),
+status Approved with a decision date and a numeric MW:
+
+| | Before | After | Audit's own filter |
+|---|---|---|---|
+| Approved records counted | 2,392, 207.4 GW | 1,412, 194.2 GW | 1,391, 193 GW |
+| Approved five or more calendar years ago | 1,778, 90.8 GW (44%) | 847, 78.2 GW (40%) | 827, 77 GW (40%) |
+
+Of the 2,392, 901 carry 0 MW. The difference from the audit's count is its second de-duplication (records sharing MW, date
+and centroid under different names), not applied here: those may be phases of one site. The name rules are ours.
+
+Provincial electricity mix (G6 fix 4). nodal/provincial_mix.json's generation and demand rebuilt by
+harness/build_provincial_mix.js from the engine's start-up state; capacity unchanged. National totals, TWh:
+
+| | Before (file) | After (engine, Today 2026) |
+|---|---|---|
+| Coal | 160.66 | 147.21 |
+| Nuclear | 13.80 | 10.87 |
+| Hydro | 1.31 | 2.90 |
+| Gas and diesel | 0.01 | 0.92 |
+| Wind | 15.23 | 14.36 |
+| Solar, rooftop included | 23.83 | 25.77 |
+| Demand | 218.9 | 194.7 (grid demand: loadS less storage charging plus demand response) |
+
+Demand shares are now the regional model's (nodal/demand_2025_regional.csv, the ten hourly columns summed): Limpopo 4.8% to
+9.2%, Mpumalanga 17.5% to 11.9%, Free State 5.5% to 2.9%, North West 7.5% to 11.0%, KwaZulu-Natal 15.5% to 19.2%. Clean
+generation against demand: Hydra Central 387% to 723%, Northern Cape 212% to 162%; the two hold 2.6% of national demand
+(2.0% before), so the panel's sentence is now computed. Mpumalanga stays last (3% to 6%). The panel tag reads 'capacity:
+data, mid-2026 · generation: the engine at start-up, not the scenario'. validate_outputs checks national coal, nuclear and
+demand in the file against the engine within 2% (three checks), so the file cannot drift again unnoticed.
+
+Wording (G6 fixes 1-3, 5, 7), checked in the render: above Run the full model and on its card and banner, 'The full model
+runs on 2025 regional demand and its own regional weather data, and does not dispatch gas; its results are not comparable
+with the presets'; the card's 'Cost of network limits' / 'Saving vs heuristic' tile and its start-up and curtail-renewables
+sentences removed; 'per-unit' commitment now 'by unit group'. Where to build: 'real demand' and 'siting' dropped from the
+full-model sentence, the full model dropped from the list of panels that read siting, and 'Charged as the engine charges it'
+replaced (the engine charges by REEA_SHARE whatever is sited, G6-M8, confirmed at index.html txChargeFor). GETs control:
+'Raises the remaining connection headroom in Where to build by 20%. Its cost is not yet charged, and it does not reach the
+full model or the build optimiser.' NERSA panel: 'Registered renewable generation (NERSA)', with NERSA's all-technologies
+figure (2,692 facilities, 21.9 GW) read from the file and 'unreconciled' removed. Schematic tag: 'node size: national
+output, split by fixed shares'.
+
+Checks: audit.py's 'node size label' asserted the old, false text; it now asserts the corrected label (the check guarded the
+claim the audit found false; the label is still required). validate_outputs gains six checks (three provincial mix, three
+on the register filter: no zero-MW, gas or coal, or repeated record counted). Render check in Chromium 23/23: every new text
+at start-up, both provincial views, the register counts, the full-model card and banner (from a stand-in result: jsDelivr,
+where the page loads HiGHS, is blocked here, so the solve itself was not run), no undefined or NaN on the four note presets,
+no page errors.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)

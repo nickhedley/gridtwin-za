@@ -10,7 +10,8 @@ CHECKS = [
     # RENDERED text is unchanged - verified - so the pin follows the wording that
     # survives in one piece rather than relaxing what it checks.
     ('are the optimal network-aware ',                             'MIP banner text'),
-    ('node size = modelled output',                                     'node size label'),
+    # The label was false (audit G6-M14, message 264): node sizes are fixed shares of national output, not regional output.
+    ('node size: national output, split by fixed shares',               'node size label'),
     ('Show REIPPPP project pipeline',                              'REIPPPP button text'),
     ('Click on each for region-specific',                          'click on each (was Hover)'),
     ('Ring size scales with capacity',                            'pipeline rings: size means capacity'),
