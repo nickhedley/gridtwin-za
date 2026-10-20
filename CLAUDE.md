@@ -39,9 +39,11 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_external.js testroot    node validate_solve.js testroot
     node validate_outputs.js testroot     node validate_pathway_presets.js testroot
     node validate_public_text.js testroot node validate_stored_panels.js testroot
-    node validate_worker.js testroot      python3 audit.py testroot/index.html
-    node eng5.js
+    node validate_links.js testroot       node validate_worker.js testroot
+    python3 audit.py testroot/index.html  node eng5.js
 
+validate_links.js (user, 20 Oct 2026, message 263 (1)): a ?preset= link, a reload after each preset click, a preset with a
+slider moved, and links with new wind and new solar each compute exactly what the click computes; 48 checks, about 5 minutes.
 validate_worker.js (user, 20 Oct 2026, message 260 (3)) runs the page in Chromium (/opt/pw-browsers) and checks the engine's
 web worker against the page's own engine on start-up and every preset, to the digit: 38 checks, about 20 minutes.
 
