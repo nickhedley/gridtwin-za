@@ -54,7 +54,7 @@ Data sources incorporated in this repository carry their own licences:
 - nodal/bq_queue.json: NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 - nodal/coal_availability_trace.json: Eskom Holdings SOC Ltd, hourly dataset ESK19679 (obtained on request): terms under review; not CC BY.
 - nodal/corridor_electrical.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
-- nodal/demand_2025_regional.csv: under the source's terms (likely UCT ESRG, ZivaHub, version unconfirmed); no licence of our own
+- nodal/demand_2025_regional.csv: under that source's terms (MIT for the repository; the split rests on Eskom provincial transformer data, terms to be confirmed); no licence of our own
 - nodal/eskom_tariff_components.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
 - nodal/firm_headroom_lookup.json: NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 - nodal/fleet_units.csv: under the source's terms (PyPSA-RSA); no licence of our own

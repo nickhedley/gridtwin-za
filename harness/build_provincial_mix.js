@@ -89,7 +89,8 @@ const r2 = x => Math.round(x * 100) / 100;
       + `exports and storage, which are not allocated by province. Built by harness/build_provincial_mix.js.`;
     d.meta.demand_note = `Provincial demand is the engine's grid demand at start-up (${E.demand.toFixed(1)} TWh; loadS less `
       + `storage charging plus demand response) apportioned by the regional model's shares, the ten hourly columns of `
-      + `nodal/demand_2025_regional.csv summed (2025; that file's source and terms apply to the shares). An allocation, `
+      + `nodal/demand_2025_regional.csv summed (2025; source being confirmed, TODO 14fa: the file matches G. Ireland's `
+      + `Demand-Spatialization-South-Africa, REF scenario, no exports, 2025, rotated 96 hours; that source's terms apply). An allocation, `
       + `not a measurement.`;
     fs.writeFileSync(FILE, JSON.stringify(d, null, 1));
     console.log('wrote nodal/provincial_mix.json from build ' + E.stamp);
