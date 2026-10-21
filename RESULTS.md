@@ -5944,6 +5944,10 @@ Suite on 2026-10-21e without validate_stored_panels (stored panels not regenerat
 iron-air July, high-season off-peak, peakerSeasonRatio) and eng5 check 6. Run 20 Oct 2026 21:02-21:22 and 22:21-23:21 UTC
 (the first run was stopped after validate_lp and the rest rerun), with another branch's suite running beside it each time.
 
+Gas burnt to charge storage stays in the capacity panel's CCGT row (user, 21 Oct 2026, message 271 (6)); the panel says so in
+one line: "The Gas CCGT row's output includes gas burnt to charge storage." No number moves. The full network audit button
+stays hidden until it is rebuilt (message 271 (5)).
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
