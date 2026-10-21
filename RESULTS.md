@@ -151,6 +151,27 @@ onshore V90 2000, so it should be flatter. It is not.
 CAVEAT: MERRA-2 is reanalysis at about 50 km and will understate short sharp lulls at every
 site, so absolute drought lengths are soft. The comparison between them is not.
 
+
+### Offshore check against ERA5 at Boegoebaai, provisional (the advisor's conversion): capacity factor 0.45-0.49 against our 0.44; hours below 10% of rating 26-28% against 20.3%; longest such run 110-114 h against 91 h (user, 21 Oct 2026, message 287; no model change)
+
+Source: ODSL MetMap hourly series (ERA5, 100 m wind) at 29.3000S 15.9005E, 1995-2023, downloaded by Nick 21 Oct 2026; the file stays
+local and is not in the repository; ODSL's terms are not stated. ERA5: Copernicus Climate Change Service, DOI 10.24381/cds.adbb2d47.
+Method (the advisor's, approximate): 100 m to 150 m by a shear exponent of 0 to 0.14 (the ranges below); an approximate Vestas
+V164 8 MW power curve; compared with nodal/profiles_offshore_regional.json, 'Boegoebaai West Coast', unscaled (Renewables.ninja,
+MERRA-2, V164 at 150 m), 2014-2023.
+
+| Measure | ERA5 via MetMap (advisor) | Ours, 2014-2023 |
+|---|---|---|
+| Capacity factor | 0.45-0.49 | 0.44 (0.438) |
+| Hours below 10% of rating | 26-28% | 20.3% |
+| Longest run below 10% | 110-114 h | 91 h |
+| Correlation with ours | 0.90 hourly, 0.95 daily | – |
+
+Our side re-measured from the file, 21 Oct 2026: 87,600 hours (the advisor's 87,598), CF 0.438, 20.3%, 91 h. Reading: ERA5 at
+this point gives a similar or slightly higher mean but more and longer lulls than our profile, so it does not support offshore
+being nearer baseload than the model shows. Caveat: provisional; the power curve and shear are the advisor's approximations, and
+the point is one site in the region.
+
 ---
 
 ## Headroom is where the wind is not
@@ -6043,6 +6064,65 @@ validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four kno
 16:20-18:07 UTC; a one-minute jsdom price measurement ran beside validate_links (17:24-17:25 UTC), which passed; the failing
 scripts ran with nothing beside them. Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets and
 its grid-delayed variant, labels about 4,300, 4,400 and 4,100 hours): 11/11.
+
+### Validation panels on one basis (mechanics audit PR 1, G7 fixes 2-7 and 1 in part): the generation rows read '2025, as modelled' against 2025 (coal 168.9 against Eskom's 170.4 TWh, -0.9%, where Today 2026 against Ember read -38.3); open-cycle 0.1% on Eskom's own turbines against 3.1%; coal EAF +0.7 against -3.0 (build 2026-10-21c; user, 20 Oct 2026, messages 264 and 270)
+
+Panels: 'How the model compares to Eskom's published figures', the assumptions table and 'How it is checked' (audit Appendix
+G7). Each finding was confirmed in the code on branch claude/audit-validation, from claude/review-batch2 at abd87ba (#97, build
+2026-10-20i), before the change. What changed:
+
+- Generation rows (G7-M1, fix 2): from the 2025 preset's own run, built as a click applies it (run2025AsModelled: the sliders'
+  defaults overridden by PRESETS['2025, as modelled'], PRESET_NON_SLIDER_KEYS from the preset or FIXED), made once, when the
+  panel is first on screen (watchPanel 'validation'). Every number of its E equals the clicked preset's lastRes.E (checked in
+  jsdom, 0 keys differ). Coal against Eskom's own 2025 sent-out, 170.4 TWh (ESKOM_2025_COAL_TWH, the author's sum of ESK19679;
+  one annual total, Eskom credited); wind, solar and nuclear against Ember's calendar 2025 with no gross-to-sent-out conversion
+  (Ember's South African monthly data are Eskom's, sent out; its 2025 nuclear equals Eskom's 10.2). The rows show on every
+  scenario; before, they showed on 2026 scenarios only, against the run on screen.
+- Open-cycle row (G7-M4, fix 3): Eskom's own turbines, the diesel fleet less Avon and Dedisa (3,400 - 670 - 335 = 2,395 MW),
+  and the output less avonDedisaMustRunMWh. The pair's contracted running is stated in the note.
+- Coal EAF row (G7-M7, fix 4): Eskom's whole-fleet 67.95% converted to coal only with coalEafFromFleet, 64.3%
+  (ESKOM_FLEET_EAF_PCT, one constant).
+- Peak (G7-M5, fix 5): the assumptions sentence said the model's peak includes storage charging; it is demand less charging and
+  includes firm exports. Both the sentence and the row's note now say so. Eskom's own definition is not settled (TODO 14hp).
+- How it is checked (G7-M6, fix 6): 'The two panels above show the reconciliations themselves' replaced with what the panels
+  run; the 'Mirrors validate_external.js ... cannot drift' comment corrected.
+- Capex line (G7-M8, fix 7): renderCapexLine shows PV's fixed-tilt R12,000 and, where the scenario builds single-axis tracking,
+  bldCostEntry('pv'): R11,038 on IRP's 2030 targets, IRP path 2035 and Least-cost path 2035. PV R12,000 and rooftop R17,000 are
+  marked 'no recorded source' (SOURCES records none).
+- CSIR's 40% renewable share labelled 'derived from its coal share' (G7-M9, part of fix 1).
+
+Measured in jsdom on the page's own functions (applyState(PRESETS[name]); run(); renderValidation()), page defaults otherwise,
+ESK19679.csv present (not read by these panels), script scratchpad overnight/a1/probe.js, 20 Oct 2026 about 18:50-19:05 UTC.
+Rows as shown, model / benchmark / gap:
+
+| Row | Before (20i), Today 2026 | After (21c), every note preset |
+|---|---|---|
+| Coal fleet EAF | 65.0 / 67.95 / -3.0 | 65.0 / 64.3 / +0.7 |
+| OCGT load factor (Today 2026 only) | 3.1 / 1.17 / +1.9 | 0.1 / 1.17 / -1.1 |
+| Coal generation | 147.2 / 185.5 (Ember) / -38.3 | 168.9 / 170.4 (Eskom) / -1.5 |
+| Wind generation | 14.3 / 11.3 / +3.0 | 12.0 / 11.3 / +0.7 |
+| Solar generation | 24.0 / 18.6 / +5.4 | 18.4 / 18.6 / -0.2 |
+| Nuclear generation | 10.9 / 10.2 / +0.7 (note: compare with 9.7 sent out) | 10.2 / 10.2 / 0.0 |
+| PV capex shown | R12,000 on every preset | R12,000 fixed tilt; plus R11,038 tracking on the three 2030-35 note presets |
+
+On IRP's 2030 targets, IRP path 2035 and Least-cost path 2035 the generation rows were hidden before (2026 scenarios only);
+they now show the 2025 rows above. Peak and open-cycle rows stay on 2026 scenarios. No engine number moves: dispatch, cost and
+CO2 of every preset are untouched (the change is display, plus one extra run of the 2025 preset when the panel is seen).
+
+Not done, and why: the published-models panel's denominator (G7 fix 1c) changes the panel and validate_external's bands
+together and is left for after the note (TODO 14hp); fix 1's other parts are in #97 (message 262). A35 (existing wind 4.7 GW
+from one constant) was already done in #93. Fixes 8-12 are after the note (TODO 14hp).
+
+Suite on 2026-10-21c without validate_stored_panels (stored panels not regenerated, message 266; ESK19679.csv present): 966/970,
+node checks 878/882 plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 20 Oct 2026
+20:55-22:20 UTC with other branches' suites beside it (two at a time overnight, message 270); the runner was stopped at its time
+limit during validate_response and resumed from there. Render check in Chromium (fresh load, the four note presets): 25/25.
+
+Suite on 2026-10-21k (main a96bc1b, with #96, #108 and #110, merged in; stored panels regenerated for 21k, fingerprint
+02ec8cc6251d18): 1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links
+48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 21 Oct
+2026 15:52-17:23 UTC with the s_eskom26 share checks (c5f/eskom) beside it. Render check in Chromium (fresh load, the four
+note presets, build 21k): 25/25.
 
 ### Coal marginal cost's rand year, a sensitivity: indexing PyPSA-RSA's marginal_cost from 2024 rands to 2026 raises the average price 1-6% on the four note presets, from 2023 rands 2-11%; dispatch, system cost and CO2 unchanged (build 2026-10-20f, main 51150a8; user, 20 Oct 2026, message 268 (5); measure only, no model change until Meridian answers, TODO 14hu)
 
