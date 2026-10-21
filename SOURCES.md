@@ -1550,3 +1550,28 @@ Applied in RESULTS 'Value-chain CO2e beside the smokestack figures' (message 223
     2025) over 165,431 GWh sent out (p.9); spread over all coal, conveyor-fed stations included. Nick's copy; cited by page.
 - Conversions: 1.108 MJ HHV per MJ LHV (NETL 2024, DOE LNG Export Study Appendix C, p. C-12, fn 14); the model's CCGT at 52%
   HHV burns 6.248 GJ LHV per MWh (57.6% LHV), its OCGT at 10,624 kJ/kWh HHV 9.588 GJ LHV per MWh.
+
+## Gas turbine prices and lead times: Wood Mackenzie, April 2026, reported second-hand (user, 21 Oct 2026, message 272)
+
+For the c5f sensitivities s_gascapex25_c5f (CCGT capex +25%) and s_gas2032_c5f (no new gas before 2032); provisional, not for
+quoting. Every figure below is from search-result snippets of the pages named, read 21 Oct 2026; no page could be opened from
+the cloud environment (web reader and proxy refused; Firecrawl out of credits). Check against the pages before citing.
+- Wood Mackenzie press release, "Gas turbine prices soar 195% as market faces supply-demand crisis" (woodmac.com/press-releases,
+  about 1 Apr 2026); reported by Power Engineering, "Gas turbine prices climb 195% as supply crunch reshapes power development"
+  (power-eng.com, early April 2026, exact date unconfirmed), and Utility Dive, "Gas turbine supply crunch set to raise prices
+  195% by 2027: WoodMac" (utilitydive.com, 9 Apr 2026 per a search summary). The full report appears to be for clients only.
+  - Price: the turbine market is "anticipated to reach US$600/kW by end-2027", 195% above 2019. Turbine equipment only, not a
+    whole plant; no turbine class named; the 2019 base is not given (about USD 203/kW by our arithmetic, 600 / 2.95).
+  - Lead times: "six-year lead times and order books sold through 2027" (attributed to Aurora Tenorio, Wood Mackenzie): turbine
+    order to delivery, not whole-plant build time. Orders 110 GW at end-2025 against 60-70 GW a year of manufacturing capacity.
+  - Turbines are about 20-30% of a combined-cycle project's cost (E&E News, search snippet), so a turbine price rise moves the
+    plant cost by a fraction of itself; how much of the rise is already in recent plant costs is not known.
+- GridLab, Energy Futures Group, Component Reliability Consultants and Halcyon, "The New Reality of Power Generation: An
+  Analysis of Increasing Gas..." (September 2025; press release 10 Sep 2025, gridlab.org). The basis of BLD_COST.ccgt's note
+  (USD 2,000/kW or more). From the press release and second-hand quotes: "recent combined-cycle gas turbine projects report
+  costs of $2,000/kW, significantly outpacing reported costs of plants scheduled for completion in 2026 and 2027, $1,116/kW to
+  $1,427/kW respectively." What the figure covers: whole-plant capital cost per kW as reported in US utility resource plans and
+  approval filings (appendix tables give per-kW cost beside total capex), not turbine only; a search summary says costs were
+  escalated to each plant's in-service year (nominal dollars of 2026-2031), unconfirmed. Not found: whether it splits out EPC,
+  owner's costs, interconnection or financing during construction; it takes what each filing reported, and Halcyon's tracker
+  marks records as overnight or including construction financing, so the filings may mix the two (our inference).
