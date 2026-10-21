@@ -151,6 +151,30 @@ onshore V90 2000, so it should be flatter. It is not.
 CAVEAT: MERRA-2 is reanalysis at about 50 km and will understate short sharp lulls at every
 site, so absolute drought lengths are soft. The comparison between them is not.
 
+
+### c5f offered offshore wind and built none; the preset captions said the pathway could not build it (user, 21 Oct 2026, messages 298 and 299; build 2026-10-21d branch)
+
+c5f's build LP (bldBuildLP, b_off_<y>, on through bldOffshoreOn:1) offered offshore wind, floating (BLD_COST.offshore
+R79,200/kW in 2026, falling 2.6% a year; BLD_FOM.offshore R1,403/kW-yr), capped cumulatively on ESMAP's medium path (now
+BLD_OFF_PATH: nothing before 2032, 1 GW by 2035, 5 GW by 2040) and at 5,000 MW in any one year (BLD_OFF_YEAR_MW). null_c5f
+built none (its build file, scratchpad c5f/repo/harness/out/pathway_null_c5f.json, has no non-zero b_off). The annual charge
+per kW the optimiser sees (bldNetAnnuityAt, R/kW-yr):
+
+| Year | Offshore | Onshore wind | Utility solar |
+|---|---|---|---|
+| 2032 | 7,738 | 2,035 | 1,102 |
+| 2035 | 7,256 | 1,898 | 1,011 |
+| 2040 | 6,534 | 1,695 | 881 |
+
+So about 3.8 times onshore wind's and 7 times solar's per kW in 2032-40. Per MWh, at offshore's 0.516 capacity factor
+(ESMAP-scaled) against about 0.40 for new onshore wind, offshore is roughly 2.5-3 times onshore (a rough estimate, not
+measured). Correction: the preset captions (_presetOverLimit) said offshore wind 'is not among the pathway's options' (not a
+BLD_TECHS technology); BLD_TECHS is the page optimiser's loop list, not the pathway's options. c5fBuildLimitMW now has an
+offshore limit read from BLD_OFF_PATH and BLD_OFF_YEAR_MW (moved out of bldBuildLP, so no constant appears twice), and the
+caption checks offshore like the other technologies. Fossil-free 2040's 1.75 GW of offshore is within the 5 GW path, so its
+caption no longer names offshore; Deep 2035's is unchanged. The build LP's text is identical before and after (hash
+07aa3605352acf, 9,770,509 characters, Today 2026, jsdom).
+
 ---
 
 ## Headroom is where the wind is not
