@@ -188,6 +188,11 @@ bumped), from harness/:
 2. `node validate_stored_panels.js testroot`, the check (about 25 minutes; it is part of the suite);
 3. commit stored_panels.json with the change.
 
+The check also records every data file the page reads, not only the engine files in the fingerprint: any edit to a file under
+nodal/ or a profiles file, even its licence field, makes 'every file the panels were computed from is unchanged' fail, so it
+needs the same regeneration before the pull request is ready (user, 21 Oct 2026, message 293; found on #108, where an edit to
+nodal/corridor_electrical.json's licence field read 85/86).
+
 After merging main into a branch, regenerate again: two branches that each regenerated do not combine, and main is stale after
 the second of two merges until someone does. GitHub checks the fingerprint on every pull request and on main (the stress-suite workflow runs
 `node validate_stored_panels.js testroot --fingerprint`, about 15 seconds; user, 20 Oct 2026, message 260 (2)): a red 'Stored
