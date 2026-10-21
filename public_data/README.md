@@ -1,6 +1,7 @@
 # GridTwin ZA published data
 
-CC BY 4.0. Attribution required; reuse, modification and commercial use permitted.
+CC BY 4.0 for our compilations of public facts: attribution required; reuse, modification and commercial use
+permitted. Files derived from other people's data keep their sources' terms, stated in each (the exceptions below).
 Cite as: GridTwin ZA, gridtwinza.org, accessed <date>.
 Except NTCSA GCCA data: connection_headroom.csv, and the supply areas and NTCSA coordinates in
 transmission_substations.csv, come under the NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1) - non-commercial use only; publication needs NTCSA's written consent.

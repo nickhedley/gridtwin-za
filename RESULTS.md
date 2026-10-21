@@ -4661,6 +4661,31 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### Two gas sensitivities on c5f, provisional and not for quoting: gas capex +25% costs R3.7bn in engine PV and builds 1.0 GW less gas; no new gas before 2032 moves 299 MW of CCGT from 2030 to 2033 and costs nothing measurable (user, 21 Oct 2026, message 272)
+
+Settings: c5f's (scratchpad c5f/env_c5f.sh), the frozen c5f copy, MAXP=3, TL=7200, each with its engine check (pathcheck.js, TF=0.5
+LNG=1 GRID=1, twelve weather years x 20 draws), as for the 31 c5f sensitivities; run 21 Oct 2026 06:33-10:14 UTC at nice 19
+(scratchpad c5f/chain272.sh; figures by c5f/report/r272.py). Against null_c5f (engine PV R2,255.1bn, CO2 1,605.0 Mt, objective
+R1,453.1bn, 8,269 MW of new CCGT by 2040, first in 2030):
+
+| Run | Change from c5f | Engine PV vs null, R bn | CO2 2026-40 vs null, Mt | Objective vs null, R bn | New gas by 2040 | Adequacy |
+|---|---|---|---|---|---|---|
+| s_gascapex25_c5f | CCGT capex x1.25 (R34,965 to R43,706/kW); open cycle follows (derived from CCGT, so diesel open cycle too) | +3.7 | -43.2 | +10.1 | 7,268 MW (CCGT 6,386, open cycle on LNG 882) | adequate, no year over target |
+| s_gas2032_c5f | No new CCGT or open cycle on LNG before 2032 (GAS_FIRST=2032; c5f 2030); diesel open cycle unchanged | -0.9 | -31.0 | +0.4 | 8,270 MW (CCGT), first in 2033 | adequate, no year over target |
+| s_nogas4strict_c5f (for comparison) | No new gas or diesel open cycle; lithium up to 4 GW a year | +28.9 (top-up) | -215.9 | +43.2 | none | adequate after the 1,500 MW top-up |
+
+Build against the null, cumulative MW: s_gascapex25 trades CCGT (-1,286 by 2035, -1,884 by 2040) for open cycle on LNG (+882),
+solar (+1,601 by 2035, +5,298 by 2040) and lithium (+1,058 by 2040), and brings 531 MW of wind forward to 2028 (-1,330 by 2040).
+s_gas2032 moves the null's 299 MW of 2030 CCGT to 2033 and brings 1,660 MW of wind forward to 2028 (back level by 2035).
+Both change engine PV by under 0.2%; their CO2 changes come from wind timing the optimiser is nearly indifferent to. c5f stays the
+central (user, 21 Oct 2026, message 280).
+Caveats: (1) most of the CO2 difference in both runs is the earlier wind, 2028-32 (about 6 Mt a year in s_gas2032), a timing
+the optimiser is close to indifferent on (objective +R0.4bn); in s_gas2032 the engine PV and the objective move in opposite
+directions, so its cost sign is not robust. (2) c5f's CCGT capex is already at GridLab's level for recent plants (USD 2,000/kW
+or more, whole plant, SOURCES 'Gas turbine prices and lead times'); Wood Mackenzie's 195% is turbine equipment only, about
+20-30% of plant cost, so +25% on the plant is an upper bracket for the turbine rise, not Wood Mackenzie's figure. (3) Six-year
+lead times are turbine order to delivery; a 2032 first year assumes orders placed by 2026.
+
 ### IRP 2025's Table 1 build priced on c5f's inputs (engine check only): engine PV R2,564.1bn, R309.0bn above c5f; CO2 1,456.2 Mt, 148.8 Mt below; no unserved energy in any year (user, 19 Oct 2026, messages 215 (3), 218 and 221; build 2026-10-17g)
 
 Framing (user, message 221): IRP 2025 is not a least-cost plan (gas forced in as an anchor offtaker, nuclear for industrial
