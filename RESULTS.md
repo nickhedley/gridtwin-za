@@ -151,6 +151,27 @@ onshore V90 2000, so it should be flatter. It is not.
 CAVEAT: MERRA-2 is reanalysis at about 50 km and will understate short sharp lulls at every
 site, so absolute drought lengths are soft. The comparison between them is not.
 
+
+### Offshore check against ERA5 at Boegoebaai, provisional (the advisor's conversion): capacity factor 0.45-0.49 against our 0.44; hours below 10% of rating 26-28% against 20.3%; longest such run 110-114 h against 91 h (user, 21 Oct 2026, message 287; no model change)
+
+Source: ODSL MetMap hourly series (ERA5, 100 m wind) at 29.3000S 15.9005E, 1995-2023, downloaded by Nick 21 Oct 2026; the file stays
+local and is not in the repository; ODSL's terms are not stated. ERA5: Copernicus Climate Change Service, DOI 10.24381/cds.adbb2d47.
+Method (the advisor's, approximate): 100 m to 150 m by a shear exponent of 0 to 0.14 (the ranges below); an approximate Vestas
+V164 8 MW power curve; compared with nodal/profiles_offshore_regional.json, 'Boegoebaai West Coast', unscaled (Renewables.ninja,
+MERRA-2, V164 at 150 m), 2014-2023.
+
+| Measure | ERA5 via MetMap (advisor) | Ours, 2014-2023 |
+|---|---|---|
+| Capacity factor | 0.45-0.49 | 0.44 (0.438) |
+| Hours below 10% of rating | 26-28% | 20.3% |
+| Longest run below 10% | 110-114 h | 91 h |
+| Correlation with ours | 0.90 hourly, 0.95 daily | – |
+
+Our side re-measured from the file, 21 Oct 2026: 87,600 hours (the advisor's 87,598), CF 0.438, 20.3%, 91 h. Reading: ERA5 at
+this point gives a similar or slightly higher mean but more and longer lulls than our profile, so it does not support offshore
+being nearer baseload than the model shows. Caveat: provisional; the power curve and shear are the advisor's approximations, and
+the point is one site in the region.
+
 ---
 
 ## Headroom is where the wind is not

@@ -473,6 +473,19 @@ Not from this brief: the 19.3 GW of NERSA registrations, which is press coverage
 Building Africa, Aug 2026; MyBroadband, about 19,300 MW registered 2018 to Q1 2026). The model's
 registrations source is nodal/nersa_registrations.json (SAPVIA dashboard, 20,131 MW to Q1 2026/27).
 
+## Private projects reaching commercial operation, 2026: Koruson 2 (Hartebeesthoek), beside nodal/supply_area_split_draft.json's pending entry
+
+- Koruson 2, Hartebeesthoek wind, 140 MW, Eastern Cape (user, 21 Oct 2026, messages 290 and 291). In a LinkedIn post of 6 Aug 2026
+  (https://www.linkedin.com/posts/edf-edfpowersolutions-envusa-share-7491036493961138176-HhFB/; not read here), EDF power solutions
+  reported Hartebeesthoek in commercial operation from August 2026 at 130 MW, with the last 10 MW due in September, completing
+  Koruson 2: Mooi Plaats (240 MW PV), Umsobomvu (140 MW wind) and Hartebeesthoek (140 MW wind), about 50 turbines in all. EDF's
+  project page (southafrica.edf-powersolutions.com/operational/koruson-2/) gives June 2026 for all three; the post is the more
+  specific. Koruson 2 is private, not REIPPPP: Envusa Energy sells its output to Anglo American's mines under 20-year offtake
+  agreements, over Eskom's grid, with no bid window (EDF's project page). PFL's H1 2026 monitor (17 Aug 2026), which lists
+  "Anglo's Hartebeesthoek (140 MW)" among private projects expected in H2 2026, names the same plant. OpenStreetMap shows 25
+  turbines mapped at about 31.25S 25.01E. The capacity file's pending entry (H2 2026) is unchanged until the project tracker update
+  after the note; build_hydra_split.py and build_capacity.py are not rerun (TODO 14dk: a rerun erases queue_project.js's additions).
+
 ## Pumped hydro, off-river cost basis 'anu2026' (TODO 14z, build 06h)
 
 Andrew Blakers (ANU, RE100 group), personal communication by email to Nick Hedley, 6 Oct 2026:
