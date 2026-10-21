@@ -6159,6 +6159,12 @@ not move: the default bill caps self-consumption, so the extra yield is exported
 
 Suite on 2026-10-19j: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:00-22:50 UTC with other jobs beside it. Render check in Chromium (fresh load, rooftop tab): 5/5, the shading control's three values and label, the default capacity factor 19.0% (on 19j; rerun on the final build), no undefined or NaN, no page errors.
 
+Suite on 2026-10-21i (main f56089e, with #97 and #102, merged in; stored panels regenerated for 21i, fingerprint check 4/4):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 21 Oct 2026
+06:10-09:15 UTC, with the c5f gas sensitivities (message 272, nice 19) and short jsdom and Chromium checks on other branches
+beside it. Rooftop figures re-measured on 21i: unchanged. Render check in Chromium (fresh load): 5/5.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
