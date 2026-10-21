@@ -5936,6 +5936,19 @@ Not done here, with the audit's own numbering: pumped storage's anchor stays typ
 the Masterplan has no gas target, but the deliverable pace note says 'Wind and gas at the Renewable Energy Masterplan's pace'
 (audit G5 section 4, claim 3; TODO 14hx).
 
+Response baseline: validate_response read 86/87 on the first suite run, 'response matrix matches baseline', two cells changed,
+both from this change and both intended: newIronAirMW -> replAvg inert to responsive (iron-air is now charged its capital on
+capacity, as newBattMW and newVrfbMW already were) and costCcgt -> replAvg inert to responsive (the gas the run burns is now
+priced at the run's gas price, as diesel's is). No other cell moved; response_matrix.json rewritten with --write-baseline (its
+base row was also stale from earlier builds, e.g. avgPrice 759.12 from before the coal VOM fix, now 677.27; the base row is
+not compared). validate_response then 87/87, run with nothing beside it (21 Oct 2026, 01:00 UTC).
+
+Suite on 2026-10-21f without validate_stored_panels (message 266; stored panels not regenerated), ESK19679.csv present, run
+20 Oct 2026 23:52 to 21 Oct 01:00 UTC with other branches' suites and checks beside it for part of the run: node checks
+878/882 (validate_response 87/87 on the rerun above; links 48/48, worker 38/38, pathway presets 37/37) plus audit 88/88; eng5
+5/6. The failures are the four known ones (iron-air July, high-season off-peak, peakerSeasonRatio, EDMSA Scenario A CO2 2035)
+and eng5 check 6.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
