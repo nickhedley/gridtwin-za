@@ -6119,6 +6119,52 @@ external comparison re-measured on the merge: unchanged (Today 744, IRP path 203
 2035 coal 50.9%, CO2 83.2 Mt). Render check in Chromium (fresh load): 9/9, adding the carbon intensity tile (744 on Today 2026)
 and the week buttons (Winter week, 17-23 May; Summer week, 24-30 Nov).
 
+### The rooftop tab took system losses three times; it now takes them once, and yields at the defaults rise 20-45% (build 2026-10-19j; user, 19 Oct 2026, message 252, site review A47)
+
+Cause (confirmed in the code on build 2026-10-19f): rtCalc multiplied the site's capacity factor, which already carries the
+system losses (Open-Meteo yield at a performance ratio of 0.80; the 0.21 fallback is PVGIS with its losses), by 'Shading &
+losses' (default 0.80) and again by a per-type 'system/inverter' factor (usagePct, 0.80 to 0.90).
+
+What changed (index.html, rtCalc and RT_TYPES): the capacity factor carries the system losses; the control is shading only
+(messages 260 (5) and 261 (1)): Minimal 100%, no shading beyond the base yield's losses, because the base already carries 20%
+(a performance ratio of 0.80), above PVWatts' 14% default total, which includes its 3% shading (A. P. Dobos, 'PVWatts Version 5
+Manual', NREL/TP-6A20-62641, 2014; pvlib's pvwatts_losses); Moderate 93%, the default, and Heavy 85%: our assumptions, applied
+to the base and labelled so on the control. usagePct is removed. The 0.21
+fallback is PVGIS at a tilt equal to the latitude, so it is divided by the 25-degree orientation factor (1.08) to bring it to a
+flat roof before the orientation control applies, since that control is relative to flat.
+
+Before (build 2026-10-19f, main) and after (2026-10-19j), every other control at its default (typical obstructions, flat roof,
+15-degree north orientation, 5% escalation, no battery, default bill and tariff); 'fallback' is no site queried, 'site' a site
+whose capacity factor is 20%. Computed by rtCalc itself in jsdom (scratchpad b1/rt.js), read from window._rtSheet:
+
+| Roof area, bracket | Case | kWp | CF before / after | Yield MWh/yr before / after | Savings R k/yr before / after | Payback yr before / after |
+|---|---|---|---|---|---|---|
+| 60 m2, home | fallback | 9.9 | 17.6% / 19.0% | 14 / 16 | 13 / 16 | 15.8 / 12.7 |
+| 400 m2, small C&I | fallback | 65.7 | 17.6% / 19.0% | 89 / 109 | 134 / 165 | 7.0 / 5.6 |
+| 2,000 m2, large C&I | fallback | 331.1 | 17.6% / 19.0% | 435 / 551 | 647 / 671 | 6.2 / 5.9 |
+| 12,000 m2, industrial | fallback | 1,989.6 | 17.6% / 19.0% | 2,460 / 3,309 | 682 / 682 | 47.5 / 47.5 |
+| 60 m2, home | site 20% | 9.9 | 16.8% / 19.5% | 13 / 17 | 13 / 16 | 16.8 / 12.3 |
+| 400 m2, small C&I | site 20% | 65.7 | 16.8% / 19.5% | 85 / 112 | 128 / 169 | 7.4 / 5.5 |
+| 2,000 m2, large C&I | site 20% | 331.1 | 16.8% / 19.5% | 414 / 566 | 641 / 672 | 6.2 / 5.9 |
+| 12,000 m2, industrial | site 20% | 1,989.6 | 16.8% / 19.5% | 2,342 / 3,404 | 682 / 682 | 47.5 / 47.5 |
+
+The same cases at Minimal shading (100%) on this build, re-measured 20 Oct 2026 (the 'before' build's Minimal was 85% for
+shading and losses together, so it has no like-for-like column): CF 20.4% (fallback) and 21.0% (site); yield 18, 118, 592 and
+3,558 MWh/yr (fallback) and 18, 121, 609 and 3,660 (site); savings R17k, 177k, 675k and 682k (fallback) and 17k, 182k, 677k and
+682k (site); payback 11.7, 5.2, 5.9 and 47.5 years (fallback) and 11.3, 5.1, 5.9 and 47.5 (site), in the table's order.
+
+The CF column is after orientation and shading (the yield is kWp x CF x 8,760, after usagePct before). The industrial case does
+not move: the default bill caps self-consumption, so the extra yield is exported, which earns nothing in the tab. Caveat: the
+93% default and the 85% are assumptions.
+
+Suite on 2026-10-19j: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:00-22:50 UTC with other jobs beside it. Render check in Chromium (fresh load, rooftop tab): 5/5, the shading control's three values and label, the default capacity factor 19.0% (on 19j; rerun on the final build), no undefined or NaN, no page errors.
+
+Suite on 2026-10-21i (main f56089e, with #97 and #102, merged in; stored panels regenerated for 21i, fingerprint check 4/4):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 21 Oct 2026
+06:10-09:15 UTC, with the c5f gas sensitivities (message 272, nice 19) and short jsdom and Chromium checks on other branches
+beside it. Rooftop figures re-measured on 21i: unchanged. Render check in Chromium (fresh load): 5/5.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
