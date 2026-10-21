@@ -3015,6 +3015,7 @@ On 15a the probe alone gives 606.9 -> 472.4 GWh, the suite's 607 -> 472. One bui
 | 10-14p | 299ad1a | 606.7 (579.3 + 27.4) | 472.2 | 22.2% | Must-run on January-August 2026 levels; must-run never sets the price or charges storage;  |
 | 10-14q | 7ea6474 | 606.9 (579.3 + 27.6) | 472.4 | 22.2% | Reserve 14q: interruptible 1,000 MW capped and called last, storage reserve with dispatch, |
 | 10-14r | 6045387 | 606.9 (579.3 + 27.6) | 472.4 | 22.2% | Interruptible load cap tried and withdrawn (message 101); build 2026-10-14r |
+'nodal old/' and 'nodal old.zip' were removed from the repository on 21 Oct 2026 (user, message 289; branch claude/remove-nodal-old); they remain in git history from commit 774dc8d.
 
 What moved it:
 - 07s to 12e: 424.5 -> 0 (100%): the modern-turbine profile for new wind (07s; RESULTS 'New wind on the modern-turbine profile'):
@@ -3589,6 +3590,7 @@ Found on main and fixed here. Build 16b's '#' source lines broke three readers t
 - the root and 'nodal old/' engine CLIs: they read the demand file's source line as its header and ran on empty demand,
   with no error;
 - 'nodal old/nodal_dispatch.js': it loaded an empty fleet, with no error.
+'nodal old/' and 'nodal old.zip' were removed from the repository on 21 Oct 2026 (user, message 289; branch claude/remove-nodal-old); they remain in git history from commit 774dc8d.
 All now skip '#' lines. Build 16b also changed both CSVs without bumping nodal_dispatch's DATA_V; it is now 8.
 The page itself was not affected (message 149 (1)): a fresh load of main e1a4cad (16b) in Chromium, main's files served
 locally (the deployed site was not reached), loads the nodal fleet in full, 51 units and 49,134 MW, and demand for all 10

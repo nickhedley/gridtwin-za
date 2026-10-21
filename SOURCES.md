@@ -1585,8 +1585,8 @@ page, PDF page = printed + 2; figures Eskom's, the analysis ours). Read 21 Oct 2
   spend, excluding operating and capacity charges); renewable IPPs 2,175 / 2,189; other IPP programmes 3,242 / 2,446;
   international purchases 897 / 866. IPP and import unit costs are the full cost, operating and capacity charges included;
   Eskom-owned unit costs are primary energy only.
-- Coal and levies (p.56): "Coal generation costs, excluding environmental levies, grew by 0.5% despite a 7.8% decline in
-  production from coal-fired stations" (a 10.1% rise in the average coal purchase price). Primary energy chart: coal and other
+- Coal and levies (p.56): coal generation costs excluding environmental levies rose 0.5% while coal-fired production fell 7.8%,
+  which Eskom attributes to a 10.1% rise in the average coal purchase price. Primary energy chart: coal and other
   generation R91.5bn (FY2025 R91.0bn); environmental levies R6.8bn (FY2025 about R7.3bn; chart labels matched to years by their
   totals, as the chart text was not cleanly readable). Coal-fired production (p.7) 165,431 GWh (FY2025 179,426).
   Reconciliation (ours): FY2026 R91.5bn / 165.4 TWh = R553/MWh without levies; with R6.8bn, R594 against the stated R591.
@@ -1595,14 +1595,14 @@ page, PDF page = printed + 2; figures Eskom's, the analysis ours). Read 21 Oct 2
 - Volumes, GWh, FY2026 / FY2025 / FY2024 (p.7): coal 165,431 / 179,426 / 166,606; nuclear 11,618 / 8,409 / 8,172; Eskom-owned
   OCGTs 811 / 2,176 / 3,634; hydro 2,416 / 710 / 1,448; IPPs 19,596 / 19,365 / 20,183; imports 4,090 / 7,570 / 9,150.
 - OCGTs (p.20): Eskom and IPP-owned OCGTs 1,079 GWh (FY2025 2,838) at load factors of 3.9% (Eskom) and 3.0% (IPP); IPP OCGT
-  production 268 GWh at R2,144m (FY2025 662 GWh, R4,374m; FY2024 1,509 GWh, R10,054m); "budgeted for a reduced load factor of 3%
-  on both Eskom and IPP-owned OCGTs from FY2027 onwards, rising again to 5.5% in FY2030". The two IPP OCGTs are 1,005 MW (p.23,
+  production 268 GWh at R2,144m (FY2025 662 GWh, R4,374m; FY2024 1,509 GWh, R10,054m); Eskom budgets a 3% load factor for both its own and
+  the IPP OCGTs from FY2027, rising to 5.5% in FY2030. The two IPP OCGTs are 1,005 MW (p.23,
   p.76); Avon and Dedisa are named only in p.24's lease note (capacity charges under IFRS 16, R1,631m a year).
 - Renewable IPPs (p.39): 18,421 GWh in FY2026 (FY2025 17,420); full-cost unit cost R2,175/MWh (p.56), about R40.1bn by our
   arithmetic (no rand total printed). Total IPP purchases (p.24): 19,596 GWh, R46,785m spent on energy before the lease
   adjustment.
-- For TODO: international sales FY2027 target 11,926 GWh, 3,608 GWh without Mozal (p.24); data centres "2GW connected by FY2029,
-  with demand growing to around 13TWh per year by FY2031" (p.55); Richards Bay gas, four units totalling 3,000 MW, partner in
+- For TODO: international sales FY2027 target 11,926 GWh, 3,608 GWh without Mozal (p.24); data centres of 2 GW connected by FY2029,
+  growing to about 13 TWh a year by FY2031 (p.55); Richards Bay gas, four units totalling 3,000 MW, partner in
   FY2028, commissioning by FY2031 (p.29); DEE's amended RFP for 2,000 MW of land-based gas, preferred bidders expected end
   October 2026, and a possible consolidated 6 GW gas programme (p.24).
 Decisions for s_eskom26 (user, 21 Oct 2026, messages 281 and 282): coal fuel 553 (FY2026 without the levy; the levy, about
