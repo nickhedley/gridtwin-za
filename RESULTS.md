@@ -5359,9 +5359,9 @@ draws), so they differ by basis, as the captions say.
 
 | 2035 preset | Shown: system cost, R bn/yr | Shown: carbon intensity, g/kWh | Shown: expected shed, GWh/yr | Same state in the engine (one year): system cost / CO2 / unserved | validate_pathway_presets, run mean: system cost / CO2 / unserved |
 |---|---|---|---|---|---|
-| Least-cost path 2035 | 241 | 250 | 1.1 | 241.40 / 74.62 Mt / 0.000 GWh | 247.50 / 85.14 Mt / 0.733 GWh |
-| IRP path 2035 | 288 | 236 | 0 | 287.72 / 74.52 Mt / 0.000 GWh | 293.37 / 83.92 Mt / 0.000 GWh |
-| Deep decarbonisation 2035 | 231 | 54 | 0.2 | 231.46 / 16.09 Mt / 0.000 GWh | (not in the check; 214) |
+| Least-cost path 2035 | 241 | 250 (271 on generation and imports; corrected 20 Oct 2026, message 263 (3)) | 1.1 | 241.40 / 74.62 Mt / 0.000 GWh | 247.50 / 85.14 Mt / 0.733 GWh |
+| IRP path 2035 | 288 | 236 (268 on generation and imports; corrected 20 Oct 2026, message 263 (3)) | 0 | 287.72 / 74.52 Mt / 0.000 GWh | 293.37 / 83.92 Mt / 0.000 GWh |
+| Deep decarbonisation 2035 | 231 | 54 (on the old basis, which divided by storage output, exports and curtailment too; message 263 (3)) | 0.2 | 231.46 / 16.09 Mt / 0.000 GWh | (not in the check; 214) |
 
 The shown figures equal the page's own result for the same state (lastRes, adequacyEnsemble: expected unserved 1.079, 0 and
 0.165 GWh). Gas readout shown: R2.90/kWh (FIXED.lcoeCcgt 2,900), with fuel at R1.30/kWh, about 45%.
@@ -5479,7 +5479,7 @@ the record: 1,007.0 MW over 5,832 hours (0.876; the page's 0.88 of 22 Sep was th
 
 What moves (each preset as the page runs it, run(): one weather year on the default profiles; before and after):
 - Today 2026: system cost R215.450bn to R215.392bn; CO2 157.795 to 157.313 Mt; imports 8.865 to 9.338 TWh; coal 147.685 to
-  147.214 TWh; carbon intensity 711 to 709 g/kWh; replacement cost R314.24bn to R313.76bn (R1.60/kWh shown either way);
+  147.214 TWh; carbon intensity 711 to 709 g/kWh (on the old basis; 744 on generation and imports, message 263 (3)); replacement cost R314.24bn to R313.76bn (R1.60/kWh shown either way);
   average cost R1,099.4 to R1,099.1/MWh (R1.10/kWh shown either way). Retail panel: the Homepower and Homeflex rows unchanged;
   the dynamic-pricing rows R0.01/kWh lower at the mean (habits unchanged R4.24 to R4.23) and at the dearest hour (R4.34 to R4.33,
   18:00), the cheapest hour moving from 03:00 to 02:00 at R4.20; the reference household's shadow bill (900 kWh) R3,812 to
@@ -6016,6 +6016,108 @@ validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four kno
 16:20-18:07 UTC; a one-minute jsdom price measurement ran beside validate_links (17:24-17:25 UTC), which passed; the failing
 scripts ran with nothing beside them. Render check in Chromium (fresh load; start-up, IRP path 2035, IRP's 2030 targets and
 its grid-delayed variant, labels about 4,300, 4,400 and 4,100 hours): 11/11.
+
+### Coal marginal cost's rand year, a sensitivity: indexing PyPSA-RSA's marginal_cost from 2024 rands to 2026 raises the average price 1-6% on the four note presets, from 2023 rands 2-11%; dispatch, system cost and CO2 unchanged (build 2026-10-20f, main 51150a8; user, 20 Oct 2026, message 268 (5); measure only, no model change until Meridian answers, TODO 14hu)
+
+Why: PyPSA-RSA states no currency year (config.yaml at commit 89872c1: USD_to_ZAR 18.24, EUR_to_ZAR 17.83, no year given,
+checked 20 Oct 2026; the user reads the ME IRP 2024 workbook's coal fuel series as rising to 2024 and flat after). The model
+uses UC_FLEET's marginal_cost as 2026 rands. If they are 2023 or 2024 rands, the coal price is understated by the CPI since.
+
+Settings: every marginal_cost in UC_FLEET and MIP_FLEET (62 values; Arnot* R664.14) multiplied by the factor in the page text
+before load; each preset as a click applies it (applyState(PRESETS[name])), simulate(state, PROFILES) in jsdom; script
+scratchpad cpi/mc.js. Factors, January to January, Stats SA headline CPI as already used in the model (SOURCES 'SA CPI,
+January 2024 to January 2026'; 5.3% y/y January 2024 as in BLD_COST's wind_high note): 2024 rands x 1.032 x 1.035 = 1.0681
+(CPI_JAN24_TO_JAN26); 2023 rands x 1.053 x 1.0681 = 1.1247. The Stats SA site is not reachable from the cloud environment,
+so the rates are as reported, not read from the P0141 tables; an annual-average basis would differ slightly. R/MWh, mean of
+the 8,760 hourly prices; coal-set price is the mean over hours whose marginalTech is 'coal'.
+
+| Preset | Average price: as now / 2024 rands / 2023 rands | Coal-set price: as now / 2024 / 2023 | Coal-set hours (coal at a negative price, not counted) |
+|---|---|---|---|
+| Today 2026 | 677.3 / 719.2 (+6.2%) / 754.1 (+11.3%) | 665.8 / 707.8 / 742.7 | 8,730 (0) |
+| IRP's 2030 targets | 1,006.4 / 1,025.3 (+1.9%) / 1,041.1 (+3.4%) | 686.0 / 728.1 / 763.1 | 3,115 (295) |
+| IRP path 2035 | 880.3 / 888.2 (+0.9%) / 894.7 (+1.6%) | 681.5 / 723.3 / 758.0 | 1,218 (781) |
+| Least-cost path 2035 | 701.1 / 734.7 (+4.8%) / 762.5 (+8.8%) | 676.9 / 718.5 / 753.0 | 5,394 (224) |
+
+Dispatch (every hour of every technology, hashed), system cost and CO2 are identical in all three: the merit order within coal
+is unchanged by a common factor, and the system cost prices coal from FIXED.costCoal, not from marginal_cost. Only what reads
+the hourly price moves (capture prices, storage revenue, the shadow retail price, the price panel). The effect is smallest on
+IRP path 2035, where coal sets the price in 1,218 hours. Caveat: the price is the model's shadow price, not a market price;
+start-up costs (startup_cost) carry the same unknown year and were not indexed here.
+
+### Site review batch 2: display logic and small code fixes on 17 findings; Deep decarbonisation 2035 rescored on outage patterns it was not chosen on, 1.49 GWh a year against 2.42 (build 2026-10-19i; user, 19 Oct 2026, message 252)
+
+Each finding was confirmed in the code on build 2026-10-19f before it was changed (site review of 19 Oct 2026, Nick's copy).
+
+A1 (Deep's reliability claimed out of sample). Deep decarbonisation 2035 was topped up on the outage draws of seed 71830529
+and then scored on the same draws, so its 2.27 GWh was in sample. Rescored on build 19i on a fresh, disjoint seed set:
+`SEED=120000017 ONLY=Deep VARIANTS=page node harness/ext/preset_rescore.js` (twelve weather years x 20 draws, seeds
+120000017 + k x 104729 + year x 7919; output harness/ext/rescore_page_19i_deep_fresh.json, 128 s). Mean unserved 1.49 GWh a
+year against a target of 2.42 (half the 0.002% standard on customer demand), cost R318.2bn, CO2 16.0 Mt: it meets the
+target out of sample. PRESET_SCORES now takes each preset from its own rescore (gen_preset_scores.py): Deep from the fresh
+run, Fossil-free 2040 from 19e's (it had no top-up, so its draws were never used to choose it). The caption's 'outage patterns
+it was not chosen on' is now true for both. Caveat: 1.49 on fresh draws against 2.27 on the tuning draws is a wide gap for 240
+runs each; the score is a mean over few rare shortfall events.
+
+Fixed, each as the review proposed unless stated:
+- A7: the inherited-scenario line rounded, and stated against 2026 and the scenario's own year (it said 'to 2030').
+- A8: the adequacy text now describes what is computed (storage at full rating, against the month's peak grid demand with
+  charging; a high-renewable year can show a negative margin and still serve all load) and says 'in this scenario', not 'Today'.
+- A21: the cap note reports the week's uncapped peak beside the week's capped hours.
+- A22: 'on your last change' only after the engine has settled (start-up rendered twice and read as a change).
+- A24: 'almost nothing to arbitrage' judged on the benchmark battery's own cycles (under 30 a year), not on p95 less median.
+- A25: battery durations rounded.
+- A26: gas is gated on running at all, not on storage cycles, so the least-cost build's CCGT no longer reads 'not needed here'.
+- A29: the published-models comparison runs as validate_external does (current-turbine wind profile, bands 22 Mt and 12 TWh),
+  and the narrative counts the rows outside their band instead of saying it 'lands close'.
+- Message 262 (A29 continued): both studies are built from the start-up state (the sliders' defaults; every other input from
+  FIXED, as simulate fills it), whatever preset is on screen; they were built from the on-screen state. Demand is not solved to
+  CSIR's 285 TWh, which is national; on the model's basis it is about 257.7 TWh, which +30% on the 2026 base gives. Measured
+  in jsdom on this branch (applyState(preset), then renderExternalComparison):
+
+  | Row (published, band) | Today 2026 before / after | IRP path 2035 before / after |
+  |---|---|---|
+  | CSIR coal share 2030 (55%, ±6) | 50.9% / 50.9% | 33.7% / 50.9% |
+  | CSIR renewable share (40%, ±8) | 43.3% / 43.3% | 47.9% / 43.3% |
+  | EDMSA CO2 2035 (124 Mt, ±22) | 83.2 / 83.2 | 64.0 / 83.2 |
+  | EDMSA wind 2035 (64 TWh, ±12) | 75.2 / 75.2 | 70.2 / 75.2 |
+
+  The audit of 20 Oct measured 31.0% and 56.9 Mt on IRP path 2035 and 51.4% after, on main, where this branch's wind basis
+  (A29, bldWindModern 0) is absent; this branch's figures differ by that.
+- Message 263 (3): the carbon intensity tile (and its column in the scenario comparison) divides CO2 by generation and imports
+  (carbonIntensityG); it divided by every energy total, so storage output, exports and curtailment (twice, as curtailed and
+  vreCurtailed) were in it. Each preset as a click applies it, simulate(state, PROFILES), g/kWh before / after: 2025, as
+  modelled 742 / 807; Today 2026 709 / 744; IRP's 2030 targets 414 / 448; grid delayed 527 / 558; IRP path 2035 236 / 268;
+  Least-cost path 2035 250 / 271; Deep decarbonisation 2035 34 / 48; Fossil-free 2040 0 / 0. The audit measured 268 and 271.
+  The RESULTS figures that quoted 236, 250, 54 and 709 now say which basis they are on.
+- Message 263 (3), dates: the hourly profiles are on the 2025 calendar (profiles.json meta.year; 1 January a Wednesday), so the
+  winter week (from hour 3264) is Saturday 17 to Friday 23 May and the summer week (from 7848) Monday 24 to Sunday 30 November.
+  The week buttons now give the dates ('Winter week, 17-23 May'), and the dispatch, price and battery tooltips the day and date
+  ('Sat 17 May 06:00'); they called the first day Monday. The charts' week start hours are one constant (WEEK_HOUR). Found while
+  checking: astrPeakHour (the reserve product's peak hours) uses the 2026 calendar (1 January a Thursday) with 2026's public
+  holidays, while the profiles are 2025's; not changed here (TODO 14hf).
+- A30: the Eskom 2025-26 rows show only when the 2026 scenario is on screen.
+- A32: coal installed compared with 39.692 GW, the figure the page uses.
+- A39: 3D map headroom read from nodal/region_headroom_lookup.json, as the main page; tooltips no longer print 'undefined'.
+- A41: the pre-feasibility report's labels read the rates its arithmetic uses (life, discount rate, O&M share, from
+  calcFinancials), and name wind or hybrid reports as such.
+- A42: corridor upgrade cost from the model's own 400 kV line cost (BLD_GRID.line400); the grid-enhancing-technology line from
+  the model's own constants.
+- A44: KwaZulu-Natal generators in the KwaZulu-Natal zone (5.08), booklet p.38.
+- A46: the sentence names the months with the highest and lowest savings, computed from the chart's own series.
+- A49: the 3D page's 'Main model' link goes up one level.
+- B3 (two ensembles write the header's expected shed): timing only, no change (message 254 (4)). The review file is Nick's
+  copy and is not in the repository, so this is recorded here and in the pull request.
+
+Suite on 2026-10-19i: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:05-22:55 UTC with other jobs beside it. Audit first read 87/88: the A29 narrative put the variable name ROWS inside a page string, which the shouting check counts; the count is now computed before the string (the check is unchanged), and audit, validate_structure, validate_outputs, validate_external and validate_public_text were rerun on the final commit. Render check in Chromium (fresh load; start-up, Fossil-free 2040, Least-cost path 2035): 7/7, Deep's caption reads 1.49 against 2.42, the Eskom 2025-26 generation rows are left out on 2040 and the panel says so, no undefined or NaN, no page errors.
+
+Suite on 2026-10-20i (main 2116c10, with #93, merged in; stored panels regenerated for 20i, fingerprint 0c85cbeacc414c):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48, validate_worker
+38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 20 Oct 2026 18:45-21:15 UTC, with
+two other branches' suites and jsdom measurements beside it throughout; the first run stopped at its time limit during
+validate_worker, which was run again on its own from 20:41 UTC (38/38), then the audit and eng5. Carbon intensity and the
+external comparison re-measured on the merge: unchanged (Today 744, IRP path 2035 268, Least-cost 271, Deep 48 g/kWh; IRP path
+2035 coal 50.9%, CO2 83.2 Mt). Render check in Chromium (fresh load): 9/9, adding the carbon intensity tile (744 on Today 2026)
+and the week buttons (Winter week, 17-23 May; Summer week, 24-30 Nov).
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
