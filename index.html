@@ -2,11 +2,15 @@
 <!--
   ============================================================================
   GridTwin ZA - Interactive South African Power System Model
-  Copyright (c) 2026 Nick Hedley. All rights reserved.
+  Copyright (c) 2026 Nick Hedley.
 
-  Licensed under Creative Commons Attribution-NonCommercial-NoDerivatives 4.0
-  International (CC BY-NC-ND 4.0).
+  The model logic, calibration, cost assumptions, code and presentation are licensed under
+  Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0):
+  you may share them with attribution for non-commercial purposes; commercial use or
+  distributing modified versions needs written permission.
   https://creativecommons.org/licenses/by-nc-nd/4.0/
+  Our compilations of public facts are CC BY 4.0; files derived from other people's data keep
+  their sources' terms, stated in each file and listed in LICENSE (user, 20 Oct 2026, D3).
 
   You may view, share and link to this work with attribution. You may NOT:
     - use it commercially, in whole or in part
@@ -79,7 +83,7 @@ const PAGE_PARSED = new Promise(r => { const done = () => r(gtzaHash(Array.from(
 <meta name="author" content="Nick Hedley">
 <meta name="copyright" content="© 2026 Nick Hedley">
 <link rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
-<meta name="dcterms.rights" content="© 2026 Nick Hedley. cc by-nc-nd 4.0. Commercial use or derivative works require written permission.">
+<meta name="dcterms.rights" content="© 2026 Nick Hedley. The model, code and presentation are CC BY-NC-ND 4.0. Our compilations of public facts are CC BY 4.0. Data derived from Eskom, NTCSA, Renewables.ninja or PyPSA-RSA keeps its source&#39;s terms; each file states its own.">
 <meta name="dcterms.license" content="https://creativecommons.org/licenses/by-nc-nd/4.0/">
 <meta property="og:title" content="GridTwin ZA – Interactive SA Grid Model">
 <meta property="og:description" content="An hourly dispatch model of the South African grid: coal EAF, renewables, storage, load shedding stages, cost and CO₂ – re-solved live in your browser.">
@@ -1293,9 +1297,18 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
         <div style="font-weight:700;color:var(--ink);margin-top:11px">Data and licences</div>
         <p>Every data file the model uses is in the public repository, because the model runs in your
-        browser. Each file states its own licence, and LICENSE lists them by file. The model, code and
-        presentation are CC BY-NC-ND 4.0. If you are building something similar, get in touch to compare
-        notes.</p>
+        browser. The model logic, calibration, cost assumptions, code and presentation are &copy; 2026 Nick Hedley and licensed under
+        <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
+        you may share them with attribution for non-commercial purposes; commercial use or distributing modified versions needs
+        written permission. Our compilations of public facts (project names, capacities, technologies, locations and dates) are
+        licensed under CC BY 4.0. Files derived from other people's data carry the most restrictive terms among their inputs, stated
+        in each file and listed in
+        <a href="https://github.com/nickhedley/gridtwin-za/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">LICENSE</a>:
+        Eskom's website terms for Eskom-derived data (non-commercial; publication needs Eskom's consent, which has been requested);
+        NTCSA's website terms for GCCA-derived data (non-commercial; publication needs NTCSA's consent); CC BY-NC 4.0 for
+        Renewables.ninja-derived profiles; and PyPSA-RSA's AGPL-3.0-or-later, whose terms for our use are being confirmed with
+        Meridian. Analysis derived from Eskom data is ours, not Eskom's. LICENSE lists each file in nodal/ with its licence; a file in public_data/ or the root with no licence of its own is CC BY-NC-ND 4.0, unless derived from a source LICENSE lists. If you are building something
+        similar, get in touch to compare notes.</p>
 
       </div>
 </details></div>
@@ -5016,7 +5029,7 @@ function printPrefeas() {
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Obstructions</label><select id="rt_obstruction" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="clear">Clear – few penetrations</option><option value="typical" selected>Typical – vents, chimneys, walkways</option><option value="cluttered">Cluttered – HVAC plant, skylights</option><option value="heavy">Heavily obstructed – plant rooms, ducting</option></select><div id="rt_obs_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px"></div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof form</label><select id="rt_form" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="flat" selected>Flat roof – whole measured area</option><option value="mono">Single pitch facing north</option><option value="dual">Dual pitch – north plane only</option><option value="complex">Complex or multi-facet roof</option></select><div id="rt_form_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px"></div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof – 100%</option><option value="1.05" selected>15deg north-facing – 105%</option><option value="1.08">25deg north (optimal) – 108%</option><option value="0.92">East/west-facing – 92%</option><option value="0.78">South-facing – 78%</option><option value="0.95">Mixed / multiple orientations – 95%</option></select><div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Pick the direction your panels will face, not the shape of the whole roof – installers typically concentrate panels on the best-facing section rather than spreading them evenly, so in most cases you should use a single-orientation option even on a geometrically complex roof. Only choose “Mixed” if panels will be split across clearly different directions (e.g. a deliberate east+west array).</div></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading &amp; losses</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.85">Minimal – 85%</option><option value="0.80" selected>Moderate – 80%</option><option value="0.70">Heavy – 70%</option></select></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Minimal – 100% (no shading beyond the base yield's losses)</option><option value="0.93" selected>Moderate – 93% (assumption)</option><option value="0.85">Heavy – 85% (assumption)</option></select></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
               </div>
             </div>
@@ -5096,6 +5109,9 @@ function printPrefeas() {
       DMRE / IPP Office (REIPPPP project pipeline) &middot;
       <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:inherit">Open-Meteo ERA5</a>
       and PVGIS (solar resource) &middot; NASA MERRA-2 (wind profiles) &middot;
+      <a href="https://www.renewables.ninja/" target="_blank" rel="noopener" style="color:inherit">Renewables.ninja</a>
+      (regional wind and solar profiles, CC BY-NC 4.0) &middot; Ember (2025 generation) &middot; UCT ESRG (hourly demand model, CC BY 4.0)
+      &middot; ANU RE100 (pumped hydro atlas, CC BY 4.0) &middot; DFFE (environmental authorisations) &middot;
       <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap</a>
       contributors (geocoding, ODbL) &middot; Esri, Maxar and Earthstar Geographics (satellite imagery) &middot;
       <a href="https://highs.dev/" target="_blank" rel="noopener" style="color:inherit">HiGHS</a>
@@ -5111,15 +5127,17 @@ function printPrefeas() {
     </div>
 
     <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
-      &copy; 2026 Nick Hedley. GridTwin ZA &ndash; model, code, calibration and presentation.
-      <strong>Each data file in nodal/ states its own licence.</strong> Our compilations of
-      uncopyrightable facts are CC BY 4.0 &ndash; attribution only, reuse and modification permitted.
-      Files derived from NTCSA, Eskom, PyPSA-RSA and other sources stay under those sources' terms
-      (see <a href="https://github.com/nickhedley/gridtwin-za/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">LICENSE</a>). The model, code and presentation are licensed under
+      GridTwin ZA. The model logic, calibration, cost assumptions, code and presentation are &copy; 2026 Nick Hedley and licensed under
       <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
-      you may share it with attribution, but not use it commercially or distribute modified versions.
-      <strong>Commercial use, redistribution of derivatives, or incorporation into another product requires written permission.</strong>
-      The underlying public datasets above remain under their own licences and are not covered by this notice.
+      you may share them with attribution for non-commercial purposes; commercial use or distributing modified versions needs
+      written permission. Our compilations of public facts (project names, capacities, technologies, locations and dates) are
+      licensed under CC BY 4.0. Files derived from other people's data carry the most restrictive terms among their inputs, stated
+      in each file and listed in
+      <a href="https://github.com/nickhedley/gridtwin-za/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">LICENSE</a>:
+      Eskom's website terms for Eskom-derived data (non-commercial; publication needs Eskom's consent, which has been requested);
+      NTCSA's website terms for GCCA-derived data (non-commercial; publication needs NTCSA's consent); CC BY-NC 4.0 for
+      Renewables.ninja-derived profiles; and PyPSA-RSA's AGPL-3.0-or-later, whose terms for our use are being confirmed with
+      Meridian. Analysis derived from Eskom data is ours, not Eskom's.
     </div>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.18);
                 font-size:11.5px;line-height:1.6">
@@ -20025,7 +20043,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-21c';
+const BUILD_STAMP = '2026-10-21k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21160,7 +21178,8 @@ async function exportPpaTimeseries(){
   rows.push('# wind_pu and solar_pu are per-unit hourly output for this region,');
   rows.push('# from PVGIS and Renewables.ninja. Multiply by installed MW.');
   rows.push('#');
-  rows.push('# Source: gridtwinza.org – data CC BY 4.0, attribution required');
+  rows.push('# Source: gridtwinza.org. price_r_per_mwh: model output, CC BY-NC-ND 4.0 with the model. wind_pu and solar_pu:');
+  rows.push('# derived from Renewables.ninja, CC BY-NC 4.0 (non-commercial, attribution required).');
   rows.push('hour,price_r_per_mwh' + (wind ? ',wind_pu' : '') + (solar ? ',solar_pu' : ''));
 
   const N = Math.min(8760, mp.length);
@@ -21578,7 +21597,6 @@ document.getElementById('siteResetBtn').addEventListener('click', ()=>{
 <script>
 
 const RT_TYPES = {
-  // usagePct: system/inverter losses only (not a self-consumption factor - see below).
   // selfConsumeNoStorage: realistic fraction of solar generation actually used on-site
   // with NO battery, i.e. only the portion that coincides with a load being drawn at
   // that moment. The rest is exported. Depends on how well each load profile overlaps
@@ -21593,10 +21611,10 @@ const RT_TYPES = {
   // with cost per kW dropping as systems scale up. Smaller systems carry proportionally
   // more fixed cost (site visit, COC, small-order component pricing), which is why the
   // per-Wp figure falls as system size (and hence inferred bracket) increases.
-  home:       { wpPerM2: 150, usagePct: 0.90, costRwp: 17.0, label: 'Home / small office',       selfConsumeNoStorage: 0.35 },
-  smeci:      { wpPerM2: 160, usagePct: 0.88, costRwp: 13.0, label: 'Small C&I',                 selfConsumeNoStorage: 0.55 },
-  lci:        { wpPerM2: 170, usagePct: 0.85, costRwp: 11.0, label: 'Large C&I',                 selfConsumeNoStorage: 0.65 },
-  industrial: { wpPerM2: 175, usagePct: 0.80, costRwp: 9.5,  label: 'Industrial / warehouse',     selfConsumeNoStorage: 0.60 },
+  home:       { wpPerM2: 150, costRwp: 17.0, label: 'Home / small office',       selfConsumeNoStorage: 0.35 },
+  smeci:      { wpPerM2: 160, costRwp: 13.0, label: 'Small C&I',                 selfConsumeNoStorage: 0.55 },
+  lci:        { wpPerM2: 170, costRwp: 11.0, label: 'Large C&I',                 selfConsumeNoStorage: 0.65 },
+  industrial: { wpPerM2: 175, costRwp: 9.5,  label: 'Industrial / warehouse',     selfConsumeNoStorage: 0.60 },
 };
 
 // The brackets' installed costs as one line, for the rooftop tab's note (one list, from RT_TYPES).
@@ -22038,7 +22056,7 @@ function rtCalc() {
   const area     = parseFloat(document.getElementById('rt_area').value) || 2000;
   const sharePct = parseFloat(document.getElementById('rt_share').value) || 100;
   const tilt     = parseFloat(document.getElementById('rt_tilt').value) || 1.05;
-  const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.80;
+  const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.93;
   const bill     = parseFloat(document.getElementById('rt_bill').value) || RT_DEFAULT_BILL;
   const tariff   = parseFloat(document.getElementById('rt_tariff').value) || RT_DEFAULT_TARIFF;
   const battH    = parseFloat(document.getElementById('rt_batt').value) || 0;
@@ -22106,11 +22124,20 @@ function rtCalc() {
   // Battery dropdown shows real kWh for this system size, not abstract hours.
   _rtBuildApplianceInputs();
 
-  const baseCF = (window._resourceData && window._resourceData.solar) ? window._resourceData.solar.annualCF : 0.21;
+  // ONE LOSS FACTOR (site review A47, 19 Oct 2026). System losses were taken three times: in the site's capacity factor
+  // (Open-Meteo's performance ratio of 0.80; the fallback is PVGIS with its losses), again as 'Shading & losses' (0.80) and
+  // again as a per-type 'system/inverter' factor (0.80-0.90). Now the capacity factor carries the system losses, the
+  // control is shading only, and nothing else is taken. The shading options (messages 260 (5), 261 (1)): the base yield already carries 20% losses (a performance ratio
+  // of 0.80), above PVWatts' 14% default total, which includes its 3% shading (A. P. Dobos, 'PVWatts Version 5 Manual',
+  // NREL/TP-6A20-62641, 2014; pvlib's pvwatts_losses), so Minimal adds no shading (100%); Moderate 93% and Heavy 85% are our
+  // assumptions, applied to the base. The fallback is PVGIS at a tilt equal to the latitude, so it is
+  // brought to a flat roof before the orientation factor applies (that factor is relative to flat).
+  const RT_FALLBACK_CF = 0.21, RT_FALLBACK_TILT = 1.08;
+  const baseCF = (window._resourceData && window._resourceData.solar) ? window._resourceData.solar.annualCF : RT_FALLBACK_CF / RT_FALLBACK_TILT;
   const location = (window._resourceData && window._resourceData.windRegion) ? window._resourceData.windRegion : 'SA national average';
   const adjCF = baseCF * tilt * shading;
   const annualKwh = kwp * adjCF * 8760;
-  const usableKwh = annualKwh * t.usagePct; // after system/inverter losses only
+  const usableKwh = annualKwh;   // system losses are in the capacity factor (A47)
   const monthlyKwh = bill / tariff;
   const annualDemandKwh = monthlyKwh * 12;
   // battH is now the battery size in kWh, entered directly by the user

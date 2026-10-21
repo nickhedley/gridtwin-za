@@ -3015,6 +3015,7 @@ On 15a the probe alone gives 606.9 -> 472.4 GWh, the suite's 607 -> 472. One bui
 | 10-14p | 299ad1a | 606.7 (579.3 + 27.4) | 472.2 | 22.2% | Must-run on January-August 2026 levels; must-run never sets the price or charges storage;  |
 | 10-14q | 7ea6474 | 606.9 (579.3 + 27.6) | 472.4 | 22.2% | Reserve 14q: interruptible 1,000 MW capped and called last, storage reserve with dispatch, |
 | 10-14r | 6045387 | 606.9 (579.3 + 27.6) | 472.4 | 22.2% | Interruptible load cap tried and withdrawn (message 101); build 2026-10-14r |
+'nodal old/' and 'nodal old.zip' were removed from the repository on 21 Oct 2026 (user, message 289; branch claude/remove-nodal-old); they remain in git history from commit 774dc8d.
 
 What moved it:
 - 07s to 12e: 424.5 -> 0 (100%): the modern-turbine profile for new wind (07s; RESULTS 'New wind on the modern-turbine profile'):
@@ -3589,6 +3590,7 @@ Found on main and fixed here. Build 16b's '#' source lines broke three readers t
 - the root and 'nodal old/' engine CLIs: they read the demand file's source line as its header and ran on empty demand,
   with no error;
 - 'nodal old/nodal_dispatch.js': it loaded an empty fleet, with no error.
+'nodal old/' and 'nodal old.zip' were removed from the repository on 21 Oct 2026 (user, message 289; branch claude/remove-nodal-old); they remain in git history from commit 774dc8d.
 All now skip '#' lines. Build 16b also changed both CSVs without bumping nodal_dispatch's DATA_V; it is now 8.
 The page itself was not affected (message 149 (1)): a fresh load of main e1a4cad (16b) in Chromium, main's files served
 locally (the deployed site was not reached), loads the nodal fleet in full, 51 units and 49,134 MW, and demand for all 10
@@ -4660,6 +4662,31 @@ R3.329 to R3.674 (+10.4%) against system cost +2.7%. Not a bug: two different me
 rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
+
+### Two gas sensitivities on c5f, provisional and not for quoting: gas capex +25% costs R3.7bn in engine PV and builds 1.0 GW less gas; no new gas before 2032 moves 299 MW of CCGT from 2030 to 2033 and costs nothing measurable (user, 21 Oct 2026, message 272)
+
+Settings: c5f's (scratchpad c5f/env_c5f.sh), the frozen c5f copy, MAXP=3, TL=7200, each with its engine check (pathcheck.js, TF=0.5
+LNG=1 GRID=1, twelve weather years x 20 draws), as for the 31 c5f sensitivities; run 21 Oct 2026 06:33-10:14 UTC at nice 19
+(scratchpad c5f/chain272.sh; figures by c5f/report/r272.py). Against null_c5f (engine PV R2,255.1bn, CO2 1,605.0 Mt, objective
+R1,453.1bn, 8,269 MW of new CCGT by 2040, first in 2030):
+
+| Run | Change from c5f | Engine PV vs null, R bn | CO2 2026-40 vs null, Mt | Objective vs null, R bn | New gas by 2040 | Adequacy |
+|---|---|---|---|---|---|---|
+| s_gascapex25_c5f | CCGT capex x1.25 (R34,965 to R43,706/kW); open cycle follows (derived from CCGT, so diesel open cycle too) | +3.7 | -43.2 | +10.1 | 7,268 MW (CCGT 6,386, open cycle on LNG 882) | adequate, no year over target |
+| s_gas2032_c5f | No new CCGT or open cycle on LNG before 2032 (GAS_FIRST=2032; c5f 2030); diesel open cycle unchanged | -0.9 | -31.0 | +0.4 | 8,270 MW (CCGT), first in 2033 | adequate, no year over target |
+| s_nogas4strict_c5f (for comparison) | No new gas or diesel open cycle; lithium up to 4 GW a year | +28.9 (top-up) | -215.9 | +43.2 | none | adequate after the 1,500 MW top-up |
+
+Build against the null, cumulative MW: s_gascapex25 trades CCGT (-1,286 by 2035, -1,884 by 2040) for open cycle on LNG (+882),
+solar (+1,601 by 2035, +5,298 by 2040) and lithium (+1,058 by 2040), and brings 531 MW of wind forward to 2028 (-1,330 by 2040).
+s_gas2032 moves the null's 299 MW of 2030 CCGT to 2033 and brings 1,660 MW of wind forward to 2028 (back level by 2035).
+Both change engine PV by under 0.2%; their CO2 changes come from wind timing the optimiser is nearly indifferent to. c5f stays the
+central (user, 21 Oct 2026, message 280).
+Caveats: (1) most of the CO2 difference in both runs is the earlier wind, 2028-32 (about 6 Mt a year in s_gas2032), a timing
+the optimiser is close to indifferent on (objective +R0.4bn); in s_gas2032 the engine PV and the objective move in opposite
+directions, so its cost sign is not robust. (2) c5f's CCGT capex is already at GridLab's level for recent plants (USD 2,000/kW
+or more, whole plant, SOURCES 'Gas turbine prices and lead times'); Wood Mackenzie's 195% is turbine equipment only, about
+20-30% of plant cost, so +25% on the plant is an upper bracket for the turbine rise, not Wood Mackenzie's figure. (3) Six-year
+lead times are turbine order to delivery; a 2032 first year assumes orders placed by 2026.
 
 ### IRP 2025's Table 1 build priced on c5f's inputs (engine check only): engine PV R2,564.1bn, R309.0bn above c5f; CO2 1,456.2 Mt, 148.8 Mt below; no unserved energy in any year (user, 19 Oct 2026, messages 215 (3), 218 and 221; build 2026-10-17g)
 
@@ -6162,6 +6189,61 @@ Fixed, each as the review proposed unless stated:
   copy and is not in the repository, so this is recorded here and in the pull request.
 
 Suite on 2026-10-19i: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:05-22:55 UTC with other jobs beside it. Audit first read 87/88: the A29 narrative put the variable name ROWS inside a page string, which the shouting check counts; the count is now computed before the string (the check is unchanged), and audit, validate_structure, validate_outputs, validate_external and validate_public_text were rerun on the final commit. Render check in Chromium (fresh load; start-up, Fossil-free 2040, Least-cost path 2035): 7/7, Deep's caption reads 1.49 against 2.42, the Eskom 2025-26 generation rows are left out on 2040 and the panel says so, no undefined or NaN, no page errors.
+
+Suite on 2026-10-20i (main 2116c10, with #93, merged in; stored panels regenerated for 20i, fingerprint 0c85cbeacc414c):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48, validate_worker
+38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 20 Oct 2026 18:45-21:15 UTC, with
+two other branches' suites and jsdom measurements beside it throughout; the first run stopped at its time limit during
+validate_worker, which was run again on its own from 20:41 UTC (38/38), then the audit and eng5. Carbon intensity and the
+external comparison re-measured on the merge: unchanged (Today 744, IRP path 2035 268, Least-cost 271, Deep 48 g/kWh; IRP path
+2035 coal 50.9%, CO2 83.2 Mt). Render check in Chromium (fresh load): 9/9, adding the carbon intensity tile (744 on Today 2026)
+and the week buttons (Winter week, 17-23 May; Summer week, 24-30 Nov).
+
+### The rooftop tab took system losses three times; it now takes them once, and yields at the defaults rise 20-45% (build 2026-10-19j; user, 19 Oct 2026, message 252, site review A47)
+
+Cause (confirmed in the code on build 2026-10-19f): rtCalc multiplied the site's capacity factor, which already carries the
+system losses (Open-Meteo yield at a performance ratio of 0.80; the 0.21 fallback is PVGIS with its losses), by 'Shading &
+losses' (default 0.80) and again by a per-type 'system/inverter' factor (usagePct, 0.80 to 0.90).
+
+What changed (index.html, rtCalc and RT_TYPES): the capacity factor carries the system losses; the control is shading only
+(messages 260 (5) and 261 (1)): Minimal 100%, no shading beyond the base yield's losses, because the base already carries 20%
+(a performance ratio of 0.80), above PVWatts' 14% default total, which includes its 3% shading (A. P. Dobos, 'PVWatts Version 5
+Manual', NREL/TP-6A20-62641, 2014; pvlib's pvwatts_losses); Moderate 93%, the default, and Heavy 85%: our assumptions, applied
+to the base and labelled so on the control. usagePct is removed. The 0.21
+fallback is PVGIS at a tilt equal to the latitude, so it is divided by the 25-degree orientation factor (1.08) to bring it to a
+flat roof before the orientation control applies, since that control is relative to flat.
+
+Before (build 2026-10-19f, main) and after (2026-10-19j), every other control at its default (typical obstructions, flat roof,
+15-degree north orientation, 5% escalation, no battery, default bill and tariff); 'fallback' is no site queried, 'site' a site
+whose capacity factor is 20%. Computed by rtCalc itself in jsdom (scratchpad b1/rt.js), read from window._rtSheet:
+
+| Roof area, bracket | Case | kWp | CF before / after | Yield MWh/yr before / after | Savings R k/yr before / after | Payback yr before / after |
+|---|---|---|---|---|---|---|
+| 60 m2, home | fallback | 9.9 | 17.6% / 19.0% | 14 / 16 | 13 / 16 | 15.8 / 12.7 |
+| 400 m2, small C&I | fallback | 65.7 | 17.6% / 19.0% | 89 / 109 | 134 / 165 | 7.0 / 5.6 |
+| 2,000 m2, large C&I | fallback | 331.1 | 17.6% / 19.0% | 435 / 551 | 647 / 671 | 6.2 / 5.9 |
+| 12,000 m2, industrial | fallback | 1,989.6 | 17.6% / 19.0% | 2,460 / 3,309 | 682 / 682 | 47.5 / 47.5 |
+| 60 m2, home | site 20% | 9.9 | 16.8% / 19.5% | 13 / 17 | 13 / 16 | 16.8 / 12.3 |
+| 400 m2, small C&I | site 20% | 65.7 | 16.8% / 19.5% | 85 / 112 | 128 / 169 | 7.4 / 5.5 |
+| 2,000 m2, large C&I | site 20% | 331.1 | 16.8% / 19.5% | 414 / 566 | 641 / 672 | 6.2 / 5.9 |
+| 12,000 m2, industrial | site 20% | 1,989.6 | 16.8% / 19.5% | 2,342 / 3,404 | 682 / 682 | 47.5 / 47.5 |
+
+The same cases at Minimal shading (100%) on this build, re-measured 20 Oct 2026 (the 'before' build's Minimal was 85% for
+shading and losses together, so it has no like-for-like column): CF 20.4% (fallback) and 21.0% (site); yield 18, 118, 592 and
+3,558 MWh/yr (fallback) and 18, 121, 609 and 3,660 (site); savings R17k, 177k, 675k and 682k (fallback) and 17k, 182k, 677k and
+682k (site); payback 11.7, 5.2, 5.9 and 47.5 years (fallback) and 11.3, 5.1, 5.9 and 47.5 (site), in the table's order.
+
+The CF column is after orientation and shading (the yield is kWp x CF x 8,760, after usagePct before). The industrial case does
+not move: the default bill caps self-consumption, so the extra yield is exported, which earns nothing in the tab. Caveat: the
+93% default and the 85% are assumptions.
+
+Suite on 2026-10-19j: 880/884 with ESK19679.csv present: node checks 792/796 plus audit 88/88; eng5 5/6; the four known failures and eng5 check 6. Run 19 Oct 2026 about 22:00-22:50 UTC with other jobs beside it. Render check in Chromium (fresh load, rooftop tab): 5/5, the shading control's three values and label, the default capacity factor 19.0% (on 19j; rerun on the final build), no undefined or NaN, no page errors.
+
+Suite on 2026-10-21i (main f56089e, with #97 and #102, merged in; stored panels regenerated for 21i, fingerprint check 4/4):
+1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 21 Oct 2026
+06:10-09:15 UTC, with the c5f gas sensitivities (message 272, nice 19) and short jsdom and Chromium checks on other branches
+beside it. Rooftop figures re-measured on 21i: unchanged. Render check in Chromium (fresh load): 5/5.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
