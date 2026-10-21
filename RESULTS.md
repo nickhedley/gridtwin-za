@@ -6118,6 +6118,12 @@ node checks 878/882 plus audit 88/88; eng5 5/6. The failures are the four known 
 20:55-22:20 UTC with other branches' suites beside it (two at a time overnight, message 270); the runner was stopped at its time
 limit during validate_response and resumed from there. Render check in Chromium (fresh load, the four note presets): 25/25.
 
+Suite on 2026-10-21k (main a96bc1b, with #96, #108 and #110, merged in; stored panels regenerated for 21k, fingerprint
+02ec8cc6251d18): 1,052/1,056 with ESK19679.csv present: node checks 964/968 (validate_stored_panels 86/86, validate_links
+48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 21 Oct
+2026 15:52-17:23 UTC with the s_eskom26 share checks (c5f/eskom) beside it. Render check in Chromium (fresh load, the four
+note presets, build 21k): 25/25.
+
 ### Coal marginal cost's rand year, a sensitivity: indexing PyPSA-RSA's marginal_cost from 2024 rands to 2026 raises the average price 1-6% on the four note presets, from 2023 rands 2-11%; dispatch, system cost and CO2 unchanged (build 2026-10-20f, main 51150a8; user, 20 Oct 2026, message 268 (5); measure only, no model change until Meridian answers, TODO 14hu)
 
 Why: PyPSA-RSA states no currency year (config.yaml at commit 89872c1: USD_to_ZAR 18.24, EUR_to_ZAR 17.83, no year given,
