@@ -581,6 +581,12 @@ function probe(w, src) {
   set('rt_batt', 0); set('rt_area', 12000); set('rt_bill', w.eval('RT_DEFAULT_BILL')); set('rt_tariff', w.eval('RT_DEFAULT_TARIFF.toFixed(2)'));
   w.rtCalc();
   const bigWarn = /could not be connected/.test(doc.getElementById('rt_result').textContent);
+  // The default roof fits the default customer, so the tab opens without the warning (message 271 (10)).
+  set('rt_area', w.eval('RT_DEFAULT_AREA_M2')); w.rtCalc();
+  const defaultWarn = /could not be connected/.test(doc.getElementById('rt_result').textContent);
+  results.push({ name: 'Default roof fits the default customer\u2019s supply, so no warning on first opening', actual: `${w.eval('RT_DEFAULT_AREA_M2')} m2, warning ${defaultWarn}`,
+    expected: 'false', tol: null, pass: !defaultWarn && w.eval('RT_DEFAULT_AREA_M2') >= 100,
+    source: 'Businessrate 3, up to 100 kVA (Tariffs and Charges Booklet 2026/27); user, message 271 (10)', unit: '' });
   set('rt_area', 37.6); set('rt_bill', 2000); set('rt_tariff', 2.50); w.rtCalc();
   const smallWarn = /could not be connected/.test(doc.getElementById('rt_result').textContent);
   results.push({ name: 'Rooftop warns when the system exceeds the default customer\u2019s supply', actual: `12,000 m2 ${bigWarn}, 37.6 m2 ${smallWarn}`,

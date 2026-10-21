@@ -5948,6 +5948,12 @@ the four known ones and eng5 check 6. Run 20 Oct 2026 20:16-23:50 UTC in three p
 time limit; validate_links, then validate_worker, the audit and eng5 run again), with other branches' suites beside it.
 Render check in Chromium (rooftop and site tabs, Google and network calls stubbed): 12/12.
 
+The default roof now fits the default customer (user, 21 Oct 2026, message 271 (10)): RT_DEFAULT_AREA_M2, the largest whole
+hundred square metres within the 100 kVA supply at RT_WP_PER_M2, is 600 m2, 99.2 kWp (was 2,000 m2, 331.1 kWp). At the
+defaults otherwise (R80,000 a month, Businessrate 3 all-in tariff, fallback CF, no battery) payback is 6.97 years against
+6.15 on the old default, and the supply warning no longer shows on first opening; 2,000 m2 still warns. validate_outputs gains
+a check (45/45). Chromium, fresh load, 21 Oct 2026 06:25 UTC: 5/5.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)

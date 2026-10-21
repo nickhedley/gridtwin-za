@@ -5043,7 +5043,7 @@ function printPrefeas() {
             </summary>
             <div style="padding:4px 12px 12px">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:11px">
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof area (m2)</label><input id="rt_area" type="number" value="2000" min="10" max="100000" step="100" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Measured from above, so this is the roof's footprint</div></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof area (m2)</label><input id="rt_area" type="number" value="" min="10" max="100000" step="100" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Measured from above, so this is the roof's footprint</div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Obstructions</label><select id="rt_obstruction" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="clear">Clear – few penetrations</option><option value="typical" selected>Typical – vents, chimneys, walkways</option><option value="cluttered">Cluttered – HVAC plant, skylights</option><option value="heavy">Heavily obstructed – plant rooms, ducting</option></select><div id="rt_obs_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px"></div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof form</label><select id="rt_form" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="flat" selected>Flat roof – whole measured area</option><option value="mono">Single pitch facing north</option><option value="dual">Dual pitch – north plane only</option><option value="complex">Complex or multi-facet roof</option></select><div id="rt_form_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px"></div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof – 100%</option><option value="1.05" selected>15deg north-facing – 105%</option><option value="1.08">25deg north (optimal) – 108%</option><option value="0.92">East/west-facing – 92%</option><option value="0.78">South-facing – 78%</option><option value="0.95">Mixed / multiple orientations – 95%</option></select><div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Pick the direction your panels will face, not the shape of the whole roof – installers typically concentrate panels on the best-facing section rather than spreading them evenly, so in most cases you should use a single-orientation option even on a geometrically complex roof. Only choose “Mixed” if panels will be split across clearly different directions (e.g. a deliberate east+west array).</div></div>
@@ -21635,8 +21635,8 @@ const RT_BIZRATE3_2026 = { energy: 242.90, ancillary: 0.45, networkDemand: 15.81
                            networkCapacityRDay: 81.98, serviceAdminRDay: 15.99, generationCapacityRDay: 11.18 };
 const RT_DEFAULT_BILL = 80000;
 // Businessrate is for supplies of up to 100 kVA (the same booklet; RESULTS, build 2026-10-19f). The tab does not check a system
-// against the supply it connects to (audit G8-M2, message 264): the default 331 kWp roof is about three times this, the
-// industrial row about twenty. It now says so (G8 fix 4); a cap per NRS 097-2-3 and a larger-customer tariff wait for after
+// against the supply it connects to (audit G8-M2, message 264): the old default 331 kWp roof was about three times this, the
+// industrial row about twenty; the default roof now fits it (RT_DEFAULT_AREA_M2, message 271 (10)). It now says so (G8 fix 4); a cap per NRS 097-2-3 and a larger-customer tariff wait for after
 // the note (TODO 14hq).
 const RT_BIZRATE3_MAX_KVA = 100;
 const rtBizrate3 = (() => { const T = RT_BIZRATE3_2026;
@@ -21662,6 +21662,11 @@ const RT_OBSTRUCTION = {
 };
 const RT_PACKING = RT_OBSTRUCTION.typical.f;
 const RT_WP_PER_M2 = RT_MODULE.wp / RT_MODULE.areaM2 * RT_PACKING;   // about 165
+// THE DEFAULT ROOF FITS THE DEFAULT CUSTOMER (user, 21 Oct 2026, message 271 (10)). It was 2,000 m2, about 331 kWp, three
+// times the 100 kVA supply of the Businessrate 3 customer the tab assumes, so the supply warning showed on first opening. The
+// default is now the largest whole hundred square metres whose system stays within that supply: 600 m2, about 99 kWp.
+const RT_DEFAULT_AREA_M2 = Math.floor(RT_BIZRATE3_MAX_KVA * 1000 / RT_WP_PER_M2 / 100) * 100;
+{ const a = document.getElementById('rt_area'); if (a && !a.value) a.value = RT_DEFAULT_AREA_M2; }
 
 // ROOF FORM. The measured area from satellite imagery is the HORIZONTAL
 // PROJECTION of the roof. On a flat roof that is the area you build on. On a
@@ -21981,7 +21986,7 @@ function rtExportSheet(){
 function rtCalc() {
   const el = document.getElementById('rt_result');
   if(!el) return;
-  const area     = parseFloat(document.getElementById('rt_area').value) || 2000;
+  const area     = parseFloat(document.getElementById('rt_area').value) || RT_DEFAULT_AREA_M2;
   const sharePct = parseFloat(document.getElementById('rt_share').value) || 100;
   const tilt     = parseFloat(document.getElementById('rt_tilt').value) || 1.05;
   const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.80;
