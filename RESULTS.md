@@ -6340,6 +6340,20 @@ Suite minus validate_stored_panels on 2026-10-21d (stored panels not regenerated
 48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Render check
 in Chromium (fresh load; start-up and the four note presets; the risk panel on screen for Least-cost path 2035): 25/25.
 
+Main merged in as build 2026-10-21l (main 0118e42, with #105 and #110; user, 21 Oct 2026, message 304 (a)). The firm-capacity
+paragraph had been rewritten on both sides; the merge keeps this PR's wording and main's reserve-margin sentence. Together they
+put the always-visible prose at 4,318 words against audit.py's 4,250 ceiling (main 4,239, this branch 4,243, common base 4,167).
+The ceiling was not raised (message 271): the adequacy notes, the capture-rate caveat, the clean-coal test-facility sentence and
+two rooftop-calculator sentences were reworded to the same facts in fewer words, 4,246. Message 303 on the same build: the coal
+validation row is 'Coal sent out, calendar 2025', against calendar 2025 coal sent-out energy from Eskom data, the analysis ours
+(SOURCES, Eskom performance report section, relates it to the report's 179.4 TWh FY2025 production); PV R12,000 and rooftop
+R17,000/kW stay marked 'no recorded source' (SOURCES records the origin, commit 774dc8d, 1 Oct 2026, with no source given).
+Suite on 2026-10-21l (stored panels regenerated, fingerprint 008cce56d7195c; ESK19679.csv present), 21 Oct 2026 20:27-21:46 UTC
+with the s_eskom26 checks beside it: 1,052/1,056, node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Render check in
+Chromium: 25/25 (the firm-capacity and outage-model patterns updated to the reworded text; the firm GW figures unchanged: Today
+34.9, IRP's 2030 targets 39.4, IRP path 2035 41.4, Least-cost path 2035 37.2) and 10/10 on message 303's labels.
+
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
 Suite on 2026-10-18i (claude/retail-audit, ESK19679.csv present, the c5f chain running beside it): 822/826, node checks 735/739 plus audit 87/87; eng5 5/6. Each failing
