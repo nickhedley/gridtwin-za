@@ -10169,6 +10169,15 @@ const VRFB_REF_CYCLES = LI_REF_CYCLES, FE_REF_CYCLES = 8760 / (FIXED.newIronAirH
 const bldLcoeStoreAt = (k, hours, cycles) => bldLcoeAt(BLD_COST[k].c2026, BLD_FOM[k], BLD_LIFE[k], hours * cycles / 1000);
 FIXED.lcoeVrfb = Math.round(bldLcoeStoreAt('vrfb', FIXED.newVrfbHours, VRFB_REF_CYCLES) / 50) * 50;
 FIXED.lcoeIronAir = Math.round(bldLcoeStoreAt('ironair', FIXED.newIronAirHours, FE_REF_CYCLES) / 50) * 50;
+// Iron-air's cost per kWh at the cycling a run actually gives it: its discharge over its energy capacity (message 271 (8)).
+function ironAirOwnCyclingNote(r){
+  const mw = state.newIronAirMW || 0, hours = state.newIronAirHours ?? FIXED.newIronAirHours;
+  if (!(mw > 0) || !r || !r.tierDis) return ' This scenario builds no iron-air.';
+  const cycles = r.tierDis.fe / (mw * hours);
+  if (!(cycles > 0)) return ' In this scenario its iron-air does not discharge.';
+  return ' In this scenario it makes ' + cycles.toFixed(1) + ' full cycles a year: about R'
+    + (Math.round(bldLcoeStoreAt('ironair', hours, cycles) / 50) * 50 / 1000).toFixed(2) + '/kWh.';
+}
 // OPTIMISER GRID COST, TODO 14ar (7 Oct 2026, user decisions). Until now the build LP charged no grid cost to
 // any technology, while the engine added txRPerKWyr to new wind, solar and offshore afterwards, so the optimiser
 // chose them without it. Each new resource now pays, in the LP:
@@ -19905,8 +19914,9 @@ function render(r){
     {k:'lcoeBatt',nm:'Lithium-ion (4h)',c:COLORS.batt},
     {k:'lcoePs',nm:'Pumped storage (' + FIXED.newPsHours + 'h, new)',c:COLORS.ps},
     {k:'lcoeVrfb',nm:'Vanadium flow (8h)',c:COLORS.batt,tip:'The model\u2019s vanadium build costs at one full cycle a day ('+VRFB_REF_CYCLES+' a year), per kWh discharged; charging energy not costed.'},
-    // Iron-air's bar is a floor (message 264, audit G5-M1): its build costs at the most cycles a 100-hour store can make.
-    {k:'lcoeIronAir',nm:'Iron-air (100h, a floor)',c:COLORS.batt,tip:'The model\u2019s iron-air build costs at the most full cycles a 100-hour store at '+Math.round(FIXED.newIronAirEff*100)+'% round trip can make, about '+Math.round(FE_REF_CYCLES)+' a year, per kWh discharged; charging energy not costed. Used less, each kWh costs more.'},
+    // Iron-air's bar is a floor (message 264, audit G5-M1): its build costs at the most cycles a 100-hour store can make. Its
+    // label says so, and the tooltip adds the figure at this scenario's own cycling (user, 21 Oct 2026, message 271 (8)).
+    {k:'lcoeIronAir',nm:'Iron-air (100h, at the most cycles it can make)',c:COLORS.batt,tip:'The model\u2019s iron-air build costs at the most full cycles a 100-hour store at '+Math.round(FIXED.newIronAirEff*100)+'% round trip can make, about '+Math.round(FE_REF_CYCLES)+' a year, per kWh discharged; charging energy not costed. Used less, each kWh costs more.'+ironAirOwnCyclingNote(r)},
     {k:'lcoeCsp',nm:'CSP',c:COLORS.csp},
     {k:'lcoeDiesel',nm:'Diesel OCGT',c:COLORS.diesel},
   ].map(x=>({...x,v:state[x.k]!==undefined?state[x.k]:FIXED[x.k]}));

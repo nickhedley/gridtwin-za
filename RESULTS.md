@@ -5949,6 +5949,13 @@ Suite on 2026-10-21f without validate_stored_panels (message 266; stored panels 
 5/6. The failures are the four known ones (iron-air July, high-season off-peak, peakerSeasonRatio, EDMSA Scenario A CO2 2035)
 and eng5 check 6.
 
+The iron-air bar is labelled 'at the most cycles it can make' (user, 21 Oct 2026, message 271 (8)): the floor stays (R4.80/kWh
+at 27.2 full cycles a year), and its tooltip adds the figure at the scenario's own cycling, its discharge (tierDis.fe) over its
+energy capacity: Deep decarbonisation 2035, 2,000 MW, 1.2 cycles a year, about R107.90/kWh; Fossil-free 2040, 13,000 MW, 1.8
+cycles, about R72.00/kWh; presets without iron-air say so. jsdom, simulate(state, PROFILES) after applyState, 21 Oct 2026
+06:40 UTC (scratchpad overnight/a4b/fe.js). Quick checks: lint 3/3, structure 27/27, public_text 17/17, outputs 42/42, audit
+88/88; render check 3/3.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
