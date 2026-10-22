@@ -170,6 +170,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
          const leaf=id.split('.').pop();
          if (Number.isInteger(v) && v>=1990 && v<=2100){ out.rows.push({id,skip:'a year'}); continue; }
          if (/[Ss]eed/.test(leaf)){ out.rows.push({id,skip:'a random seed'}); continue; }
+         if (v===1 && /^(bld|.*On$|.*Modern$)/.test(leaf)){ out.rows.push({id,skip:'a switch'}); continue; }
          const r={id,v};
          for (const f of [0.8,1.2]){
            const nv=v*f; if (FRAC.test(leaf) && v<=1 && nv>1){ r['f'+f]={skip:'above 1'}; continue; }
