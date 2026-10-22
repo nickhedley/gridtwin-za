@@ -48,8 +48,9 @@ slider moved, and links with new wind and new solar each compute exactly what th
 validate_register.js (user, 22 Oct 2026, messages 310, 312, 313): the input register. Every input in the code needs an entry in
 harness/inputs_meta.json (hand-kept: unit, rand year, basis, a pointer to its SOURCES.md heading and page, date checked, status);
 INPUTS.md is generated from it by `node inputs_register.js testroot` and never edited by hand. A new input: run
-`node inputs_register.js testroot --add-missing`, review the entry, commit both files. The counts of 'not yet reviewed' and
-'no recorded source' may not rise above harness/inputs_baseline.json; lowering it is allowed, raising it needs Nick's say-so.
+`node inputs_register.js testroot --add-missing`, review the entry, commit both files. The counts of 'not yet reviewed',
+'no recorded source' and 'source in code comment only' (message 316) may not rise above harness/inputs_baseline.json; lowering
+them is allowed, raising them needs Nick's say-so.
 validate_worker.js (user, 20 Oct 2026, message 260 (3)) runs the page in Chromium (/opt/pw-browsers) and checks the engine's
 web worker against the page's own engine on start-up and every preset, to the digit: 38 checks, about 20 minutes.
 

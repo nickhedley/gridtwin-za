@@ -10,6 +10,9 @@
 // Statuses (message 313; weakest first, the order 'derived' uses):
 //   no recorded source            SOURCES has no entry for it (message 312 (b): never blank, never guessed)
 //   not yet reviewed              the script cannot place it (a switch, a text setting, a value computed by a function)
+//   source in code comment only   SOURCES has no entry, but the comment beside it in the code (or its data file's own meta)
+//                                 names a document with a page, table, link or date and states the input's name or value
+//                                 (message 316 (a)); a lead for confirmation by hand, which moves the source into SOURCES
 //   benchmark only                set by hand: compared with a benchmark, not taken from a source
 //   sourced (by name, unconfirmed) SOURCES names it, but the value there is not shown to match the code's value
 //   sourced                       SOURCES names it and states the code's current value in the same entry
@@ -21,7 +24,7 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 
-const STATUS_ORDER = ['no recorded source', 'not yet reviewed', 'benchmark only', 'sourced (by name, unconfirmed)', 'sourced'];
+const STATUS_ORDER = ['no recorded source', 'not yet reviewed', 'source in code comment only', 'benchmark only', 'sourced (by name, unconfirmed)', 'sourced'];
 const OBJECTS = ['FIXED', 'BLD_COST', 'BLD_FOM', 'BLD_LIFE', 'BLD_TARIFF'];
 
 // ---------- source text: comments out, strings kept ----------
@@ -197,6 +200,72 @@ function sourcesFor(id, value, S) {
   return { status: 'sourced (by name, unconfirmed)', sources: heads.map(h => ({ heading: h, page: null })),
     note: match ? 'the code value ' + value + ' appears in this SOURCES entry: confirm by hand to mark sourced' : null };
 }
+// ---------- citations in code comments (message 316 (a)) ----------
+const MONTH = '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)';
+const DOC_CUE = /\b(report|study|plan|IRP|IRENA|BNEF|NREL|Lazard|Ember|Eskom|NERSA|NTCSA|CSIR|ESMAP|EIA|IEA|PVGIS|ERA5|bid|window|BW\d|tariff|booklet|paper|et al|statistic|survey|review|assessment|guide|outlook|database|Stats SA|SAPP|DMRE|DFFE|IPP Office|GreenCape|Meridian|PyPSA|GridLab|Wood Mackenzie|Bloomberg)/i;
+const DOC_REF = new RegExp('\\bpp?\\.\\s?\\d|\\bpage\\s\\d|\\bTable\\s[\\dA-Z]|\\bFigure\\s\\d|\\bAppendix\\s[\\dA-Z]|https?://|\\bFY\\s?\\d{2,4}|\\b' + MONTH + '\\s+(?:19|20)\\d{2}\\b|\\((?:19|20)\\d{2}[a-z]?\\)');
+// Text the comment uses for its own edit log or the user's instructions, which are not documents.
+const LOG = new RegExp('\\((?:user|message)[^)]*\\)|\\bmessages?\\s\\d+[^;.]*|\\b(?:on|from|until|since|to)\\s+\\d{1,2}\\s+' + MONTH + '\\s+(?:19|20)\\d{2}|\\b\\d{1,2}\\s+' + MONTH + '\\s+(?:19|20)\\d{2}\\s*[;:)]', 'gi');
+const isCode = l => l.trim() && !/^\s*(\/\/|\/\*|\*)/.test(l);
+// The comment lines touching a declaration line: the block directly above, any comment on the line itself and the block
+// directly below, each stopping at the first code line.
+function commentWindow(lines, i) {
+  const out = []; const m = /\/\/(.*)$/.exec(lines[i]); if (m) out.push(m[1]);
+  for (let k = i - 1; k >= 0 && k > i - 60 && !isCode(lines[k]); k--) out.push(lines[k]);
+  for (let k = i + 1; k < lines.length && k < i + 60 && !isCode(lines[k]); k++) out.push(lines[k]);
+  return out.map(l => l.replace(/^\s*(\/\/|\/\*|\*)?\s?/, '')).join(' ');
+}
+function citationIn(text, names, value) {
+  const t = text.replace(LOG, ' ');
+  // A short name ('pv') or a small whole number (25, 30) is too common to tie a comment to an input.
+  const forms = typeof value === 'number' && (Math.abs(value) >= 100 || !Number.isInteger(value)) ? valueForms(value) : [];
+  const pats = names.map(n => n.split('.').pop()).filter(n => n.length >= 5).map(n => new RegExp('(^|[^\\w])' + esc(n) + '(?![\\w])', 'g'))
+    .concat(forms.map(x => new RegExp('(^|[^\\d.,])' + esc(x) + '(?![\\d])', 'g')));
+  // The document and its page or date must sit within 300 characters of where the comment names the input or states its
+  // value, so a citation in a long shared block is not credited to every setting beside it.
+  for (const re of pats) for (const m of t.matchAll(re)) {
+    const span = t.slice(Math.max(0, m.index - 300), m.index + m[0].length + 300);
+    if (DOC_CUE.test(span) && DOC_REF.test(span)) { const r = DOC_REF.exec(span); return span.slice(Math.max(0, r.index - 90), r.index + 50).replace(/\s+/g, ' ').trim(); }
+  }
+  return null;
+}
+// The line each input is declared on, in its own file.
+function declLines(root) {
+  const src = { 'index.html': fs.readFileSync(path.join(root, 'index.html'), 'utf8').split('\n'),
+                'nodal/nodal_engine.js': fs.readFileSync(path.join(root, 'nodal', 'nodal_engine.js'), 'utf8').split('\n') };
+  const find = (file, id) => {
+    const L = src[file], parts = id.split('.');
+    if (parts.length === 1) { const re = new RegExp('^const\\s+(?:[^;]*?,\\s*)?' + esc(id) + '\\s*='); for (let i = 0; i < L.length; i++) if (re.test(L[i])) return i; return -1; }
+    let i = L.findIndex(l => new RegExp('^const\\s+' + esc(parts[0]) + '\\s*=').test(l)); if (i < 0) return -1;
+    for (const p of parts.slice(1, parts.length > 2 ? -1 : undefined)) {
+      const re = new RegExp('(^|[\\s,{])' + esc(p) + '\\s*:'); let k = i;
+      while (k < L.length && k < i + 3000 && !(re.test(L[k]) && isCode(L[k]))) k++;
+      if (k >= L.length || k >= i + 3000) return -1; i = k;
+    }
+    return i;
+  };
+  return { src, find };
+}
+function fileCitation(root, f) {
+  try { const j = JSON.parse(fs.readFileSync(path.join(root, f), 'utf8'));
+    const meta = Array.isArray(j) ? null : Object.fromEntries(Object.entries(j).filter(([k]) => /^_?(meta|source|sources|note|notes|provenance|citation|licence|license)$/i.test(k)));
+    if (!meta || !Object.keys(meta).length) return null;
+    const t = JSON.stringify(meta).slice(0, 4000).replace(LOG, ' ');
+    if (!DOC_CUE.test(t) || !DOC_REF.test(t)) return null;
+    const r = DOC_REF.exec(t); return t.slice(Math.max(0, r.index - 90), r.index + 50).replace(/\s+/g, ' ');
+  } catch (e) { return null; }
+}
+// An entry at 'no recorded source' with no SOURCES pointer at all moves to 'source in code comment only' when its comment
+// (or its data file's meta) cites a document; the cited text is kept as the note, for confirmation by hand.
+function commentStatus(id, it, e, root, D) {
+  if (e.status !== 'no recorded source' || (e.sources || []).length) return e;
+  // A switch (0 or 1) or a year is a setting, not a quantity a document can confirm.
+  if (typeof it.value === 'number' && (it.value === 0 || it.value === 1 || (Number.isInteger(it.value) && it.value >= 1990 && it.value <= 2100))) return e;
+  const c = id.startsWith('file:') ? fileCitation(root, id.slice(5))
+    : (() => { const i = D.find(it.where, id); return i < 0 ? null : citationIn(commentWindow(D.src[it.where], i), namesFor(id), it.value); })();
+  return c ? { ...e, status: 'source in code comment only', note: 'code comment: ' + c } : e;
+}
+
 // ---------- classification ----------
 function parentsOf(it, items) {
   const ids = new Set(), e = it.expr;
@@ -247,7 +316,7 @@ function check(items, meta, S, baseline) {
       errs.push(`${id}: sourced at ${m.confirmedValue}, the code now reads ${items[id].value}; recheck the source or change the status`);
   }
   const counts = countStatuses(meta);
-  if (baseline) for (const k of ['not yet reviewed', 'no recorded source'])
+  if (baseline) for (const k of ['not yet reviewed', 'no recorded source', 'source in code comment only'])
     if ((counts.effective[k] || 0) > baseline[k]) errs.push(`${counts.effective[k]} inputs at '${k}' against the baseline's ${baseline[k]} (inputs_baseline.json; raising it needs the user's say-so)`);
   return { errs, counts };
 }
@@ -290,10 +359,22 @@ if (require.main === module) (async () => {
   const META = path.join(__dirname, 'inputs_meta.json'), BASE = path.join(__dirname, 'inputs_baseline.json');
   const items = await extract(root), S = readSources(root);
   let meta = fs.existsSync(META) ? JSON.parse(fs.readFileSync(META, 'utf8')) : null;
+  if (mode === '--comments') {
+    // Message 316 (a): reclassify existing 'no recorded source' entries with no SOURCES pointer by their code comments.
+    if (!meta) throw new Error('no inputs_meta.json');
+    const D = declLines(root); let moved = 0;
+    for (const id of Object.keys(meta)) if (items[id]) { const n = commentStatus(id, items[id], meta[id], root, D); if (n !== meta[id]) { meta[id] = n; moved++; } }
+    fs.writeFileSync(META, JSON.stringify(meta, null, 1) + '\n'); console.log(moved + ' entries moved to source in code comment only');
+    const b = fs.existsSync(BASE) ? JSON.parse(fs.readFileSync(BASE, 'utf8')) : {}, c = countStatuses(meta).effective;
+    b['no recorded source'] = Math.min(b['no recorded source'] ?? Infinity, c['no recorded source'] || 0);
+    if (!('source in code comment only' in b)) b['source in code comment only'] = c['source in code comment only'] || 0;
+    fs.writeFileSync(BASE, JSON.stringify(b, null, 1) + '\n');
+  }
   if (mode === '--init' || mode === '--add-missing') {
     if (mode === '--init' && meta) throw new Error('inputs_meta.json exists; use --add-missing');
     meta = meta || {}; let added = 0;
-    for (const id of Object.keys(items).sort()) if (!meta[id]) { meta[id] = autoEntry(items[id], items, S); added++; }
+    const D = declLines(root);
+    for (const id of Object.keys(items).sort()) if (!meta[id]) { meta[id] = commentStatus(id, items[id], autoEntry(items[id], items, S), root, D); added++; }
     const sorted = Object.fromEntries(Object.keys(meta).sort().map(k => [k, meta[k]]));
     fs.writeFileSync(META, JSON.stringify(sorted, null, 1) + '\n'); meta = sorted;
     console.log(`${added} entries added to inputs_meta.json`);

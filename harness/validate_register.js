@@ -23,7 +23,7 @@ const R = require('./inputs_register.js');
      !kind(/unknown status|with no SOURCES pointer|no parents listed|has no register entry/).length,
      kind(/unknown status|with no SOURCES pointer|no parents listed|has no register entry/).slice(0, 5).join('; '));
   ok('every sourced value still matches the code', !kind(/the code now reads/).length, kind(/the code now reads/).slice(0, 5).join('; '));
-  ok(`'not yet reviewed' and 'no recorded source' within the baseline (${baseline['not yet reviewed']} and ${baseline['no recorded source']})`,
+  ok(`'not yet reviewed', 'no recorded source' and 'source in code comment only' within the baseline (${baseline['not yet reviewed']}, ${baseline['no recorded source']} and ${baseline['source in code comment only'] ?? 'none set'})`,
      !kind(/against the baseline/).length, kind(/against the baseline/).join('; '));
   const want = R.writeMd(root, items, meta, counts) + '\n', have = fs.existsSync(path.join(root, 'INPUTS.md')) ? fs.readFileSync(path.join(root, 'INPUTS.md'), 'utf8') : '';
   ok('INPUTS.md is what inputs_register.js writes (never edited by hand)', want === have, 'run node inputs_register.js testroot and commit INPUTS.md');

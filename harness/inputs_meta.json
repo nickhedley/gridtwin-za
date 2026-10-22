@@ -345,8 +345,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: d the spur to the nearest grid feature are INSIDE; onshore Cost boundary, agreed by ESMAP Figure 36 and the ATB: array cables, export cable,",
+  "status": "source in code comment only",
   "sources": []
  },
  "BLD_COST.offshore.decl": {
@@ -354,8 +354,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: d the spur to the nearest grid feature are INSIDE; onshore Cost boundary, agreed by ESMAP Figure 36 and the ATB: array cables, export cable,",
+  "status": "source in code comment only",
   "sources": []
  },
  "BLD_COST.pv.c2026": {
@@ -615,8 +615,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: NEA/IEA Projected Costs run 3, 7 and 10% real. Offshore wind and hydro carry (updated 11 Oct 2026, user); REIPPPP bid window 4 real equity",
+  "status": "source in code comment only",
   "sources": []
  },
  "BLD_FOM.batt": {
@@ -642,8 +642,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: fleet scale, checked again 23 Sep 2026. The one figure in circulation is $5-15/M",
+  "status": "source in code comment only",
   "sources": []
  },
  "BLD_FOM.ocgd": {
@@ -705,8 +705,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: fleet scale, checked again 23 Sep 2026. The one figure in circulation is $5-15/M",
+  "status": "source in code comment only",
   "sources": []
  },
  "BLD_FOM.wind": {
@@ -1764,8 +1764,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: urchase is years out, so spot is a proxy - revisit if the rand FX: USD/ZAR 16.21 spot, 14 Aug 2026 (Bloomberg); 30-day average 16.47. The",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.battEff": {
@@ -1825,8 +1825,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: arithmetic, so they changed nothing and were removed. ROOFTOP HOUSEHOLD VIEW. Rebuilt 23 Sep 2026 with a calculation behind it; an earlier",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.bldAdequacyBasis": {
@@ -1852,8 +1852,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: (txRPerKWyr) and loses bldCapeCurtPct of its output; the 400; NTCSA's updated GCCA of 31 Oct 2025, per Cliffe Dekker Hofmeyr, 3,470 MW at",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.bldCapeWindMW": {
@@ -1879,8 +1879,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: nt, linearised (committed capacity, generation at least OPTIMISER GRID COST (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCo",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.bldCoalEarlyOn": {
@@ -2023,8 +2023,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: nd 2039). The build LP counts it as supply from its year and the engine bldNuclearAdd (11 Oct 2026, TODO 14be step 7): new nuclear decided i",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.bldOcgdFromYear": {
@@ -2439,8 +2439,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: on up to ccgtForceLoadMW of CCGT in IRP 2025 reference case (Government Gazette 53596, 28 Oct 2025, p.34): 6 GW of CCGT at a minimum annual",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.ccgtForceLoadPct": {
@@ -2484,8 +2484,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: g 2024 benchmarking has supercritical PC going from GBP3,668/kW to ccsCapexRkW sourced 20 Aug 2026. Two independent routes converge: Tariff",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.ccsCaptureRatePct": {
@@ -2547,8 +2547,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: UG. Tariff side: retrofit capital, allowed return and asset life. ccsCapexRkW sourced 20 Aug 2026. Two independent routes converge: Ieagh",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.ccsWaccPct": {
@@ -2729,8 +2729,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: , same source basis. costNuclear 160 Koeberg fuel; Eskom disclosed ~11c/kWh (R110) for FY2024, FY2026: R591 as stated,",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.costImports": {
@@ -3043,8 +3043,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: sales, 7% of 201,953 GWh, Eskom integrated report a same-financial-year pair: SOURCED 15 Sep 2026, replacing an assumed 550 that mirrored c",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.exportPriceR": {
@@ -3052,8 +3052,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: ich is the surplus pool rate paid for energy that would otherwise be spilled. SOURCED 15 Sep 2026, replacing an assumed 550 that mirrored c",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.exportShapePeak": {
@@ -3079,8 +3079,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: 2 and 822 from April to August. The post-Mozal mean is about 700, and 745 sits inside it. January 2026, 1,703 in February, 987 in the transi",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.fomCcgt": {
@@ -3177,8 +3177,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: s_price_cases.json are built on, so a new OCGT on VOM R80.19/MWh and FOM R423.89/kW-yr in January 2024 rands, x SA CPI to January 2026 (1.03",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.hybridCF": {
@@ -3186,8 +3186,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: om's Weekly System Status Report (Week 32, Aug 2026), which RMIPPPP hybrid - firm dispatchabl",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.hybridEndHour": {
@@ -3204,8 +3204,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: These are solar+wind+battery 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which RMIPPPP hybrid - firm dispatchabl",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.hybridStartHour": {
@@ -3461,8 +3461,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: kWh, pvUtilityMW is derived, corrected 4,974 -> 3,151 : 2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26) + 488",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.newIronAirHours": {
@@ -3470,8 +3470,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: kWh, pvUtilityMW is derived, corrected 4,974 -> 3,151 : 2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26) + 488 MW privat",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.newIronAirMW": {
@@ -3604,8 +3604,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: ure itself boundary whenever this constant is compared against an Eskom figure. Checked 2 Sep 2026 against the report. NOT an error - a diff",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.offshoreCapMW": {
@@ -3896,8 +3896,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: held flat beyond it. Held every hour whether priced or not. 21 Sep 2026. Operating reserve: NTCSA ASTR 2026/27-20",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED.reserveRegHours": {
@@ -4172,8 +4172,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: ild_capacity.py's PRE2026_PRIVATE list. 17 Oct 2026 for central c5f and 196 (2)) through",
+  "status": "source in code comment only",
   "sources": []
  },
  "FIXED_PV_CF_12Y": {
@@ -4226,8 +4226,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: related absolute figure. against this app's own real new-line cost (R31m/km, DEE Minister Apr 2025), giving a \"less than one-twentieth of wh",
+  "status": "source in code comment only",
   "sources": []
  },
  "H2_VIABLE_BAND": {
@@ -4301,8 +4301,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: hours after the value was corrected. 0.41 -> 0.88. ESK19679 International Imports, Jan-Aug 2026 mean on the 1,150 MW contract. Same sourc",
+  "status": "source in code comment only",
   "sources": []
  },
  "IMPORTS_REGION": {
@@ -4391,8 +4391,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: ey assumptions, p.37; read 18 Oct 2026, . An international - die",
+  "status": "source in code comment only",
   "sources": []
  },
  "LOSS_BASE_RATE": {
@@ -5086,8 +5086,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: tokens - at 7.9 TWh over six months, about 8% of sales, R17.5bn of lost revenue. Eskom's FY2026 interim results put NON-TECHNICAL losses -",
+  "status": "source in code comment only",
   "sources": []
  },
  "RETAIL_VAT": {
@@ -5628,8 +5628,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: {\"meta\":{\"licence\":\"CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "status": "source in code comment only",
   "sources": []
  },
  "file:nodal/profiles_regional.json": {
@@ -5678,8 +5678,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: rray was first seen COMPLETE, not a commercial operation date - Grootfontein was complete Dec 2024 and reached COD Dec 2025.\",\"wind_note\":\"W",
+  "status": "source in code comment only",
   "sources": []
  },
  "file:nodal/redz.json": {
@@ -5687,8 +5687,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment:  Zones (REDZ), South Africa\",\"count\":11,\"gazettes\":[\"GN 114, Government Gazette 41445, 16 Feb 2018 - REDZ 1-8 (Minister Molewa)\",\"GN 142/144",
+  "status": "source in code comment only",
   "sources": []
  },
  "file:nodal/reea_projects.json": {
@@ -5742,8 +5742,8 @@
   "randYear": null,
   "basis": null,
   "checked": null,
-  "note": null,
-  "status": "no recorded source",
+  "note": "code comment: tional or non-commercial use only; Eskom's written consent to publish has been requested (October 2026). Shape only; the analysis is ours, n",
+  "status": "source in code comment only",
   "sources": []
  },
  "file:nodal/sa_solar_grid.json": {

@@ -9,8 +9,9 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | sourced | 0 | 0 |
 | sourced (by name, unconfirmed) | 56 | 56 |
 | benchmark only | 0 | 0 |
+| source in code comment only | 33 | 36 |
 | not yet reviewed | 120 | 131 |
-| no recorded source | 326 | 362 |
+| no recorded source | 293 | 326 |
 | derived | 47 | - |
 | total | 549 | |
 
@@ -45,19 +46,19 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.avonEndDoy | 200 |  |  |  | no recorded source |  |  | `200` |
 | FIXED.avonEndYear | 2031 |  |  |  | no recorded source |  |  | `2031` |
 | FIXED.avonMW | 670 |  |  |  | no recorded source |  |  | `670` |
-| FIXED.battCycleCostR | 165 |  |  |  | no recorded source |  |  | `165` |
+| FIXED.battCycleCostR | 165 |  |  |  | source in code comment only – code comment: urchase is years out, so spot is a proxy - revisit if the rand FX: USD/ZAR 16.21 spot, 14 Aug 2026 (Bloomberg); 30-day average 16.47. The |  |  | `165` |
 | FIXED.battEff | 0.88 |  |  |  | no recorded source |  |  | `0.88` |
 | FIXED.battHours | 4.294117647 |  |  |  | derived (weakest parent: not yet reviewed) | EXISTING_BATT_MW, EXISTING_BATT_MWH |  | `EXISTING_BATT_MWH / EXISTING_BATT_MW` |
 | FIXED.battPowerMW | 68 |  |  |  | derived (weakest parent: not yet reviewed) | EXISTING_BATT_MW |  | `EXISTING_BATT_MW` |
 | FIXED.billFeedInR | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.billGenPct | 100 |  |  |  | no recorded source |  |  | `100` |
-| FIXED.billSelfConsumePct | 60 |  |  |  | no recorded source |  |  | `60` |
+| FIXED.billSelfConsumePct | 60 |  |  |  | source in code comment only – code comment: arithmetic, so they changed nothing and were removed. ROOFTOP HOUSEHOLD VIEW. Rebuilt 23 Sep 2026 with a calculation behind it; an earlier |  |  | `60` |
 | FIXED.bldAdequacyBasis | "customer" |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `'customer'` |
 | FIXED.bldBattCase | "central" |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `'central'` |
-| FIXED.bldCapeCurtPct | 4 |  |  |  | no recorded source |  |  | `4` |
+| FIXED.bldCapeCurtPct | 4 |  |  |  | source in code comment only – code comment: (txRPerKWyr) and loses bldCapeCurtPct of its output; the 400; NTCSA's updated GCCA of 31 Oct 2025, per Cliffe Dekker Hofmeyr, 3,470 MW at |  |  | `4` |
 | FIXED.bldCapeWindMW | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.bldCoalCommit | 1 |  |  |  | no recorded source |  |  | `1` |
-| FIXED.bldCoalCommitHours | 48 |  |  |  | no recorded source |  |  | `48` |
+| FIXED.bldCoalCommitHours | 48 |  |  |  | source in code comment only – code comment: nt, linearised (committed capacity, generation at least OPTIMISER GRID COST (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCo |  |  | `48` |
 | FIXED.bldCoalEarlyOn | 1 |  |  |  | no recorded source |  |  | `1` |
 | FIXED.bldCoalMinFrac | 0.65 |  |  |  | no recorded source |  |  | `0.65` |
 | FIXED.bldComply | "none" |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `'none'` |
@@ -73,7 +74,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.bldLiEnergyHours | 4 |  |  |  | no recorded source |  |  | `4` |
 | FIXED.bldMarginCreditMax | 1 |  |  |  | no recorded source |  |  | `1` |
 | FIXED.bldMarginHoldHours | 4 |  |  |  | no recorded source |  |  | `4` |
-| FIXED.bldNuclearAdd | null |  |  |  | no recorded source |  |  | `null` |
+| FIXED.bldNuclearAdd | null |  |  |  | source in code comment only – code comment: nd 2039). The build LP counts it as supply from its year and the engine bldNuclearAdd (11 Oct 2026, TODO 14be step 7): new nuclear decided i |  |  | `null` |
 | FIXED.bldOcgdFromYear | 2028 |  |  |  | no recorded source |  |  | `2028` |
 | FIXED.bldOcgdOn | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.bldOcgdRateMW | 1000 |  |  |  | no recorded source |  |  | `1000` |
@@ -117,19 +118,19 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.ccgtForceFromYear | 2030 |  |  |  | no recorded source |  |  | `2030` |
 | FIXED.ccgtForceHourly | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.ccgtForceLoad | 0 |  |  |  | no recorded source |  |  | `0` |
-| FIXED.ccgtForceLoadMW | 6000 |  |  |  | no recorded source |  |  | `6000` |
+| FIXED.ccgtForceLoadMW | 6000 |  |  |  | source in code comment only – code comment: on up to ccgtForceLoadMW of CCGT in IRP 2025 reference case (Government Gazette 53596, 28 Oct 2025, p.34): 6 GW of CCGT at a minimum annual |  |  | `6000` |
 | FIXED.ccgtForceLoadPct | 51 |  |  |  | no recorded source |  |  | `51` |
 | FIXED.ccgtForceToYear | 2040 |  |  |  | no recorded source |  |  | `2040` |
 | FIXED.ccgtMW | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.ccsCapexR | 260 |  |  |  | no recorded source |  |  | `260` |
-| FIXED.ccsCapexRkW | 38000 |  |  |  | no recorded source |  |  | `38000` |
+| FIXED.ccsCapexRkW | 38000 |  |  |  | source in code comment only – code comment: g 2024 benchmarking has supercritical PC going from GBP3,668/kW to ccsCapexRkW sourced 20 Aug 2026. Two independent routes converge: Tariff |  |  | `38000` |
 | FIXED.ccsCaptureRatePct | 90 |  |  |  | no recorded source |  |  | `90` |
 | FIXED.ccsEnabled | false |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `false` |
 | FIXED.ccsLifeYrs | 20 |  |  |  | no recorded source |  |  | `20` |
 | FIXED.ccsOpexR | 180 |  |  |  | no recorded source |  |  | `180` |
 | FIXED.ccsPenaltyPct | 25 |  |  |  | no recorded source |  |  | `25` |
 | FIXED.ccsSharePct | 21.8 |  |  |  | no recorded source |  |  | `null` |
-| FIXED.ccsTsR | 900 |  |  |  | no recorded source |  |  | `900` |
+| FIXED.ccsTsR | 900 |  |  |  | source in code comment only – code comment: UG. Tariff side: retrofit capital, allowed return and asset life. ccsCapexRkW sourced 20 Aug 2026. Two independent routes converge: Ieagh |  |  | `900` |
 | FIXED.ccsWaccPct | 8 |  |  |  | no recorded source |  |  | `null` |
 | FIXED.chargeFromThermal | 1 |  |  |  | no recorded source |  |  | `1` |
 | FIXED.coalEAFPct | 65 |  |  |  | sourced (by name, unconfirmed) – the code value 65 appears in this SOURCES entry: confirm by hand to mark sourced | Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026) |  | `65` |
@@ -145,7 +146,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.costCcgt | 1298.42 |  |  |  | sourced (by name, unconfirmed) | LNG import infrastructure costs (TODO 14ak, pathway sensitivity only, 6 Oct 2026); Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026) |  | `1298.42` |
 | FIXED.costCoal | 546 |  |  |  | sourced (by name, unconfirmed) – the code value 546 appears in this SOURCES entry: confirm by hand to mark sourced | Coal fuel R546/MWh and imports R550/MWh: what the record holds (message 119 (8), 15 Oct 2026) |  | `546` |
 | FIXED.costDiesel | 6100 |  |  |  | sourced (by name, unconfirmed) – the code value 6100 appears in this SOURCES entry: confirm by hand to mark sourced | Diesel fuel price, costDiesel: basis (TODO 14cj, 13 Oct 2026) |  | `6100` |
-| FIXED.costHydro | 30 |  |  |  | no recorded source |  |  | `30` |
+| FIXED.costHydro | 30 |  |  |  | source in code comment only – code comment: , same source basis. costNuclear 160 Koeberg fuel; Eskom disclosed ~11c/kWh (R110) for FY2024, FY2026: R591 as stated, |  |  | `30` |
 | FIXED.costImports | 550 |  |  |  | no recorded source – SOURCES records the gap under this heading | Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281) |  | `550` |
 | FIXED.costNuclear | 160 |  |  |  | no recorded source – SOURCES records the gap under this heading | Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281) |  | `160` |
 | FIXED.costUnservedR | 9530 |  |  |  | no recorded source |  |  | `9530` |
@@ -176,11 +177,11 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.emisDiesel | 0.78 |  |  |  | no recorded source |  |  | `0.78` |
 | FIXED.exportCapMW | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.exportMaxMW | 5000 |  |  |  | no recorded source |  |  | `5000` |
-| FIXED.exportPriceFirmR | 1330 |  |  |  | no recorded source |  |  | `1330` |
-| FIXED.exportPriceR | 450 |  |  |  | no recorded source |  |  | `450` |
+| FIXED.exportPriceFirmR | 1330 |  |  |  | source in code comment only – code comment: sales, 7% of 201,953 GWh, Eskom integrated report a same-financial-year pair: SOURCED 15 Sep 2026, replacing an assumed 550 that mirrored c |  |  | `1330` |
+| FIXED.exportPriceR | 450 |  |  |  | source in code comment only – code comment: ich is the surplus pool rate paid for energy that would otherwise be spilled. SOURCED 15 Sep 2026, replacing an assumed 550 that mirrored c |  |  | `450` |
 | FIXED.exportShapePeak | 1.14 |  |  |  | no recorded source |  |  | `1.14` |
 | FIXED.exportsCurtailable | false |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `false` |
-| FIXED.exportsMW | 745 |  |  |  | no recorded source |  |  | `745` |
+| FIXED.exportsMW | 745 |  |  |  | source in code comment only – code comment: 2 and 822 from April to August. The post-Mozal mean is about 700, and 745 sits inside it. January 2026, 1,703 in February, 987 in the transi |  |  | `745` |
 | FIXED.fomCcgt | 720 |  |  |  | no recorded source |  |  | `720` |
 | FIXED.fomCoal | 1160 |  |  |  | no recorded source |  |  | `1160` |
 | FIXED.fomCsp | 1480 |  |  |  | no recorded source |  |  | `1480` |
@@ -190,14 +191,14 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.fomOcgtRkW | 452.7653868 |  |  |  | derived (weakest parent: no recorded source) | CPI_JAN24_TO_JAN26 |  | `423.89 * CPI_JAN24_TO_JAN26` |
 | FIXED.fomPs | 220 |  |  |  | no recorded source |  |  | `220` |
 | FIXED.gridBeyondGccaPct | 0 |  |  |  | no recorded source |  |  | `0` |
-| FIXED.heatRateOcgtKJ | 10624 |  |  |  | no recorded source |  |  | `10624` |
-| FIXED.hybridCF | 0.85 |  |  |  | no recorded source |  |  | `0.85` |
+| FIXED.heatRateOcgtKJ | 10624 |  |  |  | source in code comment only – code comment: s_price_cases.json are built on, so a new OCGT on VOM R80.19/MWh and FOM R423.89/kW-yr in January 2024 rands, x SA CPI to January 2026 (1.03 |  |  | `10624` |
+| FIXED.hybridCF | 0.85 |  |  |  | source in code comment only – code comment: om's Weekly System Status Report (Week 32, Aug 2026), which RMIPPPP hybrid - firm dispatchabl |  |  | `0.85` |
 | FIXED.hybridEndHour | 21 |  |  |  | no recorded source |  |  | `21` |
-| FIXED.hybridMW | 335.1 |  |  |  | no recorded source |  |  | `335.1` |
+| FIXED.hybridMW | 335.1 |  |  |  | source in code comment only – code comment: These are solar+wind+battery 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which RMIPPPP hybrid - firm dispatchabl |  |  | `335.1` |
 | FIXED.hybridStartHour | 5 |  |  |  | no recorded source |  |  | `5` |
 | FIXED.hydroCF | 0.55 |  |  |  | no recorded source – SOURCES records the gap under this heading | Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281) |  | `0.55` |
 | FIXED.hydroMW | 602 |  |  |  | no recorded source |  |  | `602` |
-| FIXED.importsCF | 0.9269565217 |  |  |  | derived (weakest parent: no recorded source) | IMPORTS_CF |  | `IMPORTS_CF` |
+| FIXED.importsCF | 0.9269565217 |  |  |  | derived (weakest parent: source in code comment only) | IMPORTS_CF |  | `IMPORTS_CF` |
 | FIXED.importsEndYear | 0 |  |  |  | sourced (by name, unconfirmed) | Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026) |  | `0` |
 | FIXED.importsMW | 1150 |  |  |  | sourced (by name, unconfirmed) – the code value 1150 appears in this SOURCES entry: confirm by hand to mark sourced | Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026) |  | `1150` |
 | FIXED.importsMaxMW | 8000 |  |  |  | no recorded source |  |  | `8000` |
@@ -219,8 +220,8 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.lpBattDischargeCostR | 20 |  |  |  | no recorded source |  |  | `20` |
 | FIXED.lpCurtailCostR | 150 |  |  |  | no recorded source |  |  | `150` |
 | FIXED.newBattHours | 4 |  |  |  | no recorded source |  |  | `4` |
-| FIXED.newIronAirEff | 0.45 |  |  |  | no recorded source |  |  | `0.45` |
-| FIXED.newIronAirHours | 100 |  |  |  | no recorded source |  |  | `100` |
+| FIXED.newIronAirEff | 0.45 |  |  |  | source in code comment only – code comment: kWh, pvUtilityMW is derived, corrected 4,974 -> 3,151 : 2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26) + 488 |  |  | `0.45` |
+| FIXED.newIronAirHours | 100 |  |  |  | source in code comment only – code comment: kWh, pvUtilityMW is derived, corrected 4,974 -> 3,151 : 2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26) + 488 MW privat |  |  | `100` |
 | FIXED.newIronAirMW | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.newOcgdMW | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.newOcgtMW | 0 |  |  |  | no recorded source |  |  | `0` |
@@ -234,7 +235,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.newVrfbMW | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.nuclearCF | 0.66 |  |  |  | sourced (by name, unconfirmed) – the code value 0.66 appears in this SOURCES entry: confirm by hand to mark sourced | Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026) |  | `0.66` |
 | FIXED.nuclearMW | 1880 |  |  |  | no recorded source |  |  | `1880` |
-| FIXED.ocgtDieselMW | 3400 |  |  |  | no recorded source |  |  | `3400` |
+| FIXED.ocgtDieselMW | 3400 |  |  |  | source in code comment only – code comment: ure itself boundary whenever this constant is compared against an Eskom figure. Checked 2 Sep 2026 against the report. NOT an error - a diff |  |  | `3400` |
 | FIXED.offshoreCapMW | 95000 |  |  |  | no recorded source |  |  | `95000` |
 | FIXED.offshoreGridRPerKWyr | 0 |  |  |  | no recorded source |  |  | `0` |
 | FIXED.offshoreMW | 0 |  |  |  | no recorded source |  |  | `0` |
@@ -261,7 +262,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.reipppWindMW | 4042 |  |  |  | no recorded source |  |  | `4042` |
 | FIXED.reserveEnabled | 1 |  |  |  | no recorded source |  |  | `1` |
 | FIXED.reserveGasMinStableFrac | 0.5 |  |  |  | sourced (by name, unconfirmed) – the code value 0.5 appears in this SOURCES entry: confirm by hand to mark sourced | Gas and diesel turbines' minimum stable level for online reserve headroom (user, message 90; build 2026-10-14n) |  | `0.5` |
-| FIXED.reserveOperatingMW | 2200 |  |  |  | no recorded source |  |  | `2200` |
+| FIXED.reserveOperatingMW | 2200 |  |  |  | source in code comment only – code comment: held flat beyond it. Held every hour whether priced or not. 21 Sep 2026. Operating reserve: NTCSA ASTR 2026/27-20 |  |  | `2200` |
 | FIXED.reserveRegHours | 1 |  |  |  | no recorded source |  |  | `1` |
 | FIXED.reserveRule | "astr" |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `'astr'` |
 | FIXED.reserveTenHours | 0.5 |  |  |  | no recorded source |  |  | `0.5` |
@@ -288,7 +289,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | FIXED.vppGeyserPoolMW | 4000 |  |  |  | no recorded source |  |  | `4000` |
 | FIXED.vppRegion | "National" |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `'National'` |
 | FIXED.windCapeMW | 0 |  |  |  | no recorded source |  |  | `0` |
-| FIXED.windMW | 4681 |  |  |  | no recorded source |  |  | `4681` |
+| FIXED.windMW | 4681 |  |  |  | source in code comment only – code comment: ild_capacity.py's PRE2026_PRIVATE list. 17 Oct 2026 for central c5f and 196 (2)) through |  |  | `4681` |
 
 ## BLD_COST
 
@@ -309,8 +310,8 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | BLD_COST.ironair.decl | 0.06 |  |  |  | no recorded source |  |  | `0.0600` |
 | BLD_COST.ocgt_irp.c2026 | 13865.26572 |  |  |  | derived (weakest parent: no recorded source) | CPI_JAN24_TO_JAN26 |  | `12981 * CPI_JAN24_TO_JAN26` |
 | BLD_COST.ocgt_irp.decl | 0 |  |  |  | no recorded source |  |  | `0` |
-| BLD_COST.offshore.c2026 | 79200 |  |  |  | no recorded source |  |  | `79200` |
-| BLD_COST.offshore.decl | 0.026 |  |  |  | no recorded source |  |  | `0.0260` |
+| BLD_COST.offshore.c2026 | 79200 |  |  |  | source in code comment only – code comment: d the spur to the nearest grid feature are INSIDE; onshore Cost boundary, agreed by ESMAP Figure 36 and the ATB: array cables, export cable, |  |  | `79200` |
+| BLD_COST.offshore.decl | 0.026 |  |  |  | source in code comment only – code comment: d the spur to the nearest grid feature are INSIDE; onshore Cost boundary, agreed by ESMAP Figure 36 and the ATB: array cables, export cable, |  |  | `0.0260` |
 | BLD_COST.pv.c2026 | 12000 |  |  |  | no recorded source |  |  | `12000` |
 | BLD_COST.pv.decl | 0.0389 |  |  |  | no recorded source |  |  | `0.0389` |
 | BLD_COST.pvtrk.c2026 | 11755.21209 |  |  |  | no recorded source |  |  | `null` |
@@ -344,13 +345,13 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 |---|---|---|---|---|---|---|---|---|
 | BLD_FOM.batt | null |  |  |  | no recorded source |  |  | `null` |
 | BLD_FOM.ccgt | 462 |  |  |  | no recorded source |  |  | `462` |
-| BLD_FOM.ironair | 165 |  |  |  | no recorded source |  |  | `165` |
+| BLD_FOM.ironair | 165 |  |  |  | source in code comment only – code comment: fleet scale, checked again 23 Sep 2026. The one figure in circulation is $5-15/M |  |  | `165` |
 | BLD_FOM.ocgd | 452.7653868 |  |  |  | derived (weakest parent: no recorded source) | FIXED.fomOcgtRkW |  | `FIXED.fomOcgtRkW` |
 | BLD_FOM.ocgt | 452.7653868 |  |  |  | derived (weakest parent: no recorded source) | FIXED.fomOcgtRkW |  | `FIXED.fomOcgtRkW` |
 | BLD_FOM.offshore | 1403 |  |  |  | no recorded source |  |  | `1403` |
 | BLD_FOM.pv | 287.32428 |  |  |  | derived (weakest parent: no recorded source) | CPI_JAN24_TO_JAN26 |  | `269 * CPI_JAN24_TO_JAN26` |
 | BLD_FOM.rooftop | 495 |  |  |  | no recorded source |  |  | `495` |
-| BLD_FOM.vrfb | 165 |  |  |  | no recorded source |  |  | `165` |
+| BLD_FOM.vrfb | 165 |  |  |  | source in code comment only – code comment: fleet scale, checked again 23 Sep 2026. The one figure in circulation is $5-15/M |  |  | `165` |
 | BLD_FOM.wind | 392.00004 |  |  |  | derived (weakest parent: no recorded source) | CPI_JAN24_TO_JAN26 |  | `367 * CPI_JAN24_TO_JAN26` |
 
 ## BLD_LIFE
@@ -400,7 +401,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | BLD_CORRIDORS | array of 20 |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `[   ['Eastern Cape','Hydra Central',1124],['Eas...` |
 | BLD_CORRIDOR_KM | object |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `{   'Eastern Cape\|Kwazulu Natal':167, 'Limpopo\|...` |
 | BLD_DERATE | object |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `{ wind:0, pv:0, rooftop:0, batt:0.25, vrfb:0.45...` |
-| BLD_DISC_CENTRAL | 0.08 |  |  |  | no recorded source |  |  | `0.08` |
+| BLD_DISC_CENTRAL | 0.08 |  |  |  | source in code comment only – code comment: NEA/IEA Projected Costs run 3, 7 and 10% real. Offshore wind and hydro carry (updated 11 Oct 2026, user); REIPPPP bid window 4 real equity |  |  | `0.08` |
 | BLD_FOM_BATT_SHARE | 0.025 |  |  |  | no recorded source |  |  | `0.025` |
 | BLD_GRID | object |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `{   km:       { wind: 37.7, pv: 21.9, phes: 73....` |
 | BLD_LABEL | object |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `{ wind:'Wind', pv:'Utility solar', rooftop:'Roo...` |
@@ -411,7 +412,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | BLD_PHES_CAPS | object |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `{ central: [[2038, 1500]], high: [[2035, 1500],...` |
 | BLD_REGIONAL_TRK_MSG | "The regional model does not include tracking solar yet, a..." |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `'The regional model does not include tracking s...` |
 | BLD_REGIONS | array of 10 |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `['Eastern Cape','Limpopo','Mpumalanga','Gauteng...` |
-| BLD_STORE | array of 3 |  |  |  | derived (weakest parent: no recorded source) | FIXED.newIronAirEff |  | `[   { t:'batt',    dis:'bdis', chg:'bchg', eff:...` |
+| BLD_STORE | array of 3 |  |  |  | derived (weakest parent: source in code comment only) | FIXED.newIronAirEff |  | `[   { t:'batt',    dis:'bdis', chg:'bchg', eff:...` |
 | BLD_STRESS_MAX | 5 |  |  |  | no recorded source |  |  | `5` |
 | BLD_STRESS_STANDARD | 0.00002 |  |  |  | no recorded source |  |  | `0.00002` |
 | BLD_TECHS | array of 7 |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `['wind', 'pv', 'rooftop', 'batt', 'vrfb', 'iron...` |
@@ -461,7 +462,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | LINKS | array of 25 |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `[['CPT','GRW'],['GRW','PE'],['PE','EC'],['EC','...` |
 | LI_DECL | 0.03 |  |  |  | no recorded source |  |  | `0.03` |
 | LI_MAX_HOURS | 20 |  |  |  | no recorded source |  |  | `20` |
-| LI_REF_CYCLES | 365 |  |  |  | no recorded source |  |  | `365` |
+| LI_REF_CYCLES | 365 |  |  |  | source in code comment only – code comment: ey assumptions, p.37; read 18 Oct 2026, . An international - die |  |  | `365` |
 | MC_N | 60 |  |  |  | no recorded source |  |  | `60` |
 | MIP_FLEET | array of 31 |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `[{"name":"Arnot*","cap":1050.0,"n":3,"msl":0.65...` |
 | MIP_WORKER_SRC | "\nlet highs = null;\n\n// Network-aware unit commitment for ..." |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `` let highs = null;  // Network-aware unit comm...` |
@@ -505,7 +506,7 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | REIPPPP_WINDOWS | array of 8 |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `[   { bw:'1',   gwh:3753, costRm:14455, expires...` |
 | RESERVE_COOPT | false |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `false` |
 | RES_CACHE_MAX | 8 |  |  |  | no recorded source |  |  | `8` |
-| RETAIL_LOSS | 0.08 |  |  |  | no recorded source |  |  | `0.08` |
+| RETAIL_LOSS | 0.08 |  |  |  | source in code comment only – code comment: tokens - at 7.9 TWh over six months, about 8% of sales, R17.5bn of lost revenue. Eskom's FY2026 interim results put NON-TECHNICAL losses - |  |  | `0.08` |
 | RETAIL_VAT | 1.15 |  |  |  | no recorded source |  |  | `1.15` |
 | RT_APPLIANCES | array of 12 |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `[   { id:'geyser',    label:'Electric geyser', ...` |
 | RT_BIZRATE3_2026 | object |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `{ energy: 242.90, ancillary: 0.45, networkDeman...` |
@@ -561,11 +562,11 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | EXISTING_BATT_MW | 68 |  |  |  | derived (weakest parent: not yet reviewed) | ESKOM_BESS_OPERATING |  | `ESKOM_BESS_OPERATING.reduce((a, b) => a + b.mw, 0)` |
 | EXISTING_BATT_MWH | 292 |  |  |  | derived (weakest parent: not yet reviewed) | ESKOM_BESS_OPERATING |  | `ESKOM_BESS_OPERATING.reduce((a, b) => a + b.mwh...` |
 | GCCA_HEADROOM_MW | object |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `{   'Kwazulu Natal': { solar: 5500, wind: 5500,...` |
-| GET_UPLIFT_FRAC | 0.2 |  |  |  | no recorded source |  |  | `0.20` |
+| GET_UPLIFT_FRAC | 0.2 |  |  |  | source in code comment only – code comment: related absolute figure. against this app's own real new-line cost (R31m/km, DEE Minister Apr 2025), giving a "less than one-twentieth of wh |  |  | `0.20` |
 | IMPORTS_AVG_MW | 1066 |  |  |  | sourced (by name, unconfirmed) – the code value 1066 appears in this SOURCES entry: confirm by hand to mark sourced | Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026) |  | `1066` |
-| IMPORTS_CF | 0.9269565217 |  |  |  | derived (weakest parent: no recorded source) | IMPORTS_AVG_MW, IMPORTS_MW |  | `IMPORTS_AVG_MW / IMPORTS_MW` |
+| IMPORTS_CF | 0.9269565217 |  |  |  | derived (weakest parent: source in code comment only) | IMPORTS_AVG_MW, IMPORTS_MW |  | `IMPORTS_AVG_MW / IMPORTS_MW` |
 | IMPORTS_COST | 550 |  |  |  | no recorded source |  |  | `550` |
-| IMPORTS_MW | 1150 |  |  |  | no recorded source |  |  | `1150` |
+| IMPORTS_MW | 1150 |  |  |  | source in code comment only – code comment: hours after the value was corrected. 0.41 -> 0.88. ESK19679 International Imports, Jan-Aug 2026 mean on the 1,150 MW contract. Same sourc |  |  | `1150` |
 | IMPORTS_REGION | "Gauteng" |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `'Gauteng'` |
 | LOSS_BASE_RATE | 0.035 |  |  |  | no recorded source |  |  | `0.035` |
 | NEW_BATT_SHARE_BY_REGION | object |  |  |  | not yet reviewed – switch, text or structure: an input or not, to decide by hand |  |  | `{   'North West':    692 / 1744,   'Free State'...` |
@@ -585,16 +586,16 @@ SOURCES.md; an entry here points to its heading. Statuses: see the script's head
 | file:nodal/headroom_summary.json | "file" |  |  |  | sourced (by name, unconfirmed) | NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026) |  | `(data file)` |
 | file:nodal/ipp_pipeline.json | "file" |  |  |  | sourced (by name, unconfirmed) | IPP Office website terms (REIPPPP data): no open licence (read 13 Oct 2026) |  | `(data file)` |
 | file:nodal/nersa_registrations.json | "file" |  |  |  | no recorded source – SOURCES records the gap under this heading | Currently loaded |  | `(data file)` |
-| file:nodal/profiles_offshore_regional.json | "file" |  |  |  | no recorded source |  |  | `(data file)` |
+| file:nodal/profiles_offshore_regional.json | "file" |  |  |  | source in code comment only – code comment: {"meta":{"licence":"CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/ |  |  | `(data file)` |
 | file:nodal/profiles_regional.json | "file" |  |  |  | sourced (by name, unconfirmed) | PyPSA-RSA: licence and what we take (user, 13 Oct 2026); NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026) |  | `(data file)` |
 | file:nodal/profiles_solar_tracking_map.json | "file" |  |  |  | no recorded source |  |  | `(data file)` |
 | file:nodal/profiles_wind_modern_map.json | "file" |  |  |  | sourced (by name, unconfirmed) | Build costs from South African bid data (TODO 14av, 14aw, 14ax; builds 07j and 07k, 7 Oct 2026) |  | `(data file)` |
-| file:nodal/project_register.json | "file" |  |  |  | no recorded source |  |  | `(data file)` |
-| file:nodal/redz.json | "file" |  |  |  | no recorded source |  |  | `(data file)` |
+| file:nodal/project_register.json | "file" |  |  |  | source in code comment only – code comment: rray was first seen COMPLETE, not a commercial operation date - Grootfontein was complete Dec 2024 and reached COD Dec 2025.","wind_note":"W |  |  | `(data file)` |
+| file:nodal/redz.json | "file" |  |  |  | source in code comment only – code comment:  Zones (REDZ), South Africa","count":11,"gazettes":["GN 114, Government Gazette 41445, 16 Feb 2018 - REDZ 1-8 (Minister Molewa)","GN 142/144 |  |  | `(data file)` |
 | file:nodal/reea_projects.json | "file" |  |  |  | no recorded source – SOURCES records the gap under this heading | Currently loaded |  | `(data file)` |
 | file:nodal/region_headroom_lookup.json | "file" |  |  |  | sourced (by name, unconfirmed) | NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026) |  | `(data file)` |
 | file:nodal/regional_renewable_capacity.json | "file" |  |  |  | sourced (by name, unconfirmed) | IPP Office website terms (REIPPPP data): no open licence (read 13 Oct 2026); NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026) |  | `(data file)` |
-| file:nodal/residential_profile.json | "file" |  |  |  | no recorded source |  |  | `(data file)` |
+| file:nodal/residential_profile.json | "file" |  |  |  | source in code comment only – code comment: tional or non-commercial use only; Eskom's written consent to publish has been requested (October 2026). Shape only; the analysis is ours, n |  |  | `(data file)` |
 | file:nodal/sa_solar_grid.json | "file" |  |  |  | no recorded source – SOURCES records the gap under this heading | Currently loaded |  | `(data file)` |
 | file:nodal/substation_bands.json | "file" |  |  |  | sourced (by name, unconfirmed) | NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026) |  | `(data file)` |
 | file:nodal/substations_compact.json | "file" |  |  |  | sourced (by name, unconfirmed) | NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026) |  | `(data file)` |
