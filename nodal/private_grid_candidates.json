@@ -7,7 +7,7 @@
   "CAUTION_2": "COORDINATES ARE THE GENERATION CENTROID, not the line. There is no route geometry here. Do not draw these as lines without a published route - see the Impofu and Koruson entries in transmission_lines.geojson for how routed and indicative cases are distinguished.",
   "CAUTION_3": "shared_signal is a WEAK TEXTUAL HINT ONLY - the title contains a word like \"common\" or \"cluster\". It is NOT evidence the asset is open to third parties. The real test is spare capacity beyond the owner's own plant, or a stated intention to host others, and neither is in this data. Koruson qualifies on that test; Impofu does not, and NEITHER would be distinguishable from this file alone.",
   "next": "NERSA transmission licences and developer statements are the sources that settle shared-vs-single. Ask Reapplication@dffe.gov.za whether grid infrastructure is ever published as a separate release.",
-  "licence": "Source data is DFFE's. This compilation: CC BY-NC-ND 4.0, (c) 2026 Nick Hedley.",
+  "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . A compilation of public facts from DFFE's environmental authorisation register (project name, capacity, technology, location, dates), as public_data/environmental_authorisations.csv. Changed from CC BY-NC-ND 4.0 on 20 Oct 2026 (D3, message 261 (2)).",
   "compiled": "2026-08-30"
  },
  "candidates": [

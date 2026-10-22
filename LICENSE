@@ -16,10 +16,23 @@ Under the following terms:
                   not distribute the modified material without explicit written
                   permission from the copyright holder.
 
-This covers the original work: the model logic, calibration, cost assumptions,
-code and presentation. The underlying public datasets it draws on (Eskom, NTCSA,
-NERSA, DMRE, PyPSA-RSA, Open-Meteo, NASA MERRA-2, OpenStreetMap, Esri) remain
-under their own licences and are credited in the application footer.
+The model logic, calibration, cost assumptions, code and presentation are (c) 2026 Nick Hedley and
+licensed under CC BY-NC-ND 4.0: you may share them with attribution for non-commercial purposes;
+commercial use or distributing modified versions needs written permission.
+
+Our compilations of public facts (project names, capacities, technologies, locations and dates)
+are licensed under CC BY 4.0.
+
+Files derived from other people's data carry the most restrictive terms among their inputs, stated
+in each file and listed below: Eskom's website terms for Eskom-derived data (non-commercial;
+publication needs Eskom's consent, which has been requested); NTCSA's website terms for
+GCCA-derived data (non-commercial; publication needs NTCSA's consent); CC BY-NC 4.0 for
+Renewables.ninja-derived profiles; and PyPSA-RSA's AGPL-3.0-or-later, whose terms for our use are
+being confirmed with Meridian. Analysis derived from Eskom data is ours, not Eskom's.
+(Wording approved by Nick Hedley, 20 Oct 2026, message 261 (2).)
+
+Files in public_data/ and in the repository's root that carry no licence field of their own are CC BY-NC-ND 4.0, except
+any derived from the sources listed below, which carry that source's terms (message 267 (2)).
 
 Full licence text: https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode
 
@@ -38,12 +51,13 @@ Data sources incorporated in this repository carry their own licences:
   which has been requested. The raw files are not in this repository; profiles.json and nodal/coal_availability_trace.json
   hold series derived from them, to be replaced with open versions.
 - UCT ESRG Single Node Hourly Demand Model (Bruno Merven, ZivaHub):
-  https://doi.org/10.25375/uct.24137877 — CC BY 4.0
+  https://doi.org/10.25375/uct.24137877 – CC BY 4.0
 - PyPSA-RSA network topology and fleet data (Meridian Economics): https://github.com/MeridianEconomics/pypsa-rsa;
   AGPL-3.0-or-later. Its own data-licence table puts its supply-region boundaries under the GCCA's terms (BY-NC-SA). The
-  terms for our use are being confirmed with Meridian. The PyPSA library used in validation/ is MIT.
-- PVGIS SARAH2 solar profiles: European Commission JRC — open access
-- Renewables.ninja wind profiles: Pfenninger & Staffell — CC BY-NC 4.0
+  terms for our use are being confirmed with Meridian. The PyPSA library used in validation/ is MIT. The unit fleet tables
+  inside index.html (UC_FLEET and MIP_FLEET) are derived from PyPSA-RSA's fleet data and come under these terms.
+- PVGIS-SARAH2 and SARAH3 solar data: European Commission JRC – open access
+- Renewables.ninja wind profiles: Pfenninger & Staffell – CC BY-NC 4.0
 - REIPPPP project data (IPP Office, DMRE): no open licence. The IPP Office website terms (May 2016) reserve copyright in
   the site's contents (clause 7.1) and prohibit their unauthorised use (clause 7.2). Used here: project facts (name,
   capacity, technology, location, dates) and figures cited from IPP Office reports, credited.
@@ -53,7 +67,7 @@ Data sources incorporated in this repository carry their own licences:
 - profiles.json: Eskom Holdings SOC Ltd, hourly dataset ESK19679 (obtained on request): terms under review; not CC BY.
 - nodal/bq_queue.json: NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 - nodal/coal_availability_trace.json: Eskom Holdings SOC Ltd, hourly dataset ESK19679 (obtained on request): terms under review; not CC BY.
-- nodal/corridor_electrical.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
+- nodal/corridor_electrical.json: NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent (to be requested). Derived from NTCSA's transmission lines (nodal/transmission_lines.geojson). Changed from CC BY-NC-ND 4.0 on 20 Oct 2026 (D3, message 261 (2)).
 - nodal/demand_2025_regional.csv: under the source's terms (likely UCT ESRG, ZivaHub, version unconfirmed); no licence of our own
 - nodal/eskom_tariff_components.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
 - nodal/firm_headroom_lookup.json: NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
@@ -64,12 +78,12 @@ Data sources incorporated in this repository carry their own licences:
 - nodal/pfl_cod_h1_2026.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . Attribution required; reuse, modification and commercial use permitted. Cite as GridTwin ZA, gridtwinza.org. Added 6 Sep 2026: this file had no licence field, which meant anyone downloading it had to guess, and the safe guess is "all rights reserved".
 - nodal/pfl_private_h1_2026.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . Attribution required; reuse, modification and commercial use permitted. Cite as GridTwin ZA, gridtwinza.org. Added 6 Sep 2026: this file had no licence field, which meant anyone downloading it had to guess, and the safe guess is "all rights reserved".
 - nodal/phes_sites_region.json: CC BY 4.0. Derived from the ANU RE100 Group Global Pumped Hydro Atlas, South Africa shortlist (public_data/anu_phes_shortlist_za.csv); attribution required.
-- nodal/private_grid_candidates.json: Source data is DFFE's. This compilation: CC BY-NC-ND 4.0, (c) 2026 Nick Hedley.
+- nodal/private_grid_candidates.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . A compilation of public facts from DFFE's environmental authorisation register (project name, capacity, technology, location, dates), as public_data/environmental_authorisations.csv. Changed from CC BY-NC-ND 4.0 on 20 Oct 2026 (D3, message 261 (2)).
 - nodal/private_pending_h2_2026.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
 - nodal/profiles.json: Eskom Holdings SOC Ltd, hourly dataset ESK19679 (obtained on request): terms under review; not CC BY.
 - nodal/profiles_multiyear_OLD_backup.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
 - nodal/profiles_offshore_regional.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
-- nodal/profiles_regional.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . Attribution required; reuse, modification and commercial use permitted. Cite as GridTwin ZA, gridtwinza.org. Added 6 Sep 2026: this file had no licence field, which meant anyone downloading it had to guess, and the safe guess is "all rights reserved".
+- nodal/profiles_regional.json: CC BY-NC 4.0 - https://creativecommons.org/licenses/by-nc/4.0/ . Derived from Renewables.ninja (CC BY-NC 4.0), whose terms it carries: attribution required, non-commercial use only. Cite as GridTwin ZA, gridtwinza.org, and Renewables.ninja (Pfenninger and Staffell). Changed from CC BY 4.0 on 20 Oct 2026 (D3, message 261 (2)).
 - nodal/profiles_regional_SINGLECENTROID_backup.json: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
 - nodal/profiles_regional_multiyear.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
 - nodal/profiles_solar_tracking.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
