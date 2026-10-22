@@ -529,3 +529,9 @@ NTCSA's corridor data where given; dynamic line rating uplift only where the lim
 series compensation or power-flow control with sourced costs, or a statement that the panel has no option for them. Report how the
 panel's GETs numbers change per corridor and whether any RESULTS finding used them (the GETs control feeds only Where to build's
 headroom; RESULTS line 11987 records that).
+Per corridor, beside dynamic line rating (thermal limit only): advanced power-flow control, topology optimisation, reconductoring
+(thermal limit only), and storage as virtual transmission (e.g. the Waratah Super Battery, 850 MW / 1,680 MWh, New South Wales),
+which lets a stability- or contingency-limited line run harder whatever its length; each where it applies, with primary sources
+(US DOE on dynamic line rating; GridLab and UC Berkeley on reconductoring; the WATT Coalition on topology optimisation), not
+secondary articles; background, The Progress Playbook, 15 Oct 2024 (message 346 (d)). Check first whether a corridor's 'km' in
+corridor_electrical.json is one route or the sum over its circuits (Hydra Central-Northern Cape reads 542.7 km over 4 lines).
