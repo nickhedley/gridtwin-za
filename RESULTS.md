@@ -6028,6 +6028,28 @@ Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing bes
 (validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
 
+### Rooftop output against sbg.earth (report only): the 2026 replay gives 15.4 TWh a year after losses against sbg.earth's about 12.9 TWh; about two thirds of the 2.5 TWh gap is the 2025 solar profile running above its twelve-year mean, the rest within the capacity and derate figures (user, 22 Oct 2026, message 317 (a); build 2026-10-22a)
+
+Settings: Today 2026 as the page applies it, simulate on the page's own profiles (profiles.json, calendar 2025), jsdom; script
+scratch roof317.js. Rooftop capacity 8,942.1 MW (FIXED.rooftopMW, no new rooftop in 2026). The engine's rooftop output each hour is
+capacity x the national solar profile x rooftopDerate (0.78), capped at 90% of that hour's demand (index.html, simulate).
+
+| Step | TWh a year | Capacity factor |
+|---|---|---|
+| Capacity x 2025 profile, before losses | 19.69 | 25.1% |
+| After the 0.78 derate (the engine's output; the 90% demand cap never binds) | 15.36 | 19.6% |
+| Capacity x the twelve-year mean (FIXED_PV_CF_12Y 0.224), before losses | 17.54 | 22.4% |
+| Twelve-year mean after the derate | 13.69 | 17.5% |
+| sbg.earth's estimate | about 12.9 | about 16.5% on 8,942 MW |
+
+The one loss is the derate, 0.78 (orientation, shading, soiling, inverter and export limiting; FIXED.rooftopDerate, status
+'sourced (by name, unconfirmed)' in the register). The gap is real in the replay: the 2025 profile is Eskom's metered utility-
+scale fleet, which ran at 25.1% that year against its twelve-year mean of 22.4% (a sunnier year or more tracking plant in the
+fleet; the split is not measured here), so rooftop inherits about 1.7 TWh it would not get on a typical year. On the twelve-year mean the model gives 13.7 TWh,
+6% above sbg.earth; that remainder is within the uncertainty of the installed capacity (sbg.earth's own capacity figure is not
+known here) and of the derate. The derate's code comment aims at 17.5%, which holds only on the twelve-year mean. Caveat:
+sbg.earth's method and capacity are not checked (SOURCES 'Leads from a SAPVIA spokesperson's deck').
+
 ### Audit PR 3, market panels: stale tables cleared on a scenario change, capture projections start at the scenario's own build, the capacity panel pays open cycle as the engine does, and the wording says what each panel computes (build 2026-10-21e; user, 20 Oct 2026, messages 264 and 270; mechanics audit of 20 Oct 2026, section 3 PR 3)
 
 Prepared overnight from main 2116c10; stored panels not regenerated (message 266), so not merge-ready until main and the stored

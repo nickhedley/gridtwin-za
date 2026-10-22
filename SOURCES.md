@@ -915,6 +915,8 @@ harness/ext/grid_distances.py.
     recorded. c5f builds tracking solar (pvTracking 1; BLD_COST.pvtrk derived from the BW7 solar awards, R11,038/kW in 2026),
     so BLD_COST.pv reaches only runs with tracking off, the page's default (bldPvTracking 0) among them; rooftop's R17,000 does
     enter c5f. The commercial estimate excluding VAT is about a third below R17,000/kW AC. TODO 14im.
+  - Lead (message 317 (c); from a SAPVIA spokesperson's deck, Oct 2026, advocacy; not a source until a primary one is found):
+    home kit costs including VAT, PV R7/Wp installed, inverter R2,000/kW, battery R2,400/kWh.
 - Wind and solar capex boundary: BLD_COST wind R21,000 and PV R12,000/kW have no recorded source, so whether
   they include connection is unclear; charge from zero is central and beyond-18-km the sensitivity. Under
   REIPPPP the developer funds the dedicated connection (Eskom budget quote and cost estimate letter;
@@ -1731,4 +1733,17 @@ For the shadow retail price design after the note (TODO 14io). Search-level; rea
   Eskom's retail tariff restructure approved for 2025/26: the generation capacity charge phased in at 20% in 2025/26 and 30% in
   each of the two following years; inclining blocks removed for Homelight and Homepower prepaid customers; a fixed charge phased in
   for Homepower and Homeflex; peak to standard ratio 1:8 to 1:6.
+
+## Leads from a SAPVIA spokesperson's deck (user, 22 Oct 2026, message 317; Frank Spencer, Enerset and sbg.earth, October 2026)
+
+Advocacy material; the deck is not in the repository and is not cited. Each lead below names the primary source to cite once
+checked; none is checked yet.
+- Rooftop output: sbg.earth estimates about 12.9 TWh a year from rooftop solar. Against the model: RESULTS 'Rooftop output
+  against sbg.earth' (message 317 (a)).
+- Meridian Economics, SA Power Market Report (September 2026): WEPS estimates (wholesale electricity price).
+- Eskom Homeflex 1, 2026/27 time-of-use rates: R7.91/kWh winter evening peak, R2.79 at noon; Gen-offset credits 737c and 343c
+  (Eskom's 2026/27 tariff booklet, local to Nick, cite by page; the model already reads Homeflex credits from booklet p.44).
+- City of Cape Town small-scale embedded generation feed-in, 2026/27: 107.98c plus a flat 25c incentive; time-of-use feed-in
+  625.73c and 243.47c, not yet available (City of Cape Town tariff schedule 2026/27).
+- The fixed-charge leads are in TODO 14io and the VPP lead in TODO 14ip.
 
