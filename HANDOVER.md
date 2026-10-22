@@ -1,5 +1,14 @@
 # GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
 
+## Open issue: Cloudflare missed the build for #105's merge (22 Oct 2026; user, messages 307 and 308)
+
+Cloudflare's Workers Builds did not start for #105's merge to main (0118e42, 21 Oct 2026, 22:00 SAST): GitHub Pages built and
+deployed, the stress suite passed, but gridtwinza.org stayed on build 21j overnight. It did build #109's merge by itself
+(deployment c18e294a, about 08:38 SAST, 22 Oct), and Nick's retry (5441e305) followed; #110's merge built at 17:12 SAST on 21 Oct.
+The main ruleset (required stress-suite) was in place for both, so it is not the cause: a one-off missed trigger. After every
+merge, check the live build stamp (stored_panels.json meta.build, or BUILD_STAMP in the page) within 10 minutes; if it has not
+changed, ask Nick to retry the build in Cloudflare (Deployments, the latest main build, Retry). No repository setting changes.
+
 ## Every pull request that changes index.html regenerates stored_panels.json (19 Oct 2026; user, message 255 (4))
 
 The page shows the risk panels for each preset and the start-up state from stored_panels.json, while its fingerprint matches

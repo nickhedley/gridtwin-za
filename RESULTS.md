@@ -6087,6 +6087,20 @@ Suite on 2026-10-21e without validate_stored_panels (stored panels not regenerat
 iron-air July, high-season off-peak, peakerSeasonRatio) and eng5 check 6. Run 20 Oct 2026 21:02-21:22 and 22:21-23:21 UTC
 (the first run was stopped after validate_lp and the rest rerun), with another branch's suite running beside it each time.
 
+Main merged in as build 2026-10-22a (main 6fe9a31, with #105, #109 and #110; user, 22 Oct 2026, message 304 (e) and 306 (e)).
+Two conflicts: the capture-rate note keeps this PR's 'per MWh delivered' and opening-state sentence with main's shorter ratio
+clause; finishRun keeps both this PR's capture-forecast reset and main's renderCapexLine. One fault the plain merge introduced:
+site review A24 (main) had removed the sorted prices renderBess read, and this PR's cell-wear sentence reads their median, so
+the page threw 'ReferenceError: _sp is not defined' on its first run; the one line is restored with a comment and the sentence
+reads as measured before. The always-visible prose then read 4,289 words against audit.py's 4,250; five notes were reworded to
+the same facts in fewer words (4,249), the ceiling not raised (message 271). The first push of the merge (3eab49a) failed the
+stress suite's stored-panel fingerprint step (page 08d0e1cd61b975 against main's stored 008cce56d7195c; message 309 (a)); the
+regenerated panels followed (d5d3ace) and the stress suite passed. Suite on 2026-10-22a (stored panels regenerated, fingerprint
+08d0e1cd61b975; ESK19679.csv present), 22 Oct 2026 07:01-08:24 UTC with the input-register ranking screen beside it: 1,052/1,056,
+node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The
+failures are the four known ones and eng5 check 6. Render check in Chromium (fresh load): 29/29 market-panel checks and 7/7 on the
+reworded text and the restored cell-wear sentence.
+
 Gas burnt to charge storage stays in the capacity panel's CCGT row (user, 21 Oct 2026, message 271 (6)); the panel says so in
 one line: "The Gas CCGT row's output includes gas burnt to charge storage." No number moves. The full network audit button
 stays hidden until it is rebuilt (message 271 (5)).
