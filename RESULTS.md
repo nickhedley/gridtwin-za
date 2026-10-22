@@ -4707,6 +4707,84 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### Input ranking, stage 1 screen: c5f's 2035 system, each numeric input x0.8 and x1.2 one at a time, build held fixed; the largest cost effects are the price indices (CPI chain, +/-R13.8bn), coal availability, coal fuel and the discount rate; emisCoal moves CO2 by +/-16.6 Mt and has no recorded source (user, 22 Oct 2026, messages 310 (c), 315, 316 (b))
+
+Settings. The page at main 6fe9a31 (build 2026-10-21l); c5f's build from its pathway file (c5f/repo/harness/out/pathway_c5f.json,
+frozen copy b82bfd3, build 2026-10-17g), the state set as pathcheck.js sets it (TF=0.5 LNG=1 GRID=1, the run's own gas, carbon,
+imports, tracking and capex settings), 2035 only; one weather year (2025) and one outage draw (seed SEED_BASE, 71830529); system
+cost and CO2 from one simulate call. Base: R247.57bn, 83.55 Mt. Script harness/rank_screen.js (pathcheck.js with a RANK step):
+the 346 members of FIXED, BLD_COST, BLD_FOM, BLD_LIFE and BLD_TARIFF in one page (FIXED keys set in both FIXED and the run's state);
+each of the 79 numeric top-level constants by scaling its declaration in the page text, or in nodal/nodal_engine.js inlined into
+the page, before it loads (for a scaled constant the capex guard is off, since a price index moves capex on purpose). Run 22 Oct
+2026 07:31-09:52 UTC with #107's suite beside it. Statuses from harness/inputs_meta.json at commit 38d7cab.
+
+Skipped (111): 45 not numbers, 41 zero, 11 years, 12 on/off switches, 1 seed, and HOURS (8,760: at x1.2 the run did not finish in
+1 h 43 min and was stopped; invalid at +/-20%). 218 of the 314 ranked inputs move neither 2035 cost nor CO2, among them every
+nodal_engine.js constant (used by the regional model only; the scaled value was read back from the page, 0.704 for BATT_EFF at
+x0.8) and constants the pathway file sets over (IMPORTS_AVG_MW: c5f records its own import flow; FIXED.importsCF carries it).
+
+| Cost rank | CO2 rank | Input | 2035 cost, x0.8 / x1.2, R bn | 2035 CO2, x0.8 / x1.2, Mt | Status in the register |
+|---|---|---|---|---|---|
+| 1 | - | CPI_JAN24_TO_JAN26 | -13.80 / +13.80 | +0.00 / +0.00 | derived (no recorded source) |
+| 2 | - | CPI_JAN25_TO_JAN26 | -13.80 / +13.80 | +0.00 / +0.00 | no recorded source |
+| 3 | 4 | FIXED.coalEAFPct | +10.72 / -1.71 | -3.75 / +1.76 | sourced (by name, unconfirmed) |
+| 4 | - | CPI_APR21_TO_JAN26 | -9.63 / +9.63 | +0.00 / +0.00 | derived (no recorded source) |
+| 5 | - | NEW_WIND_CF_12Y | -9.63 / +9.63 | +0.00 / +0.00 | no recorded source |
+| 6 | - | FIXED.costCoal | -8.69 / +8.69 | +0.00 / +0.00 | sourced (by name, unconfirmed) |
+| 7 | - | BLD_DISC_CENTRAL | +8.10 / -6.49 | +0.00 / +0.00 | source in code comment only |
+| 8 | 2 | FIXED.coalInstalledMW | +7.85 / +7.46 | -5.84 / +2.26 | no recorded source |
+| 9 | - | FIXED.fomCoal | -6.01 / +6.01 | +0.00 / +0.00 | no recorded source |
+| 10 | 3 | FIXED.rooftopDerate | +3.65 / -3.37 | +4.52 / -4.14 | sourced (by name, unconfirmed) |
+| 11 | - | BLD_LIFE.wind | +3.50 / -2.08 | +0.00 / +0.00 | no recorded source |
+| 12 | - | NEW_PVTRK_CF_12Y | -3.26 / +3.26 | +0.00 / +0.00 | no recorded source |
+| 13 | - | BATT_BW3_BID | -3.08 / +3.08 | +0.00 / +0.00 | not yet reviewed |
+| 14 | - | FIXED.reipppWindMW | -2.97 / +2.97 | +0.00 / +0.00 | no recorded source |
+| 15 | - | BLD_COST.rooftop.c2026 | -2.88 / +2.88 | +0.00 / +0.00 | no recorded source |
+| 16 | - | BLD_COST.batt.c2026 | -2.64 / +2.64 | +0.00 / +0.00 | derived (no recorded source) |
+| 17 | - | BATT_COST_HOURS | -2.64 / +2.64 | +0.00 / +0.00 | no recorded source |
+| 18 | - | BLD_FOM.wind | -2.20 / +2.20 | +0.00 / +0.00 | derived (no recorded source) |
+| 19 | 19 | FIXED.outageForcedSharePct | +0.03 / +1.77 | -0.08 / -0.45 | sourced (by name, unconfirmed) |
+| 20 | - | FIXED.exportPriceFirmR | +1.75 / -1.75 | +0.00 / +0.00 | source in code comment only |
+| 21 | - | FIXED.txRPerKWyr | -1.68 / +1.68 | +0.00 / +0.00 | sourced (by name, unconfirmed) |
+| 22 | 5 | FIXED.windMW | +1.65 / -1.61 | +2.32 / -2.28 | source in code comment only |
+| 23 | - | BLD_COST.ccgt.c2026 | -1.63 / +1.63 | +0.00 / +0.00 | sourced (by name, unconfirmed) |
+| 24 | - | FIXED.fomNuclear | -1.60 / +1.60 | +0.00 / +0.00 | no recorded source |
+| 25 | 6 | FIXED.rooftopMW | +1.60 / -1.54 | +2.00 / -1.93 | no recorded source |
+| 26 | - | BLD_LIFE.batt | +1.48 / -0.94 | +0.00 / +0.00 | no recorded source |
+| 27 | - | FIXED.reipppSolarMW | -1.41 / +1.41 | +0.00 / +0.00 | no recorded source |
+| 28 | 8 | FIXED.nuclearCF | +1.35 / -1.30 | +1.83 / -1.83 | sourced (by name, unconfirmed) |
+| 29 | - | BLD_LIFE.rooftop | +1.26 / -0.75 | +0.00 / +0.00 | no recorded source |
+| 30 | - | FIXED.vomCoal | -1.24 / +1.24 | +0.00 / +0.00 | no recorded source |
+| 31 | 21 | FIXED.newBattHours | -0.93 / +1.11 | +0.43 / -0.35 | no recorded source |
+| 32 | - | BLD_LIFE.pv | +1.11 / -0.66 | +0.00 / +0.00 | no recorded source |
+| 33 | 11 | FIXED.psEff | +1.10 / -0.90 | +1.30 / -1.18 | no recorded source |
+| 34 | - | BLD_FOM.rooftop | -1.07 / +1.07 | +0.00 / +0.00 | no recorded source |
+| 35 | - | BLD_FOM.pv | -1.03 / +1.03 | +0.00 / +0.00 | derived (no recorded source) |
+| 36 | - | FIXED.costImports | -1.03 / +1.03 | +0.00 / +0.00 | no recorded source |
+| 37 | - | FIXED.carbonTaxRPerT | -1.02 / +1.02 | +0.00 / +0.00 | sourced (by name, unconfirmed) |
+| 38 | 1 | FIXED.emisCoal | -1.02 / +1.02 | -16.56 / +16.56 | no recorded source |
+| 39 | 15 | FIXED.outageCmPerStationYr | -0.22 / -1.01 | +0.07 / +0.55 | sourced (by name, unconfirmed) |
+| 40 | 13 | FIXED.battEff | +0.96 / - | +1.02 / - | no recorded source |
+| 41 | 12 | FIXED.exportsMW | +0.68 / -0.68 | -1.09 / +1.10 | source in code comment only |
+| 43 | 14 | FIXED.pvUtilityMW | +0.58 / -0.57 | +0.90 / -0.89 | no recorded source |
+| 45 | 9 | FIXED.importsCF | +0.53 / - | +1.62 / - | derived (source in code comment only) |
+| 46 | 10 | FIXED.importsMW | +0.53 / -0.47 | +1.62 / -1.56 | sourced (by name, unconfirmed) |
+| 57 | 7 | FIXED.nuclearMW | -0.20 / +0.31 | +1.93 / -1.83 | no recorded source |
+
+Caveats (message 315 (d)). A +/-20% screen on a fixed build ranks sensitivity, not uncertainty: some inputs are far less certain
+than 20% (imports, Avon and Dedisa), and some far more (the CPI chain is Stats SA's published index, though not yet in SOURCES).
+One year, one weather year and one outage draw: inputs that matter through adequacy in other years or draws can rank low.
+Cost effects of capex inputs are the 2035 annuity of the fixed build, not a re-optimised build.
+
+Priority list (message 316 (b)): high-impact inputs (top 50 by cost or top 15 by CO2) with no source anywhere ('no recorded
+source', derived counted at the weakest parent): 34 - CPI_JAN24_TO_JAN26, CPI_JAN25_TO_JAN26, CPI_APR21_TO_JAN26, NEW_WIND_CF_12Y,
+FIXED.coalInstalledMW, FIXED.fomCoal, BLD_LIFE.wind, NEW_PVTRK_CF_12Y, FIXED.reipppWindMW, BLD_COST.rooftop.c2026,
+BLD_COST.batt.c2026, BATT_COST_HOURS, BLD_FOM.wind, FIXED.fomNuclear, FIXED.rooftopMW, BLD_LIFE.batt, FIXED.reipppSolarMW,
+BLD_LIFE.rooftop, FIXED.vomCoal, FIXED.newBattHours, BLD_LIFE.pv, FIXED.psEff, BLD_FOM.rooftop, BLD_FOM.pv, FIXED.costImports,
+FIXED.emisCoal, FIXED.battEff, FIXED.hybridEndHour, FIXED.pvUtilityMW, BLD_LIFE.ccgt, BLD_COST.rooftop.decl, BLD_FOM_BATT_SHARE,
+FIXED.hydroCF, FIXED.nuclearMW. Some have a basis in a code comment that the matching did not credit, or in RESULTS: no recorded
+source means no SOURCES entry, not that the number is wrong. Stage 2's scope is the advisor's decision from this list.
+
 ### s_eskom26, provisional and not for quoting: Eskom's FY2026 costs and running on c5f raise engine PV by R19.4bn and CO2 by 3.7 Mt; imports are the largest change (+R30.0bn at R897), Avon and Dedisa on merit the largest saving (-R20.5bn); the IRP-against-c5f gap moves R2-4bn; losing the imports after 2030 costs R11.9bn on this basis, not R28.1bn (user, 21-22 Oct 2026, messages 278-284, 300-304; c5f's frozen copy b82bfd3, build 2026-10-17g)
 
 Settings. c5f's central settings (scratch c5f/env_c5f.sh) in a measurement copy, c5f/eskom (the repository's code untouched),
