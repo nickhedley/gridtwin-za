@@ -1824,3 +1824,28 @@ weekly System Status report, 2026 Week 42 (12-18 October). The arithmetic is our
 - The model today: enrolled geysers bring batteries at 0.35 kW per geyser kW, 4 hours, with no enablement, programme or
   participant cost (the VPP slider's note says so from build 22e). Participant bill savings and payments are transfers, for the
   retail panels, not system cost.
+
+## Coal flexibility benchmarks for UC_FLEET (user, 22 Oct 2026, messages 336 (b), 341 (c), 343 (a) and 344 (a); recorded, no model change)
+
+What other fleets show or what the literature measures, beside the model's UC_FLEET (minimum stable 0.65 for 15 groups and 0.50, our
+fill-in, for 16; minimum up and down 8 and 4 h for 28 groups; start-up costs R99-160 per MW per start; TODO 14iu). Each figure is
+a unit's capability or a fleet's practice; they are not interchangeable.
+- AEMO, 2025 Thermal Audit (November 2025), as given by the user: coal units' design minimum stable operating level typically 40%
+  (pp.20, 23); time at minimum 13-16% of operating hours in 2024-25 (p.18); two-shifting trialled in New South Wales only and not
+  pursued in Queensland (cost, fatigue) or Victoria (flame stability) (pp.36-38, 46-47); about 2 hours' notice to desynchronise or
+  resynchronise (p.25). AEMO's 2025-26 IASR workbook (unit-level minimum stable levels, ramp rates, start costs and times) is to be
+  compared unit by unit with UC_FLEET (message 344 (b)); aemo.com.au is not reachable from the analysis environment, 22 Oct 2026.
+- NREL and Intertek APTECH, Power Plant Cycling Costs (2012), table 1-1, p.12, as given by the user: lower-bound median start costs
+  for large subcritical coal (300-900 MW), 2011 US dollars, excluding fuel: hot $59, warm $65, cold $105 per MW. At US CPI-U
+  333.952 (June 2026, FRED CPIAUCNS) over 224.939 (2011 average) and R16.50 to the dollar (the model's rate): hot R1,445, warm
+  R1,592, cold R2,572 per MW per start, against UC_FLEET's R99-160 per MW (the price adder R224.52, UC_FLEET's R152.58 over 0.68):
+  about 10-20 times lower. Whether PyPSA-RSA's start costs include wear or only fuel is not documented (question for Meridian, TODO
+  14hu); their size is of the order of start-up fuel alone.
+- Central Electricity Authority (India), as given by the user: India's large subcritical fleet runs at a 55% technical minimum (a
+  CEA committee, reported by Power Line, 6 March 2026); 40% by 2030 only with retrofits (CEA flexible operation regulations, 2023).
+- Agora Energiewende, Flexibility in thermal power plants (2017), table 1, as given by the user (p.48): hard coal minimum load 25-40%
+  of rating, ramp 1.5-4% a minute, hot start 2.5-3 h, cold start 5-10 h. Page, columns ('commonly used' against 'state of the art')
+  and what the model's other ramp citations measure are not yet checked against the document (message 337 (b); TODO 14iu).
+- Eskom's own hourly data (ESK19679; Eskom credited, analysis ours), as demonstrated practice, a lower bound on capability (message
+  336 (a)): the coal fleet's hour-to-hour rise at the 99.9th percentile 1,950 MW in 2025 and 2,349 MW in January-August 2026 (8.9%
+  and 9.2% of available coal); its daily minimum over maximum 0.87 (2025) and 0.82 (2026) at the median, 0.72 at the lowest day.
