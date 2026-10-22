@@ -471,7 +471,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote"><strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Existing REIPPPP plant is charged both its contract price and fixed O&amp;M, so that O&amp;M is counted twice: about 1% of avg energy cost on the presets (0.8&ndash;1.5%), a known overstatement still to be removed. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure in constant 2020 rands, not escalated, and shown beneath system cost when it occurs. Replacement cost instead prices every MWh at full lifecycle cost, as if the mix were built new today. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
+    <p class="kpinote"><strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Existing REIPPPP plant is charged both its contract price and fixed O&amp;M, so that O&amp;M is counted twice: about 1% of avg energy cost on the presets (0.8&ndash;1.5%), a known overstatement still to be removed. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure in constant 2020 rands, not escalated, and shown beneath system cost when it occurs. Replacement cost instead prices the mix at full lifecycle cost, as if it were built new today: generation per MWh, and storage and gas on the capacity the scenario holds. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -807,10 +807,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                       style="font-size:10px;padding:3px 8px;margin-left:auto">Compute grid</button></div>
             <div class="pb">
               <div style="font-size:10.5px;line-height:1.5;margin-bottom:9px">
-                How much wind and solar removes the need for gas entirely. Only gas is
-                forced to zero &ndash; coal, storage, nuclear, imports and demand all follow
-                your scenario. Ten seconds: every cell is twelve weather years and the worst
-                is kept.
+                How much new wind and solar a system needs without new combined-cycle gas.
+                Only new combined-cycle gas is removed &ndash; open-cycle gas on LNG, diesel, coal,
+                storage, nuclear, imports and demand all follow your scenario, and each cell
+                shows the most gas and diesel any year still burns. Every cell is twelve
+                weather years and the worst is kept, so the grid takes a while.
               </div>
               <div id="frontierBody"><div style="font-size:10.5px;color:var(--ink2)">Press
                 compute to run the grid.</div></div>
@@ -4166,7 +4167,7 @@ function printPrefeas() {
       </div>`;
   }
   // ── THE NO-GAS FRONTIER ───────────────────────────────────────────────────
-  // A 6x4 grid of unserved energy against wind and solar build, with gas removed. The
+  // A 6x4 grid of unserved energy against new wind and solar, with new CCGT removed. The
   // published finding in RESULTS.md is the WORST of TWELVE weather years, and this
   // reproduces that basis rather than a cheaper single year: two authorities disagreeing
   // about the same headline is worse than a slow panel.
@@ -4210,22 +4211,25 @@ function printPrefeas() {
     const P = { ...FIXED, ...base };
     const coalLeftMW = Math.max(0, (P.coalInstalledMW || 0) - (P.coalDecomMW || 0));
 
-    const grid = FRONT_WIND.map(() => FRONT_SOLAR.map(() => null));
+    const grid = FRONT_WIND.map(() => FRONT_SOLAR.map(() => null)), burn = FRONT_WIND.map(() => FRONT_SOLAR.map(() => null));
     let done = 0;
     const total = FRONT_WIND.length * FRONT_SOLAR.length;
 
     for (let i = 0; i < FRONT_WIND.length; i++){
       for (let j = 0; j < FRONT_SOLAR.length; j++){
-        let worst = 0;
+        // The most gas and diesel any year burns, beside the worst year's unserved (message 264, mechanics audit G5-M7): only new
+        // combined-cycle gas is removed, so open-cycle gas on LNG and diesel still run.
+        let worst = 0, gas = 0, dsl = 0;
         for (const y of years){
           const r = simulate({ ...base, newWindMW: FRONT_WIND[i], newPvMW: FRONT_SOLAR[j] },
                              wx.profileFor(y));
           worst = Math.max(worst, (r.E.unserved || 0) / 1000);
+          gas = Math.max(gas, (r.E.ccgt || 0) / 1e6); dsl = Math.max(dsl, (r.E.diesel || 0) / 1e6);
         }
-        grid[i][j] = worst;
+        grid[i][j] = worst; burn[i][j] = { gas, dsl };
         done++;
         if (btn) btn.textContent = 'running\u2026 ' + done + '/' + total;
-        drawFrontier(host, grid, years.length, { coalLeftMW, eaf: P.coalEAFPct, flex: P.coalFlexPct, battMW: P.newBattMW, battH: P.newBattHours });
+        drawFrontier(host, grid, years.length, { coalLeftMW, eaf: P.coalEAFPct, flex: P.coalFlexPct, battMW: P.newBattMW, battH: P.newBattHours }, burn);
         await new Promise(r => setTimeout(r, 0));
       }
     }
@@ -4234,7 +4238,7 @@ function printPrefeas() {
   }
   window.runFrontier = runFrontier;
 
-  function drawFrontier(host, grid, nYears, asm){
+  function drawFrontier(host, grid, nYears, asm, burn){
     if (!host) return;
     const W = 110, H = 44, X0 = 76, Y0 = 72;
     // Sequential ramp on a log scale: the range spans four orders of magnitude, so a
@@ -4254,13 +4258,15 @@ function printPrefeas() {
     let allZero = true, anyDone = false;
     for (let i = 0; i < FRONT_WIND.length; i++){
       for (let j = 0; j < FRONT_SOLAR.length; j++){
-        const v = grid[i][j], c = shade(v);
+        const v = grid[i][j], c = shade(v), b = burn && burn[i] ? burn[i][j] : null;
         if (v != null){ anyDone = true; if (v > 0.5) allZero = false; }
         const x = X0 + j * W, y = Y0 + i * H;
         cells += `<rect x="${x}" y="${y}" width="${W - 2}" height="${H - 2}" rx="2" fill="${c.f}"/>`
-              +  `<text x="${x + W/2 - 1}" y="${y + H/2 + 4}" text-anchor="middle" `
+              +  `<text x="${x + W/2 - 1}" y="${y + H/2 + (b ? -2 : 4)}" text-anchor="middle" `
               +  `font-size="11.5" fill="${c.t}">`
-              +  (v == null ? '' : (v <= 0.5 ? '0' : Math.round(v).toLocaleString('en-US'))) + '</text>';
+              +  (v == null ? '' : (v <= 0.5 ? '0' : Math.round(v).toLocaleString('en-US'))) + '</text>'
+              +  (b ? `<text x="${x + W/2 - 1}" y="${y + H/2 + 11}" text-anchor="middle" font-size="8.5" fill="${c.t}">`
+                   + `gas ${b.gas.toFixed(2)} \u00b7 diesel ${b.dsl.toFixed(2)}</text>` : '');
         // frontier edge: the boundary between a zero cell and a non-zero one
         if (v != null && v <= 0.5){
           const left = j > 0 ? grid[i][j-1] : null;
@@ -4276,16 +4282,16 @@ function printPrefeas() {
       `<text x="${X0 - 8}" y="${Y0 + i*H + H/2 + 4}" text-anchor="end" font-size="10.5" fill="var(--ink2)">${v/1000} GW</text>`).join('');
     host.innerHTML =
       `<svg viewBox="0 0 ${X0 + FRONT_SOLAR.length*W + 16} ${Y0 + FRONT_WIND.length*H + 30}" width="100%">`
-      + `<text x="${X0 + FRONT_SOLAR.length*W/2}" y="${Y0 - 30}" text-anchor="middle" font-size="10.5" fill="var(--ink2)">solar built</text>`
-      + `<text x="18" y="${Y0 + FRONT_WIND.length*H/2}" text-anchor="middle" font-size="10.5" fill="var(--ink2)" transform="rotate(-90 18 ${Y0 + FRONT_WIND.length*H/2})">wind built</text>`
+      + `<text x="${X0 + FRONT_SOLAR.length*W/2}" y="${Y0 - 30}" text-anchor="middle" font-size="10.5" fill="var(--ink2)">new solar</text>`
+      + `<text x="18" y="${Y0 + FRONT_WIND.length*H/2}" text-anchor="middle" font-size="10.5" fill="var(--ink2)" transform="rotate(-90 18 ${Y0 + FRONT_WIND.length*H/2})">new wind</text>`
       + colLab + rowLab + cells
       + `<g stroke="#0F6E56" stroke-width="2.5" stroke-linecap="square">${edge}</g>`
       + `</svg>`
       + `<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">`
-      + `Unserved energy in GWh a year with gas removed, on the worst of `
-      + `${nYears} weather years. The green edge is the zero-unserved frontier. `
-      + `Grid spacing is coarse, so the staircase is where the sampling is, not where the `
-      + `physics is.</div>`
+      + `Unserved energy, GWh a year, without new combined-cycle gas, worst of `
+      + `${nYears} weather years; below, the most gas and diesel any year burns, TWh. `
+      + `Green edge: the zero-unserved frontier. `
+      + `The staircase is the coarse sampling, not the physics.</div>`
       // An all-zero grid is a legitimate result, not a broken panel: with the whole coal
       // fleet retained the system needs no gas at any renewable build, so every cell is
       // zero. Say so, or it reads as a failure to compute.
@@ -4293,14 +4299,14 @@ function printPrefeas() {
           + `background:var(--panel2);border-left:3px solid var(--veld,#7DC47A);line-height:1.5">`
           + `<strong>Every cell is zero</strong>, because with `
           + `${(asm.coalLeftMW/1000).toFixed(1)} GW of coal retained, the system covers the `
-          + `worst of ${nYears} weather years without gas.</div>` : '')
+          + `worst of ${nYears} weather years without new combined-cycle gas.</div>` : '')
       + (asm ? `<div style="font-size:9.5px;color:var(--ink2);margin-top:5px;line-height:1.5">`
           + `<strong>From your scenario:</strong> `
           + `${(asm.coalLeftMW/1000).toFixed(1)} GW of coal left at `
           + `${asm.eaf}&#37; availability, `
           + `${asm.flex >= 100 ? 'flexibilised' : 'not flexibilised'}, with `
           + `${(asm.battMW/1000).toFixed(0)} GW of new lithium at ${asm.battH}h. `
-          + `Only gas is forced to zero.</div>` : '');
+          + `Only new combined-cycle gas is removed.</div>` : '');
   }
   window.drawFrontier = drawFrontier;
 
@@ -6649,7 +6655,7 @@ const FIXED = {
   // higher on capex but never degrades and cycles indefinitely. Iron-air is by
   // far the cheapest per unit of energy stored and the worst on round-trip
   // losses, which is precisely the trade it exists to make.
-  lcoeVrfb:2100, lcoeIronAir:1750,
+  lcoeVrfb:null, lcoeIronAir:null,   // derived from BLD_COST after the lithium anchor (message 264, audit G5-M1); were 2100 and 1750, typed
     // lcoeCoalNew 1550: escalated from the Coal Baseload IPP Programme, bid window 1
   // (Oct 2016). Thabametsi bid 79c/kWh and Khanyisa 80c against an 82c ceiling, on
   // 30-year PPAs with CPI escalation. CPI to 2026 gives R1,287; the bid assumed
@@ -9511,10 +9517,10 @@ function simulate(u, prof, outPath, _soc0){
   // emits more per MWh delivered - which is the physical point of the curve.
   const co2=(coalFuelMWh*p.emisCoal+(E.ccgt+_ocgtMWh*(_ocK-1))*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;   // E.ccgt includes OCGT on LNG
   // Full replacement cost: price every MWh (existing + new) at its lifecycle LCOE.
-  // Coal is charged new-build coal LCOE; storage discharge priced at storage LCOE.
+  // Coal is charged new-build coal LCOE; storage and gas are charged on capacity, below.
   // hybrid at R1,900/MWh: RMIPPPP awarded tariffs cluster R1.5-2.3/kWh; midpoint,
   // used only as a replacement-cost weight for its 1.77 TWh - not a dispatch cost.
-  const lcoeOf={coal:p.lcoeCoalNew, ccgt:p.lcoeCcgt, nuclear:p.lcoeNuclear,
+  const lcoeOf={coal:p.lcoeCoalNew, nuclear:p.lcoeNuclear,
     hydro:p.lcoeHydro, imports:p.lcoeImports, wind:p.lcoeWind, pv:p.lcoePv, csp:p.lcoeCsp,
     rooftop:p.lcoeRooftop, ps:p.lcoePs, hybrid:1900,
     };
@@ -9525,15 +9531,18 @@ function simulate(u, prof, outPath, _soc0){
   // figure takes the run's own cost: the capacity the run holds, at the slider's cost per unit of capacity (slider x the
   // reference output of that capacity), plus diesel's running cost on the energy the run burns. A run that cycles lithium
   // 81 times a year pays for the whole battery, as its engine cost does.
-  // Vanadium and iron-air discharge through the battery-class aggregate (E.batt) and stay priced per MWh discharged at
-  // their typed LCOE, on their share of the class's energy, as before; without this their sliders would be inert.
+  // GAS, VANADIUM AND IRON-AIR ON CAPACITY TOO (user, 20 Oct 2026, message 264; mechanics audit G5-M2, fix 2). Gas was priced
+  // per MWh at its anchor, which assumes a 30% capacity factor whatever the run does (IRP's 2030 targets run gas at 51%, the
+  // least-cost path 2035 at 5%); vanadium and iron-air per MWh of the battery class's discharge, on their share of its energy
+  // capacity, not on what they discharged. Each now pays its slider's capital part on the capacity the run holds at the
+  // anchor's reference use (gas GAS_LCOE_REF_CF; vanadium VRFB_REF_CYCLES; iron-air FE_REF_CYCLES), and gas its running cost
+  // (ccgtSrmcR) on the energy the run burns. Gas capacity is ccgtCap, open-cycle on LNG included at the CCGT's anchor.
   {
     const _vE = (p.newVrfbMW||0)*(p.newVrfbHours ?? 8);
     const _fE = (p.newIronAirMW||0)*(p.newIronAirHours ?? 100);
     const _lE = p.battPowerMW*p.battHours + (p.newBattMW||0)*(p.newBattHours ?? 4);
-    const _tot = _vE + _fE + _lE;
-    replTotal += p.lcoeBatt * LI_REF_CYCLES * _lE;
-    if (_tot > 0) replTotal += E.batt * (_vE*(p.lcoeVrfb ?? 2100) + _fE*(p.lcoeIronAir ?? 1750)) / _tot;
+    replTotal += p.lcoeBatt * LI_REF_CYCLES * _lE + p.lcoeVrfb * VRFB_REF_CYCLES * _vE + p.lcoeIronAir * FE_REF_CYCLES * _fE;
+    replTotal += Math.max(0, p.lcoeCcgt - ccgtSrmcR(FIXED)) * ccgtCap * GAS_LCOE_REF_CF * 8760 + ccgtSrmcR(p) * E.ccgt;
     // The slider's capital part is measured against the running cost its anchor was built on (FIXED), so the fuel and carbon
     // sliders move only the running cost, which the energy the run burns pays at the run's own rates.
     replTotal += Math.max(0, p.lcoeDiesel - dieselSrmcR(FIXED)) * dieselAvailMW(p) * DSL_REF_CF * 8760 + dieselSrmcR(p) * E.diesel;
@@ -10172,6 +10181,8 @@ function bldLcoeAt(capex, fom, life, mwhPerKwYr){
 }
 // Diesel's running cost, R/MWh: fuel, variable O&M and carbon at the compliance rate. The floor under any diesel LCOE.
 function dieselSrmcR(q){ return q.costDiesel + q.vomDiesel + q.carbonTaxRPerT * q.emisDiesel; }
+// Gas's running cost, R/MWh, the same three parts: the part of the CCGT readout (bldLcoeCcgtAt) that is not capital or fixed O&M.
+function ccgtSrmcR(q){ return q.costCcgt + q.vomCcgt + q.carbonTaxRPerT * q.emisCcgt; }
 const bldLcoeBattAt = cycles => bldLcoeAt(BLD_COST.batt.c2026, BLD_COST.batt.c2026 * BLD_FOM_BATT_SHARE, BLD_LIFE.batt, BATT_COST_HOURS * cycles / 1000);
 const bldLcoeDieselAt = cf => bldLcoeAt(bldOcgtCentralCost().c2026, BLD_FOM.ocgd, BLD_LIFE.ocgd, cf * 8.76) + dieselSrmcR(FIXED);
 FIXED.lcoeBatt = Math.round(bldLcoeBattAt(LI_REF_CYCLES) / 20) * 20;
@@ -10182,9 +10193,27 @@ FIXED.lcoeDiesel = Math.round(bldLcoeDieselAt(DSL_REF_CF) / 50) * 50;
 // charge (moved out of the fuel price on build 19b), plus fuel (costCcgt), variable O&M (vomCcgt) and carbon at the compliance
 // rate. Until 19c fixed O&M, the terminal and VOM were left out (R2,496 on 19b). Rounded to the slider's step.
 const GAS_LCOE_REF_CF = 0.30;
-const bldLcoeCcgtAt = cf => bldLcoeAt(BLD_COST.ccgt.c2026, bldFom('ccgt', 2026, FIXED), BLD_LIFE.ccgt, cf * 8.76)
-  + FIXED.costCcgt + FIXED.vomCcgt + FIXED.carbonTaxRPerT * FIXED.emisCcgt;
+const bldLcoeCcgtAt = cf => bldLcoeAt(BLD_COST.ccgt.c2026, bldFom('ccgt', 2026, FIXED), BLD_LIFE.ccgt, cf * 8.76) + ccgtSrmcR(FIXED);
 FIXED.lcoeCcgt = Math.round(bldLcoeCcgtAt(GAS_LCOE_REF_CF) / 20) * 20;
+// VANADIUM AND IRON-AIR ANCHORS (user, 20 Oct 2026, message 264; mechanics audit G5-M1, fix 3). Typed until now at R2,100 and
+// R1,750 per MWh discharged ('an assumption; no published source'); R1,750 is below what iron-air's own capex allows. Derived
+// as lithium's is: the model's build costs (capex and fixed O&M) over their life at 8% real, per MWh discharged at a reference
+// use, charging energy not costed. Vanadium (8 h): one full cycle a day, as lithium. Iron-air (100 h at 45% round trip): the
+// most full cycles a year it can make, charging at its discharge power, 8,760 / (hours x (1 + 1 / efficiency)), about 27; so
+// its anchor is a floor, and any use below that costs more per MWh.
+const VRFB_REF_CYCLES = LI_REF_CYCLES, FE_REF_CYCLES = 8760 / (FIXED.newIronAirHours * (1 + 1 / FIXED.newIronAirEff));
+const bldLcoeStoreAt = (k, hours, cycles) => bldLcoeAt(BLD_COST[k].c2026, BLD_FOM[k], BLD_LIFE[k], hours * cycles / 1000);
+FIXED.lcoeVrfb = Math.round(bldLcoeStoreAt('vrfb', FIXED.newVrfbHours, VRFB_REF_CYCLES) / 50) * 50;
+FIXED.lcoeIronAir = Math.round(bldLcoeStoreAt('ironair', FIXED.newIronAirHours, FE_REF_CYCLES) / 50) * 50;
+// Iron-air's cost per kWh at the cycling a run actually gives it: its discharge over its energy capacity (message 271 (8)).
+function ironAirOwnCyclingNote(r){
+  const mw = state.newIronAirMW || 0, hours = state.newIronAirHours ?? FIXED.newIronAirHours;
+  if (!(mw > 0) || !r || !r.tierDis) return ' This scenario builds no iron-air.';
+  const cycles = r.tierDis.fe / (mw * hours);
+  if (!(cycles > 0)) return ' In this scenario its iron-air does not discharge.';
+  return ' In this scenario it makes ' + cycles.toFixed(1) + ' full cycles a year: about R'
+    + (Math.round(bldLcoeStoreAt('ironair', hours, cycles) / 50) * 50 / 1000).toFixed(2) + '/kWh.';
+}
 // OPTIMISER GRID COST, TODO 14ar (7 Oct 2026, user decisions). Until now the build LP charged no grid cost to
 // any technology, while the engine added txRPerKWyr to new wind, solar and offshore afterwards, so the optimiser
 // chose them without it. Each new resource now pays, in the LP:
@@ -10617,14 +10646,23 @@ function bldPaceChanged(){
     if (el) el.value = (p[t] / 1000).toFixed(2);
   }
   const n = document.getElementById('bldPaceNote');
-  if (n) n.textContent = p.note;
+  if (n) n.textContent = p.note + ' ' + bldPvGrowthNote(p.pv);
+}
+// The solar cap's yearly growth, stated beside the pace (user, 20 Oct 2026, message 264, decision D9; mechanics audit G5-M5): the
+// build LP raises utility solar's cap bldPvRateGrowthPct a year from the pace's 2026 value, so the rate box shows 2026's cap only.
+function bldPvGrowthNote(pv2026MW){
+  const g = (typeof state !== 'undefined' ? state.bldPvRateGrowthPct : undefined) ?? FIXED.bldPvRateGrowthPct;
+  if (!(g > 0)) return '';
+  const at = y => (pv2026MW * Math.pow(1 + g / 100, y - 2026) / 1000).toFixed(1);
+  return `Utility solar\u2019s cap is the 2026 figure and rises ${g}% a year (an assumption): ${at(2030)} GW in 2030, ${at(2035)} GW in 2035 `
+    + `and ${at(2040)} GW in 2040.`;
 }
 
 function bldInitRates(){
   const host = document.getElementById('bldRates');
   if (!host) return;
   host.innerHTML = BLD_TECHS.map(t =>
-    '<div><label style="display:block;margin-bottom:2px;color:var(--ink2)">' + BLD_LABEL[t] + '</label>'
+    '<div><label style="display:block;margin-bottom:2px;color:var(--ink2)">' + BLD_LABEL[t] + (t === 'pv' ? ' (2026)' : '') + '</label>'
     + '<input id="bldRate_' + t + '" type="number" min="0" max="99" step="0.05" value="0"'
     + ' style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">'
     + '<span style="font-size:9px;color:var(--ink2)">GW/yr</span></div>').join('');
@@ -18405,8 +18443,8 @@ const SLIDERS=[
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s twelve-year capacity factor of '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37;, before the grid charge. BW7 awarded solar only ('+BW7_SOLAR_AWARDS.length+' awards, '+_bw7Mw().toLocaleString('en-US')+' MW), so the capex is backed out of BW5\u2019s R'+Math.round(BLD_TARIFF.wind.rPerMWh)+'/MWh (April 2021 rands, R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+' in 2026 rands) at '+(FIXED.bldTariffCfBasis==='run' ? 'that capacity factor, so the anchor is the tariff.' : 'BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.')+' In the model\u2019s least-cost pathway in 2030: new wind runs at '+(LCP_2030_WIND_CF*100).toFixed(1)+'&#37;, R'+(bldLcoeAnchor(_anchorKey('wind'), 'wind', 'wind', LCP_2030_WIND_CF)/1000).toFixed(2)+'/kWh.'},
   {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeRooftop/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.rooftop+' years at 8% real, at rooftop\u2019s twelve-year capacity factor of '+(FIXED_PV_CF_12Y*FIXED.rooftopDerate*100).toFixed(1)+'&#37; (the fixed-tilt solar profile x the '+FIXED.rooftopDerate.toFixed(2)+' derate). In the model\u2019s least-cost pathway in 2030: the same.'},
   {id:'lcoePs',label:'Pumped storage',min:400,max:3000,step:50,def:FIXED.lcoePs,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. An assumption; no published source.'},
-  {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. An assumption; no published source.'},
-  {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. An assumption; no published source.'},
+  {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Anchor R'+(FIXED.lcoeVrfb/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.vrfb+' years at 8% real, at one full '+FIXED.newVrfbHours+'-hour cycle a day ('+VRFB_REF_CYCLES+' a year), as lithium. Per kWh discharged; the charging energy is not costed.'},
+  {id:'lcoeIronAir',label:'Iron-air',min:1000,max:20000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Anchor R'+(FIXED.lcoeIronAir/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.ironair+' years at 8% real, at the most full cycles a '+FIXED.newIronAirHours+'-hour store at '+Math.round(FIXED.newIronAirEff*100)+'&#37; round trip can make in a year, about '+Math.round(FE_REF_CYCLES)+', charging at its discharge power. A floor: at fewer cycles each kWh costs more. Per kWh discharged; the charging energy is not costed.'},
   {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:8000,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeBatt/1000).toFixed(2)+': the model\u2019s build costs (capex and fixed O&M) over '+BLD_LIFE.batt+' years at 8% real, at one full cycle a day ('+LI_REF_CYCLES+' a year). Per kWh discharged; the charging energy is not costed. In the model\u2019s least-cost pathway in 2030: '+Math.round(LCP_2030_LI_CYCLES)+' full cycles a year, R'+((bldLcoeBattAt(LCP_2030_LI_CYCLES))/1000).toFixed(2)+'/kWh delivered.'},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:'An assumption; no published source.'},
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R'+(FIXED.costCcgt/1000).toFixed(2)+'/kWh \u2013 about '+Math.round(100*FIXED.costCcgt/FIXED.lcoeCcgt)+'&#37; of this figure \u2013 so the balance is capital, fixed O&M and the LNG terminal charge, which fall per MWh as utilisation rises, plus variable O&M and carbon. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the central case\u2019s USD 11.74 at the coast.'},
@@ -20129,8 +20167,10 @@ function render(r){
     {k:'lcoeNuclear',nm:'Nuclear',c:COLORS.nuclear},
     {k:'lcoeBatt',nm:'Lithium-ion (4h)',c:COLORS.batt},
     {k:'lcoePs',nm:'Pumped storage (' + FIXED.newPsHours + 'h, new)',c:COLORS.ps},
-    {k:'lcoeVrfb',nm:'Vanadium flow (8h)',c:COLORS.batt},
-    {k:'lcoeIronAir',nm:'Iron-air (100h)',c:COLORS.batt},
+    {k:'lcoeVrfb',nm:'Vanadium flow (8h)',c:COLORS.batt,tip:'The model\u2019s vanadium build costs at one full cycle a day ('+VRFB_REF_CYCLES+' a year), per kWh discharged; charging energy not costed.'},
+    // Iron-air's bar is a floor (message 264, audit G5-M1): its build costs at the most cycles a 100-hour store can make. Its
+    // label says so, and the tooltip adds the figure at this scenario's own cycling (user, 21 Oct 2026, message 271 (8)).
+    {k:'lcoeIronAir',nm:'Iron-air (100h, at the most cycles it can make)',c:COLORS.batt,tip:'The model\u2019s iron-air build costs at the most full cycles a 100-hour store at '+Math.round(FIXED.newIronAirEff*100)+'% round trip can make, about '+Math.round(FE_REF_CYCLES)+' a year, per kWh discharged; charging energy not costed. Used less, each kWh costs more.'+ironAirOwnCyclingNote(r)},
     {k:'lcoeCsp',nm:'CSP',c:COLORS.csp},
     {k:'lcoeDiesel',nm:'Diesel OCGT',c:COLORS.diesel},
   ].map(x=>({...x,v:state[x.k]!==undefined?state[x.k]:FIXED[x.k]}));
@@ -20195,7 +20235,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-22a';
+const BUILD_STAMP = '2026-10-22b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20289,14 +20329,14 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 const ENGINE_FNS = () => ({ simulate, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
   astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate,
   otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth,
-  coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, weatherProfileFactory,
+  coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
   bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
 const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
-  SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
+  SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
   ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
   WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,

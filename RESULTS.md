@@ -6127,6 +6127,89 @@ Gas burnt to charge storage stays in the capacity panel's CCGT row (user, 21 Oct
 one line: "The Gas CCGT row's output includes gas burnt to charge storage." No number moves. The full network audit button
 stays hidden until it is rebuilt (message 271 (5)).
 
+### Audit PR 4, costs panels: replacement cost charges gas, vanadium and iron-air on capacity (IRP's 2030 targets R1.58 to R1.50/kWh, Least-cost path 2035 R1.27 to R1.31); iron-air's anchor derived, R1,750 to R4,800/MWh, a floor; the solar cap's 7% a year stated; the no-gas frontier relabelled with gas and diesel per cell (build 2026-10-21f; user, 20 Oct 2026, messages 264 and 270; mechanics audit G5 fixes 1, 2, 3 and 7's wording, decision D9)
+
+Changes, each confirmed in the code on main 2116c10 first:
+- G5-M5, fix 1 (D9): the build LP raises utility solar's cap bldPvRateGrowthPct (7%) a year from the pace's 2026 value; the pace
+  note and rate box showed the 2026 value only. The note now adds 'Utility solar's cap is the 2026 figure and rises 7% a year (an
+  assumption): 3.3 GW in 2030, 4.6 GW in 2035 and 6.4 GW in 2040.' (computed, bldPvGrowthNote) and the rate box reads 'Utility
+  solar (2026)'. No re-solve; the central's builds are unchanged.
+- G5-M1, fix 3: lcoeVrfb and lcoeIronAir, typed at R2,100 and R1,750/MWh ('an assumption; no published source'), are derived as
+  lithium's anchor is: BLD_COST capex and BLD_FOM over BLD_LIFE at 8% real (bldLcoeAt), per MWh discharged at a reference use.
+  Vanadium (8 h): one full cycle a day, 365 a year: R1,700 (was 2,100). Iron-air (100 h, 45% round trip): the most full cycles a
+  year it can make charging at its discharge power, 8,760 / (100 x (1 + 1/0.45)) = 27.2 (FE_REF_CYCLES): R4,800 (was 1,750), a
+  floor. The bar reads 'Iron-air (100h, a floor)'; both bars carry their basis as a tooltip; the iron-air slider's range is now
+  R1.00-20.00/kWh (was 0.60-4.00, below the derived anchor).
+- G5-M2 and M1, fix 2: the replacement cost tile priced gas per MWh at its 30%-capacity-factor anchor whatever the run's own
+  factor, and vanadium and iron-air per MWh of the battery class's discharge on their share of its energy capacity. Each now
+  pays its slider's capital part on the capacity the run holds at the anchor's reference use, as lithium and diesel already did
+  (message 194 (1)): gas (lcoeCcgt - ccgtSrmcR(FIXED)) x ccgtCap x 30% x 8,760 plus ccgtSrmcR(p) x the gas the run burns;
+  vanadium lcoeVrfb x 365 x MWh of capacity; iron-air lcoeIronAir x 27.2 x MWh of capacity. ccgtCap counts open-cycle on LNG at
+  the CCGT's anchor (308 MW on IRP path 2035). The KPI note and README now say storage and gas are charged on capacity.
+  'Fix 2 if quoted': the tile is on the KPI row of every preset link the note gives, so it is treated as quoted (message 270).
+- G5-M7, fix 7's wording: the no-gas frontier said 'Only gas is forced to zero' and 'Ten seconds'. Only newCcgtMW is zeroed, so
+  open-cycle gas on LNG and diesel still run. The text now says only new combined-cycle gas is removed, the axes read 'new wind'
+  and 'new solar', each cell shows the most gas and diesel any weather year burns (TWh), and 'Ten seconds' is gone. Zeroing
+  open-cycle gas and the gas floor in the frontier (B31, the rest of fix 7) stays after the note (TODO 14hn).
+
+Measured (jsdom; each preset as applyState sets it; simulate(state, PROFILES); script scratchpad overnight/a4/m.js), replacement
+cost in R/kWh, before (main 2116c10, build 2026-10-20h) and after (2026-10-21f):
+
+| Preset | Gas capacity factor | Replacement cost before / after | Other outputs |
+|---|---|---|---|
+| Today 2026 | no gas | 1.601 / 1.601 | unchanged |
+| IRP's 2030 targets | 50.9% | 1.578 / 1.502 | unchanged |
+| IRP path 2035 | 28.3% | 1.423 / 1.433 | unchanged |
+| Least-cost path 2035 | 4.7% | 1.273 / 1.310 | unchanged |
+| Deep decarbonisation 2035 (2 GW iron-air) | no gas | 1.376 / 1.428 | unchanged |
+| Fossil-free 2040 (13 GW iron-air) | no gas | 1.451 / 1.939 | unchanged |
+
+'Unchanged' is avgCost, CO2, gas and battery energy, to the digit: the tile is accounting only. The audit's figures reproduce
+(R1.50 and R1.31; IRP path 2035 +R11/MWh). Deep and Fossil-free move most because their iron-air is now charged its capital
+whatever it discharges (1.2 cycles a year on Deep, audit G5-M1); neither is a note preset.
+
+No-gas frontier on IRP path 2035 (Chromium, twelve weather years per cell, 203 s with other jobs running): worst-year unserved
+283 GWh at 20 GW new wind and 25 GW new solar down to 17 GWh at 80/80, no cell at zero; the most gas any year burns 0.07-0.61 TWh
+a cell, diesel 0.18-2.12 TWh, as the audit measured. Render check: 18/18 (pace note, rate box, both bars, frontier wording, axes,
+gas and diesel in all 24 cells, the tile on the four note presets, no 'undefined' or 'NaN', no page errors); a first run read
+the tile before the worker's result arrived (a fault in the check's wait, fixed by waiting for the result).
+
+Not done here, with the audit's own numbering: pumped storage's anchor stays typed (two capex for one technology, G5 fix 12);
+the Masterplan has no gas target, but the deliverable pace note says 'Wind and gas at the Renewable Energy Masterplan's pace'
+(audit G5 section 4, claim 3; TODO 14hx).
+
+Response baseline: validate_response read 86/87 on the first suite run, 'response matrix matches baseline', two cells changed,
+both from this change and both intended: newIronAirMW -> replAvg inert to responsive (iron-air is now charged its capital on
+capacity, as newBattMW and newVrfbMW already were) and costCcgt -> replAvg inert to responsive (the gas the run burns is now
+priced at the run's gas price, as diesel's is). No other cell moved; response_matrix.json rewritten with --write-baseline (its
+base row was also stale from earlier builds, e.g. avgPrice 759.12 from before the coal VOM fix, now 677.27; the base row is
+not compared). validate_response then 87/87, run with nothing beside it (21 Oct 2026, 01:00 UTC).
+
+Suite on 2026-10-21f without validate_stored_panels (message 266; stored panels not regenerated), ESK19679.csv present, run
+20 Oct 2026 23:52 to 21 Oct 01:00 UTC with other branches' suites and checks beside it for part of the run: node checks
+878/882 (validate_response 87/87 on the rerun above; links 48/48, worker 38/38, pathway presets 37/37) plus audit 88/88; eng5
+5/6. The failures are the four known ones (iron-air July, high-season off-peak, peakerSeasonRatio, EDMSA Scenario A CO2 2035)
+and eng5 check 6.
+
+The iron-air bar is labelled 'at the most cycles it can make' (user, 21 Oct 2026, message 271 (8)): the floor stays (R4.80/kWh
+at 27.2 full cycles a year), and its tooltip adds the figure at the scenario's own cycling, its discharge (tierDis.fe) over its
+energy capacity: Deep decarbonisation 2035, 2,000 MW, 1.2 cycles a year, about R107.90/kWh; Fossil-free 2040, 13,000 MW, 1.8
+cycles, about R72.00/kWh; presets without iron-air say so. jsdom, simulate(state, PROFILES) after applyState, 21 Oct 2026
+06:40 UTC (scratchpad overnight/a4b/fe.js). Quick checks: lint 3/3, structure 27/27, public_text 17/17, outputs 42/42, audit
+88/88; render check 3/3.
+
+Suite on 2026-10-22b after main was merged in (message 309; stored panels regenerated, fingerprint 0d603a6c98995d, head dc5b739),
+ESK19679.csv present, nothing running beside it, 22 Oct 2026 11:54 to 14:45 UTC. Container restarts stopped the run four
+times; each time it resumed from the script that was cut, and every script's count comes from one uninterrupted run of that
+script. Node checks 964/968 (stored panels 86/86, links 48/48, worker 38/38, pathway presets 37/37, public text 17/17) plus audit
+88/88; eng5 5/6. The failures are the four known ones (iron-air July, high-season off-peak, peakerSeasonRatio, EDMSA Scenario A
+CO2 2035) and eng5 check 6. Render check in Chromium on a fresh load, 20/20 (scratchpad overnight/a4/render.js, 14:55 UTC): build
+stamp, pace note, rate box, iron-air at R4.80 with message 271 (8)'s label, vanadium at R1.70, the merged cost note and frontier
+note, replacement cost tiles Today 2026 R1.60, IRP's 2030 targets R1.50, IRP path 2035 R1.43, Least-cost path 2035 R1.31, the
+frontier on IRP path 2035 with gas and diesel in all 24 cells, no undefined, NaN or page errors. Two checks in the first render
+run (17/19) were the script's own: one expected the iron-air label message 271 (8) replaced, the other read the frontier note
+before the grid that carries it was computed; both corrected in the script, not in the page.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
