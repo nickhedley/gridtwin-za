@@ -283,7 +283,7 @@ function writeMd(root, items, meta, counts) {
   return L.join('\n');
 }
 
-module.exports = { extract, readSources, check, countStatuses, writeMd, effective, STATUS_ORDER };
+module.exports = { scanExpr, topConsts, extract, readSources, check, countStatuses, writeMd, effective, STATUS_ORDER };
 
 if (require.main === module) (async () => {
   const root = path.resolve(process.argv[2] || 'testroot'), mode = process.argv[3] || '';
