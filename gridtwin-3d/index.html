@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="icon" href="favicon.ico" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <title>GridTwin ZA — 3D Power Infrastructure</title>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
@@ -228,7 +228,7 @@
     <h1>GridTwin <span>ZA</span></h1>
     <p>3D POWER INFRASTRUCTURE · SOUTH AFRICA · DRAG TO ROTATE · SCROLL TO ZOOM</p>
   </div>
-  <a href="index.html" id="back">← Main model</a>
+  <a href="../" id="back">← Main model</a>
 </div>
 
 <!-- Stats -->
@@ -343,19 +343,9 @@ const CORRIDORS = [
   ['North West',     'Northern Cape',  'dist'],
 ];
 
-// GCCA headroom by region
-const HEADROOM = {
-  'Northern Cape':  { solar: 3800, wind: 3800, batt: 3800 },
-  'Hydra Central':  { solar: 1200, wind: 1200, batt: 1200 },
-  'Western Cape':   { solar: 0,    wind: 400,  batt: 0 },
-  'Eastern Cape':   { solar: 0,    wind: 400,  batt: 0 },
-  'Free State':     { solar: 1100, wind: 1100, batt: 1100 },
-  'Kwazulu Natal':  { solar: 0,    wind: 0,    batt: 0 },
-  'Gauteng':        { solar: 600,  wind: 600,  batt: 600 },
-  'North West':     { solar: 1450, wind: 1450, batt: 1450 },
-  'Mpumalanga':     { solar: 3320, wind: 3320, batt: 3320 },
-  'Limpopo':        { solar: 3360, wind: 3360, batt: 3360 },
-};
+// GCCA headroom by supply area, from the main page's file (site review A39, 19 Oct 2026). Was a typed table, stale against
+// GCCA 2025 and its October 2025 update; filled in init() from /nodal/region_headroom_lookup.json.
+let HEADROOM = {};
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let deckgl, showCorridors = true;
@@ -624,7 +614,7 @@ function buildLayers(subs) {
       onHover: ({object, x, y}) => showTooltip(object ? {
         name: object.n,
         info: `<div>Existing substation \u00b7 ${object.kv ? object.kv + 'kV distribution' : 'voltage not recorded'}</div>`
-            + `<div style="color:rgba(232,228,216,0.6)">${object.r}</div>`
+            + `<div style="color:rgba(232,228,216,0.6)">${object.area || ''} supply area</div>`
             + plannedSummary(object.n),
       } : null, x, y),
     }));
@@ -645,10 +635,10 @@ function buildLayers(subs) {
       onHover: ({object, x, y}) => showTooltip(object ? {
         name: object.n,
         info: `<div>Existing substation \u00b7 ${object.kv ? object.kv + 'kV' : ''} transmission</div>`
-            + `<div style="color:rgba(232,228,216,0.6)">${object.r}</div>`
-            + `<div style="margin-top:6px">GCCA headroom &nbsp;`
-            + `<strong>Solar</strong> ${(HEADROOM[object.r]?.solar||0).toLocaleString()} MW &nbsp;`
-            + `<strong>Wind</strong> ${(HEADROOM[object.r]?.wind||0).toLocaleString()} MW</div>`
+            + `<div style="color:rgba(232,228,216,0.6)">${object.area || ''} supply area</div>`
+            + (HEADROOM[object.area] ? `<div style="margin-top:6px">Regional headroom for the ${object.area} supply area (GCCA 2025, updated Oct 2025) &nbsp;`
+            + `<strong>Solar</strong> ${(HEADROOM[object.area].solar||0).toLocaleString()} MW &nbsp;`
+            + `<strong>Wind</strong> ${(HEADROOM[object.area].wind||0).toLocaleString()} MW</div>` : '')
             + plannedSummary(object.n),
       } : null, x, y),
     }));
@@ -848,6 +838,15 @@ async function init() {
     substations = data.subs || [];
   } catch(e) {
     console.warn('Could not load substations:', e);
+  }
+  // Regional headroom, the main page's lookup (A39).
+  try {
+    const respH = await fetch('/nodal/region_headroom_lookup.json');
+    const dataH = await respH.json();
+    for (const [r, v] of Object.entries(dataH)) if (r !== 'meta' && v && typeof v === 'object')
+      HEADROOM[r] = { solar: (v.solar && v.solar.headroom_mw) || 0, wind: (v.wind && v.wind.headroom_mw) || 0 };
+  } catch(e) {
+    console.warn('Could not load headroom:', e);
   }
   // Planned transmission projects from the NTCSA Transmission Development Plan.
   // For a developer this is the question the existing-network view cannot answer:

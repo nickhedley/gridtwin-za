@@ -191,7 +191,7 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
                  .replace(/^ 0 <= b_phes_(\d{4}) <= ([0-9.]+)$/gm,(m,y,v)=> LDES_NOCAP && +v>0 ? ` 0 <= b_phes_${y} <= 200000` : m)
                  .replace(/^ (phescap_\d{4}): (.*) <= [0-9.]+$/gm,(m,nm,lhs)=> LDES_NOCAP ? ` ${nm}: ${lhs} <= 1000000` : m)
                  .replace(/^ 0 <= rc_(\d{4}) <= ([0-9.]+)$/gm,(m,y,ub)=> RC_FROM && +y<RC_FROM ? ` 0 <= rc_${y} <= 0` : RC_MIN!==null && +y===+(process.env.HORIZON||2040) ? ` ${Math.min(RC_MIN,+ub).toFixed(1)} <= rc_${y} <= ${ub}` : m); };
- let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid);
+ let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid); require(path.join(__dirname,'..','tmp_cleanup.js'))(tmp);
    // SOLVE CACHE (7 Oct 2026): the container restarts every few hours and a pass-2 solve takes one to three, so
    // each optimal solution is kept under lpcache/, keyed by a hash of the LP text. A restarted run replays the
    // solves it already finished (identical LP, identical answer) and only redoes the one that was cut off.
