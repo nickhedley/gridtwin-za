@@ -522,3 +522,10 @@ After the c6 runs, its own PR (messages 331 and 332): the 3D map's cross-border 
 (the SAPP draft Master Plan's attributes; the 12 existing circuits drawn on their routes, arcs only for planned links without a
 route, the 8 older planned links replaced and the dropped ones recorded in SOURCES; SAPP's terms checked first), deck.gl pinned at
 9.4.0, the NTCSA-derived files listed for the consent email.
+Also for the presets build, or after the note if it does not fit (message 346): the GETs panel states, per corridor, what limits
+transfer (thermal, voltage or stability) by line length on the St Clair curve (Dunlop, Gutman and Marchenko, IEEE 1979: thermal to
+about 80 km, voltage drop to about 320 km, stability beyond; nodal/corridor_electrical.json carries each corridor's km), or from
+NTCSA's corridor data where given; dynamic line rating uplift only where the limit is thermal; for stability-limited corridors,
+series compensation or power-flow control with sourced costs, or a statement that the panel has no option for them. Report how the
+panel's GETs numbers change per corridor and whether any RESULTS finding used them (the GETs control feeds only Where to build's
+headroom; RESULTS line 11987 records that).
