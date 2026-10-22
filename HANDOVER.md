@@ -1,5 +1,20 @@
 # GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
 
+## The note is delayed: fix first, then one rebuild as c6 (user, 22 Oct 2026, message 321)
+
+The IRP note's draft date moves from 2 Nov; the new date is Nick's, set once c6 is recorded in RESULTS (earliest about Tue
+27 Oct, if the scope decisions below come by Fri 23 Oct). c5f stays recorded as the previous central: its RESULTS entries,
+sensitivities and pack figures are kept, labelled c5f, and nothing quoting it is rewritten. c6's scope is only these six,
+everything else after the note (TODO 14iq):
+1. Demand basis and central path (messages 318, 319: the model's base is Eskom's contracted demand, about 10 TWh below Stats SA
+   P4141's national figure; the IRP-demand pair carries that coverage gap).
+2. Avon and Dedisa's must-run at 268 GWh a year (FY2026, performance report p.20), flagged as a single-year choice.
+3. Eskom FY2026 costs: coal 553 fuel only, imports 897, nuclear fuel 109 (VOM 45 kept), hydro capacity factor 0.36.
+4. Imports priced in the build optimiser (now a fixed infeed with no price), and Cahora Bassa after 2030 (central or sensitivity).
+5. Rooftop output (message 317 (a)) and a sourced rooftop cost (message 305).
+6. The top-ranked unsourced inputs from the stage 1 ranking (message 315), sourced or flagged.
+Planning only until Nick confirms: no runs and no code changes.
+
 ## Open issue: Cloudflare missed the build for #105's merge (22 Oct 2026; user, messages 307 and 308)
 
 Cloudflare's Workers Builds did not start for #105's merge to main (0118e42, 21 Oct 2026, 22:00 SAST): GitHub Pages built and
