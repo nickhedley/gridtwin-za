@@ -172,6 +172,29 @@ this point gives a similar or slightly higher mean but more and longer lulls tha
 being nearer baseload than the model shows. Caveat: provisional; the power curve and shear are the advisor's approximations, and
 the point is one site in the region.
 
+### c5f offered offshore wind and built none; the preset captions said the pathway could not build it (user, 21 Oct 2026, messages 298 and 299; build 2026-10-21d branch)
+
+c5f's build LP (bldBuildLP, b_off_<y>, on through bldOffshoreOn:1) offered offshore wind, floating (BLD_COST.offshore
+R79,200/kW in 2026, falling 2.6% a year; BLD_FOM.offshore R1,403/kW-yr), capped cumulatively on ESMAP's medium path (now
+BLD_OFF_PATH: nothing before 2032, 1 GW by 2035, 5 GW by 2040) and at 5,000 MW in any one year (BLD_OFF_YEAR_MW). null_c5f
+built none (its build file, scratchpad c5f/repo/harness/out/pathway_null_c5f.json, has no non-zero b_off). The annual charge
+per kW the optimiser sees (bldNetAnnuityAt, R/kW-yr):
+
+| Year | Offshore | Onshore wind | Utility solar |
+|---|---|---|---|
+| 2032 | 7,738 | 2,035 | 1,102 |
+| 2035 | 7,256 | 1,898 | 1,011 |
+| 2040 | 6,534 | 1,695 | 881 |
+
+So about 3.8 times onshore wind's and 7 times solar's per kW in 2032-40. Per MWh, at offshore's 0.516 capacity factor
+(ESMAP-scaled) against about 0.40 for new onshore wind, offshore is roughly 2.5-3 times onshore (a rough estimate, not
+measured). Correction: the preset captions (_presetOverLimit) said offshore wind 'is not among the pathway's options' (not a
+BLD_TECHS technology); BLD_TECHS is the page optimiser's loop list, not the pathway's options. c5fBuildLimitMW now has an
+offshore limit read from BLD_OFF_PATH and BLD_OFF_YEAR_MW (moved out of bldBuildLP, so no constant appears twice), and the
+caption checks offshore like the other technologies. Fossil-free 2040's 1.75 GW of offshore is within the 5 GW path, so its
+caption no longer names offshore; Deep 2035's is unchanged. The build LP's text is identical before and after (hash
+07aa3605352acf, 9,770,509 characters, Today 2026, jsdom).
+
 ---
 
 ## Headroom is where the wind is not
@@ -4684,6 +4707,78 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### s_eskom26, provisional and not for quoting: Eskom's FY2026 costs and running on c5f raise engine PV by R19.4bn and CO2 by 3.7 Mt; imports are the largest change (+R30.0bn at R897), Avon and Dedisa on merit the largest saving (-R20.5bn); the IRP-against-c5f gap moves R2-4bn; losing the imports after 2030 costs R11.9bn on this basis, not R28.1bn (user, 21-22 Oct 2026, messages 278-284, 300-304; c5f's frozen copy b82bfd3, build 2026-10-17g)
+
+Settings. c5f's central settings (scratch c5f/env_c5f.sh) in a measurement copy, c5f/eskom (the repository's code untouched),
+with FIXED_SET="costCoal=553,costImports=897,costNuclear=109,hydroCF=0.3625,avonDedisaMustRun=0": coal fuel R553/MWh, FY2026
+without the environmental levy (the levy, about R41/MWh of coal in FY2026, is a note, not a cost); imports R897/MWh (FY2026 full
+cost, p.56); nuclear fuel R109/MWh with vomNuclear 45 kept; hydro at 0.3625, the mean of FY2023-26 in ESK19679 (3,062, 1,449, 714
+and 2,421 GWh on 602 MW; FY2025 a drought year); Avon and Dedisa dispatched on merit with the other peakers. Re-optimisations at
+MAXP=3 (the IRP-demand one at MAXP=6), TL=7200; engine checks pathcheck.js TF=0.5 LNG=1 GRID=1, 2026-40 in three year groups.
+Engine PV at 8% real to 2026. Scripts: c5f/eskom/chain26.sh, chain26b.sh (chain26c.sh, the same run started beside chain26),
+shares.js; outputs c5f/eskom/harness/out. Run 21 Oct 2026 15:01 UTC to 22 Oct 01:13 UTC; two container restarts (about 18:25
+and 19:55 UTC) stopped the chain, resumed each time from the last finished year group. The IRP-demand re-optimisation first
+failed at once because this copy's pathway_perfail.js lacked m224's DEMAND=index patch; the patch was ported unchanged and
+the run repeated (the two scripts now differ only by the FIXED_SET hooks).
+
+| Run | Change | Engine PV vs null_c5f, R bn | CO2 2026-40 vs null, Mt |
+|---|---|---|---|
+| s_eskom26_c5f | all five changes, re-optimised; adequate, no year over target | +19.4 | +3.7 |
+| e26_all | all five on c5f's own build (engine check only) | +17.9 | +13.6 |
+| e26_coal | coal fuel 553 (c5f 546 with the levy) | +7.2 | 0.0 |
+| e26_imports | imports 897 (c5f 550, no recorded source) | +30.0 | 0.0 |
+| e26_nuclear | nuclear fuel 109 (c5f 160) | -5.1 | 0.0 |
+| e26_hydro | hydroCF 0.3625 (c5f 0.55) | +6.3 | +13.0 |
+| e26_adoff | Avon and Dedisa on merit (c5f must-run, 899 GWh a year) | -20.5 | +0.7 |
+| null_c5f_ad268 | Avon and Dedisa's must-run scaled to 268 GWh a year (AD_SCALE) | -14.4 | +0.5 |
+
+null_c5f: engine PV R2,255.1bn, CO2 1,605.0 Mt, objective R1,453.1bn; s_eskom26_c5f objective R1,447.5bn. The five single
+changes sum to +R17.9bn and +13.7 Mt, so they barely interact on a fixed build; re-optimising takes out most of hydro's CO2.
+s_eskom26's build against c5f's, cumulative MW: wind +214 (2030), +205 (2035), +120 (2040); CCGT +32 to +83; open cycle +24;
+lithium -121 to +21; solar -54 to +191; coal retirement unchanged.
+
+Avon and Dedisa's modelled output, GWh (the measurement copy's ippPeakerGWh counter: the independent peakers, must-run and on
+merit), against Eskom's 268 GWh (FY2026, p.20) and the 3% budget for FY2027 (about 264 GWh):
+
+| Year | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2035 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| c5f, must-run (e26_coal) | 896 | 887 | 874 | 801 | 742 | 381 | 147 | 107 | 83 | 97 |
+| on merit, c5f's build (e26_adoff) | 4 | 7 | 12 | 29 | 86 | 138 | 147 | 107 | 83 | 97 |
+| on merit, s_eskom26_c5f | 4 | 7 | 11 | 28 | 78 | 131 | 139 | 102 | 83 | 96 |
+
+On merit, 2026-27 falls far below the 134-536 GWh band, so the must-run at 268 GWh is reported too (null_c5f_ad268 above), a
+single-year choice (SOURCES). Eskom's own series, hybrids out: FY2024 1,509, FY2025 662, FY2026 268 GWh (p.20).
+
+The IRP-against-c5f gap (IRP 2025's plan, engine check; c5f re-optimised at each demand path):
+
+| Demand path | Basis | IRP vs c5f, engine PV | IRP vs c5f, CO2 2026-40 |
+|---|---|---|---|
+| c5f's | c5f's costs (m130) | +R309.0bn | -148.8 Mt |
+| c5f's | FY2026 (e26_irp against s_eskom26_c5f) | +R306.5bn | -140.4 Mt |
+| IRP's | c5f's costs (m130_irp2025_irpdem against m130_c5f_irpdem) | +R243.4bn | +20.2 Mt |
+| IRP's | FY2026 (e26_irp_irpdem against s_eskom26_c5f_irpdem) | +R239.0bn | +37.6 Mt |
+
+The FY2026 basis narrows the cost gap by R2.5bn at c5f's demand and R4.4bn at the IRP's; the CO2 gap moves by +8.4 and +17.4 Mt.
+s_eskom26_c5f_irpdem: adequate, no year over target; objective R1,639.3bn (c5f_irpdem R1,643.5bn); against c5f_irpdem, wind
++499 (2030) and +612 (2035) MW, CCGT +64 to +165.
+
+s_eskom26_noimp (message 302 (a)): IMP_END=2030 on s_eskom26's settings, against s_eskom26_c5f. Adequate as solved except 2031
+(2.42 against 2.23 GWh); top-up 250 MW of diesel open cycle in 2031 (1.88 after), +R3.3bn (capex 2.8, fixed O&M 0.6, fuel -0.1).
+
+| | s_eskom26_c5f | s_eskom26_noimp | Change |
+|---|---|---|---|
+| Engine PV 2026-40 | R2,274.5bn | R2,283.1bn as solved; R2,286.4bn topped up | +R8.6bn; +R11.9bn |
+| CO2 2026-40 | 1,608.7 Mt | 1,598.0 Mt | -10.7 Mt |
+| Objective | R1,447.5bn | R1,502.8bn | +R55.3bn |
+
+What replaces the imports, cumulative MW against s_eskom26: wind +2,286 from 2028 (three years before the imports end), +1,473
+by 2040; solar +446 to +996 from 2031; lithium +1,074 in 2031, about +170 later; CCGT +580 to +655 from 2033; open cycle +129
+from 2030. Coal falls about 8 TWh a year in 2028-30 and runs 0.5-3 TWh a year higher from 2033; gas 0.2-1.4 TWh higher. On c5f
+at R550 the same change was +R28.1bn (top-up included) and +12.2 Mt (s_noimp, 'c5f run' above); at Eskom's R897 the imports'
+payments saved offset most of the replacement build. The objective moves +R55.3bn on both bases because the build LP holds
+imports as a fixed infeed with no price (bldBuildLP's balance row: IMP(y)*AV_IMP, no cost term), so the import price reaches
+the engine's cost but no build decision; engine PV is the comparison that counts the payments.
+
 ### Two gas sensitivities on c5f, provisional and not for quoting: gas capex +25% costs R3.7bn in engine PV and builds 1.0 GW less gas; no new gas before 2032 moves 299 MW of CCGT from 2030 to 2033 and costs nothing measurable (user, 21 Oct 2026, message 272)
 
 Settings: c5f's (scratchpad c5f/env_c5f.sh), the frozen c5f copy, MAXP=3, TL=7200, each with its engine check (pathcheck.js, TF=0.5
@@ -6271,6 +6366,65 @@ Suite on 2026-10-21i (main f56089e, with #97 and #102, merged in; stored panels 
 validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Run 21 Oct 2026
 06:10-09:15 UTC, with the c5f gas sensitivities (message 272, nice 19) and short jsdom and Chromium checks on other branches
 beside it. Rooftop figures re-measured on 21i: unchanged. Render check in Chromium (fresh load): 5/5.
+
+### Engine display (audit PR 2): firm capacity on the engine's own basis, Today 35.6 to 34.9 GW and minimum reserve margin 20.0% to 17.5%; the two risk figures and the cost note's caveats stated (build 2026-10-21d, prepared on main 2116c10; user, 20 Oct 2026, messages 264 and 270; audit G1 fixes 5, 7, 11 and the G1-M3 caveat)
+
+What changed (index.html):
+- System adequacy: firm capacity is firmCapacityMW(p), one function: Koeberg at nuclearCF (was 0.90), hydro at hydroCF (was
+  its full rating), new vanadium, iron-air and pumped storage added at full power (were left out), new coal at the availability
+  setting. The panel no longer opens "Today," on every preset, says what counts, and labels its EUE tile "this weather year,
+  one outage draw" against the board's 48-draw expectation (G1-M5, A8 wording).
+- Load shedding risk: the fidelity line says coal follows one smooth daily fleet path with no unit trips or maintenance season,
+  so where coal retires the panel can read lower than the board (G1-M6). The stale comment that the board's ensemble holds
+  weather fixed is corrected.
+- Cost note: existing REIPPPP plant's fixed O&M is counted twice, about 1% of avg energy cost (0.8-1.5% on the presets),
+  stated as a known overstatement (G1-M3; the fix and the central's rerun are TODO 14hk). The R9.53/kWh cost of load
+  shedding is stated as constant 2020 rands, not escalated (G1-M11).
+- validate_consistency computes firm capacity with the panel's own function; its copy used hydro 0.5, imports 0.9, the whole
+  diesel fleet and FIXED storage and protected nothing (audit G1 section 5).
+
+Measured 20 Oct 2026 19:00 UTC, jsdom, applyState(PRESETS[name]) then simulate(state, PROFILES); old formula and
+firmCapacityMW on the same run; minimum over the twelve monthly peaks of r.loadS; scratchpad overnight/a2/firm.js:
+
+| Preset | Firm capacity, GW: before / after | Minimum reserve margin: before / after | REIPPPP fixed O&M on live windows, R bn / share of avg energy cost |
+|---|---|---|---|
+| Today 2026 | 35.64 / 34.91 | 20.0% / 17.5% | 3.27 / 1.52% (R16.7/MWh) |
+| IRP's 2030 targets | 40.13 / 39.41 | 7.9% / 6.0% | 3.27 / 1.21% (R14.5/MWh) |
+| IRP path 2035 | 42.16 / 41.43 | -4.4% / -6.1% | 2.43 / 0.84% (R9.3/MWh) |
+| Least-cost path 2035 | 37.96 / 37.24 | -11.1% / -12.8% | 2.43 / 1.01% (R9.2/MWh) |
+| Deep decarbonisation 2035 | 32.71 / 33.99 (2,000 MW long-duration added) | -37.4% / -35.0% | 2.43 / 0.77% |
+| Fossil-free 2040 | 26.44 / 38.71 (13,000 MW long-duration added) | -63.6% / -46.7% | 1.75 / 0.40% |
+
+Dispatch, cost, CO2 and every engine output are unchanged (display and harness only). The double count is (reipppWindMW x
+BLD_FOM.wind + reipppSolarMW x BLD_FOM.pv + cspMW x fomCsp) x reipppLiveFrac(year), over totalCost; it matches the audit's
+R3.27bn and R2.43bn.
+
+Where this differs from the audit: G1 fix 7 in the audit's PR 2 list is the risk-basis wording (fix list item 7), done here as
+wording only, the smaller change before 6 Nov; one outage model for both is TODO 14ia. The dispatch week (fix list item 6) is
+in #97 (message 263 (3)), not on main, so it is not repeated here. The audit lists new OCGT on diesel as missing from firm
+capacity; it was already counted, through dieselAvailMW (11 Oct 2026). Storage still counts at full power whatever its
+duration (A8's duration rule is TODO 14ia).
+
+Caveat: the prose ceiling (audit.py) now reads 4,243 of 4,250 words; other wording PRs will need room.
+
+Suite minus validate_stored_panels on 2026-10-21d (stored panels not regenerated, message 266; ESK19679.csv present), 20 Oct
+2026 21:07-22:18 UTC with another branch's suite and other jsdom work beside it: 966/970, node checks 878/882 (validate_links
+48/48, validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Render check
+in Chromium (fresh load; start-up and the four note presets; the risk panel on screen for Least-cost path 2035): 25/25.
+
+Main merged in as build 2026-10-21l (main 0118e42, with #105 and #110; user, 21 Oct 2026, message 304 (a)). The firm-capacity
+paragraph had been rewritten on both sides; the merge keeps this PR's wording and main's reserve-margin sentence. Together they
+put the always-visible prose at 4,318 words against audit.py's 4,250 ceiling (main 4,239, this branch 4,243, common base 4,167).
+The ceiling was not raised (message 271): the adequacy notes, the capture-rate caveat, the clean-coal test-facility sentence and
+two rooftop-calculator sentences were reworded to the same facts in fewer words, 4,246. Message 303 on the same build: the coal
+validation row is 'Coal sent out, calendar 2025', against calendar 2025 coal sent-out energy from Eskom data, the analysis ours
+(SOURCES, Eskom performance report section, relates it to the report's 179.4 TWh FY2025 production); PV R12,000 and rooftop
+R17,000/kW stay marked 'no recorded source' (SOURCES records the origin, commit 774dc8d, 1 Oct 2026, with no source given).
+Suite on 2026-10-21l (stored panels regenerated, fingerprint 008cce56d7195c; ESK19679.csv present), 21 Oct 2026 20:27-21:46 UTC
+with the s_eskom26 checks beside it: 1,052/1,056, node checks 964/968 (validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38) plus audit 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6. Render check in
+Chromium: 25/25 (the firm-capacity and outage-model patterns updated to the reworded text; the firm GW figures unchanged: Today
+34.9, IRP's 2030 targets 39.4, IRP path 2035 41.4, Least-cost path 2035 37.2) and 10/10 on message 303's labels.
 
 ### Known failures on build 2026-10-18i, each run alone, with cause and the build it first failed on (user, 18 Oct 2026, message 205 (8))
 
