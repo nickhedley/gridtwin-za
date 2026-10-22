@@ -104,7 +104,7 @@ Demand, wind and solar profiles are **actual Eskom hourly data for 2025** (Eskom
 | Energy supplied | Total annual generation incl. rooftop (TWh) |
 | System cost | Fuel + carbon + annualised capex of *new* build incl. grid adder (R bn/yr) |
 | Avg energy cost | System cost ÷ grid energy served (R/kWh) — not a tariff |
-| Replacement cost | Every MWh priced at full lifecycle LCOE ÷ grid energy served (R/kWh) |
+| Replacement cost | The mix priced at full lifecycle cost (generation per MWh at its LCOE; storage and gas on the capacity held) ÷ grid energy served (R/kWh) |
 | CO₂ emissions | From coal, CCGT and diesel (Mt/yr) |
 | Renewables | Wind + utility PV + rooftop + CSP, as % of generation |
 | Non-fossil | Renewables + nuclear + hydro + imports |

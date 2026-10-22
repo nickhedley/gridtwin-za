@@ -276,6 +276,38 @@ function probe(w, src) {
       + 'scored on the wrong quantity', 'TWh/yr');
   }
 
+  // Provincial electricity mix against the engine (user, 20 Oct 2026, message 264, audit G6 fix 4). The file was fitted to an
+  // older engine and sat 9% high on coal and 27% on nuclear with nothing to say so. National coal, nuclear and demand in
+  // nodal/provincial_mix.json must be the engine's start-up figures within 2%; rebuild with build_provincial_mix.js --write.
+  {
+    const pm = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/provincial_mix.json'), 'utf8'));
+    const nat = k => Object.values(pm.generation_twh).reduce((a, g) => a + (g[k] || 0), 0);
+    const eng = await probe(w, `const r = simulate(state, PROFILES);
+      const sum = a => Array.prototype.reduce.call(a, (x, y) => x + (+y || 0), 0) / 1e6;
+      return { coal: r.E.coal / 1e6, nuclear: r.E.nuclear / 1e6, demand: sum(r.loadS) - sum(r.chargeMW) + sum(r.drMW) };`);
+    const src = 'Engine start-up (Today 2026); nodal/provincial_mix.json rebuilt by build_provincial_mix.js';
+    for (const k of ['coal', 'nuclear'])
+      check(`Provincial mix: national ${k} generation is the engine's`, nat(k), eng && eng[k] || -1, 0.02 * (eng && eng[k] || 0), src, 'TWh');
+    const dem = Object.values(pm.demand_twh).reduce((a, b) => a + b, 0);
+    check('Provincial mix: national demand is the engine’s grid demand', dem, eng && eng.demand || -1, 0.02 * (eng && eng.demand || 0), src, 'TWh');
+  }
+
+  // Permitted but not built counts renewable generation only (user, 20 Oct 2026, message 264, D7; audit G6-M10): no record
+  // with no capacity, no gas or coal station, and no repeated row among the projects it counts.
+  {
+    const reea = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/reea_projects.json'), 'utf8')).projects;
+    const kept = await probe(w, `const p = JSON.parse(${JSON.stringify(JSON.stringify(reea))});
+      if (typeof reeaGenerationRecords !== 'function') return { error: 'reeaGenerationRecords is missing' };
+      const k = reeaGenerationRecords(p.filter(x => x.status === 'Approved' && x.decided && typeof x.mw === 'number'));
+      return { n: k.length, zero: k.filter(x => !(x.mw > 0)).length,
+        fossil: k.filter(x => /phakwe|thabametsi|gas[- ]fired|gas power|coal[- ]fired/i.test(x.name)).length,
+        dup: k.length - new Set(k.map(x => [x.name, x.mw, x.decided, x.lat, x.lng].join('|'))).size };`);
+    const src = 'DFFE REEA 2026 Q1; audit G6-M10 found 901 zero-MW, 24 fossil and 86 repeated approved records counted';
+    check('Permitted but not built: no zero-MW record counted', kept && !kept.error ? kept.zero : -1, 0, 0, src, '');
+    check('Permitted but not built: no gas or coal station counted', kept && !kept.error ? kept.fossil : -1, 0, 0, src, '');
+    check('Permitted but not built: no repeated row counted', kept && !kept.error ? kept.dup : -1, 0, 0, src, '');
+  }
+
   // ── avgCost: THE HEADLINE NUMBER NOBODY ASSERTED ──────────────────────────
   // Added 15 Sep 2026. On that day firm export revenue was booked into avgCost and it
   // moved R588.36 -> R571.70, a 2.8% shift in the model's headline cost figure, and ALL

@@ -10,7 +10,8 @@ CHECKS = [
     # RENDERED text is unchanged - verified - so the pin follows the wording that
     # survives in one piece rather than relaxing what it checks.
     ('are the optimal network-aware ',                             'MIP banner text'),
-    ('node size = modelled output',                                     'node size label'),
+    # The label was false (audit G6-M14, message 264): node sizes are fixed shares of national output, not regional output.
+    ('node size: national output, split by fixed shares',               'node size label'),
     ('Show REIPPPP project pipeline',                              'REIPPPP button text'),
     ('Click on each for region-specific',                          'click on each (was Hover)'),
     ('Ring size scales with capacity',                            'pipeline rings: size means capacity'),
@@ -243,7 +244,7 @@ for needle, label in CHECKS:
 # An allow-list needs occasional maintenance. A wrong rule needs constant argument.
 _SHOUT_OK = set("""MW GW TWh GWh MWh kW kWh CO2 CO LOLE EUE EAF VOLL OCGT CCGT IPP CSP PV
 SA ZA NERSA IRP TDP GCCA REIPPPP SAWEM CSV PPA VPP BESS LCOE SRMC NTCSA DLR CCS PVGIS
-MERRA ERA SARAH KPI KPIs UI URL SOC MIP LP HiGHS PyPSA API DR AC DC UTC SAST NDC SAPP
+MERRA ERA SARAH KPI KPIs UI URL SOC MIP LP HiGHS PyPSA API DR AC DC UTC SAST NDC SAPP RSA
 REDZ REEA SSEG ATB NREL CSIR AEMO ERCOT EIA JSON HTML PDF MD FY CY RCA ERTSA GCC MYPD RAB
 MONTHS COLORS FIXED EMIS CARBON EX EFF MC GPS NRS TOU PLEXOS EDMSA IGCAR SANS DFFE
 SAPVIA UCT GSB PFL DBSA BW COD RMIPPPP BESIPPPP UPG NCE SALGA PAJA MFMA NEM SDK ML AI

@@ -473,6 +473,19 @@ Not from this brief: the 19.3 GW of NERSA registrations, which is press coverage
 Building Africa, Aug 2026; MyBroadband, about 19,300 MW registered 2018 to Q1 2026). The model's
 registrations source is nodal/nersa_registrations.json (SAPVIA dashboard, 20,131 MW to Q1 2026/27).
 
+## Private projects reaching commercial operation, 2026: Koruson 2 (Hartebeesthoek), beside nodal/supply_area_split_draft.json's pending entry
+
+- Koruson 2, Hartebeesthoek wind, 140 MW, Eastern Cape (user, 21 Oct 2026, messages 290 and 291). In a LinkedIn post of 6 Aug 2026
+  (https://www.linkedin.com/posts/edf-edfpowersolutions-envusa-share-7491036493961138176-HhFB/; not read here), EDF power solutions
+  reported Hartebeesthoek in commercial operation from August 2026 at 130 MW, with the last 10 MW due in September, completing
+  Koruson 2: Mooi Plaats (240 MW PV), Umsobomvu (140 MW wind) and Hartebeesthoek (140 MW wind), about 50 turbines in all. EDF's
+  project page (southafrica.edf-powersolutions.com/operational/koruson-2/) gives June 2026 for all three; the post is the more
+  specific. Koruson 2 is private, not REIPPPP: Envusa Energy sells its output to Anglo American's mines under 20-year offtake
+  agreements, over Eskom's grid, with no bid window (EDF's project page). PFL's H1 2026 monitor (17 Aug 2026), which lists
+  "Anglo's Hartebeesthoek (140 MW)" among private projects expected in H2 2026, names the same plant. OpenStreetMap shows 25
+  turbines mapped at about 31.25S 25.01E. The capacity file's pending entry (H2 2026) is unchanged until the project tracker update
+  after the note; build_hydra_split.py and build_capacity.py are not rerun (TODO 14dk: a rerun erases queue_project.js's additions).
+
 ## Pumped hydro, off-river cost basis 'anu2026' (TODO 14z, build 06h)
 
 Andrew Blakers (ANU, RE100 group), personal communication by email to Nick Hedley, 6 Oct 2026:
@@ -879,6 +892,31 @@ harness/ext/grid_distances.py.
   73.4 km to 275 kV or more, GWh-weighted over the ANU AAA and AA class medians (beyond 18 km, 55.4). Gas
   7.5 km: Richards Bay 11.9 km to Athene, Coega 3.1 km to Dedisa (port coordinates approximate). The median
   over all 2,392 approved projects is 16.6 km; the 18 km threshold is the user's earlier figure.
+- No recorded source (user, 21 Oct 2026, messages 303 (b) and 304 (b); build 2026-10-21l): BLD_COST PV R12,000/kW fixed tilt and
+  rooftop R17,000/kW are marked 'no recorded source' on the page (assumptions table and capex line). Both are in the
+  repository's first commit, 774dc8d (1 Oct 2026, 19:04 SAST), with no source given. That commit's comment attributes only the
+  decline rates (3.89% a year, BNEF 2035 forecasts, no document named) and gives dollar equivalents at R16.2/USD (PV about
+  USD 740/kW); TODO 14ba (7 Oct) notes R12,000 sits near IRENA 2024's global USD 691/kW (about R11,400), a benchmark, not a
+  source. Rooftop's only partial reference is Kerwin et al., USD 1,406/1,258/1,110/kW for 2020/30/40 (HANDOVER), not the
+  R17,000. If a source is found before 6 Nov, it replaces the label here and on the page.
+  Cross-checks beside the label (user, 22 Oct 2026, message 305; benchmarks, not sources; the label stays):
+  - Utility fixed-tilt PV (BLD_COST.pv, R12,000/kW): IRENA, Renewable Power Generation Costs in 2024, utility-scale PV global
+    weighted average total installed cost USD 691/kW (2024 USD; about R11,400 at R16.50). GreenCape, Energy Services Market
+    Intelligence Report 2023: embedded PV over 1 MWp R8,000-9,500/kWp (2022 prices; about R9,600-11,400 in January 2026 rands on
+    the model's CPI chain, x1.20; VAT treatment not stated).
+  - Rooftop (BLD_COST.rooftop, R17,000/kW): a 30 kWp commercial and industrial rooftop estimate, 2025, seen by the author
+    (anonymised; not a published source): R302,204 including VAT (R262,786 excluding) for 30.0 kWp of modules on 24 kW of
+    hybrid inverters, no battery, design, installation and certificate of compliance included. Excluding VAT R8.76/Wp DC, about
+    R10,950/kW AC; in January 2026 rands (x1.035, CPI_JAN25_TO_JAN26) about R9.07/Wp DC and R11,330/kW AC; including VAT about
+    R13,000/kW AC. GreenCape 2023: under 100 kWp R11,000-15,000/kWp, 100-500 kWp R10,500-13,000/kWp (2022 prices; about
+    R13,200-18,000 and R12,600-15,600 in January 2026 rands; VAT treatment not stated). EnergyBee guide, 29 Sep 2026: grid-tied
+    homes without battery R12-19 per watt (installer market prices, presumably including VAT; no sources given).
+  - Basis: the public figures do not say whether they are per kW DC or AC, and the model's own basis for either figure is not
+    recorded. c5f builds tracking solar (pvTracking 1; BLD_COST.pvtrk derived from the BW7 solar awards, R11,038/kW in 2026),
+    so BLD_COST.pv reaches only runs with tracking off, the page's default (bldPvTracking 0) among them; rooftop's R17,000 does
+    enter c5f. The commercial estimate excluding VAT is about a third below R17,000/kW AC. TODO 14im.
+  - Lead (message 317 (c); from a SAPVIA spokesperson's deck, Oct 2026, advocacy; not a source until a primary one is found):
+    home kit costs including VAT, PV R7/Wp installed, inverter R2,000/kW, battery R2,400/kWh.
 - Wind and solar capex boundary: BLD_COST wind R21,000 and PV R12,000/kW have no recorded source, so whether
   they include connection is unclear; charge from zero is central and beyond-18-km the sensitivity. Under
   REIPPPP the developer funds the dedicated connection (Eskom budget quote and cost estimate letter;
@@ -1233,6 +1271,10 @@ first-hand; wording from search summaries, pages not known; to confirm against t
 - ESRG, UCT, 'High Spatial and Temporal Resolution End-use Electricity Demand Projection Model', web page, undated (read):
   'The results of these efforts have already been directly used to provide the electricity demand projection scenarios used
   in the latest national Draft IRP 2024 and 2025.'
+- G. Ireland, Demand-Spatialization-South-Africa, GitHub repository (MIT licence; read 21 Oct 2026, message 271 (9)): provincial
+  hourly demand, 2023-2050, ESRG v2024 national projections split by Eskom provincial transformer data. nodal/demand_2025_regional.csv
+  is its spatialized_outputs/IRPDemandREF_provincial_no_exports.csv, model_year 2025, rotated by -96 hours (sha256 of the file read
+  37b91d14e84912c2...). Source being confirmed (TODO 14fa).
 - ZivaHub (UCT figshare), B. Merven, doi:10.25375/uct.26942134, versions v1 9 Sep 2024, v2 22 Oct 2024, v3 23 Oct 2024, v4
   30 Oct 2024, v5 26 Feb 2025 (figshare public API, read): HourlyDemandModel_v10_IRP_v02_wExports.xlsm has the same checksum
   in all five, so it dates from September 2024; no v6.
@@ -1550,3 +1592,162 @@ Applied in RESULTS 'Value-chain CO2e beside the smokestack figures' (message 223
     2025) over 165,431 GWh sent out (p.9); spread over all coal, conveyor-fed stations included. Nick's copy; cited by page.
 - Conversions: 1.108 MJ HHV per MJ LHV (NETL 2024, DOE LNG Export Study Appendix C, p. C-12, fn 14); the model's CCGT at 52%
   HHV burns 6.248 GJ LHV per MWh (57.6% LHV), its OCGT at 10,624 kJ/kWh HHV 9.588 GJ LHV per MWh.
+
+## Gas turbine prices and lead times: Wood Mackenzie, April 2026, reported second-hand (user, 21 Oct 2026, message 272)
+
+For the c5f sensitivities s_gascapex25_c5f (CCGT capex +25%) and s_gas2032_c5f (no new gas before 2032); provisional, not for
+quoting. Every figure below is from search-result snippets of the pages named, read 21 Oct 2026; no page could be opened from
+the cloud environment (web reader and proxy refused; Firecrawl out of credits). Check against the pages before citing.
+- Wood Mackenzie press release, "Gas turbine prices soar 195% as market faces supply-demand crisis" (woodmac.com/press-releases,
+  about 1 Apr 2026); reported by Power Engineering, "Gas turbine prices climb 195% as supply crunch reshapes power development"
+  (power-eng.com, early April 2026, exact date unconfirmed), and Utility Dive, "Gas turbine supply crunch set to raise prices
+  195% by 2027: WoodMac" (utilitydive.com, 9 Apr 2026 per a search summary). The full report appears to be for clients only.
+  - Price: the turbine market is "anticipated to reach US$600/kW by end-2027", 195% above 2019. Turbine equipment only, not a
+    whole plant; no turbine class named; the 2019 base is not given (about USD 203/kW by our arithmetic, 600 / 2.95).
+  - Lead times: "six-year lead times and order books sold through 2027" (attributed to Aurora Tenorio, Wood Mackenzie): turbine
+    order to delivery, not whole-plant build time. Orders 110 GW at end-2025 against 60-70 GW a year of manufacturing capacity.
+  - Turbines are about 20-30% of a combined-cycle project's cost (E&E News, search snippet), so a turbine price rise moves the
+    plant cost by a fraction of itself; how much of the rise is already in recent plant costs is not known.
+- GridLab, Energy Futures Group, Component Reliability Consultants and Halcyon, "The New Reality of Power Generation: An
+  Analysis of Increasing Gas..." (September 2025; press release 10 Sep 2025, gridlab.org). The basis of BLD_COST.ccgt's note
+  (USD 2,000/kW or more). From the press release and second-hand quotes: "recent combined-cycle gas turbine projects report
+  costs of $2,000/kW, significantly outpacing reported costs of plants scheduled for completion in 2026 and 2027, $1,116/kW to
+  $1,427/kW respectively." What the figure covers: whole-plant capital cost per kW as reported in US utility resource plans and
+  approval filings (appendix tables give per-kW cost beside total capex), not turbine only; a search summary says costs were
+  escalated to each plant's in-service year (nominal dollars of 2026-2031), unconfirmed. Not found: whether it splits out EPC,
+  owner's costs, interconnection or financing during construction; it takes what each filing reported, and Halcyon's tracker
+  marks records as overnight or including construction financing, so the filings may mix the two (our inference).
+
+## Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)
+
+Eskom Holdings, Performance report for the year ended 31 March 2026 (the user's copy; not in the repository; cited by printed
+page, PDF page = printed + 2; figures Eskom's, the analysis ours). Read 21 Oct 2026 through the Drive connector.
+- Unit cost, R/MWh, FY2026 / FY2025 (p.56): coal 591 / 546; nuclear 109 / 107; Eskom-owned OCGTs 5,935 / 6,084 (gross fuel
+  cost, excluding diesel levy rebates, including environmental levies); IPPs 2,304 / 2,357; IPP OCGTs 6,048 / 5,870 (net energy
+  spend, excluding operating and capacity charges); renewable IPPs 2,175 / 2,189; other IPP programmes 3,242 / 2,446;
+  international purchases 897 / 866. IPP and import unit costs are the full cost, operating and capacity charges included;
+  Eskom-owned unit costs are primary energy only.
+- Coal and levies (p.56): coal generation costs excluding environmental levies rose 0.5% while coal-fired production fell 7.8%,
+  which Eskom attributes to a 10.1% rise in the average coal purchase price. Primary energy chart: coal and other
+  generation R91.5bn (FY2025 R91.0bn); environmental levies R6.8bn (FY2025 about R7.3bn; chart labels matched to years by their
+  totals, as the chart text was not cleanly readable). Coal-fired production (p.7) 165,431 GWh (FY2025 179,426).
+  Reconciliation (ours): FY2026 R91.5bn / 165.4 TWh = R553/MWh without levies; with R6.8bn, R594 against the stated R591.
+  FY2025 R91.0bn / 179.4 TWh = R507; with about R7.3bn, R548 against R546. The levy is about R41/MWh of coal in FY2026.
+  So FIXED.costCoal 546 (FY2025) includes the environmental levy; it is not fuel only, and the model charges carbon tax on top.
+- Volumes, GWh, FY2026 / FY2025 / FY2024 (p.7): coal 165,431 / 179,426 / 166,606; nuclear 11,618 / 8,409 / 8,172; Eskom-owned
+  OCGTs 811 / 2,176 / 3,634; hydro 2,416 / 710 / 1,448; IPPs 19,596 / 19,365 / 20,183; imports 4,090 / 7,570 / 9,150.
+- Coal on the validation panel (user, 21 Oct 2026, message 303 (a); build 2026-10-21l): the coal row compares the model with
+  170.4 TWh, labelled calendar 2025 coal sent-out energy, from Eskom data, the analysis ours (ESKOM_2025_COAL_TWH: our sum of
+  Eskom's hourly data, ESK19679, one annual total). It is not the report's 179.4 TWh (179,426 GWh, p.7): that is coal-fired
+  production in FY2025 (April 2024 to March 2025), a different period, and generation rather than sent-out energy (station
+  own use not deducted). The two are not reconciled here; the panel quotes only the 170.4 TWh.
+- OCGTs (p.20): Eskom and IPP-owned OCGTs 1,079 GWh (FY2025 2,838) at load factors of 3.9% (Eskom) and 3.0% (IPP); IPP OCGT
+  production 268 GWh at R2,144m (FY2025 662 GWh, R4,374m; FY2024 1,509 GWh, R10,054m); Eskom budgets a 3% load factor for both its own and
+  the IPP OCGTs from FY2027, rising to 5.5% in FY2030. The two IPP OCGTs are 1,005 MW (p.23,
+  p.76); Avon and Dedisa are named only in p.24's lease note (capacity charges under IFRS 16, R1,631m a year).
+- Renewable IPPs (p.39): 18,421 GWh in FY2026 (FY2025 17,420); full-cost unit cost R2,175/MWh (p.56), about R40.1bn by our
+  arithmetic (no rand total printed). Total IPP purchases (p.24): 19,596 GWh, R46,785m spent on energy before the lease
+  adjustment.
+- For TODO: international sales FY2027 target 11,926 GWh, 3,608 GWh without Mozal (p.24); data centres of 2 GW connected by FY2029,
+  growing to about 13 TWh a year by FY2031 (p.55); Richards Bay gas, four units totalling 3,000 MW, partner in
+  FY2028, commissioning by FY2031 (p.29); DEE's amended RFP for 2,000 MW of land-based gas, preferred bidders expected end
+  October 2026, and a possible consolidated 6 GW gas programme (p.24).
+Decisions for s_eskom26 (user, 21 Oct 2026, messages 281 and 282): coal fuel 553 (FY2026 without the levy; the levy, about
+R41/MWh, reported as a note, not a cost); imports 897; nuclear fuel 109 (Eskom's primary energy cost) with vomNuclear 45 kept;
+hydroCF 0.36, the mean over every complete financial year in Eskom's hourly data (ESK19679: FY2023 3,062, FY2024 1,449, FY2025
+714, FY2026 2,421 GWh on 602 MW; FY2025 was a drought year); Avon and Dedisa's must-run switched off (avonDedisaMustRun 0), so the engine dispatches them on merit with the other
+peakers, their modelled output reported against Eskom's 268 GWh (FY2026) and the 3% budget for FY2027 (about 264 GWh, p.20)
+(user, 21 Oct 2026, message 284's answer; if 2026-27 falls outside 134-536 GWh, the must-run at 268 GWh is reported too, a
+single-year choice); the central c5f keeps its must-run until the user decides after s_eskom26; REIPPPP_WINDOWS
+unchanged (NERSA's MYPD6 application forecast by bid window, 26.4 TWh at R1,905/MWh, measures the contracted programme, not
+FY2026's 18,421 GWh of purchases). Likely, from the data's shape and unconfirmed by Eskom: ESK19679's 'Dispatchable IPP OCGT'
+column (FY2026 1,175 GWh against Eskom's 268 GWh of IPP OCGT output) also carries the RMIPPPP hybrids' dispatch (a flat
+150-170 MW from 05:00 to 16:00 and more in the evening, near zero at night; about 907 GWh a year, 150 MW over 05:00-21:30),
+which the model already counts as 'Hybrid', so Avon and Dedisa's derived must-run (899 GWh a year) counts them a second time
+as diesel. The must-run itself rests on the daily running read from that column in message 88 ('both IPP peakers ran
+every day in 2025-26 on their contracts'); that daily running now looks like the RMIPPPP hybrids, not Avon and Dedisa (likely,
+unconfirmed by Eskom). Avon and Dedisa's own output, hybrids out: FY2023 1,101 GWh (ESK19679, before the hybrids: 74% of
+daytime hours under 20 MW), FY2024 1,509, FY2025 662, FY2026 268 (Eskom, p.20); mean 885 GWh. The model's 899 GWh a year
+matches none of these; its closeness to the mean is a coincidence (it is calendar 2025 and January-August 2026, hybrids in).
+Against the model: costImports 550 has no recorded source (Eskom FY2026 897, full cost); costNuclear 160 + vomNuclear 45 against
+Eskom's 109; hydroCF 0.55 against 0.46 / 0.14 / 0.27 in FY2026 / 2025 / 2024 on 602 MW; Avon and Dedisa's must-run 899 GWh a year
+against Eskom's 268 GWh in FY2026.
+Checked against the report (user, 21 Oct 2026, message 302 (d); printed pages): imports 4,090 GWh (FY2026) and 7,570 GWh
+(FY2025), p.7 and the ten-year statistics on p.70 (energy imports from SADC), a 46% fall year on year (about p.25); unit cost
+of international purchases R897 and R866/MWh, p.56 only (p.7 carries the volume, not the cost), full cost of operation including
+operating and capacity charges; IPP OCGT output 268 GWh, p.20. The must-run at 268 GWh (null_c5f_ad268, RESULTS 's_eskom26') is a
+single-year choice: Avon and Dedisa ran 1,509, 662 and 268 GWh in FY2024-26, a falling series, and 268 is its lowest year.
+s_eskom26's results are in RESULTS ('s_eskom26'), with the levy (about R41/MWh, FY2026) and hydro years (FY2023-26) beside them.
+
+## Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)
+
+The model holds 1,150 MW of must-take imports (FIXED.importsMW, the Cahora Bassa contract) at 1,066 MW on average (IMPORTS_AVG_MW,
+our mean of ESK19679, April to August 2026, after Mozal stopped), about 9.34 TWh a year in every year to 2040 (importsEndYear 0;
+s_noimp and s_eskom26_noimp end them after 2030). Context, from press reports, not primary documents:
+- The export contract with Eskom ends on 31 Dec 2030, and Mozambique's energy transition strategy names repatriating the 1,150 MW
+  as its first short-term hydro goal (Bloomberg's reading of the unpublished strategy, reported by Engineering News, 2 Feb 2024,
+  https://engineeringnews.co.za/article/mozambique-seeks-to-end-50-year-hydropower-pact-with-south-africa-2024-02-02). Lusa
+  reported in mid-2025 that the current government still plans to end the supply in 2030.
+- Eskom took 8,319 GWh from HCB in 2024, of 12,351 GWh delivered (Lusa, via Club of Mozambique,
+  https://clubofmozambique.com/news/mozambique-south-africas-eskom-bought-66-of-cahora-bassa-electricity-in-2024/); the headline's
+  66% does not match these two figures (67%).
+- HCB produced 10,921 GWh in 2025, 30% below 2024 (15,754 GWh), in a Zambezi drought (360 Mozambique and Lusa, from the 2025
+  accounts approved 30 Apr 2026). Its revenue is not cited here: reports differ (EUR 293.2m against about USD 344m).
+- Storage fell to about 20% with operating restrictions from July 2024 and was back at 56% by mid-2026 (Lusa, 21 Jul 2026; Green
+  Building Africa); 56% was already reported in May 2026, and reports differ on whether the restrictions were lifted or only eased.
+- No replacement for the HCB contract is reported. Mphanda Nkuwa (1,500 MW; EDF, TotalEnergies and Sumitomo selected in Dec 2023,
+  EDM and HCB 30%): no signed Eskom offtake found; the latest dates are construction from 2029 and operation from 2034, US$6-7bn
+  (Club of Mozambique); Lusa reported a change in the consortium on 30 Jul 2026 without naming it. Only an undated, outdated
+  GlobalData profile says its power would go to Eskom.
+- Kobong pumped storage, Lesotho (at least 1,200 MW): Convalt Energy's US$6.2bn agreement, signed 4 Jun 2026, paired with an AI
+  data centre; Convalt funds a one-year feasibility study, construction targeted for 2029; no buyer named (Business Day, 15 Sep
+  2026, https://www.businessday.co.za/news/2026-09-15-minister-may-benefit-from-lesothos-r100-billion-ai-and-hydropower-deal/).
+  Reports differ on whether the agreement is binding. Kobong was deferred in 2018 under the Lesotho Highlands Water Project
+  Phase II.
+Against the model: 9.34 TWh a year is above every recent year (8,319 GWh from HCB in 2024; Eskom's total imports 7,570 GWh in
+FY2025 and 4,090 GWh in FY2026); FY2025-26 were Mozal and drought years, so the central stays at the post-Mozal flow (user, message
+302) and a drought test is TODO 14il.
+
+## Shadow retail price design: fixed-cost recovery and residential fixed charges (user, 22 Oct 2026, message 311; search-level, checked 22 Oct 2026)
+
+For the shadow retail price design after the note (TODO 14io). Search-level; read each before citing.
+- RAP, Lazar and Gonzalez, Smart Rate Design for a Smart Future (July 2015),
+  https://www.raponline.org/wp-content/uploads/2023/09/rap-lazar-gonzalez-smart-rate-design-july2015.pdf: a customer should pay
+  no more than the cost of connecting; a customer charge for customer-specific (billing) costs and a charge per kVA for the
+  customer's own transformer; the rest by use and time. A RAP deck's illustration is $3.00 a month plus $1.00/kVA a month (so
+  'about $4 a month' holds only for a small transformer).
+- Borenstein, The Economics of Fixed Cost Recovery by Utilities, Energy Institute at Haas WP-272R (revised July 2016), The
+  Electricity Journal 29(5), 5-12, https://haas.berkeley.edu/energy-institute/research/abstracts/wp-272/: volumetric price at
+  social marginal cost; the residual by a mix of fixed charges and higher volumetric prices; no economic case for demand charges
+  or minimum bills.
+- CPUC, 9 May 2024 (Solar Power World, 10 May 2024,
+  https://www.solarpowerworldonline.com/2024/05/california-regulators-approve-new-electric-fixed-charges/): an income-graduated
+  fixed charge for PG&E, SCE and SDG&E residential customers, $24.15 a month, $6 for CARE and $12.08 for FERA customers, under
+  AB 205. The per-kWh reduction (5-7c) was not found in these results; not cited until found.
+- Ofgem, standing charges: a zero standing charge option was considered and dropped (higher-need households would pay more); a
+  one-year pilot of lower standing charge tariffs from April 2026 with EDF, E.ON, Octopus and British Gas (Ofgem, 'Lower standing
+  charge tariffs: next steps'; a British Gas derogation from SLC 22B, August 2026). No final rule requiring every supplier to
+  offer one was found. Standing charges cover network costs, supplier-failure costs and investment.
+- AEMC pricing review (draft, December, before the February 2026 submissions): more of the network charge moved to a fixed component. IEEFA's critique, via
+  RenewEconomy (https://reneweconomy.com.au/higher-fixed-network-tariffs-could-cancel-out-the-savings-from-the-cheaper-home-batteries-rebate/):
+  low and medium users, efficiency investors and solar and battery owners pay more; IEEFA's own report not found. The AEMC
+  argues the volumetric status quo disadvantages renters; separate modelling finds most households gain.
+- NERSA, 18 February 2025 (Engineering News, 24 February 2025,
+  https://www.engineeringnews.co.za/article/nersa-approves-generation-capacity-charge-sets-out-other-retail-tariff-plan-changes-2025-02-24):
+  Eskom's retail tariff restructure approved for 2025/26: the generation capacity charge phased in at 20% in 2025/26 and 30% in
+  each of the two following years; inclining blocks removed for Homelight and Homepower prepaid customers; a fixed charge phased in
+  for Homepower and Homeflex; peak to standard ratio 1:8 to 1:6.
+
+## Leads from a SAPVIA spokesperson's deck (user, 22 Oct 2026, message 317; Frank Spencer, Enerset and sbg.earth, October 2026)
+
+Advocacy material; the deck is not in the repository and is not cited. Each lead below names the primary source to cite once
+checked; none is checked yet.
+- Rooftop output: sbg.earth estimates about 12.9 TWh a year from rooftop solar. Against the model: RESULTS 'Rooftop output
+  against sbg.earth' (message 317 (a)).
+- Meridian Economics, SA Power Market Report (September 2026): WEPS estimates (wholesale electricity price).
+- Eskom Homeflex 1, 2026/27 time-of-use rates: R7.91/kWh winter evening peak, R2.79 at noon; Gen-offset credits 737c and 343c
+  (Eskom's 2026/27 tariff booklet, local to Nick, cite by page; the model already reads Homeflex credits from booklet p.44).
+- City of Cape Town small-scale embedded generation feed-in, 2026/27: 107.98c plus a flat 25c incentive; time-of-use feed-in
+  625.73c and 243.47c, not yet available (City of Cape Town tariff schedule 2026/27).
+- The fixed-charge leads are in TODO 14io and the VPP lead in TODO 14ip.
+
