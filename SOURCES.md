@@ -1751,3 +1751,76 @@ checked; none is checked yet.
   625.73c and 243.47c, not yet available (City of Cape Town tariff schedule 2026/27).
 - The fixed-charge leads are in TODO 14io and the VPP lead in TODO 14ip.
 
+
+## c6 inputs: coal availability, coal CO2, rooftop basis, the demand coverage and Kelvin (user, 22 Oct 2026, messages 318-319, 322-328; build 2026-10-22e, c6 PR A)
+
+Eskom's performance report FY2026 (year to 31 March 2026; Nick's copy, cited by printed page, paraphrased, Eskom credited) and its
+weekly System Status report, 2026 Week 42 (12-18 October). The arithmetic is ours, not Eskom's.
+
+- Coal availability (coalEAFPct 65, coal only; messages 326 and 328). Three figures that measure different things:
+  - Week 42 report, p.3: energy availability factor 68.32% for calendar 2026 to date, whole fleet (nuclear, open cycle, hydro and
+    pumped storage included); 62.44% for 2025. The page's stored whole-fleet figure (ESKOM_FLEET_EAF_PCT) is this one from build
+    2026-10-22e (was Week 32's 67.95%).
+  - Performance report, p.21: 65.16% for FY2026 (60.60% FY2025), also whole fleet; targets 68% for FY2027 and 70% from FY2028.
+  - The model's coalEAFPct is coal only, calendar year: 65, against 65.3% from Eskom's hourly data for January-August 2026
+    (ESK19679, our estimate, EAF_HISTORY) and 64.8% from Week 42 converted.
+  - The conversion (coalEafFromFleet): available MW = whole-fleet % x the whole fleet (48,298 MW: coal 39,692, nuclear 1,880,
+    hydro 602, pumped storage 2,724, open cycle 3,400); less nuclear at its output (1,880 x 0.66) and the other 6,726 MW at 90%;
+    over coal's 39,692 MW. Each whole-fleet point is 48,298 / 39,692 = 1.22 coal points, so 68.32% gives 64.8%, 68% gives 64.4%
+    and 70% gives 66.8%; FY2026's 65.16% gives 60.9% (61.4% from the hourly data). The 'Eskom targets' sensitivity after the note
+    uses 64.4 and 66.8 (TODO 14ir).
+- Coal and nuclear capacity (message 323): coalInstalledMW 39,692 MW nominal (p.6), sourced; nuclearMW 1,880 MW nominal (p.6),
+  both Koeberg units rerated to 940 MW in March 2026 (p.23), sourced.
+- Coal CO2 (emisCoal; messages 323 and 325): Eskom's CO2 for FY2026, 184.0 Mt (p.35; FY2025 204.6, FY2024 190.4), covers coal,
+  gas turbines and start-up oil. Less Eskom's own open-cycle output (811 GWh, p.7) at the model's diesel factor (0.78 t/MWh),
+  over coal sent out (165,431 GWh, p.7): 1.108 t CO2/MWh sent out. The model has no separate start-up oil, so it belongs in the
+  coal factor. The engine applies emisCoal to coal output times the part-load multiplier, whose 2026 mean in c5f was 1.0262, so
+  emisCoal = 1.108 / 1.0262 = 1.080 (was 1.04, no recorded source); validate_benchmarks holds Today 2026's rate within 0.5% of
+  1.108 (1.104 on build 22e). CO2, not CO2e: carbon tax is levied on CO2e, 1.112 on the same basis (Integrated Report 2026),
+  so the carbon cost is about 0.3% low. No second constant. FY2025 on the same basis is about 1.13 (Eskom's own FY2025
+  open-cycle output not in hand; calendar 2025's 3.4 TWh, Eskom and IPP, gives 1.126).
+- Rooftop basis (messages 322 (c) and 324 (a)): NTCSA's rooftop series (8,942.1 MW after wheeled solar; Week 42 confirms 9,430.1 MW
+  for August-September 2026, so FIXED.rooftopMW is current) does not state DC or AC; the engine treats capacity times the
+  utility profile, which behaves as AC. So the cost is AC: R12,500/kW DC (excluding VAT, January 2026 rands, a judgement across
+  the sources in 'PV and rooftop cross-checks'; R9,000-16,000 DC for the later sensitivity) x a DC/AC ratio of 1.2 (typical
+  range 1.1-1.3) = R15,000/kW AC (was R17,000, no recorded source).
+- The demand coverage gap (messages 318, 319, 322 (b) and 324 (b)): the model's customer demand is Eskom's RSA contracted demand
+  less exports, plus wheeled load, plus a rooftop add-back; without rooftop it is about 188 TWh against Stats SA's P4141
+  electricity available for distribution, 204.6 TWh in 2025. About 10 TWh of the gap is supply Eskom's series does not see
+  (municipal and private embedded generation), consistent with the model's supply side, which also leaves it out. The one
+  known overlap with demand: Kelvin (153 MW in the fleet, scaled within 39,692 MW, closed from 2027), a municipal-area plant kept
+  in the model's supply (message 324 (b)); Steenbras and other municipal plants are outside the model's supply.
+  Recorded as consistent.
+- The IRP pair's demand (message 324 (c)): ESRG's domestic grid demand scaled by 194.6/204.6 = 0.951, Eskom's 2025 coverage share
+  of P4141, with no export gap folded in. The scaling assumes the coverage share stays constant over 2026-40.
+
+## Leads for the regional model and the all-options pathway (user, 22 Oct 2026, message 330; leads only, after the note, TODO 14is)
+
+- SAPP, draft Generation and Transmission Master Plan Update (2026 consultation, sapp.co.zw; the final is pending). Chapter 4 lists
+  South Africa's interconnectors: existing Songo-Apollo HVDC 1,920 MW; Maputo-Arnot (two circuits) 1,110 MW; Ressano
+  Garcia-Komatipoort 168 MW; Phokoje-Matimba 829/649 MW; Segoditshane-Spitzkop (three) 649 MW; Namibia 170/464 MW per link;
+  Eswatini 183 and 357 MW; Lesotho 92 MW. Planned: Obib-Oranjemund 611 MW (2026); BOSA Isang-Mahikeng 650 MW (2027); ZISA
+  Nzhelele-Triangle 650 MW (2030); Mozambique 600 MW (2030); Inga 3-Merensky 1,500 MW HVDC (on hold). Chapters 1-3, 6-8 and 15
+  (demand, generation plans, scenarios, alignment with national plans and the CMP) for the regional model and for South
+  Africa's import and export options. Against the model: nodal/corridor_electrical.json has no cross-border link (it leaves the
+  Apollo-Cahora Bassa HVDC out on purpose); imports are a fixed infeed capped at the 1,150 MW Cahora Bassa contract, not the
+  1,920 MW line; importsEndYear ends the contract, not the line. The terms of SAPP's consultation documents are to be checked
+  before any layer is published (message 332 (b)).
+- IRENA, SPLAT-CMP (Advancements in continental power system planning for Africa, July 2024): data in AUDA-NEPAD's Mwanga database
+  (cmpmwanga.nepad.org); resource zones open access (Sterl et al., 2023); a results dashboard; the SPLAT user guide at
+  splat-tutorial.readthedocs.io; the GitHub repository's licence to check; interconnector costs by distance, voltage and terrain
+  on SAPP data, a candidate cost basis for new links.
+- AUDA-NEPAD pre-feasibility studies for four SAPP interconnectors under the CMP, due end-2026: identify them when published.
+
+## Virtual power plants: costs to source (user, 22 Oct 2026, message 333; leads, TODO 14it)
+
+- Brattle, Real Reliability: The Value of Virtual Power, technical appendix (May 2023): Table 3, 2022 dollars per participant:
+  smart water heaters $315 one-off, $55 a year non-incentive, $30 a year incentive; home batteries $0, $140, $500; managed EV
+  charging $0, $80, $100. Table 4: net cost $42.85/kW-yr for a VPP, $68.68 for a utility battery, $103.50 for a gas peaker.
+  Household devices are excluded as already owned.
+- South African leads: geyser controller cost and incentive (Plentify; Cape Town's Smart Geyser pilot; Engineering News, 9 Jul
+  2026: R1,200 a year bill saving and about R1,800 per geyser a year saved, company-reported); the battery participant fee
+  (Plentify-Deye, undisclosed); the enrolment cap from the 2.7 GWh Plentify-Deye pool, aggregated, not contracted.
+- The model today: enrolled geysers bring batteries at 0.35 kW per geyser kW, 4 hours, with no enablement, programme or
+  participant cost (the VPP slider's note says so from build 22e). Participant bill savings and payments are transfers, for the
+  retail panels, not system cost.
