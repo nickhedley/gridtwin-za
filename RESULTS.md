@@ -6198,6 +6198,18 @@ cycles, about R72.00/kWh; presets without iron-air say so. jsdom, simulate(state
 06:40 UTC (scratchpad overnight/a4b/fe.js). Quick checks: lint 3/3, structure 27/27, public_text 17/17, outputs 42/42, audit
 88/88; render check 3/3.
 
+Suite on 2026-10-22b after main was merged in (message 309; stored panels regenerated, fingerprint 0d603a6c98995d, head dc5b739),
+ESK19679.csv present, nothing running beside it, 22 Oct 2026 11:54 to 14:45 UTC. Container restarts stopped the run four
+times; each time it resumed from the script that was cut, and every script's count comes from one uninterrupted run of that
+script. Node checks 964/968 (stored panels 86/86, links 48/48, worker 38/38, pathway presets 37/37, public text 17/17) plus audit
+88/88; eng5 5/6. The failures are the four known ones (iron-air July, high-season off-peak, peakerSeasonRatio, EDMSA Scenario A
+CO2 2035) and eng5 check 6. Render check in Chromium on a fresh load, 20/20 (scratchpad overnight/a4/render.js, 14:55 UTC): build
+stamp, pace note, rate box, iron-air at R4.80 with message 271 (8)'s label, vanadium at R1.70, the merged cost note and frontier
+note, replacement cost tiles Today 2026 R1.60, IRP's 2030 targets R1.50, IRP path 2035 R1.43, Least-cost path 2035 R1.31, the
+frontier on IRP path 2035 with gas and diesel in all 24 cells, no undefined, NaN or page errors. Two checks in the first render
+run (17/19) were the script's own: one expected the iron-air label message 271 (8) replaced, the other read the frontier note
+before the grid that carries it was computed; both corrected in the script, not in the page.
+
 ### The coal price counted variable O&M twice; it now counts it once: average price Today 2026 R757 to R677, Least-cost path 2035 R765 to R701; dispatch, cost and CO2 unchanged (build 2026-10-20f; user, 20 Oct 2026, message 263 (2), from the independent mechanics audit)
 
 Cause: UC_FLEET's marginal_cost (PyPSA-RSA) already includes variable O&M, and the hourly price added FIXED.vomCoal (R80/MWh)
