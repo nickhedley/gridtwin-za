@@ -27,10 +27,17 @@ const LNG_M3=+(process.env.LNG_M3||170000), LNG_GJ_M3=+(process.env.LNG_GJ_M3||0
 const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.json')), K=+(process.env.K||2), DEM=+(process.env.DEM||5);
 (async()=>{
  let html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
- if (process.env.CONST_PERT){ const [nm,f]=process.env.CONST_PERT.split(':'); const re=new RegExp('^(const\\s+(?:[^;]*?,\\s*)?'+nm+'\\s*=\\s*)','m');
-   const m=re.exec(html); if(!m) throw new Error('CONST_PERT: no declaration of '+nm);
-   const {scanExpr}=require('./inputs_register.js'); const i=m.index+m[0].length; const [expr,j]=scanExpr(html,i,',;');
-   html=html.slice(0,i)+'(('+expr+')*'+(+f)+')'+html.slice(j); }
+ // The constant is scaled where it is declared: in the page itself, or in nodal/nodal_engine.js, which the page loads as a
+ // script (served patched through a resource loader).
+ let NODAL_PATCHED=null;
+ if (process.env.CONST_PERT){ const [nm,f]=process.env.CONST_PERT.split(':'); const re=new RegExp('^(\\s*const\\s+(?:[^;]*?,\\s*)?'+nm+'\\s*=\\s*)','m');
+   const {scanExpr}=require('./inputs_register.js');
+   const patch=src=>{ const m=re.exec(src); if(!m) return null; const i=m.index+m[0].length; const [expr,j]=scanExpr(src,i,',;'); return src.slice(0,i)+'(('+expr+')*'+(+f)+')'+src.slice(j); };
+   const ph=patch(html);
+   if (ph) html=ph;
+   else { NODAL_PATCHED=patch(fs.readFileSync(path.join(ROOT,'nodal','nodal_engine.js'),'utf8')); if(!NODAL_PATCHED) throw new Error('CONST_PERT: no declaration of '+nm+' in index.html or nodal/nodal_engine.js'); } }
+ if (NODAL_PATCHED){ const tag=/<script[^>]*src="nodal\/nodal_engine\.js[^"]*"[^>]*><\/script>/; if(!tag.test(html)) throw new Error('nodal_engine.js script tag not found');
+   html=html.replace(tag, ()=>'<script>'+NODAL_PATCHED.replace(/<\/script/gi,'<\\/script')+'</script>'); }
  const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,url:'file://'+path.resolve(ROOT)+'/index.html',
   beforeParse(w){ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({},{get:()=>()=>({addColorStop(){},data:[],width:0,measureText:()=>({width:10})})});
    const ch=()=>new Proxy(function(){return ch();},{get:()=>ch()}); w.L=new Proxy({},{get(){return function(){return ch();};}});
@@ -130,7 +137,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // The 2026 wind and solar capex the check prices new build at (message 127 (2)), set beside the optimiser's in each row.
  const CAPEX26={wind:+w.eval("bldCapex('wind', 2026)"), pv:+w.eval("bldCapex('pv', 2026)")};
  console.log('capex 2026, engine check:', JSON.stringify(CAPEX26), 'optimiser:', JSON.stringify(P.capex2026||null));
- if (P.capex2026 && (Math.abs(P.capex2026.wind-CAPEX26.wind)>0.01 || Math.abs(P.capex2026.pv-CAPEX26.pv)>0.01)) throw new Error('capex differs from the optimiser\'s: '+JSON.stringify(CAPEX26)+' against '+JSON.stringify(P.capex2026));
+ // A scaled constant (CONST_PERT) may move the capex on purpose: the screen measures that, so the guard is off then.
+ if (!process.env.CONST_PERT && P.capex2026 && (Math.abs(P.capex2026.wind-CAPEX26.wind)>0.01 || Math.abs(P.capex2026.pv-CAPEX26.pv)>0.01)) throw new Error('capex differs from the optimiser\'s: '+JSON.stringify(CAPEX26)+' against '+JSON.stringify(P.capex2026));
  const rows=[];
  for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0; cwCum+=P.sched[y].cw||0;
    // YEARS=2036,2037 (8 Oct 2026, TODO 14bk): check only these years; builds of the skipped years still accumulate.
@@ -176,7 +184,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
            const nv=v*f; if (FRAC.test(leaf) && v<=1 && nv>1){ r['f'+f]={skip:'above 1'}; continue; }
            const st={...base}; const isFixed=id.startsWith('FIXED.'), k=leaf;
            try{ setP(id,nv); if(isFixed && k in st) st[k]=base[k]*f; r['f'+f]=run1(st); }catch(e){ r['f'+f]={skip:'invalid run: '+String(e.message||e).slice(0,80)}; }
-           finally{ setP(id,v); }
+           finally{ try{ setP(id,v); }catch(e){} }
          }
          out.rows.push(r);
        }
