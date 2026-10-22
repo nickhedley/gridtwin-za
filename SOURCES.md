@@ -899,6 +899,24 @@ harness/ext/grid_distances.py.
   USD 740/kW); TODO 14ba (7 Oct) notes R12,000 sits near IRENA 2024's global USD 691/kW (about R11,400), a benchmark, not a
   source. Rooftop's only partial reference is Kerwin et al., USD 1,406/1,258/1,110/kW for 2020/30/40 (HANDOVER), not the
   R17,000. If a source is found before 6 Nov, it replaces the label here and on the page.
+  Cross-checks beside the label (user, 22 Oct 2026, message 305; benchmarks, not sources; the label stays):
+  - Utility fixed-tilt PV (BLD_COST.pv, R12,000/kW): IRENA, Renewable Power Generation Costs in 2024, utility-scale PV global
+    weighted average total installed cost USD 691/kW (2024 USD; about R11,400 at R16.50). GreenCape, Energy Services Market
+    Intelligence Report 2023: embedded PV over 1 MWp R8,000-9,500/kWp (2022 prices; about R9,600-11,400 in January 2026 rands on
+    the model's CPI chain, x1.20; VAT treatment not stated).
+  - Rooftop (BLD_COST.rooftop, R17,000/kW): a 30 kWp commercial and industrial rooftop estimate, 2025, seen by the author
+    (anonymised; not a published source): R302,204 including VAT (R262,786 excluding) for 30.0 kWp of modules on 24 kW of
+    hybrid inverters, no battery, design, installation and certificate of compliance included. Excluding VAT R8.76/Wp DC, about
+    R10,950/kW AC; in January 2026 rands (x1.035, CPI_JAN25_TO_JAN26) about R9.07/Wp DC and R11,330/kW AC; including VAT about
+    R13,000/kW AC. GreenCape 2023: under 100 kWp R11,000-15,000/kWp, 100-500 kWp R10,500-13,000/kWp (2022 prices; about
+    R13,200-18,000 and R12,600-15,600 in January 2026 rands; VAT treatment not stated). EnergyBee guide, 29 Sep 2026: grid-tied
+    homes without battery R12-19 per watt (installer market prices, presumably including VAT; no sources given).
+  - Basis: the public figures do not say whether they are per kW DC or AC, and the model's own basis for either figure is not
+    recorded. c5f builds tracking solar (pvTracking 1; BLD_COST.pvtrk derived from the BW7 solar awards, R11,038/kW in 2026),
+    so BLD_COST.pv reaches only runs with tracking off, the page's default (bldPvTracking 0) among them; rooftop's R17,000 does
+    enter c5f. The commercial estimate excluding VAT is about a third below R17,000/kW AC. TODO 14im.
+  - Lead (message 317 (c); from a SAPVIA spokesperson's deck, Oct 2026, advocacy; not a source until a primary one is found):
+    home kit costs including VAT, PV R7/Wp installed, inverter R2,000/kW, battery R2,400/kWh.
 - Wind and solar capex boundary: BLD_COST wind R21,000 and PV R12,000/kW have no recorded source, so whether
   they include connection is unclear; charge from zero is central and beyond-18-km the sensitivity. Under
   REIPPPP the developer funds the dedicated connection (Eskom budget quote and cost estimate letter;
@@ -1685,3 +1703,47 @@ s_noimp and s_eskom26_noimp end them after 2030). Context, from press reports, n
 Against the model: 9.34 TWh a year is above every recent year (8,319 GWh from HCB in 2024; Eskom's total imports 7,570 GWh in
 FY2025 and 4,090 GWh in FY2026); FY2025-26 were Mozal and drought years, so the central stays at the post-Mozal flow (user, message
 302) and a drought test is TODO 14il.
+
+## Shadow retail price design: fixed-cost recovery and residential fixed charges (user, 22 Oct 2026, message 311; search-level, checked 22 Oct 2026)
+
+For the shadow retail price design after the note (TODO 14io). Search-level; read each before citing.
+- RAP, Lazar and Gonzalez, Smart Rate Design for a Smart Future (July 2015),
+  https://www.raponline.org/wp-content/uploads/2023/09/rap-lazar-gonzalez-smart-rate-design-july2015.pdf: a customer should pay
+  no more than the cost of connecting; a customer charge for customer-specific (billing) costs and a charge per kVA for the
+  customer's own transformer; the rest by use and time. A RAP deck's illustration is $3.00 a month plus $1.00/kVA a month (so
+  'about $4 a month' holds only for a small transformer).
+- Borenstein, The Economics of Fixed Cost Recovery by Utilities, Energy Institute at Haas WP-272R (revised July 2016), The
+  Electricity Journal 29(5), 5-12, https://haas.berkeley.edu/energy-institute/research/abstracts/wp-272/: volumetric price at
+  social marginal cost; the residual by a mix of fixed charges and higher volumetric prices; no economic case for demand charges
+  or minimum bills.
+- CPUC, 9 May 2024 (Solar Power World, 10 May 2024,
+  https://www.solarpowerworldonline.com/2024/05/california-regulators-approve-new-electric-fixed-charges/): an income-graduated
+  fixed charge for PG&E, SCE and SDG&E residential customers, $24.15 a month, $6 for CARE and $12.08 for FERA customers, under
+  AB 205. The per-kWh reduction (5-7c) was not found in these results; not cited until found.
+- Ofgem, standing charges: a zero standing charge option was considered and dropped (higher-need households would pay more); a
+  one-year pilot of lower standing charge tariffs from April 2026 with EDF, E.ON, Octopus and British Gas (Ofgem, 'Lower standing
+  charge tariffs: next steps'; a British Gas derogation from SLC 22B, August 2026). No final rule requiring every supplier to
+  offer one was found. Standing charges cover network costs, supplier-failure costs and investment.
+- AEMC pricing review (draft, December, before the February 2026 submissions): more of the network charge moved to a fixed component. IEEFA's critique, via
+  RenewEconomy (https://reneweconomy.com.au/higher-fixed-network-tariffs-could-cancel-out-the-savings-from-the-cheaper-home-batteries-rebate/):
+  low and medium users, efficiency investors and solar and battery owners pay more; IEEFA's own report not found. The AEMC
+  argues the volumetric status quo disadvantages renters; separate modelling finds most households gain.
+- NERSA, 18 February 2025 (Engineering News, 24 February 2025,
+  https://www.engineeringnews.co.za/article/nersa-approves-generation-capacity-charge-sets-out-other-retail-tariff-plan-changes-2025-02-24):
+  Eskom's retail tariff restructure approved for 2025/26: the generation capacity charge phased in at 20% in 2025/26 and 30% in
+  each of the two following years; inclining blocks removed for Homelight and Homepower prepaid customers; a fixed charge phased in
+  for Homepower and Homeflex; peak to standard ratio 1:8 to 1:6.
+
+## Leads from a SAPVIA spokesperson's deck (user, 22 Oct 2026, message 317; Frank Spencer, Enerset and sbg.earth, October 2026)
+
+Advocacy material; the deck is not in the repository and is not cited. Each lead below names the primary source to cite once
+checked; none is checked yet.
+- Rooftop output: sbg.earth estimates about 12.9 TWh a year from rooftop solar. Against the model: RESULTS 'Rooftop output
+  against sbg.earth' (message 317 (a)).
+- Meridian Economics, SA Power Market Report (September 2026): WEPS estimates (wholesale electricity price).
+- Eskom Homeflex 1, 2026/27 time-of-use rates: R7.91/kWh winter evening peak, R2.79 at noon; Gen-offset credits 737c and 343c
+  (Eskom's 2026/27 tariff booklet, local to Nick, cite by page; the model already reads Homeflex credits from booklet p.44).
+- City of Cape Town small-scale embedded generation feed-in, 2026/27: 107.98c plus a flat 25c incentive; time-of-use feed-in
+  625.73c and 243.47c, not yet available (City of Cape Town tariff schedule 2026/27).
+- The fixed-charge leads are in TODO 14io and the VPP lead in TODO 14ip.
+
