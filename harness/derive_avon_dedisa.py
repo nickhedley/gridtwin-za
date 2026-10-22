@@ -8,7 +8,12 @@ month times k, the ratio of January-August 2026 to January-August 2025 energy in
 at 2026's level. Night hours (21-04) are taken as zero; the share of measured energy that leaves out is printed. Only these 24
 monthly figures are published, with Eskom credited; no hourly series."""
 import csv, sys, datetime as dt, collections
-src = sys.argv[1] if len(sys.argv) > 1 else '../ESK19679.csv'
+# --target-gwh G (user, 22 Oct 2026, messages 306 (a) and 322): scale both blocks so the full year is G GWh, keeping the measured
+# shape. c6's central uses 268, Avon and Dedisa's own FY2026 output (Eskom performance report FY2026, p.20), a single-year choice.
+args = [a for a in sys.argv[1:] if not a.startswith('--')]
+TARGET = float(sys.argv[sys.argv.index('--target-gwh') + 1]) if '--target-gwh' in sys.argv else None
+if TARGET is not None: args = [a for a in args if a != str(sys.argv[sys.argv.index('--target-gwh') + 1])]
+src = args[0] if args else '../ESK19679.csv'
 S = collections.defaultdict(float); N = collections.defaultdict(int); tot = collections.defaultdict(float)
 with open(src) as f:
     r = csv.reader(f); head = next(r); col = head.index('Dispatchable IPP OCGT')
@@ -23,9 +28,13 @@ with open(src) as f:
 mean = lambda y, m, b: S[(y, m, b)] / N[(y, m, b)]
 k = (tot[(2026, 'ja_day')] + tot[(2026, 'ja_eve')]) / (tot[(2025, 'ja_day')] + tot[(2025, 'ja_eve')])
 lvl = lambda m, b: mean(2026, m, b) if m <= 8 else k * mean(2025, m, b)
-day = [round(lvl(m, 'day')) for m in range(1, 13)]; eve = [round(lvl(m, 'eve')) for m in range(1, 13)]
-print('day:', day); print('eve:', eve); print('k (Sep-Dec scale on 2025): %.3f' % k)
 D = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+f = 1.0
+if TARGET is not None:
+    f = TARGET * 1e3 / sum((lvl(m + 1, 'day') * 12 + lvl(m + 1, 'eve') * 4) * D[m] for m in range(12))
+day = [round(f * lvl(m, 'day')) for m in range(1, 13)]; eve = [round(f * lvl(m, 'eve')) for m in range(1, 13)]
+if TARGET is not None: print('scaled by %.6f to %.0f GWh a year' % (f, TARGET))
+print('day:', day); print('eve:', eve); print('k (Sep-Dec scale on 2025): %.3f' % k)
 ja = sum((day[m] * 12 + eve[m] * 4) * D[m] for m in range(8)); yr = sum((day[m] * 12 + eve[m] * 4) * D[m] for m in range(12))
 print('profile: January-August %.0f GWh, full year %.0f GWh' % (ja / 1e3, yr / 1e3))
 for y in (2025, 2026):

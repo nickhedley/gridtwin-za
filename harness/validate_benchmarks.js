@@ -320,6 +320,10 @@ const check = (name, ok, detail) => {
       // Existing-fleet constants, for the Eskom Integrated Report 2026 p10 checks below.
       fleetCoal: FIXED.coalInstalledMW, fleetNuclear: FIXED.nuclearMW,
       fleetPs: FIXED.psPowerMW, fleetHydro: FIXED.hydroMW,
+      // Coal CO2 per MWh sent out on Today 2026 (user, 22 Oct 2026, message 325 (b)): the engine's CO2 less gas and diesel, over coal.
+      coalRate2026: (() => { const x = simulate({ ...state, ...PRESETS['Today 2026'] }, PROFILES);
+        return (x.co2 * 1e6 - (x.E.ccgt || 0) * FIXED.emisCcgt - (x.E.diesel || 0) * FIXED.emisDiesel) / x.E.coal; })(),
+      coalRateFY26: COAL_CO2_PER_MWH_FY26,
       // Residual basis: rooftop out of numerator and denominator, matching how Eskom
       // reports 'power supplied' - it cannot meter behind the customer's meter.
       // Surplus at the annual peak: what could still have run, less the reserve held.
@@ -494,6 +498,14 @@ const check = (name, ok, detail) => {
           Math.abs(M[k] - want) < 1,
           `model holds ${M[k]} against ${want} in the Integrated Report 2026`);
   }
+
+  // COAL CO2 PER MWH SENT OUT (user, 22 Oct 2026, messages 323 and 325 (b)). emisCoal is Eskom's FY2026 rate (CO2 less its own
+  // open-cycle output, over coal sent out: 1.108 t/MWh; ESKOM_FY26) divided by the part-load multiplier's 2026 mean
+  // (COAL_PARTLOAD_2026). This holds the engine's 2026 coal rate to within 0.5% of Eskom's, so a change to the part-load curve,
+  // the fleet or the factor cannot quietly move coal CO2 away from the measured figure.
+  check('coal CO2 per MWh sent out in 2026 within 0.5% of Eskom\'s FY2026',
+        Math.abs(M.coalRate2026 / M.coalRateFY26 - 1) <= 0.005,
+        `Today 2026 ${M.coalRate2026.toFixed(4)} t/MWh against ${M.coalRateFY26.toFixed(4)}; re-record COAL_PARTLOAD_2026 from a central run's 2026`);
 
   // ── WIND, FLEET-NORMALISED ──────────────────────────────────────────────
   // The energy comparison above measures fleet size as much as model accuracy: the model

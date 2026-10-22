@@ -5389,6 +5389,27 @@ function bldPhesCumCapMW(cap, y){
 // (SOURCES 'SA CPI, January 2024 to January 2026'). One constant for every January 2024 rand figure restated in 2026 rands.
 const CPI_JAN25_TO_JAN26 = 1.035;
 const CPI_JAN24_TO_JAN26 = 1.032 * CPI_JAN25_TO_JAN26;
+// ESKOM FY2026 (user, 22 Oct 2026, messages 306 (a), 321, 322, 323 and 325; c6 PR A). Eskom's performance report for the year to
+// 31 March 2026, cited by printed page, Eskom credited, the arithmetic ours (SOURCES 'Eskom performance report FY2026'). Each FIXED
+// value below that rests on them is computed here, not typed.
+const ESKOM_FY26 = {
+  coalCostRbn: 91.5,        // p.56: 'coal and other generation' primary energy cost, environmental levies excluded
+  coalSentOutGWh: 165431,   // p.7: coal-fired stations
+  importsRPerMWh: 897,      // p.56: international purchases, full cost of operation
+  nuclearRPerMWh: 109,      // p.56: nuclear, primary energy cost
+  co2Mt: 184.0,             // p.35: CO2, coal, gas turbines and start-up oil
+  ocgtGWh: 811,             // p.7: Eskom-owned open-cycle gas turbines
+  // Gariep and Vanderkloof (602 MW), every complete financial year in Eskom's hourly data (ESK19679; analysis ours): FY2023-26.
+  hydroGWh: [3062, 1449, 714, 2421],
+};
+// The coal CO2 factor (TODO 14gp; user, messages 323 and 325): Eskom's CO2 less its own open-cycle output at the diesel factor,
+// over coal sent out, is 1.108 t/MWh (CO2, not CO2e; carbon tax is levied on CO2e, 1.112 on the same basis, so the carbon cost is
+// about 0.3% low). The engine applies emisCoal to coal output times the part-load multiplier, so emisCoal is that rate over the
+// multiplier's 2026 mean, COAL_PARTLOAD_2026, recorded from a central run's 2026 (c5f's, 1.0262, until c6's replaces it) and
+// checked by validate_benchmarks ('coal CO2 per MWh sent out in 2026').
+const EMIS_DIESEL = 0.78;
+const COAL_CO2_PER_MWH_FY26 = (ESKOM_FY26.co2Mt * 1e6 - ESKOM_FY26.ocgtGWh * 1e3 * EMIS_DIESEL) / (ESKOM_FY26.coalSentOutGWh * 1e3);
+const COAL_PARTLOAD_2026 = 1.0262;
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -5453,8 +5474,9 @@ const FIXED = {
   // turn a loud failure into a plausible wrong answer, which is rule 7's whole lesson.
   importsCF:IMPORTS_CF,
   // Gariep and Vanderkloof, delivered share of 602 MW; was a literal in two engine lines and the
-  // build LP. 2025 ran at 0.34 (ESK19679, 1.79 TWh), the drought year. 3 Oct 2026.
-  hydroCF:0.55,
+  // build LP. 2025 ran at 0.34 (ESK19679, 1.79 TWh), the drought year. 3 Oct 2026. From c6 (user, messages 306 (a) and 322):
+  // the mean of every complete financial year in Eskom's hourly data, FY2023-26 (ESKOM_FY26.hydroGWh), 0.3625; was 0.55.
+  hydroCF:null,   // set just after FIXED from FIXED.hydroMW, so 602 MW is written once
   // FIRM EXPORTS, added 8 Sep 2026. 1,340 MW is the mean over 2025-26 from Eskom's hourly
   // file. Exports are a LOAD on the South African system and the model previously had none,
   // which made it about 1.35 GW optimistic at the annual peak. See the expAt() note in
@@ -5919,9 +5941,12 @@ const FIXED = {
   // 2016; IRP 2025 3.2.1.2.2, contracts expire 2030-31), so both through 2030 and Avon's two-thirds share to 20 July 2031.
   // Then they revert to ordinary peakers. Fuel and CO2 counted at the diesel fleet's rates; the rest of their capacity stays
   // in dispatch and emergency reserve; while running they hold online headroom (message 90). 0 turns it off.
+  // From c6 (user, 22 Oct 2026, messages 306 (a) and 322): the same shape scaled to 268 GWh a year, Avon and Dedisa's own output in
+  // FY2026 (Eskom performance report, p.20), a single-year choice (FY2024 1,509, FY2025 662 GWh); the hourly column behind the
+  // shape likely also carries the RMIPPPP hybrids (SOURCES). derive_avon_dedisa.py --target-gwh 268; was 899 GWh a year.
   avonDedisaMustRun:1,
-  avonDedisaDayMW:[175, 172, 168, 170, 144, 129, 152, 157, 90, 105, 110, 117],
-  avonDedisaEveMW:[186, 271, 222, 369, 161, 136, 201, 280, 96, 155, 125, 129],
+  avonDedisaDayMW:[52, 51, 50, 51, 43, 38, 45, 47, 27, 31, 33, 35],
+  avonDedisaEveMW:[56, 81, 66, 110, 48, 40, 60, 83, 29, 46, 37, 38],
   avonMW:670, dedisaMW:335, dedisaEndYear:2030, avonEndYear:2031, avonEndDoy:200,
   // Regulating reserve grows with variable generation, and the ASTR figure above does not:
   // it is sized to 2030/31 on today's fleet. NREL's Operating Reserves and Variable Generation
@@ -6562,10 +6587,14 @@ const FIXED = {
   // The warning it carried is still right and still applies to any FUTURE change: VOM must
   // move for all technologies at once or the merit order tilts. Do not add or remove it for
   // one constant in passing.
-  costCoal:546, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
+  // c6 (user, 22 Oct 2026, messages 306 (a) and 322): coal fuel FY2026 without the environmental levy (about R41/MWh, a note, not
+  // a cost); nuclear fuel FY2026 (vomNuclear 45 kept); imports FY2026 full cost. Were 546 (FY2025 with the levy), 160 and 550
+  // (no recorded source). emisCoal: see COAL_CO2_PER_MWH_FY26 above (was 1.04, no recorded source).
+  costCoal:Math.round(ESKOM_FY26.coalCostRbn * 1e9 / (ESKOM_FY26.coalSentOutGWh * 1e3)), emisCoal:+(COAL_CO2_PER_MWH_FY26 / COAL_PARTLOAD_2026).toFixed(3),
+  costNuclear:ESKOM_FY26.nuclearRPerMWh, costHydro:30, costImports:ESKOM_FY26.importsRPerMWh,
   // emisCcgt 0.348 t/MWh from 9 Oct 2026 (was 0.37, which implied 48.9% efficiency): natural gas 53.06 kg CO2 per
   // MMBtu (HHV; US EPA GHG Emission Factors Hub) / 0.293071 MWh per MMBtu / 0.52, the efficiency costCcgt uses.
-  costCcgt:1298.42, emisCcgt:0.348, costDiesel:6100, emisDiesel:0.78,
+  costCcgt:1298.42, emisCcgt:0.348, costDiesel:6100, emisDiesel:EMIS_DIESEL,
   // Variable O&M, R/MWh, thermal only - added 14 Aug 2026 following the
   // professional convention (NREL ATB 2022/2024, used by ReEDS/GenX; EIA AEO):
   // per-MWh VOM for thermal plant, zero for wind/solar/battery, whose O&M is
@@ -6745,8 +6774,9 @@ const FIXED = {
   bldNuclearAdd:null,
   lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:null, // lcoeDiesel set from BLD_COST below (bldLcoeAt); was 9000, typed
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
-  lcoeHydro:600, lcoeImports:550, lcoePs:1400,
+  lcoeHydro:600, lcoeImports:ESKOM_FY26.importsRPerMWh, lcoePs:1400,   // imports at FY2026 full cost from c6 (was 550)
 };
+FIXED.hydroCF = ESKOM_FY26.hydroGWh.reduce((a, b) => a + b, 0) / ESKOM_FY26.hydroGWh.length / (FIXED.hydroMW * 8.76);
 // AVAILABILITY HISTORY for the coal availability note (site review A5, 19 Oct 2026). Coal-only: our estimate from ESK19679
 // (fleet availability less nuclear at its output and the other 5,758 MW at 90%), 22 Sep 2026; fleet: Eskom's audited
 // energy availability factor, which includes nuclear, OCGT, hydro and pumped storage and runs about 4-5 points above coal.
@@ -9940,6 +9970,7 @@ const BATT_BW3_BID = 9.5e9 / 2464e3;
 const BATT_EQUIP_BID = 165 * Math.pow(117/165, 5/12) * 16.5;
 const BATT_COST_HOURS = 4;   // the lithium capex below is per kW of a 4-hour system
 const LI_DECL = 0.03;        // lithium capex decline a year, real, from 2026 (BNEF -25% by 2035; message 227 (1)); see BLD_COST.batt
+const ROOF_CAPEX_DC_RKW = 12500, ROOF_DC_AC_RATIO = 1.2;   // rooftop capex basis (BLD_COST.rooftop); SOURCES 'PV and rooftop cross-checks'
 const BLD_COST = {
   // WIND ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14av). BW6 wind compliant bids, R26,647/kW
   // (IPP Office REIPPPP historical data note, 7 Nov 2025, January 2024 rands; no wind was awarded in BW6) x SA CPI
@@ -9969,7 +10000,10 @@ const BLD_COST = {
   // From 15 Oct 2026 (message 125 (2)) the central is the capex BW7's solar tariffs imply (BLD_TARIFF); BW6 is the 'bw6' case.
   pvtrk:   { c2026: null, decl: 0.0389, connIncl: true },
   pvtrk_bw6: { c2026: 15715 * CPI_JAN24_TO_JAN26, decl: 0.0389, connIncl: true },
-  rooftop: { c2026: 17000, decl:  0.0389 },
+  // Rooftop from c6 (user, 22 Oct 2026, messages 322 (c) and 324 (a)): R12,500/kW DC, excluding VAT, January 2026 rands, a judgement
+  // across sources (SOURCES 'PV and rooftop cross-checks'; R9,000-16,000 DC for the later sensitivity), times a DC/AC ratio of 1.2
+  // (1.1-1.3), because rooftopMW behaves as AC capacity: R15,000/kW AC. Was R17,000 (no recorded source).
+  rooftop: { c2026: ROOF_CAPEX_DC_RKW * ROOF_DC_AC_RATIO, decl:  0.0389 },
   // BATTERIES ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14ax). Central: BESIPPPP bid window 3,
   // preferred bidders announced 30 May 2025: 616 MW / 2,464 MWh for R9.5bn (DEE media statement; SAnews), R3,856/kWh,
   // escalated one year at SA CPI (3.5%, Stats SA, January 2026) to R3,990/kWh, x 4 h per kW. INCLUSIONS NOT STATED:
@@ -15057,8 +15091,9 @@ function run2025AsModelled(){
   return _run2025;
 }
 const _e25 = k => _run2025 && _run2025.E ? _run2025.E[k] / 1e6 : null;
-// Eskom's energy availability factor, whole fleet, calendar 2026 to Week 32 (Eskom weekly System Status report).
-const ESKOM_FLEET_EAF_PCT = 67.95;
+// Eskom's energy availability factor, whole fleet, calendar 2026 to date: Week 42 (12-18 October 2026), weekly System Status report,
+// p.3 (user, 22 Oct 2026, messages 326 and 328; was Week 32's 67.95). Coal only it is about 64.8% (coalEafFromFleet; SOURCES).
+const ESKOM_FLEET_EAF_PCT = 68.32;
 const ESKOM_ACTUALS = {
   asOf: 'Week 32, 9 August 2026',
   source: 'Eskom weekly System Status reports',
@@ -15068,9 +15103,9 @@ const ESKOM_ACTUALS = {
     // so the gap read -3.0 where it is +0.7. Eskom's figure is converted as the presets convert it (coalEafFromFleet).
     { k: 'Coal fleet EAF',        model: () => state.coalEAFPct,
       get actual(){ return +coalEafFromFleet(ESKOM_FLEET_EAF_PCT).toFixed(1); }, unit: '%',
-      note: () => 'Coal only: Eskom\u2019s whole-fleet ' + ESKOM_FLEET_EAF_PCT + '% (calendar year to date, Week 32 2026; '
+      note: () => 'Coal only: Eskom\u2019s whole-fleet ' + ESKOM_FLEET_EAF_PCT + '% (calendar year to date, Week 42 2026; '
           + '2025 full year 62.44%) less nuclear, hydro, pumped storage and open-cycle plant at their own availability, as the presets '
-          + 'convert it. Week 32 alone was 72.15%, and the year has run above 70% since Week 27.' },
+          + 'convert it.' },
     // One boundary (mechanics audit G7-M4, fix 3): the row divided all open-cycle output, Avon and Dedisa's contracted running
     // included (0.899 of Today 2026's 0.913 TWh), by the 3,400 MW fleet that includes them, and read 3.1% against Eskom's 1.17%.
     // Now Eskom's own turbines only, the fleet less Avon and Dedisa, and their merit-order running; the pair is in the note.
@@ -18544,7 +18579,7 @@ const SLIDERS=[
   {id:'vppGeyserPoolMW',label:'Virtual power plants \u2013 national potential',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:`Household load that could be aggregated nationally. The default, ${(FIXED.vppGeyserPoolMW/1000).toFixed(0)} GW, is our estimate for electric geysers; above it, household pool pumps, air conditioning and home EV charging. Shares one cap of 45% of an hour with the shiftable load above. No effect until an enrolment share is set. Municipal VPPs are sited in Where to build.`},
   {id:'vppEnrolPct',readoutHost:'vppTotal',label:'\u2013 share enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+'% of the pool',ctrlStyle:SUB_CTRL,
-   note:'The share of that national pool signed up and dispatchable, spread across regions by their share of electricity demand. Municipal VPPs sited in Where to build add to this. Cape Town and eThekwini are working to implement city-wide VPPs; the default is zero because these are pilots.'},
+   note:'The share of that national pool signed up and dispatchable, spread across regions by their share of electricity demand. Municipal VPPs sited in Where to build add to this. Cape Town and eThekwini are working to implement city-wide VPPs; the default is zero because these are pilots. Enrolled capacity is not yet costed; scenarios using it understate cost.'},
   {id:'vppTotalReadout',readout:true,ctrlStyle:SUB_CTRL},
   {grp:'Grid and connections'},
   {id:'gridBeyondGccaPct',label:'Grid built beyond current plan',min:0,max:150,step:10,def:FIXED.gridBeyondGccaPct,fmt:v=>v===0?'GCCA plan only':'+'+v+'% headroom',
@@ -20298,7 +20333,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-22d';
+const BUILD_STAMP = '2026-10-22e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
