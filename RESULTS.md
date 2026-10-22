@@ -16500,3 +16500,38 @@ reissued it must carry the VoRS shape with it.
 
 REQUIRES `asReserveOn`. At defaults the panel shows a flat line and says so,
 because South Africa prices no ancillary services today.
+
+### c6 PR A, inputs on build 2026-10-22e: Eskom FY2026 costs, coal CO2 1.108 t/MWh sent out, Avon and Dedisa at 268 GWh, rooftop R15,000/kW AC; the rooftop output check and the demand coverage recorded (user, 22 Oct 2026, messages 306 (a), 318-319, 322-328; report and inputs, no run)
+
+Inputs changed (SOURCES 'c6 inputs' and 'Eskom performance report FY2026'), each computed in the page from Eskom's printed figures
+(ESKOM_FY26), not typed: coal fuel R553/MWh (R91.5bn over 165,431 GWh, p.56 and p.7, levies excluded; was 546 with the levy);
+nuclear fuel R109/MWh (p.56; was 160, vomNuclear 45 kept); imports R897/MWh, full cost (p.56; was 550, no recorded source), also
+the replacement-cost figure (lcoeImports, was 550); hydroCF 0.3625, the FY2023-26 mean of Eskom's hourly data on 602 MW (was 0.55);
+emisCoal 1.080 (was 1.04): Eskom's 184.0 Mt (p.35) less its 811 GWh of open-cycle output at 0.78, over coal sent out, 1.108 t
+CO2/MWh, divided by the 2026 part-load multiplier 1.0262 (c5f's; c6's replaces it). Avon and Dedisa's must-run scaled to 268
+GWh a year (p.20; was 899, the hourly column's shape kept; derive_avon_dedisa.py --target-gwh 268). Rooftop capex R12,500/kW DC x
+1.2 = R15,000/kW AC (was R17,000). Whole-fleet EAF on the comparison panel: Week 42's 68.32% (was Week 32's 67.95%). Measured
+on build 22e in jsdom, Today 2026 on the page's own profiles (scratchpad m335/fixed_check.js, 22 Oct 2026 19:20 UTC): coal
+148.8 TWh, CO2 164.5 Mt, coal's rate 1.1039 t/MWh sent out, 0.41% under Eskom's 1.1084 (the new benchmark check holds it within
+0.5%); Avon and Dedisa 267.7 GWh on the rounded profile.
+
+Two benchmark checks fail on 22e that passed before, both conflicts between references, not model errors (TODO 14iw): the
+2025 replay's hydro 1.91 TWh against Ember's 2.90 (Eskom's own 2025 Gariep and Vanderkloof output, 1.79 TWh, is lower still),
+and CO2 184.6 Mt against Ember's 160.3 (Eskom's own CO2 is 204.6 Mt for FY2025 and 184.0 for FY2026). The full suite follows
+on PR A.
+
+Rooftop output against the 12.9 TWh estimate (message 325 (d); measured 22 Oct 2026, RESULTS 'Rooftop output against
+sbg.earth', build 22a): on the twelve-year solar mean the model's rooftop gives 13.7 TWh a year after its 0.78 derate (17.5
+before) against an estimate of about 12.9 TWh; on the 2025 profile 15.4. If NTCSA's 8,942 MW were DC, at a DC/AC ratio of 1.2
+the twelve-year output would be 11.4 TWh (10.5-12.5 at 1.1-1.3): a DC basis would close the 0.8 TWh gap and overshoot it by about
+1.5 TWh, and the derate already includes inverter and export limiting, so part of the DC/AC loss would be counted twice. The
+capacity is unchanged; rooftopMW is treated as AC and its cost converted to AC (message 324 (a)). Week 42's 9,430.1 MW for
+August-September 2026 confirms FIXED.rooftopMW (8,942.1 after wheeled solar).
+
+Demand coverage (messages 318, 319 and 322 (b); quoting Stats SA's P4141 and ESRG only): the model's customer demand, 203.5 TWh in
+2026, is Eskom's RSA contracted demand less exports, plus wheeled load, plus a rooftop add-back of 15.4 TWh; without rooftop,
+188.2 TWh, against P4141's 204.6 TWh of electricity available for distribution in 2025. The difference is about 10 TWh of supply
+Eskom's series does not see (municipal and private embedded generation, which the model's supply also leaves out) and about
+6 TWh of 2026's fall; recorded as consistent, with Kelvin the one known overlap (SOURCES). c5f's customer demand, TWh, 2030 /
+2035 / 2040: 232.3 / 266.1 / 305.1, of which without rooftop 208.7 / 232.2 / 260.9. The IRP pair in c6 takes ESRG's domestic grid
+demand scaled by 0.951 (194.6/204.6), with no export gap folded in; the scaling assumes the coverage share stays constant.
