@@ -8,7 +8,7 @@
 // (the same with c5f's demand path for the preset's year and its smelter block).
 const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');
 // The repository this script sits in (harness/ext/), unless ROOT is set.
-const ROOT=process.env.ROOT||path.resolve(__dirname,'..','..'), K=+(process.env.K||20), SEED=71830529, ONLY=process.env.ONLY||'';
+const ROOT=process.env.ROOT||path.resolve(__dirname,'..','..'), K=+(process.env.K||20), SEED=+(process.env.SEED||71830529), ONLY=process.env.ONLY||'';
 const P=JSON.parse(fs.readFileSync(path.join(ROOT,'harness/pathway/c5f/pathway_c5f.json'),'utf8'));
 const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
 const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,url:'file://'+ROOT+'/index.html',
@@ -23,7 +23,7 @@ const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToB
    costCcgt:P.gas.fuelR[Y], bldCapeCurtPct:P.capeWind.curtPct, bldGridCost:1, bldGridIntVreShare:P.gridIntVreShare, bldTariffCfBasis:P.tariffCfBasis,
    reserveVreRefWindMW:Math.round(+w.eval('FIXED.windMW')+cum('wind',2030)), reserveVreRefPvMW:Math.round(+w.eval('FIXED.pvUtilityMW')+cum('pv',2030))});
  const dem=Y=>({demandGrowthPct:(P.demand.index[Y]-1)*100, demandBlockMW:P.demand.block['2027']});
- const out={stamp:w.eval('BUILD_STAMP'), decl:+w.eval('BLD_COST.batt.decl'), terminal:+w.eval('bldGasTerminalRkW()'), K, presets:{}};
+ const out={stamp:w.eval('BUILD_STAMP'), seed:SEED, decl:+w.eval('BLD_COST.batt.decl'), terminal:+w.eval('bldGasTerminalRkW()'), K, presets:{}};
  for (const [name,Y] of [['Deep decarbonisation 2035',2035],['Fossil-free 2040',2040]]){
   if (ONLY && !name.startsWith(ONLY)) continue; out.presets[name]={};
   for (const [v,over] of [['page',{}],['c5f5',base(Y)],['c5f',{...base(Y),...dem(Y)}]].filter(([v])=>!process.env.VARIANTS||process.env.VARIANTS.split(',').includes(v))){

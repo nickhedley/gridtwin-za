@@ -138,10 +138,10 @@ const num = t => {
     // The panel was right and this check was wrong. Fixed here rather than
     // relaxing the tolerance, which would have hidden a real definitional split.
     const dom_ = E.coal+E.nuclear+E.hydro+E.imports+E.wind+E.pv+E.csp+(E.hybrid||0)+E.rooftop+E.ccgt+E.diesel;
-    // firm capacity, computed exactly as the adequacy panel does
-    const firm = (FIXED.coalInstalledMW - (state.coalDecomMW||0)) * (state.coalEAFPct/100)
-               + FIXED.nuclearMW*0.9 + FIXED.hydroMW*0.5 + FIXED.importsMW*0.9
-               + FIXED.psPowerMW + FIXED.ocgtDieselMW + FIXED.battPowerMW;
+    // Firm capacity: the adequacy panel's own function (user, 20 Oct 2026, message 264; audit G1-M5). A copy here used
+    // hydro 0.5, imports 0.9, the whole diesel fleet and FIXED storage, none of which the panel used, so it protected nothing.
+    const firm = firmCapacityMW({ ...FIXED, ...state });
+    const firmStorageMW = FIXED.psPowerMW + FIXED.battPowerMW;
     return {
       peakGW: peak/1000, peakHour: peakH,
       coalTWh: E.coal/1e6, co2: r.co2, curtTWh: E.curtailed/1e6,
@@ -150,7 +150,7 @@ const num = t => {
       energyTWh: dom_/1e6, importsTWh: E.imports/1e6,
       psAtPeakMW: r.stack.ps[peakH], battAtPeakMW: r.stack.batt[peakH],
       psTWh: E.ps/1e6, battTWh: E.batt/1e6,
-      firmGW: firm/1000,
+      firmGW: firm/1000, firmStorageGW: firmStorageMW/1000,
       windMW: FIXED.windMW, pvUtilityMW: FIXED.pvUtilityMW, rooftopMW: FIXED.rooftopMW,
       vppPool: (typeof vppPoolByRegion === 'function')
         ? Object.values(vppPoolByRegion()).reduce((a,b)=>a+b,0) : null,
@@ -231,10 +231,9 @@ const num = t => {
   // The adequacy panel counts pumped storage and batteries as firm capacity. If
   // the dispatch never uses them, the panel is claiming capacity the model does
   // not deliver. That exact contradiction went unnoticed for weeks.
-  const storageCountedGW = (E.firmGW * 1000 - (E.firmGW * 1000 - 2900 - 800)) / 1000;
   check('storage counted as firm actually discharges over the year',
         E.psTWh + E.battTWh > 0.5,
-        `adequacy counts ~${(2900+800)/1000} GW of storage as firm, yet dispatch delivers only ` +
+        `adequacy counts ${E.firmStorageGW.toFixed(1)} GW of storage as firm (of ${E.firmGW.toFixed(1)} GW), yet dispatch delivers only ` +
         `${(E.psTWh + E.battTWh).toFixed(3)} TWh from it all year`);
 
   // and it must actually be there at the annual peak, which is what "firm" means
