@@ -1650,3 +1650,38 @@ matches none of these; its closeness to the mean is a coincidence (it is calenda
 Against the model: costImports 550 has no recorded source (Eskom FY2026 897, full cost); costNuclear 160 + vomNuclear 45 against
 Eskom's 109; hydroCF 0.55 against 0.46 / 0.14 / 0.27 in FY2026 / 2025 / 2024 on 602 MW; Avon and Dedisa's must-run 899 GWh a year
 against Eskom's 268 GWh in FY2026.
+Checked against the report (user, 21 Oct 2026, message 302 (d); printed pages): imports 4,090 GWh (FY2026) and 7,570 GWh
+(FY2025), p.7 and the ten-year statistics on p.70 (energy imports from SADC), a 46% fall year on year (about p.25); unit cost
+of international purchases R897 and R866/MWh, p.56 only (p.7 carries the volume, not the cost), full cost of operation including
+operating and capacity charges; IPP OCGT output 268 GWh, p.20. The must-run at 268 GWh (null_c5f_ad268, RESULTS 's_eskom26') is a
+single-year choice: Avon and Dedisa ran 1,509, 662 and 268 GWh in FY2024-26, a falling series, and 268 is its lowest year.
+s_eskom26's results are in RESULTS ('s_eskom26'), with the levy (about R41/MWh, FY2026) and hydro years (FY2023-26) beside them.
+
+## Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)
+
+The model holds 1,150 MW of must-take imports (FIXED.importsMW, the Cahora Bassa contract) at 1,066 MW on average (IMPORTS_AVG_MW,
+our mean of ESK19679, April to August 2026, after Mozal stopped), about 9.34 TWh a year in every year to 2040 (importsEndYear 0;
+s_noimp and s_eskom26_noimp end them after 2030). Context, from press reports, not primary documents:
+- The export contract with Eskom ends on 31 Dec 2030, and Mozambique's energy transition strategy names repatriating the 1,150 MW
+  as its first short-term hydro goal (Bloomberg's reading of the unpublished strategy, reported by Engineering News, 2 Feb 2024,
+  https://engineeringnews.co.za/article/mozambique-seeks-to-end-50-year-hydropower-pact-with-south-africa-2024-02-02). Lusa
+  reported in mid-2025 that the current government still plans to end the supply in 2030.
+- Eskom took 8,319 GWh from HCB in 2024, of 12,351 GWh delivered (Lusa, via Club of Mozambique,
+  https://clubofmozambique.com/news/mozambique-south-africas-eskom-bought-66-of-cahora-bassa-electricity-in-2024/); the headline's
+  66% does not match these two figures (67%).
+- HCB produced 10,921 GWh in 2025, 30% below 2024 (15,754 GWh), in a Zambezi drought (360 Mozambique and Lusa, from the 2025
+  accounts approved 30 Apr 2026). Its revenue is not cited here: reports differ (EUR 293.2m against about USD 344m).
+- Storage fell to about 20% with operating restrictions from July 2024 and was back at 56% by mid-2026 (Lusa, 21 Jul 2026; Green
+  Building Africa); 56% was already reported in May 2026, and reports differ on whether the restrictions were lifted or only eased.
+- No replacement for the HCB contract is reported. Mphanda Nkuwa (1,500 MW; EDF, TotalEnergies and Sumitomo selected in Dec 2023,
+  EDM and HCB 30%): no signed Eskom offtake found; the latest dates are construction from 2029 and operation from 2034, US$6-7bn
+  (Club of Mozambique); Lusa reported a change in the consortium on 30 Jul 2026 without naming it. Only an undated, outdated
+  GlobalData profile says its power would go to Eskom.
+- Kobong pumped storage, Lesotho (at least 1,200 MW): Convalt Energy's US$6.2bn agreement, signed 4 Jun 2026, paired with an AI
+  data centre; Convalt funds a one-year feasibility study, construction targeted for 2029; no buyer named (Business Day, 15 Sep
+  2026, https://www.businessday.co.za/news/2026-09-15-minister-may-benefit-from-lesothos-r100-billion-ai-and-hydropower-deal/).
+  Reports differ on whether the agreement is binding. Kobong was deferred in 2018 under the Lesotho Highlands Water Project
+  Phase II.
+Against the model: 9.34 TWh a year is above every recent year (8,319 GWh from HCB in 2024; Eskom's total imports 7,570 GWh in
+FY2025 and 4,090 GWh in FY2026); FY2025-26 were Mozal and drought years, so the central stays at the post-Mozal flow (user, message
+302) and a drought test is TODO 14il.

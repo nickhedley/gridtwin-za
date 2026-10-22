@@ -4707,6 +4707,78 @@ rises because coal's fuel and fixed O&M almost pay for its new build by 2035.
 Caveat: the searches and the top-up ran before c5f's base changes (Msenge's wind and wheeled load in demand, PR #80); on c5f's
 build the presets would be rescored.
 
+### s_eskom26, provisional and not for quoting: Eskom's FY2026 costs and running on c5f raise engine PV by R19.4bn and CO2 by 3.7 Mt; imports are the largest change (+R30.0bn at R897), Avon and Dedisa on merit the largest saving (-R20.5bn); the IRP-against-c5f gap moves R2-4bn; losing the imports after 2030 costs R11.9bn on this basis, not R28.1bn (user, 21-22 Oct 2026, messages 278-284, 300-304; c5f's frozen copy b82bfd3, build 2026-10-17g)
+
+Settings. c5f's central settings (scratch c5f/env_c5f.sh) in a measurement copy, c5f/eskom (the repository's code untouched),
+with FIXED_SET="costCoal=553,costImports=897,costNuclear=109,hydroCF=0.3625,avonDedisaMustRun=0": coal fuel R553/MWh, FY2026
+without the environmental levy (the levy, about R41/MWh of coal in FY2026, is a note, not a cost); imports R897/MWh (FY2026 full
+cost, p.56); nuclear fuel R109/MWh with vomNuclear 45 kept; hydro at 0.3625, the mean of FY2023-26 in ESK19679 (3,062, 1,449, 714
+and 2,421 GWh on 602 MW; FY2025 a drought year); Avon and Dedisa dispatched on merit with the other peakers. Re-optimisations at
+MAXP=3 (the IRP-demand one at MAXP=6), TL=7200; engine checks pathcheck.js TF=0.5 LNG=1 GRID=1, 2026-40 in three year groups.
+Engine PV at 8% real to 2026. Scripts: c5f/eskom/chain26.sh, chain26b.sh (chain26c.sh, the same run started beside chain26),
+shares.js; outputs c5f/eskom/harness/out. Run 21 Oct 2026 15:01 UTC to 22 Oct 01:13 UTC; two container restarts (about 18:25
+and 19:55 UTC) stopped the chain, resumed each time from the last finished year group. The IRP-demand re-optimisation first
+failed at once because this copy's pathway_perfail.js lacked m224's DEMAND=index patch; the patch was ported unchanged and
+the run repeated (the two scripts now differ only by the FIXED_SET hooks).
+
+| Run | Change | Engine PV vs null_c5f, R bn | CO2 2026-40 vs null, Mt |
+|---|---|---|---|
+| s_eskom26_c5f | all five changes, re-optimised; adequate, no year over target | +19.4 | +3.7 |
+| e26_all | all five on c5f's own build (engine check only) | +17.9 | +13.6 |
+| e26_coal | coal fuel 553 (c5f 546 with the levy) | +7.2 | 0.0 |
+| e26_imports | imports 897 (c5f 550, no recorded source) | +30.0 | 0.0 |
+| e26_nuclear | nuclear fuel 109 (c5f 160) | -5.1 | 0.0 |
+| e26_hydro | hydroCF 0.3625 (c5f 0.55) | +6.3 | +13.0 |
+| e26_adoff | Avon and Dedisa on merit (c5f must-run, 899 GWh a year) | -20.5 | +0.7 |
+| null_c5f_ad268 | Avon and Dedisa's must-run scaled to 268 GWh a year (AD_SCALE) | -14.4 | +0.5 |
+
+null_c5f: engine PV R2,255.1bn, CO2 1,605.0 Mt, objective R1,453.1bn; s_eskom26_c5f objective R1,447.5bn. The five single
+changes sum to +R17.9bn and +13.7 Mt, so they barely interact on a fixed build; re-optimising takes out most of hydro's CO2.
+s_eskom26's build against c5f's, cumulative MW: wind +214 (2030), +205 (2035), +120 (2040); CCGT +32 to +83; open cycle +24;
+lithium -121 to +21; solar -54 to +191; coal retirement unchanged.
+
+Avon and Dedisa's modelled output, GWh (the measurement copy's ippPeakerGWh counter: the independent peakers, must-run and on
+merit), against Eskom's 268 GWh (FY2026, p.20) and the 3% budget for FY2027 (about 264 GWh):
+
+| Year | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2035 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| c5f, must-run (e26_coal) | 896 | 887 | 874 | 801 | 742 | 381 | 147 | 107 | 83 | 97 |
+| on merit, c5f's build (e26_adoff) | 4 | 7 | 12 | 29 | 86 | 138 | 147 | 107 | 83 | 97 |
+| on merit, s_eskom26_c5f | 4 | 7 | 11 | 28 | 78 | 131 | 139 | 102 | 83 | 96 |
+
+On merit, 2026-27 falls far below the 134-536 GWh band, so the must-run at 268 GWh is reported too (null_c5f_ad268 above), a
+single-year choice (SOURCES). Eskom's own series, hybrids out: FY2024 1,509, FY2025 662, FY2026 268 GWh (p.20).
+
+The IRP-against-c5f gap (IRP 2025's plan, engine check; c5f re-optimised at each demand path):
+
+| Demand path | Basis | IRP vs c5f, engine PV | IRP vs c5f, CO2 2026-40 |
+|---|---|---|---|
+| c5f's | c5f's costs (m130) | +R309.0bn | -148.8 Mt |
+| c5f's | FY2026 (e26_irp against s_eskom26_c5f) | +R306.5bn | -140.4 Mt |
+| IRP's | c5f's costs (m130_irp2025_irpdem against m130_c5f_irpdem) | +R243.4bn | +20.2 Mt |
+| IRP's | FY2026 (e26_irp_irpdem against s_eskom26_c5f_irpdem) | +R239.0bn | +37.6 Mt |
+
+The FY2026 basis narrows the cost gap by R2.5bn at c5f's demand and R4.4bn at the IRP's; the CO2 gap moves by +8.4 and +17.4 Mt.
+s_eskom26_c5f_irpdem: adequate, no year over target; objective R1,639.3bn (c5f_irpdem R1,643.5bn); against c5f_irpdem, wind
++499 (2030) and +612 (2035) MW, CCGT +64 to +165.
+
+s_eskom26_noimp (message 302 (a)): IMP_END=2030 on s_eskom26's settings, against s_eskom26_c5f. Adequate as solved except 2031
+(2.42 against 2.23 GWh); top-up 250 MW of diesel open cycle in 2031 (1.88 after), +R3.3bn (capex 2.8, fixed O&M 0.6, fuel -0.1).
+
+| | s_eskom26_c5f | s_eskom26_noimp | Change |
+|---|---|---|---|
+| Engine PV 2026-40 | R2,274.5bn | R2,283.1bn as solved; R2,286.4bn topped up | +R8.6bn; +R11.9bn |
+| CO2 2026-40 | 1,608.7 Mt | 1,598.0 Mt | -10.7 Mt |
+| Objective | R1,447.5bn | R1,502.8bn | +R55.3bn |
+
+What replaces the imports, cumulative MW against s_eskom26: wind +2,286 from 2028 (three years before the imports end), +1,473
+by 2040; solar +446 to +996 from 2031; lithium +1,074 in 2031, about +170 later; CCGT +580 to +655 from 2033; open cycle +129
+from 2030. Coal falls about 8 TWh a year in 2028-30 and runs 0.5-3 TWh a year higher from 2033; gas 0.2-1.4 TWh higher. On c5f
+at R550 the same change was +R28.1bn (top-up included) and +12.2 Mt (s_noimp, 'c5f run' above); at Eskom's R897 the imports'
+payments saved offset most of the replacement build. The objective moves +R55.3bn on both bases because the build LP holds
+imports as a fixed infeed with no price (bldBuildLP's balance row: IMP(y)*AV_IMP, no cost term), so the import price reaches
+the engine's cost but no build decision; engine PV is the comparison that counts the payments.
+
 ### Two gas sensitivities on c5f, provisional and not for quoting: gas capex +25% costs R3.7bn in engine PV and builds 1.0 GW less gas; no new gas before 2032 moves 299 MW of CCGT from 2030 to 2033 and costs nothing measurable (user, 21 Oct 2026, message 272)
 
 Settings: c5f's (scratchpad c5f/env_c5f.sh), the frozen c5f copy, MAXP=3, TL=7200, each with its engine check (pathcheck.js, TF=0.5
