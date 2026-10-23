@@ -16538,8 +16538,8 @@ demand scaled by 0.951 (194.6/204.6), with no export gap folded in; the scaling 
 
 Suite on build 2026-10-22e (c6 PR A, stored panels regenerated, fingerprint 0299ebca538a43, head ebbc3a7), ESK19679.csv present, 22 Oct
 2026 21:26 to 23 Oct 00:05 UTC, with one pathway test run (test, not for quoting) beside it for the whole run and a container
-restart at about 22:12 UTC, after which the run resumed from the script that was cut: node checks 961/974 (validate_response
-86/87 before the baseline rewrite below, 87/87 after) plus audit 88/88; eng5 5/6. Failures beyond the four known ones and eng5
+restart at about 22:12 UTC, after which the run resumed from the script that was cut: node checks 966/978 (978 with the new
+coal CO2 benchmark check; validate_response 86/87 before the baseline rewrite below, so 967/978 after) plus audit 88/88; eng5 5/6. Failures beyond the four known ones and eng5
 check 6, each traced by reverting one input at a time on scratch copies (scratchpad bisect/):
 - validate_benchmarks, 2 (TODO 14iw): hydro 1.91 TWh against Ember's 2.90 and CO2 184.6 Mt against Ember's 160.3, conflicts
   between references (above).
