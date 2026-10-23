@@ -16666,3 +16666,16 @@ corrected and rerun alone: 81/82, so 966/978. Failures, each with its cause:
   a CCS run' compared FIXED.emisCoal and FIXED.costCoal with literal copies (1.04, 546) that went stale when this PR computed both
   from Eskom's FY2026 figures (1.080, 553); the model did not change them. Corrected to compare with the constants as they stood
   before the runs (the same property, no copy): passes. Render check 10/10 on 22e stands (index.html unchanged since).
+
+Suite on PR B (build 2026-10-23a, head dcbfe91 with main after #104 and PR A merged in; stored panels regenerated, identical,
+fingerprint 1ddf03e51946eb), ESK19679.csv present, 23 Oct 2026 11:28 to 13:09 UTC, nothing running beside it: node checks 963/979
+plus audit 88/88; eng5 5/6. validate_consistency then rerun alone after PR A's correction to the CCS constants check was merged
+in (head 5fd32cd): 81/82, so 964/979 (979 with validate_lp's new imports-price check). Failures, each with its cause:
+- The four known (iron-air July; high-season off-peak; peakerSeasonRatio; EDMSA Scenario A CO2 2035) and eng5 check 6.
+- validate_benchmarks hydro and CO2 against their references (known with cause, TODO 14iw); validate_invariants, 1 (TODO 14iy).
+- validate_pathway_presets, 8, expected until the presets are rebuilt on c6: PR A's four (costs 0.8-1.0% above c5f's engine
+  checks; Least-cost 2035's unserved against its check); three 'the run recorded no setting the preset cannot carry' (IRP's 2030
+  targets, Least-cost path 2035, IRP path 2035: the runs kept imports to 2040 and the page now ends them after 2030); and
+  Least-cost path 2035's unserved against the reliability target, 4.24 GWh against 2.42, from the 9.34 TWh of imports gone in 2035
+  (above). IRP path 2035's cost is now 0.20% below its check (was 0.8-1.0% above on PR A).
+- The build stamp passes (23a). validate_lp 57/57, response 87/87, stored panels 86/86, links 48/48, worker 38/38.
