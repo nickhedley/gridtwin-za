@@ -80,7 +80,7 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
       .map(([k, v]) => `${k} page ${JSON.stringify(st(k))}, check ${JSON.stringify(v)}`);
     check(`${NAME}: the page state is the engine check's ${Y} state`, off.length === 0, off.join('; '));
     check(`${NAME}: the run recorded no setting the preset cannot carry`,
-          !P.importsEndYear && !P.gasFinPremium && !P.comply && P.gas.fuelRFlat == null);
+          (P.importsEndYear ?? 0) === +w.eval('FIXED.importsEndYear') && !P.gasFinPremium && !P.comply && P.gas.fuelRFlat == null);
     // The page's global cost settings are the run's: from 19b the defaults equal c5f's (message 227 (1)).
     const decl = +w.eval('BLD_COST.batt.decl'), term = +w.eval('bldGasTerminalRkW()'), disc = +w.eval('BLD_DISC');
     check(`${NAME}: the page's lithium decline is the run's`, same(decl, +P.battDecl), `page ${decl}, run ${P.battDecl}`);
