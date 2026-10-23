@@ -1,11 +1,11 @@
 {
  "base": {
-  "coalTWh": 147.214,
-  "co2": 157.313,
-  "avgCost": 1099.05,
-  "replAvg": 1600.98,
-  "avgPrice": 677.27,
-  "rePct": 21.29,
+  "coalTWh": 148.829,
+  "co2": 164.514,
+  "avgCost": 1104.95,
+  "replAvg": 1598.01,
+  "avgPrice": 688.34,
+  "rePct": 20.8,
   "curtTWh": 0,
   "loleHrs": 0
  },
@@ -104,7 +104,7 @@
    "coalTWh": true,
    "co2": true,
    "avgCost": true,
-   "replAvg": false,
+   "replAvg": true,
    "avgPrice": true,
    "rePct": false,
    "curtTWh": false,
@@ -184,7 +184,7 @@
    "coalTWh": false,
    "co2": false,
    "avgCost": true,
-   "replAvg": false,
+   "replAvg": true,
    "avgPrice": true,
    "rePct": false,
    "curtTWh": false,
@@ -262,7 +262,7 @@
   },
   "newCcgtMW": {
    "coalTWh": false,
-   "co2": false,
+   "co2": true,
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
@@ -461,7 +461,7 @@
    "loleHrs": false
   },
   "newIronAirMW": {
-   "coalTWh": false,
+   "coalTWh": true,
    "co2": false,
    "avgCost": true,
    "replAvg": true,
@@ -601,7 +601,7 @@
    "loleHrs": false
   },
   "reserveEnabled": {
-   "coalTWh": false,
+   "coalTWh": true,
    "co2": true,
    "avgCost": true,
    "replAvg": true,
