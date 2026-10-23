@@ -5276,7 +5276,14 @@ const SYNC_MIN_MW = 6000;
 //   SYNCHRONOUS CONDENSERS. A retired coal unit with the boiler removed, spinning on the
 //   grid. Eskom has studied exactly this for decommissioned Komati units, and it is the
 //   standard retirement path where system strength binds.
-const SYNC_GFM_SHARE = 0.30;   // share of battery power that is grid-forming
+const SYNC_GFM_SHARE = 0.30;
+// COAL START WEAR (message 357 (e)(3); SOURCES 'Coal flexibility benchmarks'). NREL and Intertek APTECH, Power Plant Cycling Costs
+// (2012), table 1-1, p.12: lower-bound median start costs for large subcritical coal (300-900 MW), 2011 US dollars per MW, fuel
+// excluded. To January 2026 rands: US CPI-U 325.252 (January 2026, BLS) over 224.939 (2011 average), at R16.50/$ (the model's
+// pinned rate, the 180-day average to 26 Aug 2026). Hot R1,408, warm R1,551, cold R2,505 per MW.
+const USD_RATE_R = 16.50;
+const US_CPI_2011_TO_JAN26 = 325.252 / 224.939;
+const COAL_START_WEAR_RMW = [59, 65, 105].map(d => d * US_CPI_2011_TO_JAN26 * USD_RATE_R);   // [hot, warm, cold]   // share of battery power that is grid-forming
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
 // IMPORTS_CF is defined in nodal_engine.js, which loads at line 1124 - BEFORE this
 // constant block. So FIXED can read it, and does. That direction is deliberate: the
@@ -5899,6 +5906,29 @@ const FIXED = {
   // Chosen because 12 h is where the benefit saturates and there is no measured cost
   // to it anywhere else - not because 4 h was wrong.
   coalLookaheadH:12,
+  // PR C GROUNDWORK (user, 23 Oct 2026, message 357 (e); TODO 14iz). Each setting below defaults to today's behaviour, so the
+  // c6 decision only sets values; nothing here moves a result until one is changed.
+  // (1) Commitment that weighs start costs: 0, today's rule (cheapest first to each block's peak plus reserve; start costs are
+  //     charged but never weighed). 1: before a running unit is switched off, the pre-pass looks up to coalCommitLookaheadH
+  //     hours ahead for the block that needs it again and keeps it on, at its minimum, when its start cost exceeds the cost of
+  //     that minimum output over the gap (minimum MW x hours x its marginal cost).
+  coalCommitWeighStarts:0, coalCommitLookaheadH:24,
+  // (2) Coal minimum stable levels by period. coalMslPracticeFloor (null: none) raises every unit's minimum to at least this
+  //     share of capacity in scenario years before coalMslDesignFromYear: the 2026 practice floor, units not reaching their
+  //     design minimum when asked. coalMslDesign (null: UC_FLEET's own levels) sets them from that year: one share for every
+  //     unit, or [share for the groups at 0.65, share for the groups at 0.50], fleet-level values only (message 348 (a)).
+  coalMslPracticeFloor:null, coalMslDesign:null, coalMslDesignFromYear:2030,
+  // (3) Start-cost basis. 'ucfleet' (today): UC_FLEET's per-unit start-up costs (PyPSA-RSA; price base not stated). 'built':
+  //     per MW of unit capacity and start, by hours offline (hot up to coalStartHotH, warm up to coalStartWarmH, cold beyond;
+  //     both thresholds unsourced): fuel oil + coal burned in start-up + wear, each [hot, warm, cold] in January 2026 rands per
+  //     MW. Oil and coal have no default (set with the decision; 'built' stops with an error until they are). Wear defaults to
+  //     NREL and Intertek APTECH's lower-bound medians (COAL_START_WEAR_RMW).
+  coalStartCostBasis:'ucfleet', coalStartHotH:12, coalStartWarmH:48, coalStartOilRMW:null, coalStartCoalRMW:null, coalStartWearRMW:null,
+  // (4) Synchronous floor options. syncImportsCount 1 (today): imports count toward the floor at their utilisation; 0: they do
+  //     not (Cahora Bassa arrives over HVDC). syncNucHydroBasis 'installed' (today): nuclear and hydro at installed MW (existing
+  //     nuclear only); 'dispatched': at the hour's output (nuclear including new nuclear, at nuclearCF; hydro at hydroCF).
+  //     The grid-forming share is syncGfmShare (SYNC_GFM_SHARE, 0.30, unsourced).
+  syncImportsCount:1, syncNucHydroBasis:'installed',
   // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
   // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
   reserveEnabled:1, reserveOperatingMW:2200,
@@ -6871,7 +6901,39 @@ function ucUnitsStanding(coalInstalled) {
 //          ucMinStable[hour] = MW  (fleet minimum stable load per hour)
 //          ucAvail[hour] = MW      (committed capacity per hour)
 //          ucStartCost[hour] = R   (start-up cost charged this hour)
-function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
+// The commitment pre-pass's options from a scenario (PR C groundwork, message 357 (e)). At FIXED's defaults it returns {} and the
+// pre-pass is exactly as before. A key that is missing from FIXED stops here rather than reading as off (rule 4).
+function coalUcOpts(p){
+  for (const k of ['coalCommitWeighStarts','coalCommitLookaheadH','coalMslPracticeFloor','coalMslDesign','coalMslDesignFromYear',
+                   'coalStartCostBasis','coalStartHotH','coalStartWarmH','coalStartOilRMW','coalStartCoalRMW','coalStartWearRMW'])
+    if (!(k in FIXED)) throw new Error('coalUcOpts: FIXED.' + k + ' missing');
+  const g = k => p[k] !== undefined ? p[k] : FIXED[k];
+  const o = {};
+  if (g('coalCommitWeighStarts')) { o.weigh = true; o.lookH = g('coalCommitLookaheadH'); }
+  if (g('coalMslPracticeFloor') != null || g('coalMslDesign') != null){
+    o.year = p.scenarioYear ?? 2026; o.mslFloor = g('coalMslPracticeFloor'); o.mslDesign = g('coalMslDesign'); o.mslDesignFrom = g('coalMslDesignFromYear'); }
+  const basis = g('coalStartCostBasis');
+  if (basis === 'built'){
+    const oil = g('coalStartOilRMW'), coal = g('coalStartCoalRMW'), wear = g('coalStartWearRMW') ?? COAL_START_WEAR_RMW;
+    for (const [n, a] of [['coalStartOilRMW', oil], ['coalStartCoalRMW', coal], ['coalStartWearRMW', wear]])
+      if (!Array.isArray(a) || a.length !== 3 || a.some(v => !(v >= 0))) throw new Error('coalStartCostBasis built: ' + n + ' must be [hot, warm, cold] R/MW');
+    const hot = g('coalStartHotH'), warm = g('coalStartWarmH');
+    o.startOf = (capMW, hoursOff) => { const t = hoursOff <= hot ? 0 : hoursOff <= warm ? 1 : 2; return capMW * (oil[t] + coal[t] + wear[t]); };
+  } else if (basis !== 'ucfleet') throw new Error('coalStartCostBasis: ' + basis);
+  return o;
+}
+function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts) {
+  // ucOpts (PR C groundwork, message 357 (e)): absent or empty reproduces the pre-pass exactly. year, mslFloor, mslDesign,
+  // mslDesignFrom: minimum stable levels by period; weigh, lookH: start-weighing commitment; startOf(cap, hoursOff): the start
+  // cost of a unit of that capacity after that many hours offline, or null for UC_FLEET's own.
+  const UO = ucOpts || {};
+  const _mslOf = (u) => {
+    const y = UO.year ?? 2026;
+    if (UO.mslDesign != null && y >= (UO.mslDesignFrom ?? 2030))
+      return Array.isArray(UO.mslDesign) ? (u.msl >= 0.6 ? UO.mslDesign[0] : UO.mslDesign[1]) : UO.mslDesign;
+    if (UO.mslFloor != null && y < (UO.mslDesignFrom ?? 2030)) return Math.max(u.msl, UO.mslFloor);
+    return u.msl;
+  };
   // resOpts carries the reserve settings through from simulate(); absent means
   // reserve off, which reproduces the pre-reserve behaviour exactly.
   const RES_ON = !!(resOpts && resOpts.on);
@@ -6914,8 +6976,18 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
     hoursOff: 0,
     isOn: true,
     cap: u.cap * availFactor,
-    mslMW: u.cap * availFactor * u.msl,
+    mslMW: u.cap * availFactor * _mslOf(u),
   }));
+  // Start cost of unit i after hoursOff hours offline: UC_FLEET's own, or the built basis (ucOpts.startOf).
+  const _startCost = (i, hoursOff) => UO.startOf ? UO.startOf(unitState[i].cap, hoursOff) : UC_UNITS[i].startup_cost * availFactor;
+  // Start-weighing commitment: each block's commitment target, computed once, and each unit's merit position.
+  const _WEIGH = !!UO.weigh;
+  const _tgt = [];
+  if (_WEIGH){
+    const BH = 4;   // BLOCK_HOURS, below; checked equal there
+    for (let b = 0; b < DAYS * 24 / BH; b++){ let pk = -Infinity; for (let h = 0; h < BH; h++) pk = Math.max(pk, netLoadPre[Math.min(HOURS-1, b*BH+h)]);
+      _tgt.push(RES_ON ? pk + reserveReqAt(b*BH, pk) : pk * 1.15); }
+  }
 
   const ucAvail     = new Float64Array(HOURS);
   const ucMinStable = new Float64Array(HOURS);
@@ -6963,6 +7035,7 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
   // so 4h is closer on cost and closer on cycling. Mean gap falls 4.0% -> 2.9%.
   const BLOCK_HOURS = 4;
   const BLOCKS_PER_DAY = 24 / BLOCK_HOURS;
+  if (_WEIGH && _tgt.length !== DAYS * BLOCKS_PER_DAY) throw new Error('buildUCSchedule: start-weighing block count');
 
   for (let day = 0; day < DAYS; day++) {
    for (let blk = 0; blk < BLOCKS_PER_DAY; blk++) {
@@ -6986,6 +7059,7 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
       : peakLoad * 1.15;
     let decidedOn = new Array(UC_UNITS.length).fill(false);
     let totalCommitted = 0;
+    let _capBefore = 0;   // available capacity of the units before this one in merit order (start weighing)
 
     for (const {i} of merit) {
       const u = UC_UNITS[i];
@@ -7004,9 +7078,19 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
       if (totalCommitted < targetCapacity) {
         decidedOn[i] = true;
         totalCommitted += st.cap;
+      } else if (_WEIGH && st.isOn) {
+        // Start weighing: a running unit the rule would switch off stays on, at its minimum, when the next block within the
+        // look-ahead that needs it (its target above the capacity ahead of it in merit order) is close enough that restarting
+        // costs more than running at minimum until then.
+        const b0 = day * BLOCKS_PER_DAY + blk, nB = Math.ceil((UO.lookH ?? 24) / BLOCK_HOURS);
+        let gap = 0;
+        for (let k = 1; k <= nB && b0 + k < _tgt.length; k++) if (_tgt[b0 + k] > _capBefore) { gap = k * BLOCK_HOURS; break; }
+        const keep = gap > 0 && _startCost(i, gap) > st.mslMW * gap * u.marginal_cost;
+        decidedOn[i] = keep; if (keep) totalCommitted += st.cap;
       } else {
         decidedOn[i] = false;
       }
+      _capBefore += st.cap;
     }
 
     // Apply decisions and track state transitions
@@ -7018,8 +7102,8 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
 
       let startCostH = 0;
       if (!wasOn && nowOn) {
-        // Unit starting up — charge start-up cost in hour h0
-        startCostH = u.startup_cost * availFactor;
+        // Unit starting up — charge start-up cost in hour h0 (UC_FLEET's, or the built basis by hours offline)
+        startCostH = _startCost(i, st.hoursOff);
         st.hoursOn = 0; st.hoursOff = 0;
       } else if (wasOn && !nowOn) {
         st.hoursOn = 0; st.hoursOff = 0;
@@ -7914,7 +7998,7 @@ function simulate(u, prof, outPath, _soc0){
       }
     }
   }
-  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(_ucNet, Math.max(0, coalInstalled), eafFraction, RESERVE);
+  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(_ucNet, Math.max(0, coalInstalled), eafFraction, RESERVE, coalUcOpts(p));
   // Lumpy unit availability. Skipped when an explicit Monte Carlo path is
   // supplied (that path is already the outage draw for the run) and when the
   // toggle is off, which restores the smooth-derate behaviour exactly.
@@ -8390,7 +8474,10 @@ function simulate(u, prof, outPath, _soc0){
                   + (p.syncCondenserMW ?? SYNC_CONDENSER_MW);
     // Imports at the scenario's importsCF, as dispatch has them (user, 19 Oct 2026, message 237 (2)): until build 2026-10-19e this
     // read the global IMPORTS_CF, so a slider or preset change to importsCF never reached the floor (RESULTS, 19 Oct 2026).
-    const syncPlantNonCoal=p.nuclearMW+p.hydroMW+p.importsMW*(p.importsCF ?? FIXED.importsCF)+syncGfm;
+    // Options (message 357 (e)(4)): syncNucHydroBasis 'dispatched' counts nuclear and hydro at the hour's output; syncImportsCount 0
+    // leaves imports out. Defaults reproduce the line before them.
+    const syncPlantNonCoal=((p.syncNucHydroBasis ?? FIXED.syncNucHydroBasis) === 'dispatched' ? nuc + hyd : p.nuclearMW + p.hydroMW)
+      + ((p.syncImportsCount ?? FIXED.syncImportsCount) ? p.importsMW*(p.importsCF ?? FIXED.importsCF) : 0) + syncGfm;
     const syncDeficit=Math.max(0,(p.syncFloorMW||0)-syncPlantNonCoal);
     // The floor can still go unmet when there is no coal left to lift and not enough
     // grid-forming capacity. Record it rather than let it pass silently.
@@ -20433,7 +20520,7 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 // computes on the main thread as before. Heat stress and the external comparison still compute on the page when shown.
 // The names are simulate()'s closure, with the panel draws', found by static analysis (eslint-scope) on 19 Oct 2026; a name
 // missing here fails in the worker, the page falls back, and validate_worker.js fails.
-const ENGINE_FNS = () => ({ simulate, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
+const ENGINE_FNS = () => ({ simulate, coalUcOpts, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
   astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate,
   otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth,
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
@@ -20448,7 +20535,7 @@ const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, S
   WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
-  BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW,
+  BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW, USD_RATE_R, US_CPI_2011_TO_JAN26, COAL_START_WEAR_RMW,
   bldWeatherYears: null, bldWxWeights: null, bldSolarTrk: null, bldWindMod: null, _wxLoading: null, _twelveYearCache: {} });
 // The scripts the engine shares with the nodal model (IMPORTS_CF and others), loaded in the worker as the page loads them.
 const ENGINE_SCRIPTS = ['nodal/nodal_engine.js', 'nodal/capacity_siting.js'];
