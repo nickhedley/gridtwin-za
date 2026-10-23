@@ -16515,10 +16515,12 @@ on build 22e in jsdom, Today 2026 on the page's own profiles (scratchpad m335/fi
 148.8 TWh, CO2 164.5 Mt, coal's rate 1.1039 t/MWh sent out, 0.41% under Eskom's 1.1084 (the new benchmark check holds it within
 0.5%); Avon and Dedisa 267.7 GWh on the rounded profile.
 
-Two benchmark checks fail on 22e that passed before, both conflicts between references, not model errors (TODO 14iw): the
-2025 replay's hydro 1.91 TWh against Ember's 2.90 (Eskom's own 2025 Gariep and Vanderkloof output, 1.79 TWh, is lower still),
-and CO2 184.6 Mt against Ember's 160.3 (Eskom's own CO2 is 204.6 Mt for FY2025 and 184.0 for FY2026). The full suite follows
-on PR A.
+Two benchmark checks fail on 22e that passed before. Both stay failing, listed as known with their cause (message 347 (b);
+TODO 14iw): the 2025 replay's hydro 1.91 TWh against 2.90, a reference that is not Ember's and has no recorded source (it equals
+the old model's own output at hydroCF 0.55; measured 2025 hydro is 1.79 TWh in ESK19679 and 1.80 in Ember's monthly file); and
+CO2 184.6 Mt against Ember's 160.3, where Ember applies a fixed coal factor of 0.846 t CO2e per MWh gross (0.900 net; UNECE 2020
+plant factors, Ember methodology May 2024 pp.15-17) and Eskom measured 1.108 t CO2 per MWh sent out in FY2026; the model is 0.3%
+above Eskom's own 184.0 Mt (FY2025 204.6). The full suite follows on PR A.
 
 Rooftop output against the 12.9 TWh estimate (message 325 (d); measured 22 Oct 2026, RESULTS 'Rooftop output against
 sbg.earth', build 22a): on the twelve-year solar mean the model's rooftop gives 13.7 TWh a year after its 0.78 derate (17.5
@@ -16541,11 +16543,13 @@ Suite on build 2026-10-22e (c6 PR A, stored panels regenerated, fingerprint 0299
 restart at about 22:12 UTC, after which the run resumed from the script that was cut: node checks 966/978 (978 with the new
 coal CO2 benchmark check; validate_response 86/87 before the baseline rewrite below, so 967/978 after) plus audit 88/88; eng5 5/6. Failures beyond the four known ones and eng5
 check 6, each traced by reverting one input at a time on scratch copies (scratchpad bisect/):
-- validate_benchmarks, 2 (TODO 14iw): hydro 1.91 TWh against Ember's 2.90 and CO2 184.6 Mt against Ember's 160.3, conflicts
-  between references (above).
+- validate_benchmarks, 2, known (TODO 14iw; message 347 (b)): hydro 1.91 TWh against 2.90, a reference with no recorded
+  source that equals the old model's own output (measured 2025: 1.79-1.80 TWh); CO2 184.6 Mt against Ember's 160.3, Ember's
+  fixed coal factor (0.900 t CO2e per MWh net) against Eskom's measured 1.108 t per MWh sent out. Both stay failing; no relaxing.
 - validate_pathway_presets, 4: IRP's 2030 targets, IRP path 2035 and Least-cost path 2035 system cost 0.8-1.0% above the engine
-  checks the presets were generated from (c5f-era inputs), and Least-cost path 2035's unserved 0.87 against 0.73 GWh. The presets'
-  references are c5f's; they pass again when the presets are regenerated on c6 (the presets build).
+  checks the presets were generated from (c5f-era inputs), and Least-cost path 2035's unserved 0.87 against 0.73 GWh. Expected: the
+  presets' references are c5f's. The presets are rebuilt on c6's results in the presets build (about Wed 28 Oct), not in this
+  PR (message 347 (c)).
 - validate_invariants, 1: '[Today 2026, 55% EAF] unserved energy never rises as the reserve requirement rises': 1.17 / 0.45 /
   0.53 GWh at 0 / 2,200 / 6,000 MW, three outage draws. Reverting hydroCF alone (to 0.55) gives 0.75 / 0.32 / 0.32 and passes;
   reverting Avon and Dedisa or the costs does not. The diesel tank is not the cause (unchanged with it off). At 6,000 MW the

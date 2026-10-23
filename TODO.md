@@ -509,11 +509,21 @@ SOURCES entry; coalRampBasePct unchanged until then.
 14iv. Code tidy, after the note (user, 22 Oct 2026, messages 337 (e) and 338 (a)): MIP_FLEET repeats UC_FLEET (one constant twice);
 the commitment comment says 8-hour blocks where BLOCK_HOURS is 4; the Fossil-free 2040 preset sets coalFlexPct 100 where the
 others use 1 (harmless, all coal retired).
-14iw. Hydro and CO2 benchmarks against Ember (found 22 Oct 2026 on build 2026-10-22e, c6 PR A): validate_benchmarks' 2025 replay
-reads hydro 1.91 TWh against Ember's 2.90 (-34%, band 25%) now hydroCF is the FY2023-26 mean (0.3625; Eskom's own 2025 Gariep and
-Vanderkloof output is 1.79 TWh, so Ember's hydro counts more than the model's 602 MW), and CO2 184.6 Mt against Ember's 160.3
-(+15%, band 12%) now emisCoal is on Eskom's FY2026 basis (Eskom's own CO2: FY2025 204.6, FY2026 184.0 Mt, p.35). Both are
-conflicts between references, not model errors; to settle (fix the reference or the band, with its cause), not by relaxing.
+14iw. Hydro and CO2 benchmark checks (found 22 Oct 2026 on build 2026-10-22e, c6 PR A; causes established 23 Oct, message 347 (b)).
+Both stay failing, listed as known with their cause; neither reference nor band changes without Nick's decision, and nothing is
+relaxed. (1) Hydro: the 2025 replay reads 1.91 TWh against 2.90 (-34%, band 25%). The 2.90 is not Ember's figure and has no
+recorded source: it equals the old model's own output (hydroCF 0.55 x 602 MW x 8,760 h = 2.90 TWh), set in the 5 Oct 2026 upload
+under the label 'Eskom hydro plus SAPP hydro imports attributed to domestic hydro'. Measured 2025 hydro is 1.79 TWh (ESK19679) and
+Ember's is 1.80 (monthly file) or 1.83 TWh (yearly file); Ember excludes pumped storage from hydro where it can, and counts imports
+separately (net imports). The model's 1.91 is the FY2023-26 mean, 6% above Ember's 2025. Imported hydro is checked separately (the
+imports check), so counting it in hydro too would count it twice. (2) CO2: the model reads 184.6 Mt against Ember's 160.3 (+15%,
+band 12%) and against Eskom's own FY2026 184.0 Mt (+0.3%). Ember's coal emissions are its generation times a fixed factor: 0.846 t
+CO2e per MWh gross in every year 2023-25 (0.900 per MWh net, before Ember's 6% gross adjustment), lifecycle and all gases, from
+UNECE's 2020 plant factors blended by coal grade, which Ember says do not capture older plants' efficiency losses (Ember Electricity
+Data Methodology, May 2024, pp.15-17). Eskom's measured rate is 1.108 t CO2 per MWh sent out (FY2026), 23% above Ember's net factor
+although Ember's includes upstream emissions. Ember's monthly and yearly files also differ (coal 185.5 against 197.5 TWh, CO2 160.3
+against 169.7 Mt). Options for Nick, not taken: hydro against the measured 1.79-1.83 TWh with its source; CO2 against Eskom's
+reported figure, with Ember kept as a report-only line.
 14ix. Queued builds (user, 22 Oct 2026): the presets build, about Wed 28 Oct, with stored panels regenerated (message 340): the GETs
 panel retitled 'Grid-enhancing technologies: more from existing lines', its intro line to match; an installed-capacity table
 beside the annual electricity mix (GW existing remaining, new build and total for the year shown, storage also in GWh; the
