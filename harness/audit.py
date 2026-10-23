@@ -40,7 +40,9 @@ CHECKS = [
     ("// BEGIN GENERATED 'IRP's 2030 targets' (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/pathway_irp2025.json",
                                                                    'IRP preset generated from the IRP engine check (Table 1, coal on Figure 3\'s dates)'),
     ('Deep decarbonisation 2035',                                     'deep decarbonisation preset'),
-    ('costCoal:546',                                               'coal cost R546/MWh'),
+    # costCoal moved to Eskom's FY2026 coal cost without the environmental levy on build 2026-10-22e (user, messages 306 (a) and 322; c6
+    # PR A): R91.5bn over 165,431 GWh, R553/MWh, computed from ESKOM_FY26. Was costCoal:546 (FY2025, levy included).
+    ('costCoal:Math.round(ESKOM_FY26.coalCostRbn * 1e9 / (ESKOM_FY26.coalSentOutGWh * 1e3))', 'coal cost R553/MWh, computed from Eskom FY2026 (p.56, p.7)'),
     # costCcgt moved to the central gas case on build 2026-10-19b (user, message 227 (1)); was costCcgt:2003, the FY2026 JKM reference.
     ('costCcgt:1298.42',                                           'CCGT dispatch R1,298.42/MWh, the central gas case (gas_price_cases.json)'),
     ('bldGasTerminalRkW:530.5',                                    'LNG terminal R530.5/kW-yr on new gas, the midpoint of R354-707 (message 227 (1))'),

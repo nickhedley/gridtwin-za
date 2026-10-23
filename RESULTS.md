@@ -6106,6 +6106,7 @@ caption; it was shortened to 4,239 (the solar years stated as measured 2014-2023
 and the lender line, which no longer mentions terrain and turbine or module choice), not the ceiling raised. Render check in
 Chromium on a fresh load, 12/12 (scratchpad overnight/a6/render.js, 19:45 UTC; its solar-years check follows the shortened
 caption).
+
 ### Network panels, audit PR 5: the full model's results marked not comparable with the presets, Permitted but not built counts renewable generation only (1,778 projects and 91 GW five years and older to 847 and 78 GW), and the provincial mix rebuilt from the engine (coal 160.7 to 147.2 TWh) (build 2026-10-21g; user, 20 Oct 2026, message 264, audit G6 fixes 1-7, decision D7)
 
 Base: main 2116c10 (build 2026-10-20h). Stored panels not regenerated (message 266). Measured 20 Oct 2026, about 19:00 UTC, in
@@ -16510,3 +16511,136 @@ reissued it must carry the VoRS shape with it.
 
 REQUIRES `asReserveOn`. At defaults the panel shows a flat line and says so,
 because South Africa prices no ancillary services today.
+
+### c6 PR A, inputs on build 2026-10-22e: Eskom FY2026 costs, coal CO2 1.108 t/MWh sent out, Avon and Dedisa at 268 GWh, rooftop R15,000/kW AC; the rooftop output check and the demand coverage recorded (user, 22 Oct 2026, messages 306 (a), 318-319, 322-328; report and inputs, no run)
+
+Inputs changed (SOURCES 'c6 inputs' and 'Eskom performance report FY2026'), each computed in the page from Eskom's printed figures
+(ESKOM_FY26), not typed: coal fuel R553/MWh (R91.5bn over 165,431 GWh, p.56 and p.7, levies excluded; was 546 with the levy);
+nuclear fuel R109/MWh (p.56; was 160, vomNuclear 45 kept); imports R897/MWh, full cost (p.56; was 550, no recorded source), also
+the replacement-cost figure (lcoeImports, was 550); hydroCF 0.3625, the FY2023-26 mean of Eskom's hourly data on 602 MW (was 0.55);
+emisCoal 1.080 (was 1.04): Eskom's 184.0 Mt (p.35) less its 811 GWh of open-cycle output at 0.78, over coal sent out, 1.108 t
+CO2/MWh, divided by the 2026 part-load multiplier 1.0262 (c5f's; c6's replaces it). Avon and Dedisa's must-run scaled to 268
+GWh a year (p.20; was 899, the hourly column's shape kept; derive_avon_dedisa.py --target-gwh 268). Rooftop capex R12,500/kW DC x
+1.2 = R15,000/kW AC (was R17,000). Whole-fleet EAF on the comparison panel: Week 42's 68.32% (was Week 32's 67.95%). Measured
+on build 22e in jsdom, Today 2026 on the page's own profiles (scratchpad m335/fixed_check.js, 22 Oct 2026 19:20 UTC): coal
+148.8 TWh, CO2 164.5 Mt, coal's rate 1.1039 t/MWh sent out, 0.41% under Eskom's 1.1084 (the new benchmark check holds it within
+0.5%); Avon and Dedisa 267.7 GWh on the rounded profile.
+
+Two benchmark checks fail on 22e that passed before. Both stay failing, listed as known with their cause (message 347 (b);
+TODO 14iw): the 2025 replay's hydro 1.91 TWh against 2.90, a reference that is not Ember's and has no recorded source (it equals
+the old model's own output at hydroCF 0.55; measured 2025 hydro is 1.79 TWh in ESK19679 and 1.80 in Ember's monthly file); and
+CO2 184.6 Mt against Ember's 160.3, where Ember applies a fixed coal factor of 0.846 t CO2e per MWh gross (0.900 net; UNECE 2020
+plant factors, Ember methodology May 2024 pp.15-17) and Eskom measured 1.108 t CO2 per MWh sent out in FY2026; the model is 0.3%
+above Eskom's own 184.0 Mt (FY2025 204.6). The full suite follows on PR A.
+
+Rooftop output against the 12.9 TWh estimate (message 325 (d); measured 22 Oct 2026, RESULTS 'Rooftop output against
+sbg.earth', build 22a): on the twelve-year solar mean the model's rooftop gives 13.7 TWh a year after its 0.78 derate (17.5
+before) against an estimate of about 12.9 TWh; on the 2025 profile 15.4. If NTCSA's 8,942 MW were DC, at a DC/AC ratio of 1.2
+the twelve-year output would be 11.4 TWh (10.5-12.5 at 1.1-1.3): a DC basis would close the 0.8 TWh gap and overshoot it by about
+1.5 TWh, and the derate already includes inverter and export limiting, so part of the DC/AC loss would be counted twice. The
+capacity is unchanged; rooftopMW is treated as AC and its cost converted to AC (message 324 (a)). Week 42's 9,430.1 MW for
+August-September 2026 confirms FIXED.rooftopMW (8,942.1 after wheeled solar).
+
+Demand coverage (messages 318, 319 and 322 (b); quoting Stats SA's P4141 and ESRG only): the model's customer demand, 203.5 TWh in
+2026, is Eskom's RSA contracted demand less exports, plus wheeled load, plus a rooftop add-back of 15.4 TWh; without rooftop,
+188.2 TWh, against P4141's 204.6 TWh of electricity available for distribution in 2025. The difference is about 10 TWh of supply
+Eskom's series does not see (municipal and private embedded generation, which the model's supply also leaves out) and about
+6 TWh of 2026's fall; recorded as consistent, with Kelvin the one known overlap (SOURCES). c5f's customer demand, TWh, 2030 /
+2035 / 2040: 232.3 / 266.1 / 305.1, of which without rooftop 208.7 / 232.2 / 260.9. The IRP pair in c6 takes ESRG's domestic grid
+demand scaled by 0.951 (194.6/204.6), with no export gap folded in; the scaling assumes the coverage share stays constant.
+
+Suite on build 2026-10-22e (c6 PR A, stored panels regenerated, fingerprint 0299ebca538a43, head ebbc3a7), ESK19679.csv present, 22 Oct
+2026 21:26 to 23 Oct 00:05 UTC, with one pathway test run (test, not for quoting) beside it for the whole run and a container
+restart at about 22:12 UTC, after which the run resumed from the script that was cut: node checks 966/978 (978 with the new
+coal CO2 benchmark check; validate_response 86/87 before the baseline rewrite below, so 967/978 after) plus audit 88/88; eng5 5/6. Failures beyond the four known ones and eng5
+check 6, each traced by reverting one input at a time on scratch copies (scratchpad bisect/):
+- validate_benchmarks, 2, known (TODO 14iw; message 347 (b)): hydro 1.91 TWh against 2.90, a reference with no recorded
+  source that equals the old model's own output (measured 2025: 1.79-1.80 TWh); CO2 184.6 Mt against Ember's 160.3, Ember's
+  fixed coal factor (0.900 t CO2e per MWh net) against Eskom's measured 1.108 t per MWh sent out. Both stay failing; no relaxing.
+- validate_pathway_presets, 4: IRP's 2030 targets, IRP path 2035 and Least-cost path 2035 system cost 0.8-1.0% above the engine
+  checks the presets were generated from (c5f-era inputs), and Least-cost path 2035's unserved 0.87 against 0.73 GWh. Expected: the
+  presets' references are c5f's. The presets are rebuilt on c6's results in the presets build (about Wed 28 Oct), not in this
+  PR (message 347 (c)).
+- validate_invariants, 1: '[Today 2026, 55% EAF] unserved energy never rises as the reserve requirement rises': 1.17 / 0.45 /
+  0.53 GWh at 0 / 2,200 / 6,000 MW, three outage draws. Reverting hydroCF alone (to 0.55) gives 0.75 / 0.32 / 0.32 and passes;
+  reverting Avon and Dedisa or the costs does not. The diesel tank is not the cause (unchanged with it off). At 6,000 MW the
+  engine holds reserve on coal headroom: coal output falls 6.3 TWh, diesel runs 7.0 TWh (3.6 of it restoring reserve) and pumped
+  storage 5.1 TWh against 3.6; with less hydro, storage is lower in one stressed hour of one draw, so the mean shed hours rise from
+  1.3 to 1.7. The check's premise (since message 96, customers cut only after reserve is used) holds within an hour, not across
+  hours: reserve restoration spends stored energy a later hour needed. To settle, by the engine or the check with its cause, not
+  by relaxing (TODO 14iy).
+- validate_response, 1: 'response matrix matches baseline', five cells inert to responsive (outageUnitLevel and coalFlexPct to the
+  replacement cost, newCcgtMW to CO2, newIronAirMW and reserveEnabled to coal). Reverting Avon and Dedisa's must-run alone (268 back
+  to 899 GWh) restores 87/87; reverting hydro or the costs does not. With less must-run open-cycle output, coal and the replacement
+  cost now respond to those controls. The change is this PR's, decided (messages 306 (a), 322), so the baseline was rewritten
+  (--write-baseline), 87/87 after.
+Render check in Chromium on a fresh load, 10/10 (scratchpad overnight/c6a/render.js, 23 Oct 00:20 UTC): build 22e, the computed
+inputs, the VPP note's new sentence, the coal EAF row on Week 42 (64.8% coal only), four presets with no undefined or NaN, no page
+errors.
+
+### Coal report for c6, measurements (user, 22-23 Oct 2026, messages 339, 343-350; report only, no model change): the 48-hour rule locks units out rather than limiting a rate; a coal floor near 0.77 reproduces 2026's winter midday curtailment; the ramp limit binds on the evening rise from 2035; the model starts each unit 115-290 times a year against Eskom's preference for minimum load and Australia's 7
+
+Settings (UTC 23 Oct 2026). Engine replays on PR A's page (build 2026-10-22e): presets 'Today 2026' and 'Least-cost path 2035',
+twelve weather years x K outage draws (seeds 71830529 + k x 104729 + year x 7919), harness scratch scripts replay.js with page hooks
+(scratchpad m335, m347, m348, m349). c5f's years on c5f's own page (build 2026-10-17g) and pathway (out/pathway_c5f.json),
+pathcheck_coal.js, TF=0.5 GRID=1 K=1. Local page changes only; nothing in index.html changed.
+- The build optimiser's coal rules in the engine (Least-cost path 2035, every group's minimum at least 0.65 and minimum up and down
+  at least 48 h, K=3, 36 runs): 1,069 GWh unserved a run against 0.17 at base. 99.7% of it falls in hours when available coal is
+  switched off (11.6 GW on average in those hours), and in 93% of those hours more coal had been committed within the previous
+  48 h. The engine commits each 4-hour block by rule (cheapest first to the block's peak plus reserve, no look-ahead) and start
+  costs are only charged, so a unit switched off at midday is then locked out through the next peaks. The build optimiser's 48 h
+  is a different rule: committed coal may move by at most available coal / 48 per hour, with foresight, which still allows several
+  GW of daily swing. (Message 347 (e)(3); TODO 14iz (6).)
+- Practice floor (Today 2026, every group's minimum raised to the level, K=10, 120 runs): mean winter (May-Aug) midday curtailment
+  peak 0 MW at base; 1,438 at 0.70; 2,507 at 0.75; 3,173 at 0.78; 5,014 at 0.80 (runs at or above 3 GW: 0, 20, 80, 120 of 120). A floor
+  of about 0.77 reproduces NTCSA's ~3 GW. Starts and two-shifting do not move (115 starts per unit a year). (Message 348 (b).)
+- Design minimums against UC_FLEET: Eskom's design minimum net loads (Eskom, Generation Operational Flexibility, Nov 2023, in its
+  October 2025 minimum emission standards exemption notice; used locally, analysis ours, no per-unit figure recorded) average 0.540
+  of UC_FLEET's capacity, capacity-weighted over the 39,156 MW they cover (Arnot, Kelvin and Komati not covered), against
+  UC_FLEET's 0.558: UC_FLEET is 1.8 points above design. The groups at 0.65 have a design average of 0.568; the 16 groups at our
+  0.50 fill-in have 0.523, so the fill-in sits 2.3 points below design. (Message 348 (a).)
+- Ramp limit (coalRampBasePct, 24% of available coal per hour): binds upward 0.09 hours a run in Today 2026 (limit 6,192 MW/h);
+  in c5f 138, 457 and 532 hours a run in 2030, 2035 and 2040 (limit 5,060, 4,043 and 2,791 MW/h), 97%, 83% and 77% of them at
+  16:00-20:00, that is 7%, 21% and 22% of evening hours; diesel runs in 9.5%, 0.2% and 0.0% of the binding hours. The engine's
+  coal output also moves by more than the limit in 106, 243 and 292 hours a run upward and 114, 112 and 154 downward, not from
+  falls in available coal: to trace (TODO 14iz). For scale: Australia's coal fleet in October 2025 rose by at most 22% of its
+  capacity in an hour (p99.9), Eskom's fleet by 9.2% of available (2026, p99.9); unit design rates of 10-15 MW/min (Eskom, as above)
+  are 123-184% of a unit's capacity an hour, capacity-weighted. 24% is a fleet-level figure of the order of observed practice, not
+  a unit limit. (Message 349 (a).)
+- Starts per unit a year (MW started over mean available MW): model 115 in Today 2026; c5f 202, 255 and 288 in 2030, 2035 and
+  2040; Least-cost path 2035 256. Eskom prefers running at minimum to cycling and costs reserve shutdowns at about one weekend a
+  month (Eskom, as above), of the order of 12 starts a unit a year. Australia's coal units, October 2025: 21 starts on 37 units, about
+  7 a unit a year annualised. (Message 348 (e).)
+- Australia's coal fleet, October 2025 (AEMO, MMSDM DISPATCH_UNIT_SCADA, GENUNITS, DUALLOC, NEMweb; used under AEMO's general
+  copyright permission with attribution; files kept local; analysis ours): 37 black and brown coal units, 17,379 MW registered;
+  hourly output when online, 5th percentile, 41% of registered capacity capacity-weighted (black coal 37%, brown 54%); 8 off
+  spells of 1-24 hours on 5 units in the month; the fleet's daily minimum over maximum, median 0.51. (Message 345.)
+- Start costs, price bases: UC_FLEET's start-up costs (R77-266 per MW a start, Kelvin R2,814; R152.58 capacity-weighted) come from
+  PyPSA-RSA's fixed_technologies.xlsx (ME IRP 2024, commit 89872c1), which states no price base; R224.52/MW is R152.58 / 0.68, the
+  same unstated base. NREL and Intertek APTECH's lower-bound median wear costs (2012, table 1-1, 2011 dollars, excluding fuel: hot
+  59, warm 65, cold 105 $/MW) are R1,408, R1,551 and R2,505 per MW a start in January 2026 rands (US CPI-U 325.252 January 2026 over
+  224.939 for 2011, x1.4460; R16.50/$, the model's pinned rate). Eskom's start-up fuel oil (as above) alone exceeds UC_FLEET's whole
+  start cost; it is converted to January 2026 rands on the model's diesel basis (Brent in rands over April 2025-February 2026,
+  R1,169/bbl, against 2023, $83 x R18.45 = R1,532/bbl, x0.763), with the 12 Oct 2026 spot (R1,703/bbl) as a sensitivity only.
+  Coal burned during start-up is not yet sourced. (Messages 341 (c), 348 (c), (g).)
+- Two-shift statistic: a day counts when committed coal at 11:00-14:00 is at least 1,000 MW below both the 06:00-09:00 and the
+  17:00-20:00 commitment, fleet-wide. With a 24 h minimum down time no unit can two-shift (the engine's guard keeps it off 24 h),
+  so the 38% of days still counted in Today 2026 (68% in Least-cost path 2035) are different units leaving at midday and returning
+  for the evening: the statistic counts fleet dips, not units (TODO 14iz). (Message 347 (e)(1).)
+- Saving progress in long solves: on a 61 MB build LP, a solve stopped at a time limit with presolve on returns an invalid basis
+  (resumed: 853 s and no result, against 379 s uninterrupted); with presolve off it returns a valid one, and the resumed solve
+  reaches the same optimum (relative 2e-15) after 61,000 more iterations, 510 s in all. Slicing is used only with presolve off,
+  its overhead to be measured at full size. (Message 347 (f).)
+
+Suite on PR A after main's merge (#104; head 83754b8, build 2026-10-22e, stored panels regenerated and identical, fingerprint
+0299ebca538a43), ESK19679.csv present, 23 Oct 2026 08:50 to 11:28 UTC with a container restart at about 11:22 UTC (resumed at
+eng5), one pathway test run beside it until then: node checks 965/978 plus audit 88/88; eng5 5/6. Then validate_consistency
+corrected and rerun alone: 81/82, so 966/978. Failures, each with its cause:
+- validate_structure, 'the build stamp is not stale': the stamp is 22 Oct and the suite ran on the 23rd (no page change since).
+- The four known (iron-air July; high-season off-peak; peakerSeasonRatio; EDMSA Scenario A CO2 2035) and eng5 check 6.
+- validate_benchmarks hydro and CO2 against their references (known with cause, TODO 14iw); validate_pathway_presets, 4
+  (expected until the presets are rebuilt on c6); validate_invariants, 1 (TODO 14iy).
+- Found now, failing since 22e and missed in the 22e trace above: validate_consistency's 'the emission and cost constants survive
+  a CCS run' compared FIXED.emisCoal and FIXED.costCoal with literal copies (1.04, 546) that went stale when this PR computed both
+  from Eskom's FY2026 figures (1.080, 553); the model did not change them. Corrected to compare with the constants as they stood
+  before the runs (the same property, no copy): passes. Render check 10/10 on 22e stands (index.html unchanged since).
