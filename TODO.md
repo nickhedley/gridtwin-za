@@ -535,3 +535,8 @@ which lets a stability- or contingency-limited line run harder whatever its leng
 (US DOE on dynamic line rating; GridLab and UC Berkeley on reconductoring; the WATT Coalition on topology optimisation), not
 secondary articles; background, The Progress Playbook, 15 Oct 2024 (message 346 (d)). Check first whether a corridor's 'km' in
 corridor_electrical.json is one route or the sum over its circuits (Hydra Central-Northern Cape reads 542.7 km over 4 lines).
+14iy. Reserve restoration and later shedding (found 23 Oct 2026 on build 2026-10-22e, c6 PR A; RESULTS 'c6 PR A'): with hydroCF at
+the FY2023-26 mean, a 6,000 MW reserve requirement sheds more than 2,200 MW (0.53 against 0.45 GWh, Today 2026 at 55% EAF), because
+restoring reserve spends pumped-storage and battery energy that a later hour needs. Decide whether restoration should keep stored
+energy back for forecast shortfalls (as the engine already does for gas charging) or whether the invariant should be stated per
+hour; then fix the engine or correct the check with its cause.

@@ -16535,3 +16535,30 @@ Eskom's series does not see (municipal and private embedded generation, which th
 6 TWh of 2026's fall; recorded as consistent, with Kelvin the one known overlap (SOURCES). c5f's customer demand, TWh, 2030 /
 2035 / 2040: 232.3 / 266.1 / 305.1, of which without rooftop 208.7 / 232.2 / 260.9. The IRP pair in c6 takes ESRG's domestic grid
 demand scaled by 0.951 (194.6/204.6), with no export gap folded in; the scaling assumes the coverage share stays constant.
+
+Suite on build 2026-10-22e (c6 PR A, stored panels regenerated, fingerprint 0299ebca538a43, head ebbc3a7), ESK19679.csv present, 22 Oct
+2026 21:26 to 23 Oct 00:05 UTC, with one pathway test run (test, not for quoting) beside it for the whole run and a container
+restart at about 22:12 UTC, after which the run resumed from the script that was cut: node checks 961/974 (validate_response
+86/87 before the baseline rewrite below, 87/87 after) plus audit 88/88; eng5 5/6. Failures beyond the four known ones and eng5
+check 6, each traced by reverting one input at a time on scratch copies (scratchpad bisect/):
+- validate_benchmarks, 2 (TODO 14iw): hydro 1.91 TWh against Ember's 2.90 and CO2 184.6 Mt against Ember's 160.3, conflicts
+  between references (above).
+- validate_pathway_presets, 4: IRP's 2030 targets, IRP path 2035 and Least-cost path 2035 system cost 0.8-1.0% above the engine
+  checks the presets were generated from (c5f-era inputs), and Least-cost path 2035's unserved 0.87 against 0.73 GWh. The presets'
+  references are c5f's; they pass again when the presets are regenerated on c6 (the presets build).
+- validate_invariants, 1: '[Today 2026, 55% EAF] unserved energy never rises as the reserve requirement rises': 1.17 / 0.45 /
+  0.53 GWh at 0 / 2,200 / 6,000 MW, three outage draws. Reverting hydroCF alone (to 0.55) gives 0.75 / 0.32 / 0.32 and passes;
+  reverting Avon and Dedisa or the costs does not. The diesel tank is not the cause (unchanged with it off). At 6,000 MW the
+  engine holds reserve on coal headroom: coal output falls 6.3 TWh, diesel runs 7.0 TWh (3.6 of it restoring reserve) and pumped
+  storage 5.1 TWh against 3.6; with less hydro, storage is lower in one stressed hour of one draw, so the mean shed hours rise from
+  1.3 to 1.7. The check's premise (since message 96, customers cut only after reserve is used) holds within an hour, not across
+  hours: reserve restoration spends stored energy a later hour needed. To settle, by the engine or the check with its cause, not
+  by relaxing (TODO 14iy).
+- validate_response, 1: 'response matrix matches baseline', five cells inert to responsive (outageUnitLevel and coalFlexPct to the
+  replacement cost, newCcgtMW to CO2, newIronAirMW and reserveEnabled to coal). Reverting Avon and Dedisa's must-run alone (268 back
+  to 899 GWh) restores 87/87; reverting hydro or the costs does not. With less must-run open-cycle output, coal and the replacement
+  cost now respond to those controls. The change is this PR's, decided (messages 306 (a), 322), so the baseline was rewritten
+  (--write-baseline), 87/87 after.
+Render check in Chromium on a fresh load, 10/10 (scratchpad overnight/c6a/render.js, 23 Oct 00:20 UTC): build 22e, the computed
+inputs, the VPP note's new sentence, the coal EAF row on Week 42 (64.8% coal only), four presets with no undefined or NaN, no page
+errors.
