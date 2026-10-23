@@ -491,7 +491,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </button>
           <button id="mipCancelBtn" onclick="cancelMIP()" style="display:none;padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Cancel</button>
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
-            Re-solves the whole system as a true mixed-integer programming (MIP) model, where coal, storage and corridor flows are fully optimised across all 10 regions.
+            <strong id="mipCaveat">The full model runs on 2025 regional demand and its own regional weather data, and does not dispatch gas; its results are not comparable with the presets.</strong>
+            Re-solves coal, storage and corridor flows across all 10 regions as a mixed-integer programme (MIP).
             (The instant model commits coal in 4-hour blocks, so units can come off over midday, which NTCSA says the System Operator does not do.)
           </span>
         </div>
@@ -563,7 +564,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel mapbox" id="nav-network">
-        <div class="ph"><h2>Network Schematic</h2><span class="tag">Eskom TDP &amp; SAPP corridors · node size = modelled output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><!-- The 3D map lives at gridtwin-3d/index.html, NOT gridtwin-3d.html. Link to the
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">Eskom TDP &amp; SAPP corridors · node size: national output, split by fixed shares</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><!-- The 3D map lives at gridtwin-3d/index.html, NOT gridtwin-3d.html. Link to the
              DIRECTORY with a trailing slash: without it some servers redirect and some 404.
              The subfolder is also why that page fetches /nodal/... ABSOLUTE while this one
              uses relative nodal/... - a page one level down resolving nodal/ relatively
@@ -611,8 +612,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>Where to build</h2><span class="tag">NTCSA GCCA headroom · nodal prototype · indicative</span></div>
           <div class="pb">
             <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology. Inside the published headroom a project pays a reduced connection charge; inside what the transmission plan builds, the plan&rsquo;s rate; beyond it, half as much again. Headroom is NTCSA&rsquo;s Generation Connection Capacity Assessment 2025 (GCCA, October 2023), with the October 2025 update for Cape wind, which is capacity due by 2028.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">The instant engine is single-node: nodes grow with the national total regardless of siting. Only the dot and its own bump reflect your choice. Siting is read by virtual power plants, Run the full model, and the capture-rate and curtailment panels.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> the optimiser solves all 10 regions over 8,760 hours as a MIP: real demand, transfer-limited corridors, siting and unit-level coal commitment.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">The instant engine is single-node: nodes grow with the national total regardless of siting. Only the dot and its own bump reflect your choice. Siting is read by virtual power plants and the capture-rate and curtailment panels; it does not reach Run the full model.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> the optimiser solves all 10 regions over 8,760 hours as a MIP: transfer-limited corridors and coal commitment by unit group, on its own 2025 regional demand and weather data.</p>
             <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
               <div>
                 <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
@@ -771,7 +772,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
 
           <div class="panel" id="provMixPanel" style="margin-top:18px">
-          <div class="ph"><h2>Provincial electricity mix</h2><span class="tag">modelled</span></div>
+          <div class="ph"><h2>Provincial electricity mix</h2><span class="tag">capacity: data, mid-2026 &middot; generation: the engine at start-up, not the scenario &middot; demand shares: source being confirmed</span></div>
           <div class="pb" id="provMixBody"></div>
           </div>
 
@@ -779,7 +780,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>NERSA new project registrations</h2><span class="tag">SAPVIA &amp; NERSA</span></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
             <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
-              Private &amp; embedded generation registered, all technologies.
+              Registered renewable generation (NERSA).
             </p>
             <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
           </div>
@@ -10959,12 +10960,17 @@ async function renderProvMix(){
     }).join('');
 
     const natC = rows.reduce((a,r)=>a+r.clean,0), natD = rows.reduce((a,r)=>a+r.dem,0);
+    // Counted, not written in (audit G6 fix 4): rebuilding the file from the engine moved the two surplus provinces
+    // from 2.0% of demand to 2.6%.
+    const over = rows.filter(r => r.pct > 100), overDem = over.reduce((a,r)=>a+r.dem,0);
+    const last = rows[rows.length - 1].prov;
     html += '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:9px;'
       + 'padding-top:7px;border-top:1px solid var(--line2)">'
-      + 'Nationally ' + (100*natC/natD).toFixed(0) + '&#37;. The two provinces above 100&#37; hold '
-      + 'less than 2&#37; of demand between them, so their surplus is small in absolute terms '
-      + 'and stranded behind corridors that are already full. Mpumalanga generates more '
-      + 'electricity than any other province and is last on this measure.</div>';
+      + 'Nationally ' + (100*natC/natD).toFixed(0) + '&#37;. The ' + (['no','one','two','three','four'][over.length] || over.length)
+      + (over.length === 1 ? ' province' : ' provinces') + ' above 100&#37; hold '
+      + (100*overDem/natD).toFixed(1) + '&#37; of demand, so their surplus is small and stranded behind full corridors. '
+      + (last === 'Mpumalanga' ? 'Mpumalanga, the largest generator, is last on this measure.'
+                               : regName(last) + ' is last on this measure.') + '</div>';
     host.innerHTML = html; return;
   }
 
@@ -11013,10 +11019,9 @@ async function renderProvMix(){
     + 'National total <strong>' + fmt(natTot) + '</strong>. '
     + 'Mpumalanga alone holds ' + (100*rows[0].total/natTot).toFixed(0) + '&#37; of it, almost all coal. '
     + (isGen
-        ? 'Modelled, not measured: thermal factors are derived from the engine\u2019s own base-case '
-          + 'dispatch, and the national total reconciles to 98&#37; of demand.'
-        : 'Thermal from the station-level fleet register, renewables from the regional capacity '
-          + 'compilation, rooftop from the distributed PV estimate: <span title="The model runs '
+        ? 'The engine\u2019s Today 2026 totals, not the scenario. Generation is ' + (100*natTot/Object.values(d.demand_twh).reduce((a,b)=>a+b,0)).toFixed(0)
+          + '&#37; of demand.'
+        : 'Fleet register, regional capacity compilation and distributed PV estimate: <span title="The model runs '
           + (FIXED.coalInstalledMW/1000).toFixed(1) + ' GW of coal (Eskom FY2026 nominal) and ' + (FIXED.rooftopMW/1000).toFixed(1)
           + ' GW of rooftop">register nameplate, not the model\u2019s fleet</span>.')
     + '</div>';
@@ -17941,11 +17946,35 @@ function renderReeaPanel(){
     '<p style="font-size:11px;color:var(--ink2)">Environmental authorisation data not loaded.</p>';
 }
 
+// RENEWABLE GENERATION RECORDS ONLY (user, 20 Oct 2026, message 264, decision D7; audit G6-M10). The register is every
+// environmental application the DFFE files under renewables, and counted raw it was not renewable generation: 901 approved
+// records carry 0 MW, some are gas and coal stations (Phakwe Richards Bay 2,000 MW gas tagged Biomass, Thabametsi 1,200 MW
+// coal tagged Wind), some are a facility's power line or battery on its own, and some rows appear twice. Kept: wind, solar
+// PV, CSP and hydro records with capacity above zero, whose name is not a fossil plant, a power line or grid connection on
+// its own, or a battery on its own; identical rows (name, MW, decision date, centroid) once. The approved set on the 2026 Q1
+// release falls from 2,392 records and 207 GW to 1,412 and 194 GW, five years and older from 1,778 and 91 GW to 847 and 78 GW
+// (RESULTS, build 2026-10-21g). The name rules are ours; the audit's own filter gave 1,391 and 827.
+const REEA_GEN_TECH = /wind|solar|csp|hydro/i;
+const REEA_NOT_GEN = [
+  /\b(gas|coal)[- ](fired|power|turbines?|to power)\b|\blpg\b|\blng\b|thabametsi/i,          // fossil plant
+  /^\s*(the\s+)?(proposed\s+)?(development\s+of\s+|construction\s+of\s+)?(the\s+|a\s+|an\s+)?(\d+\s*kv\s+)?(overhead\s+)?(power\s*lines?|grid\s+connection|transmission\s+lines?|distribution\s+lines?|switching\s+station|substation)\b/i, // grid works on their own
+  /^\s*(the\s+)?(proposed\s+)?(construction\s+and\s+operation\s+of\s+)?(the\s+)?battery energy storage/i,             // a battery on its own
+];
+function reeaGenerationRecords(projects){
+  const seen = new Set();
+  return projects.filter(p => {
+    if (!REEA_GEN_TECH.test(p.tech || '') || !(p.mw > 0) || REEA_NOT_GEN.some(re => re.test(p.name || ''))) return false;
+    const k = [p.name, p.mw, p.decided, p.lat, p.lng].join('|');
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+}
+
 function reeaAgeHtml(){
   if (!queueREEA || !queueREEA.projects) return '';
   const now = new Date().getFullYear();
-  const appr = queueREEA.projects.filter(p =>
-    p.status === 'Approved' && p.decided && typeof p.mw === 'number');
+  const appr = reeaGenerationRecords(queueREEA.projects.filter(p =>
+    p.status === 'Approved' && p.decided && typeof p.mw === 'number'));
   if (!appr.length) return '';
 
   const bands = [
@@ -17964,9 +17993,9 @@ function reeaAgeHtml(){
 
   return '<div>'
     + '<div style="font-size:9.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
-    + `${appr.length.toLocaleString('en-US')} authorised projects carrying ${(totMW/1000).toFixed(0)} GW. An `
-    + 'Environmental Authorisation is required before a budget quote under IGCAR, so the time since approval is '
-    + 'the most a project can have been ready to build.</div>'
+    + `${appr.length.toLocaleString('en-US')} authorised wind, solar and hydro projects carrying ${(totMW/1000).toFixed(0)} GW; `
+    + 'zero-MW, fossil, grid-only, battery-only and repeated records left out. Time since approval (required before an IGCAR budget quote) is the most a project can '
+    + 'have been ready to build.</div>'
     + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 5px">Since approval</th>'
     + '<th style="text-align:right;padding:4px 5px">Projects</th>'
@@ -18487,7 +18516,7 @@ const SLIDERS=[
   {id:'gridBeyondGccaPct',label:'Grid built beyond current plan',min:0,max:150,step:10,def:FIXED.gridBeyondGccaPct,fmt:v=>v===0?'GCCA plan only':'+'+v+'% headroom',
    note:'Affects the build optimiser only. Scales every region\u2019s connection headroom in the build optimiser. Zero means the network Eskom currently plans to build. Above zero, connection headroom scales up as if more network were built; the grid expansion cost slider prices it. Without this the optimiser stops at GCCA headroom, which is why it builds no new corridors in high-renewables scenarios.'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Network integration charge on new build. The engine charges it on new wind, utility solar and offshore; the build optimiser also on new CCGT, OCGT and pumped hydro (batteries and rooftop pay none). TDP 2025\u20132034 (published 2024): generation integration is 51% of the plan, R225bn of R440bn for 46.9 GW, R4,800/kW, R402/kW&middot;yr. Rooftop solar avoids new grid.'},
-  {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Adds 20&#37; capacity to corridors above 30&#37; utilisation, at R1.55m/km \u2013 about a twentieth of a new line (DOE 2024). Affects the Where to build siting panel only.'},
+  {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Raises the remaining connection headroom in Where to build by 20&#37;. Its cost is not yet charged, and it does not reach the full model or the build optimiser.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar and batteries inherit the grid connection points of decommissioned coal, avoiding the transmission adder \u2013 up to the MW of coal retired.'},
   {id:'congestionCurtailOn',toggle:true,def:true,label:'Congestion curtailment',
    note:'On by default; the rate and its basis are under Curtailment. Off: the fleet runs unconstrained.'},
@@ -19678,7 +19707,7 @@ fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.js
         </div>
         <span style="text-align:right;font-size:10px;white-space:nowrap">${(v.total_mw/1000).toFixed(1)}GW</span></div>`;
     });
-    html+=`<div style="margin-top:6px;font-size:9px;color:var(--ink2)"><span style="display:inline-block;width:8px;height:8px;background:#F5C518;border-radius:1px;margin-right:3px"></span>Solar &nbsp;<span style="display:inline-block;width:8px;height:8px;background:#3EA055;border-radius:1px;margin-right:3px"></span>Wind &nbsp;Cumulative: SAPVIA NERSA Registered Plants Dashboard. NERSA&rsquo;s own Q1 2026/27 statement gives a higher figure \u2013 2,692 facilities and 21.9&nbsp;GW \u2013 unreconciled; the quarterly numbers agree exactly.</div>`;
+    html+=`<div style="margin-top:6px;font-size:9px;color:var(--ink2)"><span style="display:inline-block;width:8px;height:8px;background:#F5C518;border-radius:1px;margin-right:3px"></span>Solar &nbsp;<span style="display:inline-block;width:8px;height:8px;background:#3EA055;border-radius:1px;margin-right:3px"></span>Wind &nbsp;Cumulative: NERSA&rsquo;s renewable total, collated on SAPVIA&rsquo;s dashboard. For all technologies NERSA gives ${(data.meta?.total_projects_all_technologies||0).toLocaleString('en-US')} facilities and ${((data.meta?.total_mw_all_technologies||0)/1000).toFixed(1)}&nbsp;GW.</div>`;
     html+='</div>';   // close #nersaCum
     body.innerHTML=html;
     return;
@@ -20235,7 +20264,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-22b';
+const BUILD_STAMP = '2026-10-22c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21687,8 +21716,11 @@ function renderResult(r){
         +' MW goes beyond the transmission plan</span> on '+r.bindingCorridor+'.<br>';
   }
   html+=r.note+'<br>';
-  html+='Charged as the engine charges it: shallow connection within existing headroom, the '
-      + 'plan&rsquo;s own rate within what it builds, and half as much again beyond it.';
+  // Not 'charged as the engine charges it' (audit G6-M8, message 264): the engine spreads the national build over the DFFE
+  // register's province shares (REEA_SHARE) whatever is sited here; charging the sited region waits for after the note.
+  html+='Tiers: shallow connection within existing headroom, the plan&rsquo;s own rate within what it builds, and half as '
+      + 'much again beyond it. The scenario&rsquo;s system cost charges new wind and solar by where developers have '
+      + 'applied, not by this choice.';
   out.innerHTML=html;
 }
 
@@ -24604,18 +24636,20 @@ function showMIPBanner() {
     + 'solution</strong> \u2013 coal unit commitment, storage scheduling and corridor flows '
     + 'across all 10 regions solved together as a mixed-integer program over ' + label
     + ' with HiGHS in ' + a.elapsed.toFixed(0) + 's. '
+    + (document.getElementById('mipCaveat') ? document.getElementById('mipCaveat').textContent + ' ' : '')
     + prices
     + 'Moving any slider returns to the instant heuristic \u2013 press Run the full model to '
     + 'bring this back.'
     + '<div style="font-size:10px;opacity:.6;margin-top:5px">' + diag + '</div>';
 }
 
+// NOT COMPARABLE WITH THE PRESETS (user, 20 Oct 2026, message 264, audit G6 fix 1). The solve runs on 2025 regional demand in
+// every year, its own single-point regional weather and siting, and no gas (G6-M1, M4), so its coal cost against the instant
+// engine's is not a cost of network limits, and its 'curtailment' is the demand mismatch (M2). The card states that once and
+// carries no comparison label until the inputs are the scenario's (TODO 14ho).
 function renderMIPSummary() {
   const a = mipActiveRes;
   if (!a) return;
-  const saving = a.heurCoalCost - a.mipCoalCost;
-  const gapPct = a.heurCoalCost > 0 ? saving / a.heurCoalCost * 100 : 0;
-  const col = Math.abs(gapPct) < 1 ? 'var(--ok,#4A8C5C)' : Math.abs(gapPct) < 3 ? '#F5A623' : 'var(--alert,#C4785A)';
   const fmt = n => 'R' + (n/1e9).toFixed(2) + 'bn';
   const top = a.congested.filter(x => x.hrsAtLimit > 0).slice(0, 5);
 
@@ -24625,6 +24659,9 @@ function renderMIPSummary() {
         Optimal network-wide dispatch applied &middot; solved in ${a.elapsed.toFixed(0)}s
       </div>
       <div style="padding:12px">
+        <div style="font-size:10.5px;line-height:1.55;margin:0 0 10px;padding:7px 10px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)">
+          ${document.getElementById('mipCaveat') ? document.getElementById('mipCaveat').textContent : ''}
+        </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:12px">
           <div style="background:var(--bg2,#eee);border-radius:4px;padding:9px;text-align:center">
             <div style="font-size:20px;font-weight:700;color:#F5C518">${fmt(a.mipCoalCost)}</div>
@@ -24635,21 +24672,10 @@ function renderMIPSummary() {
             <div style="font-size:9.5px;color:var(--ink2)">Heuristic coal cost</div>
           </div>
           <div style="background:var(--bg2,#eee);border-radius:4px;padding:9px;text-align:center">
-            <div style="font-size:20px;font-weight:700;color:${col}">${gapPct >= 0 ? '' : '+'}${Math.abs(gapPct).toFixed(1)}%</div>
-            <div style="font-size:9.5px;color:var(--ink2)">${saving >= 0 ? 'Saving vs heuristic' : 'Cost of network limits'}</div>
-          </div>
-          <div style="background:var(--bg2,#eee);border-radius:4px;padding:9px;text-align:center">
             <div style="font-size:20px;font-weight:700;color:var(--ink)">${a.starts.toLocaleString('en-US')}</div>
             <div style="font-size:9.5px;color:var(--ink2)">Unit start-ups/yr</div>
           </div>
         </div>
-
-        ${saving < 0 ? `<div style="font-size:10px;line-height:1.55;margin:0 0 10px;padding:7px 10px;background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">
-          The two costs are not like for like. This solve
-          carries start-up costs for ${a.starts.toLocaleString('en-US')} unit starts, which the instant model does not
-          charge at all, and it respects the corridor limits the instant model ignores. That is why it curtails
-          renewables the instant model delivers freely, and burns coal instead.
-        </div>` : ''}
 
         <table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:11px">
           <tr style="border-bottom:1px solid var(--line2)">
@@ -24682,9 +24708,8 @@ function renderMIPSummary() {
 
         <div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:7px">
           All 10 regions, ${(mipInputs && mipInputs.corridors ? mipInputs.corridors.length : 0)} corridors and
-          ${(mipInputs && mipInputs.units ? mipInputs.units.length : 0)} coal unit groups solved together to a 2% MIP gap.
-          Per-unit minimum up times, minimum stable levels and start-up costs from the PyPSA-RSA fleet dataset;
-          storage state of charge carried across days.
+          ${(mipInputs && mipInputs.units ? mipInputs.units.length : 0)} coal unit groups solved together to a 2% MIP gap;
+          unit-group up times, stable levels and start-up costs from PyPSA-RSA; storage carried across days.
           ${a.failed ? a.failed + ' day(s) hit the 25s time limit and kept the heuristic profile. ' : ''}
           ${a.mode === 'rep' ? 'Representative days are applied across their week; run the full year for exact results.' : ''}
         </div>

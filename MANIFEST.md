@@ -23,6 +23,10 @@ ESK19679.csv                Eskom hourly dataset, Apr 2022 - Aug 2026, 12 MB.
                             Read by validate_weather (two anchors) and
                             validate_benchmarks (fleet-normalised wind). Without it:
                             one fail and three skipped checks.
+harness/build_provincial_mix.js  writes nodal/provincial_mix.json's generation and demand from the engine's start-up state
+                            (Today 2026) and the regional demand file's shares; capacity untouched. Without --write it
+                            checks the file within 2%, as validate_outputs does. Re-run after any engine change that moves
+                            Today 2026's coal, nuclear or demand (user, 20 Oct 2026, message 264, audit G6 fix 4).
 build_demand_2026.py        writes profiles.json demand (2026) and demand_2025 from ESK19679.
                             Runs from the root; re-run January 2027 with the full 2026 year.
 pathway.js / pathcheck.js   least-cost pathway to 2040 and its per-year check; run from the

@@ -1271,6 +1271,10 @@ first-hand; wording from search summaries, pages not known; to confirm against t
 - ESRG, UCT, 'High Spatial and Temporal Resolution End-use Electricity Demand Projection Model', web page, undated (read):
   'The results of these efforts have already been directly used to provide the electricity demand projection scenarios used
   in the latest national Draft IRP 2024 and 2025.'
+- G. Ireland, Demand-Spatialization-South-Africa, GitHub repository (MIT licence; read 21 Oct 2026, message 271 (9)): provincial
+  hourly demand, 2023-2050, ESRG v2024 national projections split by Eskom provincial transformer data. nodal/demand_2025_regional.csv
+  is its spatialized_outputs/IRPDemandREF_provincial_no_exports.csv, model_year 2025, rotated by -96 hours (sha256 of the file read
+  37b91d14e84912c2...). Source being confirmed (TODO 14fa).
 - ZivaHub (UCT figshare), B. Merven, doi:10.25375/uct.26942134, versions v1 9 Sep 2024, v2 22 Oct 2024, v3 23 Oct 2024, v4
   30 Oct 2024, v5 26 Feb 2025 (figshare public API, read): HourlyDemandModel_v10_IRP_v02_wExports.xlsm has the same checksum
   in all five, so it dates from September 2024; no v6.
