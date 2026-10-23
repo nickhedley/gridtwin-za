@@ -16631,3 +16631,16 @@ pathcheck_coal.js, TF=0.5 GRID=1 K=1. Local page changes only; nothing in index.
   (resumed: 853 s and no result, against 379 s uninterrupted); with presolve off it returns a valid one, and the resumed solve
   reaches the same optimum (relative 2e-15) after 61,000 more iterations, 510 s in all. Slicing is used only with presolve off,
   its overhead to be measured at full size. (Message 347 (f).)
+
+Suite on PR A after main's merge (#104; head 83754b8, build 2026-10-22e, stored panels regenerated and identical, fingerprint
+0299ebca538a43), ESK19679.csv present, 23 Oct 2026 08:50 to 11:28 UTC with a container restart at about 11:22 UTC (resumed at
+eng5), one pathway test run beside it until then: node checks 965/978 plus audit 88/88; eng5 5/6. Then validate_consistency
+corrected and rerun alone: 81/82, so 966/978. Failures, each with its cause:
+- validate_structure, 'the build stamp is not stale': the stamp is 22 Oct and the suite ran on the 23rd (no page change since).
+- The four known (iron-air July; high-season off-peak; peakerSeasonRatio; EDMSA Scenario A CO2 2035) and eng5 check 6.
+- validate_benchmarks hydro and CO2 against their references (known with cause, TODO 14iw); validate_pathway_presets, 4
+  (expected until the presets are rebuilt on c6); validate_invariants, 1 (TODO 14iy).
+- Found now, failing since 22e and missed in the 22e trace above: validate_consistency's 'the emission and cost constants survive
+  a CCS run' compared FIXED.emisCoal and FIXED.costCoal with literal copies (1.04, 546) that went stale when this PR computed both
+  from Eskom's FY2026 figures (1.080, 553); the model did not change them. Corrected to compare with the constants as they stood
+  before the runs (the same property, no copy): passes. Render check 10/10 on 22e stands (index.html unchanged since).
