@@ -16631,3 +16631,26 @@ pathcheck_coal.js, TF=0.5 GRID=1 K=1. Local page changes only; nothing in index.
   (resumed: 853 s and no result, against 379 s uninterrupted); with presolve off it returns a valid one, and the resumed solve
   reaches the same optimum (relative 2e-15) after 61,000 more iterations, 510 s in all. Slicing is used only with presolve off,
   its overhead to be measured at full size. (Message 347 (f).)
+
+### c6 PR B, build 2026-10-23a: imports priced in the build optimiser at R897/MWh; the central ends imports after 2030; up to 2030 nothing moves, and the four presets dated after 2030 run without 9.34 TWh of imports until the presets are rebuilt on c6 (user, 22 Oct 2026, c6 decisions; message 353 (c))
+
+Settings (UTC 23 Oct 2026, 08:30): branch claude/c6-imports from PR A (e9494a5), build 2026-10-23a, jsdom, each preset at its own
+year, outage seed 12345, PROFILES (2025 weather), importsEndYear 0 (imports kept) against the page default 2030; scratchpad
+c6br/presets_imp.js. Build LP on a 2026-2032 horizon, growth 0.02, EAF 0.64, the page's rates.
+- The build LP charged nothing for the fixed import infeed while the engine charged costImports; it now carries one fixed
+  variable a year, imp_<y>, at the year's import energy, priced at costImports (Eskom FY2026, R897/MWh), discounted. A fixed
+  variable moves no build; it adds the imports' cost to the discounted system cost the optimiser reports. With the default end
+  year the terms run 2026-2030 only. New check in validate_lp: 2026's term is R897 on 9,517,248 MWh (8,928 weighted hours of
+  the 1,066 MW flow), 2030's R659.32 (discounted), none in 2031.
+- importsEndYear 0 to 2030 (the Cahora Bassa contract's end): validate_lp compares the LP with imports kept and ended after
+  2030, by content: 0 lines change up to 2030, 1,828 after; the engine carries 9.34 TWh in 2030 and none in 2031.
+- Presets, engine at each preset's year, imports kept / ended after 2030 (system cost R bn; CO2 Mt; diesel TWh; unserved GWh):
+  Today 2026, IRP's 2030 targets (both) and 2025 as modelled: identical.
+  IRP path 2035: 290.19 / 287.41; CO2 77.67 / 85.48; diesel 0.000 / 0.000; unserved 0.000 / 0.000.
+  Least-cost path 2035: 243.41 / 242.51; CO2 78.71 / 87.73; diesel 0.152 / 0.300; unserved 0.000 / 0.000.
+  Deep decarbonisation 2035: 317.75 / 311.35; CO2 13.89 / 15.64; diesel 0.151 / 0.187; unserved 2.45 / 52.94.
+  Fossil-free 2040: 439.27 / 431.37; CO2 0 / 0; diesel 0.000 / 0.000; unserved 4.72 / 44.21.
+  Cost falls because the imports' R897/MWh goes and coal (or gas) fills the gap at lower cost; CO2 rises by the coal that replaces
+  them. The presets' builds were chosen with imports to 2040 (c5f), so the two higher-renewable presets lose adequacy; they are
+  expected to differ until the presets are rebuilt on c6 (the presets build), and validate_pathway_presets fails on them until
+  then.
