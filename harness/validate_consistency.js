@@ -496,12 +496,13 @@ const num = t => {
   // so its run pins ccsSharePct to 100 and tests what it always tested (message 157 (3)). A second run at the
   // default share must land between the capture-off run and the whole-fleet run.
   const iso = run(`
+    const e0 = FIXED.emisCoal, c0 = FIXED.costCoal;   // the constants before any CCS run (c6 PR A: no literal copies)
     const a = simulate({ ...state, ccsEnabled: false }, PROFILES);
     const b = simulate({ ...state, ccsEnabled: true, ccsSharePct: 100 }, PROFILES);
     const d = simulate({ ...state, ccsEnabled: true, ccsSharePct: FIXED.ccsSharePct }, PROFILES);
     const c = simulate({ ...state, ccsEnabled: false }, PROFILES);
     return { first: a.co2, mid: b.co2, dflt: d.co2, third: c.co2, share: FIXED.ccsSharePct,
-             fixedEmis: FIXED.emisCoal, fixedCost: FIXED.costCoal };
+             fixedEmis: FIXED.emisCoal, fixedCost: FIXED.costCoal, emis0: e0, cost0: c0 };
   `);
   if (iso && !iso.err){
     check('a CCS run does not leak into a later non-CCS run',
@@ -517,10 +518,12 @@ const num = t => {
           iso.dflt < iso.first && iso.dflt > iso.mid,
           `${iso.dflt.toFixed(2)} Mt at ${iso.share}% of the fleet, against ${iso.first.toFixed(2)} Mt without capture and `
           + `${iso.mid.toFixed(2)} Mt with capture on the whole fleet`);
+    // Compared with the constants as they stood before the runs, not with literals: the check held copies (1.04, 546) that
+    // went stale when c6 PR A computed both from Eskom's FY2026 figures (1.080, 553); found on build 2026-10-22e.
     check('the emission and cost constants survive a CCS run',
-          Math.abs(iso.fixedEmis - 1.04) < 1e-9 && iso.fixedCost === 546,
-          `FIXED.emisCoal ${iso.fixedEmis}, FIXED.costCoal ${iso.fixedCost} - the CCS `
-          + `branch has written through to the constants`);
+          iso.emis0 > 0 && iso.cost0 > 0 && iso.fixedEmis === iso.emis0 && iso.fixedCost === iso.cost0,
+          `FIXED.emisCoal ${iso.emis0} before, ${iso.fixedEmis} after; FIXED.costCoal ${iso.cost0} before, ${iso.fixedCost} after - `
+          + `the CCS branch has written through to the constants`);
   }
 
   // ── HOURLY ENERGY BALANCE IN SHED HOURS ──────────────────────────────────
