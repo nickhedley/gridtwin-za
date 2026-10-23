@@ -6096,6 +6096,17 @@ hundred square metres within the 100 kVA supply at RT_WP_PER_M2, is 600 m2, 99.2
 defaults otherwise (R80,000 a month, Businessrate 3 all-in tariff, fallback CF, no battery) payback is 6.97 years against
 6.15 on the old default, and the supply warning no longer shows on first opening; 2,000 m2 still warns. validate_outputs gains
 a check (45/45). Chromium, fresh load, 21 Oct 2026 06:25 UTC: 5/5.
+
+Suite on 2026-10-22d after main, audit PR 4 and audit PR 5 were merged in (message 309; stored panels regenerated, fingerprint
+1d8b665fb954ab, head 6166e2c), ESK19679.csv present, nothing running beside it, 22 Oct 2026 17:58 to 19:40 UTC: node checks
+973/977 (outputs 51/51, stored panels 86/86, links 48/48, worker 38/38, pathway presets 37/37, public text 17/17) plus audit 88/88;
+eng5 5/6. The failures are the four known ones (iron-air July, high-season off-peak, peakerSeasonRatio, EDMSA Scenario A CO2 2035)
+and eng5 check 6. At the merge the always-visible prose came to 4,270 words against the 4,250 ceiling, from this PR's weather-year
+caption; it was shortened to 4,239 (the solar years stated as measured 2014-2023 with 2024 and 2025 rescaled, the P90 sentence,
+and the lender line, which no longer mentions terrain and turbine or module choice), not the ceiling raised. Render check in
+Chromium on a fresh load, 12/12 (scratchpad overnight/a6/render.js, 19:45 UTC; its solar-years check follows the shortened
+caption).
+
 ### Network panels, audit PR 5: the full model's results marked not comparable with the presets, Permitted but not built counts renewable generation only (1,778 projects and 91 GW five years and older to 847 and 78 GW), and the provincial mix rebuilt from the engine (coal 160.7 to 147.2 TWh) (build 2026-10-21g; user, 20 Oct 2026, message 264, audit G6 fixes 1-7, decision D7)
 
 Base: main 2116c10 (build 2026-10-20h). Stored panels not regenerated (message 266). Measured 20 Oct 2026, about 19:00 UTC, in
