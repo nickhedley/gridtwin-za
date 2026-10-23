@@ -1849,3 +1849,21 @@ a unit's capability or a fleet's practice; they are not interchangeable.
 - Eskom's own hourly data (ESK19679; Eskom credited, analysis ours), as demonstrated practice, a lower bound on capability (message
   336 (a)): the coal fleet's hour-to-hour rise at the 99.9th percentile 1,950 MW in 2025 and 2,349 MW in January-August 2026 (8.9%
   and 9.2% of available coal); its daily minimum over maximum 0.87 (2025) and 0.82 (2026) at the median, 0.72 at the lowest day.
+
+## Coal report sources (user, 23 Oct 2026, messages 345, 347 (b), 348, 349; RESULTS 'Coal report for c6, measurements')
+
+- Eskom, Research, Testing and Development, Generation Operational Flexibility (RES/TRR/21/1962944, November 2023), in Eskom's
+  minimum emission standards exemption flexibilisation notice (October 2025). Held by the user. The report bars publication of its
+  contents without written permission: used locally only; no per-unit figure in this repository or in public text; only derived
+  fleet-level statements, credited to Eskom, the analysis ours, paraphrased.
+- Ember, Electricity Data Methodology (May 2024), pp.15-17 (emissions factors: lifecycle, all gases, coal from UNECE 2020 plant
+  factors blended by coal grade; 6% gross adjustment for thermal) and the hydro footnote (pumped storage excluded where possible);
+  South Africa section (monthly generation from Eskom, annual from EI). Read 23 Oct 2026 from ember-energy.org.
+- AEMO, MMSDM monthly archive, October 2025 (DISPATCH_UNIT_SCADA, GENUNITS, DUALLOC), nemweb.com.au. AEMO's copyright permissions
+  grant a general permission to use AEMO material for any purpose with accurate attribution to AEMO (aemo.com.au, 'Copyright
+  Permissions', read through a search extract on 23 Oct 2026; www.aemo.com.au is not reachable from the analysis environment).
+  Files kept local; derived statistics only; analysis ours.
+- Brent, 2023 average $83/b: EIA, Today in Energy, January 2024. Rand per dollar, 2023 average 18.4535: Federal Reserve G.5A (FRED
+  AEXSFUS). US CPI-U, January 2026, 325.252: BLS release of 13 Feb 2026 (FRED CPIAUCNS).
+- PyPSA-RSA, scenarios/ME IRP 2024/sub_scenarios/fixed_technologies.xlsx (commit 89872c1): unit start-up costs; no price base
+  stated; config.yaml's costs block (year 2030, R18.24/$) applies to technology costs.

@@ -16566,3 +16566,57 @@ check 6, each traced by reverting one input at a time on scratch copies (scratch
 Render check in Chromium on a fresh load, 10/10 (scratchpad overnight/c6a/render.js, 23 Oct 00:20 UTC): build 22e, the computed
 inputs, the VPP note's new sentence, the coal EAF row on Week 42 (64.8% coal only), four presets with no undefined or NaN, no page
 errors.
+
+### Coal report for c6, measurements (user, 22-23 Oct 2026, messages 339, 343-350; report only, no model change): the 48-hour rule locks units out rather than limiting a rate; a coal floor near 0.77 reproduces 2026's winter midday curtailment; the ramp limit binds on the evening rise from 2035; the model starts each unit 115-290 times a year against Eskom's preference for minimum load and Australia's 7
+
+Settings (UTC 23 Oct 2026). Engine replays on PR A's page (build 2026-10-22e): presets 'Today 2026' and 'Least-cost path 2035',
+twelve weather years x K outage draws (seeds 71830529 + k x 104729 + year x 7919), harness scratch scripts replay.js with page hooks
+(scratchpad m335, m347, m348, m349). c5f's years on c5f's own page (build 2026-10-17g) and pathway (out/pathway_c5f.json),
+pathcheck_coal.js, TF=0.5 GRID=1 K=1. Local page changes only; nothing in index.html changed.
+- The build optimiser's coal rules in the engine (Least-cost path 2035, every group's minimum at least 0.65 and minimum up and down
+  at least 48 h, K=3, 36 runs): 1,069 GWh unserved a run against 0.17 at base. 99.7% of it falls in hours when available coal is
+  switched off (11.6 GW on average in those hours), and in 93% of those hours more coal had been committed within the previous
+  48 h. The engine commits each 4-hour block by rule (cheapest first to the block's peak plus reserve, no look-ahead) and start
+  costs are only charged, so a unit switched off at midday is then locked out through the next peaks. The build optimiser's 48 h
+  is a different rule: committed coal may move by at most available coal / 48 per hour, with foresight, which still allows several
+  GW of daily swing. (Message 347 (e)(3); TODO 14iz (6).)
+- Practice floor (Today 2026, every group's minimum raised to the level, K=10, 120 runs): mean winter (May-Aug) midday curtailment
+  peak 0 MW at base; 1,438 at 0.70; 2,507 at 0.75; 3,173 at 0.78; 5,014 at 0.80 (runs at or above 3 GW: 0, 20, 80, 120 of 120). A floor
+  of about 0.77 reproduces NTCSA's ~3 GW. Starts and two-shifting do not move (115 starts per unit a year). (Message 348 (b).)
+- Design minimums against UC_FLEET: Eskom's design minimum net loads (Eskom, Generation Operational Flexibility, Nov 2023, in its
+  October 2025 minimum emission standards exemption notice; used locally, analysis ours, no per-unit figure recorded) average 0.540
+  of UC_FLEET's capacity, capacity-weighted over the 39,156 MW they cover (Arnot, Kelvin and Komati not covered), against
+  UC_FLEET's 0.558: UC_FLEET is 1.8 points above design. The groups at 0.65 have a design average of 0.568; the 16 groups at our
+  0.50 fill-in have 0.523, so the fill-in sits 2.3 points below design. (Message 348 (a).)
+- Ramp limit (coalRampBasePct, 24% of available coal per hour): binds upward 0.09 hours a run in Today 2026 (limit 6,192 MW/h);
+  in c5f 138, 457 and 532 hours a run in 2030, 2035 and 2040 (limit 5,060, 4,043 and 2,791 MW/h), 97%, 83% and 77% of them at
+  16:00-20:00, that is 7%, 21% and 22% of evening hours; diesel runs in 9.5%, 0.2% and 0.0% of the binding hours. The engine's
+  coal output also moves by more than the limit in 106, 243 and 292 hours a run upward and 114, 112 and 154 downward, not from
+  falls in available coal: to trace (TODO 14iz). For scale: Australia's coal fleet in October 2025 rose by at most 22% of its
+  capacity in an hour (p99.9), Eskom's fleet by 9.2% of available (2026, p99.9); unit design rates of 10-15 MW/min (Eskom, as above)
+  are 123-184% of a unit's capacity an hour, capacity-weighted. 24% is a fleet-level figure of the order of observed practice, not
+  a unit limit. (Message 349 (a).)
+- Starts per unit a year (MW started over mean available MW): model 115 in Today 2026; c5f 202, 255 and 288 in 2030, 2035 and
+  2040; Least-cost path 2035 256. Eskom prefers running at minimum to cycling and costs reserve shutdowns at about one weekend a
+  month (Eskom, as above), of the order of 12 starts a unit a year. Australia's coal units, October 2025: 21 starts on 37 units, about
+  7 a unit a year annualised. (Message 348 (e).)
+- Australia's coal fleet, October 2025 (AEMO, MMSDM DISPATCH_UNIT_SCADA, GENUNITS, DUALLOC, NEMweb; used under AEMO's general
+  copyright permission with attribution; files kept local; analysis ours): 37 black and brown coal units, 17,379 MW registered;
+  hourly output when online, 5th percentile, 41% of registered capacity capacity-weighted (black coal 37%, brown 54%); 8 off
+  spells of 1-24 hours on 5 units in the month; the fleet's daily minimum over maximum, median 0.51. (Message 345.)
+- Start costs, price bases: UC_FLEET's start-up costs (R77-266 per MW a start, Kelvin R2,814; R152.58 capacity-weighted) come from
+  PyPSA-RSA's fixed_technologies.xlsx (ME IRP 2024, commit 89872c1), which states no price base; R224.52/MW is R152.58 / 0.68, the
+  same unstated base. NREL and Intertek APTECH's lower-bound median wear costs (2012, table 1-1, 2011 dollars, excluding fuel: hot
+  59, warm 65, cold 105 $/MW) are R1,408, R1,551 and R2,505 per MW a start in January 2026 rands (US CPI-U 325.252 January 2026 over
+  224.939 for 2011, x1.4460; R16.50/$, the model's pinned rate). Eskom's start-up fuel oil (as above) alone exceeds UC_FLEET's whole
+  start cost; it is converted to January 2026 rands on the model's diesel basis (Brent in rands over April 2025-February 2026,
+  R1,169/bbl, against 2023, $83 x R18.45 = R1,532/bbl, x0.763), with the 12 Oct 2026 spot (R1,703/bbl) as a sensitivity only.
+  Coal burned during start-up is not yet sourced. (Messages 341 (c), 348 (c), (g).)
+- Two-shift statistic: a day counts when committed coal at 11:00-14:00 is at least 1,000 MW below both the 06:00-09:00 and the
+  17:00-20:00 commitment, fleet-wide. With a 24 h minimum down time no unit can two-shift (the engine's guard keeps it off 24 h),
+  so the 38% of days still counted in Today 2026 (68% in Least-cost path 2035) are different units leaving at midday and returning
+  for the evening: the statistic counts fleet dips, not units (TODO 14iz). (Message 347 (e)(1).)
+- Saving progress in long solves: on a 61 MB build LP, a solve stopped at a time limit with presolve on returns an invalid basis
+  (resumed: 853 s and no result, against 379 s uninterrupted); with presolve off it returns a valid one, and the resumed solve
+  reaches the same optimum (relative 2e-15) after 61,000 more iterations, 510 s in all. Slicing is used only with presolve off,
+  its overhead to be measured at full size. (Message 347 (f).)
