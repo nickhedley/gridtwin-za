@@ -16682,3 +16682,11 @@ in (head 5fd32cd): 81/82, so 964/979 (979 with validate_lp's new imports-price c
 Render check in Chromium on a fresh load, 12/12 (scratchpad overnight/c6b/render.js, 23 Oct 2026 about 13:20 UTC): build 23a;
 imports end after 2030 by default at R897/MWh; the imports note gives both and no longer says every scenario keeps imports to
 2040, and is shown on the page; six presets with no undefined or NaN; no page errors.
+
+Hydro benchmark corrected (user, 23 Oct 2026, message 357 (b); c6 PR B, build 2026-10-23a; TODO 14iw): validate_benchmarks' hydro
+reference was 2.90 TWh, the old model's own output (hydroCF 0.55 x 602 MW x 8,760 h) under a label naming no source. It is now
+measured 2025 hydro, read from Eskom's hourly data when present (ESK19679 'Hydro Water Generation', 8,760 hours of 2025, 1.795
+TWh; Eskom credited, the analysis ours), else Ember's 2025 monthly sum (1.80 TWh); tolerance unchanged at 25%. The model's 1.91
+TWh (the FY2023-26 mean) passes, 6.8% above. validate_benchmarks 28/30 (23 Oct 2026, 21:30 UTC): CO2 against Ember (left failing
+until Ember's basis is reconciled) and peakerSeasonRatio (known). PR B's suite count moves to 965/979. Main merged in after #112
+(e7ef060): the merge changes no file, so the stored panels and the other counts stand.

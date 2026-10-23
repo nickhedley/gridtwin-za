@@ -543,8 +543,9 @@ CO2e per MWh gross in every year 2023-25 (0.900 per MWh net, before Ember's 6% g
 UNECE's 2020 plant factors blended by coal grade, which Ember says do not capture older plants' efficiency losses (Ember Electricity
 Data Methodology, May 2024, pp.15-17). Eskom's measured rate is 1.108 t CO2 per MWh sent out (FY2026), 23% above Ember's net factor
 although Ember's includes upstream emissions. Ember's monthly and yearly files also differ (coal 185.5 against 197.5 TWh, CO2 160.3
-against 169.7 Mt). Options for Nick, not taken: hydro against the measured 1.79-1.83 TWh with its source; CO2 against Eskom's
-reported figure, with Ember kept as a report-only line.
+against 169.7 Mt). Hydro settled (user, 23 Oct 2026, message 357 (b); c6 PR B): the reference is now measured 2025 hydro from Eskom's hourly
+data (1.79 TWh; Ember's 1.80 if the file is absent), tolerance unchanged; the model's 1.91 passes (+6.8%). CO2 stays failing
+until Ember's basis is reconciled (option open: CO2 against Eskom's reported figure, Ember as a report-only line).
 14ix. Queued builds (user, 22 Oct 2026): the presets build, about Wed 28 Oct, with stored panels regenerated (message 340 (b), (c)): an installed-capacity table
 beside the annual electricity mix (GW existing remaining, new build and total for the year shown, storage also in GWh; the
 reviewer pack points to it); a line in the Provincial electricity mix panel that its capacity is today's fleet, whatever preset. The coal flexibilisation checkbox's note relabelled to say it changes the ramp rate only, and that Eskom's
