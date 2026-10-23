@@ -6028,6 +6028,84 @@ Suite on 2026-10-20e (main with #98 merged in, ESK19679.csv present, nothing bes
 (validate_stored_panels 86/86 on stored panels regenerated for 20e, validate_links 48/48, validate_worker 38/38) plus audit
 88/88; eng5 5/6. The failures are the four known ones and eng5 check 6.
 
+### Site tools (audit PR 6): the site panel's wind tile now reads the file its P50 row reads, KwaZulu-Natal 21.6% to 32.9%; P90 and 'twelve years' wording; the rooftop tab names its default customer and warns above its 100 kVA supply (build 2026-10-21h; user, 20 Oct 2026, messages 264 and 270; audit G8 fixes 1, 2 and 4)
+
+Prepared overnight on main 2116c10, not merged: stored panels not regenerated (message 266). No engine number moves: neither
+panel reads the scenario (audit G8 section 1).
+
+Fix 1 (G8-M5). The tile and the monthly wind bars read nodal/profiles_regional.json (one centroid per supply area, 2023 only,
+not bias-corrected); the P50/P90 table beneath read nodal/profiles_regional_multiyear.json (several sites per area, x1.0753 to
+Eskom's observed 2022-2023 national level, 2014-2025). Both now read the twelve-year file: the tile is the P50 of the twelve
+annual means, as the table computes it, and the bars are each month's twelve-year mean; until the file has loaded the tile
+reads an ellipsis, and if it cannot load the single-site 2023 figure is shown and labelled as that. Source lines say which.
+Measured in jsdom (renderPanel with a placeholder solar figure, each supply area, scratchpad overnight/a6/g8.js; before is
+windCFForRegion, which the tile showed):
+
+| Supply area | Tile before (2023, one site) | Tile after (P50) | P50 row beneath |
+|---|---|---|---|
+| Eastern Cape | 36.7% | 36.2% | 36.2% |
+| Free State | 26.8% | 31.1% | 31.1% |
+| Gauteng | 24.7% | 22.8% | 22.8% |
+| Hydra Central | 42.5% | 41.4% | 41.4% |
+| Kwazulu Natal | 21.6% | 32.9% | 32.9% |
+| Limpopo | 23.5% | 22.1% | 22.1% |
+| Mpumalanga | 25.5% | 24.9% | 24.9% |
+| North West | 33.2% | 29.7% | 29.7% |
+| Northern Cape | 37.9% | 40.3% | 40.3% |
+| Western Cape | 36.5% | 34.1% | 34.1% |
+
+The tile equals the P50 row to the digit in all ten areas (the audit's check: within 0.1 point). validate_outputs gains this
+check. Outside this panel the single-site file is still read by the pre-feasibility tab, wheelCoverage and the regional build
+LP (TODO 14hy).
+
+Fix 2 (G8-M9, M10). The P50/P90 note read "Capacity factor across twelve weather years (2014-2025) ... P90 is the level
+exceeded in nine years out of ten - the number debt is sized against". It now reads: "Capacity factor by weather year for the Kwazulu Natal supply area: twelve years for wind (2014–2025), ten measured years for solar (2014–2023; 2024 and 2025 are 2023’s level rescaled, not measured). P90 here is the weather spread alone, the level nine years in ten beat; a lender’s P90 also counts resource and model uncertainty and sits lower." Solar 2024 and 2025
+equal 2023's level in every area (file meta 'solar_borrowed_years'); they stay in the computation (P90 effect negligible,
+audit G8-M10) and are named. The section footnote's "Wind interpolated from regional MERRA-2 profiles" now says the wind is
+the supply area's, from twelve weather years.
+
+Fix 4 (G8-M2, text only). The tariff note adds: "The default customer is a business on Businessrate 3, a supply of up to 100
+kVA; for a larger site enter your own bill and tariff." The result carries a warning when the tariff is still the default and
+the system is above 100 kWp (RT_BIZRATE3_MAX_KVA, Businessrate's 100 kVA, booklet 2026/27; compared with kWp, so about).
+Measured (rtCalc, fallback CF 0.21, other inputs at their defaults):
+
+| Roof | Bill, tariff | kWp | Payback, years | Warning before / after |
+|---|---|---|---|---|
+| 2,000 m2 | R80,000, default R2.76 | 331.1 | 6.15 (unchanged) | no / yes |
+| 12,000 m2 | R80,000, default R2.76 | 1,989.6 | 47.48 (unchanged) | no / yes |
+| 12,000 m2 | R900,000, default R2.76 | 1,989.6 | 4.39 (unchanged) | no / yes |
+| 50 m2 | R3,000, R4.15 | 8.1 | 11.45 (unchanged) | no / no |
+| 400 m2 | R80,000, default R2.76 | 65.7 | 7.02 (unchanged) | no / no |
+
+The default roof (331 kWp) now carries the warning too: it is about three times the default customer's supply. With a bill
+that matches the industrial roof (R900,000 a month) payback is 4.39 years as is; the audit's 2.9 needs the losses fix in #96.
+validate_outputs gains a check (12,000 m2 on the default customer warns; the 37.6 m2 anchor does not). A cap per NRS 097-2-3
+and a larger-customer tariff wait for after the note (TODO 14hq).
+
+Checks on this branch (jsdom; ESK19679.csv present): validate_outputs 44/44 (42 plus the two new), validate_lint 3/3,
+validate_structure 27/27, validate_public_text 17/17, audit 88/88. Measured 20 Oct 2026 about 18:45-18:55 UTC.
+
+Suite on 2026-10-21h without validate_stored_panels (stored panels not regenerated, message 266), ESK19679.csv present:
+968/972: node checks 880/884 (validate_outputs 44/44, links 48/48, worker 38/38) plus audit 88/88; eng5 5/6. The failures are
+the four known ones and eng5 check 6. Run 20 Oct 2026 20:16-23:50 UTC in three parts (two background runs stopped at their
+time limit; validate_links, then validate_worker, the audit and eng5 run again), with other branches' suites beside it.
+Render check in Chromium (rooftop and site tabs, Google and network calls stubbed): 12/12.
+
+The default roof now fits the default customer (user, 21 Oct 2026, message 271 (10)): RT_DEFAULT_AREA_M2, the largest whole
+hundred square metres within the 100 kVA supply at RT_WP_PER_M2, is 600 m2, 99.2 kWp (was 2,000 m2, 331.1 kWp). At the
+defaults otherwise (R80,000 a month, Businessrate 3 all-in tariff, fallback CF, no battery) payback is 6.97 years against
+6.15 on the old default, and the supply warning no longer shows on first opening; 2,000 m2 still warns. validate_outputs gains
+a check (45/45). Chromium, fresh load, 21 Oct 2026 06:25 UTC: 5/5.
+
+Suite on 2026-10-22d after main, audit PR 4 and audit PR 5 were merged in (message 309; stored panels regenerated, fingerprint
+1d8b665fb954ab, head 6166e2c), ESK19679.csv present, nothing running beside it, 22 Oct 2026 17:58 to 19:40 UTC: node checks
+973/977 (outputs 51/51, stored panels 86/86, links 48/48, worker 38/38, pathway presets 37/37, public text 17/17) plus audit 88/88;
+eng5 5/6. The failures are the four known ones (iron-air July, high-season off-peak, peakerSeasonRatio, EDMSA Scenario A CO2 2035)
+and eng5 check 6. At the merge the always-visible prose came to 4,270 words against the 4,250 ceiling, from this PR's weather-year
+caption; it was shortened to 4,239 (the solar years stated as measured 2014-2023 with 2024 and 2025 rescaled, the P90 sentence,
+and the lender line, which no longer mentions terrain and turbine or module choice), not the ceiling raised. Render check in
+Chromium on a fresh load, 12/12 (scratchpad overnight/a6/render.js, 19:45 UTC; its solar-years check follows the shortened
+caption).
 ### Network panels, audit PR 5: the full model's results marked not comparable with the presets, Permitted but not built counts renewable generation only (1,778 projects and 91 GW five years and older to 847 and 78 GW), and the provincial mix rebuilt from the engine (coal 160.7 to 147.2 TWh) (build 2026-10-21g; user, 20 Oct 2026, message 264, audit G6 fixes 1-7, decision D7)
 
 Base: main 2116c10 (build 2026-10-20h). Stored panels not regenerated (message 266). Measured 20 Oct 2026, about 19:00 UTC, in
