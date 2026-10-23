@@ -16679,3 +16679,6 @@ in (head 5fd32cd): 81/82, so 964/979 (979 with validate_lp's new imports-price c
   Least-cost path 2035's unserved against the reliability target, 4.24 GWh against 2.42, from the 9.34 TWh of imports gone in 2035
   (above). IRP path 2035's cost is now 0.20% below its check (was 0.8-1.0% above on PR A).
 - The build stamp passes (23a). validate_lp 57/57, response 87/87, stored panels 86/86, links 48/48, worker 38/38.
+Render check in Chromium on a fresh load, 12/12 (scratchpad overnight/c6b/render.js, 23 Oct 2026 about 13:20 UTC): build 23a;
+imports end after 2030 by default at R897/MWh; the imports note gives both and no longer says every scenario keeps imports to
+2040, and is shown on the page; six presets with no undefined or NaN; no page errors.
