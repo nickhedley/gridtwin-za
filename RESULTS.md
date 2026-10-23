@@ -16690,3 +16690,39 @@ TWh; Eskom credited, the analysis ours), else Ember's 2025 monthly sum (1.80 TWh
 TWh (the FY2023-26 mean) passes, 6.8% above. validate_benchmarks 28/30 (23 Oct 2026, 21:30 UTC): CO2 against Ember (left failing
 until Ember's basis is reconciled) and peakerSeasonRatio (known). PR B's suite count moves to 965/979. Main merged in after #112
 (e7ef060): the merge changes no file, so the stored panels and the other counts stand.
+
+### c6 PR C groundwork and a candidate coal central (user, 23-24 Oct 2026, messages 345, 350, 357; branch claude/c6-coal at 41461ce, build stamp unchanged until delivery; report only)
+
+Four settings in index.html, each defaulting to today's behaviour (FIXED; TODO 14iz): coalCommitWeighStarts (and
+coalCommitLookaheadH), coalMslPracticeFloor / coalMslDesign / coalMslDesignFromYear, coalStartCostBasis 'built' (fuel oil, start-up
+coal, wear per MW by hours offline; wear COAL_START_WEAR_RMW from NREL/Intertek), syncImportsCount / syncNucHydroBasis. At the
+defaults every preset's engine result (jsdom, seed 12345, 2025 weather) is identical to PR B's page; each setting moves them when set.
+
+Candidate central, Today 2026 and Least-cost path 2035, twelve weather years x ten draws (120 runs, seeds 71830529 + k x 104729 +
+year x 7919), scratchpad m357/run.sh, 23 Oct 2026 21:25-21:40 UTC. 'built': start costs from fuel oil (Eskom's figures, used
+locally, values not recorded here), no start-up coal yet, NREL/Intertek wear. Starts per unit a year are MW started over mean
+available MW. Columns: starts; two-shift days; winter midday curtailment peak, mean (runs at or above 3 GW of 120); curtailment
+GWh; 24-30 Nov coal daily minimum, mean MW.
+- Today 2026: base 115.0; 0.82; 0 (0); 0; 14,361. Built start costs alone: unchanged (costs are charged, not weighed). Built +
+  weighing: 51.2; 0.42; 25 (0); 0; 14,445. Weighing + practice floor 0.77 (+ design 0.57/0.52 from 2030, inactive here): 115.0;
+  0.82; 2,941 (60); 198; 14,079 (at a 0.77 minimum, minimum output costs more than a hot start over a 4-hour gap, so weighing
+  keeps no unit on). The same with a 24 h minimum down time: 60.3; 0.38; 2,018 (10); 33; 14,305. Synchronous floor at dispatched
+  output with imports out: no change in 2026.
+- Least-cost path 2035: base 250.6; 0.96; 16,092 (120); 3,675; 1,954. Built alone: unchanged. Built + weighing: 105.2; 0.65;
+  16,600; 4,864; 4,847. + design minimums 0.57/0.52: 105.2; 0.65; 16,632; 4,940; 4,918. + synchronous floor options: 105.2; 0.65;
+  17,560; 5,229; 5,054. Weighing + design + 24 h minimum down: 73.4; 0.31; 16,458; 4,711; 4,904.
+- Eskom prefers minimum load to cycling and costs reserve shutdowns at about a weekend a month (about 12 starts a unit a year);
+  Australia's coal units started about 7 times a unit a year (October 2025). The candidate settings bring the model from 115-251
+  to 51-105 starts, 60-73 with a 24 h minimum down time: closer, still several times practice.
+- Keep-on cost is minimum output x gap x the unit's marginal cost, the cost if that output displaces nothing; where it displaces
+  other coal or gas the true cost is lower and weighing would keep more units on. A design choice for the decision.
+
+NEM black-coal units, September 2026 (AEMO MMSDM DISPATCH_UNIT_SCADA, GENUNITS, DUALLOC, NEMweb; AEMO's general copyright
+permission with attribution; files local; analysis ours): 30 units, 13,875 MW; daily minimum while synchronised, median 40% of
+registered capacity (10th percentile 25%, 90th 56%); daily maximum, median 93%; daily minimum over maximum, median 0.47; unit-days
+desynchronised for part of the day 3.4% (27 of 787 in-service unit-days, 12 units; includes the first and last days of longer
+outages). October 2025: 41%, 97%, 0.46, 2.9%.
+
+Inflex test run (message 341 (d)), dropped (message 357 (c)): with the minimum at 0.75 and a 48-hour lock, each build-LP pass took
+longer than the last (pass 4 93 minutes, pass 5 over 3 h 43 min) and container restarts every 2-3 hours stopped pass 5 before it
+finished; a presolved solve cannot save progress at a time limit. Its finished passes stay in its lpcache (scratchpad, 687 MB).
