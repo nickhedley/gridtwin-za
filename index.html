@@ -5299,6 +5299,12 @@ const COAL_START_OTHER_USD = { sub: [5.61, 7.98, 10.15], super: [5.81, 8.62, 11.
 const COAL_START_FUEL_RMW = { central: { sub: [562, 792, 1125], super: [693, 1151, 1433] },
                               spot:    { sub: [694, 1000, 1426], super: [825, 1359, 1735] } };
 const COAL_START_FUEL_AT_RGJ = 47.94;
+// The coal settings before PR C (build 2026-10-23a): a pathway run recorded before PR C replays with these (harness/pathcheck.js),
+// as its optimiser and engine had them; the keys are also the coal settings a pathway run records (pathway_perfail.js).
+const COAL_PRE_C = { coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampHonour:0, coalMslPracticeFloor:null, coalMslDesign:null,
+  coalMslDesignFromYear:2030, coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median', coalMinDownH:null,
+  syncImportsCount:1, syncNucHydroBasis:'installed', coalFlexDeepMsl:0.40, coalFlexDeepAfterYear:2035,
+  bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0 };
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
 // IMPORTS_CF is defined in nodal_engine.js, which loads at line 1124 - BEFORE this
 // constant block. So FIXED can read it, and does. That direction is deliberate: the
@@ -5743,7 +5749,7 @@ const FIXED = {
   // engine under-use: over twelve 2040 stress windows the LP opens half full, must refill, and discharges 11%
   // less than the engine. What remains is the LP's within-window foresight and daily storage balance, an
   // optimism of the method for all storage, not of pumped storage.
-  bldCoalCommit:1, bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, bldPsEnergy:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  bldCoalCommit:1, bldCoalMinFrac:'engine', bldCoalCommitHours:null, bldCoalStartCost:1, bldPsEnergy:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // OPTIMISER GRID COST (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCost 0 off (default until
   // the effect on the pathway is reviewed), 1 central (ITP basis), 2 high (MISO basis). bldGridSpurBeyond 1 charges
   // the spur only beyond the 18 km median, for capex that already includes connection. bldGridBattHalf 1 charges
@@ -5926,28 +5932,36 @@ const FIXED = {
   // Chosen because 12 h is where the benefit saturates and there is no measured cost
   // to it anywhere else - not because 4 h was wrong.
   coalLookaheadH:12,
-  // PR C GROUNDWORK (user, 23 Oct 2026, message 357 (e); TODO 14iz). Each setting below defaults to today's behaviour, so the
-  // c6 decision only sets values; nothing here moves a result until one is changed.
+  // COAL, PR C (user, 23-24 Oct 2026, messages 357 (e), 359-361, 363; TODO 14iz). The defaults are c6's coal central: commitment
+  // weighing start costs net of displaced output; the practice floor 0.77 to 2029 and the design minimums 0.57/0.52 from 2030;
+  // NREL/Intertek start costs;
+  // the synchronous floor with imports out and nuclear and hydro at output; the ramp honoured. COAL_PRE_C holds each setting's
+  // value before PR C (build 2026-10-23a), which reproduces the earlier engine exactly.
+  // The practice floor is calibrated like for like (messages 364, 365): the 2026 replay's lowest midday hour (10:00-15:00) of coal
+  // output over available coal, on sunny low-demand days, matches Eskom's January-August 2026 median at 0.77 (model 0.625, p10-p90
+  // 0.54-0.72; measured 0.62, 0.57-0.72; ESK19679, Eskom credited, analysis ours), the backcast practice of matching a simulated
+  // statistic to its measured counterpart (SEM Committee, PLEXOS validation and backcast report, SEM-20-004). NTCSA's 'up to 3 GW'
+  // in a winter day of 2026 is a check, not the target: the replay's winter midday peak is 4.8 GW at 0.77 (flagged, message 365 (a)).
   // (1) Commitment that weighs start costs: 0, today's rule (cheapest first to each block's peak plus reserve; start costs are
   //     charged but never weighed). 1: before a running unit is switched off, the pre-pass looks up to coalCommitLookaheadH
   //     hours ahead for the block that needs it again and keeps it on, at its minimum, when its start cost exceeds the cost of
   //     that minimum output over the gap (minimum MW x hours x its marginal cost).
-  coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampHonour:0,
+  coalCommitWeighStarts:1, coalCommitLookaheadH:24, coalRampHonour:1,
   // (2) Coal minimum stable levels by period. coalMslPracticeFloor (null: none) raises every unit's minimum to at least this
   //     share of capacity in scenario years before coalMslDesignFromYear: the 2026 practice floor, units not reaching their
   //     design minimum when asked. coalMslDesign (null: UC_FLEET's own levels) sets them from that year: one share for every
   //     unit, or [share for the groups at 0.65, share for the groups at 0.50], fleet-level values only (message 348 (a)).
-  coalMslPracticeFloor:null, coalMslDesign:null, coalMslDesignFromYear:2030,
+  coalMslPracticeFloor:0.77, coalMslDesign:[0.57, 0.52], coalMslDesignFromYear:2030,
   // (3) Start-cost basis. 'ucfleet' (today): UC_FLEET's per-unit start-up costs (PyPSA-RSA; price base not stated). 'built':
   //     per MW of unit capacity and start, hot, warm or cold by hours offline and class (COAL_START_OFFLINE_H): start fuel
   //     (COAL_START_FUEL_RMW, coalStartFuel 'central' or 'spot') + wear (COAL_START_WEAR_USD, coalStartWear 'median' or 'p75')
   //     + other start costs (COAL_START_OTHER_USD), in January 2026 rands.
-  coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median',
+  coalStartCostBasis:'built', coalStartFuel:'central', coalStartWear:'median',
   // (4) Synchronous floor options. syncImportsCount 1 (today): imports count toward the floor at their utilisation; 0: they do
   //     not (Cahora Bassa arrives over HVDC). syncNucHydroBasis 'installed' (today): nuclear and hydro at installed MW (existing
   //     nuclear only); 'dispatched': at the hour's output (nuclear including new nuclear, at nuclearCF; hydro at hydroCF).
   //     The grid-forming share is syncGfmShare (SYNC_GFM_SHARE, 0.30, unsourced).
-  syncImportsCount:1, syncNucHydroBasis:'installed',
+  syncImportsCount:0, syncNucHydroBasis:'dispatched',
   // (5) coalRampHonour 1 (message 359 (f)): the commitment pre-pass keeps a block's commitment at least the previous hour's net
   //     load less one hour's ramp, and dispatch's coal floor rises no faster than the ramp. 0: as before (coal moved beyond its
   //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH (null: UC_FLEET's) raises every unit's
@@ -6930,8 +6944,8 @@ function ucUnitsStanding(coalInstalled) {
 //          ucMinStable[hour] = MW  (fleet minimum stable load per hour)
 //          ucAvail[hour] = MW      (committed capacity per hour)
 //          ucStartCost[hour] = R   (start-up cost charged this hour)
-// The commitment pre-pass's options from a scenario (PR C groundwork, message 357 (e)). At FIXED's defaults it returns {} and the
-// pre-pass is exactly as before. A key that is missing from FIXED stops here rather than reading as off (rule 4).
+// The commitment pre-pass's options from a scenario (PR C, messages 357 (e), 359). With COAL_PRE_C's settings it returns {} and
+// the pre-pass is exactly as before PR C. A key that is missing from FIXED stops here rather than reading as off (rule 4).
 function coalUcOpts(p, rampMW){
   for (const k of ['coalCommitWeighStarts','coalCommitLookaheadH','coalMslPracticeFloor','coalMslDesign','coalMslDesignFromYear',
                    'coalStartCostBasis','coalStartFuel','coalStartWear','coalRampHonour','coalMinDownH','coalFlexDeepMsl','coalFlexDeepAfterYear'])
@@ -20533,7 +20547,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-23a';
+const BUILD_STAMP = '2026-10-24a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20641,7 +20655,7 @@ const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, S
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
   BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW, USD_RATE_R, US_CPI_2011_TO_JAN26,
   COAL_START_SUPER, COAL_START_OFFLINE_H, COAL_START_WEAR_USD, COAL_START_OTHER_USD, COAL_START_FUEL_RMW, COAL_START_FUEL_AT_RGJ,
-  COAL_KGCO2_PER_GJ, COAL_GJ_PER_MWH,
+  COAL_KGCO2_PER_GJ, COAL_GJ_PER_MWH, COAL_PRE_C,
   bldWeatherYears: null, bldWxWeights: null, bldSolarTrk: null, bldWindMod: null, _wxLoading: null, _twelveYearCache: {} });
 // The scripts the engine shares with the nodal model (IMPORTS_CF and others), loaded in the worker as the page loads them.
 const ENGINE_SCRIPTS = ['nodal/nodal_engine.js', 'nodal/capacity_siting.js'];
