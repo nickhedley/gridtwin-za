@@ -5312,7 +5312,7 @@ const COAL_EFOR_REPL_RMWH = 529.10;
 const COAL_PRE_C = { coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampHonour:0, coalMslPracticeFloor:null, coalMslDesign:null,
   coalMslDesignFromYear:2030, coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median', coalStartEfor:0, coalMinDownH:null,
   syncImportsCount:1, syncNucHydroBasis:'installed', coalFlexDeepMsl:0.40, coalFlexDeepAfterYear:2035,
-  bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, reserveCoalRampCap:0 };
+  bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, reserveCoalRampCap:0, coalStartupH:null };
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
 // IMPORTS_CF is defined in nodal_engine.js, which loads at line 1124 - BEFORE this
 // constant block. So FIXED can read it, and does. That direction is deliberate: the
@@ -5975,6 +5975,13 @@ const FIXED = {
   //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH (null: UC_FLEET's) raises every unit's
   //     minimum down time to at least this many hours (a sensitivity at 24).
   coalMinDownH:null,
+  // (6) Start-up time (user, 24 Oct 2026, message 369 (b)): hours from a start order to synchronisation, [hot, warm, cold] by the
+  //     unit's hours offline at the order (COAL_START_OFFLINE_H classes). Hot 2 h (AEMO 2025 Thermal Audit p.25, about 2 hours'
+  //     notice); cold 10 h (Agora Energiewende 2017, 5-10 h for hard coal, the upper end for an older fleet: conservative); warm
+  //     6 h, between them, unsourced (flagged). After synchronising a unit loads to its minimum at its own ramp, its output in
+  //     those hours must-run. The order comes at least the unit's minimum down time after it came off, so a unit can return only
+  //     after minimum down + start-up + loading hours. null: available at its minimum in the hour it is committed, as before.
+  coalStartupH:[2, 6, 10],
   // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
   // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
   reserveEnabled:1, reserveOperatingMW:2200,
@@ -6963,7 +6970,8 @@ function ucUnitsStanding(coalInstalled) {
 // the pre-pass is exactly as before PR C. A key that is missing from FIXED stops here rather than reading as off (rule 4).
 function coalUcOpts(p, rampMW){
   for (const k of ['coalCommitWeighStarts','coalCommitLookaheadH','coalMslPracticeFloor','coalMslDesign','coalMslDesignFromYear',
-                   'coalStartCostBasis','coalStartFuel','coalStartWear','coalStartEfor','coalRampHonour','coalMinDownH','coalFlexDeepMsl','coalFlexDeepAfterYear'])
+                   'coalStartCostBasis','coalStartFuel','coalStartWear','coalStartEfor','coalRampHonour','coalMinDownH','coalFlexDeepMsl','coalFlexDeepAfterYear',
+                   'coalStartupH'])
     if (!(k in FIXED)) throw new Error('coalUcOpts: FIXED.' + k + ' missing');
   const g = k => p[k] !== undefined ? p[k] : FIXED[k];
   const o = {};
@@ -6971,6 +6979,12 @@ function coalUcOpts(p, rampMW){
   if (g('coalRampHonour')) o.rampMW = rampMW;
   if (g('coalMinDownH') != null) o.minDn = g('coalMinDownH');
   const tier = coalFlexTier(p);
+  // Start-up time (message 369 (b)): hours to synchronise by start type, and each unit's ramp as a share of its capacity an hour
+  // (the flexible ramp on units retiring after coalFlexDeepAfterYear with the checkbox's second step, as the engine's rampPct).
+  if (g('coalStartupH') != null){
+    o.startH = g('coalStartupH');
+    o.rampFracOf = u => (tier >= 2 && u.dy > g('coalFlexDeepAfterYear') ? p.coalRampFlexPct : p.coalRampBasePct) / 100;
+  }
   if (g('coalMslPracticeFloor') != null || g('coalMslDesign') != null || tier >= 2){
     o.year = p.scenarioYear ?? 2026; o.mslFloor = g('coalMslPracticeFloor'); o.mslDesign = g('coalMslDesign'); o.mslDesignFrom = g('coalMslDesignFromYear');
     // Tier 1: units reach their design minimum from the start, not only from coalMslDesignFromYear.
@@ -7077,6 +7091,22 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
   }));
   // Start cost of unit i after hoursOff hours offline: UC_FLEET's own, or the built basis (ucOpts.startOf).
   const _startCost = (i, hoursOff) => UO.startOf ? UO.startOf(unitState[i].cap, hoursOff, UC_UNITS[i].cls) : UC_UNITS[i].startup_cost * availFactor;
+  // Start-up time (message 369 (b)). A unit offline H hours that is to be at its minimum at the block start was ordered to start
+  // S + L hours before: S to synchronise (UO.startH by start type), L to load from zero to its minimum at its ramp. The order
+  // finds it g = H - S - L hours after it came off; the fastest start type its thermal state at the order allows is used (a
+  // unit hot at the order can make a warm start, not the reverse), and it is charged by that state. Feasible only if g is at
+  // least the minimum down time. _plan returns { g, L } or null.
+  const _minDn = i => Math.max(UC_UNITS[i].min_dn, UO.minDn ?? 0);
+  const _loadH = i => !UO.startH ? 0 : _mslOf(UC_UNITS[i]) / Math.max(0.01, UO.rampFracOf(UC_UNITS[i]));
+  const _cls = (i, g) => { const th = COAL_START_OFFLINE_H[UC_UNITS[i].cls]; return g < th[0] ? 0 : g <= th[1] ? 1 : 2; };
+  const _plan = (i, H) => {
+    if (!UO.startH) return H >= _minDn(i) ? { g: H, L: 0 } : null;
+    const L = _loadH(i);
+    for (let t = 0; t < 3; t++){ const g = H - UO.startH[t] - L; if (g >= _minDn(i) && _cls(i, g) <= t) return { g, L }; }
+    return null;
+  };
+  // Output in the k-th hour before the block start (k = 1, 2, ...) while loading: the hour's mean of a straight rise to the minimum.
+  const _runUp = (i, L, k) => L <= 0 ? 0 : unitState[i].mslMW * Math.max(0, Math.min(1, (L - k + 0.5) / L));
   const _WEIGH = !!UO.weigh;
   // A block's commitment target: its peak net load plus reserve. With rampMW set (message 359 (f)), also at least the previous
   // hour's net load less one hour's ramp, so units coming off at a block start do not force coal down faster than it can ramp.
@@ -7182,7 +7212,8 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
       // Must stay on if min_up not yet satisfied
       const mustOn  = st.isOn  && st.hoursOn  < u.min_up;
       // Must stay off if min_down not yet satisfied
-      const mustOff = !st.isOn && st.hoursOff < Math.max(u.min_dn, UO.minDn ?? 0);
+      // (with a start-up time, until it can be ordered, synchronised and loaded to its minimum by this block: _plan)
+      const mustOff = !st.isOn && !_plan(i, st.hoursOff);
 
       if (mustOff) { decidedOn[i] = false; continue; }
       if (mustOn)  { decidedOn[i] = true;  totalCommitted += st.cap; continue; }
@@ -7198,9 +7229,13 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
         const b0 = day * BLOCKS_PER_DAY + blk, nB = Math.ceil((UO.lookH ?? 24) / BLOCK_HOURS);
         let gap = 0;
         for (let k = 1; k <= nB && b0 + k < _tgt.length; k++) if (_tgt[b0 + k] > _capBefore) { gap = k * BLOCK_HOURS; break; }
+        // With a start-up time (message 369 (b)): a unit that could not be back by then is kept on; while loading before the block
+        // that needs it, a restarted unit would already run, so keeping it on adds only its minimum less that output.
+        const pl = gap > 0 ? _plan(i, gap) : null;
         let keepCost = 0;
-        for (let h = h0; h < Math.min(HOURS, h0 + gap); h++) keepCost += st.mslMW * u.marginal_cost - Math.min(st.mslMW, Math.max(0, _room[h])) * _mcm[h];
-        const keep = gap > 0 && _startCost(i, gap) > keepCost;
+        for (let h = h0; h < Math.min(HOURS, h0 + gap); h++){ const m = st.mslMW - (pl ? _runUp(i, pl.L, h0 + gap - h) : 0);
+          keepCost += m * u.marginal_cost - Math.min(m, Math.max(0, _room[h])) * _mcm[h]; }
+        const keep = gap > 0 && (!pl || _startCost(i, pl.g) > keepCost);
         decidedOn[i] = keep;
         if (keep){ totalCommitted += st.cap; for (let h = h0; h < Math.min(HOURS, h0 + gap); h++) _room[h] -= st.mslMW; }
       } else {
@@ -7219,7 +7254,11 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
       let startCostH = 0;
       if (!wasOn && nowOn) {
         // Unit starting up — charge start-up cost in hour h0 (UC_FLEET's, or the built basis by hours offline)
-        startCostH = _startCost(i, st.hoursOff);
+        const pl = _plan(i, st.hoursOff);
+        startCostH = _startCost(i, pl ? pl.g : st.hoursOff);
+        // Loading to its minimum in the hours before the block (message 369 (b)): must-run output, no headroom.
+        if (pl) for (let k = 1; k <= Math.ceil(pl.L); k++){ const hk = h0 - k; if (hk < 0) break;
+          const mw = _runUp(i, pl.L, k); ucAvail[hk] += mw; ucMinStable[hk] += mw; }
         st.hoursOn = 0; st.hoursOff = 0;
       } else if (wasOn && !nowOn) {
         st.hoursOn = 0; st.hoursOff = 0;
