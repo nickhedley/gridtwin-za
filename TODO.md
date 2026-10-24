@@ -589,6 +589,10 @@ Done 24 Oct (messages 363-366): central set as defaults on build 2026-10-24a; pr
 Eskom's 2026 midday coal minimum (364; the 3 GW check gives 4.8 GW, flagged for review); suite 957/982 + audit 88/88, eng5 6/6, each
 new failure traced to a coal setting (RESULTS 'c6 PR C'); proposed check updates await the user's review (avgCost and the
 scenario's curtailFuelCost re-anchored, response baseline rewrite, four findings restated on c6, zero-curtailment diagnostic, a
-stressed case for drInterruptMW). Open: the IRP pair's demand basis (ESRG domestic grid x 0.951, as recorded, falls below c6's
+stressed case for drInterruptMW). After the note (user, message 368; no build work for c6), coal treatment against standard
+practice, each with its measured effect in RESULTS 'c6 PR C' and the pack's limitation 13: a unit-commitment optimisation in place
+of the cost-weighing rule; start-up time; the synchronous floor as a minimum number of units by region (AEMO system strength) and a
+sourced grid-forming share; reserve limited by unit ramp; forecast commitment; the practice floor's several causes separated; Eskom's
+minimum up and down times; cycling's effect on forced outages; deemed energy for curtailed renewables. Open: the IRP pair's demand basis (ESRG domestic grid x 0.951, as recorded, falls below c6's
 own path, 221 against about 232 TWh in 2030; confirm before the pair runs); panels regenerated after the last page edit; render
 check; Deep decarbonisation 2035 adequacy check on Tiers 1-3; solve-time trial (365 (c)); PR C opened by Sunday evening.
