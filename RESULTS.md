@@ -16973,3 +16973,85 @@ Acceptance after (a), (b), (c), (e) (24 Oct 2026, finished 13:31 UTC; before -> 
 Reading: 2026 starts 19.2 a unit a year against Eskom's costing assumption of about 12 (1.6x; passes the 3x test). Least-cost path
 2035's 70 starts fall to 28 and its two-shifting nearly stops, at 2.5 TWh more curtailment and 3 Mt more CO2. Cost falls slightly in
 both: fewer starts outweigh the extra coal running (curtailment is unpaid: no deemed energy).
+
+### c6 PR C, message 370: the MIP benchmark of coal commitment, instantaneous reserve kept uncapped, IRP 2025's own demand path for the pair (user, 24 Oct 2026, messages 369 (d), 370 (a)-(e); branch claude/c6-coal, build 2026-10-24b)
+
+(d) MIP benchmark (369 (d), 370 (d)): finding. The engine's coal commitment problem for one run (Today 2026 and Least-cost path
+2035, weather year 2025, outage seed 71830529 + 2025 x 7919; recorded with the engine's own unit commitment by scratchpad
+m369/mip/extract.js) solved as a unit-commitment MIP on the same rules (scratchpad m369/mip/mip.py, HiGHS 1.15 via highspy): the same
+net load, units at their c6 minimums, start costs by thermal state (NREL, with the forced-outage term), start-up time and loading to
+the minimum at the ramp, minimum up and down, the fleet ramp, the reserve held on committed headroom, shortfalls of coal (energy or
+reserve) at the model's diesel cost (FIXED.costDiesel, R6,100/MWh) for both, curtailment free. Eight weeks (days 14, 63, 112, 161,
+196, 245, 294, 336), each from the engine's last 96 hours of commitment, 168 h costed plus 24 h look-ahead. The engine's commitment
+is costed by the same dispatch with its commitment fixed. Least-cost path 2035 (42 units): every week solved to optimality (gap
+below 0.2%, 1-4 minutes a week). Today 2026 (84 units): 30 minutes a week, started from the engine's commitment, none to optimality;
+the solver's lower bound gives the gap.
+
+| | Least-cost path 2035, engine | its optimum | Today 2026, engine | best found (bound) |
+|---|---|---|---|---|
+| Total cost above the optimum | 1.3% (coal's own costs 3.0%) | | at most RESULT_T26_BOUND above the bound; RESULT_T26_BEST above the best found | |
+| Starts per unit a year | 28 | 147 | RESULT_T26_STARTS |
+| Two-shift days | 2 of 56 | 41 of 56 | RESULT_T26_TWO |
+| Curtailment, GWh over the weeks | 3,658 | 2,154 | RESULT_T26_CURT |
+
+Finding (370 (d)): on Least-cost path 2035, an optimum under the same rules and NREL's start costs cycles coal about five times as
+often as the engine (147 against 28 starts per unit a year; 41 against 2 two-shift days in 56), at 1.3% lower total cost. Real
+practice cycles far less (Eskom runs units at minimum rather than cycling them; Australia's black coal units start about 7 times a
+year), which suggests real cycling costs exceed NREL's lower bounds. The engine stays for c6; this goes in the reviewer pack's
+departures list; s_wearp75 (NREL's 75th-percentile wear) is a named result of the run set. After the note: calibrate start costs
+so the MIP reproduces observed starts (the implied cycling cost). Caveats: coal only (the engine's gas, storage and imports appear as
+the diesel-priced shortfall, the same for both); one weather year and draw; units of a station are identical, so many optima tie.
+
+(b) Instantaneous reserve (370 (b), commit 7afc045). Not capped by ramp: it is governor response within seconds. A sourced
+primary-response share of each unit's rating would cap it; the Grid Code (Network Code) could not be read from this environment
+(nersa.org.za and etenders.gov.za do not resolve; the Firecrawl account has no credits), and a search snippet citing version 9
+(2014) at 3% of MCR within 10 seconds is unverified, so instantaneous reserve keeps today's treatment, flagged. The ramp cap applies
+to the ten-minute reserve only; regulating keeps today's treatment too (370 (b) puts ramp caps on the ten-minute and slower
+reserves; flagged as a reading). Reserve shortfall, one draw per weather year: 2026 replay 0.6 GWh (1.3 h), Least-cost path 2035
+13.4 GWh (15 h), against 2,368 and 500 GWh with all three products capped (369 (c)). (c) The build optimiser's cap goes to the
+after-note list (TODO 14iz).
+
+(a) IRP 2025's demand path for the pair (370 (a), commit 6352b4a; replaces 367 (c)). IRP 2025 publishes no demand table; its full
+forecasting report is not public (searched 24 Oct 2026: the department's IRP pages, the gazette, ESRG's ZivaHub record and GitHub
+data, which hold the 2024 draft cycle's series, not the final Moderate). The Moderate line of Figure 2 (plan p.11, gazette p.22) is
+digitised (public_data/irp2025_fig2_moderate.json, harness/pathway/digitise_irp2025_fig2.py): the raster in the gazette PDF, axes
+calibrated from its tick marks (1 px = 1.04 TWh), the line traced by colour row by row, each year a local straight-line fit;
+reading error about +/-1 TWh, +/-3 TWh for 2031, 2032 and 2034 (obscured by other lines, interpolated). Checks: 2029 reads 255.0
+TWh, the plan's p.34 figure (its executive summary says 2030, where the figure reads 260.0); 2024-2040 growth 2.2% a year against the
+plan's 2.3%. Definition (p.11): grid-connected consumption including network losses, excluding pumping, battery charging and
+auxiliaries, covering deemed cross-border sales; its 2024 value (238.3) matches ESRG's Mode 1 total (239.2: domestic grid,
+exports, distributed PV, other onsite generation).
+
+Conversion to the model's basis, definitions only, at the IRP's own level (not re-anchored to c6's 2026): customer demand =
+0.951 x (IRP total - exports - other onsite generation - distributed PV at its 2026 level), the three parts from ESRG's split
+(exports 11.0, other onsite 12.4, distributed PV 8.75 TWh in 2026). 0.951 is Eskom's 2025 domestic grid demand over Stats SA's
+electricity available for distribution (194.6/204.6, messages 318-319): coverage, a definition. Reconciled against 1.106 (NTCSA
+MTSAO) and 1.089 (IRP, RESULTS 9 Oct): those are like-for-like ratios of a forecast's 2026 level to the model's measured 2026 after
+exports and onsite generation are removed, so they carry the coverage (1/0.951 = 1.052) and a level difference (the forecasts' 2026
+above measured demand, 3.5-5%); applying them would re-anchor, which 370 (a) rules out. In 2026 the IRP's own path on the model's
+basis is 199.2 TWh against the model's measured 203.5: IRP 2025's 2026 sits 2% below measured demand.
+
+| Year | IRP Figure 2, TWh | IRP path, model basis | c6 central | ESRG domestic x 0.951 (367 (c)) | c5f pair (exports folded in) | IRP / c6 |
+|---|---|---|---|---|---|---|
+| 2026 | 241.6 | 199.2 | 203.5 | 203.4 | 227.1 | 0.979 |
+| 2027 | 245.7 | 203.1 | 215.9 | 206.9 | 231.7 | 0.941 |
+| 2028 | 250.2 | 207.4 | 220.0 | 210.3 | 236.1 | 0.943 |
+| 2029 | 255.0 | 211.9 | 224.7 | 214.3 | 241.3 | 0.943 |
+| 2030 | 260.0 | 216.7 | 232.3 | 221.3 | 249.6 | 0.933 |
+| 2031 | 268.0 | 224.3 | 239.7 | 229.0 | 257.7 | 0.936 |
+| 2032 | 276.0 | 231.9 | 245.6 | 235.2 | 264.1 | 0.944 |
+| 2033 | 284.0 | 239.5 | 252.3 | 242.1 | 271.5 | 0.950 |
+| 2034 | 291.1 | 246.3 | 259.8 | 249.9 | 279.7 | 0.948 |
+| 2035 | 298.2 | 253.0 | 266.1 | 256.5 | 286.6 | 0.951 |
+| 2036 | 305.4 | 259.9 | 272.8 | 263.5 | 294.0 | 0.952 |
+| 2037 | 312.9 | 267.0 | 280.7 | 271.7 | 302.6 | 0.951 |
+| 2038 | 321.3 | 275.0 | 289.2 | 280.5 | 311.8 | 0.951 |
+| 2039 | 330.6 | 283.9 | 297.4 | 289.0 | 320.8 | 0.955 |
+| 2040 | 339.4 | 292.2 | 305.1 | 297.0 | 329.2 | 0.958 |
+
+(Model customer demand including the 930 MW contracted smelter block from 2027; c6 central from public_data/esrg_irp_demand_ref.json's
+index on the 203.52 TWh base.) Reading: on the model's basis IRP 2025's own Moderate forecast is 2% below c6's central in 2026, 6-7%
+below to 2032 (c6 adds the smelter block in 2027; the IRP's step is not visible) and about 5% below from 2033 to 2040. The earlier
+finding that the IRP's demand is 12-14% above the model's does not hold like for like: it compared the IRP's total (exports and
+onsite generation included) with the model's customer demand. Index file: harness/pathway/irp2025/index_irp2025fig2_c6.json
+(gen_irp_index.py fig2 2027:930), used by c6 at the IRP's demand (DEMAND=index:) and by the pair's engine check.

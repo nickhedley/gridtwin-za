@@ -606,3 +606,10 @@ weeks of the engine's own commitment problem, 2026 and Least-cost path 2035 (c6 
 Then: Deep 2035 re-search on these rules (running), top-up, rescore; panels, suite, render; PR C. After-note list now also: the
 governor-response limit on instantaneous reserve (PLEXOS Max Response); a sourced warm start-up time and the ASTR's regulating
 response time; reserve limited by ramp in the build optimiser.
+Message 370 (24 Oct): (a) IRP pair demand from IRP 2025's own Moderate forecast, digitised from Figure 2, definitions-only
+conversion (0.951 after exports, other onsite and 2026 distributed PV), not re-anchored (6352b4a; RESULTS '370'); the pair's engine
+checks wait for the IRP build file rebuilt from c6's runs (Monday). (b) instantaneous and regulating reserve keep today's treatment,
+flagged; ramp cap on the ten-minute reserve only (7afc045); source the Grid Code's primary-response share (Network Code, NERSA; the
+search snippet's 3% of MCR in 10 s is unverified) and the ASTR's regulating response time. (c) the build optimiser's ramp cap on
+reserve: after the note. (d) MIP finding recorded; s_wearp75 a named result; after the note: calibrate start costs so the MIP
+reproduces observed starts (implied cycling cost).

@@ -194,9 +194,10 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
                  .replace(/^ 0 <= rc_(\d{4}) <= ([0-9.]+)$/gm,(m,y,ub)=> RC_FROM && +y<RC_FROM ? ` 0 <= rc_${y} <= 0` : RC_MIN!==null && +y===+(process.env.HORIZON||2040) ? ` ${Math.min(RC_MIN,+ub).toFixed(1)} <= rc_${y} <= ${ub}` : m); };
  let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid); require(path.join(__dirname,'..','tmp_cleanup.js'))(tmp);
    // SOLVE CACHE (7 Oct 2026): the container restarts every few hours and a pass-2 solve takes one to three, so
-   // each optimal solution is kept under lpcache/, keyed by a hash of the LP text. A restarted run replays the
+   // each optimal solution is kept under lpcache/ (or LPCACHE, a run's own folder, so it can be deleted after the run's check;
+   // message 371 (b)), keyed by a hash of the LP text. A restarted run replays the
    // solves it already finished (identical LP, identical answer) and only redoes the one that was cut off.
-   const LPT=liMinRows(gasCumRows(gasMinRows(gasFloorVint(pvCap(tcapYr(gasLift(fixBuild(fix(lp))))))))), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
+   const LPT=liMinRows(gasCumRows(gasMinRows(gasFloorVint(pvCap(tcapYr(gasLift(fixBuild(fix(lp))))))))), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=process.env.LPCACHE?path.resolve(process.env.LPCACHE):path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
    // DUMP_LP=<prefix> (8 Oct 2026, diagnostics): write each LP to <prefix>_pass<n>.lp; DUMP_STOP=<n> exits after the n-th.
    if (w.__coalAvailSum && !w.__coalAvailPrinted){ w.__coalAvailPrinted=1; console.log('COAL_AVAIL: stress-window coal limit = available coal; per window: weather year, start day, days, seed, recorded mean / min, available mean / min (fraction of standing coal), hours equal / hours');
      for (const r of w.__coalAvailSum) console.log('  '+r[0]+' '+r[1]+' '+r[2]+' '+r[3]+'  recorded '+r[4].toFixed(4)+' / '+r[5].toFixed(4)+'  available '+r[6].toFixed(4)+' / '+r[7].toFixed(4)+'  equal '+r[8]+' / '+r[9]); }
