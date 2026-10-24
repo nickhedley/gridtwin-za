@@ -596,3 +596,13 @@ sourced grid-forming share; reserve limited by unit ramp; forecast commitment; t
 minimum up and down times; cycling's effect on forced outages; deemed energy for curtailed renewables. Open: the IRP pair's demand basis (ESRG domestic grid x 0.951, as recorded, falls below c6's
 own path, 221 against about 232 TWh in 2030; confirm before the pair runs); panels regenerated after the last page edit; render
 check; Deep decarbonisation 2035 adequacy check on Tiers 1-3; solve-time trial (365 (c)); PR C opened by Sunday evening.
+Message 369 (24 Oct, closing gaps in PR C if they fit by Monday morning): (a) cycling's forced-outage cost per start built (006f1c2);
+(c) reserve limited by coal's ramp x response time built in the engine's shortfall accounting only (4b7f2fe; 2026 replay 2.4 TWh
+short, mostly instantaneous and regulating; flagged against operations); open for the user: instantaneous capped by ramp or left
+uncapped until a governor-response figure is sourced, and the build optimiser's cap moved to the after-note list (proposed);
+(b) start-up time 2 / 6 / 10 h and loading at the ramp built (fd0c7ec; warm 6 h unsourced, flagged); (e) floor recalibrated to 0.75
+on the same measured target (07dff8b; 3 GW check now 5.5 GW, flagged); acceptance rerun (RESULTS '369'); (d) MIP benchmark on eight
+weeks of the engine's own commitment problem, 2026 and Least-cost path 2035 (c6 2035 does not exist until Monday's run), running.
+Then: Deep 2035 re-search on these rules (running), top-up, rescore; panels, suite, render; PR C. After-note list now also: the
+governor-response limit on instantaneous reserve (PLEXOS Max Response); a sourced warm start-up time and the ASTR's regulating
+response time; reserve limited by ramp in the build optimiser.

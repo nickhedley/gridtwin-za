@@ -16917,3 +16917,59 @@ difference of definition (the IRP's system demand includes losses and deemed cro
 base), not faster growth: like for like, it does not hold. ESRG's Mode 1 total matches Figure 2 at 2024, 2035 and 2040 within its
 reading error but not the stated 255 TWh in 2030 (268.6), so it is not shown to be IRP 2025's forecast restated. The pair's IRP
 path waits for IRP 2025's demand table (page) from the user, before Monday's runs.
+
+### c6 PR C, message 369 (a)-(e): forced-outage cost of a start, reserve limited by coal's ramp, start-up time, the floor recalibrated to 0.75 (user, 24 Oct 2026, message 369; branch claude/c6-coal at 07dff8b, build 2026-10-24a)
+
+Settings: PR C's central otherwise (FIXED); acceptance as before (Today 2026 and Least-cost path 2035, twelve weather years x ten
+outage draws, seeds 71830529 + k x 104729 + year x 7919, scratchpad m369/acc.sh with m359/acc_page.js and m369/acc_page_c.js);
+floor metric as in 'c6 PR C' (m364/floor_model_page.js, m369/run_fmb.sh).
+
+(a) Forced-outage cost of a start (commit 006f1c2; 24 Oct 2026, acceptance finished 13:11 UTC). Each start adds NREL/Intertek's
+median EFOR impact per start (NREL/SR-5500-55433 table 1-1: large subcritical 0.0057 / 0.0070 / 0.0088 percentage points hot /
+warm / cold; supercritical 0.0037 / 0.0054 / 0.0088), costed per MW at a year of lost output at the 2026 replay's mean marginal
+price (R529.10/MWh, computed from the replay) plus a peaker's annual capacity cost (bldNetAnnuity('ocgd', 2026), R2,743/kW-yr), per
+percentage point: about R73,800/MW. Start costs per MW: large subcritical R2,524 / R3,050 / R4,521; supercritical R2,393 / R3,282 /
+R4,840. Acceptance: 2026 starts per unit a year 28.9 -> 27.1, two-shift days 10% -> 9%, winter midday curtailment peak 4.83 -> 4.96
+GW, curtailment 1.23 TWh, cost R217.98 bn; Least-cost path 2035 86.1 -> 70.1, 56% -> 46%, 5.69 -> 6.22 TWh, shed 3.4 GWh, R254.03
+bn. Floor metric 0.625 at 0.77 (unchanged).
+
+(c) Reserve limited by coal's ramp (commit 4b7f2fe). Practice: PLEXOS limits a unit's reserve to its ramp x the reserve's timeframe
+(Reserve Timeframe, Max Ramp Up), and separately to Max Response (governor response for the fastest product). Built in the engine's
+reserve-shortfall accounting only: committed coal covers at most committed coal x 24%/h (coalRampBasePct, Agora 2017) x each
+product's response time, 10 s instantaneous and 10 min ten-minute (ASTR), 5 min regulating (ENTSO-E aFRR full activation; the
+ASTR's own regulating time is not recorded: flagged); quick-start hydro covers ten-minute first, online gas the faster products
+first. Dispatch still withholds the whole requirement from coal, so cost, curtailment and shedding are unchanged. Reserve
+shortfall, mean a year (120 runs, after (b) and (e)): 2026 replay 3.1 GWh -> 2,368 GWh in 2,699 hours; Least-cost path 2035 18 GWh
+-> 500 GWh in 431 hours. Split, one draw per weather year on 0.77 before (b): instantaneous about 1.0 TWh, regulating about 0.75
+TWh, ten-minute nil. Flag: the real 2026 system holds instantaneous reserve on coal governors, which this ramp reading cannot
+deliver in 10 s; no public South African governor-response figure found. The build optimiser's matching cap is not built (its
+shortfall is priced at VoLL, so it would buy storage for a shortfall the 2026 system does not show); both decisions put to the user.
+
+(b) Start-up time (commit fd0c7ec). coalStartupH: 2 h hot (AEMO 2025 Thermal Audit p.25), 6 h warm (unsourced, flagged), 10 h cold
+(Agora 2017, 5-10 h, upper end) to synchronise, by the unit's state at the start order (NREL classes); after synchronising the unit
+loads to its minimum at its ramp (24%/h of its capacity; 3.1 h at 0.75, 2.2-2.4 h at 0.52-0.57), that output must-run. The order
+comes at least the minimum down time after the unit came off. With 4 h minimum down a unit can return no sooner than about 8-10 h
+after coming off, so a midday trough of 4-8 h can no longer be cycled.
+
+(e) Floor recalibrated (commit 07dff8b; runs 24 Oct 2026 13:2x-13:29 UTC). The 2026 replay's sunny low-demand midday coal minimum
+over available coal, median (p10-p90), with start-up time, by floor: none 0.523 (0.440-0.621); 0.70 0.586; 0.74 0.616; 0.75 0.623
+(0.546-0.709); 0.76 0.631; 0.77 0.639 (0.559-0.728). Measured (ESK19679, Eskom credited, analysis ours) 0.623 (0.565-0.724): floor
+set to 0.75. Winter midday curtailment peak, mean of 120 runs: 590 MW none, 3,107 at 0.70, 5,139 at 0.74, 5,543 at 0.75, 5,872 at
+0.76, 5,987 at 0.77; NTCSA's reported 3 GW is met near 0.70 (flag kept, now 5.5 GW at the central).
+
+Acceptance after (a), (b), (c), (e) (24 Oct 2026, finished 13:31 UTC; before -> after, against (a)):
+
+| | 2026 replay | Least-cost path 2035 |
+|---|---|---|
+| Starts per unit a year | 27.1 -> 19.2 | 70.1 -> 28.2 |
+| Two-shift days | 9% -> 0% | 46% -> 3.6% |
+| Winter midday curtailment peak, GW | 4.96 -> 5.54 | 17.6 -> 19.0 |
+| Curtailment, TWh | 1.23 -> 0.99 | 6.22 -> 8.71 |
+| Shed, GWh | 0 -> 0 | 3.41 -> 3.47 |
+| CO2, Mt | 169.4 -> 169.3 | 102.0 -> 105.1 |
+| System cost, R bn | 217.98 -> 217.79 | 254.03 -> 253.74 |
+| Reserve shortfall, GWh | 3.1 -> 2,368 | 18 -> 500 |
+
+Reading: 2026 starts 19.2 a unit a year against Eskom's costing assumption of about 12 (1.6x; passes the 3x test). Least-cost path
+2035's 70 starts fall to 28 and its two-shifting nearly stops, at 2.5 TWh more curtailment and 3 Mt more CO2. Cost falls slightly in
+both: fewer starts outweigh the extra coal running (curtailment is unpaid: no deemed energy).
