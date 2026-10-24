@@ -16772,3 +16772,95 @@ Engine commitment against standard (PLEXOS-style) unit commitment (358 (a)); 'PR
 - No-load cost and part-load heat rate: in practice's objective; the engine applies part-load fuel and CO2 after dispatch and the
   commitment sees marginal cost only. Left out.
 - Forecast: practice day-ahead with rolling re-commitment; engine perfect foresight (tested above).
+
+### c6 PR C, build 2026-10-24a: the coal central (user, 24 Oct 2026, messages 359-366; branch claude/c6-coal; TODO 14iz)
+
+Defaults (FIXED; COAL_PRE_C holds each setting before PR C and reproduces build 2026-10-23a exactly, checked on every preset,
+seed 12345, 2025 weather):
+- Commitment weighs start costs, looking 24 h ahead: a running unit the rule would switch off stays on at its minimum when its start
+  cost exceeds its minimum output's fuel over the gap net of the fuel that output saves elsewhere (the coal it displaces, priced at
+  the displaced unit's cost; output into a surplus saves nothing).
+- Start costs per MW per start by class (large subcritical; supercritical Medupi and Kusile) and hours offline (hot below 12 h, warm
+  to 40 h subcritical or 72 h supercritical, cold beyond): NREL/Intertek (NREL/SR-5500-55433) wear and other costs, January 2026 rands,
+  plus start fuel as one combined fleet-level constant (NREL table 1-3 less Eskom's fuel oil, oil on the diesel basis, coal at the
+  model's R47.94/GJ; computed outside the repository). Large subcritical R2,103 / R2,533 / R3,872; supercritical R2,120 / R2,884 /
+  R4,191 (hot / warm / cold), against UC_FLEET's R99-160.
+- Minimums: practice floor 0.77 to 2029 (below), design minimums 0.57 and 0.52 from 2030 (Tier 1, central from 2030).
+- Minimum up and down 8 and 4 h (UC_FLEET, unchanged); synchronous floor with imports out (HVDC) and nuclear and hydro at their
+  output, grid-forming share 0.30 (unsourced, flagged).
+- Ramp 24% of available coal an hour, now honoured: the commitment pre-pass ignored ramps, so coal moved beyond the limit at about
+  700 block starts a run in Least-cost path 2035 (60% committed minimums switching on at once, 35% commitment falling, 5% the
+  ramp-aware floor); the commitment now stays above the previous hour's net load and committed minimum less one hour's ramp, the
+  floor rises no faster than the ramp, and departing units walk down. 0.2 hours a run remain (12 runs, central settings).
+- Flexibilisation in three steps (coalFlexPct 0, 1, 2): Tier 1 brings the design minimums forward to every year; Tiers 1-3 add 0.40
+  for units retiring after 2035, the flexible ramp on those units, and R223/kW/yr on them (Weisweiler, unsourced for South Africa).
+- Build optimiser: each year's capacity-weighted minimum of the units standing (0.77 in 2026; 0.536 in 2030, 0.527 in 2035, 0.520
+  in 2040) and the standing fleet's hot-start cost per MW of commitment added (about R2,110); the 48-hour rate rule becomes the
+  s_rate48 sensitivity.
+
+Practice floor, calibrated like for like (messages 364, 365). Measured (ESK19679, Eskom credited, analysis ours): per day, the lowest
+hour from 10:00 to 15:00 of coal output ('Thermal Generation') over available coal (Eskom installed less PCLF, UCLF and OCLF, less
+nuclear at its output and the other 5,758 MW at 90%, the model's coal-only method). Sunny low-demand days: midday PV above its
+month's median and midday demand in its month's lowest third. Median (p10-p90):
+- 2025: sunny low-demand 0.831 (0.591-0.943), 65 days; winter (May-August) sunny low-demand 0.879; all days 0.873 (0.629-0.973).
+- January-August 2026: sunny low-demand 0.623 (0.565-0.724), 28 days; winter sunny low-demand 0.672; all days 0.665 (0.570-0.776).
+- The minimum fell about 20 points from 2025 to 2026 as coal availability rose (coal-only 58.4% to 65.3%) and midday demand did not.
+The same statistic in the 2026 replay (Today 2026, central otherwise, twelve weather years x ten draws, 24 Oct 2026 05:20-05:29 UTC,
+scratchpad m364/floor_model_page.js), by floor: none 0.521; 0.60 0.538; 0.65 0.551; 0.70 0.576; 0.72 0.588; 0.75 0.610; 0.77 0.625
+(0.541-0.716); 0.80 0.647. Winter midday curtailment peak, mean of 120 runs: 409, 1,196, 1,746, 2,619, 2,953, 3,819, 4,828, 5,734 MW.
+The floor is set where the model matches the measurement, 0.77, as backcast practice matches a simulated statistic to its measured
+counterpart (SEM Committee, PLEXOS validation and backcast report, SEM-20-004); setting the parameter itself to 0.62 would give 0.54.
+Check, not target: NTCSA's 'up to 3 000MW in a particular day' of winter 2026 (Gav Hurford, System Operator, Windaba 7 Oct 2026, in
+TechCentral and Engineering News), described as oversupply against coal kept online for lack of flexible plant; congestion
+curtailment runs under NERSA's separate mechanism (Western and Eastern Cape) and no split of the 3 GW is published, so how much of it
+was congestion cannot be said. At 0.77 the replay's winter peak is 4.8 GW, outside the 2-4 GW band (flagged, message 365 (a); 0.72
+gives 3.0 GW). A coal floor calibrated to all of a 3 GW that included congestion would overstate coal stiffness; calibrated to coal's
+own output, as here, it does not depend on that split.
+
+Acceptance (359 (a), 363 (a)): starts per unit a year, MW started over mean available MW, central with the floor at 0.77 (24 Oct
+2026 04:44-04:54 UTC, scratchpad m359/run_acc.sh; before the ramp walk-down, which moves starts by under 1%): 2026 replay 28.9 (two-
+shift days 10%), 2.4x Eskom's about 12 (Eskom's costing assumption for reserve shutdowns, not a measurement; ESK19679 has no unit-level
+output) and 4.1x Australia's about 7 (NEM black coal, September 2026); passes the 3x test against Eskom. Least-cost path 2035: 89.2
+(56%), accepted as the result of its midday surplus (363 (a)). 24 h minimum down: 24.5 and 66.1; Least-cost path 2035 then sheds 229
+GWh (3.4 central). NREL-only start fuel (all start fuel priced at coal, 361 (c)): 62.9 (2026; cost R219.87 bn against R217.85 bn)
+and 92.0 (2035; R253.48 bn against R253.77 bn). Before PR C: 115.0 and 250.6.
+Caveats: start costs are NREL's lower bounds; the extra forced outages a start causes (NREL table 1-1's EFOR impact) and restart risk
+are not costed; Australia's units run down to about 40% and rarely start (about 7 a year); the model pays nothing for curtailed
+renewables (no deemed energy), so a higher coal floor looks cheaper than it is (2026: R217.8 bn at 0.77 against R219.1 bn at 0.60, the
+difference mostly PPA payments not made on curtailed output).
+
+Presets against build 2026-10-23a (one draw, seed 12345, 2025 weather; cost R bn, CO2 Mt, curtailment GWh): Today 2026 216.50 ->
+217.86, 164.6 -> 165.5, 0 -> 239; IRP's 2030 targets, grid delayed 273.84 -> 274.81; IRP's 2030 targets 273.82 -> 278.37, 431 ->
+968; IRP path 2035 287.41 -> 294.07, 9,678 -> 12,160; Least-cost path 2035 242.51 -> 247.80, 2,774 -> 3,657; 2025, as modelled
+225.42 -> 226.14, unserved 4.5 -> 1.0 GWh; Deep decarbonisation 2035 (now Tiers 1-3) 311.35 -> 313.92, unserved 52.9 -> 0.3 GWh;
+Fossil-free 2040 unchanged. Presets built on c5f's runs replay those runs' own coal rules in the engine check (COAL_PRE_C) and are
+rebuilt in the presets build after the reviewer pack.
+
+Suite on build 2026-10-24a (PR C, head 182176f plus the stored panels regenerated, fingerprint 156b9947e3014f), ESK19679.csv
+present, nothing running beside it, 24 Oct 2026 05:40-07:43 UTC (panels 05:40-06:03): node checks 957/982 plus audit 87/88 (88/88
+after a comment's apostrophe, which the emphasis audit read as a string holding 'PR', was reworded, a6d650c; the panels are
+regenerated for that edit); eng5 6/6 (check 6 passes again). validate_external passes 8/8: EDMSA Scenario A CO2 2035, failing since
+build 2026-10-01a, now within its 22 Mt. Known failures unchanged: iron-air July (findings), off-peak ordering (consistency),
+peakerSeasonRatio and Ember CO2 (benchmarks), the reserve invariant (invariants, 0.45 / 0.47 / 1.09 GWh, TODO 14iy). New, each
+traced on scratch copies with one group of coal settings switched back to COAL_PRE_C (scratchpad bisectC; all switched back
+reproduces build 23a: findings 41/42, outputs 51/51, response 87/87, consistency 81/82), none relaxed:
+- validate_findings (3): 'demand response reverses at high shift' (30% shift R215.28 bn against R217.87 bn at zero), 'the same
+  build rate wastes more when sustained longer' (5 GW/yr 18.8% over five years, 14.4% over ten), 'a low build rate stays at the
+  congestion floor' (8.7%). The practice floor drives them: with it switched back the last two pass and the first passes, while
+  'modest demand shifting moves system cost by under 0.1%' then fails (R217.65 against R217.90 bn); weighing and start costs move
+  the first two as well. Findings of the engine before PR C, when coal came off over midday freely; to be restated on c6.
+- validate_outputs (3): curtailment at defaults 0.2 TWh a year (practice floor; the check says spill at defaults is news, and it
+  is the floor's intended effect); avgCost R1,112.1 against R1,101 +/-10.9 (all coal settings back R1,104.9; start costs back
+  R1,104.2, weighing back R1,132.6, floor back R1,111.9); curtailFuelCost in the coal-curtailment scenario R21.8 bn against
+  15.9 +/-0.7 (synchronous floor back R14.8 bn: imports no longer counted toward the floor).
+- validate_response (2): drInterruptMW moves no output (practice floor: with more coal online, Today 2026 never calls interruptible
+  load; passes with the floor back) and the matrix differs from its baseline in 45 cells (34 from the floor, the rest weighing and
+  start costs).
+- validate_consistency (1): the shadow hourly price spread 2.2x against Homeflex's 4.4x (practice floor: more coal online flattens
+  midday prices; passes with the floor back).
+- validate_pathway_presets (11): the three presets built on c5f's runs (IRP's 2030 targets, Least-cost path 2035, IRP path 2035):
+  the new coal-settings check, cost 1.65-2.52% above their checks, and Least-cost path 2035's 2035 unserved 4.29 GWh against its
+  2.42 target on c5f's build; rebuilt in the presets build.
+Proposed for the user's review (not done): avgCost and the scenario's curtailFuelCost re-anchored with the decomposition above, as
+their notes prescribe; the response baseline rewritten; the four findings restated on c6's results; the zero-curtailment diagnostic
+retired or restated; a stressed scenario for drInterruptMW.
