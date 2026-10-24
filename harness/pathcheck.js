@@ -85,7 +85,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // GAS_CAPEX (7 Oct 2026): CCGT capex at 2026, R/kW, for the IRP-capex sensitivity; read by engine and optimiser alike.
  if (process.env.GAS_CAPEX) w.eval(`if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`);
  // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
- if (P.importsEndYear) w.eval(`state.importsEndYear=${+P.importsEndYear};`);
+ // From build 2026-10-23a (c6 PR B) the page's default is 2030 and a run records its year, 0 included; a run recorded before then
+ // has null for 'no end year', its default then, so null means 0 here rather than the page's new default.
+ w.eval(`state.importsEndYear=${P.importsEndYear == null ? 0 : +P.importsEndYear};`);
  // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
  if (P.importsMW != null) w.eval(`state.importsMW=${+P.importsMW};`);
  if (P.importsCF != null) w.eval(`state.importsCF=${+P.importsCF};`);

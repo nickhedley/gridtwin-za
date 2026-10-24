@@ -154,16 +154,38 @@ function check(label, ok, detail) {
   const imp = await runProbe(w, `
     const H0 = BLD_YEARS[BLD_YEARS.length - 1]; bldSetHorizon(2032);
     const lp = (ex) => bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: { ...state, ...ex } }).lp.split(String.fromCharCode(10));
-    const a = lp({}), b = lp({ importsEndYear: 2030 }); bldSetHorizon(H0);
-    let early = 0, late = 0;
-    for (let i = 0; i < Math.max(a.length, b.length); i++) if (a[i] !== b[i]){
-      const m = (a[i] || b[i] || '').match(/_(20[0-9][0-9])/); if (m && +m[1] > 2030) late++; else early++; }
+    const a = lp({ importsEndYear: 0 }), b = lp({ importsEndYear: 2030 }); bldSetHorizon(H0);   // 0 explicit: 2030 is the default from build 2026-10-23a
+    // Compared as multisets, not by position (PR B, build 2026-10-23a): the priced import variables add Bounds lines for the years
+    // with imports, which shifts every later line, so a positional comparison reads unchanged 2026-2030 lines as changed. The
+    // objective (one line) is compared term by term, each term dated by its own variable; every other line by the first year in it.
+    const items = L => { const out = new Map(); for (const l of L){
+        const parts = /^ {2}[0-9-]/.test(l) && / [a-z]+_20[0-9][0-9]/.test(l) && l.length > 100000 ? l.trim().split(/ (?=[+-] )/) : [l];
+        for (const q of parts) out.set(q, (out.get(q) || 0) + 1); } return out; };
+    const A = items(a), B = items(b); let early = 0, late = 0;
+    for (const [q, n] of [...A].concat([...B])){ if ((A.get(q) || 0) === (B.get(q) || 0)) continue;
+      const m = q.match(/_(20[0-9][0-9])/); if (m && +m[1] > 2030) late++; else early++; }
     const e = (y, end) => simulate({ ...state, scenarioYear: y, importsEndYear: end }, PROFILES).E.imports / 1e6;
     return { early, late, imp2030: e(2030, 2030), imp2031: e(2031, 2030), impOff: e(2031, 0) };`);
   check('importsEndYear drops imports after its year in the build LP and the engine, and nowhere else',
         imp && imp.early === 0 && imp.late > 0 && imp.imp2031 === 0 && imp.imp2030 > 0 && Math.abs(imp.imp2030 - imp.impOff) < 1e-9,
         imp ? `LP lines changed: ${imp.early} up to 2030, ${imp.late} after; engine imports ${imp.imp2030.toFixed(2)} TWh in 2030, `
               + `${imp.imp2031.toFixed(2)} in 2031 (${imp.impOff.toFixed(2)} with no end year)` : 'no result');
+  // ── IMPORTS PRICED IN THE BUILD LP (c6 PR B, build 2026-10-23a) ───────────
+  // The fixed infeed carries costImports in the objective: one variable a year, imp_<y>, fixed at importsMW x importsCF x the
+  // year's weighted hours (a year's 8,760 plus any stress-day weight), its coefficient costImports discounted; none after
+  // importsEndYear. Read back from the LP text.
+  const ipr = await runProbe(w, `
+    const H0 = BLD_YEARS[BLD_YEARS.length - 1]; bldSetHorizon(2032);
+    const L = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: { ...state, importsEndYear: 2030 } }).lp; bldSetHorizon(H0);
+    const coef = y => { const m = L.match(new RegExp('([0-9.]+) imp_' + y + '(?![0-9])')); return m ? +m[1] : null; };
+    const bnd = y => { const m = L.match(new RegExp(' ([0-9.]+) <= imp_' + y + ' <= ([0-9.]+)')); return m ? [+m[1], +m[2]] : null; };
+    return { c26: coef(2026), c30: coef(2030), c31: coef(2031), b26: bnd(2026), b31: bnd(2031), price: FIXED.costImports, disc: BLD_DISC,
+             flow: (state.importsMW ?? FIXED.importsMW) * (state.importsCF ?? FIXED.importsCF) };`);
+  check('imports are priced in the build LP at costImports, fixed at the contracted infeed, and absent after importsEndYear',
+        ipr && ipr.c26 !== null && Math.abs(ipr.c26 - ipr.price) < 0.01 && Math.abs(ipr.c30 - ipr.price / Math.pow(1 + ipr.disc, 4)) < 0.01
+          && ipr.c31 === null && ipr.b31 === null && ipr.b26 && ipr.b26[0] === ipr.b26[1] && ipr.b26[0] / ipr.flow >= 8760 && ipr.b26[0] / ipr.flow <= 8784 + 24 * 15,
+        ipr ? `2026: R${ipr.c26}/MWh on ${ipr.b26 && ipr.b26[0]} MWh, ${ipr.b26 && (ipr.b26[0] / ipr.flow).toFixed(1)} h of the ${ipr.flow.toFixed(0)} MW flow `
+              + `(price R${ipr.price}); 2030: ${ipr.c30}; 2031: ${ipr.c31}` : 'no result');
   // ── CARBON PATHS (carbonTaxAt: carbonAllowancePath, carbonTaxFull) ───────
   // Added 14 Oct 2026 (user). Central from c5, 'kept2030': the allowance kept at its 2026 share to 2030 on the rates in law
   // (R308/t 2026, 347, 385, 424, R462/t 2030) in 2026 rands at the 3% inflation target, held after 2030. 'cut2027' must

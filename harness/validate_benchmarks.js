@@ -46,6 +46,19 @@ const EMBER_COAL_25 = emberSum('Coal', 'TWh', '2025-01', '2025-12');
 const EMBER_NUC_25 = emberSum('Nuclear', 'TWh', '2025-01', '2025-12');
 const EMBER_CO2_25 = emberSum('Total emissions', 'mtCO2', '2025-01', '2025-12');
 const EMBER_WIND_25 = emberSum('Wind', 'TWh', '2025-01', '2025-12');
+const EMBER_HYDRO_25 = emberSum('Hydro', 'TWh', '2025-01', '2025-12');
+// HYDRO REFERENCE (user, 23 Oct 2026, message 357 (b); TODO 14iw). Measured 2025 hydro: Eskom's hourly data (ESK19679,
+// 'Hydro Water Generation', calendar 2025; obtained on request, Eskom credited, the analysis ours) when the file is present,
+// else Ember's 2025 monthly sum (CC BY 4.0, Ember), which counts the same plant (pumped storage excluded) and reads 1.80.
+// It replaces 2.90, which was the old model's own output (hydroCF 0.55 x 602 MW x 8,760 h) under a label naming no source.
+const HYDRO_25 = (() => { try {
+  const L = fs.readFileSync(path.join(ROOT, 'ESK19679.csv'), 'utf8').split('\n'), H = L[0].split(',');
+  const iD = H.indexOf('Date Time Hour Beginning'), iH = H.indexOf('Hydro Water Generation');
+  if (iD < 0 || iH < 0) throw new Error('ESK19679.csv: no hydro column');
+  let mwh = 0, n = 0; for (let k = 1; k < L.length; k++){ const q = L[k].split(','); if ((q[iD] || '').startsWith('2025') && q[iH] !== '' && q[iH] !== undefined){ mwh += +q[iH]; n++; } }
+  if (n < 8700) throw new Error('ESK19679.csv: ' + n + ' hours of 2025 hydro');
+  return { twh: mwh / 1e6, src: `Eskom hourly data (ESK19679), 2025 hydro generation ${(mwh / 1e6).toFixed(2)} TWh over ${n} hours (Eskom credited; the analysis is ours)` };
+} catch (e) { return { twh: EMBER_HYDRO_25, src: `${EMBER_REL}: 2025 hydro ${EMBER_HYDRO_25.toFixed(2)} TWh (ESK19679.csv not read: ${e.message})` }; } })();
 function emberYear(category, variable, unit, year) {
   const r = EMBER.yearly.filter(x => x[0] === String(year) && x[1] === category && x[3] === variable && x[4] === unit);
   if (r.length !== 1) throw new Error(`ember_za.json yearly: ${category} ${variable} ${unit} ${year}: ${r.length} rows`);
@@ -115,10 +128,11 @@ const BENCH = {
          'on the model side only.',
   },
   hydro: {
-    value: 2.9, tolPct: 25, unit: 'TWh',
-    source: 'Eskom hydro plus SAPP hydro imports attributed to domestic hydro',
-    why: 'Small carrier, highly rainfall-dependent, and the import/domestic boundary is drawn ' +
-         'differently by different sources.',
+    // 23 Oct 2026 (message 357 (b)): measured 2025 hydro (HYDRO_25, above) replaces 2.90, the old model's own output. Band unchanged.
+    value: +HYDRO_25.twh.toFixed(2), tolPct: 25, unit: 'TWh',
+    source: HYDRO_25.src,
+    why: 'Small carrier, highly rainfall-dependent: the model runs the FY2023-26 mean (hydroCF), the reference is one ' +
+         'calendar year. Imports are checked separately.',
   },
   imports: {
     value: 6.61, tolPct: 12, unit: 'TWh',
