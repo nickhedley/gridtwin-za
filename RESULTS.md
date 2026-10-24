@@ -16985,14 +16985,16 @@ reserve) at the model's diesel cost (FIXED.costDiesel, R6,100/MWh) for both, cur
 196, 245, 294, 336), each from the engine's last 96 hours of commitment, 168 h costed plus 24 h look-ahead. The engine's commitment
 is costed by the same dispatch with its commitment fixed. Least-cost path 2035 (42 units): every week solved to optimality (gap
 below 0.2%, 1-4 minutes a week). Today 2026 (84 units): 30 minutes a week, started from the engine's commitment, none to optimality;
-the solver's lower bound gives the gap.
+the solver's lower bound gives the gap; seven weeks (day 336's solve ended without a result, its process gone, likely memory;
+not rerun before the suite). Per week the engine is 0.9-2.7% above the bound; in two weeks (196, 245) the solver found nothing
+better than the engine's commitment.
 
 | | Least-cost path 2035, engine | its optimum | Today 2026, engine | best found (bound) |
 |---|---|---|---|---|
-| Total cost above the optimum | 1.3% (coal's own costs 3.0%) | | at most RESULT_T26_BOUND above the bound; RESULT_T26_BEST above the best found | |
-| Starts per unit a year | 28 | 147 | RESULT_T26_STARTS |
-| Two-shift days | 2 of 56 | 41 of 56 | RESULT_T26_TWO |
-| Curtailment, GWh over the weeks | 3,658 | 2,154 | RESULT_T26_CURT |
+| Total cost above the optimum | 1.3% (coal's own costs 3.0%) | | at most 1.9% above the bound; 0.8% above the best found | |
+| Starts per unit a year | 28 | 147 | 23 | 48 |
+| Two-shift days | 2 of 56 | 41 of 56 | 0 of 49 | 8 of 49 |
+| Curtailment, GWh over the weeks | 3,658 | 2,154 | 871 | 467 |
 
 Finding (370 (d)): on Least-cost path 2035, an optimum under the same rules and NREL's start costs cycles coal about five times as
 often as the engine (147 against 28 starts per unit a year; 41 against 2 two-shift days in 56), at 1.3% lower total cost. Real
