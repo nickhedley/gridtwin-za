@@ -6944,7 +6944,7 @@ function ucUnitsStanding(coalInstalled) {
 //          ucMinStable[hour] = MW  (fleet minimum stable load per hour)
 //          ucAvail[hour] = MW      (committed capacity per hour)
 //          ucStartCost[hour] = R   (start-up cost charged this hour)
-// The commitment pre-pass's options from a scenario (PR C, messages 357 (e), 359). With COAL_PRE_C's settings it returns {} and
+// The options of the commitment pre-pass for a scenario (PR C, messages 357 (e), 359). With COAL_PRE_C's settings it returns {} and
 // the pre-pass is exactly as before PR C. A key that is missing from FIXED stops here rather than reading as off (rule 4).
 function coalUcOpts(p, rampMW){
   for (const k of ['coalCommitWeighStarts','coalCommitLookaheadH','coalMslPracticeFloor','coalMslDesign','coalMslDesignFromYear',

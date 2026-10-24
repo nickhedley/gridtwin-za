@@ -409,7 +409,11 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
  if (DEMAND==='irp_esrg'){ const J=JSON.parse(fs.readFileSync(path.join(ROOT,'public_data','esrg_irp_demand_ref.json'),'utf8')).years;
    DEM_INDEX=Object.fromEntries(YRS.map(y=>{ if(!J[y]) throw new Error('esrg_irp_demand_ref.json has no '+y); return [y, J[y].index_vs_2026]; })); }
  else if (DEMAND.startsWith('rate:')){ const r=+DEMAND.slice(5)/100; if(!isFinite(r)) throw new Error('DEMAND rate'); DEM_INDEX=Object.fromEntries(YRS.map(y=>[y, Math.pow(1+r, y-2026)])); }
- else if (DEMAND!=='legacy') throw new Error('DEMAND must be irp_esrg, rate:<pct> or legacy');
+ // 'index:<file>' (message 224, ported for c6's IRP pair, message 363 (c)): a year -> index JSON ({"years":{"2026":x,...}}), e.g. the
+ // IRP's demand path (harness/pathway/gen_irp_index.py); every model year must be present.
+ else if (DEMAND.startsWith('index:')){ const J=JSON.parse(fs.readFileSync(DEMAND.slice(6),'utf8')).years;
+   DEM_INDEX=Object.fromEntries(YRS.map(y=>{ if(!(J[y]>0)) throw new Error('DEMAND index file has no '+y); return [y, +J[y]]; })); }
+ else if (DEMAND!=='legacy') throw new Error('DEMAND must be irp_esrg, rate:<pct>, index:<file> or legacy');
  if (DEM_INDEX && process.env.DEM) throw new Error('DEM applies only with DEMAND=legacy');
  if (DEM_INDEX) w.eval(`state.demandGrowthPct=${(DEM_INDEX[YRS[YRS.length-1]]-1)*100};`);   // the horizon year's level, for anything reading the slider
  console.log('demand', DEMAND, DEM_INDEX ? JSON.stringify(DEM_INDEX) : 'legacy +'+DEM+'% to the horizon', DEM_BLOCK ? 'block '+JSON.stringify(DEM_BLOCK) : 'no block');
