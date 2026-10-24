@@ -5941,15 +5941,15 @@ const FIXED = {
   // to it anywhere else - not because 4 h was wrong.
   coalLookaheadH:12,
   // COAL, PR C (user, 23-24 Oct 2026, messages 357 (e), 359-361, 363; TODO 14iz). The defaults are c6's coal central: commitment
-  // weighing start costs net of displaced output; the practice floor 0.77 to 2029 and the design minimums 0.57/0.52 from 2030;
+  // weighing start costs net of displaced output; the practice floor 0.75 to 2029 and the design minimums 0.57/0.52 from 2030;
   // NREL/Intertek start costs;
   // the synchronous floor with imports out and nuclear and hydro at output; the ramp honoured. COAL_PRE_C holds each setting's
   // value before PR C (build 2026-10-23a), which reproduces the earlier engine exactly.
   // The practice floor is calibrated like for like (messages 364, 365): the 2026 replay's lowest midday hour (10:00-15:00) of coal
-  // output over available coal, on sunny low-demand days, matches Eskom's January-August 2026 median at 0.77 (model 0.625, p10-p90
-  // 0.54-0.72; measured 0.62, 0.57-0.72; ESK19679, Eskom credited, analysis ours), the backcast practice of matching a simulated
+  // output over available coal, on sunny low-demand days, matches Eskom's January-August 2026 median at 0.75 (model 0.623, p10-p90
+  // 0.55-0.71; measured 0.623, 0.57-0.72; recalibrated with the start-up time, message 369 (e), from 0.77 before it; ESK19679, Eskom credited, analysis ours), the backcast practice of matching a simulated
   // statistic to its measured counterpart (SEM Committee, PLEXOS validation and backcast report, SEM-20-004). NTCSA's 'up to 3 GW'
-  // in a winter day of 2026 is a check, not the target: the replay's winter midday peak is 4.8 GW at 0.77 (flagged, message 365 (a)).
+  // in a winter day of 2026 is a check, not the target: the replay's winter midday peak is 5.5 GW at 0.75 (flagged, message 365 (a)).
   // (1) Commitment that weighs start costs: 0, today's rule (cheapest first to each block's peak plus reserve; start costs are
   //     charged but never weighed). 1: before a running unit is switched off, the pre-pass looks up to coalCommitLookaheadH
   //     hours ahead for the block that needs it again and keeps it on, at its minimum, when its start cost exceeds the cost of
@@ -5959,7 +5959,7 @@ const FIXED = {
   //     share of capacity in scenario years before coalMslDesignFromYear: the 2026 practice floor, units not reaching their
   //     design minimum when asked. coalMslDesign (null: UC_FLEET's own levels) sets them from that year: one share for every
   //     unit, or [share for the groups at 0.65, share for the groups at 0.50], fleet-level values only (message 348 (a)).
-  coalMslPracticeFloor:0.77, coalMslDesign:[0.57, 0.52], coalMslDesignFromYear:2030,
+  coalMslPracticeFloor:0.75, coalMslDesign:[0.57, 0.52], coalMslDesignFromYear:2030,
   // (3) Start-cost basis. 'ucfleet' (today): UC_FLEET's per-unit start-up costs (PyPSA-RSA; price base not stated). 'built':
   //     per MW of unit capacity and start, hot, warm or cold by hours offline and class (COAL_START_OFFLINE_H): start fuel
   //     (COAL_START_FUEL_RMW, coalStartFuel 'central' or 'spot') + wear (COAL_START_WEAR_USD, coalStartWear 'median' or 'p75')
