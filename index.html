@@ -5312,7 +5312,7 @@ const COAL_EFOR_REPL_RMWH = 529.10;
 const COAL_PRE_C = { coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampHonour:0, coalMslPracticeFloor:null, coalMslDesign:null,
   coalMslDesignFromYear:2030, coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median', coalStartEfor:0, coalMinDownH:null,
   syncImportsCount:1, syncNucHydroBasis:'installed', coalFlexDeepMsl:0.40, coalFlexDeepAfterYear:2035,
-  bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0 };
+  bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, reserveCoalRampCap:0 };
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
 // IMPORTS_CF is defined in nodal_engine.js, which loads at line 1124 - BEFORE this
 // constant block. So FIXED can read it, and does. That direction is deliberate: the
@@ -5978,6 +5978,13 @@ const FIXED = {
   // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
   // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
   reserveEnabled:1, reserveOperatingMW:2200,
+  // Reserve on committed coal capped by its ramp (user, 24 Oct 2026, message 369 (c)): coal holds at most ramp x response time of
+  // each product. Response times, minutes: instantaneous 10 s and ten-minute 10 min (NTCSA ASTR 2026/27-2030/31, as read by the
+  // user, RESULTS 'ASTR reserve rule'); regulating 5 min, ENTSO-E's harmonised full-activation time for automatic frequency
+  // restoration reserve (the ASTR's own regulating response time is not recorded here: flagged). The ramp is the fleet's 24% of
+  // available coal an hour (Agora 2017); Eskom's tests show units ramping several times faster (Eskom, analysis ours), so this
+  // is the conservative reading. 0: coal's headroom counts in full, as before.
+  reserveCoalRampCap:1, reserveResponseMin:[1/6, 5, 10],
   // RESERVE BY PRODUCT (user, 14 Oct 2026, message 85; TODO 14eh). 'legacy': one 2,200 MW requirement that open-cycle plant and
   // pumped storage at full power excuse coal from holding. 'astr': NTCSA Ancillary Services Technical Requirements 2026/27-2030/31
   // (Jan 2026, pp. 6-12, as read by the user): instantaneous and regulating from online headroom (coal; pumped storage and batteries
@@ -8041,6 +8048,9 @@ function simulate(u, prof, outPath, _soc0){
   // Then quick-start and online hydro headroom and the online headroom of running gas and diesel turbines (onlineMW) cover any
   // product (user, message 90); coal takes the balance. left: the storage power still free for energy after its reserve share,
   // energy-limited over asHoldHours as in the legacy rule.
+  // Reserve on coal capped by its ramp (message 369 (c)): response times, minutes, [instantaneous, regulating, ten-minute].
+  const _rampResOn = !!(p.reserveCoalRampCap ?? FIXED.reserveCoalRampCap);
+  const _rampResMin = FIXED.reserveResponseMin;
   const _astrCover = (h, bP, bE, pP, pE, onlineMW) => {
     const coal = _astrCoalNeed(h, bP, bE, pP, pE, onlineMW);
     return { coal, left: _astrCoalNeed.left };
@@ -8059,7 +8069,20 @@ function simulate(u, prof, outPath, _soc0){
     _astrCoalNeed.left = Math.max(0, Math.min(bP, bE / _asHoldH)) + Math.max(0, Math.min(pP, pE / _asHoldH));
     let rest = inst + reg + Math.max(0, ten);
     rest -= Math.min(rest, Math.max(0, (p.hydroMW || 0) * (1 - (p.hydroCF ?? FIXED.hydroCF))));
-    return Math.max(0, rest - Math.max(0, onlineMW || 0));
+    const need = Math.max(0, rest - Math.max(0, onlineMW || 0));
+    // What committed coal can deliver of that need within each product's response time (message 369 (c)): at most its ramp
+    // (rampPct of available coal an hour) times the response time, on the coal committed this hour. Quick-start hydro covers the
+    // ten-minute product first and online gas the faster ones first, as an operator would use them. _astrCoalNeed.coalCan is the
+    // part of the need coal can cover; the rest is reported as reserve shortfall. The dispatch still withholds the whole need.
+    if (_rampResOn){
+      let pr = [Math.max(0, inst), Math.max(0, reg), Math.max(0, ten)];
+      let hy = Math.max(0, (p.hydroMW || 0) * (1 - (p.hydroCF ?? FIXED.hydroCF))), on = Math.max(0, onlineMW || 0);
+      for (const i of [2, 1, 0]){ const x = Math.min(pr[i], hy); pr[i] -= x; hy -= x; }
+      for (const i of [0, 1, 2]){ const x = Math.min(pr[i], on); pr[i] -= x; on -= x; }
+      const perMin = Math.max(0, ucAvail[h] || 0) * rampPct / 100 / 60;
+      _astrCoalNeed.coalCan = pr.reduce((a, q, i) => a + Math.min(q, perMin * _rampResMin[i]), 0);
+    } else _astrCoalNeed.coalCan = need;
+    return need;
   };
   const _gasMSF = p.reserveGasMinStableFrac ?? FIXED.reserveGasMinStableFrac;
   // Storage power free for reserve after dispatch this hour: unused output plus the charging load that could be dropped (message 97).
@@ -9220,7 +9243,7 @@ function simulate(u, prof, outPath, _soc0){
       const _sh = Math.max(0, _astrCoalNeed(h, _stFreeB(h), Math.max(0, battSoc),
           _stFreeP(h), Math.max(0, psSoc),
           astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF) + astrOnlineHeadroom(stack.diesel[h] || 0, dieselAvailMW(p), _gasMSF))
-        - Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen));
+        - Math.min(Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen), _astrCoalNeed.coalCan));
       _resShortMWh += _sh; if (_sh > 1) _resShortH++;
     }
     // Interruptible load comes off the demand line: the customer stopped
