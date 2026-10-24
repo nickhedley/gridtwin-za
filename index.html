@@ -19079,7 +19079,11 @@ const PRESETS={
   // R313.5bn); on independent draws (seed 71830529, 240 runs) 3.97 against 2.42, so topped up, six rounds: solar 38,750 and
   // iron-air 2,000 MW; 2.418 against 2.424 GWh, R318.07bn a year (harness/ext/search_deep_c5f.json, topup_deep_c5f.json). Every
   // other setting kept, coal retirement included. Its measured shed is PRESET_SCORES, rescored on the page as it runs it.
-  'Deep decarbonisation 2035':{demandGrowthPct:C5F_DEMAND[2035].growthPct,demandBlockMW:C5F_DEMAND[2035].blockMW,coalDecomMW:27000,coalFlexPct:2,newWindMW:41500,newPvMW:39750,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:14625,newBattHours:12,newIronAirMW:2875,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // REBUILT 24 Oct 2026 on PR C (user, messages 350 (7), 359 (g), 365 (b), 369): coal at Tiers 1-3 (coalFlexPct 2, replacing the old
+  // checkbox) and the c6 coal central with the start-up time and the 0.75 floor; the same method from the c5f build (FEASIBLE, 2
+  // draws, confirm on 40): search wind 40,500, solar 39,750, lithium 14,125, iron-air 3,250 (2.33 GWh on the search's draws,
+  // R323.5bn); top-up on independent draws to follow (scratchpad deep_c6b).
+  'Deep decarbonisation 2035':{demandGrowthPct:C5F_DEMAND[2035].growthPct,demandBlockMW:C5F_DEMAND[2035].blockMW,coalDecomMW:27000,coalFlexPct:2,newWindMW:40500,newPvMW:39750,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:14125,newBattHours:12,newIronAirMW:3250,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,
