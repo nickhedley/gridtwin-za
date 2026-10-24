@@ -16864,3 +16864,10 @@ reproduces build 23a: findings 41/42, outputs 51/51, response 87/87, consistency
 Proposed for the user's review (not done): avgCost and the scenario's curtailFuelCost re-anchored with the decomposition above, as
 their notes prescribe; the response baseline rewritten; the four findings restated on c6's results; the zero-curtailment diagnostic
 retired or restated; a stressed scenario for drInterruptMW.
+
+Solve-time trial (message 365 (c); a test, not a c6 result, not for quoting): c6's central on PR C's frozen copy (182176f), c5f's
+run settings (scratchpad c6trial/env_c6.sh, MAXP=6), 24 Oct 2026 08:13-08:55 UTC, nothing beside it. The pathway: adequate after two
+passes in 1,078 s (c5f: 992 s on build 17g), solves of about 5 and 9 minutes; peak resident memory 1.6 GB; LP cache 80 MB (deleted).
+Engine check, three year groups in parallel (TF=0.5 LNG=1 GRID=1): 2026-30 425 s, 2036-40 756 s, 2031-35 1,415 s (draws raised to
+480 in 2031-33 and 2037 near the target); every year within its target, the closest 2031 (2.21 GWh against 2.23). Wall time about 42
+minutes a run with its check, against about 50 for c5f's central; no step is much slower, so no change to time limits or presolve.
