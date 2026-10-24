@@ -493,7 +493,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
             <strong id="mipCaveat">The full model runs on 2025 regional demand and its own regional weather data, and does not dispatch gas; its results are not comparable with the presets.</strong>
             Re-solves coal, storage and corridor flows across all 10 regions as a mixed-integer programme (MIP).
-            (The instant model commits coal in 4-hour blocks, so units can come off over midday, which NTCSA says the System Operator does not do.)
+            (The instant model commits coal by a rule in 4-hour blocks, with start-up times of 2 to 10 hours, so units seldom come off over midday; NTCSA says the System Operator does not do that.)
           </span>
         </div>
 
