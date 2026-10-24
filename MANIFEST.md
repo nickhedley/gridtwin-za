@@ -178,6 +178,11 @@ node jsdom_local2.js                 # hardcodes testroot/index.html
 check its exit code. Two `ctx.createPattern` errors (index.html:11951 on
 2 Oct) are jsdom lacking canvas, not a regression.
 
+Input register (22 Oct 2026, messages 310, 312, 313): `harness/inputs_register.js` reads every input from the loaded page
+(FIXED, BLD_COST, BLD_FOM, BLD_LIFE, BLD_TARIFF, the page's other upper-case constants, nodal_engine.js's constants and the
+data files the page fetches) and the hand-kept `harness/inputs_meta.json`, and writes `INPUTS.md` at the root.
+`harness/validate_register.js` checks them; `harness/inputs_baseline.json` holds its ratchet counts.
+
 Node dependencies: `jsdom`, `highs`, `eslint` (validate_lint calls `npx eslint`).
 
 Expected on 5 Oct 2026: 805/806, the one failure EDMSA Scenario A CO2 2035,
