@@ -585,3 +585,10 @@ with the central commitment; 0.77 gives 4.8 GW). Still to do after the answer: s
 Deep decarbonisation 2035 rebuilt (coalFlexPct 2), PR C opened with 358 answered and the start-cost table (360 (e)); the
 sensitivities s_coalpractice, s_mindn24, s_rate48, s_spotoil, s_wearp75 wired into the pathway scripts. docs.nlr.gov still refused
 from this session (24 Oct 05:01 UTC): the 360 table figures are as given by the user until the PDF is read.
+Done 24 Oct (messages 363-366): central set as defaults on build 2026-10-24a; practice floor 0.77 calibrated like for like to
+Eskom's 2026 midday coal minimum (364; the 3 GW check gives 4.8 GW, flagged for review); suite 957/982 + audit 88/88, eng5 6/6, each
+new failure traced to a coal setting (RESULTS 'c6 PR C'); proposed check updates await the user's review (avgCost and the
+scenario's curtailFuelCost re-anchored, response baseline rewrite, four findings restated on c6, zero-curtailment diagnostic, a
+stressed case for drInterruptMW). Open: the IRP pair's demand basis (ESRG domestic grid x 0.951, as recorded, falls below c6's
+own path, 221 against about 232 TWh in 2030; confirm before the pair runs); panels regenerated after the last page edit; render
+check; Deep decarbonisation 2035 adequacy check on Tiers 1-3; solve-time trial (365 (c)); PR C opened by Sunday evening.
