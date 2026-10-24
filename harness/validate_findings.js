@@ -106,9 +106,10 @@ setTimeout(()=>{
       // longer appears (29,589 MW against 29,628), but a large shift still costs more, through the 6% lost on shifted load.
       check('modest demand shifting moves system cost by under 0.1% once storage plans ahead', Math.abs(opt.sys - z.sys) < 0.001 * z.sys,
             `7.5% shift gives R${opt.sys.toFixed(2)}bn against R${z.sys.toFixed(2)}bn at zero`);
-      check('demand response reverses at high shift: a 30% shift raises system cost', hi.sys > z.sys,
-            `30% shift gives R${hi.sys.toFixed(2)}bn and a ${Math.round(hi.peak)} MW peak against `
-            + `R${z.sys.toFixed(2)}bn and ${Math.round(z.peak)} MW at zero`);
+      // WITHDRAWN 24 Oct 2026 (user, message 367 (b); build 2026-10-24a): 'a 30% shift raises system cost' flipped under PR C's
+      // coal rules (R215.28bn against R217.87bn at zero; the practice floor, start-cost weighing and start costs each move it;
+      // RESULTS 'c6 PR C'). Withdrawn from public text; restated only on c6's results. The value is logged, not asserted.
+      console.log(`  withdrawn      30% shift R${hi.sys.toFixed(2)}bn against R${z.sys.toFixed(2)}bn at zero (was: raises system cost)`);
       console.log(`  demand resp.   R${z.sys.toFixed(1)}bn at 0% · R${opt.sys.toFixed(1)}bn at 7.5% · R${hi.sys.toFixed(1)}bn at 30%`);
     }
   }
@@ -271,10 +272,10 @@ setTimeout(()=>{
       return { five: run(5, 5), ten: run(5, 10), lowTen: run(2, 10) };
     `);
     if (r && !r.error){
-      check('the same build rate wastes more when sustained longer',
-            r.ten > r.five * 1.5,
-            `5 GW/yr wastes ${r.five.toFixed(1)}% over five years and ${r.ten.toFixed(1)}% `
-            + `over ten - if these converge, the cumulative-versus-rate finding has changed`);
+      // WITHDRAWN 24 Oct 2026 (user, message 367 (b); build 2026-10-24a): 'the same build rate wastes more when sustained longer'
+      // flipped under PR C's coal rules (18.8% over five years, 14.4% over ten; the practice floor drives it; RESULTS 'c6 PR C').
+      // Withdrawn from public text; restated only on c6's results. The values are logged, not asserted.
+      console.log(`  withdrawn      5 GW/yr wastes ${r.five.toFixed(1)}% over five years and ${r.ten.toFixed(1)}% over ten (was: more when longer)`);
       check('a low build rate stays at the congestion floor',
             r.lowTen < 5,
             `2 GW/yr over ten years wastes ${r.lowTen.toFixed(1)}%, which should be the `
