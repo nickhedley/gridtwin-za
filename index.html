@@ -5299,10 +5299,18 @@ const COAL_START_OTHER_USD = { sub: [5.61, 7.98, 10.15], super: [5.81, 8.62, 11.
 const COAL_START_FUEL_RMW = { central: { sub: [562, 792, 1125], super: [693, 1151, 1433] },
                               spot:    { sub: [694, 1000, 1426], super: [825, 1359, 1735] } };
 const COAL_START_FUEL_AT_RGJ = 47.94;
+// Cycling and forced outages (message 369 (a)): NREL/Intertek table 1-1, p.12, 'EFOR impact' per start, median, in % added to one
+// year's equivalent forced outage rate, [hot, warm, cold]. NREL leaves the money value to the user: 'time-averaged replacement
+// energy and capacity cost' (p.B-19). Here the lost availability (the EFOR increase x 8,760 h x capacity) is valued at the
+// model's time-averaged marginal price, COAL_EFOR_REPL_RMWH, the mean hourly marginal price of the 2026 replay (Today 2026, twelve
+// weather years x ten draws, build 2026-10-24a, R529.10/MWh, recomputed if the central changes), plus the lost capacity at a diesel
+// open-cycle unit's net annuity (bldNetAnnuity('ocgd')), the plant that covers coal's forced outages in tight hours.
+const COAL_START_EFOR_PCT = { sub: [0.0057, 0.0070, 0.0088], super: [0.0037, 0.0054, 0.0088] };
+const COAL_EFOR_REPL_RMWH = 529.10;
 // The coal settings before PR C (build 2026-10-23a): a pathway run recorded before PR C replays with these (harness/pathcheck.js),
 // as its optimiser and engine had them; the keys are also the coal settings a pathway run records (pathway_perfail.js).
 const COAL_PRE_C = { coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampHonour:0, coalMslPracticeFloor:null, coalMslDesign:null,
-  coalMslDesignFromYear:2030, coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median', coalMinDownH:null,
+  coalMslDesignFromYear:2030, coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median', coalStartEfor:0, coalMinDownH:null,
   syncImportsCount:1, syncNucHydroBasis:'installed', coalFlexDeepMsl:0.40, coalFlexDeepAfterYear:2035,
   bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0 };
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
@@ -5956,7 +5964,7 @@ const FIXED = {
   //     per MW of unit capacity and start, hot, warm or cold by hours offline and class (COAL_START_OFFLINE_H): start fuel
   //     (COAL_START_FUEL_RMW, coalStartFuel 'central' or 'spot') + wear (COAL_START_WEAR_USD, coalStartWear 'median' or 'p75')
   //     + other start costs (COAL_START_OTHER_USD), in January 2026 rands.
-  coalStartCostBasis:'built', coalStartFuel:'central', coalStartWear:'median',
+  coalStartCostBasis:'built', coalStartFuel:'central', coalStartWear:'median', coalStartEfor:1,
   // (4) Synchronous floor options. syncImportsCount 1 (today): imports count toward the floor at their utilisation; 0: they do
   //     not (Cahora Bassa arrives over HVDC). syncNucHydroBasis 'installed' (today): nuclear and hydro at installed MW (existing
   //     nuclear only); 'dispatched': at the hour's output (nuclear including new nuclear, at nuclearCF; hydro at hydroCF).
@@ -6948,7 +6956,7 @@ function ucUnitsStanding(coalInstalled) {
 // the pre-pass is exactly as before PR C. A key that is missing from FIXED stops here rather than reading as off (rule 4).
 function coalUcOpts(p, rampMW){
   for (const k of ['coalCommitWeighStarts','coalCommitLookaheadH','coalMslPracticeFloor','coalMslDesign','coalMslDesignFromYear',
-                   'coalStartCostBasis','coalStartFuel','coalStartWear','coalRampHonour','coalMinDownH','coalFlexDeepMsl','coalFlexDeepAfterYear'])
+                   'coalStartCostBasis','coalStartFuel','coalStartWear','coalStartEfor','coalRampHonour','coalMinDownH','coalFlexDeepMsl','coalFlexDeepAfterYear'])
     if (!(k in FIXED)) throw new Error('coalUcOpts: FIXED.' + k + ' missing');
   const g = k => p[k] !== undefined ? p[k] : FIXED[k];
   const o = {};
@@ -6969,7 +6977,11 @@ function coalUcOpts(p, rampMW){
     if (!wear) throw new Error('coalStartWear: ' + g('coalStartWear'));
     // R/MW per start by class and type: fuel + wear + other, the last two converted from 2011 dollars.
     const perMW = {};
-    for (const c of ['sub', 'super']) perMW[c] = [0, 1, 2].map(t => fuel[c][t] + (wear[c][t] + COAL_START_OTHER_USD[c][t]) * US_CPI_2011_TO_JAN26 * USD_RATE_R);
+    // The forced-outage cost of a start, R/MW: the EFOR increase x (8,760 h x the replacement energy price + a peaker's annual
+    // capacity cost per MW).
+    const eforR = g('coalStartEfor') ? (COAL_EFOR_REPL_RMWH * 8760 + bldNetAnnuity('ocgd', 2026) * 1000) / 100 : 0;
+    for (const c of ['sub', 'super']) perMW[c] = [0, 1, 2].map(t => fuel[c][t] + (wear[c][t] + COAL_START_OTHER_USD[c][t]) * US_CPI_2011_TO_JAN26 * USD_RATE_R
+      + COAL_START_EFOR_PCT[c][t] * eforR);
     o.startOf = (capMW, hoursOff, cls) => { const th = COAL_START_OFFLINE_H[cls];
       const t = hoursOff < th[0] ? 0 : hoursOff <= th[1] ? 1 : 2; return capMW * perMW[cls][t]; };
   } else if (basis !== 'ucfleet') throw new Error('coalStartCostBasis: ' + basis);
@@ -20656,7 +20668,7 @@ const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, S
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
   BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW, USD_RATE_R, US_CPI_2011_TO_JAN26,
   COAL_START_SUPER, COAL_START_OFFLINE_H, COAL_START_WEAR_USD, COAL_START_OTHER_USD, COAL_START_FUEL_RMW, COAL_START_FUEL_AT_RGJ,
-  COAL_KGCO2_PER_GJ, COAL_GJ_PER_MWH, COAL_PRE_C,
+  COAL_KGCO2_PER_GJ, COAL_GJ_PER_MWH, COAL_PRE_C, COAL_START_EFOR_PCT, COAL_EFOR_REPL_RMWH,
   bldWeatherYears: null, bldWxWeights: null, bldSolarTrk: null, bldWindMod: null, _wxLoading: null, _twelveYearCache: {} });
 // The scripts the engine shares with the nodal model (IMPORTS_CF and others), loaded in the worker as the page loads them.
 const ENGINE_SCRIPTS = ['nodal/nodal_engine.js', 'nodal/capacity_siting.js'];
