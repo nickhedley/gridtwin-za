@@ -479,6 +479,22 @@ console.log('\nTariff constants against their published sources\n');
         rng.length === 2 && Math.abs(term - (rng[0] + rng[1]) / 2) < 1e-9, `bldGasTerminalRkW R${term} against R${rng.join('-')}`);
 }
 
+// ── COAL START FUEL: COMPUTED AT THE MODEL'S COAL COST PER GJ (user, 24 Oct 2026, messages 360, 361) ─────────────────
+// COAL_START_FUEL_RMW is computed outside the repository (its fuel-oil part is Eskom's, kept local) with the coal priced at the
+// model's cost per GJ: costCoal (ESKOM_FY26's coal cost over coal sent out, rounded as FIXED rounds it) over the heat rate its coal
+// CO2 per MWh implies at COAL_KGCO2_PER_GJ. The page records the cost per GJ it was computed at; this recomputes it from the page's
+// own inputs, so a change to Eskom's figures or the emission factor flags the constant for recomputation.
+{
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const num = re => { const m = html.match(re); return m ? +m[1] : NaN; };
+  const cost = num(/coalCostRbn: *([0-9.]+)/), so = num(/coalSentOutGWh: *([0-9.]+)/), co2 = num(/co2Mt: *([0-9.]+)/), oc = num(/ocgtGWh: *([0-9.]+)/);
+  const ed = num(/\nconst EMIS_DIESEL = ([0-9.]+);/), kg = num(/\nconst COAL_KGCO2_PER_GJ = ([0-9.]+);/), at = num(/\nconst COAL_START_FUEL_AT_RGJ = ([0-9.]+);/);
+  const costCoal = Math.round(cost * 1e9 / (so * 1e3)), gjPerMWh = (co2 * 1e6 - oc * 1e3 * ed) / (so * 1e3) * 1000 / kg, rgj = costCoal / gjPerMWh;
+  check('coal start fuel was computed at the model\'s coal cost per GJ',
+        Math.abs(rgj - at) < 0.005, `the page's inputs give R${rgj.toFixed(3)}/GJ (costCoal R${costCoal}/MWh over ${gjPerMWh.toFixed(3)} GJ/MWh); `
+        + `COAL_START_FUEL_RMW was computed at R${at}/GJ: recompute it (local script, message 361) if they differ`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');

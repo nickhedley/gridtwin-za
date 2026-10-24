@@ -1835,12 +1835,29 @@ a unit's capability or a fleet's practice; they are not interchangeable.
   pursued in Queensland (cost, fatigue) or Victoria (flame stability) (pp.36-38, 46-47); about 2 hours' notice to desynchronise or
   resynchronise (p.25). AEMO's 2025-26 IASR workbook (unit-level minimum stable levels, ramp rates, start costs and times) is to be
   compared unit by unit with UC_FLEET (message 344 (b)); aemo.com.au is not reachable from the analysis environment, 22 Oct 2026.
-- NREL and Intertek APTECH, Power Plant Cycling Costs (2012), table 1-1, p.12, as given by the user: lower-bound median start costs
-  for large subcritical coal (300-900 MW), 2011 US dollars, excluding fuel: hot $59, warm $65, cold $105 per MW. At US CPI-U
-  333.952 (June 2026, FRED CPIAUCNS) over 224.939 (2011 average) and R16.50 to the dollar (the model's rate): hot R1,445, warm
-  R1,592, cold R2,572 per MW per start, against UC_FLEET's R99-160 per MW (the price adder R224.52, UC_FLEET's R152.58 over 0.68):
-  about 10-20 times lower. Whether PyPSA-RSA's start costs include wear or only fuel is not documented (question for Meridian, TODO
-  14hu); their size is of the order of start-up fuel alone.
+- NREL and Intertek APTECH, Power Plant Cycling Costs, NREL/SR-5500-55433 (N. Kumar, P. Besuner, S. Lefton, D. Agan, D. Hilleman;
+  April 2012, published July 2012). NREL was renamed the National Laboratory of the Rockies (NLR) in December 2025; cited as
+  published. All costs 2011 US dollars (p.11), lower bounds, per MW of capacity per start [hot, warm, cold]; figures as given by the
+  user (messages 360, 361) pending a read of the PDF from docs.nlr.gov:
+  - table 1-1, p.12, wear (capital and maintenance), medians: large subcritical coal $59, $65, $105; supercritical $54, $64, $104.
+    75th percentiles (the sensitivity, p.33: units more susceptible to cycling than typical): $68, $78, $124; $63, $89, $120.
+    Hot, warm, cold by time offline: warm 12-40 h for large subcritical, 12-72 h for supercritical; hot below, cold above.
+  - table 1-3, p.30, start-up fuel, the whole fuel per start: large subcritical 7.5, 10.0, 14.0 MMBtu/MW; supercritical 10.1,
+    17.1, 20.1. Other start costs: $5.61, $7.98, $10.15; $5.81, $8.62, $11.58.
+  To January 2026 rands in the model (COAL_START_*): US CPI-U 325.252 (January 2026, BLS, FRED CPIAUCNS) over 224.939 (2011
+  annual average), x1.4460, at R16.50 to the dollar (the model's rate). Wear plus other costs, large subcritical: hot R1,541, warm
+  R1,741, cold R2,747 per MW per start; supercritical R1,427, R1,733, R2,758. Start fuel (oil and coal, one combined fleet-level
+  figure per start type, NREL/Intertek (2012) and Eskom, analysis ours): large subcritical R562, R792, R1,125; supercritical R693,
+  R1,151, R1,433 (central, heavy fuel oil on the model's diesel price basis); spot oil R694, R1,000, R1,426; R825, R1,359, R1,735.
+  The coal in start fuel is priced at the model's R47.94/GJ (below). These replace the earlier estimate of about R1,500 per MW
+  (wear alone, at June 2026 CPI). With start fuel, R2,103-3,872 (large subcritical) and R2,120-4,191 (supercritical) per MW per start, against UC_FLEET's R99-160 per MW: about 13-39 times higher. Whether PyPSA-RSA's start costs
+  include wear or only fuel is not documented (question for Meridian, TODO 14hu).
+- The model's coal cost per GJ, R47.94 (message 361 (b)): costCoal R553/MWh sent out (Eskom FY2026 integrated report: coal and
+  other generation primary energy cost R91.5 bn, p.56, over coal sent out 165,431 GWh, p.7) over 11.53 GJ/MWh, the heat rate implied
+  by the model's coal CO2 of 1.108 t/MWh sent out (Eskom's CO2, p.35, less its open-cycle output at the diesel factor) at 96.1 kg
+  CO2/GJ (IPCC 2006 Guidelines for National Greenhouse Gas Inventories, vol. 2, ch. 1, table 1.4, sub-bituminous coal). Residual
+  fuel oil 40.4 GJ/t (same, table 1.2), used in the start-fuel split. Heating values: IPCC's are net; NREL's MMBtu are taken as
+  given; the basis difference is within about 5% of the start fuel.
 - Central Electricity Authority (India), as given by the user: India's large subcritical fleet runs at a 55% technical minimum (a
   CEA committee, reported by Power Line, 6 March 2026); 40% by 2030 only with retrofits (CEA flexible operation regulations, 2023).
 - Agora Energiewende, Flexibility in thermal power plants (2017), table 1, as given by the user (p.48): hard coal minimum load 25-40%

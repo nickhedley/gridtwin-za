@@ -5277,13 +5277,28 @@ const SYNC_MIN_MW = 6000;
 //   grid. Eskom has studied exactly this for decommissioned Komati units, and it is the
 //   standard retirement path where system strength binds.
 const SYNC_GFM_SHARE = 0.30;
-// COAL START WEAR (message 357 (e)(3); SOURCES 'Coal flexibility benchmarks'). NREL and Intertek APTECH, Power Plant Cycling Costs
-// (2012), table 1-1, p.12: lower-bound median start costs for large subcritical coal (300-900 MW), 2011 US dollars per MW, fuel
-// excluded. To January 2026 rands: US CPI-U 325.252 (January 2026, BLS) over 224.939 (2011 average), at R16.50/$ (the model's
-// pinned rate, the 180-day average to 26 Aug 2026). Hot R1,408, warm R1,551, cold R2,505 per MW.
+// COAL START COSTS (messages 357 (e)(3), 359 (b), 360, 361; SOURCES 'Coal flexibility benchmarks'). NREL and Intertek APTECH,
+// Power Plant Cycling Costs, NREL/SR-5500-55433 (2012), 2011 US dollars (p.11), lower-bound costs per MW of capacity per start,
+// [hot, warm, cold], by class: 'sub' large subcritical (300-900 MW), 'super' supercritical (Medupi, Kusile). To January 2026
+// rands: US CPI-U 325.252 (January 2026, BLS, FRED CPIAUCNS) over 224.939 (2011 annual average), at R16.50/$ (the model's pinned
+// rate, the 180-day average to 26 Aug 2026).
 const USD_RATE_R = 16.50;
 const US_CPI_2011_TO_JAN26 = 325.252 / 224.939;
-const COAL_START_WEAR_RMW = [59, 65, 105].map(d => d * US_CPI_2011_TO_JAN26 * USD_RATE_R);   // [hot, warm, cold]   // share of battery power that is grid-forming
+const COAL_START_SUPER = ['Medupi', 'Kusile'];   // UC_FLEET groups in the supercritical class
+// Hot below the first figure, warm to the second, cold beyond (table 1-1).
+const COAL_START_OFFLINE_H = { sub: [12, 40], super: [12, 72] };
+// Wear, table 1-1, p.12: medians, and 75th percentiles as a sensitivity (p.33: units more susceptible to cycling than typical).
+const COAL_START_WEAR_USD = { median: { sub: [59, 65, 105], super: [54, 64, 104] }, p75: { sub: [68, 78, 124], super: [63, 89, 120] } };
+// Start costs other than fuel and wear, table 1-3, p.30.
+const COAL_START_OTHER_USD = { sub: [5.61, 7.98, 10.15], super: [5.81, 8.62, 11.58] };
+// Start fuel, R per MW per start, oil and coal together (message 361 (a)): table 1-3's whole start fuel (sub 7.5, 10.0, 14.0;
+// super 10.1, 17.1, 20.1 MMBtu/MW), its fuel-oil part from Eskom's figures for one station, oil at the heavy-fuel-oil price on the
+// model's diesel basis ('central') or spot ('spot', a sensitivity), the rest coal at the model's cost per GJ. NREL/Intertek (2012)
+// and Eskom, analysis ours: Eskom's figures stay outside the repository, so this combined figure is computed there and is
+// recomputed whenever the coal cost per GJ moves (COAL_START_FUEL_AT_RGJ, checked by validate_inputs).
+const COAL_START_FUEL_RMW = { central: { sub: [562, 792, 1125], super: [693, 1151, 1433] },
+                              spot:    { sub: [694, 1000, 1426], super: [825, 1359, 1735] } };
+const COAL_START_FUEL_AT_RGJ = 47.94;
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
 // IMPORTS_CF is defined in nodal_engine.js, which loads at line 1124 - BEFORE this
 // constant block. So FIXED can read it, and does. That direction is deliberate: the
@@ -5417,6 +5432,11 @@ const ESKOM_FY26 = {
 const EMIS_DIESEL = 0.78;
 const COAL_CO2_PER_MWH_FY26 = (ESKOM_FY26.co2Mt * 1e6 - ESKOM_FY26.ocgtGWh * 1e3 * EMIS_DIESEL) / (ESKOM_FY26.coalSentOutGWh * 1e3);
 const COAL_PARTLOAD_2026 = 1.0262;
+// The model's coal cost per GJ (message 361 (b)): costCoal (Eskom FY2026 coal cost over coal sent out) (FIXED.costCoal, from ESKOM_FY26) over the fleet heat rate that
+// the model's own coal CO2 per MWh sent out implies at 96.1 kg CO2/GJ (IPCC 2006 Guidelines, vol. 2, table 1.4, sub-bituminous
+// coal): 11.53 GJ/MWh, R47.94/GJ.
+const COAL_KGCO2_PER_GJ = 96.1;
+const COAL_GJ_PER_MWH = COAL_CO2_PER_MWH_FY26 * 1000 / COAL_KGCO2_PER_GJ;
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -5723,7 +5743,7 @@ const FIXED = {
   // engine under-use: over twelve 2040 stress windows the LP opens half full, must refill, and discharges 11%
   // less than the engine. What remains is the LP's within-window foresight and daily storage balance, an
   // optimism of the method for all storage, not of pumped storage.
-  bldCoalCommit:1, bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldPsEnergy:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  bldCoalCommit:1, bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, bldPsEnergy:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // OPTIMISER GRID COST (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCost 0 off (default until
   // the effect on the pathway is reviewed), 1 central (ITP basis), 2 high (MISO basis). bldGridSpurBeyond 1 charges
   // the spur only beyond the 18 km median, for capex that already includes connection. bldGridBattHalf 1 charges
@@ -5912,23 +5932,27 @@ const FIXED = {
   //     charged but never weighed). 1: before a running unit is switched off, the pre-pass looks up to coalCommitLookaheadH
   //     hours ahead for the block that needs it again and keeps it on, at its minimum, when its start cost exceeds the cost of
   //     that minimum output over the gap (minimum MW x hours x its marginal cost).
-  coalCommitWeighStarts:0, coalCommitLookaheadH:24,
+  coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampHonour:0,
   // (2) Coal minimum stable levels by period. coalMslPracticeFloor (null: none) raises every unit's minimum to at least this
   //     share of capacity in scenario years before coalMslDesignFromYear: the 2026 practice floor, units not reaching their
   //     design minimum when asked. coalMslDesign (null: UC_FLEET's own levels) sets them from that year: one share for every
   //     unit, or [share for the groups at 0.65, share for the groups at 0.50], fleet-level values only (message 348 (a)).
   coalMslPracticeFloor:null, coalMslDesign:null, coalMslDesignFromYear:2030,
   // (3) Start-cost basis. 'ucfleet' (today): UC_FLEET's per-unit start-up costs (PyPSA-RSA; price base not stated). 'built':
-  //     per MW of unit capacity and start, by hours offline (hot up to coalStartHotH, warm up to coalStartWarmH, cold beyond;
-  //     both thresholds unsourced): fuel oil + coal burned in start-up + wear, each [hot, warm, cold] in January 2026 rands per
-  //     MW. Oil and coal have no default (set with the decision; 'built' stops with an error until they are). Wear defaults to
-  //     NREL and Intertek APTECH's lower-bound medians (COAL_START_WEAR_RMW).
-  coalStartCostBasis:'ucfleet', coalStartHotH:12, coalStartWarmH:48, coalStartOilRMW:null, coalStartCoalRMW:null, coalStartWearRMW:null,
+  //     per MW of unit capacity and start, hot, warm or cold by hours offline and class (COAL_START_OFFLINE_H): start fuel
+  //     (COAL_START_FUEL_RMW, coalStartFuel 'central' or 'spot') + wear (COAL_START_WEAR_USD, coalStartWear 'median' or 'p75')
+  //     + other start costs (COAL_START_OTHER_USD), in January 2026 rands.
+  coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median',
   // (4) Synchronous floor options. syncImportsCount 1 (today): imports count toward the floor at their utilisation; 0: they do
   //     not (Cahora Bassa arrives over HVDC). syncNucHydroBasis 'installed' (today): nuclear and hydro at installed MW (existing
   //     nuclear only); 'dispatched': at the hour's output (nuclear including new nuclear, at nuclearCF; hydro at hydroCF).
   //     The grid-forming share is syncGfmShare (SYNC_GFM_SHARE, 0.30, unsourced).
   syncImportsCount:1, syncNucHydroBasis:'installed',
+  // (5) coalRampHonour 1 (message 359 (f)): the commitment pre-pass keeps a block's commitment at least the previous hour's net
+  //     load less one hour's ramp, and dispatch's coal floor rises no faster than the ramp. 0: as before (coal moved beyond its
+  //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH (null: UC_FLEET's) raises every unit's
+  //     minimum down time to at least this many hours (a sensitivity at 24).
+  coalMinDownH:null,
   // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
   // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
   reserveEnabled:1, reserveOperatingMW:2200,
@@ -6710,6 +6734,10 @@ const FIXED = {
   // annualised over 15yr at 8% - shorter than a new-build life, since it's a retrofit of an
   // aging asset, not a fresh plant).
   coalRampBasePct:24, coalRampFlexPct:100, acapCoalFlex:223,
+  // The checkbox's second step (coalFlexPct 2; message 359 (g)): units retiring after coalFlexDeepAfterYear turn down to
+  // coalFlexDeepMsl (AEMO 2025 Thermal Audit, design minimum typically 40%; CEA, 40% by 2030 with retrofits), ramp at
+  // coalRampFlexPct, and carry acapCoalFlex (R223/kW/yr, one German lignite plant, Weisweiler: unsourced for South Africa).
+  coalFlexDeepMsl:0.40, coalFlexDeepAfterYear:2035,
   // Aggregate unit-commitment parameters, derived from the same real per-unit fleet data the
   // nodal engine uses (PyPSA-RSA sourced). This engine has no per-unit fleet loaded - it is the
   // fast national approximation - so the fleet is represented by a cumulative curve instead:
@@ -6869,6 +6897,7 @@ function ucUnitsStanding(coalInstalled) {
     for (let k = 0; k < n; k++) {
       all.push({
         name: g.name + ' U' + (k + 1),
+        cls: COAL_START_SUPER.some(s => g.name.startsWith(s)) ? 'super' : 'sub',   // start-cost class (COAL_START_OFFLINE_H)
         cap: unitCap,
         msl: g.msl,
         min_up: g.min_up,
@@ -6903,37 +6932,72 @@ function ucUnitsStanding(coalInstalled) {
 //          ucStartCost[hour] = R   (start-up cost charged this hour)
 // The commitment pre-pass's options from a scenario (PR C groundwork, message 357 (e)). At FIXED's defaults it returns {} and the
 // pre-pass is exactly as before. A key that is missing from FIXED stops here rather than reading as off (rule 4).
-function coalUcOpts(p){
+function coalUcOpts(p, rampMW){
   for (const k of ['coalCommitWeighStarts','coalCommitLookaheadH','coalMslPracticeFloor','coalMslDesign','coalMslDesignFromYear',
-                   'coalStartCostBasis','coalStartHotH','coalStartWarmH','coalStartOilRMW','coalStartCoalRMW','coalStartWearRMW'])
+                   'coalStartCostBasis','coalStartFuel','coalStartWear','coalRampHonour','coalMinDownH','coalFlexDeepMsl','coalFlexDeepAfterYear'])
     if (!(k in FIXED)) throw new Error('coalUcOpts: FIXED.' + k + ' missing');
   const g = k => p[k] !== undefined ? p[k] : FIXED[k];
   const o = {};
   if (g('coalCommitWeighStarts')) { o.weigh = true; o.lookH = g('coalCommitLookaheadH'); }
-  if (g('coalMslPracticeFloor') != null || g('coalMslDesign') != null){
-    o.year = p.scenarioYear ?? 2026; o.mslFloor = g('coalMslPracticeFloor'); o.mslDesign = g('coalMslDesign'); o.mslDesignFrom = g('coalMslDesignFromYear'); }
+  if (g('coalRampHonour')) o.rampMW = rampMW;
+  if (g('coalMinDownH') != null) o.minDn = g('coalMinDownH');
+  const tier = coalFlexTier(p);
+  if (g('coalMslPracticeFloor') != null || g('coalMslDesign') != null || tier >= 2){
+    o.year = p.scenarioYear ?? 2026; o.mslFloor = g('coalMslPracticeFloor'); o.mslDesign = g('coalMslDesign'); o.mslDesignFrom = g('coalMslDesignFromYear');
+    // Tier 1: units reach their design minimum from the start, not only from coalMslDesignFromYear.
+    if (tier >= 1 && o.mslDesign != null) o.mslDesignFrom = -Infinity;
+    if (tier >= 2){ o.flexDeepMsl = g('coalFlexDeepMsl'); o.flexDeepAfter = g('coalFlexDeepAfterYear'); }
+  }
   const basis = g('coalStartCostBasis');
   if (basis === 'built'){
-    const oil = g('coalStartOilRMW'), coal = g('coalStartCoalRMW'), wear = g('coalStartWearRMW') ?? COAL_START_WEAR_RMW;
-    for (const [n, a] of [['coalStartOilRMW', oil], ['coalStartCoalRMW', coal], ['coalStartWearRMW', wear]])
-      if (!Array.isArray(a) || a.length !== 3 || a.some(v => !(v >= 0))) throw new Error('coalStartCostBasis built: ' + n + ' must be [hot, warm, cold] R/MW');
-    const hot = g('coalStartHotH'), warm = g('coalStartWarmH');
-    o.startOf = (capMW, hoursOff) => { const t = hoursOff <= hot ? 0 : hoursOff <= warm ? 1 : 2; return capMW * (oil[t] + coal[t] + wear[t]); };
+    const fuel = COAL_START_FUEL_RMW[g('coalStartFuel')], wear = COAL_START_WEAR_USD[g('coalStartWear')];
+    if (!fuel) throw new Error('coalStartFuel: ' + g('coalStartFuel'));
+    if (!wear) throw new Error('coalStartWear: ' + g('coalStartWear'));
+    // R/MW per start by class and type: fuel + wear + other, the last two converted from 2011 dollars.
+    const perMW = {};
+    for (const c of ['sub', 'super']) perMW[c] = [0, 1, 2].map(t => fuel[c][t] + (wear[c][t] + COAL_START_OTHER_USD[c][t]) * US_CPI_2011_TO_JAN26 * USD_RATE_R);
+    o.startOf = (capMW, hoursOff, cls) => { const th = COAL_START_OFFLINE_H[cls];
+      const t = hoursOff < th[0] ? 0 : hoursOff <= th[1] ? 1 : 2; return capMW * perMW[cls][t]; };
   } else if (basis !== 'ucfleet') throw new Error('coalStartCostBasis: ' + basis);
   return o;
+}
+// A unit's minimum stable level as a share of capacity under coalUcOpts' options: UC_FLEET's own; at least the practice floor
+// before the design year; the design minimums from it (one share, or [groups at 0.65, groups at 0.50]); and, with the checkbox's
+// second step, at most flexDeepMsl for units retiring after flexDeepAfter (message 359 (g)).
+function coalUnitMsl(u, UO){
+  const y = UO.year ?? 2026;
+  let m = u.msl;
+  if (UO.mslDesign != null && y >= (UO.mslDesignFrom ?? 2030))
+    m = Array.isArray(UO.mslDesign) ? (u.msl >= 0.6 ? UO.mslDesign[0] : UO.mslDesign[1]) : UO.mslDesign;
+  else if (UO.mslFloor != null && y < (UO.mslDesignFrom ?? 2030)) m = Math.max(u.msl, UO.mslFloor);
+  if (UO.flexDeepMsl != null && u.dy > UO.flexDeepAfter) m = Math.min(m, UO.flexDeepMsl);
+  return m;
+}
+// The coal flexibilisation step (coalFlexPct; message 359 (g)): 0 none, 1 Tier 1, 2 Tiers 2-3. A preset's or link's old 'true' or
+// 100 reads as its nearest step.
+function coalFlexTier(p){ const v = +(p.coalFlexPct ?? 0) || 0; return v >= 2 ? 2 : v >= 1 ? 1 : 0; }
+// Share of the coal standing at coalMW (installed) in units retiring after FIXED.coalFlexDeepAfterYear: the units the checkbox's
+// second step retrofits and charges for.
+function coalDeepShare(coalMW){
+  const us = ucUnitsStanding(coalMW).units, cap = us.reduce((a, u) => a + u.cap, 0);
+  return cap > 0 ? us.reduce((a, u) => a + (u.dy > FIXED.coalFlexDeepAfterYear ? u.cap : 0), 0) / cap : 0;
+}
+// The build LP's coal rules from the engine's (message 359 (h)): the standing fleet's capacity-weighted minimum stable level, and
+// its hot-start cost per MW (the LP cannot tell how long a unit was off; midday shutdowns are hot starts), in scenario year y.
+function coalFleetMinShare(p, y, coalMW){
+  const o = coalUcOpts({ ...p, scenarioYear: y }), us = ucUnitsStanding(coalMW).units, cap = us.reduce((a, u) => a + u.cap, 0);
+  return cap > 0 ? us.reduce((a, u) => a + u.cap * coalUnitMsl(u, o), 0) / cap : 0;
+}
+function coalFleetHotStartRMW(p, y, coalMW){
+  const o = coalUcOpts({ ...p, scenarioYear: y }), us = ucUnitsStanding(coalMW).units, cap = us.reduce((a, u) => a + u.cap, 0);
+  return cap > 0 ? us.reduce((a, u) => a + (o.startOf ? o.startOf(u.cap, 0, u.cls) : u.startup_cost), 0) / cap : 0;
 }
 function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts) {
   // ucOpts (PR C groundwork, message 357 (e)): absent or empty reproduces the pre-pass exactly. year, mslFloor, mslDesign,
   // mslDesignFrom: minimum stable levels by period; weigh, lookH: start-weighing commitment; startOf(cap, hoursOff): the start
   // cost of a unit of that capacity after that many hours offline, or null for UC_FLEET's own.
   const UO = ucOpts || {};
-  const _mslOf = (u) => {
-    const y = UO.year ?? 2026;
-    if (UO.mslDesign != null && y >= (UO.mslDesignFrom ?? 2030))
-      return Array.isArray(UO.mslDesign) ? (u.msl >= 0.6 ? UO.mslDesign[0] : UO.mslDesign[1]) : UO.mslDesign;
-    if (UO.mslFloor != null && y < (UO.mslDesignFrom ?? 2030)) return Math.max(u.msl, UO.mslFloor);
-    return u.msl;
-  };
+  const _mslOf = (u) => coalUnitMsl(u, UO);
   // resOpts carries the reserve settings through from simulate(); absent means
   // reserve off, which reproduces the pre-reserve behaviour exactly.
   const RES_ON = !!(resOpts && resOpts.on);
@@ -6979,15 +7043,15 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
     mslMW: u.cap * availFactor * _mslOf(u),
   }));
   // Start cost of unit i after hoursOff hours offline: UC_FLEET's own, or the built basis (ucOpts.startOf).
-  const _startCost = (i, hoursOff) => UO.startOf ? UO.startOf(unitState[i].cap, hoursOff) : UC_UNITS[i].startup_cost * availFactor;
-  // Start-weighing commitment: each block's commitment target, computed once, and each unit's merit position.
+  const _startCost = (i, hoursOff) => UO.startOf ? UO.startOf(unitState[i].cap, hoursOff, UC_UNITS[i].cls) : UC_UNITS[i].startup_cost * availFactor;
   const _WEIGH = !!UO.weigh;
-  const _tgt = [];
-  if (_WEIGH){
-    const BH = 4;   // BLOCK_HOURS, below; checked equal there
-    for (let b = 0; b < DAYS * 24 / BH; b++){ let pk = -Infinity; for (let h = 0; h < BH; h++) pk = Math.max(pk, netLoadPre[Math.min(HOURS-1, b*BH+h)]);
-      _tgt.push(RES_ON ? pk + reserveReqAt(b*BH, pk) : pk * 1.15); }
-  }
+  // A block's commitment target: its peak net load plus reserve. With rampMW set (message 359 (f)), also at least the previous
+  // hour's net load less one hour's ramp, so units coming off at a block start do not force coal down faster than it can ramp.
+  const _blockTarget = (h0, BH) => {
+    let pk = -Infinity; for (let h = 0; h < BH; h++) pk = Math.max(pk, netLoadPre[Math.min(HOURS-1, h0+h)]);
+    const t = RES_ON ? pk + reserveReqAt(h0, pk) : pk * 1.15;
+    return UO.rampMW != null && h0 > 0 ? Math.max(t, netLoadPre[h0-1] - UO.rampMW) : t;
+  };
 
   const ucAvail     = new Float64Array(HOURS);
   const ucMinStable = new Float64Array(HOURS);
@@ -7035,7 +7099,24 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
   // so 4h is closer on cost and closer on cycling. Mean gap falls 4.0% -> 2.9%.
   const BLOCK_HOURS = 4;
   const BLOCKS_PER_DAY = 24 / BLOCK_HOURS;
-  if (_WEIGH && _tgt.length !== DAYS * BLOCKS_PER_DAY) throw new Error('buildUCSchedule: start-weighing block count');
+  // Start weighing: each block's target, computed once.
+  const _tgt = _WEIGH ? Array.from({length: DAYS * BLOCKS_PER_DAY}, (_, b) => _blockTarget(b * BLOCK_HOURS, BLOCK_HOURS)) : [];
+  // What a unit kept on at its minimum displaces (message 359 (a)). For each hour, the net load above the minimums of the units its
+  // block's target commits in merit order (_room), and the marginal cost of the committed unit that would give way (_mcm). Output up
+  // to _room displaces that unit's coal; beyond it, it displaces renewable output, spilled with no fuel saved.
+  const _room = new Float64Array(_WEIGH ? HOURS : 0), _mcm = new Float64Array(_WEIGH ? HOURS : 0);
+  if (_WEIGH){
+    const order = UC_UNITS.map((u, i) => i).filter(i => unitState[i].cap > 0).sort((a, b) => UC_UNITS[a].marginal_cost - UC_UNITS[b].marginal_cost);
+    for (let b = 0; b < _tgt.length; b++){
+      let cap = 0, msl = 0, n = 0;
+      while (n < order.length && cap < _tgt[b]){ cap += unitState[order[n]].cap; msl += unitState[order[n]].mslMW; n++; }
+      for (let k = 0; k < BLOCK_HOURS; k++){
+        const h = b * BLOCK_HOURS + k; if (h >= HOURS) break;
+        let rem = netLoadPre[h] - msl; _room[h] = rem;
+        for (let j = 0; j < n && rem > 0; j++){ const s = unitState[order[j]]; _mcm[h] = UC_UNITS[order[j]].marginal_cost; rem -= s.cap - s.mslMW; }
+      }
+    }
+  }
 
   for (let day = 0; day < DAYS; day++) {
    for (let blk = 0; blk < BLOCKS_PER_DAY; blk++) {
@@ -7054,9 +7135,8 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
     // The reserve requirement is now explicit (contingency + regulating + a VRE
     // term) rather than the old flat peakLoad x 1.15 fudge. With reserve off,
     // the 1.15 behaviour is preserved exactly so old scenarios still reproduce.
-    const targetCapacity = RES_ON
-      ? peakLoad + reserveReqAt(h0, peakLoad)
-      : peakLoad * 1.15;
+    // With rampMW, also at least the previous hour's committed minimum less one hour's ramp (message 359 (f)).
+    const targetCapacity = UO.rampMW != null && h0 > 0 ? Math.max(_blockTarget(h0, BLOCK_HOURS), ucMinStable[h0-1] - UO.rampMW) : _blockTarget(h0, BLOCK_HOURS);
     let decidedOn = new Array(UC_UNITS.length).fill(false);
     let totalCommitted = 0;
     let _capBefore = 0;   // available capacity of the units before this one in merit order (start weighing)
@@ -7069,7 +7149,7 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
       // Must stay on if min_up not yet satisfied
       const mustOn  = st.isOn  && st.hoursOn  < u.min_up;
       // Must stay off if min_down not yet satisfied
-      const mustOff = !st.isOn && st.hoursOff < u.min_dn;
+      const mustOff = !st.isOn && st.hoursOff < Math.max(u.min_dn, UO.minDn ?? 0);
 
       if (mustOff) { decidedOn[i] = false; continue; }
       if (mustOn)  { decidedOn[i] = true;  totalCommitted += st.cap; continue; }
@@ -7081,12 +7161,15 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
       } else if (_WEIGH && st.isOn) {
         // Start weighing: a running unit the rule would switch off stays on, at its minimum, when the next block within the
         // look-ahead that needs it (its target above the capacity ahead of it in merit order) is close enough that restarting
-        // costs more than running at minimum until then.
+        // costs more than running at minimum until then, net of the fuel that minimum output saves elsewhere (_room, _mcm).
         const b0 = day * BLOCKS_PER_DAY + blk, nB = Math.ceil((UO.lookH ?? 24) / BLOCK_HOURS);
         let gap = 0;
         for (let k = 1; k <= nB && b0 + k < _tgt.length; k++) if (_tgt[b0 + k] > _capBefore) { gap = k * BLOCK_HOURS; break; }
-        const keep = gap > 0 && _startCost(i, gap) > st.mslMW * gap * u.marginal_cost;
-        decidedOn[i] = keep; if (keep) totalCommitted += st.cap;
+        let keepCost = 0;
+        for (let h = h0; h < Math.min(HOURS, h0 + gap); h++) keepCost += st.mslMW * u.marginal_cost - Math.min(st.mslMW, Math.max(0, _room[h])) * _mcm[h];
+        const keep = gap > 0 && _startCost(i, gap) > keepCost;
+        decidedOn[i] = keep;
+        if (keep){ totalCommitted += st.cap; for (let h = h0; h < Math.min(HOURS, h0 + gap); h++) _room[h] -= st.mslMW; }
       } else {
         decidedOn[i] = false;
       }
@@ -7580,7 +7663,8 @@ function simulate(u, prof, outPath, _soc0){
   // standard, so it doesn't need retrofitting and isn't subject to the flexibilisation
   // slider or its cost. Only the EXISTING remaining fleet's ramp rate depends on the slider.
   const oldFleetRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW);
-  const rampPct=p.coalRampBasePct+(p.coalRampFlexPct-p.coalRampBasePct)*(p.coalFlexPct?1:0);
+  // The checkbox's second step ramps the units it retrofits (those retiring after coalFlexDeepAfterYear) at coalRampFlexPct.
+  const rampPct=p.coalRampBasePct+(p.coalRampFlexPct-p.coalRampBasePct)*(coalFlexTier(p)>=2?coalDeepShare(Math.max(0,p.coalInstalledMW-p.coalDecomMW)):0);
   // Ramp rate applies to available (EAF-derated) capacity, not installed. The installed-basis
   // version gave 7,680 MW/hr on a 32 GW fleet at 64% EAF — but only 20.5 GW is actually
   // running, and a unit that's down for maintenance can't contribute to the fleet's ramp.
@@ -7998,7 +8082,7 @@ function simulate(u, prof, outPath, _soc0){
       }
     }
   }
-  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(_ucNet, Math.max(0, coalInstalled), eafFraction, RESERVE, coalUcOpts(p));
+  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(_ucNet, Math.max(0, coalInstalled), eafFraction, RESERVE, coalUcOpts(p, rampAllowedMW));
   // Lumpy unit availability. Skipped when an explicit Monte Carlo path is
   // supplied (that path is already the outage draw for the run) and when the
   // toggle is off, which restores the smooth-derate behaviour exactly.
@@ -8482,7 +8566,14 @@ function simulate(u, prof, outPath, _soc0){
     // The floor can still go unmet when there is no coal left to lift and not enough
     // grid-forming capacity. Record it rather than let it pass silently.
     if (syncDeficit > 0 && cAvail <= 0) syncUnmetH++;
-    const coalFloorBase=Math.max(ucMSL, rampAwareFloor, Math.min(cAvail, syncDeficit));
+    // With coalRampHonour (message 359 (f)) the floor rises no faster than coal can ramp: units committed at a block start load
+    // over the hours after it, rather than reaching their minimum in its first hour.
+    const _floorRaw=Math.max(ucMSL, rampAwareFloor, Math.min(cAvail, syncDeficit));
+    const coalFloorBase=(p.coalRampHonour ?? FIXED.coalRampHonour) ? Math.min(_floorRaw, prevCoalGen + rampAllowedMW) : _floorRaw;
+    // Units leaving commitment at a block start walk down at the ramp before they desynchronise (message 359 (f)): coal may run above
+    // this hour's committed capacity by up to the capacity that left, as far as one hour's ramp from the hour before requires.
+    const _walkMW=(p.coalRampHonour ?? FIXED.coalRampHonour) && h > 0
+      ? Math.min(Math.max(0, ucAvail[h-1] - ucAvail[h]), Math.max(0, prevCoalGen - rampAllowedMW - cAvail)) : 0;
     if(residual<0){
       let surplus=-residual;
       // The gas floor is applied in the deficit branch only. In a surplus hour it is not generated,
@@ -8494,7 +8585,7 @@ function simulate(u, prof, outPath, _soc0){
       // renewable surplus this hour - it's forced to keep producing at least this much, which
       // adds to what needs absorbing (storage charging first, then wasted/curtailed).
       // This is the real mechanism behind "inflexible coal causes additional curtailment".
-      const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
+      const coalFloor=Math.min(cAvail+_walkMW,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
       let btChg=Math.min(surplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
@@ -8567,7 +8658,7 @@ function simulate(u, prof, outPath, _soc0){
       // forced coal then creates a surplus that immediately recharges storage, an artificial
       // discharge/recharge oscillation. Any output above demand is absorbed by storage or
       // curtailed - which is the real mechanism behind inflexible coal wasting renewables.
-      const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
+      const coalFloor=Math.min(cAvail+_walkMW,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       // track how much coal actually serves load, separately from total coal generated - the
       // forced-above-demand portion is real generation and real fuel cost, but it is not serving
       // demand, so it must not appear in the chart stack (same principle as the off-peak charging
@@ -9292,7 +9383,7 @@ function simulate(u, prof, outPath, _soc0){
   const acapAt = (tech, flat) => (typeof BLD_COST === 'undefined' || !BLD_COST[tech])
     ? flat
     : bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint, p);
-  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
+  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(coalFlexTier(u)>=2?Math.max(0,p.coalInstalledMW-u.coalDecomMW)*coalDeepShare(Math.max(0,p.coalInstalledMW-u.coalDecomMW)):0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
   // report it against NERSA's "transmission network charges" component. It is a BUILD
   // cost, not a use-of-system charge, which is why the decomposition marks it partial.
@@ -11336,6 +11427,15 @@ function bldBuildLP(opts){
   // Level of store t at the end of hour h of day r, and at the start of day r (stress days: hourly variables).
   const hsLevel = (t, y, r, h) => h < 23 ? 's_' + t + '_' + y + '_' + r.d + '_' + h : 'e_' + t + '_' + y + '_' + r.d;
   const hsStart = (t, y, r) => 'e_' + t + '_' + y + '_' + (r.prevD !== undefined ? r.prevD : hsLast(y, r.d));
+  // Coal follows the engine (message 359 (h)): bldCoalMinFrac 'engine' is each year's capacity-weighted minimum stable level of the
+  // units standing (coalFleetMinShare), or a number as before; bldCoalStartCost 1 charges each MW of commitment added at the standing
+  // fleet's hot-start cost per MW (coalFleetHotStartRMW); bldCoalCommitHours null drops the rate rule (48, the old rule, a sensitivity).
+  const COMMIT_ON = !!S.bldCoalCommit, COMMIT_H = S.bldCoalCommitHours == null ? null : Math.max(1, S.bldCoalCommitHours);
+  const COMMIT_MIN_Y = {}, COMMIT_SU_Y = {};
+  for (const y of Y){
+    COMMIT_MIN_Y[y] = S.bldCoalMinFrac === 'engine' ? coalFleetMinShare(S, y, bldCoalMW(y)) : Math.max(0, Math.min(1, S.bldCoalMinFrac));
+    COMMIT_SU_Y[y] = COMMIT_ON && S.bldCoalStartCost ? coalFleetHotStartRMW(S, y, bldCoalMW(y)) : 0;
+  }
   for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
     // IMPORTS PRICED (user, 22 Oct 2026, c6 decisions, message 321 (a)(4); PR B). The contracted infeed is fixed, so its price
@@ -11347,6 +11447,7 @@ function bldBuildLP(opts){
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       const k = y + '_' + r.d + '_' + h;
       obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*wObj(r)*df).toFixed(3) + ' gc_' + k);
+      if (COMMIT_SU_Y[y] > 0) obj.push((COMMIT_SU_Y[y]*wObj(r)*df).toFixed(3) + ' su_' + k);
       obj.push(((bldGasFuelR(opts, y, S) + S.vomCcgt + CARBON_AT(y)*EMIS_CCGT)*wObj(r)*df).toFixed(3) + ' gg_' + k);
       obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*wObj(r)*df).toFixed(3) + ' gd_' + k);
       if (OCGT_ON) obj.push(((bldGasFuelR(opts, y, S)*OC_K + S.vomOcgt + CARBON_AT(y)*EMIS_OCGT)*wObj(r)*df).toFixed(3) + ' go_' + k);
@@ -11552,10 +11653,9 @@ function bldBuildLP(opts){
     if (CUMV) return up.map(v => ' + ' + c.toFixed(5) + ' ' + v).join('') + base.map(v => ' - ' + c.toFixed(5) + ' ' + v).join('');
     const bs = new Set(base); return up.filter(v => !bs.has(v)).map(v => ' + ' + c.toFixed(5) + ' ' + v).join('');
   }).join('');
-  const COMMIT_ON = !!S.bldCoalCommit, COMMIT_MIN = Math.max(0, Math.min(1, S.bldCoalMinFrac)), COMMIT_H = Math.max(1, S.bldCoalCommitHours);
   for (const y of Y){
     const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
-    const coalCapMean = bldCoalMW(y) * eaf;
+    const coalCapMean = bldCoalMW(y) * eaf, COMMIT_MIN = COMMIT_ON ? COMMIT_MIN_Y[y] : 0;
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
@@ -11604,8 +11704,12 @@ function bldBuildLP(opts){
         L.push(' cmax_' + k + ': cm_' + k + (RC_ON ? ' + ' + _rcfW.toFixed(4) + ' rc_' + y : '') + ' <= ' + _cmaxRhs);
         L.push(' cgen_' + k + ': gc_' + k + ' - cm_' + k + ' <= 0');
         L.push(' cmin_' + k + ': gc_' + k + ' - ' + COMMIT_MIN.toFixed(3) + ' cm_' + k + ' >= 0');
-        L.push(' cru_' + k + ': cm_' + k + ' - cm_' + kp + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
-        L.push(' crd_' + k + ': cm_' + kp + ' - cm_' + k + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
+        if (COMMIT_H){
+          L.push(' cru_' + k + ': cm_' + k + ' - cm_' + kp + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
+          L.push(' crd_' + k + ': cm_' + kp + ' - cm_' + k + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
+        }
+        // Start-ups: su_ is at least the commitment added this hour, and is priced in the objective.
+        if (COMMIT_SU_Y[y] > 0) L.push(' csu_' + k + ': su_' + k + ' - cm_' + k + ' + cm_' + kp + ' >= 0');
       }
       L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
       if (OCGT_ON) L.push(' gomax_' + k + ': go_' + k + ' - ' + cum('ocgt',y).join(' - ') + ' <= 0');
@@ -18609,7 +18713,7 @@ const SLIDERS=[
    fmt:v=>v>=29.8?'no limit':(v.toFixed(2)+' TWh/yr'),
    note:'Diesel the open-cycle fleet can buy and deliver in a year, spread evenly by month.'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:39692,step:1000,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`of ${(FIXED.coalInstalledMW/1000).toFixed(1)} GW installed (Eskom FY2026 nominal).`},
-  {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit R223/kW/yr is one German lignite plant (Weisweiler). SA fleet ramps ~24&#37;/hr today (Agora 2017); the ~100&#37;/hr once flexibilised is unsourced: IRENA gives 3\u20136&#37; a minute at the state of the art, and Agora no more than 1&#37; a minute for old South African units. Applies to the non-decommissioned fleet.'},
+  {id:'coalFlexPct',label:'Coal fleet flexibilisation',min:0,max:2,step:1,def:0,fmt:v=>['none','Tier 1','Tiers 1\u20133'][Math.round(+v)||0],note:'Tier 1: every unit reaches its design minimum from today rather than from 2030 (procedures and maintenance, negligible cost; Eskom, analysis ours). Tiers 1\u20133: units retiring after 2035 also turn down to 40&#37; of capacity (AEMO 2025 Thermal Audit; CEA) and ramp at up to 100&#37;/hr, at R223/kW/yr, one German lignite plant (Weisweiler), unsourced for South Africa. SA fleet ramps ~24&#37;/hr today (Agora 2017).'},
   {id:'ccsEnabled',toggle:true,def:false,label:'Apply carbon capture &amp; storage to the coal fleet',note:'Fits capture to the share of the coal fleet set below. The engine runs coal as one block, so the share applies to new coal build as well as the existing fleet. Off by default.'},
   {id:'ccsSharePct',label:'\u2013 share of the fleet retrofitted',min:0,max:100,step:0.2,
    def:FIXED.ccsSharePct,ctrlStyle:SUB_CTRL,
@@ -18886,7 +18990,7 @@ const PRESETS={
   // R313.5bn); on independent draws (seed 71830529, 240 runs) 3.97 against 2.42, so topped up, six rounds: solar 38,750 and
   // iron-air 2,000 MW; 2.418 against 2.424 GWh, R318.07bn a year (harness/ext/search_deep_c5f.json, topup_deep_c5f.json). Every
   // other setting kept, coal retirement included. Its measured shed is PRESET_SCORES, rescored on the page as it runs it.
-  'Deep decarbonisation 2035':{demandGrowthPct:C5F_DEMAND[2035].growthPct,demandBlockMW:C5F_DEMAND[2035].blockMW,coalDecomMW:27000,coalFlexPct:1,newWindMW:43000,newPvMW:38750,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:14625,newBattHours:12,newIronAirMW:2000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  'Deep decarbonisation 2035':{demandGrowthPct:C5F_DEMAND[2035].growthPct,demandBlockMW:C5F_DEMAND[2035].blockMW,coalDecomMW:27000,coalFlexPct:2,newWindMW:43000,newPvMW:38750,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:14625,newBattHours:12,newIronAirMW:2000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,
@@ -18903,7 +19007,7 @@ const PRESETS={
   // demand ratio (1.4275): wind 50,500, solar 56,500, lithium 20,000 at 12 h, iron-air 13,000, offshore 1,750 MW, every other
   // setting kept; no top-up needed on independent draws (harness/ext/search_ff_c5f.json, topup_ff_c5f.json). Its measured shed is
   // PRESET_SCORES, rescored on the page as it runs it.
-  'Fossil-free 2040':{demandGrowthPct:C5F_DEMAND[2040].growthPct,demandBlockMW:C5F_DEMAND[2040].blockMW,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:100,newWindMW:50500,newPvMW:56500,bldPvTracking:1,newOffshoreMW:1750,newRooftopMW:16800,newBattMW:20000,newBattHours:12,newIronAirMW:13000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  'Fossil-free 2040':{demandGrowthPct:C5F_DEMAND[2040].growthPct,demandBlockMW:C5F_DEMAND[2040].blockMW,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:2,newWindMW:50500,newPvMW:56500,bldPvTracking:1,newOffshoreMW:1750,newRooftopMW:16800,newBattMW:20000,newBattHours:12,newIronAirMW:13000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -20520,7 +20624,7 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 // computes on the main thread as before. Heat stress and the external comparison still compute on the page when shown.
 // The names are simulate()'s closure, with the panel draws', found by static analysis (eslint-scope) on 19 Oct 2026; a name
 // missing here fails in the worker, the page falls back, and validate_worker.js fails.
-const ENGINE_FNS = () => ({ simulate, coalUcOpts, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
+const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
   astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate,
   otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth,
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
@@ -20535,7 +20639,9 @@ const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, S
   WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
-  BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW, USD_RATE_R, US_CPI_2011_TO_JAN26, COAL_START_WEAR_RMW,
+  BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW, USD_RATE_R, US_CPI_2011_TO_JAN26,
+  COAL_START_SUPER, COAL_START_OFFLINE_H, COAL_START_WEAR_USD, COAL_START_OTHER_USD, COAL_START_FUEL_RMW, COAL_START_FUEL_AT_RGJ,
+  COAL_KGCO2_PER_GJ, COAL_GJ_PER_MWH,
   bldWeatherYears: null, bldWxWeights: null, bldSolarTrk: null, bldWindMod: null, _wxLoading: null, _twelveYearCache: {} });
 // The scripts the engine shares with the nodal model (IMPORTS_CF and others), loaded in the worker as the page loads them.
 const ENGINE_SCRIPTS = ['nodal/nodal_engine.js', 'nodal/capacity_siting.js'];

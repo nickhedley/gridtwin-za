@@ -16726,3 +16726,49 @@ outages). October 2025: 41%, 97%, 0.46, 2.9%.
 Inflex test run (message 341 (d)), dropped (message 357 (c)): with the minimum at 0.75 and a 48-hour lock, each build-LP pass took
 longer than the last (pass 4 93 minutes, pass 5 over 3 h 43 min) and container restarts every 2-3 hours stopped pass 5 before it
 finished; a presolved solve cannot save progress at a time limit. Its finished passes stay in its lpcache (scratchpad, 687 MB).
+
+### Coal commitment against standard practice; commitment on a forecast; reserve on committed coal (user, 24 Oct 2026, message 358; PR C's page, branch claude/c6-coal at e836566, build stamp unchanged; report only, no model change)
+
+Reserve on committed coal (358 (c), 343 a5): held whether or not reserve is priced. asReserveOn only adds the reserve revenue
+term; holding is reserveEnabled (default 1): ASTR (reserveRule 'astr', the default) holds the reserve in dispatch on coal headroom
+and storage every hour, and the commitment pre-pass adds the reserve to each block's target. Today 2026, twelve weather years x one
+draw (seeds 71830529 + year x 7919), 24 Oct 2026 04:20 UTC, scratchpad m358/reshead_page.js: asReserveOn off and on give the same
+dispatch (coal 150.67 TWh); coal headroom at 17:00-20:59, median 4,007 MW, 10th percentile 2,687, 1st 1,254; 0.4% of those hours
+below 500 MW. Reserve off (reserveEnabled 0): coal 150.68 TWh, headroom median 4,677 MW (the pre-pass then commits to peak x 1.15,
+more than peak plus 2,200 MW). Nothing to add in PR C.
+
+Commitment on a forecast (358 (b), test only): the pre-pass commits on a forecast of net load and dispatch runs on the actual
+hours. 'Persistence': the same hour the day before; 'half': the actual plus half the persistence error (a day-ahead proxy).
+Twelve weather years x ten draws (seeds as in m357), 24 Oct 2026 04:22-04:40 UTC, scratchpad m358/run_fc.sh (an in-memory patch of
+buildUCSchedule's input; the page unchanged). Base = today's rule; central = the candidate central of 23 Oct (weighing, built start
+costs, practice floor 0.77, design 0.57/0.52). Perfect / half / persistence:
+- Today 2026, base: starts per unit a year 115.0 / 114.6 / 114.9; two-shift days 0.82 / 0.85 / 0.82; unserved 0.0 / 0.0 / 0.3 GWh;
+  curtailment 0 / 0 / 2 GWh; system cost R217.73 / 217.73 / 217.99 bn. Central: 115.0 / 114.6 / 114.9; 0.82 / 0.85 / 0.82; 0.0 /
+  0.0 / 0.3 GWh; 198 / 254 / 509 GWh; R221.82 / 221.77 / 221.89 bn.
+- Least-cost path 2035, base: 250.6 / 270.7 / 250.9; 0.96 / 0.98 / 0.96; 3.2 / 4.7 / 263 GWh; 3,675 / 5,105 / 7,097 GWh; R249.68 /
+  251.42 / 259.43 bn; reserve short 16 / 21 / 174 GWh. Central: 105.2 / 109.2 / 105.6; 0.65 / 0.77 / 0.65; 3.3 / 4.0 / 246 GWh;
+  4,940 / 6,855 / 8,760 GWh; R253.04 / 254.74 / 262.03 bn; reserve short 18 / 21 / 165 GWh.
+- Committing on a forecast barely moves starts: the 4-hour block rule sets the cycling. The cost of forecast error lands on
+  adequacy and curtailment. Caveat: no re-commitment within the day, which operators do, so these are upper bounds; the 24-hour
+  persistence forecast is cruder than a day-ahead forecast.
+
+Engine commitment against standard (PLEXOS-style) unit commitment (358 (a)); 'PR C' is what message 359 adds.
+- Decision: practice minimises fuel, no-load, start and penalty costs by mixed-integer optimisation over a 24-48 h horizon, rolled
+  forward. Engine: cheapest units on to each 4-hour block's peak plus reserve. PR C: keeps a running unit on through a gap of up
+  to 24 h when restarting costs more than its minimum output net of the fuel that output saves elsewhere; a rule, not an
+  optimisation.
+- Start costs by downtime: practice hot/warm/cold. Engine: one cost per unit, charged, never weighed. PR C: hot/warm/cold by hours
+  offline and class (NREL/Intertek), weighed.
+- Minimum up and down times: per unit in practice; engine per group (8 h up, 4 h down for 97% of capacity; 48 h for Arnot) in 4-hour
+  steps. PR C: unchanged; 24 h down a sensitivity.
+- Minimum stable load: per unit in both; PR C sets the 2026-2029 practice floor and design minimums from 2030.
+- Ramps: practice per unit inside commitment; engine fleet-level in dispatch only, commitment blind to it (about 700 block starts a
+  year beyond the limit in Least-cost path 2035). PR C: commitment and floor kept within the ramp.
+- Start-up trajectories and notice: practice hours to synchronise and load; engine none. Left out.
+- Reserve on committed units: practice spinning reserve limited by ramp rate; engine holds it on coal headroom without that limit.
+  Ramp-limited reserve left out.
+- Minimum synchronous units: practice a unit count or inertia constraint; engine a coal floor in MW. PR C changes its basis (imports
+  out, nuclear and hydro at output); a unit count left out.
+- No-load cost and part-load heat rate: in practice's objective; the engine applies part-load fuel and CO2 after dispatch and the
+  commitment sees marginal cost only. Left out.
+- Forecast: practice day-ahead with rolling re-commitment; engine perfect foresight (tested above).
