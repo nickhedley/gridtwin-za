@@ -443,10 +443,9 @@ Known failures in the suite (build 2026-10-24a: node checks 957/982 plus audit 8
 - validate_consistency: high-season off-peak is the cheapest block modelled (the check's premise is contradicted by the 2026/27 tariff booklet; to be replaced).
 - validate_benchmarks: peakerSeasonRatio's plausibility; and the 2025 replay's CO2 against Ember's (184.6 against 160.3 Mt: Ember applies a fixed coal factor of 0.900 t CO2e per MWh net, Eskom measured 1.108 t per MWh sent out; kept failing until Ember's basis is reconciled).
 - validate_invariants: unserved energy rises from 2,200 to 6,000 MW of reserve in one stressed draw: restoring reserve spends stored energy a later hour needed (TODO 14iy).
-- eng5 check 6: 30 GW of new batteries cut unserved 8.3% against the check's 10%, because spare gas already charges the existing stores ahead of a shortfall (intended behaviour; the check is to be redesigned).
 - validate_pathway_presets: the presets built on c5f's runs differ from the engine's c6 coal rules and inputs until the presets build, which follows this pack.
 - New with PR C, each traced to a coal setting and kept failing pending the author's review (RESULTS 'c6 PR C'): three published findings of the engine before PR C (demand response reversing at a 30% shift; a build rate wasting more when sustained longer; a low build rate staying at the congestion floor), which the practice floor and start-cost weighing move, to be restated on c6; curtailment at defaults (0.2 TWh a year, the floor's intended effect); the average-cost and coal-curtailment anchors (start costs, weighing and the synchronous floor); interruptible load never called in Today 2026, with more coal online; the shadow hourly price spread, flattened by more coal online at midday.
-- No longer failing: EDMSA Scenario A's 2035 CO2 is within 22 Mt of the published figure from build 2026-10-24a.
+- No longer failing from build 2026-10-24a: EDMSA Scenario A's 2035 CO2 is within 22 Mt of the published figure; eng5's check that storage cuts unserved energy passes.
 
 ---
 
