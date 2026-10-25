@@ -55,11 +55,9 @@ const LABELS = [
 
 // Exempt sentences, each by its exact text, for one label only, with the reason. The pattern itself stays as it is, so change
 // history dated by month alone is still caught; an exemption that no longer matches the page fails its own check.
-const EXEMPT = [
-  { label: "'until <date> 2026'",
-    text: 'Exports ran about 1,750 MW until February 2026 and about 745 MW since, a step of roughly 1 GW caused by the suspension of South32\u2019s Mozal aluminium smelter in Mozambique over tariff terms.',
-    reason: "the power system's history (Mozal's suspension), not the model's (user, 19 Oct 2026, message 238 (1))" },
-];
+// The Mozal exports sentence (message 238 (1)) was exempt until the exports note was rewritten to the site-copy rule (message 378),
+// 25 Oct 2026; the rewritten note says 'since February 2026', which the pattern does not catch.
+const EXEMPT = [];
 
 let npass = 0, nfail = 0; const fails = [];
 function check(name, ok, detail){ if (ok) npass++; else { nfail++; fails.push(`  ${name}` + (detail ? `  -  ${detail}` : '')); } }
