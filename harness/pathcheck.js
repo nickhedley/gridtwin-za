@@ -92,6 +92,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
  // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
+ // Koeberg's monthly shape (message 376 (b)): the run's own, so s_koeberg_winter is checked on the shape it was built on.
+ if (P.nuclearShape){ w.eval(`state.nuclearMonthlyShape=${JSON.stringify(P.nuclearShape)};`); console.log('Koeberg monthly shape from the pathway:', JSON.stringify(P.nuclearShape)); }
  if (P.importsMW != null) w.eval(`state.importsMW=${+P.importsMW};`);
  if (P.importsCF != null) w.eval(`state.importsCF=${+P.importsCF};`);
  const BLK = (P.demand && P.demand.block) ? P.demand.block : null;
