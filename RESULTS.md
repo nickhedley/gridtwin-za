@@ -17107,6 +17107,25 @@ open-cycle on LNG; energy over capacity x 8,760 h, mean over the runs), with the
 UTC): a first test read 17% for c6's strict-standard run in 2034. That figure counted only the 175 MW of new open-cycle gas, not the
 3,400 MW diesel fleet (pathcheck.js read the diesel capacity from the run's state without the defaults; fixed). With all open-cycle
 plant the same test gives 0.8% (2034, one draw, 12 runs; 0.259 TWh over 3,575 MW).
+Reconciliation (user, 25 Oct 2026, message 380 (a)). The only threshold is NTCSA's 6% (MTSAO 2026-2030, section 3, p.11); "under 2%"
+in the chat report of the strict set described the largest value found, not a threshold. Definition used in both figures and in
+every run: numerator, all open-cycle output in the year (Eskom's diesel turbines and the Avon and Dedisa peakers, contract and merit
+output, plus new open-cycle on diesel; new open-cycle on LNG); CCGT output excluded. Denominator, the installed capacity of the same
+plant x 8,760 h: the 3,400 MW diesel fleet (Avon 670 MW and Dedisa 335 MW included, in every year: the model keeps both as
+available plant after their contracts end) less any diesel retired, plus new open-cycle on diesel and LNG; CCGT excluded. The 17%
+used the right numerator (0.259 TWh) over the wrong denominator (175 MW of new open-cycle gas only); it is wrong. The right figure for
+that test is 0.8%.
+The strict set (s_std_strict, 14 runs on a37d4fd), whose checks predate the criterion: open-cycle energy from the restart-count reruns
+(two draws per weather year, the engine check's seeds; scratch m376/crit2_exact.js) over the capacity above. Every run is below 6% in
+every year; the largest is 1.8% (s_gascapex25 2040, s_nogas 2037). c6 under 20 GWh (ff8cf65, the engine check itself), per year:
+
+| Year | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Open-cycle output, TWh | 0.09 | 0.08 | 0.05 | 0.04 | 0.38 | 0.45 | 0.37 | 0.27 | 0.26 | 0.23 | 0.27 | 0.27 | 0.36 | 0.44 | 0.47 |
+| Open-cycle capacity, MW | 3,400 | 3,400 | 3,400 | 3,400 | 3,400 | 3,559 | 3,559 | 3,559 | 3,559 | 3,559 | 3,873 | 3,873 | 4,215 | 4,289 | 4,289 |
+| Capacity factor | 0.29% | 0.26% | 0.16% | 0.13% | 1.26% | 1.43% | 1.19% | 0.87% | 0.84% | 0.72% | 0.81% | 0.78% | 0.97% | 1.17% | 1.25% |
+
+Criterion (ii) is met in every year (under 6%), at most 1.43% (2031).
 Forced-outage restarts (376 (a)): the cost-only adjustment (cold start at the 360 rates plus the 369 (a) forced-outage term, R4,521/MW
 subcritical and R4,840/MW supercritical) is applied to c6, every sensitivity and the IRP pair alike, counted on each run's own coal
 fleet (scratch m374/pathcheck_ret.js), and shown as its own line in the cost tables.
