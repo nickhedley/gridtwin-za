@@ -17103,8 +17103,10 @@ sourced), placed as Eskom schedules them, keeping the annual factor at the measu
 Wording (376 (c)): c6 is planned to NTCSA's unserved-energy criterion (i), mean unserved energy at most 20 GWh a year, not to the
 full adequacy test. Criterion (ii), the open-cycle gas turbine capacity factor under 6% a year, is reported by the engine check for
 every run and year (pathcheck.js ocgtCF: all open-cycle plant, diesel turbines including Avon and Dedisa's contract output, and
-open-cycle on LNG; energy over capacity x 8,760 h, mean over the runs), with the years it is exceeded. On c6's strict-standard run it
-is already 17% in 2034.
+open-cycle on LNG; energy over capacity x 8,760 h, mean over the runs), with the years it is exceeded. Correction (25 Oct 2026, 07:50
+UTC): a first test read 17% for c6's strict-standard run in 2034. That figure counted only the 175 MW of new open-cycle gas, not the
+3,400 MW diesel fleet (pathcheck.js read the diesel capacity from the run's state without the defaults; fixed). With all open-cycle
+plant the same test gives 0.8% (2034, one draw, 12 runs; 0.259 TWh over 3,575 MW).
 Forced-outage restarts (376 (a)): the cost-only adjustment (cold start at the 360 rates plus the 369 (a) forced-outage term, R4,521/MW
 subcritical and R4,840/MW supercritical) is applied to c6, every sensitivity and the IRP pair alike, counted on each run's own coal
 fleet (scratch m374/pathcheck_ret.js), and shown as its own line in the cost tables.
