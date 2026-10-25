@@ -1,6 +1,6 @@
 # GridTwin ZA – reviewer pack
 
-Draft for an outside energy modeller, 14 October 2026; refreshed on 15 October on c5b_14r, on 16 October on c5d and on 17 October on c5e. This refresh, begun 24 October 2026, moves the pack to c6, the central run on build 2026-10-24b (main plus the coal pull request, PR C). c6's results and its comparison with IRP 2025 are added on Thursday 29 October, when its runs finish; until then, every c5e and c5f figure in this pack is superseded and marked as such, kept only as the record of the previous central. Prepared from the project's results log (RESULTS.md), its source register (SOURCES.md) and the validation/ folder.
+Draft for an outside energy modeller, 14 October 2026; refreshed on 15 October on c5b_14r, on 16 October on c5d and on 17 October on c5e. This refresh, begun 24 October 2026, moves the pack to c6, the central run on build 2026-10-25a (main with the coal pull request, PR C, and NTCSA's adequacy test as the standard, PR D). c6's results and its comparison with IRP 2025 are added on Thursday 29 October, when its runs finish; until then, every c5e and c5f figure in this pack is superseded and marked as such, kept only as the record of the previous central. Prepared from the project's results log (RESULTS.md), its source register (SOURCES.md) and the validation/ folder.
 
 ## What this is and how to read it
 
