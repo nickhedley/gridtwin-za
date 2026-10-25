@@ -9,8 +9,9 @@ page runs the preset.
 import json, sys
 # Each preset from its own rescore. Deep decarbonisation 2035 was topped up on the draws of seed 71830529, so its score comes
 # from a fresh, disjoint seed set (site review A1, message 252: SEED=120000017 ONLY=Deep VARIANTS=page on build 19i); Fossil-free
-# 2040 had no top-up, so 214's rescore on 19e stands (message 234 (5)). 19c's is kept as the record.
-SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_19i_deep_fresh.json', 'Fossil-free 2040': 'harness/ext/rescore_page_19e.json'}
+# 2040 had no top-up, so 214's rescore on 19e stands (message 234 (5)). 19c's is kept as the record. Deep decarbonisation 2035 was
+# rebuilt on PR C's coal rules and rescored the same way on build 24b (24 Oct 2026, message 369); 19i's is kept as the record.
+SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_24b_deep_fresh.json', 'Fossil-free 2040': 'harness/ext/rescore_page_19e.json'}
 sc = {}
 for n, src in SRCS.items():
     R = json.load(open(src)); v = R['presets'][n]['page']

@@ -81,6 +81,10 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
     check(`${NAME}: the page state is the engine check's ${Y} state`, off.length === 0, off.join('; '));
     check(`${NAME}: the run recorded no setting the preset cannot carry`,
           (P.importsEndYear ?? 0) === +w.eval('FIXED.importsEndYear') && !P.gasFinPremium && !P.comply && P.gas.fuelRFlat == null);
+    // The page's coal settings are the run's (PR C, build 2026-10-24a): a run recorded before PR C carries none and ran on COAL_PRE_C.
+    const coalOff = JSON.parse(w.eval(`(function(){ const R = ${JSON.stringify(P.coal || null)} || COAL_PRE_C;
+      return JSON.stringify(Object.keys(COAL_PRE_C).filter(k => JSON.stringify(state[k] ?? FIXED[k]) !== JSON.stringify(R[k])).map(k => k + ' page ' + JSON.stringify(state[k] ?? FIXED[k]) + ', run ' + JSON.stringify(R[k]))); })()`));
+    check(`${NAME}: the page's coal settings are the run's`, coalOff.length === 0, coalOff.join('; '));
     // The page's global cost settings are the run's: from 19b the defaults equal c5f's (message 227 (1)).
     const decl = +w.eval('BLD_COST.batt.decl'), term = +w.eval('bldGasTerminalRkW()'), disc = +w.eval('BLD_DISC');
     check(`${NAME}: the page's lithium decline is the run's`, same(decl, +P.battDecl), `page ${decl}, run ${P.battDecl}`);

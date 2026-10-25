@@ -1,0 +1,141 @@
+{
+ "meta": {
+  "what": "IRP 2025 Moderate electricity demand forecast, TWh, digitised from Figure 2 'Electricity Demand Forecast and Sensitivities' (Integrated Resource Plan 2025, p.11; Government Gazette No. 53596, 28 October 2025, p.22). IRP 2025 publishes no table; its full forecasting report is not public (searched 24 Oct 2026).",
+  "definition": "IRP 2025 p.11: historical consumption of all systems connected to the transmission and distribution grid, excluding pumping of pumped-storage stations, battery charging and power stations' auxiliaries, including network losses; the forecast covers deemed sales across the borders (p.11 input assumptions). Its 2024 value (238.3) matches ESRG's Mode 1 total (domestic grid, exports, distributed PV and other onsite generation, 239.2), the basis the conversion in gen_irp_index.py assumes.",
+  "method": "harness/pathway/digitise_irp2025_fig2.py: the raster embedded in the gazette PDF, axes calibrated from its tick marks (1 px = 1.04 TWh, one year = 21.7 px), the line found by colour and traced row by row, each year a straight-line fit over +/-0.5 year; to 2030 all lines but Low Delayed EVs coincide, to 2033.5 High and Moderate run together (High = Moderate to 2032, p.12). Reading error: about +/-1 TWh where read (fit residual 0.1-0.3 TWh plus calibration), +/-3 TWh where interpolated.",
+  "checks": "2029 reads 255.0 TWh, the plan's 'about 255 TWh by 2029' (p.34; the executive summary says 2030, where the figure reads 260.0); growth 2024-2040 2.2% a year against the plan's 2.3% average.",
+  "source": "IRP 2025 (Department of Electricity and Energy), public; digitised by GridTwin ZA, 24 Oct 2026"
+ },
+ "years": {
+  "2024": {
+   "twh": 238.3,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2025": {
+   "twh": 239.2,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2026": {
+   "twh": 241.6,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2027": {
+   "twh": 245.7,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2028": {
+   "twh": 250.2,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2029": {
+   "twh": 255.0,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2030": {
+   "twh": 260.0,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2031": {
+   "twh": 268.0,
+   "err_twh": 3.0,
+   "how": "interpolated 2030-2033"
+  },
+  "2032": {
+   "twh": 276.0,
+   "err_twh": 3.0,
+   "how": "interpolated 2030-2033"
+  },
+  "2033": {
+   "twh": 284.0,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2034": {
+   "twh": 291.1,
+   "err_twh": 3.0,
+   "how": "interpolated 2033-2035"
+  },
+  "2035": {
+   "twh": 298.2,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2036": {
+   "twh": 305.4,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2037": {
+   "twh": 312.9,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2038": {
+   "twh": 321.3,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2039": {
+   "twh": 330.6,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2040": {
+   "twh": 339.4,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2041": {
+   "twh": 347.9,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2042": {
+   "twh": 357.1,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2043": {
+   "twh": 365.8,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2044": {
+   "twh": 375.8,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2045": {
+   "twh": 383.9,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2046": {
+   "twh": 392.3,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2047": {
+   "twh": 402.9,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2048": {
+   "twh": 412.4,
+   "err_twh": 1.0,
+   "how": "read"
+  },
+  "2049": {
+   "twh": 420.6,
+   "err_twh": 1.0,
+   "how": "read"
+  }
+ }
+}

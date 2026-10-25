@@ -88,6 +88,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // From build 2026-10-23a (c6 PR B) the page's default is 2030 and a run records its year, 0 included; a run recorded before then
  // has null for 'no end year', its default then, so null means 0 here rather than the page's new default.
  w.eval(`state.importsEndYear=${P.importsEndYear == null ? 0 : +P.importsEndYear};`);
+ // Coal settings (PR C, build 2026-10-24a; messages 359, 363): the pathway's own; a run recorded before PR C has none and replays with
+ // COAL_PRE_C, the coal rules its optimiser and engine had.
+ w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
  // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
  if (P.importsMW != null) w.eval(`state.importsMW=${+P.importsMW};`);
  if (P.importsCF != null) w.eval(`state.importsCF=${+P.importsCF};`);

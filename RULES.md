@@ -202,6 +202,14 @@ digit. Never edit stored_panels.json by hand.
 
 ---
 
+## Decisions taken without Nick follow practice, not convenience (user, 24 Oct 2026, message 366)
+
+Every modelling decision Claude takes without Nick, from 24 Oct 2026 on, follows modelling best practice and real grid
+management: how system operators and professional models (PLEXOS and its peers) handle the same question. Never convenience or run
+time. Each such decision states, where it is reported (chat, PR, RESULTS), the practice it follows and its source. Where no practice
+fits or sources disagree, take the option more conservative for reliability, flag it, and leave the final call to Nick and the
+advisor.
+
 ## Captions say what a control is, not what to do with it (user, 16 Oct 2026, message 156)
 
 A caption states what the control is, its default and the basis for the default. It does not tell the reader what to do with
