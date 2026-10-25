@@ -5807,7 +5807,7 @@ const FIXED = {
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
   // plus reserve shortfall (calendar days at their weights, windows at that probability) to targetFrac x 0.002% of
-  // demand, with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
+  // demand (or to opts.targetGWh, NTCSA_ADEQUACY_GWH for c6, message 373), with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
   bldStressTarget:0,
   // PLANNING RESERVE MARGIN IN THE BUILD LP (user, 16 Oct 2026, message 133): firm capacity at least (1 + this / 100) x the
   // peak hour of the year's represented days (row res_, wind and solar uncredited, every store at min(power, energy / 4 h)).
@@ -6141,6 +6141,11 @@ const FIXED = {
   laGasCharge:1,  // charge storage from spare coal and gas ahead of a forecast shortfall beyond coal and gas (message 125 (3)); 0 restores the earlier rule
   storageLookaheadH:48,  // storage plans over the next 48 hours (14do 13 Oct, 24; engine fix (B) 14 Oct 2026, 48); 0 restores the earlier rule
   nuclearCF:0.66,
+  // KOEBERG BY MONTH (user, 25 Oct 2026, message 376 (b)): null (central) runs nuclear flat at nuclearCF every hour, as Eskom
+  // plans refuelling outside winter. A 12-value array (hour-weighted mean 1) shapes it by month around the same annual factor:
+  // the s_koeberg_winter sensitivity repeats the 2025-26 monthly pattern, its winter outages included (supplied by the run,
+  // derived from Eskom's hourly data; not stored here). Applied in the engine and the build optimiser alike.
+  nuclearMonthlyShape:null,
   // part-load heat RATE. A coal unit burns more fuel per MWh the further it is
   // backed off: auxiliaries, mill and fan power and boiler losses are largely
   // fixed, so they spread over less output. The model previously costed every
@@ -6839,6 +6844,11 @@ const FIXED = {
   // bldGasFloorOn (11 Oct 2026, TODO 14be step 4): the same minimum in the build LP, as an annual floor on new gas
   // output (gasfloor_<y>). Off by default; the pathway switch GASFLOOR turns on both this and ccgtForceLoad.
   bldGasFloorOn:0,
+  // NTCSA'S SECOND ADEQUACY CRITERION AS A BUILD CONSTRAINT (user, 25 Oct 2026, message 376 (d); MTSAO 2026-2030 section 3, p.11):
+  // null (central) leaves it reported only. A share (0.06 for s_ntcsa_both) caps each year's open-cycle output, diesel turbines
+  // (Eskom's, the IPP peakers with Avon and Dedisa's contract output, and new) and open-cycle on LNG, at that share of their
+  // capacity x 8,760 h, counted on the weighted representative days (stress days left out, as for the gas floor).
+  bldOcCfMax:null,
   // bldGasFinPremium (11 Oct 2026, TODO 14be step 3): added to the annuity rate of new gas only (bldAnnuityRate); year
   // weighting stays at BLD_DISC. 0 by default; 0.015 is the user's sensitivity, illustrative unless a South African
   // source is found (candidate: IEA, Cost of capital by project type in selected countries, 2022).
@@ -8033,7 +8043,7 @@ function simulate(u, prof, outPath, _soc0){
     // constraints - with them in place it converges to this ordering. Note the
     // economics anyway: contracted imports (R550) now undercut marginal coal
     // (R674 with VOM and carbon) - true, and no code change follows from it.
-    const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF, hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
+    const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF*nucShapeAt(p, h), hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -8551,7 +8561,7 @@ function simulate(u, prof, outPath, _soc0){
       windGen *= (1 - _cgp2); pvGen *= (1 - _cgp2);
       congestMW[h] = _lost2; congestTot += _lost2;
     }
-    const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF, hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
+    const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF*nucShapeAt(p, h), hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -11705,6 +11715,9 @@ function bldBuildLP(opts){
   // does not make, and the reason this remains a screen.
   const TAIL_COAL_FACTOR = 0.76;
   const AV_NUC = S.nuclearCF ?? FIXED.nuclearCF;
+  // Koeberg by month (message 376 (b)): the engine's shape on each representative hour; firm capacity at its lowest month.
+  const NUC_SHAPE = Array.isArray(S.nuclearMonthlyShape ?? FIXED.nuclearMonthlyShape) ? (S.nuclearMonthlyShape ?? FIXED.nuclearMonthlyShape) : null;
+  const NUC_SH = i => NUC_SHAPE ? NUC_SHAPE[hourMonth(i)] : 1, NUC_FIRM = NUC_SHAPE ? Math.min(...NUC_SHAPE) : 1;
   const PLAN_M = +(S.bldPlanMarginPct ?? FIXED.bldPlanMarginPct);   // planning reserve margin, % (0: no res_ row)
   if (!(PLAN_M >= 0 && PLAN_M <= 50)) throw new Error('bldBuildLP: bldPlanMarginPct must be 0-50: ' + PLAN_M);
   const AV_HYD = S.hydroCF ?? FIXED.hydroCF;
@@ -11771,7 +11784,7 @@ function bldBuildLP(opts){
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
-      const fixed = NUC(y)*AV_NUC + EX.hydro*AV_HYD + IMP(y)*AV_IMP
+      const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
                   + EX.wind*wp*AV_CONG + EX.pv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + EX.csp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
@@ -11923,6 +11936,15 @@ function bldBuildLP(opts){
           + cum(S2.t,y).join(' - ') + ' <= ' + S2.ex(EX));
       }
     }
+    // NTCSA's open-cycle criterion as a constraint (bldOcCfMax, message 376 (d)): weighted open-cycle output this year at most
+    // that share of the open-cycle capacity standing x 8,760 h.
+    if (S.bldOcCfMax != null && S.bldOcCfMax > 0){
+      const oT = [], cf8760 = S.bldOcCfMax * 8760;
+      for (const r of rdY(y)) if (!r.tail) for (let h = 0; h < 24; h++){ const kk = y + '_' + r.d + '_' + h;
+        oT.push(r.weight.toFixed(6) + ' gd_' + kk); if (OCGT_ON) oT.push(r.weight.toFixed(6) + ' go_' + kk); }
+      const capT = [...LEV(y), ...(OCGD_ON ? cum('ocgd', y) : []), ...(OCGT_ON ? cum('ocgt', y) : [])].map(v => ' - ' + cf8760.toFixed(3) + ' ' + v).join('');
+      L.push(' occf_' + y + ': ' + oT.join(' + ') + capT + ' <= ' + (cf8760 * DSL(y)).toFixed(1));
+    }
     // ── CARBON CAP ────────────────────────────────────────────────────────
     // Emissions this year must not exceed the cap. Representative days carry a
     // weight scaling them to a full year, so the same weights used in the
@@ -12049,7 +12071,7 @@ function bldBuildLP(opts){
     for (const r of rdY(y)) if (!r.stress) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg + dBlk);
     // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
     // an hourly matter and lives in cmax_ and resv_ above.
-    const firm = coalCapMean + NUC(y)*AV_NUC + EX.hydro*AV_HYD + IMP(y)*AV_IMP
+    const firm = coalCapMean + NUC(y)*AV_NUC*NUC_FIRM + EX.hydro*AV_HYD + IMP(y)*AV_IMP
                + EX.ps + DSL(y) + EX.batt;
     // Long-duration storage counts toward firm capacity at its de-rated value:
     // a 100-hour store can be relied on through a long event in a way a 4-hour
@@ -12102,7 +12124,8 @@ function bldBuildLP(opts){
 
   const ST_TGT = {};
   if (ST_ON) for (const y of Y){
-    ST_TGT[y] = (opts.targetFrac || 1) * BLD_STRESS_STANDARD * (ST_DEM[y] || 0);   // MWh of expected shed
+    // opts.targetGWh (message 373): an absolute target, GWh a year (NTCSA's 20); otherwise targetFrac x the 0.002% standard.
+    ST_TGT[y] = opts.targetGWh != null ? opts.targetGWh * 1e3 : (opts.targetFrac || 1) * BLD_STRESS_STANDARD * (ST_DEM[y] || 0);   // MWh of expected shed
     L.push(' tgt_' + y + ': ' + ST_TERMS[y].join(' + ') + ' - tsl_' + y + ' <= ' + ST_TGT[y].toFixed(3));
   }
   // One gas build cap for CCGT and OCGT on LNG (user, 11 Oct 2026): gascap_<y> at the gas pace; the pathway's GAS_FIRST
@@ -12185,6 +12208,11 @@ let bldStressPeriods = [];
 let bldStressLog = [];
 const BLD_STRESS_MAX = 5;
 const BLD_STRESS_STANDARD = 0.00002;   // share of annual demand
+// NTCSA's medium-term adequacy test (user decision, 25 Oct 2026, message 373; the central reliability standard from c6): mean
+// unserved energy at most 20 GWh a year (NTCSA, Medium-Term System Adequacy Outlook, adequacy criterion i; SOURCES 'Adequacy
+// criteria'). The system operator's adequacy test, not a legislated planning standard. The build optimiser plans to it when
+// opts.targetGWh is set to it (harness/pathway/pathway_perfail.js STD=ntcsa); opts.targetFrac x BLD_STRESS_STANDARD otherwise.
+const NTCSA_ADEQUACY_GWH = 20;
 
 function bldSolveLP(lp){
   // A test harness may supply its own solver; the page uses the worker.
@@ -12377,7 +12405,8 @@ async function bldStressLoopPerYear(opts, onProgress){
       const t = bldAdequacyTest(bldStateForYear(res, y, opts), opts.draws || 1);
       const mean = t.rows.length ? t.rows.reduce((a, b) => a + b.gwh, 0) / t.rows.length : 0;
       // opts.targetFrac (default 1): plan to a fraction of the standard, 0.5 as the presets do.
-      const limit = t.worst ? t.worst.demandGWh * BLD_STRESS_STANDARD * (opts.targetFrac || 1) : 0;
+      // opts.targetGWh (message 373): an absolute limit, GWh a year, in place of the fraction of the standard.
+      const limit = t.worst ? (opts.targetGWh != null ? opts.targetGWh : t.worst.demandGWh * BLD_STRESS_STANDARD * (opts.targetFrac || 1)) : 0;
       years.push({ y, mean, limit, worstYear: t.worst && t.worst.year, worstGWh: t.worst ? t.worst.gwh : 0 });
       if (t.worst && mean > limit)
         fails.push({ y, ratio: mean / limit, rows: t.rows.filter(q => q.gwh > 0.01).sort((a, b) => b.gwh - a.gwh) });
@@ -14596,6 +14625,9 @@ function setSolarTrkMap(G, source){
 }
 const _MSTART_H = [0,31,59,90,120,151,181,212,243,273,304,334].map(d => d * 24);
 function hourMonth(h){ let m = 11; while (m > 0 && h < _MSTART_H[m]) m--; return m; }
+// Koeberg's monthly shape factor for hour h of the year (nuclearMonthlyShape, message 376 (b)); 1 when flat (null).
+function nucShapeAt(p, h){ const sh = p.nuclearMonthlyShape ?? FIXED.nuclearMonthlyShape;
+  return Array.isArray(sh) && sh.length === 12 ? sh[hourMonth(h)] : 1; }
 function bldBuildSolarTrkRatio(){
   if (!bldSolarTrk || !bldWeatherYears || !bldWxWeights) return;
   const num = Array.from({length:12}, () => new Float64Array(24)), den = Array.from({length:12}, () => new Float64Array(24));
@@ -20632,7 +20664,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-24b';
+const BUILD_STAMP = '2026-10-25a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20725,7 +20757,7 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 // missing here fails in the worker, the page falls back, and validate_worker.js fails.
 const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
   astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate,
-  otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth,
+  otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth, nucShapeAt,
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,

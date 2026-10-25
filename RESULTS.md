@@ -17057,3 +17057,68 @@ below to 2032 (c6 adds the smelter block in 2027; the IRP's step is not visible)
 finding that the IRP's demand is 12-14% above the model's does not hold like for like: it compared the IRP's total (exports and
 onsite generation included) with the model's customer demand. Index file: harness/pathway/irp2025/index_irp2025fig2_c6.json
 (gen_irp_index.py fig2 2027:930), used by c6 at the IRP's demand (DEMAND=index:) and by the pair's engine check.
+
+### Restarts after forced outages are not costed (about R0.9bn a year in 2026, falling with the fleet); Koeberg runs flat at 0.66, which is optimistic for winter against 2025-2026 operation (user, 25 Oct 2026, message 374; build 2026-10-24b, report only, no model change)
+
+(a) Forced-outage returns. The engine draws forced outages unit by unit (two-state Markov, MTTR 480 h, common-mode events per
+station, genUnitOutagePath) but applies them as an hourly fleet fraction capping committed coal; the commitment pre-pass derates
+each unit by the EAF instead of taking it out, so a unit returning from a forced outage never starts and no start cost is charged.
+The build optimiser holds coal at its EAF with no unit outages and charges start costs only for changes in commitment
+(COMMIT_SU_Y): it omits them too. Counted on c6's run under the strict standard (pathway_c6.json of the 24-25 Oct set, commit
+a37d4fd; one draw per weather year, the engine check's seeds; scratch m374/pathcheck_ret.js, which redefines genUnitOutagePath from
+its own source with a counter at each return to service, the random stream unchanged): 5.6 returns per unit a year in every year
+(about 3.9 from independent repairs, the rest common-mode), on 84 standing units in 2026 falling to 28 in 2040. Each costed as a
+cold start at the 360 rates (large subcritical R3,872/MW, supercritical R4,191/MW; with the 369 (a) forced-outage term R4,521 and
+R4,840):
+
+| Year | Units standing | Returns, MW a year | Cost, 360 rates, R m | With the forced-outage term, R m |
+|---|---|---|---|---|
+| 2026-2028 | 84 | 235,000 | 927 | 1,080 |
+| 2030 | 54 | 190,000 | 751 | 875 |
+| 2035 | 42 | 151,000 | 601 | 699 |
+| 2040 | 28 | 104,000 | 416 | 483 |
+
+2026-2040 undiscounted: R10.2bn at the 360 rates (R11.9bn with the term), about R22,000 per MW of coal standing a year, about 0.4%
+of system cost. A cost-only adjustment: dispatch does not change. The IRP pair keeps more coal standing (Figure 3's 50-year path),
+so its adjustment is larger; to be counted on its build file when it is rebuilt on c6 (Monday), and on c6 under the 20 GWh
+standard. Build optimiser: the omission is proportional to the coal standing, about 0.4% of coal's fixed cost (acapCoal), so it
+could at most shift early retirement at the margin; after the note.
+Caveats: returns from planned outages (modelled as a smooth monthly derate, not unit events) are not counted either; every return
+is costed cold although common-mode repairs (MTTR 36 h) would be warm starts; real units also trip and return within hours, which
+the 480 h MTTR does not represent.
+
+(b) Koeberg. Confirmed: nuclear output is (installed nuclear) x nuclearCF (0.66) in every hour, with no refuelling or other
+outages. Measured (ESK19679, Eskom credited, analysis ours; monthly means of hourly 'Nuclear Generation'): 2025 about 1,170 MW a year
+on average, with May-August about 940 MW (one unit) and November-December about 1,870 MW (both); January-March 2026 about 1,870 MW,
+May-August 2026 about 640 MW. The model's flat 0.66 gives about 1,228 MW every hour. Against recent operation the flat derate is
+optimistic for winter adequacy, by about 300 MW (2025) to 600 MW (2026) at the winter evening peak, because Koeberg's long outages
+have fallen in winter in both years; it would be conservative only if outages were scheduled outside winter, as an operator
+plans refuelling. For c6's 2026-2030 years the direction is therefore optimistic, on the measured pattern. After the note: model
+each unit's refuelling outage as a whole-unit outage of about one to two months every 16-18 months (interval and duration to be
+sourced), placed as Eskom schedules them, keeping the annual factor at the measured value; and test a winter-outage case on the
+2025-2026 pattern.
+
+### Message 376: c6 meets NTCSA's unserved-energy criterion, not the full adequacy test; s_koeberg_winter and s_ntcsa_both built; forced-outage restarts a cost line (user, 25 Oct 2026; PR D, build 2026-10-25a)
+
+Wording (376 (c)): c6 is planned to NTCSA's unserved-energy criterion (i), mean unserved energy at most 20 GWh a year, not to the
+full adequacy test. Criterion (ii), the open-cycle gas turbine capacity factor under 6% a year, is reported by the engine check for
+every run and year (pathcheck.js ocgtCF: all open-cycle plant, diesel turbines including Avon and Dedisa's contract output, and
+open-cycle on LNG; energy over capacity x 8,760 h, mean over the runs), with the years it is exceeded. Correction (25 Oct 2026, 07:20
+UTC): a first test read 17% for c6's strict-standard run in 2034. That figure counted only the 175 MW of new open-cycle gas, not the
+3,400 MW diesel fleet (pathcheck.js read the diesel capacity from the run's state without the defaults; fixed). With all open-cycle
+plant the same test gives 0.8% (2034, one draw, 12 runs; 0.259 TWh over 3,575 MW).
+Forced-outage restarts (376 (a)): the cost-only adjustment (cold start at the 360 rates plus the 369 (a) forced-outage term, R4,521/MW
+subcritical and R4,840/MW supercritical) is applied to c6, every sensitivity and the IRP pair alike, counted on each run's own coal
+fleet (scratch m374/pathcheck_ret.js), and shown as its own line in the cost tables.
+s_koeberg_winter (376 (b)): Koeberg's monthly output shape of 2025-26 (calendar-month means of 2025 and January-August 2026 from
+ESK19679, normalised to an hour-weighted mean of 1; derived, Eskom credited, analysis ours; the 12 factors are passed to the run, not
+stored in the repository), May-August 0.65 of the annual mean, the annual factor unchanged at 0.66. Applied in the engine every hour
+(nucShapeAt) and in the build optimiser on each representative hour, its planning-margin firm nuclear at the lowest month (the
+conservative reading). Run on c6 under 20 GWh in the central set; adequacy, peakers and cost reported. The central keeps the flat
+0.66, as Eskom plans refuelling outside winter; whole-unit refuelling outages stay after the note.
+s_ntcsa_both (376 (d)): built as a build constraint in PR D (bldOcCfMax; row occf_<y>): each year's weighted open-cycle output on
+the representative days at most 6% of the open-cycle capacity standing (existing diesel turbines, extended peakers, new open-cycle
+on diesel and LNG) x 8,760 h. Run on c6 under 20 GWh in the central set, without delaying it; cost and build reported against c6.
+Caveat: the constraint holds on the optimiser's representative days; the engine check reports the capacity factor it gets.
+Checks: at the defaults Today 2026 costs R217.73bn as before (one draw, seed 12345); a shape keeps annual nuclear energy unchanged
+(10.869 TWh); the occf rows appear only with bldOcCfMax set (2026's right-hand side 1,787,040 MWh, 6% of 3,400 MW of diesel turbines).

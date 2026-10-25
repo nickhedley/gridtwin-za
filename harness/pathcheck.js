@@ -92,6 +92,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
  // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
+ // Koeberg's monthly shape (message 376 (b)): the run's own, so s_koeberg_winter is checked on the shape it was built on.
+ if (P.nuclearShape){ w.eval(`state.nuclearMonthlyShape=${JSON.stringify(P.nuclearShape)};`); console.log('Koeberg monthly shape from the pathway:', JSON.stringify(P.nuclearShape)); }
  if (P.importsMW != null) w.eval(`state.importsMW=${+P.importsMW};`);
  if (P.importsCF != null) w.eval(`state.importsCF=${+P.importsCF};`);
  const BLK = (P.demand && P.demand.block) ? P.demand.block : null;
@@ -153,13 +155,18 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
        let dem=0, chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
-       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0}]); } }
+       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW({...FIXED,...st})+Math.max(0,st.newOcgtMW||0)}]); } }
       return JSON.stringify(o); })()`));
    // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
    // AVERAGE COST PER MWH SERVED (user, 11 Oct 2026): the engine's avgCost (grid cost, rooftop capex and the shed
    // penalty excluded, export revenue netted, as the app) over its gridServed, served-weighted across runs.
-   const TFR=+(process.env.TF||0.5), KMAX=+(process.env.KMAX||40), KSTEP=10;
+   // THE RUN'S OWN STANDARD (user decision, 25 Oct 2026, message 373): a run recorded with a standard (pathway_perfail.js STD) is judged
+   // by it: NTCSA's 20 GWh a year as an absolute target, or targetFrac x the 0.002% standard; TF applies only to runs recorded
+   // before it, and a TF that disagrees with the recorded standard is an error.
+   const STDR=P.standard||null;
+   if (STDR && process.env.TF!==undefined && STDR.targetFrac!=null && +process.env.TF!==STDR.targetFrac) throw new Error('TF '+process.env.TF+' disagrees with the run\'s standard '+JSON.stringify(STDR));
+   const TFR=STDR&&STDR.targetFrac!=null?STDR.targetFrac:+(process.env.TF||0.5), TGWH=STDR&&STDR.targetGWh!=null?STDR.targetGWh:null, KMAX=+(process.env.KMAX||40), KSTEP=10;
    const agg=(o)=>{      const n=o.length,m=i=>o.reduce((a,b)=>a+b[i],0)/n; return ({seMean:n>1?Math.sqrt(o.reduce((a,b)=>a+(b[0]-m(0))**2,0)/(n-1)/n):null,nRuns:n,mean:m(0),worst:Math.max(...o.map(a=>a[0])),cost:m(1),curt:m(2),std:m(3),co2:m(4),coal:m(5),diesel:m(6),gridCost:m(7),gasTWh:m(8),gasHours:m(9),gasCF:m(10)>0?m(8)*1e6/(m(10)*8760):0,gas14dMaxGWh:Math.max(...o.map(a=>a[11])),
      stdCust:m(14),servedTWh:m(13),avgCostRMWh:o.reduce((a,b)=>a+b[12]*b[13],0)/o.reduce((a,b)=>a+b[13],0)}); };
    let o=[], kk=0, r=null;
@@ -167,13 +174,20 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      // STANDARD ON CUSTOMER DEMAND (user, 12 Oct 2026): from these runs the target is TFR x 0.002% of demand without
      // storage charging (loadS less pumped-storage and battery charging); the old basis, which counted charging as
      // demand, is kept as targetOld. A year above 90% of its target is flagged marginal.
-     r.targetOld=TFR*r.std; r.target=TFR*r.stdCust; r.marginal=r.mean>0.9*r.target; r.ci95Half=1.96*(r.seMean||0); r.ciPctOfTarget=r.target>0?100*r.ci95Half/r.target:null; r.ciWithin20=r.ci95Half<=0.2*r.target; r.draws=kk;
+     r.targetOld=TFR*r.std; r.target=TGWH!=null?TGWH:TFR*r.stdCust; r.standard=STDR||{basis:'tf',targetFrac:TFR}; r.marginal=r.mean>0.9*r.target; r.ci95Half=1.96*(r.seMean||0); r.ciPctOfTarget=r.target>0?100*r.ci95Half/r.target:null; r.ciWithin20=r.ci95Half<=0.2*r.target; r.draws=kk;
      if (process.env.K || r.ciWithin20 || kk>=KMAX) break; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first
    // min(CCGT standing, ccgtForceLoadMW) MW of each hour's gas output, which includes OCGT on LNG and gas burnt to charge
    // storage), the floor's target and shortfall, and all gas output, TWh, mean over the runs. Zero when no floor applies.
    { const L=o[0].length-1, m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/o.length/1e6;
      r.gasFloorTWh={floored:m('fl'), target:m('tg'), unmet:m('un'), totalGas:m('gas'), unfloored:m('gas')-m('fl')}; }
+   // NTCSA'S SECOND ADEQUACY CRITERION (user, 25 Oct 2026, messages 373, 375; MTSAO 2026-2030 section 3, p.11): open-cycle gas
+   // turbine capacity factor under 6% a year, reported, not planned to. All open-cycle plant: diesel turbines (Eskom's and the IPP
+   // peakers, with Avon and Dedisa's contract output) and open-cycle on LNG; energy over capacity x 8,760, mean over the runs.
+   // Capacity is read from the defaults and the run's state together (25 Oct 2026): the state alone carries no ocgtDieselMW, so the
+   // first version counted only new open-cycle gas and read 17% for c6's strict 2034 where all open-cycle plant gives under 1%.
+   { const L=o[0].length-1, e=o.reduce((a,b)=>a+(+b[L].ocE||0),0)/o.length, cap=o.reduce((a,b)=>a+(+b[L].ocCap||0),0)/o.length;
+     r.ocgtCF=cap>0?e/(cap*8760):null; r.ocgtTWh=e/1e6; r.ocgtCapMW=cap; r.ocgtCFUnder6=r.ocgtCF!=null?r.ocgtCF<0.06:null; }
    // LNG STORAGE ADEQUACY (user, 6 Oct 2026; LNG=1). Gas burned in each of the loop's own stress windows
    // that bind this model year (fromYear <= y), re-dispatched on that window's weather year and outage seed,
    // and in the worst 14 days of the runs above, against the energy one floating storage unit holds.
