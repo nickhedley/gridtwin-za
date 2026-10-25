@@ -17098,10 +17098,16 @@ each unit's refuelling outage as a whole-unit outage of about one to two months 
 sourced), placed as Eskom schedules them, keeping the annual factor at the measured value; and test a winter-outage case on the
 2025-2026 pattern.
 
-### Message 376: c6 meets NTCSA's unserved-energy criterion, not the full adequacy test; s_koeberg_winter and s_ntcsa_both built; forced-outage restarts a cost line (user, 25 Oct 2026; PR D, build 2026-10-25a)
+### Message 376: c6 meets both criteria of NTCSA's medium-term adequacy test (wording corrected, message 381); s_koeberg_winter and s_ntcsa_both built; forced-outage restarts a cost line (user, 25 Oct 2026; PR D, build 2026-10-25a)
 
-Wording (376 (c)): c6 is planned to NTCSA's unserved-energy criterion (i), mean unserved energy at most 20 GWh a year, not to the
-full adequacy test. Criterion (ii), the open-cycle gas turbine capacity factor under 6% a year, is reported by the engine check for
+Wording (376 (c), corrected 25 Oct 2026 by message 381 after the 380 (a) reconciliation): c6 is planned to NTCSA's unserved-energy
+criterion (i), mean unserved energy at most 20 GWh a year, and meets both criteria of NTCSA's medium-term adequacy test (the system
+operator's test, not a planning standard): unserved energy under 20 GWh and an open-cycle capacity factor of 0.13-1.43%, under 6%,
+in every year. The earlier wording, 'not the full adequacy test', rested on the 17% figure corrected below. Per run, central set
+(ff8cf65): both criteria met by every run except s_nogas, whose unserved energy is over 20 GWh in 2037-2040 (open-cycle under 6%).
+Strict set (s_std_strict, a37d4fd) against the same two criteria: both met by every run except s_nogas, over 20 GWh in 2037 (20.0 GWh,
+inside its +/-1.6 GWh interval) and 2038-2040. s_std_nem_nogas and the three no-gas-with-diesel runs are reported when they finish.
+Criterion (ii), the open-cycle gas turbine capacity factor under 6% a year, is reported by the engine check for
 every run and year (pathcheck.js ocgtCF: all open-cycle plant, diesel turbines including Avon and Dedisa's contract output, and
 open-cycle on LNG; energy over capacity x 8,760 h, mean over the runs), with the years it is exceeded. Correction (25 Oct 2026, 07:20
 UTC): a first test read 17% for c6's strict-standard run in 2034. That figure counted only the 175 MW of new open-cycle gas, not the
