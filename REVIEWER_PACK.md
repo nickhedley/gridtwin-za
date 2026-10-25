@@ -85,7 +85,7 @@ Status key:
 | Interruptible load | 1,000 MW, no annual energy cap; called after open-cycle plant, as the last resource before shedding, and to restore reserve once open-cycle is exhausted. In the 2025 replay it is called for 87.1 GWh, against Eskom's 69.5 GWh of interruptible load (ILS) in 2025 (section 2) (RESULTS 'Interruptible load cap tried and withdrawn'; 'The 2025 replay against Eskom's 2025 like for like') | Eskom's certified instantaneous demand response, 1,014 MW (NREL, Demand Response at the Grid Edge, FY24). The order is the author's decision: the ASTR sets none (p.10) | partly |
 | VoLL | Engine R9,530/MWh. Optimiser: stress-window shortfall at R87,000/MWh × 365 (RESULTS 'Load shedding now costed'; 'Both measures for every run') | Eskom's Cost of Load Shedding (NERSA review, 2022); the IRP's COUE of R87.85/kWh | sourced |
 | Planning reserve margin (build LP) | Off in c5d and c5e (from build 2026-10-16a, FIXED.bldPlanMarginPct 0): adequacy is set by the engine's probabilistic standard alone (next row). Sensitivity s_prm10 restores the 10% margin: each year, firm capacity at least 1.10 × the peak hour of the represented days, wind and solar counting zero, every store at the lesser of its power and its energy over 4 hours. It bound in c5c in every year 2030–40 and set the firm capacity built (RESULTS 'Planning reserve margin in the build LP'; 'New central c5d') | No source for 10%: a modelling choice in the code since 1 Oct 2026, not South Africa's criterion. Turned off by the user, 16 Oct 2026 (message 133) | unsourced (sensitivity only) |
-| Adequacy standard | c6: NTCSA's unserved-energy criterion (MTSAO 2026–2030, section 3, p.11), mean unserved energy at most 20 GWh a year, not the full adequacy test (the open-cycle criterion is reported, and planned to only in s_ntcsa_both); the worst run's shedding shown beside it (user decision, 25 Oct 2026). Earlier centrals: at most half of 0.002% of customer demand, 2.19 GWh in 2030 and 2.78 GWh in 2040 for c5e and c5d, as for c5b_14r (c5: 2.08 and 2.66), kept in c6 as s_std_strict (RESULTS 'Average system cost per MWh served'; 'New central c5e') | NTCSA's test is the system operator's, not a legislated planning standard; the 0.002% is the Australian NEM standard; halving it was the author's choice, 12 Oct 2026. NTCSA's Medium-Term System Adequacy Outlook deems adequacy met below 20 GWh of unserved energy a year and a 6% open-cycle capacity factor (2026–2030 edition, section 3, p.11; its study is not a generation resource plan, p.ii; SOURCES 'Adequacy criteria'); the earlier standard (s_std_strict in c6) is about eight times stricter on unserved energy; the 6% open-cycle criterion is reported, not planned to. IRP 2025 states no numeric criterion | partly |
+| Adequacy standard | c6: planned to NTCSA's unserved-energy criterion (MTSAO 2026–2030, section 3, p.11), mean unserved energy at most 20 GWh a year; c6 meets both criteria of NTCSA's medium-term adequacy test (the system operator's test, not a planning standard); the open-cycle criterion is reported for every run and planned to only in s_ntcsa_both; the worst run's shedding shown beside it (user decision, 25 Oct 2026). Earlier centrals: at most half of 0.002% of customer demand, 2.19 GWh in 2030 and 2.78 GWh in 2040 for c5e and c5d, as for c5b_14r (c5: 2.08 and 2.66), kept in c6 as s_std_strict (RESULTS 'Average system cost per MWh served'; 'New central c5e') | NTCSA's test is the system operator's, not a legislated planning standard; the 0.002% is the Australian NEM standard; halving it was the author's choice, 12 Oct 2026. NTCSA's Medium-Term System Adequacy Outlook deems adequacy met below 20 GWh of unserved energy a year and a 6% open-cycle capacity factor (2026–2030 edition, section 3, p.11; its study is not a generation resource plan, p.ii; SOURCES 'Adequacy criteria'); the earlier standard (s_std_strict in c6) is about eight times stricter on unserved energy; the 6% open-cycle criterion is reported, not planned to. IRP 2025 states no numeric criterion | partly |
 
 Build limits in c5, which c5b_14r, c5d and c5e keep (RESULTS 'c5 inputs, final'; 'Diagnosis, not deliverable'; 'c5b proposal'; SOURCES 'Tubatse pumped storage'):
 
@@ -271,9 +271,57 @@ Results on 29 October. The design, fixed before the runs (user, 22–24 October,
 
 - Same assumptions, different build. The IRP plan's build (Table 1, coal retiring on Figure 3's 50-year line) is run through the same engine, with every c6 input, outage draw and weather year, so any gap in cost, CO2 or adequacy is the build, not the assumptions. c6 is the build the optimiser chooses on those assumptions.
 - Two demand bases. c6's own (the measured 2026 base on the growth of UCT ESRG's IRP reference forecast, with the contracted smelter block), and the IRP's own: IRP 2025's Moderate forecast as published, digitised from its Figure 2 (no table is published; reading error about 1 TWh, 3 TWh in 2031, 2032 and 2034), at the IRP's own level, converted to the model's demand basis for definitions only: exports, other onsite generation and 2026 rooftop solar removed (ESRG's split of the same forecast), then 0.951, Eskom's 2025 coverage of Stats SA's electricity available for distribution (194.6 of 204.6 TWh), held to 2040 (user, 25 October, message 370 (a); RESULTS '370'). On that basis the IRP's own forecast is 2–7% below c6's demand. Four runs: c6, the IRP plan at c6's demand, c6 re-optimised at the IRP's demand, and the IRP plan at the IRP's demand. The first pair isolates the build; the second shows how much of any gap is the IRP being sized for higher demand.
-- Reliability standard (user decision, 25 October, message 373): NTCSA's medium-term adequacy test, mean unserved energy at most 20 GWh a year (NTCSA, Medium-Term System Adequacy Outlook 2026–2030, section 3, p.11; a Monte Carlo mean, pp.10–11; SOURCES 'Adequacy criteria'), as closest to South African practice. It is the system operator's adequacy test, not a legislated planning standard, and NTCSA states its study is not a generation resource plan (p.ii). c6 is planned to meet NTCSA's unserved-energy criterion (i), not the full adequacy test: the second criterion, an open-cycle gas capacity factor under 6% a year, is reported for every run and year, with the years it is exceeded (all open-cycle output, Eskom's diesel turbines with Avon and Dedisa and new open-cycle on diesel or LNG, over the installed capacity of the same plant for the whole year; combined-cycle excluded; RESULTS 'Message 376'), and s_ntcsa_both plans c6 to both criteria. Two further sensitivities: s_koeberg_winter (Koeberg's 2025–26 monthly output, its winter outages repeated, same annual factor; the central keeps Koeberg flat at 0.66, as Eskom plans refuelling outside winter) and the cost of restarting coal units after forced outages, which the engine does not charge, shown as its own line in every cost table (a cost-only adjustment, the same for every run). Each run's engine check: twelve weather years by ten outage draws a year; the mean of the draws judged against 20 GWh, with the worst run's shedding shown beside it. Sensitivities on the standard: s_std_strict (the earlier half of the NEM's 0.002% of customer demand, about 2.2–2.8 GWh a year) for c6 and each sensitivity, and s_std_nem (the NEM's 0.002% itself) for c6 and s_nogas. Whether no new gas needs diesel peakers is reported under each standard.
+- Reliability standard (user decision, 25 October, message 373): NTCSA's medium-term adequacy test, mean unserved energy at most 20 GWh a year (NTCSA, Medium-Term System Adequacy Outlook 2026–2030, section 3, p.11; a Monte Carlo mean, pp.10–11; SOURCES 'Adequacy criteria'), as closest to South African practice. It is the system operator's adequacy test, not a legislated planning standard, and NTCSA states its study is not a generation resource plan (p.ii). c6 is planned to NTCSA's unserved-energy criterion (i) and meets both criteria of NTCSA's medium-term adequacy test (the system operator's test, not a planning standard); the second criterion, an open-cycle gas capacity factor under 6% a year, is reported for every run and year, with the years it is exceeded (all open-cycle output, Eskom's diesel turbines with Avon and Dedisa and new open-cycle on diesel or LNG, over the installed capacity of the same plant for the whole year; combined-cycle excluded; RESULTS 'Message 376'), and s_ntcsa_both plans c6 to both criteria. Two further sensitivities: s_koeberg_winter (Koeberg's 2025–26 monthly output, its winter outages repeated, same annual factor; the central keeps Koeberg flat at 0.66, as Eskom plans refuelling outside winter) and the cost of restarting coal units after forced outages, which the engine does not charge, shown as its own line in every cost table (a cost-only adjustment, the same for every run). Each run's engine check: twelve weather years by ten outage draws a year; the mean of the draws judged against 20 GWh, with the worst run's shedding shown beside it. Sensitivities on the standard: s_std_strict (the earlier half of the NEM's 0.002% of customer demand, about 2.2–2.8 GWh a year) for c6 and each sensitivity, and s_std_nem (the NEM's 0.002% itself) for c6 and s_nogas. Whether no new gas needs diesel peakers is reported under each standard.
 - Sensitivities (16 runs with the four above and c6's null): gas capex +25% (s_gascapex25); new gas from 2032 (s_gas2032); no new gas (s_nogas); imports to 2040 (s_imp); demand flat and falling 1% a year (s_demlow); and on coal, s_coalpractice, s_mindn24, s_rate48, s_spotoil and s_wearp75 (section 1b).
 - Reported: build by year against Table 1, engine present value 2026–40 and its components, CO2 by year, adequacy by year, and cost and CO2 for each sensitivity against c6.
+
+### c6 results so far (runs of 25 October 2026, build 2026-10-25a; provisional until the set is complete)
+
+c6 meets both criteria of NTCSA's medium-term adequacy test (the system operator's test, not a planning standard): mean unserved energy at most 3.3 GWh in any year against 20 GWh, and an open-cycle capacity factor of 0.13–1.43% against 6%, in every year. So does every run below except s_nogas (no new gas and no new diesel open-cycle), which does not meet the unserved-energy criterion from 2037. Mean unserved energy is the mean over the engine check's runs in the year with the highest mean; the worst run is the single weather-year and outage draw with the most shedding in any year, shown beside it. Central set: 120 runs a year (twelve weather years by ten outage draws); engine PV at 8% real, 2026–40. Still to come: s_std_nem_nogas (rerun, its third solve hit the solver's time limit), the three runs with no new gas but new diesel open-cycle allowed (one per standard), the forced-outage restart line for each run, and the IRP pair rebuilt on c6's paths (RESULTS 'Message 376').
+
+Central set, planned to NTCSA's 20 GWh:
+
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV, R bn | Against c6, R bn | CO2 2026–40, Mt |
+|---|---|---|---|---|---|---|---|
+| c6 | met | 3.3 | 120 | 1.4% | 2300.0 | – | 1760 |
+| s_std_nem | met | 2.6 | 194 | 1.4% | 2299.8 | −0.2 | 1760 |
+| s_ntcsa_both | met | 3.3 | 120 | 1.4% | 2300.0 | +0.0 | 1760 |
+| s_koeberg_winter | met | 2.6 | 125 | 1.2% | 2309.7 | +9.8 | 1757 |
+| s_gascapex25 | met | 3.9 | 140 | 1.9% | 2306.2 | +6.2 | 1723 |
+| s_gas2032 | met | 4.1 | 152 | 1.3% | 2299.7 | −0.2 | 1759 |
+| s_nogas | not met: unserved over 20 GWh in 2037, 2038, 2039, 2040 | 140.4 | 322 | 2.2% | 2350.8 | +50.8 | 1609 |
+| s_imp | met | 3.4 | 110 | 1.4% | 2289.3 | −10.6 | 1745 |
+| s_demlowflat | met | 3.1 | 131 | 1.3% | 1984.4 | −315.5 | 1685 |
+| s_demlowm1 | met | 1.6 | 71 | 1.4% | 1898.6 | −401.3 | 1665 |
+| c6_irpdem | met | 3.2 | 99 | 1.3% | 2185.8 | −114.2 | 1703 |
+| s_coalpractice | met | 2.7 | 99 | 1.1% | 2322.0 | +22.0 | 1871 |
+| s_mindn24 | met | 3.3 | 120 | 1.4% | 2293.1 | −6.9 | 1786 |
+| s_rate48 | met | 3.1 | 131 | 1.6% | 2299.6 | −0.4 | 1816 |
+| s_spotoil | met | 3.3 | 121 | 1.5% | 2300.7 | +0.8 | 1761 |
+| s_wearp75 | met | 3.3 | 123 | 1.5% | 2301.2 | +1.2 | 1765 |
+| s_be6 | met | 0.6 | 30 | 1.5% | 2339.4 | +39.5 | 1799 |
+| s_be7 | met | 3.5 | 118 | 1.3% | 2331.5 | +31.5 | 1735 |
+| s_irpgas | met | 0.2 | 10 | 1.0% | 2486.4 | +186.4 | 1751 |
+
+s_std_strict, the same set planned to half of the NEM standard (about 2.2–2.8 GWh a year; up to 480 runs a year; open-cycle factor computed apart, as these checks predate it), judged against NTCSA's two criteria:
+
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV, R bn | Against c6, R bn | CO2 2026–40, Mt |
+|---|---|---|---|---|---|---|---|
+| c6 | met | 2.3 | 178 | 1.2% | 2303.6 | – | 1731 |
+| s_gascapex25 | met | 3.1 | 218 | 1.8% | 2308.7 | +5.1 | 1704 |
+| s_gas2032 | met | 2.6 | 181 | 1.2% | 2303.5 | −0.1 | 1731 |
+| s_nogas | not met: unserved over 20 GWh in 2037, 2038, 2039, 2040 | 121.1 | 302 | 1.8% | 2364.5 | +60.9 | 1504 |
+| s_imp | met | 1.9 | 190 | 1.1% | 2293.5 | −10.1 | 1726 |
+| s_demlowflat | met | 2.3 | 131 | 1.2% | 1984.3 | −319.3 | 1685 |
+| s_demlowm1 | met | 1.1 | 79 | 1.3% | 1898.5 | −405.1 | 1665 |
+| c6_irpdem | met | 2.4 | 219 | 1.2% | 2185.6 | −118.0 | 1703 |
+| s_coalpractice | met | 1.9 | 99 | 1.0% | 2321.9 | +18.3 | 1872 |
+| s_mindn24 | met | 3.2 | 178 | 1.2% | 2297.3 | −6.3 | 1760 |
+| s_rate48 | met | 2.3 | 168 | 1.3% | 2303.1 | −0.5 | 1778 |
+| s_spotoil | met | 2.3 | 177 | 1.2% | 2304.6 | +0.9 | 1732 |
+| s_wearp75 | met | 2.3 | 178 | 1.3% | 2305.0 | +1.4 | 1733 |
+
+s_nogas under the strict standard is at 20.0 GWh in 2037, inside its ±1.6 GWh interval, and well over 20 GWh in 2038–2040.
 
 ### c5e against IRP 2025 Table 1, and the sensitivities (superseded by c6; the record of the previous central)
 
@@ -580,4 +628,4 @@ Each can be answered from this pack in 30–40 minutes. Each is tied to a decisi
 - c6 PR C, message 369 (a)-(e) …, 24 Oct 2026
 - c6 PR C, message 370: the MIP benchmark of coal commitment … ('370' in the text), 24 Oct 2026
 - Restarts after forced outages are not costed …, 25 Oct 2026
-- Message 376: c6 meets NTCSA's unserved-energy criterion, not the full adequacy test …, 25 Oct 2026
+- Message 376: c6 meets both criteria of NTCSA's medium-term adequacy test (wording corrected, message 381) …, 25 Oct 2026
