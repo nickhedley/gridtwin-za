@@ -26,8 +26,8 @@ const BASE = opt('--base') || 'origin/main', OUT = opt('--out');
   fs.rmSync(tmp, { recursive: true, force: true });
   const added = [...after].filter(([s]) => !before.has(s)), removed = [...before].filter(([s]) => !after.has(s));
   const L = [`## Visible text changed`, ``, `Base ${BASE} (${rev}) against the working tree; ${before.size} sentences before, ${after.size} after (harness/diff_public_text.js).`, ``,
-    `### Added or changed (${added.length})`, ``, ...added.map(([s, w]) => `- ${s}  \n  _in ${[...w].slice(0, 3).join('; ')}${w.size > 3 ? ` and ${w.size - 3} more` : ''}_`), ``,
-    `### Removed (${removed.length})`, ``, ...removed.map(([s, w]) => `- ${s}  \n  _was in ${[...w].slice(0, 3).join('; ')}${w.size > 3 ? ` and ${w.size - 3} more` : ''}_`)];
+    `### Added or changed (${added.length})`, ``, ...added.map(([s, w]) => `- ${s}  \n  in: ${[...w].slice(0, 3).join('; ')}${w.size > 3 ? ` and ${w.size - 3} more` : ''}`), ``,
+    `### Removed (${removed.length})`, ``, ...removed.map(([s, w]) => `- ${s}  \n  was in: ${[...w].slice(0, 3).join('; ')}${w.size > 3 ? ` and ${w.size - 3} more` : ''}`)];
   const md = L.join('\n') + '\n';
   if (OUT) fs.writeFileSync(OUT, md); else process.stdout.write(md);
   console.error(`added or changed ${added.length}, removed ${removed.length}`);
