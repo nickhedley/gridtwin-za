@@ -7,7 +7,7 @@
  * and provenance notes: 'Typed;', 'no source recorded', 'in the model since', 'until <date> 2026', and .json or .csv paths;
  * and, from message 241, a value that failed to reach its text: 'undefined', 'NaN' or 'null'.
  * Error messages that show only when a file fails to load are not on a fresh page, so they are not scanned (TODO 14gu lists
- * them). Eskom Data Portal IDs (ESK19679) stay as citations; they carry no file extension. One sentence is exempt from one label
+ * them). From message 377 (25 Oct 2026) Eskom Data Portal IDs are no longer exempt: the page cites 'Eskom data, analysis ours'. One sentence is exempt from one label
  * by its exact text (EXEMPT, with its reason); everything else on the page is held to every label.
  *
  * What is scanned, on a fresh load (the page opens on Today 2026):
@@ -43,6 +43,14 @@ const LABELS = [
   ["'undefined'", /\bundefined\b/],
   ["'NaN'", /\bNaN\b/],
   ["'null'", /\bnull\b/],
+  // Internal identifiers and provenance (user, 25 Oct 2026, message 377 (a)): Eskom Data Portal IDs (the page cites data as 'Eskom
+  // data, analysis ours' or by the dataset's public name; the IDs stay in SOURCES), code identifiers, and year-by-year provenance
+  // lists in slider notes. camelCase needs two lower-case letters before its first capital, so units (kW, kWh) and place names
+  // (eThekwini) pass.
+  ['Eskom Data Portal IDs (ESK followed by digits)', /\bESK\d+\b/],
+  ['code identifiers in camelCase', /\b[a-z]{2,}[A-Z][A-Za-z0-9]*\b/],
+  ['code identifiers in CONSTANT_CASE', /\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\b/],
+  ['year-by-year provenance lists', /\d+(?:\.\d+)?% in 20\d\d\b.*?\d+(?:\.\d+)?% in 20\d\d\b.*?\d+(?:\.\d+)?% in 20\d\d\b/],
 ];
 
 // Exempt sentences, each by its exact text, for one label only, with the reason. The pattern itself stays as it is, so change
@@ -56,38 +64,15 @@ const EXEMPT = [
 let npass = 0, nfail = 0; const fails = [];
 function check(name, ok, detail){ if (ok) npass++; else { nfail++; fails.push(`  ${name}` + (detail ? `  -  ${detail}` : '')); } }
 
-const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, url: 'file://' + path.resolve(ROOT) + '/index.html',
-  beforeParse(w){ w.HTMLCanvasElement.prototype.getContext = () => new Proxy({}, { get: () => () => ({ addColorStop(){}, data: [], width: 0, measureText: () => ({ width: 10 }) }) });
-    const ch = () => new Proxy(function(){ return ch(); }, { get: () => ch() }); w.L = new Proxy({}, { get(){ return function(){ return ch(); }; } });
-    w.onerror = () => {}; Object.defineProperty(w.history, 'replaceState', { value: () => {}, writable: true }); w.URL.createObjectURL = () => 'blob:x'; w.Worker = function(){ this.postMessage = () => {}; };
-    w.fetch = async (u) => { try { const cl = String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config|harness\/coal)/, ''); const t = fs.readFileSync(path.join(path.resolve(ROOT), cl), 'utf8');
-      return { ok: true, json: async () => JSON.parse(t), text: async () => t }; } catch (e) { return { ok: false, json: async () => { throw e; }, text: async () => { throw e; } }; } }; } });
+// The text itself comes from public_text_lib.js (message 378), so this check and diff_public_text.js read the same text.
+const { collectPublicText, words } = require('./public_text_lib.js');
+// SITE-COPY LENGTH (user, 25 Oct 2026, message 378 (b)): a slider note or a preset caption states the default and its basis in one
+// or two sentences, about 40 words at most. Exemptions only with the user's written decision, recorded with its message.
+const MAX_WORDS = 40;
+const LONG_EXEMPT = [];
 
 (async () => {
-  const w = dom.window;
-  for (let i = 0; i < 80 && !w.GTZA_READY; i++) await new Promise(r => setTimeout(r, 250));
-  await new Promise(r => setTimeout(r, 3000));
-  const doc = w.document;
-  // Where a piece of text sits: the nearest element with an id, else the nearest heading or label before it.
-  // A slider note sits beside its control, so the control's id is named when no ancestor has an id of its own.
-  const where = el => { const ids = []; let ctl = null;
-    for (let e = el; e && e !== doc.body; e = e.parentElement){
-      if (!ids.length && !ctl && !e.id){ const c = e.querySelector('input[id],select[id]'); if (c) ctl = '#' + c.id; }
-      if (e.id){ ids.push('#' + e.id); if (ids.length === 2) break; } }
-    if (ctl) ids.unshift(ctl);
-    return ids.length ? ids.reverse().join(' ') : (el ? el.tagName.toLowerCase() : 'body'); };
-  const items = [];
-  const SKIP = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE']);
-  const tw = doc.createTreeWalker(doc.body, w.NodeFilter.SHOW_TEXT);
-  for (let n = tw.nextNode(); n; n = tw.nextNode()){
-    let skip = false; for (let e = n.parentElement; e; e = e.parentElement) if (SKIP.has(e.tagName)){ skip = true; break; }
-    const t = n.nodeValue.replace(/\s+/g, ' ').trim(); if (!skip && t) items.push({ src: 'text ' + where(n.parentElement), t });
-  }
-  for (const el of doc.body.querySelectorAll('[title],[placeholder],[aria-label],[alt]'))
-    for (const a of ['title', 'placeholder', 'aria-label', 'alt']) { const v = el.getAttribute(a); if (v && v.trim()) items.push({ src: `${a} ${where(el)}`, t: v.replace(/\s+/g, ' ').trim() }); }
-  const desc = JSON.parse(w.eval('JSON.stringify(Object.entries(PRESET_DESC))'));
-  for (const [k, v] of desc) items.push({ src: `caption '${k}'`, t: String(v) });
+  const { items, captions: desc, notes } = await collectPublicText(ROOT);
   console.log(`scanned: ${items.length} pieces of text (${desc.length} preset captions)`);
   check('the page loaded and has text to scan', items.length > 100 && desc.length > 0, `${items.length} pieces, ${desc.length} captions`);
 
@@ -103,6 +88,12 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
     console.log(`\n${name}: ${hits.size} distinct text${hits.size === 1 ? '' : 's'}, ${n} place${n === 1 ? '' : 's'}`);
     for (const [k, v] of hits) console.log(`  ${k}\n      in ${v.join('; ')}`);
     check(`visible text carries no ${name}`, hits.size === 0, `${hits.size} distinct text${hits.size === 1 ? '' : 's'}, listed above`);
+  }
+  for (const [kind, list] of [['slider notes', notes], ['preset captions', desc]]){
+    const long = list.filter(x => words(x.t) > MAX_WORDS && !LONG_EXEMPT.some(e => e.text === x.t));
+    console.log(`\n${kind} over ${MAX_WORDS} words: ${long.length} of ${list.length}`);
+    for (const x of long) console.log(`  ${words(x.t)} words, ${x.src}: ${x.t.slice(0, 120)}...`);
+    check(`${kind} are at most about ${MAX_WORDS} words`, long.length === 0, `${long.length} of ${list.length}, listed above`);
   }
   for (const e of EXEMPT){
     const n = items.filter(it => it.t.includes(e.text)).length;
