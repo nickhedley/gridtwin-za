@@ -613,3 +613,14 @@ flagged; ramp cap on the ten-minute reserve only (7afc045); source the Grid Code
 search snippet's 3% of MCR in 10 s is unverified) and the ASTR's regulating response time. (c) the build optimiser's ramp cap on
 reserve: after the note. (d) MIP finding recorded; s_wearp75 a named result; after the note: calibrate start costs so the MIP
 reproduces observed starts (implied cycling cost).
+Message 373-375 (25 Oct): c6's central reliability standard is NTCSA's adequacy test, mean unserved energy at most 20 GWh a year
+(MTSAO 2026-2030 section 3, p.11; not a generation resource plan, p.ii); criterion (ii), open-cycle capacity factor under 6%,
+reported for every run (pathcheck ocgtCF). PR D (claude/c6-std20): NTCSA_ADEQUACY_GWH, opts.targetGWh, STD in the pathway script.
+The 24-25 Oct set becomes s_std_strict; the central set reruns under 20 GWh, with s_std_nem for c6 and s_nogas. Check the MTSAO
+2027-2031 edition (due by 30 Oct 2026) before the pack goes out and flag any change to the criteria. Preset captions and the Deep
+2035 rebuild to the new standard in the presets build.
+Message 374 (25 Oct, after the note): (a) restarts after forced outages are not costed in the engine or the build optimiser
+(about R0.9bn a year in 2026, cost-only adjustment reported for c6 and the IRP pair); cost them in the engine (warm for
+common-mode, cold for long repairs) and in the optimiser; planned-outage returns too. (b) Koeberg refuelling outages as whole-unit
+outages (one to two months every 16-18 months, sourced), placed as Eskom schedules them, annual factor kept; a winter-outage case
+on the 2025-2026 pattern (the flat 0.66 is optimistic for winter against it).

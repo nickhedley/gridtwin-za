@@ -1419,11 +1419,16 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
   "Adequacy is deemed acceptable when annual unserved energy is below 20 gigawatt-hours and OCGT capacity factors remain under 6%."
   Earlier editions are on eskom.co.za and were not opened; extracts say the 2022 edition added a contingency base-load capacity
   factor under 50%.
-  Adopted as c6's central reliability standard (user decision, 25 Oct 2026, message 373): criterion i, mean unserved energy at
-  most 20 GWh a year (NTCSA_ADEQUACY_GWH in index.html), as closest to South African practice; it is the system operator's adequacy
-  test, not a legislated planning standard. Criterion ii (open-cycle capacity factor under 6%) is reported for each run, not
-  planned to. The page number is still not confirmed (the PDF has not been opened from this environment); the wording rests on the
-  extract and the Daily Maverick article above.
+- NTCSA (System Operator), Medium-Term System Adequacy Outlook 2026-2030, 30 October 2025, section 3, p.11 (user, 25 Oct 2026,
+  message 375, from the user's copy; not opened from this environment): the system is adequate if (i) unserved energy is less than
+  20 GWh a year and (ii) the open-cycle gas turbine capacity factor is less than 6% a year; results are the average across the
+  Monte Carlo samples (pp.10-11), as the model's engine check reports a mean. The study is not a generation resource plan
+  (Purpose, p.ii). The 2027-2031 edition is due by 30 October 2026 (Grid Code requirement, same page): to be checked before the
+  reviewer pack goes out, and any change to the criteria flagged.
+  Adopted as c6's central reliability standard (user decision, 25 Oct 2026, message 373): criterion (i), mean unserved energy at
+  most 20 GWh a year (NTCSA_ADEQUACY_GWH in index.html), as closest to South African practice. It is the system operator's
+  adequacy test, not a legislated planning standard, and NTCSA's study is not a generation resource plan. Criterion (ii), the
+  open-cycle capacity factor under 6%, is reported for every run, not planned to.
 - Neither names a planning reserve margin. The build LP's 10% margin therefore has no South African source (RESULTS 'Planning
   reserve margin in the build LP').
 

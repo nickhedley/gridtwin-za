@@ -17057,3 +17057,43 @@ below to 2032 (c6 adds the smelter block in 2027; the IRP's step is not visible)
 finding that the IRP's demand is 12-14% above the model's does not hold like for like: it compared the IRP's total (exports and
 onsite generation included) with the model's customer demand. Index file: harness/pathway/irp2025/index_irp2025fig2_c6.json
 (gen_irp_index.py fig2 2027:930), used by c6 at the IRP's demand (DEMAND=index:) and by the pair's engine check.
+
+### Restarts after forced outages are not costed (about R0.9bn a year in 2026, falling with the fleet); Koeberg runs flat at 0.66, which is optimistic for winter against 2025-2026 operation (user, 25 Oct 2026, message 374; build 2026-10-24b, report only, no model change)
+
+(a) Forced-outage returns. The engine draws forced outages unit by unit (two-state Markov, MTTR 480 h, common-mode events per
+station, genUnitOutagePath) but applies them as an hourly fleet fraction capping committed coal; the commitment pre-pass derates
+each unit by the EAF instead of taking it out, so a unit returning from a forced outage never starts and no start cost is charged.
+The build optimiser holds coal at its EAF with no unit outages and charges start costs only for changes in commitment
+(COMMIT_SU_Y): it omits them too. Counted on c6's run under the strict standard (pathway_c6.json of the 24-25 Oct set, commit
+a37d4fd; one draw per weather year, the engine check's seeds; scratch m374/pathcheck_ret.js, which redefines genUnitOutagePath from
+its own source with a counter at each return to service, the random stream unchanged): 5.6 returns per unit a year in every year
+(about 3.9 from independent repairs, the rest common-mode), on 84 standing units in 2026 falling to 28 in 2040. Each costed as a
+cold start at the 360 rates (large subcritical R3,872/MW, supercritical R4,191/MW; with the 369 (a) forced-outage term R4,521 and
+R4,840):
+
+| Year | Units standing | Returns, MW a year | Cost, 360 rates, R m | With the forced-outage term, R m |
+|---|---|---|---|---|
+| 2026-2028 | 84 | 235,000 | 927 | 1,080 |
+| 2030 | 54 | 190,000 | 751 | 875 |
+| 2035 | 42 | 151,000 | 601 | 699 |
+| 2040 | 28 | 104,000 | 416 | 483 |
+
+2026-2040 undiscounted: R10.2bn at the 360 rates (R11.9bn with the term), about R22,000 per MW of coal standing a year, about 0.4%
+of system cost. A cost-only adjustment: dispatch does not change. The IRP pair keeps more coal standing (Figure 3's 50-year path),
+so its adjustment is larger; to be counted on its build file when it is rebuilt on c6 (Monday), and on c6 under the 20 GWh
+standard. Build optimiser: the omission is proportional to the coal standing, about 0.4% of coal's fixed cost (acapCoal), so it
+could at most shift early retirement at the margin; after the note.
+Caveats: returns from planned outages (modelled as a smooth monthly derate, not unit events) are not counted either; every return
+is costed cold although common-mode repairs (MTTR 36 h) would be warm starts; real units also trip and return within hours, which
+the 480 h MTTR does not represent.
+
+(b) Koeberg. Confirmed: nuclear output is (installed nuclear) x nuclearCF (0.66) in every hour, with no refuelling or other
+outages. Measured (ESK19679, Eskom credited, analysis ours; monthly means of hourly 'Nuclear Generation'): 2025 about 1,170 MW a year
+on average, with May-August about 940 MW (one unit) and November-December about 1,870 MW (both); January-March 2026 about 1,870 MW,
+May-August 2026 about 640 MW. The model's flat 0.66 gives about 1,228 MW every hour. Against recent operation the flat derate is
+optimistic for winter adequacy, by about 300 MW (2025) to 600 MW (2026) at the winter evening peak, because Koeberg's long outages
+have fallen in winter in both years; it would be conservative only if outages were scheduled outside winter, as an operator
+plans refuelling. For c6's 2026-2030 years the direction is therefore optimistic, on the measured pattern. After the note: model
+each unit's refuelling outage as a whole-unit outage of about one to two months every 16-18 months (interval and duration to be
+sourced), placed as Eskom schedules them, keeping the annual factor at the measured value; and test a winter-outage case on the
+2025-2026 pattern.
