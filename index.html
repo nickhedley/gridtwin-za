@@ -5807,7 +5807,7 @@ const FIXED = {
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
   // plus reserve shortfall (calendar days at their weights, windows at that probability) to targetFrac x 0.002% of
-  // demand, with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
+  // demand (or to opts.targetGWh, NTCSA_ADEQUACY_GWH for c6, message 373), with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
   bldStressTarget:0,
   // PLANNING RESERVE MARGIN IN THE BUILD LP (user, 16 Oct 2026, message 133): firm capacity at least (1 + this / 100) x the
   // peak hour of the year's represented days (row res_, wind and solar uncredited, every store at min(power, energy / 4 h)).
@@ -12102,7 +12102,8 @@ function bldBuildLP(opts){
 
   const ST_TGT = {};
   if (ST_ON) for (const y of Y){
-    ST_TGT[y] = (opts.targetFrac || 1) * BLD_STRESS_STANDARD * (ST_DEM[y] || 0);   // MWh of expected shed
+    // opts.targetGWh (message 373): an absolute target, GWh a year (NTCSA's 20); otherwise targetFrac x the 0.002% standard.
+    ST_TGT[y] = opts.targetGWh != null ? opts.targetGWh * 1e3 : (opts.targetFrac || 1) * BLD_STRESS_STANDARD * (ST_DEM[y] || 0);   // MWh of expected shed
     L.push(' tgt_' + y + ': ' + ST_TERMS[y].join(' + ') + ' - tsl_' + y + ' <= ' + ST_TGT[y].toFixed(3));
   }
   // One gas build cap for CCGT and OCGT on LNG (user, 11 Oct 2026): gascap_<y> at the gas pace; the pathway's GAS_FIRST
@@ -12185,6 +12186,11 @@ let bldStressPeriods = [];
 let bldStressLog = [];
 const BLD_STRESS_MAX = 5;
 const BLD_STRESS_STANDARD = 0.00002;   // share of annual demand
+// NTCSA's medium-term adequacy test (user decision, 25 Oct 2026, message 373; the central reliability standard from c6): mean
+// unserved energy at most 20 GWh a year (NTCSA, Medium-Term System Adequacy Outlook, adequacy criterion i; SOURCES 'Adequacy
+// criteria'). The system operator's adequacy test, not a legislated planning standard. The build optimiser plans to it when
+// opts.targetGWh is set to it (harness/pathway/pathway_perfail.js STD=ntcsa); opts.targetFrac x BLD_STRESS_STANDARD otherwise.
+const NTCSA_ADEQUACY_GWH = 20;
 
 function bldSolveLP(lp){
   // A test harness may supply its own solver; the page uses the worker.
@@ -12377,7 +12383,8 @@ async function bldStressLoopPerYear(opts, onProgress){
       const t = bldAdequacyTest(bldStateForYear(res, y, opts), opts.draws || 1);
       const mean = t.rows.length ? t.rows.reduce((a, b) => a + b.gwh, 0) / t.rows.length : 0;
       // opts.targetFrac (default 1): plan to a fraction of the standard, 0.5 as the presets do.
-      const limit = t.worst ? t.worst.demandGWh * BLD_STRESS_STANDARD * (opts.targetFrac || 1) : 0;
+      // opts.targetGWh (message 373): an absolute limit, GWh a year, in place of the fraction of the standard.
+      const limit = t.worst ? (opts.targetGWh != null ? opts.targetGWh : t.worst.demandGWh * BLD_STRESS_STANDARD * (opts.targetFrac || 1)) : 0;
       years.push({ y, mean, limit, worstYear: t.worst && t.worst.year, worstGWh: t.worst ? t.worst.gwh : 0 });
       if (t.worst && mean > limit)
         fails.push({ y, ratio: mean / limit, rows: t.rows.filter(q => q.gwh > 0.01).sort((a, b) => b.gwh - a.gwh) });
@@ -20632,7 +20639,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-24b';
+const BUILD_STAMP = '2026-10-25a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

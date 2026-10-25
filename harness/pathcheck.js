@@ -159,7 +159,12 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
    // AVERAGE COST PER MWH SERVED (user, 11 Oct 2026): the engine's avgCost (grid cost, rooftop capex and the shed
    // penalty excluded, export revenue netted, as the app) over its gridServed, served-weighted across runs.
-   const TFR=+(process.env.TF||0.5), KMAX=+(process.env.KMAX||40), KSTEP=10;
+   // THE RUN'S OWN STANDARD (user decision, 25 Oct 2026, message 373): a run recorded with a standard (pathway_perfail.js STD) is judged
+   // by it: NTCSA's 20 GWh a year as an absolute target, or targetFrac x the 0.002% standard; TF applies only to runs recorded
+   // before it, and a TF that disagrees with the recorded standard is an error.
+   const STDR=P.standard||null;
+   if (STDR && process.env.TF!==undefined && STDR.targetFrac!=null && +process.env.TF!==STDR.targetFrac) throw new Error('TF '+process.env.TF+' disagrees with the run\'s standard '+JSON.stringify(STDR));
+   const TFR=STDR&&STDR.targetFrac!=null?STDR.targetFrac:+(process.env.TF||0.5), TGWH=STDR&&STDR.targetGWh!=null?STDR.targetGWh:null, KMAX=+(process.env.KMAX||40), KSTEP=10;
    const agg=(o)=>{      const n=o.length,m=i=>o.reduce((a,b)=>a+b[i],0)/n; return ({seMean:n>1?Math.sqrt(o.reduce((a,b)=>a+(b[0]-m(0))**2,0)/(n-1)/n):null,nRuns:n,mean:m(0),worst:Math.max(...o.map(a=>a[0])),cost:m(1),curt:m(2),std:m(3),co2:m(4),coal:m(5),diesel:m(6),gridCost:m(7),gasTWh:m(8),gasHours:m(9),gasCF:m(10)>0?m(8)*1e6/(m(10)*8760):0,gas14dMaxGWh:Math.max(...o.map(a=>a[11])),
      stdCust:m(14),servedTWh:m(13),avgCostRMWh:o.reduce((a,b)=>a+b[12]*b[13],0)/o.reduce((a,b)=>a+b[13],0)}); };
    let o=[], kk=0, r=null;
@@ -167,7 +172,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      // STANDARD ON CUSTOMER DEMAND (user, 12 Oct 2026): from these runs the target is TFR x 0.002% of demand without
      // storage charging (loadS less pumped-storage and battery charging); the old basis, which counted charging as
      // demand, is kept as targetOld. A year above 90% of its target is flagged marginal.
-     r.targetOld=TFR*r.std; r.target=TFR*r.stdCust; r.marginal=r.mean>0.9*r.target; r.ci95Half=1.96*(r.seMean||0); r.ciPctOfTarget=r.target>0?100*r.ci95Half/r.target:null; r.ciWithin20=r.ci95Half<=0.2*r.target; r.draws=kk;
+     r.targetOld=TFR*r.std; r.target=TGWH!=null?TGWH:TFR*r.stdCust; r.standard=STDR||{basis:'tf',targetFrac:TFR}; r.marginal=r.mean>0.9*r.target; r.ci95Half=1.96*(r.seMean||0); r.ciPctOfTarget=r.target>0?100*r.ci95Half/r.target:null; r.ciWithin20=r.ci95Half<=0.2*r.target; r.draws=kk;
      if (process.env.K || r.ciWithin20 || kk>=KMAX) break; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first
    // min(CCGT standing, ccgtForceLoadMW) MW of each hour's gas output, which includes OCGT on LNG and gas burnt to charge
