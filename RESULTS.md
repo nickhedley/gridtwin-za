@@ -17540,3 +17540,13 @@ were built on; they clear with the presets rebuild (TODO). Every other script's 
 
 Flags: the March 2026 dip in the monthly series without wheeled plant is the interpolation meeting Mooi Plaats's March subtraction;
 October-December are an extrapolation; unnamed earlier private plant may still sit inside the series.
+
+### Fossil-free 2040's caption no longer quotes 2.16 GWh (build 2026-10-26c; user, 26 Oct 2026, message 402 (c))
+
+Fossil-free 2040's reliability sentence quoted its score from build 2026-10-19e (PRESET_SCORES: 2.16 GWh/yr against half the
+Australian standard, 2.72), taken while imports ran to 2040. Since c6 PR B (build 2026-10-23a) imports end after 2030
+(FIXED.importsEndYear), and the page runs the 2040 preset without them, so the score no longer holds. Change: _presetMeets
+does not quote a score taken before that build on a preset dated after importsEndYear; the caption says 'Unserved energy to be
+rescored: imports now end after 2030.' until the presets build rescores it (message 402 (b), TODO 14ix). PRESET_SCORES is
+generated data and is not edited. Deep decarbonisation 2035's score (build 2026-10-24b) is after PR B and is unchanged. Visible
+text: that one sentence (harness/diff_public_text.js against main 02cb281).

@@ -19657,7 +19657,12 @@ const _presetOverLimit = P => { const y = P.scenarioYear;
   return items.length ? ' Builds beyond the least-cost pathway\u2019s limits.' : ''; };
 // The standard sentence (messages 377, 378): the score is averaged over twelve weather years and the outage patterns the build
 // was not chosen on (PRESET_SCORES); the standard is half of the Australian market's (at most 0.002% of demand unserved).
+// A score taken before imports ended after importsEndYear (c6 PR B, build 2026-10-23a) on a preset dated after that year no longer
+// holds, so it is not quoted until the preset is rescored (user, 26 Oct 2026, message 402 (c): Fossil-free 2040's 2.16 GWh).
+const PRESET_SCORE_IMPORTS_END_BUILD = '2026-10-23a';
 const _presetMeets = n => { const S = PRESET_SCORES[n], f = v => v.toFixed(2);
+  if (S.build < PRESET_SCORE_IMPORTS_END_BUILD && FIXED.importsEndYear > 0 && (PRESETS[n].scenarioYear ?? 2026) > FIXED.importsEndYear)
+    return `Unserved energy to be rescored: imports now end after ${FIXED.importsEndYear}.`;
   return S.shed <= S.target
     ? `Unserved ${f(S.shed)} GWh/yr, within half the Australian standard.`
     : `Unserved ${f(S.shed)} GWh/yr, above half the Australian standard (${f(S.target)}).`; };
@@ -20715,7 +20720,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-26b';
+const BUILD_STAMP = '2026-10-26c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
