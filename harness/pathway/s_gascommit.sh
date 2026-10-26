@@ -1,21 +1,23 @@
 #!/bin/bash
-# s_gascommit (user, 26 Oct 2026, message 386 (a)): c6 with a committed first gas round forced into the build, the rest of the
+# s_gascommit (user, 26 Oct 2026, messages 386 (a) and 391 (c)): c6a with a committed first gas round forced into the build, the rest of the
 # build re-optimised around it, engine check (twelve weather years by ten outage draws a year), judged against NTCSA's 20 GWh.
-# Settings, each with its default (IRP 2025 Table 1's 3,000 MW of IPP gas in 2030, plan p.31, until the Gas IPP Procurement
-# Programme briefing gives figures):
+# Runs on c6a's settings (env_c6a.sh: new gas from 2032). Settings, each with its default (user, 26 Oct 2026, message 391 (c): 3,000 MW of
+# CCGT on LNG in 2032, the earliest year c6a allows new gas, until the Gas IPP Procurement Programme briefing gives figures; IRP 2025
+# Table 1 has the 3,000 MW in 2030, plan p.31):
 #   GC_MW=3000     committed capacity, MW
-#   GC_YEAR=2030   commissioning year (in service for the whole year, as every build in the model)
+#   GC_YEAR=2032   commissioning year, in service for the whole year as every build in the model; an earlier year overrides
+#                  c6a's gas date for this round only
 #   GC_TECH=ccgt   ccgt (combined cycle) or opencycle
 #   GC_FUEL=lng    lng or diesel (combined cycle on diesel is not a technology in the model)
-# c6 is rerun beside it on the same checkout, so the comparison is like for like whatever the build stamp. About an hour for both
+# c6a is rerun beside it on the same checkout, so the comparison is like for like whatever the build stamp. About an hour for both
 # (c6 alone: 9 minutes to solve and 9 to check on 25 Oct). Resumable: a finished run or check is skipped. Outputs, the log and
 # the comparison table go to out/gascommit/ (LP caches in out/gascommit/lpcache_<run>, deleted once the run's check is written).
 # Usage, from harness/ with the testroot link and node_modules in place (CLAUDE.md):
-#   GC_MW=3000 GC_YEAR=2030 GC_TECH=ccgt GC_FUEL=lng nohup bash pathway/s_gascommit.sh > /dev/null 2>&1 &
+#   GC_MW=3000 GC_YEAR=2032 GC_TECH=ccgt GC_FUEL=lng nohup bash pathway/s_gascommit.sh > /dev/null 2>&1 &
 set -u
 cd "$(dirname "$0")/.." || exit 1
-source pathway/env_c6.sh
-MW=${GC_MW:-3000} YR=${GC_YEAR:-2030} TECH=${GC_TECH:-ccgt} FUEL=${GC_FUEL:-lng}
+source pathway/env_c6a.sh
+MW=${GC_MW:-3000} YR=${GC_YEAR:-2032} TECH=${GC_TECH:-ccgt} FUEL=${GC_FUEL:-lng}
 case "$TECH:$FUEL" in
   ccgt:lng) T=ccgt;;
   opencycle:lng) T=ocgt;;
@@ -41,5 +43,5 @@ one(){ local name=$1 chg=$2 maxp=$3
   fi
   [ -s $O/pathway_$name.json ] && check $name; return 0; }
 echo "$(date -u +%H:%M) s_gascommit on $(git log --oneline -1 | cut -c1-60): $NAME (GAS_COMMIT=$T:$YR:$MW)" >> $P
-one c6 "" 6 & one $NAME "GAS_COMMIT=$T:$YR:$MW" 3 & wait
-node pathway/gascommit_table.js $O c6 $NAME > $O/table_$NAME.md && echo "$(date -u +%H:%M) DONE: $O/table_$NAME.md" >> $P
+one c6a "" 6 & one $NAME "GAS_COMMIT=$T:$YR:$MW" 3 & wait
+node pathway/gascommit_table.js $O c6a $NAME > $O/table_$NAME.md && echo "$(date -u +%H:%M) DONE: $O/table_$NAME.md" >> $P
