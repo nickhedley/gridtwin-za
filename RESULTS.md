@@ -17501,5 +17501,34 @@ Changes (branch claude/rooftop-addback):
   the twelve-year mean (ROOF12, harness; message 392 (c)), so Today 2026 does not move for that. The nodal engines keep NTCSA's
   August regional row less wheeled plant (8,644.6 MW in all), not the 2026 mean.
 
+- Twelve-year solar constants re-measured, with cause: the regional solar weights changed with the 297.5 MW moved to utility
+  solar, so validate_weather's two twelve-year checks failed on the old constants. FIXED_PV_CF_12Y 0.22398 -> 0.22361 and
+  NEW_PVTRK_CF_12Y 0.28673 -> 0.28590; solar tracking map rebuilt (MAP_ONLY=1 python3 build_solar_tracking.py). validate_weather
+  68/68 after. ROOF12's ratio K moves 0.8909 -> 0.8900 with it.
+- LICENSE lists nodal/rooftop_ntcsa_2026.json (licence_list.js --write).
+
+Page before and after (index.html as a preset click computes it, one run each on the page's profiles; main 2026-10-25d against
+this branch's final commit, measured 26 Oct 2026 about 14:30 UTC):
+
+| Output | Today 2026, main | Today 2026, branch | 2025, as modelled (both) |
+|---|---|---|---|
+| Rooftop installed, MW | 8,942.1 | 8,135.7 | 6,532 |
+| Utility solar installed, MW | 3,271 | 3,568.5 | 2,600 |
+| Coal, TWh | 149.040 | 149.061 | 169.125 |
+| Rooftop output, TWh | 15.360 | 13.975 | 11.220 |
+| Utility solar output, TWh | 7.099 | 7.745 | 5.651 |
+| Grid-served demand, TWh | 195.960 | 196.627 | 210.826 |
+| CO2, Mt | 165.690 | 165.715 | 186.450 |
+| System cost, R bn | 217.765 | 217.854 | 225.946 |
+
+Today 2026's coal moves +0.02 TWh: the 1.4 TWh less rooftop output is met by the 0.65 TWh more utility solar and the 0.67 TWh more
+grid demand; the backcast does not move.
+
+Suite (ESK19679.csv present, nothing running beside it): main 2026-10-25d node 961/985, audit 88/88, eng5 5/6; this branch node
+960/987 before the LICENSE line, 961/987 with it (validate_structure 27/27 rerun alone), audit 88/88, eng5 5/6. validate_capacity
++2 checks (35/35). validate_pathway_presets 27/40 against 29/40 on main: the two new failures are 'Least-cost path 2035' and 'IRP
+path 2035', 'page state is the engine check's state', the reserve's reference utility solar 297.5 MW higher than the presets
+were built on; they clear with the presets rebuild (TODO). Every other script's failures are main's.
+
 Flags: the March 2026 dip in the monthly series without wheeled plant is the interpolation meeting Mooi Plaats's March subtraction;
 October-December are an extrapolation; unnamed earlier private plant may still sit inside the series.
