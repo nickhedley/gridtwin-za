@@ -1,6 +1,6 @@
 # GridTwin ZA – reviewer pack
 
-Draft for an outside energy modeller, 14 October 2026; refreshed on 15 October on c5b_14r, on 16 October on c5d and on 17 October on c5e. This refresh, begun 24 October 2026, moves the pack to c6, the central run on build 2026-10-25a (main with the coal pull request, PR C, and NTCSA's adequacy test as the standard, PR D). c6's results and its comparison with IRP 2025 are added on Thursday 29 October, when its runs finish; until then, every c5e and c5f figure in this pack is superseded and marked as such, kept only as the record of the previous central. Prepared from the project's results log (RESULTS.md), its source register (SOURCES.md) and the validation/ folder.
+Draft for an outside energy modeller, 14 October 2026; refreshed on 15 October on c5b_14r, on 16 October on c5d and on 17 October on c5e. This refresh, begun 24 October 2026, moves the pack to c6, the central run on build 2026-10-25a (main with the coal pull request, PR C, and NTCSA's adequacy test as the standard, PR D). c6's results and its comparison with IRP 2025, from the runs of 25–26 October, are in section 4 (provisional until the note); every c5e and c5f figure in this pack is superseded and marked as such, kept only as the record of the previous central. Prepared from the project's results log (RESULTS.md), its source register (SOURCES.md) and the validation/ folder.
 
 ## What this is and how to read it
 
@@ -11,7 +11,7 @@ GridTwin ZA is a South African power-system model by Nick Hedley. It has two par
 
 The two run in a loop. The engine checks each year of the optimiser's plan against an adequacy target, and any year that fails adds stress windows to the next pass.
 
-The central run reviewed here is c6 (results due 29 October). It keeps c5f's settings (c5e's, with rooftop at 1,200 MW a year from 2027, Msenge Emoyeni's 69 MW of wind in the base, s_constr2's floors as the committed minimums, and wheeled wind's load added back; RESULTS 'New central c5f') and changes three things, each in its own reviewed pull request (section 1, 'What c6 changes'):
+The central run reviewed here is c6 (results in section 4, provisional). It keeps c5f's settings (c5e's, with rooftop at 1,200 MW a year from 2027, Msenge Emoyeni's 69 MW of wind in the base, s_constr2's floors as the committed minimums, and wheeled wind's load added back; RESULTS 'New central c5f') and changes three things, each in its own reviewed pull request (section 1, 'What c6 changes'):
 
 - inputs from Eskom's FY2026 reports: coal fuel R553/MWh, nuclear fuel R109/MWh, imports R897/MWh, coal CO2 1.108 t/MWh sent out, hydro at its FY2023–26 mean, Avon and Dedisa at 268 GWh a year, rooftop R15,000/kW AC (PR A, build 2026-10-22e; RESULTS 'c6 PR A');
 - imports priced in the build optimiser, and the Cahora Bassa contract ending after 2030 in the central case (PR B, build 2026-10-23a; RESULTS 'c6 PR B');
@@ -267,7 +267,7 @@ Recorded caveats: one bus; one outage draw per week; perfect sight within each w
 
 ## 4. c6 against IRP 2025, and the sensitivities
 
-Results on 29 October. The design, fixed before the runs (user, 22–24 October, messages 321, 322, 329, 363):
+The design, fixed before the runs (user, 22–24 October, messages 321, 322, 329, 363):
 
 - Same assumptions, different build. The IRP plan's build (Table 1, coal retiring on Figure 3's 50-year line) is run through the same engine, with every c6 input, outage draw and weather year, so any gap in cost, CO2 or adequacy is the build, not the assumptions. c6 is the build the optimiser chooses on those assumptions.
 - Two demand bases. c6's own (the measured 2026 base on the growth of UCT ESRG's IRP reference forecast, with the contracted smelter block), and the IRP's own: IRP 2025's Moderate forecast as published, digitised from its Figure 2 (no table is published; reading error about 1 TWh, 3 TWh in 2031, 2032 and 2034), at the IRP's own level, converted to the model's demand basis for definitions only: exports, other onsite generation and 2026 rooftop solar removed (ESRG's split of the same forecast), then 0.951, Eskom's 2025 coverage of Stats SA's electricity available for distribution (194.6 of 204.6 TWh), held to 2040 (user, 25 October, message 370 (a); RESULTS '370'). On that basis the IRP's own forecast is 2–7% below c6's demand. Four runs: c6, the IRP plan at c6's demand, c6 re-optimised at the IRP's demand, and the IRP plan at the IRP's demand. The first pair isolates the build; the second shows how much of any gap is the IRP being sized for higher demand.
