@@ -113,4 +113,5 @@ the web reader cannot open, never for long PDFs; no reads of eskom.co.za. Put th
 ## Long runs
 
 Pathway loops take 5 to 30 minutes and can use several GB of memory. Run them in the background,
-write output to a file, and report progress.
+write output to a file, and report progress. Record each background job's PID when it starts and stop it by that PID only, never by
+pattern match (pkill -f and the like; RULES.md, 'Stop background jobs by their PID').

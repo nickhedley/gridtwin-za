@@ -210,6 +210,13 @@ time. Each such decision states, where it is reported (chat, PR, RESULTS), the p
 fits or sources disagree, take the option more conservative for reliability, flag it, and leave the final call to Nick and the
 advisor.
 
+## Stop background jobs by their PID, never by a pattern (user, 26 Oct 2026, message 393 (b))
+
+Never kill a process by pattern match (pkill -f, killall, pgrep -f piped to kill, or similar): the pattern also matches the shell
+running the command and any unrelated job whose command line contains the words, and it has stopped the wrong process three times
+(24, 25 and 26 Oct 2026). Record each background job's PID when it starts (echo $! to the job's log or progress file) and stop it
+by that PID only, after checking with ps -p that the PID is still the job you started.
+
 ## Captions say what a control is, not what to do with it (user, 16 Oct 2026, message 156)
 
 A caption states what the control is, its default and the basis for the default. It does not tell the reader what to do with
