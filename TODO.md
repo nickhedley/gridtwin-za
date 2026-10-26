@@ -39,6 +39,10 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14jf. Two fixes for Nick's decision before the next central (user, 26 Oct 2026, message 384 (g); RESULTS 'c6's 2026 fleet, plant by
+plant'): (1) 2026 plant counted from each plant's commercial operation, not 1 January (adds 4.7 TWh of coal and 5.1 Mt in 2026
+only); (2) the rooftop add-back in build_demand_2026.py on the same solar the engine check removes (each weather year's, or the
+twelve-year mean), not 2025's (about -1.5 TWh of coal a year, every year). Also TODO 16c, the RMIPPPP hybrids' 2026 dates.
 14je. s_gascommit (user, 26 Oct 2026, message 386 (a)): prepared, not run (PR #118: GAS_COMMIT in pathway_perfail.js,
 harness/pathway/s_gascommit.sh). c6 with a committed first gas round forced into the build, the rest re-optimised, engine check
 against 20 GWh. Start within an hour of Nick's instruction after the Gas IPP Procurement Programme briefing (Wed 28 Oct 09:00 SAST),
