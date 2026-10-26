@@ -17282,8 +17282,8 @@ The 2026 gap is inputs and scope, two of them flags:
   non-firm exports.
 - Wind, solar, CSP and hybrid (-10.4 TWh): c6 runs its whole 2026 fleet from 1 January, including the 1,131 MW of new wind and
   1,018 MW of new solar committed for 2026 and private plant the portal does not meter. Flag: full-year output from plant that
-  commissions during 2026 overstates 2026 renewables by roughly half of that new build's output (Today 2026 against c6's 2026: about
-  3.2 TWh of wind and 2.1 of solar between them, so about 2.7 TWh of coal and 3 Mt; an estimate, not run). 2026 only.
+  commissions during 2026 overstates 2026 renewables; measured in the next entry: correcting it adds 4.7 TWh of coal and 5.1 Mt in
+  2026 (message 384 (g)). 2026 only.
 - Imports (-2.6 TWh): c6 runs the measured April-August 2026 mean (1,066 MW), 9.3 TWh against FY2026's 6.8 (8.3 on the 2026 trend).
 - Open-cycle, nuclear, hydro and pumped storage (+3.4 TWh) and domestic load (-1.1 TWh).
 - Financial against calendar year: Eskom's own coal is falling, 170.4 TWh in calendar 2025, 165.4 in FY2026 and about 153.9 in
@@ -17360,3 +17360,82 @@ fa74179); m383/mix.js (c6 and c5f lines), the central set's pathcheck rows ('cur
 
 Correction to message 383's generation mix (chat only, never in RESULTS or the pack): it left out the RMIPPPP hybrid line, 1.8 TWh
 in 2026, 1.7 in 2030, 1.3 in 2035 and 1.0 in 2040, in both c6 and c5f; c6's 2026 total is 217.1 TWh, not 215.4.
+
+### c6's 2026 fleet, plant by plant, and January-August 2026 against Ember: wind and utility solar overstated by about 1.0 GW each in 2026, from plant counted before it commissioned; correcting it adds 4.7 TWh of coal (user, 26 Oct 2026, messages 384 (f) and (g); build 2026-10-25a; report only)
+
+Finding. No plant is counted twice: every 2026 floor project is outside the base (none appears in Eskom's metered installed capacity
+by August 2026, which picked up Koruson 1's 420 MW of wind in December-February and Doornhoek's 120 MW of solar in May), and the
+private H1 2026 plants are in the base only. But c6 runs plant from 1 January that commissioned during 2026 or has not yet: the base's
+private H1 2026 plants (commercial operation January-June) and nearly all of the 2026 floor (commissioning August 2026 or later).
+Corrected to each plant's months in service, c6's 2026 wind is about 4.78 GW against 5.81, and utility solar about 3.31 GW against
+4.29. With both corrected, 2026 coal is 151.5 TWh against 146.8 (+4.7 TWh, +3.2%) and CO2 168.6 Mt against 163.5 (+5.1); coal's
+share of generation (rooftop in, imports and storage out) 74.9% against 72.5%. The correction is 2026 only: every plant runs all
+of 2027.
+
+Rooftop: c6's 8,942 MW is NTCSA's August 2026 private-PV level (9,430 MW) less the H1 2026 wheeled solar, run all year; NTCSA's
+series was about 6,800 MW in June 2025, 8,295 in May 2026 and 9,107 in June 2026, so the 2026 mean is lower, about 8,450 MW (an
+interpolation). Overstating rooftop does not move coal: the demand series adds rooftop back with the same capacity the engine
+removes (build_demand_2026.py). One thing does: the add-back uses the 2025 solar profile (capacity factor 25.1%), while the engine
+check removes rooftop on twelve weather years (22.4% mean), so c6's grid load sits about 1.67 TWh a year above the measured base in
+every year. Aligning the two (gross demand -0.82%, a proxy: proportional, not solar-shaped) takes 1.5 TWh of coal back out: fleet
+and rooftop together, 2026 coal 150.0 TWh (+3.2), CO2 167.0 Mt (+3.5), coal's share 74.7%. Flag: the profile mismatch is a bias in
+every year of c6, about +1.5 TWh of coal and +1.7 Mt a year; not fixed here.
+
+c6's 2026 fleet, MW (2026 mean in service; months in service from each plant's commercial operation date):
+
+| Item | c6 | Corrected | Basis |
+|---|---|---|---|
+| Wind, REIPPPP and Sere | 4,143 | about 4,110 | Eskom's metered installed wind: 3,863 in January, 4,028 in February, 4,143 from March (ESK19679, Eskom credited, analysis ours); IPP Office Q4 2025/26, online at 31 March 2026 |
+| Wind, private before 2026 | 69 (Msenge) + 89 (Castle, in the floor) | 158 | Sasol, 10 Oct 2024; Sibanye-Stillwater, 1 Apr 2025 |
+| Wind, private H1 2026 (PFL monitor) | 470 | about 316 | Umsobomvu April, Impofu North and East May, Impofu West June (nodal/pfl_cod_h1_2026.json) |
+| Wind, other 2026 floor projects | 1,042 | about 198 | Ummbila P1 from 31 July; Hartebeesthoek, Umsinde and Khangela 'H2 2026' (taken as October); Wolf 84 (BW5, not metered by August; taken as Q4); Ishwati Q4 at risk; Witberg and De Aar 2 South end-2026 (none in 2026) |
+| Wind, total | 5,812 | about 4,780 | |
+| Utility solar, REIPPPP | 2,780 | about 2,730 | metered: 2,571 in January, 2,660 February-April, 2,749 May, 2,780 from June (Doornhoek, 22 May) |
+| Utility solar, private H1 2026 (wheeled) | 488 | about 423 | Bolobedu January, Mooi Plaats March, ARM Platinum taken as April |
+| Utility solar, 2026 floor | 1,018 | about 156 | Ilikwa from 3 August; Ukuqala (financial close + 20 months, August); SunCentral 1 October; Virginia 240 (BW6, not metered by August; taken as Q4); Du Plessis Dam PV2, Khauta West, SunCentral 2, Teraco Q4 or late 2026; Paarde Valley PV2 end-2026 |
+| Utility solar, total | 4,289 (with 3 MW of rounding in FIXED) | about 3,310 | |
+| Rooftop | 8,942 | about 8,450 | NTCSA's private-PV series, interpolated; no effect on coal (above) |
+
+The months taken for plants without a published date are assumptions; the RMIPPPP hybrids (335 MW, all year) are not corrected
+here (Hydra from July 2026; TODO 16c).
+
+2026 coal, CO2 and share by correction (c6's 2026 engine check, 24 runs: twelve weather years by two draws, the same seeds):
+
+| Run | Coal TWh | CO2 Mt | Wind TWh | Utility solar TWh | Curtailed TWh | Coal share of generation | Coal Jan-Aug TWh |
+|---|---|---|---|---|---|---|---|
+| c6 | 146.8 | 163.5 | 17.5 | 8.3 | 2.0 | 72.5% | 99.9 |
+| Wind corrected | 149.7 (+2.9) | 166.7 (+3.2) | 14.5 | 8.4 | 1.4 | 74.0% | 101.9 |
+| Wind and solar corrected | 151.5 (+4.7) | 168.6 (+5.1) | 14.7 | 6.3 | 0.9 | 74.9% | 103.0 |
+| Both, rooftop add-back aligned | 150.0 (+3.2) | 167.0 (+3.5) | 14.6 | 6.2 | 1.0 | 74.7% | 101.9 |
+
+January-August 2026 on Ember's definitions (Ember, monthly electricity generation, South Africa, export supplied by the user,
+CC BY 4.0, attribute Ember; Eskom from ESK19679; c6 from the same check, January-August of each run). Ember's wind equals Eskom's
+metered wind (7.01 TWh both), so it leaves out private wheeled wind; its hydro excludes pumped storage; its solar is Eskom's PV and
+CSP (4.05 TWh) plus 7.63 TWh it estimates for rooftop and other unmetered solar; its coal is Eskom's thermal (106.20 TWh) topped up
+from Stats SA (+11.32), as its methodology states. Generation excludes imports and storage. c6's rooftop for January-August is
+about 8.5 TWh (its annual 13.7 at the 2025 profile's January-August share, 0.621; an estimate).
+
+| TWh (share) | Ember Jan-Aug 2026 | Eskom data | c6 | c6, fleet corrected | c6, fleet corrected, add-back aligned |
+|---|---|---|---|---|---|
+| Coal | 117.52 (80.5%) | 106.20 | 99.9 (73.4%) | 103.0 (75.7%) | 101.9 (75.5%) |
+| Wind | 7.01 (4.8%) | 7.01 | 11.7 (8.6%) | 9.9 (7.3%) | 9.8 (7.3%) |
+| Solar, all (utility, CSP, hybrid, rooftop) | 11.68 (8.0%) | 4.05 metered | 15.9 (11.7%) | 14.7 (10.8%) | 14.6 (10.8%) |
+| Nuclear | 6.68 | 6.68 | 7.2 | 7.2 | 7.2 |
+| Hydro | 1.95 | 1.95 | 1.3 | 1.3 | 1.3 |
+| Open-cycle ('other fossil') | 0.85 | 0.80 | 0.1 | 0.1 | 0.1 |
+| Total generation | 145.92 | | 136.1 | 136.1 | 135.0 |
+
+Reading: Ember's 84.6% coal, 7.3% solar and 4.8% wind are August 2026 alone; January-August is 80.5%, 8.0% and 4.8%. On Eskom's
+coal with Ember's other lines, coal's January-August share is 78.9%. After the fleet correction c6's January-August coal is 3.2 TWh
+below Eskom's: its wind is still 2.9 TWh above the metered (private wind, which Ember and Eskom do not count, about 0.7 of it; the
+rest per-MW output on twelve weather years against a weak 2026, with Ember's July wind 33% below July 2025), its open-cycle 0.7 below,
+its hydro 0.7 below, its firm exports 1.3 below Eskom's January-August 5.69 TWh, and its nuclear 0.6 above (Koeberg flat). Rooftop: c6's 13.7 TWh a year
+is 6% above sbg.earth's 12.9 ('Rooftop output against sbg.earth'); its January-August, about 8.5 TWh, is 11% above Ember's
+7.63 TWh for rooftop and other unmetered solar together.
+
+Settings. c6's pathway output (25 Oct 2026, ff8cf65, build 2026-10-25a) through scratch copies of the engine check: zz_mix8.js
+(January-August sums of every stack series) and zz_mix8f.js (FOV, a 2026 fleet override: windMW 4,494, newWindMW 287, windCapeMW
+287; pvUtilityMW 3,156, newPvMW 156; demandGrowthPct -0.82 for the aligned add-back); LNG=1 GRID=1 K=2 YEARS=2026; 26 Oct 2026
+06:39-06:45 UTC. Ember: the user's export (ember_monthly_electricity-generation, South Africa, to August 2026); Ember's public bulk
+file at the address fetch_ember.py reads still ends at March 2026 (release of 7 July 2026), and Ember's API host is not reachable
+from this session.
