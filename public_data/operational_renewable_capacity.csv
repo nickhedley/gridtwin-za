@@ -1,6 +1,6 @@
 # GridTwin ZA - operational renewable capacity by region, technology and source
 # CC BY 4.0 - attribution required. gridtwinza.org
-# source fingerprint: gtza-73b6a09dcf93d936
+# source fingerprint: gtza-ec58227e079c7c20
 # as at: 2026-03-31
 # source: IPP Office quarterly (reipppp, rmipppp) + Power Futures Lab IPP monitor (private)
 # NOTE: commissioned capacity, not bid-window awards. Captive behind-the-meter excluded.
@@ -13,9 +13,10 @@ Hydra Central,solar,reipppp,459.5
 Limpopo,solar,private,388.0
 Western Cape,solar,reipppp,359.0
 North West,solar,reipppp,345.0
+North West,solar,private,300.0
 Free State,solar,reipppp,168.9
 Limpopo,solar,reipppp,118.0
-North West,solar,private,100.0
+Free State,solar,private,97.5
 Gauteng,solar,reipppp,50.0
 Eastern Cape,wind,reipppp,1566.0
 Western Cape,wind,reipppp,1156.9

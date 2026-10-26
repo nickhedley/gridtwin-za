@@ -79,9 +79,11 @@ for q in wheel:
     wheeled_ja += sum(q['mw_installed'] * pu[h] for h in range(h0, 5832))
     for h in range(5832, 8760): wheel_full[h] += q['mw_installed'] * pu[h]
 # Pre-2026 wheeled wind, hour by hour (message 199 (3)); the 2025 per-unit wind shape stands in for both years.
-PRE = [dict(name=x['name'], mw=x['mw'], cod=x['cod']) for x in
-       json.load(open('nodal/regional_renewable_capacity.json'))['meta']['private_pre2026'] if x['tech'] == 'wind']
-PRE += [dict(name='Castle', mw=89.0, cod='2025-04')]   # Mining Weekly, 1 Apr 2025: wheeled to Sibanye-Stillwater from about the end of March 2025; not in the fleet
+# Pre-2026 wheeled solar (user, 26 Oct 2026, message 392 (b)): Selemela 2 and 3 and Damlaagte, moved out of rooftopMW into the
+# fleet (build_capacity.py PRE2026_PRIVATE), add back their customers' load the same way, on the 2025 solar shape.
+PRE = [dict(name=x['name'], mw=x['mw'], cod=x['cod'], tech=x['tech']) for x in
+       json.load(open('nodal/regional_renewable_capacity.json'))['meta']['private_pre2026']]
+PRE += [dict(name='Castle', mw=89.0, cod='2025-04', tech='wind')]   # Mining Weekly, 1 Apr 2025: wheeled to Sibanye-Stillwater from about the end of March 2025; not in the fleet
 def start_2025(ym):
     y, m = map(int, ym.split('-'))
     assert y <= 2025, ym
@@ -89,9 +91,10 @@ def start_2025(ym):
 pre25 = [0.0] * 8760                       # 2025 output, from each plant's COD
 pre26 = [0.0] * 8760                       # 2026 output, every plant running all year
 for q in PRE:
+    pu = W if q['tech'] == 'wind' else S
     for h in range(8760):
-        pre26[h] += q['mw'] * W[h]
-        if h >= start_2025(q['cod']): pre25[h] += q['mw'] * W[h]
+        pre26[h] += q['mw'] * pu[h]
+        if h >= start_2025(q['cod']): pre25[h] += q['mw'] * pu[h]
 RATIO = ((dom(lambda t: t.year == 2026 and t.month <= 8) + wheeled_ja + sum(pre26[:5832]))
          / (dom(lambda t: t.year == 2025 and t.month <= 8) + sum(pre25[:5832])))
 dom26 = [RATIO * (d + pre25[h]) if h < 5832 else RATIO_LATE * d + wheel_full[h] + pre26[h] for h, d in enumerate(y25)]
@@ -129,7 +132,7 @@ p['meta']['demand_source'] = (
     f'Wheeled private output added back to the 2026 side of the ratio ({wheeled_ja/1e6:.2f} TWh '
     f'Jan-Aug 2026, {len(wheel)} plants from COD; ratio {RATIO_CONTRACTED:.4f} before, {RATIO:.4f} after), '
     f'because contracted demand omits load served by wheeled plant and the engine supplies it. '
-    f'Pre-2026 wheeled wind ({", ".join(q["name"] + " " + format(q["mw"], "g") + " MW" for q in PRE)}) added back on both '
+    f'Pre-2026 wheeled wind and solar ({", ".join(q["name"] + " " + format(q["mw"], "g") + " MW" for q in PRE)}) added back on both '
     f'sides: {sum(pre25)/1e6:.3f} TWh to the 2025 base, {sum(pre26)/1e6:.3f} TWh a year in 2026 (message 199 (3)). '
     f'Domestic grid demand {sum(y25)/1e6:.2f} TWh (2025) -> {sum(dom26)/1e6:.2f} TWh. '
     f'Exports are added by the engine, not carried here. Provisional: re-run with full-year 2026.')
@@ -141,6 +144,6 @@ p['meta']['demand_2025_source'] = (
 json.dump(p, open('profiles.json', 'w'))
 print(f'wheeled Jan-Aug 2026: {wheeled_ja/1e6:.3f} TWh from {len(wheel)} plants')
 print(f'domestic ratio Jan-Aug 2026/2025: {RATIO_CONTRACTED:.4f} contracted, {RATIO:.4f} with wheeled')
-print(f'pre-2026 wheeled wind: {sum(pre25)/1e6:.3f} TWh in 2025, {sum(pre26)/1e6:.3f} TWh in 2026, ' + ', '.join(f"{q['name']} {q['mw']:g} MW from {q['cod']}" for q in PRE))
+print(f'pre-2026 wheeled wind and solar: {sum(pre25)/1e6:.3f} TWh in 2025, {sum(pre26)/1e6:.3f} TWh in 2026, ' + ', '.join(f"{q['name']} {q['mw']:g} MW from {q['cod']}" for q in PRE))
 print(f'domestic grid demand 2025 {sum(y25)/1e6:.2f} -> 2026 {sum(dom26)/1e6:.2f} TWh')
 print(f'September-December ratio (August 2026/August 2025): {RATIO_LATE:.4f}; wheeled September-December {sum(wheel_full)/1e6:.3f} TWh')
