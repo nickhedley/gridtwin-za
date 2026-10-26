@@ -403,6 +403,48 @@ allocation for power by 36%, SOURCES 'Context for the pack, 26 Oct 2026'). Repor
   applications from June 2026) and the GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027; as
   reported, no original found yet).
 
+14ji. Pack validation against public coal shares (user, 26 Oct 2026, messages 394 (a) and 397 (a); for the pack): c6a's 2026 coal
+share beside Ember January-August 2026 (coal 80.5%, solar 8.0%, wind 4.8%; 84.6% is August alone and is used nowhere in the
+repository as a January-August figure, checked 26 Oct) and GridPulse ZA's about 80% over a year (https://gridpulse.org.za/, coal
+section, read 26 Oct 2026), with one line on the difference from the 384 reconciliation: calendar against financial year, exports
+after Mozal, definitions.
+14jj. Forecast error for the imperfect-foresight test, 358 (b) (user, 26 Oct 2026, messages 394 (b) and 397 (b); next note):
+GridPulse ZA's comparison of Eskom's day-ahead forecasts with delivered output, past year (https://gridpulse.org.za/, forecast
+section, read 26 Oct 2026; cite as GridPulse's analysis): wind and solar about 5% over-forecast, roughly 400 MW in a typical hour,
+read as the bias; demand within about 2%. The typical hourly error from a published source on day-ahead wind and solar forecast
+errors; where sources disagree, the larger error, flagged.
+14jk. Product backlog (user, 26 Oct 2026, message 394 (c)): plain-data pages beside charts; a published emission-factor glossary;
+chart export; a feedback form.
+14jl. Global Energy Monitor cross-check (user, 26 Oct 2026, message 395; after the note, with the project tracker update): the Global
+Integrated Power Tracker, latest release (CC BY 4.0, attribute GEM; Nick may need to fetch it by hand if a form is required):
+South Africa's entries against nodal/regional_renewable_capacity.json, the nodal fleet and the tracker leads (missing plants,
+capacity or location differences, status). GEM entries are leads; confirm each from a primary source (IPP Office, PFL monitor,
+NERSA, developer) before adding. Cite GEM directly, not GridPulse ZA, which re-publishes it.
+14jm. TDP line length (user, 26 Oct 2026, messages 396 (a) and 397 (c); next page PR): the two code comments that give 10,209 km as
+the plan (index.html near the transmission-plan slider; nodal/capacity_siting.js, 'HEADROOM GROWS') say instead 14,494 km of new
+line, 210 transformers (765, 400 and 275 kV; NTCSA's own figure as reported, and the voltage split in nodal/tdp_projects.json's
+meta from the Public Report's 'Planned overhead lines' tables: 765 kV 6,957, 400 kV 7,477), and that 10,209 km was our sum of the
+mapped projects' route lengths at an earlier compile (11,251 km now). The visible text is already right. Open: whether the total
+counts strengthened lines; the reports seen describe it as new line (search results, 26 Oct 2026); the Public Report itself could
+not be opened from this environment on 26 Oct (network policy), so confirm from it before the pack quotes it.
+14jn. Next note, Where to build and Cape wind (user, 26 Oct 2026, message 396 (b)): read NTCSA's practice note on congestion
+curtailment (October 2025; SOURCES says not yet read) and its curtailment capacity dashboard on the grid access page: capacity
+released by accepting curtailment (1,580 MW reported), reserved (940 MW by end July 2026, per GridPulse ZA) and the 2028 figure
+(7,205 MW reported). Compare with bldCapeCurtPct and the 3,470 MW at 10% in the code. NTCSA data stays under the consent rule.
+14jo. SAWEM, next note (user, 26 Oct 2026, message 398 (b); SOURCES 'Krutham 2026 trading'): (1) NTCSA's internal SAWEM clearing
+prices, planned from January 2027 (Krutham p.6), as a check on the model's hourly shadow prices once published; pre-vesting prices
+are not a market reference. (2) Capacity and ancillary services markets from 2030 as a sensitivity, on the existing
+capacity-payment and reserve-pricing settings. (3) Battery revenue from intraday arbitrage against SAWEM prices for the battery
+revenue panels (p.5). (4) Retail (311): fixed distribution and notified maximum demand charges apply whoever supplies the energy
+(pp.1, 4).
+14jp. Southern Africa regional version, scoping (user, 26 Oct 2026, message 399; after the next note, with 330): South Africa plus
+Mozambique, Zimbabwe, Botswana, Namibia, Zambia, Lesotho and Eswatini as linked nodes (later more). Candidate open data: JRC-TEMBA
+(OSeMOSYS, 47 African countries with trade links, CC BY 4.0, Zenodo 10.5281/zenodo.3521841, GitHub KTH-dESA/jrc_temba; 2019-2020
+vintage) and the CCG OSeMOSYS starter data kits as the skeleton; SAPP's draft Master Plan and national IRPs for interconnectors and
+plant timing; Renewables.ninja for hourly profiles; Kariba and Cahora Bassa hydro with drought years. Open model data are leads;
+confirm against primary national sources. Report: data gaps by country, what the hourly engine needs to become multi-node, and an
+estimate of the work.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
@@ -594,7 +636,7 @@ although Ember's includes upstream emissions. Ember's monthly and yearly files a
 against 169.7 Mt). Hydro settled (user, 23 Oct 2026, message 357 (b); c6 PR B): the reference is now measured 2025 hydro from Eskom's hourly
 data (1.79 TWh; Ember's 1.80 if the file is absent), tolerance unchanged; the model's 1.91 passes (+6.8%). CO2 stays failing
 until Ember's basis is reconciled (option open: CO2 against Eskom's reported figure, Ember as a report-only line).
-14ix. Queued builds (user, 22 Oct 2026): the presets build, about Wed 28 Oct, with stored panels regenerated (message 340 (b), (c)): an installed-capacity table
+14ix. Queued builds (user, 22 Oct 2026): the presets build, brought forward by message 402 (26 Oct 2026; replaces 'after the pack' in 362 (b) and 373 (d)): as soon as c6a's runs land, Least-cost path 2035, IRP path 2035 and IRP's 2030 targets rebuilt from c6a's runs, captions to NTCSA's 20 GWh test with mean and worst-run unserved; Deep decarbonisation 2035 and Fossil-free 2040 re-searched on c6a's settings against 20 GWh, rescored on fresh draws, captions with the build-limit overshoot; until then, Fossil-free 2040's caption no longer claims 2.16 GWh (scored before imports end in 2030); one presets PR with the suite, the visible-text list and the render check, ready for Nick's merge by Wed 28 Oct evening at the latest. Also in the presets build, with stored panels regenerated (message 340 (b), (c)): an installed-capacity table
 beside the annual electricity mix (GW existing remaining, new build and total for the year shown, storage also in GWh; the
 reviewer pack points to it); a line in the Provincial electricity mix panel that its capacity is today's fleet, whatever preset. The coal flexibilisation checkbox's note relabelled to say it changes the ramp rate only, and that Eskom's
 own flexibility work targets minimum load and start-up time (Eskom, Oct 2025; analysis ours) (message 349 (d)).

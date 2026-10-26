@@ -337,6 +337,15 @@ These do not populate a JSON file, but a number in `FIXED` rests on each. Changi
 source means changing the constant, so they belong in this register.
 
 ```
+GridPulse ZA           https://gridpulse.org.za/ , home page, read 26 Oct 2026 (user, messages 394 and 397).
+                         Forecast section: GridPulse's comparison of Eskom's day-ahead forecasts with
+                         delivered output over the past year: wind and solar about 5% over-forecast,
+                         roughly 400 MW in a typical hour (a bias, not the hourly spread); demand
+                         within about 2%. Cite as GridPulse's analysis (TODO 14jj). Coal section:
+                         about 80% of generation from coal over a year (TODO 14ji). Its plant data
+                         re-publish Global Energy Monitor's tracker: cite GEM directly for those
+                         (message 395 (b); TODO 14jl). Its reserved-curtailment figure (940 MW by end
+                         July 2026) is a lead for TODO 14jn.
 Krutham 2026 trading   Krutham, Trading electricity: Is SA ready for the next financial market?
                          (October 2026), https://www.krutham.com/reports/trading-electricity/ ;
                          6 pages, page numbers from the PDF. Read 26 Oct 2026 (user, messages 398
