@@ -27,6 +27,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    w.onerror=()=>{}; Object.defineProperty(w.history,'replaceState',{value:()=>{},writable:true}); w.URL.createObjectURL=()=>'blob:x'; w.Worker=function(){this.postMessage=()=>{};};
    w.fetch=async(u)=>{try{const cl=String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config)/,'');const t=fs.readFileSync(path.join(path.resolve(ROOT),cl),'utf8');return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}};}});
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
+ // The run's rooftop add-back on the twelve-year mean (messages 391 (b), 392 (c)), as its build LP had it.
+ if (P.roofAddback12){ const K=require('./pathway/roof12.js')(w); if (Math.abs(K-P.roofAddback12)>1e-9) throw new Error('roof12: K '+K+' differs from the run\'s '+P.roofAddback12); console.log('ROOF12: rooftop add-back scaled by', K.toFixed(4)); }
  w.eval(`applyState(PRESETS['Today 2026']);`); await w.eval('loadWeatherYears()');
  // GRID (7 Oct 2026, TODO 14ar): the same grid-cost settings as the pathway run.
  w.eval(`if(!('bldGridCost' in FIXED)) throw new Error('bldGridCost missing');`+(process.env.GRID!==undefined?` state.bldGridCost=${+process.env.GRID};`:'')+(process.env.GRID_BEYOND!==undefined?` state.bldGridSpurBeyond=${+process.env.GRID_BEYOND};`:'')+(process.env.GRID_BATTHALF!==undefined?` state.bldGridBattHalf=${+process.env.GRID_BATTHALF};`:''));
@@ -138,6 +140,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
+   // FLEET_2026 (message 391 (a)): the run's 2026 existing-fleet adjustment, recorded by pathway_perfail.js, in 2026 only.
+   if (y===2026 && P.fleet2026) for (const [k,d] of Object.entries(P.fleet2026)){ over[k]=+w.eval('FIXED.'+k)+d; console.log('FLEET_2026: '+k+' '+over[k]+' MW in 2026'); }
    // ASTR reserve after 2030/31 (user, message 86): the growth term is measured from this run's own 2030 wind and solar fleet,
    // as the pathway's adequacy test measures it (index.html bldAstrVreRef).
    if (y > 2030){ let w30=0, p30=0; for (const yy of Object.keys(P.sched)) if (+yy <= 2030){ w30 += +P.sched[yy].wind||0; p30 += +P.sched[yy].pv||0; }
