@@ -445,6 +445,16 @@ plant timing; Renewables.ninja for hourly profiles; Kariba and Cahora Bassa hydr
 confirm against primary national sources. Report: data gaps by country, what the hourly engine needs to become multi-node, and an
 estimate of the work.
 
+14jq. Coal operation after this note, in this order (user, 26 Oct 2026, message 403; an estimate for each before starting):
+(a) Implied cycling cost: calibrate a start-cost multiplier so the MIP unit-commitment benchmark reproduces observed starts per
+unit (AEMO NEMweb black-coal units; Eskom unit-level data if consent and data allow), NREL's 75th percentile as a cross-check;
+then the calibrated start costs in the engine and the build optimiser. (b) Unit commitment by optimisation: the cost-weighing rule
+replaced by a rolling-horizon commitment (for example 48-hour windows, day-ahead) on the page's MIP machinery; run time and results
+benchmarked against the rule. (c) Commitment on a forecast with realistic error (GridPulse ZA's bias plus a published hourly error,
+14jj), re-committing within the day. (d) System strength as a minimum number of synchronous units per region (AEMO practice), via
+the network model, once NTCSA data allows. (e) With the next note's all-options pathway (curtailment sinks, 14jb), how coal starts
+and midday output change.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
