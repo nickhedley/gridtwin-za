@@ -10500,7 +10500,9 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // recomputes them. They feed the LCOE chart and the replacement-cost figure, not dispatch or the build optimiser.
 // Wind re-measured 17 Oct 2026 (build 2026-10-17e): 0.42507 to 0.42499, after Msenge Emoyeni's 69 MW reweighted the national
 // modern-wind map (nodal/profiles_wind_modern_map.json).
-const NEW_WIND_CF_12Y = 0.42499, NEW_PVTRK_CF_12Y = 0.28673;
+// Tracking solar re-measured 26 Oct 2026 (build 2026-10-26a): 0.28673 to 0.28590, after Selemela 2 and 3 (North West) and
+// Damlaagte (Free State) moved into the regional solar fleet reweighted the national solar profile (message 392 (b)).
+const NEW_WIND_CF_12Y = 0.42499, NEW_PVTRK_CF_12Y = 0.28590;
 // The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
 BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
 BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };
@@ -10535,7 +10537,8 @@ FIXED.lcoePv = Math.round(bldLcoeAnchor(_anchorKey('pvtrk'), 'pv', 'pv', NEW_PVT
 // (0.805 TWh from 3,400 MW), new wind 41.707% (26.47 TWh from 7,246 MW). The same method gives c5e's 81.141, 2.8529% and 41.740%
 // (RESULTS 'LCOE anchors on reference parameters', which has c5e's run-based costs). Vanadium flow, iron-air,
 // nuclear, CSP, new coal and pumped storage stay typed (messages 159 (2) and 191 (6)). Each anchor is rounded to its slider's step.
-const FIXED_PV_CF_12Y = 0.22398, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
+// FIXED_PV_CF_12Y re-measured 26 Oct 2026 with the tracking figure above: 0.22398 to 0.22361.
+const FIXED_PV_CF_12Y = 0.22361, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
 const LCP_2030_LI_CYCLES = 102.688, LCP_2030_DSL_CF = 0.027045, LCP_2030_WIND_CF = 0.41707;
 function bldLcoeAt(capex, fom, life, mwhPerKwYr){
   const r = BLD_DISC_CENTRAL;
