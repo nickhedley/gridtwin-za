@@ -17122,3 +17122,146 @@ on diesel and LNG) x 8,760 h. Run on c6 under 20 GWh in the central set, without
 Caveat: the constraint holds on the optimiser's representative days; the engine check reports the capacity factor it gets.
 Checks: at the defaults Today 2026 costs R217.73bn as before (one draw, seed 12345); a shape keeps annual nuclear energy unchanged
 (10.869 TWh); the occf rows appear only with bldOcCfMax set (2026's right-hand side 1,787,040 MWh, 6% of 3,400 MW of diesel turbines).
+
+### c6 under NTCSA's 20 GWh test: the central set, c6 against the strict and NEM standards, no new gas with and without diesel peakers, the IRP pair on c6's paths, the restart line (user, 25-26 Oct 2026, messages 373-376 and 379-383; build 2026-10-25a, commit ff8cf65; provisional until the note)
+
+Settings. Commit ff8cf65 (PR D before its worker and panel commits, which do not touch the runs; merged as 759f059). c6:
+COMMIT=1 PSE=1 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5 STRESS_TARGET=1 GRID=1 ROOF_MW=1200
+COAL_AVAIL=1 PVTRK=1 COAL_DATES=coal_dates_irp2025.json BATT_DECL=0.03 WIND_CAP=3500 WIND_CAP_FROM=2031 MAXP=6 STALL=0.1 STALL_FROM=4
+DEM_BLOCK=2027:930 IMP_AVG_MW=1066 CAPE_WIND=1580:4 RP_EXCL=wind MIN_BUILD=wind:2026:1131,wind:2027:2245.5,pv:2026:1018,pv:2027:2276,
+pv:2028:3405 LI_MIN=2026:360:1440,2027:760.5:3059,2028:760.5:3719 SOLVER=native STD=ntcsa; each sensitivity the same line with its
+change and MAXP=3, TL=7200 (s_std_nem_nogas rerun at TL=14400 after its third solve hit the 2-hour limit; message 381 (b)). Engine
+check: pathcheck.js, LNG=1 GRID=1, the run's recorded standard, twelve weather years by ten outage draws (120 runs a year). The strict
+set (s_std_strict) is the 24-25 Oct set on a37d4fd (TF=0.5), its open-cycle factor computed apart (RESULTS 'Message 376'). Runs
+25 Oct 10:13-17:12 UTC; no-gas-with-peakers 17:14-19:16 UTC; s_std_nem_nogas rerun 19:17-22:06 UTC. The 2026 to 2040 engine present
+value is at 8% real. Restart line: forced-outage returns counted on each run's own coal fleet (two draws per weather year,
+scratch zz_pathcheck_ret.js), costed cold at the 360 rates; present value at 8%.
+
+c6 meets both criteria of NTCSA's medium-term adequacy test (the system operator's test, not a planning standard) in every year:
+mean unserved energy at most 3.3 GWh (worst single run 120 GWh) and an open-cycle capacity factor of 0.13-1.43%. Every run in the
+central set meets both except s_nogas and s_std_nem_nogas (no new gas and no new diesel open-cycle), over 20 GWh from 2037.
+
+Central set (NTCSA 20 GWh unless the name says otherwise):
+
+| Run | Verdict | Engine PV R bn | vs c6 | Restart line PV R bn | CO2 2026-40 Mt | Max mean unserved GWh | Worst run GWh | Open-cycle CF max | 2030 wind/PV/Li/gas GW | 2035 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| c6 | adequate | 2300.0 | +0.0 | 6.8 | 1760 | 3.31 | 120.3 | 1.4% | 8.4/9.3/3.4/0.0 | 25.9/16.0/9.1/3.1 | 33.6/27.2/13.0/8.9 |
+| null_c6 | adequate | 2300.0 | +0.0 | 6.8 | 1760 | 3.31 | 120.3 | 1.4% | 8.4/9.3/3.4/0.0 | 25.9/16.0/9.1/3.1 | 33.6/27.2/13.0/8.9 |
+| s_std_nem_c6 | adequate | 2299.8 | -0.2 | 6.8 | 1760 | 2.62 | 194.1 | 1.4% | 8.4/9.3/3.4/0.0 | 25.9/16.0/9.1/3.1 | 33.6/27.2/13.0/8.9 |
+| s_ntcsa_both_c6 | adequate | 2300.0 | +0.0 | 6.8 | 1760 | 3.31 | 120.3 | 1.4% | 8.4/9.3/3.4/0.0 | 25.9/16.0/9.1/3.1 | 33.6/27.2/13.0/8.9 |
+| s_koeberg_winter_c6 | adequate | 2309.7 | +9.8 | 6.8 | 1757 | 2.56 | 125.5 | 1.2% | 8.7/9.3/3.8/0.0 | 26.2/15.5/8.9/3.6 | 34.2/26.6/12.7/9.4 |
+| s_gascapex25_c6 | adequate | 2306.2 | +6.2 | 6.8 | 1723 | 3.90 | 139.6 | 1.9% | 9.0/9.3/3.4/0.0 | 26.5/18.6/9.9/2.3 | 32.1/32.6/13.8/7.9 |
+| s_gas2032_c6 | adequate | 2299.7 | -0.2 | 6.8 | 1759 | 4.10 | 151.8 | 1.3% | 8.5/9.3/3.4/0.0 | 26.0/16.0/9.1/3.1 | 33.6/27.2/13.0/8.9 |
+| s_nogas_c6 | pass limit reached | 2350.8 | +50.8 | 6.8 | 1609 | 140.41 | 322.4 | 2.2% | 5.7/10.9/4.4/0.0 | 19.6/31.0/12.8/0.0 | 33.5/59.3/21.3/0.0 |
+| s_imp_c6 | adequate | 2289.3 | -10.6 | 6.8 | 1745 | 3.39 | 110.4 | 1.4% | 7.3/9.3/3.6/0.0 | 24.8/15.2/8.8/2.3 | 31.5/26.9/12.8/8.0 |
+| s_demlowflat_c6 | adequate | 1984.4 | -315.5 | 6.8 | 1685 | 3.08 | 131.3 | 1.3% | 2.2/9.0/1.9/0.0 | 17.2/10.4/5.6/0.0 | 17.9/20.1/9.2/0.7 |
+| s_demlowm1_c6 | adequate | 1898.6 | -401.3 | 6.8 | 1665 | 1.59 | 70.9 | 1.4% | 2.2/8.3/2.0/0.0 | 13.3/8.3/3.9/0.0 | 16.6/9.3/7.1/0.0 |
+| c6_irpdem_c6 | adequate | 2185.8 | -114.2 | 6.8 | 1703 | 3.15 | 99.2 | 1.3% | 6.2/9.1/1.9/0.0 | 23.7/15.4/8.8/1.8 | 30.5/27.5/12.5/7.5 |
+| s_coalpractice_c6 | adequate | 2322.0 | +22.0 | 6.8 | 1871 | 2.68 | 99.4 | 1.1% | 8.8/9.3/3.4/0.0 | 26.3/16.1/9.2/3.0 | 33.4/27.4/13.2/8.8 |
+| s_mindn24_c6 | adequate | 2293.1 | -6.9 | 6.8 | 1786 | 3.34 | 120.3 | 1.4% | 8.4/9.3/3.4/0.0 | 25.9/16.0/9.1/3.1 | 33.6/27.2/13.0/8.9 |
+| s_rate48_c6 | adequate | 2299.6 | -0.4 | 6.8 | 1816 | 3.11 | 131.1 | 1.6% | 7.6/9.3/3.5/0.0 | 24.6/15.2/8.8/3.5 | 31.9/26.6/12.9/9.1 |
+| s_spotoil_c6 | adequate | 2300.7 | +0.8 | 7.4 | 1761 | 3.27 | 121.3 | 1.5% | 8.4/9.3/3.4/0.0 | 25.9/16.0/9.1/3.1 | 33.6/27.3/12.9/8.9 |
+| s_wearp75_c6 | adequate | 2301.2 | +1.2 | 7.6 | 1765 | 3.32 | 122.9 | 1.5% | 8.2/9.3/3.5/0.0 | 25.7/16.0/9.1/3.1 | 33.8/27.2/12.9/8.9 |
+| s_be6_c6 | adequate | 2339.4 | +39.5 | 6.8 | 1799 | 0.57 | 29.6 | 1.5% | 9.3/9.3/2.2/1.1 | 26.8/12.0/4.7/6.8 | 40.4/13.3/7.2/12.6 |
+| s_be7_c6 | adequate | 2331.5 | +31.5 | 6.8 | 1735 | 3.48 | 118.1 | 1.3% | 8.7/9.3/3.4/0.0 | 26.2/16.3/9.3/2.8 | 29.0/22.8/12.4/6.6 |
+| s_irpgas_c6 | adequate | 2486.4 | +186.4 | 6.1 | 1751 | 0.24 | 10.4 | 1.0% | 5.0/9.7/1.9/6.0 | 22.5/12.0/5.0/10.8 | 38.6/15.8/7.9/17.3 |
+| s_nogas_dsl_c6 | adequate | 2309.2 | +9.2 | 6.8 | 1609 | 7.17 | 162.2 | 1.3% | 7.8/9.6/3.5/0.0 | 23.7/27.7/12.3/0.0 | 34.3/54.1/19.5/3.7 |
+| s_std_strict_nogas_dsl_c6 | pass limit reached | 2313.7 | +13.8 | 6.8 | 1574 | 12.71 | 237.2 | 1.3% | 9.4/9.3/5.0/0.0 | 25.1/28.1/13.2/0.3 | 34.4/53.9/18.9/3.8 |
+| s_std_nem_nogas_dsl_c6 | pass limit reached | 2309.2 | +9.2 | 6.8 | 1605 | 12.36 | 256.7 | 1.3% | 8.1/9.4/3.5/0.0 | 23.9/27.7/12.3/0.0 | 34.2/54.6/19.4/3.6 |
+| s_std_nem_nogas_c6 | pass limit reached | 2355.5 | +55.5 | 6.8 | 1554 | 115.33 | 276.7 | 1.9% | 7.6/10.6/4.7/0.0 | 21.6/30.5/12.5/0.0 | 36.1/58.8/21.0/0.0 |
+
+c6 by standard. The standard barely moves c6: NTCSA's 20 GWh and the NEM's 0.002% give the same build; half the NEM adds 1.3 GW of
+wind and 1.5 GW of lithium in 2030 and costs R3.6bn more. The strict row is from the a37d4fd set.
+
+| | Engine PV, R bn | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle CF, highest year | CO2 2026-40, Mt | 2030 | 2035 | 2040 |
+|---|---|---|---|---|---|---|---|---|
+| c6, NTCSA 20 GWh | 2300.0 | 3.3 | 120 | 1.4% | 1760 | wind 8.4, solar 9.3, Li 3.4 GW, CCGT 0.0, open-cycle 0.0 | wind 25.9, solar 16.0, Li 9.1 GW, CCGT 2.9, open-cycle 0.2 | wind 33.6, solar 27.2, Li 13.0 GW, CCGT 8.0, open-cycle 0.9 |
+| c6, s_std_strict | 2303.6 | 2.3 | 178 | 1.2% | 1731 | wind 9.7, solar 9.3, Li 4.9 GW, CCGT 0.0, open-cycle 0.2 | wind 27.2, solar 15.5, Li 9.0 GW, CCGT 2.9, open-cycle 0.2 | wind 33.7, solar 26.9, Li 13.0 GW, CCGT 8.1, open-cycle 0.9 |
+| c6, s_std_nem | 2299.8 | 2.6 | 194 | 1.4% | 1760 | wind 8.4, solar 9.3, Li 3.4 GW, CCGT 0.0, open-cycle 0.0 | wind 25.9, solar 16.0, Li 9.1 GW, CCGT 2.9, open-cycle 0.2 | wind 33.6, solar 27.2, Li 13.0 GW, CCGT 8.0, open-cycle 0.9 |
+
+No new gas, with and without new diesel open-cycle (messages 373 (c), 380 (b)). Without new diesel peakers, no new gas fails NTCSA's
+unserved-energy criterion from 2037 under every standard. With them allowed, the optimiser builds diesel open-cycle from 2035-2036,
+3.6-3.8 GW by 2040, running at an open-cycle capacity factor of at most 1.3%, and the plan meets both NTCSA criteria under every
+standard, at R9-10bn above c6 and R42-51bn below no-gas-without-peakers. It does not meet the stricter standards it was planned to
+(strict: over in 2031-2040; NEM: over in 2036, 2037, 2038 and 2040), which the pass limit stopped. So "no new gas needs diesel
+peakers" holds under all three standards. The strict rows compare like with like within the a37d4fd set except the peakers run,
+which is on ff8cf65 (the standard and the open-cycle report differ; the engine is the same).
+
+| Standard | Run | Meets its standard | Both NTCSA criteria | New diesel open-cycle MW, 2035 / 2036 / 2037 / 2038 / 2040 | Open-cycle CF, highest year | Mean unserved, highest year / worst run, GWh | PV, R bn | Against c6 | Against no gas |
+|---|---|---|---|---|---|---|---|---|---|
+| NTCSA 20 GWh | no new gas, no new peakers | no (2037-2040) | no: over 20 GWh in 2037, 2038, 2039, 2040 | 0 / 0 / 0 / 0 / 0 | 2.2% | 140.4 / 322 | 2350.8 | +50.8 | – |
+| NTCSA 20 GWh | no new gas, peakers allowed | yes | yes | 0 / 124 / 1,124 / 1,790 / 3,709 | 1.3% | 7.2 / 162 | 2309.2 | +9.2 | -41.6 |
+| Strict (half NEM) | no new gas, no new peakers | no (2035-2040) | no: over 20 GWh in 2037, 2038, 2039, 2040 | 0 / 0 / 0 / 0 / 0 | 1.8% | 121.1 / 302 | 2364.5 | +60.9 | – |
+| Strict (half NEM) | no new gas, peakers allowed | no (2031-2040) | yes | 344 / 344 / 1,344 / 2,018 / 3,824 | 1.3% | 12.7 / 237 | 2313.7 | +10.1 | -50.7 |
+| NEM 0.002% | no new gas, no new peakers | no (2035-2040) | no: over 20 GWh in 2037, 2038, 2039, 2040 | 0 / 0 / 0 / 0 / 0 | 1.9% | 115.3 / 277 | 2355.5 | +55.6 | – |
+| NEM 0.002% | no new gas, peakers allowed | no (2036, 2037, 2038, 2040) | yes | 0 / 159 / 1,159 / 1,826 / 3,633 | 1.3% | 12.4 / 257 | 2309.2 | +9.4 | -46.3 |
+
+c6's own gas build by year and CO2, Mt, beside the no-gas runs (s_nogas's lower CO2 after 2037 is partly load it does not serve):
+
+| Year | c6 CCGT MW | c6 open-cycle LNG MW | c6 open-cycle diesel MW | c6 CO2 | s_nogas CO2 | s_nogas_dsl CO2 | strict s_nogas CO2 | strict s_nogas_dsl CO2 | NEM s_nogas_dsl CO2 |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026 | 0 | 0 | 0 | 163.5 | 163.5 | 163.5 | 163.5 | 163.5 | 163.5 |
+| 2027 | 0 | 0 | 0 | 168.2 | 168.2 | 168.2 | 168.2 | 168.2 | 168.2 |
+| 2028 | 0 | 0 | 0 | 166.2 | 168.6 | 167.9 | 162.8 | 163.3 | 167.2 |
+| 2029 | 0 | 0 | 0 | 158.4 | 164.4 | 159.9 | 155.6 | 155.8 | 159.3 |
+| 2030 | 0 | 0 | 0 | 136.7 | 141.9 | 138.1 | 129.3 | 132.5 | 137.6 |
+| 2031 | 109 | 159 | 0 | 131.2 | 136.0 | 132.2 | 123.7 | 127.7 | 131.8 |
+| 2032 | 415 | 159 | 0 | 117.8 | 119.8 | 116.2 | 107.7 | 112.1 | 115.8 |
+| 2033 | 1,158 | 159 | 0 | 109.9 | 104.7 | 101.3 | 93.0 | 97.7 | 100.8 |
+| 2034 | 2,358 | 159 | 0 | 102.4 | 90.3 | 87.0 | 79.0 | 83.8 | 86.6 |
+| 2035 | 2,909 | 159 | 0 | 95.9 | 85.9 | 80.3 | 76.9 | 76.3 | 79.9 |
+| 2036 | 3,598 | 473 | 0 | 91.2 | 80.9 | 75.1 | 73.0 | 75.0 | 74.8 |
+| 2037 | 4,798 | 473 | 0 | 86.6 | 67.6 | 68.3 | 60.1 | 68.5 | 68.4 |
+| 2038 | 5,656 | 815 | 0 | 82.2 | 53.2 | 60.7 | 47.8 | 57.5 | 60.9 |
+| 2039 | 6,782 | 889 | 0 | 77.0 | 36.7 | 48.8 | 36.5 | 50.0 | 48.9 |
+| 2040 | 7,982 | 889 | 0 | 73.0 | 26.9 | 41.1 | 27.0 | 41.7 | 41.1 |
+| 2026-40 | | | | 1760 | 1609 | 1609 | 1504 | 1574 | 1605 |
+
+IRP pair on c6's paths (message 382 (b)). Build file from harness/pathway/irp2025/build_irp.py rerun on c6's set (scratch
+m382/build_irp_c6.py, BASEGAP=0): Table 1's wind and solar by year, rooftop 900 MW a year 2027-2035, s_be6_c6's lithium, s_irpgas_c6's
+CCGT and open-cycle gas with its 51% floor record, s_be7_c6's nuclear (5.2 GW 2036-2039), 1,332 MW of pumped storage in 2037, and
+coal on Figure 3's dates with no early retirement (the same path as c6). Totals to 2040: wind 36.0 GW, solar 25.5, rooftop 8.1,
+lithium 7.2 GW and 19.8 GWh, CCGT 14.6, open-cycle gas 2.7. At IRP 2025's own demand (370 (a); c6_irpdem_c6's demand record) 2030
+demand is 7.0% below c6's and 2040 4.3% below.
+
+| Run | 20 GWh | Strict (half NEM) | Mean unserved, highest year / worst run, GWh | Open-cycle CF, highest year | Engine PV, R bn | Against the optimised plan at the same demand | CO2 2030 / 2035 / 2040, Mt | CO2 2026-40, Mt | Restart line PV, R bn |
+|---|---|---|---|---|---|---|---|---|---|
+| IRP 2025 build, c6 demand | met | met | 0.00 / 0 | 0.17% | 2590.9 | +290.9 against c6 (2300.0) | 126.2 / 105.3 / 63.0 | 1741 (c6 1760) | 6.8 |
+| IRP 2025 build, IRP 2025 demand | met | met | 0.00 / 0 | 0.11% | 2525.5 | +339.7 against c6_irpdem (2185.8) | 117.1 / 97.3 / 56.5 | 1614 (c6_irpdem 1703) | 6.8 |
+
+Restart line by run, R bn (cold at the 360 rates; with the 369 (a) forced-outage term in brackets). It is the same for every run on
+c6's coal path, the IRP pair included (the pair keeps the same Figure 3 dates as c6, so an earlier expectation that its adjustment is
+larger was wrong), and lower for s_irpgas, which retires 5.1 GW of coal early:
+
+| Run | 2026 | 2030 | 2035 | 2040 | 2026-40 undiscounted | PV |
+|---|---|---|---|---|---|---|
+| c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| null_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_std_nem_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_ntcsa_both_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_koeberg_winter_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_gascapex25_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_gas2032_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_nogas_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_imp_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_demlowflat_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_demlowm1_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| c6_irpdem_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_coalpractice_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_mindn24_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_rate48_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_spotoil_c6 | 1.00 | 0.82 | 0.66 | 0.46 | 11.1 (12.8) | 7.4 (8.5) |
+| s_wearp75_c6 | 1.04 | 0.85 | 0.68 | 0.47 | 11.4 (13.1) | 7.6 (8.7) |
+| s_be6_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_be7_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_irpgas_c6 | 0.93 | 0.64 | 0.50 | 0.29 | 8.9 (10.3) | 6.1 (7.1) |
+| s_nogas_dsl_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_std_strict_nogas_dsl_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_std_nem_nogas_dsl_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| s_std_nem_nogas_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| irp2025_c6 | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+| irp2025_c6_irpdem | 0.93 | 0.76 | 0.61 | 0.43 | 10.3 (12.0) | 6.8 (8.0) |
+
+Caveats: one weather set and ten outage draws a year; the strict and central sets are on different commits (a37d4fd, ff8cf65) with
+the same engine; the IRP pair is an engine check of a fixed build, not an optimised plan; everything here is provisional until the
+note and the advisor's review.
