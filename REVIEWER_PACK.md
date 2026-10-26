@@ -275,35 +275,65 @@ Results on 29 October. The design, fixed before the runs (user, 22–24 October,
 - Sensitivities (16 runs with the four above and c6's null): gas capex +25% (s_gascapex25); new gas from 2032 (s_gas2032); no new gas (s_nogas); imports to 2040 (s_imp); demand flat and falling 1% a year (s_demlow); and on coal, s_coalpractice, s_mindn24, s_rate48, s_spotoil and s_wearp75 (section 1b).
 - Reported: build by year against Table 1, engine present value 2026–40 and its components, CO2 by year, adequacy by year, and cost and CO2 for each sensitivity against c6.
 
-### c6 results so far (runs of 25 October 2026, build 2026-10-25a; provisional until the set is complete)
+### c6 results (runs of 25–26 October 2026, build 2026-10-25a; provisional until the note)
 
-c6 meets both criteria of NTCSA's medium-term adequacy test (the system operator's test, not a planning standard): mean unserved energy at most 3.3 GWh in any year against 20 GWh, and an open-cycle capacity factor of 0.13–1.43% against 6%, in every year. So does every run below except s_nogas (no new gas and no new diesel open-cycle), which does not meet the unserved-energy criterion from 2037. Mean unserved energy is the mean over the engine check's runs in the year with the highest mean; the worst run is the single weather-year and outage draw with the most shedding in any year, shown beside it. Central set: 120 runs a year (twelve weather years by ten outage draws); engine PV at 8% real, 2026–40. Still to come: s_std_nem_nogas (rerun, its third solve hit the solver's time limit), the three runs with no new gas but new diesel open-cycle allowed (one per standard), the forced-outage restart line for each run, and the IRP pair rebuilt on c6's paths (RESULTS 'Message 376').
+c6 meets both criteria of NTCSA's medium-term adequacy test (the system operator's test, not a planning standard) in every year: mean unserved energy at most 3.3 GWh against 20 GWh (worst single run 120 GWh), and an open-cycle capacity factor of 0.13–1.43% against 6%. Every run below meets both except the two runs with no new gas and no new diesel open-cycle (s_nogas, s_std_nem_nogas), which fail the unserved-energy criterion from 2037. Mean unserved energy is the mean over the engine check's runs in the year with the highest mean; the worst run is the single weather-year and outage draw with the most shedding in any year. Central set: 120 runs a year (twelve weather years by ten outage draws); engine PV at 8% real, 2026–40; the restart line is the cost of coal restarts after forced outages, which the engine does not charge, added as its own line (RESULTS 'c6 under NTCSA's 20 GWh test').
 
-Central set, planned to NTCSA's 20 GWh:
+Central set, planned to NTCSA's 20 GWh (s_std_nem and the two NEM no-gas runs are planned to the NEM's 0.002%, s_std_strict_nogas_dsl to half of it):
 
-| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV, R bn | Against c6, R bn | CO2 2026–40, Mt |
-|---|---|---|---|---|---|---|---|
-| c6 | met | 3.3 | 120 | 1.4% | 2300.0 | – | 1760 |
-| s_std_nem | met | 2.6 | 194 | 1.4% | 2299.8 | −0.2 | 1760 |
-| s_ntcsa_both | met | 3.3 | 120 | 1.4% | 2300.0 | +0.0 | 1760 |
-| s_koeberg_winter | met | 2.6 | 125 | 1.2% | 2309.7 | +9.8 | 1757 |
-| s_gascapex25 | met | 3.9 | 140 | 1.9% | 2306.2 | +6.2 | 1723 |
-| s_gas2032 | met | 4.1 | 152 | 1.3% | 2299.7 | −0.2 | 1759 |
-| s_nogas | not met: unserved over 20 GWh in 2037, 2038, 2039, 2040 | 140.4 | 322 | 2.2% | 2350.8 | +50.8 | 1609 |
-| s_imp | met | 3.4 | 110 | 1.4% | 2289.3 | −10.6 | 1745 |
-| s_demlowflat | met | 3.1 | 131 | 1.3% | 1984.4 | −315.5 | 1685 |
-| s_demlowm1 | met | 1.6 | 71 | 1.4% | 1898.6 | −401.3 | 1665 |
-| c6_irpdem | met | 3.2 | 99 | 1.3% | 2185.8 | −114.2 | 1703 |
-| s_coalpractice | met | 2.7 | 99 | 1.1% | 2322.0 | +22.0 | 1871 |
-| s_mindn24 | met | 3.3 | 120 | 1.4% | 2293.1 | −6.9 | 1786 |
-| s_rate48 | met | 3.1 | 131 | 1.6% | 2299.6 | −0.4 | 1816 |
-| s_spotoil | met | 3.3 | 121 | 1.5% | 2300.7 | +0.8 | 1761 |
-| s_wearp75 | met | 3.3 | 123 | 1.5% | 2301.2 | +1.2 | 1765 |
-| s_be6 | met | 0.6 | 30 | 1.5% | 2339.4 | +39.5 | 1799 |
-| s_be7 | met | 3.5 | 118 | 1.3% | 2331.5 | +31.5 | 1735 |
-| s_irpgas | met | 0.2 | 10 | 1.0% | 2486.4 | +186.4 | 1751 |
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV, R bn | Against c6, R bn | CO2 2026–40, Mt | Restart line, PV R bn |
+|---|---|---|---|---|---|---|---|---|
+| c6 | met | 3.3 | 120 | 1.4% | 2300.0 | – | 1760 | 6.8 |
+| s_std_nem | met | 2.6 | 194 | 1.4% | 2299.8 | −0.2 | 1760 | 6.8 |
+| s_ntcsa_both | met | 3.3 | 120 | 1.4% | 2300.0 | +0.0 | 1760 | 6.8 |
+| s_koeberg_winter | met | 2.6 | 125 | 1.2% | 2309.7 | +9.8 | 1757 | 6.8 |
+| s_gascapex25 | met | 3.9 | 140 | 1.9% | 2306.2 | +6.2 | 1723 | 6.8 |
+| s_gas2032 | met | 4.1 | 152 | 1.3% | 2299.7 | −0.2 | 1759 | 6.8 |
+| s_nogas | not met: unserved over 20 GWh in 2037, 2038, 2039, 2040 | 140.4 | 322 | 2.2% | 2350.8 | +50.8 | 1609 | 6.8 |
+| s_nogas_dsl | met | 7.2 | 162 | 1.3% | 2309.2 | +9.2 | 1609 | 6.8 |
+| s_std_strict_nogas_dsl | met | 12.7 | 237 | 1.3% | 2313.7 | +13.8 | 1574 | 6.8 |
+| s_std_nem_nogas | not met: unserved over 20 GWh in 2037, 2038, 2039, 2040 | 115.3 | 277 | 1.9% | 2355.5 | +55.5 | 1554 | 6.8 |
+| s_std_nem_nogas_dsl | met | 12.4 | 257 | 1.3% | 2309.2 | +9.2 | 1605 | 6.8 |
+| s_imp | met | 3.4 | 110 | 1.4% | 2289.3 | −10.6 | 1745 | 6.8 |
+| s_demlowflat | met | 3.1 | 131 | 1.3% | 1984.4 | −315.5 | 1685 | 6.8 |
+| s_demlowm1 | met | 1.6 | 71 | 1.4% | 1898.6 | −401.3 | 1665 | 6.8 |
+| c6_irpdem | met | 3.2 | 99 | 1.3% | 2185.8 | −114.2 | 1703 | 6.8 |
+| s_coalpractice | met | 2.7 | 99 | 1.1% | 2322.0 | +22.0 | 1871 | 6.8 |
+| s_mindn24 | met | 3.3 | 120 | 1.4% | 2293.1 | −6.9 | 1786 | 6.8 |
+| s_rate48 | met | 3.1 | 131 | 1.6% | 2299.6 | −0.4 | 1816 | 6.8 |
+| s_spotoil | met | 3.3 | 121 | 1.5% | 2300.7 | +0.8 | 1761 | 7.4 |
+| s_wearp75 | met | 3.3 | 123 | 1.5% | 2301.2 | +1.2 | 1765 | 7.6 |
+| s_be6 | met | 0.6 | 30 | 1.5% | 2339.4 | +39.5 | 1799 | 6.8 |
+| s_be7 | met | 3.5 | 118 | 1.3% | 2331.5 | +31.5 | 1735 | 6.8 |
+| s_irpgas | met | 0.2 | 10 | 1.0% | 2486.4 | +186.4 | 1751 | 6.1 |
 
-s_std_strict, the same set planned to half of the NEM standard (about 2.2–2.8 GWh a year; up to 480 runs a year; open-cycle factor computed apart, as these checks predate it), judged against NTCSA's two criteria:
+c6 under each standard. The standard barely moves c6: NTCSA's 20 GWh and the NEM's 0.002% give the same build; half the NEM adds 1.3 GW of wind and 1.5 GW of lithium in 2030 and costs R3.6bn more.
+
+| | Engine PV, R bn | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle CF, highest year | CO2 2026-40, Mt | 2030 | 2035 | 2040 |
+|---|---|---|---|---|---|---|---|---|
+| c6, NTCSA 20 GWh | 2300.0 | 3.3 | 120 | 1.4% | 1760 | wind 8.4, solar 9.3, Li 3.4 GW, CCGT 0.0, open-cycle 0.0 | wind 25.9, solar 16.0, Li 9.1 GW, CCGT 2.9, open-cycle 0.2 | wind 33.6, solar 27.2, Li 13.0 GW, CCGT 8.0, open-cycle 0.9 |
+| c6, s_std_strict | 2303.6 | 2.3 | 178 | 1.2% | 1731 | wind 9.7, solar 9.3, Li 4.9 GW, CCGT 0.0, open-cycle 0.2 | wind 27.2, solar 15.5, Li 9.0 GW, CCGT 2.9, open-cycle 0.2 | wind 33.7, solar 26.9, Li 13.0 GW, CCGT 8.1, open-cycle 0.9 |
+| c6, s_std_nem | 2299.8 | 2.6 | 194 | 1.4% | 1760 | wind 8.4, solar 9.3, Li 3.4 GW, CCGT 0.0, open-cycle 0.0 | wind 25.9, solar 16.0, Li 9.1 GW, CCGT 2.9, open-cycle 0.2 | wind 33.6, solar 27.2, Li 13.0 GW, CCGT 8.0, open-cycle 0.9 |
+
+No new gas, with and without new diesel open-cycle, under each standard. Without new diesel peakers, no new gas fails NTCSA's unserved-energy criterion from 2037 under every standard. With them allowed, the optimiser builds 3.6–3.8 GW of diesel open-cycle by 2040, running at an open-cycle capacity factor of at most 1.3%, and the plan meets both NTCSA criteria, at R9–10bn above c6 and R42–51bn below no gas without peakers; it misses the stricter standards it was planned to in some years. "No new gas needs diesel peakers" holds under all three.
+
+| Standard | Run | Meets its standard | Both NTCSA criteria | New diesel open-cycle MW, 2035 / 2036 / 2037 / 2038 / 2040 | Open-cycle CF, highest year | Mean unserved, highest year / worst run, GWh | PV, R bn | Against c6 | Against no gas |
+|---|---|---|---|---|---|---|---|---|---|
+| NTCSA 20 GWh | no new gas, no new peakers | no (2037-2040) | no: over 20 GWh in 2037, 2038, 2039, 2040 | 0 / 0 / 0 / 0 / 0 | 2.2% | 140.4 / 322 | 2350.8 | +50.8 | – |
+| NTCSA 20 GWh | no new gas, peakers allowed | yes | yes | 0 / 124 / 1,124 / 1,790 / 3,709 | 1.3% | 7.2 / 162 | 2309.2 | +9.2 | -41.6 |
+| Strict (half NEM) | no new gas, no new peakers | no (2035-2040) | no: over 20 GWh in 2037, 2038, 2039, 2040 | 0 / 0 / 0 / 0 / 0 | 1.8% | 121.1 / 302 | 2364.5 | +60.9 | – |
+| Strict (half NEM) | no new gas, peakers allowed | no (2031-2040) | yes | 344 / 344 / 1,344 / 2,018 / 3,824 | 1.3% | 12.7 / 237 | 2313.7 | +10.1 | -50.7 |
+| NEM 0.002% | no new gas, no new peakers | no (2035-2040) | no: over 20 GWh in 2037, 2038, 2039, 2040 | 0 / 0 / 0 / 0 / 0 | 1.9% | 115.3 / 277 | 2355.5 | +55.6 | – |
+| NEM 0.002% | no new gas, peakers allowed | no (2036-2040) | yes | 0 / 159 / 1,159 / 1,826 / 3,633 | 1.3% | 12.4 / 257 | 2309.2 | +9.4 | -46.3 |
+
+The IRP 2025 build on c6's paths (Table 1's wind and solar, s_irpgas's gas with its 51% floor, s_be6's storage, s_be7's 5.2 GW of nuclear from 2036, coal on Figure 3's dates), checked by the same engine at c6's demand and at the IRP's own (2030 demand 7.0% below c6's):
+
+| Run | 20 GWh | Strict (half NEM) | Mean unserved, highest year / worst run, GWh | Open-cycle CF, highest year | Engine PV, R bn | Against the optimised plan at the same demand | CO2 2030 / 2035 / 2040, Mt | CO2 2026-40, Mt | Restart line PV, R bn |
+|---|---|---|---|---|---|---|---|---|---|
+| IRP 2025 build, c6 demand | met | met | 0.00 / 0 | 0.17% | 2590.9 | +290.9 against c6 (2300.0) | 126.2 / 105.3 / 63.0 | 1741 (c6 1760) | 6.8 |
+| IRP 2025 build, IRP 2025 demand | met | met | 0.00 / 0 | 0.11% | 2525.5 | +339.7 against c6_irpdem (2185.8) | 117.1 / 97.3 / 56.5 | 1614 (c6_irpdem 1703) | 6.8 |
+
+s_std_strict, the set planned to half of the NEM standard (about 2.2–2.8 GWh a year; up to 480 runs a year; open-cycle factor computed apart, as these checks predate it), judged against NTCSA's two criteria:
 
 | Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV, R bn | Against c6, R bn | CO2 2026–40, Mt |
 |---|---|---|---|---|---|---|---|
