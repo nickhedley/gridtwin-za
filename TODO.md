@@ -383,6 +383,19 @@ performance series (NREL ATB, BNEF, Lazard or similar: capex, round-trip efficie
 duration storage capex 20% below c6's path, to show what cheaper batteries, lithium or sodium-ion, do to the build, curtailment and
 gas, against c6.
 
+14jg. Imports-drought sensitivity (user, 26 Oct 2026, message 388 (b); after the note): Cahora Bassa imports cut in a drought year
+to 2030, scaled from a measured drought year's Cahora Bassa output (sources to find; the Zambezi River Authority cut Kariba's 2027
+allocation for power by 36%, SOURCES 'Context for the pack, 26 Oct 2026'). Report adequacy, peakers, cost and CO2 against c6a.
+14jh. References for the next note (user, 26 Oct 2026, message 388 (d); SOURCES 'Context for the pack, 26 Oct 2026'):
+- Tubatse pumped storage (1,500 MW, 21 GWh, about 14 hours; Eskom and Eskom Green's strategic-partner RFQ, October 2026; RFP
+  date of 30 Nov 2026 as reported, not confirmed) as a cost and size reference for new pumped storage.
+- Municipal supply, in the demand-basis work: Ekurhuleni's Section 34 determination (2,400 MW: 1,237 solar of which 1,137
+  embedded, 780 gas of which 535 wheeled, 183 waste-to-energy, 200 other; announced 19 Oct 2026) and Cape Town's 500 MW
+  energy-trader tender (PPAs of 1-10 years, responses closed 13 May 2026): what each takes out of Eskom's measured demand, and when.
+- VPP pricing (14it): eThekwini's Project Smart Solar pilot with Plentify (280 households and facilities with solar and batteries,
+  applications from June 2026) and the GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027; as
+  reported, no original found yet).
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
