@@ -1894,3 +1894,28 @@ a unit's capability or a fleet's practice; they are not interchangeable.
   AEXSFUS). US CPI-U, January 2026, 325.252: BLS release of 13 Feb 2026 (FRED CPIAUCNS).
 - PyPSA-RSA, scenarios/ME IRP 2024/sub_scenarios/fixed_technologies.xlsx (commit 89872c1): unit start-up costs; no price base
   stated; config.yaml's costs block (year 2030, R18.24/$) applies to technology costs.
+
+## Context for the pack, 26 Oct 2026 (user, message 388; no input changed)
+
+Pointer: C. Yelland, EE Business Intelligence weekly note, 26 October 2026 (Nick's copy, not read here). Originals cited where found
+(web search, 26 Oct 2026); where none was found the item is marked 'as reported'.
+- Gas: IGUA-SA, Gas Roadmap for South Africa 2025-42, update of May 2026 (Engineering News, 18 May 2026, 'Industrial gas users
+  outline policy actions needed to avert gas cliff'): gas cliff from mid-2028; Sasol's methane-rich gas from Secunda to external
+  customers July 2028 to June 2030 (Engineering News, 16 Sep 2026). The October 2026 edition and 'LNG terminals unlikely before
+  2031': as reported (Yelland); not read. Basis of Nick's decision on gas from 2032 (message 389).
+- Kariba: Zambezi River Authority, 2027 allocation for power 23 billion cubic metres against 36 in 2026 (-36%), on forecasts of a
+  strong El Nino; 11.5 each for ZPC and ZESCO (The Herald, Harare, 'ZRA slashes Kariba water allocation for 2027', October 2026;
+  Lusaka Times, 20 Oct 2026).
+- Thyspunt: Eskom's draft scoping report (WSP, April 2026) names Thyspunt the preferred site for 5,200 MW; a full EIA follows if
+  DFFE accepts the scoping (Daily Maverick, 14 Apr 2026); SAHRA's provisional Grade I heritage declaration, January 2025, to at least
+  February 2027. Draft EIA in Q1 2027, no authorisation or vendor: as reported (Yelland).
+- Tubatse pumped storage: Eskom's two-stage strategic-partner process with Eskom Green, RFQ then RFP; 1.5 GW, about 21 GWh, four
+  reversible units, up to 14 hours at full output; land secured, environmental authorisation granted, water from De Hoop Dam
+  (Engineering News, 13 Oct 2026; Energy-Storage.news, October 2026). RFP due 30 Nov 2026: as reported, not confirmed.
+- Ekurhuleni: Section 34 determination for about 2,400 MW from IPPs, announced by the Minister on 19 Oct 2026: 1,237 MW solar PV
+  (1,137 embedded), 780 MW gas (535 wheeled), 183 MW waste-to-energy, 200 MW other (SAnews; EWN, 19 Oct 2026).
+- Cape Town: 500 MW energy-trader tender, PPAs of one to ten years, minimum 5 MW a project, delivery within 36 months, responses
+  closed 13 May 2026 (Engineering News, 1 Apr 2026; Mining Weekly, 24 Apr 2026).
+- eThekwini: Project Smart Solar with Plentify, 280 households and facilities with solar and batteries, applications from June 2026
+  (Engineering News, 3 Jun 2026). GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027): as
+  reported, no original found.
