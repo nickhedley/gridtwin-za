@@ -337,6 +337,19 @@ These do not populate a JSON file, but a number in `FIXED` rests on each. Changi
 source means changing the constant, so they belong in this register.
 
 ```
+Krutham 2026 trading   Krutham, Trading electricity: Is SA ready for the next financial market?
+                         (October 2026), https://www.krutham.com/reports/trading-electricity/ ;
+                         6 pages, page numbers from the PDF. Read 26 Oct 2026 (user, messages 398
+                         and 400). p.2: SAWEM phases (Eskom Generation to Distribution internally
+                         since April 2026; commercial launch Q2 2027; full balancing Q1 2028;
+                         capacity and ancillary services markets from 2030) and the expectation of
+                         an Eskom-dominated market with little external price discovery until the
+                         early 2030s: the basis for the coal practice floor's duration to 2029 and
+                         the design minimums from 2030 (pack section 1b). p.6: NTCSA aims to publish
+                         internal clearing prices from January 2027; pre-vesting prices are not a
+                         market reference. p.5: battery intraday arbitrage and revenue swaps.
+                         pp.1, 4: notified maximum demand and fixed distribution charges apply
+                         whoever supplies the energy. Paraphrase; cite by page.
 Lazard LCOE+ 2025      Levelized Cost of Energy+ (June 2025), Appendix A, LCOE v18.0 key
                          assumptions, p.37: gas peaking (new build) capacity factor 15%-10%.
                          Read 18 Oct 2026 (user, message 199 (1)). DSL_REF_CF 0.10, the bottom of
