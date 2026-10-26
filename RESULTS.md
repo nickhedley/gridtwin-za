@@ -17265,3 +17265,92 @@ larger was wrong), and lower for s_irpgas, which retires 5.1 GW of coal early:
 Caveats: one weather set and ten outage draws a year; the strict and central sets are on different commits (a37d4fd, ff8cf65) with
 the same engine; the IRP pair is an engine check of a fixed build, not an optimised plan; everything here is provisional until the
 note and the advisor's review.
+
+### c6's 2026 coal and CO2 against Eskom's FY2026, line by line; coal-first dispatch; curtailment against the IRP pair (user, 26 Oct 2026, messages 384 (a)-(c), (e) and 385 (a); build 2026-10-25a; report only)
+
+Finding. The gap between c6's 2026 coal (146.8 TWh) and Eskom's FY2026 (165.4 TWh, report p.7) is explained line by line to
+0.0 TWh. Nothing in the engine is wrong: run on 2025's inputs, '2025, as modelled' gives 169.1 TWh against Eskom's 170.4 (-0.8%).
+The 2026 gap is inputs and scope, two of them flags:
+- Exports (-7.9 TWh, flag): c6 carries firm exports only (6.6 TWh); Eskom exported 14.5 TWh in FY2026, about 8.7 on the 2026 trend.
+  c6's coal and CO2 cover domestic load and firm exports, so they are not comparable with Eskom's reported totals without the
+  non-firm exports.
+- Wind, solar, CSP and hybrid (-10.4 TWh): c6 runs its whole 2026 fleet from 1 January, including the 1,131 MW of new wind and
+  1,018 MW of new solar committed for 2026 and private plant the portal does not meter. Flag: full-year output from plant that
+  commissions during 2026 overstates 2026 renewables by roughly half of that new build's output (Today 2026 against c6's 2026: about
+  3.2 TWh of wind and 2.1 of solar between them, so about 2.7 TWh of coal and 3 Mt; an estimate, not run). 2026 only.
+- Imports (-2.6 TWh): c6 runs the measured April-August 2026 mean (1,066 MW), 9.3 TWh against FY2026's 6.8 (8.3 on the 2026 trend).
+- Open-cycle, nuclear, hydro and pumped storage (+3.4 TWh) and domestic load (-1.1 TWh).
+- Financial against calendar year: Eskom's own coal is falling, 170.4 TWh in calendar 2025, 165.4 in FY2026 and about 153.9 in
+  calendar 2026 on the January-August trend. Against calendar 2026, c6 is 7.1 TWh low, all of it and more wind and solar (-11.1),
+  with c6's domestic load 4.4 TWh above the trend.
+- Coal rules: PR C raised Today 2026's CO2 by 0.9 Mt (about 0.8 TWh of coal; 'c6 PR C, build 2026-10-24a'), and c6's 2026 coal is
+  4.3 TWh above c5f's: hydro at the measured 2025 benchmark (+1.0), fewer peaker hours (+0.8), wind and solar 2.1 lower as the
+  practice floor curtails 2.0 TWh, and pumping losses (+0.4). The rules narrow the gap; they do not cause it.
+- Rooftop solar (13.7 TWh in c6's 2026) is behind the meter on both sides: Eskom's demand is net of it and so is c6's grid load.
+
+CO2. c6's coal factor is calibrated to Eskom's FY2026 (184.0 Mt, p.35, less open-cycle, over coal sent out), so the CO2 gap is the
+coal gap: 163.5 Mt + 20.7 (18.67 TWh at Eskom's 1.108 t/MWh) - 0.8 (c6's part-load running puts its 2026 factor at 1.114) + 0.6
+(Eskom's open-cycle output less c6's, at 0.78 t/MWh) = 184.0 Mt.
+
+Coal-first dispatch (384 (e), an operating-practice sensitivity): the 2026 replay with coal held ahead of contracted wind and solar
+up to NERSA's measured 2025 curtailment, about 1.0-1.6% of REIPPPP output (SOURCES 'NERSA renewable energy monitoring report'),
+modelled as that share of utility wind and solar lost in every hour (congestionCurtailPct, the stopgap at 1.3% in every run
+already). Against none: +0.18 TWh of coal at 1.0%, +0.23 at 1.3%, +0.28 at 1.6% (0.82 TWh of coal for each TWh of wind and solar
+lost; CO2 +0.19, +0.25, +0.30 Mt). It explains at most about 0.3 TWh of the 18.6 TWh gap, and the central already includes 0.23 of
+it. The replay already curtails 1.0 TWh for oversupply under the practice floor (about 5% of REIPPPP's 19.2 TWh) on top of it.
+
+Line by line, TWh. c6 and c5f 2026: the mean of message 383's engine check (24 runs, twelve weather years by two draws; c6's coal
+equals its 120-run check's 146.76). Eskom (ESK19679 annual sums, obtained on request; Eskom credited, the analysis ours): FY2026
+(April 2025-March 2026), calendar 2025, and calendar 2026 at the January-August trend (each line's calendar 2025 total times its
+January-August 2026 over January-August 2025). Backcast: '2025, as modelled' as the page runs it, build 2026-10-25a (fa74179), one
+run. Pumped storage and batteries net of their round-trip losses (0.76, 0.88). "Effect" is what the line does to c6's coal: more
+non-coal supply or less load means less coal.
+
+| Line, TWh | c6 2026 | c5f 2026 | Eskom FY2026 | 2025, as modelled (25a) | Eskom calendar 2025 | Eskom calendar 2026 at Jan-Aug trend | c6 less FY2026 | Effect on c6 coal against FY2026 | Effect against calendar 2026 trend | Backcast less calendar 2025 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Coal (sent out) | 146.8 | 142.5 | 165.4 | 169.1 | 170.4 | 153.9 | -18.6 |  |  | -1.3 |
+| Nuclear | 10.9 | 10.9 | 11.6 | 10.2 | 10.2 | 11.2 | -0.8 | +0.8 | +0.3 | 0.0 |
+| Open-cycle (Eskom and IPP) | 0.1 | 0.9 | 2.0 | 2.2 | 3.4 | 1.0 | -1.9 | +1.9 | +0.9 | -1.1 |
+| Hydro | 1.9 | 2.9 | 2.4 | 1.8 | 1.8 | 3.0 | -0.5 | +0.5 | +1.1 | 0.0 |
+| Pumped storage, generation less pumping | -1.6 | -1.2 | -1.5 | -1.2 | -1.5 | -1.3 | -0.2 | +0.2 | +0.3 | +0.3 |
+| Batteries, discharge less charge | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| Wind | 17.5 | 19.0 | 11.6 | 12.0 | 11.3 | 10.9 | +5.9 | -5.9 | -6.6 | +0.6 |
+| Utility solar | 8.3 | 8.9 | 5.3 | 5.7 | 5.1 | 5.1 | +3.0 | -3.0 | -3.2 | +0.6 |
+| CSP and other renewables (model: CSP and RMIPPPP hybrid) | 3.3 | 3.3 | 1.8 | 3.3 | 1.7 | 2.0 | +1.5 | -1.5 | -1.3 | +1.6 |
+| Imports | 9.3 | 9.3 | 6.8 | 6.6 | 6.6 | 8.3 | +2.6 | -2.6 | -1.0 | 0.0 |
+| Exports | 6.6 | 6.6 | 14.5 | 15.1 | 14.9 | 8.7 | -7.9 | -7.9 | -2.1 | +0.2 |
+| Domestic grid load met (supply less exports) | 189.8 | 189.8 | 190.9 | 194.5 | 194.0 | 185.4 | -1.1 | -1.1 | +4.4 | +0.6 |
+
+Lines sum to -18.62 against the -18.62 TWh coal gap (portal basis, 165.38), residual 0.00; against the calendar 2026 trend they sum
+to -7.2 against -7.1 (the trend lines are rounded).
+
+Curtailment by year, surplus wind and solar curtailed, TWh (engine checks of the 25-26 Oct central set and the IRP pair; c5f from
+message 383's check). The 1.3% stopgap on utility wind and solar applies on top in every run.
+
+| Run | 2026 | 2030 | 2035 | 2040 | 2026-40 |
+|---|---|---|---|---|---|
+| c6 | 2.0 | 2.6 | 12.0 | 20.7 | 152.4 |
+| IRP 2025 build, c6's demand | 4.8 | 3.3 | 16.9 | 44.3 | 255.4 |
+| c6 re-optimised at IRP 2025's demand (c6_irpdem) | 2.6 | 4.3 | 11.6 | 19.8 | 156.6 |
+| IRP 2025 build, IRP 2025's demand | 5.6 | 8.7 | 22.1 | 50.1 | 322.9 |
+| c5f (reference) | 0.0 | 0.0 | 4.3 | 11.3 | |
+
+As a share of utility wind and solar available: c6 7.2, 3.4, 7.7 and 9.8% in 2026, 2030, 2035 and 2040 (c5f 0.0, 0.1, 3.0, 5.9%);
+with the stopgap, c6's 2040 is about 11%, above the 2.2-10% of European systems ('c5e's curtailment against Europe's'). Curtailment
+is optimal only within the options c6 can build: the build LP minimises total system cost with no penalty on curtailed energy beyond
+the value lost, and its only sinks for surplus are storage (lithium, iron-air, flow, pumped storage). Electrolysers, flexible exports
+to SAPP, demand shifting and virtual power plants, interruptible load as a build option, and grid-enhancing technologies are outside
+its option set (TODO 14jb).
+
+The IRP comparison (384 (b)): the IRP build has no unserved energy in any year and any run (0.00 GWh mean, 0 worst), more than
+NTCSA's 20 GWh asks. c6 planned to the strictest standard run, half the NEM's 0.002% (s_std_strict), costs R2,303.6bn, R3.6bn more
+than c6's R2,300.0bn, against the IRP build's R2,590.9bn (+R290.9bn). Reliability explains about 1% of the gap. Caveat: s_std_strict
+still has a mean of 2.3 GWh unserved in its highest year (178 GWh worst run); no run was planned to zero.
+
+Settings. Scripts (scratch): m384/esk_totals.py (ESK19679 sums), m384/backcast_lines.js (the backcast, 26 Oct 2026 06:20 UTC),
+m384/recon.py (the table), m384/run_cf.sh with energy_stats.js on m335/replay.js (the 2026 replay: Today 2026, twelve weather years
+x ten draws, the engine check's seeds; congestionCurtailPct 0, 1.0, 1.3 and 1.6; 26 Oct 2026 06:23-06:29 UTC, build 2026-10-25a at
+fa74179); m383/mix.js (c6 and c5f lines), the central set's pathcheck rows ('curt') for curtailment.
+
+Correction to message 383's generation mix (chat only, never in RESULTS or the pack): it left out the RMIPPPP hybrid line, 1.8 TWh
+in 2026, 1.7 in 2030, 1.3 in 2035 and 1.0 in 2040, in both c6 and c5f; c6's 2026 total is 217.1 TWh, not 215.4.

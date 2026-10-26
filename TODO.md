@@ -39,6 +39,12 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14je. s_gascommit (user, 26 Oct 2026, message 386 (a)): prepared, not run (PR #118: GAS_COMMIT in pathway_perfail.js,
+harness/pathway/s_gascommit.sh). c6 with a committed first gas round forced into the build, the rest re-optimised, engine check
+against 20 GWh. Start within an hour of Nick's instruction after the Gas IPP Procurement Programme briefing (Wed 28 Oct 09:00 SAST),
+with the briefing's capacity, year, technology and fuel; defaults IRP 2025 Table 1's 3,000 MW of IPP gas in 2030 (CCGT on LNG).
+Then the result into RESULTS and the pack's gas results, and one sentence on the briefing where the pack leaves room (386 (b)).
+
 14bb. External comparison candidate (14p): WWF and UCT ESRG illustrative IEP on SATIMGE (WWF Nedbank Green Trust, March 2026) - check whether its electricity results are published
 FOCUS (user, 12 Oct 2026). Until the IRP comparison is drafted, the only goal is c4 as the frozen central (14cn), then the seeded sensitivities and the 14be comparison steps against it (14co). Parked until then: 14bw, the preset re-search and the +5% marks (14ay), Playwright render checks, EarthPV (14cl), new storage classes (14cm), exports (14by), panels and dashboards (14cd-14cg, 14br). The ERA5 download continues only if it costs nothing (14cp). Report only: runs started, runs finished, and anything that changes c4's headline numbers. Local background runs do not survive the session going idle (user, 12 Oct): long runs go to GitHub (optimiser-long-run.yml).
 
@@ -354,6 +360,24 @@ which lets a stability- or contingency-limited line run harder whatever its leng
 (US DOE on dynamic line rating; GridLab and UC Berkeley on reconductoring; the WATT Coalition on topology optimisation), not
 secondary articles; background, The Progress Playbook, 15 Oct 2024 (message 346 (d)). Check first whether a corridor's 'km' in
 corridor_electrical.json is one route or the sum over its circuits (Hydra Central-Northern Cape reads 542.7 km over 4 lines).
+
+14jb. Every surplus sink as a priced build option, each with a realistic cap and a source (user, 26 Oct 2026, message 385 (b); after
+the note, with 14ip). c6's build LP minimises total system cost with no penalty on curtailment, and its only sinks are storage, so its
+curtailment (152.4 TWh over 2026-40; 20.7 TWh, about 10% of utility wind and solar, in 2040; RESULTS 'c6's 2026 coal and CO2 against
+Eskom's FY2026') is optimal only within that set. Add, each as an LP option with cost, cap and source:
+- electrolysers, with a hydrogen value or a contracted offtake (capex, efficiency and stack life from an independent series; the
+  hydrogen price from an offtake or export parity; the cap from announced South African projects; with 14s and 14y);
+- flexible exports to SAPP up to the physical links (cap: interconnector ratings, SAPP Master Plan, 14is; value: SAPP market prices);
+- demand shifting and virtual power plants at programme cost (14it, Brattle's method);
+- interruptible load at contract prices (Eskom's ILS contracts; 69.5 GWh called in 2025, ESK19679, analysis ours);
+- grid-enhancing technologies per corridor (14ja).
+Report curtailment by year and the generation mix against c6, and which sinks the optimiser takes.
+14jc. Sodium-ion storage as a build option (user, 26 Oct 2026, message 387 (a); after the note): only with an independent cost and
+performance series (NREL ATB, BNEF, Lazard or similar: capex, round-trip efficiency, cycle life, degradation). Company claims alone
+(e.g. Peak Energy and GM, October 2026, "20% lower storage cost") are not enough.
+14jd. Battery cost sensitivity (user, 26 Oct 2026, message 387 (b); after the note, whether or not 14jc adds sodium-ion): short-
+duration storage capex 20% below c6's path, to show what cheaper batteries, lithium or sodium-ion, do to the build, curtailment and
+gas, against c6.
 
 ## Follow-through on the engine change
 
