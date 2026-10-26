@@ -218,6 +218,20 @@ location") and cross-references ("see About", "see LICENSE") stay. Numbers in a 
 audit.py checks the rendered page text, not the source, for "to ask", "to see what", "to test what", "switch on to", "set
 this", "try", "explore" and "you can see" (harness/render_text.js renders it).
 
+## Site copy: the default and its basis, about 40 words (user, 25 Oct 2026, messages 377 and 378)
+
+Every slider note and preset caption states the default and its basis in one or two sentences, at most about 40 words. No
+history of the model, no tutorial wording. Data is credited as "Eskom data, analysis ours" or by the dataset's public name;
+Eskom Data Portal IDs stay in SOURCES.md. Example (Koeberg): "Defaults to 66% sent-out, above the 61-62% of 2025-26, allowing for
+Koeberg's recovery after its life-extension outages. Eskom data, analysis ours." Detail cut from a note goes to a comment at the
+slider and to the input register's provenance field, which the page never renders. validate_public_text.js holds the 40 words,
+the Data Portal IDs, code identifiers and year-by-year provenance lists. Exemptions from the word cap only with Nick's written
+decision, recorded in LONG_EXEMPT with its message.
+
+Every pull request that changes visible text carries a "Visible text changed" section in its description: run
+`node diff_public_text.js testroot --base <base commit>` from harness/ and paste its output, which lists every added or changed
+sentence and every removed one. The advisor reviews that list before the pull request merges.
+
 ## When a result contradicts the question
 
 Say so first, before anything else. On 28 Aug a request to show that a

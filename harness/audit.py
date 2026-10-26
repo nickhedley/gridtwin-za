@@ -244,6 +244,8 @@ for needle, label in CHECKS:
 # lookup to prose only would make the check depend on the thing it is checking.
 #
 # An allow-list needs occasional maintenance. A wrong rule needs constant argument.
+# IEA added 26 Oct 2026 (message 377, PR E): the shiftable-load note, shortened to the 40-word rule, now falls inside the
+# 400-character window this check reads; the longer note it replaced did not, so the acronym was never seen before.
 _SHOUT_OK = set("""MW GW TWh GWh MWh kW kWh CO2 CO LOLE EUE EAF VOLL OCGT CCGT IPP CSP PV
 SA ZA NERSA IRP TDP GCCA REIPPPP SAWEM CSV PPA VPP BESS LCOE SRMC NTCSA DLR CCS PVGIS
 MERRA ERA SARAH KPI KPIs UI URL SOC MIP LP HiGHS PyPSA API DR AC DC UTC SAST NDC SAPP RSA
@@ -254,6 +256,7 @@ US UK II III IV UCLF PCLF OCLF IRENA EV EVs VRE LDES GVA MVA kV DOE USD ZAR EUR 
 HVDC HVAC STATCOM FACTS SVC OHL MTS GCC ITP ERTT CORE JET
 LNG LPG CNG MMBtu GJ PJ TJ CF RTE SOC DOD SONI MCR
 CC BY SA NC ND VAT DUoS TNUoS LCOH FID WACC ORDC VoRS ESMAP OSW EBSA MARISMA LBNL NREL AEMO BESS
+IEA
 VOM
 """.split())
 # VOM (variable operation and maintenance) added 19 Oct 2026 (build 2026-10-19d, message 236): the gas row of the assumptions
