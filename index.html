@@ -1197,7 +1197,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             standard convention rather than an omission. Anchored to NREL ATB figures. Hydro and
             imports get no adder &ndash; hydro has no fuel so its R30/MWh already is consumables, and
             the import price is contracted and embeds the supplier&rsquo;s own O&amp;M.</td></tr>
-          <tr><td>Existing fleet</td><td>Wind <span data-num="windFleet">4.7&nbsp;GW</span> &middot; Utility solar 3.57&nbsp;GW (grid-contracted 2.78 + wheeled 0.79) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop <span data-num="rooftopGW"></span>&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries <span data-num="battGW"></span>&nbsp;GW &middot; Pumped storage <span data-num="psGW"></span>&nbsp;GW</td></tr>
+          <tr><td>Existing fleet</td><td>Wind <span data-num="windFleet">4.7&nbsp;GW</span> &middot; Utility solar <span data-num="pvUtilGW"></span>&nbsp;GW (grid-contracted <span data-num="pvContractedGW"></span> + wheeled <span data-num="pvWheeledGW"></span>) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop <span data-num="rooftopGW"></span>&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries <span data-num="battGW"></span>&nbsp;GW &middot; Pumped storage <span data-num="psGW"></span>&nbsp;GW</td></tr>
           <tr><td>New-build capex</td><td>Wind R<span id="capexWind">&ndash;</span> &middot; PV R<span id="capexPv">&ndash;</span> &middot; Rooftop R<span id="capexRooftop">&ndash;</span> (no recorded source) &middot; Battery&nbsp;(4h) R<span id="capexBatt">&ndash;</span> (BESIPPPP bid window 3 aged to 2026; inclusions not stated) &middot; CCGT R<span id="capexCcgt">&ndash;</span> /kW, 2026. Declining per BNEF to 2035 (solar &minus;30%, storage &minus;25%, onshore wind &minus;23%); CCGT rises, having hit a record high in 2025</td></tr>
           <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region &middot; 11 Renewable Energy Development Zones (GN&nbsp;114 / Gazette&nbsp;41445 2018 and GN&nbsp;142/144/145 / Gazette&nbsp;44191 2021), held as centre points and equivalent-area radii rather than gazetted polygons. Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &ndash; they are not published by Eskom or NTCSA.</td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
@@ -5451,6 +5451,9 @@ const COAL_PARTLOAD_2026 = 1.0262;
 // coal): 11.53 GJ/MWh, R47.94/GJ.
 const COAL_KGCO2_PER_GJ = 96.1;
 const COAL_GJ_PER_MWH = COAL_CO2_PER_MWH_FY26 * 1000 / COAL_KGCO2_PER_GJ;
+// Privately wheeled utility solar inside FIXED.pvUtilityMW, MW: by_source.private solar in nodal/regional_renewable_capacity.json
+// (PFL H1 2026 monitor, Selemela 2 and 3, Damlaagte; validate_capacity.js asserts it). The rest of pvUtilityMW is NTCSA-contracted.
+const PV_WHEELED_MW = 785.5;
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -18876,8 +18879,8 @@ const SLIDERS=[
    note:'The cap is the national technical potential from the World Bank and ESMAP strategic '
      + 'framework of September 2026: 95 GW across five regions: Boegoebaai, Saldanha, '
      + 'Durban-Richards Bay, Cape Point and Coega. Almost all of it is floating.'},
-  {id:'newPvMW',label:'New utility solar',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.pvUtilityMW/1000).toFixed(1)} GW existing, including 488 MW of wheeled plant.`},
-  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.rooftopMW/1000).toFixed(1)} GW existing, behind the meter: the 2026 average of Eskom's estimate (9.4 GW by August 2026), less 0.79 GW of wheeled plant, modelled as utility supply.`},
+  {id:'newPvMW',label:'New utility solar',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.pvUtilityMW/1000).toFixed(1)} GW existing, including ${(PV_WHEELED_MW/1000).toFixed(2)} GW of wheeled plant.`},
+  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.rooftopMW/1000).toFixed(1)} GW existing, behind the meter: the 2026 average of Eskom's estimate (9.4 GW by August 2026), less ${(PV_WHEELED_MW/1000).toFixed(2)} GW of wheeled plant, modelled as utility supply.`},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup and is rarely dispatched when storage is ample, unless the IRP&rsquo;s minimum load factor is applied.'},
   {id:'ccgtForceLoad',label:'Force 51% load factor (IRP 2025)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,// Moved from the note (messages 377, 378): IRP 2025 is Government Gazette 53596, 28 Oct 2025; the hourly version
    // (ccgtForceHourly, 51% in every hour) is a sensitivity for the comparison runs, not on this panel.
@@ -20712,7 +20715,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-26a';
+const BUILD_STAMP = '2026-10-26b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21664,6 +21667,9 @@ const ABOUT_NUM = {
   ucMslW: () => (UC_FLEET.reduce((a, g) => a + g.cap * g.msl, 0) / UC_FLEET.reduce((a, g) => a + g.cap, 0)).toFixed(3),
   nuclearCF: () => String(Math.round(FIXED.nuclearCF * 100)),
   rooftopGW: () => (FIXED.rooftopMW / 1000).toFixed(1),
+  pvUtilGW: () => (FIXED.pvUtilityMW / 1000).toFixed(2),
+  pvContractedGW: () => ((FIXED.pvUtilityMW - PV_WHEELED_MW) / 1000).toFixed(2),
+  pvWheeledGW: () => (PV_WHEELED_MW / 1000).toFixed(2),
   coalGW: () => (FIXED.coalInstalledMW / 1000).toFixed(1),
   psGW: () => (FIXED.psPowerMW / 1000).toFixed(1),
   rooftopDerate: () => FIXED.rooftopDerate.toFixed(2),

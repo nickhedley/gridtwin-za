@@ -136,6 +136,10 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
     check('rooftop_ntcsa_2026.json September wheeled subtraction = by_source.private solar',
           Math.abs(rf.monthly_total_mw['2026-09'] - rf.monthly_ex_wheeled_mw['2026-09'] - wheeled) <= TOL,
           `${(rf.monthly_total_mw['2026-09'] - rf.monthly_ex_wheeled_mw['2026-09']).toFixed(1)} vs ${wheeled}`);
+    // PV_WHEELED_MW, the wheeled share of pvUtilityMW the page's notes and fleet row print (user, 26 Oct 2026: the new-solar note
+    // carried a stale 488 MW), is the same private solar.
+    const pw = html.match(/const PV_WHEELED_MW\s*=\s*([0-9.]+)/);
+    check('PV_WHEELED_MW = by_source.private solar', pw && Math.abs(parseFloat(pw[1]) - wheeled) <= TOL, `${pw && pw[1]} vs ${wheeled}`);
     check('FIXED.rooftopMW = the 2026 mean of rooftop_ntcsa_2026.json',
           Math.abs(rf.mean_2026_mw - rConst) <= TOL, `${rf.mean_2026_mw} vs ${rConst}`);
   }
