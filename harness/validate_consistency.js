@@ -330,9 +330,16 @@ const num = t => {
   const sumRt = Object.values(rt).filter(v => typeof v === 'number').reduce((a, b) => a + b, 0);
   const privSolar = (cap.by_source && cap.by_source.private && cap.by_source.private.solar_mw) || {};
   const sumPriv = Object.values(privSolar).reduce((a, b) => a + b, 0);
-  check('regional rooftop, net of privately wheeled solar, sums to FIXED.rooftopMW',
-        agrees(sumRt - sumPriv, E.rooftopMW, 0.01),
-        `${sumRt.toFixed(0)} - ${sumPriv.toFixed(0)} = ${(sumRt-sumPriv).toFixed(0)} vs FIXED ${E.rooftopMW}`);
+  // Since 26 Oct 2026 (user, message 392 (b)) FIXED.rooftopMW is the 2026 MEAN on 2025's basis, not the August point the
+  // regional file holds, so the one identity becomes two, each still one number in two places: the regional file net of
+  // wheeled solar is nodal/rooftop_ntcsa_2026.json's August point net of wheeled solar (what the nodal engines use), and
+  // FIXED.rooftopMW is that file's 2026 mean.
+  const rf = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/rooftop_ntcsa_2026.json'), 'utf8'));
+  check('regional rooftop, net of privately wheeled solar, is the August 2026 point net of wheeled solar',
+        agrees(sumRt - sumPriv, rf.monthly_ex_wheeled_mw['2026-08'], 0.01),
+        `${sumRt.toFixed(0)} - ${sumPriv.toFixed(0)} = ${(sumRt-sumPriv).toFixed(1)} vs file ${rf.monthly_ex_wheeled_mw['2026-08']}`);
+  check('FIXED.rooftopMW is the 2026 mean of nodal/rooftop_ntcsa_2026.json',
+        agrees(rf.mean_2026_mw, E.rooftopMW, 0.01), `file ${rf.mean_2026_mw} vs FIXED ${E.rooftopMW}`);
 
   // ── 5. VPP: what the sliders imply vs what reaches the optimiser ──────────
   if (E.vppPool !== null) {

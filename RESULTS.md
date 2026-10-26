@@ -17477,7 +17477,7 @@ end-2026 level that is likely higher and a recent pace about twice as fast (s_ro
 Settings: arithmetic on the recorded NTCSA points (SOURCES rows 34, 174 and 1442; nodal/rooftop_mw_by_region.json) and c6's 2026
 engine check (message 384 (g) entry).
 
-### Rooftop on 2025's basis for 2026, named wheeled solar moved to utility solar (build 2026-10-26a; user, 26 Oct 2026, messages 390 (a) and 392 (b), (c))
+### Rooftop on 2025's basis for 2026, named wheeled solar moved to utility solar (builds 2026-10-26a and 26b; user, 26 Oct 2026, messages 390 (a) and 392 (b), (c))
 
 Changes (branch claude/rooftop-addback):
 - FIXED.rooftopMW 8,942.1 -> 8,135.7: the 2026 mean of NTCSA's 'Estimated Rooftop PV' series less every wheeled solar plant inside it
@@ -17506,6 +17506,12 @@ Changes (branch claude/rooftop-addback):
   NEW_PVTRK_CF_12Y 0.28673 -> 0.28590; solar tracking map rebuilt (MAP_ONLY=1 python3 build_solar_tracking.py). validate_weather
   68/68 after. ROOF12's ratio K moves 0.8909 -> 0.8900 with it.
 - LICENSE lists nodal/rooftop_ntcsa_2026.json (licence_list.js --write).
+- Build 2026-10-26b: the wheeled share of utility solar is one constant, PV_WHEELED_MW = 785.5 (by_source.private solar), used by
+  the new-solar and rooftop notes and the fleet row; the new-solar note still said 488 MW. validate_capacity asserts it (36 checks).
+- validate_consistency: its rooftop identity (the regional file net of wheeled solar = FIXED.rooftopMW) failed for the same
+  cause as validate_capacity's, the constant now a mean; restated as two checks: the regional file net of wheeled solar is the
+  August point net of wheeled solar in nodal/rooftop_ntcsa_2026.json (8,644.6, what the nodal engines use), and FIXED.rooftopMW
+  is the file's mean. 80/82 -> 81/83, main's two failures.
 
 Page before and after (index.html as a preset click computes it, one run each on the page's profiles; main 2026-10-25d against
 this branch's final commit, measured 26 Oct 2026 about 14:30 UTC):
@@ -17524,9 +17530,11 @@ this branch's final commit, measured 26 Oct 2026 about 14:30 UTC):
 Today 2026's coal moves +0.02 TWh: the 1.4 TWh less rooftop output is met by the 0.65 TWh more utility solar and the 0.67 TWh more
 grid demand; the backcast does not move.
 
-Suite (ESK19679.csv present, nothing running beside it): main 2026-10-25d node 961/985, audit 88/88, eng5 5/6; this branch node
-960/987 before the LICENSE line, 961/987 with it (validate_structure 27/27 rerun alone), audit 88/88, eng5 5/6. validate_capacity
-+2 checks (35/35). validate_pathway_presets 27/40 against 29/40 on main: the two new failures are 'Least-cost path 2035' and 'IRP
+Suite (ESK19679.csv present, nothing running beside it), 26 Oct 2026: main 2026-10-25d node 961/985, audit 88/88, eng5 5/6;
+build 2026-10-26b (14:19-16:44 UTC) node 962/988, audit 88/88, eng5 5/6 (storage cuts unserved, known). By script, against main:
+validate_capacity 33/33 -> 36/36; validate_structure 26/27 -> 27/27 (main's stale stamp); validate_consistency 80/82 -> 79/82
+(the rooftop identity), then 81/83 with it restated, rerun alone at 16:50 UTC with the c6a chain running beside it (the check is
+deterministic; counted as 81/83, so node 964/989). validate_pathway_presets 27/40 against 29/40 on main: the two new failures are 'Least-cost path 2035' and 'IRP
 path 2035', 'page state is the engine check's state', the reserve's reference utility solar 297.5 MW higher than the presets
 were built on; they clear with the presets rebuild (TODO). Every other script's failures are main's.
 
