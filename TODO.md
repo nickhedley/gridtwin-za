@@ -39,6 +39,16 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14jf. Two fixes for Nick's decision before the next central (user, 26 Oct 2026, message 384 (g); RESULTS 'c6's 2026 fleet, plant by
+plant'): (1) 2026 plant counted from each plant's commercial operation, not 1 January (adds 4.7 TWh of coal and 5.1 Mt in 2026
+only); (2) the rooftop add-back in build_demand_2026.py on the same solar the engine check removes (each weather year's, or the
+twelve-year mean), not 2025's (about -1.5 TWh of coal a year, every year). Also TODO 16c, the RMIPPPP hybrids' 2026 dates.
+14je. s_gascommit (user, 26 Oct 2026, message 386 (a)): prepared, not run (PR #118: GAS_COMMIT in pathway_perfail.js,
+harness/pathway/s_gascommit.sh). c6 with a committed first gas round forced into the build, the rest re-optimised, engine check
+against 20 GWh. Start within an hour of Nick's instruction after the Gas IPP Procurement Programme briefing (Wed 28 Oct 09:00 SAST),
+with the briefing's capacity, year, technology and fuel; defaults IRP 2025 Table 1's 3,000 MW of IPP gas in 2030 (CCGT on LNG).
+Then the result into RESULTS and the pack's gas results, and one sentence on the briefing where the pack leaves room (386 (b)).
+
 14bb. External comparison candidate (14p): WWF and UCT ESRG illustrative IEP on SATIMGE (WWF Nedbank Green Trust, March 2026) - check whether its electricity results are published
 FOCUS (user, 12 Oct 2026). Until the IRP comparison is drafted, the only goal is c4 as the frozen central (14cn), then the seeded sensitivities and the 14be comparison steps against it (14co). Parked until then: 14bw, the preset re-search and the +5% marks (14ay), Playwright render checks, EarthPV (14cl), new storage classes (14cm), exports (14by), panels and dashboards (14cd-14cg, 14br). The ERA5 download continues only if it costs nothing (14cp). Report only: runs started, runs finished, and anything that changes c4's headline numbers. Local background runs do not survive the session going idle (user, 12 Oct): long runs go to GitHub (optimiser-long-run.yml).
 
@@ -339,7 +349,10 @@ fixed infeed at the 1,150 MW contract; a new Cahora Bassa contract up to the 1,9
 kW-year from programme components on Brattle's method (Tables 3 and 4), household devices excluded; South African geyser and
 battery costs to source (SOURCES 'Virtual power plants'); a cap from enrolment potential. Participant savings and payments are
 transfers, shown in the retail panels (14il), not system cost. Also: the 4-hour duration of enrolled batteries is a bare literal
-in three engine lines (index.html, simulate); make it one constant.
+in three engine lines (index.html, simulate); make it one constant. Pricing basis (user, 26 Oct 2026, message 390 (b)): GreenCape's pilot pays VPP providers per measured and verified response
+(peak-to-off-peak shifting on instruction under Eskom's time-of-use periods; ancillary services later), incentives capped per
+provider, no rates published, results after September 2027. Model VPPs as a priced resource on that basis, per MWh shifted and/or
+per MW available, with rates from international programmes until South African ones exist.
 14ja. Grid-enhancing technologies rework (user, 22 Oct 2026, messages 340 (a) and 346; moved to the next note, message 351): the GETs
 panel retitled 'Grid-enhancing technologies: more from existing lines', its intro line to match. The panel states, per corridor, what limits
 transfer (thermal, voltage or stability) by line length on the St Clair curve (Dunlop, Gutman and Marchenko, IEEE 1979: thermal to
@@ -354,6 +367,37 @@ which lets a stability- or contingency-limited line run harder whatever its leng
 (US DOE on dynamic line rating; GridLab and UC Berkeley on reconductoring; the WATT Coalition on topology optimisation), not
 secondary articles; background, The Progress Playbook, 15 Oct 2024 (message 346 (d)). Check first whether a corridor's 'km' in
 corridor_electrical.json is one route or the sum over its circuits (Hydra Central-Northern Cape reads 542.7 km over 4 lines).
+
+14jb. Every surplus sink as a priced build option, each with a realistic cap and a source (user, 26 Oct 2026, message 385 (b); after
+the note, with 14ip). c6's build LP minimises total system cost with no penalty on curtailment, and its only sinks are storage, so its
+curtailment (152.4 TWh over 2026-40; 20.7 TWh, about 10% of utility wind and solar, in 2040; RESULTS 'c6's 2026 coal and CO2 against
+Eskom's FY2026') is optimal only within that set. Add, each as an LP option with cost, cap and source:
+- electrolysers, with a hydrogen value or a contracted offtake (capex, efficiency and stack life from an independent series; the
+  hydrogen price from an offtake or export parity; the cap from announced South African projects; with 14s and 14y);
+- flexible exports to SAPP up to the physical links (cap: interconnector ratings, SAPP Master Plan, 14is; value: SAPP market prices);
+- demand shifting and virtual power plants at programme cost (14it, Brattle's method);
+- interruptible load at contract prices (Eskom's ILS contracts; 69.5 GWh called in 2025, ESK19679, analysis ours);
+- grid-enhancing technologies per corridor (14ja).
+Report curtailment by year and the generation mix against c6, and which sinks the optimiser takes.
+14jc. Sodium-ion storage as a build option (user, 26 Oct 2026, message 387 (a); after the note): only with an independent cost and
+performance series (NREL ATB, BNEF, Lazard or similar: capex, round-trip efficiency, cycle life, degradation). Company claims alone
+(e.g. Peak Energy and GM, October 2026, "20% lower storage cost") are not enough.
+14jd. Battery cost sensitivity (user, 26 Oct 2026, message 387 (b); after the note, whether or not 14jc adds sodium-ion): short-
+duration storage capex 20% below c6's path, to show what cheaper batteries, lithium or sodium-ion, do to the build, curtailment and
+gas, against c6.
+
+14jg. Imports-drought sensitivity (user, 26 Oct 2026, message 388 (b); after the note): Cahora Bassa imports cut in a drought year
+to 2030, scaled from a measured drought year's Cahora Bassa output (sources to find; the Zambezi River Authority cut Kariba's 2027
+allocation for power by 36%, SOURCES 'Context for the pack, 26 Oct 2026'). Report adequacy, peakers, cost and CO2 against c6a.
+14jh. References for the next note (user, 26 Oct 2026, message 388 (d); SOURCES 'Context for the pack, 26 Oct 2026'):
+- Tubatse pumped storage (1,500 MW, 21 GWh, about 14 hours; Eskom and Eskom Green's strategic-partner RFQ, October 2026; RFP
+  date of 30 Nov 2026 as reported, not confirmed) as a cost and size reference for new pumped storage.
+- Municipal supply, in the demand-basis work: Ekurhuleni's Section 34 determination (2,400 MW: 1,237 solar of which 1,137
+  embedded, 780 gas of which 535 wheeled, 183 waste-to-energy, 200 other; announced 19 Oct 2026) and Cape Town's 500 MW
+  energy-trader tender (PPAs of 1-10 years, responses closed 13 May 2026): what each takes out of Eskom's measured demand, and when.
+- VPP pricing (14it): eThekwini's Project Smart Solar pilot with Plentify (280 households and facilities with solar and batteries,
+  applications from June 2026) and the GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027; as
+  reported, no original found yet).
 
 ## Follow-through on the engine change
 
