@@ -52,7 +52,7 @@ Every pull request that changes index.html first regenerates the stored risk pan
 
 Expected (19 Oct 2026, build 2026-10-19e, branch claude/presets-214, ESK19679.csv present, nothing running beside it):
 880/884, node checks 792/796 plus audit 88/88; eng5 5/6 (validate_pathway_presets: 37 checks, about 12 minutes;
-validate_public_text: 17 checks, internal labels and missing values in visible text, messages 235 and 241). The full suite
+validate_public_text: 22 checks, internal labels, missing values, Eskom Data Portal IDs, code identifiers and the 40-word site-copy cap in visible text, messages 235, 241, 377 and 378). The full suite
 takes over 30 minutes: run it in parts or in the foreground. The known failures, each with its
 cause and the build it first failed on in RESULTS 'Known failures on build 2026-10-18i' (message 205 (8)):
 
@@ -98,6 +98,10 @@ available; otherwise a Playwright script against /opt/pw-browsers/chromium.
 - En dashes, never em dashes. No italics. No words in all caps.
 - End every message with a short running list of the pressing outstanding tasks.
 - Push back when something is asserted as safe or settled; never fudge a test to pass.
+- Site copy (user, 25 Oct 2026, messages 377 and 378): a slider note or preset caption states the default and its basis in one
+  or two sentences, at most about 40 words; no model history, no tutorial wording, no Eskom Data Portal IDs on the page. Every
+  pull request that changes visible text includes a "Visible text changed" section from
+  `node diff_public_text.js testroot --base <base commit>`; the advisor reviews it before merge (RULES.md, 'Site copy').
 - Times (user, 16 Oct 2026, message 165): in chat and PR descriptions, give times in South Africa time (SAST, UTC+2) and
   label them, e.g. "19:58 SAST". RESULTS keeps UTC, labelled, as now, so the record stays consistent.
 

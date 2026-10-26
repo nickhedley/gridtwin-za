@@ -643,6 +643,12 @@ reported for every run (pathcheck ocgtCF). PR D (claude/c6-std20): NTCSA_ADEQUAC
 The 24-25 Oct set becomes s_std_strict; the central set reruns under 20 GWh, with s_std_nem for c6 and s_nogas. Check the MTSAO
 2027-2031 edition (due by 30 Oct 2026) before the pack goes out and flag any change to the criteria. Preset captions and the Deep
 2035 rebuild to the new standard in the presets build.
+Messages 377-378 (25 Oct): site copy. PR E (claude/c6-public-text, merges after PR D): validate_public_text labels for Data Portal
+IDs, code identifiers and year-by-year provenance lists, and the 40-word cap on slider notes and preset captions; 36 notes and all
+7 long captions rewritten to the default and its basis; detail cut from a note kept in a comment at the slider; the weather-year
+caveat said once above the presets; harness/diff_public_text.js for every PR's 'Visible text changed' section; RULES.md and
+CLAUDE.md 'Site copy'. Still to do: the input register's public note and provenance field per input (378 (c), #111); captions of
+Deep 2035 and Fossil-free 2040 rewritten again when the presets are rebuilt to NTCSA's 20 GWh test (373 (d)).
 Message 374 (25 Oct, after the note): (a) restarts after forced outages are not costed in the engine or the build optimiser
 (about R0.9bn a year in 2026, cost-only adjustment reported for c6 and the IRP pair); cost them in the engine (warm for
 common-mode, cold for long repairs) and in the optimiser; planned-outage returns too. (b) Koeberg refuelling outages as whole-unit
