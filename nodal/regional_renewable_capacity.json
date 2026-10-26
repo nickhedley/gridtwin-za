@@ -20,8 +20,8 @@
   "Northern Cape": 1282.6,
   "Hydra Central": 459.5,
   "Kwazulu Natal": 0.0,
-  "North West": 445.0,
-  "Free State": 168.9
+  "North West": 645.0,
+  "Free State": 266.4
  },
  "by_source": {
   "reipppp": {
@@ -108,8 +108,8 @@
     "Northern Cape": 0.0,
     "Hydra Central": 0.0,
     "Kwazulu Natal": 0.0,
-    "North West": 100.0,
-    "Free State": 0.0
+    "North West": 300.0,
+    "Free State": 97.5
    },
    "wind_mw": {
     "Eastern Cape": 399.0,
@@ -206,7 +206,7 @@
   "description": "Operational renewable capacity by GridTwin ZA nodal region. Rebuilt from commissioned-plant figures, not bid-window awards.",
   "source_reipppp": "IPP Office, IPPPP Quarterly Report Q4 2025/26 (as at 31 March 2026), p.18 (Capacity Online by province and technology). PLUS Doornhoek Solar PV (120 MW, North West, BW6, AMEA Power), which reached commercial operation 22 May 2026 - after the 31 March cutoff - confirmed by Engineering News and the PFL H1 2026 monitor, and listed as in-construction at the cutoff in ipp_pipeline.json.",
   "source_private": "Alao, O. & Kruger, W. (2026), South African IPPs: financial close and commercial operations monitor, H1 2026 update, Power Futures Lab, UCT GSB (see nodal/pfl_private_h1_2026.json); plus pre-2026 private wheeled wind confirmed from releases (private_pre2026)",
-  "private_coverage": "h1-2026, plus pre-2026 private wind listed in private_pre2026",
+  "private_coverage": "h1-2026, plus pre-2026 private wind and solar listed in private_pre2026",
   "private_pre2026": [
    {
     "name": "Msenge Emoyeni",
@@ -217,6 +217,26 @@
     "route": "wheeling to Sasolburg",
     "owners": "AIIM 62%, Reatile 38%",
     "source": "Sasol release, 10 Oct 2024: commercial operation by 10 Oct 2024"
+   },
+   {
+    "name": "Selemela 2 and 3",
+    "tech": "solar",
+    "mw": 200.0,
+    "region": "North West",
+    "cod": "2024-04",
+    "route": "wheeling to Tronox",
+    "owners": "SOLA Group",
+    "source": "SOLA project pages, Selemela 2 and 3 (read 17 Oct 2026): commissioned early 2024; 200 MW AC (256 MWp) and 24 Apr 2024 as reported in the trade press, Jul 2024"
+   },
+   {
+    "name": "Damlaagte",
+    "tech": "solar",
+    "mw": 97.5,
+    "region": "Free State",
+    "cod": "2025-08",
+    "route": "private PPAs with Sasol and Air Liquide",
+    "owners": "Mainstream",
+    "source": "Mainstream release, 23 Aug 2025: commercial operation"
    }
   ],
   "as_at": "2026-03-31",
@@ -228,6 +248,6 @@
   "region_key_note": "Region keys follow GridTwin ZA convention: 'Kwazulu Natal', and 'Hydra Central' is a supply area, not a province.",
   "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . Changed from CC BY-NC-ND on 6 Sep 2026: this file is a compilation of uncopyrightable facts (project name, MW, technology, location, COD), so nothing upstream constrains the licence, and NC-ND blocked both reuse by researchers and ingestion of BY-SA sources such as PowerTracker.",
   "copyright": "(c) 2026 Nick Hedley",
-  "fingerprint": "gtza-73b6a09dcf93d936"
+  "fingerprint": "gtza-ec58227e079c7c20"
  }
 }

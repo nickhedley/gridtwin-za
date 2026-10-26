@@ -125,9 +125,19 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
     // by_source.private from the capacity file, so the two identities share one
     // sourced number and cannot drift apart.
     const wheeled = sum(cap.by_source.private.solar_mw);
-    check('FIXED.rooftopMW = sum(rooftop_mw_by_region) - wheeled private solar',
-          Math.abs(rtSum - wheeled - rConst) <= TOL,
-          `${rtSum} - ${wheeled} = ${(rtSum - wheeled).toFixed(1)} vs ${rConst}`);
+    // Since 26 Oct 2026 (user, message 392 (b)) the constant is the 2026 MEAN on 2025's basis, not the August point:
+    // build_rooftop_2026.py derives it from NTCSA's monthly points less wheeled solar from each plant's commercial
+    // operation. Three checks keep it one number: the file's August point is the regional table; its September
+    // subtraction is the capacity file's private solar (H1 2026 and pre-2026 named plant, all in service by then);
+    // and the constant is the file's mean.
+    const rf = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/rooftop_ntcsa_2026.json'), 'utf8'));
+    check('nodal/rooftop_ntcsa_2026.json August 2026 point = sum(rooftop_mw_by_region)',
+          Math.abs(rf.monthly_total_mw['2026-08'] - rtSum) <= TOL, `${rf.monthly_total_mw['2026-08']} vs ${rtSum}`);
+    check('rooftop_ntcsa_2026.json September wheeled subtraction = by_source.private solar',
+          Math.abs(rf.monthly_total_mw['2026-09'] - rf.monthly_ex_wheeled_mw['2026-09'] - wheeled) <= TOL,
+          `${(rf.monthly_total_mw['2026-09'] - rf.monthly_ex_wheeled_mw['2026-09']).toFixed(1)} vs ${wheeled}`);
+    check('FIXED.rooftopMW = the 2026 mean of rooftop_ntcsa_2026.json',
+          Math.abs(rf.mean_2026_mw - rConst) <= TOL, `${rf.mean_2026_mw} vs ${rConst}`);
   }
 
   const cspM = html.match(/cspMW\s*:\s*([0-9.]+)/);

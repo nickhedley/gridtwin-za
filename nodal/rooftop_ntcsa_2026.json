@@ -1,0 +1,78 @@
+{
+ "meta": {
+  "description": "NTCSA's 'Estimated Rooftop PV' (Weekly System Status Report) counts every PV installation without an NTCSA contract, wheeled ground-mounted plant included. '2025, as modelled' uses the calendar-2025 mean of that series less the wheeled solar of the time. This puts 2026 on the same basis (planning practice: the year's average for that year; the trajectory from the latest installed level):   - monthly national points as published (below); January-April 2026 interpolated linearly between December 2025 and May 2026;   - less wheeled private solar inside the series from its commercial operation: the H1 2026 PFL plants (nodal/pfl_cod_h1_2026.json),     the pre-2026 named plants (Selemela 2 and 3, Damlaagte; build_capacity.py PRE2026_PRIVATE) and SunCentral 1 from October 2026     (in c6a's 2026 build floor as utility solar);   - October-December 2026 not yet published: the series without wheeled plant grows at its December 2025 - September 2026 pace. Writes nodal/rooftop_ntcsa_2026.json: the monthly series, the 2026 mean (FIXED.rooftopMW; validate_capacity.js asserts it) and the end-2026 level (the pathway's 2027 starting point, ROOF_FROM_END2026).",
+  "built_by": "build_rooftop_2026.py",
+  "built": "2026-10-26",
+  "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ ; attribution GridTwin ZA; NTCSA figures as published by Eskom/NTCSA",
+  "points": {
+   "2025-12": {
+    "mw": 7464.0,
+    "source": "Eskom weekly reports, via Engineering News, 23 Jan 2026"
+   },
+   "2026-05": {
+    "mw": 8294.5,
+    "source": "Weekly System Status Report 2026 week 25, pp.5-6"
+   },
+   "2026-06": {
+    "mw": 9107.4,
+    "source": "Weekly System Status Report, June 2026 row (index.html rooftop note; SOURCES)"
+   },
+   "2026-07": {
+    "mw": 9219.6,
+    "source": "Weekly System Status Report, July 2026 row: August less the +210.5 MW nodal/rooftop_mw_by_region.json records"
+   },
+   "2026-08": {
+    "mw": 9430.1,
+    "source": "Weekly System Status Report 2026 week 37 (nodal/rooftop_mw_by_region.json, Aug-26 row)"
+   },
+   "2026-09": {
+    "mw": 9430.1,
+    "source": "Weekly System Status Report 2026 week 42: August-September unchanged (SOURCES, rooftop basis)"
+   }
+  },
+  "wheeled_pre2026": [
+   {
+    "name": "Selemela 2 and 3",
+    "mw": 200.0,
+    "cod": "2024-04"
+   },
+   {
+    "name": "Damlaagte",
+    "mw": 97.5,
+    "cod": "2025-08"
+   }
+  ],
+  "suncentral1": [
+   114.0,
+   "2026-10"
+  ],
+  "pace_ex_wheeled_mw_per_month": 164.2
+ },
+ "monthly_total_mw": {
+  "2026-01": 7630.1,
+  "2026-02": 7796.2,
+  "2026-03": 7962.3,
+  "2026-04": 8128.4,
+  "2026-05": 8294.5,
+  "2026-06": 9107.4,
+  "2026-07": 9219.6,
+  "2026-08": 9430.1,
+  "2026-09": 9430.1
+ },
+ "monthly_ex_wheeled_mw": {
+  "2026-01": 7184.6,
+  "2026-02": 7350.7,
+  "2026-03": 7276.8,
+  "2026-04": 7342.9,
+  "2026-05": 7509.0,
+  "2026-06": 8321.9,
+  "2026-07": 8434.1,
+  "2026-08": 8644.6,
+  "2026-09": 8644.6,
+  "2026-10": 8808.8,
+  "2026-11": 8973.1,
+  "2026-12": 9137.3
+ },
+ "mean_2026_mw": 8135.7,
+ "end_2026_mw": 9137.3
+}

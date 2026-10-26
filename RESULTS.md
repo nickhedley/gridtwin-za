@@ -17476,3 +17476,30 @@ end-2026 level that is likely higher and a recent pace about twice as fast (s_ro
 
 Settings: arithmetic on the recorded NTCSA points (SOURCES rows 34, 174 and 1442; nodal/rooftop_mw_by_region.json) and c6's 2026
 engine check (message 384 (g) entry).
+
+### Rooftop on 2025's basis for 2026, named wheeled solar moved to utility solar (build 2026-10-26a; user, 26 Oct 2026, messages 390 (a) and 392 (b), (c))
+
+Changes (branch claude/rooftop-addback):
+- FIXED.rooftopMW 8,942.1 -> 8,135.7: the 2026 mean of NTCSA's 'Estimated Rooftop PV' series less every wheeled solar plant inside it
+  from its commercial operation, the basis of '2025, as modelled' (6,532: the 2025 mean less 298.3 MW of wheeled solar). Derived by
+  build_rooftop_2026.py into nodal/rooftop_ntcsa_2026.json from the published national points (December 2025 7,464 MW; May 2026
+  8,294.5; June 9,107.4; July 9,219.6; August 9,430.1; September 9,430.1); January-April interpolated; October-December at the
+  December 2025 - September 2026 pace without wheeled plant, 164.2 MW a month. Planning practice: the year's average for that year.
+- FIXED.pvUtilityMW 3,271 -> 3,568.5: Selemela 2 and 3 (200 MW AC, Tronox, early 2024) and Damlaagte (97.5 MW, Sasol and Air
+  Liquide, 23 Aug 2025) loaded as pre-2026 private solar (build_capacity.py PRE2026_PRIVATE; nodal/regional_renewable_capacity.json:
+  North West private solar 100 -> 300, Free State 0 -> 97.5), and subtracted from the rooftop series instead of counted in it.
+- Their customers' load added back in build_demand_2026.py, as for every wheeled plant (on the 2025 solar shape): the 2026 domestic
+  grid demand 188.16 -> 188.82 TWh; the 2026 gross series 203.525 -> 202.795 TWh (the rooftop add-back is smaller with the smaller
+  rooftop figure). The 2025 series is unchanged.
+- End-2026 rooftop, the pathway's 2027 starting point: 9,137.3 MW (the September 2026 level without wheeled plant, 8,644.6, plus
+  three months at 164.2). The pathway takes 2027 as 1,200 MW plus the step from the 2026 mean to it (ROOF_FROM_END2026, harness;
+  message 392 (b)), then 1,200 MW a year.
+- validate_capacity.js: the rooftop identity redefined, with its cause (the constant is now a mean, not the August point), as three
+  checks: the file's August point is the regional table (9,430.1); its September wheeled subtraction is the capacity file's private
+  solar (785.5); the constant is the file's mean. 33 -> 35 checks.
+- Not changed here: the page keeps its rooftop add-back on its own 2025 profile; the pathway's build LP and engine check scale it to
+  the twelve-year mean (ROOF12, harness; message 392 (c)), so Today 2026 does not move for that. The nodal engines keep NTCSA's
+  August regional row less wheeled plant (8,644.6 MW in all), not the 2026 mean.
+
+Flags: the March 2026 dip in the monthly series without wheeled plant is the interpolation meeting Mooi Plaats's March subtraction;
+October-December are an extrapolation; unnamed earlier private plant may still sit inside the series.

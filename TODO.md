@@ -39,7 +39,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
-14jf. Two fixes for Nick's decision before the next central (user, 26 Oct 2026, message 384 (g); RESULTS 'c6's 2026 fleet, plant by
+14jf. Done for c6a (user, 26 Oct 2026, messages 391 and 392): (1) as FLEET_2026 and the 2026 floors at their in-service share; (2) as ROOF12 in the pathway runs only, the page keeping its 2025-matched add-back. Was: two fixes for Nick's decision before the next central (user, 26 Oct 2026, message 384 (g); RESULTS 'c6's 2026 fleet, plant by
 plant'): (1) 2026 plant counted from each plant's commercial operation, not 1 January (adds 4.7 TWh of coal and 5.1 Mt in 2026
 only); (2) the rooftop add-back in build_demand_2026.py on the same solar the engine check removes (each weather year's, or the
 twelve-year mean), not 2025's (about -1.5 TWh of coal a year, every year). Also TODO 16c, the RMIPPPP hybrids' 2026 dates.
@@ -330,6 +330,10 @@ FOCUS (user, 12 Oct 2026). Until the IRP comparison is drafted, the only goal is
 16d. Investigate the flat shadow price: a normal winter week varies 1.1x against Homeflex's 3.9x (standing failure in validate_consistency)
 16b2. You: the backcast's remaining gap is Eskom's reserve-refill shedding; ask Eskom or NTCSA for their weekly emergency-reserve targets?
 16c. You: the RMIPPPP hybrids (335 MW, 1.8 TWh) – were they delivering in 2025? Turning them off brings backcast coal to 170.3 against 170.4
+    Answered from RESULTS's recorded dates (26 Oct 2026, message 392 (e)): Kenhardt 1-3 (150 MW) from Nov-Dec 2023, so yes for 2025;
+    Umoyilanga's Dassiesridge provisional COD 5 Dec 2025; Hydra (75 MW) from 16 Jul 2026. c6a counts Hydra for its 2026 share (-41 MW,
+    FLEET_2026); about 35 MW of the 335.1 MW block is not tied to a named plant (flagged in the pack). Still open: the 2025 preset's
+    hybrid should be Kenhardt's 150 MW, not 335.1.
 16a. Run the converged loop build through the presets' twelve-year test before treating it as a result
 16b. You: backcast capacities – move solar and wind to 2025 annual means (2,302 and 3,642) alongside rooftop 6,830?
 
