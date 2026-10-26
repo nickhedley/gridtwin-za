@@ -1,0 +1,5847 @@
+{
+ "ABOUT_NUM": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "ESKOM_ACTUALS",
+   "ESKOM_WIND_LINE_MW",
+   "FIXED.battPowerMW",
+   "FIXED.bldGasTerminalRkW",
+   "FIXED.coalInstalledMW",
+   "FIXED.costCcgt",
+   "FIXED.costDiesel",
+   "FIXED.drInterruptMW",
+   "FIXED.importsCF",
+   "FIXED.importsMW",
+   "FIXED.newPsHours",
+   "FIXED.nuclearCF",
+   "FIXED.psPowerMW",
+   "FIXED.reserveOperatingMW",
+   "FIXED.rooftopDerate",
+   "FIXED.rooftopMW",
+   "FIXED.windMW",
+   "UC_FLEET"
+  ],
+  "sources": []
+ },
+ "ADEQ_N": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "ASTR_RESERVE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "ASTR_TOTAL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "ASTR_RESERVE"
+  ],
+  "sources": []
+ },
+ "BATT_BW3_BID": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "computed in code (9.5e9 / 2464e3), not from a registered input",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BATT_COST_HOURS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BATT_EFF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BATT_EQUIP_BID": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "computed in code (165 * Math.pow(117/165, 5/12) * 16.5), not from a registered input",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BATT_HOURS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BATT_POWER_SHARE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 0.278 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "BATT_SHARE_BY_REGION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "ESKOM_BESS_OPERATING",
+   "EXISTING_BATT_MW"
+  ],
+  "sources": []
+ },
+ "BESIPPPP_MW_BY_REGION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BESIPPPP_TOTAL_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_CORRIDORS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_CORRIDOR_KM": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.batt.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "BATT_BW3_BID",
+   "BATT_COST_HOURS",
+   "BATT_EQUIP_BID"
+  ],
+  "sources": []
+ },
+ "BLD_COST.batt.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.batt.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "LI_DECL"
+  ],
+  "sources": []
+ },
+ "BLD_COST.batt_high.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "BATT_BW3_BID",
+   "BATT_COST_HOURS"
+  ],
+  "sources": []
+ },
+ "BLD_COST.batt_high.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.batt_high.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "LI_DECL"
+  ],
+  "sources": []
+ },
+ "BLD_COST.batt_low.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.batt_low.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.batt_low.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "LI_DECL"
+  ],
+  "sources": []
+ },
+ "BLD_COST.ccgt.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 34965 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "BLD_COST.ccgt.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   },
+   {
+    "heading": "LNG import infrastructure costs (TODO 14ak, pathway sensitivity only, 6 Oct 2026)",
+    "page": null
+   },
+   {
+    "heading": "Gas turbine prices and lead times: Wood Mackenzie, April 2026, reported second-hand (user, 21 Oct 2026, message 272)",
+    "page": null
+   }
+  ]
+ },
+ "BLD_COST.ironair.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.ironair.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.ocgt_irp.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "BLD_COST.ocgt_irp.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.offshore.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: d the spur to the nearest grid feature are INSIDE; onshore Cost boundary, agreed by ESMAP Figure 36 and the ATB: array cables, export cable,",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "BLD_COST.offshore.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: d the spur to the nearest grid feature are INSIDE; onshore Cost boundary, agreed by ESMAP Figure 36 and the ATB: array cables, export cable,",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "BLD_COST.pv.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.pv.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.pvtrk.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.pvtrk.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.pvtrk.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.pvtrk_bw6.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "BLD_COST.pvtrk_bw6.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.pvtrk_bw6.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.rooftop.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.rooftop.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.vrfb.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.vrfb.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.wind.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.wind.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.wind.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.wind_bw6.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "BLD_COST.wind_bw6.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.wind_bw6.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.wind_high.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "BLD_COST.wind_high.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.wind_high.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.wind_legacy.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.wind_legacy.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_COST.wind_low.c2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "computed in code (1041 * 16.5), not from a registered input",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.wind_low.connIncl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_COST.wind_low.decl": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_DERATE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_DISC_CENTRAL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: NEA/IEA Projected Costs run 3, 7 and 10% real. Offshore wind and hydro carry (updated 11 Oct 2026, user); REIPPPP bid window 4 real equity",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "BLD_FOM.batt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_FOM.ccgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_FOM.ironair": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: fleet scale, checked again 23 Sep 2026. The one figure in circulation is $5-15/M",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "BLD_FOM.ocgd": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "FIXED.fomOcgtRkW"
+  ],
+  "sources": []
+ },
+ "BLD_FOM.ocgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "FIXED.fomOcgtRkW"
+  ],
+  "sources": []
+ },
+ "BLD_FOM.offshore": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_FOM.pv": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "BLD_FOM.rooftop": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_FOM.vrfb": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: fleet scale, checked again 23 Sep 2026. The one figure in circulation is $5-15/M",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "BLD_FOM.wind": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "BLD_FOM_BATT_SHARE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_GRID": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_LABEL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_LIFE.batt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.ccgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.ironair": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.ocgd": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.ocgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.offshore": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.pv": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.rooftop": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.vrfb": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LIFE.wind": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_LOAD_SHARE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_OFF_YEAR_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_PACE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_PEAKERS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_PHES_CAPS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_REGIONAL_TRK_MSG": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_REGIONS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_STORE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "FIXED.newIronAirEff"
+  ],
+  "sources": []
+ },
+ "BLD_STRESS_MAX": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_STRESS_STANDARD": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_TARIFF.pvtrk.cf": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "BW6_PV_TRK_BID_CF"
+  ],
+  "sources": []
+ },
+ "BLD_TARIFF.pvtrk.fom": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_TARIFF.pvtrk.indexShare": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_TARIFF.pvtrk.life": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_TARIFF.pvtrk.rPerMWh": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "BW7_SOLAR_AWARDS"
+  ],
+  "sources": []
+ },
+ "BLD_TARIFF.pvtrk.toJan26": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "BLD_TARIFF.wind.cf": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "BW6_WIND_BID_CF"
+  ],
+  "sources": []
+ },
+ "BLD_TARIFF.wind.fom": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_TARIFF.wind.indexShare": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_TARIFF.wind.life": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_TARIFF.wind.rPerMWh": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_TARIFF.wind.toJan26": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_APR21_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "BLD_TECHS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BLD_TIME_LIMIT_S": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BLD_WORKER_SRC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "BLD_TIME_LIMIT_S"
+  ],
+  "sources": []
+ },
+ "BUILD_STAMP": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "BW6_PV_TRK_BID_CF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BW6_WIND_BID_CF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "BW7_SOLAR_AWARDS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "C5F_BUILD_CAPS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "C5F_DEMAND": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "CAP_PAY_LDS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "CARBON_CPI_PA": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 0.03 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Carbon tax in law and IRP 2025 on emissions (user, 14 Oct 2026; research helper, HTML pages and search extracts, no PDFs)",
+    "page": null
+   }
+  ]
+ },
+ "CARBON_TAX_LAW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "CCS_CANDIDATE_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "UC_FLEET"
+  ],
+  "sources": []
+ },
+ "COAL_CARRIERS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "COAL_MINSTABLE_CURVE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "COAL_RAMP_BASE_PCT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "COAL_RAMP_FLEX_PCT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "COLORS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "COMPLY_MES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN25_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "CORRIDORS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "CPI_APR21_TO_JAN26": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "CPI_JAN24_TO_JAN26": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN25_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "CPI_JAN25_TO_JAN26": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "CSP_MW_BY_REGION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "CSP_PROFILE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "CTS_C12": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "CTS_SYS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "DAY_NM": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "DSL_REF_CF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 0.1 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Sources used for constants, not for data files",
+    "page": null
+   }
+  ]
+ },
+ "EAF_HISTORY": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "EAF_NONCOAL_AVAIL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "EIA_AEO2023_CC_KW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "EIA_AEO2023_CT_KW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "ENGINE_SCRIPTS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "ESKOM_2025_COAL_TWH": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 170.4 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)",
+    "page": null
+   }
+  ]
+ },
+ "ESKOM_ACTUALS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "ESKOM_2025_COAL_TWH",
+   "ESKOM_FLEET_EAF_PCT",
+   "ESKOM_WIND_LINE_MW",
+   "FIXED.coalInstalledMW",
+   "FIXED.exportsMW",
+   "FIXED.hybridMW",
+   "FIXED.pvUtilityMW",
+   "FIXED.rooftopMW",
+   "FIXED.windMW",
+   "PRESETS"
+  ],
+  "sources": []
+ },
+ "ESKOM_BESS_OPERATING": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "ESKOM_FLEET_EAF_PCT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "ESKOM_WIND_LINE_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "EXISTING_BATT_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "ESKOM_BESS_OPERATING"
+  ],
+  "sources": []
+ },
+ "EXISTING_BATT_MWH": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "ESKOM_BESS_OPERATING"
+  ],
+  "sources": []
+ },
+ "FIXED.acapBatt4h": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "ANU RE100 pumped hydro atlas, South Africa shortlist (TODO 14z, 7 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.acapCcgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.acapCoal": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.acapCoalFlex": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.acapIronAir": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.acapNuclear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.acapOffshore": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.acapPs": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.acapPv": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.acapRooftop": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.acapVrfb": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 5565 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Sources used for constants, not for data files",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.acapWind": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.asHoldHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.asInertiaOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.asInertiaRkWyr": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.asReserveOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.asReserveRMWh": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.asReserveShare": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.asVoltageOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.asVoltagePotRm": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 468 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.asVoltageRMWyr": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.avonDedisaDayMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.avonDedisaEveMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.avonDedisaMustRun": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.avonEndDoy": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.avonEndYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.avonMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.battCycleCostR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: urchase is years out, so spot is a proxy - revisit if the rand FX: USD/ZAR 16.21 spot, 14 Aug 2026 (Bloomberg); 30-day average 16.47. The",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.battEff": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.battHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "EXISTING_BATT_MW",
+   "EXISTING_BATT_MWH"
+  ],
+  "sources": []
+ },
+ "FIXED.battPowerMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "EXISTING_BATT_MW"
+  ],
+  "sources": []
+ },
+ "FIXED.billFeedInR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.billGenPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.billSelfConsumePct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: arithmetic, so they changed nothing and were removed. ROOFTOP HOUSEHOLD VIEW. Rebuilt 23 Sep 2026 with a calculation behind it; an earlier",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.bldAdequacyBasis": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldBattCase": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldCapeCurtPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: (txRPerKWyr) and loses bldCapeCurtPct of its output; the 400; NTCSA's updated GCCA of 31 Oct 2025, per Cliffe Dekker Hofmeyr, 3,470 MW at",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.bldCapeWindMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldCoalCommit": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldCoalCommitHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: nt, linearised (committed capacity, generation at least OPTIMISER GRID COST (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCo",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.bldCoalEarlyOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldCoalMinFrac": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldComply": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldCumVars": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldGasFinPremium": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldGasFloorOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldGasTerminalRkW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldGridBattHalf": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldGridCost": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldGridIntVreShare": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldGridSpurBeyond": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldHourlySoc": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldLiEnergyHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldMarginCreditMax": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldMarginHoldHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldNuclearAdd": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: nd 2039). The build LP counts it as supply from its year and the engine bldNuclearAdd (11 Oct 2026, TODO 14be step 7): new nuclear decided i",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.bldOcgdFromYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldOcgdOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldOcgdRateMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldOcgtCostCase": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldOcgtOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldOffshoreOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPeakerExtRkW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPeakerLifeExt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPeakerRet": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPhesCap": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldPhesCostBasis": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldPhesFomRkW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPhesHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 14 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Tubatse pumped storage: support for BLD_PHES_CAPS central and bldPhesHours 14 (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.bldPhesHours2": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPhesOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPhesRateMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPlanMarginPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPsEnergy": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPvCase": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldPvRateGrowthPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldPvTracking": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldRepDaysRule": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldRpExclude": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldStressTarget": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldTariffCfBasis": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldTurbineCapMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.bldWindCase": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldWindCorr": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.bldWindModern": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 1 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Build costs from South African bid data (TODO 14av, 14aw, 14ax; builds 07j and 07k, 7 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.bldWindowsPerYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.capPayPs": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.capacityPaymentLdsRkWyr": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.capacityPaymentOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.capacityPaymentRkWyr": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.carbonAllowancePath": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.carbonCapEnabled": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.carbonCapMt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.carbonTaxFull": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Carbon tax in law and IRP 2025 on emissions (user, 14 Oct 2026; research helper, HTML pages and search extracts, no PDFs)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.carbonTaxPathOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.carbonTaxRPerT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 46 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Sources used for constants, not for data files",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.ccgtForceFromYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccgtForceHourly": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccgtForceLoad": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccgtForceLoadMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: on up to ccgtForceLoadMW of CCGT in IRP 2025 reference case (Government Gazette 53596, 28 Oct 2025, p.34): 6 GW of CCGT at a minimum annual",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.ccgtForceLoadPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccgtForceToYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccgtMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccsCapexR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccsCapexRkW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: g 2024 benchmarking has supercritical PC going from GBP3,668/kW to ccsCapexRkW sourced 20 Aug 2026. Two independent routes converge: Tariff",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.ccsCaptureRatePct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccsEnabled": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.ccsLifeYrs": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccsOpexR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccsPenaltyPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccsSharePct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ccsTsR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: UG. Tariff side: retrofit capital, allowed return and asset life. ccsCapexRkW sourced 20 Aug 2026. Two independent routes converge: Ieagh",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.ccsWaccPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.chargeFromThermal": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.coalEAFPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 65 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.coalInstalledMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.coalLookaheadH": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.coalPartLoadK": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.coalRampBasePct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.coalRampFlexPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.coalStartUpCostRPerMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.congestHeadroomMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.congestionCurtailOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.congestionCurtailPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   },
+   {
+    "heading": "Congestion curtailment: South Africa's current rule (TODO 14aj)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.costCcgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "LNG import infrastructure costs (TODO 14ak, pathway sensitivity only, 6 Oct 2026)",
+    "page": null
+   },
+   {
+    "heading": "Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.costCoal": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 546 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Coal fuel R546/MWh and imports R550/MWh: what the record holds (message 119 (8), 15 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.costDiesel": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 6100 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Diesel fuel price, costDiesel: basis (TODO 14cj, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.costHydro": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: , same source basis. costNuclear 160 Koeberg fuel; Eskom disclosed ~11c/kWh (R110) for FY2024, FY2026: R591 as stated,",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.costImports": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.costNuclear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.costUnservedR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.cspMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.dedisaEndYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.dedisaMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.demandBlockMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.demandYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.derateBattLi": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.derateCcgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.derateIronAir": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.derateVrfb": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.derateePs": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.dieselBudgetTWh": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.dieselDecomMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.drInterruptAnnualMWh": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Interruptible load: annual energy (user, message 98; build 2026-10-14q)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.drInterruptCostR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.drInterruptMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Interruptible load: contracted size (user, message 94; 14 Oct 2026; applied as 1,000 MW in build 2026-10-14q, message 95)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.drShiftLossPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.drShiftPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Non-residential shiftable load (drShiftPct note, build 06g)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.dslRefillMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.dslTankGWh": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.dslTankMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.dslTankOn": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.effCcgtHHV": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.emisCcgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 0.348 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.emisCoal": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.emisDiesel": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.exportCapMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.exportMaxMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.exportPriceFirmR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: sales, 7% of 201,953 GWh, Eskom integrated report a same-financial-year pair: SOURCED 15 Sep 2026, replacing an assumed 550 that mirrored c",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.exportPriceR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: ich is the surplus pool rate paid for energy that would otherwise be spilled. SOURCED 15 Sep 2026, replacing an assumed 550 that mirrored c",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.exportShapePeak": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.exportsCurtailable": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.exportsMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: 2 and 822 from April to August. The post-Mozal mean is about 700, and 745 sits inside it. January 2026, 1,703 in February, 987 in the transi",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.fomCcgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.fomCoal": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.fomCsp": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.fomDiesel": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 360 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Existing diesel peakers: dates and life extension (TODO 14as, build 07h, 7 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.fomHydro": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.fomNuclear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.fomOcgtRkW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "FIXED.fomPs": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.gridBeyondGccaPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.heatRateOcgtKJ": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: s_price_cases.json are built on, so a new OCGT on VOM R80.19/MWh and FOM R423.89/kW-yr in January 2024 rands, x SA CPI to January 2026 (1.03",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.hybridCF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: om's Weekly System Status Report (Week 32, Aug 2026), which RMIPPPP hybrid - firm dispatchabl",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.hybridEndHour": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.hybridMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: These are solar+wind+battery 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which RMIPPPP hybrid - firm dispatchabl",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.hybridStartHour": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.hydroCF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.hydroMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.importsCF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "IMPORTS_CF"
+  ],
+  "sources": []
+ },
+ "FIXED.importsEndYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.importsMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 1150 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.importsMaxMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.laGasCharge": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeBatt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeCcgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeCoalNew": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeCsp": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeDiesel": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Sources used for constants, not for data files",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.lcoeHydro": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeImports": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeIronAir": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeNuclear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoePs": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoePv": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeRooftop": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeVrfb": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lcoeWind": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lpBattDischargeCostR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.lpCurtailCostR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newBattHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newIronAirEff": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: kWh, pvUtilityMW is derived, corrected 4,974 -> 3,151 : 2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26) + 488",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.newIronAirHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: kWh, pvUtilityMW is derived, corrected 4,974 -> 3,151 : 2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26) + 488 MW privat",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.newIronAirMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newOcgdMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newOcgtMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newOffshoreMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newPsEff": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newPsHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newPsMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newPsMaxMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "BLD_PHES_CAPS"
+  ],
+  "sources": []
+ },
+ "FIXED.newVrfbEff": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newVrfbHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.newVrfbMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.nuclearCF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 0.66 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.nuclearMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.ocgtDieselMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: ure itself boundary whenever this constant is compared against an Eskom figure. Checked 2 Sep 2026 against the report. NOT an error - a diff",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.offshoreCapMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.offshoreGridRPerKWyr": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.offshoreMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.outageCmMttrH": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 36 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.outageCmPerStationYr": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 5 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.outageCmUnitShare": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 0.5 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.outageForcedSharePct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 61 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.outageMonthlyAvail": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.outageMttrH": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 480 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.outagePlannedSeason": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.outageSeed": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.outageStandingUnits": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.outageTraceYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   },
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.outageUnitLevel": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.pnmConeMultiple": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.pnmLowCapFrac": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.psCycleCostR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.psEff": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.psEnergyMWh": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.psPowerMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.psResOnce": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.pvUtilityMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.reipppSolarMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.reipppWindMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.reserveEnabled": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.reserveGasMinStableFrac": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 0.5 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Gas and diesel turbines' minimum stable level for online reserve headroom (user, message 90; build 2026-10-14n)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.reserveOperatingMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: held flat beyond it. Held every hour whether priced or not. 21 Sep 2026. Operating reserve: NTCSA ASTR 2026/27-20",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED.reserveRegHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.reserveRule": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.reserveTenHours": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.reserveVreBaseMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.reserveVrePct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 5 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.reserveVreRefPvMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.reserveVreRefWindMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.rooftopDerate": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 0.78 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "SOLTRAK Monthly Insights Report, September 2026: C&I export limiting and performance ratio (user, 16 Oct 2026, message 151; record only, no input changed)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.rooftopMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.scenarioYear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.storageLookaheadH": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.sysResVreProvidesShare": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.tdpConfidencePct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.txRPerKWyr": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 402 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.voll": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.vomCcgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.vomCoal": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.vomDiesel": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 70 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Diesel fuel price, costDiesel: basis (TODO 14cj, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.vomNuclear": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)",
+    "page": null
+   }
+  ]
+ },
+ "FIXED.vomOcgt": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "CPI_JAN24_TO_JAN26"
+  ],
+  "sources": []
+ },
+ "FIXED.vppBattPerGeyserKW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.vppEnabled": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.vppEnrolPct": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.vppGeyserPoolMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.vppRegion": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "FIXED.windCapeMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "FIXED.windMW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: ild_capacity.py's PRE2026_PRIVATE list. 17 Oct 2026 for central c5f and 196 (2)) through",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "FIXED_PV_CF_12Y": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "GAS_LCOE_REF_CF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "GCCA_HEADROOM_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "GET_COST_PER_KM": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "computed in code (31000000/20), not from a registered input",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "GET_LIFETIME_YEARS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "GET_UPLIFT_FRAC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: related absolute figure. against this app's own real new-line cost (R31m/km, DEE Minister Apr 2025), giving a \"less than one-twentieth of wh",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "H2_VIABLE_BAND": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "H2_VIABLE_CF"
+  ],
+  "sources": []
+ },
+ "H2_VIABLE_CF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "HOURS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "IMPORTS_AVG_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "the code value 1066 appears in this SOURCES entry: confirm by hand to mark sourced",
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "IMPORTS_CF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "IMPORTS_AVG_MW",
+   "IMPORTS_MW"
+  ],
+  "sources": []
+ },
+ "IMPORTS_COST": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "IMPORTS_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: hours after the value was corrected. 0.41 -> 0.88. ESK19679 International Imports, Jan-Aug 2026 mean on the 1,150 MW contract. Same sourc",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "IMPORTS_REGION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "IRP2030_DEMAND_GAP_PCT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "IRP2035_DEMAND_GAP_PCT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "LCP_2030_DSL_CF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "LCP_2030_LI_CYCLES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "LCP_2030_WIND_CF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "LINKS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "LI_DECL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "LI_MAX_HOURS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "LI_REF_CYCLES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: ey assumptions, p.37; read 18 Oct 2026, . An international - die",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "LOSS_BASE_RATE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "MC_N": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "MIP_FLEET": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "MIP_WORKER_SRC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "MONTH_D": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "MONTH_N": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "MON_NM": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "NAMES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "NAMES_STORAGE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "NDC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "ABOUT_NUM",
+   "ADEQ_N",
+   "ASTR_RESERVE",
+   "ASTR_TOTAL",
+   "BATT_BW3_BID",
+   "BATT_COST_HOURS",
+   "BATT_EQUIP_BID",
+   "BATT_POWER_SHARE",
+   "BLD_COST.pv.c2026",
+   "BLD_COST.pv.decl",
+   "BLD_DERATE",
+   "BLD_DISC_CENTRAL",
+   "BLD_FOM_BATT_SHARE",
+   "BLD_LIFE.batt",
+   "BLD_LIFE.ocgd",
+   "BLD_LIFE.pv",
+   "BLD_LIFE.rooftop",
+   "BLD_LIFE.wind",
+   "BLD_OFF_YEAR_MW",
+   "BLD_PACE",
+   "BLD_PHES_CAPS",
+   "BLD_REGIONAL_TRK_MSG",
+   "BLD_REGIONS",
+   "BLD_STRESS_STANDARD",
+   "BLD_TARIFF.pvtrk.rPerMWh",
+   "BLD_TARIFF.wind.rPerMWh",
+   "BUILD_STAMP",
+   "BW6_PV_TRK_BID_CF",
+   "BW6_WIND_BID_CF",
+   "BW7_SOLAR_AWARDS",
+   "C5F_BUILD_CAPS",
+   "C5F_DEMAND",
+   "CAP_PAY_LDS",
+   "CCS_CANDIDATE_MW",
+   "COAL_MINSTABLE_CURVE",
+   "COLORS",
+   "CPI_APR21_TO_JAN26",
+   "CPI_JAN24_TO_JAN26",
+   "CPI_JAN25_TO_JAN26",
+   "CTS_C12",
+   "CTS_SYS",
+   "DAY_NM",
+   "DSL_REF_CF",
+   "EAF_HISTORY",
+   "EIA_AEO2023_CC_KW",
+   "EIA_AEO2023_CT_KW",
+   "ENGINE_SCRIPTS",
+   "ESKOM_2025_COAL_TWH",
+   "ESKOM_ACTUALS",
+   "ESKOM_FLEET_EAF_PCT",
+   "ESKOM_WIND_LINE_MW",
+   "FIXED.asInertiaRkWyr",
+   "FIXED.asReserveRMWh",
+   "FIXED.asVoltagePotRm",
+   "FIXED.asVoltageRMWyr",
+   "FIXED.avonMW",
+   "FIXED.battEff",
+   "FIXED.battHours",
+   "FIXED.battPowerMW",
+   "FIXED.billFeedInR",
+   "FIXED.billGenPct",
+   "FIXED.billSelfConsumePct",
+   "FIXED.bldGasTerminalRkW",
+   "FIXED.bldPvRateGrowthPct",
+   "FIXED.bldTariffCfBasis",
+   "FIXED.capacityPaymentLdsRkWyr",
+   "FIXED.capacityPaymentRkWyr",
+   "FIXED.carbonCapMt",
+   "FIXED.carbonTaxRPerT",
+   "FIXED.ccgtForceLoad",
+   "FIXED.ccgtForceLoadMW",
+   "FIXED.ccgtForceLoadPct",
+   "FIXED.ccsPenaltyPct",
+   "FIXED.ccsSharePct",
+   "FIXED.ccsWaccPct",
+   "FIXED.coalEAFPct",
+   "FIXED.coalInstalledMW",
+   "FIXED.coalPartLoadK",
+   "FIXED.congestionCurtailPct",
+   "FIXED.costCcgt",
+   "FIXED.costCoal",
+   "FIXED.costDiesel",
+   "FIXED.costUnservedR",
+   "FIXED.dedisaMW",
+   "FIXED.derateBattLi",
+   "FIXED.dieselBudgetTWh",
+   "FIXED.dieselDecomMW",
+   "FIXED.drInterruptCostR",
+   "FIXED.drInterruptMW",
+   "FIXED.drShiftLossPct",
+   "FIXED.drShiftPct",
+   "FIXED.exportCapMW",
+   "FIXED.exportPriceR",
+   "FIXED.exportsMW",
+   "FIXED.gridBeyondGccaPct",
+   "FIXED.hybridMW",
+   "FIXED.hydroCF",
+   "FIXED.importsCF",
+   "FIXED.importsMW",
+   "FIXED.lcoeBatt",
+   "FIXED.lcoeCcgt",
+   "FIXED.lcoeCoalNew",
+   "FIXED.lcoeCsp",
+   "FIXED.lcoeDiesel",
+   "FIXED.lcoeIronAir",
+   "FIXED.lcoeNuclear",
+   "FIXED.lcoePs",
+   "FIXED.lcoePv",
+   "FIXED.lcoeRooftop",
+   "FIXED.lcoeVrfb",
+   "FIXED.lcoeWind",
+   "FIXED.newBattHours",
+   "FIXED.newIronAirMW",
+   "FIXED.newOffshoreMW",
+   "FIXED.newPsHours",
+   "FIXED.newPsMW",
+   "FIXED.newPsMaxMW",
+   "FIXED.newVrfbMW",
+   "FIXED.nuclearCF",
+   "FIXED.ocgtDieselMW",
+   "FIXED.outageForcedSharePct",
+   "FIXED.outageMttrH",
+   "FIXED.pnmConeMultiple",
+   "FIXED.pnmLowCapFrac",
+   "FIXED.psPowerMW",
+   "FIXED.pvUtilityMW",
+   "FIXED.reserveEnabled",
+   "FIXED.reserveOperatingMW",
+   "FIXED.rooftopDerate",
+   "FIXED.rooftopMW",
+   "FIXED.scenarioYear",
+   "FIXED.tdpConfidencePct",
+   "FIXED.txRPerKWyr",
+   "FIXED.voll",
+   "FIXED.vomDiesel",
+   "FIXED.vppEnrolPct",
+   "FIXED.vppGeyserPoolMW",
+   "FIXED.windMW",
+   "FIXED_PV_CF_12Y",
+   "GET_COST_PER_KM",
+   "GET_LIFETIME_YEARS",
+   "H2_VIABLE_BAND",
+   "H2_VIABLE_CF",
+   "HOURS",
+   "IMPORTS_AVG_MW",
+   "IRP2030_DEMAND_GAP_PCT",
+   "IRP2035_DEMAND_GAP_PCT",
+   "LCP_2030_DSL_CF",
+   "LCP_2030_LI_CYCLES",
+   "LCP_2030_WIND_CF",
+   "LINKS",
+   "LI_DECL",
+   "LI_MAX_HOURS",
+   "LI_REF_CYCLES",
+   "MC_N",
+   "MIP_FLEET",
+   "MIP_WORKER_SRC",
+   "MONTH_D",
+   "MONTH_N",
+   "MON_NM",
+   "NAMES",
+   "NAMES_STORAGE",
+   "NETWORK_RETAIL_R",
+   "NEW_PVTRK_CF_12Y",
+   "NEW_WIND_CF_12Y",
+   "NEXT_STEPS",
+   "NODES",
+   "NODE_TO_REGION",
+   "ORDC_MIN_CONT_FRAC",
+   "ORDC_SIGMA_FRAC",
+   "ORDC_SIGMA_SHIFT",
+   "PANEL_CACHE_MAX",
+   "PANEL_ELS",
+   "PANEL_FILES",
+   "PANEL_FILE_HASH",
+   "PANEL_OWED",
+   "PANEL_SEEN",
+   "PRESETS",
+   "PRESET_DESC",
+   "PRESET_NON_SLIDER_KEYS",
+   "PRESET_ORDER",
+   "PRESET_SCORES",
+   "PROFILE_CAL_YEAR",
+   "P_HEAD",
+   "P_OFF",
+   "P_PROF",
+   "P_STORE",
+   "P_STRK",
+   "P_TDP",
+   "P_TRACE",
+   "P_WMOD",
+   "REGION_TO_NODE",
+   "REIPPPP_WINDOWS",
+   "RES_CACHE_MAX",
+   "RETAIL_LOSS",
+   "RETAIL_VAT",
+   "RT_APPLIANCES",
+   "RT_BIZRATE3_2026",
+   "RT_CRITICAL_DEMAND_FRACTION",
+   "RT_DEFAULT_BILL",
+   "RT_DEFAULT_TARIFF",
+   "RT_FORMS",
+   "RT_MODULE",
+   "RT_OBSTRUCTION",
+   "RT_PACKING",
+   "RT_TYPES",
+   "RT_WP_PER_M2",
+   "RT_ZOOM_ROOF",
+   "RT_ZOOM_SAFE",
+   "SITING_GET_UPLIFT_FRAC",
+   "SLIDERS",
+   "SP_TECH_LABEL",
+   "SP_ZERO_COL",
+   "SUB_CTRL",
+   "SYNC_CONDENSER_MW",
+   "SYNC_GFM_SHARE",
+   "SYNC_MIN_MW",
+   "TX_BEYOND",
+   "TX_SHALLOW",
+   "UC_FLEET",
+   "URL_SCENARIO",
+   "VPP_DEMAND_SHARE",
+   "WEEK_HOUR",
+   "WIND_NEW_CORR",
+   "ZA_PATH"
+  ],
+  "sources": []
+ },
+ "NETWORK_RETAIL_R": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "NEW_BATT_SHARE_BY_REGION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "NEW_PVTRK_CF_12Y": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "NEW_WIND_CF_12Y": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "NEXT_STEPS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "NODES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "NODE_TO_REGION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "ORDC_MIN_CONT_FRAC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "ORDC_SIGMA_FRAC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "ORDC_SIGMA_SHIFT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "PANEL_CACHE_MAX": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "PANEL_ELS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PANEL_FILES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PANEL_FILE_HASH": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PANEL_OWED": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PANEL_SEEN": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PRESETS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "C5F_DEMAND",
+   "FIXED.battPowerMW",
+   "FIXED.coalInstalledMW",
+   "FIXED.ocgtDieselMW",
+   "FIXED.pvUtilityMW",
+   "FIXED.windMW"
+  ],
+  "sources": []
+ },
+ "PRESET_DESC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "FIXED.ccgtForceLoadMW",
+   "FIXED.ccgtForceLoadPct",
+   "IRP2030_DEMAND_GAP_PCT",
+   "IRP2035_DEMAND_GAP_PCT",
+   "PRESETS"
+  ],
+  "sources": []
+ },
+ "PRESET_NON_SLIDER_KEYS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PRESET_ORDER": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PRESET_SCORES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PROFILE_CAL_YEAR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "PROV_SRC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PS_EFF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "PS_ENERGY_MWH_BY_REGION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "PS_MW_BY_REGION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "P_HEAD": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "P_OFF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "P_PROF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "HOURS"
+  ],
+  "sources": []
+ },
+ "P_STORE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "P_STRK": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "P_TDP": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "P_TRACE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "P_WMOD": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "REGIONS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "REGION_TO_NODE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "REIPPPP_WINDOWS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "RESERVE_COOPT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "RES_CACHE_MAX": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "RETAIL_LOSS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: tokens - at 7.9 TWh over six months, about 8% of sales, R17.5bn of lost revenue. Eskom's FY2026 interim results put NON-TECHNICAL losses -",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "RETAIL_VAT": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "RT_APPLIANCES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "RT_BIZRATE3_2026": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "RT_CRITICAL_DEMAND_FRACTION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "RT_DEFAULT_BILL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "RT_DEFAULT_TARIFF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "RT_DEFAULT_BILL"
+  ],
+  "sources": []
+ },
+ "RT_FORMS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "RT_MODULE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "RT_OBSTRUCTION": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "RT_PACKING": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "RT_OBSTRUCTION"
+  ],
+  "sources": []
+ },
+ "RT_TYPES": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "RT_WP_PER_M2": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "RT_MODULE",
+   "RT_PACKING"
+  ],
+  "sources": []
+ },
+ "RT_ZOOM_ROOF": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "RT_ZOOM_SAFE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "SITING_GET_UPLIFT_FRAC": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "SLIDERS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "BLD_LIFE.batt",
+   "BLD_LIFE.ocgd",
+   "BLD_LIFE.pv",
+   "BLD_LIFE.rooftop",
+   "BLD_LIFE.wind",
+   "BLD_TARIFF.pvtrk.rPerMWh",
+   "BLD_TARIFF.wind.rPerMWh",
+   "BW6_PV_TRK_BID_CF",
+   "BW6_WIND_BID_CF",
+   "BW7_SOLAR_AWARDS",
+   "CCS_CANDIDATE_MW",
+   "CPI_APR21_TO_JAN26",
+   "CPI_JAN24_TO_JAN26",
+   "DSL_REF_CF",
+   "EAF_HISTORY",
+   "FIXED.asInertiaRkWyr",
+   "FIXED.asReserveRMWh",
+   "FIXED.asVoltagePotRm",
+   "FIXED.asVoltageRMWyr",
+   "FIXED.avonMW",
+   "FIXED.battHours",
+   "FIXED.battPowerMW",
+   "FIXED.billFeedInR",
+   "FIXED.billGenPct",
+   "FIXED.billSelfConsumePct",
+   "FIXED.bldGasTerminalRkW",
+   "FIXED.bldTariffCfBasis",
+   "FIXED.capacityPaymentLdsRkWyr",
+   "FIXED.capacityPaymentRkWyr",
+   "FIXED.carbonCapMt",
+   "FIXED.carbonTaxRPerT",
+   "FIXED.ccgtForceLoad",
+   "FIXED.ccsPenaltyPct",
+   "FIXED.ccsSharePct",
+   "FIXED.coalEAFPct",
+   "FIXED.coalInstalledMW",
+   "FIXED.coalPartLoadK",
+   "FIXED.congestionCurtailPct",
+   "FIXED.costCcgt",
+   "FIXED.costDiesel",
+   "FIXED.costUnservedR",
+   "FIXED.dedisaMW",
+   "FIXED.dieselBudgetTWh",
+   "FIXED.dieselDecomMW",
+   "FIXED.drInterruptCostR",
+   "FIXED.drInterruptMW",
+   "FIXED.drShiftLossPct",
+   "FIXED.drShiftPct",
+   "FIXED.exportCapMW",
+   "FIXED.exportPriceR",
+   "FIXED.exportsMW",
+   "FIXED.gridBeyondGccaPct",
+   "FIXED.importsCF",
+   "FIXED.importsMW",
+   "FIXED.lcoeBatt",
+   "FIXED.lcoeCcgt",
+   "FIXED.lcoeCoalNew",
+   "FIXED.lcoeCsp",
+   "FIXED.lcoeDiesel",
+   "FIXED.lcoeIronAir",
+   "FIXED.lcoeNuclear",
+   "FIXED.lcoePs",
+   "FIXED.lcoePv",
+   "FIXED.lcoeRooftop",
+   "FIXED.lcoeVrfb",
+   "FIXED.lcoeWind",
+   "FIXED.newBattHours",
+   "FIXED.newIronAirMW",
+   "FIXED.newOffshoreMW",
+   "FIXED.newPsHours",
+   "FIXED.newPsMW",
+   "FIXED.newPsMaxMW",
+   "FIXED.newVrfbMW",
+   "FIXED.nuclearCF",
+   "FIXED.ocgtDieselMW",
+   "FIXED.outageForcedSharePct",
+   "FIXED.outageMttrH",
+   "FIXED.psPowerMW",
+   "FIXED.pvUtilityMW",
+   "FIXED.reserveOperatingMW",
+   "FIXED.rooftopDerate",
+   "FIXED.rooftopMW",
+   "FIXED.tdpConfidencePct",
+   "FIXED.txRPerKWyr",
+   "FIXED.voll",
+   "FIXED.vomDiesel",
+   "FIXED.vppEnrolPct",
+   "FIXED.vppGeyserPoolMW",
+   "FIXED.windMW",
+   "FIXED_PV_CF_12Y",
+   "IMPORTS_AVG_MW",
+   "LCP_2030_DSL_CF",
+   "LCP_2030_LI_CYCLES",
+   "LCP_2030_WIND_CF",
+   "LI_MAX_HOURS",
+   "LI_REF_CYCLES",
+   "NEW_PVTRK_CF_12Y",
+   "NEW_WIND_CF_12Y",
+   "SUB_CTRL",
+   "UC_FLEET"
+  ],
+  "sources": []
+ },
+ "SP_TECH_LABEL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "SP_ZERO_COL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "STORAGE_CHRONO": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "SUB_CTRL": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "SYNC_CONDENSER_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "SYNC_GFM_SHARE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "SYNC_MIN_MW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "TOU_WINDOWS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "TX_BEYOND": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "TX_LIFE_YEARS": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "TX_MAX_MW_PER_CORRIDOR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "TX_R_PER_MW_KM": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "TX_SHALLOW": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "UC_FLEET": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "URL_SCENARIO": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "derived",
+  "parents": [
+   "PRESETS",
+   "SLIDERS"
+  ],
+  "sources": []
+ },
+ "VPP_DEMAND_SHARE": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "WEEK_HOUR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "WIND_NEW_CORR": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "ZA_PATH": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "switch, text or structure: an input or not, to decide by hand",
+  "status": "not yet reviewed",
+  "sources": []
+ },
+ "file:nodal/bq_queue.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/coal_availability_trace.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   },
+   {
+    "heading": "Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/corridor_electrical.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "PyPSA-RSA: licence and what we take (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/eskom_tariff_components.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Retail panel audit: tariffs, revenue and the retail cap (user, 18 Oct 2026, message 203 and the audit's addendum)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/headroom_summary.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/ipp_pipeline.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "IPP Office website terms (REIPPPP data): no open licence (read 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/nersa_registrations.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/profiles_offshore_regional.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: {\"meta\":{\"licence\":\"CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "file:nodal/profiles_regional.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "PyPSA-RSA: licence and what we take (user, 13 Oct 2026)",
+    "page": null
+   },
+   {
+    "heading": "NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/profiles_solar_tracking_map.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "no recorded source",
+  "sources": []
+ },
+ "file:nodal/profiles_wind_modern_map.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Build costs from South African bid data (TODO 14av, 14aw, 14ax; builds 07j and 07k, 7 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/project_register.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: rray was first seen COMPLETE, not a commercial operation date - Grootfontein was complete Dec 2024 and reached COD Dec 2025.\",\"wind_note\":\"W",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "file:nodal/redz.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment:  Zones (REDZ), South Africa\",\"count\":11,\"gazettes\":[\"GN 114, Government Gazette 41445, 16 Feb 2018 - REDZ 1-8 (Minister Molewa)\",\"GN 142/144",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "file:nodal/reea_projects.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/region_headroom_lookup.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/regional_renewable_capacity.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "IPP Office website terms (REIPPPP data): no open licence (read 13 Oct 2026)",
+    "page": null
+   },
+   {
+    "heading": "NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/residential_profile.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "code comment: tional or non-commercial use only; Eskom's written consent to publish has been requested (October 2026). Shape only; the analysis is ours, n",
+  "status": "source in code comment only",
+  "sources": []
+ },
+ "file:nodal/sa_solar_grid.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/substation_bands.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/substations_compact.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/tdp_projects.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "file:nodal/transmission_lines.geojson": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "file:profiles.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": "SOURCES records the gap under this heading",
+  "status": "no recorded source",
+  "sources": [
+   {
+    "heading": "Currently loaded",
+    "page": null
+   }
+  ]
+ },
+ "file:public_data/ember_za.json": {
+  "unit": null,
+  "randYear": null,
+  "basis": null,
+  "checked": null,
+  "note": null,
+  "status": "sourced (by name, unconfirmed)",
+  "sources": [
+   {
+    "heading": "Ember bulk data for validate_benchmarks (user, 12 Oct 2026)",
+    "page": null
+   }
+  ]
+ }
+}

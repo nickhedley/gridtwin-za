@@ -1,0 +1,6 @@
+{
+ "not yet reviewed": 131,
+ "no recorded source": 326,
+ "note": "Ratchet for validate_register.js (user, 22 Oct 2026, message 313 (c)): the counts may fall; raising them needs the user's say-so in a message.",
+ "source in code comment only": 36
+}
