@@ -27,6 +27,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    w.onerror=()=>{}; Object.defineProperty(w.history,'replaceState',{value:()=>{},writable:true}); w.URL.createObjectURL=()=>'blob:x'; w.Worker=function(){this.postMessage=()=>{};};
    w.fetch=async(u)=>{try{const cl=String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config)/,'');const t=fs.readFileSync(path.join(path.resolve(ROOT),cl),'utf8');return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}};}});
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
+ // The run's rooftop add-back on the twelve-year mean (messages 391 (b), 392 (c)), as its build LP had it.
+ if (P.roofAddback12){ const K=require('./pathway/roof12.js')(w); if (Math.abs(K-P.roofAddback12)>1e-9) throw new Error('roof12: K '+K+' differs from the run\'s '+P.roofAddback12); console.log('ROOF12: rooftop add-back scaled by', K.toFixed(4)); }
  w.eval(`applyState(PRESETS['Today 2026']);`); await w.eval('loadWeatherYears()');
  // GRID (7 Oct 2026, TODO 14ar): the same grid-cost settings as the pathway run.
  w.eval(`if(!('bldGridCost' in FIXED)) throw new Error('bldGridCost missing');`+(process.env.GRID!==undefined?` state.bldGridCost=${+process.env.GRID};`:'')+(process.env.GRID_BEYOND!==undefined?` state.bldGridSpurBeyond=${+process.env.GRID_BEYOND};`:'')+(process.env.GRID_BATTHALF!==undefined?` state.bldGridBattHalf=${+process.env.GRID_BATTHALF};`:''));
