@@ -349,7 +349,10 @@ fixed infeed at the 1,150 MW contract; a new Cahora Bassa contract up to the 1,9
 kW-year from programme components on Brattle's method (Tables 3 and 4), household devices excluded; South African geyser and
 battery costs to source (SOURCES 'Virtual power plants'); a cap from enrolment potential. Participant savings and payments are
 transfers, shown in the retail panels (14il), not system cost. Also: the 4-hour duration of enrolled batteries is a bare literal
-in three engine lines (index.html, simulate); make it one constant.
+in three engine lines (index.html, simulate); make it one constant. Pricing basis (user, 26 Oct 2026, message 390 (b)): GreenCape's pilot pays VPP providers per measured and verified response
+(peak-to-off-peak shifting on instruction under Eskom's time-of-use periods; ancillary services later), incentives capped per
+provider, no rates published, results after September 2027. Model VPPs as a priced resource on that basis, per MWh shifted and/or
+per MW available, with rates from international programmes until South African ones exist.
 14ja. Grid-enhancing technologies rework (user, 22 Oct 2026, messages 340 (a) and 346; moved to the next note, message 351): the GETs
 panel retitled 'Grid-enhancing technologies: more from existing lines', its intro line to match. The panel states, per corridor, what limits
 transfer (thermal, voltage or stability) by line length on the St Clair curve (Dunlop, Gutman and Marchenko, IEEE 1979: thermal to

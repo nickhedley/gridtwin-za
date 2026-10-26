@@ -17373,8 +17373,8 @@ share of generation (rooftop in, imports and storage out) 74.9% against 72.5%. T
 of 2027.
 
 Rooftop: c6's 8,942 MW is NTCSA's August 2026 private-PV level (9,430 MW) less the H1 2026 wheeled solar, run all year; NTCSA's
-series was about 6,800 MW in June 2025, 8,295 in May 2026 and 9,107 in June 2026, so the 2026 mean is lower, about 8,450 MW (an
-interpolation). Overstating rooftop does not move coal: the demand series adds rooftop back with the same capacity the engine
+series was about 6,800 MW in June 2025, 8,295 in May 2026 and 9,107 in June 2026, so the 2026 mean is lower: about 8,050-8,180 MW
+on 2025's basis (next entry; first given here as 8,450). Overstating rooftop does not move coal: the demand series adds rooftop back with the same capacity the engine
 removes (build_demand_2026.py). One thing does: the add-back uses the 2025 solar profile (capacity factor 25.1%), while the engine
 check removes rooftop on twelve weather years (22.4% mean), so c6's grid load sits about 1.67 TWh a year above the measured base in
 every year. Aligning the two (gross demand -0.82%, a proxy: proportional, not solar-shaped) takes 1.5 TWh of coal back out: fleet
@@ -17394,7 +17394,7 @@ c6's 2026 fleet, MW (2026 mean in service; months in service from each plant's c
 | Utility solar, private H1 2026 (wheeled) | 488 | about 423 | Bolobedu January, Mooi Plaats March, ARM Platinum taken as April |
 | Utility solar, 2026 floor | 1,018 | about 156 | Ilikwa from 3 August; Ukuqala (financial close + 20 months, August); SunCentral 1 October; Virginia 240 (BW6, not metered by August; taken as Q4); Du Plessis Dam PV2, Khauta West, SunCentral 2, Teraco Q4 or late 2026; Paarde Valley PV2 end-2026 |
 | Utility solar, total | 4,289 (with 3 MW of rounding in FIXED) | about 3,310 | |
-| Rooftop | 8,942 | about 8,450 | NTCSA's private-PV series, interpolated; no effect on coal (above) |
+| Rooftop | 8,942 | about 8,050-8,180 | NTCSA's private-PV series, 2026 mean on 2025's basis (next entry); no effect on 2026 coal (above) |
 
 The months taken for plants without a published date are assumptions; the RMIPPPP hybrids (335 MW, all year) are not corrected
 here (Hydra from July 2026; TODO 16c).
@@ -17439,3 +17439,40 @@ Settings. c6's pathway output (25 Oct 2026, ff8cf65, build 2026-10-25a) through 
 06:39-06:45 UTC. Ember: the user's export (ember_monthly_electricity-generation, South Africa, to August 2026); Ember's public bulk
 file at the address fetch_ember.py reads still ends at March 2026 (release of 7 July 2026), and Ember's API host is not reachable
 from this session.
+
+### Rooftop: the two figures are one series on two bases; 297.5 MW of named wheeled solar sits inside c6's rooftop; output per MW (user, 26 Oct 2026, message 390 (a); build 2026-10-25a; report only)
+
+Finding. '2025, as modelled' (6,532 MW) and c6's 2026 (8,942 MW) come from the same NTCSA series, 'Estimated Rooftop PV' in the
+Weekly System Status Report, which counts every PV installation without an NTCSA contract, ground-mounted and wheeled plant included.
+The bases differ. 2025 is the calendar-year mean of the monthly rows (6,830.2) less 298.3 MW of wheeled solar moved to utility solar.
+2026 is the August 2026 point (9,430.1) less only the 488 MW of wheeled solar commissioned in January-June 2026. On 2025's basis, 2026
+is about 8,050-8,180 MW, not 8,942, and the growth from 2025 is about 1,520-1,650 MW (+23-25%), not 2,410.
+
+1. Wheeled plant inside rooftopMW: Selemela 2 and 3 (200 MW AC, Tronox, early 2024) and Damlaagte (97.5 MW, Sasol and Air Liquide,
+23 Aug 2025), 297.5 MW in all, named in nodal/private_pending_h2_2026.json. The 2025 preset takes them out (its 298.3 MW); c6's 2026
+does not. SunCentral 1 (114 MW, October 2026) is after the August figure and sits in c6's 2026 build floor, so it is counted once.
+Unnamed earlier private plant may also be inside the series (PFL's H1 2026 monitor covers H1 2026 only); not quantified.
+Moving the 297.5 MW to utility solar does not move coal if the wheeled load is added back, as build_demand_2026.py does for every
+other wheeled plant: as rooftop it gives about 0.46 TWh a year (0.78 derate on the twelve-year mean), cancelled by the add-back; as
+utility solar about 0.57 TWh, matched by the same output added to demand. Moved without the load add-back, it would cut coal by
+about 0.6 TWh a year in error.
+
+2. The 2026 mean, NTCSA's points: December 2025 7,464 MW (Engineering News, 23 Jan 2026); May 2026 8,294.5 (week 25); June 9,107.4;
+July 9,219.6; August 9,430.1 (week 37), confirmed for September (week 42). January-April interpolated between December and May.
+October-December held at September: mean 8,774 MW; or rising at the December-August pace: 8,897. Less H1 2026 wheeled solar in
+service (mean 423 MW) and the 297.5 MW above: 8,054-8,177 MW. NTCSA's series grew about 2,950 MW a year from December 2025 to August
+2026, about 2,400 without the wheeled plant; c6 adds 1,200 MW a year from 2027 on its 8,942 base, and the end-2026 level (9,430-
+10,170 MW in NTCSA's terms, before wheeled plant) is above that base. NTCSA notes month-to-month jumps partly reflect cloudy days.
+
+3. Output per MW (the open question of 'Rooftop output against sbg.earth', message 317 (a)): c6's rooftop gives 1,531 kWh per kW a
+year (17.5%: the twelve-year mean solar profile, 22.4%, times the 0.78 derate), 13.69 TWh on 8,942 MW. sbg.earth's 12.9 TWh is
+1,443 kWh per kW on 8,942 MW or about 1,590 on 8,050-8,180 MW. On the like-for-like capacity c6 would give 12.3-12.5 TWh, 3-4% below
+sbg.earth's estimate. Whether NTCSA's MW are AC or DC is still open (SOURCES, rooftop basis); the 0.78 derate (orientation,
+shading, soiling, inverter and export limiting) is sourced by name, unconfirmed.
+
+Effect on coal: in 2026, none from the level, since the demand series adds back what the engine removes. From 2027 the level matters,
+because new rooftop beyond the base lowers grid demand: c6's path starts from 8,942 MW in 2026 and adds 1,200 MW a year, against an
+end-2026 level that is likely higher and a recent pace about twice as fast (s_roof2, 2,000 MW a year, brackets it).
+
+Settings: arithmetic on the recorded NTCSA points (SOURCES rows 34, 174 and 1442; nodal/rooftop_mw_by_region.json) and c6's 2026
+engine check (message 384 (g) entry).
