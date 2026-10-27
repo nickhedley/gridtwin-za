@@ -17717,7 +17717,7 @@ prose ceiling). Main: #121's suite on 27e (identical index.html to 026e027).
 | validate_invariants | 176/176 | 175/176 |
 | validate_response | 86/87 | 85/87 |
 | validate_consistency | 82/83 | 81/83 |
-| validate_benchmarks | 27/30 | 28/30 |
+| validate_benchmarks | 27/30 (28/30 after COAL_PARTLOAD_2026 was re-recorded, below) | 28/30 |
 | validate_outputs | 49/51 | 49/51 |
 | eng5 | 5/6 | 5/6 |
 | Every other script | as main | |
@@ -17734,7 +17734,8 @@ Newly failing on 27f, kept failing with the cause:
 - validate_benchmarks, 'coal CO2 per MWh sent out in 2026 within 0.5% of Eskom's FY2026': Today 2026 1.1150 against 1.1084
   t/MWh (+0.6%). COAL_PARTLOAD_2026 (1.0262) is c5f's central run's 2026 part-load mean; with the 24-hour down time and the 0.715
   floor more coal runs at part load. The check asks for the constant to be re-recorded from a central run's 2026: c6c's, once
-  its runs land (decision for the user: re-record before or after the c6c runs).
+  its runs land (decision for the user: re-record before or after the c6c runs). Re-recorded from Today 2026 (message 450,
+  entry below): the check passes, 1.1088 against 1.1084 t/MWh.
 
 The two spill substitution checks (above, failing at the 0.75 floor) pass at 0.715: 2.24 TWh spilled raises coal by 0.92 TWh
 per TWh and CO2 by 0.97 Mt per TWh. Curtailment at defaults is 0.3 TWh a year (validate_outputs, failing as on main, 0.1).
@@ -17754,3 +17755,9 @@ the difference; if over 0.1 percentage point, say so before any pack table uses 
 
 Also: the methods table typed the coal factor as 1.04 t/MWh while FIXED.emisCoal was 1.080 on main; it now reads FIXED.emisCoal
 (data-num emisCoal, 1.07).
+
+Suite after COAL_PARTLOAD_2026 was re-recorded (commit 7639a89, panels rewritten; ESK19679.csv present, nothing running beside it;
+27 Oct 2026 from 17:53 UTC, scratch m450s/suite.sh): stored panels 86/86, outputs 49/51, findings 37/40, consistency 82/83,
+invariants 176/176, response 86/87, benchmarks 28/30, weather 68/68, structure 27/27, public text 22/22, lint 3/3, geo 43/43,
+capacity 36/36, inputs 37/37, lp 57/57, external 8/8, solve 9/9, audit 88/88, eng5 5/6; pathway presets, links and worker in
+piece 2. The failures are main's less the four now passing, plus the turn-up finding above.
