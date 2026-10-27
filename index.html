@@ -5794,7 +5794,12 @@ const FIXED = {
   // tariff (BLD_TARIFF); bw6 BW6's compliant bids; high the disclosed investment values of awarded projects; low IRENA's global average) on a modern-turbine profile (Vestas
   // V162 5.6 MW at 120 m, nodal/profiles_wind_modern.json); existing farms keep their profile. Capex and profile change
   // together. 0: the previous R21,000/kW on the existing profile, for comparison with earlier results.
-  bldWindModern:1, bldWindCase:'central',
+  // CENTRAL FROM c6b (user, 27 Oct 2026, messages 405, 406 (a) and 408 (a)): 'bw6', BW6's compliant wind bids (R28,462/kW,
+  // BLD_COST.wind_bw6). BW5 struggled to reach financial close after costs rose: about half its 1,608 MW of wind closed, late
+  // (Nov 2022-Mar 2023), at R564-601/MWh after the RFP's exchange-rate and CPI adjustment, against R495.22 as bid (RESULTS 'c6b').
+  // So the case keyed 'central' (the capex BW5's tariff implies, R20,874/kW) is now the low case and 'high' (disclosed investment
+  // values) the high case. The keys are kept so runs recorded with windCase 'central' are still checked as built.
+  bldWindModern:1, bldWindCase:'bw6',
   // Correction for new wind on the modern-turbine profile (WIND_NEW_CORR): 'none' (1.00, central from 15 Oct 2026, message
   // 125 (1): the profile uncorrected, 42.5% over the twelve weather years), 'farms' (1.064, fitted to two developers'
   // projections, the central until then) or 'bw6' (scaled to BW6 wind bids' typical capacity factor, BW6_WIND_BID_CF).
@@ -10521,7 +10526,10 @@ function bldLcoeAnchor(costKey, fomKey, lifeKey, cf){
 // At the default basis (FIXED; the page's state is not yet built here): on 'run' each anchor is its awarded tariff in 2026 rands.
 if (FIXED.bldTariffCfBasis !== 'bid' && FIXED.bldTariffCfBasis !== 'run') throw new Error('FIXED.bldTariffCfBasis must be bid or run');
 const _anchorKey = k => FIXED.bldTariffCfBasis === 'run' ? k + '_runcf' : k;
-FIXED.lcoeWind = Math.round(bldLcoeAnchor(_anchorKey('wind'), 'wind', 'wind', NEW_WIND_CF_12Y) / 10) * 10;
+// The wind anchor follows the central wind case (FIXED.bldWindCase; 'bw6' from c6b, message 408 (a)): the tariff-derived capex
+// only when the central is the case keyed 'central'.
+const _windAnchorKey = () => FIXED.bldWindCase === 'central' ? _anchorKey('wind') : 'wind_' + FIXED.bldWindCase;
+FIXED.lcoeWind = Math.round(bldLcoeAnchor(_windAnchorKey(), 'wind', 'wind', NEW_WIND_CF_12Y) / 10) * 10;
 FIXED.lcoePv = Math.round(bldLcoeAnchor(_anchorKey('pvtrk'), 'pv', 'pv', NEW_PVTRK_CF_12Y) / 10) * 10;
 // LCOE ANCHORS ON REFERENCE PARAMETERS (user, 17 Oct 2026, messages 159 and 194 (1); replaces 186 (4)'s anchors on c5e's 2030
 // dispatch, which showed how little c5e used lithium and diesel, not what they cost). Lithium (4 h), rooftop and new diesel
@@ -13955,8 +13963,9 @@ function renderCapacityPayment(res){
   // at a quarter of a cycle it is close to the whole answer. The ratio of the two columns is
   // the point rather than either figure alone.
   const _vint = 2026 + (retailYear() - 2026) / 2;
-  // Open cycle's capex comes from bldCostEntry (its cost case), as the build LP takes it.
-  const _costOf = (tech) => (tech === 'ocgt' || tech === 'ocgd') ? bldCostEntry(tech) : BLD_COST[tech];
+  // Open cycle's capex comes from bldCostEntry (its cost case), as the build LP takes it; wind too from c6b (message 408 (a)),
+  // which read BLD_COST.wind, the tariff capex at the bid capacity factor, not the case the model builds with.
+  const _costOf = (tech) => (tech === 'ocgt' || tech === 'ocgd' || tech === 'wind') ? bldCostEntry(tech) : BLD_COST[tech];
   const _capexPerKW = (tech) => (_costOf(tech) && BLD_LIFE[tech])
     ? bldAnnuity(_costOf(tech).c2026 * Math.pow(1 - _costOf(tech).decl, _vint - 2026), BLD_LIFE[tech], tech)
     : null;
@@ -18891,9 +18900,9 @@ const SLIDERS=[
   {id:'lcoePv',label:'Utility solar',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),// Moved from the note (messages 377, 378): build costs are capex and fixed O&M; the capacity factor is new tracking
    // solar's twelve-year mean; the BW7 award is R492.53/MWh in January 2024 rands (BLD_TARIFF.pvtrk).
    note:'Anchor R'+(FIXED.lcoePv/1000).toFixed(2)+': build costs over '+BLD_LIFE.pv+' years at 8% real, at tracking solar\u2019s '+(NEW_PVTRK_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. The capex is backed out of BW7\u2019s MW-weighted solar award (R'+Math.round(BLD_TARIFF.pvtrk.rPerMWh*CPI_JAN24_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 tracker bids\u2019 '+(BW6_PV_TRK_BID_CF*100).toFixed(1)+'&#37;.')},
-  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),// Moved from the note (messages 377, 378): BW7 awarded solar only (BW7_SOLAR_AWARDS), so wind is backed out of BW5's
+  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),// Moved from the note (messages 377, 378): BW7 awarded solar only (BW7_SOLAR_AWARDS); from c6b (message 408 (a)) the central is BW6's compliant bids, and the low case is backed out of BW5's
    // R495/MWh in April 2021 rands (BLD_TARIFF.wind); in the least-cost pathway's 2030 new wind runs at LCP_2030_WIND_CF.
-   note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': build costs over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. The capex is backed out of BW5\u2019s wind tariff (R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.')},
+   note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': build costs over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. '+(FIXED.bldWindCase==='bw6' ? 'The capex is BW6\u2019s compliant wind bids, R'+Math.round(BLD_COST.wind_bw6.c2026).toLocaleString('en-US')+'/kW in 2026 rands; BW5\u2019s tariff is the low case.' : 'The capex is backed out of BW5\u2019s wind tariff (R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.'))},
   {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeRooftop/1000).toFixed(2)+': build costs over '+BLD_LIFE.rooftop+' years at 8% real, at rooftop\u2019s '+(FIXED_PV_CF_12Y*FIXED.rooftopDerate*100).toFixed(1)+'&#37; capacity factor (the fixed-tilt solar profile x the '+FIXED.rooftopDerate.toFixed(2)+' derate), the same in the least-cost pathway\u2019s 2030.'},
   {id:'lcoePs',label:'Pumped storage',min:400,max:3000,step:50,def:FIXED.lcoePs,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. An assumption; no published source.'},
   {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Anchor R'+(FIXED.lcoeVrfb/1000).toFixed(2)+': build costs over '+BLD_LIFE.vrfb+' years at 8% real, at one full '+FIXED.newVrfbHours+'-hour cycle a day ('+VRFB_REF_CYCLES+' a year), as lithium, per kWh discharged; charging not costed.'},
@@ -20715,7 +20724,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-26b';
+const BUILD_STAMP = '2026-10-27a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21703,7 +21712,9 @@ function fillAboutNums(){
 function renderCapexLine(){
   for (const [id, t] of [['capexWind','wind'],['capexRooftop','rooftop'],['capexBatt','batt'],['capexCcgt','ccgt']]){
     const el = document.getElementById(id);
-    if (el && BLD_COST[t]) el.textContent = Math.round(BLD_COST[t].c2026).toLocaleString('en-US');
+    // Wind through bldCostEntry, the case the model builds with (message 408 (a)); it printed BLD_COST.wind, the tariff capex at
+    // the bid capacity factor, which no run has used since the 'run' basis became the default.
+    if (el && BLD_COST[t]) el.textContent = Math.round((t === 'wind' ? bldCostEntry('wind') : BLD_COST[t]).c2026).toLocaleString('en-US');
   }
   const pv = document.getElementById('capexPv');
   if (pv && BLD_COST.pv) pv.textContent = Math.round(BLD_COST.pv.c2026).toLocaleString('en-US') + ' fixed tilt (no recorded source)'
