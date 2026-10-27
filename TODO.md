@@ -479,7 +479,12 @@ and s_carbonhold.
 14ju. c6b carbon results for the pack (user, 27 Oct 2026, message 423 (c)-(e)): from c6b's set, s_carbontreasury against c6b
 (build, cost, CO2), and the IRP build's cost per tonne avoided at the central rate and on s_carbontreasury, beside the carbon tax
 path. If s_carbontreasury does not fit in tonight's set, run it first after the set. Meridian's briefing note (p.10, price
-neutrality) is cited from the user; not yet read here.
+neutrality) is cited from the user; not yet read here. The DBSA/PCC/NPC/SA-TIED study (launched 5 Nov 2025) stays out of the pack until read
+(message 424 (d)); search summaries say it sets emissions limits, and one also lists a carbon tax among its inputs.
+
+14jv. Page dispatch carbon rate, after the note (user, 27 Oct 2026, message 424 (e)): the page's single-year dispatch charges
+carbonTaxRPerT (R46/t) in every scenario year, while the pathway optimiser and its engine check follow carbonTaxAt; match the
+page's rate to the scenario year. The slider note stays as it is until then.
 
 ## Follow-through on the engine change
 
