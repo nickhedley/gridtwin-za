@@ -17767,3 +17767,22 @@ minimum up and 8 h minimum down (no source stated). Meridian Economics' briefing
 units cannot shut down and restart within a day and run through to the evening peak. The AEMO 2025 Thermal Audit and Meridian's
 2025 flexibility study could not be opened from the container. Local cross-check (Eskom's flexibilisation studies pack, Oct 2025):
 no minimum down time or start durations given; nothing from it is used here.
+
+### Deep decarbonisation 2035's new-build capital moved with PR C's preset rebuild (27 Oct 2026, 12:00 UTC; TODO 14jz, message 441 (c))
+
+validate_consistency's 'new-build capital matches the hand computation' (retailComponents(0.40, true, 2035) on Deep decarbonisation
+2035) measured on main's history with the check's own code, one page each (scratch worktree, deleted after):
+
+| Commit | Build | New-build capital, R/kWh |
+|---|---|---|
+| df2eecf (#91, where R0.904 was set) | 2026-10-19e | 0.9038 |
+| 0118e42 (audit PR 1) | 2026-10-21k | 0.9038 |
+| 021feb2 (c6 PR B) | 2026-10-23a | 0.9040 |
+| 1b0dad0 (c6 PR C) | 2026-10-24b | 0.9532 |
+| 7cc6f23 (#119, rooftop) | 2026-10-26b | 0.9507 |
+| 02cb281 (main) | 2026-10-26b | 0.9507 |
+
+The move is PR C's: it re-sized the preset (wind 43,000 -> 40,500 MW, tracking solar 38,750 -> 42,750 MW, iron-air 2,000 -> 3,250 MW,
+coal flexibility tier 1 -> 2), a deliberate scenario change; PR B's imports change adds 0.0002 and #119's rooftop -0.0024. The
+check's figure was not re-measured then because the move stayed inside its 0.06 tolerance. #121 re-measures it (R1.056). The
+presets PR, which rebuilds Deep decarbonisation 2035 again, re-measures it once more and records this cause in the check's comment.
