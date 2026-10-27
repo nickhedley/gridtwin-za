@@ -513,6 +513,11 @@ requests, and the reviewer has read access; update the pack's section 7 (reprodu
 R0.951 drift is c6 PR C's re-sizing of the preset. Remaining: the presets PR re-measures the check after its rebuild and records the
 cause in the check's comment.
 
+14ka. Coal minimum down time in the build optimiser, after the note (user, 27 Oct 2026, message 443 (d)): the build LP does not see
+coalMinDownH, so builds are unchanged by it except through the adequacy loop's engine verdicts (s_mindn24_c6a: same build, same
+objective). Give the build LP a commitment rule that matches: a unit (or block) that comes off stays off for the minimum down time,
+in the representative days and the stress windows, and measure the build's move against c6c.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
