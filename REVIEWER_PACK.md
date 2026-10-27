@@ -721,6 +721,40 @@ Each can be answered from this pack in 30–40 minutes. Each is tied to a decisi
 
 ---
 
+## 7. Reproducing these results
+
+What was run (message 418 (a)):
+
+- Build: c6b, BUILD_STAMP '2026-10-27a', PR #121. The commit is PR #121's merge commit, recorded here once merged; until then, branch claude/c6b-wind (scripts at 3788f4e).
+- Settings: harness/pathway/env_c6.sh, then harness/pathway/env_c6a.sh on top (c6b keeps c6a's pathway settings; its two cost changes are in index.html). Each run's own changes are on its line in harness/pathway/chain_c6b.sh.
+- Software: Node 22, Python 3 with highspy 1.15.1 (SOLVER=native), and in harness/ `npm install jsdom highs eslint` (jsdom 29.1.1, highs 1.15.3 used here).
+
+In order, from a clone at that commit:
+
+1. `cd harness && npm install jsdom highs eslint && pip install highspy && ln -s .. testroot`
+2. Optional: the suite (CLAUDE.md, 'Running the suite'), about 1–2 hours.
+3. `bash pathway/chain_c6b.sh`. Resumable: rerun it after an interruption and finished runs and checks are skipped. Progress in harness/out/c6b/progress.txt.
+4. Tables, from harness/: `node pathway/tables/packtable.js out c6b null_c6b s_nogas_c6b ...` (results table) and `node pathway/tables/irptable.js out out/c6b/irp` (IRP comparison).
+
+Run times, from c6a's set on the project's cloud container (two solves at a time, about 15 GB of memory):
+
+| Step | Time |
+|---|---|
+| One solve, most runs | 6–10 min |
+| s_irpgas, s_std_strict | 14–21 min |
+| s_nogas, s_std_strict_nogas_dsl | 34–38 min |
+| Engine check of one run (three year groups in parallel) | 10–30 min |
+| Whole set | about 9 hours |
+
+Not run: s_std_strict_nogas and s_std_nem_nogas, whose solves exceed two hours (one stopped at the 7,200 s limit with no output on c6a).
+
+The engine check's outage draws are seeded (SEED_BASE), so a check repeats exactly on the same commit and solve. The solves are HiGHS; a different version or machine may land on a different plan of equal cost within the solver's tolerance.
+
+Inputs not in the repository:
+
+- ESK19679.csv, Eskom's hourly data for 2025–26, obtained on request; all rights reserved, so it cannot be shared. The pathway runs do not read it: the one value they take from it, average imports of 1,066 MW (April–August 2026), is a setting in env_c6.sh (IMP_AVG_MW). Without it, the runs and tables reproduce in full; the suite shows one failing and three skipped checks in validate_weather and validate_benchmarks, and validate_benchmarks uses Ember's 2025 hydro figure in place of the measured one. To check those four, request the data from Eskom.
+- The calendar-2026 comparison in section 2 also rests on Eskom's data and cannot be rerun without it.
+
 ## RESULTS entry headings drawn on
 
 - GridTwin ZA – verified results (header caveats)
