@@ -96,6 +96,32 @@ Build limits in c5, which c5b_14r, c5d and c5e keep (RESULTS 'c5 inputs, final';
 
 c5e connects 15.5 GW of new wind and utility solar in 2026–30. NTCSA's stated programme for 2024–30 is 16.2 GW: 13 GW of new renewables through transformer upgrades plus 3.2 GW from the first private transmission tender by August 2029. At least 1.3 GW connected in 2024–25, so c5e's early build is above it. (GreenCape MIR 2026, p.20, citing NTCSA 2024; 2024–25 connections: NERSA via SolarQuarter, 10 Apr 2026; SOLA's Selemela 2 and 3 project pages; Mainstream, 23 Aug 2025; Sibanye-Stillwater, 1 Apr 2025, for Castle; Sasol, 10 Oct 2024, for Msenge Emoyeni; GEM, September 2026 release, for Springbok; RESULTS 'c5e's new wind and solar against NTCSA's connection programme')
 
+
+### Capex against IRP 2025 Figure 9 (message 417 (c))
+
+Overnight capex, R/kW. Figure 9 (IRP 2025, plan p.21) is in 2024 rands; converted to January 2026 at ×1.0681 (SA CPI). Meridian's column waits for pages 82–87 of its IRP 2023 review. Flag: more than 25% apart.
+
+| Technology | Ours, Jan 2026 | Our basis | Figure 9, Jan 2026 | Ours against Figure 9 | Flag | Meridian |
+|---|---|---|---|---|---|---|
+| Onshore wind | 28,462 | BW6 compliant bids (c6b, PR #121, not merged) | 28,462 | equal | no | pending |
+| Utility solar, tracking | 10,998 | BW7 awards, tariff-implied | 16,785–21,101 | −48% to −34% | yes | pending |
+| Lithium-ion, 4 h | 13,699 | BESIPPPP bid window 3, aged to 2026 | 25,248–27,674 | −50% to −46% | yes | pending |
+| Pumped storage | about 29,200 | Tubatse estimate (2022), CPI-indexed | 44,487 | −34% | yes | pending |
+| CCGT | 34,965 | GridLab, 2025 project data, USD 2,119 | 14,808–19,266 | +81% to +136% | yes | pending |
+| Open-cycle gas | 25,778 | CCGT × EIA AEO2023 ratio 867/1,176 | 11,610–13,506 | +91% to +122% | yes | pending |
+| Offshore wind, floating | 79,200 | USD 4,800 (IRENA 2018 and NREL ATB brackets) | 73,009–112,270 | within | no | pending |
+| Coal, new | about 59,600 | USD 3,600, from acapCoal (no new coal is built) | 158,443 | −62% | yes | pending |
+| Nuclear | about 125,200 (USD 7,500, from acapNuclear) | no study | withheld until the reconciliation is confirmed (message 417 (b)) | – | – | pending |
+| CSP with storage | no build option | – | 142,101–205,734 | – | – | pending |
+
+Causes of the flags:
+
+- Solar and lithium: ours come from South African awards and bids (BW7, BESIPPPP 3); Figure 9's source for these was not traced. Solar is tariff-implied while wind now uses bid capex, an inconsistency left to the user.
+- Pumped storage: ours is Tubatse's own estimate; Figure 9's basis was not traced.
+- Gas: ours is 2025 project data, after the turbine price rise; Figure 9 sits at roughly half.
+- Coal: no run builds new coal, so the gap moves no result.
+- The coal and nuclear benchmarks convert at about R16.8/$, against R16.50 elsewhere in the model; a constant held twice, to be reconciled.
+
 ---
 
 ## 1b. Coal in c6
