@@ -472,6 +472,14 @@ year), wind and solar are credited at zero (BLD_DERATE), and the build LP nets t
 run shows what an investor-facing payment shifts, not a cheaper plan; system cost must be reported gross of the transfer. Needs:
 a start year, and wind and solar credits measured on the twelve weather years.
 
+14jt. Carbon paths in the IRPs, after the note (user, 27 Oct 2026, message 422 (c)): find the carbon path in IRP 2023 (the rand per
+tonne penalty in DMRE's input assumptions) and IRP 2025 (input workbook) and compare them with c6b's treasury path, s_carbonlegis
+and s_carbonhold.
+
+14ju. c6b carbon results for the pack (user, 27 Oct 2026, messages 420 (a)-(b), 421 (c)-(d)): from c6b's set, s_carbonlegis and
+s_carbonhold against c6b (build, cost, CO2), and the IRP build's cost per tonne avoided on each carbon path, beside the carbon tax
+path; the pack's carbon row and limitation 15 already state the central path as a key assumption.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
