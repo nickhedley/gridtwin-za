@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run from anywhere: bash harness/pathway/chain_c6b.sh. Outputs in harness/out (runs, checks) and harness/out/c6b (progress.txt,
 # IRP pair, restart counts); set N to put the latter elsewhere. Needs node, python3 and harness/node_modules (npm install jsdom highs).
-# c6b central run set (user, 27 Oct 2026, messages 406, 416, 423 and 424): c6a's settings (env_c6a.sh) on build 2026-10-27d, wind on BW6 bids and rooftop at R10,500 DC; was the c6a set (messages 389 and 391): c6's settings with new gas from 2032 and the 2026 fleet counted for
+# c6b central run set (user, 27 Oct 2026, messages 406, 416, 423 and 424): c6a's settings (env_c6a.sh) on build 2026-10-27e, wind on BW6 bids and rooftop at R10,500 DC; was the c6a set (messages 389 and 391): c6's settings with new gas from 2032 and the 2026 fleet counted for
 # its share of the year in service (harness/pathway/env_c6a.sh). Every run plans to NTCSA's 20 GWh unless it sets STD. s_gas2032 is
 # replaced by s_gas2030 (gas from 2030, as c6 had; 391 (c)); the strict and NEM standards only for c6b, s_nogas and s_nogas_dsl (391 (d)).
 # Order (message 428 (b)): c6b; the three IRP-schedule runs and c6b at IRP 2025's demand, then the IRP pair's build files and checks;
