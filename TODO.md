@@ -466,7 +466,7 @@ model-ready inputs (the README says the data is not distributed with the code); 
 from the cloud container.
 
 14js. Capacity-mechanism sensitivity, next note (user, 27 Oct 2026, message 419 (d); Meridian Economics briefing note,
-26 Oct 2026, p.7 Box 1): capacity payments from 2030, variable renewables credited at their reliability contribution. The
+26 Oct 2026, Box 1, p.7 as given; the extracted text cannot confirm the page): capacity payments from 2030, variable renewables credited at their reliability contribution. The
 existing settings (capacityPaymentOn, capacityPaymentRkWyr, BLD_DERATE) cover part of it: payments apply in every year (no start
 year), wind and solar are credited at zero (BLD_DERATE), and the build LP nets the payment off each technology's annuity, so the
 run shows what an investor-facing payment shifts, not a cheaper plan; system cost must be reported gross of the transfer. Needs:
@@ -479,7 +479,7 @@ and s_carbonhold.
 14ju. c6b carbon results for the pack (user, 27 Oct 2026, message 423 (c)-(e)): from c6b's set, s_carbontreasury against c6b
 (build, cost, CO2), and the IRP build's cost per tonne avoided at the central rate and on s_carbontreasury, beside the carbon tax
 path. If s_carbontreasury does not fit in tonight's set, run it first after the set. Meridian's briefing note (p.10, price
-neutrality) is cited from the user; not yet read here. The DBSA/PCC/NPC/SA-TIED study (launched 5 Nov 2025) stays out of the pack until read
+neutrality) is read and confirmed by the advisor (message 425). The DBSA/PCC/NPC/SA-TIED study (launched 5 Nov 2025) stays out of the pack until read
 (message 424 (d)); search summaries say it sets emissions limits, and one also lists a carbon tax among its inputs.
 
 14jv. Page dispatch carbon rate, after the note (user, 27 Oct 2026, message 424 (e)): the page's single-year dispatch charges

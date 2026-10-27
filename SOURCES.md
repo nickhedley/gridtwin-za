@@ -355,6 +355,19 @@ PyPSA-CL (Chile)       PyPSA-CL, capacity expansion model of Chile's National El
                          databases (energia.gob.cl/pelp/repositorio) rests on search snippets only:
                          unconfirmed. Uses: note recommendation (TODO 14jr); coal calibration lead
                          (TODO 14jq (a)).
+Meridian 2026 reform   Meridian Economics (N. van Doesburgh, G. Steyn, B. Cohen), Electricity market reform
+                         in South Africa: the public interest rationale and key risks ahead (briefing note,
+                         October 2026; published 26 Oct 2026), https://meridianeconomics.co.za/wp-content/
+                         uploads/2026/10/Electricity-market-reform-briefing-note.pdf ; 12 pages. Read
+                         27 Oct 2026 from Nick's Drive copy (the site is blocked from the container); pages
+                         confirmed by the advisor (message 425). p.1 fn.1: many coal units cannot shut down
+                         and restart within a day, so they run for the evening peak, causing curtailment
+                         (pack limitation 13, item 6). p.9: SAWEM as drafted is energy-only; the only
+                         capacity payments are in Eskom's vesting contracts; missing money for batteries
+                         and peakers (limitation 29). p.10: electricity-price neutrality to 2030 "largely
+                         shields electricity generation from the tax" (carbon row). Box 1: wind and solar
+                         should be eligible for capacity payments in line with their reliability
+                         contribution (TODO 14js).
 Krutham 2026 trading   Krutham, Trading electricity: Is SA ready for the next financial market?
                          (October 2026), https://www.krutham.com/reports/trading-electricity/ ;
                          6 pages, page numbers from the PDF. Read 26 Oct 2026 (user, messages 398
