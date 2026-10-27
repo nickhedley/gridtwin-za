@@ -337,6 +337,25 @@ These do not populate a JSON file, but a number in `FIXED` rests on each. Changi
 source means changing the constant, so they belong in this register.
 
 ```
+Coal minimum down time (user, 27 Oct 2026, messages 442 and 443): FIXED.coalMinDownH 24 h, central from c6c. Our reading of
+                         Meridian Economics, Electricity market reform in South Africa (briefing note, 26 Oct 2026), p.1,
+                         fn.1: "many coal units are unable to shut down and restart within a day, so they are run continuously
+                         in order to be available for the evening peak". No measured minimum down time for South African or
+                         comparable large units was found. Literature, read 27 Oct 2026: NREL/Intertek APTECH, Power Plant
+                         Cycling Costs (2012, NREL/SR-5500-55433), Table 1-1, p.12, warm starts after 12-40 h offline for
+                         large subcritical and 12-72 h for supercritical units (below the band hot, above it cold); Agora
+                         Energiewende, Flexibility in thermal power plants (2017), p.44, hot under 8 h offline, warm 8-48 h,
+                         cold over 48 h, and Table 1, p.48, hard-coal start-up 2.5-3 h hot and 5-10 h cold; PyPSA-Eur,
+                         data/unit_commitment.csv, coal 8 h minimum up and down (no source stated). So the literature ranges
+                         8-48 h. The longer value is the more conservative choice for reliability (RULES.md, decisions taken
+                         without Nick, message 366). AEMO's 2025 Thermal Audit and Meridian's 2025 flexibility study could not
+                         be opened from the container: to read. UC_FLEET's own values (PyPSA-RSA) are kept for c6b, the
+                         4-hour sensitivity. With it the practice floor is recalibrated from 0.75 to 0.715 (messages 447 and
+                         448): each setting represents one thing; the floor was partly standing in for units kept on for the
+                         evening peak, which the down time now represents, so it is matched again to the same measured
+                         statistic, Eskom's January-August 2026 sunny low-demand midday coal output over available coal,
+                         median 0.623 (ESK19679, Eskom credited, analysis ours; model 0.624 at 0.715, 0.642 at 0.75), the
+                         backcast practice of SEM Committee, PLEXOS validation and backcast report, SEM-20-004.
 Rooftop PV installed cost, 2025-26 (user, 27 Oct 2026, messages 413 and 416 (b)): the c6b rooftop capex. 2025-26 installer price
                          guides; no authoritative survey of South African rooftop costs was found. All read from search-result
                          snippets on 27 Oct 2026 (this environment could not open .co.za pages): confirm dates, VAT and

@@ -493,7 +493,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
             <strong id="mipCaveat">The full model runs on 2025 regional demand and its own regional weather data, and does not dispatch gas; its results are not comparable with the presets.</strong>
             Re-solves coal, storage and corridor flows across all 10 regions as a mixed-integer programme (MIP).
-            (The instant model commits coal by a rule in 4-hour blocks, with start-up times of 2 to 10 hours, so units seldom come off over midday; NTCSA says the System Operator does not do that.)
+            (The instant model commits coal by a rule in 4-hour blocks and keeps a unit off for at least 24 hours once it comes off, so units seldom come off over midday; NTCSA says the System Operator does not do that.)
           </span>
         </div>
 
@@ -1188,7 +1188,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <p style="margin-bottom:8px"><strong>Unit commitment:</strong> coal is committed at <strong>individual unit level</strong> – <span data-num="ucUnits"></span> units in <span data-num="ucRows"></span> groups across <span data-num="ucStations"></span> stations – in 4-hour blocks, respecting each unit&rsquo;s minimum stable level (<span data-num="ucMslRange"></span> of capacity, fleet-weighted <span data-num="ucMslW"></span>), minimum up and down times, and ramp limits. This is what produces the &ldquo;Buffalo curve&rdquo;: coal that cannot drop far enough at midday to make room for solar while remaining available for the morning and evening peaks. Against a single-node PyPSA unit-commitment optimum with a 24-hour horizon on the same inputs (October 2026), the engine&rsquo;s cost is 1.1&ndash;3.5% higher in three ordinary weeks (1.2% in the 2026 baseline week) and 26% higher in the 2040 stress week.</p>
 
         <table class="mono" style="font-size:11.5px">
-          <tr><td>Coal</td><td>R546/MWh (Eskom FY2025 coal unit cost, environmental levy included; about R507 without it) &middot; +R80 VOM &middot; 1.04&nbsp;tCO&#8322;/MWh (our figure; Eskom&rsquo;s FY2026 report implies 1.11) &middot; <span data-num="coalGW"></span>&nbsp;GW installed (Eskom FY2026 nominal) &middot; real per-unit retirement dates to 2051</td></tr>
+          <tr><td>Coal</td><td>R546/MWh (Eskom FY2025 coal unit cost, environmental levy included; about R507 without it) &middot; +R80 VOM &middot; <span data-num="emisCoal"></span>&nbsp;tCO&#8322;/MWh (our figure; Eskom&rsquo;s FY2026 report implies 1.11) &middot; <span data-num="coalGW"></span>&nbsp;GW installed (Eskom FY2026 nominal) &middot; real per-unit retirement dates to 2051</td></tr>
           <tr><td>Diesel OCGT</td><td>R<span data-num="costDiesel"></span>/MWh fuel &middot; +R70 VOM &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
           <tr><td>Gas CCGT</td><td>R<span data-num="costCcgt"></span>/MWh fuel &middot; +R35 VOM &middot; 0.348&nbsp;tCO&#8322;/MWh &middot; LNG-fired, the central gas case: 13.25% of Brent at USD&nbsp;80 in 2024 dollars, USD&nbsp;11.74/MMBtu at the coast with shipping, plus USD&nbsp;0.25 of regasification, &times; R16.50/USD &divide; 0.293071&nbsp;MWh/MMBtu &divide; 52% efficiency, the same in every year. The LNG terminal is a fixed R<span data-num="gasTerminalRkW"></span>/kW-yr on new gas burning LNG, the midpoint of the sourced R354&ndash;707 range (a choice). Carbon added separately. Spot ($23/MMBtu) is about R2,490/MWh; pre-Hormuz consensus ($12) about R1,300. The national model treats gas plants as coastal (Richards Bay): no inland transport is charged. The inland adder (the Lilly pipeline at R9.00/GJ, NERSA 2025/26, once its flow is reversed; about USD&nbsp;2.8/GJ by truck before then, from an undated source) goes into the regional optimiser. The 2040 pathways also run five gas price cases (low, central, Brent USD&nbsp;100, high, and IRP 2025 as published), each delivered at the coast; all but the IRP case carry the LNG terminal as a fixed cost per kW of new gas. Shipping is their least-sourced input: a 2018 charter breakeven adjusted with US inflation and an estimated sea distance, and charter rates have likely risen since the Hormuz disruption.</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; <span data-num="importsMW"></span>&nbsp;MW must-take at <span data-num="importsCF"></span>% &middot; the contract ends in 2030; the model keeps the imports to its horizon unless an end year is set</td></tr>
@@ -5442,10 +5442,13 @@ const ESKOM_FY26 = {
 // over coal sent out, is 1.108 t/MWh (CO2, not CO2e; carbon tax is levied on CO2e, 1.112 on the same basis, so the carbon cost is
 // about 0.3% low). The engine applies emisCoal to coal output times the part-load multiplier, so emisCoal is that rate over the
 // multiplier's 2026 mean, COAL_PARTLOAD_2026, recorded from a central run's 2026 (c5f's, 1.0262, until c6's replaces it) and
-// checked by validate_benchmarks ('coal CO2 per MWh sent out in 2026').
+// checked by validate_benchmarks ('coal CO2 per MWh sent out in 2026'). Re-recorded on build 2026-10-27f from the Today 2026
+// preset (user, 27 Oct 2026, message 450), a departure from that method: with the 24-hour down time and the 0.715 floor the
+// 2026 rate was 0.6% above the Eskom figure, and the c6c central run exists only after the c6c runs, which should run on a
+// calibrated value. To be checked against the c6c 2026 when those runs land (RESULTS, COAL_PARTLOAD_2026 re-recorded).
 const EMIS_DIESEL = 0.78;
 const COAL_CO2_PER_MWH_FY26 = (ESKOM_FY26.co2Mt * 1e6 - ESKOM_FY26.ocgtGWh * 1e3 * EMIS_DIESEL) / (ESKOM_FY26.coalSentOutGWh * 1e3);
-const COAL_PARTLOAD_2026 = 1.0262;
+const COAL_PARTLOAD_2026 = 1.0324;
 // The model's coal cost per GJ (message 361 (b)): costCoal (Eskom FY2026 coal cost over coal sent out) (FIXED.costCoal, from ESKOM_FY26) over the fleet heat rate that
 // the model's own coal CO2 per MWh sent out implies at 96.1 kg CO2/GJ (IPCC 2006 Guidelines, vol. 2, table 1.4, sub-bituminous
 // coal): 11.53 GJ/MWh, R47.94/GJ.
@@ -5963,15 +5966,18 @@ const FIXED = {
   // to it anywhere else - not because 4 h was wrong.
   coalLookaheadH:12,
   // COAL, PR C (user, 23-24 Oct 2026, messages 357 (e), 359-361, 363; TODO 14iz). The defaults are c6's coal central: commitment
-  // weighing start costs net of displaced output; the practice floor 0.75 to 2029 and the design minimums 0.57/0.52 from 2030;
+  // weighing start costs net of displaced output; the practice floor 0.715 to 2029 and the design minimums 0.57/0.52 from 2030;
   // NREL/Intertek start costs;
   // the synchronous floor with imports out and nuclear and hydro at output; the ramp honoured. COAL_PRE_C holds each setting's
   // value before PR C (build 2026-10-23a), which reproduces the earlier engine exactly.
   // The practice floor is calibrated like for like (messages 364, 365): the 2026 replay's lowest midday hour (10:00-15:00) of coal
-  // output over available coal, on sunny low-demand days, matches Eskom's January-August 2026 median at 0.75 (model 0.623, p10-p90
-  // 0.55-0.71; measured 0.623, 0.57-0.72; recalibrated with the start-up time, message 369 (e), from 0.77 before it; ESK19679, Eskom credited, analysis ours), the backcast practice of matching a simulated
-  // statistic to its measured counterpart (SEM Committee, PLEXOS validation and backcast report, SEM-20-004). NTCSA's 'up to 3 GW'
-  // in a winter day of 2026 is a check, not the target: the replay's winter midday peak is 5.5 GW at 0.75 (flagged, message 365 (a)).
+  // output over available coal, on sunny low-demand days, matches Eskom's January-August 2026 median at 0.715 (model 0.624, p10-p90
+  // 0.55-0.71; measured 0.623, 0.57-0.72; ESK19679, Eskom credited, analysis ours), the backcast practice of matching a simulated
+  // statistic to its measured counterpart (SEM Committee, PLEXOS validation and backcast report, SEM-20-004). Recalibrated with
+  // the 24-hour minimum down time (user, 27 Oct 2026, messages 447 and 448): each setting represents one thing, and the floor was
+  // partly standing in for units kept on for the evening peak, which the down time now represents; at 0.75 with 24 h the
+  // statistic was 0.642. Earlier: 0.77, then 0.75 with the start-up time (message 369 (e)), both at 4 h. NTCSA's 'up to 3 GW'
+  // in a winter day of 2026 is a check, not the target: the replay's winter midday peak is 5.2 GW at 0.715 (flagged, message 365 (a)).
   // (1) Commitment that weighs start costs: 0, today's rule (cheapest first to each block's peak plus reserve; start costs are
   //     charged but never weighed). 1: before a running unit is switched off, the pre-pass looks up to coalCommitLookaheadH
   //     hours ahead for the block that needs it again and keeps it on, at its minimum, when its start cost exceeds the cost of
@@ -5981,7 +5987,7 @@ const FIXED = {
   //     share of capacity in scenario years before coalMslDesignFromYear: the 2026 practice floor, units not reaching their
   //     design minimum when asked. coalMslDesign (null: UC_FLEET's own levels) sets them from that year: one share for every
   //     unit, or [share for the groups at 0.65, share for the groups at 0.50], fleet-level values only (message 348 (a)).
-  coalMslPracticeFloor:0.75, coalMslDesign:[0.57, 0.52], coalMslDesignFromYear:2030,
+  coalMslPracticeFloor:0.715, coalMslDesign:[0.57, 0.52], coalMslDesignFromYear:2030,
   // (3) Start-cost basis. 'ucfleet' (today): UC_FLEET's per-unit start-up costs (PyPSA-RSA; price base not stated). 'built':
   //     per MW of unit capacity and start, hot, warm or cold by hours offline and class (COAL_START_OFFLINE_H): start fuel
   //     (COAL_START_FUEL_RMW, coalStartFuel 'central' or 'spot') + wear (COAL_START_WEAR_USD, coalStartWear 'median' or 'p75')
@@ -5994,9 +6000,16 @@ const FIXED = {
   syncImportsCount:0, syncNucHydroBasis:'dispatched',
   // (5) coalRampHonour 1 (message 359 (f)): the commitment pre-pass keeps a block's commitment at least the previous hour's net
   //     load less one hour's ramp, and dispatch's coal floor rises no faster than the ramp. 0: as before (coal moved beyond its
-  //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH (null: UC_FLEET's) raises every unit's
-  //     minimum down time to at least this many hours (a sensitivity at 24).
-  coalMinDownH:null,
+  //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH raises every unit's minimum down time to at
+  //     least this many hours (null: UC_FLEET's, PyPSA-RSA's values, 4 h on 40,130 of 41,530 MW, which with the 2-hour hot start
+  //     lets a unit come off at midday and be back for the evening peak). 24, central from c6c (user, 27 Oct 2026, message 443):
+  //     our reading of Meridian Economics' "many coal units are unable to shut down and restart within a day" (Electricity market
+  //     reform briefing note, 26 Oct 2026, p.1, fn.1). No measured minimum down time for these units was found; the literature
+  //     ranges 8-48 h (PyPSA-Eur 8 h; NREL/Intertek 2012, Table 1-1, warm starts after 12-40 h offline for large subcritical and
+  //     12-72 h for supercritical; Agora Energiewende 2017, warm 8-48 h), and the longer value is the more conservative choice for
+  //     reliability (user, message 366). The build optimiser does not see it (TODO 14ka); the engine and its checks do. c6b ran
+  //     at null (4 h) and is now a sensitivity. The MIP mode (MIP_FLEET) keeps its own unit values.
+  coalMinDownH:24,
   // (6) Start-up time (user, 24 Oct 2026, message 369 (b)): hours from a start order to synchronisation, [hot, warm, cold] by the
   //     unit's hours offline at the order (COAL_START_OFFLINE_H classes). Hot 2 h (AEMO 2025 Thermal Audit p.25, about 2 hours'
   //     notice); cold 10 h (Agora Energiewende 2017, 5-10 h for hard coal, the upper end for an older fleet: conservative); warm
@@ -13773,6 +13786,10 @@ function renderCurtailmentForecast(){
     const congPct = (state.congestionCurtailOn ?? FIXED.congestionCurtailOn) ? (state.congestionCurtailPct ?? FIXED.congestionCurtailPct) : 0;
     const oversupplyOnly = 'Oversupply only: the congestion stopgap (' + congPct + '% of utility wind and solar, '
       + congTWh.toFixed(1) + ' TWh here) and the Cape wind cap come off before dispatch and are not counted.';
+    // THE CURTAILMENT NOTE BELOW, RESTATED ON BUILD 2026-10-27f (user, 27 Oct 2026, messages 446 and 448): it said the replay
+    // curtails almost nothing (16 Oct, message 130). Measured on the Today 2026 preset, twelve weather years x ten outage draws:
+    // 0.94 TWh a year on 27e (4 h down time, floor 0.75), 0.85 TWh on 27f (24 h, floor 0.715); mean winter (May-August) largest
+    // midday hour 5.6 and 5.2 GW. RESULTS, the practice floor recalibrated to 0.715 with the 24-hour down time.
     host.innerHTML =
         '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:6px">'
       + 'The table below shows the results of a dispatch engine run at a ladder of national build levels '
@@ -13785,7 +13802,7 @@ function renderCurtailmentForecast(){
       + gasFloorNote(lastRes, 'Its output adds to the midday surplus, so curtailment here is higher on this preset than without the minimum.', 'margin-top:8px')
       + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
       + oversupplyOnly
-      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Why this shows almost no curtailment today, when Eskom is already curtailing:</strong> NTCSA attributes today\u2019s curtailment to coal kept online through daylight to cover the morning and evening peaks. The instant engine takes coal units off over midday in 4-hour blocks instead, so it understates midday oversupply curtailment: its 2026 replay curtails almost nothing, against NTCSA\u2019s report of up to 3 GW on a winter day.</div>'
+      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Curtailment today, against NTCSA\u2019s report:</strong> NTCSA attributes today\u2019s curtailment to coal kept online through daylight to cover the morning and evening peaks. The instant engine keeps a coal unit off for at least 24 hours once off, so units stay on through midday. Its 2026 replay curtails about 0.85 TWh a year, with a mean winter midday peak of 5.2 GW across twelve weather years, against NTCSA\u2019s report of up to 3 GW on a winter day.</div>'
       // NOT ADDED TO THE COLUMNS (mechanics audit of 20 Oct 2026, G3-M3, fix 4; message 264). The note said to add the full
       // run's extra curtailment, in TWh, to columns in percent; the figure carries the representative-day repeat and stayed
       // on screen through later scenario changes. Shown only for the scenario it was run on, and not added.
@@ -20754,7 +20771,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-27e';
+const BUILD_STAMP = '2026-10-27f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21710,6 +21727,7 @@ const ABOUT_NUM = {
   pvContractedGW: () => ((FIXED.pvUtilityMW - PV_WHEELED_MW) / 1000).toFixed(2),
   pvWheeledGW: () => (PV_WHEELED_MW / 1000).toFixed(2),
   coalGW: () => (FIXED.coalInstalledMW / 1000).toFixed(1),
+  emisCoal: () => FIXED.emisCoal.toFixed(2),   // the methods table's coal factor (was typed 1.04 while FIXED held 1.080; message 450)
   psGW: () => (FIXED.psPowerMW / 1000).toFixed(1),
   rooftopDerate: () => FIXED.rooftopDerate.toFixed(2),
   battGW: () => (FIXED.battPowerMW / 1000).toFixed(2),

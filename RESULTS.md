@@ -17605,3 +17605,160 @@ of the 2026 allowance (confirmed by the user, message 424 (a)). Our assumption, 
 same to 2030, then the 2030 rate in law held, R410.5/t. Holding the central flat after 2030 probably understates the
 carbon cost coal will face; s_carbontreasury shows by how much. Electricity price neutrality to 2030 is not modelled. validate_lp's
 carbon check asserts kept2030 as the default and the treasury and law2031 paths, written out independently (57/57).
+
+### c6c: coal minimum down time 24 h as the central (build 2026-10-27f; user, 27 Oct 2026, messages 442 and 443)
+
+FIXED.coalMinDownH null -> 24: every coal unit's minimum down time is at least 24 h in the engine's commitment (UC_FLEET carried
+PyPSA-RSA's 4 h on 40,130 of 41,530 MW, which with the 2-hour hot start let a unit come off at midday and return for the evening
+peak). Our reading of Meridian Economics' briefing note (26 Oct 2026, p.1, fn.1); literature 8-48 h; the more conservative choice
+for reliability (SOURCES 'Coal minimum down time'). The build optimiser does not see the minimum down time (TODO 14ka), so builds
+move only through the adequacy loop's engine verdicts. Measured before the change (RESULTS on the pack branch, 'Coal minimum down
+time: what it does to the extreme-solar case and to c6a'): in the extreme-solar week, starts halve and curtailment rises 1.6%; on
+c6a (s_mindn24_c6a) the build is unchanged, engine PV -R8.1bn, CO2 +25 Mt and curtailment +22.8 TWh over 2026-40. c6c is c6b's
+settings and set rerun on this page (harness/pathway/chain_c6c.sh, C6C_RUN_BRIEF.md); s_mindn24 is dropped from the set; c6b
+(4 h) is the down-time sensitivity. irpcheck_coalsustain.sh takes the set's name (CENTRAL, default c6b).
+
+### The 2026 replay on builds 27e and 27f: oversupply curtailment 0.94 and 3.05 TWh a year; the mean winter midday peak 5.6 and 6.6 GW, above NTCSA's up to 3 GW on a winter day; the page note restated (user, 27 Oct 2026, message 446; builds 2026-10-27e and 2026-10-27f)
+
+Settings. 'Today 2026' preset (applyState), twelve weather years (2014-2025) x ten outage draws, the engine check's seeds
+(71830529 + k x 104729 + year x 7919), simulate with real profiles, the congestion stopgap as the preset has it; script m130_replay.js
+(scratch, as in 'The 2026 replay curtails almost nothing for oversupply', message 130), run on 27e (main, 026e027) and on 27f
+(claude/c6c-mindown). Winter is May-August, midday 06:00-17:59.
+
+| 2026 replay, 120 runs | 27e (4 h down time) | 27f (24 h) |
+|---|---|---|
+| Oversupply curtailment, GWh a year, mean / median / largest | 944 / 999 / 1,326 | 3,048 / 3,141 / 3,557 |
+| Winter largest midday hour, MW, mean / median / largest | 5,615 / 5,974 / 7,317 | 6,627 / 6,629 / 7,317 |
+| Runs with a winter midday hour of 3 GW or more | 120 | 120 |
+| Largest winter midday day, GWh, mean / largest | 25.9 / 36.2 | 38.0 / 45.9 |
+| Winter days with an hour above 1 GW, mean | 26.3 | 73.8 |
+
+By month, GWh, mean of 120 runs: 27e 3.2, 2.8, 4.9, 31.8, 98.4, 78.6, 147.4, 283.8, 201.1, 43.8, 38.3, 9.6; 27f 5.2, 6.4, 13.7,
+257.8, 456.5, 414.9, 628.6, 618.1, 428.9, 123.9, 76.6, 17.8. The congestion stopgap is 0.29 TWh on both.
+
+Finding. The page note's "its 2026 replay curtails almost nothing" (16 Oct, build 16a) no longer held on 27e: the replay curtails
+0.94 TWh a year and every run has a winter midday hour of 3 GW or more. On 27f it curtails 3.05 TWh, and the mean largest winter
+midday hour, 6.6 GW, is about twice NTCSA's reported up to 3 GW on a winter day. The note (regional curtailment panel) and the full
+model's caption are restated from these figures in #122. Caveats as for message 130: NTCSA's 3 GW is a single reported day, not a
+distribution; the replay uses the preset's fleet and the 2014-2025 weather. Between 16a and 27e the change is PR C's practice floor
+(every unit at 0.75 to 2029): RESULTS 'c6 PR C, message 369 (a)-(e)' records the replay's winter midday peak at 5.5 GW at the central,
+as here (bisection not run).
+
+### The spill substitution checks fail on 27f: 2.24 TWh spilled to congestion raises coal by 1.66 TWh and cuts oversupply curtailment by 0.57 TWh (user, 27 Oct 2026, message 446; build 2026-10-27f)
+
+Settings. validate_findings section 8: slider defaults, congestion stopgap 0% against 10%, PROFILES (2025); the same pair with
+E.curtailed, gas, storage, imports and unserved added (scratch m446/subst.js).
+
+| Default view, 10% stopgap minus 0% | 27e | 27f |
+|---|---|---|
+| Spilled to congestion, TWh | 2.24 | 2.24 |
+| Coal, TWh | +2.10 | +1.66 |
+| Oversupply curtailment, TWh | -0.05 | -0.57 |
+| Gas and diesel, TWh | +0.03 | +0.01 |
+| Storage discharge, TWh | -0.22 | +0.02 |
+| CO2, Mt | +2.23 | +1.78 |
+| Coal per TWh spilled | 0.94 | 0.74 |
+| CO2, Mt per TWh spilled | 1.00 | 0.79 |
+
+Finding. On 27f, 0.57 of the 2.24 TWh spilled to congestion would otherwise have been curtailed as oversupply (the default view
+curtails 2.23 TWh at 0%, against 0.13 TWh on 27e), so coal replaces 0.74 TWh per TWh spilled, below the check's 0.8-1.2, and CO2 is
+0.79 Mt per TWh against 0.85-1.25. Coal plus the curtailment avoided is 2.23 TWh, the spill. The claim the checks guard ("one for
+one") is in no public text: not on the page, the README, the notes or the pack (searched 27 Oct 2026). Both checks are kept and fail
+on 27f, with this cause; the bands are unchanged.
+
+Also on the default view (diff_public_text, 026e027 against 27f): hours priced below zero 240 to 1,542; must-run coal sets the
+price in 74 of the price week's 168 hours (17 on 27e); coal 149.1 to 151.3 TWh, wind 14.2 to 12.8, utility PV 7.7 to 7.1, CO2
+166 to 169 Mt.
+
+### The practice floor recalibrated to 0.715 with the 24-hour down time: the 2026 replay's sunny low-demand midday coal statistic 0.624 against Eskom's 0.623; curtailment 0.85 TWh a year, winter midday peak 5.2 GW against NTCSA's 3 GW (user, 27 Oct 2026, messages 447 and 448; build 2026-10-27f, floor 0.75 -> 0.715)
+
+Settings. Build 27f (FIXED.coalMinDownH 24), 'Today 2026' preset, twelve weather years (2014-2025) x ten outage draws, the engine
+check's seeds; state override coalMslPracticeFloor; floor metric as in 'c6 PR C, message 369 (a)-(e)' (per day, the lowest hour
+10:00-15:00 of coal output over available coal; sunny low-demand days: midday PV above the month's median and midday demand in the
+month's lowest third); scratch m447/run_fm.sh with m335/replay.js and m447/fm_page.js (m364/floor_model_page.js plus annual
+curtailment). Hours below zero: the page's start-up view, simulate on PROFILES (scratch m447/neg.js). Measured statistic
+(ESK19679, Eskom credited, analysis ours): 0.623, p10-p90 0.565-0.724.
+
+| Floor (27f, 24 h) | Statistic, median (p10-p90) | Curtailment, TWh a year | Winter midday peak, MW, mean | Runs at 3 GW or more | Start-up view hours below zero |
+|---|---|---|---|---|---|
+| none | 0.527 (0.448-0.623) | 0.005 | 653 | 0 | 0 |
+| 0.60 | 0.553 (0.483-0.636) | 0.04 | 2,022 | 0 | 0 |
+| 0.65 | 0.573 (0.503-0.654) | 0.11 | 2,728 | 30 | 13 |
+| 0.70 | 0.611 (0.539-0.694) | 0.52 | 4,041 | 120 | 229 |
+| 0.71 | 0.619 (0.546-0.703) | 0.71 | 4,827 | 120 | 332 |
+| 0.715 | 0.624 (0.550-0.707) | 0.85 | 5,207 | 120 | 400 |
+| 0.72 | 0.627 (0.553-0.710) | 1.04 | 5,711 | 120 | 495 |
+| 0.73 | 0.632 (0.558-0.717) | 1.57 | 6,320 | 120 | - |
+| 0.75 | 0.642 (0.566-0.727) | 3.05 | 6,627 | 120 | 1,542 |
+
+For reference, 27e (4 h, floor 0.75): statistic 0.623, curtailment 0.94 TWh, winter midday peak 5.6 GW, 240 hours below zero.
+
+Finding. (a) With the 24-hour down time, the 0.75 floor overshoots the measured statistic (0.642 against 0.623): the two settings
+double count. (b) 0.715 reproduces it (0.624), as closely as 0.75 did at 4 h. Set as the central (message 448, option A): each
+setting represents one thing, and the floor was partly standing in for units kept on for the evening peak, which the down time now
+represents; recalibrating to the same measured statistic is standard calibration practice (rule 366). At 0.715 the 2026 replay
+curtails 0.85 TWh a year (0.94 on 27e) and its mean winter midday peak is 5.2 GW (5.6 on 27e), still above NTCSA's reported 3 GW on
+a winter day (flag kept; NTCSA's figure is one reported day). The start-up view has 400 hours below zero (240 on 27e). The
+extreme-solar week (message 407; Least-cost path 2035 with 45 GW utility and 25 GW rooftop solar, 8-14 January) is in 2035, after
+the floor ends in 2029: 4.4 starts a day on 27f at any floor (scratch m447/probe407_27f.json). The entries 'The 2026 replay on
+builds 27e and 27f' and 'The spill substitution checks fail on 27f' above were measured at the 0.75 floor and are superseded on
+the page by this one.
+
+### Suite on build 27f at the 0.715 floor, against main (27e): three checks now pass, two newly fail (user, 27 Oct 2026, messages 446-449; build 2026-10-27f, branch claude/c6c-mindown)
+
+Settings. ESK19679.csv present, nothing running beside the suite, from harness/ in pieces (scratch m447/suite.sh and
+m447b/suite.sh): piece 1 on e742467 (27 Oct 2026, 15:24-16:29 UTC; panels rewritten first), piece 2 on 87cefdf (from 16:35 UTC;
+panels rewritten again), whose index.html differs from e742467's only in the curtailment note's comment and wording (audit
+prose ceiling). Main: #121's suite on 27e (identical index.html to 026e027).
+
+| Script | 27f, floor 0.715 | Main, 27e |
+|---|---|---|
+| validate_findings | 37/40 | 37/40 |
+| validate_invariants | 176/176 | 175/176 |
+| validate_response | 86/87 | 85/87 |
+| validate_consistency | 82/83 | 81/83 |
+| validate_benchmarks | 27/30 (28/30 after COAL_PARTLOAD_2026 was re-recorded, below) | 28/30 |
+| validate_outputs | 49/51 | 49/51 |
+| eng5 | 5/6 | 5/6 |
+| Every other script | as main | |
+
+Now passing on 27f: modest demand shifting moves system cost by under 0.1% (findings); unserved energy no longer rises with
+reserve in the stressed draw (invariants); interruptible load is called (response); the shadow hourly price spread against
+Homeflex's (consistency). The response matrix's baseline now differs in 35 cells (40 on main), still to be rewritten.
+
+Newly failing on 27f, kept failing with the cause:
+- validate_findings, 'turn-up is a growing share of constraint cost': 54% of constraint cost today and 54% under IRP's 2030
+  targets, turn-up rate R637 against R634/MWh (on 27e 54% and 54% at R647 and R655, passing by a fraction). The finding (10 Sep
+  2026: 42% to 65%, R395 to R1,010/MWh) had already faded to the margin on 27e; on 27f today's replacement rate equals the IRP
+  build's. Not in public text (searched 27 Oct 2026).
+- validate_benchmarks, 'coal CO2 per MWh sent out in 2026 within 0.5% of Eskom's FY2026': Today 2026 1.1150 against 1.1084
+  t/MWh (+0.6%). COAL_PARTLOAD_2026 (1.0262) is c5f's central run's 2026 part-load mean; with the 24-hour down time and the 0.715
+  floor more coal runs at part load. The check asks for the constant to be re-recorded from a central run's 2026: c6c's, once
+  its runs land (decision for the user: re-record before or after the c6c runs). Re-recorded from Today 2026 (message 450,
+  entry below): the check passes, 1.1088 against 1.1084 t/MWh.
+
+The two spill substitution checks (above, failing at the 0.75 floor) pass at 0.715: 2.24 TWh spilled raises coal by 0.92 TWh
+per TWh and CO2 by 0.97 Mt per TWh. Curtailment at defaults is 0.3 TWh a year (validate_outputs, failing as on main, 0.1).
+
+### COAL_PARTLOAD_2026 re-recorded from Today 2026: 1.0262 -> 1.0324, emisCoal 1.080 -> 1.074 t/MWh, the 2026 coal rate 1.1150 -> 1.1088 against Eskom's 1.1084 (user, 27 Oct 2026, message 450; build 2026-10-27f, floor 0.715)
+
+Settings. Today 2026 preset on the page's start-up state, simulate on PROFILES, as validate_benchmarks measures it: coal rate =
+(engine CO2 less CCGT and diesel at their factors) over coal output; part-load mean = that rate over FIXED.emisCoal (scratch
+m450/rate.js). Before: rate 1.11495 t/MWh with emisCoal 1.080 (COAL_PARTLOAD_2026 1.0262, c5f's central run's 2026), part-load
+mean 1.03237. After: COAL_PARTLOAD_2026 1.0324, emisCoal +(1.10842 / 1.0324).toFixed(3) = 1.074, rate 1.10876 (+0.03% against
+Eskom's FY2026 1.10842; band 0.5%). Coal output unchanged (149.29 TWh); Today 2026 CO2 166.59 -> 165.67 Mt.
+
+Departure from the documented method. The constant is meant to be recorded from a central run's 2026 (c5f's until now). c6c's
+own 2026 exists only after the c6c runs, and those should run on a calibrated value, so it is recorded from Today 2026 on this
+build instead (the user's decision, message 450 (a)). Check: when claude/c6c-runs lands, re-record it from c6c's 2026 and report
+the difference; if over 0.1 percentage point, say so before any pack table uses c6c's CO2.
+
+Also: the methods table typed the coal factor as 1.04 t/MWh while FIXED.emisCoal was 1.080 on main; it now reads FIXED.emisCoal
+(data-num emisCoal, 1.07).
+
+Suite after COAL_PARTLOAD_2026 was re-recorded (commit 7639a89, panels rewritten; ESK19679.csv present, nothing running beside it;
+27 Oct 2026 from 17:53 UTC, scratch m450s/suite.sh): stored panels 86/86, outputs 49/51, findings 37/40, consistency 82/83,
+invariants 176/176, response 86/87, benchmarks 28/30, weather 68/68, structure 27/27, public text 22/22, lint 3/3, geo 43/43,
+capacity 36/36, inputs 37/37, lp 57/57, external 8/8, solve 9/9, audit 88/88, eng5 5/6; piece 2 (from 18:57 UTC): pathway presets
+27/40, links 48/48, worker 38/38. Node checks 967/989 (main 964/989), audit 88/88, eng5 5/6. The failures are main's less the four
+now passing, plus the turn-up finding above.
