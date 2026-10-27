@@ -493,7 +493,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
             <strong id="mipCaveat">The full model runs on 2025 regional demand and its own regional weather data, and does not dispatch gas; its results are not comparable with the presets.</strong>
             Re-solves coal, storage and corridor flows across all 10 regions as a mixed-integer programme (MIP).
-            (The instant model commits coal by a rule in 4-hour blocks, with start-up times of 2 to 10 hours, so units seldom come off over midday; NTCSA says the System Operator does not do that.)
+            (The instant model commits coal by a rule in 4-hour blocks and keeps a unit off for at least 24 hours once it comes off, so units seldom come off over midday; NTCSA says the System Operator does not do that.)
           </span>
         </div>
 
@@ -13792,7 +13792,11 @@ function renderCurtailmentForecast(){
       + gasFloorNote(lastRes, 'Its output adds to the midday surplus, so curtailment here is higher on this preset than without the minimum.', 'margin-top:8px')
       + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
       + oversupplyOnly
-      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Why this shows almost no curtailment today, when Eskom is already curtailing:</strong> NTCSA attributes today\u2019s curtailment to coal kept online through daylight to cover the morning and evening peaks. The instant engine takes coal units off over midday in 4-hour blocks instead, so it understates midday oversupply curtailment: its 2026 replay curtails almost nothing, against NTCSA\u2019s report of up to 3 GW on a winter day.</div>'
+      // RESTATED ON BUILD 2026-10-27f (user, 27 Oct 2026, message 446): the note said the replay "curtails almost nothing"
+      // (16 Oct, message 130). Measured, 'Today 2026', twelve weather years x ten outage draws: 0.94 TWh a year on 27e (4 h
+      // down time), 3.05 TWh on 27f (24 h); mean winter (May-August) largest midday hour 5.6 and 6.6 GW. RESULTS 'The 2026
+      // replay on builds 27e and 27f'.
+      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Curtailment today, against NTCSA\u2019s report:</strong> NTCSA attributes today\u2019s curtailment to coal kept online through daylight to cover the morning and evening peaks. The instant engine keeps a coal unit off for at least 24 hours once it comes off, so units stay on through midday. Its 2026 replay curtails about 3.0 TWh a year for oversupply, and its largest winter midday hour averages 6.6 GW across twelve weather years, against NTCSA\u2019s report of up to 3 GW on a winter day.</div>'
       // NOT ADDED TO THE COLUMNS (mechanics audit of 20 Oct 2026, G3-M3, fix 4; message 264). The note said to add the full
       // run's extra curtailment, in TWh, to columns in percent; the figure carries the representative-day repeat and stayed
       // on screen through later scenario changes. Shown only for the scenario it was run on, and not added.

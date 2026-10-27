@@ -17617,3 +17617,55 @@ time: what it does to the extreme-solar case and to c6a'): in the extreme-solar 
 c6a (s_mindn24_c6a) the build is unchanged, engine PV -R8.1bn, CO2 +25 Mt and curtailment +22.8 TWh over 2026-40. c6c is c6b's
 settings and set rerun on this page (harness/pathway/chain_c6c.sh, C6C_RUN_BRIEF.md); s_mindn24 is dropped from the set; c6b
 (4 h) is the down-time sensitivity. irpcheck_coalsustain.sh takes the set's name (CENTRAL, default c6b).
+
+### The 2026 replay on builds 27e and 27f: oversupply curtailment 0.94 and 3.05 TWh a year; the mean winter midday peak 5.6 and 6.6 GW, above NTCSA's up to 3 GW on a winter day; the page note restated (user, 27 Oct 2026, message 446; builds 2026-10-27e and 2026-10-27f)
+
+Settings. 'Today 2026' preset (applyState), twelve weather years (2014-2025) x ten outage draws, the engine check's seeds
+(71830529 + k x 104729 + year x 7919), simulate with real profiles, the congestion stopgap as the preset has it; script m130_replay.js
+(scratch, as in 'The 2026 replay curtails almost nothing for oversupply', message 130), run on 27e (main, 026e027) and on 27f
+(claude/c6c-mindown). Winter is May-August, midday 06:00-17:59.
+
+| 2026 replay, 120 runs | 27e (4 h down time) | 27f (24 h) |
+|---|---|---|
+| Oversupply curtailment, GWh a year, mean / median / largest | 944 / 999 / 1,326 | 3,048 / 3,141 / 3,557 |
+| Winter largest midday hour, MW, mean / median / largest | 5,615 / 5,974 / 7,317 | 6,627 / 6,629 / 7,317 |
+| Runs with a winter midday hour of 3 GW or more | 120 | 120 |
+| Largest winter midday day, GWh, mean / largest | 25.9 / 36.2 | 38.0 / 45.9 |
+| Winter days with an hour above 1 GW, mean | 26.3 | 73.8 |
+
+By month, GWh, mean of 120 runs: 27e 3.2, 2.8, 4.9, 31.8, 98.4, 78.6, 147.4, 283.8, 201.1, 43.8, 38.3, 9.6; 27f 5.2, 6.4, 13.7,
+257.8, 456.5, 414.9, 628.6, 618.1, 428.9, 123.9, 76.6, 17.8. The congestion stopgap is 0.29 TWh on both.
+
+Finding. The page note's "its 2026 replay curtails almost nothing" (16 Oct, build 16a) no longer held on 27e: the replay curtails
+0.94 TWh a year and every run has a winter midday hour of 3 GW or more. On 27f it curtails 3.05 TWh, and the mean largest winter
+midday hour, 6.6 GW, is about twice NTCSA's reported up to 3 GW on a winter day. The note (regional curtailment panel) and the full
+model's caption are restated from these figures in #122. Caveats as for message 130: NTCSA's 3 GW is a single reported day, not a
+distribution; the replay uses the preset's fleet and the 2014-2025 weather. Between 16a and 27e the change is PR C's practice floor
+(every unit at 0.75 to 2029): RESULTS 'c6 PR C, message 369 (a)-(e)' records the replay's winter midday peak at 5.5 GW at the central,
+as here (bisection not run).
+
+### The spill substitution checks fail on 27f: 2.24 TWh spilled to congestion raises coal by 1.66 TWh and cuts oversupply curtailment by 0.57 TWh (user, 27 Oct 2026, message 446; build 2026-10-27f)
+
+Settings. validate_findings section 8: slider defaults, congestion stopgap 0% against 10%, PROFILES (2025); the same pair with
+E.curtailed, gas, storage, imports and unserved added (scratch m446/subst.js).
+
+| Default view, 10% stopgap minus 0% | 27e | 27f |
+|---|---|---|
+| Spilled to congestion, TWh | 2.24 | 2.24 |
+| Coal, TWh | +2.10 | +1.66 |
+| Oversupply curtailment, TWh | -0.05 | -0.57 |
+| Gas and diesel, TWh | +0.03 | +0.01 |
+| Storage discharge, TWh | -0.22 | +0.02 |
+| CO2, Mt | +2.23 | +1.78 |
+| Coal per TWh spilled | 0.94 | 0.74 |
+| CO2, Mt per TWh spilled | 1.00 | 0.79 |
+
+Finding. On 27f, 0.57 of the 2.24 TWh spilled to congestion would otherwise have been curtailed as oversupply (the default view
+curtails 2.23 TWh at 0%, against 0.13 TWh on 27e), so coal replaces 0.74 TWh per TWh spilled, below the check's 0.8-1.2, and CO2 is
+0.79 Mt per TWh against 0.85-1.25. Coal plus the curtailment avoided is 2.23 TWh, the spill. The claim the checks guard ("one for
+one") is in no public text: not on the page, the README, the notes or the pack (searched 27 Oct 2026). Both checks are kept and fail
+on 27f, with this cause; the bands are unchanged.
+
+Also on the default view (diff_public_text, 026e027 against 27f): hours priced below zero 240 to 1,542; must-run coal sets the
+price in 74 of the price week's 168 hours (17 on 27e); coal 149.1 to 151.3 TWh, wind 14.2 to 12.8, utility PV 7.7 to 7.1, CO2
+166 to 169 Mt.
