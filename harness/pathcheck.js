@@ -103,6 +103,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (P.importsCF != null) w.eval(`state.importsCF=${+P.importsCF};`);
  const BLK = (P.demand && P.demand.block) ? P.demand.block : null;
  if (BLK) console.log('demand block from the pathway:', JSON.stringify(BLK));
+ // Coal sustaining capital (s_coalsustain, message 429): the pathway's own add-on to fomCoal, R/kW-yr.
+ if (P.coalFomAdd) { w.eval(`if(!('fomCoal' in FIXED)) throw new Error('fomCoal missing'); state.fomCoal=FIXED.fomCoal+${+P.coalFomAdd};`); console.log('coal fixed cost add-on from the pathway:', P.coalFomAdd); }
  // Cape wind allowance (14 Oct 2026): the pathway's curtailment share; each year's MW from sched[y].cw, cumulated below.
  if (P.capeWind) { w.eval(`state.bldCapeCurtPct=${+P.capeWind.curtPct};`); console.log('Cape wind allowance from the pathway:', JSON.stringify(P.capeWind)); }
  let cwCum=0;

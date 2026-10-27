@@ -81,6 +81,8 @@ pair s_rate48_c6b "COAL_STATE='{\"bldCoalCommitHours\":48}'" s_spotoil_c6b "COAL
 pair s_wearp75_c6b "COAL_STATE='{\"coalStartWear\":\"p75\"}'" s_koeberg_winter_c6b "NUC_SHAPE='[1.4859869721690109,1.3233883976907597,1.0703906157535057,0.8662924051076811,0.6634941830646963,0.6625941909550381,0.6646941725442406,0.6101946503482708,0.7746932081691338,0.7827931371560578,1.544486459296795,1.5773861708609676]'"
 pair s_ntcsa_both_c6b "OC_CF_MAX=0.06" s_nogas_dsl_c6b "GAS_CAP=0 OCGD=1"
 pair s_std_strict_c6b "STD=strict" s_std_nem_c6b "STD=nem"
+# Messages 426 and 429: s_coalsustain, R500/kW-yr of sustaining capital on existing coal (top of the working range R350-500).
+one s_coalsustain_c6b "COAL_FOM_ADD=500"
 echo "$(date -u +%H:%M) SHORT RUNS DONE" >> $P
 # Solves over 30 minutes on c6a, last: s_nogas (38 min), s_std_strict_nogas_dsl (34 min); s_std_nem_nogas_dsl (not timed on c6a).
 # Not run (message 416 (f)): s_std_strict_nogas_c6b and s_std_nem_nogas_c6b, whose solves exceed the time between container restarts.
@@ -88,7 +90,7 @@ pair s_nogas_c6b "GAS_CAP=0 OCGD=0" s_std_strict_nogas_dsl_c6b "STD=strict GAS_C
 one s_std_nem_nogas_dsl_c6b "STD=nem GAS_CAP=0 OCGD=1"
 echo "$(date -u +%H:%M) STANDARDS DONE" >> $P
 python3 -I pathway/make_ret.py pathway/ret_counter.js pathcheck.js pathcheck_ret.gen.js >> $P 2>&1   # restart counts on this commit's own check
-for n in c6b null_c6b s_nogas_c6b s_gascapex25_c6b s_gas2030_c6b s_imp_c6b s_demlowflat_c6b s_demlowm1_c6b c6b_irpdem s_coalpractice_c6b s_mindn24_c6b s_rate48_c6b s_spotoil_c6b s_wearp75_c6b s_be6_c6b s_be7_c6b s_irpgas_c6b s_koeberg_winter_c6b s_ntcsa_both_c6b s_nogas_dsl_c6b s_std_strict_c6b s_std_strict_nogas_c6b s_std_strict_nogas_dsl_c6b s_std_nem_c6b s_std_nem_nogas_c6b s_std_nem_nogas_dsl_c6b s_carbontreasury_c6b s_carbonhold_c6b; do
+for n in c6b null_c6b s_nogas_c6b s_gascapex25_c6b s_gas2030_c6b s_imp_c6b s_demlowflat_c6b s_demlowm1_c6b c6b_irpdem s_coalpractice_c6b s_mindn24_c6b s_rate48_c6b s_spotoil_c6b s_wearp75_c6b s_be6_c6b s_be7_c6b s_irpgas_c6b s_koeberg_winter_c6b s_ntcsa_both_c6b s_nogas_dsl_c6b s_std_strict_c6b s_std_strict_nogas_c6b s_std_strict_nogas_dsl_c6b s_std_nem_c6b s_std_nem_nogas_c6b s_std_nem_nogas_dsl_c6b s_carbontreasury_c6b s_carbonhold_c6b s_coalsustain_c6b; do
   [ -s out/pathway_$n.json ] && ret $n out/pathway_$n.json; done
 ret irp2025_c6b $N/irp/pathway_irp2025_c6b.json; ret irp2025_c6b_irpdem $N/irp/pathway_irp2025_c6b_irpdem.json
 echo "$(date -u +%H:%M) C6B SET DONE" >> $P
