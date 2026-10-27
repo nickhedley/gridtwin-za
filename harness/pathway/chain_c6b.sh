@@ -4,8 +4,9 @@
 # c6b central run set (user, 27 Oct 2026, messages 406, 416, 423 and 424): c6a's settings (env_c6a.sh) on build 2026-10-27d, wind on BW6 bids and rooftop at R10,500 DC; was the c6a set (messages 389 and 391): c6's settings with new gas from 2032 and the 2026 fleet counted for
 # its share of the year in service (harness/pathway/env_c6a.sh). Every run plans to NTCSA's 20 GWh unless it sets STD. s_gas2032 is
 # replaced by s_gas2030 (gas from 2030, as c6 had; 391 (c)); the strict and NEM standards only for c6b, s_nogas and s_nogas_dsl (391 (d)).
-# Order: c6b; the three IRP-schedule runs and c6b at IRP 2025's demand, then the IRP pair's build files and checks; the rest of the
-# 20 GWh set; the no-gas-with-peakers run; the standard runs; restart counts. Two solves at a time (15 GB). Resumable: a finished
+# Order (message 428 (b)): c6b; the three IRP-schedule runs and c6b at IRP 2025's demand, then the IRP pair's build files and checks;
+# the wind cases and the IRP pair at each; the carbon cases and the IRP pair on each; the IRP pair at a high nuclear charge; the rest
+# of the set, short solves first; solves over 30 minutes last; restart counts. Two solves at a time (15 GB). Resumable: a finished
 # run or check is skipped; each run's LP cache is deleted once its check is written.
 REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd); H=$REPO/harness; N=${N:-$H/out/c6b}; P=$N/progress.txt
 cd $H; source pathway/env_c6a.sh; mkdir -p out $N/irp $N/ret
@@ -20,6 +21,10 @@ check(){ local n=$1 extra=$2
   else echo "$(date -u +%H:%M) check $n INCOMPLETE (see out/pathcheck_${n}_*.log)" >> $P; fi; }
 one(){ local name=$1 chg=$2 maxp=${3:-3} tl=${4:-7200}
   if [ ! -s out/pathway_$name.json ]; then
+    # A run that has started twice without output (each container restart kills it) is reported as not run (message 428 (b)).
+    local att=$N/attempts_$name k; k=$(cat $att 2>/dev/null || echo 0)
+    if [ "$k" -ge 2 ]; then echo "$(date -u +%H:%M) NOT RUN $name: no output after $k attempts (container restarts or the time limit)" >> $P; return 0; fi
+    echo $((k+1)) > $att
     echo "$(date -u +%H:%M) start $name ($chg) MAXP=$maxp TL=$tl; free $(df -h /home/user | awk 'NR==2{print $4}')" >> $P
     eval "env $chg LPCACHE=lpcache_$name MAXP=$maxp OUT=out/pathway_$name.json TL=$tl timeout $((tl*2)) nice -n 10 node --max-old-space-size=8192 pathway/pathway_perfail.js" > out/$name.log 2>&1
     local rc=$?; echo "$(date -u +%H:%M) end $name rc=$rc $(grep -o 'done [a-z ]*[0-9]*s\|stall stop[^\n]*\|pass limit[^\n]*' out/$name.log | tail -1)$([ -s out/pathway_$name.json ] || echo ' NO OUTPUT')" >> $P
@@ -32,6 +37,11 @@ irpcheck(){ local f=$1
     [ -s $N/irp/pathcheck_${f}_$1.json ] && continue
     env -i PATH="$PATH" HOME="$HOME" LNG=1 GRID=1 YEARS=$2 IN=$N/irp/pathway_$f.json OUTC=$N/irp/pathcheck_${f}_$1.json nice -n 10 node --max-old-space-size=4096 pathcheck.js > $N/irp/pathcheck_${f}_$1.log 2>&1 &
   done; wait; echo "$(date -u +%H:%M) IRP pair check $f: $(ls $N/irp/pathcheck_${f}_?.json 2>/dev/null | wc -l)/3 groups" >> $P; }
+nuccheck(){ local f=$1 acap=$2   # the IRP pair at a high nuclear capital charge (message 415 (a)): engine check only
+  for g in "a 2026,2027,2028,2029,2030" "b 2031,2032,2033,2034,2035" "c 2036,2037,2038,2039,2040"; do set -- $g
+    [ -s $N/irp/pathcheck_${f}_nuc${acap}_$1.json ] && continue
+    env -i PATH="$PATH" HOME="$HOME" LNG=1 GRID=1 NUC_ACAP=$acap YEARS=$2 IN=$N/irp/pathway_$f.json OUTC=$N/irp/pathcheck_${f}_nuc${acap}_$1.json nice -n 10 node --max-old-space-size=4096 pathcheck.js > $N/irp/pathcheck_${f}_nuc${acap}_$1.log 2>&1 &
+  done; wait; echo "$(date -u +%H:%M) IRP pair nuclear check $f at R$acap/kW-yr: $(ls $N/irp/pathcheck_${f}_nuc${acap}_?.json 2>/dev/null | wc -l)/3 groups" >> $P; }
 ret(){ local n=$1 in=$2; [ -s $N/ret/ret_$n.json ] && return 0
   env -i PATH="$PATH" HOME="$HOME" LNG=1 GRID=1 K=2 IN=$in OUTC=$N/ret/pc_$n.json OUTR=$N/ret/ret_$n.json nice -n 10 node --max-old-space-size=4096 pathcheck_ret.gen.js > $N/ret/ret_$n.log 2>&1
   echo "$(date -u +%H:%M) restart count $n exit $?" >> $P; }
@@ -59,18 +69,23 @@ P['note423']='Copy of pathway_irp2025_c6b.json on carbon path '+sys.argv[3]+' (m
 json.dump(P,open(sys.argv[2],'w'))" $N/irp/pathway_irp2025_c6b.json $N/irp/pathway_irp2025_c6b_carbon$k.json $v out/pathway_s_carbon${k}_c6b.json; done
 irpcheck irp2025_c6b_carbontreasury & irpcheck irp2025_c6b_carbonhold & wait
 echo "$(date -u +%H:%M) CARBON CASES DONE" >> $P
-pair null_c6b "" s_nogas_c6b "GAS_CAP=0 OCGD=0"
-pair s_gascapex25_c6b "GAS_CAPEX=43706" s_gas2030_c6b "GAS_FIRST=2030"
-pair s_imp_c6b "IMP_END=2040" s_demlowflat_c6b "DEMAND=rate:0"
-pair s_demlowm1_c6b "DEMAND=rate:-1" s_coalpractice_c6b "COAL_STATE='{\"coalMslDesignFromYear\":2041}'"
-pair s_mindn24_c6b "COAL_STATE='{\"coalMinDownH\":24}'" s_rate48_c6b "COAL_STATE='{\"bldCoalCommitHours\":48}'"
-pair s_spotoil_c6b "COAL_STATE='{\"coalStartFuel\":\"spot\"}'" s_wearp75_c6b "COAL_STATE='{\"coalStartWear\":\"p75\"}'"
-pair s_koeberg_winter_c6b "NUC_SHAPE='[1.4859869721690109,1.3233883976907597,1.0703906157535057,0.8662924051076811,0.6634941830646963,0.6625941909550381,0.6646941725442406,0.6101946503482708,0.7746932081691338,0.7827931371560578,1.544486459296795,1.5773861708609676]'" s_ntcsa_both_c6b "OC_CF_MAX=0.06"
-echo "$(date -u +%H:%M) 20 GWH SET DONE" >> $P
-pair s_nogas_dsl_c6b "GAS_CAP=0 OCGD=1" s_std_strict_c6b "STD=strict"
-# Not run (message 416 (f)): s_std_strict_nogas_c6b and s_std_nem_nogas_c6b, whose solves exceed the 1.5-2 h between container restarts.
-one s_std_strict_nogas_dsl_c6b "STD=strict GAS_CAP=0 OCGD=1"
-one s_std_nem_c6b "STD=nem"; one s_std_nem_nogas_dsl_c6b "STD=nem GAS_CAP=0 OCGD=1"
+# Message 415 (a): the IRP pair checked at a high nuclear capital charge, R16,800/kW-yr (USD 12,000/kW on acapNuclear's basis; the
+# value waits on the nuclear reconciliation, message 417 (b), and stays out of the pack until confirmed).
+nuccheck irp2025_c6b 16800 & nuccheck irp2025_c6b_irpdem 16800 & wait
+# Message 428 (b): the 20 GWh set and the standard runs, short solves first; solves over 30 minutes last.
+pair null_c6b "" s_gascapex25_c6b "GAS_CAPEX=43706"
+pair s_gas2030_c6b "GAS_FIRST=2030" s_imp_c6b "IMP_END=2040"
+pair s_demlowflat_c6b "DEMAND=rate:0" s_demlowm1_c6b "DEMAND=rate:-1"
+pair s_coalpractice_c6b "COAL_STATE='{\"coalMslDesignFromYear\":2041}'" s_mindn24_c6b "COAL_STATE='{\"coalMinDownH\":24}'"
+pair s_rate48_c6b "COAL_STATE='{\"bldCoalCommitHours\":48}'" s_spotoil_c6b "COAL_STATE='{\"coalStartFuel\":\"spot\"}'"
+pair s_wearp75_c6b "COAL_STATE='{\"coalStartWear\":\"p75\"}'" s_koeberg_winter_c6b "NUC_SHAPE='[1.4859869721690109,1.3233883976907597,1.0703906157535057,0.8662924051076811,0.6634941830646963,0.6625941909550381,0.6646941725442406,0.6101946503482708,0.7746932081691338,0.7827931371560578,1.544486459296795,1.5773861708609676]'"
+pair s_ntcsa_both_c6b "OC_CF_MAX=0.06" s_nogas_dsl_c6b "GAS_CAP=0 OCGD=1"
+pair s_std_strict_c6b "STD=strict" s_std_nem_c6b "STD=nem"
+echo "$(date -u +%H:%M) SHORT RUNS DONE" >> $P
+# Solves over 30 minutes on c6a, last: s_nogas (38 min), s_std_strict_nogas_dsl (34 min); s_std_nem_nogas_dsl (not timed on c6a).
+# Not run (message 416 (f)): s_std_strict_nogas_c6b and s_std_nem_nogas_c6b, whose solves exceed the time between container restarts.
+pair s_nogas_c6b "GAS_CAP=0 OCGD=0" s_std_strict_nogas_dsl_c6b "STD=strict GAS_CAP=0 OCGD=1"
+one s_std_nem_nogas_dsl_c6b "STD=nem GAS_CAP=0 OCGD=1"
 echo "$(date -u +%H:%M) STANDARDS DONE" >> $P
 python3 -I pathway/make_ret.py pathway/ret_counter.js pathcheck.js pathcheck_ret.gen.js >> $P 2>&1   # restart counts on this commit's own check
 for n in c6b null_c6b s_nogas_c6b s_gascapex25_c6b s_gas2030_c6b s_imp_c6b s_demlowflat_c6b s_demlowm1_c6b c6b_irpdem s_coalpractice_c6b s_mindn24_c6b s_rate48_c6b s_spotoil_c6b s_wearp75_c6b s_be6_c6b s_be7_c6b s_irpgas_c6b s_koeberg_winter_c6b s_ntcsa_both_c6b s_nogas_dsl_c6b s_std_strict_c6b s_std_strict_nogas_c6b s_std_strict_nogas_dsl_c6b s_std_nem_c6b s_std_nem_nogas_c6b s_std_nem_nogas_dsl_c6b s_carbontreasury_c6b s_carbonhold_c6b; do
