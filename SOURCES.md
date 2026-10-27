@@ -337,6 +337,25 @@ These do not populate a JSON file, but a number in `FIXED` rests on each. Changi
 source means changing the constant, so they belong in this register.
 
 ```
+Rooftop PV installed cost, 2025-26 (user, 27 Oct 2026, messages 413 and 416 (b)): the c6b rooftop capex. 2025-26 installer price
+                         guides; no authoritative survey of South African rooftop costs was found. All read from search-result
+                         snippets on 27 Oct 2026 (this environment could not open .co.za pages): confirm dates, VAT and
+                         contents before the pack quotes a single source. Rand per Wp DC excluding VAT, no battery; prices
+                         stated with VAT divided by 1.15. Residential: EnergyBee 2026 guides, 5 kW R13.0-17.4, 3-8 kW
+                         R13.0-15.7, above 8 kW R10.4-13.9, 10 kW R13.0-16.5 (energybee.co.za; installer guide); VoltFlow,
+                         3 Apr 2026, 5 kW R14.8-20.9 (scope not stated). SAPVIA spokesperson's deck, Oct 2026 (via the user,
+                         advocacy): components about R7.5-7.8 with no installer margin stated. Commercial and industrial:
+                         Focal Energy 2026, ex VAT, R10.40 (50 kWp), 8.70 (100), 7.24 (500), 6.70 (1 MWp)
+                         (focalenergy.co.za); Elite Energy (undated), ex VAT, R11-14 (30-100 kWp), 9.5-12 (100-500), 8.5-10.5
+                         (500-1,000) (eliteenergy.co.za); an anonymised 30 kWp C&I estimate, 2025, R8.76/Wp DC ex VAT,
+                         hybrid inverters, design and installation (seen by the author; not published). Central residential
+                         R13.0 (10.0-17.0), C&I R9.5 (7.0-12.5); weighted 30% residential and 70% C&I by installed MW (no
+                         sourced split: 675,000 households with panels, StatsSA General Household Survey 2025 as reported, at
+                         3-4 kWp is 2.0-2.7 GW of about 8-9 GW; NTCSA: commercial roofs hold the bulk, Engineering News 19 Jun
+                         2026). Blend R10.55, taken as R10.5/Wp DC (R12,600/kW AC at 1.2); low R8.0, high R14.0. GreenCape's
+                         market intelligence reports not used (user, message 413: conservative and dated). Flags: the retail
+                         guides (about R13) and SAPVIA's component figure (about R7.7) are far apart, unexplained; the 30 kWp
+                         estimate sits below both vendors' small-system prices.
 Lazard LCOE+ 2025      Levelized Cost of Energy+ (June 2025), Appendix A, LCOE v18.0 key
                          assumptions, p.37: gas peaking (new build) capacity factor 15%-10%.
                          Read 18 Oct 2026 (user, message 199 (1)). DSL_REF_CF 0.10, the bottom of

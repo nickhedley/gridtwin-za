@@ -17550,3 +17550,26 @@ does not quote a score taken before that build on a preset dated after importsEn
 rescored: imports now end after 2030.' until the presets build rescores it (message 402 (b), TODO 14ix). PRESET_SCORES is
 generated data and is not edited. Deep decarbonisation 2035's score (build 2026-10-24b) is after PR B and is unchanged. Visible
 text: that one sentence (harness/diff_public_text.js against main 02cb281).
+
+### c6b's two cost changes: wind on BW6's compliant bids, rooftop blended from 2025-26 price guides (build 2026-10-27a; user, 27 Oct 2026, messages 405, 406, 408, 409, 411, 413, 414, 416 (a), (b); replaces the wind part of message 125)
+
+Wind: FIXED.bldWindCase 'central' -> 'bw6'. Central BW6's compliant wind bids, R26,647/kW (IPP Office REIPPPP historical data note,
+7 Nov 2025, January 2024 rands), R28,462/kW in January 2026 rands, about R0.82/kWh at 8% real over 25 years at new wind's 42.5%
+capacity factor before the grid charge. Corroborated by IRP 2025's workbook BW6 base case (R27,446/kW, 2026 rands), Koruson 1's
+disclosed investment (BW5, 420 MW, R11.5bn, about R27,400/kW, 2023) and Meridian Economics' 2024 base case (R24,797/kW in 2023 rands,
+about R27,900 in January 2026 rands at the model's CPI chain; Review of the IRP 2023, 18 Mar 2024 draft, technical appendix). Low case:
+the capex implied by BW5's awarded tariff on the model's assumptions, R20,874/kW, about R0.63/kWh (the case keyed 'central', kept so
+earlier runs check as built); BW5 reached financial close late and in part (about half of its 1,608 MW of wind, Nov 2022-Mar 2023, at
+R564-601/MWh after the RFP's exchange-rate and CPI adjustment). High: disclosed investment values (Koruson 1 and Impofu), R30,063/kW,
+about R0.86/kWh. Published estimates beside them (search results, pages not opened): Meridian 2020 66 c/kWh (about R0.84-0.86 in 2026
+rands), IRENA 2024 Africa onshore about USD 0.052/kWh (about R0.86 at 12% cost of capital), BNEF 2025 global onshore USD 40/MWh
+(about R0.66). The wind anchor, the methodology table's capex line and the capacity-payment panel now follow the central case; the
+capex line showed R17,773 (the tariff capex at BW6 bids' capacity factor, used by no run since the 'run' basis became the default).
+validate_weather's anchor formula follows the case likewise.
+
+Rooftop: ROOF_CAPEX_DC_RKW 12,500 -> 10,500 (R12,600/kW AC at DC/AC 1.2), excluding VAT, January 2026 rands: 30% residential at
+R13.0/Wp and 70% commercial and industrial at R9.5/Wp (SOURCES 'Rooftop PV installed cost, 2025-26'; installer price guides, no
+authoritative survey). Low R8,000, high R14,000 DC. Rooftop is a fixed path in the build LP (1,200 MW a year from 2027), so the build
+does not move; costs do (TODO: engine checks and cost tables only).
+
+The Fossil-free 2040 caption fix (message 402 (c), previous entry) rides in the same page change, so one suite covers all three.
