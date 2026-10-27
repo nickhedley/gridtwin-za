@@ -486,6 +486,15 @@ neutrality) is read and confirmed by the advisor (message 425). The DBSA/PCC/NPC
 carbonTaxRPerT (R46/t) in every scenario year, while the pathway optimiser and its engine check follow carbonTaxAt; match the
 page's rate to the scenario year. The slider note stays as it is until then.
 
+14jw. Coal flexibilisation as a build decision, after the note; no work before Friday 30 Oct (user, 27 Oct 2026, message 427):
+(a) the three flexibilisation steps (Tier 1, Tiers 1-3) become a choice the build optimiser makes by station and year, each with a
+retrofit cost (capex, its fixed O&M and outage time) and what it buys (lower minimum stable level, faster ramps, cheaper starts);
+the hourly engine checks the chosen retrofits like any other build. (b) Costs from public sources only, each cited in SOURCES:
+start with Agora Energiewende, Flexibility in thermal power plants (2017), and NREL / 21st Century Power Partnership's work on
+flexible coal (India and China retrofit costs). The Eskom flexibilisation report (RES/TRR/21/1962944) stays local, a cross-check
+only, no figures from it in the repository. (c) The checkbox stays as a setting for runs that fix the choice. (d) Report it beside
+s_coalpractice: what flexibilisation is worth against coal held at the 75% floor.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
