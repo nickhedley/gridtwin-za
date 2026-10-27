@@ -1188,7 +1188,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <p style="margin-bottom:8px"><strong>Unit commitment:</strong> coal is committed at <strong>individual unit level</strong> – <span data-num="ucUnits"></span> units in <span data-num="ucRows"></span> groups across <span data-num="ucStations"></span> stations – in 4-hour blocks, respecting each unit&rsquo;s minimum stable level (<span data-num="ucMslRange"></span> of capacity, fleet-weighted <span data-num="ucMslW"></span>), minimum up and down times, and ramp limits. This is what produces the &ldquo;Buffalo curve&rdquo;: coal that cannot drop far enough at midday to make room for solar while remaining available for the morning and evening peaks. Against a single-node PyPSA unit-commitment optimum with a 24-hour horizon on the same inputs (October 2026), the engine&rsquo;s cost is 1.1&ndash;3.5% higher in three ordinary weeks (1.2% in the 2026 baseline week) and 26% higher in the 2040 stress week.</p>
 
         <table class="mono" style="font-size:11.5px">
-          <tr><td>Coal</td><td>R546/MWh (Eskom FY2025 coal unit cost, environmental levy included; about R507 without it) &middot; +R80 VOM &middot; 1.04&nbsp;tCO&#8322;/MWh (our figure; Eskom&rsquo;s FY2026 report implies 1.11) &middot; <span data-num="coalGW"></span>&nbsp;GW installed (Eskom FY2026 nominal) &middot; real per-unit retirement dates to 2051</td></tr>
+          <tr><td>Coal</td><td>R546/MWh (Eskom FY2025 coal unit cost, environmental levy included; about R507 without it) &middot; +R80 VOM &middot; <span data-num="emisCoal"></span>&nbsp;tCO&#8322;/MWh (our figure; Eskom&rsquo;s FY2026 report implies 1.11) &middot; <span data-num="coalGW"></span>&nbsp;GW installed (Eskom FY2026 nominal) &middot; real per-unit retirement dates to 2051</td></tr>
           <tr><td>Diesel OCGT</td><td>R<span data-num="costDiesel"></span>/MWh fuel &middot; +R70 VOM &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
           <tr><td>Gas CCGT</td><td>R<span data-num="costCcgt"></span>/MWh fuel &middot; +R35 VOM &middot; 0.348&nbsp;tCO&#8322;/MWh &middot; LNG-fired, the central gas case: 13.25% of Brent at USD&nbsp;80 in 2024 dollars, USD&nbsp;11.74/MMBtu at the coast with shipping, plus USD&nbsp;0.25 of regasification, &times; R16.50/USD &divide; 0.293071&nbsp;MWh/MMBtu &divide; 52% efficiency, the same in every year. The LNG terminal is a fixed R<span data-num="gasTerminalRkW"></span>/kW-yr on new gas burning LNG, the midpoint of the sourced R354&ndash;707 range (a choice). Carbon added separately. Spot ($23/MMBtu) is about R2,490/MWh; pre-Hormuz consensus ($12) about R1,300. The national model treats gas plants as coastal (Richards Bay): no inland transport is charged. The inland adder (the Lilly pipeline at R9.00/GJ, NERSA 2025/26, once its flow is reversed; about USD&nbsp;2.8/GJ by truck before then, from an undated source) goes into the regional optimiser. The 2040 pathways also run five gas price cases (low, central, Brent USD&nbsp;100, high, and IRP 2025 as published), each delivered at the coast; all but the IRP case carry the LNG terminal as a fixed cost per kW of new gas. Shipping is their least-sourced input: a 2018 charter breakeven adjusted with US inflation and an estimated sea distance, and charter rates have likely risen since the Hormuz disruption.</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; <span data-num="importsMW"></span>&nbsp;MW must-take at <span data-num="importsCF"></span>% &middot; the contract ends in 2030; the model keeps the imports to its horizon unless an end year is set</td></tr>
@@ -5442,10 +5442,13 @@ const ESKOM_FY26 = {
 // over coal sent out, is 1.108 t/MWh (CO2, not CO2e; carbon tax is levied on CO2e, 1.112 on the same basis, so the carbon cost is
 // about 0.3% low). The engine applies emisCoal to coal output times the part-load multiplier, so emisCoal is that rate over the
 // multiplier's 2026 mean, COAL_PARTLOAD_2026, recorded from a central run's 2026 (c5f's, 1.0262, until c6's replaces it) and
-// checked by validate_benchmarks ('coal CO2 per MWh sent out in 2026').
+// checked by validate_benchmarks ('coal CO2 per MWh sent out in 2026'). Re-recorded on build 2026-10-27f from the Today 2026
+// preset (user, 27 Oct 2026, message 450), a departure from that method: with the 24-hour down time and the 0.715 floor the
+// 2026 rate was 0.6% above the Eskom figure, and the c6c central run exists only after the c6c runs, which should run on a
+// calibrated value. To be checked against the c6c 2026 when those runs land (RESULTS, COAL_PARTLOAD_2026 re-recorded).
 const EMIS_DIESEL = 0.78;
 const COAL_CO2_PER_MWH_FY26 = (ESKOM_FY26.co2Mt * 1e6 - ESKOM_FY26.ocgtGWh * 1e3 * EMIS_DIESEL) / (ESKOM_FY26.coalSentOutGWh * 1e3);
-const COAL_PARTLOAD_2026 = 1.0262;
+const COAL_PARTLOAD_2026 = 1.0324;
 // The model's coal cost per GJ (message 361 (b)): costCoal (Eskom FY2026 coal cost over coal sent out) (FIXED.costCoal, from ESKOM_FY26) over the fleet heat rate that
 // the model's own coal CO2 per MWh sent out implies at 96.1 kg CO2/GJ (IPCC 2006 Guidelines, vol. 2, table 1.4, sub-bituminous
 // coal): 11.53 GJ/MWh, R47.94/GJ.
@@ -21724,6 +21727,7 @@ const ABOUT_NUM = {
   pvContractedGW: () => ((FIXED.pvUtilityMW - PV_WHEELED_MW) / 1000).toFixed(2),
   pvWheeledGW: () => (PV_WHEELED_MW / 1000).toFixed(2),
   coalGW: () => (FIXED.coalInstalledMW / 1000).toFixed(1),
+  emisCoal: () => FIXED.emisCoal.toFixed(2),   // the methods table's coal factor (was typed 1.04 while FIXED held 1.080; message 450)
   psGW: () => (FIXED.psPowerMW / 1000).toFixed(1),
   rooftopDerate: () => FIXED.rooftopDerate.toFixed(2),
   battGW: () => (FIXED.battPowerMW / 1000).toFixed(2),

@@ -17738,3 +17738,19 @@ Newly failing on 27f, kept failing with the cause:
 
 The two spill substitution checks (above, failing at the 0.75 floor) pass at 0.715: 2.24 TWh spilled raises coal by 0.92 TWh
 per TWh and CO2 by 0.97 Mt per TWh. Curtailment at defaults is 0.3 TWh a year (validate_outputs, failing as on main, 0.1).
+
+### COAL_PARTLOAD_2026 re-recorded from Today 2026: 1.0262 -> 1.0324, emisCoal 1.080 -> 1.074 t/MWh, the 2026 coal rate 1.1150 -> 1.1088 against Eskom's 1.1084 (user, 27 Oct 2026, message 450; build 2026-10-27f, floor 0.715)
+
+Settings. Today 2026 preset on the page's start-up state, simulate on PROFILES, as validate_benchmarks measures it: coal rate =
+(engine CO2 less CCGT and diesel at their factors) over coal output; part-load mean = that rate over FIXED.emisCoal (scratch
+m450/rate.js). Before: rate 1.11495 t/MWh with emisCoal 1.080 (COAL_PARTLOAD_2026 1.0262, c5f's central run's 2026), part-load
+mean 1.03237. After: COAL_PARTLOAD_2026 1.0324, emisCoal +(1.10842 / 1.0324).toFixed(3) = 1.074, rate 1.10876 (+0.03% against
+Eskom's FY2026 1.10842; band 0.5%). Coal output unchanged (149.29 TWh); Today 2026 CO2 166.59 -> 165.67 Mt.
+
+Departure from the documented method. The constant is meant to be recorded from a central run's 2026 (c5f's until now). c6c's
+own 2026 exists only after the c6c runs, and those should run on a calibrated value, so it is recorded from Today 2026 on this
+build instead (the user's decision, message 450 (a)). Check: when claude/c6c-runs lands, re-record it from c6c's 2026 and report
+the difference; if over 0.1 percentage point, say so before any pack table uses c6c's CO2.
+
+Also: the methods table typed the coal factor as 1.04 t/MWh while FIXED.emisCoal was 1.080 on main; it now reads FIXED.emisCoal
+(data-num emisCoal, 1.07).
