@@ -509,6 +509,11 @@ scratch and backup files, and anything under the NTCSA or Eskom terms) while kee
 not raw markdown. (c) After the switch: confirm Cloudflare still builds main (one retry), Claude Code can still push and open pull
 requests, and the reviewer has read access; update the pack's section 7 (reproducing these results) to match.
 
+14jz. validate_consistency's new-build capital check (user, 27 Oct 2026; found on #121's suite): main (02cb281) measures R0.951 for
+Deep decarbonisation 2035, R0.047 above the R0.904 recorded on 19 Oct (build 19e), inside the check's 0.06 tolerance, so no check
+failed. Trace which change since 19e moved it (candidates: Deep's rebuild scored on 24b, imports ending after 2030, the rooftop
+add-back) and record it in the check's comment.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
