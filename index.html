@@ -13783,6 +13783,10 @@ function renderCurtailmentForecast(){
     const congPct = (state.congestionCurtailOn ?? FIXED.congestionCurtailOn) ? (state.congestionCurtailPct ?? FIXED.congestionCurtailPct) : 0;
     const oversupplyOnly = 'Oversupply only: the congestion stopgap (' + congPct + '% of utility wind and solar, '
       + congTWh.toFixed(1) + ' TWh here) and the Cape wind cap come off before dispatch and are not counted.';
+    // THE CURTAILMENT NOTE BELOW, RESTATED ON BUILD 2026-10-27f (user, 27 Oct 2026, messages 446 and 448): it said the replay
+    // curtails almost nothing (16 Oct, message 130). Measured on the Today 2026 preset, twelve weather years x ten outage draws:
+    // 0.94 TWh a year on 27e (4 h down time, floor 0.75), 0.85 TWh on 27f (24 h, floor 0.715); mean winter (May-August) largest
+    // midday hour 5.6 and 5.2 GW. RESULTS, the practice floor recalibrated to 0.715 with the 24-hour down time.
     host.innerHTML =
         '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:6px">'
       + 'The table below shows the results of a dispatch engine run at a ladder of national build levels '
@@ -13795,11 +13799,7 @@ function renderCurtailmentForecast(){
       + gasFloorNote(lastRes, 'Its output adds to the midday surplus, so curtailment here is higher on this preset than without the minimum.', 'margin-top:8px')
       + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
       + oversupplyOnly
-      // RESTATED ON BUILD 2026-10-27f (user, 27 Oct 2026, messages 446 and 448): the note said the replay "curtails almost
-      // nothing" (16 Oct, message 130). Measured, 'Today 2026', twelve weather years x ten outage draws: 0.94 TWh a year on 27e
-      // (4 h down time, floor 0.75), 0.85 TWh on 27f (24 h, floor 0.715); mean winter (May-August) largest midday hour 5.6 and
-      // 5.2 GW. RESULTS 'The practice floor recalibrated to 0.715 with the 24-hour down time'.
-      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Curtailment today, against NTCSA\u2019s report:</strong> NTCSA attributes today\u2019s curtailment to coal kept online through daylight to cover the morning and evening peaks. The instant engine keeps a coal unit off for at least 24 hours once it comes off, so units stay on through midday. Its 2026 replay curtails about 0.85 TWh a year for oversupply, and its largest winter midday hour averages 5.2 GW across twelve weather years, against NTCSA\u2019s report of up to 3 GW on a winter day.</div>'
+      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Curtailment today, against NTCSA\u2019s report:</strong> NTCSA attributes today\u2019s curtailment to coal kept online through daylight to cover the morning and evening peaks. The instant engine keeps a coal unit off for at least 24 hours once off, so units stay on through midday. Its 2026 replay curtails about 0.85 TWh a year, with a mean winter midday peak of 5.2 GW across twelve weather years, against NTCSA\u2019s report of up to 3 GW on a winter day.</div>'
       // NOT ADDED TO THE COLUMNS (mechanics audit of 20 Oct 2026, G3-M3, fix 4; message 264). The note said to add the full
       // run's extra curtailment, in TWh, to columns in percent; the figure carries the representative-day repeat and stayed
       // on screen through later scenario changes. Shown only for the scenario it was run on, and not added.
