@@ -453,7 +453,24 @@ replaced by a rolling-horizon commitment (for example 48-hour windows, day-ahead
 benchmarked against the rule. (c) Commitment on a forecast with realistic error (GridPulse ZA's bias plus a published hourly error,
 14jj), re-committing within the day. (d) System strength as a minimum number of synchronous units per region (AEMO practice), via
 the network model, once NTCSA data allows. (e) With the next note's all-options pathway (curtailment sinks, 14jb), how coal starts
-and midday output change.
+and midday output change. Calibration sources for (a) in a high-solar system (user, 27 Oct 2026, message 418 (c)): PyPSA-Chile's (PyPSA-CL) treatment
+of coal (minimum loads, start costs, commitment; its README does not describe them, so read the code), and the Chilean system
+operator CEN's unit-level operating data (starts per unit).
+
+14jr. Note recommendation, planning transparency (user, 27 Oct 2026, message 418 (b); draft for Nick and the advisor): publish
+the IRP's model, data and code so others can reproduce the official plan, as Chile's Ministry of Energy did for PELP 2028-2032
+(PyPSA-CL, built by the Ministry's Planning and Climate Change Unit on open-source PyPSA, MIT licence,
+https://github.com/paredes-vergara/PyPSA-CL), against the IRP's PLEXOS modelling, whose input workbook is published but not the
+model. To confirm before it goes in the note: that the Ministry's PELP repository (energia.gob.cl/pelp/repositorio) holds the
+model-ready inputs (the README says the data is not distributed with the code); energia.gob.cl and docs.pypsa.org are blocked
+from the cloud container.
+
+14js. Capacity-mechanism sensitivity, next note (user, 27 Oct 2026, message 419 (d); Meridian Economics briefing note,
+26 Oct 2026, p.7 Box 1): capacity payments from 2030, variable renewables credited at their reliability contribution. The
+existing settings (capacityPaymentOn, capacityPaymentRkWyr, BLD_DERATE) cover part of it: payments apply in every year (no start
+year), wind and solar are credited at zero (BLD_DERATE), and the build LP nets the payment off each technology's annuity, so the
+run shows what an investor-facing payment shifts, not a cheaper plan; system cost must be reported gross of the transfer. Needs:
+a start year, and wind and solar credits measured on the twelve weather years.
 
 ## Follow-through on the engine change
 

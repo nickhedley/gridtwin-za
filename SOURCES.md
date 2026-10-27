@@ -346,6 +346,15 @@ GridPulse ZA           https://gridpulse.org.za/ , home page, read 26 Oct 2026 (
                          re-publish Global Energy Monitor's tracker: cite GEM directly for those
                          (message 395 (b); TODO 14jl). Its reserved-curtailment figure (940 MW by end
                          July 2026) is a lead for TODO 14jn.
+PyPSA-CL (Chile)       PyPSA-CL, capacity expansion model of Chile's National Electric System,
+                         https://github.com/paredes-vergara/PyPSA-CL (MIT licence). Read 27 Oct 2026
+                         (README only; message 418). The README credits the Unit of Planning and
+                         Climate Change, Ministry of Energy of Chile, and says it was developed for
+                         the Long-Term Energy Planning process (PELP 2028-2032); input data is not
+                         distributed with the code. That the Ministry publishes each PELP report's
+                         databases (energia.gob.cl/pelp/repositorio) rests on search snippets only:
+                         unconfirmed. Uses: note recommendation (TODO 14jr); coal calibration lead
+                         (TODO 14jq (a)).
 Krutham 2026 trading   Krutham, Trading electricity: Is SA ready for the next financial market?
                          (October 2026), https://www.krutham.com/reports/trading-electricity/ ;
                          6 pages, page numbers from the PDF. Read 26 Oct 2026 (user, messages 398
