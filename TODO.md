@@ -501,6 +501,14 @@ plan to read how close early retirement is to the margin (reduced costs of rc_<y
 retiring early, fold the charge into the central after the note. To check: the Sargent & Lundy / EIA coefficients (16.53 + 0.126 x
 age + 5.68 x FGD, 2017 $/kW-yr; eia.gov blocked from the container) and NERSA's MYPD6 reasons for decision (Generation capex).
 
+14jy. Private repository, public site, after the pack goes on Friday 30 Oct; no work before then (user, 27 Oct 2026, message 431).
+(a) Before Nick makes the repository private: list every file the live site serves now, and propose a .assetsignore that keeps
+internal files off the site (CLAUDE.md, HANDOVER.md, TODO.md, STATE.md, RULES.md, MANIFEST.md, CALENDAR.md, FIRST_SESSION.md,
+scratch and backup files, and anything under the NTCSA or Eskom terms) while keeping the page, its data and the public docs.
+(b) Next note: assumptions, results and sources as proper pages on the site, rendered, with internal message references removed,
+not raw markdown. (c) After the switch: confirm Cloudflare still builds main (one retry), Claude Code can still push and open pull
+requests, and the reviewer has read access; update the pack's section 7 (reproducing these results) to match.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
