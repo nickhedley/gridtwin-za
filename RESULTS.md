@@ -17738,3 +17738,32 @@ fleet's mean unit size (489 MW, UC_FLEET); curtailment 103.6 TWh and coal 67.6 T
 minimum is the larger of the national synchronous floor (SYNC_MIN_MW 6,000 MW of spinning plant less nuclear, hydro and
 grid-forming batteries at 0.30 of their power; imports do not count) and the committed units' minimum stable levels; the model
 has no unit-level or regional system-strength requirement, so commitment can fall to the floor every midday. Pack limitation 31.
+
+### Coal minimum down time: what it does to the extreme-solar case and to c6a (27 Oct 2026, 11:45 UTC; user, message 442)
+
+Page probe (scratchpad m407/probe407.js), build 2026-10-27e, Least-cost path 2035 with newPvMW 45,000 and newRooftopMW 25,000, one
+simulate() on the page's own profiles, 8-14 January (profile days 7-13), state.coalMinDownH (raises every unit's minimum down time
+to at least that; null keeps UC_FLEET's, 4 h on 40,130 of 41,530 MW, 8 h on 160 MW, 48 h on 1,240 MW):
+
+| Minimum down time | Midday coal, MW | Evening coal, MW | Coal switched on a day, MW (mean) | Starts a day at 489 MW (mean) | Curtailed in the week, GWh | Curtailed in the year, TWh | Coal in the year, TWh |
+|---|---|---|---|---|---|---|---|
+| UC_FLEET (4 h) | 1,525-3,299 | 2,352-9,284 | 1,313-8,423 (3,940) | 8.1 | 3,253 | 103.6 | 67.6 |
+| 12 h | 1,926-4,468 | 2,352-9,491 | 0-8,423 (2,137) | 4.4 | 3,304 | 104.6 | 68.5 |
+| 24 h | 1,926-4,468 | 2,352-9,491 | 0-8,423 (2,137) | 4.4 | 3,304 | 104.6 | 68.6 |
+
+12 h and 24 h give the same week: no unit comes off at midday and back the same evening, starts halve, curtailment rises 1.6%
+(week) and 1.0 TWh (year). Restarts remain after multi-day low-coal spells (8,423 MW on 13 January).
+
+c6a with coalMinDownH 24 (s_mindn24_c6a, run 26 Oct on build 2026-10-26b): the build is identical to c6a's (same schedule and
+objective: the build LP does not see the minimum down time), both NTCSA criteria met (highest-year mean unserved 4.4 GWh, worst run
+163 GWh, open-cycle 1.4%), engine PV R2,286.6bn against R2,294.7bn (-R8.1bn: fewer start costs), CO2 2026-40 1,835 Mt against
+1,810 (+25), curtailment 2026-40 162.7 TWh against 139.9 (+22.8).
+
+Sources (message 442 (b)): no source opened gives a measured minimum down time for large subcritical or supercritical coal.
+NREL/Intertek APTECH (2012, NREL/SR-5500-55433), Table 1-1 p.12: warm starts after 12-40 h offline for large subcritical and 12-72 h
+for supercritical (below the band hot, above cold). Agora Energiewende (2017), p.44: hot under 8 h offline, warm 8-48 h, cold over
+48 h; Table 1 p.48: start-up 2.5-3 h hot, 5-10 h cold for common hard-coal plants. PyPSA-Eur's data/unit_commitment.csv: coal 8 h
+minimum up and 8 h minimum down (no source stated). Meridian Economics' briefing note (26 Oct 2026, p.1, fn.1): many South African
+units cannot shut down and restart within a day and run through to the evening peak. The AEMO 2025 Thermal Audit and Meridian's
+2025 flexibility study could not be opened from the container. Local cross-check (Eskom's flexibilisation studies pack, Oct 2025):
+no minimum down time or start durations given; nothing from it is used here.
