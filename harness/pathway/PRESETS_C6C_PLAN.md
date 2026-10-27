@@ -31,3 +31,19 @@ full suite before and after; "Visible text changed" from `node diff_public_text.
 
 - Whether the run-based presets name c6c in their captions (the captions are 40 words at most; the build basis now says c5f).
 - Whether a re-search of Deep decarbonisation 2035, if needed, waits for after the note: the rescore alone tells us.
+
+## Two visible-text fixes to carry in the same PR (user, 27 Oct 2026, message 451; not in #122)
+
+Both change visible text only; they ride the presets PR's panels rewrite and suite, so no extra cycle.
+
+1. Full model caption (index.html, beside the full-model button). Now: "(The instant model commits coal by a rule in 4-hour blocks and
+   keeps a unit off for at least 24 hours once it comes off, so units seldom come off over midday; NTCSA says the System Operator
+   does not do that.)" The last clause is ambiguous after the 24-hour wording. Proposed: "(The instant model commits coal by a
+   rule in 4-hour blocks and keeps a unit off for at least 24 hours once it comes off. NTCSA reports that the System Operator keeps
+   coal online through daylight for the morning and evening peaks (Engineering News, 30 July 2026).)" Check the source line against
+   SOURCES and the pack's limitation 23 (NTCSA, as reported by SAPVIA and Engineering News, 30 Jul 2026) before writing it, and
+   keep the caption within the 40-word site-copy cap and the audit's prose ceiling (4,250 words; at the ceiling now).
+2. Methods table, coal row. Now: "1.07 tCO2/MWh (our figure; Eskom's FY2026 report implies 1.11)", which reads as a 4% gap.
+   Proposed: "1.07 tCO2/MWh at full load; 1.109 in 2026 with part-load running, against 1.108 implied by Eskom's FY2026 report".
+   All three from constants, not typed: FIXED.emisCoal (data-num emisCoal), FIXED.emisCoal x COAL_PARTLOAD_2026 and
+   COAL_CO2_PER_MWH_FY26 (two new data-num entries beside emisCoal).
