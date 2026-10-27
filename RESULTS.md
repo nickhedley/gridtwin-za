@@ -17703,3 +17703,38 @@ extreme-solar week (message 407; Least-cost path 2035 with 45 GW utility and 25 
 the floor ends in 2029: 4.4 starts a day on 27f at any floor (scratch m447/probe407_27f.json). The entries 'The 2026 replay on
 builds 27e and 27f' and 'The spill substitution checks fail on 27f' above were measured at the 0.75 floor and are superseded on
 the page by this one.
+
+### Suite on build 27f at the 0.715 floor, against main (27e): three checks now pass, two newly fail (user, 27 Oct 2026, messages 446-449; build 2026-10-27f, branch claude/c6c-mindown)
+
+Settings. ESK19679.csv present, nothing running beside the suite, from harness/ in pieces (scratch m447/suite.sh and
+m447b/suite.sh): piece 1 on e742467 (27 Oct 2026, 15:24-16:29 UTC; panels rewritten first), piece 2 on 87cefdf (from 16:35 UTC;
+panels rewritten again), whose index.html differs from e742467's only in the curtailment note's comment and wording (audit
+prose ceiling). Main: #121's suite on 27e (identical index.html to 026e027).
+
+| Script | 27f, floor 0.715 | Main, 27e |
+|---|---|---|
+| validate_findings | 37/40 | 37/40 |
+| validate_invariants | 176/176 | 175/176 |
+| validate_response | 86/87 | 85/87 |
+| validate_consistency | 82/83 | 81/83 |
+| validate_benchmarks | 27/30 | 28/30 |
+| validate_outputs | 49/51 | 49/51 |
+| eng5 | 5/6 | 5/6 |
+| Every other script | as main | |
+
+Now passing on 27f: modest demand shifting moves system cost by under 0.1% (findings); unserved energy no longer rises with
+reserve in the stressed draw (invariants); interruptible load is called (response); the shadow hourly price spread against
+Homeflex's (consistency). The response matrix's baseline now differs in 35 cells (40 on main), still to be rewritten.
+
+Newly failing on 27f, kept failing with the cause:
+- validate_findings, 'turn-up is a growing share of constraint cost': 54% of constraint cost today and 54% under IRP's 2030
+  targets, turn-up rate R637 against R634/MWh (on 27e 54% and 54% at R647 and R655, passing by a fraction). The finding (10 Sep
+  2026: 42% to 65%, R395 to R1,010/MWh) had already faded to the margin on 27e; on 27f today's replacement rate equals the IRP
+  build's. Not in public text (searched 27 Oct 2026).
+- validate_benchmarks, 'coal CO2 per MWh sent out in 2026 within 0.5% of Eskom's FY2026': Today 2026 1.1150 against 1.1084
+  t/MWh (+0.6%). COAL_PARTLOAD_2026 (1.0262) is c5f's central run's 2026 part-load mean; with the 24-hour down time and the 0.715
+  floor more coal runs at part load. The check asks for the constant to be re-recorded from a central run's 2026: c6c's, once
+  its runs land (decision for the user: re-record before or after the c6c runs).
+
+The two spill substitution checks (above, failing at the 0.75 floor) pass at 0.715: 2.24 TWh spilled raises coal by 0.92 TWh
+per TWh and CO2 by 0.97 Mt per TWh. Curtailment at defaults is 0.3 TWh a year (validate_outputs, failing as on main, 0.1).
