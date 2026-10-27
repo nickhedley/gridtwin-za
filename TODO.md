@@ -532,6 +532,11 @@ in the representative days and the stress windows, and measure the build's move 
 mean winter midday peak is 5.2 GW against NTCSA's one reported 3 GW day (flag kept). When 14ka gives the build LP the down time,
 recheck the floor's calibration on the same statistic; any later change to coal commitment settings recalibrates the floor too.
 
+14kc. COAL_PARTLOAD_2026 against c6c's 2026 (user, 27 Oct 2026, message 450): re-recorded on 27f from Today 2026 (1.0324; emisCoal
+1.074), a departure from the central-run method so that c6c runs on a calibrated value. When claude/c6c-runs lands, compute the
+part-load mean from c6c's 2026 and report the difference; if it is over 0.1 percentage point, say so before any pack table uses
+c6c's CO2.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
