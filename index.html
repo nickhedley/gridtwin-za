@@ -5794,11 +5794,13 @@ const FIXED = {
   // tariff (BLD_TARIFF); bw6 BW6's compliant bids; high the disclosed investment values of awarded projects; low IRENA's global average) on a modern-turbine profile (Vestas
   // V162 5.6 MW at 120 m, nodal/profiles_wind_modern.json); existing farms keep their profile. Capex and profile change
   // together. 0: the previous R21,000/kW on the existing profile, for comparison with earlier results.
-  // CENTRAL FROM c6b (user, 27 Oct 2026, messages 405, 406 (a) and 408 (a)): 'bw6', BW6's compliant wind bids (R28,462/kW,
-  // BLD_COST.wind_bw6). BW5 struggled to reach financial close after costs rose: about half its 1,608 MW of wind closed, late
-  // (Nov 2022-Mar 2023), at R564-601/MWh after the RFP's exchange-rate and CPI adjustment, against R495.22 as bid (RESULTS 'c6b').
-  // So the case keyed 'central' (the capex BW5's tariff implies, R20,874/kW) is now the low case and 'high' (disclosed investment
-  // values) the high case. The keys are kept so runs recorded with windCase 'central' are still checked as built.
+  // CENTRAL FROM c6b (user, 27 Oct 2026, messages 405, 406 (a), 408 (a) and 409; replaces the wind part of message 125): 'bw6',
+  // BW6's compliant wind bids (R26,647/kW, IPP Office REIPPPP historical data note, 7 Nov 2025, January 2024 rands; R28,462 in
+  // 2026; BLD_COST.wind_bw6), corroborated by IRP 2025's workbook BW6 base case (R27,446/kW, 2026 rands) and Koruson 1's disclosed
+  // investment (BW5, 420 MW, R11.5bn, about R27,400/kW, 2023). The case keyed 'central', the capex implied by BW5's awarded tariff
+  // on the model's assumptions (R20,874/kW), is the outlier and now the low case; 'high' (disclosed investment values) the high
+  // case. BW5 struggled to reach financial close after costs rose (RESULTS 'c6b'). Keys kept so runs recorded with windCase
+  // 'central' are still checked as built.
   bldWindModern:1, bldWindCase:'bw6',
   // Correction for new wind on the modern-turbine profile (WIND_NEW_CORR): 'none' (1.00, central from 15 Oct 2026, message
   // 125 (1): the profile uncorrected, 42.5% over the twelve weather years), 'farms' (1.064, fitted to two developers'
@@ -18902,7 +18904,7 @@ const SLIDERS=[
    note:'Anchor R'+(FIXED.lcoePv/1000).toFixed(2)+': build costs over '+BLD_LIFE.pv+' years at 8% real, at tracking solar\u2019s '+(NEW_PVTRK_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. The capex is backed out of BW7\u2019s MW-weighted solar award (R'+Math.round(BLD_TARIFF.pvtrk.rPerMWh*CPI_JAN24_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 tracker bids\u2019 '+(BW6_PV_TRK_BID_CF*100).toFixed(1)+'&#37;.')},
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),// Moved from the note (messages 377, 378): BW7 awarded solar only (BW7_SOLAR_AWARDS); from c6b (message 408 (a)) the central is BW6's compliant bids, and the low case is backed out of BW5's
    // R495/MWh in April 2021 rands (BLD_TARIFF.wind); in the least-cost pathway's 2030 new wind runs at LCP_2030_WIND_CF.
-   note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': build costs over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. '+(FIXED.bldWindCase==='bw6' ? 'The capex is BW6\u2019s compliant wind bids, R'+Math.round(BLD_COST.wind_bw6.c2026).toLocaleString('en-US')+'/kW in 2026 rands; BW5\u2019s tariff is the low case.' : 'The capex is backed out of BW5\u2019s wind tariff (R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.'))},
+   note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': build costs over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. '+(FIXED.bldWindCase==='bw6' ? 'Capex: BW6\u2019s compliant bids, R'+Math.round(BLD_COST.wind_bw6.c2026).toLocaleString('en-US')+'/kW; low case: the capex implied by BW5\u2019s awarded tariff.' : 'The capex is backed out of BW5\u2019s wind tariff (R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.'))},
   {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeRooftop/1000).toFixed(2)+': build costs over '+BLD_LIFE.rooftop+' years at 8% real, at rooftop\u2019s '+(FIXED_PV_CF_12Y*FIXED.rooftopDerate*100).toFixed(1)+'&#37; capacity factor (the fixed-tilt solar profile x the '+FIXED.rooftopDerate.toFixed(2)+' derate), the same in the least-cost pathway\u2019s 2030.'},
   {id:'lcoePs',label:'Pumped storage',min:400,max:3000,step:50,def:FIXED.lcoePs,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. An assumption; no published source.'},
   {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Anchor R'+(FIXED.lcoeVrfb/1000).toFixed(2)+': build costs over '+BLD_LIFE.vrfb+' years at 8% real, at one full '+FIXED.newVrfbHours+'-hour cycle a day ('+VRFB_REF_CYCLES+' a year), as lithium, per kWh discharged; charging not costed.'},
