@@ -17540,3 +17540,68 @@ were built on; they clear with the presets rebuild (TODO). Every other script's 
 
 Flags: the March 2026 dip in the monthly series without wheeled plant is the interpolation meeting Mooi Plaats's March subtraction;
 October-December are an extrapolation; unnamed earlier private plant may still sit inside the series.
+
+### Fossil-free 2040's caption no longer quotes 2.16 GWh (build 2026-10-27a, with the c6b cost changes; user, 26 Oct 2026, message 402 (c))
+
+Fossil-free 2040's reliability sentence quoted its score from build 2026-10-19e (PRESET_SCORES: 2.16 GWh/yr against half the
+Australian standard, 2.72), taken while imports ran to 2040. Since c6 PR B (build 2026-10-23a) imports end after 2030
+(FIXED.importsEndYear), and the page runs the 2040 preset without them, so the score no longer holds. Change: _presetMeets
+does not quote a score taken before that build on a preset dated after importsEndYear, and the caption says nothing on
+unserved energy until the presets build rescores it (message 402 (b), TODO 14ix). Build 2026-10-27e (message 430): the interim
+sentence 'Unserved energy to be rescored: imports now end after 2030.' was an internal note in visible text and is dropped; the
+unserved sentence now carries its own leading space so the caption joins cleanly with or without it. PRESET_SCORES is generated
+data and is not edited. Deep decarbonisation 2035's score (build 2026-10-24b) is after PR B and is unchanged. Visible text: the
+2.16 GWh sentence removed (harness/diff_public_text.js against main 02cb281).
+
+validate_stored_panels.js is resumable state by state (27 Oct 2026, message 432 (b)): each state's computed panels go to a resume
+file keyed by the page fingerprint and the SHA-256 of index.html and the script; --write and the check keep separate files.
+Tested on build 2026-10-27e: a --write stopped after three states (Start-up, 2025, Today 2026) and resumed (09:07 UTC) wrote a file
+identical, byte for byte apart from meta.written, to an uninterrupted --write with PANELS_NO_RESUME=1 (09:29 UTC); 9/9 checks
+while writing in both; fingerprint 14a2598204b502. validate_worker.js (about 20 min) and validate_pathway_presets.js (about 12 min)
+are not made resumable: each fits well inside one run_in_background piece and run_suite.sh already skips finished scripts.
+
+### c6b's two cost changes: wind on BW6's compliant bids, rooftop blended from 2025-26 price guides (build 2026-10-27a; user, 27 Oct 2026, messages 405, 406, 408, 409, 411, 413, 414, 416 (a), (b); replaces the wind part of message 125)
+
+Wind: FIXED.bldWindCase 'central' -> 'bw6'. Central BW6's compliant wind bids, R26,647/kW (IPP Office REIPPPP historical data note,
+7 Nov 2025, January 2024 rands), R28,462/kW in January 2026 rands, about R0.82/kWh at 8% real over 25 years at new wind's 42.5%
+capacity factor before the grid charge. Corroborated by IRP 2025's workbook BW6 base case (R27,446/kW, 2026 rands), Koruson 1's
+disclosed investment (BW5, 420 MW, R11.5bn, about R27,400/kW, 2023) and Meridian Economics' 2024 base case (R24,797/kW in 2023 rands,
+about R27,900 in January 2026 rands at the model's CPI chain; Review of the IRP 2023, 18 Mar 2024 draft, technical appendix). Low case:
+the capex implied by BW5's awarded tariff on the model's assumptions, R20,874/kW, about R0.63/kWh (the case keyed 'central', kept so
+earlier runs check as built); BW5 reached financial close late and in part (about half of its 1,608 MW of wind, Nov 2022-Mar 2023, at
+R564-601/MWh after the RFP's exchange-rate and CPI adjustment). High: disclosed investment values (Koruson 1 and Impofu), R30,063/kW,
+about R0.86/kWh. Published estimates beside them (search results, pages not opened): Meridian 2020 66 c/kWh (about R0.84-0.86 in 2026
+rands), IRENA 2024 Africa onshore about USD 0.052/kWh (about R0.86 at 12% cost of capital), BNEF 2025 global onshore USD 40/MWh
+(about R0.66). The wind anchor, the methodology table's capex line and the capacity-payment panel now follow the central case; the
+capex line showed R17,773 (the tariff capex at BW6 bids' capacity factor, used by no run since the 'run' basis became the default).
+validate_weather's anchor formula follows the case likewise.
+
+Rooftop: ROOF_CAPEX_DC_RKW 12,500 -> 10,500 (R12,600/kW AC at DC/AC 1.2), excluding VAT, January 2026 rands: 30% residential at
+R13.0/Wp and 70% commercial and industrial at R9.5/Wp (SOURCES 'Rooftop PV installed cost, 2025-26'; installer price guides, no
+authoritative survey). Low R8,000, high R14,000 DC. Rooftop is a fixed path in the build LP (1,200 MW a year from 2027), so the build
+does not move; costs do (TODO: engine checks and cost tables only).
+
+The Fossil-free 2040 caption fix (message 402 (c), previous entry) rides in the same page change, so one suite covers all three.
+
+Carbon (build 2026-10-27d; user, 27 Oct 2026, messages 423 and 424; 423 replaces 421 and 422 (a)-(b)): the central stays on the
+legislated rate, FIXED.carbonAllowancePath 'kept2030' (the central uses the law as it stands; policy not legislated goes in
+sensitivities). Builds 2026-10-27b and c, never merged, had Treasury's path as central and then US$120 read as 2026 dollars. The path is kept as a setting,
+'treasury', for sensitivity s_carbontreasury, with 'law2031' for s_carbonhold. Effective carbon price for the build optimiser and the
+engine check (carbonTaxAt), R/t CO2e in January 2026 rands:
+
+| Path | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2035 | 2040 |
+|---|---|---|---|---|---|---|---|---|
+| kept2030 (central) | 46.0 | 50.3 | 54.2 | 58.0 | 61.3 | 61.3 | 61.3 | 61.3 |
+| treasury (s_carbontreasury) | 46.0 | 107.6 | 177.7 | 256.0 | 340.6 | 451.5 | 615.6 | 820.7 |
+| law2031 (s_carbonhold) | 46.0 | 107.6 | 177.7 | 256.0 | 340.6 | 410.5 | 410.5 | 410.5 |
+
+s_carbontreasury: the rates in law to 2030 (Carbon Tax Act, R308/t 2026 to R462/t 2030 nominal, R410.5/t in January 2026 rands at
+the 3% inflation target); tax-free allowances reduced in equal steps from their 2026 share (the R46/t compliance rate over R308/t,
+14.9% net) to none from 2031; after 2030 a straight line from R410.5/t to Treasury's stated aim of US$120/t in 2050 (2022 Budget;
+not legislated). The Budget names no dollar year; our reading: nominal, since its US$20 (2026) and US$30 (2030) match the headline
+rates in law (R308 and R462/t nominal), deflated to 2026 dollars at 2% a year (the model has no US inflation rate) and converted at
+R16.50/$: US$74.6, R1,231/t (CARBON_AIM_2050_USD, CARBON_AIM_USD_INFL_PA, USD_RATE_R). Allowance steps: five, so 2030 keeps a fifth
+of the 2026 allowance (confirmed by the user, message 424 (a)). Our assumption, built on Treasury's stated aim. s_carbonhold: the
+same to 2030, then the 2030 rate in law held, R410.5/t. Holding the central flat after 2030 probably understates the
+carbon cost coal will face; s_carbontreasury shows by how much. Electricity price neutrality to 2030 is not modelled. validate_lp's
+carbon check asserts kept2030 as the default and the treasury and law2031 paths, written out independently (57/57).
