@@ -115,3 +115,10 @@ the web reader cannot open, never for long PDFs; no reads of eskom.co.za. Put th
 Pathway loops take 5 to 30 minutes and can use several GB of memory. Run them in the background,
 write output to a file, and report progress. Record each background job's PID when it starts and stop it by that PID only, never by
 pattern match (pkill -f and the like; RULES.md, 'Stop background jobs by their PID').
+
+Start every long job with the Bash tool's own background option (run_in_background, timeout under 2 hours), never with nohup or &
+(user, 27 Oct 2026, messages 434 and 436). These cloud sessions stop nohup and & jobs once a reply ends and the session goes idle,
+and an idle session's machine is reclaimed; a run_in_background job is tracked across replies for up to 2 hours and keeps the
+session awake. Split longer work into pieces under 2 hours that resume where the last stopped (resumable scripts: the pathway
+chains, harness/run_suite pieces, validate_stored_panels.js), and relaunch the next piece at each check-in or completion notice.
+Evidence: HANDOVER 'Restarts were idle shutdowns'.

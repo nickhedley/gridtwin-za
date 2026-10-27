@@ -1,5 +1,22 @@
 # GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
 
+## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
+
+On 27 Oct the cloud machine restarted five times in two hours and killed every job started with nohup (the #121 suite, the c6a
+chain). Each restart followed an idle gap after a reply; none happened while replies came less than 6 minutes apart. Times SAST,
+from the session transcript and uptime:
+
+| Previous reply ended | Next wake | Idle gap | Machine restarted |
+|---|---|---|---|
+| 08:35 | 08:43 | 8 min | yes |
+| 08:57 | 09:18 | 21 min | yes |
+| 09:21 | 09:35 | 14 min | yes |
+| 09:57 | 10:07 | 10 min | yes |
+| 10:08 | 10:39 | 31 min | yes |
+| 09:37-09:57, replies 0-4 min apart | - | under 6 min | no (up 13-22 min) |
+
+Rule since then (CLAUDE.md, 'Long runs'): long jobs start with run_in_background in pieces under 2 hours, never nohup or &.
+
 ## The note is delayed: fix first, then one rebuild as c6 (user, 22 Oct 2026, message 321)
 
 The IRP note's draft date moves from 2 Nov; the new date is Nick's, set once c6 is recorded in RESULTS (earliest about Tue
