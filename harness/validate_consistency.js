@@ -1489,6 +1489,12 @@ const num = t => {
       // 19e in one page: the old preset R0.737, the old build at the new demand R0.578, the new preset R0.904, so the move is the
       // new build (more capital, partly spread over more sales). Deliberate scenario change, tolerance unchanged.
       //
+      // UPDATED 27 Oct 2026, R0.904 -> R1.056, build 2026-10-27e (c6b; user, messages 406 and 416 (a)). Wind central on BW6's
+      // compliant bids (FIXED.bldWindCase 'bw6', R28,462/kW, from the BW5-tariff capex). Measured with this check's own code on
+      // each page: main (02cb281) R0.951; this build with state.bldWindCase 'central' R0.951 exactly, with 'bw6' R1.056, so the
+      // whole move from main is the wind input. Main already sat R0.047 above the 19 Oct figure, inside the tolerance; that
+      // drift's cause is not traced here (TODO 14jz). Deliberate input change, tolerance unchanged.
+      //
       // UPDATED 18 Oct 2026, R0.965 -> R0.718, build 2026-10-17i (user, messages 199 and 200 (4)). Deep decarbonisation 2035
       // re-searched on c5e's costs and topped up (wind 32.5 -> 26.5 GW, solar 29.5 -> 27.5 GW tracking, lithium 19 -> 10.5 GW,
       // iron-air 1.125 -> 0.625 GW). Measured on 17i, each in a fresh page: main's preset R1.009, main's preset with tracking
@@ -1537,8 +1543,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 0.904) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.904 for Deep `
+              Math.abs(ncap.newCap - 1.056) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.056 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }
