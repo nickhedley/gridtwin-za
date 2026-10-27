@@ -466,7 +466,7 @@ model-ready inputs (the README says the data is not distributed with the code); 
 from the cloud container.
 
 14js. Capacity-mechanism sensitivity, next note (user, 27 Oct 2026, message 419 (d); Meridian Economics briefing note,
-26 Oct 2026, Box 1, p.7 as given; the extracted text cannot confirm the page): capacity payments from 2030, variable renewables credited at their reliability contribution. The
+26 Oct 2026, p.8, Box 1 "What is capacity?"; page checked by the advisor, message 428 (c)): capacity payments from 2030, variable renewables credited at their reliability contribution. The
 existing settings (capacityPaymentOn, capacityPaymentRkWyr, BLD_DERATE) cover part of it: payments apply in every year (no start
 year), wind and solar are credited at zero (BLD_DERATE), and the build LP nets the payment off each technology's annuity, so the
 run shows what an investor-facing payment shifts, not a cheaper plan; system cost must be reported gross of the transfer. Needs:
