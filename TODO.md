@@ -455,7 +455,16 @@ benchmarked against the rule. (c) Commitment on a forecast with realistic error 
 the network model, once NTCSA data allows. (e) With the next note's all-options pathway (curtailment sinks, 14jb), how coal starts
 and midday output change. Calibration sources for (a) in a high-solar system (user, 27 Oct 2026, message 418 (c)): PyPSA-Chile's (PyPSA-CL) treatment
 of coal (minimum loads, start costs, commitment; its README does not describe them, so read the code), and the Chilean system
-operator CEN's unit-level operating data (starts per unit).
+operator CEN's unit-level operating data (starts per unit). Findings, 27 Oct 2026 (message 445; research only):
+PyPSA-CL (commit e3042ae) commits every existing coal and gas unit of 50 MW or more (main.py:523, 774-790), solves with linearised
+unit commitment by default (main.py:1972-1976), splits start_up_cost half into start and half into shut-down cost (main.py:788-789),
+caps minimum up and down times at the representative days' length (24 h by default; main.py:785-787) and sets no ramp limits; the
+values (p_min_pu, start_up_cost, min_up_time, min_down_time) sit in data/Topology.xlsx, sheet 'Generators', which is not in the
+repository (a Ministry SharePoint link, blocked from the container): to obtain. Chile's coal fleet (about 3-4 GW, 2025-26) met
+midday solar mainly by turning down: operators cut minimum loads from 30-60% to 20-35% of capacity (Coal Transition Commission,
+From Flex to Phase-Out, Nov 2025), and 31-66% was the 2017 range (IISD/Inodu); no published fleet start count found (CEN's 2025
+wear-cost study and GIZ's 2018/19 flexibility study are the likely sources). All of the Chilean figures are from search snippets,
+unverified: confirm before any goes into the pack beside Australia's one start a day.
 
 14jr. Note recommendation, planning transparency (user, 27 Oct 2026, message 418 (b); draft for Nick and the advisor): publish
 the IRP's model, data and code so others can reproduce the official plan, as Chile's Ministry of Energy did for PELP 2028-2032
