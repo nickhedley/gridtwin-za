@@ -17708,3 +17708,21 @@ compliant wind bids (bldWindCase 'bw6', R28,462/kW), with the IRP build checked 
 At BW6's bid capex the optimiser builds little wind beyond the committed 2026-27 floors (2.53 GW) by 2030, more utility solar, and
 burns more coal: +R60.3bn and +133 Mt over 2026-40; the IRP gap widens by R14.4bn. s_windhigh_c6a and s_windbw6cf_c6a (message 410)
 and the IRP pair at USD 12,000/kW nuclear (message 415) follow the chain.
+
+### Coal sustaining capital: how far c6a's plan is from retiring coal early (27 Oct 2026, 11:30 UTC; user, messages 426 and 429)
+
+c6a's final pathway re-run on build 2026-10-26b (run worktree at 86f2362, env_c6a.sh, MAXP=6) with a scratch copy of
+pathway_perfail.js that saves the final solve's reduced costs of rc_<y> and the duals of the rcmono_<y> rows; the plan reproduces
+c6a exactly (same schedule, objective R1,547,211.2m, done adequate in 456 s). The objective cost of retiring 1 MW of coal from
+year y onward is the sum of rc_t's reduced costs for t >= y plus rcmono_y's dual; dividing by 1,000 x the sum of the discount
+factors gives the extra coal fixed cost, R/kW-yr (January 2026 rands), at which that retirement starts to pay:
+
+| Retire from | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Break-even extra, R/kW-yr | 1,600 | 1,959 | 2,249 | 2,289 | 2,348 | 2,475 | 2,429 | 2,479 | 2,893 | 3,169 | 3,595 | 3,176 |
+
+Early retirement is allowed from 2029 (RC_FROM); were it allowed from 2026, the break-even would be R599 (from 2026), R859 (2027)
+and R1,161 (2028). The working range for sustaining capital, R350-500/kW-yr, is under a third of the smallest margin, so the
+charge should not move c6a's plan; consistent with c5b, where R1,746/kW-yr on in-scope coal retired nothing. Caveat: reduced
+costs are first-order and the LP is degenerate; s_coalsustain (R500, in c6b's set) is the direct test. fomCoal R1,160/kW-yr,
+discount 8%.
