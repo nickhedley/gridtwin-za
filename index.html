@@ -19691,14 +19691,15 @@ const _presetOverLimit = P => { const y = P.scenarioYear;
 // The standard sentence (messages 377, 378): the score is averaged over twelve weather years and the outage patterns the build
 // was not chosen on (PRESET_SCORES); the standard is half of the Australian market's (at most 0.002% of demand unserved).
 // A score taken before imports ended after importsEndYear (c6 PR B, build 2026-10-23a) on a preset dated after that year no longer
-// holds, so it is not quoted until the preset is rescored (user, 26 Oct 2026, message 402 (c): Fossil-free 2040's 2.16 GWh).
+// holds, so the caption says nothing on unserved energy until the preset is rescored (user, 26 Oct 2026, message 402 (c):
+// Fossil-free 2040's 2.16 GWh; 27 Oct 2026, message 430: no note in its place). The sentence carries its own leading space.
 const PRESET_SCORE_IMPORTS_END_BUILD = '2026-10-23a';
 const _presetMeets = n => { const S = PRESET_SCORES[n], f = v => v.toFixed(2);
   if (S.build < PRESET_SCORE_IMPORTS_END_BUILD && FIXED.importsEndYear > 0 && (PRESETS[n].scenarioYear ?? 2026) > FIXED.importsEndYear)
-    return `Unserved energy to be rescored: imports now end after ${FIXED.importsEndYear}.`;
+    return '';
   return S.shed <= S.target
-    ? `Unserved ${f(S.shed)} GWh/yr, within half the Australian standard.`
-    : `Unserved ${f(S.shed)} GWh/yr, above half the Australian standard (${f(S.target)}).`; };
+    ? ` Unserved ${f(S.shed)} GWh/yr, within half the Australian standard.`
+    : ` Unserved ${f(S.shed)} GWh/yr, above half the Australian standard (${f(S.target)}).`; };
 // Gas in the IRP captions: the floored share named only when it is not all of the gas.
 const _presetGas = P => { const g = (P.newCcgtMW || 0) + (P.newOcgtMW || 0), fl = Math.min(g, P.ccgtForceLoadMW ?? FIXED.ccgtForceLoadMW);
   return fl >= g ? `${_gw(g)} GW gas at a ${FIXED.ccgtForceLoadPct}% load factor` : `${_gw(g)} GW gas (${_gw(fl)} at a ${FIXED.ccgtForceLoadPct}% load factor)`; };
@@ -19712,8 +19713,8 @@ const PRESET_DESC = {
   'IRP\'s 2030 targets, grid delayed': ((P, T) => `IRP\u2019s 2030 targets with ${Math.round(100 * (1 - P.newWindMW / T.newWindMW))}% of the new wind and solar unable to connect (${_gw(P.newWindMW)} GW of wind and ${_gw(P.newPvMW)} GW of solar connect) and curtailment at ${P.congestionCurtailPct}%, for a transmission corridor not built in time.`)(PRESETS['IRP\'s 2030 targets, grid delayed'], PRESETS['IRP\'s 2030 targets']),
   'IRP path 2035': (P => `IRP 2025\u2019s 2035 build on Least-cost path 2035\u2019s demand (IRP plans ${(+IRP2035_DEMAND_GAP_PCT.toFixed(1))}% more): ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries, ${_presetGas(P)}; ${_gw(P.coalDecomMW)} GW coal retired.`)(PRESETS['IRP path 2035']),
   'Least-cost path 2035': (P => `The model\u2019s least-cost build to 2035: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries and ${_gw(P.newCcgtMW + P.newOcgtMW)} GW gas; ${_gw(P.coalDecomMW)} GW coal retired; demand ${Math.round(P.demandGrowthPct)}% above 2026 plus ${P.demandBlockMW} MW of smelter load.`)(PRESETS['Least-cost path 2035']),
-  'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035, no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW ${P.newBattHours}-hour batteries, ${_gw(P.newIronAirMW)} GW iron-air. ${_presetMeets('Deep decarbonisation 2035')}${_presetOverLimit(P)}`)(PRESETS['Deep decarbonisation 2035']),
-  'Fossil-free 2040': (P => `No fossil plant by 2040: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newOffshoreMW)} GW offshore, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW ${P.newBattHours}-hour batteries, ${_gw(P.newIronAirMW)} GW iron-air. ${_presetMeets('Fossil-free 2040')}${_presetOverLimit(P)}`)(PRESETS['Fossil-free 2040']),
+  'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035, no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW ${P.newBattHours}-hour batteries, ${_gw(P.newIronAirMW)} GW iron-air.${_presetMeets('Deep decarbonisation 2035')}${_presetOverLimit(P)}`)(PRESETS['Deep decarbonisation 2035']),
+  'Fossil-free 2040': (P => `No fossil plant by 2040: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newOffshoreMW)} GW offshore, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW ${P.newBattHours}-hour batteries, ${_gw(P.newIronAirMW)} GW iron-air.${_presetMeets('Fossil-free 2040')}${_presetOverLimit(P)}`)(PRESETS['Fossil-free 2040']),
 };
 const presetsEl=document.getElementById('presets');
 const presetCaptionEl=document.getElementById('presetCaption');
@@ -20753,7 +20754,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-27d';
+const BUILD_STAMP = '2026-10-27e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

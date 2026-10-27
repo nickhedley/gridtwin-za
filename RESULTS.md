@@ -17546,10 +17546,12 @@ October-December are an extrapolation; unnamed earlier private plant may still s
 Fossil-free 2040's reliability sentence quoted its score from build 2026-10-19e (PRESET_SCORES: 2.16 GWh/yr against half the
 Australian standard, 2.72), taken while imports ran to 2040. Since c6 PR B (build 2026-10-23a) imports end after 2030
 (FIXED.importsEndYear), and the page runs the 2040 preset without them, so the score no longer holds. Change: _presetMeets
-does not quote a score taken before that build on a preset dated after importsEndYear; the caption says 'Unserved energy to be
-rescored: imports now end after 2030.' until the presets build rescores it (message 402 (b), TODO 14ix). PRESET_SCORES is
-generated data and is not edited. Deep decarbonisation 2035's score (build 2026-10-24b) is after PR B and is unchanged. Visible
-text: that one sentence (harness/diff_public_text.js against main 02cb281).
+does not quote a score taken before that build on a preset dated after importsEndYear, and the caption says nothing on
+unserved energy until the presets build rescores it (message 402 (b), TODO 14ix). Build 2026-10-27e (message 430): the interim
+sentence 'Unserved energy to be rescored: imports now end after 2030.' was an internal note in visible text and is dropped; the
+unserved sentence now carries its own leading space so the caption joins cleanly with or without it. PRESET_SCORES is generated
+data and is not edited. Deep decarbonisation 2035's score (build 2026-10-24b) is after PR B and is unchanged. Visible text: the
+2.16 GWh sentence removed (harness/diff_public_text.js against main 02cb281).
 
 ### c6b's two cost changes: wind on BW6's compliant bids, rooftop blended from 2025-26 price guides (build 2026-10-27a; user, 27 Oct 2026, messages 405, 406, 408, 409, 411, 413, 414, 416 (a), (b); replaces the wind part of message 125)
 
