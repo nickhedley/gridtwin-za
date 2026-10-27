@@ -5739,7 +5739,8 @@ const FIXED = {
   // 'treasury' (sensitivity s_carbontreasury, message 423 (c)): the rates in law to 2030; allowances reduced in equal steps
   // from their 2026 share to none in 2031 (Treasury has said they will be reduced over 2026-2030 without setting the steps:
   // our assumption); after 2030 a straight line from the 2030 rate in law to Treasury's stated aim of US$120/t in 2050
-  // (CARBON_AIM_2050_USD; not legislated): our assumption, built on Treasury's stated aim. 'law2031': the same to 2030, then
+  // (CARBON_AIM_2050_USD, nominal, about R1,231/t in 2026 rands; not legislated): our assumption, built on Treasury's stated
+  // aim. 'law2031' (sensitivity s_carbonhold, message 424 (c)): the same to 2030, then
   // the 2030 rate in law with no allowances, held. 'cut2027': c4 and every run before 14 Oct 2026 (allowances cut 2.5 points
   // a year 2027-2030, nominal rates interpolated between 2026 and 2030). Caveat: electricity price neutrality is also extended
   // to 31 Dec 2030; not modelled.
@@ -10253,9 +10254,11 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 // 2030. The 2022 Budget's intent (at least US$30 by 2030, higher by 2035 and 2040, US$120 beyond 2050) is not legislated.
 const CARBON_TAX_LAW = { 2026: 308, 2027: 347, 2028: 385, 2029: 424, 2030: 462 };
 function carbonTaxHeadline(y){ return CARBON_TAX_LAW[Math.min(2030, Math.max(2026, y))]; }
-// Treasury's stated aim after 2030 (2022 Budget: at least US$30/t by 2030, rising to US$120/t beyond 2050; not legislated),
-// read in January 2026 dollars at USD_RATE_R because the Budget names no dollar year (user, 27 Oct 2026, message 421).
-const CARBON_AIM_2050_USD = 120;
+// Treasury's stated aim after 2030 (2022 Budget: at least US$30/t by 2030, rising to US$120/t beyond 2050; not legislated).
+// The Budget names no dollar year; read as nominal, since its US$20 (2026) and US$30 (2030) match the headline rates in law
+// (R308 and R462/t nominal), and deflated to 2026 dollars at 2% a year (no US inflation rate in the model), then converted at
+// USD_RATE_R: about R1,231/t in January 2026 rands (user, 27 Oct 2026, message 424 (b)).
+const CARBON_AIM_2050_USD = 120, CARBON_AIM_USD_INFL_PA = 0.02;
 // The rates in law are nominal. South Africa's inflation target, 3% from 12 Nov 2025 (National Treasury and SARB joint
 // announcement), states them in 2026 rands like every other cost in the model. Used by every path but 'cut2027'.
 const CARBON_CPI_PA = 0.03;
@@ -10276,7 +10279,8 @@ function carbonTaxAt(y, S){
     const s0 = S.carbonTaxRPerT / CARBON_TAX_LAW[2026];
     if (y <= 2030) return real(carbonTaxHeadline(y)) * (s0 + (1 - s0) * (y - 2026) / 5);
     const h30 = real(CARBON_TAX_LAW[2030]);
-    return path === 'law2031' ? h30 : h30 + (CARBON_AIM_2050_USD * USD_RATE_R - h30) * Math.min(20, y - 2030) / 20;
+    const aim = CARBON_AIM_2050_USD / Math.pow(1 + CARBON_AIM_USD_INFL_PA, 2050 - 2026) * USD_RATE_R;
+    return path === 'law2031' ? h30 : h30 + (aim - h30) * Math.min(20, y - 2030) / 20;
   }
   if (path !== 'kept2030') throw new Error('carbonAllowancePath must be treasury, law2031, kept2030 or cut2027: ' + path);
   // The 2026 net share (carbonTaxRPerT over the 2026 rate in law) held to 2030 and after.
@@ -20749,7 +20753,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-27c';
+const BUILD_STAMP = '2026-10-27d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

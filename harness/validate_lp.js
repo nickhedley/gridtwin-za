@@ -190,7 +190,7 @@ function check(label, ok, detail) {
   // Added 14 Oct 2026 (user). Central, 'kept2030': the allowance kept at its 2026 share to 2030 on the rates in law (R308/t
   // 2026, 347, 385, 424, R462/t 2030) in 2026 rands at the 3% inflation target, held after 2030. 'treasury' (s_carbontreasury,
   // 27 Oct 2026, message 423): net share in equal steps from the 2026 share to 1 in 2031, then a straight line from the 2030
-  // rate in law to US$120/t (at R16.50) in 2050; 'law2031' holds the 2030 rate in law after 2030. 'cut2027' must
+  // rate in law to US$120/t nominal (deflated at 2% a year to 2026 dollars, at R16.50) in 2050; 'law2031' holds the 2030 rate in law after 2030. 'cut2027' must
   // reproduce c4's path exactly. carbonTaxFull: the rates in law, no allowances, in 2026 rands. LP-KEY TEST: between any two
   // paths only the carbon terms may change, the objective coefficients of fossil output (gc_, gg_, gd_, go_) and no row.
   const ctf = await runProbe(w, `
@@ -214,10 +214,11 @@ function check(label, ok, detail) {
              kc: cmp(kept, cut), kf: cmp(kept, full) };`);
   const wantK = [46, 347, 385, 424, 462, 462, 462].map((v, i) => +(i ? v / Math.pow(1.03, Math.min(4, [0,1,2,3,4,5,14][i])) * 46 / 308 : 46).toFixed(2));
   const wantF = [308, 347, 385, 424, 462, 462, 462].map((v, i) => +(v / Math.pow(1.03, Math.min(4, [0,1,2,3,4,5,14][i]))).toFixed(2));
-  // The treasury path, written out independently of carbonTaxAt: real headline x net share to 2030, then the line to 120 x 16.50.
+  // The treasury path, written out independently of carbonTaxAt: real headline x net share to 2030, then the line to
+  // 120 / 1.02^24 x 16.50.
   const realH = [308, 347, 385, 424, 462].map((v, i) => v / Math.pow(1.03, i)), s0 = 46 / 308;
   const wantT = [2026, 2027, 2028, 2029, 2030, 2031, 2040].map(y => +(y <= 2030 ? realH[y - 2026] * (s0 + (1 - s0) * (y - 2026) / 5)
-                  : realH[4] + (120 * 16.5 - realH[4]) * (y - 2030) / 20).toFixed(2));
+                  : realH[4] + (120 / Math.pow(1.02, 24) * 16.5 - realH[4]) * (y - 2030) / 20).toFixed(2));
   const wantL = wantT.map((v, i) => i <= 4 ? v : +realH[4].toFixed(2));
   const lpk = c => c && c.keys && c.rowsSame && c.nonCarbon === 0 && c.carbon > 0;
   check('carbon paths: kept2030 central, treasury, law2031, cut2027 as c4, full rate; between paths only carbon terms change in the LP',
