@@ -17553,6 +17553,13 @@ unserved sentence now carries its own leading space so the caption joins cleanly
 data and is not edited. Deep decarbonisation 2035's score (build 2026-10-24b) is after PR B and is unchanged. Visible text: the
 2.16 GWh sentence removed (harness/diff_public_text.js against main 02cb281).
 
+validate_stored_panels.js is resumable state by state (27 Oct 2026, message 432 (b)): each state's computed panels go to a resume
+file keyed by the page fingerprint and the SHA-256 of index.html and the script; --write and the check keep separate files.
+Tested on build 2026-10-27e: a --write stopped after three states (Start-up, 2025, Today 2026) and resumed (09:07 UTC) wrote a file
+identical, byte for byte apart from meta.written, to an uninterrupted --write with PANELS_NO_RESUME=1 (09:29 UTC); 9/9 checks
+while writing in both; fingerprint 14a2598204b502. validate_worker.js (about 20 min) and validate_pathway_presets.js (about 12 min)
+are not made resumable: each fits well inside one run_in_background piece and run_suite.sh already skips finished scripts.
+
 ### c6b's two cost changes: wind on BW6's compliant bids, rooftop blended from 2025-26 price guides (build 2026-10-27a; user, 27 Oct 2026, messages 405, 406, 408, 409, 411, 413, 414, 416 (a), (b); replaces the wind part of message 125)
 
 Wind: FIXED.bldWindCase 'central' -> 'bw6'. Central BW6's compliant wind bids, R26,647/kW (IPP Office REIPPPP historical data note,
