@@ -17574,22 +17574,22 @@ does not move; costs do (TODO: engine checks and cost tables only).
 
 The Fossil-free 2040 caption fix (message 402 (c), previous entry) rides in the same page change, so one suite covers all three.
 
-Carbon (build 2026-10-27b; user, 27 Oct 2026, messages 420, 421 and its replacement (a), 422): FIXED.carbonAllowancePath 'kept2030'
--> 'treasury'. Effective carbon price for the build optimiser and the engine check (carbonTaxAt), R/t CO2e in January 2026 rands:
+Carbon (build 2026-10-27c; user, 27 Oct 2026, message 423, which replaces 421 and 422 (a)-(b)): the central stays on the
+legislated rate, FIXED.carbonAllowancePath 'kept2030' (the central uses the law as it stands; policy not legislated goes in
+sensitivities). Build 2026-10-27b had made Treasury's path the central; it was never merged. The path is kept as a setting,
+'treasury', for sensitivity s_carbontreasury, with 'law2031' beside it. Effective carbon price for the build optimiser and the
+engine check (carbonTaxAt), R/t CO2e in January 2026 rands:
 
 | Path | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2035 | 2040 |
 |---|---|---|---|---|---|---|---|---|
-| treasury (central from c6b) | 46.0 | 107.6 | 177.7 | 256.0 | 340.6 | 489.0 | 802.9 | 1,195.2 |
-| law2031 (s_carbonhold) | 46.0 | 107.6 | 177.7 | 256.0 | 340.6 | 410.5 | 410.5 | 410.5 |
-| kept2030 (central c5 to c6a; s_carbonlegis, "legislated rates only") | 46.0 | 50.3 | 54.2 | 58.0 | 61.3 | 61.3 | 61.3 | 61.3 |
+| kept2030 (central) | 46.0 | 50.3 | 54.2 | 58.0 | 61.3 | 61.3 | 61.3 | 61.3 |
+| treasury (s_carbontreasury) | 46.0 | 107.6 | 177.7 | 256.0 | 340.6 | 489.0 | 802.9 | 1,195.2 |
+| law2031 (setting only, not run) | 46.0 | 107.6 | 177.7 | 256.0 | 340.6 | 410.5 | 410.5 | 410.5 |
 
-To 2030 the headline is the rate in law (Carbon Tax Act, R308/t 2026 to R462/t 2030 nominal, R410.5/t in January 2026 rands at the
-3% inflation target). Tax-free allowances fall in equal steps from their 2026 share (the R46/t compliance rate over R308/t, a net
-share of 14.9%) to none in 2031: our assumption, as Treasury has said they will be reduced over 2026-2030 without setting the steps.
-After 2030 a straight line from R410.5/t to Treasury's stated aim of US$120/t in 2050 (2022 Budget; not legislated), R1,980/t at
-the model's R16.50/$ (CARBON_AIM_2050_USD, USD_RATE_R), taken as January 2026 dollars because the Budget names no dollar year: our
-assumption built on Treasury's stated aim. Electricity price neutrality to 31 Dec 2030 lowers what Eskom recovers from customers for
-the tax, not the tax on emissions, so it does not change the cost the model charges on emissions. The page's own dispatch still
-charges the flat carbonTaxRPerT (R46/t) in every year; only the pathway optimiser and its engine check follow the path (as before).
-validate_lp's carbon check now asserts the treasury path, written out independently, and law2031, beside kept2030, cut2027 and the
-full rate (57/57).
+s_carbontreasury: the rates in law to 2030 (Carbon Tax Act, R308/t 2026 to R462/t 2030 nominal, R410.5/t in January 2026 rands at
+the 3% inflation target); tax-free allowances reduced in equal steps from their 2026 share (the R46/t compliance rate over R308/t,
+14.9% net) to none from 2031; after 2030 a straight line from R410.5/t to Treasury's stated aim of US$120/t in 2050 (2022 Budget;
+not legislated), R1,980/t at the model's R16.50/$ (CARBON_AIM_2050_USD, USD_RATE_R), read as January 2026 dollars because the Budget
+names no dollar year. Our assumption, built on Treasury's stated aim. Holding the central flat after 2030 probably understates the
+carbon cost coal will face; s_carbontreasury shows by how much. Electricity price neutrality to 2030 is not modelled. validate_lp's
+carbon check asserts kept2030 as the default and the treasury and law2031 paths, written out independently (57/57).

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run from anywhere: bash harness/pathway/chain_c6b.sh. Outputs in harness/out (runs, checks) and harness/out/c6b (progress.txt,
 # IRP pair, restart counts); set N to put the latter elsewhere. Needs node, python3 and harness/node_modules (npm install jsdom highs).
-# c6b central run set (user, 27 Oct 2026, messages 406, 416 and 421): c6a's settings (env_c6a.sh) on build 2026-10-27b, wind on BW6 bids, rooftop at R10,500 DC and carbon on the treasury path; was the c6a set (messages 389 and 391): c6's settings with new gas from 2032 and the 2026 fleet counted for
+# c6b central run set (user, 27 Oct 2026, messages 406, 416 and 423): c6a's settings (env_c6a.sh) on build 2026-10-27c, wind on BW6 bids and rooftop at R10,500 DC; was the c6a set (messages 389 and 391): c6's settings with new gas from 2032 and the 2026 fleet counted for
 # its share of the year in service (harness/pathway/env_c6a.sh). Every run plans to NTCSA's 20 GWh unless it sets STD. s_gas2032 is
 # replaced by s_gas2030 (gas from 2030, as c6 had; 391 (c)); the strict and NEM standards only for c6b, s_nogas and s_nogas_dsl (391 (d)).
 # Order: c6b; the three IRP-schedule runs and c6b at IRP 2025's demand, then the IRP pair's build files and checks; the rest of the
@@ -49,14 +49,14 @@ P['note416']='Copy of pathway_irp2025_c6b.json with windCase '+sys.argv[3]+' and
 json.dump(P,open(sys.argv[2],'w'))" $N/irp/pathway_irp2025_c6b.json $N/irp/pathway_irp2025_c6b_wind$c.json $k out/pathway_s_wind${c}_c6b.json; done
 irpcheck irp2025_c6b_windlow & irpcheck irp2025_c6b_windhigh & wait
 echo "$(date -u +%H:%M) WIND CASES DONE" >> $P
-# Message 421 (c): the previous central's carbon path (s_carbonlegis, "legislated rates only": allowances kept, R61/t flat after 2030)
-# and the 2030 rate in law held from 2031 (s_carbonhold), each with the IRP build checked on the same carbon path.
-pair s_carbonlegis_c6b "CARBON_PATH=kept2030" s_carbonhold_c6b "CARBON_PATH=law2031"
-for c in legis:kept2030 hold:law2031; do k=${c%%:*}; v=${c#*:}; [ -s $N/irp/pathway_irp2025_c6b_carbon$k.json ] || [ ! -s out/pathway_s_carbon${k}_c6b.json ] || python3 -I -c "
-import json,sys; P=json.load(open(sys.argv[1])); R=json.load(open(sys.argv[4])); assert R.get('carbonPath')==sys.argv[3]; P['carbonPath']=sys.argv[3]
-P['note421']='Copy of pathway_irp2025_c6b.json on carbon path '+sys.argv[3]+' (message 421 (c)).'
-json.dump(P,open(sys.argv[2],'w'))" $N/irp/pathway_irp2025_c6b.json $N/irp/pathway_irp2025_c6b_carbon$k.json $v out/pathway_s_carbon${k}_c6b.json; done
-irpcheck irp2025_c6b_carbonlegis & irpcheck irp2025_c6b_carbonhold & wait
+# Message 423 (c): s_carbontreasury, our assumption built on Treasury's stated aim (allowances cut in equal steps to none from
+# 2031, then a straight line to US$120/t in 2050), with the IRP build checked on the same carbon path.
+one s_carbontreasury_c6b "CARBON_PATH=treasury"
+[ -s $N/irp/pathway_irp2025_c6b_carbontreasury.json ] || [ ! -s out/pathway_s_carbontreasury_c6b.json ] || python3 -I -c "
+import json,sys; P=json.load(open(sys.argv[1])); R=json.load(open(sys.argv[3])); assert R.get('carbonPath')=='treasury'; P['carbonPath']='treasury'
+P['note423']='Copy of pathway_irp2025_c6b.json on carbon path treasury (message 423 (c)).'
+json.dump(P,open(sys.argv[2],'w'))" $N/irp/pathway_irp2025_c6b.json $N/irp/pathway_irp2025_c6b_carbontreasury.json out/pathway_s_carbontreasury_c6b.json
+irpcheck irp2025_c6b_carbontreasury
 echo "$(date -u +%H:%M) CARBON CASES DONE" >> $P
 pair null_c6b "" s_nogas_c6b "GAS_CAP=0 OCGD=0"
 pair s_gascapex25_c6b "GAS_CAPEX=43706" s_gas2030_c6b "GAS_FIRST=2030"
@@ -72,7 +72,7 @@ one s_std_strict_nogas_dsl_c6b "STD=strict GAS_CAP=0 OCGD=1"
 one s_std_nem_c6b "STD=nem"; one s_std_nem_nogas_dsl_c6b "STD=nem GAS_CAP=0 OCGD=1"
 echo "$(date -u +%H:%M) STANDARDS DONE" >> $P
 python3 -I pathway/make_ret.py pathway/ret_counter.js pathcheck.js pathcheck_ret.gen.js >> $P 2>&1   # restart counts on this commit's own check
-for n in c6b null_c6b s_nogas_c6b s_gascapex25_c6b s_gas2030_c6b s_imp_c6b s_demlowflat_c6b s_demlowm1_c6b c6b_irpdem s_coalpractice_c6b s_mindn24_c6b s_rate48_c6b s_spotoil_c6b s_wearp75_c6b s_be6_c6b s_be7_c6b s_irpgas_c6b s_koeberg_winter_c6b s_ntcsa_both_c6b s_nogas_dsl_c6b s_std_strict_c6b s_std_strict_nogas_c6b s_std_strict_nogas_dsl_c6b s_std_nem_c6b s_std_nem_nogas_c6b s_std_nem_nogas_dsl_c6b s_carbonlegis_c6b s_carbonhold_c6b; do
+for n in c6b null_c6b s_nogas_c6b s_gascapex25_c6b s_gas2030_c6b s_imp_c6b s_demlowflat_c6b s_demlowm1_c6b c6b_irpdem s_coalpractice_c6b s_mindn24_c6b s_rate48_c6b s_spotoil_c6b s_wearp75_c6b s_be6_c6b s_be7_c6b s_irpgas_c6b s_koeberg_winter_c6b s_ntcsa_both_c6b s_nogas_dsl_c6b s_std_strict_c6b s_std_strict_nogas_c6b s_std_strict_nogas_dsl_c6b s_std_nem_c6b s_std_nem_nogas_c6b s_std_nem_nogas_dsl_c6b s_carbontreasury_c6b; do
   [ -s out/pathway_$n.json ] && ret $n out/pathway_$n.json; done
 ret irp2025_c6b $N/irp/pathway_irp2025_c6b.json; ret irp2025_c6b_irpdem $N/irp/pathway_irp2025_c6b_irpdem.json
 echo "$(date -u +%H:%M) C6B SET DONE" >> $P
