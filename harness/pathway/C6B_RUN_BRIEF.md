@@ -33,11 +33,16 @@ of chain_c6b.sh, the resumable stored-panels step) and do not change index.html,
 
 ## 3. Start the set
 
-From the repository root:
+Start it with the Bash tool's own background option (run_in_background: true, timeout 7000000 ms, just under 2 hours), not with
+nohup or &. In these cloud sessions a process started with nohup or & is stopped a few minutes after a reply ends, and an idle
+session's machine is reclaimed; a run_in_background job is tracked across replies for up to 2 hours (message 434). From the
+repository root, as the background command:
 
-    mkdir -p harness/out/c6b
-    nohup bash harness/pathway/chain_c6b.sh > harness/out/c6b/chain.out 2>&1 &
-    echo $! > harness/out/c6b/chain.pid
+    mkdir -p harness/out/c6b && echo $$ > harness/out/c6b/chain.pid && exec bash harness/pathway/chain_c6b.sh >> harness/out/c6b/chain.out 2>&1
+
+When the job ends (the set is done, or the 2-hour limit stops it) you are notified. If progress.txt has no "C6B SET DONE", start
+the same command again: the script is resumable and skips every finished run and check. So the set runs as a series of pieces
+under 2 hours each. No solve in the set takes over 40 minutes on c6a's timings, so each piece finishes at least one run.
 
 Settings: the script sources harness/pathway/env_c6a.sh, which sources env_c6.sh. Each run's own changes sit on its line in
 chain_c6b.sh. Progress, one line per event: harness/out/c6b/progress.txt.
@@ -55,15 +60,16 @@ chain_c6b.sh. Progress, one line per event: harness/out/c6b/progress.txt.
 Run times on c6a: most solves 6–10 min; s_irpgas and s_std_strict 14–21 min; s_nogas and s_std_strict_nogas_dsl 34–38 min; each
 engine check 10–30 min; the whole set about 9 hours.
 
-## 5. Container restarts
+## 5. Restarts and stops
 
-The container may restart without warning; on 27 Oct it restarted every 20–40 minutes. The script is resumable:
-
-- After a restart, check the PID in harness/out/c6b/chain.pid. If it is gone and progress.txt has no "C6B SET DONE", start the
-  set again with the same commands as in section 3. Finished runs and checks are skipped.
-- Schedule a check-in about every 30 minutes (send_later) so a restart never leaves the set stopped for long.
+- On 27 Oct the machine was reclaimed whenever the session sat idle for 6 minutes or more after a reply, and the session woke on
+  a fresh machine with every nohup job gone (message 434 (b)). A run_in_background job keeps the session from going idle while it
+  runs.
+- If the set stops anyway (a reclaimed machine, or the 2-hour limit), check harness/out/c6b/progress.txt and start the command in
+  section 3 again. Finished runs and checks are skipped.
 - A run that starts twice without output is logged in progress.txt as "NOT RUN <name>". Report each one to Nick as not run,
   with the reason (container restarts or the time limit). Do not delete its attempts file to force a third try unless Nick asks.
+- Stop the set only by the PID in harness/out/c6b/chain.pid (and its children by their own PIDs), never by pattern.
 
 ## 6. Tables, when the set is done
 
