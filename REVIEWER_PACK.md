@@ -104,7 +104,7 @@ Overnight capex, R/kW. Figure 9 (IRP 2025, plan p.21) is in 2024 rands; converte
 
 | Technology | Ours, Jan 2026 | Our basis | Figure 9, Jan 2026 | Ours against Figure 9 | Flag | Meridian |
 |---|---|---|---|---|---|---|
-| Onshore wind | 28,462 | BW6 compliant bids (c6b, PR #121, not merged) | 28,462 | equal | no | pending |
+| Onshore wind | 28,462 | BW6 compliant bids (c6b and c6c, PR #121, merged) | 28,462 | equal | no | pending |
 | Utility solar, tracking | 10,998 | BW7 awards, tariff-implied | 16,785–21,101 | −48% to −34% | yes | pending |
 | Lithium-ion, 4 h | 13,699 | BESIPPPP bid window 3, aged to 2026 | 25,248–27,674 | −50% to −46% | yes | pending |
 | Pumped storage | about 29,200 | Tubatse estimate (2022), CPI-indexed | 44,487 | −34% | yes | pending |
