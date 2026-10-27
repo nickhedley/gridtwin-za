@@ -527,6 +527,11 @@ coalMinDownH, so builds are unchanged by it except through the adequacy loop's e
 objective). Give the build LP a commitment rule that matches: a unit (or block) that comes off stays off for the minimum down time,
 in the representative days and the stress windows, and measure the build's move against c6c.
 
+14kb. Practice floor and down time together (user, 27 Oct 2026, messages 447 and 448): done in #122, floor 0.75 -> 0.715 so the
+2026 replay's sunny low-demand midday statistic matches Eskom's 0.623 again (0.624) with the 24-hour down time. Open: the replay's
+mean winter midday peak is 5.2 GW against NTCSA's one reported 3 GW day (flag kept). When 14ka gives the build LP the down time,
+recheck the floor's calibration on the same statistic; any later change to coal commitment settings recalibrates the floor too.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
