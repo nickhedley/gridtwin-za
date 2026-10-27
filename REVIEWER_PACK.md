@@ -154,7 +154,17 @@ Where the replay falls short:
 - Curtailment. The model curtails none, against about 1.0–1.6%. That range is derived from NERSA's deemed-energy payments, since NERSA gives no GWh figure. No system-wide mechanism the author tried reproduces it, and local grid limits, which a single node cannot see, are the explanation on record. A flat 1.3% stopgap stands in (RESULTS 'Curtailment re-based on 2025'; 'A coal operating floor does not reproduce 2025's curtailment either').
 - Pumped storage. On c5d's and c5e's engine (16c and 16h) the benchmark configuration produces 3.6 TWh, inside the ±25% band around Eskom's 4.49 TWh (3.37–5.62) (RESULTS 'Reviewer pack on c5d'), and the 2025 page run 4.01 TWh (RESULTS 'Fixed presets and the 2025 replay'). On c5b_14r's engine (14r) it produced 3.3 TWh, just below the band: the reserve rule held pumped-storage energy back for reserve, and without that holdback the same run gave 4.97 TWh. It was 3.8 TWh on 14e, before the rule (RESULTS 'Every check moved by the reserve rule and the must-run'; 'Storage reserve decided with dispatch').
 
-### c6's 2026 against Eskom's FY2026
+### c6a's 2026 against Eskom's calendar 2026 (the main validation; message 392 (a))
+
+c6a's 2026 coal is 150.4 TWh against about 153.9 TWh for Eskom's calendar 2026 on its January–August trend (each line's calendar 2025
+times January–August 2026 over January–August 2025; Eskom's hourly data, derived, analysis ours): 3.5 TWh (2.3%) low. Against FY2026
+(165.4 TWh, Eskom performance report, p.7) it is 14.9 TWh low; exports explain 7.9 TWh of that: c6a carries firm exports only (6.6 TWh
+against Eskom's 14.5 TWh in FY2026 and about 8.7 TWh on the 2026 trend), and Mozal's suspension from February 2026 takes about 2 TWh a
+year of non-firm exports out (limitation 27). Coal's share of generation, rooftop in and imports and storage out: 75.1% for the year,
+against Ember's 80.5% for January–August 2026 (coal 80.5%, solar 8.0%, wind 4.8%; Ember, CC BY 4.0). The 2025 backcast stays within
+1.3 TWh of calendar 2025 (below). c6's FY2026 comparison is kept below for the record.
+
+### c6's 2026 against Eskom's FY2026 (superseded by c6a; the record)
 
 c6's 2026 coal is 146.8 TWh against Eskom's 165.4 TWh for FY2026 (Eskom performance report, p.7); its CO2 163.5 Mt against 184.0 Mt (p.35). The gap is explained line by line to 0.0 TWh, and nothing in the engine is wrong: on 2025's inputs the 2025 replay (build 2026-10-25a) gives 169.1 TWh of coal against Eskom's 170.4 (−0.8%). The 2026 gap is inputs and scope (Eskom data, analysis ours; RESULTS 'c6's 2026 coal and CO2 against Eskom's FY2026'):
 
@@ -284,7 +294,7 @@ Recorded caveats: one bus; one outage draw per week; perfect sight within each w
 
 ---
 
-## 4. c6 against IRP 2025, and the sensitivities
+## 4. c6a against IRP 2025, and the sensitivities
 
 The design, fixed before the runs (user, 22–24 October, messages 321, 322, 329, 363):
 
@@ -294,7 +304,69 @@ The design, fixed before the runs (user, 22–24 October, messages 321, 322, 329
 - Sensitivities (16 runs with the four above and c6's null): gas capex +25% (s_gascapex25); new gas from 2032 (s_gas2032); no new gas (s_nogas); imports to 2040 (s_imp); demand flat and falling 1% a year (s_demlow); and on coal, s_coalpractice, s_mindn24, s_rate48, s_spotoil and s_wearp75 (section 1b).
 - Reported: build by year against Table 1, engine present value 2026–40 and its components, CO2 by year, adequacy by year, and cost and CO2 for each sensitivity against c6.
 
-### c6 results (runs of 25–26 October 2026, build 2026-10-25a; provisional until the note)
+### c6a results (runs of 26–27 October 2026, build 2026-10-26b; the central from 26 October; provisional until the note)
+
+c6a is c6 with new gas (CCGT and open-cycle on LNG) from 2032 at the earliest (IGUA-SA's Gas Roadmap, October 2026), the 2026 fleet
+counted for its share of the year in service, and rooftop on 2025's basis (the 2026 mean less wheeled plant; the 2027 step to the
+end-2026 level; the add-back on the twelve-year solar mean). c6 stays below as the earlier result.
+
+c6a meets both of NTCSA's criteria in every year: mean unserved energy at most 4.3 GWh against 20 GWh (worst single run 163 GWh) and
+an open-cycle capacity factor of at most 1.4%. As in c6, no new gas without new open-cycle fails the unserved-energy criterion from 2037.
+
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV, R bn | Against c6a, R bn | CO2 2026–40, Mt |
+|---|---|---|---|---|---|---|---|
+| c6a | met | 4.3 | 163 | 1.4% | 2294.7 | – | 1810 |
+| null | met | 4.3 | 163 | 1.4% | 2294.7 | +0.0 | 1810 |
+| s_ntcsa_both | met | 4.3 | 163 | 1.4% | 2294.7 | +0.0 | 1810 |
+| s_koeberg_winter | met | 4.7 | 193 | 1.3% | 2305.8 | +11.1 | 1794 |
+| s_gascapex25 | met | 4.6 | 151 | 1.8% | 2303.1 | +8.4 | 1775 |
+| s_gas2030 | met | 3.7 | 126 | 1.3% | 2295.0 | +0.3 | 1811 |
+| s_nogas | not met: unserved over 20 GWh in 2037, 2038, 2039, 2040 | 133.4 | 317 | 2.1% | 2346.6 | +51.9 | 1620 |
+| s_nogas_dsl | met | 11.0 | 157 | 1.4% | 2304.3 | +9.6 | 1622 |
+| s_imp | met | 3.3 | 107 | 1.4% | 2284.8 | −9.9 | 1782 |
+| s_demlowflat | met | 3.2 | 135 | 1.3% | 1981.4 | −313.3 | 1720 |
+| s_demlowm1 | met | 2.1 | 80 | 1.4% | 1894.5 | −400.3 | 1713 |
+| c6a_irpdem | met | 3.4 | 104 | 1.2% | 2181.2 | −113.6 | 1753 |
+| s_coalpractice | met | 3.8 | 138 | 1.0% | 2314.7 | +20.0 | 1924 |
+| s_mindn24 | met | 4.4 | 163 | 1.4% | 2286.6 | −8.1 | 1835 |
+| s_rate48 | met | 4.3 | 164 | 1.4% | 2296.6 | +1.9 | 1822 |
+| s_spotoil | met | 4.4 | 164 | 1.4% | 2295.5 | +0.8 | 1811 |
+| s_wearp75 | met | 4.3 | 164 | 1.4% | 2296.0 | +1.3 | 1811 |
+| s_be6 | met | 1.1 | 42 | 1.0% | 2334.7 | +40.0 | 1789 |
+| s_be7 | met | 4.3 | 159 | 1.4% | 2326.4 | +31.7 | 1783 |
+| s_irpgas | met | 0.3 | 27 | 0.5% | 2484.4 | +189.7 | 1793 |
+| s_std_strict | met | 2.4 | 190 | 1.2% | 2299.3 | +4.5 | 1768 |
+| s_std_strict_nogas_dsl | met | 5.0 | 237 | 1.2% | 2310.4 | +15.7 | 1583 |
+| s_nofleet | met | 4.3 | 163 | 1.4% | 2294.6 | −0.1 | 1805 |
+| s_noroofh | met | 4.3 | 155 | 1.3% | 2300.8 | +6.1 | 1766 |
+| s_windbw6 | met | 11.2 | 353 | 2.7% | 2355.0 | +60.3 | 1943 |
+
+Still running at 05:30 SAST, 27 October: the three NEM-standard runs; the restart-cost line follows them. s_std_strict_nogas did not
+finish (a build pass hit its 2-hour limit); c6's did not meet the standard either.
+
+The IRP 2025 build on c6a's paths, checked by the same engine (IRP comparison as at 27 October 2026, before the government briefing on
+the Gas IPP Procurement Programme, 28 October. [Briefing: one sentence to follow.]):
+
+| Run | 20 GWh | Strict (half NEM) | Mean unserved, highest year / worst run, GWh | Open-cycle CF, highest year | Engine PV, R bn | Against the optimised plan at the same demand | CO2 2030 / 2035 / 2040, Mt | CO2 2026-40, Mt | Curtailed wind and solar 2026-40, TWh | Restart line PV, R bn |
+|---|---|---|---|---|---|---|---|---|---|---|
+| IRP 2025 build, c6a demand | met | met | 0.00 / 0 | 0.15% | 2591.8 | +297.1 against c6a (2294.7) | 125.3 / 104.7 / 62.4 | 1731 (c6a 1810) | 271.3 (c6a 139.9) | – |
+| IRP 2025 build, IRP 2025 demand | met | met | 0.00 / 0 | 0.10% | 2527.4 | +346.3 against c6a_irpdem (2181.2) | 116.8 / 96.7 / 55.8 | 1607 (c6a_irpdem 1753) | 339.9 (c6a_irpdem 144.5) | – |
+
+Against c6, c6a emits 50 Mt more over 2026–40 (1,810 against 1,760 Mt): 44 Mt from the rooftop changes (about 1 GW more rooftop from
+2027 and its output on the twelve-year solar mean, against which the optimiser builds 1.1 GW less wind by 2030 and 2–3 GW less utility
+solar by 2035–40), 5 Mt from the 2026 fleet correction (2026 only), and less than 1 Mt from gas starting in 2032 rather than 2030
+(RESULTS 'c6a, the new central').
+
+Wind cost, for the central decision (RESULTS 'c6a'; capex implied by BW5's awarded tariff on the model's assumptions R20,874/kW, the
+c6a central; BW6's compliant bids R28,462/kW, corroborated by IRP 2025's workbook BW6 base case, R27,446/kW, and Koruson 1's
+disclosed investment, about R27,400/kW):
+
+| Run | Wind GW 2030/35/40 | Utility solar GW 2030/35/40 | Lithium GW 2035/40 | Gas GW 2035/40 | Engine PV R bn | CO2 2026-40 Mt | Mean unserved max / worst run GWh | IRP build PV, same wind cost | IRP gap R bn |
+|---|---|---|---|---|---|---|---|---|---|
+| c6a (wind central: capex implied by BW5's awarded tariff, R20,874/kW) | 7.3 / 24.8 / 33.7 | 9.3 / 13.9 / 24.0 | 9.0 / 12.7 | 3.3 / 9.2 | 2294.7 | 1810 | 4.3 / 163 | 2591.8 | +297.1 |
+| s_windbw6_c6a (BW6 compliant bids, R28,462/kW) | 2.7 / 17.1 / 31.0 | 9.5 / 16.9 / 26.3 | 9.3 / 13.6 | 3.5 / 8.8 | 2355.0 | 1943 | 11.2 / 353 | 2666.5 | +311.5 |
+
+### c6 results (runs of 25–26 October 2026, build 2026-10-25a; superseded by c6a, the record of the earlier central)
 
 c6 meets both criteria of NTCSA's medium-term adequacy test (the system operator's test, not a planning standard) in every year: mean unserved energy at most 3.3 GWh against 20 GWh (worst single run 120 GWh), and an open-cycle capacity factor of 0.13–1.43% against 6%. Every run below meets both except the two runs with no new gas and no new diesel open-cycle (s_nogas, s_std_nem_nogas), which fail the unserved-energy criterion from 2037. Mean unserved energy is the mean over the engine check's runs in the year with the highest mean; the worst run is the single weather-year and outage draw with the most shedding in any year. Central set: 120 runs a year (twelve weather years by ten outage draws); engine PV at 8% real, 2026–40; the restart line is the cost of coal restarts after forced outages, which the engine does not charge, added as its own line (RESULTS 'c6 under NTCSA's 20 GWh test').
 
