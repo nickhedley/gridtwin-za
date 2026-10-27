@@ -17759,5 +17759,6 @@ Also: the methods table typed the coal factor as 1.04 t/MWh while FIXED.emisCoal
 Suite after COAL_PARTLOAD_2026 was re-recorded (commit 7639a89, panels rewritten; ESK19679.csv present, nothing running beside it;
 27 Oct 2026 from 17:53 UTC, scratch m450s/suite.sh): stored panels 86/86, outputs 49/51, findings 37/40, consistency 82/83,
 invariants 176/176, response 86/87, benchmarks 28/30, weather 68/68, structure 27/27, public text 22/22, lint 3/3, geo 43/43,
-capacity 36/36, inputs 37/37, lp 57/57, external 8/8, solve 9/9, audit 88/88, eng5 5/6; pathway presets, links and worker in
-piece 2. The failures are main's less the four now passing, plus the turn-up finding above.
+capacity 36/36, inputs 37/37, lp 57/57, external 8/8, solve 9/9, audit 88/88, eng5 5/6; piece 2 (from 18:57 UTC): pathway presets
+27/40, links 48/48, worker 38/38. Node checks 967/989 (main 964/989), audit 88/88, eng5 5/6. The failures are main's less the four
+now passing, plus the turn-up finding above.
