@@ -17669,3 +17669,37 @@ on 27f, with this cause; the bands are unchanged.
 Also on the default view (diff_public_text, 026e027 against 27f): hours priced below zero 240 to 1,542; must-run coal sets the
 price in 74 of the price week's 168 hours (17 on 27e); coal 149.1 to 151.3 TWh, wind 14.2 to 12.8, utility PV 7.7 to 7.1, CO2
 166 to 169 Mt.
+
+### The practice floor recalibrated to 0.715 with the 24-hour down time: the 2026 replay's sunny low-demand midday coal statistic 0.624 against Eskom's 0.623; curtailment 0.85 TWh a year, winter midday peak 5.2 GW against NTCSA's 3 GW (user, 27 Oct 2026, messages 447 and 448; build 2026-10-27f, floor 0.75 -> 0.715)
+
+Settings. Build 27f (FIXED.coalMinDownH 24), 'Today 2026' preset, twelve weather years (2014-2025) x ten outage draws, the engine
+check's seeds; state override coalMslPracticeFloor; floor metric as in 'c6 PR C, message 369 (a)-(e)' (per day, the lowest hour
+10:00-15:00 of coal output over available coal; sunny low-demand days: midday PV above the month's median and midday demand in the
+month's lowest third); scratch m447/run_fm.sh with m335/replay.js and m447/fm_page.js (m364/floor_model_page.js plus annual
+curtailment). Hours below zero: the page's start-up view, simulate on PROFILES (scratch m447/neg.js). Measured statistic
+(ESK19679, Eskom credited, analysis ours): 0.623, p10-p90 0.565-0.724.
+
+| Floor (27f, 24 h) | Statistic, median (p10-p90) | Curtailment, TWh a year | Winter midday peak, MW, mean | Runs at 3 GW or more | Start-up view hours below zero |
+|---|---|---|---|---|---|
+| none | 0.527 (0.448-0.623) | 0.005 | 653 | 0 | 0 |
+| 0.60 | 0.553 (0.483-0.636) | 0.04 | 2,022 | 0 | 0 |
+| 0.65 | 0.573 (0.503-0.654) | 0.11 | 2,728 | 30 | 13 |
+| 0.70 | 0.611 (0.539-0.694) | 0.52 | 4,041 | 120 | 229 |
+| 0.71 | 0.619 (0.546-0.703) | 0.71 | 4,827 | 120 | 332 |
+| 0.715 | 0.624 (0.550-0.707) | 0.85 | 5,207 | 120 | 400 |
+| 0.72 | 0.627 (0.553-0.710) | 1.04 | 5,711 | 120 | 495 |
+| 0.73 | 0.632 (0.558-0.717) | 1.57 | 6,320 | 120 | - |
+| 0.75 | 0.642 (0.566-0.727) | 3.05 | 6,627 | 120 | 1,542 |
+
+For reference, 27e (4 h, floor 0.75): statistic 0.623, curtailment 0.94 TWh, winter midday peak 5.6 GW, 240 hours below zero.
+
+Finding. (a) With the 24-hour down time, the 0.75 floor overshoots the measured statistic (0.642 against 0.623): the two settings
+double count. (b) 0.715 reproduces it (0.624), as closely as 0.75 did at 4 h. Set as the central (message 448, option A): each
+setting represents one thing, and the floor was partly standing in for units kept on for the evening peak, which the down time now
+represents; recalibrating to the same measured statistic is standard calibration practice (rule 366). At 0.715 the 2026 replay
+curtails 0.85 TWh a year (0.94 on 27e) and its mean winter midday peak is 5.2 GW (5.6 on 27e), still above NTCSA's reported 3 GW on
+a winter day (flag kept; NTCSA's figure is one reported day). The start-up view has 400 hours below zero (240 on 27e). The
+extreme-solar week (message 407; Least-cost path 2035 with 45 GW utility and 25 GW rooftop solar, 8-14 January) is in 2035, after
+the floor ends in 2029: 4.4 starts a day on 27f at any floor (scratch m447/probe407_27f.json). The entries 'The 2026 replay on
+builds 27e and 27f' and 'The spill substitution checks fail on 27f' above were measured at the 0.75 floor and are superseded on
+the page by this one.

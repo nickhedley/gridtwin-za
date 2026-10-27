@@ -2,7 +2,7 @@
 
 For the run session on nickhedley/gridtwin-za that ran c6b. Let the c6b set finish and commit its outputs first (they are the
 4-hour down-time sensitivity and the fallback); then run c6c on main after Nick merges the minimum down time PR (build
-2026-10-27f, coal minimum down time 24 h). c6c is c6b's settings and run set on that page, rerun in full, because the adequacy
+2026-10-27f, coal minimum down time 24 h, practice floor recalibrated to 0.715, messages 443 and 448). c6c is c6b's settings and run set on that page, rerun in full, because the adequacy
 loops may move. The pack, RESULTS and the analysis stay with the session that wrote this brief.
 
 Read CLAUDE.md and RULES.md first; their rules apply. The ones that matter here:
@@ -22,6 +22,7 @@ Read CLAUDE.md and RULES.md first; their rules apply. The ones that matter here:
     git log --oneline -1                                   # the minimum down time PR's merge commit
     grep -o "BUILD_STAMP = '[0-9a-z-]*'" index.html         # must be '2026-10-27f'; stop and tell Nick if not
     grep -n "coalMinDownH:24" index.html                    # the 24-hour default must be there
+    grep -n "coalMslPracticeFloor:0.715" index.html         # the recalibrated floor must be there
     ls harness/pathway/chain_c6c.sh harness/pathway/env_c6.sh harness/pathway/env_c6a.sh harness/pathway/make_ret.py \
        harness/pathway/ret_counter.js harness/pathway/tables/ harness/pathway/irpcheck_coalsustain.sh
 

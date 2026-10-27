@@ -350,7 +350,12 @@ Coal minimum down time (user, 27 Oct 2026, messages 442 and 443): FIXED.coalMinD
                          8-48 h. The longer value is the more conservative choice for reliability (RULES.md, decisions taken
                          without Nick, message 366). AEMO's 2025 Thermal Audit and Meridian's 2025 flexibility study could not
                          be opened from the container: to read. UC_FLEET's own values (PyPSA-RSA) are kept for c6b, the
-                         4-hour sensitivity.
+                         4-hour sensitivity. With it the practice floor is recalibrated from 0.75 to 0.715 (messages 447 and
+                         448): each setting represents one thing; the floor was partly standing in for units kept on for the
+                         evening peak, which the down time now represents, so it is matched again to the same measured
+                         statistic, Eskom's January-August 2026 sunny low-demand midday coal output over available coal,
+                         median 0.623 (ESK19679, Eskom credited, analysis ours; model 0.624 at 0.715, 0.642 at 0.75), the
+                         backcast practice of SEM Committee, PLEXOS validation and backcast report, SEM-20-004.
 Rooftop PV installed cost, 2025-26 (user, 27 Oct 2026, messages 413 and 416 (b)): the c6b rooftop capex. 2025-26 installer price
                          guides; no authoritative survey of South African rooftop costs was found. All read from search-result
                          snippets on 27 Oct 2026 (this environment could not open .co.za pages): confirm dates, VAT and
