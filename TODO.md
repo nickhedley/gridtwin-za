@@ -495,6 +495,12 @@ flexible coal (India and China retrofit costs). The Eskom flexibilisation report
 only, no figures from it in the repository. (c) The checkbox stays as a setting for runs that fix the choice. (d) Report it beside
 s_coalpractice: what flexibilisation is worth against coal held at the 75% floor.
 
+14jx. Coal sustaining capital (user, 27 Oct 2026, messages 426 and 429): s_coalsustain (COAL_FOM_ADD=500, R/kW-yr) runs in c6b's
+set; add its effect on system cost (2026-40 PV) and on the IRP gap to pack limitation 30. After the #121 suite: re-solve c6a's final
+plan to read how close early retirement is to the margin (reduced costs of rc_<y>). If s_coalsustain or the margin shows coal
+retiring early, fold the charge into the central after the note. To check: the Sargent & Lundy / EIA coefficients (16.53 + 0.126 x
+age + 5.68 x FGD, 2017 $/kW-yr; eia.gov blocked from the container) and NERSA's MYPD6 reasons for decision (Generation capex).
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
