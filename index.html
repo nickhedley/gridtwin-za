@@ -5994,9 +5994,16 @@ const FIXED = {
   syncImportsCount:0, syncNucHydroBasis:'dispatched',
   // (5) coalRampHonour 1 (message 359 (f)): the commitment pre-pass keeps a block's commitment at least the previous hour's net
   //     load less one hour's ramp, and dispatch's coal floor rises no faster than the ramp. 0: as before (coal moved beyond its
-  //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH (null: UC_FLEET's) raises every unit's
-  //     minimum down time to at least this many hours (a sensitivity at 24).
-  coalMinDownH:null,
+  //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH raises every unit's minimum down time to at
+  //     least this many hours (null: UC_FLEET's, PyPSA-RSA's values, 4 h on 40,130 of 41,530 MW, which with the 2-hour hot start
+  //     lets a unit come off at midday and be back for the evening peak). 24, central from c6c (user, 27 Oct 2026, message 443):
+  //     our reading of Meridian Economics' "many coal units are unable to shut down and restart within a day" (Electricity market
+  //     reform briefing note, 26 Oct 2026, p.1, fn.1). No measured minimum down time for these units was found; the literature
+  //     ranges 8-48 h (PyPSA-Eur 8 h; NREL/Intertek 2012, Table 1-1, warm starts after 12-40 h offline for large subcritical and
+  //     12-72 h for supercritical; Agora Energiewende 2017, warm 8-48 h), and the longer value is the more conservative choice for
+  //     reliability (user, message 366). The build optimiser does not see it (TODO 14ka); the engine and its checks do. c6b ran
+  //     at null (4 h) and is now a sensitivity. The MIP mode (MIP_FLEET) keeps its own unit values.
+  coalMinDownH:24,
   // (6) Start-up time (user, 24 Oct 2026, message 369 (b)): hours from a start order to synchronisation, [hot, warm, cold] by the
   //     unit's hours offline at the order (COAL_START_OFFLINE_H classes). Hot 2 h (AEMO 2025 Thermal Audit p.25, about 2 hours'
   //     notice); cold 10 h (Agora Energiewende 2017, 5-10 h for hard coal, the upper end for an older fleet: conservative); warm
@@ -20754,7 +20761,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-27e';
+const BUILD_STAMP = '2026-10-27f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

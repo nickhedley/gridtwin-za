@@ -17605,3 +17605,15 @@ of the 2026 allowance (confirmed by the user, message 424 (a)). Our assumption, 
 same to 2030, then the 2030 rate in law held, R410.5/t. Holding the central flat after 2030 probably understates the
 carbon cost coal will face; s_carbontreasury shows by how much. Electricity price neutrality to 2030 is not modelled. validate_lp's
 carbon check asserts kept2030 as the default and the treasury and law2031 paths, written out independently (57/57).
+
+### c6c: coal minimum down time 24 h as the central (build 2026-10-27f; user, 27 Oct 2026, messages 442 and 443)
+
+FIXED.coalMinDownH null -> 24: every coal unit's minimum down time is at least 24 h in the engine's commitment (UC_FLEET carried
+PyPSA-RSA's 4 h on 40,130 of 41,530 MW, which with the 2-hour hot start let a unit come off at midday and return for the evening
+peak). Our reading of Meridian Economics' briefing note (26 Oct 2026, p.1, fn.1); literature 8-48 h; the more conservative choice
+for reliability (SOURCES 'Coal minimum down time'). The build optimiser does not see the minimum down time (TODO 14ka), so builds
+move only through the adequacy loop's engine verdicts. Measured before the change (RESULTS on the pack branch, 'Coal minimum down
+time: what it does to the extreme-solar case and to c6a'): in the extreme-solar week, starts halve and curtailment rises 1.6%; on
+c6a (s_mindn24_c6a) the build is unchanged, engine PV -R8.1bn, CO2 +25 Mt and curtailment +22.8 TWh over 2026-40. c6c is c6b's
+settings and set rerun on this page (harness/pathway/chain_c6c.sh, C6C_RUN_BRIEF.md); s_mindn24 is dropped from the set; c6b
+(4 h) is the down-time sensitivity. irpcheck_coalsustain.sh takes the set's name (CENTRAL, default c6b).
