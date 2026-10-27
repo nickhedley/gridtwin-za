@@ -284,8 +284,9 @@ let ROOF_STEP27=0; const ROOT='testroot', OUT=process.env.OUT||'pathway.json', G
  // CARBON_TAX_LAW: R308/t in 2026 to R462/t in 2030 in law, stated in 2026 rands, held after). Recorded in the output (carbonFull); pathcheck.js applies it.
  if (process.env.CTAX_FULL!==undefined && !['0','1'].includes(process.env.CTAX_FULL)) throw new Error('CTAX_FULL must be 0 or 1');
  w.eval(`if(!('carbonTaxFull' in FIXED)) throw new Error('carbonTaxFull missing');`+(process.env.CTAX_FULL!==undefined?` state.carbonTaxFull=${+process.env.CTAX_FULL};`:''));
- // CARBON_PATH (14 Oct 2026): the allowance path, kept2030 (default, central from c5) or cut2027 (c4's); recorded as carbonPath.
- if (process.env.CARBON_PATH!==undefined && !['kept2030','cut2027'].includes(process.env.CARBON_PATH)) throw new Error('CARBON_PATH must be kept2030 or cut2027');
+ // CARBON_PATH (14 Oct 2026): the allowance path; recorded as carbonPath. treasury (default, central from c6b, message 421),
+ // law2031, kept2030 (central c5 to c6a; s_carbonlegis) or cut2027 (c4's). See FIXED.carbonAllowancePath.
+ if (process.env.CARBON_PATH!==undefined && !['treasury','law2031','kept2030','cut2027'].includes(process.env.CARBON_PATH)) throw new Error('CARBON_PATH must be treasury, law2031, kept2030 or cut2027');
  w.eval(`if(!('carbonAllowancePath' in FIXED)) throw new Error('carbonAllowancePath missing');`+(process.env.CARBON_PATH!==undefined?` state.carbonAllowancePath=${JSON.stringify(process.env.CARBON_PATH)};`:''));
  // PVTRK (7 Oct 2026, TODO 14aw): new utility solar on the tracking profile at tracker capex.
  w.eval(`if(!('bldPvTracking' in FIXED)) throw new Error('bldPvTracking missing');`+(process.env.PVTRK!==undefined?` state.bldPvTracking=${+process.env.PVTRK};`:''));

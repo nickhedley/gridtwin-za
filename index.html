@@ -5732,13 +5732,18 @@ const FIXED = {
   // at the full statutory rate with no tax-free allowances (CARBON_TAX_LAW, in 2026 rands), held at the 2030 rate after 2030
   // because no later rate is in law. 0: the allowance path below.
   carbonTaxFull:0,
-  // Allowance path (carbonTaxAt), user 14 Oct 2026. 'kept2030', central from c5: the tax-free allowance kept at its 2026
-  // share to 31 Dec 2030 (February 2025 Budget, as reported by Engineering News, 19 Feb 2025: 'maintenance of the basic
-  // tax-free allowance until December 31, 2030, rather than reducing it from 2027') on the rates in law, in 2026 rands, held
-  // after 2030. 'cut2027': c4 and every run before 14 Oct 2026 (allowances cut 2.5 points a year 2027-2030, nominal rates
-  // interpolated between 2026 and 2030). Caveat: electricity price neutrality is also extended to 31 Dec 2030 and may lower
-  // generators' net cost further; not modelled.
-  carbonAllowancePath:'kept2030',
+  // Allowance path (carbonTaxAt). 'treasury', central from c6b (user, 27 Oct 2026, message 421): the rates in law to 2030;
+  // tax-free allowances reduced in equal steps from their 2026 share to none in 2031 (Treasury has said they will be reduced
+  // over 2026-2030 without setting the steps: our assumption); after 2030 a straight line from the 2030 rate in law to
+  // Treasury's stated aim of US$120/t in 2050 (CARBON_AIM_2050_USD; not legislated). 'law2031': the same to 2030, then the
+  // 2030 rate in law with no allowances, held. 'kept2030', central from c5 to c6a, now sensitivity s_carbonlegis ("legislated
+  // rates only"): the allowance kept at its 2026 share to 31 Dec 2030 (February 2025 Budget, as reported by Engineering News,
+  // 19 Feb 2025: 'maintenance of the basic tax-free allowance until December 31, 2030, rather than reducing it from 2027') on
+  // the rates in law, in 2026 rands, held after 2030. 'cut2027': c4 and every run before 14 Oct 2026 (allowances cut 2.5
+  // points a year 2027-2030, nominal rates interpolated between 2026 and 2030). Electricity price neutrality, extended to
+  // 31 Dec 2030, lowers what Eskom recovers from customers for the tax, not the tax on emissions, so it does not change the
+  // cost the model charges on emissions.
+  carbonAllowancePath:'treasury',
   // Pumped hydro as a build option (bldBuildLP, 5 Oct 2026). Off by default until reviewed.
   // FOM R297/kW-yr: NREL ATB 2022 pumped storage, USD 18/kW-yr, at R16.50/USD (no South African
   // figure published).
@@ -10248,8 +10253,11 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 // 2030. The 2022 Budget's intent (at least US$30 by 2030, higher by 2035 and 2040, US$120 beyond 2050) is not legislated.
 const CARBON_TAX_LAW = { 2026: 308, 2027: 347, 2028: 385, 2029: 424, 2030: 462 };
 function carbonTaxHeadline(y){ return CARBON_TAX_LAW[Math.min(2030, Math.max(2026, y))]; }
+// Treasury's stated aim after 2030 (2022 Budget: at least US$30/t by 2030, rising to US$120/t beyond 2050; not legislated),
+// read in January 2026 dollars at USD_RATE_R because the Budget names no dollar year (user, 27 Oct 2026, message 421).
+const CARBON_AIM_2050_USD = 120;
 // The rates in law are nominal. South Africa's inflation target, 3% from 12 Nov 2025 (National Treasury and SARB joint
-// announcement), states them in 2026 rands like every other cost in the model. Used by 'kept2030' and carbonTaxFull only.
+// announcement), states them in 2026 rands like every other cost in the model. Used by every path but 'cut2027'.
 const CARBON_CPI_PA = 0.03;
 // Effective carbon price for year y, R/t in 2026 rands, as the build optimiser (CARBON_AT) and the engine check
 // (pathcheck.js) both read it. S: FIXED overlaid with the scenario state.
@@ -10257,12 +10265,20 @@ function carbonTaxAt(y, S){
   const real = v => v / Math.pow(1 + CARBON_CPI_PA, Math.min(2030, Math.max(2026, y)) - 2026);
   if (S.carbonTaxFull) return real(carbonTaxHeadline(y));
   if (!S.carbonTaxPathOn || y <= 2026) return S.carbonTaxRPerT;
-  if ((S.carbonAllowancePath ?? 'kept2030') === 'cut2027'){
+  if (S.carbonAllowancePath === 'cut2027'){
     const L0 = CARBON_TAX_LAW[2026], L1 = CARBON_TAX_LAW[2030];
     const head = y >= 2030 ? L1 : L0 * Math.pow(L1 / L0, (y - 2026) / 4);
     return head * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
   }
-  if (S.carbonAllowancePath !== 'kept2030') throw new Error('carbonAllowancePath must be kept2030 or cut2027: ' + S.carbonAllowancePath);
+  const path = S.carbonAllowancePath ?? 'treasury';
+  if (path === 'treasury' || path === 'law2031'){
+    // Net share: the 2026 share (carbonTaxRPerT over the 2026 rate in law), then equal steps to 1 in 2031.
+    const s0 = S.carbonTaxRPerT / CARBON_TAX_LAW[2026];
+    if (y <= 2030) return real(carbonTaxHeadline(y)) * (s0 + (1 - s0) * (y - 2026) / 5);
+    const h30 = real(CARBON_TAX_LAW[2030]);
+    return path === 'law2031' ? h30 : h30 + (CARBON_AIM_2050_USD * USD_RATE_R - h30) * Math.min(20, y - 2030) / 20;
+  }
+  if (path !== 'kept2030') throw new Error('carbonAllowancePath must be treasury, law2031, kept2030 or cut2027: ' + path);
   // The 2026 net share (carbonTaxRPerT over the 2026 rate in law) held to 2030 and after.
   return real(carbonTaxHeadline(y)) * S.carbonTaxRPerT / CARBON_TAX_LAW[2026];
 }
@@ -18998,7 +19014,7 @@ const SLIDERS=[
   {id:'exportPriceR',label:'\u2013 export price received',min:150,max:1200,step:25,def:FIXED.exportPriceR,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',ctrlStyle:SUB_CTRL,
    note:'What a neighbouring utility pays for surplus South African energy. Defaults near SAPP system operation costs, which the draft SAPP Master Plan puts at USD 25\u201340/MWh through the horizon. Revenue offsets the system bill directly.'},
   {grp:'Prices and markets'},
-  {id:'carbonTaxRPerT',label:'Carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+Math.round(v)+'/t',note:'Defaults to R'+Math.round(FIXED.carbonTaxRPerT)+'/t, the compliance rate: the R308/t Phase 2 headline less allowances of up to 85&#37;. R308, R462 and R640 are policy prices, not forecasts; on the central path the 2030 rate is R'+carbonTaxAt(2030, {...FIXED, carbonTaxPathOn:1, carbonAllowancePath:'kept2030'}).toFixed(1)+' in 2026 rands.'},
+  {id:'carbonTaxRPerT',label:'Carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+Math.round(v)+'/t',note:'Defaults to R'+Math.round(FIXED.carbonTaxRPerT)+'/t, the 2026 compliance rate (the R308/t headline less allowances of up to 85&#37;). The pathway optimiser\u2019s central path ends allowances in 2031: R'+Math.round(carbonTaxAt(2030, {...FIXED, carbonTaxPathOn:1}))+'/t in 2030, R'+Math.round(carbonTaxAt(2040, {...FIXED, carbonTaxPathOn:1})).toLocaleString('en-US')+'/t in 2040 (2026 rands); after 2030 our assumption on Treasury\u2019s stated aim.'},
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
    note:'Make the build optimiser meet an emissions ceiling in 2030, rather than only reporting whether it does. When turned on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
@@ -20733,7 +20749,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-27a';
+const BUILD_STAMP = '2026-10-27b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
