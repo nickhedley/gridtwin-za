@@ -17726,3 +17726,15 @@ and R1,161 (2028). The working range for sustaining capital, R350-500/kW-yr, is 
 charge should not move c6a's plan; consistent with c5b, where R1,746/kW-yr on in-scope coal retired nothing. Caveat: reduced
 costs are first-order and the LP is degenerate; s_coalsustain (R500, in c6b's set) is the direct test. fomCoal R1,160/kW-yr,
 discount 8%.
+
+### Extreme midday solar on the page (27 Oct 2026, 11:28 UTC; user, messages 407 and 421 (e); report only)
+
+Build 2026-10-27e (claude/c6b-wind), Least-cost path 2035 with newPvMW 45,000 and newRooftopMW 25,000 (the preset's 14,736 and
+10,800; everything else the preset's: wind 23,362 MW, lithium 8,647 MW at 3.45 h, syncMinMW 6,000), one simulate() on the page's
+own profiles (scratchpad m407/probe407.js, a jsdom driver; aggregates only). Days 8-14 January (profile days 7-13): coal at midday
+(10:00-14:59 minimum) 1,525-3,299 MW; evening (17:00-20:59 maximum) 2,352-9,284 MW; largest hourly rise and fall 4,043 MW, at the
+fleet ramp limit (24% of available coal an hour); committed coal switched on 1,313-8,423 MW a day, about 3 to 17 starts at the
+fleet's mean unit size (489 MW, UC_FLEET); curtailment 103.6 TWh and coal 67.6 TWh over the year. Mechanism: in these hours coal's
+minimum is the larger of the national synchronous floor (SYNC_MIN_MW 6,000 MW of spinning plant less nuclear, hydro and
+grid-forming batteries at 0.30 of their power; imports do not count) and the committed units' minimum stable levels; the model
+has no unit-level or regional system-strength requirement, so commitment can fall to the floor every midday. Pack limitation 31.
