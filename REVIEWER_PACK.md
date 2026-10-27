@@ -823,7 +823,7 @@ Each can be answered from this pack in 30–40 minutes. Each is tied to a decisi
 
 What was run:
 
-- Build: c6c, BUILD_STAMP '2026-10-27f', PR #122; the commit is PR #122's merge commit, recorded here once merged. The c6b sensitivity ran on 2603be5 (build 2026-10-27e, PR #121, merged as 026e027 with an identical index.html).
+- Build: c6c, BUILD_STAMP '2026-10-27f', PR #122, run on main at acb2451 (PR #122's merge commit). The c6b sensitivity ran on 2603be5 (build 2026-10-27e, PR #121, merged as 026e027 with an identical index.html).
 - Settings: harness/pathway/env_c6.sh, then harness/pathway/env_c6a.sh on top (c6b and c6c keep c6a's pathway settings; their cost and down-time changes are in index.html). Each run's own changes are on its line in harness/pathway/chain_c6c.sh (chain_c6b.sh for c6b).
 - Software: Node 22, Python 3 with highspy 1.15.1 (SOLVER=native), and in harness/ `npm install jsdom highs eslint` (jsdom 29.1.1, highs 1.15.3 used here).
 
