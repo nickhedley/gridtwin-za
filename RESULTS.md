@@ -17786,3 +17786,34 @@ The move is PR C's: it re-sized the preset (wind 43,000 -> 40,500 MW, tracking s
 coal flexibility tier 1 -> 2), a deliberate scenario change; PR B's imports change adds 0.0002 and #119's rooftop -0.0024. The
 check's figure was not re-measured then because the move stayed inside its 0.06 tolerance. #121 re-measures it (R1.056). The
 presets PR, which rebuilds Deep decarbonisation 2035 again, re-measures it once more and records this cause in the check's comment.
+
+### c6c set: results (user, 27 Oct 2026, messages 443, 448 and 449 (c); build 2026-10-27f, run commit: to fill) – tables to fill when claude/c6c-runs lands
+
+Settings. harness/pathway/env_c6.sh, then env_c6a.sh; the page's FIXED at build 27f (coalMinDownH 24, coalMslPracticeFloor 0.715,
+BW6 wind bids, rooftop R10,500/kW DC, carbon on the legislated path); each run's own changes as chain_c6c.sh lists them; NTCSA's
+20 GWh unless a run sets STD; engine check twelve weather years x ten outage draws, seeds as before. Tables from
+`node pathway/tables/settables.js out out/c6c c6c c6b` on the run commit; the high nuclear charge checks withheld (message 417 (b)).
+
+Runs: (to fill)
+
+IRP 2025 build against the optimised plan, by case: (to fill)
+
+c6c against c6b, run by run: (to fill)
+
+s_coalsustain's IRP check (irpcheck_coalsustain.sh, CENTRAL=c6c): (to fill)
+
+Not run: (to fill)
+
+### c6b set: results, the 4-hour down-time sensitivity (user, 27 Oct 2026, messages 432, 443 and 449 (b); build 2026-10-27e, run commit 2603be5) – tables to fill when claude/c6b-runs lands
+
+Settings. As c6c's, at build 27e: UC_FLEET's minimum down time (4 h on 40,130 of 41,530 MW) and the 0.75 practice floor.
+Tables from `node pathway/tables/settables.js out out/c6b c6b` on 2603be5; pathway_irp2025_c6b.json checked present; runs superseded
+by c6c and not run listed.
+
+Runs: (to fill)
+
+IRP 2025 build against the optimised plan, by case: (to fill)
+
+s_coalsustain's IRP check (irpcheck_coalsustain.sh, CENTRAL=c6b, run here): (to fill)
+
+Not run: (to fill)

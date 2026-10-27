@@ -333,6 +333,48 @@ The design, fixed before the runs (user, 22–24 October, messages 321, 322, 329
 - Sensitivities (16 runs with the four above and c6's null): gas capex +25% (s_gascapex25); new gas from 2032 (s_gas2032); no new gas (s_nogas); imports to 2040 (s_imp); demand flat and falling 1% a year (s_demlow); and on coal, s_coalpractice, s_mindn24, s_rate48, s_spotoil and s_wearp75 (section 1b).
 - Reported: build by year against Table 1, engine present value 2026–40 and its components, CO2 by year, adequacy by year, and cost and CO2 for each sensitivity against c6.
 
+### c6c results (the headline set; build 2026-10-27f, PR #122: coal minimum down time 24 h, practice floor 0.715; tables to fill when claude/c6c-runs lands)
+
+Filled from `node pathway/tables/settables.js out out/c6c c6c c6b` on the run commit (section 7). Runs the chain could not finish are listed under Not run, with the reason.
+
+Runs against NTCSA's two criteria:
+
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV 2026–40, R bn | Against c6c, R bn | CO2 2026–40, Mt | CO2 2030 / 2035 / 2040, Mt |
+|---|---|---|---|---|---|---|---|---|
+| (to fill) | | | | | | | | |
+
+The IRP 2025 build against the optimised plan, case by case (central and IRP demand, the two wind cost cases, the two carbon paths, coal sustaining capital at R500/kW-yr; the high nuclear charge withheld until the nuclear reconciliation, message 417 (b)):
+
+| Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026–40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |
+|---|---|---|---|---|---|---|
+| (to fill) | | | | | | |
+
+c6c against c6b, run by run (the 24-hour down time and the 0.715 floor against the 4-hour down time and the 0.75 floor):
+
+| Run | Engine PV, c6c / c6b, R bn | Difference | CO2 2026–40, c6c / c6b, Mt | Curtailed wind and solar 2026–40, c6c / c6b, TWh | Mean unserved, highest year, c6c / c6b, GWh |
+|---|---|---|---|---|---|
+| (to fill) | | | | | |
+
+Not run: (to fill).
+
+### c6b: the 4-hour down-time sensitivity (build 2026-10-27e, run commit 2603be5; tables to fill when claude/c6b-runs lands)
+
+c6b is c6c's set at UC_FLEET's 4-hour minimum down time and the 0.75 floor. Filled from `node pathway/tables/settables.js out out/c6b c6b` on 2603be5. Runs superseded by c6c and not run are listed.
+
+Runs against NTCSA's two criteria:
+
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV 2026–40, R bn | Against c6b, R bn | CO2 2026–40, Mt | CO2 2030 / 2035 / 2040, Mt |
+|---|---|---|---|---|---|---|---|---|
+| (to fill) | | | | | | | | |
+
+The IRP 2025 build against the optimised plan, case by case:
+
+| Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026–40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |
+|---|---|---|---|---|---|---|
+| (to fill) | | | | | | |
+
+Not run: (to fill).
+
 ### c6a results (runs of 26–27 October 2026, build 2026-10-26b; the central from 26 October; provisional until the note)
 
 c6a is c6 with new gas (CCGT and open-cycle on LNG) from 2032 at the earliest (IGUA-SA's Gas Roadmap, October 2026), the 2026 fleet
@@ -742,7 +784,7 @@ In order, from a clone at that commit:
 1. `cd harness && npm install jsdom highs eslint && pip install highspy && ln -s .. testroot`
 2. Optional: the suite (CLAUDE.md, 'Running the suite'), about 1–2 hours.
 3. `bash pathway/chain_c6c.sh` (and `chain_c6b.sh` on 2603be5 for the c6b sensitivity), started as a tracked background job in pieces under 2 hours (CLAUDE.md, 'Long runs'). Resumable: rerun it after an interruption and finished runs and checks are skipped. Progress in harness/out/c6c/progress.txt.
-4. Tables, from harness/: `BASE=c6c node pathway/tables/packtable.js out c6c null_c6c s_nogas_c6c ...` (results table) and `CENTRAL=c6c node pathway/tables/irptable.js out out/c6c/irp` (IRP comparison).
+4. Tables, from harness/: `node pathway/tables/settables.js out out/c6c c6c c6b` (every table in section 4: runs, build, the IRP gap by case, c6c against c6b, not run); or `BASE=c6c node pathway/tables/packtable.js out c6c null_c6c s_nogas_c6c ...` (results table) and `CENTRAL=c6c node pathway/tables/irptable.js out out/c6c/irp` (IRP comparison).
 
 Run times, from c6a's set on the project's cloud container (two solves at a time, about 15 GB of memory):
 
