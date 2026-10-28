@@ -17763,6 +17763,42 @@ capacity 36/36, inputs 37/37, lp 57/57, external 8/8, solve 9/9, audit 88/88, en
 27/40, links 48/48, worker 38/38. Node checks 967/989 (main 964/989), audit 88/88, eng5 5/6. The failures are main's less the four
 now passing, plus the turn-up finding above.
 
+### Costs on the latest market evidence per technology: solar stays on BW7's awarded tariffs; solar at construction cost and 5% finance as sensitivities on c6c (user, 28 Oct 2026, messages 458-462; build 2026-10-27f, no page change)
+
+Decision (message 462, reversing 458): new utility solar stays on BW7's awarded tariffs (FIXED.bldPvCase 'central', R10,998/kW
+on the run basis, about R0.53/kWh); wind stays on BW6's compliant construction cost at 8% real (R28,462/kW). c6c (build
+2026-10-27f, run on main at acb2451) stays the headline set; c6d (chain_c6d.sh, kept unused) is not run. Basis and sources in
+SOURCES ('Build costs from South African bid data', costs on the latest market evidence per technology).
+
+s_pvbw6_c6c, solar at construction cost, 8% real (28 Oct 2026, 04:56-05:18 UTC, main at c3b9e14, whose index.html is acb2451's;
+c6c's settings: env_c6a.sh as chain_c6c.sh sources it, PV_CASE=bw6 so new tracking solar costs BW6's compliant bids, R16,786/kW;
+MAXP=3, TL=7200; engine check groups a-c with LNG=1 GRID=1): the run loop ended adequate in 550 s; both NTCSA criteria met, mean
+unserved at most 15.91 GWh in the highest year (worst run 384 GWh); engine PV 2026-40 R2,385.5bn; CO2 2026-40 1,952 Mt.
+Standing in 2030 / 2035 / 2040: utility solar 6.9 / 12.7 / 20.1 GW, wind 4.1 / 20.3 / 32.8 GW, lithium 4.1 / 8.4 / 12.3 GW, CCGT
+0.0 / 4.2 / 9.8 GW, coal 32.4 / 25.9 / 17.9 GW. Against c6c and the IRP check at the same solar cost: when claude/c6c-runs lands.
+
+s_disc5_c6c and s_discirp_c6c (messages 462 (d), 465 (b), 466): c6c's settings with PV_CASE=bw6 and DISC=0.05 or 0.113, so every
+technology, solar included, is on construction cost and only the rate differs from s_pvbw6_c6c (8%). A first s_disc5_c6c started
+05:34 UTC with DISC=0.05 alone was stopped at 05:44 before it wrote a run file: on BW7-tariff solar it would count solar's cheap
+finance twice (the tariff-implied capex already carries it), so it is not reported. 11.3% is IRP 2025's stated discount rate
+(Gazette p.34), read as real (SOURCES). Both run on main at c3b9e14 (pathway_perfail.js sets BLD_DISC: the annuity rate of every
+capital charge, new plant and existing coal's station capital, and the optimiser's weight on each year; pathcheck.js applies the
+run file's disc; the tables weight the engine's annual costs at 8% for every run). The IRP build is checked at the same costs and
+rate once c6c's IRP build file lands. Lives stay at BLD_LIFE (wind and solar 25 years, a page constant): a 30-year run waits for
+after the note (TODO 14kf). Results (28 Oct 2026; s_disc5 05:44-06:03 UTC, s_discirp 05:45-06:21 UTC; MAXP=3, TL=7200; engine
+check groups a-c with LNG=1 GRID=1), beside s_pvbw6_c6c at 8%; engine PV weights each year at 8% in every row:
+
+```
+run              rate   adequacy  mean max / worst GWh  OC CF max  engine PV R bn  CO2 Mt  solar GW 30/35/40   wind GW 30/35/40    lithium GW        gas GW
+s_discirp_c6c    11.3%  met       18.82 / 426           3.8%       2,528.2         2,029   6.7 / 12.9 / 20.0   3.3 / 16.3 / 29.1   4.2 / 8.6 / 12.3  0.0 / 4.3 / 10.3
+s_pvbw6_c6c      8%     met       15.91 / 384           3.4%       2,385.5         1,952   6.9 / 12.7 / 20.1   4.1 / 20.3 / 32.8   4.1 / 8.4 / 12.3  0.0 / 4.2 / 10.1
+s_disc5_c6c      5%     met        5.10 / 185           1.5%       2,259.3         1,850   8.7 / 12.7 / 19.9   6.6 / 22.5 / 34.9   4.0 / 8.2 / 11.7  0.0 / 4.2 / 10.0
+```
+
+Coal standing is the same in all three (32.4 / 25.9 / 17.9 GW in 2030 / 2035 / 2040). The rate moves wind most: 3.3 to 6.6 GW in
+2030 and 29.1 to 34.9 GW in 2040 between 11.3% and 5%; CO2 2026-40 falls 179 Mt. Against c6c and the IRP gaps: when claude/c6c-runs
+lands.
+
 ### Cost of capital by technology: solar and wind 5.5%, lithium and pumped storage 6.8%, gas 8.0%, nuclear 8.5%, network 7.1%, with interest during construction (user, 28 Oct 2026, messages 468, 469, 471 (a), (b) and 472; build 2026-10-28a)
 
 Settings. index.html: BLD_DISC stays the discount rate that weights years (8% real). Each technology's capital charge and its
