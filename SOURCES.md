@@ -2006,5 +2006,8 @@ January 2026 rands, on the central's basis (8% real, 25 years, fixed O&M R287/kW
   https://www.nersa.org.za/files/files/2026/10/FeedbackReportontheNERSAGasDialoguesof1July2026.pdf; quoted by Nick, not read from
   this container): "Standard procurement may be too rigid"; LNG expected around 2029-30; bankability depends on infrastructure
   finance and anchor demand. Basis for s_gas2035_c6e beside the gas-from-2032 central.
-- Not yet confirmed from a primary source: an analyst reported (28 Oct 2026) that the department says no preferred bidders were
-  selected in Gas IPP bid window 1. Kept out of the pack until the department's statement is found (TODO 14kh).
+- Department of Electricity and Energy, statement of 28 October 2026 (PDF held by Nick, to be placed in Drive; message 477): Gas IPP
+  bid window 1 (2,000 MW sought; four bids for 2,830 MW, received 29 May 2026) appointed no preferred bidders, mainly because
+  bidders could not assure gas supply (imports from Mozambique; no LNG terminal); a bid window 1.5 is to follow, with details before
+  the end of 2026. Basis for c6e's central taking new gas from 2035 (bid window 1.5's rules by early 2027, financial close 2028-29 at
+  the earliest once an LNG terminal is committed, three to four years to build a CCGT); 2032 is the sensitivity s_gas2032_c6e.
