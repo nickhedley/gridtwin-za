@@ -51,6 +51,19 @@ const LABELS = [
   ['code identifiers in camelCase', /\b[a-z]{2,}[A-Z][A-Za-z0-9]*\b/],
   ['code identifiers in CONSTANT_CASE', /\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\b/],
   ['year-by-year provenance lists', /\d+(?:\.\d+)?% in 20\d\d\b.*?\d+(?:\.\d+)?% in 20\d\d\b.*?\d+(?:\.\d+)?% in 20\d\d\b/],
+  // Stale, internal and tutorial wording (user, 28 Oct 2026, messages 470 (d) and 471 (n)): each was on the page at build 27f.
+  ["'(no recorded source)'", /\(no recorded source\)/i],
+  ["'Update these figures'", /\bUpdate these figures\b/i],
+  ["'Read that carefully'", /\bRead that carefully\b/i],
+  ["'Compare these carefully'", /\bCompare these carefully\b/i],
+  ["'This is because'", /\bThis is because\b/],
+  ["'no wholesale market' (SAWEM has traded inside Eskom since April 2026)", /\bno wholesale market\b/i],
+  ["'smartest' (advice wording)", /\bsmartest\b/i],
+  // Glitches (message 471 (m)): a label built for the first percentile, 'check the box in the Set the scenario box' (the page
+  // splits that sentence across text nodes, so the check matches its opening), and a negative plant count in prose.
+  ["'Top 0%'", /\bTop 0%/],
+  ["'check the box in the'", /\bcheck the box in the\b/i],
+  ['a negative MW count in prose', /(?:^|[^\w.])-\d[\d,]*(?:\.\d+)? MW of\b/],
 ];
 
 // Exempt sentences, each by its exact text, for one label only, with the reason. The pattern itself stays as it is, so change
