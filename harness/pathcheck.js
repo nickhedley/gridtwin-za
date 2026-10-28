@@ -85,6 +85,17 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // Open-cycle gas (build 2026-10-11f): the pathway's capex case, so the engine charges what the optimiser charged.
  if (P.ocgt && P.ocgt.costCase) w.eval(`state.bldOcgtCostCase=${JSON.stringify(P.ocgt.costCase)};`);
  // GAS_CAPEX (7 Oct 2026): CCGT capex at 2026, R/kW, for the IRP-capex sensitivity; read by engine and optimiser alike.
+ // The pathway's cost-of-capital case (build 2026-10-28a, messages 468 and 469), so capital is charged at the rates the optimiser
+ // used. A run file without one was built before 2026-10-28a, at one rate for all and no interest during construction: check it
+ // on its own commit. NUC_CAPEX_USD (nuclear's high capex case, USD 12,000) and NUC_LIFE (its 60-year sensitivity) recompute new
+ // nuclear's capital charge in that case.
+ if (P.cocCase==null) throw new Error('the run records no cocCase: it was built before build 2026-10-28a; check it on its own commit');
+ if (process.env.COC!==undefined && process.env.COC!==P.cocCase) throw new Error('COC '+process.env.COC+' disagrees with the run\'s cocCase '+P.cocCase);
+ w.eval(`bldApplyCocCase(${JSON.stringify(P.cocCase)}, ${process.env.NUC_CAPEX_USD?+process.env.NUC_CAPEX_USD:'undefined'}, ${process.env.NUC_LIFE?+process.env.NUC_LIFE:'undefined'});`);
+ if (process.env.NUC_CAPEX_USD||process.env.NUC_LIFE) console.log('nuclear capital charge', w.eval('state.acapNuclear'), 'R/kW-yr');
+ // NUC_ACAP (message 415 (a)): new nuclear's capital charge, R/kW-yr, for the IRP pair's high-cost nuclear check (no LP: the
+ // build is the run file's own).
+ if (process.env.NUC_ACAP) w.eval(`if(!('acapNuclear' in FIXED)) throw new Error('acapNuclear missing'); FIXED.acapNuclear=${+process.env.NUC_ACAP}; if (typeof state!=='undefined') state.acapNuclear=${+process.env.NUC_ACAP};`), console.log('NUC_ACAP', process.env.NUC_ACAP);
  if (process.env.GAS_CAPEX) w.eval(`if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`);
  // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
  // From build 2026-10-23a (c6 PR B) the page's default is 2030 and a run records its year, 0 included; a run recorded before then
@@ -100,6 +111,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (P.importsCF != null) w.eval(`state.importsCF=${+P.importsCF};`);
  const BLK = (P.demand && P.demand.block) ? P.demand.block : null;
  if (BLK) console.log('demand block from the pathway:', JSON.stringify(BLK));
+ // Coal sustaining capital (s_coalsustain, message 429): the pathway's own add-on to fomCoal, R/kW-yr.
+ if (P.coalFomAdd) { w.eval(`if(!('fomCoal' in FIXED)) throw new Error('fomCoal missing'); state.fomCoal=FIXED.fomCoal+${+P.coalFomAdd};`); console.log('coal fixed cost add-on from the pathway:', P.coalFomAdd); }
  // Cape wind allowance (14 Oct 2026): the pathway's curtailment share; each year's MW from sched[y].cw, cumulated below.
  if (P.capeWind) { w.eval(`state.bldCapeCurtPct=${+P.capeWind.curtPct};`); console.log('Cape wind allowance from the pathway:', JSON.stringify(P.capeWind)); }
  let cwCum=0;
@@ -153,7 +166,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // From build 2026-10-09d the pathway records its pumped-hydro settings (P.phes), which take precedence over PH, PH2
    // and PHES_BASIS, so the check cannot price a different duration from the one the optimiser built.
    if (cum.phes + cum.phel > 0){ const PS=P.phes||{}, H=+(PS.hours??(process.env.PH||w.eval('FIXED.bldPhesHours'))), H2=+(PS.hours2??(process.env.PH2||0)), B=PS.basis??(process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis'));
-     const ann=h=>+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${h}),60)+FIXED.bldPhesFomRkW`), P1=cum.phes, P2=cum.phel;
+     const ann=h=>+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${h}),60,'phes')+FIXED.bldPhesFomRkW`), P1=cum.phes, P2=cum.phel;
      over.newPsMW=P1+P2; over.newPsHours=(H*P1+H2*P2)/(P1+P2); over.newPsMaxMW=1e7; over.acapPs=(ann(H)*P1+(P2>0?ann(H2)*P2:0))/(P1+P2); }
    const batch=(k0,k1)=>JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
@@ -227,7 +240,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    if (PEAK_ON){
      const pk=JSON.parse(w.eval(`JSON.stringify(BLD_PEAKERS.map(p=>({id:p.id,eol:p.eol,irp:p.irp,on:bldPeakerExtOn(p,{...FIXED,...state},${y})})))`));
      const R=+w.eval('state.bldPeakerExtRkW??FIXED.bldPeakerExtRkW'); let e=0, kept=0;
-     for (const p of pk) if (p.on){ const mw=(P.peakerExt||{})[p.id]||0; kept+=mw; e+=mw*1000*w.eval(`bldAnnuity(${R},${p.irp-p.eol})`); }
+     for (const p of pk) if (p.on){ const mw=(P.peakerExt||{})[p.id]||0; kept+=mw; e+=mw*1000*w.eval(`bldAnnuity(${R},${p.irp-p.eol},'eskom')`); }
      r.peakerKeptMW=kept; r.peakerExtBn=e/1e9; r.dieselOnMW=+w.eval(`dieselAvailMW({...FIXED,...state,dieselDecomMW:${over.dieselDecomMW}})`);
    }
    // COMPLY (15 Oct 2026): the coal emissions compliance charge the pathway run recorded for this year (on the in-scope coal it kept),

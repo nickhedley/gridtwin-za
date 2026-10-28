@@ -187,8 +187,10 @@ function check(label, ok, detail) {
         ipr ? `2026: R${ipr.c26}/MWh on ${ipr.b26 && ipr.b26[0]} MWh, ${ipr.b26 && (ipr.b26[0] / ipr.flow).toFixed(1)} h of the ${ipr.flow.toFixed(0)} MW flow `
               + `(price R${ipr.price}); 2030: ${ipr.c30}; 2031: ${ipr.c31}` : 'no result');
   // ── CARBON PATHS (carbonTaxAt: carbonAllowancePath, carbonTaxFull) ───────
-  // Added 14 Oct 2026 (user). Central from c5, 'kept2030': the allowance kept at its 2026 share to 2030 on the rates in law
-  // (R308/t 2026, 347, 385, 424, R462/t 2030) in 2026 rands at the 3% inflation target, held after 2030. 'cut2027' must
+  // Added 14 Oct 2026 (user). Central, 'kept2030': the allowance kept at its 2026 share to 2030 on the rates in law (R308/t
+  // 2026, 347, 385, 424, R462/t 2030) in 2026 rands at the 3% inflation target, held after 2030. 'treasury' (s_carbontreasury,
+  // 27 Oct 2026, message 423): net share in equal steps from the 2026 share to 1 in 2031, then a straight line from the 2030
+  // rate in law to US$120/t nominal (deflated at 2% a year to 2026 dollars, at R16.50) in 2050; 'law2031' holds the 2030 rate in law after 2030. 'cut2027' must
   // reproduce c4's path exactly. carbonTaxFull: the rates in law, no allowances, in 2026 rands. LP-KEY TEST: between any two
   // paths only the carbon terms may change, the objective coefficients of fossil output (gc_, gg_, gd_, go_) and no row.
   const ctf = await runProbe(w, `
@@ -201,22 +203,30 @@ function check(label, ok, detail) {
       for (const [k, v] of a.m){ if (!b.m.has(k)) { keys = false; continue; } if (b.m.get(k) !== v){
         if (/^(gc|gg|gd|go)_/.test(k)) { carbon++; if (/_2026_/.test(k)) y2026++; } else nonCarbon++; } }
       return { keys, carbon, nonCarbon, y2026, rowsSame: a.rows === b.rows }; };
-    const kept = lp({}), cut = lp({ carbonAllowancePath: 'cut2027' }), full = lp({ carbonTaxFull: 1 }); bldSetHorizon(H0);
+    const kept = lp({ carbonAllowancePath: 'kept2030' }), cut = lp({ carbonAllowancePath: 'cut2027' }), full = lp({ carbonTaxFull: 1 }), tre = lp({ carbonAllowancePath: 'treasury' }); bldSetHorizon(H0);
     const S = { ...FIXED, ...state }, at = (y, ex) => carbonTaxAt(y, { ...S, ...ex });
     const old = y => y <= 2026 ? S.carbonTaxRPerT : (y >= 2030 ? 462 : 308 * Math.pow(462 / 308, (y - 2026) / 4)) * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
     const Y = [2026, 2027, 2028, 2029, 2030, 2031, 2040];
     return { law: [2026, 2027, 2028, 2029, 2030].map(carbonTaxHeadline), def: S.carbonAllowancePath,
-             kept: Y.map(y => +at(y, {}).toFixed(2)), full: Y.map(y => +at(y, { carbonTaxFull: 1 }).toFixed(2)),
+             kept: Y.map(y => +at(y, { carbonAllowancePath: 'kept2030' }).toFixed(2)), full: Y.map(y => +at(y, { carbonTaxFull: 1 }).toFixed(2)),
+             tre: Y.map(y => +at(y, { carbonAllowancePath: 'treasury' }).toFixed(2)), l31: Y.map(y => +at(y, { carbonAllowancePath: 'law2031' }).toFixed(2)), kt: cmp(kept, tre),
              cutErr: Math.max(...Y.map(y => Math.abs(at(y, { carbonAllowancePath: 'cut2027' }) - old(y)))),
              kc: cmp(kept, cut), kf: cmp(kept, full) };`);
   const wantK = [46, 347, 385, 424, 462, 462, 462].map((v, i) => +(i ? v / Math.pow(1.03, Math.min(4, [0,1,2,3,4,5,14][i])) * 46 / 308 : 46).toFixed(2));
   const wantF = [308, 347, 385, 424, 462, 462, 462].map((v, i) => +(v / Math.pow(1.03, Math.min(4, [0,1,2,3,4,5,14][i]))).toFixed(2));
+  // The treasury path, written out independently of carbonTaxAt: real headline x net share to 2030, then the line to
+  // 120 / 1.02^24 x 16.50.
+  const realH = [308, 347, 385, 424, 462].map((v, i) => v / Math.pow(1.03, i)), s0 = 46 / 308;
+  const wantT = [2026, 2027, 2028, 2029, 2030, 2031, 2040].map(y => +(y <= 2030 ? realH[y - 2026] * (s0 + (1 - s0) * (y - 2026) / 5)
+                  : realH[4] + (120 / Math.pow(1.02, 24) * 16.5 - realH[4]) * (y - 2030) / 20).toFixed(2));
+  const wantL = wantT.map((v, i) => i <= 4 ? v : +realH[4].toFixed(2));
   const lpk = c => c && c.keys && c.rowsSame && c.nonCarbon === 0 && c.carbon > 0;
-  check('carbon paths: kept2030 central, cut2027 as c4, full rate; between paths only carbon terms change in the LP',
+  check('carbon paths: kept2030 central, treasury, law2031, cut2027 as c4, full rate; between paths only carbon terms change in the LP',
         ctf && !ctf.error && ctf.law.join() === '308,347,385,424,462' && ctf.def === 'kept2030'
           && ctf.kept.join() === wantK.join() && ctf.full.join() === wantF.join() && ctf.cutErr < 1e-9
+          && ctf.tre.join() === wantT.join() && ctf.l31.join() === wantL.join() && lpk(ctf.kt) && ctf.kt.y2026 === 0
           && lpk(ctf.kc) && ctf.kc.y2026 === 0 && lpk(ctf.kf),
-        ctf && !ctf.error ? `default ${ctf.def}; kept2030 R/t 2026-31, 2040: ${ctf.kept.join(', ')}; full: ${ctf.full.join(', ')}; `
+        ctf && !ctf.error ? `default ${ctf.def}; treasury R/t 2026-31, 2040: ${ctf.tre.join(', ')}; law2031: ${ctf.l31.join(', ')}; kept2030: ${ctf.kept.join(', ')}; full: ${ctf.full.join(', ')}; `
           + `cut2027 against c4's formula, worst gap ${ctf.cutErr.toExponential(1)}; LP kept vs cut2027: ${ctf.kc.carbon} carbon terms, `
           + `${ctf.kc.nonCarbon} others, ${ctf.kc.y2026} in 2026, rows ${ctf.kc.rowsSame ? 'same' : 'DIFFER'}; kept vs full: ${ctf.kf.carbon} carbon, `
           + `${ctf.kf.nonCarbon} others, rows ${ctf.kf.rowsSame ? 'same' : 'DIFFER'}` : JSON.stringify(ctf));

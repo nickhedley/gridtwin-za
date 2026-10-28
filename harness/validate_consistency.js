@@ -1489,6 +1489,19 @@ const num = t => {
       // 19e in one page: the old preset R0.737, the old build at the new demand R0.578, the new preset R0.904, so the move is the
       // new build (more capital, partly spread over more sales). Deliberate scenario change, tolerance unchanged.
       //
+      // UPDATED 28 Oct 2026, R1.056 -> R0.986, build 2026-10-28a (costs of capital by technology; user, messages 468, 469 and 479).
+      // Measured with this check's own code on each page: main (27f) R1.056; 28a with one rate for all (bldCocCase 'planning') and
+      // solar backed out of BW7's tariffs (bldPvCase 'central') R1.062, the +0.005 being interest during construction on iron-air
+      // and the other overnight costs; 28a planning with solar on BW6's construction cost (the new default) R1.143, +0.081; 28a
+      // central, each technology at its own cost of capital (solar and wind 5.5%, storage 6.8%) R0.986, -0.157. The whole move is
+      // the two input changes and the new rates. Deliberate input change, tolerance unchanged.
+      //
+      // UPDATED 27 Oct 2026, R0.904 -> R1.056, build 2026-10-27e (c6b; user, messages 406 and 416 (a)). Wind central on BW6's
+      // compliant bids (FIXED.bldWindCase 'bw6', R28,462/kW, from the BW5-tariff capex). Measured with this check's own code on
+      // each page: main (02cb281) R0.951; this build with state.bldWindCase 'central' R0.951 exactly, with 'bw6' R1.056, so the
+      // whole move from main is the wind input. Main already sat R0.047 above the 19 Oct figure, inside the tolerance; that
+      // drift's cause is not traced here (TODO 14jz). Deliberate input change, tolerance unchanged.
+      //
       // UPDATED 18 Oct 2026, R0.965 -> R0.718, build 2026-10-17i (user, messages 199 and 200 (4)). Deep decarbonisation 2035
       // re-searched on c5e's costs and topped up (wind 32.5 -> 26.5 GW, solar 29.5 -> 27.5 GW tracking, lithium 19 -> 10.5 GW,
       // iron-air 1.125 -> 0.625 GW). Measured on 17i, each in a fresh page: main's preset R1.009, main's preset with tracking
@@ -1537,8 +1550,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 0.904) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.904 for Deep `
+              Math.abs(ncap.newCap - 0.986) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.986 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

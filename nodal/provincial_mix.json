@@ -4,8 +4,8 @@
   "note": "CAPACITY, not generation. A province with 30 GW of coal produces far more energy than one with 3 GW of solar at the same nameplate, because the capacity factors differ by a factor of four or five. Read the energy shares alongside, never the megawatts alone.",
   "licence": "CC BY-NC-ND 4.0",
   "attribution": "GridTwin ZA - gridtwinza.org",
-  "generation_note": "Generation is the engine's, not measured: each technology's national total is the engine's at start-up (Today 2026, build 2026-10-21g): coal 147.2, nuclear 10.9, hydro 2.9, gas and diesel 0.9, wind 14.3, solar with rooftop 25.8 TWh. Coal, nuclear, hydro and gas are split by installed capacity; wind and solar by the regional hourly profiles (a Hydra Central wind MW at 42.5%, a KwaZulu-Natal one at 21.6%). It does not change with the scenario. National generation is 104% of demand; the gap is imports, exports and storage, which are not allocated by province. Built by harness/build_provincial_mix.js.",
-  "demand_note": "Provincial demand is the engine's grid demand at start-up (194.7 TWh; loadS less storage charging plus demand response) apportioned by the regional model's shares, the ten hourly columns of nodal/demand_2025_regional.csv summed (2025; source being confirmed, TODO 14fa: the file matches G. Ireland's Demand-Spatialization-South-Africa, REF scenario, no exports, 2025, rotated 96 hours; that source's terms apply). An allocation, not a measurement."
+  "generation_note": "Generation is the engine's, not measured: each technology's national total is the engine's at start-up (Today 2026, build 2026-10-27f): coal 149.3, nuclear 10.9, hydro 1.9, gas and diesel 0.2, wind 14.1, solar with rooftop 25.0 TWh. Coal, nuclear, hydro and gas are split by installed capacity; wind and solar by the regional hourly profiles (a Hydra Central wind MW at 42.5%, a KwaZulu-Natal one at 21.6%). It does not change with the scenario. National generation is 103% of demand; the gap is imports, exports and storage, which are not allocated by province. Built by harness/build_provincial_mix.js.",
+  "demand_note": "Provincial demand is the engine's grid demand at start-up (195.4 TWh; loadS less storage charging plus demand response) apportioned by the regional model's shares, the ten hourly columns of nodal/demand_2025_regional.csv summed (2025; source being confirmed, TODO 14fa: the file matches G. Ireland's Demand-Spatialization-South-Africa, REF scenario, no exports, 2025, rotated 96 hours; that source's terms apply). An allocation, not a measurement."
  },
  "capacity_mw": {
   "Eastern Cape": {
@@ -101,16 +101,16 @@
  },
  "generation_twh": {
   "Eastern Cape": {
-   "wind": 5.75,
-   "solar": 1.44,
+   "wind": 5.64,
+   "solar": 1.39,
    "nuclear": 0,
    "hydro": 0,
    "coal": 0,
-   "gas": 0.11
+   "gas": 0.02
   },
   "Free State": {
    "wind": 0,
-   "solar": 1.56,
+   "solar": 1.52,
    "nuclear": 0,
    "hydro": 0,
    "coal": 0,
@@ -118,79 +118,79 @@
   },
   "Gauteng": {
    "wind": 0,
-   "solar": 6.11,
+   "solar": 5.92,
    "nuclear": 0,
    "hydro": 0,
-   "coal": 12.95,
-   "gas": 0.09
+   "coal": 13.13,
+   "gas": 0.02
   },
   "Hydra Central": {
-   "wind": 2.35,
-   "solar": 1.33,
+   "wind": 2.31,
+   "solar": 1.29,
    "nuclear": 0,
-   "hydro": 2.9,
+   "hydro": 1.91,
    "coal": 0,
-   "gas": 0.02
+   "gas": 0
   },
   "Kwazulu Natal": {
    "wind": 0,
-   "solar": 2.54,
+   "solar": 2.46,
    "nuclear": 0,
    "hydro": 0,
    "coal": 0,
-   "gas": 0.14
+   "gas": 0.03
   },
   "Limpopo": {
    "wind": 0,
-   "solar": 2.14,
+   "solar": 2.08,
    "nuclear": 0,
    "hydro": 0,
-   "coal": 27.89,
+   "coal": 28.29,
    "gas": 0
   },
   "Mpumalanga": {
    "wind": 0,
-   "solar": 1.41,
+   "solar": 1.36,
    "nuclear": 0,
    "hydro": 0,
-   "coal": 106.37,
+   "coal": 107.87,
    "gas": 0
   },
   "North West": {
    "wind": 0,
-   "solar": 2.41,
+   "solar": 2.34,
    "nuclear": 0,
    "hydro": 0,
    "coal": 0,
    "gas": 0
   },
   "Northern Cape": {
-   "wind": 2.47,
-   "solar": 4.27,
+   "wind": 2.43,
+   "solar": 4.14,
    "nuclear": 0,
    "hydro": 0,
    "coal": 0,
-   "gas": 0.07
+   "gas": 0.01
   },
   "Western Cape": {
-   "wind": 3.79,
-   "solar": 2.56,
+   "wind": 3.72,
+   "solar": 2.48,
    "nuclear": 10.87,
    "hydro": 0,
    "coal": 0,
-   "gas": 0.49
+   "gas": 0.1
   }
  },
  "demand_twh": {
-  "Eastern Cape": 9.83,
-  "Free State": 5.74,
-  "Gauteng": 54.43,
+  "Eastern Cape": 9.86,
+  "Free State": 5.76,
+  "Gauteng": 54.62,
   "Hydra Central": 0.91,
-  "Kwazulu Natal": 37.47,
-  "Limpopo": 18,
-  "Mpumalanga": 23.2,
-  "North West": 21.42,
-  "Northern Cape": 4.16,
-  "Western Cape": 19.57
+  "Kwazulu Natal": 37.6,
+  "Limpopo": 18.06,
+  "Mpumalanga": 23.28,
+  "North West": 21.5,
+  "Northern Cape": 4.18,
+  "Western Cape": 19.63
  }
 }

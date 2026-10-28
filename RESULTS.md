@@ -17893,3 +17893,306 @@ checks (R16,800/kW-yr) ran and are withheld until the nuclear cost is reconciled
 
 Caveats. c6b differs from c6c in three settings (down time, floor, coal emission factor), so c6c against c6b is not the down time
 alone. s_windlow_c6b reproduces c6a's build (wind on the BW5-implied capex; engine PV R13.4bn below c6a's on c6b's cheaper rooftop).
+
+### Fossil-free 2040's caption no longer quotes 2.16 GWh (build 2026-10-27a, with the c6b cost changes; user, 26 Oct 2026, message 402 (c))
+
+Fossil-free 2040's reliability sentence quoted its score from build 2026-10-19e (PRESET_SCORES: 2.16 GWh/yr against half the
+Australian standard, 2.72), taken while imports ran to 2040. Since c6 PR B (build 2026-10-23a) imports end after 2030
+(FIXED.importsEndYear), and the page runs the 2040 preset without them, so the score no longer holds. Change: _presetMeets
+does not quote a score taken before that build on a preset dated after importsEndYear, and the caption says nothing on
+unserved energy until the presets build rescores it (message 402 (b), TODO 14ix). Build 2026-10-27e (message 430): the interim
+sentence 'Unserved energy to be rescored: imports now end after 2030.' was an internal note in visible text and is dropped; the
+unserved sentence now carries its own leading space so the caption joins cleanly with or without it. PRESET_SCORES is generated
+data and is not edited. Deep decarbonisation 2035's score (build 2026-10-24b) is after PR B and is unchanged. Visible text: the
+2.16 GWh sentence removed (harness/diff_public_text.js against main 02cb281).
+
+validate_stored_panels.js is resumable state by state (27 Oct 2026, message 432 (b)): each state's computed panels go to a resume
+file keyed by the page fingerprint and the SHA-256 of index.html and the script; --write and the check keep separate files.
+Tested on build 2026-10-27e: a --write stopped after three states (Start-up, 2025, Today 2026) and resumed (09:07 UTC) wrote a file
+identical, byte for byte apart from meta.written, to an uninterrupted --write with PANELS_NO_RESUME=1 (09:29 UTC); 9/9 checks
+while writing in both; fingerprint 14a2598204b502. validate_worker.js (about 20 min) and validate_pathway_presets.js (about 12 min)
+are not made resumable: each fits well inside one run_in_background piece and run_suite.sh already skips finished scripts.
+
+### c6b's two cost changes: wind on BW6's compliant bids, rooftop blended from 2025-26 price guides (build 2026-10-27a; user, 27 Oct 2026, messages 405, 406, 408, 409, 411, 413, 414, 416 (a), (b); replaces the wind part of message 125)
+
+Wind: FIXED.bldWindCase 'central' -> 'bw6'. Central BW6's compliant wind bids, R26,647/kW (IPP Office REIPPPP historical data note,
+7 Nov 2025, January 2024 rands), R28,462/kW in January 2026 rands, about R0.82/kWh at 8% real over 25 years at new wind's 42.5%
+capacity factor before the grid charge. Corroborated by IRP 2025's workbook BW6 base case (R27,446/kW, 2026 rands), Koruson 1's
+disclosed investment (BW5, 420 MW, R11.5bn, about R27,400/kW, 2023) and Meridian Economics' 2024 base case (R24,797/kW in 2023 rands,
+about R27,900 in January 2026 rands at the model's CPI chain; Review of the IRP 2023, 18 Mar 2024 draft, technical appendix). Low case:
+the capex implied by BW5's awarded tariff on the model's assumptions, R20,874/kW, about R0.63/kWh (the case keyed 'central', kept so
+earlier runs check as built); BW5 reached financial close late and in part (about half of its 1,608 MW of wind, Nov 2022-Mar 2023, at
+R564-601/MWh after the RFP's exchange-rate and CPI adjustment). High: disclosed investment values (Koruson 1 and Impofu), R30,063/kW,
+about R0.86/kWh. Published estimates beside them (search results, pages not opened): Meridian 2020 66 c/kWh (about R0.84-0.86 in 2026
+rands), IRENA 2024 Africa onshore about USD 0.052/kWh (about R0.86 at 12% cost of capital), BNEF 2025 global onshore USD 40/MWh
+(about R0.66). The wind anchor, the methodology table's capex line and the capacity-payment panel now follow the central case; the
+capex line showed R17,773 (the tariff capex at BW6 bids' capacity factor, used by no run since the 'run' basis became the default).
+validate_weather's anchor formula follows the case likewise.
+
+Rooftop: ROOF_CAPEX_DC_RKW 12,500 -> 10,500 (R12,600/kW AC at DC/AC 1.2), excluding VAT, January 2026 rands: 30% residential at
+R13.0/Wp and 70% commercial and industrial at R9.5/Wp (SOURCES 'Rooftop PV installed cost, 2025-26'; installer price guides, no
+authoritative survey). Low R8,000, high R14,000 DC. Rooftop is a fixed path in the build LP (1,200 MW a year from 2027), so the build
+does not move; costs do (TODO: engine checks and cost tables only).
+
+The Fossil-free 2040 caption fix (message 402 (c), previous entry) rides in the same page change, so one suite covers all three.
+
+Carbon (build 2026-10-27d; user, 27 Oct 2026, messages 423 and 424; 423 replaces 421 and 422 (a)-(b)): the central stays on the
+legislated rate, FIXED.carbonAllowancePath 'kept2030' (the central uses the law as it stands; policy not legislated goes in
+sensitivities). Builds 2026-10-27b and c, never merged, had Treasury's path as central and then US$120 read as 2026 dollars. The path is kept as a setting,
+'treasury', for sensitivity s_carbontreasury, with 'law2031' for s_carbonhold. Effective carbon price for the build optimiser and the
+engine check (carbonTaxAt), R/t CO2e in January 2026 rands:
+
+| Path | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2035 | 2040 |
+|---|---|---|---|---|---|---|---|---|
+| kept2030 (central) | 46.0 | 50.3 | 54.2 | 58.0 | 61.3 | 61.3 | 61.3 | 61.3 |
+| treasury (s_carbontreasury) | 46.0 | 107.6 | 177.7 | 256.0 | 340.6 | 451.5 | 615.6 | 820.7 |
+| law2031 (s_carbonhold) | 46.0 | 107.6 | 177.7 | 256.0 | 340.6 | 410.5 | 410.5 | 410.5 |
+
+s_carbontreasury: the rates in law to 2030 (Carbon Tax Act, R308/t 2026 to R462/t 2030 nominal, R410.5/t in January 2026 rands at
+the 3% inflation target); tax-free allowances reduced in equal steps from their 2026 share (the R46/t compliance rate over R308/t,
+14.9% net) to none from 2031; after 2030 a straight line from R410.5/t to Treasury's stated aim of US$120/t in 2050 (2022 Budget;
+not legislated). The Budget names no dollar year; our reading: nominal, since its US$20 (2026) and US$30 (2030) match the headline
+rates in law (R308 and R462/t nominal), deflated to 2026 dollars at 2% a year (the model has no US inflation rate) and converted at
+R16.50/$: US$74.6, R1,231/t (CARBON_AIM_2050_USD, CARBON_AIM_USD_INFL_PA, USD_RATE_R). Allowance steps: five, so 2030 keeps a fifth
+of the 2026 allowance (confirmed by the user, message 424 (a)). Our assumption, built on Treasury's stated aim. s_carbonhold: the
+same to 2030, then the 2030 rate in law held, R410.5/t. Holding the central flat after 2030 probably understates the
+carbon cost coal will face; s_carbontreasury shows by how much. Electricity price neutrality to 2030 is not modelled. validate_lp's
+carbon check asserts kept2030 as the default and the treasury and law2031 paths, written out independently (57/57).
+
+### c6c: coal minimum down time 24 h as the central (build 2026-10-27f; user, 27 Oct 2026, messages 442 and 443)
+
+FIXED.coalMinDownH null -> 24: every coal unit's minimum down time is at least 24 h in the engine's commitment (UC_FLEET carried
+PyPSA-RSA's 4 h on 40,130 of 41,530 MW, which with the 2-hour hot start let a unit come off at midday and return for the evening
+peak). Our reading of Meridian Economics' briefing note (26 Oct 2026, p.1, fn.1); literature 8-48 h; the more conservative choice
+for reliability (SOURCES 'Coal minimum down time'). The build optimiser does not see the minimum down time (TODO 14ka), so builds
+move only through the adequacy loop's engine verdicts. Measured before the change (RESULTS on the pack branch, 'Coal minimum down
+time: what it does to the extreme-solar case and to c6a'): in the extreme-solar week, starts halve and curtailment rises 1.6%; on
+c6a (s_mindn24_c6a) the build is unchanged, engine PV -R8.1bn, CO2 +25 Mt and curtailment +22.8 TWh over 2026-40. c6c is c6b's
+settings and set rerun on this page (harness/pathway/chain_c6c.sh, C6C_RUN_BRIEF.md); s_mindn24 is dropped from the set; c6b
+(4 h) is the down-time sensitivity. irpcheck_coalsustain.sh takes the set's name (CENTRAL, default c6b).
+
+### The 2026 replay on builds 27e and 27f: oversupply curtailment 0.94 and 3.05 TWh a year; the mean winter midday peak 5.6 and 6.6 GW, above NTCSA's up to 3 GW on a winter day; the page note restated (user, 27 Oct 2026, message 446; builds 2026-10-27e and 2026-10-27f)
+
+Settings. 'Today 2026' preset (applyState), twelve weather years (2014-2025) x ten outage draws, the engine check's seeds
+(71830529 + k x 104729 + year x 7919), simulate with real profiles, the congestion stopgap as the preset has it; script m130_replay.js
+(scratch, as in 'The 2026 replay curtails almost nothing for oversupply', message 130), run on 27e (main, 026e027) and on 27f
+(claude/c6c-mindown). Winter is May-August, midday 06:00-17:59.
+
+| 2026 replay, 120 runs | 27e (4 h down time) | 27f (24 h) |
+|---|---|---|
+| Oversupply curtailment, GWh a year, mean / median / largest | 944 / 999 / 1,326 | 3,048 / 3,141 / 3,557 |
+| Winter largest midday hour, MW, mean / median / largest | 5,615 / 5,974 / 7,317 | 6,627 / 6,629 / 7,317 |
+| Runs with a winter midday hour of 3 GW or more | 120 | 120 |
+| Largest winter midday day, GWh, mean / largest | 25.9 / 36.2 | 38.0 / 45.9 |
+| Winter days with an hour above 1 GW, mean | 26.3 | 73.8 |
+
+By month, GWh, mean of 120 runs: 27e 3.2, 2.8, 4.9, 31.8, 98.4, 78.6, 147.4, 283.8, 201.1, 43.8, 38.3, 9.6; 27f 5.2, 6.4, 13.7,
+257.8, 456.5, 414.9, 628.6, 618.1, 428.9, 123.9, 76.6, 17.8. The congestion stopgap is 0.29 TWh on both.
+
+Finding. The page note's "its 2026 replay curtails almost nothing" (16 Oct, build 16a) no longer held on 27e: the replay curtails
+0.94 TWh a year and every run has a winter midday hour of 3 GW or more. On 27f it curtails 3.05 TWh, and the mean largest winter
+midday hour, 6.6 GW, is about twice NTCSA's reported up to 3 GW on a winter day. The note (regional curtailment panel) and the full
+model's caption are restated from these figures in #122. Caveats as for message 130: NTCSA's 3 GW is a single reported day, not a
+distribution; the replay uses the preset's fleet and the 2014-2025 weather. Between 16a and 27e the change is PR C's practice floor
+(every unit at 0.75 to 2029): RESULTS 'c6 PR C, message 369 (a)-(e)' records the replay's winter midday peak at 5.5 GW at the central,
+as here (bisection not run).
+
+### The spill substitution checks fail on 27f: 2.24 TWh spilled to congestion raises coal by 1.66 TWh and cuts oversupply curtailment by 0.57 TWh (user, 27 Oct 2026, message 446; build 2026-10-27f)
+
+Settings. validate_findings section 8: slider defaults, congestion stopgap 0% against 10%, PROFILES (2025); the same pair with
+E.curtailed, gas, storage, imports and unserved added (scratch m446/subst.js).
+
+| Default view, 10% stopgap minus 0% | 27e | 27f |
+|---|---|---|
+| Spilled to congestion, TWh | 2.24 | 2.24 |
+| Coal, TWh | +2.10 | +1.66 |
+| Oversupply curtailment, TWh | -0.05 | -0.57 |
+| Gas and diesel, TWh | +0.03 | +0.01 |
+| Storage discharge, TWh | -0.22 | +0.02 |
+| CO2, Mt | +2.23 | +1.78 |
+| Coal per TWh spilled | 0.94 | 0.74 |
+| CO2, Mt per TWh spilled | 1.00 | 0.79 |
+
+Finding. On 27f, 0.57 of the 2.24 TWh spilled to congestion would otherwise have been curtailed as oversupply (the default view
+curtails 2.23 TWh at 0%, against 0.13 TWh on 27e), so coal replaces 0.74 TWh per TWh spilled, below the check's 0.8-1.2, and CO2 is
+0.79 Mt per TWh against 0.85-1.25. Coal plus the curtailment avoided is 2.23 TWh, the spill. The claim the checks guard ("one for
+one") is in no public text: not on the page, the README, the notes or the pack (searched 27 Oct 2026). Both checks are kept and fail
+on 27f, with this cause; the bands are unchanged.
+
+Also on the default view (diff_public_text, 026e027 against 27f): hours priced below zero 240 to 1,542; must-run coal sets the
+price in 74 of the price week's 168 hours (17 on 27e); coal 149.1 to 151.3 TWh, wind 14.2 to 12.8, utility PV 7.7 to 7.1, CO2
+166 to 169 Mt.
+
+### The practice floor recalibrated to 0.715 with the 24-hour down time: the 2026 replay's sunny low-demand midday coal statistic 0.624 against Eskom's 0.623; curtailment 0.85 TWh a year, winter midday peak 5.2 GW against NTCSA's 3 GW (user, 27 Oct 2026, messages 447 and 448; build 2026-10-27f, floor 0.75 -> 0.715)
+
+Settings. Build 27f (FIXED.coalMinDownH 24), 'Today 2026' preset, twelve weather years (2014-2025) x ten outage draws, the engine
+check's seeds; state override coalMslPracticeFloor; floor metric as in 'c6 PR C, message 369 (a)-(e)' (per day, the lowest hour
+10:00-15:00 of coal output over available coal; sunny low-demand days: midday PV above the month's median and midday demand in the
+month's lowest third); scratch m447/run_fm.sh with m335/replay.js and m447/fm_page.js (m364/floor_model_page.js plus annual
+curtailment). Hours below zero: the page's start-up view, simulate on PROFILES (scratch m447/neg.js). Measured statistic
+(ESK19679, Eskom credited, analysis ours): 0.623, p10-p90 0.565-0.724.
+
+| Floor (27f, 24 h) | Statistic, median (p10-p90) | Curtailment, TWh a year | Winter midday peak, MW, mean | Runs at 3 GW or more | Start-up view hours below zero |
+|---|---|---|---|---|---|
+| none | 0.527 (0.448-0.623) | 0.005 | 653 | 0 | 0 |
+| 0.60 | 0.553 (0.483-0.636) | 0.04 | 2,022 | 0 | 0 |
+| 0.65 | 0.573 (0.503-0.654) | 0.11 | 2,728 | 30 | 13 |
+| 0.70 | 0.611 (0.539-0.694) | 0.52 | 4,041 | 120 | 229 |
+| 0.71 | 0.619 (0.546-0.703) | 0.71 | 4,827 | 120 | 332 |
+| 0.715 | 0.624 (0.550-0.707) | 0.85 | 5,207 | 120 | 400 |
+| 0.72 | 0.627 (0.553-0.710) | 1.04 | 5,711 | 120 | 495 |
+| 0.73 | 0.632 (0.558-0.717) | 1.57 | 6,320 | 120 | - |
+| 0.75 | 0.642 (0.566-0.727) | 3.05 | 6,627 | 120 | 1,542 |
+
+For reference, 27e (4 h, floor 0.75): statistic 0.623, curtailment 0.94 TWh, winter midday peak 5.6 GW, 240 hours below zero.
+
+Finding. (a) With the 24-hour down time, the 0.75 floor overshoots the measured statistic (0.642 against 0.623): the two settings
+double count. (b) 0.715 reproduces it (0.624), as closely as 0.75 did at 4 h. Set as the central (message 448, option A): each
+setting represents one thing, and the floor was partly standing in for units kept on for the evening peak, which the down time now
+represents; recalibrating to the same measured statistic is standard calibration practice (rule 366). At 0.715 the 2026 replay
+curtails 0.85 TWh a year (0.94 on 27e) and its mean winter midday peak is 5.2 GW (5.6 on 27e), still above NTCSA's reported 3 GW on
+a winter day (flag kept; NTCSA's figure is one reported day). The start-up view has 400 hours below zero (240 on 27e). The
+extreme-solar week (message 407; Least-cost path 2035 with 45 GW utility and 25 GW rooftop solar, 8-14 January) is in 2035, after
+the floor ends in 2029: 4.4 starts a day on 27f at any floor (scratch m447/probe407_27f.json). The entries 'The 2026 replay on
+builds 27e and 27f' and 'The spill substitution checks fail on 27f' above were measured at the 0.75 floor and are superseded on
+the page by this one.
+
+### Suite on build 27f at the 0.715 floor, against main (27e): three checks now pass, two newly fail (user, 27 Oct 2026, messages 446-449; build 2026-10-27f, branch claude/c6c-mindown)
+
+Settings. ESK19679.csv present, nothing running beside the suite, from harness/ in pieces (scratch m447/suite.sh and
+m447b/suite.sh): piece 1 on e742467 (27 Oct 2026, 15:24-16:29 UTC; panels rewritten first), piece 2 on 87cefdf (from 16:35 UTC;
+panels rewritten again), whose index.html differs from e742467's only in the curtailment note's comment and wording (audit
+prose ceiling). Main: #121's suite on 27e (identical index.html to 026e027).
+
+| Script | 27f, floor 0.715 | Main, 27e |
+|---|---|---|
+| validate_findings | 37/40 | 37/40 |
+| validate_invariants | 176/176 | 175/176 |
+| validate_response | 86/87 | 85/87 |
+| validate_consistency | 82/83 | 81/83 |
+| validate_benchmarks | 27/30 (28/30 after COAL_PARTLOAD_2026 was re-recorded, below) | 28/30 |
+| validate_outputs | 49/51 | 49/51 |
+| eng5 | 5/6 | 5/6 |
+| Every other script | as main | |
+
+Now passing on 27f: modest demand shifting moves system cost by under 0.1% (findings); unserved energy no longer rises with
+reserve in the stressed draw (invariants); interruptible load is called (response); the shadow hourly price spread against
+Homeflex's (consistency). The response matrix's baseline now differs in 35 cells (40 on main), still to be rewritten.
+
+Newly failing on 27f, kept failing with the cause:
+- validate_findings, 'turn-up is a growing share of constraint cost': 54% of constraint cost today and 54% under IRP's 2030
+  targets, turn-up rate R637 against R634/MWh (on 27e 54% and 54% at R647 and R655, passing by a fraction). The finding (10 Sep
+  2026: 42% to 65%, R395 to R1,010/MWh) had already faded to the margin on 27e; on 27f today's replacement rate equals the IRP
+  build's. Not in public text (searched 27 Oct 2026).
+- validate_benchmarks, 'coal CO2 per MWh sent out in 2026 within 0.5% of Eskom's FY2026': Today 2026 1.1150 against 1.1084
+  t/MWh (+0.6%). COAL_PARTLOAD_2026 (1.0262) is c5f's central run's 2026 part-load mean; with the 24-hour down time and the 0.715
+  floor more coal runs at part load. The check asks for the constant to be re-recorded from a central run's 2026: c6c's, once
+  its runs land (decision for the user: re-record before or after the c6c runs). Re-recorded from Today 2026 (message 450,
+  entry below): the check passes, 1.1088 against 1.1084 t/MWh.
+
+The two spill substitution checks (above, failing at the 0.75 floor) pass at 0.715: 2.24 TWh spilled raises coal by 0.92 TWh
+per TWh and CO2 by 0.97 Mt per TWh. Curtailment at defaults is 0.3 TWh a year (validate_outputs, failing as on main, 0.1).
+
+### COAL_PARTLOAD_2026 re-recorded from Today 2026: 1.0262 -> 1.0324, emisCoal 1.080 -> 1.074 t/MWh, the 2026 coal rate 1.1150 -> 1.1088 against Eskom's 1.1084 (user, 27 Oct 2026, message 450; build 2026-10-27f, floor 0.715)
+
+Settings. Today 2026 preset on the page's start-up state, simulate on PROFILES, as validate_benchmarks measures it: coal rate =
+(engine CO2 less CCGT and diesel at their factors) over coal output; part-load mean = that rate over FIXED.emisCoal (scratch
+m450/rate.js). Before: rate 1.11495 t/MWh with emisCoal 1.080 (COAL_PARTLOAD_2026 1.0262, c5f's central run's 2026), part-load
+mean 1.03237. After: COAL_PARTLOAD_2026 1.0324, emisCoal +(1.10842 / 1.0324).toFixed(3) = 1.074, rate 1.10876 (+0.03% against
+Eskom's FY2026 1.10842; band 0.5%). Coal output unchanged (149.29 TWh); Today 2026 CO2 166.59 -> 165.67 Mt.
+
+Departure from the documented method. The constant is meant to be recorded from a central run's 2026 (c5f's until now). c6c's
+own 2026 exists only after the c6c runs, and those should run on a calibrated value, so it is recorded from Today 2026 on this
+build instead (the user's decision, message 450 (a)). Check: when claude/c6c-runs lands, re-record it from c6c's 2026 and report
+the difference; if over 0.1 percentage point, say so before any pack table uses c6c's CO2.
+
+Also: the methods table typed the coal factor as 1.04 t/MWh while FIXED.emisCoal was 1.080 on main; it now reads FIXED.emisCoal
+(data-num emisCoal, 1.07).
+
+Suite after COAL_PARTLOAD_2026 was re-recorded (commit 7639a89, panels rewritten; ESK19679.csv present, nothing running beside it;
+27 Oct 2026 from 17:53 UTC, scratch m450s/suite.sh): stored panels 86/86, outputs 49/51, findings 37/40, consistency 82/83,
+invariants 176/176, response 86/87, benchmarks 28/30, weather 68/68, structure 27/27, public text 22/22, lint 3/3, geo 43/43,
+capacity 36/36, inputs 37/37, lp 57/57, external 8/8, solve 9/9, audit 88/88, eng5 5/6; piece 2 (from 18:57 UTC): pathway presets
+27/40, links 48/48, worker 38/38. Node checks 967/989 (main 964/989), audit 88/88, eng5 5/6. The failures are main's less the four
+now passing, plus the turn-up finding above.
+
+### Costs on the latest market evidence per technology: solar stays on BW7's awarded tariffs; solar at construction cost and 5% finance as sensitivities on c6c (user, 28 Oct 2026, messages 458-462; build 2026-10-27f, no page change)
+
+Decision (message 462, reversing 458): new utility solar stays on BW7's awarded tariffs (FIXED.bldPvCase 'central', R10,998/kW
+on the run basis, about R0.53/kWh); wind stays on BW6's compliant construction cost at 8% real (R28,462/kW). c6c (build
+2026-10-27f, run on main at acb2451) stays the headline set; c6d (chain_c6d.sh, kept unused) is not run. Basis and sources in
+SOURCES ('Build costs from South African bid data', costs on the latest market evidence per technology).
+
+s_pvbw6_c6c, solar at construction cost, 8% real (28 Oct 2026, 04:56-05:18 UTC, main at c3b9e14, whose index.html is acb2451's;
+c6c's settings: env_c6a.sh as chain_c6c.sh sources it, PV_CASE=bw6 so new tracking solar costs BW6's compliant bids, R16,786/kW;
+MAXP=3, TL=7200; engine check groups a-c with LNG=1 GRID=1): the run loop ended adequate in 550 s; both NTCSA criteria met, mean
+unserved at most 15.91 GWh in the highest year (worst run 384 GWh); engine PV 2026-40 R2,385.5bn; CO2 2026-40 1,952 Mt.
+Standing in 2030 / 2035 / 2040: utility solar 6.9 / 12.7 / 20.1 GW, wind 4.1 / 20.3 / 32.8 GW, lithium 4.1 / 8.4 / 12.3 GW, CCGT
+0.0 / 4.2 / 9.8 GW, coal 32.4 / 25.9 / 17.9 GW. Against c6c and the IRP check at the same solar cost: when claude/c6c-runs lands.
+
+s_disc5_c6c and s_discirp_c6c (messages 462 (d), 465 (b), 466): c6c's settings with PV_CASE=bw6 and DISC=0.05 or 0.113, so every
+technology, solar included, is on construction cost and only the rate differs from s_pvbw6_c6c (8%). A first s_disc5_c6c started
+05:34 UTC with DISC=0.05 alone was stopped at 05:44 before it wrote a run file: on BW7-tariff solar it would count solar's cheap
+finance twice (the tariff-implied capex already carries it), so it is not reported. 11.3% is IRP 2025's stated discount rate
+(Gazette p.34), read as real (SOURCES). Both run on main at c3b9e14 (pathway_perfail.js sets BLD_DISC: the annuity rate of every
+capital charge, new plant and existing coal's station capital, and the optimiser's weight on each year; pathcheck.js applies the
+run file's disc; the tables weight the engine's annual costs at 8% for every run). The IRP build is checked at the same costs and
+rate once c6c's IRP build file lands. Lives stay at BLD_LIFE (wind and solar 25 years, a page constant): a 30-year run waits for
+after the note (TODO 14kf). Results (28 Oct 2026; s_disc5 05:44-06:03 UTC, s_discirp 05:45-06:21 UTC; MAXP=3, TL=7200; engine
+check groups a-c with LNG=1 GRID=1), beside s_pvbw6_c6c at 8%; engine PV weights each year at 8% in every row:
+
+```
+run              rate   adequacy  mean max / worst GWh  OC CF max  engine PV R bn  CO2 Mt  solar GW 30/35/40   wind GW 30/35/40    lithium GW        gas GW
+s_discirp_c6c    11.3%  met       18.82 / 426           3.8%       2,528.2         2,029   6.7 / 12.9 / 20.0   3.3 / 16.3 / 29.1   4.2 / 8.6 / 12.3  0.0 / 4.3 / 10.3
+s_pvbw6_c6c      8%     met       15.91 / 384           3.4%       2,385.5         1,952   6.9 / 12.7 / 20.1   4.1 / 20.3 / 32.8   4.1 / 8.4 / 12.3  0.0 / 4.2 / 10.1
+s_disc5_c6c      5%     met        5.10 / 185           1.5%       2,259.3         1,850   8.7 / 12.7 / 19.9   6.6 / 22.5 / 34.9   4.0 / 8.2 / 11.7  0.0 / 4.2 / 10.0
+```
+
+Coal standing is the same in all three (32.4 / 25.9 / 17.9 GW in 2030 / 2035 / 2040). The rate moves wind most: 3.3 to 6.6 GW in
+2030 and 29.1 to 34.9 GW in 2040 between 11.3% and 5%; CO2 2026-40 falls 179 Mt. Against c6c and the IRP gaps: when claude/c6c-runs
+lands.
+
+### Cost of capital by technology: solar and wind 5.5%, lithium and pumped storage 6.8%, gas 8.0%, nuclear 8.5%, network 7.1%, with interest during construction (user, 28 Oct 2026, messages 468, 469, 471 (a), (b) and 472; build 2026-10-28a)
+
+Settings. index.html: BLD_DISC stays the discount rate that weights years (8% real). Each technology's capital charge and its
+interest during construction take its real pre-tax cost of capital, bldCoc(tech) (BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK,
+BLD_COC_GROUP; FIXED.bldCocCase 'central'); bldAnnuity refuses a call that does not name its technology. Interest during
+construction, bldIdcFactor, only for costs quoted before financing (BLD_BUILD_Y). New nuclear, new coal and new pumped storage
+charges derived from capex (bldDerivedAcaps; were typed). New utility solar on BW6's compliant construction cost
+(FIXED.bldPvCase 'bw6'). Cost readouts (lcoe* anchors and bldLcoeAt) at each technology's rate; the slider notes print it
+(bldCocPct). Harness: COC (central, private, high, low, planning) in pathway_perfail.js, recorded as cocCase and cocRates;
+pathcheck.js applies the run's case, refuses run files from before 2026-10-28a, and takes NUC_CAPEX_USD and NUC_LIFE for nuclear's
+high capex and 60-year cases. validate_bids.js (new). Basis of every rate, life and build year: SOURCES 'Cost of capital by
+technology'.
+
+Measured on build 2026-10-28a at start-up (Today 2026), central case:
+- rates: solar, wind and offshore 5.5%; lithium, vanadium, iron-air and pumped storage 6.8%; CCGT and open-cycle 8.0%; nuclear 8.5%;
+  coal 8.0%; transmission, grid connection and Eskom capital 7.1%; rooftop 8.0% (the discount rate).
+- interest during construction factors: CCGT 1.125, open-cycle 1.081, offshore 1.085, pumped storage 1.226, nuclear 1.410, coal
+  1.271, transmission 1.110, grid connection 1.072; solar, wind and lithium 1 (bid capex taken to include financing).
+- derived charges, R/kW-yr: nuclear 15,704 (was 10,500 typed), coal 6,444 (was 5,000), pumped storage 2,482 (was 2,360). Planning
+  case (one rate, 8%): nuclear 14,600, coal 6,444, pumped storage 2,998; high: 24,869, 9,936, 4,104; low: 13,545, 5,595, 2,086.
+- cost readouts, R/MWh: solar 610 (BW6 construction cost at 5.5%), wind 680, rooftop 1,100, lithium (4 h, one cycle a day) 1,260,
+  diesel open-cycle (10%) 9,550, CCGT readout 3,060.
+- bid check (validate_bids.js, 2026 rands, two-sided at 10%): solar R583/MWh at the bids' 30.1% capacity factor against BW5 546,
+  BW6 590 and BW7 526 (mean 554, +5.2%), lowest accepted 449; wind R771/MWh at 37.2% against BW5's 631 (+22.2%), explained (BW5's
+  prices do not hold); lithium R1,485/kW-yr capital against BW3's capacity charge R1,850-2,131 (mean 1,990; -25.4%, -19.7% under the
+  lowest), explained (equipment prices fell after the bid). 7/7.
+
+Cost readouts before and after (2026 rands, R/kWh): solar 0.53 -> 0.61, wind 0.82 -> 0.68, lithium 1.34 -> 1.26, vanadium 1.70 -> 1.60,
+iron-air 4.80 -> 4.55, CCGT 2.90 -> 3.06, diesel open-cycle 9.35 -> 9.55, rooftop 1.10 unchanged.
+
+Suite on build 2026-10-28a (28 Oct 2026, 11:40-14:03 UTC, branch claude/coc-by-tech after the worker fix, ESK19679.csv present,
+nothing running beside it; stored panels rewritten first, 1,741 s): node checks 973/996, audit 88/88, eng5 5/6. Against main
+(27f, the suite of RESULTS 'Suite on build 27f at the 0.715 floor'): validate_outputs 49/51, validate_findings 37/40,
+validate_response 86/87, validate_benchmarks 28/30, validate_pathway_presets 27/40 (the presets built on c5f's runs) and eng5
+check 6 fail as on main; validate_consistency was 81/83 against main's 82/83 (an earlier comparison of failure lines with the
+numbers stripped missed it; message 479). The extra failure, 'new-build capital matches the hand computation', is the cost of
+capital's own effect on Deep decarbonisation 2035's new-build capital, measured with the check's own code: main R1.056; 28a with
+one rate for all and solar backed out of BW7's tariffs R1.062 (+0.005, interest during construction); with solar on BW6's
+construction cost R1.143 (+0.081); with each technology at its own cost of capital R0.986 (-0.157). The stored value is
+re-measured to R0.986 with this cause in the check's comment, tolerance unchanged; validate_consistency then 82/83 (the known
+off-peak check), so node checks 974/996. New: validate_bids 7/7. validate_stored_panels
+86/86 with no 'not used' line; validate_worker 38/38 after the engine worker was given the cost-of-capital functions (it failed on
+its first preset without them; message 478: the stored panels were rewritten after that fix, as the fingerprint covers the page's
+inline scripts).

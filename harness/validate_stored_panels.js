@@ -30,8 +30,15 @@
  * Rerun with --write after any change to index.html or to a file the panels read (check 3 names it). Takes about 10 to 20
  * minutes: 113 or more engine runs per state (60 Monte Carlo draws, 48 adequacy draws, five capture curve points; the IRP
  * presets repeat each run for the gas floor).
+ *
+ * Resumable (user, 27 Oct 2026, message 432 (b)): each state's freshly computed panels are kept in a resume file as soon as they
+ * are done, and a relaunch after an interruption takes them from there instead of computing them again. The file is keyed by the
+ * page's fingerprint and the SHA-256 of index.html and of this script, so any change to either starts afresh; --write and the
+ * check keep separate files, so the check never reuses the computation it checks. Everything else (the before-and-after results,
+ * the store checks, the drawing checks) runs in full on every launch. The file is deleted when a run finishes.
+ * PANELS_RESUME_DIR sets where the files go (default: the system temp folder); PANELS_NO_RESUME=1 turns resuming off.
  */
-const fs = require('fs'), path = require('path'), crypto = require('crypto');
+const fs = require('fs'), path = require('path'), crypto = require('crypto'), os = require('os');
 const { JSDOM } = require('jsdom');
 const ROOT = path.resolve(process.argv[2] || 'testroot');
 const WRITE = process.argv.includes('--write');
@@ -135,6 +142,18 @@ function firstDiff(a, b, at = ''){
     process.exit(fail ? 1 : 0);
   }
 
+  // Resume file (message 432 (b)): this mode's freshly computed panels for the states already done on this page and script.
+  const RESUME = process.env.PANELS_NO_RESUME ? null : await (async () => {
+    const fp0 = '' + (await call(`return await pageFingerprint();`));
+    const key = crypto.createHash('sha256').update([fp0, sha('index.html'), crypto.createHash('sha256').update(fs.readFileSync(__filename)).digest('hex')].join('|')).digest('hex').slice(0, 16);
+    const dir = process.env.PANELS_RESUME_DIR || path.join(os.tmpdir(), 'gtza_panels_resume');
+    fs.mkdirSync(dir, { recursive: true });
+    return path.join(dir, (WRITE ? 'write_' : 'check_') + key + '.json');
+  })();
+  const resumed = RESUME && fs.existsSync(RESUME) ? JSON.parse(fs.readFileSync(RESUME, 'utf8')) : {};
+  const keep = () => { if (!RESUME) return; fs.writeFileSync(RESUME + '.tmp', JSON.stringify(resumed)); fs.renameSync(RESUME + '.tmp', RESUME); };
+  if (Object.keys(resumed).length) console.log(`  ..   resuming: ${Object.keys(resumed).length} state(s) already computed (${RESUME})`);
+
   // 6, first half: every state's main result before the weather years load.
   const before = {};
   for (const S of STATES){
@@ -158,9 +177,15 @@ function firstDiff(a, b, at = ''){
     const after = await call(resultDigest);
     check(`[${S.label}] main results identical before and after the weather years load`, after === before[S.label],
           before[S.label] + ' against ' + after);
+    if (resumed[S.label]){
+      ({ fresh: fresh[S.label], text: freshText[S.label] } = resumed[S.label]);
+      console.log(`  ..   ${S.label}: taken from the resume file`);
+      continue;
+    }
     freshText[S.label] = await call(`PANEL_CACHE.clear(); _panelStore = Promise.resolve(null); await runAdequacy(); await runMC(); ${drawnText}`);
     fresh[S.label] = await call(`const key = panelKey(), c = PANEL_CACHE.get(key) || {};
       return { key, state: JSON.parse(JSON.stringify(state)), mc: c.mc || null, adequacy: c.adequacy || null, capCurve: await captureCurve(() => true) };`);
+    resumed[S.label] = { fresh: fresh[S.label], text: freshText[S.label] }; keep();
     console.log(`  ..   ${S.label}: computed in ${((Date.now() - t) / 1000).toFixed(0)} s`);
   }
 
@@ -180,6 +205,7 @@ function firstDiff(a, b, at = ''){
     fs.writeFileSync(STORE, JSON.stringify(out) + '\n');
     console.log(`  wrote ${path.relative(process.cwd(), STORE)} (${fs.statSync(STORE).size} bytes, fingerprint ${fp})`);
     console.log(`\n${pass}/${pass + fail} checks passed while writing; now run without --write`);
+    if (RESUME && fs.existsSync(RESUME)) fs.unlinkSync(RESUME);
     process.exit(fail ? 1 : 0);
   }
 
@@ -234,5 +260,6 @@ function firstDiff(a, b, at = ''){
           + (at ? '\n      fresh ' + firstSpot(A.get(at), B.get(at)) : ''));
   }
   console.log(`\n${pass}/${pass + fail} stored-panel checks passed`);
+  if (RESUME && fs.existsSync(RESUME)) fs.unlinkSync(RESUME);
   process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

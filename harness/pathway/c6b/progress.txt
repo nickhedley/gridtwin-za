@@ -1,0 +1,240 @@
+2026-10-27T08:43Z chain start, PID 451, on 2603be5 Fossil-free 2040 caption: drop the internal 'to be rescored' n, BUILD_STAMP = '2026-10-27e
+08:43 c6b chain (re)start on 2603be5 Fossil-free 2040 caption: drop the internal 'to be r
+08:43 start c6b () MAXP=6 TL=7200; free 30G
+08:45 chain PID 451 stopped by PID (it was started with nohup; message 435 (a)); c6b attempt counter reset to 0, since that attempt was stopped deliberately, not by a restart
+2026-10-27T08:45Z chain start, PID 654, on 2603be5 Fossil-free 2040 caption: drop the internal 'to be rescored' n, BUILD_STAMP = '2026-10-27e
+08:45 c6b chain (re)start on 2603be5 Fossil-free 2040 caption: drop the internal 'to be r
+08:45 start c6b () MAXP=6 TL=7200; free 30G
+08:54 end c6b rc=0 done adequate 544s
+09:04 check c6b done; free 30G
+09:04 start s_be6_c6b (STOR_CUM=2026:144,2027:294,2028:909,2029:3524,2030:3724,2031:3924,2032:4124,2033:4324,2034:4524,2035:4724,2036:5224,2037:5724,2038:6224,2039:6724,2040:7224) MAXP=3 TL=7200; free 30G
+09:04 start s_irpgas_c6b (GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1 GASFLOOR=1 GASFLOOR_VINT=2029-2030 TCAP_YR=2029:4000,2030:4000) MAXP=3 TL=7200; free 30G
+09:12 end s_be6_c6b rc=0 done adequate 474s
+09:20 check s_be6_c6b done; free 30G
+09:24 end s_irpgas_c6b rc=0 done adequate 1152s
+09:52 check s_irpgas_c6b done; free 30G
+09:52 start s_be7_c6b (NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350) MAXP=3 TL=7200; free 30G
+09:52 start c6b_irpdem (DEMAND=index:/home/user/gridtwin-za/harness/pathway/irp2025/index_irp2025fig2_c6.json) MAXP=3 TL=7200; free 30G
+10:00 end s_be7_c6b rc=0 done adequate 499s
+10:01 end c6b_irpdem rc=0 done adequate 523s
+10:13 check c6b_irpdem done; free 30G
+10:14 check s_be7_c6b done; free 30G
+gap {'wind': 0, 'solar_pv': 0} totals {'wind': 36041, 'pv': 25513, 'rooftop': 8100, 'batt': 7224, 'battMWh': 29031, 'ccgt': 13336, 'ocgt': 3914, 'phes': 1332} nuclear 5200
+coal 2026/2030/2035/2040 [39692, 32433, 25916, 17890] cw 1580
+irpdem file /home/user/gridtwin-za/harness/out/c6b/irp/pathway_irp2025_c6b_irpdem.json demand 2030/2040 1.0247242611702387 1.3957809542772832 against c6 1.101384 1.458896
+10:45 timeout stop (2-hour tracked job), not counted: no solve running; IRP pair checks irp2025_c6b and irp2025_c6b_irpdem groups b, c interrupted and rerun
+2026-10-27T10:45Z chain start, PID 2464, on 2603be5 Fossil-free 2040 caption: drop the internal 'to be rescored' n, BUILD_STAMP = '2026-10-27e
+10:45 c6b chain (re)start on 2603be5 Fossil-free 2040 caption: drop the internal 'to be r
+10:45 check c6b done; free 30G
+10:45 check s_be6_c6b done; free 30G
+10:45 check s_irpgas_c6b done; free 30G
+10:45 check s_be7_c6b done; free 30G
+10:45 check c6b_irpdem done; free 30G
+11:15 IRP pair check irp2025_c6b_irpdem: 3/3 groups
+11:16 IRP pair check irp2025_c6b: 3/3 groups
+11:16 IRP PAIR CHECKS DONE
+11:16 start s_windlow_c6b (WIND_CASE=central) MAXP=3 TL=7200; free 30G
+11:16 start s_windhigh_c6b (WIND_CASE=high) MAXP=3 TL=7200; free 30G
+11:23 end s_windlow_c6b rc=0 done adequate 457s
+11:25 end s_windhigh_c6b rc=0 done adequate 526s
+11:34 check s_windlow_c6b done; free 30G
+11:38 check s_windhigh_c6b done; free 30G
+12:15 IRP pair check irp2025_c6b_windhigh: 3/3 groups
+12:16 IRP pair check irp2025_c6b_windlow: 3/3 groups
+12:16 WIND CASES DONE
+12:16 start s_carbonhold_c6b (CARBON_PATH=law2031) MAXP=3 TL=7200; free 30G
+12:16 start s_carbontreasury_c6b (CARBON_PATH=treasury) MAXP=3 TL=7200; free 30G
+12:23 end s_carbontreasury_c6b rc=0 done adequate 456s
+12:24 end s_carbonhold_c6b rc=0 done adequate 513s
+12:34 check s_carbontreasury_c6b done; free 30G
+12:35 check s_carbonhold_c6b done; free 30G
+12:45 timeout stop (2-hour tracked job), not counted: no solve running; IRP carbon checks interrupted and rerun
+2026-10-27T12:45Z chain start, PID 4307, on 2603be5 Fossil-free 2040 caption: drop the internal 'to be rescored' n, BUILD_STAMP = '2026-10-27e
+12:45 c6b chain (re)start on 2603be5 Fossil-free 2040 caption: drop the internal 'to be r
+12:45 check c6b done; free 30G
+12:45 check s_irpgas_c6b done; free 30G
+12:45 check s_be6_c6b done; free 30G
+12:45 check s_be7_c6b done; free 30G
+12:45 check c6b_irpdem done; free 30G
+12:45 IRP pair check irp2025_c6b_irpdem: 3/3 groups
+12:45 IRP pair check irp2025_c6b: 3/3 groups
+12:45 IRP PAIR CHECKS DONE
+12:45 check s_windlow_c6b done; free 30G
+12:45 check s_windhigh_c6b done; free 30G
+12:45 IRP pair check irp2025_c6b_windlow: 3/3 groups
+12:45 IRP pair check irp2025_c6b_windhigh: 3/3 groups
+12:45 WIND CASES DONE
+12:45 check s_carbontreasury_c6b done; free 30G
+12:45 check s_carbonhold_c6b done; free 30G
+13:22 IRP pair check irp2025_c6b_carbontreasury: 3/3 groups
+13:23 IRP pair check irp2025_c6b_carbonhold: 3/3 groups
+13:23 CARBON CASES DONE
+14:00 IRP pair nuclear check irp2025_c6b_irpdem at R16800/kW-yr: 3/3 groups
+14:00 IRP pair nuclear check irp2025_c6b at R16800/kW-yr: 3/3 groups
+14:00 start null_c6b () MAXP=3 TL=7200; free 30G
+14:00 start s_gascapex25_c6b (GAS_CAPEX=43706) MAXP=3 TL=7200; free 30G
+14:10 end s_gascapex25_c6b rc=0 done adequate 529s
+14:10 end null_c6b rc=0 done adequate 534s
+14:23 check null_c6b done; free 30G
+14:23 check s_gascapex25_c6b done; free 30G
+14:23 start s_imp_c6b (IMP_END=2040) MAXP=3 TL=7200; free 30G
+14:23 start s_gas2030_c6b (GAS_FIRST=2030) MAXP=3 TL=7200; free 30G
+14:32 end s_imp_c6b rc=0 done adequate 534s
+14:33 end s_gas2030_c6b rc=0 done adequate 548s
+14:45 check s_imp_c6b done; free 30G
+14:45 timeout stop (2-hour tracked job), not counted: no solve running; engine check of s_gas2030_c6b interrupted and rerun (s_imp_c6b check had finished at 14:45)
+2026-10-27T14:45Z chain start, PID 6011, on 2603be5 Fossil-free 2040 caption: drop the internal 'to be rescored' n, BUILD_STAMP = '2026-10-27e
+14:45 c6b chain (re)start on 2603be5 Fossil-free 2040 caption: drop the internal 'to be r
+14:45 check c6b done; free 30G
+14:45 check s_irpgas_c6b done; free 30G
+14:45 check s_be6_c6b done; free 30G
+14:45 check c6b_irpdem done; free 30G
+14:45 check s_be7_c6b done; free 30G
+14:45 IRP pair check irp2025_c6b: 3/3 groups
+14:45 IRP pair check irp2025_c6b_irpdem: 3/3 groups
+14:45 IRP PAIR CHECKS DONE
+14:45 check s_windhigh_c6b done; free 30G
+14:45 check s_windlow_c6b done; free 30G
+14:45 IRP pair check irp2025_c6b_windlow: 3/3 groups
+14:45 IRP pair check irp2025_c6b_windhigh: 3/3 groups
+14:45 WIND CASES DONE
+14:45 check s_carbontreasury_c6b done; free 30G
+14:45 check s_carbonhold_c6b done; free 30G
+14:45 IRP pair check irp2025_c6b_carbontreasury: 3/3 groups
+14:45 IRP pair check irp2025_c6b_carbonhold: 3/3 groups
+14:45 CARBON CASES DONE
+14:45 IRP pair nuclear check irp2025_c6b at R16800/kW-yr: 3/3 groups
+14:45 IRP pair nuclear check irp2025_c6b_irpdem at R16800/kW-yr: 3/3 groups
+14:45 check s_gascapex25_c6b done; free 30G
+14:45 check null_c6b done; free 30G
+14:45 check s_imp_c6b done; free 30G
+14:54 check s_gas2030_c6b done; free 30G
+14:54 start s_demlowm1_c6b (DEMAND=rate:-1) MAXP=3 TL=7200; free 30G
+14:54 start s_demlowflat_c6b (DEMAND=rate:0) MAXP=3 TL=7200; free 30G
+15:01 end s_demlowm1_c6b rc=0 done adequate 413s
+15:01 end s_demlowflat_c6b rc=0 done adequate 429s
+15:12 check s_demlowm1_c6b done; free 30G
+15:12 check s_demlowflat_c6b done; free 30G
+15:12 start s_mindn24_c6b (COAL_STATE='{"coalMinDownH":24}') MAXP=3 TL=7200; free 30G
+15:12 start s_coalpractice_c6b (COAL_STATE='{"coalMslDesignFromYear":2041}') MAXP=3 TL=7200; free 30G
+15:21 end s_coalpractice_c6b rc=0 done adequate 528s
+15:22 end s_mindn24_c6b rc=0 done adequate 555s
+15:34 check s_coalpractice_c6b done; free 30G
+15:37 check s_mindn24_c6b done; free 30G
+15:37 start s_rate48_c6b (COAL_STATE='{"bldCoalCommitHours":48}') MAXP=3 TL=7200; free 30G
+15:37 start s_spotoil_c6b (COAL_STATE='{"coalStartFuel":"spot"}') MAXP=3 TL=7200; free 30G
+15:46 end s_rate48_c6b rc=0 done adequate 549s
+15:46 end s_spotoil_c6b rc=0 done adequate 559s
+16:00 check s_rate48_c6b done; free 30G
+16:00 check s_spotoil_c6b done; free 30G
+16:00 start s_koeberg_winter_c6b (NUC_SHAPE='[1.4859869721690109,1.3233883976907597,1.0703906157535057,0.8662924051076811,0.6634941830646963,0.6625941909550381,0.6646941725442406,0.6101946503482708,0.7746932081691338,0.7827931371560578,1.544486459296795,1.5773861708609676]') MAXP=3 TL=7200; free 30G
+16:00 start s_wearp75_c6b (COAL_STATE='{"coalStartWear":"p75"}') MAXP=3 TL=7200; free 30G
+16:09 end s_wearp75_c6b rc=0 done adequate 531s
+16:10 end s_koeberg_winter_c6b rc=0 done adequate 548s
+16:23 check s_wearp75_c6b done; free 30G
+16:23 check s_koeberg_winter_c6b done; free 30G
+16:23 start s_nogas_dsl_c6b (GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 30G
+16:23 start s_ntcsa_both_c6b (OC_CF_MAX=0.06) MAXP=3 TL=7200; free 30G
+16:31 end s_nogas_dsl_c6b rc=0 done adequate 434s
+16:32 end s_ntcsa_both_c6b rc=0 done adequate 523s
+16:45 timeout stop (2-hour tracked job), not counted: no solve running; engine checks of s_nogas_dsl_c6b and s_ntcsa_both_c6b interrupted and rerun
+2026-10-27T16:45Z chain start, PID 8148, on 2603be5 Fossil-free 2040 caption: drop the internal 'to be rescored' n, BUILD_STAMP = '2026-10-27e
+16:45 c6b chain (re)start on 2603be5 Fossil-free 2040 caption: drop the internal 'to be r
+16:45 check c6b done; free 30G
+16:45 check s_be6_c6b done; free 30G
+16:45 check s_irpgas_c6b done; free 30G
+16:45 check s_be7_c6b done; free 30G
+16:45 check c6b_irpdem done; free 30G
+16:45 IRP pair check irp2025_c6b: 3/3 groups
+16:45 IRP pair check irp2025_c6b_irpdem: 3/3 groups
+16:45 IRP PAIR CHECKS DONE
+16:45 check s_windhigh_c6b done; free 30G
+16:45 check s_windlow_c6b done; free 30G
+16:45 IRP pair check irp2025_c6b_windlow: 3/3 groups
+16:45 IRP pair check irp2025_c6b_windhigh: 3/3 groups
+16:45 WIND CASES DONE
+16:45 check s_carbonhold_c6b done; free 30G
+16:45 check s_carbontreasury_c6b done; free 30G
+16:45 IRP pair check irp2025_c6b_carbontreasury: 3/3 groups
+16:45 IRP pair check irp2025_c6b_carbonhold: 3/3 groups
+16:45 CARBON CASES DONE
+16:45 IRP pair nuclear check irp2025_c6b_irpdem at R16800/kW-yr: 3/3 groups
+16:45 IRP pair nuclear check irp2025_c6b at R16800/kW-yr: 3/3 groups
+16:45 check s_gascapex25_c6b done; free 30G
+16:45 check null_c6b done; free 30G
+16:45 check s_gas2030_c6b done; free 30G
+16:45 check s_imp_c6b done; free 30G
+16:45 check s_demlowm1_c6b done; free 30G
+16:45 check s_demlowflat_c6b done; free 30G
+16:45 check s_mindn24_c6b done; free 30G
+16:45 check s_coalpractice_c6b done; free 30G
+16:45 check s_rate48_c6b done; free 30G
+16:45 check s_spotoil_c6b done; free 30G
+16:45 check s_wearp75_c6b done; free 30G
+16:45 check s_koeberg_winter_c6b done; free 30G
+16:56 check s_ntcsa_both_c6b done; free 30G
+16:58 check s_nogas_dsl_c6b done; free 30G
+16:58 start s_std_strict_c6b (STD=strict) MAXP=3 TL=7200; free 30G
+16:58 start s_std_nem_c6b (STD=nem) MAXP=3 TL=7200; free 30G
+17:07 end s_std_nem_c6b rc=0 done adequate 562s
+17:20 end s_std_strict_c6b rc=0 done adequate 1310s
+17:30 check s_std_nem_c6b done; free 30G
+17:49 check s_std_strict_c6b done; free 30G
+17:49 start s_coalsustain_c6b (COAL_FOM_ADD=500) MAXP=3 TL=7200; free 30G
+17:58 end s_coalsustain_c6b rc=0 done adequate 519s
+18:08 check s_coalsustain_c6b done; free 30G
+18:08 SHORT RUNS DONE
+18:08 start s_std_strict_nogas_dsl_c6b (STD=strict GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 30G
+18:08 start s_nogas_c6b (GAS_CAP=0 OCGD=0) MAXP=3 TL=7200; free 30G
+18:43 end s_nogas_c6b rc=0 done pass limit reached 2084s
+18:46 timeout stop, not counted: s_std_strict_nogas_dsl_c6b (started 18:08, mid-piece; attempt counter reset to 0, message 437 (b)); engine check of s_nogas_c6b interrupted and rerun
+2026-10-27T18:46Z chain start, PID 9910, on 2603be5 Fossil-free 2040 caption: drop the internal 'to be rescored' n, BUILD_STAMP = '2026-10-27e
+18:46 c6b chain (re)start on 2603be5 Fossil-free 2040 caption: drop the internal 'to be r
+18:46 check c6b done; free 30G
+18:46 check s_irpgas_c6b done; free 30G
+18:46 check s_be6_c6b done; free 30G
+18:46 check s_be7_c6b done; free 30G
+18:46 check c6b_irpdem done; free 30G
+18:46 IRP pair check irp2025_c6b: 3/3 groups
+18:46 IRP pair check irp2025_c6b_irpdem: 3/3 groups
+18:46 IRP PAIR CHECKS DONE
+18:46 check s_windhigh_c6b done; free 30G
+18:46 check s_windlow_c6b done; free 30G
+18:46 IRP pair check irp2025_c6b_windhigh: 3/3 groups
+18:46 IRP pair check irp2025_c6b_windlow: 3/3 groups
+18:46 WIND CASES DONE
+18:46 check s_carbontreasury_c6b done; free 30G
+18:46 check s_carbonhold_c6b done; free 30G
+18:46 IRP pair check irp2025_c6b_carbontreasury: 3/3 groups
+18:46 IRP pair check irp2025_c6b_carbonhold: 3/3 groups
+18:46 CARBON CASES DONE
+18:46 IRP pair nuclear check irp2025_c6b at R16800/kW-yr: 3/3 groups
+18:46 IRP pair nuclear check irp2025_c6b_irpdem at R16800/kW-yr: 3/3 groups
+18:46 check null_c6b done; free 30G
+18:46 check s_gascapex25_c6b done; free 30G
+18:46 check s_gas2030_c6b done; free 30G
+18:46 check s_imp_c6b done; free 30G
+18:46 check s_demlowflat_c6b done; free 30G
+18:46 check s_demlowm1_c6b done; free 30G
+18:46 check s_coalpractice_c6b done; free 30G
+18:46 check s_mindn24_c6b done; free 30G
+18:46 check s_rate48_c6b done; free 30G
+18:46 check s_spotoil_c6b done; free 30G
+18:46 check s_wearp75_c6b done; free 30G
+18:46 check s_koeberg_winter_c6b done; free 30G
+18:46 check s_ntcsa_both_c6b done; free 30G
+18:46 check s_nogas_dsl_c6b done; free 30G
+18:46 check s_std_strict_c6b done; free 30G
+18:46 check s_std_nem_c6b done; free 30G
+18:46 check s_coalsustain_c6b done; free 30G
+18:46 SHORT RUNS DONE
+18:46 start s_std_strict_nogas_dsl_c6b (STD=strict GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 30G
+19:03 check s_nogas_c6b done; free 30G
+19:19 end s_std_strict_nogas_dsl_c6b rc=0 done pass limit reached 1996s
+19:45 check s_std_strict_nogas_dsl_c6b done; free 30G
+19:45 start s_std_nem_nogas_dsl_c6b (STD=nem GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 30G
+20:23 end s_std_nem_nogas_dsl_c6b rc=0 done pass limit reached 2235s
+20:46 main carries BUILD_STAMP 2026-10-27f and C6C_RUN_BRIEF.md (acb2451); c6b stopped here, chain already ended on the 20:45 timeout (Nick's change of plan)
+20:46 not run: superseded by c6c: engine check groups b, c of s_std_nem_nogas_dsl_c6b (group a done)
+20:46 not run: superseded by c6c: restart counts (make_ret.py, ret_*)
+20:46 not run: s_coalsustain IRP check for c6b (skipped, Nick's message)
