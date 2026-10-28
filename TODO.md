@@ -552,6 +552,11 @@ spend profile (nuclear about eight years, adding roughly a third at 8%; coal and
 batteries and gas one to three years, a few percent), in the build optimiser and the engine's capital charge alike, and rerun the
 central.
 
+14kf. A lower discount rate for every technology, as a sensitivity, after the note (user, 28 Oct 2026, message 459 (d)): every
+capital cost is annuitised at 8% real, above what recent solar bids imply (about 46-47c/kWh in BW6 and BW7 against the model's
+R0.74/kWh on BW6's construction cost; pack limitation 32). Run c6d's set at a lower rate for all technologies alike, the rate
+taken from a published cost-of-capital source (the IEA Cost of Capital Observatory's 6.5-10% real is the range on record).
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
