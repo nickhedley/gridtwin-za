@@ -1,5 +1,12 @@
 # GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
 
+## Reviewer pack: Google Doc copy (user, 28 Oct 2026, message 474)
+
+REVIEWER_PACK.md on the pack branch (claude/c6a-results) is the master. A Google Doc copy is kept for reviewers in Nick's Drive:
+https://docs.google.com/document/d/1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc/edit. The advisor mirrors changed sections into it
+at each milestone; superseded sets (c6, c5e) stay in the repository only. Every report that changes the pack ends with one line
+listing the sections changed, so the advisor knows what to carry into the Doc.
+
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 
 On 27 Oct the cloud machine restarted five times in two hours and killed every job started with nohup (the #121 suite, the c6a

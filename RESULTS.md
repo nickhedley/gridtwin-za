@@ -8052,7 +8052,7 @@ not reach the retail panel; it now reads bldCostEntry, as the optimiser and the 
 the central capex, R1.118 on BW6's. The pathway records the 2026 wind and solar capex it used (capex2026), and the engine check
 records its own in every row and stops if they differ.
 
-### New central inputs (messages 125 (1)-(2) and 126 (2)-(4), build 2026-10-15e): wind and tracking solar capex calibrated to awarded tariffs at 8% real (wind R17,773/kW from BW5, the low end of the evidence; solar R11,755/kW from the MW-weighted mean of all 18 BW7 awards), new wind uncorrected (42.5%), the optimiser's days matched to the twelve-year wind and solar, and the spur double count removed; BW7's wind bid prices are not published
+### New central inputs (build 2026-10-15e; messages 125 (1)-(2) and 126 (2)-(4)): wind and tracking solar capex calibrated to awarded tariffs at 8% real (wind R17,773/kW from BW5, the low end of the evidence; solar R11,755/kW from the MW-weighted mean of all 18 BW7 awards), new wind uncorrected (42.5%), the optimiser's days matched to the twelve-year wind and solar, and the spur double count removed; BW7's wind bid prices are not published
 
 | Input | Before (c5b_14r) | Now | Source and assumptions |
 |---|---|---|---|
@@ -16918,7 +16918,7 @@ base), not faster growth: like for like, it does not hold. ESRG's Mode 1 total m
 reading error but not the stated 255 TWh in 2030 (268.6), so it is not shown to be IRP 2025's forecast restated. The pair's IRP
 path waits for IRP 2025's demand table (page) from the user, before Monday's runs.
 
-### c6 PR C, message 369 (a)-(e): forced-outage cost of a start, reserve limited by coal's ramp, start-up time, the floor recalibrated to 0.75 (user, 24 Oct 2026, message 369; branch claude/c6-coal at 07dff8b, build 2026-10-24a)
+### c6 PR C, coal rules: forced-outage cost of a start, reserve limited by coal's ramp, start-up time, the floor recalibrated to 0.75 (user, 24 Oct 2026, message 369; branch claude/c6-coal at 07dff8b, build 2026-10-24a)
 
 Settings: PR C's central otherwise (FIXED); acceptance as before (Today 2026 and Least-cost path 2035, twelve weather years x ten
 outage draws, seeds 71830529 + k x 104729 + year x 7919, scratchpad m369/acc.sh with m359/acc_page.js and m369/acc_page_c.js);
@@ -16974,7 +16974,7 @@ Reading: 2026 starts 19.2 a unit a year against Eskom's costing assumption of ab
 2035's 70 starts fall to 28 and its two-shifting nearly stops, at 2.5 TWh more curtailment and 3 Mt more CO2. Cost falls slightly in
 both: fewer starts outweigh the extra coal running (curtailment is unpaid: no deemed energy).
 
-### c6 PR C, message 370: the MIP benchmark of coal commitment, instantaneous reserve kept uncapped, IRP 2025's own demand path for the pair (user, 24 Oct 2026, messages 369 (d), 370 (a)-(e); branch claude/c6-coal, build 2026-10-24b)
+### c6 PR C, the MIP benchmark of coal commitment, instantaneous reserve kept uncapped, IRP 2025's own demand path for the pair (user, 24 Oct 2026, messages 369 (d), 370 (a)-(e); branch claude/c6-coal, build 2026-10-24b)
 
 (d) MIP benchmark (369 (d), 370 (d)): finding. The engine's coal commitment problem for one run (Today 2026 and Least-cost path
 2035, weather year 2025, outage seed 71830529 + 2025 x 7919; recorded with the engine's own unit commitment by scratchpad
@@ -17098,7 +17098,7 @@ each unit's refuelling outage as a whole-unit outage of about one to two months 
 sourced), placed as Eskom schedules them, keeping the annual factor at the measured value; and test a winter-outage case on the
 2025-2026 pattern.
 
-### Message 376: c6 meets both criteria of NTCSA's medium-term adequacy test (wording corrected, message 381); s_koeberg_winter and s_ntcsa_both built; forced-outage restarts a cost line (user, 25 Oct 2026; PR D, build 2026-10-25a)
+### c6 meets both criteria of NTCSA's medium-term adequacy test (messages 376 and 381); s_koeberg_winter and s_ntcsa_both built; forced-outage restarts a cost line (user, 25 Oct 2026; PR D, build 2026-10-25a)
 
 Wording (376 (c), corrected 25 Oct 2026 by message 381 after the 380 (a) reconciliation): c6 is planned to NTCSA's unserved-energy
 criterion (i), mean unserved energy at most 20 GWh a year, and meets both criteria of NTCSA's medium-term adequacy test (the system
@@ -17138,7 +17138,7 @@ DEM_BLOCK=2027:930 IMP_AVG_MW=1066 CAPE_WIND=1580:4 RP_EXCL=wind MIN_BUILD=wind:
 pv:2028:3405 LI_MIN=2026:360:1440,2027:760.5:3059,2028:760.5:3719 SOLVER=native STD=ntcsa; each sensitivity the same line with its
 change and MAXP=3, TL=7200 (s_std_nem_nogas rerun at TL=14400 after its third solve hit the 2-hour limit; message 381 (b)). Engine
 check: pathcheck.js, LNG=1 GRID=1, the run's recorded standard, twelve weather years by ten outage draws (120 runs a year). The strict
-set (s_std_strict) is the 24-25 Oct set on a37d4fd (TF=0.5), its open-cycle factor computed apart (RESULTS 'Message 376'). Runs
+set (s_std_strict) is the 24-25 Oct set on a37d4fd (TF=0.5), its open-cycle factor computed apart (RESULTS 'c6 meets both criteria'). Runs
 25 Oct 10:13-17:12 UTC; no-gas-with-peakers 17:14-19:16 UTC; s_std_nem_nogas rerun 19:17-22:06 UTC. The 2026 to 2040 engine present
 value is at 8% real. Restart line: forced-outage returns counted on each run's own coal fleet (two draws per weather year,
 scratch zz_pathcheck_ret.js), costed cold at the 360 rates; present value at 8%.
