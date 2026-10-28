@@ -1,6 +1,6 @@
 # GridTwin ZA – reviewer pack
 
-Draft for an outside energy modeller, first written 14 October 2026 and refreshed with each central run since. This refresh, 27–28 October 2026, moves the pack to c6d, the headline set, on build 2026-10-27g (new utility solar costed from BW6's compliant bids, as wind is). Its results fill section 4 when the runs finish; every figure still to come is marked 'to fill'. Until then the latest complete results are c6a's, the previous central, marked as such. c6c, the same set with solar at the capex BW7's awarded tariffs imply, is the low-solar-cost sensitivity; c6b, c6c's set at a 4-hour coal minimum down time, is the down-time sensitivity. Figures for c6, c5f and c5e are kept only as the record and marked as superseded. Prepared from the project's results log (RESULTS.md), its source register (SOURCES.md) and the validation/ folder.
+Draft for an outside energy modeller, first written 14 October 2026 and refreshed with each central run since. This refresh, 27–28 October 2026, moves the pack to c6c, the headline set, on build 2026-10-27f. Its results fill section 4 when the runs finish; every figure still to come is marked 'to fill'. Until then the latest complete results are c6a's, the previous central, marked as such. c6b, the same set at a 4-hour coal minimum down time, is a sensitivity. Figures for c6, c5f and c5e are kept only as the record and marked as superseded. Prepared from the project's results log (RESULTS.md), its source register (SOURCES.md) and the validation/ folder.
 
 ## What this is and how to read it
 
@@ -11,13 +11,13 @@ GridTwin ZA is a South African power-system model by Nick Hedley. It has two par
 
 The two run in a loop. The engine checks each year of the optimiser's plan against an adequacy target, and any year that fails adds stress windows to the next pass.
 
-The headline set reviewed here is c6d (section 4; results to fill). It is built in five steps, each in its own reviewed pull request. c6 kept c5f's settings (c5e's, with rooftop at 1,200 MW a year from 2027, Msenge Emoyeni's 69 MW of wind in the base, s_constr2's floors as the committed minimums, and wheeled wind's load added back; RESULTS 'New central c5f') and changed three things (section 1, 'What c6 changes'):
+The headline set reviewed here is c6c (section 4; results to fill). It is built in four steps, each in its own reviewed pull request. c6 kept c5f's settings (c5e's, with rooftop at 1,200 MW a year from 2027, Msenge Emoyeni's 69 MW of wind in the base, s_constr2's floors as the committed minimums, and wheeled wind's load added back; RESULTS 'New central c5f') and changed three things (section 1, 'What c6 changes'):
 
 - inputs from Eskom's FY2026 reports: coal fuel R553/MWh, nuclear fuel R109/MWh, imports R897/MWh, coal CO2 1.108 t/MWh sent out, hydro at its FY2023–26 mean, Avon and Dedisa at 268 GWh a year, rooftop R15,000/kW AC (PR A, build 2026-10-22e; RESULTS 'c6 PR A');
 - imports priced in the build optimiser, and the Cahora Bassa contract ending after 2030 in the central case (PR B, build 2026-10-23a; RESULTS 'c6 PR B');
 - coal operated as a system operator and a unit-commitment model would: commitment that weighs start costs, a practice floor calibrated to Eskom's 2026 operation and design minimums from 2030, sourced start costs, a corrected synchronous floor and ramp, and the build optimiser on the same rules (PR C, build 2026-10-24a; section 1b).
 
-c6a then started new gas from 2032 at the earliest, counted the 2026 fleet for its share of the year in service and put rooftop on 2025's basis (RESULTS 'c6a, the new central'). c6b priced onshore wind at BW6's compliant bids (R28,462/kW, the figure IRP 2025's Figure 9 uses), and rooftop at R10,500/kW DC, and added two carbon-path sensitivities (RESULTS 'c6b's two cost changes'). c6c sets a 24-hour minimum down time for every coal unit, recalibrates the practice floor to 0.715 so the 2026 replay still matches Eskom's measured midday minimum, and recalibrates the coal emission factor so the 2026 rate matches Eskom's FY2026 rate (sections 1 and 1b; RESULTS 'c6c: coal minimum down time 24 h as the central', 'The practice floor recalibrated to 0.715 with the 24-hour down time' and 'COAL_PARTLOAD_2026 re-recorded from Today 2026'). c6d prices new utility solar at BW6's compliant tracker bids (R16,786/kW, the low end of IRP 2025's Figure 9), so wind and solar are costed the same way, from compliant bid construction cost; c6c's solar, the capex BW7's awarded tariffs imply (R10,998/kW), becomes the low-solar-cost sensitivity (SOURCES 'Build costs from South African bid data'; RESULTS 'Solar central on BW6 bids').
+c6a then started new gas from 2032 at the earliest, counted the 2026 fleet for its share of the year in service and put rooftop on 2025's basis (RESULTS 'c6a, the new central'). c6b priced onshore wind at BW6's compliant bids (R28,462/kW, the figure IRP 2025's Figure 9 uses), and rooftop at R10,500/kW DC, and added two carbon-path sensitivities (RESULTS 'c6b's two cost changes'). c6c sets a 24-hour minimum down time for every coal unit, recalibrates the practice floor to 0.715 so the 2026 replay still matches Eskom's measured midday minimum, and recalibrates the coal emission factor so the 2026 rate matches Eskom's FY2026 rate (sections 1 and 1b; RESULTS 'c6c: coal minimum down time 24 h as the central', 'The practice floor recalibrated to 0.715 with the 24-hour down time' and 'COAL_PARTLOAD_2026 re-recorded from Today 2026').
 
 c6a (build 2026-10-26b), c6 (build 2026-10-25a), c5f (build 2026-10-17g) and c5e (build 2026-10-16h) are superseded: their figures remain below only where marked. Sections 2 and 3 still report earlier engines, as each table says; their rerun on c6c's engine is listed in section 5's known failures and in the final note's open items.
 
@@ -52,9 +52,9 @@ Finding: c6 changes eleven inputs from c5f, each computed in the page from a pri
 | Build optimiser's coal | minimum 0.65 of committed; commitment moving at most 1/48 of available coal an hour | each year's minimum and the hot-start cost of the units standing, as in the engine; the 48-hour rule a sensitivity | section 1b | follows the engine |
 | Coal flexibility option | ramp only (24% to 100% an hour), R223/kW-yr on all coal | three steps: none; Tier 1 (design minimums from the start); Tiers 1–3 (also 40% for units retiring after 2035, the faster ramp on them, R223/kW-yr on them) | section 1b | partly |
 
-What c6a to c6d change on top of c6 (each with its source in SOURCES):
+What c6a, c6b and c6c change on top of c6 (each with its source in SOURCES):
 
-| Input | c6 | c6d | Set that changed it | Status |
+| Input | c6 | c6c | Set that changed it | Status |
 |---|---|---|---|---|
 | New gas, earliest year | 2030 | 2032 (IGUA-SA, Gas Roadmap, May 2026 update; s_gas2030 keeps 2030). The Minister postponed the 28 October 2026 briefing on the Gas IPP Procurement Programme, with no new date; the Section 34 determination of 7 October 2026 covers 5,000 MW of gas-to-power and 4,600 MW of battery storage, 2026–2037, procured by the IPP Office (Green Building Africa, 'Ramokgopa postpones gas power procurement programme briefing', 28 October 2026, https://www.greenbuildingafrica.co.za/ramokgopa-postpones-gas-power-procurement-programme-briefing/) | c6a | sourced (choice of year) |
 | 2026 fleet | every 2026 plant all year | each 2026 plant for its share of the year in service | c6a | sourced |
@@ -65,7 +65,15 @@ What c6a to c6d change on top of c6 (each with its source in SOURCES):
 | Coal minimum down time | 4 hours on 97% of capacity (PyPSA-RSA) | 24 hours on every unit | c6c | partly (literature 8–48 hours; no measured value) |
 | Practice floor to 2029 | 0.75 | 0.715, recalibrated to the same measured statistic | c6c | sourced (calibration) |
 | Coal emission factor before part-load | 1.080 t/MWh | 1.074 t/MWh, so the 2026 rate with part-load is 1.109 against Eskom's 1.108 | c6c | sourced (calibration) |
-| New utility solar capex | R10,998/kW, the capex BW7's 18 solar awards' tariff implies, about R0.53/kWh | R16,786/kW, BW6's compliant tracker bids (R15,715 in January 2024 rands, ×1.068), about R0.74/kWh at new tracking solar's yield, 8% real over 25 years: the same method as wind and as IRP 2025's Figure 9. BW7's per-kW construction cost is not published. Low case R10,998 (c6c); upper reference R18,465, BW7's disclosed R31.4bn for 1,760 MW, which may include connection, development and financing (limitation 32) | c6d | sourced (bids); the author's choice of basis |
+
+### Cost basis: the latest market evidence for each technology
+
+Finding: each technology is costed on its latest market evidence (the author's decision, 28 Oct 2026; SOURCES 'Build costs from South African bid data'; RESULTS 'Costs on the latest market evidence per technology').
+
+- Utility solar: from BW7's awarded tariffs (about 46–49c/kWh), the capex those tariffs imply at 8% real, R10,998/kW (about R0.53/kWh). The tariffs imply that solar developers finance at roughly 5% real over 30 years: BW6's compliant tracker construction cost, R16,786/kW, costs R0.52/kWh at 5% real over 30 years and R0.74/kWh at 8% over 25. BW7's per-kW construction cost is not published.
+- Onshore wind: from BW6's compliant construction cost at 8% real, R28,462/kW. No wind tariff has been awarded since BW5, and BW7's compliant wind bids were rejected as too high, so there is no recent wind price to calibrate to.
+- Flag: if wind could finance as cheaply as solar, the model under-builds wind. s_disc5_c6c (5% real for every technology) shows the plan if it could.
+- Practice varies. One rate for all technologies: IRP 2025 and Meridian. Financing by technology from market evidence: NREL's ATB and the IEA. (The author's summary of practice; page references to add.) We follow market evidence per technology where a market price exists, which for solar carries its cheaper finance into the capex, and one rate, 8% real, everywhere else, because no market price shows how cheaply the other technologies would finance. Sensitivities: s_pvbw6_c6c (solar at its construction cost, 8% real) and s_disc5_c6c (section 4).
 
 The c5e table below is kept as the record of the previous central; a row changed above is superseded there.
 
@@ -122,7 +130,7 @@ Overnight capex, R/kW. All capital costs in the model are overnight and annuitis
 | Technology | Ours, Jan 2026 | Our basis | Figure 9, Jan 2026 | Ours against Figure 9 | Flag | Meridian |
 |---|---|---|---|---|---|---|
 | Onshore wind | 28,462 | BW6 compliant bids (c6b and c6c, PR #121, merged) | 28,462 | equal | no | pending |
-| Utility solar, tracking | 16,786 | BW6 compliant tracker bids (c6d; c6c's BW7 tariff-implied 10,998 is the low case) | 16,785–21,101 | equal to −20% | no | pending |
+| Utility solar, tracking | 10,998 | BW7 awards, tariff-implied (cheaper finance carried into the capex; s_pvbw6 at BW6's 16,786) | 16,785–21,101 | −48% to −34% | yes | pending |
 | Lithium-ion, 4 h | 13,699 | BESIPPPP bid window 3, aged to 2026 | 25,248–27,674 | −50% to −46% | yes | pending |
 | Pumped storage | about 29,200 | Tubatse estimate (2022), CPI-indexed | 44,487 | −34% | yes | pending |
 | CCGT | 34,965 | GridLab, 2025 project data, USD 2,119 | 14,808–19,266 | +81% to +136% | yes | pending |
@@ -339,9 +347,9 @@ Recorded caveats: one bus; one outage draw per week; perfect sight within each w
 
 ---
 
-## 4. c6d against IRP 2025, and the sensitivities
+## 4. c6c against IRP 2025, and the sensitivities
 
-The headline set is c6d (the author's decision, 28 Oct 2026): c6c's settings and run set with new utility solar at BW6's compliant tracker bids (R16,786/kW), run in full on build 2026-10-27g. c6c (the author's decision, 27 Oct 2026: c6b's settings, BW6 wind bids and rooftop at R10,500/kW DC, with a 24-hour coal minimum down time, build 2026-10-27f, PR #122) has solar at the capex BW7's awarded tariffs imply, R10,998/kW, and becomes the low-solar-cost sensitivity. c6b, c6c's set at UC_FLEET's 4-hour minimum down time, is the down-time sensitivity. Their results replace c6a's below when the runs land; c6a's stand as the record until then.
+The headline set is c6c (the author's decision, 27 Oct 2026): c6b's settings (BW6 wind bids, rooftop at R10,500/kW DC) with a 24-hour coal minimum down time, run in full on build 2026-10-27f (PR #122). c6b, the same set at UC_FLEET's 4-hour minimum down time, becomes the down-time sensitivity. Their results replace c6a's below when the runs land; c6a's stand as the record until then.
 
 The design, fixed before the runs (22–24 October):
 
@@ -351,42 +359,7 @@ The design, fixed before the runs (22–24 October):
 - Sensitivities (16 runs with the four above and c6's null): gas capex +25% (s_gascapex25); new gas from 2032 (s_gas2032); no new gas (s_nogas); imports to 2040 (s_imp); demand flat and falling 1% a year (s_demlow); and on coal, s_coalpractice, s_mindn24, s_rate48, s_spotoil and s_wearp75 (section 1b).
 - Reported: build by year against Table 1, engine present value 2026–40 and its components, CO2 by year, adequacy by year, and cost and CO2 for each sensitivity against c6.
 
-### c6d results (the headline set; build 2026-10-27g: c6c's settings with new utility solar at BW6's compliant tracker bids; tables to fill when claude/c6d-runs lands)
-
-Filled from `node pathway/tables/settables.js out out/c6d c6d c6c` on the run commit (section 7). Runs the chain could not finish are listed under Not run, with the reason.
-
-Runs against NTCSA's two criteria:
-
-| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV 2026–40, R bn | Against c6d, R bn | CO2 2026–40, Mt | CO2 2030 / 2035 / 2040, Mt |
-|---|---|---|---|---|---|---|---|---|
-| (to fill) | | | | | | | | |
-
-The IRP 2025 build against the optimised plan, case by case (as for c6c below):
-
-| Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026–40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |
-|---|---|---|---|---|---|---|
-| (to fill) | | | | | | |
-
-New gas against the Section 34 determination (5,000 MW of gas-to-power, 2026–2037): c6d builds (to fill) MW of new gas by 2035 and (to fill) MW by 2040.
-
-Solar cost: c6d against c6c (BW6's compliant tracker bids, R16,786/kW, against the capex BW7's awarded tariffs imply, R10,998/kW; everything else the same; limitation 32):
-
-| | Wind, GW 2030 / 2035 / 2040 | Utility solar, GW 2030 / 2035 / 2040 | Engine PV 2026–40, R bn | CO2 2026–40, Mt | IRP gap at central demand, R bn |
-|---|---|---|---|---|---|
-| c6d, solar R16,786/kW | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
-| c6c, solar R10,998/kW | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
-| Difference | | | | | |
-
-Cheaper finance: s_disc5 beside c6d. The central keeps 8% real for every technology, so the IRP comparison is like for like. s_disc5 shows the plan if developers' cheaper finance applied to all new plant: 5% real for every technology, the rate at which BW6 solar's construction cost comes close to its bid tariffs (R0.52/kWh at BW6's 30.1% bid capacity factor over 30 years; the model keeps 25-year lives). The setting changes every capital charge, new plant and existing coal's, and the optimiser's weight on each year; the engine PV below weights each year at 8% in both rows, so the difference is the build and its cheaper capital, not the weighting. The IRP build is checked at the same rate (RESULTS 'Solar central on BW6 bids'):
-
-| Run | Utility solar, GW 2030 / 2035 / 2040 | Wind | Lithium | Gas (CCGT and open-cycle on LNG) | Engine PV 2026–40, R bn | CO2 2026–40, Mt | IRP gap at the same rate, R bn |
-|---|---|---|---|---|---|---|---|
-| c6d, 8% real | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
-| s_disc5, 5% real | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
-
-A check on c6d's central, run before c6d (28 Oct 2026, on main at c3b9e14, build 2026-10-27f, PV_CASE=bw6): c6c's settings with solar at BW6's bids (s_pvbw6_c6c) met both criteria, engine PV R2,385.5bn, CO2 1,952 Mt; solar 6.9 / 12.7 / 20.1 GW and wind 4.1 / 20.3 / 32.8 GW standing in 2030 / 2035 / 2040. c6d is compared with it when it lands.
-
-### c6c results (the low-solar-cost sensitivity; build 2026-10-27f, PR #122: coal minimum down time 24 h, practice floor 0.715, solar at BW7's tariff-implied R10,998/kW; tables to fill when claude/c6c-runs lands)
+### c6c results (the headline set; build 2026-10-27f, PR #122: coal minimum down time 24 h, practice floor 0.715; tables to fill when claude/c6c-runs lands)
 
 Filled from `node pathway/tables/settables.js out out/c6c c6c c6b` on the run commit (section 7). Runs the chain could not finish are listed under Not run, with the reason.
 
@@ -411,6 +384,14 @@ c6c against c6b, run by run (the 24-hour down time and the 0.715 floor against t
 | (to fill) | | | | | |
 
 Not run: (to fill).
+
+Two cost sensitivities on c6c, run beside its chain on main's commit (c3b9e14, whose index.html is acb2451's; RESULTS 'Costs on the latest market evidence per technology'): s_pvbw6_c6c, solar at its construction cost (BW6's compliant tracker bids, R16,786/kW) at 8% real; and s_disc5_c6c, 5% real for every technology. The discount setting changes every capital charge, new plant and existing coal's, and the optimiser's weight on each year; engine PV below weights each year at 8% in every row, so a difference is the build and its capital charges, not the weighting. Each IRP build is checked at the same solar cost or rate when c6c's IRP build file lands. s_pvbw6_c6c meets both criteria (mean unserved at most 15.9 GWh, worst run 384 GWh).
+
+| Run | Utility solar, GW 2030 / 2035 / 2040 | Wind | Lithium | Gas (CCGT and open-cycle on LNG) | Engine PV 2026–40, R bn | CO2 2026–40, Mt | IRP gap in the same case, R bn |
+|---|---|---|---|---|---|---|---|
+| c6c | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
+| s_pvbw6_c6c, solar at construction cost, 8% real | 6.9 / 12.7 / 20.1 | 4.1 / 20.3 / 32.8 | 4.1 / 8.4 / 12.3 | 0.0 / 4.2 / 10.0 | 2,385.5 | 1,952 | (to fill) |
+| s_disc5_c6c, 5% real for every technology | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
 
 ### c6b: the 4-hour down-time sensitivity (build 2026-10-27e, run commit 2603be5; runs of 27 October 2026)
 
@@ -804,7 +785,7 @@ Inputs
 29. Market design and capacity. The build is a least-cost plan, as if one planner built it. SAWEM as drafted is an energy-only market: the only capacity payments are those in Eskom's vesting contracts, not open to other participants, and Meridian Economics warns of a missing-money problem in which energy sales alone may not justify batteries, peakers or other dispatchable capacity (briefing note, 26 Oct 2026, p.9). Delivering the least-cost build therefore needs a capacity mechanism or continued public procurement. Capacity and ancillary services markets are planned from 2030 (Krutham, Trading electricity, October 2026, p.2), but not yet designed. A capacity-mechanism sensitivity is on the list for the next note.
 30. Sustaining capital on existing coal. The central charges none: coal's fixed cost (R1,160/kW-yr) is calibrated to MYPD6 operating costs, which exclude capital, so future refurbishment and sustaining spending is not charged, though early retirement would avoid it. Working range R350–500/kW-yr (January 2026 rands): EIA's capital additions for existing coal (Sargent & Lundy for EIA, 2018, age-dependent; about R445–500/kW-yr without scrubbers at 30–50 years; coefficients from a search result, not yet checked against the report) and Eskom's FY2026 Generation capital spending (R26.7bn, about R494/kW-yr over 54 GW installed; Eskom performance report FY2026, p.28; an upper bound, as it includes new build, Koeberg and emissions retrofits; Eskom credited, the analysis ours). c6a retired no coal early in any run, and on c5b a larger charge on in-scope coal (R1,746/kW-yr) retired none either. On c6a's own solution the cheapest early retirement allowed (from 2029) starts to pay only at about R1,600/kW-yr of extra fixed cost, more than three times the range (RESULTS 'Coal sustaining capital: how far c6a's plan is from retiring coal early'). Sensitivity s_coalsustain charges R500/kW-yr; its effect on system cost (2026–40 PV) and on the IRP gap follows from the c6b and c6c sets.
 31. Extreme midday solar (RESULTS 'Coal minimum down time: what it does to the extreme-solar case and to c6a'). With very large solar the engine still cycles coal more than current practice. Least-cost path 2035 with utility solar at 45 GW and rooftop at 25 GW (from 14.7 and 10.8), one run on the page's own profiles, 8-14 January, at c6c's 24-hour minimum down time: coal at 1.9-4.5 GW at midday and up to 9.5 GW in the evening, about 4 unit starts a day (8 at the earlier 4 hours), after multi-day low-coal spells rather than midday shutdowns, and 105 TWh of wind and solar curtailed over the year. Australia's black-coal fleet (30 units, 13.9 GW) starts about one unit a day (AEMO NEMweb data, September 2026, analysis ours), and Meridian Economics describes South Africa's units as unable to shut down and restart within a day (briefing note, 26 Oct 2026, p.1, fn.1). Fixes after the note: start costs calibrated to observed starts , a minimum number of synchronous units by region (14jq (d)) and the down time in the build optimiser (14ka).
-32. Solar's cost against recent bids (c6d; SOURCES 'Build costs from South African bid data'). Solar is costed like every other technology: compliant bid construction cost, annuitised at 8% real over 25 years. For solar that is BW6's tracker bids, R16,786/kW, about R0.74/kWh at the model's tracking yield. Recent solar bids cleared at about 46–47c/kWh (BW6 and BW7), so the model's solar cost is above what those bids imply: developers finance more cheaply than the model's 8% real. The method is the one IRP 2025 uses (its Figure 9 takes BW6's construction cost) and Meridian's. BW7's per-kW construction cost is not published. Wind is costed the same way, and recent bids do not contradict it: no wind tariff has been awarded since BW5, and BW7's compliant wind bids were rejected as too high. c6c shows solar at the capex BW7's tariffs imply (R10,998/kW; section 4). s_disc5 runs every technology at 5% real (section 4); 30-year lives for wind and solar wait for after the note (TODO 14kf).
+32. Finance by technology (section 1, 'Cost basis'). Solar's capex comes from BW7's awarded tariffs, which carry developers' cheaper finance (roughly 5% real over 30 years); every other technology is annuitised at 8% real on its construction cost. If wind, batteries or gas could finance as cheaply as solar, the model under-builds them, wind most (wind has no recent tariff to show it: none awarded since BW5, and BW7's compliant wind bids were rejected as too high). s_disc5_c6c gives the plan at 5% real for every technology; 30-year lives for wind and solar wait for after the note (TODO 14kf).
 
 
 Known failures in the suite (build 2026-10-27f, PR #122, practice floor 0.715; against main 27e script by script in RESULTS 'Suite on build 27f at the 0.715 floor'; each with its cause in RESULTS, none relaxed):
@@ -821,7 +802,7 @@ Known failures in the suite (build 2026-10-27f, PR #122, practice floor 0.715; a
 
 ---
 
-## 6. Four questions for the reviewer (written on c5e; to restate on c6d)
+## 6. Four questions for the reviewer (written on c5e; to restate on c6c)
 
 Each can be answered from this pack in 30–40 minutes. Each is tied to a decision the model rests on.
 
@@ -863,16 +844,16 @@ Each can be answered from this pack in 30–40 minutes. Each is tied to a decisi
 
 What was run:
 
-- Build: c6d, BUILD_STAMP '2026-10-27g', run on main at (to fill). The c6c low-solar-cost sensitivity ran on main at acb2451 (build 2026-10-27f, PR #122's merge commit). The c6b sensitivity ran on 2603be5 (build 2026-10-27e, PR #121, merged as 026e027 with an identical index.html).
-- Settings: harness/pathway/env_c6.sh, then harness/pathway/env_c6a.sh on top (c6b, c6c and c6d keep c6a's pathway settings; their cost and down-time changes are in index.html). Each run's own changes are on its line in harness/pathway/chain_c6d.sh (chain_c6c.sh and chain_c6b.sh for the sensitivities).
+- Build: c6c, BUILD_STAMP '2026-10-27f', PR #122, run on main at acb2451 (PR #122's merge commit). The c6b sensitivity ran on 2603be5 (build 2026-10-27e, PR #121, merged as 026e027 with an identical index.html).
+- Settings: harness/pathway/env_c6.sh, then harness/pathway/env_c6a.sh on top (c6b and c6c keep c6a's pathway settings; their cost and down-time changes are in index.html). Each run's own changes are on its line in harness/pathway/chain_c6c.sh (chain_c6b.sh for c6b).
 - Software: Node 22, Python 3 with highspy 1.15.1 (SOLVER=native), and in harness/ `npm install jsdom highs eslint` (jsdom 29.1.1, highs 1.15.3 used here).
 
 In order, from a clone at that commit:
 
 1. `cd harness && npm install jsdom highs eslint && pip install highspy && ln -s .. testroot`
 2. Optional: the suite (CLAUDE.md, 'Running the suite'), about 1–2 hours.
-3. `bash pathway/chain_c6d.sh` (and `chain_c6c.sh` on acb2451 and `chain_c6b.sh` on 2603be5 for the sensitivities), started as a tracked background job in pieces under 2 hours (CLAUDE.md, 'Long runs'). Resumable: rerun it after an interruption and finished runs and checks are skipped. Progress in harness/out/c6d/progress.txt.
-4. Tables, from harness/: `node pathway/tables/settables.js out out/c6d c6d c6c` (every table in section 4: runs, build, the IRP gap by case, c6d against c6c, not run; the same with `out/c6c c6c c6b` for c6c); or `BASE=c6c node pathway/tables/packtable.js out c6c null_c6c s_nogas_c6c ...` (results table) and `CENTRAL=c6c node pathway/tables/irptable.js out out/c6c/irp` (IRP comparison).
+3. `bash pathway/chain_c6c.sh` (and `chain_c6b.sh` on 2603be5 for the c6b sensitivity), started as a tracked background job in pieces under 2 hours (CLAUDE.md, 'Long runs'). Resumable: rerun it after an interruption and finished runs and checks are skipped. Progress in harness/out/c6c/progress.txt.
+4. Tables, from harness/: `node pathway/tables/settables.js out out/c6c c6c c6b` (every table in section 4: runs, build, the IRP gap by case, c6c against c6b, not run); or `BASE=c6c node pathway/tables/packtable.js out c6c null_c6c s_nogas_c6c ...` (results table) and `CENTRAL=c6c node pathway/tables/irptable.js out out/c6c/irp` (IRP comparison).
 
 Run times, from c6a's set on the project's cloud container (two solves at a time, about 15 GB of memory):
 
@@ -972,4 +953,4 @@ Inputs not in the repository:
 - c6 PR C, message 370: the MIP benchmark of coal commitment … ('370' in the text), 24 Oct 2026
 - Restarts after forced outages are not costed …, 25 Oct 2026
 - Message 376: c6 meets both criteria of NTCSA's medium-term adequacy test (wording corrected, message 381) …, 25 Oct 2026
-- Solar central on BW6 bids, 28 Oct 2026
+- Costs on the latest market evidence per technology …, 28 Oct 2026
