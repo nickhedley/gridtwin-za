@@ -552,11 +552,14 @@ spend profile (nuclear about eight years, adding roughly a third at 8%; coal and
 batteries and gas one to three years, a few percent), in the build optimiser and the engine's capital charge alike, and rerun the
 central.
 
-14kf. Finance and life by technology, after the note (user, 28 Oct 2026, messages 459 (d), 461 and 462): solar's capex comes from
-BW7's tariffs, which imply about 5% real over 30 years; everything else is annuitised at 8% real over BLD_LIFE (wind and solar 25
-years). In the pack now: s_disc5_c6c (5% real for every technology, DISC=0.05) and s_pvbw6_c6c (solar at construction cost, 8%).
-After the note: 30-year lives for wind and solar (BLD_LIFE is a page constant, not a harness setting), and whether financing by
-technology from market evidence (NREL ATB, IEA) should replace the single 8% for technologies without a recent tariff.
+14kf. Cost of capital by technology, for the next note, not this pack (user, 28 Oct 2026, messages 459 (d), 461, 462 and 463).
+Separate the two rates: one discount rate, 8% real, for comparing costs across years; a cost of capital per technology for capital
+charges, all from one evidence base (IEA World Energy Outlook and Cost of Capital Observatory figures for emerging economies; NREL
+ATB financing cases; academic estimates such as Steffen 2020), cross-checked against South African bids where they exist (REIPPPP
+solar and wind, BESIPPPP storage). Every technology on the same framework, including gas, nuclear and coal. Now (c6c): solar's
+capex from BW7's tariffs (about 5% real over 30 years implied), everything else annuitised at 8% real over BLD_LIFE (wind and
+solar 25 years); s_disc5_c6c (5% real for every technology) and s_pvbw6_c6c (solar at construction cost, 8%) bracket it (pack
+limitation 32). 30-year lives for wind and solar go with it (BLD_LIFE is a page constant, not a harness setting).
 
 ## Follow-through on the engine change
 
