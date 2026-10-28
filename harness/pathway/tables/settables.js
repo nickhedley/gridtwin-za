@@ -11,7 +11,9 @@ if (!C){ console.error('usage: node pathway/tables/settables.js <run folder> <se
 const SENS=['null','s_irpgas','s_be6','s_be7','s_windlow','s_windhigh','s_carbontreasury','s_carbonhold','s_gascapex25','s_gas2030','s_imp',
   's_demlowflat','s_demlowm1','s_coalpractice','s_rate48','s_spotoil','s_wearp75','s_koeberg_winter','s_ntcsa_both','s_nogas_dsl',
   's_std_strict','s_std_nem','s_coalsustain','s_nogas','s_std_strict_nogas_dsl','s_std_nem_nogas_dsl','s_std_strict_nogas','s_std_nem_nogas',
-  's_pvbw6','s_disc5','s_discirp'].filter(s=>!(['s_pvbw6','s_disc5','s_discirp'].includes(s) && C==='c6b'));   // from c6c, beside its chain (462, 465, 466)
+  's_pvbw6','s_disc5','s_discirp','s_gas2035','s_gas2035_dsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate']
+  // s_pvbw6, s_disc5 and s_discirp ran beside c6c's chain only (462, 465, 466); the gas-2035 and cost-of-capital runs are c6e's (469, 475).
+  .filter(s=>['s_pvbw6','s_disc5','s_discirp'].includes(s) ? C==='c6c' : ['s_gas2035','s_gas2035_dsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate'].includes(s) ? C!=='c6b' && C!=='c6c' : true);
 const names=[C, `${C}_irpdem`, ...SENS.map(s=>`${s}_${C}`)];
 const prog=fs.existsSync(`${N}/progress.txt`)?fs.readFileSync(`${N}/progress.txt`,'utf8'):'';
 const why=n=>{ const m=prog.split('\n').filter(l=>l.includes(`NOT RUN ${n}:`)).pop(); if (m) return m.replace(/^.*NOT RUN [^:]*: /,'');
@@ -59,7 +61,9 @@ const IRP=[['central demand',C,`irp2025_${C}`],['IRP 2025 demand',`${C}_irpdem`,
   ['wind, high cost case',`s_windhigh_${C}`,`irp2025_${C}_windhigh`],['carbon, Treasury path',`s_carbontreasury_${C}`,`irp2025_${C}_carbontreasury`],
   ['carbon, 2030 rate held',`s_carbonhold_${C}`,`irp2025_${C}_carbonhold`],['coal sustaining capital R500/kW-yr',`s_coalsustain_${C}`,`irp2025_${C}_coalsustain`],
   ...(SENS.includes('s_disc5')?[['all on construction cost, 8% real',`s_pvbw6_${C}`,`irp2025_${C}_pvbw6`],
-    ['all on construction cost, 5% real',`s_disc5_${C}`,`irp2025_${C}_disc5`],['all on construction cost, 11.3% real',`s_discirp_${C}`,`irp2025_${C}_discirp`]]:[])];
+    ['all on construction cost, 5% real',`s_disc5_${C}`,`irp2025_${C}_disc5`],['all on construction cost, 11.3% real',`s_discirp_${C}`,`irp2025_${C}_discirp`]]:[]),
+  ...(SENS.includes('s_cocplan')?[['cost of capital: one rate, 8% (planning)',`s_cocplan_${C}`,`irp2025_${C}_cocplan`],['cost of capital: high',`s_cochigh_${C}`,`irp2025_${C}_cochigh`],
+    ['cost of capital: low',`s_coclow_${C}`,`irp2025_${C}_coclow`],['cost of capital: private finance',`s_cocprivate_${C}`,`irp2025_${C}_cocprivate`]]:[])];
 console.log('\n### IRP 2025 build against the optimised plan\n');
 console.log('| Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026–40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |');
 console.log('|---|---|---|---|---|---|---|');
