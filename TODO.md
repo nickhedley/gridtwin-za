@@ -567,6 +567,11 @@ transport 43.3, commercial and public 34.8, residential 13.3 PJ), with the elect
 us and flagged as ours (the strategy gives no electricity share and no peak target; SOURCES 'National Energy Efficiency Strategy
 2026-2035'). Report build, system cost, CO2 and the IRP gap against the central.
 
+14kh. Gas IPP bid window 1 (user, 28 Oct 2026, message 475 (b), (c)): an analyst reported (28 Oct 2026) that the department says no
+preferred bidders were selected; find the department's statement before the pack cites it. For the next note, if bid window 1 has
+failed: test gas from 2035 as the central (s_gas2035_c6e in c6e is the first look), and coal life extension as an option the build
+optimiser can choose.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?

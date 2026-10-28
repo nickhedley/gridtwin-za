@@ -1999,3 +1999,12 @@ January 2026 rands, on the central's basis (8% real, 25 years, fixed O&M R287/kW
   19 Sep 2026 also seen): 132 PJ of savings by 2035, by sector: industry 40.7, transport 43.3, commercial and public 34.8,
   residential 13.3 PJ. No electricity share and no peak-demand target are given. It states that efficiency is absent from the IRP
   and proposes treating it as a supply-side-equivalent resource. It cites IRP 2025's R2.33 trillion of investment to 2050.
+
+## Gas timing (user, 28 Oct 2026, message 475)
+
+- NERSA, Feedback report on the NERSA gas dialogues of 1 July 2026 (October 2026;
+  https://www.nersa.org.za/files/files/2026/10/FeedbackReportontheNERSAGasDialoguesof1July2026.pdf; quoted by Nick, not read from
+  this container): "Standard procurement may be too rigid"; LNG expected around 2029-30; bankability depends on infrastructure
+  finance and anchor demand. Basis for s_gas2035_c6e beside the gas-from-2032 central.
+- Not yet confirmed from a primary source: an analyst reported (28 Oct 2026) that the department says no preferred bidders were
+  selected in Gas IPP bid window 1. Kept out of the pack until the department's statement is found (TODO 14kh).
