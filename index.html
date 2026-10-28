@@ -20963,7 +20963,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
-  bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
+  bldCoc, bldCocCase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
   bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
 const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
@@ -20972,6 +20972,7 @@ const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, S
   WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
+  BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK, BLD_COC_PRIVATE_PREM, BLD_COC_GROUP, BLD_BUILD_Y,
   BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW, USD_RATE_R, US_CPI_2011_TO_JAN26,
   COAL_START_SUPER, COAL_START_OFFLINE_H, COAL_START_WEAR_USD, COAL_START_OTHER_USD, COAL_START_FUEL_RMW, COAL_START_FUEL_AT_RGJ,
   COAL_KGCO2_PER_GJ, COAL_GJ_PER_MWH, COAL_PRE_C, COAL_START_EFOR_PCT, COAL_EFOR_REPL_RMWH,
