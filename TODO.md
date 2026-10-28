@@ -572,6 +572,19 @@ preferred bidders were selected; find the department's statement before the pack
 failed: test gas from 2035 as the central (s_gas2035_c6e in c6e is the first look), and coal life extension as an option the build
 optimiser can choose.
 
+14ki. Long-duration storage winter reserve, next note (user, 28 Oct 2026, message 476 (a)): an operating rule that keeps stores of
+24 hours or more above a stated charge level through the winter months (as hydro reservoir rule curves do), released only in
+deficit hours; tested against the current one-week look-ahead on the twelve weather years.
+
+14kj. Hydrogen as a build option, next note (user, 28 Oct 2026, message 476 (b)): electrolysers (from surplus and curtailment),
+storage (South Africa lacks salt caverns: price tanks, pipeline packing or ammonia, and state which), and hydrogen-capable
+turbines (new build, and conversion of gas or diesel peakers), with round-trip efficiency and costs from one sourced basis (e.g.
+NREL ATB, IEA, CSIR or Hive/Coega disclosures); tested as seasonal storage against peakers and iron-air on the twelve weather
+years.
+
+14kk. Iron-air (user, 28 Oct 2026, message 476 (c)): the finding "with gas, 20 GW of 100-hour iron-air barely moves July" stays
+out of any note until its check (validate_findings, a known failure since 13h) is settled.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
