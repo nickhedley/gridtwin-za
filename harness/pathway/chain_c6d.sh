@@ -9,6 +9,7 @@
 # its share of the year in service (harness/pathway/env_c6a.sh). Every run plans to NTCSA's 20 GWh unless it sets STD. s_gas2032 is
 # replaced by s_gas2030 (gas from 2030, as c6 had; 391 (c)); the strict and NEM standards only for c6d, s_nogas and s_nogas_dsl (391 (d)).
 # Order (message 428 (b)): c6d; the three IRP-schedule runs and c6d at IRP 2025's demand, then the IRP pair's build files and checks;
+# s_disc5 at 5% real and the IRP build at the same rate (message 461);
 # the wind cases and the IRP pair at each; the carbon cases and the IRP pair on each; the IRP pair at a high nuclear charge; the rest
 # of the set, short solves first; solves over 30 minutes last; restart counts. Two solves at a time (15 GB). Resumable: a finished
 # run or check is skipped; each run's LP cache is deleted once its check is written.
@@ -56,6 +57,19 @@ pair s_be7_c6d "NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350" c6d_irpdem "D
 [ -s $N/irp/pathway_irp2025_c6d.json ] || (OUTDIR=$H/out CENTRAL=c6d IRPDEM=c6d_irpdem BASEGAP=0 python3 -I pathway/irp2025/build_irp_c6.py $N/irp/pathway_irp2025_c6d.json >> $P 2>&1)
 irpcheck irp2025_c6d & irpcheck irp2025_c6d_irpdem & wait
 echo "$(date -u +%H:%M) IRP PAIR CHECKS DONE" >> $P
+# Message 461: s_disc5, c6d at a 5% real discount rate for every technology (DISC=0.05 sets BLD_DISC, which is both the annuity
+# rate of every capital charge, new plant and existing coal's station capital, and the optimiser's weight on each year; pathcheck.js
+# applies the run file's disc to the engine check's capital charges; the tables weight the engine's annual costs at 8% as for every
+# run). Lives unchanged (BLD_LIFE: wind and solar 25 years; a 30-year life is a page constant, not a harness setting, so it waits
+# for after the note). The IRP build checked at the same rate. Placed here so it lands early.
+one s_disc5_c6d "DISC=0.05"
+[ -s $N/irp/pathway_irp2025_c6d_disc5.json ] || [ ! -s out/pathway_s_disc5_c6d.json ] || python3 -I -c "
+import json,sys; P=json.load(open(sys.argv[1])); R=json.load(open(sys.argv[3])); assert abs(R.get('disc',0)-0.05)<1e-9, R.get('disc')
+assert P.get('disc') in (None,0.08), P.get('disc'); P['disc']=R['disc']
+P['note461']='Copy of pathway_irp2025_c6d.json at the 5% real discount rate of s_disc5_c6d (message 461).'
+json.dump(P,open(sys.argv[2],'w'))" $N/irp/pathway_irp2025_c6d.json $N/irp/pathway_irp2025_c6d_disc5.json out/pathway_s_disc5_c6d.json
+[ -s $N/irp/pathway_irp2025_c6d_disc5.json ] && irpcheck irp2025_c6d_disc5
+echo "$(date -u +%H:%M) DISCOUNT CASE DONE" >> $P
 pair s_windlow_c6d "WIND_CASE=central" s_windhigh_c6d "WIND_CASE=high"   # message 416 (d): the IRP gap at both wind cost cases
 for c in low high; do k=$( [ $c = low ] && echo central || echo high ); [ -s $N/irp/pathway_irp2025_c6d_wind$c.json ] || [ ! -s out/pathway_s_wind${c}_c6d.json ] || python3 -I -c "
 import json,sys; P=json.load(open(sys.argv[1])); R=json.load(open(sys.argv[4])); assert R.get('windCase')==sys.argv[3]; P['windCase']=sys.argv[3]; P['capex2026']=R['capex2026']
@@ -95,7 +109,7 @@ pair s_nogas_c6d "GAS_CAP=0 OCGD=0" s_std_strict_nogas_dsl_c6d "STD=strict GAS_C
 one s_std_nem_nogas_dsl_c6d "STD=nem GAS_CAP=0 OCGD=1"
 echo "$(date -u +%H:%M) STANDARDS DONE" >> $P
 python3 -I pathway/make_ret.py pathway/ret_counter.js pathcheck.js pathcheck_ret.gen.js >> $P 2>&1   # restart counts on this commit's own check
-for n in c6d null_c6d s_nogas_c6d s_gascapex25_c6d s_gas2030_c6d s_imp_c6d s_demlowflat_c6d s_demlowm1_c6d c6d_irpdem s_coalpractice_c6d s_rate48_c6d s_spotoil_c6d s_wearp75_c6d s_be6_c6d s_be7_c6d s_irpgas_c6d s_koeberg_winter_c6d s_ntcsa_both_c6d s_nogas_dsl_c6d s_std_strict_c6d s_std_strict_nogas_c6d s_std_strict_nogas_dsl_c6d s_std_nem_c6d s_std_nem_nogas_c6d s_std_nem_nogas_dsl_c6d s_carbontreasury_c6d s_carbonhold_c6d s_coalsustain_c6d; do
+for n in c6d s_disc5_c6d null_c6d s_nogas_c6d s_gascapex25_c6d s_gas2030_c6d s_imp_c6d s_demlowflat_c6d s_demlowm1_c6d c6d_irpdem s_coalpractice_c6d s_rate48_c6d s_spotoil_c6d s_wearp75_c6d s_be6_c6d s_be7_c6d s_irpgas_c6d s_koeberg_winter_c6d s_ntcsa_both_c6d s_nogas_dsl_c6d s_std_strict_c6d s_std_strict_nogas_c6d s_std_strict_nogas_dsl_c6d s_std_nem_c6d s_std_nem_nogas_c6d s_std_nem_nogas_dsl_c6d s_carbontreasury_c6d s_carbonhold_c6d s_coalsustain_c6d; do
   [ -s out/pathway_$n.json ] && ret $n out/pathway_$n.json; done
 ret irp2025_c6d $N/irp/pathway_irp2025_c6d.json; ret irp2025_c6d_irpdem $N/irp/pathway_irp2025_c6d_irpdem.json
 echo "$(date -u +%H:%M) C6D SET DONE" >> $P

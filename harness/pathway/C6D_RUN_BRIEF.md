@@ -54,6 +54,8 @@ chain_c6d.sh. Progress, one line per event: harness/out/c6d/progress.txt.
 ## 4. The run order (message 428 (b)), already in the script
 
 1. c6d central; s_irpgas, s_be6, s_be7 and c6d at IRP 2025's demand; then the IRP pair's build files and checks.
+1b. s_disc5 (message 461): c6d at a 5% real discount rate for every technology (DISC=0.05), one solve, then the IRP build checked
+   at the same rate (out/c6d/irp/pathway_irp2025_c6d_disc5.json). Progress logs DISCOUNT CASE DONE.
 2. The wind cases (s_windlow, s_windhigh) and the IRP pair at each.
 3. The carbon cases (s_carbontreasury, s_carbonhold) and the IRP pair on each.
 4. The IRP pair at a high nuclear charge (check only; the figure stays out of the pack until Nick confirms it).
@@ -82,9 +84,10 @@ From harness/:
     node pathway/tables/packtable.js out c6d null_c6d s_nogas_c6d s_nogas_dsl_c6d s_gascapex25_c6d s_gas2030_c6d s_imp_c6d \
       s_demlowflat_c6d s_demlowm1_c6d s_coalpractice_c6d s_rate48_c6d s_spotoil_c6d s_wearp75_c6d \
       s_koeberg_winter_c6d s_ntcsa_both_c6d s_windlow_c6d s_windhigh_c6d s_carbontreasury_c6d s_carbonhold_c6d s_coalsustain_c6d \
-      s_std_strict_c6d s_std_nem_c6d s_std_strict_nogas_dsl_c6d s_std_nem_nogas_dsl_c6d > out/c6d/packtable.md
+      s_disc5_c6d s_std_strict_c6d s_std_nem_c6d s_std_strict_nogas_dsl_c6d s_std_nem_nogas_dsl_c6d > out/c6d/packtable.md
     CENTRAL=c6d node pathway/tables/irptable.js out out/c6d/irp > out/c6d/irptable.md
     node pathway/tables/summ.js out c6d > out/c6d/summ_c6d.txt
+    node pathway/tables/settables.js out out/c6d c6d c6c > out/c6d/tables_c6d.md   # every table, s_disc5 beside c6d included
 
 Runs that did not finish are skipped by the scripts; list them separately.
 
@@ -96,12 +99,12 @@ but the outputs (message 453: a branch cut from an older commit carried other co
     git fetch origin main && git checkout -b claude/c6d-runs origin/main
 
 - Copy into harness/pathway/c6d/: out/pathway_*c6d*.json, out/pathcheck_*c6d*_?.json, out/c6d/irp/*.json, out/c6d/ret/ret_*.json,
-  out/c6d/progress.txt and the three table files. No logs, no lpcache folders, no ESK files.
+  out/c6d/progress.txt and the four table files. No logs, no lpcache folders, no ESK files.
 - Before opening the pull request, list the changed files: `git diff --name-only origin/main`. Every line must start with
   harness/pathway/c6d/; if any does not, stop and tell Nick.
 - Commit message: what was run, on which commit and build 2026-10-27g, and the runs not run.
 - Open a pull request titled "c6d run set: outputs (build 2026-10-27g)". The body: the run commit, the build stamp, the start and
-  end times (SAST), every run with its verdict, the runs not run with reasons, the two tables and the changed-file list. No
+  end times (SAST), every run with its verdict, the runs not run with reasons, tables_c6d.md and the changed-file list. No
   RESULTS edit: the other session writes RESULTS and the pack from these files.
 
 ## 8. The s_coalsustain IRP check
