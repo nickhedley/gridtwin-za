@@ -1963,3 +1963,14 @@ Pointer: C. Yelland, EE Business Intelligence weekly note, 26 October 2026 (Nick
 - eThekwini: Project Smart Solar with Plentify, 280 households and facilities with solar and batteries, applications from June 2026
   (Engineering News, 3 Jun 2026). GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027): as
   reported, no original found.
+
+Private South African solar, disclosed costs 2024-26 (user, 28 Oct 2026, message 455 (d); reference only, a cross-check like the
+wind high case; from search-result summaries of 28 Oct 2026, the articles not opened from this container (.co.za pages blocked):
+confirm scope, AC or DC, and whether the figure is total capex or the financing raised before any use):
+                         Sibanye-Stillwater, Springbok solar, 150 MW, estimated R2.8bn, commercial operation September 2025:
+                         about R18,700/kW (Engineering News, Sibanye-Stillwater renewable energy projects update, 29 May 2026).
+                         SolarAfrica, SunCentral 2, 114 MW, financial close R1.5bn, February 2026: about R13,200/kW, possibly
+                         financing only (Engineering News, 10 Feb 2026; SolarQuarter, 20 Aug 2026). SolarAfrica, SunCentral 1,
+                         114 MW: R1.8bn reported at financial close (Engineering News, 25 Feb 2025) and R5bn capex in a later
+                         update (Engineering News, 2 Oct 2026); scopes differ, unresolved. For comparison (January 2026 rands):
+                         BW6 tracker bids R16,786/kW, IRP 2025 Figure 9 R16,785-21,101/kW, the central's BW7-implied R10,998/kW.
