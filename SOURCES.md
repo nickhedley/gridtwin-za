@@ -1067,6 +1067,18 @@ Decisions are the user's (7 Oct 2026).
   (including 6% augmentation). Fixed O&M R269 (solar), R367 (wind), R678 (BESS) per kW-yr. Bid ranges: solar
   R14,000-23,000, wind R19,000-36,000, storage R23,000-43,000. What the overnight cost includes is not defined;
   under REIPPPP the developer funds the dedicated connection, so it probably includes it.
+- Solar central from build 2026-10-27g (user, 28 Oct 2026, messages 458 and 460): FIXED.bldPvCase 'bw6', the BW6 tracker bids
+  above, R15,715 x CPI_JAN24_TO_JAN26 = R16,786/kW, about R0.74/kWh at new tracking solar's run capacity factor (8% real, 25
+  years). Wind and solar are now costed the same way, from compliant bid construction cost; IRP 2025 Figure 9 also uses BW6's
+  solar construction cost (rule 366: method as IRP 2025 and Meridian). BW7's per-kW bid construction cost is not published: no
+  IPP Office or DBSA figure was found (web search, 28 Oct 2026; the IPP Office's and DBSA's sites cannot be opened from the cloud
+  environment, so neither was read directly), so BW6 stays the central. Low case 'low' (or the legacy 'central'): the capex
+  implied by BW7's awarded tariffs, R10,998/kW on the run basis, about R0.53/kWh. High case 'high': BW7's disclosed investment,
+  R31.4bn for the first 1,760 MW (department statement, as reported by Green Building Africa and Engineering News, 6 Jan 2025),
+  x CPI_JAN25_TO_JAN26, about R18,465/kW, an upper reference only, like wind's disclosed investment values: it may include
+  connection, development and financing costs and is not evidence that BW7 cost more than BW6. Sibanye-Stillwater's Springbok
+  (150 MW, about R2.8bn, Engineering News, 29 May 2026) is a single unverified reference beside it. Recent solar bids cleared at
+  about 46-47c/kWh (BW6 and BW7), below the model's solar cost: developers finance more cheaply than the model's 8% real.
 - SA CPI, January 2024 to January 2026: 1.032 x 1.035 = 1.068 (Stats SA headline, 3.2% y/y January 2025 and
   3.5% y/y January 2026, as reported; the Stats SA site is not reachable from the cloud environment).
 - IRP 2025 assumptions workbook (uploaded by the user), Learning Rates sheet, base case: onshore wind (BW6)

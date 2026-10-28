@@ -17762,3 +17762,28 @@ invariants 176/176, response 86/87, benchmarks 28/30, weather 68/68, structure 2
 capacity 36/36, inputs 37/37, lp 57/57, external 8/8, solve 9/9, audit 88/88, eng5 5/6; piece 2 (from 18:57 UTC): pathway presets
 27/40, links 48/48, worker 38/38. Node checks 967/989 (main 964/989), audit 88/88, eng5 5/6. The failures are main's less the four
 now passing, plus the turn-up finding above.
+
+### Solar central on BW6 bids: new utility solar R10,998 -> R16,786/kW, the solar LCOE anchor R0.53 -> R0.74/kWh (user, 28 Oct 2026, messages 458-460; build 2026-10-27g)
+
+Settings. index.html FIXED.bldPvCase 'bw6' (was 'central'): BLD_COST.pvtrk_bw6, BW6's compliant tracker bids, R15,715/kW in
+January 2024 rands x CPI_JAN24_TO_JAN26 = R16,786/kW in 2026, decline 3.89% a year as before; the LCOE anchor FIXED.lcoePv follows
+the central case (bldLcoeAnchor on pvtrk_bw6 at NEW_PVTRK_CF_12Y, 8% real, 25 years). Cases: 'low' (or the legacy 'central') the
+capex BW7's awarded tariffs imply on the run basis, R10,998/kW (pvtrk_runcf); 'high' BW7's disclosed investment, R31.4bn / 1,760
+MW x CPI_JAN25_TO_JAN26 = R18,465/kW (pvtrk_high), an upper reference only. Wind is unchanged on BW6's compliant bids
+(R28,462/kW). Pathway runs take the case from PV_CASE (pathway_perfail.js, pathcheck.js), recorded in each run file as pvCase with
+capex2026. Basis in SOURCES ('Build costs from South African bid data', solar central from build 2026-10-27g).
+
+Why (rule 366, the user's decision of 28 Oct 2026): wind and solar costed the same way, from compliant bid construction cost, as
+IRP 2025 (Figure 9 uses BW6's construction cost) and Meridian do. BW7's per-kW construction cost is not published (message 460:
+none found), so BW6 stays the central and BW7's R31.4bn is cited only as an upper reference. Recent solar bids cleared at about
+46-47c/kWh (BW6 and BW7), below the model's R0.74/kWh: developers finance more cheaply than the model's 8% real (pack limitation
+32; TODO 14kf).
+
+Pathway check before c6d (28 Oct 2026, 04:56-05:18 UTC, main at c3b9e14, build 2026-10-27f, c6c's settings: env_c6.sh then
+env_c6a.sh, PV_CASE=bw6, run s_pvbw6_c6c, engine check groups a-c with LNG=1 GRID=1): run loop ended adequate in 550 s; both
+NTCSA criteria met, mean unserved at most 15.91 GWh in the highest year (worst run 384 GWh); engine PV 2026-40 R2,385.5bn; CO2
+2026-40 1,952 Mt. Standing in 2030 / 2035 / 2040: utility solar 6.9 / 12.7 / 20.1 GW, wind 4.1 / 20.3 / 32.8 GW, lithium 4.1 / 8.4
+/ 12.3 GW, CCGT 0.0 / 4.2 / 9.8 GW, coal 32.4 / 25.9 / 17.9 GW. Compared with c6c's central when claude/c6c-runs lands; c6d, the
+full set on 27g, is the new central (harness/pathway/chain_c6d.sh, C6D_RUN_BRIEF.md).
+
+Suite on 27g (to fill).
