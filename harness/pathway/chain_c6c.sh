@@ -95,4 +95,4 @@ python3 -I pathway/make_ret.py pathway/ret_counter.js pathcheck.js pathcheck_ret
 for n in c6c null_c6c s_nogas_c6c s_gascapex25_c6c s_gas2030_c6c s_imp_c6c s_demlowflat_c6c s_demlowm1_c6c c6c_irpdem s_coalpractice_c6c s_rate48_c6c s_spotoil_c6c s_wearp75_c6c s_be6_c6c s_be7_c6c s_irpgas_c6c s_koeberg_winter_c6c s_ntcsa_both_c6c s_nogas_dsl_c6c s_std_strict_c6c s_std_strict_nogas_c6c s_std_strict_nogas_dsl_c6c s_std_nem_c6c s_std_nem_nogas_c6c s_std_nem_nogas_dsl_c6c s_carbontreasury_c6c s_carbonhold_c6c s_coalsustain_c6c; do
   [ -s out/pathway_$n.json ] && ret $n out/pathway_$n.json; done
 ret irp2025_c6c $N/irp/pathway_irp2025_c6c.json; ret irp2025_c6c_irpdem $N/irp/pathway_irp2025_c6c_irpdem.json
-echo "$(date -u +%H:%M) C6B SET DONE" >> $P
+echo "$(date -u +%H:%M) C6C SET DONE" >> $P   # was "C6B SET DONE" (a sed leftover) on the commit c6c ran on, acb2451 (message 458)
