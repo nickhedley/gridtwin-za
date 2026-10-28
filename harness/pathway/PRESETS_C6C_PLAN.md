@@ -89,7 +89,9 @@ f. Old least-cost figures ("103 cycles a year: R4.73/kWh"; "the fleet runs at 2.
 g. "each region's connection headroom is the network Eskom plans to build (GCCA)" -> NTCSA.
 h. Pumped storage R1.40/kWh "An assumption; no published source": Meridian's IRP 2023 review (R31,800/kW, 20 h); source it or keep
    the flag.
-i. Header "for planners and project developers" against footer "educational tool, not planning advice": Nick to decide.
+i. Positioning (Nick, message 473): header "An interactive model of the South African power system for analysts, planners and
+   project developers."; footer "Results are indicative, and not investment or planning advice." in place of "All outputs indicative –
+   educational tool, not planning advice."
 j. "Hive's Coega project, the most advanced in Africa": source or drop; "Avg industrial 2026 ≈ R2.50/kWh" and "5% Eskom historical"
    escalation: basis (nominal or real) and source.
 k. "Leandra ... has yet to inject a single tonne": date it.
