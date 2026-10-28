@@ -9,7 +9,7 @@
 # its share of the year in service (harness/pathway/env_c6a.sh). Every run plans to NTCSA's 20 GWh unless it sets STD. s_gas2032 is
 # replaced by s_gas2030 (gas from 2030, as c6 had; 391 (c)); the strict and NEM standards only for c6e, s_nogas and s_nogas_dsl (391 (d)).
 # Order (message 428 (b)): c6e; the three IRP-schedule runs and c6e at IRP 2025's demand, then the IRP pair's build files and checks;
-# the four cost-of-capital cases and the IRP pair at each (message 469);
+# s_gas2035 (message 475); the four cost-of-capital cases and the IRP pair at each (message 469);
 # the wind cases and the IRP pair at each; the carbon cases and the IRP pair on each; the IRP pair at a high nuclear charge; the rest
 # of the set, short solves first; solves over 30 minutes last; restart counts. Two solves at a time (15 GB). Resumable: a finished
 # run or check is skipped; each run's LP cache is deleted once its check is written.
@@ -57,6 +57,10 @@ pair s_be7_c6e "NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350" c6e_irpdem "D
 [ -s $N/irp/pathway_irp2025_c6e.json ] || (OUTDIR=$H/out CENTRAL=c6e IRPDEM=c6e_irpdem BASEGAP=0 python3 -I pathway/irp2025/build_irp_c6.py $N/irp/pathway_irp2025_c6e.json >> $P 2>&1)
 irpcheck irp2025_c6e & irpcheck irp2025_c6e_irpdem & wait
 echo "$(date -u +%H:%M) IRP PAIR CHECKS DONE" >> $P
+# Message 475 (a): new gas from 2035 (GAS_FIRST=2035; diesel open-cycle allowed as in the central), early in the set. Report its
+# build, reliability by year (2032-2036 especially), system cost and CO2 against c6e.
+one s_gas2035_c6e "GAS_FIRST=2035"
+echo "$(date -u +%H:%M) GAS 2035 DONE" >> $P
 # Message 469: the cost-of-capital cases, each with the IRP build checked at the same rates (its cocCase copied from the run):
 # planning (one rate for all, 8%, the IRP convention), high (the same gaps on the IEA's 9.0% for solar), low (central less one
 # point), private (private and merchant finance for wind, solar and lithium; its premium an assumption until CEPA's Table 5.22 is read).
@@ -111,7 +115,7 @@ pair s_nogas_c6e "GAS_CAP=0 OCGD=0" s_std_strict_nogas_dsl_c6e "STD=strict GAS_C
 one s_std_nem_nogas_dsl_c6e "STD=nem GAS_CAP=0 OCGD=1"
 echo "$(date -u +%H:%M) STANDARDS DONE" >> $P
 python3 -I pathway/make_ret.py pathway/ret_counter.js pathcheck.js pathcheck_ret.gen.js >> $P 2>&1   # restart counts on this commit's own check
-for n in c6e null_c6e s_nogas_c6e s_gascapex25_c6e s_gas2030_c6e s_imp_c6e s_demlowflat_c6e s_demlowm1_c6e c6e_irpdem s_coalpractice_c6e s_rate48_c6e s_spotoil_c6e s_wearp75_c6e s_be6_c6e s_be7_c6e s_irpgas_c6e s_koeberg_winter_c6e s_ntcsa_both_c6e s_nogas_dsl_c6e s_std_strict_c6e s_std_strict_nogas_c6e s_std_strict_nogas_dsl_c6e s_std_nem_c6e s_std_nem_nogas_c6e s_std_nem_nogas_dsl_c6e s_carbontreasury_c6e s_carbonhold_c6e s_coalsustain_c6e; do
+for n in c6e s_gas2035_c6e null_c6e s_nogas_c6e s_gascapex25_c6e s_gas2030_c6e s_imp_c6e s_demlowflat_c6e s_demlowm1_c6e c6e_irpdem s_coalpractice_c6e s_rate48_c6e s_spotoil_c6e s_wearp75_c6e s_be6_c6e s_be7_c6e s_irpgas_c6e s_koeberg_winter_c6e s_ntcsa_both_c6e s_nogas_dsl_c6e s_std_strict_c6e s_std_strict_nogas_c6e s_std_strict_nogas_dsl_c6e s_std_nem_c6e s_std_nem_nogas_c6e s_std_nem_nogas_dsl_c6e s_carbontreasury_c6e s_carbonhold_c6e s_coalsustain_c6e; do
   [ -s out/pathway_$n.json ] && ret $n out/pathway_$n.json; done
 ret irp2025_c6e $N/irp/pathway_irp2025_c6e.json; ret irp2025_c6e_irpdem $N/irp/pathway_irp2025_c6e_irpdem.json
 echo "$(date -u +%H:%M) C6E SET DONE" >> $P
