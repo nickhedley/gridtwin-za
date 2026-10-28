@@ -13,7 +13,8 @@ const SENS=['null','s_irpgas','s_be6','s_be7','s_windlow','s_windhigh','s_carbon
   's_std_strict','s_std_nem','s_coalsustain','s_nogas','s_std_strict_nogas_dsl','s_std_nem_nogas_dsl','s_std_strict_nogas','s_std_nem_nogas',
   's_pvbw6','s_disc5','s_discirp','s_gas2032','s_gas2035_nodsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate']
   // s_pvbw6, s_disc5 and s_discirp ran beside c6c's chain only (462, 465, 466); the gas-2035 and cost-of-capital runs are c6e's (469, 475).
-  .filter(s=>['s_pvbw6','s_disc5','s_discirp'].includes(s) ? C==='c6c' : ['s_gas2032','s_gas2035_nodsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate'].includes(s) ? C!=='c6b' && C!=='c6c' : true);
+  // s_windlow is not in c6e's set (469: its capex backed out of BW5's tariff at 8% would count wind's finance twice).
+  .filter(s=>s==='s_windlow' ? C==='c6b'||C==='c6c' : ['s_pvbw6','s_disc5','s_discirp'].includes(s) ? C==='c6c' : ['s_gas2032','s_gas2035_nodsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate'].includes(s) ? C!=='c6b' && C!=='c6c' : true);
 const names=[C, `${C}_irpdem`, ...SENS.map(s=>`${s}_${C}`)];
 const prog=fs.existsSync(`${N}/progress.txt`)?fs.readFileSync(`${N}/progress.txt`,'utf8'):'';
 const why=n=>{ const m=prog.split('\n').filter(l=>l.includes(`NOT RUN ${n}:`)).pop(); if (m) return m.replace(/^.*NOT RUN [^:]*: /,'');
@@ -56,6 +57,20 @@ if (S[`s_disc5_${C}`]||S[`s_pvbw6_${C}`]||S[`s_discirp_${C}`]){
     console.log(`| ${short(n)} | ${yrs(r,b=>b.pv)} | ${yrs(r,b=>b.wind)} | ${yrs(r,b=>b.li)} | ${yrs(r,b=>b.ccgt+b.ocgtGas)} | ${f1(r.pv)} | ${r.co2Cum.toFixed(0)} | ${gap(r,irp)} |`); }
   console.log('\nEngine PV weights each year\'s cost at 8% in every row; the capital charges inside those costs are annuities at each run\'s own rate.'); }
 
+// 2d. Cost of capital cases (message 469): one rate for all (planning), high, low and private finance, beside the central
+// (each technology at its own state-backed rate), with the IRP build checked at the same rates.
+if (SENS.includes('s_cocplan')&&(S[`s_cocplan_${C}`]||S[`s_cochigh_${C}`]||S[`s_coclow_${C}`]||S[`s_cocprivate_${C}`])){
+  const gap=(o,irp)=>{ const i=sum(`${N}/irp`,irp); return i?sg(i.pv-o.pv):'not available'; };
+  const yrs=(r,f)=>[2030,2035,2040].map(y=>g(f(r.build[y]))).join(' / ');
+  console.log(`\n### Cost of capital cases, beside ${C} (each technology at its own state-backed rate)\n`);
+  console.log('| Run | Utility PV, GW 2030 / 2035 / 2040 | Wind | Lithium | Gas (CCGT and open-cycle on LNG) | Engine PV 2026–40, R bn | Against '+C+', R bn | CO2 2026–40, Mt | IRP gap in the same case, R bn |');
+  console.log('|---|---|---|---|---|---|---|---|---|');
+  for (const [n,irp,lab] of [[C,`irp2025_${C}`,`${C}, each technology at its own rate`],[`s_cocplan_${C}`,`irp2025_${C}_cocplan`,'s_cocplan, one rate for all, 8% real'],
+      [`s_cochigh_${C}`,`irp2025_${C}_cochigh`,'s_cochigh, high'],[`s_coclow_${C}`,`irp2025_${C}_coclow`,'s_coclow, low'],[`s_cocprivate_${C}`,`irp2025_${C}_cocprivate`,'s_cocprivate, private finance for wind, solar and lithium']]){
+    const r=S[n]; if (!r){ console.log(`| ${lab} | not yet available | | | | | | | |`); continue; }
+    console.log(`| ${lab} | ${yrs(r,b=>b.pv)} | ${yrs(r,b=>b.wind)} | ${yrs(r,b=>b.li)} | ${yrs(r,b=>b.ccgt+b.ocgtGas)} | ${f1(r.pv)} | ${n===C?'–':sg(r.pv-base.pv)} | ${r.co2Cum.toFixed(0)} | ${gap(r,irp)} |`); }
+  console.log('\nEngine PV weights each year\'s cost at 8% in every row; the capital charges inside those costs are annuities at each run\'s own rates.'); }
+
 // 2c. Gas timing (messages 475 and 477): reliability by year 2032-2036 and new diesel open-cycle, against the central.
 if (S[`s_gas2032_${C}`]||S[`s_gas2035_nodsl_${C}`]){
   console.log(`\n### Gas timing: mean unserved by year, 2032-2036, and new diesel open-cycle\n`);
@@ -66,7 +81,7 @@ if (S[`s_gas2032_${C}`]||S[`s_gas2035_nodsl_${C}`]){
     console.log(`| ${short(n)} | ${[2032,2033,2034,2035,2036].map(m).join(' / ')} | ${[2030,2035,2040].map(y=>g(r.build[y].ocgtDsl)).join(' / ')} | ${f1(r.pv)} | ${n===C?'–':sg(r.pv-base.pv)} | ${r.co2Cum.toFixed(0)} |`); } }
 
 // 3. The IRP 2025 build against the optimised plan in the same case (each IRP check beside its own run).
-const IRP=[['central demand',C,`irp2025_${C}`],['IRP 2025 demand',`${C}_irpdem`,`irp2025_${C}_irpdem`],['wind, central cost case',`s_windlow_${C}`,`irp2025_${C}_windlow`],
+const IRP=[['central demand',C,`irp2025_${C}`],['IRP 2025 demand',`${C}_irpdem`,`irp2025_${C}_irpdem`],...(SENS.includes('s_windlow')?[['wind, central cost case',`s_windlow_${C}`,`irp2025_${C}_windlow`]]:[]),
   ['wind, high cost case',`s_windhigh_${C}`,`irp2025_${C}_windhigh`],['carbon, Treasury path',`s_carbontreasury_${C}`,`irp2025_${C}_carbontreasury`],
   ['carbon, 2030 rate held',`s_carbonhold_${C}`,`irp2025_${C}_carbonhold`],['coal sustaining capital R500/kW-yr',`s_coalsustain_${C}`,`irp2025_${C}_coalsustain`],
   ...(SENS.includes('s_disc5')?[['all on construction cost, 8% real',`s_pvbw6_${C}`,`irp2025_${C}_pvbw6`],

@@ -1,4 +1,26 @@
-# GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 28 Oct 2026, 22:00 UTC)
+
+## Decisions of 28 Oct 2026, 23:24 SAST (user, messages 481, 482 and 483), in force
+
+- Cost of capital (481 (a)): the central keeps wind and solar on state-backed finance at 5.5% real; private finance stays a
+  sensitivity (s_cocprivate). The next note uses a blended public and private rate; sourcing the split (built capacity, not NERSA
+  registrations) and setting the blend is TODO 14kn.
+- Merges without Nick (481 (b)): the advisor may merge two pull requests if their checks pass. The c6e outputs PR: outputs folder
+  only (harness/pathway/c6e/), the progress file ending 'C6E SET DONE', and figures that match the log. The presets PR: suite counts
+  match main's, stored panels rewritten, the visible-text list reviewed by the advisor, no conflict.
+- Scope freeze (481 (c), kept by 482 (d)): no new runs or sensitivities before the pack goes out, only reruns of failed runs.
+  Anything new goes on TODO's after-the-note list.
+- The pack (482, replacing 480 (a) and (c) and 481 (d)): goes Friday 30 October 2026, about 14:00 SAST (the reviewer travels the
+  following week), on c6e; c6c's tables are not filled. REVIEWER_PACK.md on claude/c6a-results carries c6e's table shells, findings
+  list and cover note, every figure a placeholder filled by `BASE=c6e node pathway/tables/packfill.js out out/c6e ../REVIEWER_PACK.md`
+  from c6e's outputs, never typed. It goes with whatever c6e results are in by Thursday 29 October, 22:00 SAST; a missing result is
+  named, with when it follows. The coal part-load check (14kc) runs on c6e's 2026 as a check; if it moves a headline figure, Nick and
+  the advisor are told straight away.
+- The presets PR (483, replacing 482 (b)): in scope for Friday. Wednesday night: the 470, 471 and 473 items that do not depend on c6e
+  figures on a branch from main (28a), panels rewritten, full suite overnight in tracked pieces with nothing beside it (done on
+  claude/site-text, build 2026-10-29a). Thursday, once the c6e outputs PR is merged: preset captions and figures from c6e's outputs,
+  panels, suite, PR with the visible-text list; the advisor reviews and merges under 481 (b). If it is not merged by Friday 10:00
+  SAST, the pack links the site as it stands and the PR follows after the send.
 
 ## Reviewer pack: Google Doc copy (user, 28 Oct 2026, message 474)
 

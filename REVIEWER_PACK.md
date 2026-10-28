@@ -2,7 +2,29 @@
 
 This file is the master. A Google Doc copy is kept for reviewers: https://docs.google.com/document/d/1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc/edit (the advisor mirrors changed sections into it at each milestone; superseded sets stay in the repository only).
 
-Draft for an outside energy modeller, first written 14 October 2026 and refreshed with each central run since. This refresh, 27–28 October 2026, moves the pack to c6c, the headline set, on build 2026-10-27f. Its results are in section 4 (runs of 27–28 October 2026, outputs merged as PR #126); the IRP checks of the three cost sensitivities are marked 'to fill' until they finish. c6a's results, the previous central, are kept as the record and marked as such. c6b, the same set at a 4-hour coal minimum down time, is a sensitivity. Figures for c6, c5f and c5e are kept only as the record and marked as superseded. Prepared from the project's results log (RESULTS.md), its source register (SOURCES.md) and the validation/ folder.
+Draft for an outside energy modeller, first written 14 October 2026 and refreshed with each central run since. This refresh, 28–29 October 2026, moves the pack to c6e, the headline set, on build 2026-10-28a (cost of capital by technology; new gas from 2035). Its results fill section 4 from the outputs as they land; a figure not yet in reads 'not yet available'. c6c (build 2026-10-27f, one rate for all, solar on BW7's tariffs) is the comparison and the record of the previous central; c6b, c6c's set at a 4-hour coal minimum down time, is a sensitivity. Figures for c6, c5f and c5e are kept only as the record and marked as superseded. Prepared from the project's results log (RESULTS.md), its source register (SOURCES.md) and the validation/ folder.
+
+## Cover note (for the send of Friday 30 October 2026)
+
+This pack reviews c6e, the headline run set: the model's own least-cost plan for South Africa to 2040 against IRP 2025's build, on build <!--fill:site.build-->2026-10-28a<!--/fill--> of the page, with each technology carrying its own cost of capital for state-backed procurement (section 1, 'Cost basis'). It goes out with whatever c6e results were in by Thursday 29 October, 22:00 SAST; any result not yet in is named under 'Not yet in' at the end of section 4, with when it follows. Scope is frozen: no new runs or sensitivities before the send, only reruns of failed runs; anything new is on the after-the-note list (TODO). The site, gridtwinza.org, is linked as it stands at build 2026-10-28a; its preset captions and figures are updated from c6e after the send unless the presets pull request merges first.
+
+Findings (each figure from c6e's outputs through harness/pathway/tables/packfill.js; none typed):
+
+- Adequacy. c6e against NTCSA's two medium-term adequacy criteria: <!--fill:base.verdict-->…<!--/fill-->. Mean unserved energy at most <!--fill:base.maxmean-->…<!--/fill--> GWh in its worst year against 20 GWh (worst single run <!--fill:base.worst-->…<!--/fill--> GWh); open-cycle capacity factor at most <!--fill:base.ocmax-->…<!--/fill-->.
+- Cost and CO2. Engine present value 2026–40 R<!--fill:base.pv-->…<!--/fill-->bn; CO2 <!--fill:base.co2-->…<!--/fill--> Mt.
+- Against IRP 2025. The IRP build, run through the same engine on the same inputs: engine PV gap <!--fill:irp.gap-->…<!--/fill--> R bn (positive: the IRP build costs more), CO2 cut <!--fill:irp.cut-->…<!--/fill--> Mt (positive: the IRP build emits less); <!--fill:irp.pertonne-->…<!--/fill--> a tonne with the carbon tax taken out (<!--fill:irp.pertonnetax-->…<!--/fill--> with it). At the IRP's own demand: <!--fill:irp_irpdem.gap-->…<!--/fill--> R bn, <!--fill:irp_irpdem.cut-->…<!--/fill--> Mt, <!--fill:irp_irpdem.pertonne-->…<!--/fill--> a tonne. At nuclear's high capex (USD 12,000/kW) the gap is <!--fill:irp_nuc12000.gap-->…<!--/fill-->; at a 60-year nuclear life <!--fill:irp_nuclife60.gap-->…<!--/fill-->.
+- Gas timing. The central takes new gas from 2035 (the department's statement of 28 October 2026). With new gas from 2032 (s_gas2032) engine PV moves <!--fill:s_gas2032.dpv-->…<!--/fill--> R bn; the central without new diesel open-cycle (s_gas2035_nodsl) <!--fill:s_gas2035_nodsl.dpv-->…<!--/fill--> R bn, with mean unserved <!--fill:s_gas2035_nodsl.mean_2034-->…<!--/fill--> / <!--fill:s_gas2035_nodsl.mean_2035-->…<!--/fill--> / <!--fill:s_gas2035_nodsl.mean_2036-->…<!--/fill--> GWh in 2034–36 against the central's <!--fill:base.mean_2034-->…<!--/fill--> / <!--fill:base.mean_2035-->…<!--/fill--> / <!--fill:base.mean_2036-->…<!--/fill-->. New gas on LNG standing: <!--fill:base.gasmw_2035-->…<!--/fill--> MW in 2035 and <!--fill:base.gasmw_2040-->…<!--/fill--> MW in 2040, against the Section 34 determination's 5,000 MW to 2037.
+- Cost of capital. One rate for all at 8% (s_cocplan, the planning convention) moves engine PV <!--fill:s_cocplan.dpv-->…<!--/fill--> R bn and the IRP gap to <!--fill:irp_cocplan.gap-->…<!--/fill-->; private finance for wind, solar and lithium (s_cocprivate) <!--fill:s_cocprivate.dpv-->…<!--/fill--> R bn and <!--fill:irp_cocprivate.gap-->…<!--/fill-->; high <!--fill:s_cochigh.dpv-->…<!--/fill--> and low <!--fill:s_coclow.dpv-->…<!--/fill-->.
+- No new gas. Without new gas or new diesel open-cycle: <!--fill:s_nogas.verdict-->…<!--/fill-->. With new diesel open-cycle allowed: <!--fill:s_nogas_dsl.verdict-->…<!--/fill-->, engine PV <!--fill:s_nogas_dsl.dpv-->…<!--/fill--> R bn, CO2 <!--fill:s_nogas_dsl.co2-->…<!--/fill--> Mt.
+- Coal sustaining capital at R500/kW-yr (s_coalsustain): engine PV <!--fill:s_coalsustain.dpv-->…<!--/fill--> R bn; CO2 <!--fill:s_coalsustain.dco2-->…<!--/fill--> Mt against the central.
+- 2026 check. c6e's 2026 coal is <!--fill:base.coal2026-->…<!--/fill--> TWh at <!--fill:base.rate2026-->…<!--/fill--> t CO2/MWh against Eskom's FY2026 <!--fill:base.eskomrate-->…<!--/fill-->; its coal part-load factor <!--fill:base.partload-->…<!--/fill--> against the page's recorded <!--fill:base.partloadrec-->…<!--/fill--> (<!--fill:base.partloaddiff-->…<!--/fill--> percentage points; a check, not a headline figure, unless it moves one).
+
+Not yet in (as at the last fill; when each follows is added by hand beside it before the send):
+<!--fill:missing-->
+
+[not yet filled]
+
+<!--/fill-->
 
 ## What this is and how to read it
 
@@ -13,7 +35,7 @@ GridTwin ZA is a South African power-system model by Nick Hedley. It has two par
 
 The two run in a loop. The engine checks each year of the optimiser's plan against an adequacy target, and any year that fails adds stress windows to the next pass.
 
-The headline set reviewed here is c6c (section 4). It is built in four steps, each in its own reviewed pull request. c6 kept c5f's settings (c5e's, with rooftop at 1,200 MW a year from 2027, Msenge Emoyeni's 69 MW of wind in the base, s_constr2's floors as the committed minimums, and wheeled wind's load added back; RESULTS 'New central c5f') and changed three things (section 1, 'What c6 changes'):
+The headline set reviewed here is c6e (section 4). It is built in four steps, each in its own reviewed pull request. c6 kept c5f's settings (c5e's, with rooftop at 1,200 MW a year from 2027, Msenge Emoyeni's 69 MW of wind in the base, s_constr2's floors as the committed minimums, and wheeled wind's load added back; RESULTS 'New central c5f') and changed three things (section 1, 'What c6 changes'):
 
 - inputs from Eskom's FY2026 reports: coal fuel R553/MWh, nuclear fuel R109/MWh, imports R897/MWh, coal CO2 1.108 t/MWh sent out, hydro at its FY2023–26 mean, Avon and Dedisa at 268 GWh a year, rooftop R15,000/kW AC (PR A, build 2026-10-22e; RESULTS 'c6 PR A');
 - imports priced in the build optimiser, and the Cahora Bassa contract ending after 2030 in the central case (PR B, build 2026-10-23a; RESULTS 'c6 PR B');
@@ -21,7 +43,7 @@ The headline set reviewed here is c6c (section 4). It is built in four steps, ea
 
 c6a then started new gas from 2032 at the earliest, counted the 2026 fleet for its share of the year in service and put rooftop on 2025's basis (RESULTS 'c6a, the new central'). c6b priced onshore wind at BW6's compliant bids (R28,462/kW, the figure IRP 2025's Figure 9 uses), and rooftop at R10,500/kW DC, and added two carbon-path sensitivities (RESULTS 'c6b's two cost changes'). c6c sets a 24-hour minimum down time for every coal unit, recalibrates the practice floor to 0.715 so the 2026 replay still matches Eskom's measured midday minimum, and recalibrates the coal emission factor so the 2026 rate matches Eskom's FY2026 rate (sections 1 and 1b; RESULTS 'c6c: coal minimum down time 24 h as the central', 'The practice floor recalibrated to 0.715 with the 24-hour down time' and 'COAL_PARTLOAD_2026 re-recorded from Today 2026').
 
-c6a (build 2026-10-26b), c6 (build 2026-10-25a), c5f (build 2026-10-17g) and c5e (build 2026-10-16h) are superseded: their figures remain below only where marked. Sections 2 and 3 still report earlier engines, as each table says; their rerun on c6c's engine is listed in section 5's known failures and in the final note's open items.
+c6e (build 2026-10-28a) then gives each technology its own cost of capital for state-backed procurement, with interest during construction and solar on BW6's compliant construction cost (section 1, 'Cost basis'; RESULTS 'Cost of capital by technology'), and takes new gas from 2035. c6c (build 2026-10-27f), c6a (2026-10-26b), c6 (2026-10-25a), c5f (2026-10-17g) and c5e (2026-10-16h) are superseded: their figures remain below only where marked. Sections 2 and 3 still report earlier engines, as each table says; their rerun on c6e's engine is listed in section 5's known failures and in the final note's open items.
 
 How to read the pack:
 
@@ -353,9 +375,9 @@ Recorded caveats: one bus; one outage draw per week; perfect sight within each w
 
 ---
 
-## 4. c6c against IRP 2025, and the sensitivities
+## 4. c6e against IRP 2025, and the sensitivities
 
-The headline set is c6c (the author's decision, 27 Oct 2026): c6b's settings (BW6 wind bids, rooftop at R10,500/kW DC) with a 24-hour coal minimum down time, run in full on build 2026-10-27f (PR #122). c6b, the same set at UC_FLEET's 4-hour minimum down time, becomes the down-time sensitivity. Their results are below; c6a's are kept as the record.
+The headline set is c6e (the author's decision, 28 Oct 2026, messages 469 and 477): c6c's settings and run set on build 2026-10-28a, where each technology carries its own cost of capital for state-backed procurement (solar and wind 5.5%, lithium and pumped storage 6.8%, gas 8.0%, nuclear 8.5%, network 7.1%, real), interest during construction where costs are quoted before financing, solar on BW6's compliant construction cost, and new gas from 2035 (s_gas2032 keeps the earlier 2032). s_windlow is dropped (its capex, backed out of BW5's tariff at 8%, would count wind's finance twice); the cost-of-capital cases s_cocplan, s_cochigh, s_coclow and s_cocprivate replace c6c's s_pvbw6, s_disc5 and s_discirp, each with the IRP build checked at the same rates. c6c's results are kept below as the record of the previous central.
 
 The design, fixed before the runs (22–24 October):
 
@@ -365,7 +387,55 @@ The design, fixed before the runs (22–24 October):
 - Sensitivities (16 runs with the four above and c6's null): gas capex +25% (s_gascapex25); new gas from 2032 (s_gas2032); no new gas (s_nogas); imports to 2040 (s_imp); demand flat and falling 1% a year (s_demlow); and on coal, s_coalpractice, s_mindn24, s_rate48, s_spotoil and s_wearp75 (section 1b).
 - Reported: build by year against Table 1, engine present value 2026–40 and its components, CO2 by year, adequacy by year, and cost and CO2 for each sensitivity against c6.
 
-### c6c results (the headline set; build 2026-10-27f, PR #122: coal minimum down time 24 h, practice floor 0.715; run on acb2451, outputs merged as PR #126)
+### c6e results (the headline set; build 2026-10-28a, PR #127; chain harness/pathway/chain_c6e.sh)
+
+Filled by `BASE=c6e node pathway/tables/packfill.js out out/c6e ../REVIEWER_PACK.md` from the outputs (section 7); every figure between the fill markers is written by that script, none by hand. Runs the chain could not finish are under 'Not yet in'.
+
+c6e against NTCSA's two criteria: <!--fill:base.verdict-->…<!--/fill-->. Mean unserved energy at most <!--fill:base.maxmean-->…<!--/fill--> GWh against 20 GWh (worst single run <!--fill:base.worst-->…<!--/fill--> GWh); open-cycle capacity factor at most <!--fill:base.ocmax-->…<!--/fill-->. Engine PV 2026–40 R<!--fill:base.pv-->…<!--/fill-->bn, CO2 <!--fill:base.co2-->…<!--/fill--> Mt (2030 / 2035 / 2040: <!--fill:base.co2_2030-->…<!--/fill--> / <!--fill:base.co2_2035-->…<!--/fill--> / <!--fill:base.co2_2040-->…<!--/fill-->). Without new gas or new diesel open-cycle: <!--fill:s_nogas.verdict-->…<!--/fill-->; with new diesel open-cycle allowed: <!--fill:s_nogas_dsl.verdict-->…<!--/fill--> (engine PV <!--fill:s_nogas_dsl.dpv-->…<!--/fill--> R bn, CO2 <!--fill:s_nogas_dsl.co2-->…<!--/fill--> Mt). Planned to half the NEM standard, s_std_strict is over its own standard in: <!--fill:s_std_strict.overown-->…<!--/fill-->; s_std_nem: <!--fill:s_std_nem.overown-->…<!--/fill-->. Runs are reported as meeting the standard or not by their engine check; 'pass limit reached' in the run logs is the optimiser's loop cap, not a reliability failure.
+
+Runs against NTCSA's two criteria:
+<!--fill:table:Runs-->
+
+[not yet filled]
+
+<!--/fill-->
+Build standing, GW:
+<!--fill:table:Build standing-->
+
+[not yet filled]
+
+<!--/fill-->
+Cost of capital cases (message 469), each with the IRP build checked at the same rates:
+<!--fill:table:Cost of capital cases-->
+
+[not yet filled]
+
+<!--/fill-->
+Gas timing (messages 475 and 477): reliability by year 2032–36 and new diesel open-cycle, against the central:
+<!--fill:table:Gas timing-->
+
+[not yet filled]
+
+<!--/fill-->
+New gas against the Section 34 determination (5,000 MW of gas-to-power, 2026–2037): c6e builds <!--fill:base.gasmw_2035-->…<!--/fill--> MW of new gas (CCGT and open-cycle on LNG) by 2035 and <!--fill:base.gasmw_2040-->…<!--/fill--> MW by 2040 (c6c, new gas from 2032: 3,550 MW and 8,831 MW).
+
+The IRP 2025 build against the optimised plan, case by case (the IRP build checked on the same inputs as each run):
+<!--fill:table:IRP 2025 build-->
+
+[not yet filled]
+
+<!--/fill-->
+Nuclear's high cases: at USD 12,000/kW the gap is <!--fill:irp_nuc12000.gap-->…<!--/fill--> R bn at c6e's demand and <!--fill:irp_irpdem_nuc12000.gap-->…<!--/fill--> at the IRP's; at a 60-year nuclear life <!--fill:irp_nuclife60.gap-->…<!--/fill--> and <!--fill:irp_irpdem_nuclife60.gap-->…<!--/fill--> (the optimised plans build no nuclear, so they do not move).
+
+Cost per tonne of CO2 cut by the IRP 2025 build, carbon tax taken out because it is a transfer: <!--fill:irp.pertonne-->…<!--/fill--> at c6e's demand (<!--fill:irp.cut-->…<!--/fill--> Mt over 2026–40; <!--fill:irp.pertonnetax-->…<!--/fill--> with the tax) and <!--fill:irp_irpdem.pertonne-->…<!--/fill--> at the IRP's (<!--fill:irp_irpdem.cut-->…<!--/fill--> Mt). On the Treasury carbon path: <!--fill:irp_carbontreasury.pertonne-->…<!--/fill--> (gap <!--fill:irp_carbontreasury.gap-->…<!--/fill--> R bn, cut <!--fill:irp_carbontreasury.cut-->…<!--/fill--> Mt).
+
+Not yet in:
+<!--fill:missing-->
+
+[not yet filled]
+
+<!--/fill-->
+### c6c results (the previous central; build 2026-10-27f, PR #122: coal minimum down time 24 h, practice floor 0.715; run on acb2451, outputs merged as PR #126; the record)
 
 From `node pathway/tables/settables.js out out/c6c c6c c6b` (section 7). Runs the chain could not finish are listed under Not run, with the reason.
 
@@ -874,7 +944,7 @@ Known failures in the suite (build 2026-10-27f, PR #122, practice floor 0.715; a
 
 ---
 
-## 6. Four questions for the reviewer (written on c5e; to restate on c6c)
+## 6. Four questions for the reviewer (written on c5e; restated on c6e once section 4 is filled)
 
 Each can be answered from this pack in 30–40 minutes. Each is tied to a decision the model rests on.
 
@@ -916,16 +986,16 @@ Each can be answered from this pack in 30–40 minutes. Each is tied to a decisi
 
 What was run:
 
-- Build: c6c, BUILD_STAMP '2026-10-27f', PR #122, run on main at acb2451 (PR #122's merge commit). The c6b sensitivity ran on 2603be5 (build 2026-10-27e, PR #121, merged as 026e027 with an identical index.html).
-- Settings: harness/pathway/env_c6.sh, then harness/pathway/env_c6a.sh on top (c6b and c6c keep c6a's pathway settings; their cost and down-time changes are in index.html). Each run's own changes are on its line in harness/pathway/chain_c6c.sh (chain_c6b.sh for c6b).
+- Build: c6e, BUILD_STAMP '2026-10-28a', PR #127, run on main at f7921b7 (PR #127's merge commit). c6c ran on acb2451 (build 2026-10-27f, PR #122); the c6b sensitivity on 2603be5 (build 2026-10-27e, PR #121, merged as 026e027 with an identical index.html).
+- Settings: harness/pathway/env_c6.sh, then harness/pathway/env_c6a.sh on top, then GAS_FIRST=2035 in chain_c6e.sh (c6b, c6c and c6e keep c6a's pathway settings; their cost, down-time and cost-of-capital changes are in index.html). Each run's own changes are on its line in harness/pathway/chain_c6e.sh (chain_c6c.sh and chain_c6b.sh for the earlier sets).
 - Software: Node 22, Python 3 with highspy 1.15.1 (SOLVER=native), and in harness/ `npm install jsdom highs eslint` (jsdom 29.1.1, highs 1.15.3 used here).
 
 In order, from a clone at that commit:
 
 1. `cd harness && npm install jsdom highs eslint && pip install highspy && ln -s .. testroot`
 2. Optional: the suite (CLAUDE.md, 'Running the suite'), about 1–2 hours.
-3. `bash pathway/chain_c6c.sh` (and `chain_c6b.sh` on 2603be5 for the c6b sensitivity), started as a tracked background job in pieces under 2 hours (CLAUDE.md, 'Long runs'). Resumable: rerun it after an interruption and finished runs and checks are skipped. Progress in harness/out/c6c/progress.txt.
-4. Tables, from harness/: `node pathway/tables/settables.js out out/c6c c6c c6b` (every table in section 4: runs, build, the IRP gap by case, c6c against c6b, not run); or `BASE=c6c node pathway/tables/packtable.js out c6c null_c6c s_nogas_c6c ...` (results table) and `CENTRAL=c6c node pathway/tables/irptable.js out out/c6c/irp` (IRP comparison).
+3. `bash pathway/chain_c6e.sh` (chain_c6c.sh on acb2451 and chain_c6b.sh on 2603be5 for the earlier sets), started as a tracked background job in pieces under 2 hours (CLAUDE.md, 'Long runs'). Resumable: rerun it after an interruption and finished runs and checks are skipped. Progress in harness/out/c6e/progress.txt; its last line is 'C6E SET DONE' when complete.
+4. Tables, from harness/: `node pathway/tables/settables.js out out/c6e c6e c6c` (every table in section 4: runs, build, cost of capital cases, gas timing, the IRP gap by case, c6e against c6c, not run), and `BASE=c6e node pathway/tables/packfill.js out out/c6e ../REVIEWER_PACK.md` writes every figure of this pack that comes from the runs into its fill markers (`--dry` to preview; `--strip` for a copy without markers for the Google Doc).
 
 Run times, from c6a's set on the project's cloud container (two solves at a time, about 15 GB of memory):
 

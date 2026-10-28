@@ -562,6 +562,20 @@ capex from BW7's tariffs (about 5% real over 30 years implied), everything else 
 solar 25 years); s_pvbw6_c6c and s_disc5_c6c (every technology on construction cost at 8% and 5%; message 466) bracket it, with
 s_discirp_c6c at IRP 2025's 11.3% (pack limitation 32). 30-year lives for wind and solar go with it (BLD_LIFE is a page constant, not a harness setting).
 
+14kn. Blended public and private cost of capital for the next note (user, 28 Oct 2026, message 481 (a)). Decision: the central keeps
+wind and solar on state-backed finance at 5.5% real; private finance (s_cocprivate, CEPA's premiums) stays a sensitivity for this
+pack. The next note uses a blended rate per technology: source the public/private split of built capacity (REIPPPP and BESIPPPP
+awards against private wheeled and embedded plant in service, from the project register and Eskom's connected-capacity lines; not
+NERSA registrations, which count intent), set the blend from it, and record both in SOURCES beside 'Cost of capital by technology'.
+
+14ko. Reviewer pack schedule and scope (user, 28 Oct 2026, messages 481 (b)-(d), 482 and 483; HANDOVER 'Decisions of 28 Oct 2026').
+The pack goes Friday 30 October 2026, about 14:00 SAST, on c6e, with whatever c6e results are in by Thursday 22:00 SAST; any
+missing result is named with when it follows (packfill.js's 'Not yet in'). Scope frozen: no new runs or sensitivities before the
+send, only reruns of failed runs; anything new goes on this list under 'after the note'. The advisor may merge the c6e outputs PR
+and the presets PR without Nick when their checks pass (the conditions in HANDOVER). Thursday: preset captions and figures from
+c6e's outputs, panels, suite, PR with the visible-text list; if not merged by Friday 10:00 SAST the pack links the site as it stands.
+Still to restate on c6e once section 4 is filled: the pack's section 6 questions (written on c5e).
+
 14kg. 'Strategy savings' demand case, after the note (user, 28 Oct 2026, message 444 (a)), for the consultation submission on the
 National Energy Efficiency Strategy 2026-2035: the pathway at demand reduced by the strategy's 2035 savings (132 PJ: industry 40.7,
 transport 43.3, commercial and public 34.8, residential 13.3 PJ), with the electricity share of each sector's savings estimated by

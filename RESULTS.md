@@ -18222,7 +18222,7 @@ Settings. c6c's chain (harness/pathway/chain_c6c.sh) on acb2451 (build 2026-10-2
 harness/pathway/c6c/. Tables from `node pathway/tables/settables.js out out/c6c c6c c6b` (pack branch's settables.js, fixed below),
 28 Oct 2026, about 21:45 UTC; each run's engine check is twelve weather years by ten outage draws, judged on the mean against
 20 GWh. The three cost runs (s_pvbw6, s_disc5, s_discirp) are in RESULTS 'Costs on the latest market evidence per technology';
-their IRP checks are running (tracked job, out/c6c/irp in the pvbw6 worktree).
+their IRP checks were started as a tracked job (out/c6c/irp in the pvbw6 worktree) and stopped by that job's ID at 21:35 UTC under message 482 (c6e replaces c6c in the pack; the c6c tables are not filled further), with one of nine check files written (pathcheck_irp2025_c6c_pvbw6_a); the three IRP gaps stay unfilled.
 
 | Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV 2026–40, R bn | Against c6c, R bn | CO2 2026–40, Mt | CO2 2030 / 2035 / 2040, Mt |
 |---|---|---|---|---|---|---|---|---|
