@@ -57,7 +57,8 @@ chain_c6e.sh. Progress, one line per event: harness/out/c6e/progress.txt.
 ## 4. The run order (message 428 (b)), already in the script
 
 1. c6e central; s_irpgas, s_be6, s_be7 and c6e at IRP 2025's demand; then the IRP pair's build files and checks.
-1a. s_gas2035 (message 475): new gas from 2035, one solve. Progress logs GAS 2035 DONE.
+1a. s_gas2035 and s_gas2035_dsl (message 475): new gas from 2035, without and with new diesel open-cycle before then; two solves
+   at once. Progress logs GAS 2035 DONE.
 1b. The four cost-of-capital cases (COC=planning, high, low, private), two solves at a time, then the IRP build checked at each
    (out/c6e/irp/pathway_irp2025_c6e_coc*.json). Progress logs COST OF CAPITAL CASES DONE.
 2. The high wind cost case (s_windhigh) and the IRP pair at it; s_windlow is not run.
@@ -88,7 +89,7 @@ From harness/:
     node pathway/tables/packtable.js out c6e null_c6e s_nogas_c6e s_nogas_dsl_c6e s_gascapex25_c6e s_gas2030_c6e s_imp_c6e \
       s_demlowflat_c6e s_demlowm1_c6e s_coalpractice_c6e s_rate48_c6e s_spotoil_c6e s_wearp75_c6e \
       s_koeberg_winter_c6e s_ntcsa_both_c6e s_windhigh_c6e s_carbontreasury_c6e s_carbonhold_c6e s_coalsustain_c6e \
-      s_gas2035_c6e s_cocplan_c6e s_cochigh_c6e s_coclow_c6e s_cocprivate_c6e s_std_strict_c6e s_std_nem_c6e s_std_strict_nogas_dsl_c6e s_std_nem_nogas_dsl_c6e > out/c6e/packtable.md
+      s_gas2035_c6e s_gas2035_dsl_c6e s_cocplan_c6e s_cochigh_c6e s_coclow_c6e s_cocprivate_c6e s_std_strict_c6e s_std_nem_c6e s_std_strict_nogas_dsl_c6e s_std_nem_nogas_dsl_c6e > out/c6e/packtable.md
     CENTRAL=c6e node pathway/tables/irptable.js out out/c6e/irp > out/c6e/irptable.md
     node pathway/tables/summ.js out c6e > out/c6e/summ_c6e.txt
     node pathway/tables/settables.js out out/c6e c6e c6c > out/c6e/tables_c6e.md   # every table (the settables.js from #125 or later)
