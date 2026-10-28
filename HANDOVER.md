@@ -16,6 +16,10 @@
   from c6e's outputs, never typed. It goes with whatever c6e results are in by Thursday 29 October, 22:00 SAST; a missing result is
   named, with when it follows. The coal part-load check (14kc) runs on c6e's 2026 as a check; if it moves a headline figure, Nick and
   the advisor are told straight away.
+- Message 484 (28 Oct 2026, about 00:10 SAST on the 29th): (1) part-load, option (a): 1.0324 stays for this pack, the pack states
+  the check, re-record from c6e's 2026 in the first page build after the send (TODO 14kp). (2) The Google Doc: the advisor mirrors
+  it after Nick's read on Friday morning; Claude does not touch it. (3) The c6e chain started 23:10 SAST on f7921b7 (PID 284 in the
+  run session), the central first; the advisor passes the last line of harness/out/c6e/progress.txt each morning.
 - The presets PR (483, replacing 482 (b)): in scope for Friday. Wednesday night: the 470, 471 and 473 items that do not depend on c6e
   figures on a branch from main (28a), panels rewritten, full suite overnight in tracked pieces with nothing beside it (done on
   claude/site-text, build 2026-10-29a). Thursday, once the c6e outputs PR is merged: preset captions and figures from c6e's outputs,

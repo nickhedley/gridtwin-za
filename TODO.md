@@ -537,6 +537,9 @@ recheck the floor's calibration on the same statistic; any later change to coal 
 part-load mean from c6c's 2026 and report the difference; if it is over 0.1 percentage point, say so before any pack table uses
 c6c's CO2. Done 28 Oct 2026 (message 480 (b); RESULTS 'COAL_PARTLOAD_2026 against c6c's 2026'): c6c's 2026 part-load mean is
 1.0337 against the recorded 1.0324, +0.13 percentage points, over the threshold; flagged, constant unchanged pending Nick's decision.
+Decision (user, 28 Oct 2026, message 484 (1)): option (a). 1.0324 stays as recorded for this pack; the pack states the check (c6c's
+2026 gives 1.0337; re-recording would lower emisCoal from 1.074 to 1.072 t/MWh and coal CO2 by about 0.2% in every run). Re-record
+it from c6e's 2026 in the first page build after the send (TODO 14kp, the first after-the-note page change).
 
 14kd. Gas IPP briefing postponed (user, 28 Oct 2026, message 454 (b)): the government briefing on the Gas IPP Procurement Programme
 set for Wed 28 Oct 2026, 09:00, was postponed with no new date. s_gascommit is not run for the pack (its script stays on main for
@@ -575,6 +578,11 @@ send, only reruns of failed runs; anything new goes on this list under 'after th
 and the presets PR without Nick when their checks pass (the conditions in HANDOVER). Thursday: preset captions and figures from
 c6e's outputs, panels, suite, PR with the visible-text list; if not merged by Friday 10:00 SAST the pack links the site as it stands.
 Still to restate on c6e once section 4 is filled: the pack's section 6 questions (written on c5e).
+
+14kp. First after-the-note page change (user, 28 Oct 2026, message 484 (1)): re-record COAL_PARTLOAD_2026 from c6e's 2026
+(harness/pathway/partload_check.js on c6e's engine check, the documented central-run method; 1.0324 now, from Today 2026 on 27f).
+emisCoal follows from it (Eskom's FY2026 rate over the constant), so the page, the stored panels and the suite change with it; record
+the before and after in RESULTS with the run it was taken from. Not before the pack goes on 30 Oct 2026.
 
 14kg. 'Strategy savings' demand case, after the note (user, 28 Oct 2026, message 444 (a)), for the consultation submission on the
 National Energy Efficiency Strategy 2026-2035: the pathway at demand reduced by the strategy's 2035 savings (132 PJ: industry 40.7,
