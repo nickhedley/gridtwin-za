@@ -403,6 +403,20 @@ allocation for power by 36%, SOURCES 'Context for the pack, 26 Oct 2026'). Repor
   applications from June 2026) and the GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027; as
   reported, no original found yet).
 
+14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
+build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
+source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
+Megaflex rates on a stated load shape, or keep it as a labelled default); the wheeling R1.50 and grid-sale R0.55 defaults have no
+recorded source either; (2) the rooftop tab's escalation options, 3, 5 and 8% a year, discounted at 10%: real or nominal is not
+recorded, and 'Eskom historical' had no source (Eskom's nominal increases since 2008 were far above 5%); state the basis and pair
+it with a matching discount rate; (3) the synchronous floor, 6 GW (SYNC_MIN_MW), 'about 15% of peak': no South African source
+(RESULTS, the inertia limitation entry); NTCSA's system-strength or inertia requirement if published, else keep it labelled.
+
+14km. Re-measure the engine against the single-node PyPSA unit-commitment optimum (message 470 (a)) on the presets PR's build: the
+page quotes 1.1-3.5% in three ordinary weeks and 26% in the 2040 stress week, measured on build 2026-10-14r, before PR C's coal
+rules and the 24-hour down time; the page now dates the figures by that build. Several hours; after the note if the presets PR is
+short of time.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?

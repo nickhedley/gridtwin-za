@@ -17843,3 +17843,27 @@ off-peak check), so node checks 974/996. New: validate_bids 7/7. validate_stored
 86/86 with no 'not used' line; validate_worker 38/38 after the engine worker was given the cost-of-capital functions (it failed on
 its first preset without them; message 478: the stored panels were rewritten after that fix, as the fingerprint covers the page's
 inline scripts).
+
+### Site text on build 2026-10-29a: the 2025 wind note subtracted today's Eskom wind line, not 2025's; the rest is wording (user, 28 Oct 2026, messages 470, 471 and 473; branch claude/site-text, no PR yet)
+
+Wind, validation panel, '2025, as modelled' against Ember: the note printed "-243 MW of privately wheeled wind". The preset's
+3,900 MW is the 2025 Eskom-visible wind plus that year's private wheeled wind (its comment), but the note subtracted
+ESKOM_WIND_LINE_MW, today's line (4,142.6 MW, Week 32 2026). The 2025 line, from Eskom data (ESK19679 'Wind Installed Capacity',
+mean of the 8,760 hourly rows of calendar 2025; our averaging, not Eskom's), is 3,642.2 MW, so the run carries 258 MW of private
+wheeled wind. Added as ESKOM_WIND_LINE_2025_MW. The line's year-end values in the same series: 2024 3,442.6, 2025 3,862.6, 2026
+4,142.6 MW. The engine does not read either constant; no result moves.
+
+Wording only, no engine change (index.html, commit be26b56): the price-duration tooltip's first and last points read 'Highest
+hour' and 'Lowest hour' (was 'Top 0% of hours'); the CCS panel names its checkbox (was 'check the box in the ... box'); the CCS
+note says capture is a fleet average (the engine's cost and emissions factors are share-weighted over all coal; commitment is
+by unit); the storage chart counts pumped storage and batteries together and the lithium slider says it counts batteries only;
+the storage-price caveat appears once, in the price-setting panel; SAWEM replaces 'no wholesale market' in the prices panel;
+GCCA is NTCSA's; Hive's superlative dropped; Leandra dated (as of August 2026); the tutorial lines of message 471 (l) cut or
+stated plainly; 7 of the 67 'not' and 'rather than' contrasts trimmed (the rest carry scope or definitions); header and footer per
+message 473; the PyPSA unit-commitment comparison dated by its build (14r; re-measure, TODO 14km). Labelled as assumptions, no
+basis found: the pre-feasibility R2.50/kWh, the rooftop escalation options (were '5% Eskom historical'), the 6 GW synchronous
+floor (were 'Eskom's historical practice'); TODO 14kl. Pumped storage R1.40/kWh keeps its 'no published source' flag (Meridian's
+review is the candidate; its PDF does not open here).
+
+validate_public_text: ten new patterns (messages 470 (d) and 471 (n)); 32/32 on this build, 22/32 on main (28a), each new
+pattern failing there on the text it was written for.
