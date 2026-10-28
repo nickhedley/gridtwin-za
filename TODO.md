@@ -537,6 +537,14 @@ recheck the floor's calibration on the same statistic; any later change to coal 
 part-load mean from c6c's 2026 and report the difference; if it is over 0.1 percentage point, say so before any pack table uses
 c6c's CO2.
 
+14kd. Gas IPP briefing postponed (user, 28 Oct 2026, message 454 (b)): the government briefing on the Gas IPP Procurement Programme
+set for Wed 28 Oct 2026, 09:00, was postponed with no new date. s_gascommit is not run for the pack (its script stays on main for
+later). The pack is unchanged for now: no source has been read. A web search (28 Oct 2026) found one press report, Green Building
+Africa, 28 Oct 2026, 'Ramokgopa postpones gas power procurement programme briefing' (greenbuildingafrica.co.za), which reports the
+department announced it on social media; this container cannot open .co.za pages, so it was not read. Once the article, a
+department or IPP Office notice is read: one line beside the gas-from-2032 assumption in the pack, and the three '[Briefing: one
+sentence to follow.]' placeholders in section 4 replaced with it (or removed if no source is confirmed before the pack goes out).
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
