@@ -1974,3 +1974,21 @@ confirm scope, AC or DC, and whether the figure is total capex or the financing 
                          114 MW: R1.8bn reported at financial close (Engineering News, 25 Feb 2025) and R5bn capex in a later
                          update (Engineering News, 2 Oct 2026); scopes differ, unresolved. For comparison (January 2026 rands):
                          BW6 tracker bids R16,786/kW, IRP 2025 Figure 9 R16,785-21,101/kW, the central's BW7-implied R10,998/kW.
+
+BW7 solar as the reference (user, 28 Oct 2026, message 457; solar only, wind stays on BW6 as BW7 awarded no wind). Three points, in
+January 2026 rands, on the central's basis (8% real, 25 years, fixed O&M R287/kW-yr, new tracking solar's run capacity factor 28.6%):
+                         Lower (bid tariff): the first eight BW7 awards (1,760 MW, DMRE preferred bidders list, Dec 2024, as
+                         held in BW7_SOLAR_AWARDS) average R461.15/MWh MW-weighted, the "average bid tariff R0.46/kWh" of Green
+                         Building Africa, 'Eight solar projects awarded preferred bidder status in REIPPPP BW 7', and Engineering
+                         News, 6 Jan 2025. Price base date not stated in the DMRE lists; no IPP Office or DBSA note giving it was
+                         found (web search, 28 Oct 2026); the model takes January 2024 (RFP issued 14 Dec 2023, bids due Aug
+                         2024), so x1.0681 to R492.6/MWh and an implied capex of about R10,100/kW, R0.49/kWh.
+                         High (disclosed investment): R31.4bn for the same 1,760 MW (department statement, as reported in both
+                         articles), R17,841/kW, taken as early-2025 rands, x1.035 to about R18,470/kW, about R0.81/kWh; like
+                         wind's disclosed investment values, it may include connection, development and financing costs. The
+                         later 890 MW tranche reported R16bn, about R18,000/kW (SAnews, 17 Dec 2025, as found by search).
+                         Central (compliant bid capex): no BW7 bid capex has been published by the IPP Office (searched 28 Oct
+                         2026), so there is no BW7 central point; the nearest published compliant-bid figure is BW6's tracker
+                         bids, R16,786/kW, about R0.74/kWh.
+                         The solar central now: R10,998/kW, R0.53/kWh, backed out of all 18 BW7 awards' MW-weighted tariff
+                         (R492.53/MWh over 3,940 MW), so it sits near the lower point.
