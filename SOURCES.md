@@ -1986,7 +1986,7 @@ January 2026 rands, on the central's basis (8% real, 25 years, fixed O&M R287/kW
                          High (disclosed investment): R31.4bn for the same 1,760 MW (department statement, as reported in both
                          articles), R17,841/kW, taken as early-2025 rands, x1.035 to about R18,470/kW, about R0.81/kWh; like
                          wind's disclosed investment values, it may include connection, development and financing costs. The
-                         later 890 MW tranche reported R16bn, about R18,000/kW (SAnews, 17 Dec 2025, as found by search).
+                         later 890 MW tranche reported R16bn, about R18,000/kW (allAfrica, "Ramokgopa Announces 890mw Solar Boost", 17 Dec 2025, as summarised by a web search, not read).
                          Central (compliant bid capex): no BW7 bid capex has been published by the IPP Office (searched 28 Oct
                          2026), so there is no BW7 central point; the nearest published compliant-bid figure is BW6's tracker
                          bids, R16,786/kW, about R0.74/kWh.
