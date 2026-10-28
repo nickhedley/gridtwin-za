@@ -3,7 +3,8 @@
 For the run session on nickhedley/gridtwin-za that ran c6c. Let the c6c set finish and open its outputs PR first (c6c is the
 comparison and fallback); then run c6e on main once Nick merges the cost-of-capital PR (build 2026-10-28a: each technology at its
 own cost of capital for state-backed procurement, interest during construction where costs are quoted before financing, solar on
-BW6's compliant construction cost; everything else as c6c). c6e is c6c's settings and run set on that page, rerun in full, plus four
+BW6's compliant construction cost; new gas from 2035, message 477: the department's statement of 28 Oct 2026 that Gas IPP bid
+window 1 appointed no preferred bidders; everything else as c6c). c6e is c6c's settings and run set on that page, rerun in full, plus four
 cost-of-capital cases with the IRP build checked at each, and nuclear at its high capex and at a 60-year life. s_windlow is not run
 (its capex is backed out of BW5's tariff at 8% and would count wind's finance twice). The pack, RESULTS and the analysis stay with the
 session that wrote this brief.
@@ -57,8 +58,8 @@ chain_c6e.sh. Progress, one line per event: harness/out/c6e/progress.txt.
 ## 4. The run order (message 428 (b)), already in the script
 
 1. c6e central; s_irpgas, s_be6, s_be7 and c6e at IRP 2025's demand; then the IRP pair's build files and checks.
-1a. s_gas2035 and s_gas2035_dsl (message 475): new gas from 2035, without and with new diesel open-cycle before then; two solves
-   at once. Progress logs GAS 2035 DONE.
+1a. s_gas2032 (new gas from 2032, the old central) and s_gas2035_nodsl (the central without new diesel open-cycle) (messages 475,
+   477); two solves at once. Progress logs GAS TIMING DONE.
 1b. The four cost-of-capital cases (COC=planning, high, low, private), two solves at a time, then the IRP build checked at each
    (out/c6e/irp/pathway_irp2025_c6e_coc*.json). Progress logs COST OF CAPITAL CASES DONE.
 2. The high wind cost case (s_windhigh) and the IRP pair at it; s_windlow is not run.
@@ -89,7 +90,7 @@ From harness/:
     node pathway/tables/packtable.js out c6e null_c6e s_nogas_c6e s_nogas_dsl_c6e s_gascapex25_c6e s_gas2030_c6e s_imp_c6e \
       s_demlowflat_c6e s_demlowm1_c6e s_coalpractice_c6e s_rate48_c6e s_spotoil_c6e s_wearp75_c6e \
       s_koeberg_winter_c6e s_ntcsa_both_c6e s_windhigh_c6e s_carbontreasury_c6e s_carbonhold_c6e s_coalsustain_c6e \
-      s_gas2035_c6e s_gas2035_dsl_c6e s_cocplan_c6e s_cochigh_c6e s_coclow_c6e s_cocprivate_c6e s_std_strict_c6e s_std_nem_c6e s_std_strict_nogas_dsl_c6e s_std_nem_nogas_dsl_c6e > out/c6e/packtable.md
+      s_gas2032_c6e s_gas2035_nodsl_c6e s_cocplan_c6e s_cochigh_c6e s_coclow_c6e s_cocprivate_c6e s_std_strict_c6e s_std_nem_c6e s_std_strict_nogas_dsl_c6e s_std_nem_nogas_dsl_c6e > out/c6e/packtable.md
     CENTRAL=c6e node pathway/tables/irptable.js out out/c6e/irp > out/c6e/irptable.md
     node pathway/tables/summ.js out c6e > out/c6e/summ_c6e.txt
     node pathway/tables/settables.js out out/c6e c6e c6c > out/c6e/tables_c6e.md   # every table (the settables.js from #125 or later)

@@ -11,9 +11,9 @@ if (!C){ console.error('usage: node pathway/tables/settables.js <run folder> <se
 const SENS=['null','s_irpgas','s_be6','s_be7','s_windlow','s_windhigh','s_carbontreasury','s_carbonhold','s_gascapex25','s_gas2030','s_imp',
   's_demlowflat','s_demlowm1','s_coalpractice','s_rate48','s_spotoil','s_wearp75','s_koeberg_winter','s_ntcsa_both','s_nogas_dsl',
   's_std_strict','s_std_nem','s_coalsustain','s_nogas','s_std_strict_nogas_dsl','s_std_nem_nogas_dsl','s_std_strict_nogas','s_std_nem_nogas',
-  's_pvbw6','s_disc5','s_discirp','s_gas2035','s_gas2035_dsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate']
+  's_pvbw6','s_disc5','s_discirp','s_gas2032','s_gas2035_nodsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate']
   // s_pvbw6, s_disc5 and s_discirp ran beside c6c's chain only (462, 465, 466); the gas-2035 and cost-of-capital runs are c6e's (469, 475).
-  .filter(s=>['s_pvbw6','s_disc5','s_discirp'].includes(s) ? C==='c6c' : ['s_gas2035','s_gas2035_dsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate'].includes(s) ? C!=='c6b' && C!=='c6c' : true);
+  .filter(s=>['s_pvbw6','s_disc5','s_discirp'].includes(s) ? C==='c6c' : ['s_gas2032','s_gas2035_nodsl','s_cocplan','s_cochigh','s_coclow','s_cocprivate'].includes(s) ? C!=='c6b' && C!=='c6c' : true);
 const names=[C, `${C}_irpdem`, ...SENS.map(s=>`${s}_${C}`)];
 const prog=fs.existsSync(`${N}/progress.txt`)?fs.readFileSync(`${N}/progress.txt`,'utf8'):'';
 const why=n=>{ const m=prog.split('\n').filter(l=>l.includes(`NOT RUN ${n}:`)).pop(); if (m) return m.replace(/^.*NOT RUN [^:]*: /,'');
@@ -55,6 +55,15 @@ if (S[`s_disc5_${C}`]||S[`s_pvbw6_${C}`]||S[`s_discirp_${C}`]){
   for (const [n,irp] of [[`s_discirp_${C}`,`irp2025_${C}_discirp`],[`s_pvbw6_${C}`,`irp2025_${C}_pvbw6`],[C,`irp2025_${C}`],[`s_disc5_${C}`,`irp2025_${C}_disc5`]]){ const r=S[n]; if (!r) continue;
     console.log(`| ${short(n)} | ${yrs(r,b=>b.pv)} | ${yrs(r,b=>b.wind)} | ${yrs(r,b=>b.li)} | ${yrs(r,b=>b.ccgt+b.ocgtGas)} | ${f1(r.pv)} | ${r.co2Cum.toFixed(0)} | ${gap(r,irp)} |`); }
   console.log('\nEngine PV weights each year\'s cost at 8% in every row; the capital charges inside those costs are annuities at each run\'s own rate.'); }
+
+// 2c. Gas timing (messages 475 and 477): reliability by year 2032-2036 and new diesel open-cycle, against the central.
+if (S[`s_gas2032_${C}`]||S[`s_gas2035_nodsl_${C}`]){
+  console.log(`\n### Gas timing: mean unserved by year, 2032-2036, and new diesel open-cycle\n`);
+  console.log('| Run | Mean unserved 2032 / 2033 / 2034 / 2035 / 2036, GWh | Open-cycle diesel standing 2030 / 2035 / 2040, GW | Engine PV 2026–40, R bn | Against '+C+', R bn | CO2 2026–40, Mt |');
+  console.log('|---|---|---|---|---|---|');
+  for (const n of [C, `s_gas2032_${C}`, `s_gas2035_nodsl_${C}`, `s_gas2030_${C}`]){ const r=S[n]; if (!r) continue;
+    const m=y=>{ const x=r.rows.find(q=>q.y===y); return x?x.mean.toFixed(1):'–'; };
+    console.log(`| ${short(n)} | ${[2032,2033,2034,2035,2036].map(m).join(' / ')} | ${[2030,2035,2040].map(y=>g(r.build[y].ocgtDsl)).join(' / ')} | ${f1(r.pv)} | ${n===C?'–':sg(r.pv-base.pv)} | ${r.co2Cum.toFixed(0)} |`); } }
 
 // 3. The IRP 2025 build against the optimised plan in the same case (each IRP check beside its own run).
 const IRP=[['central demand',C,`irp2025_${C}`],['IRP 2025 demand',`${C}_irpdem`,`irp2025_${C}_irpdem`],['wind, central cost case',`s_windlow_${C}`,`irp2025_${C}_windlow`],
