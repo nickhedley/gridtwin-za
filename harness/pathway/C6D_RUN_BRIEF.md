@@ -1,4 +1,7 @@
-# Brief: run the c6d set (message 458)
+# Brief: run the c6d set (message 458) – withdrawn, do not run (message 462)
+
+Withdrawn (user, 28 Oct 2026, message 462): the solar central stays on BW7's awarded tariffs, c6c stays the headline set, and
+c6d is not run. Kept for the record only.
 
 For the run session on nickhedley/gridtwin-za that ran c6c. Let the c6c set finish and open its outputs PR first (c6c is now the
 low-solar-cost sensitivity); then run c6d on main once Nick merges the solar-cost PR (build 2026-10-27g: new utility solar costed

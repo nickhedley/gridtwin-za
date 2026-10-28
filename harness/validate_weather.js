@@ -261,12 +261,11 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
   // full cycle a day, per MWh discharged with charging not costed, and new diesel open-cycle at the 10% reference capacity
   // factor plus fuel, variable O&M and carbon at the compliance rate (RESULTS 'LCOE anchors on reference parameters').
   // Wind's capex follows the central wind case as the page's anchor does (user, 27 Oct 2026, message 408 (a)): the tariff-derived
-  // capex when the central is the case keyed 'central', else that case's own (BW6's compliant bids from c6b). Solar likewise from
-  // c6d (user, 28 Oct 2026, message 458): tariff-derived for the cases keyed 'central' or 'low', else that case's own capex.
+  // capex when the central is the case keyed 'central', else that case's own (BW6's compliant bids from c6b).
   {
     const a = probe(`const runcf = FIXED.bldTariffCfBasis === 'run';
       return { r: BLD_DISC_CENTRAL, L: BLD_LIFE, F: BLD_FOM, share: BLD_FOM_BATT_SHARE, bh: BATT_COST_HOURS,
-        cw: (FIXED.bldWindCase === 'central' ? BLD_COST[runcf ? 'wind_runcf' : 'wind'] : BLD_COST['wind_' + FIXED.bldWindCase]).c2026, cp: ((FIXED.bldPvCase === 'central' || FIXED.bldPvCase === 'low') ? BLD_COST[runcf ? 'pvtrk_runcf' : 'pvtrk'] : BLD_COST['pvtrk_' + FIXED.bldPvCase]).c2026,
+        cw: (FIXED.bldWindCase === 'central' ? BLD_COST[runcf ? 'wind_runcf' : 'wind'] : BLD_COST['wind_' + FIXED.bldWindCase]).c2026, cp: BLD_COST[runcf ? 'pvtrk_runcf' : 'pvtrk'].c2026,
         cb: BLD_COST.batt.c2026, cr: BLD_COST.rooftop.c2026, cc: BLD_COST.ccgt.c2026, ct: EIA_AEO2023_CT_KW, ccc: EIA_AEO2023_CC_KW,
         cfW: NEW_WIND_CF_12Y, cfP: NEW_PVTRK_CF_12Y, cyc: LI_REF_CYCLES, cfR: FIXED_PV_CF_12Y * FIXED.rooftopDerate, cfD: DSL_REF_CF,
         fuelD: FIXED.costDiesel, vomD: FIXED.vomDiesel, emD: FIXED.emisDiesel, tax: FIXED.carbonTaxRPerT,

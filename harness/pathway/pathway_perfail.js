@@ -310,7 +310,7 @@ let ROOF_STEP27=0; const ROOT='testroot', OUT=process.env.OUT||'pathway.json', G
 const RC_FROM = process.env.RC_FROM !== undefined && process.env.RC_FROM !== '' ? +process.env.RC_FROM : 2029;
  // WINDMOD / WIND_CASE (7 Oct 2026): new wind on the modern-turbine profile with bid capex (1, default) or the previous
  // R21,000 on the current profile (0); wind cost case central, bw6, high or low; WIND_CORR the new-wind correction, none (central
- // from 15 Oct 2026), farms or bw6. PV_CASE (15 Oct 2026): tracking solar capex, bw6 (BW6 bids, the default from c6d, message 458), low or central (BW7 tariffs) or high (BW7 investment). REPDAYS_RULE: the
+ // from 15 Oct 2026), farms or bw6. PV_CASE (15 Oct 2026): tracking solar capex, central (BW7 tariffs) or bw6. REPDAYS_RULE: the
  // optimiser's calendar days, matched (default) or even. All four are recorded in the output for the engine check.
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:'')+(process.env.PV_CASE!==undefined?` state.bldPvCase=${JSON.stringify(process.env.PV_CASE)};`:'')+(process.env.PS_RES_ONCE!==undefined?` state.psResOnce=${+process.env.PS_RES_ONCE};`:'')+(process.env.REPDAYS_RULE!==undefined?` state.bldRepDaysRule=${JSON.stringify(process.env.REPDAYS_RULE)};`:''));
  // TARIFF_CF (16 Oct 2026, message 158 (4)): run (the default from build 2026-10-16h, c5e) or bid (c5d), the capacity factor at

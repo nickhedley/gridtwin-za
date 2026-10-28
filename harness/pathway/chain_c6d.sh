@@ -1,4 +1,6 @@
 #!/bin/bash
+# Not to run (user, 28 Oct 2026, message 462): the solar central stays on BW7's awarded tariffs and c6c stays the headline set.
+# Kept unused. It assumes FIXED.bldPvCase 'bw6' as the page default, which main does not have.
 # Run from anywhere: bash harness/pathway/chain_c6d.sh. Outputs in harness/out (runs, checks) and harness/out/c6d (progress.txt,
 # IRP pair, restart counts); set N to put the latter elsewhere. Needs node, python3 and harness/node_modules (npm install jsdom highs).
 # c6d central run set (user, 28 Oct 2026, message 458): c6c's settings and run set on build 2026-10-27g, where new utility solar is

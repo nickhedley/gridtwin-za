@@ -11,7 +11,7 @@ if (!C){ console.error('usage: node pathway/tables/settables.js <run folder> <se
 const SENS=['null','s_irpgas','s_be6','s_be7','s_windlow','s_windhigh','s_carbontreasury','s_carbonhold','s_gascapex25','s_gas2030','s_imp',
   's_demlowflat','s_demlowm1','s_coalpractice','s_rate48','s_spotoil','s_wearp75','s_koeberg_winter','s_ntcsa_both','s_nogas_dsl',
   's_std_strict','s_std_nem','s_coalsustain','s_nogas','s_std_strict_nogas_dsl','s_std_nem_nogas_dsl','s_std_strict_nogas','s_std_nem_nogas',
-  's_disc5'].filter(s=>!(s==='s_disc5' && ['c6b','c6c'].includes(C)));   // s_disc5 from c6d (message 461)
+  's_disc5','s_pvbw6'].filter(s=>!(['s_disc5','s_pvbw6'].includes(s) && C==='c6b'));   // from c6c, run beside its chain (message 462)
 const names=[C, `${C}_irpdem`, ...SENS.map(s=>`${s}_${C}`)];
 const prog=fs.existsSync(`${N}/progress.txt`)?fs.readFileSync(`${N}/progress.txt`,'utf8'):'';
 const why=n=>{ const m=prog.split('\n').filter(l=>l.includes(`NOT RUN ${n}:`)).pop(); if (m) return m.replace(/^.*NOT RUN [^:]*: /,'');
@@ -43,7 +43,7 @@ const g=v=>(v/1e3).toFixed(1);
 for (const n of [C, B&&S[B]?B:null].filter(Boolean)) for (const y of [2030,2035,2040]){ const b=S[n].build[y];
   console.log(`| ${n} | ${y} | ${g(b.wind)} | ${g(b.pv)} | ${g(b.roof)} | ${g(b.li)} (${b.liH.toFixed(1)}) | ${g(b.ccgt)} | ${g(b.ocgtGas)} | ${g(b.ocgtDsl)} | ${g(b.ironair)} | ${g(b.vrfb)} | ${g(b.phes)} | ${g(b.off)} | ${g(b.coal)} |`); }
 
-// 2b. Cheaper finance (message 461): s_disc5 beside the central, new build by type, system cost, CO2 and the IRP gap at each rate.
+// 2b. Cheaper finance (messages 461, 462): s_disc5 beside the central, new build by type, system cost, CO2 and the IRP gap at each rate.
 if (S[`s_disc5_${C}`]){ const d=S[`s_disc5_${C}`];
   const gap=(o,irp)=>{ const i=sum(`${N}/irp`,irp); return i?sg(i.pv-o.pv):'not available'; };
   const yrs=(r,f)=>[2030,2035,2040].map(y=>g(f(r.build[y]))).join(' / ');
@@ -58,7 +58,8 @@ if (S[`s_disc5_${C}`]){ const d=S[`s_disc5_${C}`];
 const IRP=[['central demand',C,`irp2025_${C}`],['IRP 2025 demand',`${C}_irpdem`,`irp2025_${C}_irpdem`],['wind, central cost case',`s_windlow_${C}`,`irp2025_${C}_windlow`],
   ['wind, high cost case',`s_windhigh_${C}`,`irp2025_${C}_windhigh`],['carbon, Treasury path',`s_carbontreasury_${C}`,`irp2025_${C}_carbontreasury`],
   ['carbon, 2030 rate held',`s_carbonhold_${C}`,`irp2025_${C}_carbonhold`],['coal sustaining capital R500/kW-yr',`s_coalsustain_${C}`,`irp2025_${C}_coalsustain`],
-  ...(SENS.includes('s_disc5')?[['discount rate 5% real',`s_disc5_${C}`,`irp2025_${C}_disc5`]]:[])];
+  ...(SENS.includes('s_disc5')?[['discount rate 5% real',`s_disc5_${C}`,`irp2025_${C}_disc5`],
+    ['solar at construction cost, 8% real',`s_pvbw6_${C}`,`irp2025_${C}_pvbw6`]]:[])];
 console.log('\n### IRP 2025 build against the optimised plan\n');
 console.log('| Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026–40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |');
 console.log('|---|---|---|---|---|---|---|');
