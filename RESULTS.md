@@ -17867,3 +17867,14 @@ review is the candidate; its PDF does not open here).
 
 validate_public_text: ten new patterns (messages 470 (d) and 471 (n)); 32/32 on this build, 22/32 on main (28a), each new
 pattern failing there on the text it was written for.
+
+First suite on 29a (28 Oct 2026, 21:55 UTC to 23:27 UTC, branch claude/site-text at 36ed859, ESK19679.csv present, stored panels
+rewritten first (fingerprint 139d0414070f99, 9/9 while writing), nothing beside it): 19 of 20 node scripts before the container
+restarted inside validate_worker at about 23:27 UTC (the two-hour cloud limit was not reached; HANDOVER 'Restarts were idle
+shutdowns'). Against main (28a): one extra failure, validate_findings 36/40 against 37/40: 'fleet figures in slider notes match the
+constants: newBattMW: no figure'. Cause: the lithium slider's note was reworded to say what it counts and lost the 'on X GW
+existing' form the check reads (validate_findings.js, added 5 Oct 2026). Fixed in the note, not the check (commit 819b113): "on
+0.1 GW existing (grid batteries only, 4h); the 2.7 GW of pumped storage is separate", both figures still from FIXED. The note is in
+the page's inline script, so the stored panels are rewritten again and the suite rerun in full. Same as main in that run:
+validate_response 86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, validate_pathway_presets
+27/40; validate_public_text 32/32 (22 checks on main), validate_stored_panels 86/86, validate_links 48/48, validate_external 8/8.
