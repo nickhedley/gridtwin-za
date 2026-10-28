@@ -1992,3 +1992,10 @@ January 2026 rands, on the central's basis (8% real, 25 years, fixed O&M R287/kW
                          bids, R16,786/kW, about R0.74/kWh.
                          The solar central now: R10,998/kW, R0.53/kWh, backed out of all 18 BW7 awards' MW-weighted tariff
                          (R492.53/MWh over 3,940 MW), so it sits near the lower point.
+
+## National Energy Efficiency Strategy 2026-2035 (user, 28 Oct 2026, message 444 (a); reference for a later demand case, no input changed)
+
+- Department of Electricity and Energy, NEES 2026-2035 presentation (October 2026; PDF held by Nick; the strategy document of
+  19 Sep 2026 also seen): 132 PJ of savings by 2035, by sector: industry 40.7, transport 43.3, commercial and public 34.8,
+  residential 13.3 PJ. No electricity share and no peak-demand target are given. It states that efficiency is absent from the IRP
+  and proposes treating it as a supply-side-equivalent resource. It cites IRP 2025's R2.33 trillion of investment to 2050.
