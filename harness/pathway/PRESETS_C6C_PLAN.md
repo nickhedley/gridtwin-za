@@ -53,9 +53,7 @@ Both change visible text only; they ride the presets PR's panels rewrite and sui
 Carried in the presets PR; each figure restated from measurement on the PR's build, not typed.
 
 a. Stale:
-   - Fossil-free 2040 becomes Fossil-free 2045 (Nick's decision). The build optimiser and the preset demand stop at 2040
-     (bldSetHorizon caps at 2040; C5F_DEMAND to 2040): a 2045 state needs demand, coal dates and costs to 2045. Question for Nick
-     before building: extend the demand path to 2045 on the same source's growth (UCT ESRG), or another basis.
+   - Fossil-free 2040 keeps its name (message 471: the 2045 horizon is next-note work); its caption is refreshed only.
    - Every preset caption restated from the central set's runs (c6c, or c6e if it lands first); "within half the Australian
      standard" replaced by NTCSA's 20 GWh.
    - "Eskom does not since South Africa does not yet have an independent system operator and competitive market": NTCSA is the
@@ -75,3 +73,28 @@ c. Cadence: review the 56 "X – not Y" / ", not Y" / "rather than" contrasts; k
    information.
 d. validate_public_text: fail on "(no recorded source)", "Update these figures", "Read that carefully", "This is because" and
    "no wholesale market".
+
+## Site text, full read (user, 28 Oct 2026, message 471; the advisor's line-by-line read of all 2,163 visible sentences, build 27f)
+
+Items (a) and (b) are in the cost-of-capital PR (build 2026-10-28a). The rest go in the presets PR, each figure restated from
+measurement on the PR's build:
+c. Lithium: slider "on 0.1 GW existing (4h)" against the battery chart's "3.0 GW fleet <- about here today": reconcile; say what each
+   counts.
+d. CCS note "The engine runs coal as one block": check against unit-level commitment; restate.
+e. "-243 MW of privately wheeled wind" (validation, wind row): ABOUT_NUM.windFleet prints FIXED.windMW - ESKOM_WIND_LINE_MW, which is
+   negative: fix the sign or the wording at its source.
+f. Old least-cost figures ("103 cycles a year: R4.73/kWh"; "the fleet runs at 2.7%: R17.78/kWh"; rooftop "the same in the least-cost
+   pathway's 2030"; "system cost is lowest at about 16 hours"): restate from the headline set with its name, or remove
+   (LCP_2030_* constants come from c5f).
+g. "each region's connection headroom is the network Eskom plans to build (GCCA)" -> NTCSA.
+h. Pumped storage R1.40/kWh "An assumption; no published source": Meridian's IRP 2023 review (R31,800/kW, 20 h); source it or keep
+   the flag.
+i. Header "for planners and project developers" against footer "educational tool, not planning advice": Nick to decide.
+j. "Hive's Coega project, the most advanced in Africa": source or drop; "Avg industrial 2026 ≈ R2.50/kWh" and "5% Eskom historical"
+   escalation: basis (nominal or real) and source.
+k. "Leandra ... has yet to inject a single tonne": date it.
+l. Tutorial, advice or AI-sounding lines (the list in message 471 (l)): cut or state plainly; "Baseline is 6 GW, or ~15% of SA's
+   peak - Eskom's historical practice": source it.
+m. Glitches: "check the box in the box in the left column"; "Top 0% of hours" in the price-duration list; the storage-price
+   limitation sentence repeated in the prices and price-setting panels.
+n. validate_public_text: add the clearest of these patterns beside message 470 (d)'s.
