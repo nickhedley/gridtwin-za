@@ -47,3 +47,31 @@ Both change visible text only; they ride the presets PR's panels rewrite and sui
    Proposed: "1.07 tCO2/MWh at full load; 1.109 in 2026 with part-load running, against 1.108 implied by Eskom's FY2026 report".
    All three from constants, not typed: FIXED.emisCoal (data-num emisCoal), FIXED.emisCoal x COAL_PARTLOAD_2026 and
    COAL_CO2_PER_MWH_FY26 (two new data-num entries beside emisCoal).
+
+## Site text (user, 28 Oct 2026, message 470; the advisor's sift of the 2,163 visible sentences on main, build 27f)
+
+Carried in the presets PR; each figure restated from measurement on the PR's build, not typed.
+
+a. Stale:
+   - Fossil-free 2040 becomes Fossil-free 2045 (Nick's decision). The build optimiser and the preset demand stop at 2040
+     (bldSetHorizon caps at 2040; C5F_DEMAND to 2040): a 2045 state needs demand, coal dates and costs to 2045. Question for Nick
+     before building: extend the demand path to 2045 on the same source's growth (UCT ESRG), or another basis.
+   - Every preset caption restated from the central set's runs (c6c, or c6e if it lands first); "within half the Australian
+     standard" replaced by NTCSA's 20 GWh.
+   - "Eskom does not since South Africa does not yet have an independent system operator and competitive market": NTCSA is the
+     system operator; say how dispatch works now (NTCSA dispatches on Eskom's merit order under its grid code; SAWEM trading
+     inside Eskom since April 2026, commercial launch targeted for 2027, Krutham, October 2026).
+   - Both "no wholesale market (yet)" lines: as above.
+   - "DMRE / IPP Office" -> Department of Electricity and Energy.
+   - "Grid Connection Capacity Assessment" -> Generation Connection Capacity Assessment.
+   - The PyPSA unit-commitment comparison figures: re-measure on the PR's build, or date them with their build (engine 14r).
+   - "12,000 fixed tilt (no recorded source)": source BLD_COST.pv or say what it is (fixed-tilt, used only with tracking off).
+   - The rooftop tab's "indicative and unsourced" brackets: align with SOURCES 'Rooftop PV installed cost, 2025-26'.
+b. Internal or tutorial, remove or plain: "Update these figures when Eskom publishes; the comparison is only as current as the
+   date above."; "Read that carefully before comparing:"; "This is because a quarter of each plant's output…"; "So where the model
+   runs a different mix…"; "This matters most in high-renewable scenarios…"; "…good enough to show that flows follow physics rather
+   than economics"; "The page opens here." -> "Opens on this preset."; "Buffalo curve": source it or describe plainly.
+c. Cadence: review the 56 "X – not Y" / ", not Y" / "rather than" contrasts; keep only those where the contrast carries
+   information.
+d. validate_public_text: fail on "(no recorded source)", "Update these figures", "Read that carefully", "This is because" and
+   "no wholesale market".
