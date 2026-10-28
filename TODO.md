@@ -556,6 +556,8 @@ central.
 capital cost is annuitised at 8% real, above what recent solar bids imply (about 46-47c/kWh in BW6 and BW7 against the model's
 R0.74/kWh on BW6's construction cost; pack limitation 32). Run c6d's set at a lower rate for all technologies alike, the rate
 taken from a published cost-of-capital source (the IEA Cost of Capital Observatory's 6.5-10% real is the range on record).
+In c6d from message 461: s_disc5_c6d (DISC=0.05, every technology, the IRP build checked at the same rate). Left for after the
+note: 30-year lives for wind and solar, s_disc5life30 (BLD_LIFE is a page constant, not a harness setting).
 
 ## Follow-through on the engine change
 
