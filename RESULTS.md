@@ -17777,9 +17777,12 @@ unserved at most 15.91 GWh in the highest year (worst run 384 GWh); engine PV 20
 Standing in 2030 / 2035 / 2040: utility solar 6.9 / 12.7 / 20.1 GW, wind 4.1 / 20.3 / 32.8 GW, lithium 4.1 / 8.4 / 12.3 GW, CCGT
 0.0 / 4.2 / 9.8 GW, coal 32.4 / 25.9 / 17.9 GW. Against c6c and the IRP check at the same solar cost: when claude/c6c-runs lands.
 
-s_disc5_c6c, 5% real for every technology (message 462 (d), moved from 461): c6c's settings with DISC=0.05, on main at c3b9e14
-(pathway_perfail.js sets BLD_DISC: the annuity rate of every capital charge, new plant and existing coal's station capital, and
-the optimiser's weight on each year; pathcheck.js applies the run file's disc to the engine check's capital charges; the tables
-weight the engine's annual costs at 8% for every run). The IRP build is checked at the same rate once c6c's IRP build file lands.
-Lives stay at BLD_LIFE (wind and solar 25 years, a page constant): a 30-year run waits for after the note (TODO 14kf). Results to
-fill.
+s_disc5_c6c and s_discirp_c6c (messages 462 (d), 465 (b), 466): c6c's settings with PV_CASE=bw6 and DISC=0.05 or 0.113, so every
+technology, solar included, is on construction cost and only the rate differs from s_pvbw6_c6c (8%). A first s_disc5_c6c started
+05:34 UTC with DISC=0.05 alone was stopped at 05:44 before it wrote a run file: on BW7-tariff solar it would count solar's cheap
+finance twice (the tariff-implied capex already carries it), so it is not reported. 11.3% is IRP 2025's stated discount rate
+(Gazette p.34), read as real (SOURCES). Both run on main at c3b9e14 (pathway_perfail.js sets BLD_DISC: the annuity rate of every
+capital charge, new plant and existing coal's station capital, and the optimiser's weight on each year; pathcheck.js applies the
+run file's disc; the tables weight the engine's annual costs at 8% for every run). The IRP build is checked at the same costs and
+rate once c6c's IRP build file lands. Lives stay at BLD_LIFE (wind and solar 25 years, a page constant): a 30-year run waits for
+after the note (TODO 14kf). Results to fill.

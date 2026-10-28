@@ -1075,7 +1075,12 @@ Decisions are the user's (7 Oct 2026).
   construction cost (above, R16,786/kW in 2026) with R287/kW-yr fixed O&M costs R0.52/kWh at the bids' 30.1% capacity factor at
   5% real over 30 years, against R0.74/kWh at 8% over 25 years. BW7's per-kW construction cost is not published (no IPP Office or
   DBSA figure found, web search 28 Oct 2026; neither site can be opened from the cloud environment). Sensitivities on c6c:
-  s_pvbw6_c6c, solar at BW6's construction cost at 8% real (PV_CASE=bw6); s_disc5_c6c, 5% real for every technology (DISC=0.05).
+  every technology, solar included, on construction cost (PV_CASE=bw6) at 8% real (s_pvbw6_c6c), 5% real (s_disc5_c6c,
+  DISC=0.05) and IRP 2025's 11.3% (s_discirp_c6c, DISC=0.113; messages 465, 466). Meridian's review of the IRP 2023 discounts
+  at 8.2% real (Meridian Economics, Review of IRP 2023, slide 16: "future costs are discounted at 8.2% real"). IRP 2025 states 'a
+  discount rate of 11.3%' (Gazette p.34); neither the plan text nor its assumptions workbook says real or nominal (the workbook's
+  Economic Parameters sheet gives only 2023's average South African inflation, 5.7%); read as real, as its costs are in constant
+  January 2024 rands. Read as nominal at 5.7% it would be about 5.3% real.
   BW7's disclosed R31.4bn for the first 1,760 MW (department statement, as reported by Green Building Africa and Engineering News,
   6 Jan 2025), about R18,470/kW in 2026 rands, is an upper reference only; it may include connection, development and financing.
 - SA CPI, January 2024 to January 2026: 1.032 x 1.035 = 1.068 (Stats SA headline, 3.2% y/y January 2025 and
