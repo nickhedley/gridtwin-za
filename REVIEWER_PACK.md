@@ -385,14 +385,14 @@ c6c against c6b, run by run (the 24-hour down time and the 0.715 floor against t
 
 Not run: (to fill).
 
-Three cost sensitivities on c6c, run beside its chain on main's commit (c3b9e14, whose index.html is acb2451's; RESULTS 'Costs on the latest market evidence per technology'). In all three every technology, solar included, is costed on its construction cost (solar at BW6's compliant tracker bids, R16,786/kW), so the rate is the only difference between them; c6c sits between the first two, with solar at its bid finance (the capex BW7's tariffs imply) and the rest at 8% real. The discount setting changes every capital charge, new plant and existing coal's, and the optimiser's weight on each year; engine PV below weights each year at 8% in every row, so a difference is the build and its capital charges, not the weighting. Each IRP build is checked at the same costs and rate when c6c's IRP build file lands. s_pvbw6_c6c meets both criteria (mean unserved at most 15.9 GWh, worst run 384 GWh).
+Three cost sensitivities on c6c, run beside its chain on main's commit (c3b9e14, whose index.html is acb2451's; RESULTS 'Costs on the latest market evidence per technology'). In all three every technology, solar included, is costed on its construction cost (solar at BW6's compliant tracker bids, R16,786/kW), so the rate is the only difference between them; c6c sits between the first two, with solar at its bid finance (the capex BW7's tariffs imply) and the rest at 8% real. The discount setting changes every capital charge, new plant and existing coal's, and the optimiser's weight on each year; engine PV below weights each year at 8% in every row, so a difference is the build and its capital charges, not the weighting. Each IRP build is checked at the same costs and rate when c6c's IRP build file lands. All three meet both criteria: mean unserved at most 18.8 GWh at 11.3%, 15.9 at 8% and 5.1 at 5% (worst runs 426, 384 and 185 GWh). Coal standing is the same in all three (32.4 / 25.9 / 17.9 GW).
 
 | Run | Utility solar, GW 2030 / 2035 / 2040 | Wind | Lithium | Gas (CCGT and open-cycle on LNG) | Engine PV 2026–40, R bn | CO2 2026–40, Mt | IRP gap in the same case, R bn |
 |---|---|---|---|---|---|---|---|
-| s_discirp_c6c, all on construction cost at 11.3% real | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
-| s_pvbw6_c6c, all on construction cost at 8% real | 6.9 / 12.7 / 20.1 | 4.1 / 20.3 / 32.8 | 4.1 / 8.4 / 12.3 | 0.0 / 4.2 / 10.0 | 2,385.5 | 1,952 | (to fill) |
+| s_discirp_c6c, all on construction cost at 11.3% real | 6.7 / 12.9 / 20.0 | 3.3 / 16.3 / 29.1 | 4.2 / 8.6 / 12.3 | 0.0 / 4.3 / 10.3 | 2,528.2 | 2,029 | (to fill) |
+| s_pvbw6_c6c, all on construction cost at 8% real | 6.9 / 12.7 / 20.1 | 4.1 / 20.3 / 32.8 | 4.1 / 8.4 / 12.3 | 0.0 / 4.2 / 10.1 | 2,385.5 | 1,952 | (to fill) |
 | c6c, solar at its bid finance, the rest at 8% real | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
-| s_disc5_c6c, all on construction cost at 5% real | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) | (to fill) |
+| s_disc5_c6c, all on construction cost at 5% real | 8.7 / 12.7 / 19.9 | 6.6 / 22.5 / 34.9 | 4.0 / 8.2 / 11.7 | 0.0 / 4.2 / 10.0 | 2,259.3 | 1,850 | (to fill) |
 
 ### c6b: the 4-hour down-time sensitivity (build 2026-10-27e, run commit 2603be5; runs of 27 October 2026)
 
