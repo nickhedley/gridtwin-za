@@ -17786,4 +17786,12 @@ NTCSA criteria met, mean unserved at most 15.91 GWh in the highest year (worst r
 / 12.3 GW, CCGT 0.0 / 4.2 / 9.8 GW, coal 32.4 / 25.9 / 17.9 GW. Compared with c6c's central when claude/c6c-runs lands; c6d, the
 full set on 27g, is the new central (harness/pathway/chain_c6d.sh, C6D_RUN_BRIEF.md).
 
+Cheaper finance in c6d (user, 28 Oct 2026, message 461): s_disc5_c6d, c6d's settings with DISC=0.05 (pathway_perfail.js sets
+BLD_DISC: the annuity rate of every capital charge, new plant and existing coal's station capital, and the optimiser's weight on
+each year; pathcheck.js applies the run file's disc to the engine check's capital charges; the tables weight the engine's annual
+costs at 8% for every run). The IRP build is checked at the same rate (pathway_irp2025_c6d_disc5.json, disc 0.05). Basis: at 5%
+real over 30 years BW6 solar's R16,786/kW with R287/kW-yr fixed O&M costs R0.52/kWh at the bids' 30.1% capacity factor (R0.55 at
+the model's 28.6%), close to its bid tariffs; at 8% over 25 years, R0.74. Lives stay at BLD_LIFE (wind and solar 25 years): a
+page constant, not a harness setting, so a 30-year run waits for after the note (TODO 14kf). Results to fill when c6d lands.
+
 Suite on 27g (to fill).
