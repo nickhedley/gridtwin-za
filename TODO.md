@@ -558,8 +558,8 @@ charges, all from one evidence base (IEA World Energy Outlook and Cost of Capita
 ATB financing cases; academic estimates such as Steffen 2020), cross-checked against South African bids where they exist (REIPPPP
 solar and wind, BESIPPPP storage). Every technology on the same framework, including gas, nuclear and coal. Now (c6c): solar's
 capex from BW7's tariffs (about 5% real over 30 years implied), everything else annuitised at 8% real over BLD_LIFE (wind and
-solar 25 years); s_disc5_c6c (5% real for every technology) and s_pvbw6_c6c (solar at construction cost, 8%) bracket it (pack
-limitation 32). 30-year lives for wind and solar go with it (BLD_LIFE is a page constant, not a harness setting).
+solar 25 years); s_pvbw6_c6c and s_disc5_c6c (every technology on construction cost at 8% and 5%; message 466) bracket it, with
+s_discirp_c6c at IRP 2025's 11.3% (pack limitation 32). 30-year lives for wind and solar go with it (BLD_LIFE is a page constant, not a harness setting).
 
 ## Follow-through on the engine change
 
