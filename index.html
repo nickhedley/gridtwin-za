@@ -19052,7 +19052,7 @@ const SLIDERS=[
    note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': build costs over '+BLD_LIFE.ocgd+' years at '+bldCocPct('ocgd')+' at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor (bottom of Lazard\u2019s 2025 gas-peaker range), plus running costs. In the least-cost pathway\u2019s 2030 the fleet runs at '+(LCP_2030_DSL_CF*100).toFixed(1)+'&#37;: R'+((bldLcoeDieselAt(LCP_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
   {endsub:true},
   {grp:'Storage and flexibility'},
-  {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW of grid batteries in service (4h), beside ${(FIXED.psPowerMW/1000).toFixed(1)} GW of pumped storage.`},
+  {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (grid batteries only, 4h); the ${(FIXED.psPowerMW/1000).toFixed(1)} GW of pumped storage is separate.`},
   {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>(+(+v).toFixed(1))+'h',
    note:`Hours of storage for new lithium; the existing ${(FIXED.battPowerMW/1000).toFixed(2)} GW stays at ${FIXED.battHours.toFixed(1)}h. Defaults to ${FIXED.newBattHours}h, South Africa\u2019s utility procurement today. Longer durations add cell cost only. In this model system cost is lowest at about 16 hours.`},
   {id:'newPsMW',label:'New pumped storage',min:0,max:FIXED.newPsMaxMW,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
