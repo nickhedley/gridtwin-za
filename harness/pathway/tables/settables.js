@@ -83,10 +83,12 @@ for (const [lab,opt,irp] of IRP){ const o=S[opt], i=sum(`${N}/irp`,irp);
 if (irpMissing.length) console.log(`\nIRP checks not available: ${irpMissing.join('; ')}.`);
 
 // 4. Against the comparison set, run by run (c6c against c6b: the 24-hour down time against UC_FLEET's 4 hours).
+// The IRP-demand run carries the set's name first (c6c_irpdem), so it maps to the other set's by name, not by suffix; before
+// 28 Oct 2026 it was compared with itself.
 if (B){ console.log(`\n### ${C} against ${B}, same run\n`);
   console.log(`| Run | Engine PV, ${C} / ${B}, R bn | Difference | CO2 2026–40, ${C} / ${B}, Mt | Curtailed wind and solar 2026–40, ${C} / ${B}, TWh | Mean unserved, highest year, ${C} / ${B}, GWh |`);
   console.log('|---|---|---|---|---|---|');
-  for (const n of names){ const m=n===C?B:n.replace(new RegExp('_'+C+'$'),'_'+B), a=S[n], b=sum(O,m); if (!a||!b) continue;
+  for (const n of names){ const m=n===C?B:n===`${C}_irpdem`?`${B}_irpdem`:n.replace(new RegExp('_'+C+'$'),'_'+B), a=S[n], b=sum(O,m); if (!a||!b) continue;
     const cu=s=>s.rows.reduce((q,x)=>q+(x.curt||0),0);
     console.log(`| ${short(n)} | ${f1(a.pv)} / ${f1(b.pv)} | ${sg(a.pv-b.pv)} | ${a.co2Cum.toFixed(0)} / ${b.co2Cum.toFixed(0)} | ${f1(cu(a))} / ${f1(cu(b))} | ${f1(a.maxMean)} / ${f1(b.maxMean)} |`); } }
 
