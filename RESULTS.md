@@ -17798,3 +17798,48 @@ s_disc5_c6c      5%     met        5.10 / 185           1.5%       2,259.3      
 Coal standing is the same in all three (32.4 / 25.9 / 17.9 GW in 2030 / 2035 / 2040). The rate moves wind most: 3.3 to 6.6 GW in
 2030 and 29.1 to 34.9 GW in 2040 between 11.3% and 5%; CO2 2026-40 falls 179 Mt. Against c6c and the IRP gaps: when claude/c6c-runs
 lands.
+
+### Cost of capital by technology: solar and wind 5.5%, lithium and pumped storage 6.8%, gas 8.0%, nuclear 8.5%, network 7.1%, with interest during construction (user, 28 Oct 2026, messages 468, 469, 471 (a), (b) and 472; build 2026-10-28a)
+
+Settings. index.html: BLD_DISC stays the discount rate that weights years (8% real). Each technology's capital charge and its
+interest during construction take its real pre-tax cost of capital, bldCoc(tech) (BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK,
+BLD_COC_GROUP; FIXED.bldCocCase 'central'); bldAnnuity refuses a call that does not name its technology. Interest during
+construction, bldIdcFactor, only for costs quoted before financing (BLD_BUILD_Y). New nuclear, new coal and new pumped storage
+charges derived from capex (bldDerivedAcaps; were typed). New utility solar on BW6's compliant construction cost
+(FIXED.bldPvCase 'bw6'). Cost readouts (lcoe* anchors and bldLcoeAt) at each technology's rate; the slider notes print it
+(bldCocPct). Harness: COC (central, private, high, low, planning) in pathway_perfail.js, recorded as cocCase and cocRates;
+pathcheck.js applies the run's case, refuses run files from before 2026-10-28a, and takes NUC_CAPEX_USD and NUC_LIFE for nuclear's
+high capex and 60-year cases. validate_bids.js (new). Basis of every rate, life and build year: SOURCES 'Cost of capital by
+technology'.
+
+Measured on build 2026-10-28a at start-up (Today 2026), central case:
+- rates: solar, wind and offshore 5.5%; lithium, vanadium, iron-air and pumped storage 6.8%; CCGT and open-cycle 8.0%; nuclear 8.5%;
+  coal 8.0%; transmission, grid connection and Eskom capital 7.1%; rooftop 8.0% (the discount rate).
+- interest during construction factors: CCGT 1.125, open-cycle 1.081, offshore 1.085, pumped storage 1.226, nuclear 1.410, coal
+  1.271, transmission 1.110, grid connection 1.072; solar, wind and lithium 1 (bid capex taken to include financing).
+- derived charges, R/kW-yr: nuclear 15,704 (was 10,500 typed), coal 6,444 (was 5,000), pumped storage 2,482 (was 2,360). Planning
+  case (one rate, 8%): nuclear 14,600, coal 6,444, pumped storage 2,998; high: 24,869, 9,936, 4,104; low: 13,545, 5,595, 2,086.
+- cost readouts, R/MWh: solar 610 (BW6 construction cost at 5.5%), wind 680, rooftop 1,100, lithium (4 h, one cycle a day) 1,260,
+  diesel open-cycle (10%) 9,550, CCGT readout 3,060.
+- bid check (validate_bids.js, 2026 rands, two-sided at 10%): solar R583/MWh at the bids' 30.1% capacity factor against BW5 546,
+  BW6 590 and BW7 526 (mean 554, +5.2%), lowest accepted 449; wind R771/MWh at 37.2% against BW5's 631 (+22.2%), explained (BW5's
+  prices do not hold); lithium R1,485/kW-yr capital against BW3's capacity charge R1,850-2,131 (mean 1,990; -25.4%, -19.7% under the
+  lowest), explained (equipment prices fell after the bid). 7/7.
+
+Cost readouts before and after (2026 rands, R/kWh): solar 0.53 -> 0.61, wind 0.82 -> 0.68, lithium 1.34 -> 1.26, vanadium 1.70 -> 1.60,
+iron-air 4.80 -> 4.55, CCGT 2.90 -> 3.06, diesel open-cycle 9.35 -> 9.55, rooftop 1.10 unchanged.
+
+Suite on build 2026-10-28a (28 Oct 2026, 11:40-14:03 UTC, branch claude/coc-by-tech after the worker fix, ESK19679.csv present,
+nothing running beside it; stored panels rewritten first, 1,741 s): node checks 973/996, audit 88/88, eng5 5/6. Against main
+(27f, the suite of RESULTS 'Suite on build 27f at the 0.715 floor'): validate_outputs 49/51, validate_findings 37/40,
+validate_response 86/87, validate_benchmarks 28/30, validate_pathway_presets 27/40 (the presets built on c5f's runs) and eng5
+check 6 fail as on main; validate_consistency was 81/83 against main's 82/83 (an earlier comparison of failure lines with the
+numbers stripped missed it; message 479). The extra failure, 'new-build capital matches the hand computation', is the cost of
+capital's own effect on Deep decarbonisation 2035's new-build capital, measured with the check's own code: main R1.056; 28a with
+one rate for all and solar backed out of BW7's tariffs R1.062 (+0.005, interest during construction); with solar on BW6's
+construction cost R1.143 (+0.081); with each technology at its own cost of capital R0.986 (-0.157). The stored value is
+re-measured to R0.986 with this cause in the check's comment, tolerance unchanged; validate_consistency then 82/83 (the known
+off-peak check), so node checks 974/996. New: validate_bids 7/7. validate_stored_panels
+86/86 with no 'not used' line; validate_worker 38/38 after the engine worker was given the cost-of-capital functions (it failed on
+its first preset without them; message 478: the stored panels were rewritten after that fix, as the fingerprint covers the page's
+inline scripts).
