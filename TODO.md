@@ -535,7 +535,8 @@ recheck the floor's calibration on the same statistic; any later change to coal 
 14kc. COAL_PARTLOAD_2026 against c6c's 2026 (user, 27 Oct 2026, message 450): re-recorded on 27f from Today 2026 (1.0324; emisCoal
 1.074), a departure from the central-run method so that c6c runs on a calibrated value. When claude/c6c-runs lands, compute the
 part-load mean from c6c's 2026 and report the difference; if it is over 0.1 percentage point, say so before any pack table uses
-c6c's CO2.
+c6c's CO2. Done 28 Oct 2026 (message 480 (b); RESULTS 'COAL_PARTLOAD_2026 against c6c's 2026'): c6c's 2026 part-load mean is
+1.0337 against the recorded 1.0324, +0.13 percentage points, over the threshold; flagged, constant unchanged pending Nick's decision.
 
 14kd. Gas IPP briefing postponed (user, 28 Oct 2026, message 454 (b)): the government briefing on the Gas IPP Procurement Programme
 set for Wed 28 Oct 2026, 09:00, was postponed with no new date. s_gascommit is not run for the pack (its script stays on main for

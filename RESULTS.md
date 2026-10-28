@@ -18196,3 +18196,19 @@ off-peak check), so node checks 974/996. New: validate_bids 7/7. validate_stored
 86/86 with no 'not used' line; validate_worker 38/38 after the engine worker was given the cost-of-capital functions (it failed on
 its first preset without them; message 478: the stored panels were rewritten after that fix, as the fingerprint covers the page's
 inline scripts).
+
+### COAL_PARTLOAD_2026 against c6c's 2026: 1.0337 against the recorded 1.0324, +0.13 percentage points, over message 450's 0.1 (user, 28 Oct 2026, messages 450 and 480 (b); TODO 14kc; build 2026-10-28a)
+
+Settings. harness/pathway/partload_check.js (pack branch) run from harness/ of main at f7921b7 (build 2026-10-28a; COAL_PARTLOAD_2026,
+FIXED.emisCoal and the diesel and CCGT factors unchanged from 27f), 28 Oct 2026, about 21:24 UTC, on c6c's engine check for 2026-30
+(harness/pathway/c6c/pathcheck_c6c_a.json, 120 runs; run on acb2451, build 2026-10-27f). The run's 2026 coal rate is its CO2 less
+open-cycle diesel and gas at their factors, over its coal output; the part-load mean is that rate over emisCoal (1.074 t/MWh).
+
+- c6c: coal 150.21 TWh, CO2 166.89 Mt; coal rate 1.1102 t/MWh against Eskom's FY2026 1.1084; part-load mean 1.0337 against the
+  recorded 1.0324 (from Today 2026 on 27f): +0.13 percentage points.
+- c6c at IRP 2025's demand (pathcheck_c6c_irpdem_a.json): coal 146.31 TWh, rate 1.1113, part-load mean 1.0348: +0.24 points.
+
+Over message 450's 0.1-point threshold, so flagged before the pack uses c6c's CO2. Effect: on the same coal output, re-recording the
+constant from c6c's 2026 would raise coal CO2 by about 0.13% (about 0.2 Mt in 2026; under 3 Mt over 2026-40 on c6c's coal), and
+the 2026 coal rate would sit 0.2% above Eskom's FY2026 rate instead of matching it. The constant is not changed here; Nick decides
+whether to re-record it from c6c's 2026 (the documented central-run method) before c6e's CO2 is used.
