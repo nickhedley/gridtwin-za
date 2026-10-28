@@ -17831,9 +17831,15 @@ iron-air 4.80 -> 4.55, CCGT 2.90 -> 3.06, diesel open-cycle 9.35 -> 9.55, roofto
 
 Suite on build 2026-10-28a (28 Oct 2026, 11:40-14:03 UTC, branch claude/coc-by-tech after the worker fix, ESK19679.csv present,
 nothing running beside it; stored panels rewritten first, 1,741 s): node checks 973/996, audit 88/88, eng5 5/6. Against main
-(27f, the suite of RESULTS 'Suite on build 27f at the 0.715 floor') the failures are the same checks by name: validate_outputs
-49/51, validate_findings 37/40, validate_consistency 81/83, validate_response 86/87, validate_benchmarks 28/30,
-validate_pathway_presets 27/40 (the presets built on c5f's runs), eng5 check 6. New: validate_bids 7/7. validate_stored_panels
+(27f, the suite of RESULTS 'Suite on build 27f at the 0.715 floor'): validate_outputs 49/51, validate_findings 37/40,
+validate_response 86/87, validate_benchmarks 28/30, validate_pathway_presets 27/40 (the presets built on c5f's runs) and eng5
+check 6 fail as on main; validate_consistency was 81/83 against main's 82/83 (an earlier comparison of failure lines with the
+numbers stripped missed it; message 479). The extra failure, 'new-build capital matches the hand computation', is the cost of
+capital's own effect on Deep decarbonisation 2035's new-build capital, measured with the check's own code: main R1.056; 28a with
+one rate for all and solar backed out of BW7's tariffs R1.062 (+0.005, interest during construction); with solar on BW6's
+construction cost R1.143 (+0.081); with each technology at its own cost of capital R0.986 (-0.157). The stored value is
+re-measured to R0.986 with this cause in the check's comment, tolerance unchanged; validate_consistency then 82/83 (the known
+off-peak check), so node checks 974/996. New: validate_bids 7/7. validate_stored_panels
 86/86 with no 'not used' line; validate_worker 38/38 after the engine worker was given the cost-of-capital functions (it failed on
 its first preset without them; message 478: the stored panels were rewritten after that fix, as the fingerprint covers the page's
 inline scripts).
