@@ -1999,9 +1999,15 @@ Central rates and their basis (message 469 as amended):
 Cases (FIXED.bldCocCase): 'high', the same gaps on the IEA's 9.0% for solar (wind 9.0, storage 10.3, gas 11.5, nuclear 12.0, network
 9.0); 'low', the central less one point (network unchanged); 'planning', one rate for all (BLD_DISC), as IRP 2025 does; 'private',
 private and merchant finance for wind, solar and lithium (corporate PPAs, wheeling via traders, the wholesale market from 2027):
-wind and solar +1.5 points, lithium +2.0, ASSUMPTIONS anchored on the Danish Energy Agency's offshore-wind hurdle-rate study
-(merchant 1.0-3.0 points over a 20-year CfD; search snippet only). CEPA's merchant case (Table 5.22) was not readable here and
-replaces these once read. No South African figure for the private premium was found: REIPPPP benchmarks only (BW5 debt margin
+wind and solar +1.5 points, lithium +2.0 (user, 28 Oct 2026, message 472; PDF supplied by Nick). CEPA for DESNZ (July 2025), section
+5.3.3, Table 5.22 (p.116): investor survey, impact of a merchant revenue model on the overall hurdle rate, all technologies +1.5% to
++3%, median +1.5%; on equity, solar PV and onshore wind +1% to +3%. Supporting evidence: Brookfield Renewable Partners, uncontracted
+minus contracted discount rates +1.2-1.3% (Table 5.23, p.119); Europe Economics (2018), merchant minus CfD, solar PV and onshore wind
++0.8% (Table 5.24, p.119); CEPA's conclusion (p.120): the +1.5% median is consistent with the other evidence. Wind and solar take the
+survey median; lithium +2.0, inside the survey range, as storage is more exposed to price swings. South African private deals are
+mostly corporate PPAs, partly contracted, so a full merchant premium makes this case an upper bound for private finance. The
+state-backed central stands; private is a sensitivity (Nick, 28 Oct 2026); blending by a sourced public and private split is
+next-note work. No South African figure for the private premium was found: REIPPPP benchmarks only (BW5 debt margin
 about 2.5%, equity IRR 11.35%, Intellidex; 54+ projects, nominal equity IRR 12.3%, senior debt 10.2%, gearing 70.8%, Cresco,
 6 Mar 2024; search snippets). Public and private split of new build, partly sourced (search snippets): BNEF, corporate PPAs backed
 48% of 1.4 GW in 2025 and are expected to back 73% of 2.3 GW in 2026; NERSA registrations since 2018, 16,461 MW by October 2025
