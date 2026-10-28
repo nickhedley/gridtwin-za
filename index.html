@@ -5815,9 +5815,11 @@ const FIXED = {
   // 125 (1): the profile uncorrected, 42.5% over the twelve weather years), 'farms' (1.064, fitted to two developers'
   // projections, the central until then) or 'bw6' (scaled to BW6 wind bids' typical capacity factor, BW6_WIND_BID_CF).
   bldWindCorr:'none',
-  // Solar capex case for new utility solar on the tracking profile: 'central' (BW7 tariffs, BLD_TARIFF) or 'bw6' (BW6
-  // tracker bids). Message 125 (2).
-  bldPvCase:'central',
+  // Solar capex case for new utility solar on the tracking profile: 'bw6' (BW6's compliant tracker bids, R15,715/kW in January 2024
+  // rands, R16,786 in 2026; BLD_COST.pvtrk_bw6), the central from build 2026-10-28a (user, 28 Oct 2026, messages 468 (b) and 469):
+  // every technology from construction cost, its finance in its cost of capital (bldCoc), not backed out of a tariff. 'central'
+  // (the capex BW7's tariffs imply at 8%, BLD_TARIFF; the central before 2026-10-28a) is kept so earlier runs are checked as built.
+  bldPvCase:'bw6',
   // The capacity factor at which wind and tracking-solar capex are backed out of their tariffs (BLD_TARIFF): 'run' (the
   // capacity factor each runs at, NEW_WIND_CF_12Y and NEW_PVTRK_CF_12Y, so each costs its awarded tariff per MWh; the central
   // from build 2026-10-16h, c5e, user decision 16 Oct 2026, message 161) or 'bid' (BW6 bids' typical capacity factors,
@@ -6787,7 +6789,8 @@ const FIXED = {
   // finding is that installed cost per kWh falls with duration while cost per kW rises,
   // so a linear scale overstates cost at long durations. Acceptable while the duration
   // constants are fixed; revisit if they ever become sliders.
-  acapVrfb:5565, acapIronAir:12940, acapPs:2360,
+  // acapPs is derived from build 2026-10-28a (bldDerivedAcaps); it was typed at 2,360 (Tubatse at 8% over 60 years).
+  acapVrfb:5565, acapIronAir:12940, acapPs:null,
   // OFFSHORE WIND, added 18 Sep 2026. Offshore was absent from acap* entirely, so newCapexR
   // did not move when it was built: 40 GW registered as ZERO headline capex while the retail
   // panel counted the same plant through annuity('offshore'). Two numbers for one quantity,
@@ -6809,7 +6812,9 @@ const FIXED = {
   // converted at ~R16.8/$ and annualised over a 40yr asset life at ~8% - same annuity method
   // implied by the app's existing acap figures above. Cross-checked: the resulting LCOE lands
   // close to the app's own pre-existing lcoeCoalNew/lcoeNuclear reference values below.
-  acapCoal:5000, acapNuclear:10500,
+  // acapCoal and acapNuclear are derived from their capex from build 2026-10-28a (bldDerivedAcaps, beside BLD_COC; message 468 (b));
+  // they were typed at 5,000 and 10,500 (8% over 40 years, no interest during construction).
+  acapCoal:null, acapNuclear:null,
   // Coal ramp-rate flexibilisation: SA's current coal fleet ramps at just 0.1-0.7%/min
   // (Agora Energiewende 2017, via NREL's Greening the Grid programme - worse than
   // the "average plant" global benchmark, consistent with Eskom's aging, strained fleet).
@@ -6893,6 +6898,10 @@ const FIXED = {
   // weighting stays at BLD_DISC. 0 by default; 0.015 is the user's sensitivity, illustrative unless a South African
   // source is found (candidate: IEA, Cost of capital by project type in selected countries, 2022).
   bldGasFinPremium:0,
+  // Cost of capital case for capital charges (BLD_COC_*, user, 28 Oct 2026, messages 468 and 469): 'central' (state-backed
+  // procurement, the only South African bid evidence), 'private' (private and merchant finance for wind, solar and lithium),
+  // 'high', 'low', or 'planning' (one rate for all, BLD_DISC, the IRP convention).
+  bldCocCase:'central',
   // OPEN-CYCLE GAS AS A BUILD OPTION (user, 11 Oct 2026, TODO 14bo item 5): a GE 9F.05 open-cycle unit from the IRP 2025
   // workbook (New Tech Properties): heat rate 10,624 kJ/kWh, read as HHV (33.9%; about 37.5% on LHV, the class figure),
   // VOM R80.19/MWh and FOM R423.89/kW-yr in January 2024 rands, x SA CPI to January 2026 (1.032 x 1.035).
@@ -10458,6 +10467,85 @@ let BLD_DISC = BLD_DISC_CENTRAL;
 //   ccsWaccPct: the CCS panel's return on the retrofit, the same 8% real. Its 20-year life (ccsLifeYrs) is kept
 //   because it is a retrofit's remaining life on an existing coal unit, which BLD_LIFE (new build) does not cover.
 FIXED.ccsWaccPct = BLD_DISC * 100;
+// TWO RATES FROM BUILD 2026-10-28a (user, 28 Oct 2026, messages 468 and 469; SOURCES 'Cost of capital by technology'). BLD_DISC
+// stays the discount rate that weights each year (8% real, one for all; Meridian's review of the IRP 2023 uses 8.2% real). Each
+// technology's capital charge and its interest during construction take its own real pre-tax cost of capital (bldCoc).
+// The central is the cost of capital for state-backed procurement, the only South African bid evidence:
+//  - level: solar 5.5%, the rate at which BW6's compliant tracker bid capex reproduces BW6's average tariff over the model's 25-year
+//    solar life (5.6%; BW5 4.7%, BW7 4.2% on the same capex);
+//  - gaps: CEPA for DESNZ, Hurdle rates for electricity generation (30 Jul 2025, pre-tax real at 31 Dec 2024): solar PV and onshore
+//    wind 7.6% under a CfD; lithium, gas (capacity-market contract) and pumped hydro 8.9%; adjusted to South Africa's state-backed
+//    contracts: wind equal to solar; lithium and pumped storage solar + 1.3 points (lithium rests first on BESIPPPP BW1's capacity
+//    charge, about 7% over its 15-year contract);
+//  - gas 8.0% (message 469: no South African gas bid, lenders excluding new gas, LNG supply and price risk, stranding risk; lower would
+//    make gas cheaper on assumption alone, rule 366); nuclear 8.5% (no regulated asset base here; construction risk stays in the
+//    high capex case); new coal as gas;
+//  - network and Eskom capital (transmission, grid connection, coal retrofits, peaker life extension) 7.1%, NERSA's allowed real
+//    pre-tax WACC for Eskom (MYPD4);
+//  - rooftop at the discount rate: owners' finance, outside state procurement, no evidence for a different rate.
+// Cases: 'private' (wind, solar and lithium financed privately, central plus BLD_COC_PRIVATE_PREM); 'high' (the same gaps on the
+// IEA's South African solar figure, 9.0% real pre-tax); 'low' (central less one point; network unchanged); 'planning' (one rate for
+// all, BLD_DISC, as IRP 2025 does).
+const BLD_COC_LEVEL = { central: 0.055, private: 0.055, high: 0.090, low: 0.045 };
+const BLD_COC_GAP = { re: 0, store: 0.013, gas: 0.025, nuclear: 0.030, coal: 0.025 };
+const BLD_COC_NETWORK = { central: 0.071, private: 0.071, high: 0.090, low: 0.071 };
+// Private and merchant finance (message 469 (f)): corporate PPAs, wheeling via traders and the wholesale market from 2027 carry more
+// offtaker and price risk than state-backed contracts. ASSUMPTIONS until CEPA's merchant case (Table 5.22) is read: wind and solar
+// +1.5 points (mostly 20-year corporate PPAs, between a CfD and fully merchant), lithium +2.0 (close to merchant); anchored on the
+// Danish Energy Agency's offshore-wind hurdle-rate study, merchant 1.0-3.0 points over a 20-year CfD (search snippet only). No South
+// African figure for the premium was found (SOURCES 'Cost of capital by technology').
+const BLD_COC_PRIVATE_PREM = { re: 0.015, store: 0.020 };
+const BLD_COC_GROUP = { pv:'re', wind:'re', offshore:'re', batt:'store', vrfb:'store', ironair:'store', phes:'store', phel:'store',
+  ccgt:'gas', ocgt:'gas', ocgd:'gas', nuclear:'nuclear', coal:'coal', tx:'network', grid:'network', eskom:'network', rooftop:'disc' };
+function bldCocCase(){
+  let st = null; try { st = state; } catch (e) { /* state is declared later in the file; at load, use FIXED */ }
+  const c = (st && st.bldCocCase != null) ? st.bldCocCase : FIXED.bldCocCase;
+  if (!['central', 'private', 'high', 'low', 'planning'].includes(c)) throw new Error('bldCocCase must be central, private, high, low or planning: ' + c);
+  return c;
+}
+// A technology's real pre-tax cost of capital in the current case.
+function bldCoc(tech){
+  const g = BLD_COC_GROUP[tech];
+  if (!g) throw new Error('bldCoc: no cost-of-capital group for ' + tech);
+  const c = bldCocCase();
+  if (c === 'planning' || g === 'disc') return BLD_DISC;
+  if (g === 'network') return BLD_COC_NETWORK[c];
+  const prem = (c === 'private' && (g === 're' || g === 'store')) ? BLD_COC_PRIVATE_PREM[g] : 0;
+  if (prem == null) throw new Error('bldCoc: BLD_COC_PRIVATE_PREM.' + g + ' is not set');
+  return BLD_COC_LEVEL[c] + BLD_COC_GAP[g] + prem;
+}
+// INTEREST DURING CONSTRUCTION (TODO 14ke; messages 468 (b) and 469 (c)): only where the capital cost is quoted before financing
+// (international and engineering estimates). Bid capex and announced project values (REIPPPP wind and solar, BESIPPPP lithium) are
+// assumed to include financing, so they take none; nor do rooftop installer prices, coal retrofits or peaker life extension.
+// Build years (spend uniform, mid-year, financed to commissioning) are the project's assumptions, checked against NREL ATB 2024's
+// construction finance factors (gas 1.114, coal 1.235, large nuclear 1.30, pumped storage 1.064; ATB at US rates).
+const BLD_BUILD_Y = { ccgt:3, ocgt:2, ocgd:2, offshore:3, vrfb:1, ironair:1, phes:6, phel:6, nuclear:8, coal:6, tx:3, grid:2 };
+function bldIdcFactor(tech){
+  const T = BLD_BUILD_Y[tech]; if (!T) return 1;
+  const r = bldAnnuityRate(tech);
+  let f = 0; for (let i = 0; i < T; i++) f += Math.pow(1 + r, T - i - 0.5);
+  return f / T;
+}
+// CAPITAL CHARGES DERIVED FROM CAPEX (message 468 (b)): new nuclear and new coal from the global capex benchmarks above (USD 7,500
+// and 3,600/kW at about R16.8/USD, the figures acapNuclear and acapCoal were typed from), and new pumped storage at Tubatse's
+// R29,200/kW (acapPs's comment), each over its unchanged life with its interest during construction at its cost of capital. In the
+// central case nuclear is R15,704/kW-yr (was 10,500; 8.5% and 1.41 for an eight-year build), coal R6,444 (was 5,000) and pumped
+// storage R2,482 (was 2,360).
+// The harness sets another case with bldApplyCocCase, which recomputes these for the page's state; NUC_CAPEX_USD and NUC_LIFE
+// in pathcheck.js set nuclear's high capex case (USD 12,000) and its 60-year life sensitivity.
+const NUC_CAPEX_USD = 7500, COAL_NEW_CAPEX_USD = 3600, NUC_COAL_FX = 16.8, PS_TUBATSE_RKW = 29200;
+const NUC_LIFE = 40, COAL_NEW_LIFE = 40, PS_LIFE = 60;
+function bldDerivedAcaps(nucUsd = NUC_CAPEX_USD, nucLife = NUC_LIFE){
+  return { acapNuclear: Math.round(bldAnnuity(nucUsd * NUC_COAL_FX, nucLife, 'nuclear')),
+           acapCoal: Math.round(bldAnnuity(COAL_NEW_CAPEX_USD * NUC_COAL_FX, COAL_NEW_LIFE, 'coal')),
+           acapPs: Math.round(bldAnnuity(PS_TUBATSE_RKW, PS_LIFE, 'phes')) };
+}
+Object.assign(FIXED, bldDerivedAcaps());
+// For the harness: set the page's cost-of-capital case and recompute the derived charges in its state.
+function bldApplyCocCase(c, nucUsd, nucLife){
+  state.bldCocCase = c; bldCocCase();   // validates
+  Object.assign(state, bldDerivedAcaps(nucUsd ?? NUC_CAPEX_USD, nucLife ?? NUC_LIFE));
+}
 
   // Fixed O&M for new build, R/kW-yr real 2026, from NREL ATB. Added 18 Sep 2026; until
   // then every technology was built on capital alone, which understated the ones with
@@ -10556,9 +10644,9 @@ function bldTariffCfBasis(){
   if (b !== 'bid' && b !== 'run') throw new Error('bldTariffCfBasis must be bid or run: ' + b);
   return b;
 }
+// At the technology's cost of capital in the central case (bldAnnuity; from build 2026-10-28a, message 468; was 8% for all).
 function bldLcoeAnchor(costKey, fomKey, lifeKey, cf){
-  const r = BLD_DISC_CENTRAL, n = BLD_LIFE[lifeKey];
-  return (BLD_COST[costKey].c2026 * r / (1 - Math.pow(1 + r, -n)) + BLD_FOM[fomKey]) / (cf * 8.76);   // R/MWh
+  return (bldAnnuity(BLD_COST[costKey].c2026, BLD_LIFE[lifeKey], lifeKey) + BLD_FOM[fomKey]) / (cf * 8.76);   // R/MWh
 }
 // At the default basis (FIXED; the page's state is not yet built here): on 'run' each anchor is its awarded tariff in 2026 rands.
 if (FIXED.bldTariffCfBasis !== 'bid' && FIXED.bldTariffCfBasis !== 'run') throw new Error('FIXED.bldTariffCfBasis must be bid or run');
@@ -10567,7 +10655,9 @@ const _anchorKey = k => FIXED.bldTariffCfBasis === 'run' ? k + '_runcf' : k;
 // only when the central is the case keyed 'central'.
 const _windAnchorKey = () => FIXED.bldWindCase === 'central' ? _anchorKey('wind') : 'wind_' + FIXED.bldWindCase;
 FIXED.lcoeWind = Math.round(bldLcoeAnchor(_windAnchorKey(), 'wind', 'wind', NEW_WIND_CF_12Y) / 10) * 10;
-FIXED.lcoePv = Math.round(bldLcoeAnchor(_anchorKey('pvtrk'), 'pv', 'pv', NEW_PVTRK_CF_12Y) / 10) * 10;
+// The solar anchor follows the central solar case as wind's does ('bw6' from build 2026-10-28a): tariff-derived only for 'central'.
+const _pvAnchorKey = () => FIXED.bldPvCase === 'central' ? _anchorKey('pvtrk') : 'pvtrk_' + FIXED.bldPvCase;
+FIXED.lcoePv = Math.round(bldLcoeAnchor(_pvAnchorKey(), 'pv', 'pv', NEW_PVTRK_CF_12Y) / 10) * 10;
 // LCOE ANCHORS ON REFERENCE PARAMETERS (user, 17 Oct 2026, messages 159 and 194 (1); replaces 186 (4)'s anchors on c5e's 2030
 // dispatch, which showed how little c5e used lithium and diesel, not what they cost). Lithium (4 h), rooftop and new diesel
 // open-cycle at their 2026 central capex, fixed O&M and life, at 8% real (BLD_DISC_CENTRAL):
@@ -10588,25 +10678,26 @@ FIXED.lcoePv = Math.round(bldLcoeAnchor(_anchorKey('pvtrk'), 'pv', 'pv', NEW_PVT
 // FIXED_PV_CF_12Y re-measured 26 Oct 2026 with the tracking figure above: 0.22398 to 0.22361.
 const FIXED_PV_CF_12Y = 0.22361, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
 const LCP_2030_LI_CYCLES = 102.688, LCP_2030_DSL_CF = 0.027045, LCP_2030_WIND_CF = 0.41707;
-function bldLcoeAt(capex, fom, life, mwhPerKwYr){
-  const r = BLD_DISC_CENTRAL;
-  return (capex * r / (1 - Math.pow(1 + r, -life)) + fom) / mwhPerKwYr;   // R/MWh
+function bldLcoeAt(capex, fom, life, mwhPerKwYr, tech){
+  return (bldAnnuity(capex, life, tech) + fom) / mwhPerKwYr;   // R/MWh, at the technology's cost of capital (message 468)
 }
+// A technology's cost of capital as the slider notes print it.
+const bldCocPct = tech => (bldAnnuityRate(tech) * 100).toFixed(1) + '% real';
 // Diesel's running cost, R/MWh: fuel, variable O&M and carbon at the compliance rate. The floor under any diesel LCOE.
 function dieselSrmcR(q){ return q.costDiesel + q.vomDiesel + q.carbonTaxRPerT * q.emisDiesel; }
 // Gas's running cost, R/MWh, the same three parts: the part of the CCGT readout (bldLcoeCcgtAt) that is not capital or fixed O&M.
 function ccgtSrmcR(q){ return q.costCcgt + q.vomCcgt + q.carbonTaxRPerT * q.emisCcgt; }
-const bldLcoeBattAt = cycles => bldLcoeAt(BLD_COST.batt.c2026, BLD_COST.batt.c2026 * BLD_FOM_BATT_SHARE, BLD_LIFE.batt, BATT_COST_HOURS * cycles / 1000);
-const bldLcoeDieselAt = cf => bldLcoeAt(bldOcgtCentralCost().c2026, BLD_FOM.ocgd, BLD_LIFE.ocgd, cf * 8.76) + dieselSrmcR(FIXED);
+const bldLcoeBattAt = cycles => bldLcoeAt(BLD_COST.batt.c2026, BLD_COST.batt.c2026 * BLD_FOM_BATT_SHARE, BLD_LIFE.batt, BATT_COST_HOURS * cycles / 1000, 'batt');
+const bldLcoeDieselAt = cf => bldLcoeAt(bldOcgtCentralCost().c2026, BLD_FOM.ocgd, BLD_LIFE.ocgd, cf * 8.76, 'ocgd') + dieselSrmcR(FIXED);
 FIXED.lcoeBatt = Math.round(bldLcoeBattAt(LI_REF_CYCLES) / 20) * 20;
-FIXED.lcoeRooftop = Math.round(bldLcoeAt(BLD_COST.rooftop.c2026, BLD_FOM.rooftop, BLD_LIFE.rooftop, FIXED_PV_CF_12Y * FIXED.rooftopDerate * 8.76) / 10) * 10;
+FIXED.lcoeRooftop = Math.round(bldLcoeAt(BLD_COST.rooftop.c2026, BLD_FOM.rooftop, BLD_LIFE.rooftop, FIXED_PV_CF_12Y * FIXED.rooftopDerate * 8.76, 'rooftop') / 10) * 10;
 FIXED.lcoeDiesel = Math.round(bldLcoeDieselAt(DSL_REF_CF) / 50) * 50;
 // Gas CCGT readout (user, 19 Oct 2026, message 229 (1)), as lithium and diesel: capital and fixed O&M through bldLcoeAt at a
 // 30% capacity factor (the assumption the old hand-derived R3,340 made), fixed O&M from bldFom so it carries the LNG terminal
 // charge (moved out of the fuel price on build 19b), plus fuel (costCcgt), variable O&M (vomCcgt) and carbon at the compliance
 // rate. Until 19c fixed O&M, the terminal and VOM were left out (R2,496 on 19b). Rounded to the slider's step.
 const GAS_LCOE_REF_CF = 0.30;
-const bldLcoeCcgtAt = cf => bldLcoeAt(BLD_COST.ccgt.c2026, bldFom('ccgt', 2026, FIXED), BLD_LIFE.ccgt, cf * 8.76) + ccgtSrmcR(FIXED);
+const bldLcoeCcgtAt = cf => bldLcoeAt(BLD_COST.ccgt.c2026, bldFom('ccgt', 2026, FIXED), BLD_LIFE.ccgt, cf * 8.76, 'ccgt') + ccgtSrmcR(FIXED);
 FIXED.lcoeCcgt = Math.round(bldLcoeCcgtAt(GAS_LCOE_REF_CF) / 20) * 20;
 // VANADIUM AND IRON-AIR ANCHORS (user, 20 Oct 2026, message 264; mechanics audit G5-M1, fix 3). Typed until now at R2,100 and
 // R1,750 per MWh discharged ('an assumption; no published source'); R1,750 is below what iron-air's own capex allows. Derived
@@ -10615,7 +10706,7 @@ FIXED.lcoeCcgt = Math.round(bldLcoeCcgtAt(GAS_LCOE_REF_CF) / 20) * 20;
 // most full cycles a year it can make, charging at its discharge power, 8,760 / (hours x (1 + 1 / efficiency)), about 27; so
 // its anchor is a floor, and any use below that costs more per MWh.
 const VRFB_REF_CYCLES = LI_REF_CYCLES, FE_REF_CYCLES = 8760 / (FIXED.newIronAirHours * (1 + 1 / FIXED.newIronAirEff));
-const bldLcoeStoreAt = (k, hours, cycles) => bldLcoeAt(BLD_COST[k].c2026, BLD_FOM[k], BLD_LIFE[k], hours * cycles / 1000);
+const bldLcoeStoreAt = (k, hours, cycles) => bldLcoeAt(BLD_COST[k].c2026, BLD_FOM[k], BLD_LIFE[k], hours * cycles / 1000, k);
 FIXED.lcoeVrfb = Math.round(bldLcoeStoreAt('vrfb', FIXED.newVrfbHours, VRFB_REF_CYCLES) / 50) * 50;
 FIXED.lcoeIronAir = Math.round(bldLcoeStoreAt('ironair', FIXED.newIronAirHours, FE_REF_CYCLES) / 50) * 50;
 // Iron-air's cost per kWh at the cycling a run actually gives it: its discharge over its energy capacity (message 271 (8)).
@@ -10712,7 +10803,7 @@ function complyStations(S){
     x.life = Math.max(1, Math.min(COMPLY_MES.maxLifeY, x.close - COMPLY_MES.fromYear));
     x.capexR = K.capexBn * 1e9 * COMPLY_MES.rand * x.mw / tot;
     x.opexR = K.opexBnYr * 1e9 * COMPLY_MES.rand * x.mw / tot;
-    x.annR = bldAnnuity(x.capexR, x.life);
+    x.annR = bldAnnuity(x.capexR, x.life, 'eskom');
   }
   return st;
 }
@@ -10767,7 +10858,7 @@ function bldGridAnn(tech, S){
   const vreK = (tech === 'wind' || tech === 'pv') ? +(S.bldGridIntVreShare ?? FIXED.bldGridIntVreShare) : 1;
   if (!(vreK >= 0 && vreK <= 1)) throw new Error('bldGridIntVreShare must be 0-1: ' + vreK);
   const integ = tech === 'rooftop' ? 0 : store ? (S.bldGridBattHalf ? 0.5 : 0) * S.txRPerKWyr : (vreK === 1 ? S.txRPerKWyr : vreK * S.txRPerKWyr);
-  return bldAnnuity(bldGridCapexKW(tech, S), BLD_GRID.lifeY) + integ;
+  return bldAnnuity(bldGridCapexKW(tech, S), BLD_GRID.lifeY, 'grid') + integ;
 }
 
 // Build-rate presets, each grounded in something real rather than assumed.
@@ -10862,19 +10953,21 @@ function bldPhesCapexKW(basis, hours){
   if (basis === 'anu2026') return (1100 + 14 * hours) * 16.5;
   return (1226 + 11.4 * hours) * (basis === 'atlas' ? 1 : 1.28) * 16.5;
 }
-// The annuity rate for a technology: BLD_DISC, plus bldGasFinPremium for new gas, CCGT and OCGT on LNG (a sensitivity,
-// 0 by default; not OCGT on diesel).
-// Read from the page state, as bldCapex reads its cost case.
-// The gas LCOE readout (FIXED.lcoeCcgt, set at load) stays at BLD_DISC.
+// The annuity rate for a technology: its cost of capital (bldCoc), plus bldGasFinPremium for new gas, CCGT and OCGT on LNG (a
+// sensitivity, 0 by default; not OCGT on diesel). Read from the page state, as bldCapex reads its cost case.
 function bldAnnuityRate(tech){
-  if (tech !== 'ccgt' && tech !== 'ocgt') return BLD_DISC;   // new gas: CCGT and OCGT on LNG
+  const r = bldCoc(tech);
+  if (tech !== 'ccgt' && tech !== 'ocgt') return r;   // new gas: CCGT and OCGT on LNG
   let st = null; try { st = state; } catch (e) { /* state is declared later in the file; at load, use FIXED */ }
   const prem = (st && st.bldGasFinPremium != null) ? +st.bldGasFinPremium : (FIXED.bldGasFinPremium || 0);
-  return BLD_DISC + prem;
+  return r + prem;
 }
+// Capital charge, R/kW-yr: overnight capex with its interest during construction, annuitised at the technology's cost of capital
+// over its life. Every call names its technology (message 468 (b)), so no capital is charged at an unstated rate.
 function bldAnnuity(capexPerKW, life, tech){
-  const r = tech ? bldAnnuityRate(tech) : BLD_DISC;
-  return capexPerKW * r / (1 - Math.pow(1+r, -life));
+  if (!tech) throw new Error('bldAnnuity: name the technology, so its cost of capital applies');
+  const r = bldAnnuityRate(tech);
+  return capexPerKW * bldIdcFactor(tech) * r / (1 - Math.pow(1+r, -life));
 }
 // A capacity payment does not change how an existing fleet dispatches - it is paid
 // for availability, not energy. What it changes is what GETS built, by offsetting
@@ -11575,7 +11668,7 @@ function bldBuildLP(opts){
   for (const y of Y){
     let ec = 0;
     for (const yy of Y) if (yy >= y)
-      ec += (bldAnnuity(bldCapex('batt', y), BLD_LIFE.batt) + bldFom('batt', y))
+      ec += (bldAnnuity(bldCapex('batt', y), BLD_LIFE.batt, 'batt') + bldFom('batt', y))
             * (1 - BATT_POWER_SHARE) / 4 / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((ec * 1000).toFixed(3) + ' eb_batt_' + y);
   }
@@ -11667,13 +11760,13 @@ function bldBuildLP(opts){
   }
   if (PHES_ON) for (const y of Y){
     let cost = 0;
-    const ann = bldAnnuity(PHES_KW(), 60) + S.bldPhesFomRkW + GA.phes;
+    const ann = bldAnnuity(PHES_KW(), 60, 'phes') + S.bldPhesFomRkW + GA.phes;
     for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_phes_' + y);
   }
   if (PHES2_ON) for (const y of Y){
     let cost = 0;
-    const ann = bldAnnuity(bldPhesCapexKW(S.bldPhesCostBasis, PHES2_H), 60) + S.bldPhesFomRkW + GA.phel;
+    const ann = bldAnnuity(bldPhesCapexKW(S.bldPhesCostBasis, PHES2_H), 60, 'phel') + S.bldPhesFomRkW + GA.phel;
     for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_phel_' + y);
   }
@@ -11718,7 +11811,7 @@ function bldBuildLP(opts){
   // capex over those years and fixed O&M every year it runs.
   for (const p of LE_P){
     let cost = 0;
-    const ann = bldAnnuity(S.bldPeakerExtRkW, p.irp - p.eol) + S.fomDiesel;
+    const ann = bldAnnuity(S.bldPeakerExtRkW, p.irp - p.eol, 'eskom') + S.fomDiesel;
     for (const yy of Y) if (yy >= p.eol) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' le_' + p.id);
   }
@@ -13005,7 +13098,7 @@ function bldBuildRegionalLP(opts){
     for (const y of Y){
       let c = 0;
       for (const yy of Y) if (yy >= y)
-        c += bldAnnuity(TX_R_PER_MW_KM * km, TX_LIFE_YEARS) / Math.pow(1+BLD_DISC, yy-2026);
+        c += bldAnnuity(TX_R_PER_MW_KM * km, TX_LIFE_YEARS, 'tx') / Math.pow(1+BLD_DISC, yy-2026);
       obj.push(c.toFixed(3) + ' tx_' + ci + '_' + y);
     }
   }
@@ -18940,15 +19033,15 @@ const SLIDERS=[
   {subgrp:'Build cost assumptions (LCOE, R/kWh) \u2013 full lifecycle'},
   {id:'lcoePv',label:'Utility solar',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),// Moved from the note (messages 377, 378): build costs are capex and fixed O&M; the capacity factor is new tracking
    // solar's twelve-year mean; the BW7 award is R492.53/MWh in January 2024 rands (BLD_TARIFF.pvtrk).
-   note:'Anchor R'+(FIXED.lcoePv/1000).toFixed(2)+': build costs over '+BLD_LIFE.pv+' years at 8% real, at tracking solar\u2019s '+(NEW_PVTRK_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. The capex is backed out of BW7\u2019s MW-weighted solar award (R'+Math.round(BLD_TARIFF.pvtrk.rPerMWh*CPI_JAN24_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 tracker bids\u2019 '+(BW6_PV_TRK_BID_CF*100).toFixed(1)+'&#37;.')},
+   note:'Anchor R'+(FIXED.lcoePv/1000).toFixed(2)+': build costs over '+BLD_LIFE.pv+' years at '+bldCocPct('pv')+', at tracking solar\u2019s '+(NEW_PVTRK_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. '+(FIXED.bldPvCase==='bw6' ? 'Capex: BW6\u2019s compliant tracker bids, R'+Math.round(BLD_COST.pvtrk_bw6.c2026).toLocaleString('en-US')+'/kW.' : 'The capex is backed out of BW7\u2019s MW-weighted solar award (R'+Math.round(BLD_TARIFF.pvtrk.rPerMWh*CPI_JAN24_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 tracker bids\u2019 '+(BW6_PV_TRK_BID_CF*100).toFixed(1)+'&#37;.'))},
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),// Moved from the note (messages 377, 378): BW7 awarded solar only (BW7_SOLAR_AWARDS); from c6b (message 408 (a)) the central is BW6's compliant bids, and the low case is backed out of BW5's
    // R495/MWh in April 2021 rands (BLD_TARIFF.wind); in the least-cost pathway's 2030 new wind runs at LCP_2030_WIND_CF.
-   note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': build costs over '+BLD_LIFE.wind+' years at 8% real, at new wind\u2019s '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. '+(FIXED.bldWindCase==='bw6' ? 'Capex: BW6\u2019s compliant bids, R'+Math.round(BLD_COST.wind_bw6.c2026).toLocaleString('en-US')+'/kW; low case: the capex implied by BW5\u2019s awarded tariff.' : 'The capex is backed out of BW5\u2019s wind tariff (R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.'))},
-  {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeRooftop/1000).toFixed(2)+': build costs over '+BLD_LIFE.rooftop+' years at 8% real, at rooftop\u2019s '+(FIXED_PV_CF_12Y*FIXED.rooftopDerate*100).toFixed(1)+'&#37; capacity factor (the fixed-tilt solar profile x the '+FIXED.rooftopDerate.toFixed(2)+' derate), the same in the least-cost pathway\u2019s 2030.'},
+   note:'Anchor R'+(FIXED.lcoeWind/1000).toFixed(2)+': build costs over '+BLD_LIFE.wind+' years at '+bldCocPct('wind')+', at new wind\u2019s '+(NEW_WIND_CF_12Y*100).toFixed(1)+'&#37; capacity factor, before the grid charge. '+(FIXED.bldWindCase==='bw6' ? 'Capex: BW6\u2019s compliant bids, R'+Math.round(BLD_COST.wind_bw6.c2026).toLocaleString('en-US')+'/kW; low case: the capex implied by BW5\u2019s awarded tariff.' : 'The capex is backed out of BW5\u2019s wind tariff (R'+Math.round(BLD_TARIFF.wind.rPerMWh*CPI_APR21_TO_JAN26)+'/MWh in 2026 rands), '+(FIXED.bldTariffCfBasis==='run' ? 'so the anchor is the tariff.' : 'at BW6 wind bids\u2019 '+(BW6_WIND_BID_CF*100).toFixed(1)+'&#37;.'))},
+  {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeRooftop/1000).toFixed(2)+': build costs over '+BLD_LIFE.rooftop+' years at '+bldCocPct('rooftop')+', at rooftop\u2019s '+(FIXED_PV_CF_12Y*FIXED.rooftopDerate*100).toFixed(1)+'&#37; capacity factor (the fixed-tilt solar profile x the '+FIXED.rooftopDerate.toFixed(2)+' derate), the same in the least-cost pathway\u2019s 2030.'},
   {id:'lcoePs',label:'Pumped storage',min:400,max:3000,step:50,def:FIXED.lcoePs,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Per kWh discharged. An assumption; no published source.'},
-  {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Anchor R'+(FIXED.lcoeVrfb/1000).toFixed(2)+': build costs over '+BLD_LIFE.vrfb+' years at 8% real, at one full '+FIXED.newVrfbHours+'-hour cycle a day ('+VRFB_REF_CYCLES+' a year), as lithium, per kWh discharged; charging not costed.'},
-  {id:'lcoeIronAir',label:'Iron-air',min:1000,max:20000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Anchor R'+(FIXED.lcoeIronAir/1000).toFixed(2)+': build costs over '+BLD_LIFE.ironair+' years at 8% real, at about '+Math.round(FE_REF_CYCLES)+' full cycles a year, the most a '+FIXED.newIronAirHours+'-hour store at '+Math.round(FIXED.newIronAirEff*100)+'&#37; round trip can make. A floor: fewer cycles cost more per kWh. Charging not costed.'},
-  {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:8000,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeBatt/1000).toFixed(2)+': build costs over '+BLD_LIFE.batt+' years at 8% real, at one full cycle a day ('+LI_REF_CYCLES+' a year), per kWh discharged; charging not costed. In the least-cost pathway\u2019s 2030, lithium makes '+Math.round(LCP_2030_LI_CYCLES)+' cycles a year: R'+((bldLcoeBattAt(LCP_2030_LI_CYCLES))/1000).toFixed(2)+'/kWh.'},
+  {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Anchor R'+(FIXED.lcoeVrfb/1000).toFixed(2)+': build costs over '+BLD_LIFE.vrfb+' years at '+bldCocPct('vrfb')+', at one full '+FIXED.newVrfbHours+'-hour cycle a day ('+VRFB_REF_CYCLES+' a year), as lithium, per kWh discharged; charging not costed.'},
+  {id:'lcoeIronAir',label:'Iron-air',min:1000,max:20000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',note:'Anchor R'+(FIXED.lcoeIronAir/1000).toFixed(2)+': build costs over '+BLD_LIFE.ironair+' years at '+bldCocPct('ironair')+', at about '+Math.round(FE_REF_CYCLES)+' full cycles a year, the most a '+FIXED.newIronAirHours+'-hour store at '+Math.round(FIXED.newIronAirEff*100)+'&#37; round trip can make. A floor: fewer cycles cost more per kWh. Charging not costed.'},
+  {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:8000,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:'Anchor R'+(FIXED.lcoeBatt/1000).toFixed(2)+': build costs over '+BLD_LIFE.batt+' years at '+bldCocPct('batt')+', at one full cycle a day ('+LI_REF_CYCLES+' a year), per kWh discharged; charging not costed. In the least-cost pathway\u2019s 2030, lithium makes '+Math.round(LCP_2030_LI_CYCLES)+' cycles a year: R'+((bldLcoeBattAt(LCP_2030_LI_CYCLES))/1000).toFixed(2)+'/kWh.'},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:'An assumption; no published source.'},
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),// Moved from the note (messages 377, 378): IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about
    // USD 15.0/MMBtu at R18.35/USD), against the central case's USD 11.74 at the coast.
@@ -18957,7 +19050,7 @@ const SLIDERS=[
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:20000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),// Moved from the note (messages 377, 378): Lazard, Levelized Cost of Energy+, June 2025, an international gas-peaker
    // reference, not South African diesel; the slider's floor is diesel's own running cost, dieselSrmcR.
-   note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': build costs over '+BLD_LIFE.ocgd+' years at 8% real at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor (bottom of Lazard\u2019s 2025 gas-peaker range), plus running costs. In the least-cost pathway\u2019s 2030 the fleet runs at '+(LCP_2030_DSL_CF*100).toFixed(1)+'&#37;: R'+((bldLcoeDieselAt(LCP_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
+   note:'Anchor R'+(FIXED.lcoeDiesel/1000).toFixed(2)+': build costs over '+BLD_LIFE.ocgd+' years at '+bldCocPct('ocgd')+' at a '+(DSL_REF_CF*100).toFixed(0)+'&#37; capacity factor (bottom of Lazard\u2019s 2025 gas-peaker range), plus running costs. In the least-cost pathway\u2019s 2030 the fleet runs at '+(LCP_2030_DSL_CF*100).toFixed(1)+'&#37;: R'+((bldLcoeDieselAt(LCP_2030_DSL_CF))/1000).toFixed(2)+'/kWh.'},
   {endsub:true},
   {grp:'Storage and flexibility'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
@@ -20771,7 +20864,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-27f';
+const BUILD_STAMP = '2026-10-28a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
