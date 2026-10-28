@@ -17878,6 +17878,15 @@ R500/kW-yr, as at the central (R1,517), since both plans retire coal on Figure 3
 s_coalsustain_c6b: the same build and CO2 as c6b (no early coal retirement), engine PV +R145.4bn; the IRP gap unchanged at
 +R317.4bn.
 
+Nuclear's high case, released (user, 28 Oct 2026, message 455 (a); central USD 7,500/kW confirmed, R10,500/kW-yr, about
+R125,200/kW overnight; high USD 12,000/kW, R16,800/kW-yr, about R200,300/kW): the IRP pair checked at NUC_ACAP=16800
+(pathcheck_irp2025_c6b_nuc16800 and _irpdem_nuc16800, run in the chain): IRP build engine PV R2,702.2bn at c6b's demand, gap
++R360.7bn (+R43.2bn on the central charge); R2,638.0bn at the IRP's demand, gap +R417.0bn (+R43.2bn). CO2 and adequacy unchanged; the
+optimised plans build no nuclear. Like for like with IRP 2025's Figure 9 (both overnight, January 2026 rands at x1.0681): the central
+is 52-74% above Figure 9's large reactor (R71,810-82,595/kW) and inside its SMR range (R100,095-166,492/kW); the high case is 2.4-2.8
+times the large reactor. All capital costs in the model are overnight, annuitised at 8% without interest during construction; at 8%
+IDC adds roughly a third for an eight-year build and a few percent for one- to three-year builds (TODO 14ke).
+
 Not run: s_std_nem_nogas_dsl_c6b's engine check groups b and c (the run finished; superseded by c6c); s_std_strict_nogas_c6b and
 s_std_nem_nogas_c6b (not in the set: their solves exceed two hours); restart counts (superseded by c6c). The high nuclear charge
 checks (R16,800/kW-yr) ran and are withheld until the nuclear cost is reconciled.

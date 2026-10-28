@@ -543,7 +543,14 @@ later). The pack is unchanged for now: no source has been read. A web search (28
 Africa, 28 Oct 2026, 'Ramokgopa postpones gas power procurement programme briefing' (greenbuildingafrica.co.za), which reports the
 department announced it on social media; this container cannot open .co.za pages, so it was not read. Once the article, a
 department or IPP Office notice is read: one line beside the gas-from-2032 assumption in the pack, and the three '[Briefing: one
-sentence to follow.]' placeholders in section 4 replaced with it (or removed if no source is confirmed before the pack goes out).
+sentence to follow.]' placeholders in section 4 replaced with it (or removed if no source is confirmed before the pack goes out). Closed 28 Oct 2026 (message 456): source read by the advisor; the pack line and the three placeholders are done; the
+determination comparison (5,000 MW of gas by 2037 against c6c's new gas by 2035 and 2040) fills when c6c lands.
+
+14ke. Interest during construction by build time, for every technology, after the note (user, 28 Oct 2026, message 455 (a); standard
+practice, rule 366): all capital costs are overnight, annuitised at 8% without IDC. Add IDC from each technology's build time and
+spend profile (nuclear about eight years, adding roughly a third at 8%; coal and pumped storage several years; wind, solar,
+batteries and gas one to three years, a few percent), in the build optimiser and the engine's capital charge alike, and rerun the
+central.
 
 ## Follow-through on the engine change
 

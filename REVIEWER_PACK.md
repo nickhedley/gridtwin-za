@@ -56,7 +56,7 @@ What c6a, c6b and c6c change on top of c6 (each with its source in SOURCES):
 
 | Input | c6 | c6c | Set that changed it | Status |
 |---|---|---|---|---|
-| New gas, earliest year | 2030 | 2032 (IGUA-SA, Gas Roadmap, May 2026 update; s_gas2030 keeps 2030) | c6a | sourced (choice of year) |
+| New gas, earliest year | 2030 | 2032 (IGUA-SA, Gas Roadmap, May 2026 update; s_gas2030 keeps 2030). The Minister postponed the 28 October 2026 briefing on the Gas IPP Procurement Programme, with no new date; the Section 34 determination of 7 October 2026 covers 5,000 MW of gas-to-power and 4,600 MW of battery storage, 2026–2037, procured by the IPP Office (Green Building Africa, 'Ramokgopa postpones gas power procurement programme briefing', 28 October 2026, https://www.greenbuildingafrica.co.za/ramokgopa-postpones-gas-power-procurement-programme-briefing/) | c6a | sourced (choice of year) |
 | 2026 fleet | every 2026 plant all year | each 2026 plant for its share of the year in service | c6a | sourced |
 | Rooftop basis | August 2026 point | the 2026 mean less wheeled plant, stepping to the end-2026 level in 2027, added back on the twelve-year solar mean | c6a | partly |
 | Onshore wind capex | R20,874/kW (implied by BW5's awarded tariff) | R28,462/kW, BW6 compliant bids, the figure IRP 2025's Figure 9 uses | c6b | sourced |
@@ -116,7 +116,7 @@ c5e connects 15.5 GW of new wind and utility solar in 2026–30. NTCSA's stated 
 
 ### Capex against IRP 2025 Figure 9
 
-Overnight capex, R/kW. Figure 9 (IRP 2025, plan p.21) is in 2024 rands; converted to January 2026 at ×1.0681 (SA CPI). Meridian's column waits for pages 82–87 of its IRP 2023 review. Flag: more than 25% apart.
+Overnight capex, R/kW. All capital costs in the model are overnight and annuitised at 8% real without interest during construction (IDC). At 8%, IDC adds roughly a third for an eight-year nuclear build and a few percent for one- to three-year builds such as wind, solar, batteries and gas; nuclear's high case (USD 12,000/kW, about 60% above the central) spans its IDC. Figure 9 (IRP 2025, plan p.21) is in 2024 rands, also overnight; converted to January 2026 at ×1.0681 (SA CPI). Meridian's column waits for pages 82–87 of its IRP 2023 review. Flag: more than 25% apart.
 
 | Technology | Ours, Jan 2026 | Our basis | Figure 9, Jan 2026 | Ours against Figure 9 | Flag | Meridian |
 |---|---|---|---|---|---|---|
@@ -128,7 +128,7 @@ Overnight capex, R/kW. Figure 9 (IRP 2025, plan p.21) is in 2024 rands; converte
 | Open-cycle gas | 25,778 | CCGT × EIA AEO2023 ratio 867/1,176 | 11,610–13,506 | +91% to +122% | yes | pending |
 | Offshore wind, floating | 79,200 | USD 4,800 (IRENA 2018 and NREL ATB brackets) | 73,009–112,270 | within | no | pending |
 | Coal, new | about 59,600 | USD 3,600, from acapCoal (no new coal is built) | 158,443 | −62% | yes | pending |
-| Nuclear | about 125,200 (USD 7,500, from acapNuclear) | no study | withheld until the reconciliation is confirmed | – | – | pending |
+| Nuclear, large reactor | about 125,200 (USD 7,500, from acapNuclear); high case about 200,300 (USD 12,000, R16,800/kW-yr) | the middle of published USD 6,000–9,000/kW benchmarks | 71,810–82,595 (PWR); SMR 100,095–166,492 | +52% to +74% (central, against PWR) | yes | pending |
 | CSP with storage | no build option | – | 142,101–205,734 | – | – | pending |
 
 Causes of the flags:
@@ -137,6 +137,7 @@ Causes of the flags:
 - Pumped storage: ours is Tubatse's own estimate; Figure 9's basis was not traced.
 - Gas: ours is 2025 project data, after the turbine price rise; Figure 9 sits at roughly half.
 - Coal: no run builds new coal, so the gap moves no result.
+- Nuclear: like for like (both overnight, January 2026 rands), our central is 52–74% above Figure 9's large-reactor range and inside its SMR range; the high case is about 2.4–2.8 times Figure 9's large reactor. No optimised plan builds nuclear, so the charge moves only the IRP build's cost (and s_be7's).
 - The coal and nuclear benchmarks convert at about R16.8/$, against R16.50 elsewhere in the model; a constant held twice, to be reconciled.
 
 ---
@@ -359,11 +360,13 @@ Runs against NTCSA's two criteria:
 |---|---|---|---|---|---|---|---|---|
 | (to fill) | | | | | | | | |
 
-The IRP 2025 build against the optimised plan, case by case (central and IRP demand, the two wind cost cases, the two carbon paths, coal sustaining capital at R500/kW-yr; the high nuclear charge withheld until the nuclear cost is reconciled):
+The IRP 2025 build against the optimised plan, case by case (central and IRP demand, the two wind cost cases, the two carbon paths, coal sustaining capital at R500/kW-yr, and nuclear at the high charge):
 
 | Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026–40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |
 |---|---|---|---|---|---|---|
 | (to fill) | | | | | | |
+
+New gas against the Section 34 determination (5,000 MW of gas-to-power, 2026–2037): c6c builds (to fill) MW of new gas (CCGT and open-cycle on LNG) by 2035 and (to fill) MW by 2040; c6b built 3,541 MW by 2035 and 8,830 MW by 2040.
 
 c6c against c6b, run by run (the 24-hour down time and the 0.715 floor against the 4-hour down time and the 0.75 floor). CO2 differences include c6c's recalibrated coal emission factor (1.074 against 1.080 t/MWh before part-load), which on the same coal output takes about 0.6% off coal CO2:
 
@@ -421,7 +424,7 @@ The IRP 2025 build against the optimised plan, case by case (the IRP build check
 
 Cost per tonne of CO2 cut by the IRP 2025 build, carbon tax taken out because it is a transfer: R1,517 at c6b's demand (214 Mt over 2026–40) and R1,306 at the IRP's (294 Mt). On the Treasury carbon path the optimised plan emits less than the IRP build (1,644 against 1,729 Mt) and costs R307.2bn less, so the IRP build has no abatement cost there. Coal sustaining capital leaves the gap unchanged: both plans retire coal on Figure 3's dates.
 
-Not run: two of the three engine-check groups of s_std_nem_nogas_dsl (superseded by c6c), and s_std_strict_nogas and s_std_nem_nogas (their solves exceed two hours). The IRP pair at a high nuclear charge ran and is withheld until the nuclear cost is reconciled.
+Not run: two of the three engine-check groups of s_std_nem_nogas_dsl (superseded by c6c), and s_std_strict_nogas and s_std_nem_nogas (their solves exceed two hours). At nuclear's high case (USD 12,000/kW, R16,800/kW-yr against R10,500) the IRP build costs R43.2bn more at either demand: the gap is +R360.7bn at c6b's demand and +R417.0bn at the IRP's (the optimised plans build no nuclear, so they do not move).
 
 ### c6a results (runs of 26–27 October 2026, build 2026-10-26b; the previous central, superseded by c6c when its runs land)
 
@@ -463,8 +466,8 @@ an open-cycle capacity factor of at most 1.4%. As in c6, no new gas without new 
 Not in the table: the three NEM-standard runs and the restart-cost line, still running when c6a was superseded. s_std_strict_nogas did not
 finish (a build pass hit its 2-hour limit); c6's did not meet the standard either.
 
-The IRP 2025 build on c6a's paths, checked by the same engine (IRP comparison as at 27 October 2026, before the government briefing on
-the Gas IPP Procurement Programme, 28 October. [Briefing: one sentence to follow.]):
+The IRP 2025 build on c6a's paths, checked by the same engine (IRP comparison as at 27 October 2026; the government briefing on the Gas IPP Procurement Programme set for 28 October was
+postponed with no new date, section 1):
 
 | Run | 20 GWh | Strict (half NEM) | Mean unserved, highest year / worst run, GWh | Open-cycle CF, highest year | Engine PV, R bn | Against the optimised plan at the same demand | CO2 2030 / 2035 / 2040, Mt | CO2 2026-40, Mt | Curtailed wind and solar 2026-40, TWh | Restart line PV, R bn |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -525,7 +528,7 @@ c6 under each standard. The standard barely moves c6: NTCSA's 20 GWh and the NEM
 | c6, s_std_strict | 2303.6 | 2.3 | 178 | 1.2% | 1731 | wind 9.7, solar 9.3, Li 4.9 GW, CCGT 0.0, open-cycle 0.2 | wind 27.2, solar 15.5, Li 9.0 GW, CCGT 2.9, open-cycle 0.2 | wind 33.7, solar 26.9, Li 13.0 GW, CCGT 8.1, open-cycle 0.9 |
 | c6, s_std_nem | 2299.8 | 2.6 | 194 | 1.4% | 1760 | wind 8.4, solar 9.3, Li 3.4 GW, CCGT 0.0, open-cycle 0.0 | wind 25.9, solar 16.0, Li 9.1 GW, CCGT 2.9, open-cycle 0.2 | wind 33.6, solar 27.2, Li 13.0 GW, CCGT 8.0, open-cycle 0.9 |
 
-Gas results as at 27 October 2026, before the government briefing on the Gas IPP Procurement Programme (28 October). [Briefing: one sentence to follow.]
+Gas results as at 27 October 2026. The government briefing on the Gas IPP Procurement Programme set for 28 October was postponed with no new date (Green Building Africa, 'Ramokgopa postpones gas power procurement programme briefing', 28 October 2026, https://www.greenbuildingafrica.co.za/ramokgopa-postpones-gas-power-procurement-programme-briefing/).
 
 Gas supply against the IRP's timing. The IRP build has 6 GW of new CCGT in 2029–30 (s_irpgas's 3,000 MW in each year). Industrial gas users place the gas cliff in mid-2028, when Sasol's pipeline gas to industry ends (Sasol bridges some customers with methane-rich gas from Secunda to June 2030), and see new LNG import terminals as unlikely before 2031 (IGUA-SA, Gas Roadmap for South Africa 2025–42, May 2026 update, as reported by Engineering News, 18 May 2026; the October 2026 edition and its 2031 terminal date are as reported by C. Yelland, EE Business Intelligence, 26 October 2026, not read here). c6 builds its first new gas in 2031 (268 MW), about 1 GW by 2033 and 3.1 GW by 2035, so it shares the risk on a smaller scale; s_gas2032, no new gas before 2032, costs R0.2bn less than c6, so in c6's plan a later gas date costs nothing. The IRP's 6 GW in 2029–30 depends on fuel that may not be there.
 
@@ -540,7 +543,7 @@ No new gas, with and without new diesel open-cycle, under each standard. Without
 | NEM 0.002% | no new gas, no new peakers | no (2035-2040) | no: over 20 GWh in 2037, 2038, 2039, 2040 | 0 / 0 / 0 / 0 / 0 | 1.9% | 115.3 / 277 | 2355.5 | +55.6 | – |
 | NEM 0.002% | no new gas, peakers allowed | no (2036-2040) | yes | 0 / 159 / 1,159 / 1,826 / 3,633 | 1.3% | 12.4 / 257 | 2309.2 | +9.4 | -46.3 |
 
-IRP comparison as at 27 October 2026, before the government briefing on the Gas IPP Procurement Programme (28 October). [Briefing: one sentence to follow.]
+IRP comparison as at 27 October 2026; the gas briefing set for 28 October was postponed with no new date (above).
 
 Nuclear timing risk. The IRP build includes IRP 2025's 5.2 GW of new nuclear from 2036 (s_be7's schedule). The site process is early: Eskom's draft scoping report (WSP, April 2026) names Thyspunt as the preferred site, and a full environmental impact assessment follows only if the Department of Forestry, Fisheries and the Environment accepts the scoping; the area holds a provisional Grade I heritage declaration (SAHRA, January 2025) to at least February 2027 (Daily Maverick, 14 April 2026). The draft EIA is now reported for the first quarter of 2027, with no authorisation and no vendor chosen (C. Yelland, EE Business Intelligence, 26 October 2026). A first unit in 2036 would leave about nine years from a draft EIA to operation. c6 builds no new nuclear, so the timing risk sits on the IRP side of the comparison.
 
