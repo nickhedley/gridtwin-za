@@ -17829,7 +17829,7 @@ Measured on build 2026-10-28a at start-up (Today 2026), central case:
 Cost readouts before and after (2026 rands, R/kWh): solar 0.53 -> 0.61, wind 0.82 -> 0.68, lithium 1.34 -> 1.26, vanadium 1.70 -> 1.60,
 iron-air 4.80 -> 4.55, CCGT 2.90 -> 3.06, diesel open-cycle 9.35 -> 9.55, rooftop 1.10 unchanged.
 
-Suite on build 2026-10-28a (28 Oct 2026, 10:12-14:03 UTC, branch claude/coc-by-tech after the worker fix, ESK19679.csv present,
+Suite on build 2026-10-28a (28 Oct 2026, 11:40-14:03 UTC, branch claude/coc-by-tech after the worker fix, ESK19679.csv present,
 nothing running beside it; stored panels rewritten first, 1,741 s): node checks 973/996, audit 88/88, eng5 5/6. Against main
 (27f, the suite of RESULTS 'Suite on build 27f at the 0.715 floor') the failures are the same checks by name: validate_outputs
 49/51, validate_findings 37/40, validate_consistency 81/83, validate_response 86/87, validate_benchmarks 28/30,
