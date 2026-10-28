@@ -1957,3 +1957,72 @@ Pointer: C. Yelland, EE Business Intelligence weekly note, 26 October 2026 (Nick
 - eThekwini: Project Smart Solar with Plentify, 280 households and facilities with solar and batteries, applications from June 2026
   (Engineering News, 3 Jun 2026). GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027): as
   reported, no original found.
+
+## Cost of capital by technology (user, 28 Oct 2026, messages 468 and 469; build 2026-10-28a)
+
+Two rates. The discount rate that weights each year stays 8% real, one for all (BLD_DISC). Meridian Economics' review of the IRP
+2023 discounts "future costs ... at 8.2% real" (slide 16, read by the advisor); SATIMGE's global rate 8.2% (search snippet only);
+IRP 2025 states "a discount rate of 11.3%" (Gazette p.34), real or nominal not stated in the plan or its assumptions workbook (read
+as real: its costs are in constant January 2024 rands). Capital charges and interest during construction take each technology's
+real pre-tax cost of capital (bldCoc). The central is the cost of capital for state-backed procurement (REIPPPP, BESIPPPP), the only
+South African bid evidence.
+
+Central rates and their basis (message 469 as amended):
+- Utility solar 5.5%: the rate at which BW6's compliant tracker bid capex (R15,715/kW, IPP Office REIPPPP historical data note,
+  7 Nov 2025, January 2024 terms; R16,786 in 2026) with BW6's fixed O&M reproduces BW6's average tariff (R490.48/MWh, base 1 April
+  2022, about R590 in 2026) over the model's 25-year solar life at the bids' 30.1% capacity factor: 5.6%. On the same capex BW5's
+  R428.79 (base taken as April 2021) gives 4.7% and BW7's MW-weighted R492.53 (base taken as January 2024) 4.2%.
+- Onshore wind 5.5%: equal to solar. CEPA for DESNZ, Hurdle rates for electricity generation (final report 30 July 2025, pre-tax
+  real at 31 December 2024; read by the advisor) gives solar PV and onshore wind the same 7.6% under a CfD; the premia depend mainly
+  on the revenue model, and South Africa's wind and solar have the same state-backed contracts.
+- Lithium storage 6.8%: solar + 1.3 points, CEPA's gap (lithium under a capacity-market contract 8.9% against 7.6%). It rests
+  first on BESIPPPP BW1's capacity charge (about R420 per MW per hour of availability against about R28m/MW of capital, R10.09bn
+  for 360 MW: about 13% of capital a year over the 15-year contract, about 7% real if the charge is CPI-indexed and covers fixed O&M,
+  about 10% if it covers capital only). The charge is levied per MW of contracted capacity per hour of availability (BW3 award
+  table, energy-storage.news, search snippet only; the BW2 list notes the evaluation price is the present value of the capital cost
+  recovery charge and the energy output payment). Its indexation and what it covers are not confirmed: to read in the BESIPPPP RFP.
+- Pumped storage 6.8%: solar + 1.3 (CEPA: pumped hydro 8.9%).
+- New gas (CCGT, open-cycle on LNG and on diesel) 8.0%: no South African gas bid; many development and commercial lenders exclude
+  new gas; LNG import supply and price risk; stranding risk under tightening carbon policy; a lower rate would make gas cheaper on
+  assumption alone (message 469, rule 366).
+- Nuclear 8.5%: CEPA's 7.6% for large nuclear holds only under the UK's regulated asset base; South Africa has none (CEPA's SMRs
+  8.9%). Construction risk stays in nuclear's high capex case (USD 12,000/kW).
+- New coal 8.0%: as gas (no new coal is built).
+- Transmission, grid connection, coal retrofits and peaker life extension 7.1%: NERSA's allowed real pre-tax WACC for Eskom
+  (MYPD4, as reported in a parliamentary reply; search snippet only; MYPD6's figure not found).
+- Rooftop: the discount rate (owners' finance, outside state procurement; no evidence for another rate).
+- Cross-checks: NREL ATB 2024 (read; real pre-tax, no tax credits): solar 5.46%, wind 5.77%, pumped storage 6.01%, nuclear 7.20%,
+  gas and coal 8.06%. IEA Cost of Capital Observatory, South Africa: solar 11-13.5% nominal after tax (2023-24), about 9.0% real
+  pre-tax at 4.5% inflation grossing up equity only (search snippets; the high case's level). The 2018 Europe Economics (NERA)
+  figures used in BEIS 2020 are replaced by CEPA 2025.
+
+Cases (FIXED.bldCocCase): 'high', the same gaps on the IEA's 9.0% for solar (wind 9.0, storage 10.3, gas 11.5, nuclear 12.0, network
+9.0); 'low', the central less one point (network unchanged); 'planning', one rate for all (BLD_DISC), as IRP 2025 does; 'private',
+private and merchant finance for wind, solar and lithium (corporate PPAs, wheeling via traders, the wholesale market from 2027):
+wind and solar +1.5 points, lithium +2.0, ASSUMPTIONS anchored on the Danish Energy Agency's offshore-wind hurdle-rate study
+(merchant 1.0-3.0 points over a 20-year CfD; search snippet only). CEPA's merchant case (Table 5.22) was not readable here and
+replaces these once read. No South African figure for the private premium was found: REIPPPP benchmarks only (BW5 debt margin
+about 2.5%, equity IRR 11.35%, Intellidex; 54+ projects, nominal equity IRR 12.3%, senior debt 10.2%, gearing 70.8%, Cresco,
+6 Mar 2024; search snippets). Public and private split of new build, partly sourced (search snippets): BNEF, corporate PPAs backed
+48% of 1.4 GW in 2025 and are expected to back 73% of 2.3 GW in 2026; NERSA registrations since 2018, 16,461 MW by October 2025
+(solar 11,443, wind 5,018), registered not built; GreenCape, 6 GW private solar and 3.5 GW private wind by 2030.
+
+Interest during construction: only where the capital cost is quoted before financing; bid capex and announced project values
+(REIPPPP wind and solar, BESIPPPP lithium) are assumed to include financing. Build years (spend uniform, mid-year; the project's
+assumptions, checked against NREL ATB 2024's construction finance factors, gas 1.114, coal 1.235, large nuclear 1.30, pumped storage
+1.064): CCGT 3, open-cycle 2, offshore 3, vanadium and iron-air 1, pumped storage 6, nuclear 8, coal 6, transmission 3, grid
+connection 2. At the central rates: CCGT 1.125, open-cycle 1.081, nuclear 1.410, coal 1.271, pumped storage 1.226, transmission 1.110.
+
+Lives (unchanged, message 469 (d)), with their sources: wind and solar 25 years (the model's since build 07j; REIPPPP PPAs run 20
+years; NREL ATB 2024's recovery period is 30 for every technology, technical lives longer); lithium 15 (BESIPPPP's 15-year contract;
+McCall et al. 2019, read); vanadium flow 25 and iron-air 20 (BLD_LIFE comments: cycle and calendar life, iron-air a judgement);
+CCGT and open-cycle 30 (the model's; ATB technical life 55); pumped storage 60 (civil works; acapPs's comment; ATB hydro 100);
+nuclear 40 (the model's; ATB technical 60; a 60-year sensitivity, NUC_LIFE=60); new coal 40 (ATB technical 75); transmission and
+grid connection 40 (TX_LIFE_YEARS, BLD_GRID.lifeY). IRP 2025's lives were not found (EPRI 2017's cost tables could not be read).
+
+Bid check (validate_bids.js, two-sided at 10%): solar against BW5-7, wind against BW5, lithium against BESIPPPP BW3's capacity charge
+(about R204-235/MW/h; base taken as 2025, not found); CPI April 2022 5.9% (Stats SA release, search snippet). Explained flags: wind
+above BW5 (BW5's prices do not hold: 784 MW of BW5 wind signed by December 2022, no wind tariff awarded since, BW7's compliant wind
+bids rejected as too high; message 469 (c)); lithium below BW3 (equipment prices fell after the bid: BNEF turnkey survey, USD 165/kWh
+in 2024, 117 in 2025, as in BLD_COST.batt). RMIPPPP not checked (hybrids to a firm profile; powerships bundle fuel and a 72.7%
+take-or-pay; weighted average evaluation price R1,575/MWh, April 2020 base; search snippet).
