@@ -5,8 +5,8 @@
   "IRP's 2030 targets"    the IRP engine check's 2030 state (below; check harness/pathway/irp2025/pathcheck_irp2025_a.json)
   "..., grid delayed"     the same state with 60% of its new wind and solar connected and curtailment capped at 10%
 
-  'Least-cost path 2035'  c5f's pathway (harness/pathway/c5f/pathway_c5f.json; frozen copy of b82bfd3, build 2026-10-17g)
-  'IRP path 2035'         IRP 2025's Table 1 build on c5f's inputs (harness/pathway/irp2025/pathway_irp2025.json, written by
+  'Least-cost path 2035'  the central run's pathway (CENTRAL below: harness/pathway/c6e/pathway_c6e.json from 29 Oct 2026; c5f before)
+  'IRP path 2035'         IRP 2025's Table 1 build on the central run's inputs (harness/pathway/c6e/pathway_irp2025_c6e.json, written by
                           build_irp.py beside it), the engine check of 19 Oct 2026 (message 215 (3))
 
 Nothing in a block is typed: every value is read from the build file, the way pathcheck.js builds a year's state: cumulative
@@ -23,29 +23,30 @@ validate_pathway_presets.js checks they still do.
 import json, sys
 Y = 2035
 PRE2030 = ("  // IRP's 2030 targets and its grid-delayed variant (from build 2026-10-19d; user, message 232 (2)): generated from the IRP\n"
-           "  // engine check's 2030 state (harness/pathway/irp2025/, as IRP path 2035), so their demand, gas price, carbon path, coal dates\n"
-           "  // and coal availability are c5f's; the typed preset before it (IRP demand +20%, coalEafFromFleet(67), lcoeCcgt 2500, 4,500 MW\n"
+           "  // engine check's 2030 state (harness/pathway/c6e/, as IRP path 2035), so their demand, gas price, carbon path, coal dates\n"
+           "  // and coal availability are the central run's (c6e from 29 Oct 2026); the typed preset before it (IRP demand +20%, coalEafFromFleet(67), lcoeCcgt 2500, 4,500 MW\n"
            "  // rooftop and 3,724 MW of storage) is in git history. The build is the run's (build_irp.py): Table 1's wind and solar by year,\n"
-           "  // s_irpgas_c5f's gas and 51% floor, rooftop 900 MW a year from 2027, s_be6_c5f's lithium. The variant connects 60% of the\n"
+           "  // the IRP's gas and 51% floor, rooftop 900 MW a year from 2027 to 2035, the IRP's lithium. The variant connects 60% of the\n"
            "  // state's new wind and solar and caps congestion curtailment at 10%, as before.\n")
+CENTRAL = 'harness/pathway/c6e/pathway_c6e.json'   # the central run's build file (c6e, PR #128, run on f7921b7, build 2026-10-28a)
 PRESETS = [
-    {'name': "IRP's 2030 targets", 'year': 2030, 'build': 'harness/pathway/irp2025/pathway_irp2025.json', 'check': 'harness/pathway/irp2025/pathcheck_irp2025_a.json',
+    {'name': "IRP's 2030 targets", 'year': 2030, 'build': 'harness/pathway/c6e/pathway_irp2025_c6e.json', 'check': 'harness/pathway/c6e/pathcheck_irp2025_c6e_a.json',
      'first_from': "  // DEMAND FROM 19 OCT 2026 (user, message 231 (2)): both 2030 presets run on c5f's demand for 2030", 'first_to': "lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},\n", 'preamble': PRE2030},
     # 'grid delayed': 40% of the new wind and solar cannot connect and curtailment is 10% (the variant's own definition, 7 Oct 2026)
-    {'name': "IRP's 2030 targets, grid delayed", 'year': 2030, 'build': 'harness/pathway/irp2025/pathway_irp2025.json', 'check': 'harness/pathway/irp2025/pathcheck_irp2025_a.json',
+    {'name': "IRP's 2030 targets, grid delayed", 'year': 2030, 'build': 'harness/pathway/c6e/pathway_irp2025_c6e.json', 'check': 'harness/pathway/c6e/pathcheck_irp2025_c6e_a.json',
      'delay': {'share': 0.6, 'congestionCurtailPct': 10},
      'first_from': "  'IRP\\'s 2030 targets, grid delayed':{demandGrowthPct:C5F_DEMAND[2030].growthPct,", 'first_to': "congestionCurtailPct:10,scenarioYear:2030},\n", 'preamble': ''},
-    {'name': 'IRP path 2035', 'build': 'harness/pathway/irp2025/pathway_irp2025.json', 'check': 'harness/pathway/irp2025/pathcheck_irp2025_b.json',
-     'gap_index': 'harness/pathway/irp2025/index_irpdem.json',
+    {'name': 'IRP path 2035', 'build': 'harness/pathway/c6e/pathway_irp2025_c6e.json', 'check': 'harness/pathway/c6e/pathcheck_irp2025_c6e_b.json',
+     'gap_run': 'harness/pathway/c6e/pathway_c6e_irpdem.json',
      # first generation replaces the hand-written preset and its comment block, from this line to the end of the preset
      'first_from': "  // IRP path 2035. The counterfactual the two transition presets should be read against: what",
      'first_to': "ccgtForceLoad:1,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},\n",
-     'preamble': ("  // IRP path 2035 (from build 2026-10-19b; user, message 227 (2)): the IRP 2025's Table 1 build to 2035 priced on c5f's inputs,\n"
-                  "  // the engine check of 19 Oct 2026 (RESULTS 'IRP 2025's Table 1 build priced on c5f's inputs'), so it compares like for like\n"
+     'preamble': ("  // IRP path 2035 (from build 2026-10-19b; user, message 227 (2)): the IRP 2025's Table 1 build to 2035 priced on the central\n"
+                  "  // run's inputs (c6e from 29 Oct 2026; c5f before), its engine check beside the central's, so it compares like for like\n"
                   "  // with 'Least-cost path 2035': the same demand, gas price, carbon path and coal dates. Until 19a it was typed: Table 1's\n"
                   "  // build at the transition presets' +5% demand, the page's R2,003 gas and R46/t carbon, lcoeCcgt 2500, reserve and inertia\n"
                   "  // pricing on (git history). The IRP's own 51% gas floor on 6 GW applies, as in the run.\n")},
-    {'name': 'Least-cost path 2035', 'build': 'harness/pathway/c5f/pathway_c5f.json', 'check': 'harness/pathway/c5f/pathcheck_c5f_b.json'},
+    {'name': 'Least-cost path 2035', 'build': 'harness/pathway/c6e/pathway_c6e.json', 'check': 'harness/pathway/c6e/pathcheck_c6e_b.json'},
 ]
 j = lambda v: json.dumps(v)
 
@@ -113,7 +114,7 @@ def block(cfg):
 
 
 def demand_gap(cfg, Y=2035):
-    # How far the IRP's demand path sits above the pathway's in 2035 (message 229 (2)): customer demand plus firm exports on
+    # How far the IRP's demand path sits from the pathway's in 2035, signed (message 229 (2)): customer demand plus firm exports on
     # the pair's index (harness/pathway/irp2025/index_irpdem.json, message 224) against the same on the build file's own index.
     # From c6e (29 Oct 2026) the pair's demand is read from its own run files instead ('gap_run': the IRP-demand run beside
     # 'build'): customer demand is the profile base x the run's index plus its smelter block, firm exports the page's, on both sides;
@@ -134,18 +135,20 @@ def demand_gap(cfg, Y=2035):
 def c5f_demand():
     # c5f's demand for the presets' years (message 231 (2)): growth on the 2026 base and the smelter block, from its build file,
     # read by every preset that runs on the pathway's demand.
-    P = json.load(open('harness/pathway/c5f/pathway_c5f.json')); blk = P['demand'].get('block') or {}
+    # From 29 Oct 2026 the central is c6e (harness/pathway/c6e, PR #128); the identifiers keep the C5F_ names (renaming them is churn in
+    # the presets block), and the block's comment says whose figures they are.
+    P = json.load(open(CENTRAL)); blk = P['demand'].get('block') or {}
     yrs = {y: {'growthPct': (P['demand']['index'][str(y)] - 1) * 100,
                'blockMW': max([mw for s, mw in blk.items() if int(s) <= y] or [0])} for y in (2026, 2030, 2035, 2040)}
-    DB = "// BEGIN GENERATED C5F_DEMAND (harness/pathway/gen_pathway_presets.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)"
+    DB = f"// BEGIN GENERATED C5F_DEMAND (harness/pathway/gen_pathway_presets.py from {CENTRAL}; do not edit by hand)"
     DE = "// END GENERATED C5F_DEMAND"
     # c5f's build-rate caps that override the pace, recorded in its build file (WIND_CAP, LI_CAP, MW a year from the year given;
     # lithium energy at liEnergyHours of the power cap); the captions compare the searched presets' builds with c5f's limits
     # (messages 245 and 246 (4)).
     caps = {'wind': {'mw': P['windCap'], 'from': P['windCapFrom']}, 'batt': {'mw': P['liCap'], 'from': P['liCapFrom']},
             'battEnergyHours': P['liEnergyHours']}
-    return DB, DE, (f"{DB}\n// c5f's demand by model year: growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))\nconst C5F_DEMAND = {j(yrs)};\n"
-                    f"// c5f's build-rate caps over the pace: MW a year from the year given; lithium energy in hours of its power cap (messages 245, 246 (4))\nconst C5F_BUILD_CAPS = {j(caps)};\n{DE}")
+    return DB, DE, (f"{DB}\n// The central run's demand by model year (c6e from 29 Oct 2026; the C5F_ names are kept): growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))\nconst C5F_DEMAND = {j(yrs)};\n"
+                    f"// The central run's build-rate caps over the pace: MW a year from the year given; lithium energy in hours of its power cap (messages 245, 246 (4))\nconst C5F_BUILD_CAPS = {j(caps)};\n{DE}")
 
 
 html = open('index.html').read(); new = html
@@ -182,7 +185,7 @@ for cfg in PRESETS:
         gsrc = cfg.get('gap_run') or cfg['gap_index']
         GB30 = f"// BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from {gsrc}; do not edit by hand)"
         GE30 = "// END GENERATED IRP's 2030 targets demand gap"
-        g30blk = f"{GB30}\nconst IRP2030_DEMAND_GAP_PCT = {j(g30)};   // the IRP's demand path above the pathway's in 2030, customer demand plus firm exports\n{GE30}"
+        g30blk = f"{GB30}\nconst IRP2030_DEMAND_GAP_PCT = {j(g30)};   // the IRP's demand path against the pathway's in 2030, signed (negative: below), customer demand plus firm exports\n{GE30}"
         if replace_block(new, GB30, GE30, g30blk) is not None:
             new = replace_block(new, GB30, GE30, g30blk)
         else:
@@ -192,7 +195,7 @@ for cfg in PRESETS:
         gap = demand_gap(cfg)
         GB = f"// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from {gsrc}; do not edit by hand)"
         GE = "// END GENERATED 'IRP path 2035' demand gap"
-        gblk = f"{GB}\nconst IRP2035_DEMAND_GAP_PCT = {j(gap)};   // Table 1's demand path above the pathway's in 2035, customer demand plus firm exports\n{GE}"
+        gblk = f"{GB}\nconst IRP2035_DEMAND_GAP_PCT = {j(gap)};   // the IRP's demand path against the pathway's in 2035, signed (negative: below), customer demand plus firm exports\n{GE}"
         if replace_block(new, GB, GE, gblk) is not None:
             new = replace_block(new, GB, GE, gblk)
         else:

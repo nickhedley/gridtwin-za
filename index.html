@@ -19183,10 +19183,10 @@ const SLIDERS=[
    note:'What an exported unit earns on the City Power rows; zero by default, as no City Power rate is sourced. Eskom rows use Eskom\u2019s Gen-offset Homeflex rates (2026/27 booklet, p.44). Cape Town pays R1.53 in 2026/27.'},
   {endsub:true},
 ];
-// BEGIN GENERATED C5F_DEMAND (harness/pathway/gen_pathway_presets.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)
-// c5f's demand by model year: growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))
+// BEGIN GENERATED C5F_DEMAND (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_c6e.json; do not edit by hand)
+// The central run's demand by model year (c6e from 29 Oct 2026; the C5F_ names are kept): growth on the 2026 base (ESRG IRPDemandREF index) and the flat smelter block, MW (message 231 (2))
 const C5F_DEMAND = {"2026": {"growthPct": 0, "blockMW": 0}, "2030": {"growthPct": 10.138399999999992, "blockMW": 930}, "2035": {"growthPct": 26.745400000000007, "blockMW": 930}, "2040": {"growthPct": 45.889599999999994, "blockMW": 930}};
-// c5f's build-rate caps over the pace: MW a year from the year given; lithium energy in hours of its power cap (messages 245, 246 (4))
+// The central run's build-rate caps over the pace: MW a year from the year given; lithium energy in hours of its power cap (messages 245, 246 (4))
 const C5F_BUILD_CAPS = {"wind": {"mw": 3500, "from": 2031}, "batt": {"mw": 3000, "from": 2028}, "battEnergyHours": 4};
 // END GENERATED C5F_DEMAND
 const PRESETS={
@@ -19219,8 +19219,8 @@ const PRESETS={
   // national programme rather than a marginal one.
   // Table 1 build (see IRP's 2030 targets) with 40% of the new wind and solar unable to connect: wind 0.6 x 7,341,
   // solar 0.6 x 10,313; storage as planned. 7 Oct 2026.
-  // BEGIN GENERATED 'IRP's 2030 targets, grid delayed' (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/pathway_irp2025.json; do not edit by hand)
-  'IRP\'s 2030 targets, grid delayed':{scenarioYear:2030,newWindMW:4405,newPvMW:6188,newRooftopMW:3600,newBattMW:3214,newBattHours:2.4374611076540136,newVrfbMW:0,newIronAirMW:0,newCcgtMW:6000,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:10.138399999999992,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"central",bldPvCase:"central",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",ccgtForceLoad:1,ccgtForceLoadMW:6000,congestionCurtailPct:10,get carbonTaxRPerT(){ return carbonTaxAt(2030, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 32433)); }},
+  // BEGIN GENERATED 'IRP's 2030 targets, grid delayed' (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_irp2025_c6e.json; do not edit by hand)
+  'IRP\'s 2030 targets, grid delayed':{scenarioYear:2030,newWindMW:4405,newPvMW:6188,newRooftopMW:3600,newBattMW:1916,newBattHours:3.0015657620041756,newVrfbMW:0,newIronAirMW:0,newCcgtMW:6000,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:10.138399999999992,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"bw6",bldPvCase:"bw6",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",ccgtForceLoad:1,ccgtForceLoadMW:6000,congestionCurtailPct:10,get carbonTaxRPerT(){ return carbonTaxAt(2030, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 32433)); }},
   // END GENERATED 'IRP's 2030 targets, grid delayed'
   // IRP's 2030 targets and its grid-delayed variant (from build 2026-10-19d; user, message 232 (2)): generated from the IRP
   // engine check's 2030 state (harness/pathway/irp2025/, as IRP path 2035), so their demand, gas price, carbon path, coal dates
@@ -19228,19 +19228,19 @@ const PRESETS={
   // rooftop and 3,724 MW of storage) is in git history. The build is the run's (build_irp.py): Table 1's wind and solar by year,
   // s_irpgas_c5f's gas and 51% floor, rooftop 900 MW a year from 2027, s_be6_c5f's lithium. The variant connects 60% of the
   // state's new wind and solar and caps congestion curtailment at 10%, as before.
-  // BEGIN GENERATED 'IRP's 2030 targets' (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/pathway_irp2025.json; do not edit by hand)
-  'IRP\'s 2030 targets':{scenarioYear:2030,newWindMW:7341.0,newPvMW:10313.0,newRooftopMW:3600,newBattMW:3214,newBattHours:2.4374611076540136,newVrfbMW:0,newIronAirMW:0,newCcgtMW:6000,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:10.138399999999992,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"central",bldPvCase:"central",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",ccgtForceLoad:1,ccgtForceLoadMW:6000,get carbonTaxRPerT(){ return carbonTaxAt(2030, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 32433)); }},
+  // BEGIN GENERATED 'IRP's 2030 targets' (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_irp2025_c6e.json; do not edit by hand)
+  'IRP\'s 2030 targets':{scenarioYear:2030,newWindMW:7341.0,newPvMW:10313.0,newRooftopMW:3600,newBattMW:1916,newBattHours:3.0015657620041756,newVrfbMW:0,newIronAirMW:0,newCcgtMW:6000,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:10.138399999999992,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"bw6",bldPvCase:"bw6",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",ccgtForceLoad:1,ccgtForceLoadMW:6000,get carbonTaxRPerT(){ return carbonTaxAt(2030, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 32433)); }},
   // END GENERATED 'IRP's 2030 targets'
   // IRP path 2035 (from build 2026-10-19b; user, message 227 (2)): the IRP 2025's Table 1 build to 2035 priced on c5f's inputs,
   // the engine check of 19 Oct 2026 (RESULTS 'IRP 2025's Table 1 build priced on c5f's inputs'), so it compares like for like
   // with 'Least-cost path 2035': the same demand, gas price, carbon path and coal dates. Until 19a it was typed: Table 1's
   // build at the transition presets' +5% demand, the page's R2,003 gas and R46/t carbon, lcoeCcgt 2500, reserve and inertia
   // pricing on (git history). The IRP's own 51% gas floor on 6 GW applies, as in the run.
-  // BEGIN GENERATED 'IRP path 2035' (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/pathway_irp2025.json; do not edit by hand)
-  'IRP path 2035':{scenarioYear:2035,newWindMW:21041.0,newPvMW:17513.0,newRooftopMW:8100,newBattMW:4724,newBattHours:3.472904318374259,newVrfbMW:0,newIronAirMW:0,newCcgtMW:10442,newOcgtMW:308,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:26.745400000000007,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"central",bldPvCase:"central",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",ccgtForceLoad:1,ccgtForceLoadMW:6000,get carbonTaxRPerT(){ return carbonTaxAt(2035, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 25916)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 7341.0); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 10313.0); }},
+  // BEGIN GENERATED 'IRP path 2035' (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_irp2025_c6e.json; do not edit by hand)
+  'IRP path 2035':{scenarioYear:2035,newWindMW:21041.0,newPvMW:17513.0,newRooftopMW:8100,newBattMW:4724,newBattHours:5.604572396274344,newVrfbMW:0,newIronAirMW:0,newCcgtMW:9403,newOcgtMW:1347,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:26.745400000000007,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"bw6",bldPvCase:"bw6",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",ccgtForceLoad:1,ccgtForceLoadMW:6000,get carbonTaxRPerT(){ return carbonTaxAt(2035, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 25916)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 7341.0); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 10313.0); }},
   // END GENERATED 'IRP path 2035'
-  // BEGIN GENERATED 'Least-cost path 2035' (harness/pathway/gen_pathway_presets.py from harness/pathway/c5f/pathway_c5f.json; do not edit by hand)
-  'Least-cost path 2035':{scenarioYear:2035,newWindMW:23362,newPvMW:14736,newRooftopMW:10800,newBattMW:8647,newBattHours:3.4504452411240893,newVrfbMW:0,newIronAirMW:0,newCcgtMW:2632,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:26.745400000000007,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"central",bldPvCase:"central",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",get carbonTaxRPerT(){ return carbonTaxAt(2035, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 25916)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 7246); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 9347); }},
+  // BEGIN GENERATED 'Least-cost path 2035' (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_c6e.json; do not edit by hand)
+  'Least-cost path 2035':{scenarioYear:2035,newWindMW:22562,newPvMW:22746,newRooftopMW:11802,newBattMW:11315,newBattHours:5.0768890852850195,newVrfbMW:0,newIronAirMW:0,newCcgtMW:551,newOcgtMW:649,newOcgdMW:0,newOffshoreMW:0,newNuclearMW:0,newPsMW:0,demandGrowthPct:26.745400000000007,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"bw6",bldPvCase:"bw6",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",get carbonTaxRPerT(){ return carbonTaxAt(2035, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 25916)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 7246); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 8194); }},
   // END GENERATED 'Least-cost path 2035'
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
   // (expected unserved energy at most 0.002% of demand, mean of twelve weather years), re-run
@@ -19771,11 +19771,11 @@ const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'roofto
 // ONE DESCRIPTION PER PRESET, read by the caption under the buttons, the hover tooltip and the screen-reader
 // description alike, so the text lives only here. Hover tooltips alone appeared late and never on touch
 // screens; the caption shows the hovered or focused preset, and the active one otherwise. 7 Oct 2026.
-// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)
-const IRP2035_DEMAND_GAP_PCT = 7.5137236790951745;   // Table 1's demand path above the pathway's in 2035, customer demand plus firm exports
+// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_c6e_irpdem.json; do not edit by hand)
+const IRP2035_DEMAND_GAP_PCT = -4.792573521804244;   // the IRP's demand path against the pathway's in 2035, signed (negative: below), customer demand plus firm exports
 // END GENERATED 'IRP path 2035' demand gap
-// BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)
-const IRP2030_DEMAND_GAP_PCT = 7.2498099089135515;   // the IRP's demand path above the pathway's in 2030, customer demand plus firm exports
+// BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_c6e_irpdem.json; do not edit by hand)
+const IRP2030_DEMAND_GAP_PCT = -6.531248397471545;   // the IRP's demand path against the pathway's in 2030, signed (negative: below), customer demand plus firm exports
 // END GENERATED IRP's 2030 targets demand gap
 // BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from harness/ext/rescore_page_29a_deep.json and harness/ext/rescore_page_29a_fossil_topped.json; do not edit by hand)
 const PRESET_SCORES = {"Deep decarbonisation 2035": {"shed": 1.4314, "target": 2.4281, "runs": 240, "build": "2026-10-29a", "seed": 120000017}, "Fossil-free 2040": {"shed": 2.5527, "target": 2.7236, "runs": 240, "build": "2026-10-29a", "seed": 71830529}};
@@ -20879,7 +20879,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-29a';
+const BUILD_STAMP = '2026-10-29b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
