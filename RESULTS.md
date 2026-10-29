@@ -17887,7 +17887,12 @@ text on build 2026-10-29a', 985/1006, 88/88, 5/6), every script equal by count a
 validate_benchmarks 28/30 (Ember CO2, peakerSeasonRatio); validate_outputs 49/51 (curtailment at defaults, the coal-curtailment
 anchor); eng5 storage vs unserved. All known (RESULTS 'Known failures').
 
-Second suite, on the reworded page with the panels rewritten again: to follow in this entry.
+Second suite, build 2026-10-29b, 29 Oct 2026 19:27-21:51 UTC, branch claude/site-text at 66cb5eb (the comment reworded, the
+audit's marker check on the folder, stored panels rewritten first, fingerprint 030bb9c5fafa49, 9/9 while writing), ESK19679.csv
+present, nothing running beside it: node checks 998/1007, audit 88/88, eng5 5/6. Every script equal to the first suite by count
+and by failure name; the two audit items cleared. Against the branch's third suite on 29a (985/1006, 88/88, 5/6): equal by name
+except validate_pathway_presets 27/40 to 41/41. Against main (28a: 974/996, 88/88, 5/6): the same, plus the 29a text changes.
+These are the counts the presets pull request reports.
 
 ### Site text on build 2026-10-29a: the 2025 wind note subtracted today's Eskom wind line, not 2025's; the rest is wording (user, 28 Oct 2026, messages 470, 471 and 473; branch claude/site-text, no PR yet)
 
