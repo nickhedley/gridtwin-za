@@ -19,6 +19,11 @@
 - Code comments (487 (3)): the remaining emphasis capitals and the comment phrases go in a separate PR after the send.
 - Pack (489 (a)): one caveat line, the c6e central against the Australian 0.002% standard (AEMO 2026 ESOO, pp. 5, 24-25), computed
   by packfill (nemover) from the engine check; the snapshot reproduces the advisor's preliminary 2031 and 2032 figures.
+- Pack caveats, no new runs (491, 492): beside Fossil-free 2040, its 13 GW of 100-hour iron-air from the original design (figures
+  from the page through packfill; the re-search after the note includes a version without iron-air); beside the gas-timing
+  sensitivities, Mitsubishi Power's turbine deliveries for new orders around 2031 (Bloomberg, 27 Oct 2026; SOURCES 'Gas timing'
+  and 'Gas turbine prices and lead times'), so new gas before about 2034 assumes turbines already ordered. TODO 14kt: a high LNG
+  price case after the send.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
