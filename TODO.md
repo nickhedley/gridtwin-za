@@ -447,6 +447,13 @@ optimiser's pass limit on c6e (both met their standard in c6c, with new gas from
 against its own standard and says a higher limit is untested. Rerun both with MAXP raised (chain_c6e.sh's one() takes a pass count)
 to settle whether the standard is reachable with new gas from 2035; report cost, build and the years over the standard.
 
+14kv. Cost of IRP 2025's 51% gas minimum to industry, after the send (user, 29 Oct 2026, message 496). (a) Engine check of c6e's
+central build with only the gas minimum on (GASFLOOR engine-only: 51% of up to 6,000 MW of CCGT, 2030-40), against the central:
+system cost per MWh by year, engine PV and CO2; the same build, so the difference is the floor alone. (b) Pass both through the retail
+tariff calculator to Megaflex: c/kWh and the percentage change for a typical industrial load. (c) First indication, from c6e's
+s_irpgas on the snapshot (the advisor, 29 Oct 2026): system cost +R142-152/MWh in 2030-40, PV +R198bn, CO2 +155 Mt; that run also
+changes the gas build (GAS_FIRST=2032, forced and minimum gas), so it is not the floor alone and is not quoted as such.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
