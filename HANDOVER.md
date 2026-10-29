@@ -32,6 +32,12 @@
   pack reports each from its engine check against its own standard, worded 'the optimiser reached its pass limit; the engine check
   gives ...' (packfill passlimit, overownfig), never 'infeasible' or 'cannot be met': a higher pass limit is untested (TODO 14ku,
   after the send).
+- The note (497): NOTE_DRAFT.md on the pack branch is the note's master, started with the first agreed text, 'Gas: IRP 2025's 51%
+  minimum', every figure a packfill marker (s_irpgas against c6e: cost per MWh served, the range of the yearly percentage differences
+  across 2030-40, avgcostpct; the PV difference, dpvabs). The same finding is in the pack's cover note and section 4. The advisor's
+  14.0-14.4% were the 2030 and 2040 endpoints; across every year the snapshot gives 12.3-15.9% (R128-156/MWh), the reading used
+  pending Nick's call. The minimum alone and its pass-through to Megaflex is TODO 14kv; the sentence is updated when it lands.
+  Source: Engineering News, 19 Oct 2025 (50%; the Gazette's 51% is used), under SOURCES 'Gas timing'.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
