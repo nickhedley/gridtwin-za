@@ -28,6 +28,10 @@
   c6's record; new gas's capacity factor by year from the engine check (packfill gascf; built as backup capacity) in the cover note
   and section 4; the two working notes cut; NTCSA's 20 GWh against the 0.002% test as a computed range (nemratio). Section 6 as
   drafted is recommended by the advisor; Nick confirms on his Friday read.
+- Standard runs (495): s_std_strict and s_std_nem stopped at the optimiser's pass limit on c6e (both met their standard in c6c). The
+  pack reports each from its engine check against its own standard, worded 'the optimiser reached its pass limit; the engine check
+  gives ...' (packfill passlimit, overownfig), never 'infeasible' or 'cannot be met': a higher pass limit is untested (TODO 14ku,
+  after the send).
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
