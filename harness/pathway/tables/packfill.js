@@ -48,7 +48,7 @@
 //   prev.*               the previous central (PREV, default c6c) as a run; RUN.dco2absmt CO2 against the plan, unsigned, Mt;
 //                        RUN.dco2prevabs CO2 against the previous central, unsigned (message 507 (b)); table:against c6c the
 //                        run-by-run comparison with the previous set (settables section 4)
-//   nogasbest.*          the no-gas rerun that meets the standard (s_nogas_maxp6, else s_nogas_topup): every run key, plus .which,
+//   nogasbest.*          the no-gas rerun that meets the standard (s_nogas_maxp6, else s_nogas_maxp10): every run key, plus .which,
 //                        .added and .finding (message 508); while neither is in, .finding says the rerun follows
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
@@ -113,10 +113,10 @@ function pageCost(k){
   if (w==='pvCase') return g.pvCase; if (w==='cocCase') return g.cocCase; if (w==='fx') return nf(g.fx,2); if (w==='nucUsd') return nf(g.nucUsd,0); if (w==='coalUsd') return nf(g.coalUsd,0);
   throw new Error('packfill: unknown page key '+k);
 }
-// The no-gas rerun (message 508): 'nogasbest' is the first of the higher-pass-limit run and the top-up run whose check meets NTCSA's
+// The no-gas rerun (messages 508, 510): 'nogasbest' is the first of the pass-limit-6 and pass-limit-10 runs whose check meets NTCSA's
 // two criteria; its keys are the ordinary run keys plus .which (its plain name), .added (what stands in 2040 beyond the pass-limit
 // run, GW, iron-air flagged) and .finding (one sentence; while neither run is in, the sentence says the rerun follows).
-const NOGAS_RERUNS=['s_nogas_maxp6','s_nogas_topup'];
+const NOGAS_RERUNS=['s_nogas_maxp6','s_nogas_maxp10'];   // message 510: pass limit 6, then 10 if 6 still falls short; no top-up tonight
 const meets=s=>!!s&&!s.rows.some(x=>x.mean>20)&&!s.rows.some(x=>x.ocgtCF>=0.06);
 const peek=r=>{ const n=opt(r); if (!fs.existsSync(`${O}/pathway_${n}.json`)) return null; if (cache[r]!==undefined) return cache[r]; const q=summ(O,n); if (q) q.dir=O; return q; };
 let NB; const nogasBest=()=>{ if (NB!==undefined) return NB; NB=null; for (const r of NOGAS_RERUNS){ const q=peek(r); if (q&&meets(q)){ NB={r,s:q}; break; } } return NB; };
@@ -127,7 +127,7 @@ const nogasAdded=q=>{ const z=S('s_nogas'); if (!z) return null; const a=q.build
   return parts.map(([n,d])=>`${d>0?'':'−'}${nf(Math.abs(d),1)} GW ${n}`).join(', ')+(parts.some(([n,d])=>n==='iron-air'&&d>0)?' (it adds iron-air, whose finding is a known failure: section 5)':''); };
 function value(k){
   if (k.startsWith('nogasbest.')){ const m=k.slice(10); const best=nogasBest();
-    if (!best){ missing.add(opt('s_nogas_maxp6')); return m==='finding'?'A rerun with a higher pass limit, and an adequacy top-up as its fallback, follows.':null; }
+    if (!best){ missing.add(opt('s_nogas_maxp6')); return m==='finding'?'A rerun with a higher pass limit follows.':null; }
     if (m==='which') return plainName(opt(best.r));
     if (m==='added') return nogasAdded(best.s);
     if (m==='finding'){ const b=S('base'); const d=best.s.pv-b.pv; const cost=Math.abs(d)<1?'costs within R1 billion of the least-cost plan':(d>0?'costs ':'saves ')+Rb(d)+(d>0?' more than the least-cost plan':' against the least-cost plan');

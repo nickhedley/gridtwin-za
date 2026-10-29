@@ -629,6 +629,11 @@ overownfig).
 month and in wind and solar lulls (hours below a set share of mean wind-plus-solar output, and multi-day lulls), 2035 and 2040, so the
 pack can say whether gas runs mainly in winter lulls; a packfill key for the sentence.
 
+14ky. A no-gas adequacy top-up tool, after the note (user, 29 Oct 2026, message 510): the harness's adequacy top-up adds only diesel
+open-cycle, which a no-new-gas-and-no-peakers run forbids, so such a run that stops at the optimiser's pass limit has no fallback; a
+top-up that adds from the run's own allowed technologies (storage, wind, solar, pumped storage) until the engine check meets the
+standard, reported as what it added, and a packfill key for it.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
