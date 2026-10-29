@@ -45,6 +45,11 @@
 - 500: sections 5 and 6 keep c6c's no-gas lines as the engine check measured them on that plan. c6e at 32 of 33 runs at 13:32
   SAST (only s_std_nem_nogas_dsl and the restart counts left); the session checks main for the merged c6e outputs every 30
   minutes from 15:30 SAST and starts the fill as soon as they are there.
+- 501: section 1's cost basis restated for c6e: 'Cost basis' is a table of each technology's cost of capital, basis, interest
+  during construction, 2026 capex and capex basis, the four cases and the private premium, with c6c's text kept below it as the
+  record; the Figure 9 subsection, the c5e table's Discount rate row and limitation 9 updated or marked superseded. Rates, factors
+  and capex come from the page through packfill's page.* keys (harness/pathway/tables/page_costs.js reads index.html in jsdom), so
+  none is typed; nuclear against Figure 9 reads +53% to +75% (was +52% to +74%, typed at about R16.69 against the page's R16.80).
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 

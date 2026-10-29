@@ -27,6 +27,12 @@
 //                        factor against COAL_PARTLOAD_2026 and Eskom's FY2026 rate (partload_check.js; the constants read from the page)
 //   site.build           the page's BUILD_STAMP
 //   page.ff2040ironairGW / page.ironairHours   the Fossil-free 2040 preset's iron-air (GW) and the page's iron-air duration (hours)
+//   page.coc.TECH / page.coc.CASE.TECH   a technology's real pre-tax cost of capital on the page, central or the named case
+//                        (private, high, low, planning), as '5.5%'; page.idc.TECH its interest-during-construction factor; page.years.TECH
+//                        its build years; page.life.TECH its life; page.capex.TECH its 2026 capex, R/kW; page.acap.TECH its derived
+//                        capital charge, R/kW-yr; page.capexvs.TECH.LO[.HI] the capex against a typed Figure 9 range, as '−48% to −34%',
+//                        'within' or 'equal'; page.privprem.re|store the private-finance premium in points; page.disc the discount
+//                        rate; page.pvCase, page.cocCase, page.fx, page.nucUsd, page.coalUsd (page_costs.js, message 501 (d))
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -63,7 +69,31 @@ let PL=null; const partload=()=>{ if (PL) return PL; const f=`${O}/pathcheck_${C
   try { PL=JSON.parse(cp.execFileSync('node',[path.join(__dirname,'..','partload_check.js'),f],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim().split('\n').pop()); } catch(e){ console.error('partload_check.js failed (run from harness/ with testroot): '+e.message.split('\n')[0]); PL=null; }
   return PL; };
 
+let PG=null; const pagecosts=()=>{ if (PG) return PG; if (!fs.existsSync('testroot/index.html')) return null;
+  try { PG=JSON.parse(cp.execFileSync('node',[path.join(__dirname,'page_costs.js'),'testroot'],{encoding:'utf8',stdio:['ignore','pipe','ignore'],timeout:300000}).trim().split('\n').pop()); }
+  catch(e){ console.error('page_costs.js failed (run from harness/ with testroot): '+e.message.split('\n')[0]); PG=null; }
+  return PG; };
+const pc1=v=>nf(v*100,1)+'%';
+function pageCost(k){
+  const g=pagecosts(); if (!g){ missing.add('the page (page_costs.js)'); return null; }
+  const q=k.split('.').slice(1); const w=q[0];
+  const T=t=>{ if (!(t in g.coc.central)&&!(t in g.capex)&&!(t in g.acap)) throw new Error(`packfill: no page cost for technology '${t}' in ${k}`); return t; };
+  if (w==='coc') return q.length===2?pc1(g.coc.central[T(q[1])]):pc1(g.coc[q[1]][T(q[2])]);
+  if (w==='idc') return nf(g.idc.central[T(q[1])],3);
+  if (w==='years') return String(g.buildYears[T(q[1])]??'');
+  if (w==='life') return String(g.life[T(q[1])]??'');
+  if (w==='capex') return nf(g.capex[T(q[1])],0);
+  if (w==='acap') return nf(g.acap[T(q[1])],0);
+  if (w==='capexvs'){ const v=Math.round(g.capex[T(q[1])]), lo=+q[2], hi=q[3]!=null?+q[3]:+q[2]; const pct=x=>v/x-1;
+    if (v>=lo&&v<=hi) return lo===hi?'equal':'within';
+    const a=pct(hi), b=pct(lo); const f=x=>(x>=0?'+':'−')+nf(Math.abs(x)*100,0)+'%'; return a===b?f(a):`${f(Math.min(a,b))} to ${f(Math.max(a,b))}`; }
+  if (w==='privprem') return nf(g.privatePrem[q[1]]*100,1)+' points';
+  if (w==='disc') return pc1(g.disc);
+  if (w==='pvCase') return g.pvCase; if (w==='cocCase') return g.cocCase; if (w==='fx') return nf(g.fx,2); if (w==='nucUsd') return nf(g.nucUsd,0); if (w==='coalUsd') return nf(g.coalUsd,0);
+  throw new Error('packfill: unknown page key '+k);
+}
 function value(k){
+  if (k.startsWith('page.')&&!['page.ff2040ironairGW','page.ironairHours'].includes(k)) return pageCost(k);
   if (k==='site.build'){ if (!fs.existsSync('testroot/index.html')) return null; const m=fs.readFileSync('testroot/index.html','utf8').match(/const BUILD_STAMP = '([^']+)'/); return m?m[1]:null; }
   // Page inputs read from index.html (message 491): the Fossil-free 2040 preset's iron-air, GW, and the page's iron-air duration, hours.
   if (k==='page.ff2040ironairGW'||k==='page.ironairHours'){ if (!fs.existsSync('testroot/index.html')) return null; const h=fs.readFileSync('testroot/index.html','utf8');
