@@ -42,6 +42,9 @@
 //   table:What gets built, least-cost plan / table:What gets built, IRP 2025   new capacity added each year by technology, MW, with the
 //                        total and coal standing, from the run's build schedule; all-zero columns dropped (message 505 (a))
 //   RUN.lumpy            the years with no new wind or utility solar and those with almost none (under a tenth of the mean addition)
+//   Draft 2 keys (message 506): RUN.nemlimits the Australian limit in GWh across the years, '4-5.5 GWh'; RUN.gascfr_YYYY new gas's capacity
+//                        factor rounded, '5%'; RUN.coalgw_YYYY coal standing in GW; RUN.addgw_T new capacity added 2026-40 in GW, T one of
+//                        wind solar rooftop batt gas ccgt ocgt dsl ps offshore ironair nuclear (one decimal under 10 GW)
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -72,6 +75,9 @@ function S(r){ if (r in cache) return cache[r];
   return cache[r]=s; }
 const nf=(v,d)=>v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const sg=(v,d)=>(v>=0?'+':'−')+nf(Math.abs(v),d);
+// Reviewer-facing style (message 506): 'R368 billion', ranges with a hyphen (2026-40, 12-16%), year spans as '2031-32'.
+const Rb=v=>'R'+nf(Math.abs(v),0)+' billion';
+const spanH=ys=>span(ys).replace(/(\d{4})\u2013(\d{4})/g,(m,a,b)=>a.slice(0,2)===b.slice(0,2)?`${a}-${b.slice(2)}`:`${a}-${b}`);
 const span=ys=>{ const a=[]; for (const y of ys){ const l=a[a.length-1]; if (l&&y===l[1]+1) l[1]=y; else a.push([y,y]); } return a.map(([p,q])=>p===q?`${p}`:`${p}–${q}`).join(', '); };
 const taxPV=s=>{ let t=0; for (const r of s.rows) t+=r.co2*(r.carbonTaxRPerT||0)*Math.pow(1.08,-(r.y-2026))/1000; return t; };
 let PL=null; const partload=()=>{ if (PL) return PL; const f=`${O}/pathcheck_${C}_a.json`; if (!fs.existsSync(f)) return null;
@@ -121,22 +127,22 @@ function value(k){
     case 'lumpy': { const out=[]; for (const [k,name] of [['wind','wind'],['pv','utility solar']]){ const ys=Object.keys(s.sched).map(Number).sort().filter(y=>y>=2027);   // 2026 is the year in progress
         const add=y=>s.sched[y][k]||0; const nz=ys.filter(y=>add(y)>=1); const mean=nz.length?nz.reduce((a,y)=>a+add(y),0)/nz.length:0;
         const zero=ys.filter(y=>add(y)<1), small=ys.filter(y=>add(y)>=1&&add(y)<0.1*mean);
-        if (zero.length||small.length) out.push((zero.length?`no new ${name} in ${span(zero)}`:`little new ${name}`)+(small.length?` and almost none in ${span(small)}`:'')); }
+        if (zero.length||small.length) out.push((zero.length?`no new ${name} in ${spanH(zero)}`:`little new ${name}`)+(small.length?` and almost none in ${spanH(small)}`:'')); }
       return out.length?out.join('; '):'additions are steady from year to year'; }
-    case 'pvbn': return 'R'+nf(s.pv,0)+'bn';
-    case 'dpvplain': { if (!b) return null; const d=s.pv-b.pv; return Math.abs(d)<1?'changes the cost by less than R1bn':(d>0?'adds R':'saves R')+nf(Math.abs(d),0)+'bn'; }
-    case 'dpvabsbn': return b&&'R'+nf(Math.abs(s.pv-b.pv),0)+'bn';
+    case 'pvbn': return Rb(s.pv);
+    case 'dpvplain': { if (!b) return null; const d=s.pv-b.pv; return Math.abs(d)<1?'changes the cost by less than R1 billion':(d>0?'adds ':'saves ')+Rb(d); }
+    case 'dpvabsbn': return b&&Rb(s.pv-b.pv);
     case 'dco2plain': { if (!b) return null; const d=s.co2Cum-b.co2Cum; return Math.abs(d)<0.5?'less than 1 Mt':nf(Math.abs(d),0)+' Mt '+(d>0?'more':'less'); }
     case 'verdictplain': { const u=s.rows.filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
       if (!u.length&&!o.length) return "meets the system operator's adequacy test in every year to 2040";
-      return [u.length?`exceeds the system operator's 20 GWh limit on expected unserved energy in ${span(u)}`:'',o.length?`runs open-cycle plant more than 6% of the time in ${span(o)}`:''].filter(Boolean).join(' and '); }
+      return [u.length?`exceeds the system operator's 20 GWh limit on expected unserved energy in ${spanH(u)}`:'',o.length?`runs open-cycle plant more than 6% of the time in ${spanH(o)}`:''].filter(Boolean).join(' and '); }
     case 'nemplain': { const lim=x=>0.00002*x.servedTWh*1e3; const over=s.rows.filter(x=>x.mean-(x.seMean||0)>lim(x)), near=s.rows.filter(x=>x.mean>lim(x)&&!(x.mean-(x.seMean||0)>lim(x)));
-      const a=[]; if (over.length) a.push(`is over the limit in ${span(over.map(x=>x.y))}`); if (near.length) a.push(`sits at about the limit in ${span(near.map(x=>x.y))}, within the model\u2019s sampling error`);
+      const a=[]; if (over.length) a.push(`is over the limit in ${spanH(over.map(x=>x.y))}`); if (near.length) a.push(`sits at about the limit in ${spanH(near.map(x=>x.y))}, within the model\u2019s sampling error`);
       return a.length?a.join(', and '):'stays under the limit in every year'; }
     case 'gasgw': return nf(at(q=>q.ccgt+q.ocgtGas)/1e3,1);
-    case 'gascfplain': { const v=s.rows.filter(x=>x.y>=2035&&x.gasCF!=null).map(x=>100*x.gasCF); if (!v.length) return null; const lo=Math.round(Math.min(...v)), hi=Math.round(Math.max(...v)); return lo===hi?`${lo}%`:`${lo}\u2013${hi}%`; }
+    case 'gascfplain': { const v=s.rows.filter(x=>x.y>=2035&&x.gasCF!=null).map(x=>100*x.gasCF); if (!v.length) return null; const lo=Math.round(Math.min(...v)), hi=Math.round(Math.max(...v)); return lo===hi?`${lo}%`:`${lo}-${hi}%`; }
     case 'avgcostpctplain': { if (!b) return null; const d=s.rows.filter(x=>x.y>=2030&&x.y<=2040).map(x=>{ const c=b.rows.find(q=>q.y===x.y); return c?100*(x.avgCostRMWh/c.avgCostRMWh-1):null; }).filter(v=>v!=null);
-      if (!d.length) return null; const lo=Math.round(Math.min(...d)), hi=Math.round(Math.max(...d)); return lo===hi?`${lo}%`:`${lo}\u2013${hi}%`; }
+      if (!d.length) return null; const lo=Math.round(Math.min(...d)), hi=Math.round(Math.max(...d)); return lo===hi?`${lo}%`:`${lo}-${hi}%`; }
     case 'dpv': return b&&sg(s.pv-b.pv,1);
     case 'dpvabs': return b&&nf(Math.abs(s.pv-b.pv),1);   // the same, unsigned, for prose such as 'R…bn in present value'
     case 'co2': return y?nf(s.co2[y],1):nf(s.co2Cum,0);
@@ -164,13 +170,20 @@ function value(k){
     // New gas's capacity factor in a year (the engine check's gasCF: gas output over the CCGT standing x 8,760), %; message 493 (b).
     case 'gascf': { const x=s.rows.find(q=>q.y===y); return x&&x.gasCF!=null?nf(100*x.gasCF,1)+'%':null; }
     // NTCSA's 20 GWh over 0.002% of each year's served energy, the range across the run's years (message 493 (d)).
-    case 'nemratio': { const r=s.rows.map(x=>20/(0.00002*x.servedTWh*1e3)); return `${nf(Math.min(...r),1)}\u2013${nf(Math.max(...r),1)}`; }
+    case 'nemratio': { const r=s.rows.map(x=>20/(0.00002*x.servedTWh*1e3)); return `${nf(Math.min(...r),1)}-${nf(Math.max(...r),1)}`; }
+    case 'nemlimits': { const r=s.rows.map(x=>0.00002*x.servedTWh*1e3); const f=v=>nf(Math.round(v*2)/2,Number.isInteger(Math.round(v*2)/2)?0:1); return `${f(Math.min(...r))}-${f(Math.max(...r))} GWh`; }
+    case 'gascfr': { const x=s.rows.find(q=>q.y===y); return x&&x.gasCF!=null?nf(100*x.gasCF,0)+'%':null; }
+    case 'coalgw': { const v=s.sched&&s.sched[y]&&s.sched[y].coalMW; return v==null?null:nf(v/1e3,1); }
+    case 'addgw': { if (!s.sched) return null; const t=m.split('_')[1]; const ys=Object.keys(s.sched); const g=k=>ys.reduce((a,yy)=>a+((s.sched[yy][k])||0),0);
+      const v={wind:g('wind'),solar:g('pv'),rooftop:g('rooftop'),batt:g('batt'),gas:g('ccgt')+g('ocgt'),ccgt:g('ccgt'),ocgt:g('ocgt'),dsl:g('ocgd'),ps:g('phes')+g('phel'),offshore:g('off'),ironair:g('ironair'),
+        nuclear:s.nuclearAdd?Object.values(s.nuclearAdd).reduce((a,b)=>a+b,0):0}[t]; if (v==null) throw new Error('packfill: no addgw technology '+t);
+      return v<9.95e3?nf(v/1e3,1):nf(v/1e3,0); }
     // Against the Australian standard with the engine check's sampling error (message 502 (a)): a year is over only when the mean less
     // one standard error is still above 0.002% of served energy; a year whose mean is above but within one standard error is 'at the
     // limit within sampling error'. nemover is the phrase after 'the central is'; nemfig_YYYY one year's figure; nemshort the span form.
     case 'nemover': case 'nemshort': { const lim=x=>0.00002*x.servedTWh*1e3, fig=x=>`${x.y} (${nf(x.mean,2)} ± ${nf(x.seMean||0,2)} against ${nf(lim(x),2)})`;
       const over=s.rows.filter(x=>x.mean-(x.seMean||0)>lim(x)), near=s.rows.filter(x=>x.mean>lim(x)&&!(x.mean-(x.seMean||0)>lim(x)));
-      if (m==='nemshort'){ const a=[]; if (over.length) a.push(`over the Australian standard in ${span(over.map(x=>x.y))}`); if (near.length) a.push(`at about the Australian standard in ${span(near.map(x=>x.y))}, within sampling error`);
+      if (m==='nemshort'){ const a=[]; if (over.length) a.push(`over the Australian standard in ${spanH(over.map(x=>x.y))}`); if (near.length) a.push(`at about the Australian standard in ${spanH(near.map(x=>x.y))}, within sampling error`);
         return a.length?a.join(' and '):'under the Australian standard in every year'; }
       const a=[]; if (over.length) a.push(`over it in ${over.map(fig).join(', ')}`); if (near.length) a.push(`at the limit within sampling error in ${near.map(fig).join(', ')}`);
       return a.length?a.join('; '):'under it in every year'; }
@@ -188,11 +201,11 @@ function value(k){
     case 'curt': return nf(s.rows.reduce((q,x)=>q+(x.curt||0),0),1);
     case 'cocgapmax': { if (r!=='irp') return null; const g0=S('irp'); if (!g0) return null; const gap=(ir,run)=>{ const a=S(ir), c=S(run); return a&&c?a.pv-c.pv:null; };
       const g=gap('irp','base'); const ds=[['irp_cocplan','s_cocplan'],['irp_cocprivate','s_cocprivate']].map(([i,x])=>{ const v=gap(i,x); return v==null||g==null?null:Math.abs(v-g); });
-      if (ds.some(v=>v==null)) return null; return 'R'+nf(Math.max(...ds),0)+'bn'; }
+      if (ds.some(v=>v==null)) return null; return Rb(Math.max(...ds)); }
     case 'gap': case 'cut': case 'gapbn': case 'gapplain': case 'cutmt': case 'cutplain': case 'pertonne': case 'pertonnetax': { const o=S(irpMatch(r)); if (!o) return null;
       const gap=s.pv-o.pv, cut=o.co2Cum-s.co2Cum;
       if (m==='gap') return sg(gap,1); if (m==='cut') return nf(cut,0);
-      if (m==='gapbn') return 'R'+nf(Math.abs(gap),0)+'bn'; if (m==='gapplain') return Math.abs(gap)<1?'about the same':'R'+nf(Math.abs(gap),0)+'bn '+(gap>0?'more':'less');
+      if (m==='gapbn') return Rb(gap); if (m==='gapplain') return Math.abs(gap)<1?'about the same':Rb(gap)+' '+(gap>0?'more':'less');
       if (m==='cutmt') return nf(Math.abs(cut),0)+' Mt'; if (m==='cutplain') return Math.abs(cut)<0.5?'about the same':nf(Math.abs(cut),0)+' Mt '+(cut>0?'less':'more');
       if (cut<=0) return 'none (the IRP build emits more)';
       return 'R'+nf(1000*(m==='pertonnetax'?gap:gap-(taxPV(s)-taxPV(o)))/cut,0); }
@@ -202,17 +215,17 @@ function value(k){
 
 // What gets built, year by year (message 505 (a)): additions in MW from the run's build schedule, plain column names, all-zero columns dropped.
 const built=run=>{ const s=S(run); if (!s||!s.sched) return null; const ys=Object.keys(s.sched).map(Number).sort(); const g=(y,k)=>(s.sched[y]&&s.sched[y][k])||0;
-  const cols=[['Wind',y=>g(y,'wind')],['Utility solar',y=>g(y,'pv')],['Rooftop solar (input)',y=>g(y,'rooftop')],['Batteries',y=>g(y,'batt')],['Combined-cycle gas',y=>g(y,'ccgt')],
-    ['Open-cycle gas',y=>g(y,'ocgt')],['Open-cycle diesel',y=>g(y,'ocgd')],['Pumped storage',y=>g(y,'phes')+g(y,'phel')],['Offshore wind',y=>g(y,'off')],['Iron-air',y=>g(y,'ironair')],
+  const cols=[['Wind',y=>g(y,'wind')],['Utility-scale solar',y=>g(y,'pv')],['Rooftop solar',y=>g(y,'rooftop')],['Batteries',y=>g(y,'batt')],['Pumped storage',y=>g(y,'phes')+g(y,'phel')],
+    ['Gas (CCGT)',y=>g(y,'ccgt')],['Gas (open-cycle)',y=>g(y,'ocgt')],['Diesel peakers',y=>g(y,'ocgd')],['Offshore wind',y=>g(y,'off')],['Iron-air',y=>g(y,'ironair')],
     ['Vanadium',y=>g(y,'vrfb')],['Nuclear',y=>(s.nuclearAdd&&s.nuclearAdd[y])||0]].filter(([,f])=>ys.some(y=>f(y)>=0.5));
   const tot=y=>cols.reduce((a,[,f])=>a+f(y),0);
-  const head=`| Year | ${cols.map(c=>c[0]).join(' | ')} | Total new | Coal standing |`, sep='|'+'---|'.repeat(cols.length+3);
+  const head=`| Year | ${cols.map(c=>c[0]).join(' | ')} | Total new | Remaining coal |`, sep='|'+'---|'.repeat(cols.length+3);
   const rows=ys.map(y=>`| ${y} | ${cols.map(([,f])=>nf(f(y),0)).join(' | ')} | ${nf(tot(y),0)} | ${nf(g(y,'coalMW'),0)} |`);
-  rows.push(`| 2026–40 | ${cols.map(([,f])=>nf(ys.reduce((a,y)=>a+f(y),0),0)).join(' | ')} | ${nf(ys.reduce((a,y)=>a+tot(y),0),0)} | – |`);
+  rows.push(`| Total | ${cols.map(([,f])=>nf(ys.reduce((a,y)=>a+f(y),0),0)).join(' | ')} | ${nf(ys.reduce((a,y)=>a+tot(y),0),0)} | – |`);
   return '\n\n'+[head,sep,...rows].join('\n')+'\n\n'; };
 let tables=null; const table=t=>{ if (/^What gets built/.test(t)) return built(/IRP/.test(t)?'irp':'base'); if (!tables){ const out=cp.execFileSync('node',[path.join(__dirname,'settables.js'),O,N,C],{encoding:'utf8'}); tables={};
     for (const b of out.split('\n### ').slice(1)){ const i=b.indexOf('\n'); tables[b.slice(0,i).replace(new RegExp('\\b'+C+'\\b','g'),'').replace(/\s+/g,' ').trim()]=b.slice(i).trim(); } }
-  const k=Object.keys(tables).find(h=>h.startsWith(t)); return k?'\n\n'+tables[k]+'\n\n':null; };
+  const k=Object.keys(tables).find(h=>h.startsWith(t)); return k?'\n\n'+tables[k].replace(/\u2013/g,'-')+'\n\n':null; };   // hyphens in ranges (message 506)
 
 const src=fs.readFileSync(PACK,'utf8'); let changed=0; const unknown=[];
 // Every key but 'missing' first, so the missing list is complete when it is written.

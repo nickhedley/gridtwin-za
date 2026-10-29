@@ -625,6 +625,10 @@ draws for years whose mean sits within about two standard errors of a standard (
 the verdict is stable, and report mean ± standard error wherever a year is judged against a standard (packfill's nemover,
 overownfig).
 
+14kx. When new gas runs, after the send (user, 29 Oct 2026, message 506): from the hourly check of the least-cost plan, new gas output by
+month and in wind and solar lulls (hours below a set share of mean wind-plus-solar output, and multi-day lulls), 2035 and 2040, so the
+pack can say whether gas runs mainly in winter lulls; a packfill key for the sentence.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?

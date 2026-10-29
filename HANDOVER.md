@@ -71,6 +71,12 @@
   dropped, rooftop noted as an input; one sentence names the lumpy years from the schedule (key 'lumpy', from 2027); the cover note
   points to it in one line. Nick and the advisor are rewriting the cover note, introduction and section 6 in a Google Doc (plain
   draft 2), carried into the master Friday morning; tonight only the markers and the sections 1-5 rule are maintained.
+- 506: reviewer-facing style: hyphens in number and year ranges, 'R368 billion' written out, finding labels with a colon. packfill's
+  plain keys write 'R… billion' and hyphenated spans ('2031-32'), tables come out with hyphens, the year-by-year tables carry
+  draft 2's column names and a 'Total' row. Draft 2 (Google Doc 'plain-language draft 2', 16:00 SAST) is the final wording for
+  'About', 'Main findings', the build tables and 'Questions' (one question: coal operating rules); the advisor carries it into the
+  master Friday morning. Every figure in it has a fill key (new: nemlimits, gascfr_YYYY, coalgw_YYYY, addgw_T) except 'the
+  replay of 2025 matches Eskom's coal output to within about 1%', a section 2 record with no run key. TODO 14kx: when new gas runs.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
