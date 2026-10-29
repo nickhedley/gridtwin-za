@@ -618,6 +618,13 @@ years.
 14kk. Iron-air (user, 28 Oct 2026, message 476 (c)): the finding "with gas, 20 GW of 100-hour iron-air barely moves July" stays
 out of any note until its check (validate_findings, a known failure since 13h) is settled.
 
+14kw. More draws for years near a standard, after the note (user, 29 Oct 2026, message 502 (d)): the engine check's 120 runs a year
+(twelve weather years by ten outage draws) leave standard errors of 1-2 GWh at the 4-6 GWh level of c6e's 2031-33 means, as large
+as the margins against the Australian 0.002% standard (2031 4.74 ± 1.74 against 4.46; 2032 5.46 ± 1.79 against 4.56). Raise the
+draws for years whose mean sits within about two standard errors of a standard (NTCSA's 20 GWh, the NEM's 0.002%, half of it) until
+the verdict is stable, and report mean ± standard error wherever a year is judged against a standard (packfill's nemover,
+overownfig).
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?

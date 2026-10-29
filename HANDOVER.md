@@ -50,6 +50,11 @@
   record; the Figure 9 subsection, the c5e table's Discount rate row and limitation 9 updated or marked superseded. Rates, factors
   and capex come from the page through packfill's page.* keys (harness/pathway/tables/page_costs.js reads index.html in jsdom), so
   none is typed; nuclear against Figure 9 reads +53% to +75% (was +52% to +74%, typed at about R16.69 against the page's R16.80).
+- 502: the Australian-standard line overstated precision (the advisor's error in 489): the engine check's standard errors are as
+  large as the margins (central 2031 4.74 ± 1.74 against 4.46, 2032 5.46 ± 1.79 against 4.56). packfill's nemover now prints each
+  year's mean ± standard error and counts a year as over only when the mean less one standard error is still above the limit, else
+  'at the limit within sampling error'; nemfig_YYYY gives one year, nemshort the span form for section 6's question 3. s_gas2032's
+  2031 comparison is dropped; its 2032 figure stays. TODO 14kw: more draws for years near a standard.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 

@@ -13,7 +13,7 @@
 //   RUN.pv / .dpv / .dpvabs   engine PV 2026-40, R bn, its difference from the central, and that difference unsigned
 //   RUN.co2 / .dco2 / .co2_YYYY   CO2 2026-40, Mt, its difference from the central, and one year's CO2
 //   RUN.maxmean / .worst / .ocmax / .verdict / .mean_YYYY / .overown / .nemover   adequacy (verdict against NTCSA's two criteria;
-//                        overown: the years over the run's own standard, or 'none'; nemover: the years over the Australian
+//                        overown: the years over the run's own standard, or 'none'; nemover: the phrase against the Australian
 //                        standard, 0.002% of served energy, each with its figures, or 'none'); .gascf_YYYY new gas's capacity
 //                        factor in a year, %; .nemratio the range of 20 GWh over 0.002% of each year's served energy;
 //                        .overownfig the years over the run's own standard with mean against target; .passlimit how the optimiser ended;
@@ -133,7 +133,17 @@ function value(k){
     case 'gascf': { const x=s.rows.find(q=>q.y===y); return x&&x.gasCF!=null?nf(100*x.gasCF,1)+'%':null; }
     // NTCSA's 20 GWh over 0.002% of each year's served energy, the range across the run's years (message 493 (d)).
     case 'nemratio': { const r=s.rows.map(x=>20/(0.00002*x.servedTWh*1e3)); return `${nf(Math.min(...r),1)}\u2013${nf(Math.max(...r),1)}`; }
-    case 'nemover': { const o=s.rows.filter(x=>x.mean>0.00002*x.servedTWh*1e3); return o.length?o.map(x=>`${x.y} (${nf(x.mean,2)} against ${nf(0.00002*x.servedTWh*1e3,2)})`).join(', '):'none'; }
+    // Against the Australian standard with the engine check's sampling error (message 502 (a)): a year is over only when the mean less
+    // one standard error is still above 0.002% of served energy; a year whose mean is above but within one standard error is 'at the
+    // limit within sampling error'. nemover is the phrase after 'the central is'; nemfig_YYYY one year's figure; nemshort the span form.
+    case 'nemover': case 'nemshort': { const lim=x=>0.00002*x.servedTWh*1e3, fig=x=>`${x.y} (${nf(x.mean,2)} ± ${nf(x.seMean||0,2)} against ${nf(lim(x),2)})`;
+      const over=s.rows.filter(x=>x.mean-(x.seMean||0)>lim(x)), near=s.rows.filter(x=>x.mean>lim(x)&&!(x.mean-(x.seMean||0)>lim(x)));
+      if (m==='nemshort'){ const a=[]; if (over.length) a.push(`over the Australian standard in ${span(over.map(x=>x.y))}`); if (near.length) a.push(`at about the Australian standard in ${span(near.map(x=>x.y))}, within sampling error`);
+        return a.length?a.join(' and '):'under the Australian standard in every year'; }
+      const a=[]; if (over.length) a.push(`over it in ${over.map(fig).join(', ')}`); if (near.length) a.push(`at the limit within sampling error in ${near.map(fig).join(', ')}`);
+      return a.length?a.join('; '):'under it in every year'; }
+    case 'nemfig': { const x=s.rows.find(r=>r.y===y); if (!x) return null; const l=0.00002*x.servedTWh*1e3, se=x.seMean||0;
+      return `${nf(x.mean,2)} ± ${nf(se,2)} GWh against ${nf(l,2)}, ${x.mean-se>l?'over it':x.mean>l?'at the limit within sampling error':'under it'}`; }
     case 'verdict': { const u=s.rows.filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
       return !u.length&&!o.length?'met':[u.length?`unserved over 20 GWh in ${span(u)}`:'',o.length?`open-cycle over 6% in ${span(o)}`:''].filter(Boolean).join('; '); }
     case 'wind': return nf(at(q=>q.wind)/1e3,1);
