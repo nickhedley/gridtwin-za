@@ -2082,6 +2082,12 @@ January 2026 rands, on the central's basis (8% real, 25 years, fixed O&M R287/kW
   Bearing on gas build timing: new gas before about 2034 assumes turbines already ordered (the pack, section 4, beside the
   gas-timing sensitivities). See also 'Gas turbine prices and lead times' below.
 
+- Engineering News, 'IRP 2025 raises gas load factor to 50% as adjustments are also made to accommodate nuclear and "clean coal"',
+  19 October 2025 (as reported by the user, 29 Oct 2026, message 497; not read here): the Minister's briefing, gas-to-power to anchor
+  gas demand for industrial users and the LNG imports needed as Sasol's Mozambican supply runs down. The article gives 50%; the
+  Gazette gives 51% (Government Gazette 53596, p.34), the figure the model and the note use. Used for the note's first agreed text
+  (NOTE_DRAFT.md) and the pack's s_irpgas finding.
+
 ## Cost of capital by technology (user, 28 Oct 2026, messages 468 and 469; build 2026-10-28a)
 
 Two rates. The discount rate that weights each year stays 8% real, one for all (BLD_DISC). Meridian Economics' review of the IRP

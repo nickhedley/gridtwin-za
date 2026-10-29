@@ -16,7 +16,8 @@
 //                        overown: the years over the run's own standard, or 'none'; nemover: the years over the Australian
 //                        standard, 0.002% of served energy, each with its figures, or 'none'); .gascf_YYYY new gas's capacity
 //                        factor in a year, %; .nemratio the range of 20 GWh over 0.002% of each year's served energy;
-//                        .overownfig the years over the run's own standard with mean against target; .passlimit how the optimiser ended
+//                        .overownfig the years over the run's own standard with mean against target; .passlimit how the optimiser ended;
+//                        .avgcostpct the range of the yearly percentage differences in cost per MWh served against the central, 2030-40
 //   RUN.wind_YYYY .solar_YYYY .li_YYYY .gas_YYYY .dsl_YYYY .coal_YYYY   GW standing; .gasmw_YYYY new gas on LNG in MW
 //   RUN.curt             curtailed wind and solar 2026-40, TWh
 //   irp*.gap / .cut / .pertonne / .pertonnetax   the IRP build against the optimised plan in the same case: engine PV gap, CO2 cut,
@@ -84,6 +85,10 @@ function value(k){
     case 'overown': return s.over.length?span(s.over):'none';
     // The years over the run's own standard with their figures (mean against that year's target, GWh), and how the optimiser ended
     // (its run file's verdict; message 495: 'pass limit reached' is reported as such, never as infeasible).
+    // Cost per MWh served against the central, 2030-40, as a range of the yearly percentage differences (message 497; the engine
+    // check's avgCostRMWh, served-weighted over its runs).
+    case 'avgcostpct': { if (!b) return null; const d=s.rows.filter(x=>x.y>=2030&&x.y<=2040).map(x=>{ const c=b.rows.find(q=>q.y===x.y); return c?100*(x.avgCostRMWh/c.avgCostRMWh-1):null; }).filter(v=>v!=null);
+      return d.length?`${nf(Math.min(...d),1)}\u2013${nf(Math.max(...d),1)}`:null; }
     case 'overownfig': { const o=s.rows.filter(x=>x.mean>x.target+1e-9); return o.length?o.map(x=>`${x.y} (${nf(x.mean,2)} against ${nf(x.target,2)})`).join(', '):'none'; }
     case 'passlimit': return /pass limit/i.test(s.verdict||'')?'the optimiser reached its pass limit':/adequate/i.test(s.verdict||'')?'the optimiser converged':`the optimiser ended '${s.verdict}'`;
     // Against the Australian grid's standard (AEMO 2026 ESOO: expected unserved energy at most 0.002% of demand; message 489 (a)):
