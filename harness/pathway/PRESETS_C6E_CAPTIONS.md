@@ -46,13 +46,28 @@ Now: "In the model's least-cost pathway in 2030: 103 cycles a year: R4.73/kWh" (
 - B: drop the pathway sentence from the three notes; each keeps its reference-parameter anchor (365 cycles, 10% capacity factor,
   the twelve-year wind factor), which already carries the default and its basis within the 40-word rule.
 
-## Generator inputs for c6e (gen_pathway_presets.py; four path changes, no logic change)
+## Generator changes made on 29 Oct 2026 (claude/site-text, tested on claude/c6e-snapshot in a scratch copy of main's page)
+
+- The guard that refused any run recording a setting the generator does not carry now accepts a run whose imports end year and
+  cost-of-capital case equal the page's own defaults, read from index.html (FIXED.importsEndYear 2030, FIXED.bldCocCase 'central'),
+  and refuses otherwise; files that predate the settings (c5f) pass as before. c6's central ends imports after 2030, so every set
+  since c6 would have been refused.
+- Generated blocks are found by their name, not by the whole BEGIN marker, which records the build file's path: pointing the
+  configuration at c6e's files no longer makes the generator look for the hand-written preset.
+- The demand gap for the IRP captions can be taken from the pair's own run files ('gap_run': the IRP-demand run) instead of an index
+  file's metadata: customer demand (profile base x index plus the smelter block) plus the page's firm exports, on both sides; the c6
+  index file (index_irp2025fig2_c6.json) has no firm-exports entry.
+- Caption wording: at the IRP's own demand basis the IRP's forecast sits below c6's (the pack: 2–7% below), so 'IRP plans X% more'
+  would print a negative figure. The two IRP captions take a sign-aware form on Thursday: 'IRP plans X% more' or 'IRP plans X% less',
+  from the same constant.
+
+## Generator inputs for c6e (gen_pathway_presets.py; path changes only, with the extensions above)
 
 | Entry | Now (c5f) | For c6e |
 |---|---|---|
-| Least-cost path 2035: build, check | harness/pathway/c5f/pathway_c5f.json, pathcheck_c5f_b.json | harness/pathway/c6e/pathway_c6e.json, pathcheck_c6e_b.json (frozen copies from the outputs PR; the run commit in the block's comment) |
-| IRP path 2035: build, check, gap_index | harness/pathway/irp2025/pathway_irp2025.json, pathcheck_irp2025_b.json, index_irpdem.json | harness/pathway/irp2025/pathway_irp2025_c6e.json, pathcheck_irp2025_c6e_b.json (copied from out/c6e/irp), the c6e index (index_irp2025fig2_c6.json, the one chain_c6e.sh runs c6e_irpdem on) |
-| IRP's 2030 targets (and grid delayed): build, check | pathway_irp2025.json, pathcheck_irp2025_a.json | pathway_irp2025_c6e.json, pathcheck_irp2025_c6e_a.json |
+| Least-cost path 2035: build, check | harness/pathway/c5f/pathway_c5f.json, pathcheck_c5f_b.json | harness/pathway/c6e/pathway_c6e.json, pathcheck_c6e_b.json (the outputs PR's folder is the frozen copy; the run commit in the block's comment) |
+| IRP path 2035: build, check, gap | harness/pathway/irp2025/pathway_irp2025.json, pathcheck_irp2025_b.json, gap_index index_irpdem.json | harness/pathway/c6e/pathway_irp2025_c6e.json, pathcheck_irp2025_c6e_b.json (the outputs PR's folder), gap_run harness/pathway/c6e/pathway_c6e_irpdem.json |
+| IRP's 2030 targets (and grid delayed): build, check | pathway_irp2025.json, pathcheck_irp2025_a.json | harness/pathway/c6e/pathway_irp2025_c6e.json, pathcheck_irp2025_c6e_a.json |
 | c5f_demand() | pathway_c5f.json (C5F_DEMAND, C5F_BUILD_CAPS) | pathway_c6e.json; the generated identifiers keep their names on Thursday (renaming them is code churn in the presets block), with the block's comment saying they are c6e's |
 
 Then `python3 harness/pathway/gen_pathway_presets.py` and `--check`; `node validate_pathway_presets.js testroot` (the 13 failures on main,
