@@ -228,7 +228,7 @@ const built=run=>{ const s=S(run); if (!s||!s.sched) return null; const ys=Objec
   const rows=ys.map(y=>`| ${y} | ${cols.map(([,f])=>nf(f(y),0)).join(' | ')} | ${nf(tot(y),0)} | ${nf(g(y,'coalMW'),0)} |`);
   rows.push(`| Total | ${cols.map(([,f])=>nf(ys.reduce((a,y)=>a+f(y),0),0)).join(' | ')} | ${nf(ys.reduce((a,y)=>a+tot(y),0),0)} | – |`);
   return '\n\n'+[head,sep,...rows].join('\n')+'\n\n'; };
-let tables=null; const table=t=>{ if (/^What gets built/.test(t)) return built(/IRP/.test(t)?'irp':'base'); if (!tables){ const out=cp.execFileSync('node',[path.join(__dirname,'settables.js'),O,N,C],{encoding:'utf8'}); tables={};
+let tables=null; const table=t=>{ if (/^What gets built/.test(t)) return built(/IRP/.test(t)?'irp':'base'); if (!tables){ const out=cp.execFileSync('node',[path.join(__dirname,'settables.js'),O,N,C,PV],{encoding:'utf8'}); tables={};   // PV: the comparison set, for 'against <set>' (message 507 (b))
     for (const b of out.split('\n### ').slice(1)){ const i=b.indexOf('\n'); tables[b.slice(0,i).replace(new RegExp('\\b'+C+'\\b','g'),'').replace(/\s+/g,' ').trim()]=b.slice(i).trim(); } }
   const k=Object.keys(tables).find(h=>h.startsWith(t)); return k?'\n\n'+tables[k].replace(/\u2013/g,'-')+'\n\n':null; };   // hyphens in ranges (message 506)
 

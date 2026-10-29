@@ -550,7 +550,35 @@ The IRP 2025 build against the optimised plan, case by case (the IRP build check
 The plan against the 27 October version, run by run (the 27 October version took new gas from 2032 and one 8% rate for every technology; runs without a counterpart in that set are not listed):
 <!--fill:table:against c6c-->
 
-[not yet available: table against c6c]
+| Run | Engine PV, c6e / c6c, R bn | Difference | CO2 2026-40, c6e / c6c, Mt | Curtailed wind and solar 2026-40, c6e / c6c, TWh | Mean unserved, highest year, c6e / c6c, GWh |
+|---|---|---|---|---|---|
+| c6e | 2314.7 / 2340.0 | −25.4 | 1739 / 1937 | 158.8 / 100.3 | 5.5 / 11.7 |
+| c6e_irpdem | 2194.9 / 2219.8 | −24.9 | 1738 / 1890 | 143.9 / 103.7 | 3.7 / 5.9 |
+| null | 2314.7 / 2340.0 | −25.4 | 1739 / 1937 | 158.8 / 100.3 | 5.5 / 11.7 |
+| s_irpgas | 2512.6 / 2499.5 | +13.1 | 1894 / 2064 | 112.6 / 77.4 | 0.5 / 0.8 |
+| s_be6 | 2379.1 / 2384.1 | −5.0 | 1754 / 1943 | 202.7 / 119.3 | 1.0 / 1.9 |
+| s_be7 | 2379.9 / 2368.5 | +11.4 | 1734 / 1914 | 142.7 / 96.4 | 5.4 / 11.7 |
+| s_windhigh | 2323.4 / 2349.6 | −26.2 | 1777 / 1953 | 146.5 / 96.1 | 6.3 / 12.2 |
+| s_carbontreasury | 2633.3 / 2689.6 | −56.4 | 1544 / 1646 | 252.2 / 220.0 | 3.3 / 3.8 |
+| s_carbonhold | 2558.9 / 2610.6 | −51.7 | 1574 / 1693 | 227.2 / 193.9 | 3.2 / 3.7 |
+| s_gascapex25 | 2321.3 / 2347.9 | −26.6 | 1732 / 1889 | 164.1 / 115.8 | 5.5 / 11.7 |
+| s_gas2030 | 2315.1 / 2340.7 | −25.6 | 1826 / 1946 | 134.4 / 99.8 | 3.9 / 4.3 |
+| s_imp | 2299.2 / 2325.8 | −26.6 | 1764 / 1933 | 141.0 / 94.0 | 4.3 / 7.0 |
+| s_demlowflat | 1984.0 / 1993.9 | −9.9 | 1768 / 1849 | 98.0 / 89.8 | 3.5 / 5.1 |
+| s_demlowm1 | 1891.4 / 1892.7 | −1.3 | 1766 / 1851 | 87.6 / 95.1 | 3.3 / 3.1 |
+| s_coalpractice | 2333.2 / 2350.9 | −17.7 | 1844 / 2007 | 266.1 / 178.9 | 4.8 / 10.9 |
+| s_rate48 | 2314.2 / 2342.8 | −28.7 | 1742 / 1950 | 155.9 / 95.9 | 5.6 / 11.1 |
+| s_spotoil | 2315.3 / 2340.4 | −25.1 | 1738 / 1938 | 159.2 / 100.2 | 5.5 / 11.7 |
+| s_wearp75 | 2315.7 / 2340.6 | −24.9 | 1738 / 1938 | 159.2 / 100.1 | 5.5 / 11.8 |
+| s_koeberg_winter | 2325.9 / 2351.4 | −25.5 | 1711 / 1913 | 168.4 / 102.8 | 4.3 / 8.5 |
+| s_ntcsa_both | 2317.8 / 2340.0 | −22.3 | 1740 / 1937 | 158.1 / 100.3 | 4.8 / 11.7 |
+| s_nogas_dsl | 2327.8 / 2351.9 | −24.1 | 1633 / 1707 | 221.4 / 216.4 | 11.5 / 14.6 |
+| s_std_strict | 2324.3 / 2352.4 | −28.1 | 1698 / 1886 | 177.2 / 115.9 | 2.9 / 2.5 |
+| s_std_nem | 2317.4 / 2346.0 | −28.7 | 1730 / 1902 | 162.0 / 109.5 | 3.7 / 3.6 |
+| s_coalsustain | 2460.0 / 2485.4 | −25.4 | 1739 / 1937 | 158.8 / 100.3 | 5.5 / 11.7 |
+| s_nogas | 2364.0 / 2386.2 | −22.2 | 1628 / 1689 | 229.5 / 223.6 | 134.5 / 188.2 |
+| s_std_strict_nogas_dsl | 2333.4 / 2367.2 | −33.9 | 1605 / 1648 | 232.8 / 225.8 | 11.8 / 11.7 |
+| s_std_nem_nogas_dsl | 2328.0 / 2360.8 | −32.7 | 1624 / 1662 | 225.1 / 228.0 | 11.4 / 20.2 |
 
 <!--/fill-->
 The plan emits <!--fill:prev.dco2absmt-->198<!--/fill--> Mt less CO2 over 2026-40 than the 27 October version (<!--fill:base.co2-->1,739<!--/fill--> against <!--fill:prev.co2-->1,937<!--/fill--> Mt). About <!--fill:s_gas2032.dco2prevabs-->111<!--/fill--> Mt of that comes with costs of capital by technology (the plan with gas allowed from 2032, <!--fill:s_gas2032.co2-->1,825<!--/fill--> Mt, against the 27 October version's <!--fill:prev.co2-->1,937<!--/fill-->, both with gas from 2032) and about <!--fill:s_gas2032.dco2absmt-->87<!--/fill--> Mt with moving new gas from 2032 to 2035 (<!--fill:s_gas2032.co2-->1,825<!--/fill--> against <!--fill:base.co2-->1,739<!--/fill-->).
