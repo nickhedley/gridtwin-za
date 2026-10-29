@@ -17888,3 +17888,11 @@ range for its size (SOURCES 'Rooftop PV installed cost, 2025-26'", and the audit
 as opening a quoted string, so SOURCES fell inside one. Reworded (commit e17023c, "the range the 2025-26 installer price guides give
 for its size"); audit alone then 88/88, prose 4,174 of 4,250 words. The comment is inline script, so the stored panels are
 rewritten a third time and the suite rerun; counts below.
+
+Third suite on 29a, the final one for the branch (29 Oct 2026, 01:53 to 03:01 UTC, at ed0e9eb, panels rewritten first, fingerprint
+08cb010dfeb386, 9/9 while writing, nothing beside it): node checks 984/1006, audit 88/88, eng5 5/6 (check 6, as on main). Against
+main (28a, 974/996, 88/88, 5/6): every script equal by count and by failure name; the ten added public-text checks pass (32/32
+against 22/22). Per script: lint 3/3, structure 27/27, geo 43/43, capacity 36/36, inputs 37/37, findings 37/40 (the three known),
+invariants 176/176, response 86/87, weather 68/68, lp 57/57, consistency 82/83 (off-peak, known), benchmarks 28/30, external 8/8,
+solve 9/9, outputs 49/51, pathway_presets 27/40 (the presets built on c5f's runs; c6e's presets PR), public_text 32/32, stored
+panels 86/86 with no 'not used' line, links 48/48, worker 38/38, bids 7/7.
