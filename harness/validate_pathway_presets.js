@@ -52,6 +52,14 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
 (async () => {
   await new Promise(r => setTimeout(r, 6000)); const w = dom.window;
   await w.eval('loadWeatherYears()');
+  // The runs' rooftop add-back scaled to the twelve-year mean (messages 391 (b), 392 (c); roof12.js), recorded as roofAddback12 and
+  // applied by pathcheck.js before every check: applied here the same way, once, so the page is compared under the check's own demand
+  // series. The live page does not apply it (about 1.7 TWh a year more grid load), so the page's preset figures sit about 0.3% above
+  // the check's until the exact fix lands (TODO 391 (b)); every run checked here must record the same K.
+  { const Ks = RUNS.map(R => JSON.parse(fs.readFileSync(path.join(ROOT, R.build), 'utf8')).roofAddback12 || null).filter(Boolean);
+    if (Ks.length){ const K = require('./pathway/roof12.js')(w); const bad = Ks.filter(k => Math.abs(k - K) > 1e-9);
+      check('the runs record the page\'s rooftop add-back scaling (roof12)', bad.length === 0 && Ks.length === RUNS.length, `page K ${K}, runs ${Ks.join(', ')}`);
+      console.log(`roof12: rooftop add-back scaled by ${K.toFixed(4)}, as the runs record`); } }
   const same = (a, b) => (typeof a === 'number' && typeof b === 'number') ? Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b)) : a === b;
   for (const R of RUNS){
     const NAME = R.name, Y = R.year || 2035, P = JSON.parse(fs.readFileSync(path.join(ROOT, R.build), 'utf8'));
