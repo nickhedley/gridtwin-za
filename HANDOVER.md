@@ -109,6 +109,10 @@
   'without gas or peakers'.
 - 512 (replaces 511's no-gas wording; the rest of 511 stands): the finding's last sentence reads 'falls short of the standard in
   2037-40 when tested hourly' without the range (key shortfallshort); the ranged form stays in section 4's record and limitation 33.
+- Presets PR opened 29 Oct 23:58 SAST: #130 'Presets on c6e; site text of messages 470, 471, 473 and 485 (build 2026-10-29b)',
+  claude/site-text at 6e968cf; suite 998/1007, 88/88, 5/6 against main 974/996, 88/88, 5/6 (public_text and pathway_presets the
+  only scripts that moved, both up); visible-text diff in the body (69 added or changed, 78 removed). The advisor merges before
+  10:00 SAST Friday under 481 (b) if the checks pass; else the pack links the site as it stands (483 (c)).
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
