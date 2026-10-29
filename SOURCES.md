@@ -1733,6 +1733,9 @@ the cloud environment (web reader and proxy refused; Firecrawl out of credits). 
   owner's costs, interconnection or financing during construction; it takes what each filing reported, and Halcyon's tracker
   marks records as overnight or including construction financing, so the filings may mix the two (our inference).
 
+- Lead times, October 2026: Bloomberg, 27 October 2026, Mitsubishi Power quoting deliveries for new orders around 2031 (entry under
+  'Gas timing', message 492). Bears on gas capex too: a seller's market at 70-80 GW of orders a year.
+
 ## Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)
 
 Eskom Holdings, Performance report for the year ended 31 March 2026 (the user's copy; not in the repository; cited by printed
@@ -2072,6 +2075,12 @@ January 2026 rands, on the central's basis (8% real, 25 years, fixed O&M R287/kW
   bidders could not assure gas supply (imports from Mozambique; no LNG terminal); a bid window 1.5 is to follow, with details before
   the end of 2026. Basis for c6e's central taking new gas from 2035 (bid window 1.5's rules by early 2027, financial close 2028-29 at
   the earliest once an LNG terminal is committed, three to four years to build a CCGT); 2032 is the sensitivity s_gas2032_c6e.
+
+- Bloomberg, 'Mitsubishi Power: High Gas Turbine Demand Is Pushing Out Deliveries to 2031', 27 October 2026 (paywalled; the user
+  holds the text; as reported by the user, 29 Oct 2026, message 492; not read here). Mitsubishi Power Asia Pacific's chief
+  executive: new orders deliver around 2031; the 2028 and 2029 slots are almost full; global orders this year about 70-80 GW.
+  Bearing on gas build timing: new gas before about 2034 assumes turbines already ordered (the pack, section 4, beside the
+  gas-timing sensitivities). See also 'Gas turbine prices and lead times' below.
 
 ## Cost of capital by technology (user, 28 Oct 2026, messages 468 and 469; build 2026-10-28a)
 
