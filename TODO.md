@@ -442,6 +442,11 @@ of Opportunities (SOURCES 'Adequacy criteria').
 against the central's LNG at 13.25% of Brent at USD 80 (SOURCES 'Gas price cases'); run the existing high gas price case on c6e's
 settings, or a case indexed to the October 2026 European level, and report cost, CO2 and the gas build against the central.
 
+14ku. s_std_strict and s_std_nem on c6e with a higher pass limit, after the send (user, 29 Oct 2026, message 495): both stopped at the
+optimiser's pass limit on c6e (both met their standard in c6c, with new gas from 2032); the pack reports each from its engine check
+against its own standard and says a higher limit is untested. Rerun both with MAXP raised (chain_c6e.sh's one() takes a pass count)
+to settle whether the standard is reachable with new gas from 2035; report cost, build and the years over the standard.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
