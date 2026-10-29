@@ -22,6 +22,7 @@
 //   base.coal2026 / .rate2026 / .partload / .partloaddiff / .partloadrec / .eskomrate   the central's 2026 coal, its rate and part-load
 //                        factor against COAL_PARTLOAD_2026 and Eskom's FY2026 rate (partload_check.js; the constants read from the page)
 //   site.build           the page's BUILD_STAMP
+//   page.ff2040ironairGW / page.ironairHours   the Fossil-free 2040 preset's iron-air (GW) and the page's iron-air duration (hours)
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -60,6 +61,10 @@ let PL=null; const partload=()=>{ if (PL) return PL; const f=`${O}/pathcheck_${C
 
 function value(k){
   if (k==='site.build'){ if (!fs.existsSync('testroot/index.html')) return null; const m=fs.readFileSync('testroot/index.html','utf8').match(/const BUILD_STAMP = '([^']+)'/); return m?m[1]:null; }
+  // Page inputs read from index.html (message 491): the Fossil-free 2040 preset's iron-air, GW, and the page's iron-air duration, hours.
+  if (k==='page.ff2040ironairGW'||k==='page.ironairHours'){ if (!fs.existsSync('testroot/index.html')) return null; const h=fs.readFileSync('testroot/index.html','utf8');
+    if (k==='page.ironairHours'){ const m=h.match(/^\s*newIronAirHours:(\d+),/m); return m?m[1]:null; }
+    const m=h.match(/'Fossil-free 2040':\{[^\n]*?newIronAirMW:(\d+)/); return m?nf(+m[1]/1e3,0):null; }
   const [r,m]=[k.slice(0,k.lastIndexOf('.')),k.slice(k.lastIndexOf('.')+1)];
   if (r==='base'&&['coal2026','rate2026','partload','partloaddiff','partloadrec','eskomrate'].includes(m)){ const p=partload(); if (!p){ missing.add(`${C} (2026 check)`); return null; }
     return m==='coal2026'?nf(p.coalTWh,1):m==='rate2026'?nf(p.rate,3):m==='partload'?nf(p.partloadRun,4):m==='partloadrec'?nf(p.recorded,4):m==='eskomrate'?nf(p.eskomFY26,3):sg(p.diffPp,2); }

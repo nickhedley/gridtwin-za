@@ -591,7 +591,8 @@ the before and after in RESULTS with the run it was taken from. Not before the p
 failed the adequacy standard on the current page (132.4 GWh a year; the central ended imports after 2030 after the preset was built)
 and was topped up the same day by the search tool with iron-air excluded (user, messages 487 (1) and 490): solar 56.5 to 64.5 GW,
 offshore 1.75 to 2.75 GW, 2.55 GWh against 2.72 on 240 runs; the iron-air version (R2.6bn a year cheaper) not used, rule 366. After
-the note: re-search the preset on c6e's basis (its demand is still c5f's 2040) and the 2045 horizon question (message 471).
+the note: re-search the preset on c6e's basis (its demand is still c5f's 2040), with a version without iron-air (it carries 13 GW of
+100-hour iron-air from its original design; message 491), and the 2045 horizon question (message 471).
 
 14kg. 'Strategy savings' demand case, after the note (user, 28 Oct 2026, message 444 (a)), for the consultation submission on the
 National Energy Efficiency Strategy 2026-2035: the pathway at demand reduced by the strategy's 2035 savings (132 PJ: industry 40.7,
