@@ -50,6 +50,14 @@ PRESETS = [
 j = lambda v: json.dumps(v)
 
 
+import re
+def page_defaults():
+    h = open('index.html').read()
+    m1 = re.search(r"^\s*importsEndYear:(\d+),", h, re.M); m2 = re.search(r"^bldCocCase:'([a-z]+)'", h, re.M)
+    if not (m1 and m2): raise SystemExit('page defaults not found once (importsEndYear, bldCocCase)')
+    return {'importsEndYear': int(m1.group(1)), 'bldCocCase': m2.group(1)}
+
+
 def block(cfg):
     Y = cfg.get('year', 2035)
     P = json.load(open(cfg['build']))
@@ -61,8 +69,17 @@ def block(cfg):
     blkMW = max(((int(y), mw) for y, mw in blk.items() if int(y) <= Y), default=(0, 0))[1]
     nuc = sum(mw for y, mw in (P.get('nuclearAdd') or {}).items() if int(y) <= Y)
     if ps: raise SystemExit(cfg['name'] + f': pumped storage built by {Y}: carry PHES hours and acapPs before using the generator')
-    if P['gas'].get('fuelRFlat') is not None or P.get('gasFinPremium') or P.get('importsEndYear') or P.get('comply'):
+    if P['gas'].get('fuelRFlat') is not None or P.get('gasFinPremium') or P.get('comply'):
         raise SystemExit(cfg['name'] + ': a recorded setting this generator does not carry is set: extend it first')
+    # Settings the run records that are the page's own defaults, not preset state (29 Oct 2026, for c6e; the same rule as the
+    # lithium decline and the LNG terminal): the imports end year (c6's central ends the Cahora Bassa contract after 2030, PR B) and
+    # the cost-of-capital case (build 2026-10-28a). The run must equal the page, read here from index.html, or the preset would run
+    # on another basis than its run; validate_pathway_presets.js checks the same equality on the generated preset.
+    pg = page_defaults()
+    if (P.get('importsEndYear') or 0) != pg['importsEndYear']:
+        raise SystemExit(cfg['name'] + f": the run's imports end year {P.get('importsEndYear')} is not the page's {pg['importsEndYear']}")
+    if (P.get('cocCase') or 'central') != pg['bldCocCase']:
+        raise SystemExit(cfg['name'] + f": the run's cost-of-capital case {P.get('cocCase')} is not the page's {pg['bldCocCase']}")
     f = {'scenarioYear': Y,
          'newWindMW': cum('wind'), 'newPvMW': cum('pv'), 'newRooftopMW': cum('rooftop'), 'newBattMW': batt,
          'newBattHours': max(1, min(20, mwh / batt)) if batt > 0 else 4, 'newVrfbMW': cum('vrfb'), 'newIronAirMW': cum('ironair'),
