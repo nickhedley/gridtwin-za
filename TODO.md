@@ -424,8 +424,9 @@ now). After the note: re-search the preset on the current page (harness/ext/pres
 rescore, gen_preset_scores.py; the 2045 horizon question (message 471) with it.
 
 14kr. AEMO Quarterly Energy Dynamics Q3 2026 benchmarks (user, 29 Oct 2026, message 488; after the send, no action before):
-(a) battery cycling: the NEM fleet (over 10 GW / 23 GWh) charged about 13.4 GWh a day in Q3, roughly half a cycle a day (the
-advisor's estimate); the lithium LCOE anchor assumes 365 cycles a year, so test it against this. (b) Gas at 3.4% of NEM
+(a) battery cycling: take the figure from the report's battery section (p. 37), not the advisor's estimate (message 488 (d)):
+the 13.4 GWh a day of charging is daytime charging only, so 'half a cycle a day' understates it; the lithium LCOE anchor assumes
+365 cycles a year, so test it against the report's own cycling figure. (b) Gas at 3.4% of NEM
 generation; batteries 8.0% of evening-peak supply against gas's 5.1%: a benchmark for c6e's low gas capacity factor. (c) Utility
 solar curtailment 6.7% and wind 2.5% (network), solar offloading 5.9%: benchmarks for the curtailment band. Source: AEMO,
 Quarterly Energy Dynamics Q3 2026, pp. 4, 26, 35-37 (to SOURCES with the work).
