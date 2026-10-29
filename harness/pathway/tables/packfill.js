@@ -48,6 +48,8 @@
 //   prev.*               the previous central (PREV, default c6c) as a run; RUN.dco2absmt CO2 against the plan, unsigned, Mt;
 //                        RUN.dco2prevabs CO2 against the previous central, unsigned (message 507 (b)); table:against c6c the
 //                        run-by-run comparison with the previous set (settables section 4)
+//   nogasbest.*          the no-gas rerun that meets the standard (s_nogas_maxp6, else s_nogas_topup): every run key, plus .which,
+//                        .added and .finding (message 508); while neither is in, .finding says the rerun follows
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -62,6 +64,7 @@ const why=n=>{ const m=prog.split('\n').filter(l=>l.includes(`NOT RUN ${n}:`)).p
   const irp=n.startsWith('irp2025_'); return fs.existsSync(`${O}/pathway_${n}.json`)||fs.existsSync(`${N}/irp/pathway_${n}.json`)?(irp?'IRP build check incomplete':'engine check incomplete'):(done?'no run file':(irp?'IRP build check not yet run':'not yet run')); };
 // Run names: optimised runs in O; IRP builds in N/irp (a nuclear check reads its build file under the case's own name).
 const opt=r=>r==='base'?C:r==='prev'?PV:r==='irpdem'?`${C}_irpdem`:`${r}_${C}`;
+const Sraw=r=>r==='nogasbest_run'?cache['nogasbest']:undefined;
 const irpName=r=>r==='irp'?`irp2025_${C}`:`irp2025_${C}_${r.slice(4)}`;
 const irpMatch=r=>{ const x=r.slice(4).replace(/_?(nuc\d+|nuclife\d+)$/,''); return !x?'base':x==='irpdem'?'irpdem':`s_${x}`; };
 const cache={}, missing=new Set();
@@ -110,7 +113,26 @@ function pageCost(k){
   if (w==='pvCase') return g.pvCase; if (w==='cocCase') return g.cocCase; if (w==='fx') return nf(g.fx,2); if (w==='nucUsd') return nf(g.nucUsd,0); if (w==='coalUsd') return nf(g.coalUsd,0);
   throw new Error('packfill: unknown page key '+k);
 }
+// The no-gas rerun (message 508): 'nogasbest' is the first of the higher-pass-limit run and the top-up run whose check meets NTCSA's
+// two criteria; its keys are the ordinary run keys plus .which (its plain name), .added (what stands in 2040 beyond the pass-limit
+// run, GW, iron-air flagged) and .finding (one sentence; while neither run is in, the sentence says the rerun follows).
+const NOGAS_RERUNS=['s_nogas_maxp6','s_nogas_topup'];
+const meets=s=>!!s&&!s.rows.some(x=>x.mean>20)&&!s.rows.some(x=>x.ocgtCF>=0.06);
+const peek=r=>{ const n=opt(r); if (!fs.existsSync(`${O}/pathway_${n}.json`)) return null; if (cache[r]!==undefined) return cache[r]; const q=summ(O,n); if (q) q.dir=O; return q; };
+let NB; const nogasBest=()=>{ if (NB!==undefined) return NB; NB=null; for (const r of NOGAS_RERUNS){ const q=peek(r); if (q&&meets(q)){ NB={r,s:q}; break; } } return NB; };
+const nogasAdded=q=>{ const z=S('s_nogas'); if (!z) return null; const a=q.build[2040], b=z.build[2040];
+  const parts=[['wind','wind'],['pv','utility solar'],['li','batteries'],['phes','pumped storage'],['off','offshore wind'],['ironair','iron-air'],['vrfb','vanadium'],['ocgtDsl','diesel peakers']]
+    .map(([k,n])=>[n,((a[k]||0)-(b[k]||0))/1e3]).filter(([,d])=>Math.abs(d)>=0.05);
+  if (!parts.length) return 'nothing beyond the pass-limit run';
+  return parts.map(([n,d])=>`${d>0?'':'−'}${nf(Math.abs(d),1)} GW ${n}`).join(', ')+(parts.some(([n,d])=>n==='iron-air'&&d>0)?' (it adds iron-air, whose finding is a known failure: section 5)':''); };
 function value(k){
+  if (k.startsWith('nogasbest.')){ const m=k.slice(10); const best=nogasBest();
+    if (!best){ missing.add(opt('s_nogas_maxp6')); return m==='finding'?'A rerun with a higher pass limit, and an adequacy top-up as its fallback, follows.':null; }
+    if (m==='which') return plainName(opt(best.r));
+    if (m==='added') return nogasAdded(best.s);
+    if (m==='finding'){ const b=S('base'); const d=best.s.pv-b.pv; const cost=Math.abs(d)<1?'costs within R1 billion of the least-cost plan':(d>0?'costs ':'saves ')+Rb(d)+(d>0?' more than the least-cost plan':' against the least-cost plan');
+      return `Rerun as ${plainName(opt(best.r))}, the plan meets the system operator's adequacy test in every year to 2040: it ${cost}, emits ${nf(best.s.co2Cum,0)} Mt and stands ${nogasAdded(best.s)} by 2040.`; }
+    cache['nogasbest']=best.s; return value('nogasbest_run.'+m); }
   if (k==='glossary'){ const rows=Object.entries(PLAIN).map(([c,[n,d]])=>`| ${n} | ${c==='base'?C:c==='irpdem'?C+'_irpdem':c.startsWith('irp')?('irp2025_'+C+(c==='irp'?'':c.slice(3))):c+'_'+C} | ${d} |`);
     const vers=Object.entries(VERSIONS).map(([c,n])=>`| ${n} | ${c} | the central run set of that date |`);
     return '\n\n| Plain name | Run code | What it changes |\n|---|---|---|\n'+rows.join('\n')+'\n'+vers.join('\n')+'\n\n'; }
@@ -123,7 +145,7 @@ function value(k){
   const [r,m]=[k.slice(0,k.lastIndexOf('.')),k.slice(k.lastIndexOf('.')+1)];
   if (r==='base'&&['coal2026','rate2026','partload','partloaddiff','partloadrec','eskomrate'].includes(m)){ const p=partload(); if (!p){ missing.add(`${C} (2026 check)`); return null; }
     return m==='coal2026'?nf(p.coalTWh,1):m==='rate2026'?nf(p.rate,3):m==='partload'?nf(p.partloadRun,4):m==='partloadrec'?nf(p.recorded,4):m==='eskomrate'?nf(p.eskomFY26,3):sg(p.diffPp,2); }
-  const s=S(r); if (!s) return null; const b=S('base'); const y=+m.split('_')[1];
+  const s=Sraw(r)||S(r); if (!s) return null; const b=S('base'); const y=+m.split('_')[1];
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);

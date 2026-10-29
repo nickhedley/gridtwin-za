@@ -83,6 +83,14 @@
   comparison table added to section 4 through packfill (prev run = PREV, default c6c; dco2absmt, dco2prevabs); the cost-of-capital
   part uses the plan with gas from 2032 against c6c, which also took gas from 2032 (112 Mt), where the message named gas from 2030
   (111 Mt). (c) the pass-limit runs fill in 499's form. Every result is in: the missing list reads 'None'.
+- 508: the no-gas rerun (s_nogas_maxp6_c6e, higher pass limit; s_nogas_topup_c6e, adequacy top-up as fallback; results in the early
+  hours, the advisor merges its outputs PR). packfill's virtual run 'nogasbest' is the first of the two whose check meets NTCSA's
+  criteria; 'nogasbest.finding' (cover note finding 7 and section 4) prints its verdict, cost against the plan, CO2 and what stands
+  beyond the pass-limit run in 2040 (iron-air flagged when added), and while neither is in prints 'A rerun ... follows'; the
+  pass-limit result stays as the record. The advisor keeps the finding-7 marker when carrying draft 2 into the master. If neither
+  run meets the standard by Friday 09:00 SAST the finding stays as filled, naming the rerun as following (the fallback sentence).
+  To fill after the merge: rebuild the run layout from main (c6e and c6c folders into out/, each set's IRP files under its irp/)
+  and run BASE=c6e packfill on REVIEWER_PACK.md and NOTE_DRAFT.md.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
