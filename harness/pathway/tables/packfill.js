@@ -50,6 +50,8 @@
 //                        run-by-run comparison with the previous set (settables section 4)
 //   nogasbest.*          the no-gas rerun that meets the standard (s_nogas_maxp6, else s_nogas_maxp10): every run key, plus .which,
 //                        .added and .finding (message 508); while neither is in, .finding says the rerun follows
+//   RUN.shortfall        'falls short of the 20 GWh standard in 2037-40 when tested hourly (27-134 GWh a year)', or 'meets ... in every
+//                        year when tested hourly' (message 511)
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -149,6 +151,10 @@ function value(k){
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
+    // The no-gas finding's clause (message 511): the years the hourly check finds over 20 GWh, as a span, and the range of their means.
+    case 'shortfall': { const o=s.rows.filter(x=>x.mean>20); if (!o.length) return 'meets the 20 GWh standard in every year when tested hourly';
+      const v=o.map(x=>x.mean); const lo=Math.round(Math.min(...v)), hi=Math.round(Math.max(...v));
+      return `falls short of the 20 GWh standard in ${spanH(o.map(x=>x.y))} when tested hourly (${lo===hi?lo:lo+'-'+hi} GWh a year)`; }
     case 'lumpy': { const out=[]; for (const [k,name] of [['wind','wind'],['pv','utility solar']]){ const ys=Object.keys(s.sched).map(Number).sort().filter(y=>y>=2027);   // 2026 is the year in progress
         const add=y=>s.sched[y][k]||0; const nz=ys.filter(y=>add(y)>=1); const mean=nz.length?nz.reduce((a,y)=>a+add(y),0)/nz.length:0;
         const zero=ys.filter(y=>add(y)<1), small=ys.filter(y=>add(y)>=1&&add(y)<0.1*mean);

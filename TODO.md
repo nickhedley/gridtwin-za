@@ -634,6 +634,11 @@ open-cycle, which a no-new-gas-and-no-peakers run forbids, so such a run that st
 top-up that adds from the run's own allowed technologies (storage, wind, solar, pumped storage) until the engine check meets the
 standard, reported as what it added, and a packfill key for it.
 
+14kz. The optimiser-engine gap without gas, after the note (user, 29 Oct 2026, message 511): in the no-gas run the optimiser's stress
+windows hold expected unserved energy at or below 20 GWh in 2037-40 while the hourly check finds 27-134 GWh, and a six-pass rerun
+stopped on the stall rule at the same result. Find why the windows miss the shortfall (window selection, the daily storage balance,
+the coal rules in the LP) and what closes it, so a no-gas plan can be planned to the standard; with 14ky.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?

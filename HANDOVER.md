@@ -99,6 +99,10 @@
   checks to the key; the checks' rooftop add-back scaling (roof12, K 0.8895) explains the 0.3% cost gap to the live page; audit
   items (marker path; a quoted span carrying RESULTS) fixed; panels rewritten twice; suite rerun on the final page before the PR
   (RESULTS 'Presets on c6e, build 2026-10-29b'; PRESETS_C6E_CAPTIONS.md 'Done on 29 Oct 2026 evening').
+- 511 (replaces 510's fallback): the six-pass no-gas rerun stopped at pass 4 on the stall rule with the same result; no ten-pass
+  run. Finding 7 and section 4 carry 511's wording from the fill (key 'shortfall': the years over 20 GWh and the range of their
+  means from the hourly check), the pass-limit status kept as the record; limitation 33 added; TODO 14kz. The 02:00 SAST check
+  is cancelled: nothing follows for the pack's no-gas finding.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
