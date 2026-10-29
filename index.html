@@ -3205,7 +3205,7 @@ let redzData = null;
 
 /* ========== C&I Pre-feasibility module ========== */
 
-// The own-use default has no recorded source (site text review, message 471 (j)); the note says so rather than calling it an
+// The own-use default has no source (TODO 14kl; site text review, message 471 (j)); the note says so rather than calling it an
 // average. Shown on load (the static note below) and when own use is picked again.
 const PF_OWNUSE_NOTE = 'Default R2.50/kWh is a round figure, not a tariff-book rate: enter the site\u2019s own all-in tariff.';
 document.getElementById('pf_price_note').textContent = PF_OWNUSE_NOTE;
@@ -5846,7 +5846,7 @@ const FIXED = {
   bldPlanMarginPct:0,
   // LITHIUM ENERGY BUILT PER YEAR (user, 12 Oct 2026, central c4): at most bldLiEnergyHours x the year's lithium power
   // cap (eb_batt bound). 4 hours, matching South African procurement so far (1,744 MW / 6,976 MWh); 8 hours is the first
-  // sensitivity. Was 12 hours with no recorded source (36 GWh a year at 3 GW, about 1.8 times Australia's record year).
+  // sensitivity. Was 12 hours, a choice before 5 Oct 2026 (36 GWh a year at 3 GW, about 1.8 times Australia's record year).
   bldLiEnergyHours:4,
   // ADEQUACY LOOP ON CUSTOMER DEMAND (user, 12 Oct 2026, central c4): the loop's standard is a share of demand without
   // storage charging (loadS less pumped-storage and battery charging), as the engine check (pathcheck.js) from 12 Oct.
@@ -6732,7 +6732,7 @@ const FIXED = {
   // one constant in passing.
   // c6 (user, 22 Oct 2026, messages 306 (a) and 322): coal fuel FY2026 without the environmental levy (about R41/MWh, a note, not
   // a cost); nuclear fuel FY2026 (vomNuclear 45 kept); imports FY2026 full cost. Were 546 (FY2025 with the levy), 160 and 550
-  // (no recorded source). emisCoal: see COAL_CO2_PER_MWH_FY26 above (was 1.04, no recorded source).
+  // (550: SOURCES 'Coal fuel R546/MWh and imports R550/MWh', which records that it had no source). emisCoal: see COAL_CO2_PER_MWH_FY26 above (was 1.04, unsourced; SOURCES 'c6 inputs').
   costCoal:Math.round(ESKOM_FY26.coalCostRbn * 1e9 / (ESKOM_FY26.coalSentOutGWh * 1e3)), emisCoal:+(COAL_CO2_PER_MWH_FY26 / COAL_PARTLOAD_2026).toFixed(3),
   costNuclear:ESKOM_FY26.nuclearRPerMWh, costHydro:30, costImports:ESKOM_FY26.importsRPerMWh,
   // emisCcgt 0.348 t/MWh from 9 Oct 2026 (was 0.37, which implied 48.9% efficiency): natural gas 53.06 kg CO2 per
@@ -10325,7 +10325,7 @@ const BLD_COST = {
   // (connIncl). International benchmark: IRENA, Renewable Power Generation Costs in 2024, onshore wind global weighted
   // average total installed cost USD 1,041/kW (R17,180 at R16.50), so South African bids sit about 66% above the
   // global average. Cross-check only: IRP 2025 workbook BW6 base case R27,446/kW (2026 rands). The previous R21,000 had
-  // no recorded source. IRP 2025 cost assumptions are a sensitivity (COSTSET=irp2025), never central (user, 7 Oct).
+  // no source (SOURCES 'Optimiser grid cost'). IRP 2025 cost assumptions are a sensitivity (COSTSET=irp2025), never central (user, 7 Oct).
   // From 15 Oct 2026 (message 125 (2)) the central is the capex BW5's awarded tariff implies (BLD_TARIFF, set below once
   // BLD_FOM and BLD_LIFE exist); the BW6 bids are the 'bw6' case.
   wind:    { c2026: null, decl:  0.0286, connIncl: true },
@@ -10338,7 +10338,7 @@ const BLD_COST = {
   wind_high: { c2026: (420 * 11.5e9 / 420e3 * 1.053 * CPI_JAN24_TO_JAN26 + 330 * 9e9 / 330e3 * CPI_JAN24_TO_JAN26) / 750, decl: 0.0286, connIncl: true },
   // Low: IRENA, Renewable Power Generation Costs in 2024, onshore wind global weighted average USD 1,041/kW at R16.50.
   wind_low:  { c2026: 1041 * 16.5, decl: 0.0286, connIncl: false },
-  // The previous central, R21,000/kW (no recorded source), kept for bldWindModern 0 only.
+  // The previous central, R21,000/kW (unsourced; SOURCES 'Optimiser grid cost'), kept for bldWindModern 0 only.
   wind_legacy: { c2026: 21000, decl: 0.0286 },
   pv:      { c2026: 12000, decl:  0.0389 },
   // Single-axis tracking solar, BW6 preferred bidders' mean, R15,715/kW (IPP Office REIPPPP historical data note,
@@ -10351,7 +10351,7 @@ const BLD_COST = {
   // residential (R13.0/Wp, low 10.0, high 17.0) and 70% commercial and industrial (R9.5/Wp, low 7.0, high 12.5) by installed MW, from
   // 2025-26 installer price guides with no authoritative survey, plus an anonymised 30 kWp C&I estimate (SOURCES 'Rooftop PV installed
   // cost, 2025-26'); low R8,000 and high R14,000 DC. Times a DC/AC ratio of 1.2 (1.1-1.3), because rooftopMW behaves as AC capacity:
-  // R12,600/kW AC. Was R12,500 DC (R15,000 AC) from c6 (messages 322 (c), 324 (a)), and R17,000 AC before that (no recorded source).
+  // R12,600/kW AC. Was R12,500 DC (R15,000 AC) from c6 (messages 322 (c), 324 (a)), and R17,000 AC before that (unsourced; SOURCES 'Optimiser grid cost').
   rooftop: { c2026: ROOF_CAPEX_DC_RKW * ROOF_DC_AC_RATIO, decl:  0.0389 },
   // BATTERIES ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14ax). Central: BESIPPPP bid window 3,
   // preferred bidders announced 30 May 2025: 616 MW / 2,464 MWh for R9.5bn (DEE media statement; SAnews), R3,856/kWh,
@@ -10359,7 +10359,7 @@ const BLD_COST = {
   // the R9.5bn is the announced project value; whether it covers development, financing, local content (31% on
   // BW2) and the works at the five NTCSA substations is not published. Treated as including connection (connIncl),
   // so a battery on this basis pays no connection bay in the grid-cost option. The previous R8,105/kW (R2,026/kWh,
-  // no recorded source; level of BNEF's 2025 global turnkey price, which excludes EPC and grid connection) is the
+  // unsourced; the level of BNEF's 2025 global turnkey price, which excludes EPC and grid connection; SOURCES 'Build costs from South African bid data') is the
   // low case: BATT_CAPEX=8105 in the pathway scripts.
   // AGED TO JANUARY 2026 (user decision, 7 Oct 2026). BW3 was bid in May 2025; applying it as a 2026 price ignores a
   // year of falling equipment prices. The equipment share of the bid is taken as BNEF's global turnkey price at the
@@ -10372,7 +10372,7 @@ const BLD_COST = {
   // published (TODO 14au).
   // Lithium capex decline LI_DECL, the same in all three cases (user, 19 Oct 2026, message 227 (1)): 3% a year real, BNEF's
   // 2035 forecast cited above (-25% for storage by 2035, about 3.1% a year over 2026-35; 3% gives -24%), the decline every
-  // central since c5b ran on (BATT_DECL=0.03). Was 5%, with no recorded source (TODO 14cw). BATT_DECL is now for sensitivities.
+  // central since c5b ran on (BATT_DECL=0.03). Was 5% (TODO 14cw). BATT_DECL is now for sensitivities.
   batt:    { c2026: BATT_COST_HOURS * (BATT_EQUIP_BID * Math.pow(117/165, 8/12) + (BATT_BW3_BID - BATT_EQUIP_BID) * 1.035), decl: LI_DECL, connIncl: true },
   batt_high: { c2026: BATT_COST_HOURS * BATT_BW3_BID * 1.035, decl: LI_DECL, connIncl: true },
   batt_low:  { c2026: 8105, decl: LI_DECL, connIncl: false },
@@ -15755,7 +15755,7 @@ function renderValidation(){
 
 
 /* ==================== WHOLESALE SHADOW PRICE =============================
- * South Africa has no wholesale market, so these are SHADOW prices: what a
+ * SAWEM is not yet open commercially, so these are shadow prices: what a
  * competitive market would clear at, given this dispatch. Labelled as such
  * throughout - presenting them as observed prices would be wrong.
  */
@@ -16781,8 +16781,8 @@ for (const [id, k] of [['wkW', 'W'], ['wkS', 'S'], ['spW', 'W'], ['spS', 'S']]){
 
 // ── SHADOW DYNAMIC RETAIL PRICE ────────────────────────────────────────────
 // What a household would pay by the hour if the retail price followed cost. No such
-// tariff exists in South Africa: there is no wholesale market until SAWEM and no dynamic
-// retail product, so this is what the hours are WORTH, not what anyone could charge.
+// tariff exists in South Africa: SAWEM is not yet open commercially and there is no dynamic
+// retail product, so this is what the hours are worth, not what anyone could charge.
 //
 // STRUCTURE, after Octopus Agile, whose formula is published:
 //
@@ -16856,7 +16856,7 @@ const RETAIL_LOSS = 0.08;
 //
 // WHY. The panel's shadow price shapes only fuel and carbon by the hour and recovers capital
 // through a flat regulated adder - right for South Africa today, where Eskom recovers a
-// NERSA-approved revenue requirement and there is no wholesale market. It is NOT what Octopus
+// NERSA-approved revenue requirement and SAWEM is not yet open commercially. It is not what Octopus
 // Agile does, and the gap was measured on 10 Sep 2026: wholesale revenue at short-run cost
 // covers 157% of system cost today but 16% on Deep decarbonisation 2035. That is the missing
 // money problem. Our price distribution runs -R0.23 to R0.79 and never higher, all year.
