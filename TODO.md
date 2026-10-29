@@ -417,11 +417,11 @@ page quotes 1.1-3.5% in three ordinary weeks and 26% in the 2040 stress week, me
 rules and the 24-hour down time; the page now dates the figures by that build. Several hours; after the note if the presets PR is
 short of time.
 
-14kq. Fossil-free 2040 fails the adequacy standard on the current page (29 Oct 2026; RESULTS 'Fossil-free 2040 sheds 132.4 GWh'):
-132.4 GWh a year against its 2.72 GWh design target and NTCSA's 20 GWh, on 240 runs; its recorded score (2.16, build 19e) predates
-the central ending imports after 2030. You: the caption for Friday (state the miss, or stay silent as the build-date guard does
-now). After the note: re-search the preset on the current page (harness/ext/preset_search.js, no coal, DRAWS=1 and a confirm set),
-rescore, gen_preset_scores.py; the 2045 horizon question (message 471) with it.
+14kq. Fossil-free 2040 (29 Oct 2026; RESULTS 'Fossil-free 2040 sheds 132.4 GWh' and 'Fossil-free 2040 topped up'): it failed the
+adequacy standard on the current page (132.4 GWh a year; the central ended imports after 2030 after the preset was built) and was
+topped up the same day by the search tool with iron-air excluded (user, messages 487 (1) and 490): solar 56.5 to 64.5 GW, offshore
+1.75 to 2.75 GW, 2.55 GWh against 2.72 on 240 runs; the iron-air version (R2.6bn a year cheaper) not used, rule 366. After the
+note: re-search the preset on c6e's basis (its demand is still c5f's 2040, C5F_DEMAND) and the 2045 horizon question (message 471).
 
 14kr. AEMO Quarterly Energy Dynamics Q3 2026 benchmarks (user, 29 Oct 2026, message 488; after the send, no action before):
 (a) battery cycling: take the figure from the report's battery section (p. 37), not the advisor's estimate (message 488 (d)):

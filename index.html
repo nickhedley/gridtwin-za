@@ -19329,7 +19329,14 @@ const PRESETS={
   // demand ratio (1.4275): wind 50,500, solar 56,500, lithium 20,000 at 12 h, iron-air 13,000, offshore 1,750 MW, every other
   // setting kept; no top-up needed on independent draws (harness/ext/search_ff_c5f.json, topup_ff_c5f.json). Its measured shed is
   // PRESET_SCORES, rescored on the page as it runs it.
-  'Fossil-free 2040':{demandGrowthPct:C5F_DEMAND[2040].growthPct,demandBlockMW:C5F_DEMAND[2040].blockMW,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:2,newWindMW:50500,newPvMW:56500,bldPvTracking:1,newOffshoreMW:1750,newRooftopMW:16800,newBattMW:20000,newBattHours:12,newIronAirMW:13000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  // TOPPED UP 29 Oct 2026 (user, messages 487 (1) and 490; RESULTS 'Fossil-free 2040 topped up'): the central has ended Cahora
+  // Bassa imports after 2030 since this build (PR B), and with no fossil plant nothing replaced them in 2040: 132.4 GWh a year of
+  // unserved energy on 240 runs against the 2.72 GWh design target. Topped up by the same search tool (harness/ext/preset_search.js,
+  // FEASIBLE then the greedy, confirm on the preset check's runs, seed 71830529, imports ending after 2030 as in the central) with
+  // iron-air excluded from the moves (rule 366; its finding is a known failure, TODO 14gm): solar 56,500 to 64,500 and offshore
+  // 1,750 to 2,750 MW, 2.55 GWh against 2.72 (harness/ext/search_fossil_29a_noironair.json). With iron-air allowed the tool took
+  // solar 64,500 and iron-air 13,500 instead, R2.6bn a year cheaper (449.3 against 451.9; search_fossil_29a.json); not used.
+  'Fossil-free 2040':{demandGrowthPct:C5F_DEMAND[2040].growthPct,demandBlockMW:C5F_DEMAND[2040].blockMW,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:2,newWindMW:50500,newPvMW:64500,bldPvTracking:1,newOffshoreMW:2750,newRooftopMW:16800,newBattMW:20000,newBattHours:12,newIronAirMW:13000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -19770,8 +19777,8 @@ const IRP2035_DEMAND_GAP_PCT = 7.5137236790951745;   // Table 1's demand path ab
 // BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)
 const IRP2030_DEMAND_GAP_PCT = 7.2498099089135515;   // the IRP's demand path above the pathway's in 2030, customer demand plus firm exports
 // END GENERATED IRP's 2030 targets demand gap
-// BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from harness/ext/rescore_page_19e.json and harness/ext/rescore_page_29a_deep.json; do not edit by hand)
-const PRESET_SCORES = {"Deep decarbonisation 2035": {"shed": 1.4314, "target": 2.4281, "runs": 240, "build": "2026-10-29a", "seed": 120000017}, "Fossil-free 2040": {"shed": 2.1634, "target": 2.7213, "runs": 240, "build": "2026-10-19e", "seed": 71830529}};
+// BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from harness/ext/rescore_page_29a_deep.json and harness/ext/rescore_page_29a_fossil_topped.json; do not edit by hand)
+const PRESET_SCORES = {"Deep decarbonisation 2035": {"shed": 1.4314, "target": 2.4281, "runs": 240, "build": "2026-10-29a", "seed": 120000017}, "Fossil-free 2040": {"shed": 2.5527, "target": 2.7236, "runs": 240, "build": "2026-10-29a", "seed": 71830529}};
 // END GENERATED PRESET_SCORES
 const _gw = mw => String(+(mw / 1000).toFixed(1));
 // The searched presets' reliability sentence, from PRESET_SCORES (their rescore as the page runs them, twelve weather years x

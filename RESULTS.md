@@ -17935,3 +17935,28 @@ profile (the modern twin, the run's correction, capped at 1 per unit: 26.98 TWh)
 (15.15 TWh): 40.21 TWh x 26.98 / 42.13; the engine reports wind as one fleet, so the split is a definition, stated in pathcheck.js.
 New wind to 2030 is 7,246 MW in both c5f and c6e: both build at the binding caps and committed floors to 2030, which are the same
 in the two sets. Lithium cycles and the diesel factor depend on the outage draws (one draw gave 252.1 and 1.18%); new wind does not.
+
+### Fossil-free 2040 topped up to its design target on build 2026-10-29a: utility solar 56.5 to 64.5 GW and offshore 1.75 to 2.75 GW, 2.55 GWh a year against 2.72 on 240 runs; iron-air excluded under rule 366 (user, 29 Oct 2026, messages 487 (1) and 490; branch claude/site-text)
+
+Settings. harness/ext/preset_search.js from harness/ of claude/site-text (page at 0da780d, build 2026-10-29a; imports end after 2030,
+FIXED.importsEndYear, as in the central), PRESET='Fossil-free 2040' FEASIBLE=1 DRAWS=1 CONFIRM=20 SEED=71830529: the feasible phase adds
+capacity by the largest step until the target is met (half the NEM's 0.002% of customer demand at the start, 2.72 GWh), the greedy
+then accepts only moves that meet it and cost less, the confirm scores on twelve weather years x 20 draws (240 runs, the preset
+check's seeds). DRAWS=1 for the search phase: this fleet has no thermal units to draw outages for, and its score is identical at 1
+and 20 draws. Two runs, 29 Oct 2026, 07:36-07:50 and 07:51-08:01 UTC:
+
+| Run | Moves | Final build, MW (wind, solar, lithium at 12 h, iron-air, offshore) | Shed, GWh (240 runs) | Search cost, R bn | File |
+|---|---|---|---|---|---|
+| Preset as written | - | 50,500 / 56,500 / 20,000 / 13,000 / 1,750 | 132.40 | 434.8 | RESULTS 'Fossil-free 2040 sheds 132.4 GWh' |
+| Iron-air allowed | solar +2,000 x3, iron-air +500, solar +2,000; greedy: no cheaper move | 50,500 / 64,500 / 20,000 / 13,500 / 1,750 | 2.685 | 449.3 | harness/ext/search_fossil_29a.json |
+| Iron-air excluded (EXCLUDE=newIronAirMW) | solar +2,000 x4, offshore +1,000; greedy: no cheaper move | 50,500 / 64,500 / 20,000 / 13,000 / 2,750 | 2.553 | 451.9 | harness/ext/search_fossil_29a_noironair.json |
+
+Decision (message 490): the excluded version is used, since it meets the target; it costs R2.6bn a year more than the iron-air
+version (451.9 against 449.3, 0.6%). The tool searches wind, utility solar, lithium, iron-air and offshore; pumped storage is not a
+search technology (the preset carries Tubatse only), so the exclusion run covered wind, solar, lithium and offshore (offshore
+2,750 MW is within ESMAP's 5 GW deployable by 2040). Written into PRESETS['Fossil-free 2040'] (newPvMW 64500, newOffshoreMW 2750;
+the preset's comment block carries the top-up and the rejected iron-air version); rescored on the page as it runs it
+(harness/ext/preset_rescore.js, VARIANTS=page K=20 SEED=71830529: 2.5527 GWh against 2.7236, cost R451.9bn, the confirm's figures
+to the digit; harness/ext/rescore_page_29a_fossil_topped.json) and written to PRESET_SCORES by gen_preset_scores.py. The caption
+reads 'Unserved 2.55 GWh/yr, within NTCSA's 20 GWh.' The preset remains built to c5f's demand for 2040 (C5F_DEMAND); the full
+re-search on c6e's basis and the 2045 horizon question stay after the note (TODO 14kq).
