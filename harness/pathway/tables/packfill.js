@@ -33,8 +33,14 @@
 //                        capital charge, R/kW-yr; page.capexvs.TECH.LO[.HI] the capex against a typed Figure 9 range, as '−48% to −34%',
 //                        'within' or 'equal'; page.privprem.re|store the private-finance premium in points; page.disc the discount
 //                        rate; page.pvCase, page.cocCase, page.fx, page.nucUsd, page.coalUsd (page_costs.js, message 501 (d))
+//   Plain forms for the parts the reviewer reads (message 503 (a), (b)): RUN.pvbn 'R2,315bn'; .co2r_YYYY the year's CO2 rounded; .dpvplain 'adds R83bn' / 'saves R12bn' /
+//                        'changes the cost by less than R1bn'; .dpvabsbn 'R198bn'; .dco2plain '8 Mt less'; .verdictplain the adequacy
+//                        verdict as a clause; .nemplain the Australian-standard clause; .gasgw_YYYY new gas on LNG in GW; .gascfplain the
+//                        range of new gas's capacity factor 2035-40 as '5-8%'; .avgcostpctplain '12-16%'; irp*.gapbn 'R368bn', .gapplain
+//                        'R368bn more', .cutmt '8 Mt', .cutplain '8 Mt less'; irp.cocgapmax the larger move of the IRP gap across the
+//                        one-rate and private-rate cases, 'R4bn'; glossary the plain-name table for section 7 (plain.js)
 //   missing              the list of results not yet available, with the chain's reason
-const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js');
+const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
 const re=/<!--fill:([^>]+?)-->([\s\S]*?)<!--\/fill-->/g;
 if (args[0]==='--strip'){ const s=fs.readFileSync(args[1],'utf8').replace(re,(m,k,v)=>v); fs.writeFileSync(args[2],s); process.exit(0); }
@@ -93,6 +99,9 @@ function pageCost(k){
   throw new Error('packfill: unknown page key '+k);
 }
 function value(k){
+  if (k==='glossary'){ const rows=Object.entries(PLAIN).map(([c,[n,d]])=>`| ${n} | ${c==='base'?C:c==='irpdem'?C+'_irpdem':c.startsWith('irp')?('irp2025_'+C+(c==='irp'?'':c.slice(3))):c+'_'+C} | ${d} |`);
+    const vers=Object.entries(VERSIONS).map(([c,n])=>`| ${n} | ${c} | the central run set of that date |`);
+    return '\n\n| Plain name | Run code | What it changes |\n|---|---|---|\n'+rows.join('\n')+'\n'+vers.join('\n')+'\n\n'; }
   if (k.startsWith('page.')&&!['page.ff2040ironairGW','page.ironairHours'].includes(k)) return pageCost(k);
   if (k==='site.build'){ if (!fs.existsSync('testroot/index.html')) return null; const m=fs.readFileSync('testroot/index.html','utf8').match(/const BUILD_STAMP = '([^']+)'/); return m?m[1]:null; }
   // Page inputs read from index.html (message 491): the Fossil-free 2040 preset's iron-air, GW, and the page's iron-air duration, hours.
@@ -106,9 +115,24 @@ function value(k){
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
+    case 'pvbn': return 'R'+nf(s.pv,0)+'bn';
+    case 'dpvplain': { if (!b) return null; const d=s.pv-b.pv; return Math.abs(d)<1?'changes the cost by less than R1bn':(d>0?'adds R':'saves R')+nf(Math.abs(d),0)+'bn'; }
+    case 'dpvabsbn': return b&&'R'+nf(Math.abs(s.pv-b.pv),0)+'bn';
+    case 'dco2plain': { if (!b) return null; const d=s.co2Cum-b.co2Cum; return Math.abs(d)<0.5?'less than 1 Mt':nf(Math.abs(d),0)+' Mt '+(d>0?'more':'less'); }
+    case 'verdictplain': { const u=s.rows.filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
+      if (!u.length&&!o.length) return "meets the system operator's adequacy test in every year to 2040";
+      return [u.length?`exceeds the system operator's 20 GWh limit on expected unserved energy in ${span(u)}`:'',o.length?`runs open-cycle plant more than 6% of the time in ${span(o)}`:''].filter(Boolean).join(' and '); }
+    case 'nemplain': { const lim=x=>0.00002*x.servedTWh*1e3; const over=s.rows.filter(x=>x.mean-(x.seMean||0)>lim(x)), near=s.rows.filter(x=>x.mean>lim(x)&&!(x.mean-(x.seMean||0)>lim(x)));
+      const a=[]; if (over.length) a.push(`is over the limit in ${span(over.map(x=>x.y))}`); if (near.length) a.push(`sits at about the limit in ${span(near.map(x=>x.y))}, within the model\u2019s sampling error`);
+      return a.length?a.join(', and '):'stays under the limit in every year'; }
+    case 'gasgw': return nf(at(q=>q.ccgt+q.ocgtGas)/1e3,1);
+    case 'gascfplain': { const v=s.rows.filter(x=>x.y>=2035&&x.gasCF!=null).map(x=>100*x.gasCF); if (!v.length) return null; const lo=Math.round(Math.min(...v)), hi=Math.round(Math.max(...v)); return lo===hi?`${lo}%`:`${lo}\u2013${hi}%`; }
+    case 'avgcostpctplain': { if (!b) return null; const d=s.rows.filter(x=>x.y>=2030&&x.y<=2040).map(x=>{ const c=b.rows.find(q=>q.y===x.y); return c?100*(x.avgCostRMWh/c.avgCostRMWh-1):null; }).filter(v=>v!=null);
+      if (!d.length) return null; const lo=Math.round(Math.min(...d)), hi=Math.round(Math.max(...d)); return lo===hi?`${lo}%`:`${lo}\u2013${hi}%`; }
     case 'dpv': return b&&sg(s.pv-b.pv,1);
     case 'dpvabs': return b&&nf(Math.abs(s.pv-b.pv),1);   // the same, unsigned, for prose such as 'R…bn in present value'
     case 'co2': return y?nf(s.co2[y],1):nf(s.co2Cum,0);
+    case 'co2r': return y?nf(s.co2[y],0):nf(s.co2Cum,0);   // the yearly figure rounded, for the cover note (message 504 (a))
     case 'dco2': return b&&sg(s.co2Cum-b.co2Cum,0);
     case 'maxmean': return nf(s.maxMean,1);
     case 'worst': return nf(s.worstRun,0);
@@ -154,9 +178,14 @@ function value(k){
     case 'dsl': return nf(at(q=>q.ocgtDsl)/1e3,1);
     case 'coal': return nf(at(q=>q.coal)/1e3,1);
     case 'curt': return nf(s.rows.reduce((q,x)=>q+(x.curt||0),0),1);
-    case 'gap': case 'cut': case 'pertonne': case 'pertonnetax': { const o=S(irpMatch(r)); if (!o) return null;
+    case 'cocgapmax': { if (r!=='irp') return null; const g0=S('irp'); if (!g0) return null; const gap=(ir,run)=>{ const a=S(ir), c=S(run); return a&&c?a.pv-c.pv:null; };
+      const g=gap('irp','base'); const ds=[['irp_cocplan','s_cocplan'],['irp_cocprivate','s_cocprivate']].map(([i,x])=>{ const v=gap(i,x); return v==null||g==null?null:Math.abs(v-g); });
+      if (ds.some(v=>v==null)) return null; return 'R'+nf(Math.max(...ds),0)+'bn'; }
+    case 'gap': case 'cut': case 'gapbn': case 'gapplain': case 'cutmt': case 'cutplain': case 'pertonne': case 'pertonnetax': { const o=S(irpMatch(r)); if (!o) return null;
       const gap=s.pv-o.pv, cut=o.co2Cum-s.co2Cum;
       if (m==='gap') return sg(gap,1); if (m==='cut') return nf(cut,0);
+      if (m==='gapbn') return 'R'+nf(Math.abs(gap),0)+'bn'; if (m==='gapplain') return Math.abs(gap)<1?'about the same':'R'+nf(Math.abs(gap),0)+'bn '+(gap>0?'more':'less');
+      if (m==='cutmt') return nf(Math.abs(cut),0)+' Mt'; if (m==='cutplain') return Math.abs(cut)<0.5?'about the same':nf(Math.abs(cut),0)+' Mt '+(cut>0?'less':'more');
       if (cut<=0) return 'none (the IRP build emits more)';
       return 'R'+nf(1000*(m==='pertonnetax'?gap:gap-(taxPV(s)-taxPV(o)))/cut,0); }
   }
@@ -171,11 +200,20 @@ const src=fs.readFileSync(PACK,'utf8'); let changed=0; const unknown=[];
 // Every key but 'missing' first, so the missing list is complete when it is written.
 const fill=s=>s.replace(re,(all,k,old)=>{ if (k==='missing') return all; let v;
   try { v=k.startsWith('table:')?table(k.slice(6)):value(k); } catch(e){ unknown.push(k); return all; }
-  if (v==null) v=k.startsWith('table:')?`\n\n[not yet available: table ${k.slice(6)}]\n\n`:`[not yet available: ${k.split('.')[0]}]`;
+  if (v==null) v=k.startsWith('table:')?`\n\n[not yet available: table ${k.slice(6)}]\n\n`:`[not yet available: ${plainName(k.split('.')[0])}]`;
   if (v!==old) changed++; return `<!--fill:${k}-->${v}<!--/fill-->`; });
 let out=fill(src);
-out=out.replace(/<!--fill:missing-->([\s\S]*?)<!--\/fill-->/g,()=>{ const l=[...missing].sort().map(n=>`- ${n.replace(new RegExp('_'+C+'$'),'')}: ${why(n)}`);
+out=out.replace(/<!--fill:missing-->([\s\S]*?)<!--\/fill-->/g,()=>{ const l=[...missing].sort().map(n=>`- ${plainName(n)}: ${why(n)}`);
   return `<!--fill:missing-->\n${l.length?l.join('\n'):'- None: every result in this pack is in.'}\n<!--/fill-->`; });
 if (unknown.length){ console.error('unknown keys: '+unknown.join(', ')); process.exit(1); }
+// Plain-language check (message 503 (f)): the cover note, the introduction and section 6, as filled, carry no run code, no script or
+// data filename and no TODO reference. Markers are stripped first, so a key name never counts; table rows do.
+const plainFail=(()=>{ const txt=out.replace(/<!--\/?fill[^>]*-->/g,''); const secs=[...txt.matchAll(/^## (.+)$/gm)]; const bad=[];
+  secs.forEach((h,i)=>{ if (!/^(Cover note|What this is|6\.)/.test(h[1])) return; const body=txt.slice(h.index,secs[i+1]?secs[i+1].index:txt.length);
+    for (const [what,re] of [['run code',/\b(?:c[56][a-z]?(?:_[a-z0-9_]+)?|s_[a-z0-9_]+|irp2025_[a-z0-9_]+|irp_[a-z0-9_]+|null_c\d[a-z]?)\b/g],['filename',/\b[\w/.-]+\.(?:md|js|json|py|sh|csv)\b/g],['TODO',/\bTODO\b/g]]){
+      for (const m of body.matchAll(re)) bad.push(`${h[1].slice(0,12)}: ${what} '${m[0]}'`); } });
+  return [...new Set(bad)]; })();
+if (plainFail.length) console.error(`plain-language check failed (${plainFail.length}): `+plainFail.slice(0,20).join('; '));
 if (dry) console.log(`${changed} placeholders would change; missing: ${[...missing].join(', ')||'none'}`);
 else { fs.writeFileSync(PACK,out); console.log(`${changed} placeholders filled from ${C} (${O}, ${N}); missing: ${[...missing].join(', ')||'none'}`); }
+if (plainFail.length) process.exit(1);

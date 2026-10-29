@@ -55,6 +55,17 @@
   year's mean ± standard error and counts a year as over only when the mean less one standard error is still above the limit, else
   'at the limit within sampling error'; nemfig_YYYY gives one year, nemshort the span form for section 6's question 3. s_gas2032's
   2031 comparison is dropped; its 2032 figure stays. TODO 14kw: more draws for years near a standard.
+- 503 and 504: plain language for everything the reviewer reads. The cover note and the opening of 'What this is' are the advisor's
+  text with a fill marker behind every figure (packfill's plain keys: pvbn, dpvplain, dpvabsbn, dco2plain, verdictplain, nemplain,
+  gasgw, gascfplain, avgcostpctplain, gapbn, gapplain, cutmt, cutplain, cocgapmax, co2r); 504 (a) and (b) added. Rule for the cover
+  note, the introduction and sections 1-6 prose: no run codes, filenames, TODO numbers, build stamps or results-log headings, no
+  '+' on rands; runs named by what they change (harness/pathway/tables/plain.js, one table). Section 6 rewritten; section 4's
+  record subsections moved to a new section 8; section 7 carries the glossary (fill key 'glossary'), the version history and the
+  script names. Sections 1-5 went through a mechanical pass from the same table, then leftovers by hand; sections 7, 8 and the
+  headings list keep codes by design. packfill fails (exit 1, after writing) if the cover note, the introduction or section 6
+  carries a run code, a script or data filename or 'TODO'. Nick's own cover-note wording replaces the advisor's on Friday morning
+  (504 (c)); the markers and the rule stay. Snapshot fill reproduces the advisor's figures except the IRP-gap move across the
+  cost-of-capital cases (R3bn from the outputs against the advisor's R4bn); the fill decides.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
