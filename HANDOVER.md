@@ -70,6 +70,11 @@ https://docs.google.com/document/d/1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc/
 at each milestone; superseded sets (c6, c5e) stay in the repository only. Every report that changes the pack ends with one line
 listing the sections changed, so the advisor knows what to carry into the Doc.
 
+After the send (user, 29 Oct 2026, 10:57 SAST, message 494): the reviewer's copy is the one live Google Doc; there is no frozen copy.
+Nick names the sent version "Sent 30 October" in its version history. After the send the advisor makes only targeted edits (single
+figures and sentences, never whole sections), puts new results in a dated addendum at the end, reads the open comments before each
+update, and leaves commented passages alone unless Nick agrees first.
+
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 
 On 27 Oct the cloud machine restarted five times in two hours and killed every job started with nohup (the #121 suite, the c6a
