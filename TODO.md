@@ -587,6 +587,13 @@ presets PR's page work run after that merge, the suite overnight, the merge Frid
 emisCoal follows from it (Eskom's FY2026 rate over the constant), so the page, the stored panels and the suite change with it; record
 the before and after in RESULTS with the run it was taken from. Not before the pack goes on 30 Oct 2026.
 
+14kq. Fossil-free 2040 fails the adequacy standard on the current page (29 Oct 2026; RESULTS 'Fossil-free 2040 sheds 132.4 GWh',
+on claude/site-text): 132.4 GWh a year against its 2.72 GWh design target and NTCSA's 20 GWh, on 240 runs; cause confirmed, the
+central ending imports after 2030 (PR B) after the preset was built with them (3.4 GWh with imports kept). You: the caption for
+Friday (state the miss, or stay silent as the build-date guard does now). After the note: re-search the preset on the current page
+(harness/ext/preset_search.js, no coal, DRAWS=1 and a confirm set), rescore, gen_preset_scores.py; the 2045 horizon question
+(message 471) with it.
+
 14kg. 'Strategy savings' demand case, after the note (user, 28 Oct 2026, message 444 (a)), for the consultation submission on the
 National Energy Efficiency Strategy 2026-2035: the pathway at demand reduced by the strategy's 2035 savings (132 PJ: industry 40.7,
 transport 43.3, commercial and public 34.8, residential 13.3 PJ), with the electricity share of each sector's savings estimated by
