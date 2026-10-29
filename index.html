@@ -19806,9 +19806,16 @@ const PRESET_SCORE_IMPORTS_END_BUILD = '2026-10-23a';
 const _presetMeets = n => { const S = PRESET_SCORES[n], f = v => v.toFixed(2);
   if (S.build < PRESET_SCORE_IMPORTS_END_BUILD && FIXED.importsEndYear > 0 && (PRESETS[n].scenarioYear ?? 2026) > FIXED.importsEndYear)
     return '';
+  // Against NTCSA's medium-term test (NTCSA_ADEQUACY_GWH) and the half-NEM target the preset was built to (user, 28 Oct 2026,
+  // message 470 (a): the Australian standard is no longer the yardstick named).
+  // Within the 40-word caption rule: eight words at most. The half-NEM design target is named only when it is missed.
+  if (S.shed > NTCSA_ADEQUACY_GWH) return ` Unserved ${f(S.shed)} GWh/yr, above NTCSA\u2019s ${NTCSA_ADEQUACY_GWH} GWh.`;
   return S.shed <= S.target
-    ? ` Unserved ${f(S.shed)} GWh/yr, within half the Australian standard.`
-    : ` Unserved ${f(S.shed)} GWh/yr, above half the Australian standard (${f(S.target)}).`; };
+    ? ` Unserved ${f(S.shed)} GWh/yr, within NTCSA\u2019s ${NTCSA_ADEQUACY_GWH} GWh.`
+    : ` Unserved ${f(S.shed)} GWh/yr, over its design target (${f(S.target)}).`; };
+// The IRP's demand against the pathway's in the two IRP captions, worded by sign: on c6's demand basis the IRP's own forecast sits
+// below the pathway's (29 Oct 2026), so a signed percentage would read 'plans -5% more'.
+const _gapWord = pct => `${Math.abs(+pct.toFixed(1))}% ${pct >= 0 ? 'more' : 'less'}`;
 // Gas in the IRP captions: the floored share named only when it is not all of the gas.
 const _presetGas = P => { const g = (P.newCcgtMW || 0) + (P.newOcgtMW || 0), fl = Math.min(g, P.ccgtForceLoadMW ?? FIXED.ccgtForceLoadMW);
   return fl >= g ? `${_gw(g)} GW gas at a ${FIXED.ccgtForceLoadPct}% load factor` : `${_gw(g)} GW gas (${_gw(fl)} at a ${FIXED.ccgtForceLoadPct}% load factor)`; };
@@ -19818,9 +19825,9 @@ const _presetGas = P => { const g = (P.newCcgtMW || 0) + (P.newOcgtMW || 0), fl 
 const PRESET_DESC = {
   '2025, as modelled': 'The model re-run on 2025\u2019s fleet, demand, weather, imports and coal outages (Eskom data, analysis ours). Not a validation: coal output is close to Eskom\u2019s, but it sheds far less load than Eskom did.',
   'Today 2026': 'The system as it runs today: the 2026 fleet, demand and coal availability. Opens on this preset.',
-  'IRP\'s 2030 targets': (P => `IRP 2025\u2019s 2030 build at the model\u2019s costs and demand (IRP plans ${(+IRP2030_DEMAND_GAP_PCT.toFixed(1))}% more): ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries, ${_presetGas(P)}; ${_gw(P.coalDecomMW)} GW coal retired.`)(PRESETS['IRP\'s 2030 targets']),
+  'IRP\'s 2030 targets': (P => `IRP 2025\u2019s 2030 build at the model\u2019s costs and demand (IRP plans ${_gapWord(IRP2030_DEMAND_GAP_PCT)}): ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries, ${_presetGas(P)}; ${_gw(P.coalDecomMW)} GW coal retired.`)(PRESETS['IRP\'s 2030 targets']),
   'IRP\'s 2030 targets, grid delayed': ((P, T) => `IRP\u2019s 2030 targets with ${Math.round(100 * (1 - P.newWindMW / T.newWindMW))}% of the new wind and solar unable to connect (${_gw(P.newWindMW)} GW of wind and ${_gw(P.newPvMW)} GW of solar connect) and curtailment at ${P.congestionCurtailPct}%, for a transmission corridor not built in time.`)(PRESETS['IRP\'s 2030 targets, grid delayed'], PRESETS['IRP\'s 2030 targets']),
-  'IRP path 2035': (P => `IRP 2025\u2019s 2035 build on Least-cost path 2035\u2019s demand (IRP plans ${(+IRP2035_DEMAND_GAP_PCT.toFixed(1))}% more): ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries, ${_presetGas(P)}; ${_gw(P.coalDecomMW)} GW coal retired.`)(PRESETS['IRP path 2035']),
+  'IRP path 2035': (P => `IRP 2025\u2019s 2035 build on Least-cost path 2035\u2019s demand (IRP plans ${_gapWord(IRP2035_DEMAND_GAP_PCT)}): ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries, ${_presetGas(P)}; ${_gw(P.coalDecomMW)} GW coal retired.`)(PRESETS['IRP path 2035']),
   'Least-cost path 2035': (P => `The model\u2019s least-cost build to 2035: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW of ${+P.newBattHours.toFixed(1)}-hour batteries and ${_gw(P.newCcgtMW + P.newOcgtMW)} GW gas; ${_gw(P.coalDecomMW)} GW coal retired; demand ${Math.round(P.demandGrowthPct)}% above 2026 plus ${P.demandBlockMW} MW of smelter load.`)(PRESETS['Least-cost path 2035']),
   'Deep decarbonisation 2035': (P => `${_gw(P.coalDecomMW)} GW of coal retired by 2035, no new gas: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW ${P.newBattHours}-hour batteries, ${_gw(P.newIronAirMW)} GW iron-air.${_presetMeets('Deep decarbonisation 2035')}${_presetOverLimit(P)}`)(PRESETS['Deep decarbonisation 2035']),
   'Fossil-free 2040': (P => `No fossil plant by 2040: ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newOffshoreMW)} GW offshore, ${_gw(P.newRooftopMW)} GW rooftop, ${_gw(P.newBattMW)} GW ${P.newBattHours}-hour batteries, ${_gw(P.newIronAirMW)} GW iron-air.${_presetMeets('Fossil-free 2040')}${_presetOverLimit(P)}`)(PRESETS['Fossil-free 2040']),
