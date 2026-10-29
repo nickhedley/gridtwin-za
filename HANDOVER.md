@@ -107,6 +107,8 @@
   test; cost difference with its share; CO2; new peakers in GW; their capacity factor), then the no-peaker shortfall; keys
   dpvword, dpvpctplain, dslgw_YYYY, ocmaxplain added; the same text is NOTE_DRAFT.md's 'No new gas' section; limitation 33 reads
   'without gas or peakers'.
+- 512 (replaces 511's no-gas wording; the rest of 511 stands): the finding's last sentence reads 'falls short of the standard in
+  2037-40 when tested hourly' without the range (key shortfallshort); the ranged form stays in section 4's record and limitation 33.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 

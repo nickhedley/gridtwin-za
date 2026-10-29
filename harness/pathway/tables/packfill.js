@@ -50,6 +50,7 @@
 //                        run-by-run comparison with the previous set (settables section 4)
 //   nogasbest.*          the no-gas rerun that meets the standard (s_nogas_maxp6, else s_nogas_maxp10): every run key, plus .which,
 //                        .added and .finding (message 508); while neither is in, .finding says the rerun follows
+//   RUN.shortfallshort   'falls short of the standard in 2037-40 when tested hourly' (message 512; the finding's form)
 //   RUN.shortfall        'falls short of the 20 GWh standard in 2037-40 when tested hourly (27-134 GWh a year)', or 'meets ... in every
 //                        year when tested hourly' (message 511)
 //   RUN.dpvword / .dpvpctplain / .dslgw_YYYY / .ocmaxplain   'more' or 'less'; the cost difference as a share of the plan, '0.6%'; new
@@ -161,6 +162,7 @@ function value(k){
     case 'ocmaxplain': { const ys=Object.keys(s.sched||{}).map(Number).sort(); let first=null, cum=0; for (const yy of ys){ cum+=(s.sched[yy].ocgd||0); if (cum>=1&&first==null) first=yy; }
       const rows=s.rows.filter(x=>first!=null&&x.y>=first&&x.ocgtCF!=null); if (!rows.length) return null; const v=100*Math.max(...rows.map(x=>x.ocgtCF)); return v<0.5?'under 1%':'about '+Math.round(v)+'%'; }
     // The no-gas finding's clause (message 511): the years the hourly check finds over 20 GWh, as a span, and the range of their means.
+    case 'shortfallshort': { const o=s.rows.filter(x=>x.mean>20); return o.length?`falls short of the standard in ${spanH(o.map(x=>x.y))} when tested hourly`:'meets the standard in every year when tested hourly'; }   // message 512
     case 'shortfall': { const o=s.rows.filter(x=>x.mean>20); if (!o.length) return 'meets the 20 GWh standard in every year when tested hourly';
       const v=o.map(x=>x.mean); const lo=Math.round(Math.min(...v)), hi=Math.round(Math.max(...v));
       return `falls short of the 20 GWh standard in ${spanH(o.map(x=>x.y))} when tested hourly (${lo===hi?lo:lo+'-'+hi} GWh a year)`; }
