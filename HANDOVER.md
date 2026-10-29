@@ -11,6 +11,8 @@
   meets 2.72 GWh on the 240-run confirm and report its cost against the iron-air version; use the iron-air version only if the
   exclusion fails, flagged in the caption's source note and the pack's known failures (iron-air's finding is a known failure, TODO
   14gm). Time box 18:00 SAST; if nothing meets 20 GWh, the caption states the miss and the pack says the top-up follows.
+  Done 10:05 SAST: the exclusion run met the target (solar 64.5 GW, offshore 2.75 GW; 2.55 against 2.72 GWh; R2.6bn a year dearer
+  than the iron-air version); in the page on claude/site-text with its rescore in PRESET_SCORES (RESULTS 'Fossil-free 2040 topped up').
 - LCOE anchor notes (487 (2)): option A, done on claude/c6e-snapshot's central (harness/pathcheck.js LCOE=1, K=20, 2030;
   harness/ext/gen_lcoe_anchors.py writes LCP_2030_*; RESULTS 'LCOE anchor notes on c6e's 2030'). After the outputs PR merges,
   confirm pathway_c6e.json is identical to the snapshot's; if not, rerun.
