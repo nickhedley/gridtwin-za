@@ -438,6 +438,10 @@ committed floors and the near-term build; (ii) more weather years, AEMO using 24
 availability declining toward retirement (p. 14), against the model's flat coal-only EAF. Source: AEMO, 2026 Electricity Statement
 of Opportunities (SOURCES 'Adequacy criteria').
 
+14kt. High LNG price case, after the send (user, 29 Oct 2026, message 492 (c)): European gas at a four-year high in October 2026
+against the central's LNG at 13.25% of Brent at USD 80 (SOURCES 'Gas price cases'); run the existing high gas price case on c6e's
+settings, or a case indexed to the October 2026 European level, and report cost, CO2 and the gas build against the central.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
