@@ -578,6 +578,9 @@ send, only reruns of failed runs; anything new goes on this list under 'after th
 and the presets PR without Nick when their checks pass (the conditions in HANDOVER). Thursday: preset captions and figures from
 c6e's outputs, panels, suite, PR with the visible-text list; if not merged by Friday 10:00 SAST the pack links the site as it stands.
 Still to restate on c6e once section 4 is filled: the pack's section 6 questions (written on c5e).
+Timing (message 486, 29 Oct 08:31 SAST): c6e's end line expected 19:00–20:00 SAST, outputs PR about 20:30; the final fill and the
+presets PR's page work run after that merge, the suite overnight, the merge Friday morning before 10:00 SAST. claude/c6e-snapshot
+(finished runs only) is for testing the scripts this afternoon, never a source of figures. Caption draft: harness/pathway/PRESETS_C6E_CAPTIONS.md.
 
 14kp. First after-the-note page change (user, 28 Oct 2026, message 484 (1)): re-record COAL_PARTLOAD_2026 from c6e's 2026
 (harness/pathway/partload_check.js on c6e's engine check, the documented central-run method; 1.0324 now, from Today 2026 on 27f).

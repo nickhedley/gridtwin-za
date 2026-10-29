@@ -20,6 +20,12 @@
   the check, re-record from c6e's 2026 in the first page build after the send (TODO 14kp). (2) The Google Doc: the advisor mirrors
   it after Nick's read on Friday morning; Claude does not touch it. (3) The c6e chain started 23:10 SAST on f7921b7 (PID 284 in the
   run session), the central first; the advisor passes the last line of harness/out/c6e/progress.txt each morning.
+- Message 486 (29 Oct 2026, 08:31 SAST), c6e status: 18 of 33 runs done with their IRP checks (central, IRP-schedule runs,
+  both gas-timing runs, the four cost-of-capital cases, high wind, both carbon cases, null, s_gascapex25); to come, 12 short runs,
+  s_coalsustain, three long no-gas solves, the restart counts; end line expected 19:00–20:00 SAST, outputs PR about 20:30; one
+  container restart so far. The run session pushes claude/c6e-snapshot (finished runs only, read-only) for testing packfill and
+  the caption generation; no figure from the snapshot goes into the pack or the page. Tonight after the merge: packfill, section 6,
+  captions, panels, suite overnight; the advisor reviews and merges Friday before 10:00 SAST, else 483 (c).
 - The presets PR (483, replacing 482 (b)): in scope for Friday. Wednesday night: the 470, 471 and 473 items that do not depend on c6e
   figures on a branch from main (28a), panels rewritten, full suite overnight in tracked pieces with nothing beside it (done on
   claude/site-text, build 2026-10-29a). Thursday, once the c6e outputs PR is merged: preset captions and figures from c6e's outputs,
