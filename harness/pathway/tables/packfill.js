@@ -10,7 +10,7 @@
 // 'irp' the IRP 2025 build at the central's demand and 'irp_x' its check in case x, e.g. irp_irpdem, irp_cochigh, irp_nuc12000):
 //   table:<title>        a section of settables.js's output, by the start of its heading with the set name taken out
 //                        ('Runs', 'Build standing', 'Gas timing', 'Cost of capital cases', 'IRP 2025 build', 'Not run')
-//   RUN.pv / .dpv        engine PV 2026-40, R bn, and its difference from the central
+//   RUN.pv / .dpv / .dpvabs   engine PV 2026-40, R bn, its difference from the central, and that difference unsigned
 //   RUN.co2 / .dco2 / .co2_YYYY   CO2 2026-40, Mt, its difference from the central, and one year's CO2
 //   RUN.maxmean / .worst / .ocmax / .verdict / .mean_YYYY / .overown / .nemover   adequacy (verdict against NTCSA's two criteria;
 //                        overown: the years over the run's own standard, or 'none'; nemover: the years over the Australian
@@ -76,6 +76,7 @@ function value(k){
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
     case 'dpv': return b&&sg(s.pv-b.pv,1);
+    case 'dpvabs': return b&&nf(Math.abs(s.pv-b.pv),1);   // the same, unsigned, for prose such as 'R…bn in present value'
     case 'co2': return y?nf(s.co2[y],1):nf(s.co2Cum,0);
     case 'dco2': return b&&sg(s.co2Cum-b.co2Cum,0);
     case 'maxmean': return nf(s.maxMean,1);
