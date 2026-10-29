@@ -54,8 +54,9 @@ import re
 def page_defaults():
     h = open('index.html').read()
     m1 = re.search(r"^\s*importsEndYear:(\d+),", h, re.M); m2 = re.search(r"^\s*bldCocCase:'([a-z]+)',", h, re.M)
-    if not (m1 and m2): raise SystemExit('page defaults not found once (importsEndYear, bldCocCase)')
-    return {'importsEndYear': int(m1.group(1)), 'bldCocCase': m2.group(1)}
+    m3 = re.search(r"^\s*exportsMW:(\d+),", h, re.M)   # FIXED's firm exports, the first such line
+    if not (m1 and m2 and m3): raise SystemExit('page defaults not found once (importsEndYear, bldCocCase, exportsMW)')
+    return {'importsEndYear': int(m1.group(1)), 'bldCocCase': m2.group(1), 'exportsMW': int(m3.group(1))}
 
 
 def block(cfg):
@@ -114,8 +115,18 @@ def block(cfg):
 def demand_gap(cfg, Y=2035):
     # How far the IRP's demand path sits above the pathway's in 2035 (message 229 (2)): customer demand plus firm exports on
     # the pair's index (harness/pathway/irp2025/index_irpdem.json, message 224) against the same on the build file's own index.
-    P = json.load(open(cfg['build'])); I = json.load(open(cfg['gap_index'])); m = I['meta']
-    blk = max(((int(y), mw) for y, mw in (P['demand'].get('block') or {}).items() if int(y) <= Y), default=(0, 0))[1] * 8.76 / 1000
+    # From c6e (29 Oct 2026) the pair's demand is read from its own run files instead ('gap_run': the IRP-demand run beside
+    # 'build'): customer demand is the profile base x the run's index plus its smelter block, firm exports the page's, on both sides;
+    # the c6 index file carries no firm-exports entry. Negative when the IRP's own forecast sits below the pathway's, as it does
+    # on c6's basis; the caption words the sign.
+    P = json.load(open(cfg['build']))
+    blkOf = lambda R: max(((int(y), mw) for y, mw in (R['demand'].get('block') or {}).items() if int(y) <= Y), default=(0, 0))[1] * 8.76 / 1000
+    if 'gap_run' in cfg:
+        R = json.load(open(cfg['gap_run'])); base = sum(json.load(open('profiles.json'))['demand']) / 1e6
+        exp = page_defaults()['exportsMW'] * 8.76 / 1000
+        tot = lambda Q: base * Q['demand']['index'][str(Y)] + blkOf(Q) + exp
+        return 100 * (tot(R) / tot(P) - 1)
+    I = json.load(open(cfg['gap_index'])); m = I['meta']; blk = blkOf(P)
     tot = lambda ix: m['base_TWh'] * ix + blk + m['firm_exports_TWh']
     return 100 * (tot(I['years'][str(Y)]) / tot(P['demand']['index'][str(Y)]) - 1)
 
@@ -165,10 +176,11 @@ for cfg in PRESETS:
         anchor = "  // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard"
         if new.count(anchor) != 1: raise SystemExit('anchor not found once')
         new = new.replace(anchor, blk + '\n' + anchor, 1)
-    if 'gap_index' in cfg:
+    if 'gap_index' in cfg or 'gap_run' in cfg:
         # IRP's 2030 targets' caption gives the same gap for 2030 (message 235 (3)), from the same index
         g30 = demand_gap(cfg, 2030)
-        GB30 = "// BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
+        gsrc = cfg.get('gap_run') or cfg['gap_index']
+        GB30 = f"// BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from {gsrc}; do not edit by hand)"
         GE30 = "// END GENERATED IRP's 2030 targets demand gap"
         g30blk = f"{GB30}\nconst IRP2030_DEMAND_GAP_PCT = {j(g30)};   // the IRP's demand path above the pathway's in 2030, customer demand plus firm exports\n{GE30}"
         if replace_block(new, GB30, GE30, g30blk) is not None:
@@ -178,7 +190,7 @@ for cfg in PRESETS:
             if new.count(anchor) != 1: raise SystemExit('caption anchor not found once')
             new = new.replace(anchor, g30blk + '\n' + anchor, 1)
         gap = demand_gap(cfg)
-        GB = "// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
+        GB = f"// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from {gsrc}; do not edit by hand)"
         GE = "// END GENERATED 'IRP path 2035' demand gap"
         gblk = f"{GB}\nconst IRP2035_DEMAND_GAP_PCT = {j(gap)};   // Table 1's demand path above the pathway's in 2035, customer demand plus firm exports\n{GE}"
         if replace_block(new, GB, GE, gblk) is not None:
