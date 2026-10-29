@@ -38,6 +38,10 @@
   14.0-14.4% were the 2030 and 2040 endpoints; across every year the snapshot gives 12.3-15.9% (R128-156/MWh), the reading used
   pending Nick's call. The minimum alone and its pass-through to Megaflex is TODO 14kv; the sentence is updated when it lands.
   Source: Engineering News, 19 Oct 2025 (50%; the Gazette's 51% is used), under SOURCES 'Gas timing'.
+- 498: the note's range is the full yearly range across 2030-40 (the advisor's 14.0-14.4% sampled three years); 12.3-15.9% on the
+  snapshot, filled from the merged outputs. 499: 495's wording applies to every run that stopped at the pass limit (s_nogas, the
+  two no-gas standard runs, the cover note's no-gas line included): packfill 'status' gives 'the optimiser reached its pass limit;
+  the engine check gives ...' with the years over the run's own standard; never 'infeasible' or 'cannot be met'.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
