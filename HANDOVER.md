@@ -103,6 +103,10 @@
   run. Finding 7 and section 4 carry 511's wording from the fill (key 'shortfall': the years over 20 GWh and the range of their
   means from the hourly check), the pass-limit status kept as the record; limitation 33 added; TODO 14kz. The 02:00 SAST check
   is cancelled: nothing follows for the pack's no-gas finding.
+- 511 (second message, the final no-gas wording): the finding leads with the no-gas plan that allows diesel peakers (passes the
+  test; cost difference with its share; CO2; new peakers in GW; their capacity factor), then the no-peaker shortfall; keys
+  dpvword, dpvpctplain, dslgw_YYYY, ocmaxplain added; the same text is NOTE_DRAFT.md's 'No new gas' section; limitation 33 reads
+  'without gas or peakers'.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 

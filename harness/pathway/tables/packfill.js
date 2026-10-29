@@ -52,6 +52,8 @@
 //                        .added and .finding (message 508); while neither is in, .finding says the rerun follows
 //   RUN.shortfall        'falls short of the 20 GWh standard in 2037-40 when tested hourly (27-134 GWh a year)', or 'meets ... in every
 //                        year when tested hourly' (message 511)
+//   RUN.dpvword / .dpvpctplain / .dslgw_YYYY / .ocmaxplain   'more' or 'less'; the cost difference as a share of the plan, '0.6%'; new
+//                        diesel peakers standing in GW; the open-cycle capacity factor's highest year since new peakers first stand
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -151,6 +153,13 @@ function value(k){
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
+    // The no-gas finding (message 511, second): cost difference as a word and as a share of the plan, new diesel peakers standing, GW,
+    // and the open-cycle capacity factor's highest year from the first year new peakers stand, as 'about X%'.
+    case 'dpvword': return b&&((s.pv-b.pv)>=0?'more':'less');
+    case 'dpvpctplain': return b&&nf(Math.abs(100*(s.pv-b.pv)/b.pv),1)+'%';
+    case 'dslgw': return nf(at(q=>q.ocgtDsl||0)/1e3,1);
+    case 'ocmaxplain': { const ys=Object.keys(s.sched||{}).map(Number).sort(); let first=null, cum=0; for (const yy of ys){ cum+=(s.sched[yy].ocgd||0); if (cum>=1&&first==null) first=yy; }
+      const rows=s.rows.filter(x=>first!=null&&x.y>=first&&x.ocgtCF!=null); if (!rows.length) return null; const v=100*Math.max(...rows.map(x=>x.ocgtCF)); return v<0.5?'under 1%':'about '+Math.round(v)+'%'; }
     // The no-gas finding's clause (message 511): the years the hourly check finds over 20 GWh, as a span, and the range of their means.
     case 'shortfall': { const o=s.rows.filter(x=>x.mean>20); if (!o.length) return 'meets the 20 GWh standard in every year when tested hourly';
       const v=o.map(x=>x.mean); const lo=Math.round(Math.min(...v)), hi=Math.round(Math.max(...v));
