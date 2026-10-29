@@ -24,6 +24,10 @@
   sensitivities, Mitsubishi Power's turbine deliveries for new orders around 2031 (Bloomberg, 27 Oct 2026; SOURCES 'Gas timing'
   and 'Gas turbine prices and lead times'), so new gas before about 2034 assumes turbines already ordered. TODO 14kt: a high LNG
   price case after the send.
+- Pack review 493 (advisor, on 4ca4eef): done on ce840f8 and 9b0df4a: the new-gas row led by c6e's basis with the 2032 text as
+  c6's record; new gas's capacity factor by year from the engine check (packfill gascf; built as backup capacity) in the cover note
+  and section 4; the two working notes cut; NTCSA's 20 GWh against the 0.002% test as a computed range (nemratio). Section 6 as
+  drafted is recommended by the advisor; Nick confirms on his Friday read.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
