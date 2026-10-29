@@ -15,7 +15,8 @@
 //   RUN.maxmean / .worst / .ocmax / .verdict / .mean_YYYY / .overown / .nemover   adequacy (verdict against NTCSA's two criteria;
 //                        overown: the years over the run's own standard, or 'none'; nemover: the years over the Australian
 //                        standard, 0.002% of served energy, each with its figures, or 'none'); .gascf_YYYY new gas's capacity
-//                        factor in a year, %; .nemratio the range of 20 GWh over 0.002% of each year's served energy
+//                        factor in a year, %; .nemratio the range of 20 GWh over 0.002% of each year's served energy;
+//                        .overownfig the years over the run's own standard with mean against target; .passlimit how the optimiser ended
 //   RUN.wind_YYYY .solar_YYYY .li_YYYY .gas_YYYY .dsl_YYYY .coal_YYYY   GW standing; .gasmw_YYYY new gas on LNG in MW
 //   RUN.curt             curtailed wind and solar 2026-40, TWh
 //   irp*.gap / .cut / .pertonne / .pertonnetax   the IRP build against the optimised plan in the same case: engine PV gap, CO2 cut,
@@ -81,6 +82,10 @@ function value(k){
     case 'ocmax': return nf(100*Math.max(...s.rows.map(x=>x.ocgtCF)),1)+'%';
     case 'mean': { const x=s.rows.find(q=>q.y===y); return x?nf(x.mean,1):null; }
     case 'overown': return s.over.length?span(s.over):'none';
+    // The years over the run's own standard with their figures (mean against that year's target, GWh), and how the optimiser ended
+    // (its run file's verdict; message 495: 'pass limit reached' is reported as such, never as infeasible).
+    case 'overownfig': { const o=s.rows.filter(x=>x.mean>x.target+1e-9); return o.length?o.map(x=>`${x.y} (${nf(x.mean,2)} against ${nf(x.target,2)})`).join(', '):'none'; }
+    case 'passlimit': return /pass limit/i.test(s.verdict||'')?'the optimiser reached its pass limit':/adequate/i.test(s.verdict||'')?'the optimiser converged':`the optimiser ended '${s.verdict}'`;
     // Against the Australian grid's standard (AEMO 2026 ESOO: expected unserved energy at most 0.002% of demand; message 489 (a)):
     // the years whose mean unserved energy exceeds 0.002% of the run's served energy, each with its figures, GWh.
     // New gas's capacity factor in a year (the engine check's gasCF: gas output over the CCGT standing x 8,760), %; message 493 (b).
