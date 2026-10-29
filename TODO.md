@@ -452,7 +452,9 @@ central build with only the gas minimum on (GASFLOOR engine-only: 51% of up to 6
 system cost per MWh by year, engine PV and CO2; the same build, so the difference is the floor alone. (b) Pass both through the retail
 tariff calculator to Megaflex: c/kWh and the percentage change for a typical industrial load. (c) First indication, from c6e's
 s_irpgas on the snapshot (the advisor, 29 Oct 2026): system cost +R142-152/MWh in 2030-40, PV +R198bn, CO2 +155 Mt; that run also
-changes the gas build (GAS_FIRST=2032, forced and minimum gas), so it is not the floor alone and is not quoted as such.
+changes the gas build (GAS_FIRST=2032, forced and minimum gas), so it is not the floor alone and is not quoted as such. The note's
+first agreed text (NOTE_DRAFT.md on the pack branch, message 497) quotes s_irpgas with that caveat; its sentence is updated when (a)
+and (b) land.
 
 ## Follow-through on the engine change
 
