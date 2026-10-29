@@ -17878,3 +17878,13 @@ existing' form the check reads (validate_findings.js, added 5 Oct 2026). Fixed i
 the page's inline script, so the stored panels are rewritten again and the suite rerun in full. Same as main in that run:
 validate_response 86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, validate_pathway_presets
 27/40; validate_public_text 32/32 (22 checks on main), validate_stored_panels 86/86, validate_links 48/48, validate_external 8/8.
+
+Second suite on 29a (29 Oct 2026, 00:06 to 01:14 UTC, at 79d981e, panels rewritten first, fingerprint 02627976993aa9, nothing
+beside it): node checks 984/1006 (main 974/996; the ten new public-text checks all pass, every other script equal to main by
+count: findings 37/40, response 86/87, consistency 82/83, benchmarks 28/30, outputs 49/51, pathway_presets 27/40; stored panels
+86/86, links 48/48, worker 38/38, bids 7/7); eng5 5/6 (check 6, as on main); audit 87/88 against main's 88/88. The audit miss, 'no
+shouted emphasis in user-facing strings: SOURCES': the RT_TYPES comment written tonight read "the 2025-26 installer price guides'
+range for its size (SOURCES 'Rooftop PV installed cost, 2025-26'", and the audit's string scanner takes the possessive apostrophe
+as opening a quoted string, so SOURCES fell inside one. Reworded (commit e17023c, "the range the 2025-26 installer price guides give
+for its size"); audit alone then 88/88, prose 4,174 of 4,250 words. The comment is inline script, so the stored panels are
+rewritten a third time and the suite rerun; counts below.
