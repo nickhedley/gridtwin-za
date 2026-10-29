@@ -33,7 +33,24 @@ carries markers.
     Unserved {shed} GWh/yr: above the half-NEM target ({target}) it was built to; within NTCSA's {ntcsaGWh} GWh a year.
     Unserved {shed} GWh/yr: above NTCSA's {ntcsaGWh} GWh a year.                      (only if a rescore ever lands there)
 
-## The three LCOE anchor notes (message 471 (f))
+## Fossil-free 2040 (messages 487 (1) and 490; 29 Oct 2026)
+
+Fails the standard on the current page (132.4 GWh a year against 2.72; imports ended after 2030 since the preset was built).
+Topped up today by the search tool, imports ending after 2030 as in the central: (1) iron-air allowed, met in the feasible phase
+(+6.0 GW utility solar, +0.5 GW iron-air); (2) rerun with EXCLUDE=newIronAirMW; the exclusion is used if it meets 2.72 GWh on the
+240-run confirm, else the iron-air version with the flag in the caption's source note and the pack's known failures. The new build
+goes into the page's hand-written preset (PRESETS['Fossil-free 2040']), the rescore (preset_rescore.js, seed 71830529, K=20) into
+PRESET_SCORES through gen_preset_scores.py, and the caption's GW figures follow from PRESETS as now. RESULTS carries the search
+output (harness/ext/search_fossil_29a*.json), the added capacity and the cost against the iron-air version.
+
+## The three LCOE anchor notes (message 471 (f)): option A, done 29 Oct 2026
+
+LCP_2030_LI_CYCLES, LCP_2030_DSL_CF and LCP_2030_WIND_CF are written by harness/ext/gen_lcoe_anchors.py from the central's hooked
+2030 check (harness/pathcheck.js LCOE=1, K=20; harness/ext/lcoe_c6e_2030_k20.json, on claude/c6e-snapshot's pathway_c6e.json):
+254.6 cycles, 1.32%, 40.56%. After the outputs PR merges, confirm pathway_c6e.json is identical to the snapshot's; if not, rerun
+the check and the generator. The notes' wording is unchanged ('In the least-cost pathway's 2030 …').
+
+## The three LCOE anchor notes, as drafted before the decision (message 471 (f))
 
 Now: "In the model's least-cost pathway in 2030: 103 cycles a year: R4.73/kWh" (lithium), "the fleet runs at 2.7%: R17.78/kWh"
 (diesel), wind at 41.7% (all three from c5f's 2030, build 2026-10-17g). Two options, Nick's call on Thursday:

@@ -1,5 +1,25 @@
 # GridTwin ZA - handover, current state (kept current; updated 28 Oct 2026, 22:00 UTC)
 
+## Decisions of 29 Oct 2026 (user, messages 485, 487, 489 and 490), in force
+
+- Fossil-free 2040 (487 (1), 490): it fails the adequacy standard on the current page (132.4 GWh a year; the central ended imports
+  after 2030 after the preset was built; RESULTS 'Fossil-free 2040 sheds 132.4 GWh'). Top it up today with the preset search tools
+  (harness/ext/preset_search.js: FEASIBLE then the greedy, confirm on the preset check's 240 runs, seed 71830529) to its 2.72 GWh
+  design target and at least NTCSA's 20 GWh; imports end after 2030 as in the central. First run (iron-air allowed) met the target
+  in the feasible phase with +6.0 GW solar and +0.5 GW iron-air. Rule 366: rerun with iron-air excluded (EXCLUDE=newIronAirMW; the
+  tool searches wind, utility solar, lithium and offshore; pumped storage is not a search technology); use the exclusion if it
+  meets 2.72 GWh on the 240-run confirm and report its cost against the iron-air version; use the iron-air version only if the
+  exclusion fails, flagged in the caption's source note and the pack's known failures (iron-air's finding is a known failure, TODO
+  14gm). Time box 18:00 SAST; if nothing meets 20 GWh, the caption states the miss and the pack says the top-up follows.
+- LCOE anchor notes (487 (2)): option A, done on claude/c6e-snapshot's central (harness/pathcheck.js LCOE=1, K=20, 2030;
+  harness/ext/gen_lcoe_anchors.py writes LCP_2030_*; RESULTS 'LCOE anchor notes on c6e's 2030'). After the outputs PR merges,
+  confirm pathway_c6e.json is identical to the snapshot's; if not, rerun.
+- Code comments (487 (3)): the remaining emphasis capitals and the comment phrases go in a separate PR after the send.
+- Pack (489 (a)): one caveat line, the c6e central against the Australian 0.002% standard (AEMO 2026 ESOO, pp. 5, 24-25), computed
+  by packfill (nemover) from the engine check; the snapshot reproduces the advisor's preliminary 2031 and 2032 figures.
+- After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
+  14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
+
 ## Decisions of 28 Oct 2026, 23:24 SAST (user, messages 481, 482 and 483), in force
 
 - Cost of capital (481 (a)): the central keeps wind and solar on state-backed finance at 5.5% real; private finance stays a
