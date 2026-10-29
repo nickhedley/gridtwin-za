@@ -45,12 +45,15 @@
 //   Draft 2 keys (message 506): RUN.nemlimits the Australian limit in GWh across the years, '4-5.5 GWh'; RUN.gascfr_YYYY new gas's capacity
 //                        factor rounded, '5%'; RUN.coalgw_YYYY coal standing in GW; RUN.addgw_T new capacity added 2026-40 in GW, T one of
 //                        wind solar rooftop batt gas ccgt ocgt dsl ps offshore ironair nuclear (one decimal under 10 GW)
+//   prev.*               the previous central (PREV, default c6c) as a run; RUN.dco2absmt CO2 against the plan, unsigned, Mt;
+//                        RUN.dco2prevabs CO2 against the previous central, unsigned (message 507 (b)); table:against c6c the
+//                        run-by-run comparison with the previous set (settables section 4)
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
 const re=/<!--fill:([^>]+?)-->([\s\S]*?)<!--\/fill-->/g;
 if (args[0]==='--strip'){ const s=fs.readFileSync(args[1],'utf8').replace(re,(m,k,v)=>v); fs.writeFileSync(args[2],s); process.exit(0); }
-const [O,N,PACK]=args.filter(a=>!a.startsWith('--')); const C=process.env.BASE||'c6e';
+const [O,N,PACK]=args.filter(a=>!a.startsWith('--')); const C=process.env.BASE||'c6e'; const PV=process.env.PREV||'c6c';   // PREV: the previous central's set (message 507 (b))
 if (!PACK){ console.error('usage: BASE=c6e node pathway/tables/packfill.js <run folder> <set folder> <pack.md> [--dry]'); process.exit(1); }
 
 const prog=fs.existsSync(`${N}/progress.txt`)?fs.readFileSync(`${N}/progress.txt`,'utf8'):'';
@@ -58,7 +61,7 @@ const done=/C6[A-Z] SET DONE|SET DONE/.test(prog.split('\n').filter(Boolean).pop
 const why=n=>{ const m=prog.split('\n').filter(l=>l.includes(`NOT RUN ${n}:`)).pop(); if (m) return m.replace(/^.*NOT RUN [^:]*: /,'');
   const irp=n.startsWith('irp2025_'); return fs.existsSync(`${O}/pathway_${n}.json`)||fs.existsSync(`${N}/irp/pathway_${n}.json`)?(irp?'IRP build check incomplete':'engine check incomplete'):(done?'no run file':(irp?'IRP build check not yet run':'not yet run')); };
 // Run names: optimised runs in O; IRP builds in N/irp (a nuclear check reads its build file under the case's own name).
-const opt=r=>r==='base'?C:r==='irpdem'?`${C}_irpdem`:`${r}_${C}`;
+const opt=r=>r==='base'?C:r==='prev'?PV:r==='irpdem'?`${C}_irpdem`:`${r}_${C}`;
 const irpName=r=>r==='irp'?`irp2025_${C}`:`irp2025_${C}_${r.slice(4)}`;
 const irpMatch=r=>{ const x=r.slice(4).replace(/_?(nuc\d+|nuclife\d+)$/,''); return !x?'base':x==='irpdem'?'irpdem':`s_${x}`; };
 const cache={}, missing=new Set();
@@ -132,6 +135,8 @@ function value(k){
     case 'pvbn': return Rb(s.pv);
     case 'dpvplain': { if (!b) return null; const d=s.pv-b.pv; return Math.abs(d)<1?'changes the cost by less than R1 billion':(d>0?'adds ':'saves ')+Rb(d); }
     case 'dpvabsbn': return b&&Rb(s.pv-b.pv);
+    case 'dco2absmt': return b&&nf(Math.abs(s.co2Cum-b.co2Cum),0);   // against the plan, unsigned (message 507 (b))
+    case 'dco2prevabs': { const q=S('prev'); return q&&nf(Math.abs(s.co2Cum-q.co2Cum),0); }   // against the previous central, unsigned
     case 'dco2plain': { if (!b) return null; const d=s.co2Cum-b.co2Cum; return Math.abs(d)<0.5?'less than 1 Mt':nf(Math.abs(d),0)+' Mt '+(d>0?'more':'less'); }
     case 'verdictplain': { const u=s.rows.filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
       if (!u.length&&!o.length) return "meets the system operator's adequacy test in every year to 2040";

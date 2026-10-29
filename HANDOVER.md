@@ -77,6 +77,12 @@
   'About', 'Main findings', the build tables and 'Questions' (one question: coal operating rules); the advisor carries it into the
   master Friday morning. Every figure in it has a fill key (new: nemlimits, gascfr_YYYY, coalgw_YYYY, addgw_T) except 'the
   replay of 2025 matches Eskom's coal output to within about 1%', a section 2 record with no run key. TODO 14kx: when new gas runs.
+- 507: #128 merged (5857f03, 19:30 SAST); the pack and NOTE_DRAFT filled from main's harness/pathway/c6e (run layout built in the
+  scratchpad as out/ with out/c6e/irp and out/c6c/irp; settables with c6c as the comparison set). (a) settables already maps the
+  IRP-demand run by name (c6e_irpdem against c6c_irpdem, R2,219.8bn); every other row maps to the same run. (b) one line and the
+  comparison table added to section 4 through packfill (prev run = PREV, default c6c; dco2absmt, dco2prevabs); the cost-of-capital
+  part uses the plan with gas from 2032 against c6c, which also took gas from 2032 (112 Mt), where the message named gas from 2030
+  (111 Mt). (c) the pass-limit runs fill in 499's form. Every result is in: the missing list reads 'None'.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 

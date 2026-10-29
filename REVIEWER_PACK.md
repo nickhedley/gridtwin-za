@@ -10,20 +10,18 @@ This pack asks you to review GridTwin ZA's least-cost plan for South Africa's po
 
 Main findings (every figure is written from the run outputs by the fill script; none is typed):
 
-1. Reliability: The least-cost plan <!--fill:base.verdictplain-->…<!--/fill-->. Expected unserved energy peaks at <!--fill:base.maxmean-->…<!--/fill--> GWh a year, against NTCSA's limit of 20 GWh. Against Australia's stricter standard (0.002% of demand), it <!--fill:base.nemplain-->…<!--/fill-->.
-2. Cost and emissions: Over 2026-40 the plan costs <!--fill:base.pvbn-->…<!--/fill--> in present value (annual costs discounted at 8% real) and emits <!--fill:base.co2-->…<!--/fill--> Mt of CO2 in total, falling from <!--fill:base.co2r_2026-->…<!--/fill--> Mt in 2026 to <!--fill:base.co2r_2040-->…<!--/fill--> Mt in 2040.
-3. Against IRP 2025: Built as IRP 2025 sets out, the system costs <!--fill:irp.gapplain-->…<!--/fill--> over 2026-40 and emits <!--fill:irp.cutplain-->…<!--/fill--> CO2. At IRP 2025's own, higher demand forecast, the gap is <!--fill:irp_irpdem.gapbn-->…<!--/fill--> and <!--fill:irp_irpdem.cutmt-->…<!--/fill-->. Section 4 shows what each plan builds, year by year.
-4. Gas timing: The plan builds no new gas before 2035, following the department's statement of 28 October that the first gas bid window appointed no bidders. Allowing gas from 2032 <!--fill:s_gas2032.dpvplain-->…<!--/fill-->. New gas reaches <!--fill:base.gasgw_2035-->…<!--/fill--> GW by 2035 and <!--fill:base.gasgw_2040-->…<!--/fill--> GW by 2040, and runs <!--fill:base.gascfplain-->…<!--/fill--> of the time: it is built as backup. Turbines ordered now are quoted for delivery around 2031.
-5. IRP 2025's gas minimum: IRP 2025 requires 6 GW of new gas plant to run at least 51% of the time from 2030. Its gas plan, including that minimum, raises the system's cost per unit of electricity by <!--fill:s_irpgas.avgcostpctplain-->…<!--/fill--> over 2030-40 (<!--fill:s_irpgas.dpvabsbn-->…<!--/fill--> in present value). The Minister has said the minimum is meant to secure LNG imports for industrial gas users; all electricity customers would bear the cost. The result includes IRP 2025's larger gas build, so the minimum's effect alone is still to be measured.
-6. Cost of capital: Each technology is financed at its own cost of capital for state-backed projects (<!--fill:page.coc.pv-->…<!--/fill--> real for wind and solar). Using a single 8% rate for every technology, as planning studies usually do, <!--fill:s_cocplan.dpvplain-->…<!--/fill-->. Financing wind, solar and batteries at private-sector rates <!--fill:s_cocprivate.dpvplain-->…<!--/fill-->. Neither moves the gap to IRP 2025 by more than <!--fill:irp.cocgapmax-->…<!--/fill-->.
-7. No new gas: Without new gas or new diesel peakers, <!--fill:s_nogas.status-->…<!--/fill-->. With diesel peakers allowed, <!--fill:s_nogas_dsl.status-->…<!--/fill-->; that plan <!--fill:s_nogas_dsl.dpvplain-->…<!--/fill--> against the least-cost plan and emits <!--fill:s_nogas_dsl.co2-->…<!--/fill--> Mt.
-8. Calibration: The model's 2026 coal fleet emits <!--fill:base.rate2026-->…<!--/fill--> t of CO2 per MWh, against Eskom's <!--fill:base.eskomrate-->…<!--/fill-->.
+1. Reliability: The least-cost plan <!--fill:base.verdictplain-->meets the system operator's adequacy test in every year to 2040<!--/fill-->. Expected unserved energy peaks at <!--fill:base.maxmean-->5.5<!--/fill--> GWh a year, against NTCSA's limit of 20 GWh. Against Australia's stricter standard (0.002% of demand), it <!--fill:base.nemplain-->sits at about the limit in 2031-32, within the model’s sampling error<!--/fill-->.
+2. Cost and emissions: Over 2026-40 the plan costs <!--fill:base.pvbn-->R2,315 billion<!--/fill--> in present value (annual costs discounted at 8% real) and emits <!--fill:base.co2-->1,739<!--/fill--> Mt of CO2 in total, falling from <!--fill:base.co2r_2026-->167<!--/fill--> Mt in 2026 to <!--fill:base.co2r_2040-->68<!--/fill--> Mt in 2040.
+3. Against IRP 2025: Built as IRP 2025 sets out, the system costs <!--fill:irp.gapplain-->R368 billion more<!--/fill--> over 2026-40 and emits <!--fill:irp.cutplain-->8 Mt less<!--/fill--> CO2. At IRP 2025's own, higher demand forecast, the gap is <!--fill:irp_irpdem.gapbn-->R424 billion<!--/fill--> and <!--fill:irp_irpdem.cutmt-->127 Mt<!--/fill-->. Section 4 shows what each plan builds, year by year.
+4. Gas timing: The plan builds no new gas before 2035, following the department's statement of 28 October that the first gas bid window appointed no bidders. Allowing gas from 2032 <!--fill:s_gas2032.dpvplain-->changes the cost by less than R1 billion<!--/fill-->. New gas reaches <!--fill:base.gasgw_2035-->1.2<!--/fill--> GW by 2035 and <!--fill:base.gasgw_2040-->7.2<!--/fill--> GW by 2040, and runs <!--fill:base.gascfplain-->5-8%<!--/fill--> of the time: it is built as backup. Turbines ordered now are quoted for delivery around 2031.
+5. IRP 2025's gas minimum: IRP 2025 requires 6 GW of new gas plant to run at least 51% of the time from 2030. Its gas plan, including that minimum, raises the system's cost per unit of electricity by <!--fill:s_irpgas.avgcostpctplain-->12-16%<!--/fill--> over 2030-40 (<!--fill:s_irpgas.dpvabsbn-->R198 billion<!--/fill--> in present value). The Minister has said the minimum is meant to secure LNG imports for industrial gas users; all electricity customers would bear the cost. The result includes IRP 2025's larger gas build, so the minimum's effect alone is still to be measured.
+6. Cost of capital: Each technology is financed at its own cost of capital for state-backed projects (<!--fill:page.coc.pv-->5.5%<!--/fill--> real for wind and solar). Using a single 8% rate for every technology, as planning studies usually do, <!--fill:s_cocplan.dpvplain-->adds R83 billion<!--/fill-->. Financing wind, solar and batteries at private-sector rates <!--fill:s_cocprivate.dpvplain-->adds R57 billion<!--/fill-->. Neither moves the gap to IRP 2025 by more than <!--fill:irp.cocgapmax-->R3 billion<!--/fill-->.
+7. No new gas: Without new gas or new diesel peakers, <!--fill:s_nogas.status-->the optimiser reached its pass limit; the engine check gives mean unserved energy over the run’s standard in 2037 (27.14 against 20.00), 2038 (105.36 against 20.00), 2039 (122.95 against 20.00), 2040 (134.46 against 20.00)<!--/fill-->. With diesel peakers allowed, <!--fill:s_nogas_dsl.status-->the optimiser converged; the engine check gives mean unserved energy within the run’s standard in every year<!--/fill-->; that plan <!--fill:s_nogas_dsl.dpvplain-->adds R13 billion<!--/fill--> against the least-cost plan and emits <!--fill:s_nogas_dsl.co2-->1,633<!--/fill--> Mt.
+8. Calibration: The model's 2026 coal fleet emits <!--fill:base.rate2026-->1.110<!--/fill--> t of CO2 per MWh, against Eskom's <!--fill:base.eskomrate-->1.108<!--/fill-->.
 
 Not yet in (as at the last fill; when each follows is added by hand beside it before the send):
 <!--fill:missing-->
-
-[not yet filled]
-
+- None: every result in this pack is in.
 <!--/fill-->
 
 ## What this is and how to read it
@@ -69,9 +67,9 @@ What the 26 October version, the 4-hour down-time variant, the 27 October versio
 | New gas, earliest year | 2030 | c6e (build 2026-10-28a): new gas from 2035. The Department of Electricity and Energy stated on 28 October 2026 that Gas IPP bid window 1 (2,000 MW sought; four bids for 2,830 MW, received 29 May 2026) appointed no preferred bidders, mainly because bidders could not assure gas supply (imports from Mozambique; no LNG terminal), and that a bid window 1.5 will follow, with details before the end of 2026. The reasoning: bid window 1.5's rules by early 2027, financial close in 2028–29 at the earliest once an LNG terminal is committed, then three to four years to build a CCGT. New gas from 2032, the earlier central, is the sensitivity s_gas2032_c6e; s_gas2035_nodsl_c6e is the central without new diesel open-cycle. The IRP build keeps IRP 2025's own gas dates Record, c6a to c6c: 2032 (IGUA-SA, Gas Roadmap, May 2026 update; s_gas2030 keeps 2030). The Minister postponed the 28 October 2026 briefing on the Gas IPP Procurement Programme, with no new date; the Section 34 determination of 7 October 2026 covers 5,000 MW of gas-to-power and 4,600 MW of battery storage, 2026–2037, procured by the IPP Office (Green Building Africa, 'Ramokgopa postpones gas power procurement programme briefing', 28 October 2026, https://www.greenbuildingafrica.co.za/ramokgopa-postpones-gas-power-procurement-programme-briefing/). NERSA's feedback report on its gas dialogues of 1 July 2026 (October 2026) finds that "standard procurement may be too rigid", expects LNG around 2029–30, and says bankability depends on infrastructure finance and anchor demand (https://www.nersa.org.za/files/files/2026/10/FeedbackReportontheNERSAGasDialoguesof1July2026.pdf). | c6a; c6e | sourced (choice of year) |
 | 2026 fleet | every 2026 plant all year | each 2026 plant for its share of the year in service | c6a | sourced |
 | Rooftop basis | August 2026 point | the 2026 mean less wheeled plant, stepping to the end-2026 level in 2027, added back on the twelve-year solar mean | c6a | partly |
-| Onshore wind capex | R20,874/kW (implied by BW5's awarded tariff) | R<!--fill:page.capex.wind-->…<!--/fill-->/kW, BW6 compliant bids, the figure IRP 2025's Figure 9 uses | c6b | sourced |
-| Utility solar capex | R10,998/kW, implied by BW7's awarded tariffs at 8% real (c6 to c6c) | R<!--fill:page.capex.pv-->…<!--/fill-->/kW, BW6 compliant tracker bids; the developers' cheaper finance moves from the capex to the rate | c6e | sourced |
-| Cost of capital | 8% real for every technology (c6 to c6c), solar's cheaper finance carried in its tariff-implied capex | by technology, real pre-tax, for state-backed procurement: solar and wind <!--fill:page.coc.pv-->…<!--/fill-->, lithium and pumped storage <!--fill:page.coc.batt-->…<!--/fill-->, gas and new coal <!--fill:page.coc.ccgt-->…<!--/fill-->, nuclear <!--fill:page.coc.nuclear-->…<!--/fill-->, network <!--fill:page.coc.tx-->…<!--/fill-->; interest during construction where a cost is quoted before financing ('Cost basis' below) | c6e | partly (level from South African bids, spread from CEPA 2025) |
+| Onshore wind capex | R20,874/kW (implied by BW5's awarded tariff) | R<!--fill:page.capex.wind-->28,462<!--/fill-->/kW, BW6 compliant bids, the figure IRP 2025's Figure 9 uses | c6b | sourced |
+| Utility solar capex | R10,998/kW, implied by BW7's awarded tariffs at 8% real (c6 to c6c) | R<!--fill:page.capex.pv-->16,786<!--/fill-->/kW, BW6 compliant tracker bids; the developers' cheaper finance moves from the capex to the rate | c6e | sourced |
+| Cost of capital | 8% real for every technology (c6 to c6c), solar's cheaper finance carried in its tariff-implied capex | by technology, real pre-tax, for state-backed procurement: solar and wind <!--fill:page.coc.pv-->5.5%<!--/fill-->, lithium and pumped storage <!--fill:page.coc.batt-->6.8%<!--/fill-->, gas and new coal <!--fill:page.coc.ccgt-->8.0%<!--/fill-->, nuclear <!--fill:page.coc.nuclear-->8.5%<!--/fill-->, network <!--fill:page.coc.tx-->7.1%<!--/fill-->; interest during construction where a cost is quoted before financing ('Cost basis' below) | c6e | partly (level from South African bids, spread from CEPA 2025) |
 | Rooftop capex | R15,000/kW AC (R12,500/kW DC) | R10,500/kW DC (R12,600/kW AC), blended from 2025–26 price guides | c6b | partly |
 | Carbon tax | legislated effective rate to 2030, held flat after | unchanged; two sensitivities added, s_carbontreasury and s_carbonhold | c6b | sourced (law); choice (after 2030) |
 | Coal minimum down time | 4 hours on 97% of capacity (PyPSA-RSA) | 24 hours on every unit | c6c | partly (literature 8–48 hours; no measured value) |
@@ -80,25 +78,25 @@ What the 26 October version, the 4-hour down-time variant, the 27 October versio
 
 ### Cost basis: each technology at its own cost of capital, on the latest market evidence
 
-Finding: from the 28 October version (build <!--fill:site.build-->…<!--/fill-->) each technology carries its own real pre-tax cost of capital for state-backed procurement, with interest during construction where its cost is quoted before financing, and capex on the latest South African bid where one exists (the author's decision, 28 Oct 2026, messages 468 and 469; SOURCES 'Cost of capital by technology' and 'Build costs from South African bid data'; limitation 32). Two rates: the discount rate that weights each year stays <!--fill:page.disc-->…<!--/fill--> real, one for all (Meridian's review of the IRP 2023 discounts at 8.2% real, slide 16); the cost of capital sets each technology's capital charge. Every rate, factor and capex below is read from the page by the fill script, not typed.
+Finding: from the 28 October version (build <!--fill:site.build-->2026-10-28a<!--/fill-->) each technology carries its own real pre-tax cost of capital for state-backed procurement, with interest during construction where its cost is quoted before financing, and capex on the latest South African bid where one exists (the author's decision, 28 Oct 2026, messages 468 and 469; SOURCES 'Cost of capital by technology' and 'Build costs from South African bid data'; limitation 32). Two rates: the discount rate that weights each year stays <!--fill:page.disc-->8.0%<!--/fill--> real, one for all (Meridian's review of the IRP 2023 discounts at 8.2% real, slide 16); the cost of capital sets each technology's capital charge. Every rate, factor and capex below is read from the page by the fill script, not typed.
 
 | Technology | Cost of capital, real pre-tax | Basis | Interest during construction | 2026 capex, R/kW | Capex basis |
 |---|---|---|---|---|---|
-| Utility solar, tracking | <!--fill:page.coc.pv-->…<!--/fill--> | the rate at which BW6's compliant tracker bid capex, with BW6's fixed O&M, reproduces BW6's average tariff over the model's <!--fill:page.life.pv-->…<!--/fill-->-year life (5.6%; BW5 4.7%, BW7 4.2% on the same capex) | none: bid capex is taken to include financing | <!--fill:page.capex.pv-->…<!--/fill--> | BW6 compliant tracker bids, January 2024 rands indexed (c6e; c6c's tariff-implied R10,998 is the record below) |
-| Onshore wind | <!--fill:page.coc.wind-->…<!--/fill--> | equal to solar: CEPA for DESNZ (Hurdle rates for electricity generation, 30 Jul 2025, pre-tax real) gives solar PV and onshore wind the same 7.6% under a CfD, and both have the same state-backed contracts here | none | <!--fill:page.capex.wind-->…<!--/fill--> | BW6 compliant bids (c6b) |
-| Lithium, 4 h | <!--fill:page.coc.batt-->…<!--/fill--> | solar + 1.3 points, CEPA's gap between lithium under a capacity contract (8.9%) and solar (7.6%); BESIPPPP BW1's capacity charge implies about 7% over its 15-year contract | none | <!--fill:page.capex.batt-->…<!--/fill--> | BESIPPPP bid window 3, aged to 2026 |
-| Pumped storage | <!--fill:page.coc.phes-->…<!--/fill--> | solar + 1.3 (CEPA: pumped hydro 8.9%) | <!--fill:page.idc.phes-->…<!--/fill--> over <!--fill:page.years.phes-->…<!--/fill--> years | <!--fill:page.capex.phes-->…<!--/fill--> | Tubatse estimate (2022), CPI-indexed |
-| New gas (CCGT and open-cycle on LNG) | <!--fill:page.coc.ccgt-->…<!--/fill--> | no South African gas bid; many lenders exclude new gas; LNG supply, price and stranding risk; a lower rate would make gas cheaper on assumption alone (rule 366) | CCGT <!--fill:page.idc.ccgt-->…<!--/fill--> over <!--fill:page.years.ccgt-->…<!--/fill--> years; open-cycle <!--fill:page.idc.ocgt-->…<!--/fill--> over <!--fill:page.years.ocgt-->…<!--/fill--> | CCGT <!--fill:page.capex.ccgt-->…<!--/fill-->; open-cycle <!--fill:page.capex.ocgt-->…<!--/fill--> | GridLab 2025 project data; open-cycle at the EIA AEO2023 ratio |
-| New coal | <!--fill:page.coc.coal-->…<!--/fill--> | as gas (no run builds new coal) | <!--fill:page.idc.coal-->…<!--/fill--> over <!--fill:page.years.coal-->…<!--/fill--> years | <!--fill:page.capex.coal-->…<!--/fill--> | USD <!--fill:page.coalUsd-->…<!--/fill-->/kW at R<!--fill:page.fx-->…<!--/fill-->; charge <!--fill:page.acap.coal-->…<!--/fill--> R/kW-yr |
-| Nuclear, large reactor | <!--fill:page.coc.nuclear-->…<!--/fill--> | CEPA's 7.6% for large nuclear holds only under a regulated asset base, which South Africa lacks (CEPA's SMRs 8.9%); construction risk stays in the high capex case | <!--fill:page.idc.nuclear-->…<!--/fill--> over <!--fill:page.years.nuclear-->…<!--/fill--> years | <!--fill:page.capex.nuclear-->…<!--/fill--> | USD <!--fill:page.nucUsd-->…<!--/fill-->/kW at R<!--fill:page.fx-->…<!--/fill-->, the middle of published USD 6,000–9,000 benchmarks; charge <!--fill:page.acap.nuclear-->…<!--/fill--> R/kW-yr |
-| Network and Eskom capital (transmission, grid connection, coal retrofits, peaker life extension) | <!--fill:page.coc.tx-->…<!--/fill--> | NERSA's allowed real pre-tax WACC for Eskom (MYPD4, as reported) | transmission <!--fill:page.idc.tx-->…<!--/fill--> over <!--fill:page.years.tx-->…<!--/fill--> years; grid connection <!--fill:page.idc.grid-->…<!--/fill--> over <!--fill:page.years.grid-->…<!--/fill-->; retrofits and life extension none | – | – |
-| Rooftop | <!--fill:page.coc.rooftop-->…<!--/fill--> | the discount rate: owners' finance, outside state procurement, no evidence for another rate | none | – | 'What c6 changes' above |
+| Utility solar, tracking | <!--fill:page.coc.pv-->5.5%<!--/fill--> | the rate at which BW6's compliant tracker bid capex, with BW6's fixed O&M, reproduces BW6's average tariff over the model's <!--fill:page.life.pv-->25<!--/fill-->-year life (5.6%; BW5 4.7%, BW7 4.2% on the same capex) | none: bid capex is taken to include financing | <!--fill:page.capex.pv-->16,786<!--/fill--> | BW6 compliant tracker bids, January 2024 rands indexed (c6e; c6c's tariff-implied R10,998 is the record below) |
+| Onshore wind | <!--fill:page.coc.wind-->5.5%<!--/fill--> | equal to solar: CEPA for DESNZ (Hurdle rates for electricity generation, 30 Jul 2025, pre-tax real) gives solar PV and onshore wind the same 7.6% under a CfD, and both have the same state-backed contracts here | none | <!--fill:page.capex.wind-->28,462<!--/fill--> | BW6 compliant bids (c6b) |
+| Lithium, 4 h | <!--fill:page.coc.batt-->6.8%<!--/fill--> | solar + 1.3 points, CEPA's gap between lithium under a capacity contract (8.9%) and solar (7.6%); BESIPPPP BW1's capacity charge implies about 7% over its 15-year contract | none | <!--fill:page.capex.batt-->13,699<!--/fill--> | BESIPPPP bid window 3, aged to 2026 |
+| Pumped storage | <!--fill:page.coc.phes-->6.8%<!--/fill--> | solar + 1.3 (CEPA: pumped hydro 8.9%) | <!--fill:page.idc.phes-->1.226<!--/fill--> over <!--fill:page.years.phes-->6<!--/fill--> years | <!--fill:page.capex.phes-->29,200<!--/fill--> | Tubatse estimate (2022), CPI-indexed |
+| New gas (CCGT and open-cycle on LNG) | <!--fill:page.coc.ccgt-->8.0%<!--/fill--> | no South African gas bid; many lenders exclude new gas; LNG supply, price and stranding risk; a lower rate would make gas cheaper on assumption alone (rule 366) | CCGT <!--fill:page.idc.ccgt-->1.125<!--/fill--> over <!--fill:page.years.ccgt-->3<!--/fill--> years; open-cycle <!--fill:page.idc.ocgt-->1.081<!--/fill--> over <!--fill:page.years.ocgt-->2<!--/fill--> | CCGT <!--fill:page.capex.ccgt-->34,965<!--/fill-->; open-cycle <!--fill:page.capex.ocgt-->25,778<!--/fill--> | GridLab 2025 project data; open-cycle at the EIA AEO2023 ratio |
+| New coal | <!--fill:page.coc.coal-->8.0%<!--/fill--> | as gas (no run builds new coal) | <!--fill:page.idc.coal-->1.271<!--/fill--> over <!--fill:page.years.coal-->6<!--/fill--> years | <!--fill:page.capex.coal-->60,480<!--/fill--> | USD <!--fill:page.coalUsd-->3,600<!--/fill-->/kW at R<!--fill:page.fx-->16.80<!--/fill-->; charge <!--fill:page.acap.coal-->6,444<!--/fill--> R/kW-yr |
+| Nuclear, large reactor | <!--fill:page.coc.nuclear-->8.5%<!--/fill--> | CEPA's 7.6% for large nuclear holds only under a regulated asset base, which South Africa lacks (CEPA's SMRs 8.9%); construction risk stays in the high capex case | <!--fill:page.idc.nuclear-->1.410<!--/fill--> over <!--fill:page.years.nuclear-->8<!--/fill--> years | <!--fill:page.capex.nuclear-->126,000<!--/fill--> | USD <!--fill:page.nucUsd-->7,500<!--/fill-->/kW at R<!--fill:page.fx-->16.80<!--/fill-->, the middle of published USD 6,000–9,000 benchmarks; charge <!--fill:page.acap.nuclear-->15,704<!--/fill--> R/kW-yr |
+| Network and Eskom capital (transmission, grid connection, coal retrofits, peaker life extension) | <!--fill:page.coc.tx-->7.1%<!--/fill--> | NERSA's allowed real pre-tax WACC for Eskom (MYPD4, as reported) | transmission <!--fill:page.idc.tx-->1.110<!--/fill--> over <!--fill:page.years.tx-->3<!--/fill--> years; grid connection <!--fill:page.idc.grid-->1.072<!--/fill--> over <!--fill:page.years.grid-->2<!--/fill-->; retrofits and life extension none | – | – |
+| Rooftop | <!--fill:page.coc.rooftop-->8.0%<!--/fill--> | the discount rate: owners' finance, outside state procurement, no evidence for another rate | none | – | 'What c6 changes' above |
 
 Cross-checks: NREL ATB 2024 (real pre-tax, no tax credits) solar 5.46%, wind 5.77%, pumped storage 6.01%, nuclear 7.20%, gas and coal 8.06%; the IEA Cost of Capital Observatory's South African solar figure, about 9.0% real pre-tax, is the high case's level. Build years are the project's assumptions, checked against NREL ATB 2024's construction finance factors (gas 1.114, coal 1.235, large nuclear 1.30, pumped storage 1.064, at US rates).
 
-Private finance (CEPA 2025, Table 5.22, p.116): an investor survey puts a merchant revenue model at +1.5 to +3 points on the hurdle rate, median +1.5 (Brookfield +1.2–1.3, Table 5.23; Europe Economics 2018 +0.8 for solar and onshore wind, Table 5.24). Wind and solar take the median, <!--fill:page.privprem.re-->…<!--/fill-->; lithium <!--fill:page.privprem.store-->…<!--/fill-->, inside the range, as storage is more exposed to price swings. South African private deals are mostly corporate PPAs, partly contracted, so this case is an upper bound for private finance.
+Private finance (CEPA 2025, Table 5.22, p.116): an investor survey puts a merchant revenue model at +1.5 to +3 points on the hurdle rate, median +1.5 (Brookfield +1.2–1.3, Table 5.23; Europe Economics 2018 +0.8 for solar and onshore wind, Table 5.24). Wind and solar take the median, <!--fill:page.privprem.re-->1.5 points<!--/fill-->; lithium <!--fill:page.privprem.store-->2.0 points<!--/fill-->, inside the range, as storage is more exposed to price swings. South African private deals are mostly corporate PPAs, partly contracted, so this case is an upper bound for private finance.
 
-The four cases (section 4, 'Cost of capital cases', each with the IRP build checked at the same rates): Private-sector rates for wind, solar and batteries, wind, solar and lithium at the private premium (solar and wind <!--fill:page.coc.private.pv-->…<!--/fill-->, lithium <!--fill:page.coc.private.batt-->…<!--/fill-->); high cost of capital, the same gaps on the IEA's level (solar and wind <!--fill:page.coc.high.pv-->…<!--/fill-->, lithium <!--fill:page.coc.high.batt-->…<!--/fill-->, gas <!--fill:page.coc.high.ccgt-->…<!--/fill-->, nuclear <!--fill:page.coc.high.nuclear-->…<!--/fill-->, network <!--fill:page.coc.high.tx-->…<!--/fill-->); low cost of capital, the central less one point (solar and wind <!--fill:page.coc.low.pv-->…<!--/fill-->, gas <!--fill:page.coc.low.ccgt-->…<!--/fill-->; network unchanged); one 8% rate for every technology, one rate for all at the discount rate (<!--fill:page.coc.planning.pv-->…<!--/fill-->), as IRP 2025 does (its 11.3%, Gazette p.34, real or nominal not stated).
+The four cases (section 4, 'Cost of capital cases', each with the IRP build checked at the same rates): Private-sector rates for wind, solar and batteries, wind, solar and lithium at the private premium (solar and wind <!--fill:page.coc.private.pv-->7.0%<!--/fill-->, lithium <!--fill:page.coc.private.batt-->8.8%<!--/fill-->); high cost of capital, the same gaps on the IEA's level (solar and wind <!--fill:page.coc.high.pv-->9.0%<!--/fill-->, lithium <!--fill:page.coc.high.batt-->10.3%<!--/fill-->, gas <!--fill:page.coc.high.ccgt-->11.5%<!--/fill-->, nuclear <!--fill:page.coc.high.nuclear-->12.0%<!--/fill-->, network <!--fill:page.coc.high.tx-->9.0%<!--/fill-->); low cost of capital, the central less one point (solar and wind <!--fill:page.coc.low.pv-->4.5%<!--/fill-->, gas <!--fill:page.coc.low.ccgt-->7.0%<!--/fill-->; network unchanged); one 8% rate for every technology, one rate for all at the discount rate (<!--fill:page.coc.planning.pv-->8.0%<!--/fill-->), as IRP 2025 does (its 11.3%, Gazette p.34, real or nominal not stated).
 
 Flag: the level rests on a thin South African evidence base (REIPPPP and BESIPPPP bids) and the spread on a British investor survey; private procurement is growing (limitation 29), and the next note moves to a blended rate once the public and private split of built capacity is sourced (the after-the-note list; limitation 32).
 
@@ -159,19 +157,19 @@ The 16 October version connects 15.5 GW of new wind and utility solar in 2026–
 
 ### Capex against IRP 2025 Figure 9
 
-Overnight capex, R/kW. Each capital cost is annuitised at its technology's cost of capital over its life ('Cost basis' above), with interest during construction only where the cost is quoted before financing: the page's factors are nuclear <!--fill:page.idc.nuclear-->…<!--/fill--> over <!--fill:page.years.nuclear-->…<!--/fill--> years, coal <!--fill:page.idc.coal-->…<!--/fill--> over <!--fill:page.years.coal-->…<!--/fill-->, pumped storage <!--fill:page.idc.phes-->…<!--/fill--> over <!--fill:page.years.phes-->…<!--/fill-->, CCGT <!--fill:page.idc.ccgt-->…<!--/fill--> over <!--fill:page.years.ccgt-->…<!--/fill--> and open-cycle <!--fill:page.idc.ocgt-->…<!--/fill--> over <!--fill:page.years.ocgt-->…<!--/fill-->; bid capex (wind, solar, lithium) is taken to include financing and carries none. Nuclear's high case (USD 12,000/kW, 1.6 times the central) spans more than its interest during construction. The 'Ours' column and the comparison are read from the page by the fill script. Figure 9 (IRP 2025, plan p.21) is in 2024 rands, also overnight; converted to January 2026 at ×1.0681 (SA CPI). Meridian's column waits for pages 82–87 of its IRP 2023 review. Flag: more than 25% apart.
+Overnight capex, R/kW. Each capital cost is annuitised at its technology's cost of capital over its life ('Cost basis' above), with interest during construction only where the cost is quoted before financing: the page's factors are nuclear <!--fill:page.idc.nuclear-->1.410<!--/fill--> over <!--fill:page.years.nuclear-->8<!--/fill--> years, coal <!--fill:page.idc.coal-->1.271<!--/fill--> over <!--fill:page.years.coal-->6<!--/fill-->, pumped storage <!--fill:page.idc.phes-->1.226<!--/fill--> over <!--fill:page.years.phes-->6<!--/fill-->, CCGT <!--fill:page.idc.ccgt-->1.125<!--/fill--> over <!--fill:page.years.ccgt-->3<!--/fill--> and open-cycle <!--fill:page.idc.ocgt-->1.081<!--/fill--> over <!--fill:page.years.ocgt-->2<!--/fill-->; bid capex (wind, solar, lithium) is taken to include financing and carries none. Nuclear's high case (USD 12,000/kW, 1.6 times the central) spans more than its interest during construction. The 'Ours' column and the comparison are read from the page by the fill script. Figure 9 (IRP 2025, plan p.21) is in 2024 rands, also overnight; converted to January 2026 at ×1.0681 (SA CPI). Meridian's column waits for pages 82–87 of its IRP 2023 review. Flag: more than 25% apart.
 
 | Technology | Ours, Jan 2026 | Our basis | Figure 9, Jan 2026 | Ours against Figure 9 | Flag | Meridian |
 |---|---|---|---|---|---|---|
-| Onshore wind | <!--fill:page.capex.wind-->…<!--/fill--> | BW6 compliant bids (c6b and c6c, PR #121, merged) | 28,462 | <!--fill:page.capexvs.wind.28462-->…<!--/fill--> | no | pending |
-| Utility solar, tracking | <!--fill:page.capex.pv-->…<!--/fill--> | BW6 compliant tracker bids (c6e; the cheaper finance is in the rate, 'Cost basis'). c6c's tariff-implied R10,998/kW, −48% to −34% against Figure 9, is the record in section 4 | 16,785–21,101 | <!--fill:page.capexvs.pv.16785.21101-->…<!--/fill--> | no | pending |
-| Lithium-ion, 4 h | <!--fill:page.capex.batt-->…<!--/fill--> | BESIPPPP bid window 3, aged to 2026 | 25,248–27,674 | <!--fill:page.capexvs.batt.25248.27674-->…<!--/fill--> | yes | pending |
-| Pumped storage | <!--fill:page.capex.phes-->…<!--/fill--> | Tubatse estimate (2022), CPI-indexed | 44,487 | <!--fill:page.capexvs.phes.44487-->…<!--/fill--> | yes | pending |
-| CCGT | <!--fill:page.capex.ccgt-->…<!--/fill--> | GridLab, 2025 project data, USD 2,119 | 14,808–19,266 | <!--fill:page.capexvs.ccgt.14808.19266-->…<!--/fill--> | yes | pending |
-| Open-cycle gas | <!--fill:page.capex.ocgt-->…<!--/fill--> | CCGT × EIA AEO2023 ratio 867/1,176 | 11,610–13,506 | <!--fill:page.capexvs.ocgt.11610.13506-->…<!--/fill--> | yes | pending |
-| Offshore wind, floating | <!--fill:page.capex.offshore-->…<!--/fill--> | USD 4,800 (IRENA 2018 and NREL ATB brackets) | 73,009–112,270 | <!--fill:page.capexvs.offshore.73009.112270-->…<!--/fill--> | no | pending |
-| Coal, new | <!--fill:page.capex.coal-->…<!--/fill--> | USD <!--fill:page.coalUsd-->…<!--/fill--> at R<!--fill:page.fx-->…<!--/fill--> (no new coal is built) | 158,443 | <!--fill:page.capexvs.coal.158443-->…<!--/fill--> | yes | pending |
-| Nuclear, large reactor | <!--fill:page.capex.nuclear-->…<!--/fill--> (USD <!--fill:page.nucUsd-->…<!--/fill--> at R<!--fill:page.fx-->…<!--/fill-->); high case USD 12,000 | the middle of published USD 6,000–9,000/kW benchmarks | 71,810–82,595 (PWR); SMR 100,095–166,492 | <!--fill:page.capexvs.nuclear.71810.82595-->…<!--/fill--> (central, against PWR) | yes | pending |
+| Onshore wind | <!--fill:page.capex.wind-->28,462<!--/fill--> | BW6 compliant bids (c6b and c6c, PR #121, merged) | 28,462 | <!--fill:page.capexvs.wind.28462-->equal<!--/fill--> | no | pending |
+| Utility solar, tracking | <!--fill:page.capex.pv-->16,786<!--/fill--> | BW6 compliant tracker bids (c6e; the cheaper finance is in the rate, 'Cost basis'). c6c's tariff-implied R10,998/kW, −48% to −34% against Figure 9, is the record in section 4 | 16,785–21,101 | <!--fill:page.capexvs.pv.16785.21101-->within<!--/fill--> | no | pending |
+| Lithium-ion, 4 h | <!--fill:page.capex.batt-->13,699<!--/fill--> | BESIPPPP bid window 3, aged to 2026 | 25,248–27,674 | <!--fill:page.capexvs.batt.25248.27674-->−50% to −46%<!--/fill--> | yes | pending |
+| Pumped storage | <!--fill:page.capex.phes-->29,200<!--/fill--> | Tubatse estimate (2022), CPI-indexed | 44,487 | <!--fill:page.capexvs.phes.44487-->−34%<!--/fill--> | yes | pending |
+| CCGT | <!--fill:page.capex.ccgt-->34,965<!--/fill--> | GridLab, 2025 project data, USD 2,119 | 14,808–19,266 | <!--fill:page.capexvs.ccgt.14808.19266-->+81% to +136%<!--/fill--> | yes | pending |
+| Open-cycle gas | <!--fill:page.capex.ocgt-->25,778<!--/fill--> | CCGT × EIA AEO2023 ratio 867/1,176 | 11,610–13,506 | <!--fill:page.capexvs.ocgt.11610.13506-->+91% to +122%<!--/fill--> | yes | pending |
+| Offshore wind, floating | <!--fill:page.capex.offshore-->79,200<!--/fill--> | USD 4,800 (IRENA 2018 and NREL ATB brackets) | 73,009–112,270 | <!--fill:page.capexvs.offshore.73009.112270-->within<!--/fill--> | no | pending |
+| Coal, new | <!--fill:page.capex.coal-->60,480<!--/fill--> | USD <!--fill:page.coalUsd-->3,600<!--/fill--> at R<!--fill:page.fx-->16.80<!--/fill--> (no new coal is built) | 158,443 | <!--fill:page.capexvs.coal.158443-->−62%<!--/fill--> | yes | pending |
+| Nuclear, large reactor | <!--fill:page.capex.nuclear-->126,000<!--/fill--> (USD <!--fill:page.nucUsd-->7,500<!--/fill--> at R<!--fill:page.fx-->16.80<!--/fill-->); high case USD 12,000 | the middle of published USD 6,000–9,000/kW benchmarks | 71,810–82,595 (PWR); SMR 100,095–166,492 | <!--fill:page.capexvs.nuclear.71810.82595-->+53% to +75%<!--/fill--> (central, against PWR) | yes | pending |
 | CSP with storage | no build option | – | 142,101–205,734 | – | – | pending |
 
 Causes of the flags:
@@ -180,8 +178,8 @@ Causes of the flags:
 - Pumped storage: ours is Tubatse's own estimate; Figure 9's basis was not traced.
 - Gas: ours is 2025 project data, after the turbine price rise; Figure 9 sits at roughly half.
 - Coal: no run builds new coal, so the gap moves no result.
-- Nuclear: like for like (both overnight, January 2026 rands), our central is <!--fill:page.capexvs.nuclear.71810.82595-->…<!--/fill--> against Figure 9's large-reactor range and inside its SMR range; the high case (1.6 times the central) is about 2.4–2.8 times Figure 9's large reactor. Interest during construction (<!--fill:page.idc.nuclear-->…<!--/fill--> at <!--fill:page.coc.nuclear-->…<!--/fill-->) is charged on top of the overnight figure compared here. No optimised plan builds nuclear, so the charge moves only the IRP build's cost (and IRP 2025's nuclear forced's).
-- The coal and nuclear benchmarks convert at R<!--fill:page.fx-->…<!--/fill-->/USD (the page's NUC_COAL_FX), against R16.50 elsewhere in the model; two exchange rates, to be reconciled.
+- Nuclear: like for like (both overnight, January 2026 rands), our central is <!--fill:page.capexvs.nuclear.71810.82595-->+53% to +75%<!--/fill--> against Figure 9's large-reactor range and inside its SMR range; the high case (1.6 times the central) is about 2.4–2.8 times Figure 9's large reactor. Interest during construction (<!--fill:page.idc.nuclear-->1.410<!--/fill--> at <!--fill:page.coc.nuclear-->8.5%<!--/fill-->) is charged on top of the overnight figure compared here. No optimised plan builds nuclear, so the charge moves only the IRP build's cost (and IRP 2025's nuclear forced's).
+- The coal and nuclear benchmarks convert at R<!--fill:page.fx-->16.80<!--/fill-->/USD (the page's NUC_COAL_FX), against R16.50 elsewhere in the model; two exchange rates, to be reconciled.
 
 ---
 
@@ -387,7 +385,7 @@ Recorded caveats: one bus; one outage draw per week; perfect sight within each w
 
 ## 4. The least-cost plan against IRP 2025, and the sensitivities
 
-The set reviewed here is the 28 October version: the 27 October version's settings and run set on the page as it stood on 28 October, where each technology carries its own cost of capital for state-backed procurement (solar and wind <!--fill:page.coc.pv-->…<!--/fill-->, batteries and pumped storage <!--fill:page.coc.batt-->…<!--/fill-->, gas <!--fill:page.coc.ccgt-->…<!--/fill-->, nuclear <!--fill:page.coc.nuclear-->…<!--/fill-->, network <!--fill:page.coc.tx-->…<!--/fill-->, real), interest during construction where costs are quoted before financing, solar on BW6's compliant construction cost, and new gas from 2035 (the gas-from-2032 sensitivity keeps the earlier date). The low wind capex case is dropped (its capex, backed out of BW5's tariff at 8%, would count wind's finance twice); four cost-of-capital cases (one 8% rate for every technology; private-sector rates for wind, solar and batteries; high; low) replace the earlier discount-rate cases, each with the IRP build checked at the same rates. The previous versions' results are in section 8, the record.
+The set reviewed here is the 28 October version: the 27 October version's settings and run set on the page as it stood on 28 October, where each technology carries its own cost of capital for state-backed procurement (solar and wind <!--fill:page.coc.pv-->5.5%<!--/fill-->, batteries and pumped storage <!--fill:page.coc.batt-->6.8%<!--/fill-->, gas <!--fill:page.coc.ccgt-->8.0%<!--/fill-->, nuclear <!--fill:page.coc.nuclear-->8.5%<!--/fill-->, network <!--fill:page.coc.tx-->7.1%<!--/fill-->, real), interest during construction where costs are quoted before financing, solar on BW6's compliant construction cost, and new gas from 2035 (the gas-from-2032 sensitivity keeps the earlier date). The low wind capex case is dropped (its capex, backed out of BW5's tariff at 8%, would count wind's finance twice); four cost-of-capital cases (one 8% rate for every technology; private-sector rates for wind, solar and batteries; high; low) replace the earlier discount-rate cases, each with the IRP build checked at the same rates. The previous versions' results are in section 8, the record.
 
 The design, fixed before the runs (22–24 October):
 
@@ -401,18 +399,56 @@ The design, fixed before the runs (22–24 October):
 
 Every figure between the fill markers is written from the run outputs by the fill script (section 7), none by hand. Runs the chain could not finish are under 'Not yet in'.
 
-The plan <!--fill:base.verdictplain-->…<!--/fill-->. Expected unserved energy at most <!--fill:base.maxmean-->…<!--/fill--> GWh against 20 GWh (worst single run <!--fill:base.worst-->…<!--/fill--> GWh); open-cycle capacity factor at most <!--fill:base.ocmax-->…<!--/fill-->. System cost 2026–40 <!--fill:base.pvbn-->…<!--/fill--> in present value, CO2 <!--fill:base.co2-->…<!--/fill--> Mt (2030 / 2035 / 2040: <!--fill:base.co2_2030-->…<!--/fill--> / <!--fill:base.co2_2035-->…<!--/fill--> / <!--fill:base.co2_2040-->…<!--/fill-->). Without new gas or new diesel peakers, <!--fill:s_nogas.status-->…<!--/fill-->. With diesel peakers allowed, <!--fill:s_nogas_dsl.status-->…<!--/fill-->; that plan <!--fill:s_nogas_dsl.dpvplain-->…<!--/fill--> and emits <!--fill:s_nogas_dsl.co2-->…<!--/fill--> Mt. The same under the stricter standards: at half the Australian standard, <!--fill:s_std_strict_nogas_dsl.status-->…<!--/fill-->; at the Australian standard, <!--fill:s_std_nem_nogas_dsl.status-->…<!--/fill-->. A run at the optimiser's pass limit is reported as its hourly check finds it; whether a higher pass limit changes it is untested (on the list for after the note). The two runs planned to stricter standards, each judged by its hourly check against its own standard: at half the Australian standard (half of 0.002% of customer demand), <!--fill:s_std_strict.passlimit-->…<!--/fill-->; the check gives expected unserved energy over the standard in <!--fill:s_std_strict.overownfig-->…<!--/fill-->. At the Australian standard (0.002%), <!--fill:s_std_nem.passlimit-->…<!--/fill-->; the check gives <!--fill:s_std_nem.overownfig-->…<!--/fill-->. Both met their standard in the 27 October version, with new gas from 2032; whether a higher pass limit reaches it with gas from 2035 is untested. Measured against the Australian grid's standard itself (0.002% of served energy; AEMO, 2026 ESOO, pp. 5, 24–25), the plan is <!--fill:base.nemover-->…<!--/fill--> (mean ± standard error, GWh, against 0.002% of served energy; over only where the mean less one standard error is still above it); with gas allowed from 2032, the 2032 figure is <!--fill:s_gas2032.nemfig_2032-->…<!--/fill--> (a caveat, within the scope freeze). Runs are reported as meeting the standard or not by their hourly check; 'pass limit reached' in the run logs is the optimiser's loop cap, not a reliability failure.
+The plan <!--fill:base.verdictplain-->meets the system operator's adequacy test in every year to 2040<!--/fill-->. Expected unserved energy at most <!--fill:base.maxmean-->5.5<!--/fill--> GWh against 20 GWh (worst single run <!--fill:base.worst-->174<!--/fill--> GWh); open-cycle capacity factor at most <!--fill:base.ocmax-->1.9%<!--/fill-->. System cost 2026–40 <!--fill:base.pvbn-->R2,315 billion<!--/fill--> in present value, CO2 <!--fill:base.co2-->1,739<!--/fill--> Mt (2030 / 2035 / 2040: <!--fill:base.co2_2030-->140.0<!--/fill--> / <!--fill:base.co2_2035-->90.5<!--/fill--> / <!--fill:base.co2_2040-->67.5<!--/fill-->). Without new gas or new diesel peakers, <!--fill:s_nogas.status-->the optimiser reached its pass limit; the engine check gives mean unserved energy over the run’s standard in 2037 (27.14 against 20.00), 2038 (105.36 against 20.00), 2039 (122.95 against 20.00), 2040 (134.46 against 20.00)<!--/fill-->. With diesel peakers allowed, <!--fill:s_nogas_dsl.status-->the optimiser converged; the engine check gives mean unserved energy within the run’s standard in every year<!--/fill-->; that plan <!--fill:s_nogas_dsl.dpvplain-->adds R13 billion<!--/fill--> and emits <!--fill:s_nogas_dsl.co2-->1,633<!--/fill--> Mt. The same under the stricter standards: at half the Australian standard, <!--fill:s_std_strict_nogas_dsl.status-->the optimiser reached its pass limit; the engine check gives mean unserved energy over the run’s standard in 2031 (2.78 against 2.21), 2032 (2.47 against 2.25), 2033 (2.76 against 2.29), 2034 (3.84 against 2.35), 2035 (3.16 against 2.39), 2036 (6.44 against 2.44), 2037 (6.13 against 2.50), 2038 (6.08 against 2.57), 2039 (4.40 against 2.63), 2040 (11.79 against 2.69)<!--/fill-->; at the Australian standard, <!--fill:s_std_nem_nogas_dsl.status-->the optimiser reached its pass limit; the engine check gives mean unserved energy over the run’s standard in 2034 (4.81 against 4.70), 2035 (5.12 against 4.79), 2036 (6.82 against 4.88), 2037 (6.36 against 5.00), 2038 (6.49 against 5.13), 2040 (11.36 against 5.37)<!--/fill-->. A run at the optimiser's pass limit is reported as its hourly check finds it; whether a higher pass limit changes it is untested (on the list for after the note). The two runs planned to stricter standards, each judged by its hourly check against its own standard: at half the Australian standard (half of 0.002% of customer demand), <!--fill:s_std_strict.passlimit-->the optimiser reached its pass limit<!--/fill-->; the check gives expected unserved energy over the standard in <!--fill:s_std_strict.overownfig-->2031 (2.23 against 2.21), 2032 (2.95 against 2.25), 2033 (2.79 against 2.29), 2034 (2.45 against 2.35)<!--/fill-->. At the Australian standard (0.002%), <!--fill:s_std_nem.passlimit-->the optimiser reached its pass limit<!--/fill-->; the check gives <!--fill:s_std_nem.overownfig-->none<!--/fill-->. Both met their standard in the 27 October version, with new gas from 2032; whether a higher pass limit reaches it with gas from 2035 is untested. Measured against the Australian grid's standard itself (0.002% of served energy; AEMO, 2026 ESOO, pp. 5, 24–25), the plan is <!--fill:base.nemover-->at the limit within sampling error in 2031 (4.74 ± 1.74 against 4.46), 2032 (5.46 ± 1.79 against 4.56)<!--/fill--> (mean ± standard error, GWh, against 0.002% of served energy; over only where the mean less one standard error is still above it); with gas allowed from 2032, the 2032 figure is <!--fill:s_gas2032.nemfig_2032-->3.30 ± 1.20 GWh against 4.55, under it<!--/fill--> (a caveat, within the scope freeze). Runs are reported as meeting the standard or not by their hourly check; 'pass limit reached' in the run logs is the optimiser's loop cap, not a reliability failure.
 
 Runs against NTCSA's two criteria (run codes as in section 7's glossary):
 <!--fill:table:Runs-->
 
-[not yet filled]
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV 2026-40, R bn | Against c6e, R bn | CO2 2026-40, Mt | CO2 2030 / 2035 / 2040, Mt |
+|---|---|---|---|---|---|---|---|---|
+| c6e | met | 5.5 | 174 | 1.9% | 2314.7 | - | 1739 | 140.0 / 90.5 / 67.5 |
+| c6e_irpdem | met | 3.7 | 109 | 1.7% | 2194.9 | −119.8 | 1738 | 137.9 / 93.9 / 70.2 |
+| null | met | 5.5 | 174 | 1.9% | 2314.7 | +0.0 | 1739 | 140.0 / 90.5 / 67.5 |
+| s_irpgas | met | 0.5 | 28 | 0.8% | 2512.6 | +198.0 | 1894 | 141.5 / 111.2 / 77.6 |
+| s_be6 | met | 1.0 | 28 | 1.5% | 2379.1 | +64.4 | 1754 | 135.5 / 94.2 / 74.1 |
+| s_be7 | met | 5.4 | 173 | 1.5% | 2379.9 | +65.3 | 1734 | 140.0 / 90.9 / 67.7 |
+| s_windhigh | met | 6.3 | 238 | 1.8% | 2323.4 | +8.8 | 1777 | 144.7 / 94.9 / 70.0 |
+| s_carbontreasury | met | 3.3 | 94 | 1.1% | 2633.3 | +318.6 | 1544 | 122.2 / 74.7 / 62.2 |
+| s_carbonhold | met | 3.2 | 103 | 1.3% | 2558.9 | +244.3 | 1574 | 122.7 / 77.9 / 65.0 |
+| s_gascapex25 | met | 5.5 | 174 | 2.5% | 2321.3 | +6.7 | 1732 | 140.0 / 90.5 / 65.7 |
+| s_gas2030 | met | 3.9 | 159 | 1.7% | 2315.1 | +0.5 | 1826 | 142.0 / 101.5 / 75.0 |
+| s_imp | met | 4.3 | 128 | 1.7% | 2299.2 | −15.4 | 1764 | 146.4 / 92.7 / 69.1 |
+| s_demlowflat | met | 3.5 | 130 | 1.7% | 1984.0 | −330.6 | 1768 | 145.9 / 101.2 / 59.5 |
+| s_demlowm1 | met | 3.3 | 92 | 1.6% | 1891.4 | −423.2 | 1766 | 139.8 / 98.2 / 58.0 |
+| s_coalpractice | met | 4.8 | 176 | 1.4% | 2333.2 | +18.5 | 1844 | 149.2 / 101.2 / 74.4 |
+| s_rate48 | met | 5.6 | 177 | 1.7% | 2314.2 | −0.5 | 1742 | 140.2 / 89.4 / 69.7 |
+| s_spotoil | met | 5.5 | 174 | 1.9% | 2315.3 | +0.7 | 1738 | 140.0 / 90.5 / 67.1 |
+| s_wearp75 | met | 5.5 | 174 | 1.9% | 2315.7 | +1.0 | 1738 | 140.0 / 90.5 / 67.1 |
+| s_koeberg_winter | met | 4.3 | 208 | 1.6% | 2325.9 | +11.2 | 1711 | 137.9 / 88.1 / 66.2 |
+| s_ntcsa_both | met | 4.8 | 163 | 1.4% | 2317.8 | +3.1 | 1740 | 139.3 / 91.8 / 68.9 |
+| s_nogas_dsl | met | 11.5 | 182 | 1.5% | 2327.8 | +13.1 | 1633 | 141.0 / 81.6 / 41.0 |
+| s_std_strict | met | 2.9 | 263 | 1.6% | 2324.3 | +9.6 | 1698 | 131.6 / 89.9 / 68.4 |
+| s_std_nem | met | 3.7 | 281 | 1.7% | 2317.4 | +2.7 | 1730 | 138.4 / 92.2 / 67.5 |
+| s_coalsustain | met | 5.5 | 174 | 1.9% | 2460.0 | +145.4 | 1739 | 140.0 / 90.5 / 67.5 |
+| s_nogas | unserved over 20 GWh in 2037, 2038, 2039, 2040 | 134.5 | 329 | 2.2% | 2364.0 | +49.4 | 1628 | 144.2 / 86.6 / 28.5 |
+| s_std_strict_nogas_dsl | met | 11.8 | 273 | 1.3% | 2333.4 | +18.7 | 1605 | 134.6 / 78.4 / 41.5 |
+| s_std_nem_nogas_dsl | met | 11.4 | 287 | 1.3% | 2328.0 | +13.4 | 1624 | 139.1 / 81.2 / 41.1 |
+| s_gas2032 | met | 5.5 | 191 | 1.7% | 2315.0 | +0.4 | 1825 | 141.6 / 101.6 / 75.0 |
+| s_gas2035_nodsl | met | 5.5 | 174 | 1.9% | 2314.8 | +0.2 | 1737 | 140.0 / 90.5 / 67.6 |
+| s_cocplan | met | 7.8 | 276 | 2.1% | 2397.8 | +83.1 | 1819 | 147.5 / 100.5 / 71.1 |
+| s_cochigh | met | 10.0 | 316 | 3.4% | 2469.1 | +154.5 | 1833 | 150.0 / 101.8 / 70.8 |
+| s_coclow | met | 4.6 | 141 | 1.5% | 2272.3 | −42.4 | 1702 | 135.6 / 89.0 / 65.7 |
+| s_cocprivate | met | 7.4 | 265 | 2.1% | 2371.2 | +56.5 | 1798 | 146.8 / 96.0 / 70.6 |
 
 <!--/fill-->
 Build standing, GW:
 <!--fill:table:Build standing-->
 
-[not yet filled]
+| Run | Year | Wind | Utility PV | Rooftop | Lithium (hours) | CCGT | Open-cycle gas | Open-cycle diesel | Iron-air | Vanadium | Pumped storage | Offshore | Coal |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| c6e | 2030 | 7.2 | 8.2 | 5.8 | 3.7 (3.0) | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 32.4 |
+| c6e | 2035 | 22.6 | 22.7 | 11.8 | 11.3 (5.1) | 0.6 | 0.6 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 25.9 |
+| c6e | 2040 | 31.4 | 33.8 | 17.8 | 15.2 (6.2) | 6.1 | 1.1 | 0.2 | 0.0 | 0.0 | 0.0 | 0.0 | 17.9 |
 
 <!--/fill-->
 What gets built, year by year: new capacity added each year, MW, from each run's build schedule, with coal standing at the end of the year. Rooftop solar is an input, not a choice: 1,200 MW a year in the least-cost plan and IRP 2025's 900 MW a year to 2035. Columns with nothing built are left out.
@@ -420,48 +456,112 @@ What gets built, year by year: new capacity added each year, MW, from each run's
 The least-cost plan:
 <!--fill:table:What gets built, least-cost plan-->
 
-[not yet filled]
+| Year | Wind | Utility-scale solar | Rooftop solar | Batteries | Gas (CCGT) | Gas (open-cycle) | Diesel peakers | Total new | Remaining coal |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026 | 287 | 156 | 0 | 360 | 0 | 0 | 0 | 803 | 39,692 |
+| 2027 | 1,959 | 2,120 | 2,202 | 401 | 0 | 0 | 0 | 6,682 | 39,692 |
+| 2028 | 0 | 1,129 | 1,200 | 0 | 0 | 0 | 0 | 2,329 | 39,692 |
+| 2029 | 2,500 | 1,512 | 1,200 | 774 | 0 | 0 | 0 | 5,986 | 37,027 |
+| 2030 | 2,500 | 3,277 | 1,200 | 2,195 | 0 | 0 | 0 | 9,172 | 32,433 |
+| 2031 | 3,500 | 3,506 | 1,200 | 2,693 | 0 | 0 | 0 | 10,899 | 30,876 |
+| 2032 | 3,500 | 3,752 | 1,200 | 1,637 | 0 | 0 | 0 | 10,089 | 29,223 |
+| 2033 | 3,500 | 3,131 | 1,200 | 1,391 | 0 | 0 | 0 | 9,222 | 28,121 |
+| 2034 | 3,500 | 4,163 | 1,200 | 1,864 | 0 | 0 | 0 | 10,727 | 26,467 |
+| 2035 | 1,316 | 0 | 1,200 | 0 | 551 | 649 | 0 | 3,716 | 25,916 |
+| 2036 | 125 | 0 | 1,200 | 20 | 730 | 470 | 0 | 2,545 | 25,348 |
+| 2037 | 3,500 | 762 | 1,200 | 739 | 1,193 | 7 | 0 | 7,401 | 23,658 |
+| 2038 | 3,500 | 2,299 | 1,200 | 809 | 1,200 | 0 | 0 | 9,008 | 21,969 |
+| 2039 | 2 | 5,209 | 1,200 | 1,399 | 1,200 | 0 | 152 | 9,162 | 19,661 |
+| 2040 | 1,688 | 2,814 | 1,200 | 959 | 1,200 | 0 | 0 | 7,861 | 17,890 |
+| Total | 31,377 | 33,830 | 17,802 | 15,241 | 6,074 | 1,126 | 152 | 105,602 | – |
 
 <!--/fill-->
 IRP 2025's build:
 <!--fill:table:What gets built, IRP 2025-->
 
-[not yet filled]
+| Year | Wind | Utility-scale solar | Rooftop solar | Batteries | Pumped storage | Gas (CCGT) | Gas (open-cycle) | Nuclear | Total new | Remaining coal |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 2026 | 964 | 3,553 | 0 | 360 | 0 | 0 | 0 | 0 | 4,877 | 39,692 |
+| 2027 | 2,847 | 2,886 | 900 | 401 | 0 | 0 | 0 | 0 | 7,034 | 39,692 |
+| 2028 | 770 | 1,760 | 900 | 0 | 0 | 0 | 0 | 0 | 3,430 | 39,692 |
+| 2029 | 760 | 1,314 | 900 | 292 | 0 | 3,000 | 0 | 0 | 6,266 | 37,027 |
+| 2030 | 2,000 | 800 | 900 | 863 | 0 | 3,000 | 0 | 0 | 7,563 | 32,433 |
+| 2031 | 2,500 | 1,000 | 900 | 2,008 | 0 | 0 | 0 | 0 | 6,408 | 30,876 |
+| 2032 | 2,600 | 1,200 | 900 | 200 | 0 | 618 | 632 | 0 | 6,150 | 29,223 |
+| 2033 | 2,600 | 1,400 | 900 | 200 | 0 | 889 | 361 | 0 | 6,350 | 28,121 |
+| 2034 | 3,000 | 1,600 | 900 | 200 | 0 | 1,200 | 50 | 0 | 6,950 | 26,467 |
+| 2035 | 3,000 | 2,000 | 900 | 200 | 0 | 696 | 304 | 0 | 7,100 | 25,916 |
+| 2036 | 2,000 | 1,600 | 0 | 500 | 0 | 568 | 682 | 1,250 | 6,600 | 25,348 |
+| 2037 | 3,000 | 1,600 | 0 | 500 | 1,332 | 1,200 | 300 | 1,250 | 9,182 | 23,658 |
+| 2038 | 3,000 | 1,600 | 0 | 500 | 0 | 1,200 | 50 | 1,350 | 7,700 | 21,969 |
+| 2039 | 3,500 | 1,600 | 0 | 500 | 0 | 1,127 | 123 | 1,350 | 8,200 | 19,661 |
+| 2040 | 3,500 | 1,600 | 0 | 500 | 0 | 954 | 296 | 0 | 6,850 | 17,890 |
+| Total | 36,041 | 25,513 | 8,100 | 7,224 | 1,332 | 14,452 | 2,798 | 5,200 | 100,660 | – |
 
 <!--/fill-->
-The least-cost plan's additions are lumpy: <!--fill:base.lumpy-->…<!--/fill-->. Why is left as a point for the reviewer.
+The least-cost plan's additions are lumpy: <!--fill:base.lumpy-->no new wind in 2028 and almost none in 2036, 2039; no new utility solar in 2035-36<!--/fill-->. Why is left as a point for the reviewer.
 
 Cost of capital cases, each with the IRP build checked at the same rates:
 <!--fill:table:Cost of capital cases-->
 
-[not yet filled]
+| Run | Utility PV, GW 2030 / 2035 / 2040 | Wind | Lithium | Gas (CCGT and open-cycle on LNG) | Engine PV 2026-40, R bn | Against c6e, R bn | CO2 2026-40, Mt | IRP gap in the same case, R bn |
+|---|---|---|---|---|---|---|---|---|
+| c6e, each technology at its own rate | 8.2 / 22.7 / 33.8 | 7.2 / 22.6 / 31.4 | 3.7 / 11.3 / 15.2 | 0.0 / 1.2 / 7.2 | 2314.7 | - | 1739 | +368.2 |
+| s_cocplan, one rate for all, 8% real | 8.7 / 23.4 / 33.3 | 4.6 / 18.6 / 29.5 | 4.0 / 11.5 / 15.3 | 0.0 / 1.2 / 7.2 | 2397.8 | +83.1 | 1819 | +371.3 |
+| s_cochigh, high | 8.7 / 23.7 / 34.6 | 3.7 / 18.0 / 29.2 | 4.1 / 11.6 / 15.4 | 0.0 / 1.2 / 7.2 | 2469.1 | +154.5 | 1833 | +500.9 |
+| s_coclow, low | 9.0 / 22.4 / 33.8 | 8.3 / 23.3 / 32.4 | 3.5 / 11.2 / 15.1 | 0.0 / 1.2 / 7.2 | 2272.3 | −42.4 | 1702 | +337.8 |
+| s_cocprivate, private finance for wind, solar and lithium | 8.8 / 23.4 / 33.9 | 4.7 / 20.1 / 29.7 | 4.0 / 11.5 / 15.2 | 0.0 / 1.2 / 7.2 | 2371.2 | +56.5 | 1798 | +371.7 |
+
+Engine PV weights each year's cost at 8% in every row; the capital charges inside those costs are annuities at each run's own rates.
 
 <!--/fill-->
 Gas timing: reliability by year 2032–36 and new diesel peakers, against the central:
 <!--fill:table:Gas timing-->
 
-[not yet filled]
+| Run | Mean unserved 2032 / 2033 / 2034 / 2035 / 2036, GWh | Open-cycle diesel standing 2030 / 2035 / 2040, GW | Engine PV 2026-40, R bn | Against c6e, R bn | CO2 2026-40, Mt |
+|---|---|---|---|---|---|
+| c6e | 5.5 / 4.2 / 3.1 / 1.4 / 1.6 | 0.0 / 0.0 / 0.2 | 2314.7 | - | 1739 |
+| s_gas2032 | 3.3 / 2.6 / 0.8 / 0.7 / 0.9 | 0.0 / 0.0 / 0.0 | 2315.0 | +0.4 | 1825 |
+| s_gas2035_nodsl | 5.5 / 4.2 / 3.1 / 1.4 / 1.6 | 0.0 / 0.0 / 0.0 | 2314.8 | +0.2 | 1737 |
+| s_gas2030 | 3.3 / 2.7 / 0.8 / 0.7 / 0.9 | 0.0 / 0.0 / 0.0 | 2315.1 | +0.5 | 1826 |
 
 <!--/fill-->
 Turbine delivery: Mitsubishi Power quotes deliveries for new orders around 2031, with the 2028 and 2029 slots almost full and global orders this year about 70–80 GW (Bloomberg, 'Mitsubishi Power: High Gas Turbine Demand Is Pushing Out Deliveries to 2031', 27 October 2026), so new gas before about 2034 assumes turbines already ordered; the central's 2035 sits after that, the gas-from-2032 case and the IRP build's dates before it.
 
-New gas against the Section 34 determination (5,000 MW of gas-to-power, 2026–2037): the plan builds <!--fill:base.gasmw_2035-->…<!--/fill--> MW of new gas (combined-cycle and open-cycle on LNG) by 2035 and <!--fill:base.gasmw_2040-->…<!--/fill--> MW by 2040 (the 27 October version, with new gas from 2032: 3,550 MW and 8,831 MW). IRP 2025's gas plan with its 51% minimum (6 GW of new combined-cycle gas at a 51% minimum from 2030, on the IRP's own gas dates): cost per MWh served <!--fill:s_irpgas.avgcostpct-->…<!--/fill-->% above the plan across 2030–40, system cost <!--fill:s_irpgas.dpvabsbn-->…<!--/fill--> more in present value, CO2 <!--fill:s_irpgas.dco2plain-->…<!--/fill-->; the run also changes the gas build, so the minimum alone is not isolated (on the list for after the note). New gas's capacity factor in the hourly check: <!--fill:base.gascf_2035-->…<!--/fill--> in 2035, <!--fill:base.gascf_2040-->…<!--/fill--> in 2040, so it is built as backup capacity, not for energy; with gas from 2032: <!--fill:s_gas2032.gascf_2035-->…<!--/fill--> and <!--fill:s_gas2032.gascf_2040-->…<!--/fill-->.
+New gas against the Section 34 determination (5,000 MW of gas-to-power, 2026–2037): the plan builds <!--fill:base.gasmw_2035-->1,200<!--/fill--> MW of new gas (combined-cycle and open-cycle on LNG) by 2035 and <!--fill:base.gasmw_2040-->7,200<!--/fill--> MW by 2040 (the 27 October version, with new gas from 2032: 3,550 MW and 8,831 MW). IRP 2025's gas plan with its 51% minimum (6 GW of new combined-cycle gas at a 51% minimum from 2030, on the IRP's own gas dates): cost per MWh served <!--fill:s_irpgas.avgcostpct-->12.3–15.9<!--/fill-->% above the plan across 2030–40, system cost <!--fill:s_irpgas.dpvabsbn-->R198 billion<!--/fill--> more in present value, CO2 <!--fill:s_irpgas.dco2plain-->155 Mt more<!--/fill-->; the run also changes the gas build, so the minimum alone is not isolated (on the list for after the note). New gas's capacity factor in the hourly check: <!--fill:base.gascf_2035-->5.1%<!--/fill--> in 2035, <!--fill:base.gascf_2040-->8.4%<!--/fill--> in 2040, so it is built as backup capacity, not for energy; with gas from 2032: <!--fill:s_gas2032.gascf_2035-->6.1%<!--/fill--> and <!--fill:s_gas2032.gascf_2040-->11.3%<!--/fill-->.
 
 The IRP 2025 build against the optimised plan, case by case (the IRP build checked on the same inputs as each run):
 <!--fill:table:IRP 2025 build-->
 
-[not yet filled]
+| Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026-40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |
+|---|---|---|---|---|---|---|
+| central demand | 2682.9 | 2314.7 | +368.2 | 1730 | 1739 | 0.00 / 0 |
+| IRP 2025 demand | 2618.5 | 2194.9 | +423.6 | 1611 | 1738 | 0.00 / 0 |
+| wind, high cost case | 2695.4 | 2323.4 | +372.0 | 1730 | 1777 | 0.00 / 0 |
+| carbon, Treasury path | 3021.6 | 2633.3 | +388.4 | 1730 | 1544 | 0.00 / 0 |
+| carbon, 2030 rate held | 2933.4 | 2558.9 | +374.5 | 1730 | 1574 | 0.00 / 0 |
+| coal sustaining capital R500/kW-yr | 2828.3 | 2460.0 | +368.2 | 1730 | 1739 | 0.00 / 0 |
+| cost of capital: one rate, 8% (planning) | 2769.1 | 2397.8 | +371.3 | 1730 | 1819 | 0.00 / 0 |
+| cost of capital: high | 2970.0 | 2469.1 | +500.9 | 1730 | 1833 | 0.00 / 0 |
+| cost of capital: low | 2610.0 | 2272.3 | +337.8 | 1730 | 1702 | 0.00 / 0 |
+| cost of capital: private finance | 2742.8 | 2371.2 | +371.7 | 1730 | 1798 | 0.00 / 0 |
 
 <!--/fill-->
-Nuclear's high cases: at USD 12,000/kW the gap is <!--fill:irp_nuc12000.gapbn-->…<!--/fill--> at the model's demand and <!--fill:irp_irpdem_nuc12000.gapbn-->…<!--/fill--> at the IRP's; at a 60-year nuclear life <!--fill:irp_nuclife60.gapbn-->…<!--/fill--> and <!--fill:irp_irpdem_nuclife60.gapbn-->…<!--/fill--> (the optimised plans build no nuclear, so they do not move).
+The plan against the 27 October version, run by run (the 27 October version took new gas from 2032 and one 8% rate for every technology; runs without a counterpart in that set are not listed):
+<!--fill:table:against c6c-->
 
-Cost per tonne of CO2 cut by the IRP 2025 build, carbon tax taken out because it is a transfer: <!--fill:irp.pertonne-->…<!--/fill--> at the model's demand (<!--fill:irp.cutmt-->…<!--/fill--> over 2026–40; <!--fill:irp.pertonnetax-->…<!--/fill--> with the tax) and <!--fill:irp_irpdem.pertonne-->…<!--/fill--> at the IRP's (<!--fill:irp_irpdem.cutmt-->…<!--/fill-->). On the Treasury carbon path: <!--fill:irp_carbontreasury.pertonne-->…<!--/fill--> (gap <!--fill:irp_carbontreasury.gapbn-->…<!--/fill-->, cut <!--fill:irp_carbontreasury.cutmt-->…<!--/fill-->).
+[not yet available: table against c6c]
+
+<!--/fill-->
+The plan emits <!--fill:prev.dco2absmt-->198<!--/fill--> Mt less CO2 over 2026-40 than the 27 October version (<!--fill:base.co2-->1,739<!--/fill--> against <!--fill:prev.co2-->1,937<!--/fill--> Mt). About <!--fill:s_gas2032.dco2prevabs-->111<!--/fill--> Mt of that comes with costs of capital by technology (the plan with gas allowed from 2032, <!--fill:s_gas2032.co2-->1,825<!--/fill--> Mt, against the 27 October version's <!--fill:prev.co2-->1,937<!--/fill-->, both with gas from 2032) and about <!--fill:s_gas2032.dco2absmt-->87<!--/fill--> Mt with moving new gas from 2032 to 2035 (<!--fill:s_gas2032.co2-->1,825<!--/fill--> against <!--fill:base.co2-->1,739<!--/fill-->).
+
+Nuclear's high cases: at USD 12,000/kW the gap is <!--fill:irp_nuc12000.gapbn-->R433 billion<!--/fill--> at the model's demand and <!--fill:irp_irpdem_nuc12000.gapbn-->R488 billion<!--/fill--> at the IRP's; at a 60-year nuclear life <!--fill:irp_nuclife60.gapbn-->R365 billion<!--/fill--> and <!--fill:irp_irpdem_nuclife60.gapbn-->R420 billion<!--/fill--> (the optimised plans build no nuclear, so they do not move).
+
+Cost per tonne of CO2 cut by the IRP 2025 build, carbon tax taken out because it is a transfer: <!--fill:irp.pertonne-->R43,629<!--/fill--> at the model's demand (<!--fill:irp.cutmt-->8 Mt<!--/fill--> over 2026–40; <!--fill:irp.pertonnetax-->R43,543<!--/fill--> with the tax) and <!--fill:irp_irpdem.pertonne-->R3,368<!--/fill--> at the IRP's (<!--fill:irp_irpdem.cutmt-->127 Mt<!--/fill-->). On the Treasury carbon path: <!--fill:irp_carbontreasury.pertonne-->none (the IRP build emits more)<!--/fill--> (gap <!--fill:irp_carbontreasury.gapbn-->R388 billion<!--/fill-->, cut <!--fill:irp_carbontreasury.cutmt-->186 Mt<!--/fill-->).
 
 Not yet in:
 <!--fill:missing-->
-
-[not yet filled]
-
+- None: every result in this pack is in.
 <!--/fill-->
 ---
 
@@ -517,12 +617,12 @@ Inputs
 29. Market design and capacity. The build is a least-cost plan, as if one planner built it. SAWEM as drafted is an energy-only market: the only capacity payments are those in Eskom's vesting contracts, not open to other participants, and Meridian Economics warns of a missing-money problem in which energy sales alone may not justify batteries, peakers or other dispatchable capacity (briefing note, 26 Oct 2026, p.9). Delivering the least-cost build therefore needs a capacity mechanism or continued public procurement. Capacity and ancillary services markets are planned from 2030 (Krutham, Trading electricity, October 2026, p.2), but not yet designed. A capacity-mechanism sensitivity is on the list for the next note.
 30. Sustaining capital on existing coal. The central charges none: coal's fixed cost (R1,160/kW-yr) is calibrated to MYPD6 operating costs, which exclude capital, so future refurbishment and sustaining spending is not charged, though early retirement would avoid it. Working range R350–500/kW-yr (January 2026 rands): EIA's capital additions for existing coal (Sargent & Lundy for EIA, 2018, age-dependent; about R445–500/kW-yr without scrubbers at 30–50 years; coefficients from a search result, not yet checked against the report) and Eskom's FY2026 Generation capital spending (R26.7bn, about R494/kW-yr over 54 GW installed; Eskom performance report FY2026, p.28; an upper bound, as it includes new build, Koeberg and emissions retrofits; Eskom credited, the analysis ours). The 26 October version retired no coal early in any run, and on the 14 October version a larger charge on in-scope coal (R1,746/kW-yr) retired none either. On the 26 October version's own solution the cheapest early retirement allowed (from 2029) starts to pay only at about R1,600/kW-yr of extra fixed cost, more than three times the range. Sensitivity coal sustaining capital charged charges R500/kW-yr; its effect on system cost (2026–40 PV) and on the IRP gap follows from the 4-hour down-time variant and the 27 October version sets.
 31. Extreme midday solar . With very large solar the engine still cycles coal more than current practice. Least-cost path 2035 with utility solar at 45 GW and rooftop at 25 GW (from 14.7 and 10.8), one run on the page's own profiles, 8-14 January, at the 27 October version's 24-hour minimum down time: coal at 1.9-4.5 GW at midday and up to 9.5 GW in the evening, about 4 unit starts a day (8 at the earlier 4 hours), after multi-day low-coal spells rather than midday shutdowns, and 105 TWh of wind and solar curtailed over the year. Australia's black-coal fleet (30 units, 13.9 GW) starts about one unit a day (AEMO NEMweb data, September 2026, analysis ours), and Meridian Economics describes South Africa's units as unable to shut down and restart within a day (briefing note, 26 Oct 2026, p.1, fn.1). Fixes after the note: start costs calibrated to observed starts , a minimum number of synchronous units by region (14jq (d)) and the down time in the build optimiser (14ka).
-32. Cost of capital by technology (section 1, 'Cost basis'). From the 28 October version each technology carries its own real pre-tax cost of capital for state-backed procurement (solar and wind <!--fill:page.coc.pv-->…<!--/fill-->, lithium and pumped storage <!--fill:page.coc.batt-->…<!--/fill-->, gas <!--fill:page.coc.ccgt-->…<!--/fill-->, nuclear <!--fill:page.coc.nuclear-->…<!--/fill-->, network <!--fill:page.coc.tx-->…<!--/fill-->), with interest during construction where costs are quoted before financing; the level is set from South African bids (REIPPPP, BESIPPPP) and the spread from CEPA's technology gaps, so the rates rest on a thin South African evidence base and a British spread. Private finance for wind, solar and lithium (CEPA's premiums) is a sensitivity (private-sector rates for wind, solar and batteries), not the central, although private procurement is growing (limitation 29); the next note moves to a blended rate once the public and private split of built capacity is sourced (on the list for after the note). The 27 October version, the previous central, gave solar the developers' cheaper finance through BW7's tariffs and every other technology 8% real (kept as the record in section 4).
+32. Cost of capital by technology (section 1, 'Cost basis'). From the 28 October version each technology carries its own real pre-tax cost of capital for state-backed procurement (solar and wind <!--fill:page.coc.pv-->5.5%<!--/fill-->, lithium and pumped storage <!--fill:page.coc.batt-->6.8%<!--/fill-->, gas <!--fill:page.coc.ccgt-->8.0%<!--/fill-->, nuclear <!--fill:page.coc.nuclear-->8.5%<!--/fill-->, network <!--fill:page.coc.tx-->7.1%<!--/fill-->), with interest during construction where costs are quoted before financing; the level is set from South African bids (REIPPPP, BESIPPPP) and the spread from CEPA's technology gaps, so the rates rest on a thin South African evidence base and a British spread. Private finance for wind, solar and lithium (CEPA's premiums) is a sensitivity (private-sector rates for wind, solar and batteries), not the central, although private procurement is growing (limitation 29); the next note moves to a blended rate once the public and private split of built capacity is sourced (on the list for after the note). The 27 October version, the previous central, gave solar the developers' cheaper finance through BW7's tariffs and every other technology 8% real (kept as the record in section 4).
 
 
 Known failures in the suite (the 27 October build, PR #122, practice floor 0.715; against main 27e script by script in each with its cause in RESULTS, none relaxed):
 
-- Fossil-free 2040 (the page's searched preset) failed the adequacy standard as the page stood on 28 October (132.4 GWh a year of unserved energy on 240 runs against its 2.72 GWh design target; the preset was built with Cahora Bassa imports running in 2040, and the central has ended them after 2030 since PR B). Topped up on 29 October by the same search tool with iron-air excluded from the moves (rule 366: iron-air's finding is a known failure): utility solar 56.5 to 64.5 GW and offshore 1.75 to 2.75 GW, 2.55 GWh against 2.72 on 240 runs; the iron-air version, R2.6bn a year cheaper, was not used . In the presets pull request; until it merges the site shows the earlier build with its caption silent on unserved energy. The preset carries <!--fill:page.ff2040ironairGW-->…<!--/fill--> GW of <!--fill:page.ironairHours-->…<!--/fill-->-hour iron-air from its original design (the top-up added none), a technology with no fleet at that scale, and the iron-air finding is a known failure (on the list for after the note). The preset's demand is still the 17 October version's 2040; its re-search on the 28 October version's basis after the note (on the list for after the note) includes a version without iron-air.
+- Fossil-free 2040 (the page's searched preset) failed the adequacy standard as the page stood on 28 October (132.4 GWh a year of unserved energy on 240 runs against its 2.72 GWh design target; the preset was built with Cahora Bassa imports running in 2040, and the central has ended them after 2030 since PR B). Topped up on 29 October by the same search tool with iron-air excluded from the moves (rule 366: iron-air's finding is a known failure): utility solar 56.5 to 64.5 GW and offshore 1.75 to 2.75 GW, 2.55 GWh against 2.72 on 240 runs; the iron-air version, R2.6bn a year cheaper, was not used . In the presets pull request; until it merges the site shows the earlier build with its caption silent on unserved energy. The preset carries <!--fill:page.ff2040ironairGW-->13<!--/fill--> GW of <!--fill:page.ironairHours-->100<!--/fill-->-hour iron-air from its original design (the top-up added none), a technology with no fleet at that scale, and the iron-air finding is a known failure (on the list for after the note). The preset's demand is still the 17 October version's 2040; its re-search on the 28 October version's basis after the note (on the list for after the note) includes a version without iron-air.
 - validate_pathway_presets: the presets built on the 17 October version's runs (Least-cost path 2035, IRP path 2035, IRP's 2030 targets) differ from the engine's coal rules and inputs, so their states, coal settings, system cost and unserved energy no longer match their engine checks (13 on 27e). The presets PR rebuilds them on the 27 October version's runs (the plan is in the repository's presets notes).
 - validate_findings (3): with gas, 20 GW of 100-hour iron-air barely moves July (kept out of the note and the pack until settled); a low build rate staying at the congestion floor (an engine finding from before PR C, to be restated); turn-up a growing share of constraint cost (54% today and 54% under IRP's 2030 targets, R637 against R634/MWh; it passed on 27e by a fraction; not in public text). Modest demand shifting passes again on 27f.
 - validate_consistency (1): high-season off-peak is the cheapest block modelled (the check's premise is contradicted by the 2026/27 tariff booklet; to be replaced). The shadow price spread passes on 27f.
@@ -543,15 +643,15 @@ Each can be answered from this pack in 30-40 minutes. Each is tied to a decision
 
    Decision: whether the reliability verdicts come from the hourly model, or wait for an optimising unit-commitment model.
 
-   Evidence: against a single-node optimum (PyPSA, unit commitment) the hourly model's cost was 1.1-3.5% above it in ordinary weeks and up to 26% in the stress week, measured on the 14 October version, before the current coal rules (section 3; the re-measure is on the list for after the note). On the plan reviewed here the model finds expected unserved energy of at most <!--fill:base.maxmean-->…<!--/fill--> GWh in any year (worst single run <!--fill:base.worst-->…<!--/fill--> GWh) against NTCSA's 20 GWh, and against the Australian 0.002% standard it is <!--fill:base.nemover-->…<!--/fill--> (mean ± standard error against the limit). The 2025 replay (section 2) is the model's calibration.
+   Evidence: against a single-node optimum (PyPSA, unit commitment) the hourly model's cost was 1.1-3.5% above it in ordinary weeks and up to 26% in the stress week, measured on the 14 October version, before the current coal rules (section 3; the re-measure is on the list for after the note). On the plan reviewed here the model finds expected unserved energy of at most <!--fill:base.maxmean-->5.5<!--/fill--> GWh in any year (worst single run <!--fill:base.worst-->174<!--/fill--> GWh) against NTCSA's 20 GWh, and against the Australian 0.002% standard it is <!--fill:base.nemover-->at the limit within sampling error in 2031 (4.74 ± 1.74 against 4.46), 2032 (5.46 ± 1.79 against 4.56)<!--/fill--> (mean ± standard error against the limit). The 2025 replay (section 2) is the model's calibration.
 
    Question: would you accept the verdicts on this evidence? If not, which one further test would you require?
 
 2. Should the central cost of capital be the state-backed rate?
 
-   Decision: taken on 28 October. Each technology carries its own real pre-tax cost of capital for state-backed procurement (solar and wind <!--fill:page.coc.pv-->…<!--/fill-->, batteries and pumped storage <!--fill:page.coc.batt-->…<!--/fill-->, gas <!--fill:page.coc.ccgt-->…<!--/fill-->, nuclear <!--fill:page.coc.nuclear-->…<!--/fill-->, network <!--fill:page.coc.tx-->…<!--/fill-->; section 1, 'Cost basis'), the level set from South African bids and the spread from CEPA's 2025 hurdle-rate study for the British government; private finance for wind, solar and batteries is a sensitivity, and the next note moves to a blended public and private rate once the split of built capacity is sourced.
+   Decision: taken on 28 October. Each technology carries its own real pre-tax cost of capital for state-backed procurement (solar and wind <!--fill:page.coc.pv-->5.5%<!--/fill-->, batteries and pumped storage <!--fill:page.coc.batt-->6.8%<!--/fill-->, gas <!--fill:page.coc.ccgt-->8.0%<!--/fill-->, nuclear <!--fill:page.coc.nuclear-->8.5%<!--/fill-->, network <!--fill:page.coc.tx-->7.1%<!--/fill-->; section 1, 'Cost basis'), the level set from South African bids and the spread from CEPA's 2025 hurdle-rate study for the British government; private finance for wind, solar and batteries is a sensitivity, and the next note moves to a blended public and private rate once the split of built capacity is sourced.
 
-   Evidence: private-sector rates for wind, solar and batteries <!--fill:s_cocprivate.dpvplain-->…<!--/fill--> and put the gap to IRP 2025 at <!--fill:irp_cocprivate.gapbn-->…<!--/fill-->; one rate for all at 8%, the planning convention, <!--fill:s_cocplan.dpvplain-->…<!--/fill--> and puts the gap at <!--fill:irp_cocplan.gapbn-->…<!--/fill-->; the high cost-of-capital case <!--fill:s_cochigh.dpvplain-->…<!--/fill--> and the low case <!--fill:s_coclow.dpvplain-->…<!--/fill--> (section 4, cost of capital cases; limitation 32).
+   Evidence: private-sector rates for wind, solar and batteries <!--fill:s_cocprivate.dpvplain-->adds R57 billion<!--/fill--> and put the gap to IRP 2025 at <!--fill:irp_cocprivate.gapbn-->R372 billion<!--/fill-->; one rate for all at 8%, the planning convention, <!--fill:s_cocplan.dpvplain-->adds R83 billion<!--/fill--> and puts the gap at <!--fill:irp_cocplan.gapbn-->R371 billion<!--/fill-->; the high cost-of-capital case <!--fill:s_cochigh.dpvplain-->adds R154 billion<!--/fill--> and the low case <!--fill:s_coclow.dpvplain-->saves R42 billion<!--/fill--> (section 4, cost of capital cases; limitation 32).
 
    Question: for a least-cost plan to 2040 in a system where private procurement is growing, is a state-backed central defensible, and what blend would you use, from which evidence?
 
@@ -559,15 +659,15 @@ Each can be answered from this pack in 30-40 minutes. Each is tied to a decision
 
    Decision: taken on 28 October. The central takes new gas from 2035 (the department's statement that the first gas bid window appointed no preferred bidders; a further window to follow; financial close 2028-29 at the earliest, then three to four years to build), with gas allowed from 2032 as the sensitivity; turbine deliveries for new orders are quoted around 2031 (Bloomberg, 27 October 2026). The IRP build keeps IRP 2025's own dates.
 
-   Evidence: allowing gas from 2032 <!--fill:s_gas2032.dpvplain-->…<!--/fill-->; expected unserved energy in 2034, 2035 and 2036 is <!--fill:base.mean_2034-->…<!--/fill--> / <!--fill:base.mean_2035-->…<!--/fill--> / <!--fill:base.mean_2036-->…<!--/fill--> GWh on the central and <!--fill:s_gas2032.mean_2034-->…<!--/fill--> / <!--fill:s_gas2032.mean_2035-->…<!--/fill--> / <!--fill:s_gas2032.mean_2036-->…<!--/fill--> with gas from 2032; the central without new diesel peakers <!--fill:s_gas2035_nodsl.dpvplain-->…<!--/fill-->; against the Australian standard the central is <!--fill:base.nemover-->…<!--/fill-->, and with gas from 2032 the 2032 figure is <!--fill:s_gas2032.nemfig_2032-->…<!--/fill--> (section 4, gas timing).
+   Evidence: allowing gas from 2032 <!--fill:s_gas2032.dpvplain-->changes the cost by less than R1 billion<!--/fill-->; expected unserved energy in 2034, 2035 and 2036 is <!--fill:base.mean_2034-->3.1<!--/fill--> / <!--fill:base.mean_2035-->1.4<!--/fill--> / <!--fill:base.mean_2036-->1.6<!--/fill--> GWh on the central and <!--fill:s_gas2032.mean_2034-->0.8<!--/fill--> / <!--fill:s_gas2032.mean_2035-->0.7<!--/fill--> / <!--fill:s_gas2032.mean_2036-->0.9<!--/fill--> with gas from 2032; the central without new diesel peakers <!--fill:s_gas2035_nodsl.dpvplain-->changes the cost by less than R1 billion<!--/fill-->; against the Australian standard the central is <!--fill:base.nemover-->at the limit within sampling error in 2031 (4.74 ± 1.74 against 4.46), 2032 (5.46 ± 1.79 against 4.56)<!--/fill-->, and with gas from 2032 the 2032 figure is <!--fill:s_gas2032.nemfig_2032-->3.30 ± 1.20 GWh against 4.55, under it<!--/fill--> (section 4, gas timing).
 
-   Question: would you plan on 2035? The central is <!--fill:base.nemshort-->…<!--/fill-->: does that change the answer?
+   Question: would you plan on 2035? The central is <!--fill:base.nemshort-->at about the Australian standard in 2031-32, within sampling error<!--/fill-->: does that change the answer?
 
 4. Which coal operating rules?
 
    Decision: taken on 27 October. Every coal unit keeps a 24-hour minimum down time (our reading of Meridian's footnote; the literature spans 8-48 hours and no measured South African value was found) and a practice floor of 0.715 of capacity to 2029, calibrated to Eskom's 2026 midday minimum; design minimums from 2030 (section 1b; limitations 13 and 23).
 
-   Evidence: holding the practice floor to 2040 <!--fill:s_coalpractice.dpvplain-->…<!--/fill--> and changes CO2 by <!--fill:s_coalpractice.dco2plain-->…<!--/fill-->; the optimiser's earlier 48-hour commitment rule <!--fill:s_rate48.dpvplain-->…<!--/fill-->; the 27 October version against its 4-hour down-time variant (with the floor and emission-factor changes) was R1.5bn of system cost and 6 Mt (section 8, the record).
+   Evidence: holding the practice floor to 2040 <!--fill:s_coalpractice.dpvplain-->adds R19 billion<!--/fill--> and changes CO2 by <!--fill:s_coalpractice.dco2plain-->106 Mt more<!--/fill-->; the optimiser's earlier 48-hour commitment rule <!--fill:s_rate48.dpvplain-->changes the cost by less than R1 billion<!--/fill-->; the 27 October version against its 4-hour down-time variant (with the floor and emission-factor changes) was R1.5bn of system cost and 6 Mt (section 8, the record).
 
    Question: which minimum down time and which minimum level would you use for Eskom's fleet, from which source, and would you let the optimiser see the down time?
 
@@ -576,7 +676,73 @@ Each can be answered from this pack in 30-40 minutes. Each is tied to a decision
 ## 7. Reproducing these results
 
 Glossary. Every run named in plain words in sections 1–6 has a run code in the outputs and the scripts (written by the fill script from the same table it names them from):
-<!--fill:glossary-->…<!--/fill-->
+<!--fill:glossary-->
+
+| Plain name | Run code | What it changes |
+|---|---|---|
+| the least-cost plan | c6e | the model's own least-cost build on the central assumptions |
+| the least-cost plan at IRP 2025's demand | c6e_irpdem | the same optimisation on IRP 2025's own Moderate demand forecast |
+| no new build | null_c6e | the existing fleet alone, for the cost of doing nothing |
+| IRP 2025's build | irp2025_c6e | IRP 2025's Table 1 build run through the same hourly model on the same inputs |
+| IRP 2025's build at its own demand | irp2025_c6e_irpdem | IRP 2025's build at its own Moderate demand forecast |
+| IRP 2025's build, nuclear at USD 12,000/kW | irp2025_c6e_nuc12000 | the IRP build with nuclear capex at the high case |
+| IRP 2025's build, 60-year nuclear life | irp2025_c6e_nuclife60 | the IRP build with nuclear annuitised over 60 years |
+| IRP 2025's build at its own demand, nuclear at USD 12,000/kW | irp2025_c6e_irpdem_nuc12000 | as above, at the IRP demand |
+| IRP 2025's build at its own demand, 60-year nuclear life | irp2025_c6e_irpdem_nuclife60 | as above, at the IRP demand |
+| gas allowed from 2032 | s_gas2032_c6e | new gas may be built from 2032 instead of 2035 |
+| gas allowed from 2030 | s_gas2030_c6e | new gas may be built from 2030 |
+| no new diesel peakers | s_gas2035_nodsl_c6e | the central without new open-cycle plant on diesel |
+| gas capex 25% higher | s_gascapex25_c6e | CCGT and open-cycle capex raised a quarter |
+| no new gas or diesel peakers | s_nogas_c6e | no new gas plant of any kind and no new diesel open-cycle |
+| no new gas, diesel peakers allowed | s_nogas_dsl_c6e | no new gas plant; new open-cycle on diesel may be built |
+| half the Australian standard | s_std_strict_c6e | planned to half of 0.002% of customer demand instead of NTCSA’s 20 GWh |
+| the Australian standard | s_std_nem_c6e | planned to 0.002% of customer demand |
+| no new gas or diesel peakers, half the Australian standard | s_std_strict_nogas_c6e | not run: the solve exceeds two hours |
+| no new gas or diesel peakers, Australian standard | s_std_nem_nogas_c6e | not run: the solve exceeds two hours |
+| no new gas, diesel peakers allowed, half the Australian standard | s_std_strict_nogas_dsl_c6e | as its name says |
+| no new gas, diesel peakers allowed, Australian standard | s_std_nem_nogas_dsl_c6e | as its name says |
+| planned to both NTCSA criteria | s_ntcsa_both_c6e | the open-cycle capacity factor under 6% enforced in the plan, not only reported |
+| one 8% rate for every technology | s_cocplan_c6e | the planning convention: every technology at the 8% discount rate |
+| private-sector rates for wind, solar and batteries | s_cocprivate_c6e | wind and solar 1.5 points and batteries 2 points above the state-backed rates |
+| high cost of capital | s_cochigh_c6e | every rate on the IEA's South African solar level, 9% real |
+| low cost of capital | s_coclow_c6e | every rate one point below the central; network unchanged |
+| IRP 2025's gas plan with its 51% minimum | s_irpgas_c6e | 6 GW of new combined-cycle gas required to run at least 51% of the time from 2030, on the IRP’s own gas dates |
+| imports kept to 2040 | s_imp_c6e | the Cahora Bassa flow continues after 2030 |
+| flat demand | s_demlowflat_c6e | no demand growth after 2026 |
+| demand falling 1% a year | s_demlowm1_c6e | demand falls 1% a year from 2026 |
+| coal practice floor held to 2040 | s_coalpractice_c6e | the 2026 coal operating floor kept to 2040 instead of ending in 2029 |
+| coal sustaining capital charged | s_coalsustain_c6e | R500/kW-yr of sustaining capital on existing coal |
+| the 48-hour coal commitment rule | s_rate48_c6e | the build optimiser's earlier rule: commitment moving at most 1/48 of available coal an hour |
+| coal starts fuelled at spot oil prices | s_spotoil_c6e | start-up fuel priced at spot fuel oil instead of the central assumption |
+| high coal cycling wear | s_wearp75_c6e | start wear costs at the 75th percentile of NREL’s range |
+| Koeberg's winter outages | s_koeberg_winter_c6e | Koeberg on its 2025–26 monthly shape, winter outages repeated, same annual output |
+| Treasury's carbon price path | s_carbontreasury_c6e | allowances cut to none from 2031, then a straight line to USD 120/t in 2050 |
+| 2030 carbon rate held | s_carbonhold_c6e | the 2030 statutory rate held from 2031 instead of the effective rate |
+| IRP 2025's build schedule forced | s_be6_c6e | the optimiser made to build IRP 2025's Table 1 schedule |
+| IRP 2025's nuclear forced | s_be7_c6e | 5.2 GW of nuclear built in 2036–39 as IRP 2025 schedules it |
+| high wind capex | s_windhigh_c6e | onshore wind at disclosed project investment values, about R30,000/kW |
+| low wind capex (dropped) | s_windlow_c6e | wind at the capex BW5's tariff implies; dropped from the 28 October set as it counts wind's finance twice |
+| 24-hour coal down time | s_mindn24_c6e | the 24-hour minimum down time as a sensitivity on the 26 October version (central from 27 October) |
+| 10% planning reserve margin | s_prm10_c6e | the build optimiser holds firm capacity at 1.10 times the peak (off in the central) |
+| coal retiring on IRP 2025's 60-year line | s_coal60_c6e | coal retirement dates from the 60-year line of Figure 3 instead of the 50-year line |
+| solar on BW6's bid capex at 8% | s_pvbw6_c6e | the 27 October version with every technology on construction cost at 8% real |
+| every technology at 5% real | s_disc5_c6e | the 27 October version with every technology on construction cost at 5% real |
+| every technology at IRP 2025's 11.3% | s_discirp_c6e | the 27 October version with every technology at 11.3% |
+| the 12 October version | c4 | the central run set of that date |
+| the 14 October version | c5 | the central run set of that date |
+| the 14 October version (second) | c5b | the central run set of that date |
+| the 14 October version (third) | c5c | the central run set of that date |
+| the 14 October version | c5b_14r | the central run set of that date |
+| the 15 October version | c5d | the central run set of that date |
+| the 16 October version | c5e | the central run set of that date |
+| the 17 October version | c5f | the central run set of that date |
+| the 25 October version | c6 | the central run set of that date |
+| the 26 October version | c6a | the central run set of that date |
+| the 4-hour down-time variant | c6b | the central run set of that date |
+| the 27 October version | c6c | the central run set of that date |
+| the 28 October version | c6e | the central run set of that date |
+
+<!--/fill-->
 
 Version history. The headline set reviewed here is c6e (section 4). It is built in four steps, each in its own reviewed pull request. c6 kept c5f's settings (c5e's, with rooftop at 1,200 MW a year from 2027, Msenge Emoyeni's 69 MW of wind in the base, s_constr2's floors as the committed minimums, and wheeled wind's load added back; RESULTS 'New central c5f') and changed three things (section 1, 'What c6 changes'):
 
