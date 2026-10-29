@@ -17908,7 +17908,10 @@ it. Outputs in the session scratchpad (rescore_page_29a_fossil.json, rescore_pag
   R434.8bn. Identical at K=1 (12 runs, 132.3998), as expected for a fleet with no thermal units to draw outages for: the shedding is
   weather, not outages. Recorded score (PRESET_SCORES, build 2026-10-19e): 2.16 GWh on 240 runs. The page's caption has said nothing
   on unserved energy since build 2026-10-23a (PRESET_SCORE_IMPORTS_END_BUILD): the score predates the central ending Cahora Bassa
-  imports after 2030 (PR B), and the preset's 2040 was searched with those imports in place. Cause to confirm below.
+  imports after 2030 (PR B), and the preset's 2040 was searched with those imports in place. Cause confirmed: the same one-draw
+  rescore on a scratch copy of the page with FIXED.importsEndYear set to 0 (imports to 2040, as when the preset was built; K=1,
+  seed 71830529, 07:10 UTC) sheds 3.40 GWh (cost R441.3bn) against 132.40 with the central's 2030 end; the rest of the gap to its
+  2.72 target is within one draw's noise and the engine changes since 19e.
 - Deep decarbonisation 2035: 1.43 GWh against 2.43, cost R335.3bn; recorded 1.53 on build 2026-10-24b, within the draws' spread.
   At K=1 0.07 GWh.
 
