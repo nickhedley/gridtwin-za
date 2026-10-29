@@ -1532,6 +1532,12 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
   reserve margin in the build LP').
 
 
+- AEMO, 2026 Electricity Statement of Opportunities (ESOO): the NEM reliability standard, expected unserved energy at most 0.002% of
+  demand in a region in a year (pp. 5, 24-25; as reported by the user, 29 Oct 2026, message 489; not read here). The pack measures the
+  c6e central against it as a caveat (mean unserved energy against 0.002% of each year's served energy; packfill.js 'nemover'). Also
+  noted for after the note (TODO 14ks): commissioning delays applied to committed and anticipated projects (p. 23), 24 weather years
+  (p. 23), coal availability declining toward retirement (p. 14).
+
 ## Eskom Distribution, EEBI webinar deck, 14 Oct 2026: rooftop cross-check and cost-to-serve (user, 16 Oct 2026, message 147; record only, no input changed)
 
 Eskom Distribution, 'Time-of-Use Tariffs, Feed-in Tariffs and Smart Metering', EEBI webinar, 14 October 2026, slide 3. Figures

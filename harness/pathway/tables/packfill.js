@@ -12,8 +12,9 @@
 //                        ('Runs', 'Build standing', 'Gas timing', 'Cost of capital cases', 'IRP 2025 build', 'Not run')
 //   RUN.pv / .dpv        engine PV 2026-40, R bn, and its difference from the central
 //   RUN.co2 / .dco2 / .co2_YYYY   CO2 2026-40, Mt, its difference from the central, and one year's CO2
-//   RUN.maxmean / .worst / .ocmax / .verdict / .mean_YYYY / .overown   adequacy (verdict against NTCSA's two criteria;
-//                        overown: the years over the run's own standard, or 'none')
+//   RUN.maxmean / .worst / .ocmax / .verdict / .mean_YYYY / .overown / .nemover   adequacy (verdict against NTCSA's two criteria;
+//                        overown: the years over the run's own standard, or 'none'; nemover: the years over the Australian
+//                        standard, 0.002% of served energy, each with its figures, or 'none')
 //   RUN.wind_YYYY .solar_YYYY .li_YYYY .gas_YYYY .dsl_YYYY .coal_YYYY   GW standing; .gasmw_YYYY new gas on LNG in MW
 //   RUN.curt             curtailed wind and solar 2026-40, TWh
 //   irp*.gap / .cut / .pertonne / .pertonnetax   the IRP build against the optimised plan in the same case: engine PV gap, CO2 cut,
@@ -74,6 +75,9 @@ function value(k){
     case 'ocmax': return nf(100*Math.max(...s.rows.map(x=>x.ocgtCF)),1)+'%';
     case 'mean': { const x=s.rows.find(q=>q.y===y); return x?nf(x.mean,1):null; }
     case 'overown': return s.over.length?span(s.over):'none';
+    // Against the Australian grid's standard (AEMO 2026 ESOO: expected unserved energy at most 0.002% of demand; message 489 (a)):
+    // the years whose mean unserved energy exceeds 0.002% of the run's served energy, each with its figures, GWh.
+    case 'nemover': { const o=s.rows.filter(x=>x.mean>0.00002*x.servedTWh*1e3); return o.length?o.map(x=>`${x.y} (${nf(x.mean,2)} against ${nf(0.00002*x.servedTWh*1e3,2)})`).join(', '):'none'; }
     case 'verdict': { const u=s.rows.filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
       return !u.length&&!o.length?'met':[u.length?`unserved over 20 GWh in ${span(u)}`:'',o.length?`open-cycle over 6% in ${span(o)}`:''].filter(Boolean).join('; '); }
     case 'wind': return nf(at(q=>q.wind)/1e3,1);
