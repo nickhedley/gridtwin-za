@@ -12,7 +12,7 @@ Main findings (every figure is written from the run outputs by the fill script; 
 
 1. Reliability. The least-cost plan <!--fill:base.verdictplain-->…<!--/fill-->. Expected unserved energy peaks at <!--fill:base.maxmean-->…<!--/fill--> GWh a year, against NTCSA's limit of 20 GWh. Against Australia's stricter standard (0.002% of demand), it <!--fill:base.nemplain-->…<!--/fill-->.
 2. Cost and emissions. Over 2026–40 the plan costs <!--fill:base.pvbn-->…<!--/fill--> in present value (annual costs discounted at 8% real) and emits <!--fill:base.co2-->…<!--/fill--> Mt of CO2 in total, falling from <!--fill:base.co2r_2026-->…<!--/fill--> Mt in 2026 to <!--fill:base.co2r_2040-->…<!--/fill--> Mt in 2040.
-3. Against IRP 2025. Built as IRP 2025 sets out, the system costs <!--fill:irp.gapplain-->…<!--/fill--> over 2026–40 and emits <!--fill:irp.cutplain-->…<!--/fill--> CO2. At IRP 2025's own, higher demand forecast, the gap is <!--fill:irp_irpdem.gapbn-->…<!--/fill--> and <!--fill:irp_irpdem.cutmt-->…<!--/fill-->.
+3. Against IRP 2025. Built as IRP 2025 sets out, the system costs <!--fill:irp.gapplain-->…<!--/fill--> over 2026–40 and emits <!--fill:irp.cutplain-->…<!--/fill--> CO2. At IRP 2025's own, higher demand forecast, the gap is <!--fill:irp_irpdem.gapbn-->…<!--/fill--> and <!--fill:irp_irpdem.cutmt-->…<!--/fill-->. Section 4 shows what each plan builds, year by year.
 4. Gas timing. The plan builds no new gas before 2035, following the department's statement of 28 October that the first gas bid window appointed no bidders. Allowing gas from 2032 <!--fill:s_gas2032.dpvplain-->…<!--/fill-->. New gas reaches <!--fill:base.gasgw_2035-->…<!--/fill--> GW by 2035 and <!--fill:base.gasgw_2040-->…<!--/fill--> GW by 2040, and runs <!--fill:base.gascfplain-->…<!--/fill--> of the time: it is built as backup. Turbines ordered now are quoted for delivery around 2031.
 5. IRP 2025's gas minimum. IRP 2025 requires 6 GW of new gas plant to run at least 51% of the time from 2030. Its gas plan, including that minimum, raises the system's cost per unit of electricity by <!--fill:s_irpgas.avgcostpctplain-->…<!--/fill--> over 2030–40 (<!--fill:s_irpgas.dpvabsbn-->…<!--/fill--> in present value). The Minister has said the minimum is meant to secure LNG imports for industrial gas users; all electricity customers would bear the cost. The result includes IRP 2025's larger gas build, so the minimum's effect alone is still to be measured.
 6. Cost of capital. Each technology is financed at its own cost of capital for state-backed projects (<!--fill:page.coc.pv-->…<!--/fill--> real for wind and solar). Using a single 8% rate for every technology, as planning studies usually do, <!--fill:s_cocplan.dpvplain-->…<!--/fill-->. Financing wind, solar and batteries at private-sector rates <!--fill:s_cocprivate.dpvplain-->…<!--/fill-->. Neither moves the gap to IRP 2025 by more than <!--fill:irp.cocgapmax-->…<!--/fill-->.
@@ -415,6 +415,22 @@ Build standing, GW:
 [not yet filled]
 
 <!--/fill-->
+What gets built, year by year: new capacity added each year, MW, from each run's build schedule, with coal standing at the end of the year. Rooftop solar is an input, not a choice: 1,200 MW a year in the least-cost plan and IRP 2025's 900 MW a year to 2035. Columns with nothing built are left out.
+
+The least-cost plan:
+<!--fill:table:What gets built, least-cost plan-->
+
+[not yet filled]
+
+<!--/fill-->
+IRP 2025's build:
+<!--fill:table:What gets built, IRP 2025-->
+
+[not yet filled]
+
+<!--/fill-->
+The least-cost plan's additions are lumpy: <!--fill:base.lumpy-->…<!--/fill-->. Why is left as a point for the reviewer.
+
 Cost of capital cases, each with the IRP build checked at the same rates:
 <!--fill:table:Cost of capital cases-->
 

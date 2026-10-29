@@ -66,6 +66,11 @@
   carries a run code, a script or data filename or 'TODO'. Nick's own cover-note wording replaces the advisor's on Friday morning
   (504 (c)); the markers and the rule stay. Snapshot fill reproduces the advisor's figures except the IRP-gap move across the
   cost-of-capital cases (R3bn from the outputs against the advisor's R4bn); the fill decides.
+- 505: section 4 gains 'What gets built, year by year', two fill tables (packfill 'table:What gets built, least-cost plan' and
+  '…, IRP 2025') of MW added each year by technology from each run's build schedule, total and coal standing, all-zero columns
+  dropped, rooftop noted as an input; one sentence names the lumpy years from the schedule (key 'lumpy', from 2027); the cover note
+  points to it in one line. Nick and the advisor are rewriting the cover note, introduction and section 6 in a Google Doc (plain
+  draft 2), carried into the master Friday morning; tonight only the markers and the sections 1-5 rule are maintained.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 

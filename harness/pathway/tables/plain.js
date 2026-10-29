@@ -53,8 +53,8 @@ const PLAIN = {
   s_discirp:          ["every technology at IRP 2025's 11.3%", 'the 27 October version with every technology at 11.3%'],
 };
 // Versions of the central, by the date of the build each ran on.
-const VERSIONS = { c4:'the 12 October version', c5:'the 14 October version', c5b:'the 14 October version (second)', c5c:'the 14 October version (third)', c5b_14r:'the 14 October version with the 14r engine', c5d:'the 15 October version', c5e:'the 16 October version', c5f:'the 17 October version',
-  c6:'the 25 October version', c6a:'the 26 October version', c6b:'the 27 October version with 4-hour coal down time', c6c:'the 27 October version',
+const VERSIONS = { c4:'the 12 October version', c5:'the 14 October version', c5b:'the 14 October version (second)', c5c:'the 14 October version (third)', c5b_14r:'the 14 October version', c5d:'the 15 October version', c5e:'the 16 October version', c5f:'the 17 October version',
+  c6:'the 25 October version', c6a:'the 26 October version', c6b:'the 4-hour down-time variant', c6c:'the 27 October version',
   c6e:'the 28 October version' };
 // A run name with or without a set suffix, e.g. 's_gas2032_c6e' or 'irp2025_c6e_cocplan', to its plain name.
 function plainName(n){

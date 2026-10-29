@@ -39,6 +39,9 @@
 //                        range of new gas's capacity factor 2035-40 as '5-8%'; .avgcostpctplain '12-16%'; irp*.gapbn 'R368bn', .gapplain
 //                        'R368bn more', .cutmt '8 Mt', .cutplain '8 Mt less'; irp.cocgapmax the larger move of the IRP gap across the
 //                        one-rate and private-rate cases, 'R4bn'; glossary the plain-name table for section 7 (plain.js)
+//   table:What gets built, least-cost plan / table:What gets built, IRP 2025   new capacity added each year by technology, MW, with the
+//                        total and coal standing, from the run's build schedule; all-zero columns dropped (message 505 (a))
+//   RUN.lumpy            the years with no new wind or utility solar and those with almost none (under a tenth of the mean addition)
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -115,6 +118,11 @@ function value(k){
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
+    case 'lumpy': { const out=[]; for (const [k,name] of [['wind','wind'],['pv','utility solar']]){ const ys=Object.keys(s.sched).map(Number).sort().filter(y=>y>=2027);   // 2026 is the year in progress
+        const add=y=>s.sched[y][k]||0; const nz=ys.filter(y=>add(y)>=1); const mean=nz.length?nz.reduce((a,y)=>a+add(y),0)/nz.length:0;
+        const zero=ys.filter(y=>add(y)<1), small=ys.filter(y=>add(y)>=1&&add(y)<0.1*mean);
+        if (zero.length||small.length) out.push((zero.length?`no new ${name} in ${span(zero)}`:`little new ${name}`)+(small.length?` and almost none in ${span(small)}`:'')); }
+      return out.length?out.join('; '):'additions are steady from year to year'; }
     case 'pvbn': return 'R'+nf(s.pv,0)+'bn';
     case 'dpvplain': { if (!b) return null; const d=s.pv-b.pv; return Math.abs(d)<1?'changes the cost by less than R1bn':(d>0?'adds R':'saves R')+nf(Math.abs(d),0)+'bn'; }
     case 'dpvabsbn': return b&&'R'+nf(Math.abs(s.pv-b.pv),0)+'bn';
@@ -192,7 +200,17 @@ function value(k){
   throw new Error(`unknown key ${k}`);
 }
 
-let tables=null; const table=t=>{ if (!tables){ const out=cp.execFileSync('node',[path.join(__dirname,'settables.js'),O,N,C],{encoding:'utf8'}); tables={};
+// What gets built, year by year (message 505 (a)): additions in MW from the run's build schedule, plain column names, all-zero columns dropped.
+const built=run=>{ const s=S(run); if (!s||!s.sched) return null; const ys=Object.keys(s.sched).map(Number).sort(); const g=(y,k)=>(s.sched[y]&&s.sched[y][k])||0;
+  const cols=[['Wind',y=>g(y,'wind')],['Utility solar',y=>g(y,'pv')],['Rooftop solar (input)',y=>g(y,'rooftop')],['Batteries',y=>g(y,'batt')],['Combined-cycle gas',y=>g(y,'ccgt')],
+    ['Open-cycle gas',y=>g(y,'ocgt')],['Open-cycle diesel',y=>g(y,'ocgd')],['Pumped storage',y=>g(y,'phes')+g(y,'phel')],['Offshore wind',y=>g(y,'off')],['Iron-air',y=>g(y,'ironair')],
+    ['Vanadium',y=>g(y,'vrfb')],['Nuclear',y=>(s.nuclearAdd&&s.nuclearAdd[y])||0]].filter(([,f])=>ys.some(y=>f(y)>=0.5));
+  const tot=y=>cols.reduce((a,[,f])=>a+f(y),0);
+  const head=`| Year | ${cols.map(c=>c[0]).join(' | ')} | Total new | Coal standing |`, sep='|'+'---|'.repeat(cols.length+3);
+  const rows=ys.map(y=>`| ${y} | ${cols.map(([,f])=>nf(f(y),0)).join(' | ')} | ${nf(tot(y),0)} | ${nf(g(y,'coalMW'),0)} |`);
+  rows.push(`| 2026–40 | ${cols.map(([,f])=>nf(ys.reduce((a,y)=>a+f(y),0),0)).join(' | ')} | ${nf(ys.reduce((a,y)=>a+tot(y),0),0)} | – |`);
+  return '\n\n'+[head,sep,...rows].join('\n')+'\n\n'; };
+let tables=null; const table=t=>{ if (/^What gets built/.test(t)) return built(/IRP/.test(t)?'irp':'base'); if (!tables){ const out=cp.execFileSync('node',[path.join(__dirname,'settables.js'),O,N,C],{encoding:'utf8'}); tables={};
     for (const b of out.split('\n### ').slice(1)){ const i=b.indexOf('\n'); tables[b.slice(0,i).replace(new RegExp('\\b'+C+'\\b','g'),'').replace(/\s+/g,' ').trim()]=b.slice(i).trim(); } }
   const k=Object.keys(tables).find(h=>h.startsWith(t)); return k?'\n\n'+tables[k]+'\n\n':null; };
 
