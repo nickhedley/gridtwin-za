@@ -17844,6 +17844,51 @@ off-peak check), so node checks 974/996. New: validate_bids 7/7. validate_stored
 its first preset without them; message 478: the stored panels were rewritten after that fix, as the fingerprint covers the page's
 inline scripts).
 
+### Presets on c6e, build 2026-10-29b: the four run-based presets regenerated from the c6e pair, states matching their engine checks to the key; the live page's preset figures sit about 0.3% above the checks because the checks scale the rooftop add-back to the twelve-year mean and the page does not (user, 29 Oct 2026, messages 483 (b) and 486 (b); branch claude/site-text)
+
+Generator (harness/pathway/gen_pathway_presets.py) pointed at harness/pathway/c6e (PR #128, runs on f7921b7, build 2026-10-28a):
+Least-cost path 2035 from pathway_c6e.json and pathcheck_c6e_b.json; IRP path 2035 and the two 2030 presets from
+pathway_irp2025_c6e.json with pathcheck_irp2025_c6e_b.json and _a.json; the two demand-gap constants from the pair's own run
+files (gap_run pathway_c6e_irpdem.json): IRP2035_DEMAND_GAP_PCT -4.79 and IRP2030_DEMAND_GAP_PCT -6.53 (the IRP's own forecast
+sits below the model's demand, so the captions read 'IRP plans 4.8% less' and '6.5% less'). `--check` matches. The generated
+identifiers keep the C5F_ names (message 486 (b)); the block's comment says whose figures they are.
+
+Presets as generated, GW: Least-cost path 2035 wind 22.6, utility solar 22.7, rooftop 11.8, batteries 11.3 (5.1 hours), CCGT
+0.55, open-cycle gas 0.65, no diesel peakers, nuclear or pumped storage; IRP path 2035 wind 21.0, solar 17.5, rooftop 8.1,
+batteries 4.7 (5.6 hours), CCGT 9.4, open-cycle 1.3; IRP's 2030 targets wind 7.3, solar 10.3, rooftop 3.6, batteries 1.9 (3.0
+hours), CCGT 6.0 at the 51% floor; coal standing 25,916 MW in 2035 and 32,433 in 2030 in both. Captions from the generator's
+templates (PRESETS_C6E_CAPTIONS.md): each states unserved energy against NTCSA's 20 GWh from PRESET_SCORES.
+
+validate_pathway_presets.js pointed at the same files (41 checks, 812 s). First run against the old c5f and irp2025 check
+files: 26/40, the states differing on every generated key, as expected. Against the c6e files: every state key matches (41, 37
+and 41 keys, 0 differ), unserved energy within tolerance, and system cost 0.18-0.33% above the check in all three presets
+(IRP's 2030 targets R281.987bn against R281.132bn; Least-cost path 2035 R261.794 against R260.944; IRP path 2035 R308.882
+against R308.323). Cause: the pathway runs record roofAddback12 (K 0.8895, pathway/roof12.js, messages 391 (b) and 392 (c)),
+which pathcheck.js applies before every check (demand less rooftopMW x derate x S x (1 - K), about 1.7 TWh a year); the page
+does not apply it. The validator now applies the recorded scaling once before the checks, as pathcheck.js does, and asserts
+every run records the page's K: 41/41. The live page's preset figures (the captions' unserved energy from PRESET_SCORES, and the
+cost and CO2 a visitor sees) therefore sit about 0.3% above the run's check until the exact fix lands (TODO, after the note).
+
+Audit on the regenerated page, first suite: 86/88. (1) The 'IRP preset generated from the IRP engine check' item searched for
+the BEGIN marker with the irp2025 path, which the marker no longer carries; the check now reads the marker up to the folder.
+(2) 'No shouted emphasis in user-facing strings' read a span between the apostrophe of "c5e's" and the quote opening 'LCOE
+anchors on reference parameters' in the LCOE-anchor comment (the class recorded under 'Site text on build 2026-10-29a', third
+suite); the comment is reworded without a possessive before the reference. Audit on the reworded page: 88/88 (standalone). The
+reword changes the inline script, so the stored panels were rewritten again and the suite rerun on the final page (next
+paragraph).
+
+First suite, build 2026-10-29b, 29 Oct 2026 18:03-19:52 UTC, branch claude/site-text at 3fdba0f (the validator with the roof12
+scaling in place when the suite reached it), ESK19679.csv present, nothing running beside it, stored panels rewritten first
+(fingerprint 102875a3379486): node checks 998/1007, audit 86/88, eng5 5/6. Against the branch's third suite on 29a (RESULTS 'Site
+text on build 2026-10-29a', 985/1006, 88/88, 5/6), every script equal by count and failure name except validate_pathway_presets
+27/40 to 41/41 (the 13 c5f-era failures cleared; one check added) and audit 88/88 to 86/88 (the two items above). Against main
+(28a: 974/996, 88/88, 5/6), the same plus the 29a text changes recorded in that entry. Failing by name: validate_findings 37/40
+(the three of main); validate_response 86/87 (baseline, 35 cells); validate_consistency 82/83 (high-season off-peak);
+validate_benchmarks 28/30 (Ember CO2, peakerSeasonRatio); validate_outputs 49/51 (curtailment at defaults, the coal-curtailment
+anchor); eng5 storage vs unserved. All known (RESULTS 'Known failures').
+
+Second suite, on the reworded page with the panels rewritten again: to follow in this entry.
+
 ### Site text on build 2026-10-29a: the 2025 wind note subtracted today's Eskom wind line, not 2025's; the rest is wording (user, 28 Oct 2026, messages 470, 471 and 473; branch claude/site-text, no PR yet)
 
 Wind, validation panel, '2025, as modelled' against Ember: the note printed "-243 MW of privately wheeled wind". The preset's
