@@ -75,11 +75,13 @@ def block(cfg):
     # lithium decline and the LNG terminal): the imports end year (c6's central ends the Cahora Bassa contract after 2030, PR B) and
     # the cost-of-capital case (build 2026-10-28a). The run must equal the page, read here from index.html, or the preset would run
     # on another basis than its run; validate_pathway_presets.js checks the same equality on the generated preset.
+    # Enforced only where the run records the setting: files from before PR B (c5f) and before build 2026-10-28a carry neither,
+    # and validate_pathway_presets.js reports those presets against the page as it does now.
     pg = page_defaults()
-    if (P.get('importsEndYear') or 0) != pg['importsEndYear']:
-        raise SystemExit(cfg['name'] + f": the run's imports end year {P.get('importsEndYear')} is not the page's {pg['importsEndYear']}")
-    if (P.get('cocCase') or 'central') != pg['bldCocCase']:
-        raise SystemExit(cfg['name'] + f": the run's cost-of-capital case {P.get('cocCase')} is not the page's {pg['bldCocCase']}")
+    if P.get('importsEndYear') is not None and P['importsEndYear'] != pg['importsEndYear']:
+        raise SystemExit(cfg['name'] + f": the run's imports end year {P['importsEndYear']} is not the page's {pg['importsEndYear']}")
+    if P.get('cocCase') is not None and P['cocCase'] != pg['bldCocCase']:
+        raise SystemExit(cfg['name'] + f": the run's cost-of-capital case {P['cocCase']} is not the page's {pg['bldCocCase']}")
     f = {'scenarioYear': Y,
          'newWindMW': cum('wind'), 'newPvMW': cum('pv'), 'newRooftopMW': cum('rooftop'), 'newBattMW': batt,
          'newBattHours': max(1, min(20, mwh / batt)) if batt > 0 else 4, 'newVrfbMW': cum('vrfb'), 'newIronAirMW': cum('ironair'),
@@ -136,16 +138,26 @@ def c5f_demand():
 
 
 html = open('index.html').read(); new = html
+
+
+def replace_block(text, begin, end, blk):
+    # A generated block is found by the start of its BEGIN marker up to '(' (its name), not by the whole marker: the marker records the
+    # build file's path, which changes when the central changes (c5f to c6e, 29 Oct 2026). Returns the new text, or None if absent.
+    pre = begin.split('(')[0]
+    if pre not in text: return None
+    a = text.index(pre); b = text.index(end, a) + len(end); return text[:a] + blk + text[b:]
+
+
 DB, DE, dblk = c5f_demand()
-if DB in new:
-    a = new.index(DB); b = new.index(DE, a) + len(DE); new = new[:a] + dblk + new[b:]
+if replace_block(new, DB, DE, dblk) is not None:
+    new = replace_block(new, DB, DE, dblk)
 else:
     if new.count('const PRESETS={') != 1: raise SystemExit('PRESETS not found once')
     new = new.replace('const PRESETS={', dblk + '\nconst PRESETS={', 1)
 for cfg in PRESETS:
     BEGIN, END, blk, f, coal = block(cfg); Y = cfg.get('year', 2035)
-    if BEGIN in new:
-        a = new.index(BEGIN); b = new.index(END, a) + len(END); new = new[:a] + blk + new[b:]
+    if replace_block(new, BEGIN, END, blk) is not None:
+        new = replace_block(new, BEGIN, END, blk)
     elif 'first_from' in cfg:
         if new.count(cfg['first_from']) != 1 or new.count(cfg['first_to']) != 1: raise SystemExit(cfg['name'] + ': the hand-written preset was not found once')
         a = new.index(cfg['first_from']); b = new.index(cfg['first_to'], a) + len(cfg['first_to']); new = new[:a] + cfg['preamble'] + blk + '\n' + new[b:]
@@ -159,8 +171,8 @@ for cfg in PRESETS:
         GB30 = "// BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
         GE30 = "// END GENERATED IRP's 2030 targets demand gap"
         g30blk = f"{GB30}\nconst IRP2030_DEMAND_GAP_PCT = {j(g30)};   // the IRP's demand path above the pathway's in 2030, customer demand plus firm exports\n{GE30}"
-        if GB30 in new:
-            a = new.index(GB30); b = new.index(GE30, a) + len(GE30); new = new[:a] + g30blk + new[b:]
+        if replace_block(new, GB30, GE30, g30blk) is not None:
+            new = replace_block(new, GB30, GE30, g30blk)
         else:
             anchor = "const _gw = mw => String(+(mw / 1000).toFixed(1));"
             if new.count(anchor) != 1: raise SystemExit('caption anchor not found once')
@@ -169,8 +181,8 @@ for cfg in PRESETS:
         GB = "// BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/index_irpdem.json; do not edit by hand)"
         GE = "// END GENERATED 'IRP path 2035' demand gap"
         gblk = f"{GB}\nconst IRP2035_DEMAND_GAP_PCT = {j(gap)};   // Table 1's demand path above the pathway's in 2035, customer demand plus firm exports\n{GE}"
-        if GB in new:
-            a = new.index(GB); b = new.index(GE, a) + len(GE); new = new[:a] + gblk + new[b:]
+        if replace_block(new, GB, GE, gblk) is not None:
+            new = replace_block(new, GB, GE, gblk)
         else:
             anchor = "const _gw = mw => String(+(mw / 1000).toFixed(1));"
             if new.count(anchor) != 1: raise SystemExit('caption anchor not found once')
