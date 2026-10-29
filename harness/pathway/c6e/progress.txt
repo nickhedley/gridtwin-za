@@ -1,0 +1,511 @@
+2026-10-28T21:10Z chain start, PID 284, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+21:10 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+21:10 start c6e () MAXP=6 TL=7200; free 30G
+21:18 end c6e rc=0 done adequate 455s
+21:25 check c6e done; free 30G
+21:25 start s_irpgas_c6e (GAS_FIRST=2032 GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1 GASFLOOR=1 GASFLOOR_VINT=2029-2030 TCAP_YR=2029:4000,2030:4000) MAXP=3 TL=7200; free 30G
+21:25 start s_be6_c6e (STOR_CUM=2026:144,2027:294,2028:909,2029:3524,2030:3724,2031:3924,2032:4124,2033:4324,2034:4524,2035:4724,2036:5224,2037:5724,2038:6224,2039:6724,2040:7224) MAXP=3 TL=7200; free 30G
+21:33 end s_be6_c6e rc=0 done adequate 441s
+21:40 check s_be6_c6e done; free 30G
+21:46 end s_irpgas_c6e rc=0 done adequate 1241s
+22:16 check s_irpgas_c6e done; free 30G
+22:16 start c6e_irpdem (DEMAND=index:/home/user/gridtwin-za/harness/pathway/irp2025/index_irp2025fig2_c6.json) MAXP=3 TL=7200; free 30G
+22:16 start s_be7_c6e (NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350) MAXP=3 TL=7200; free 30G
+22:24 end c6e_irpdem rc=0 done adequate 441s
+22:24 end s_be7_c6e rc=0 done adequate 474s
+22:35 check c6e_irpdem done; free 30G
+22:35 check s_be7_c6e done; free 30G
+gap {'wind': 0, 'solar_pv': 0} totals {'wind': 36041, 'pv': 25513, 'rooftop': 8100, 'batt': 7224, 'battMWh': 35431, 'ccgt': 14452, 'ocgt': 2798, 'phes': 1332} nuclear 5200
+coal 2026/2030/2035/2040 [39692, 32433, 25916, 17890] cw 1580
+irpdem file /home/user/gridtwin-za/harness/out/c6e/irp/pathway_irp2025_c6e_irpdem.json demand 2030/2040 1.0247242611702387 1.3957809542772832 against c6 1.101384 1.458896
+23:07 timeout stop (tracked job), not counted: no solve running; IRP pair checks interrupted and rerun
+2026-10-28T23:07Z chain start, PID 1914, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+23:07 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+23:07 check c6e done; free 30G
+23:07 check s_irpgas_c6e done; free 30G
+23:07 check s_be6_c6e done; free 30G
+23:07 check s_be7_c6e done; free 30G
+23:07 check c6e_irpdem done; free 30G
+23:27 container restart: booted 23:26 UTC, previous reply ended about 23:17 UTC; no solve running (IRP pair checks interrupted and rerun)
+2026-10-28T23:27Z chain start, PID 268, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+23:27 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+23:27 check c6e done; free 30G
+23:27 check s_irpgas_c6e done; free 30G
+23:27 check s_be6_c6e done; free 30G
+23:27 check c6e_irpdem done; free 30G
+23:27 check s_be7_c6e done; free 30G
+23:57 IRP pair check irp2025_c6e: 3/3 groups
+23:57 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+23:57 IRP PAIR CHECKS DONE
+23:57 start s_gas2032_c6e (GAS_FIRST=2032) MAXP=3 TL=7200; free 30G
+23:57 start s_gas2035_nodsl_c6e (OCGD=0) MAXP=3 TL=7200; free 30G
+00:05 end s_gas2035_nodsl_c6e rc=0 done adequate 428s
+00:07 end s_gas2032_c6e rc=0 done adequate 546s
+00:14 check s_gas2035_nodsl_c6e done; free 30G
+00:16 check s_gas2032_c6e done; free 30G
+00:16 GAS TIMING DONE
+00:16 start s_cochigh_c6e (COC=high) MAXP=3 TL=7200; free 30G
+00:16 start s_cocplan_c6e (COC=planning) MAXP=3 TL=7200; free 30G
+00:24 end s_cochigh_c6e rc=0 done adequate 459s
+00:24 end s_cocplan_c6e rc=0 done adequate 473s
+00:38 check s_cocplan_c6e done; free 30G
+00:40 check s_cochigh_c6e done; free 30G
+00:40 start s_coclow_c6e (COC=low) MAXP=3 TL=7200; free 30G
+00:40 start s_cocprivate_c6e (COC=private) MAXP=3 TL=7200; free 30G
+00:47 end s_coclow_c6e rc=0 done adequate 447s
+00:48 end s_cocprivate_c6e rc=0 done adequate 456s
+00:58 check s_coclow_c6e done; free 30G
+01:02 check s_cocprivate_c6e done; free 30G
+01:24 timeout stop (tracked job), not counted: no solve running; IRP cost-of-capital checks interrupted and rerun
+2026-10-29T01:24Z chain start, PID 2121, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+01:24 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+01:24 check c6e done; free 30G
+01:24 check s_be6_c6e done; free 30G
+01:24 check s_irpgas_c6e done; free 30G
+01:24 check s_be7_c6e done; free 30G
+01:24 check c6e_irpdem done; free 30G
+01:24 IRP pair check irp2025_c6e: 3/3 groups
+01:24 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+01:24 IRP PAIR CHECKS DONE
+01:24 check s_gas2035_nodsl_c6e done; free 30G
+01:24 check s_gas2032_c6e done; free 30G
+01:24 GAS TIMING DONE
+01:24 check s_cocplan_c6e done; free 30G
+01:24 check s_cochigh_c6e done; free 30G
+01:24 check s_cocprivate_c6e done; free 30G
+01:24 check s_coclow_c6e done; free 30G
+01:53 IRP pair check irp2025_c6e_cochigh: 3/3 groups
+01:53 IRP pair check irp2025_c6e_cocplan: 3/3 groups
+02:30 IRP pair check irp2025_c6e_coclow: 3/3 groups
+02:30 IRP pair check irp2025_c6e_cocprivate: 3/3 groups
+02:30 COST OF CAPITAL CASES DONE
+02:30 start s_windhigh_c6e (WIND_CASE=high) MAXP=3 TL=7200; free 30G
+02:38 end s_windhigh_c6e rc=0 done adequate 461s
+02:48 check s_windhigh_c6e done; free 30G
+03:17 IRP pair check irp2025_c6e_windhigh: 3/3 groups
+03:17 WIND CASES DONE
+03:17 start s_carbontreasury_c6e (CARBON_PATH=treasury) MAXP=3 TL=7200; free 30G
+03:17 start s_carbonhold_c6e (CARBON_PATH=law2031) MAXP=3 TL=7200; free 30G
+03:20 timeout stop, not counted: s_carbontreasury_c6e and s_carbonhold_c6e (started 03:17, mid-piece; attempt counters set back so the relaunch counts as their first attempt, message 437 (b))
+2026-10-29T03:20Z chain start, PID 3710, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+03:20 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+03:20 check c6e done; free 30G
+03:20 check s_be6_c6e done; free 30G
+03:20 check s_irpgas_c6e done; free 30G
+03:20 check s_be7_c6e done; free 30G
+03:20 check c6e_irpdem done; free 30G
+03:20 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+03:20 IRP pair check irp2025_c6e: 3/3 groups
+03:20 IRP PAIR CHECKS DONE
+03:20 check s_gas2032_c6e done; free 30G
+03:20 check s_gas2035_nodsl_c6e done; free 30G
+03:20 GAS TIMING DONE
+03:20 check s_cochigh_c6e done; free 30G
+03:20 check s_cocplan_c6e done; free 30G
+03:20 check s_cocprivate_c6e done; free 30G
+03:20 check s_coclow_c6e done; free 30G
+03:20 IRP pair check irp2025_c6e_cochigh: 3/3 groups
+03:20 IRP pair check irp2025_c6e_cocplan: 3/3 groups
+03:20 IRP pair check irp2025_c6e_coclow: 3/3 groups
+03:20 IRP pair check irp2025_c6e_cocprivate: 3/3 groups
+03:20 COST OF CAPITAL CASES DONE
+03:20 check s_windhigh_c6e done; free 30G
+03:20 IRP pair check irp2025_c6e_windhigh: 3/3 groups
+03:20 WIND CASES DONE
+03:20 start s_carbonhold_c6e (CARBON_PATH=law2031) MAXP=3 TL=7200; free 30G
+03:20 start s_carbontreasury_c6e (CARBON_PATH=treasury) MAXP=3 TL=7200; free 30G
+03:25 end s_carbontreasury_c6e rc=0 done adequate 254s
+03:28 end s_carbonhold_c6e rc=0 done adequate 428s
+03:35 check s_carbontreasury_c6e done; free 30G
+03:37 check s_carbonhold_c6e done; free 30G
+04:13 IRP pair check irp2025_c6e_carbontreasury: 3/3 groups
+04:14 IRP pair check irp2025_c6e_carbonhold: 3/3 groups
+04:14 CARBON CASES DONE
+04:50 IRP pair nuclear check irp2025_c6e, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+04:51 IRP pair nuclear check irp2025_c6e_irpdem, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+05:17 timeout stop (tracked job), not counted: no solve running; IRP nuclear 60-year life checks interrupted and rerun
+2026-10-29T05:17Z chain start, PID 5440, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+05:17 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+05:17 check c6e done; free 30G
+05:17 check s_irpgas_c6e done; free 30G
+05:17 check s_be6_c6e done; free 30G
+05:17 check s_be7_c6e done; free 30G
+05:17 check c6e_irpdem done; free 30G
+05:17 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+05:17 IRP pair check irp2025_c6e: 3/3 groups
+05:17 IRP PAIR CHECKS DONE
+05:17 check s_gas2032_c6e done; free 30G
+05:17 check s_gas2035_nodsl_c6e done; free 30G
+05:17 GAS TIMING DONE
+05:17 check s_cochigh_c6e done; free 30G
+05:17 check s_cocplan_c6e done; free 30G
+05:17 check s_coclow_c6e done; free 30G
+05:17 check s_cocprivate_c6e done; free 30G
+05:17 IRP pair check irp2025_c6e_cocplan: 3/3 groups
+05:17 IRP pair check irp2025_c6e_cochigh: 3/3 groups
+05:17 IRP pair check irp2025_c6e_cocprivate: 3/3 groups
+05:17 IRP pair check irp2025_c6e_coclow: 3/3 groups
+05:17 COST OF CAPITAL CASES DONE
+05:17 check s_windhigh_c6e done; free 30G
+05:17 IRP pair check irp2025_c6e_windhigh: 3/3 groups
+05:17 WIND CASES DONE
+05:17 check s_carbonhold_c6e done; free 30G
+05:17 check s_carbontreasury_c6e done; free 30G
+05:17 IRP pair check irp2025_c6e_carbontreasury: 3/3 groups
+05:17 IRP pair check irp2025_c6e_carbonhold: 3/3 groups
+05:17 CARBON CASES DONE
+05:17 IRP pair nuclear check irp2025_c6e, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+05:17 IRP pair nuclear check irp2025_c6e_irpdem, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+05:49 IRP pair nuclear check irp2025_c6e, nuclife60 (NUC_LIFE=60): 3/3 groups
+05:50 IRP pair nuclear check irp2025_c6e_irpdem, nuclife60 (NUC_LIFE=60): 3/3 groups
+05:50 start s_gascapex25_c6e (GAS_CAPEX=43706) MAXP=3 TL=7200; free 30G
+05:50 start null_c6e () MAXP=3 TL=7200; free 30G
+05:58 end null_c6e rc=0 done adequate 476s
+05:58 end s_gascapex25_c6e rc=0 done adequate 499s
+06:09 check null_c6e done; free 30G
+06:09 check s_gascapex25_c6e done; free 30G
+06:09 start s_imp_c6e (IMP_END=2040) MAXP=3 TL=7200; free 30G
+06:09 start s_gas2030_c6e (GAS_FIRST=2030) MAXP=3 TL=7200; free 30G
+06:18 end s_imp_c6e rc=0 done adequate 514s
+06:20 end s_gas2030_c6e rc=0 done adequate 599s
+06:29 check s_imp_c6e done; free 30G
+06:31 check s_gas2030_c6e done; free 30G
+06:31 start s_demlowm1_c6e (DEMAND=rate:-1) MAXP=3 TL=7200; free 30G
+06:31 start s_demlowflat_c6e (DEMAND=rate:0) MAXP=3 TL=7200; free 30G
+06:40 end s_demlowm1_c6e rc=0 done adequate 551s
+06:40 end s_demlowflat_c6e rc=0 done adequate 566s
+06:52 check s_demlowm1_c6e done; free 30G
+06:52 check s_demlowflat_c6e done; free 30G
+06:52 start s_coalpractice_c6e (COAL_STATE='{"coalMslDesignFromYear":2041}') MAXP=3 TL=7200; free 30G
+07:00 end s_coalpractice_c6e rc=0 done adequate 480s
+07:08 check s_coalpractice_c6e done; free 30G
+07:08 start s_spotoil_c6e (COAL_STATE='{"coalStartFuel":"spot"}') MAXP=3 TL=7200; free 30G
+07:08 start s_rate48_c6e (COAL_STATE='{"bldCoalCommitHours":48}') MAXP=3 TL=7200; free 30G
+07:14 timeout stop, not counted: s_spotoil_c6e and s_rate48_c6e (started 07:08, mid-piece; attempt counters reset to 0, message 437 (b))
+2026-10-29T07:14Z chain start, PID 7667, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+07:14 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+07:14 check c6e done; free 30G
+07:14 check s_irpgas_c6e done; free 30G
+07:14 check s_be6_c6e done; free 30G
+07:14 check s_be7_c6e done; free 30G
+07:14 check c6e_irpdem done; free 30G
+07:14 IRP pair check irp2025_c6e: 3/3 groups
+07:14 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+07:14 IRP PAIR CHECKS DONE
+07:14 check s_gas2032_c6e done; free 30G
+07:14 check s_gas2035_nodsl_c6e done; free 30G
+07:14 GAS TIMING DONE
+07:14 check s_cochigh_c6e done; free 30G
+07:14 check s_cocplan_c6e done; free 30G
+07:14 check s_cocprivate_c6e done; free 30G
+07:14 check s_coclow_c6e done; free 30G
+07:14 IRP pair check irp2025_c6e_cocplan: 3/3 groups
+07:14 IRP pair check irp2025_c6e_cochigh: 3/3 groups
+07:14 IRP pair check irp2025_c6e_cocprivate: 3/3 groups
+07:14 IRP pair check irp2025_c6e_coclow: 3/3 groups
+07:14 COST OF CAPITAL CASES DONE
+07:14 check s_windhigh_c6e done; free 30G
+07:14 IRP pair check irp2025_c6e_windhigh: 3/3 groups
+07:14 WIND CASES DONE
+07:14 check s_carbonhold_c6e done; free 30G
+07:14 check s_carbontreasury_c6e done; free 30G
+07:14 IRP pair check irp2025_c6e_carbontreasury: 3/3 groups
+07:14 IRP pair check irp2025_c6e_carbonhold: 3/3 groups
+07:14 CARBON CASES DONE
+07:14 IRP pair nuclear check irp2025_c6e, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+07:14 IRP pair nuclear check irp2025_c6e_irpdem, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+07:14 IRP pair nuclear check irp2025_c6e, nuclife60 (NUC_LIFE=60): 3/3 groups
+07:14 IRP pair nuclear check irp2025_c6e_irpdem, nuclife60 (NUC_LIFE=60): 3/3 groups
+07:14 check null_c6e done; free 30G
+07:14 check s_gascapex25_c6e done; free 30G
+07:14 check s_gas2030_c6e done; free 30G
+07:14 check s_imp_c6e done; free 30G
+07:14 check s_demlowflat_c6e done; free 30G
+07:14 check s_demlowm1_c6e done; free 30G
+07:14 check s_coalpractice_c6e done; free 30G
+07:14 start s_spotoil_c6e (COAL_STATE='{"coalStartFuel":"spot"}') MAXP=3 TL=7200; free 30G
+07:14 start s_rate48_c6e (COAL_STATE='{"bldCoalCommitHours":48}') MAXP=3 TL=7200; free 30G
+07:19 end s_rate48_c6e rc=0 done adequate 289s
+07:19 end s_spotoil_c6e rc=0 done adequate 290s
+07:33 check s_spotoil_c6e done; free 30G
+07:33 check s_rate48_c6e done; free 30G
+07:33 start s_wearp75_c6e (COAL_STATE='{"coalStartWear":"p75"}') MAXP=3 TL=7200; free 30G
+07:33 start s_koeberg_winter_c6e (NUC_SHAPE='[1.4859869721690109,1.3233883976907597,1.0703906157535057,0.8662924051076811,0.6634941830646963,0.6625941909550381,0.6646941725442406,0.6101946503482708,0.7746932081691338,0.7827931371560578,1.544486459296795,1.5773861708609676]') MAXP=3 TL=7200; free 30G
+07:42 end s_wearp75_c6e rc=0 done adequate 535s
+07:42 end s_koeberg_winter_c6e rc=0 done adequate 544s
+07:54 check s_wearp75_c6e done; free 30G
+07:55 check s_koeberg_winter_c6e done; free 30G
+07:55 start s_nogas_dsl_c6e (GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 30G
+07:55 start s_ntcsa_both_c6e (OC_CF_MAX=0.06) MAXP=3 TL=7200; free 30G
+08:03 end s_nogas_dsl_c6e rc=0 done adequate 470s
+08:04 end s_ntcsa_both_c6e rc=0 done adequate 506s
+08:16 check s_ntcsa_both_c6e done; free 30G
+08:16 check s_nogas_dsl_c6e done; free 30G
+08:16 start s_std_strict_c6e (STD=strict) MAXP=3 TL=7200; free 30G
+08:16 start s_std_nem_c6e (STD=nem) MAXP=3 TL=7200; free 30G
+08:45 end s_std_nem_c6e rc=0 done pass limit reached 1752s
+08:48 end s_std_strict_c6e rc=0 done pass limit reached 1931s
+09:11 timeout stop (tracked job), not counted: no solve running; engine checks of s_std_strict_c6e and s_std_nem_c6e interrupted and rerun
+2026-10-29T09:11Z chain start, PID 9651, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+09:11 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+09:11 check c6e done; free 30G
+09:11 check s_be6_c6e done; free 30G
+09:11 check s_irpgas_c6e done; free 30G
+09:11 check s_be7_c6e done; free 30G
+09:11 check c6e_irpdem done; free 30G
+09:11 IRP pair check irp2025_c6e: 3/3 groups
+09:11 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+09:11 IRP PAIR CHECKS DONE
+09:11 check s_gas2032_c6e done; free 30G
+09:11 check s_gas2035_nodsl_c6e done; free 30G
+09:11 GAS TIMING DONE
+09:11 check s_cochigh_c6e done; free 30G
+09:11 check s_cocplan_c6e done; free 30G
+09:11 check s_coclow_c6e done; free 30G
+09:11 check s_cocprivate_c6e done; free 30G
+09:11 IRP pair check irp2025_c6e_cocplan: 3/3 groups
+09:11 IRP pair check irp2025_c6e_cochigh: 3/3 groups
+09:11 IRP pair check irp2025_c6e_cocprivate: 3/3 groups
+09:11 IRP pair check irp2025_c6e_coclow: 3/3 groups
+09:11 COST OF CAPITAL CASES DONE
+09:11 check s_windhigh_c6e done; free 30G
+09:11 IRP pair check irp2025_c6e_windhigh: 3/3 groups
+09:11 WIND CASES DONE
+09:11 check s_carbontreasury_c6e done; free 30G
+09:11 check s_carbonhold_c6e done; free 30G
+09:11 IRP pair check irp2025_c6e_carbonhold: 3/3 groups
+09:11 IRP pair check irp2025_c6e_carbontreasury: 3/3 groups
+09:11 CARBON CASES DONE
+09:11 IRP pair nuclear check irp2025_c6e_irpdem, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+09:11 IRP pair nuclear check irp2025_c6e, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+09:11 IRP pair nuclear check irp2025_c6e_irpdem, nuclife60 (NUC_LIFE=60): 3/3 groups
+09:11 IRP pair nuclear check irp2025_c6e, nuclife60 (NUC_LIFE=60): 3/3 groups
+09:11 check null_c6e done; free 30G
+09:11 check s_gascapex25_c6e done; free 30G
+09:11 check s_imp_c6e done; free 30G
+09:11 check s_gas2030_c6e done; free 30G
+09:11 check s_demlowm1_c6e done; free 30G
+09:11 check s_demlowflat_c6e done; free 30G
+09:11 check s_coalpractice_c6e done; free 30G
+09:11 check s_spotoil_c6e done; free 30G
+09:11 check s_rate48_c6e done; free 30G
+09:11 check s_koeberg_winter_c6e done; free 30G
+09:11 check s_wearp75_c6e done; free 30G
+09:11 check s_nogas_dsl_c6e done; free 30G
+09:11 check s_ntcsa_both_c6e done; free 30G
+09:36 check s_std_strict_c6e done; free 30G
+09:36 check s_std_nem_c6e done; free 30G
+09:36 start s_coalsustain_c6e (COAL_FOM_ADD=500) MAXP=3 TL=7200; free 30G
+09:45 end s_coalsustain_c6e rc=0 done adequate 528s
+09:54 check s_coalsustain_c6e done; free 30G
+09:54 SHORT RUNS DONE
+09:54 start s_nogas_c6e (GAS_CAP=0 OCGD=0) MAXP=3 TL=7200; free 30G
+09:54 start s_std_strict_nogas_dsl_c6e (STD=strict GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 30G
+10:36 end s_nogas_c6e rc=0 done pass limit reached 2507s
+10:51 check s_nogas_c6e done; free 30G
+10:59 end s_std_strict_nogas_dsl_c6e rc=0 done pass limit reached 3897s
+11:08 timeout stop (tracked job), not counted: no solve running; engine check of s_std_strict_nogas_dsl_c6e interrupted and rerun
+2026-10-29T11:08Z chain start, PID 11394, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+11:08 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+11:08 check c6e done; free 30G
+11:08 check s_irpgas_c6e done; free 30G
+11:08 check s_be6_c6e done; free 30G
+11:08 check s_be7_c6e done; free 30G
+11:08 check c6e_irpdem done; free 30G
+11:08 IRP pair check irp2025_c6e: 3/3 groups
+11:08 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+11:08 IRP PAIR CHECKS DONE
+11:08 check s_gas2035_nodsl_c6e done; free 30G
+11:08 check s_gas2032_c6e done; free 30G
+11:08 GAS TIMING DONE
+11:08 check s_cocplan_c6e done; free 30G
+11:08 check s_cochigh_c6e done; free 30G
+11:08 check s_cocprivate_c6e done; free 30G
+11:08 check s_coclow_c6e done; free 30G
+11:08 IRP pair check irp2025_c6e_cochigh: 3/3 groups
+11:08 IRP pair check irp2025_c6e_cocplan: 3/3 groups
+11:08 IRP pair check irp2025_c6e_cocprivate: 3/3 groups
+11:08 IRP pair check irp2025_c6e_coclow: 3/3 groups
+11:08 COST OF CAPITAL CASES DONE
+11:08 check s_windhigh_c6e done; free 30G
+11:08 IRP pair check irp2025_c6e_windhigh: 3/3 groups
+11:08 WIND CASES DONE
+11:08 check s_carbontreasury_c6e done; free 30G
+11:08 check s_carbonhold_c6e done; free 30G
+11:08 IRP pair check irp2025_c6e_carbonhold: 3/3 groups
+11:08 IRP pair check irp2025_c6e_carbontreasury: 3/3 groups
+11:08 CARBON CASES DONE
+11:08 IRP pair nuclear check irp2025_c6e, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+11:08 IRP pair nuclear check irp2025_c6e_irpdem, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+11:08 IRP pair nuclear check irp2025_c6e, nuclife60 (NUC_LIFE=60): 3/3 groups
+11:08 IRP pair nuclear check irp2025_c6e_irpdem, nuclife60 (NUC_LIFE=60): 3/3 groups
+11:08 check s_gascapex25_c6e done; free 30G
+11:08 check null_c6e done; free 30G
+11:08 check s_imp_c6e done; free 30G
+11:08 check s_gas2030_c6e done; free 30G
+11:08 check s_demlowm1_c6e done; free 30G
+11:08 check s_demlowflat_c6e done; free 30G
+11:08 check s_coalpractice_c6e done; free 30G
+11:08 check s_rate48_c6e done; free 30G
+11:08 check s_spotoil_c6e done; free 30G
+11:08 check s_koeberg_winter_c6e done; free 30G
+11:08 check s_wearp75_c6e done; free 30G
+11:08 check s_ntcsa_both_c6e done; free 30G
+11:08 check s_nogas_dsl_c6e done; free 30G
+11:08 check s_std_nem_c6e done; free 30G
+11:08 check s_std_strict_c6e done; free 30G
+11:08 check s_coalsustain_c6e done; free 30G
+11:08 SHORT RUNS DONE
+11:08 check s_nogas_c6e done; free 30G
+11:38 check s_std_strict_nogas_dsl_c6e done; free 30G
+11:38 start s_std_nem_nogas_dsl_c6e (STD=nem GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 30G
+12:11 end s_std_nem_nogas_dsl_c6e rc=0 done pass limit reached 1969s
+12:42 check s_std_nem_nogas_dsl_c6e done; free 30G
+12:42 STANDARDS DONE
+ok, counter inserted before line 147
+12:47 restart count c6e exit 0
+12:52 restart count s_gas2032_c6e exit 0
+12:56 restart count s_gas2035_nodsl_c6e exit 0
+13:01 restart count null_c6e exit 0
+13:05 timeout stop (tracked job), not counted: no solve running; restart count in progress interrupted and rerun
+2026-10-29T13:05Z chain start, PID 12988, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+13:05 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+13:05 check c6e done; free 30G
+13:05 check s_be6_c6e done; free 30G
+13:05 check s_irpgas_c6e done; free 30G
+13:05 check s_be7_c6e done; free 30G
+13:05 check c6e_irpdem done; free 30G
+13:05 IRP pair check irp2025_c6e: 3/3 groups
+13:05 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+13:05 IRP PAIR CHECKS DONE
+13:05 check s_gas2035_nodsl_c6e done; free 30G
+13:05 check s_gas2032_c6e done; free 30G
+13:05 GAS TIMING DONE
+13:05 check s_cocplan_c6e done; free 30G
+13:05 check s_cochigh_c6e done; free 30G
+13:05 check s_coclow_c6e done; free 30G
+13:05 check s_cocprivate_c6e done; free 30G
+13:05 IRP pair check irp2025_c6e_cocplan: 3/3 groups
+13:05 IRP pair check irp2025_c6e_cochigh: 3/3 groups
+13:05 IRP pair check irp2025_c6e_cocprivate: 3/3 groups
+13:05 IRP pair check irp2025_c6e_coclow: 3/3 groups
+13:05 COST OF CAPITAL CASES DONE
+13:05 check s_windhigh_c6e done; free 30G
+13:05 IRP pair check irp2025_c6e_windhigh: 3/3 groups
+13:05 WIND CASES DONE
+13:05 check s_carbontreasury_c6e done; free 30G
+13:05 check s_carbonhold_c6e done; free 30G
+13:05 IRP pair check irp2025_c6e_carbontreasury: 3/3 groups
+13:05 IRP pair check irp2025_c6e_carbonhold: 3/3 groups
+13:05 CARBON CASES DONE
+13:05 IRP pair nuclear check irp2025_c6e_irpdem, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+13:05 IRP pair nuclear check irp2025_c6e, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+13:05 IRP pair nuclear check irp2025_c6e, nuclife60 (NUC_LIFE=60): 3/3 groups
+13:05 IRP pair nuclear check irp2025_c6e_irpdem, nuclife60 (NUC_LIFE=60): 3/3 groups
+13:05 check s_gascapex25_c6e done; free 30G
+13:05 check null_c6e done; free 30G
+13:05 check s_gas2030_c6e done; free 30G
+13:05 check s_imp_c6e done; free 30G
+13:05 check s_demlowm1_c6e done; free 30G
+13:05 check s_demlowflat_c6e done; free 30G
+13:05 check s_coalpractice_c6e done; free 30G
+13:05 check s_rate48_c6e done; free 30G
+13:05 check s_spotoil_c6e done; free 30G
+13:05 check s_koeberg_winter_c6e done; free 30G
+13:05 check s_wearp75_c6e done; free 30G
+13:05 check s_nogas_dsl_c6e done; free 30G
+13:05 check s_ntcsa_both_c6e done; free 30G
+13:05 check s_std_strict_c6e done; free 30G
+13:05 check s_std_nem_c6e done; free 30G
+13:05 check s_coalsustain_c6e done; free 30G
+13:05 SHORT RUNS DONE
+13:05 check s_nogas_c6e done; free 30G
+13:05 check s_std_strict_nogas_dsl_c6e done; free 30G
+13:05 check s_std_nem_nogas_dsl_c6e done; free 30G
+13:05 STANDARDS DONE
+ok, counter inserted before line 147
+13:10 restart count s_nogas_c6e exit 0
+13:14 restart count s_gascapex25_c6e exit 0
+13:19 restart count s_gas2030_c6e exit 0
+13:23 restart count s_imp_c6e exit 0
+13:29 restart count s_demlowflat_c6e exit 0
+13:34 restart count s_demlowm1_c6e exit 0
+13:39 restart count c6e_irpdem exit 0
+13:43 restart count s_coalpractice_c6e exit 0
+13:49 restart count s_rate48_c6e exit 0
+13:54 restart count s_spotoil_c6e exit 0
+13:59 restart count s_wearp75_c6e exit 0
+14:04 restart count s_be6_c6e exit 0
+14:08 restart count s_be7_c6e exit 0
+14:23 restart count s_irpgas_c6e exit 0
+14:28 restart count s_koeberg_winter_c6e exit 0
+14:33 restart count s_ntcsa_both_c6e exit 0
+14:38 restart count s_nogas_dsl_c6e exit 0
+14:43 restart count s_std_strict_c6e exit 0
+14:48 restart count s_std_strict_nogas_dsl_c6e exit 0
+14:53 restart count s_std_nem_c6e exit 0
+14:58 restart count s_std_nem_nogas_dsl_c6e exit 0
+15:02 timeout stop (tracked job), not counted: no solve running; restart count in progress interrupted and rerun
+2026-10-29T15:02Z chain start, PID 14638, on f7921b7 Cost of capital by technology (build 2026-10-28a); c6e chain w, BUILD_STAMP = '2026-10-28a
+15:02 c6e chain (re)start on f7921b7 Cost of capital by technology (build 2026-10-28a); c
+15:02 check c6e done; free 30G
+15:02 check s_irpgas_c6e done; free 30G
+15:02 check s_be6_c6e done; free 30G
+15:02 check c6e_irpdem done; free 30G
+15:02 check s_be7_c6e done; free 30G
+15:02 IRP pair check irp2025_c6e: 3/3 groups
+15:02 IRP pair check irp2025_c6e_irpdem: 3/3 groups
+15:02 IRP PAIR CHECKS DONE
+15:02 check s_gas2035_nodsl_c6e done; free 30G
+15:02 check s_gas2032_c6e done; free 30G
+15:02 GAS TIMING DONE
+15:02 check s_cocplan_c6e done; free 30G
+15:02 check s_cochigh_c6e done; free 30G
+15:02 check s_coclow_c6e done; free 30G
+15:02 check s_cocprivate_c6e done; free 30G
+15:02 IRP pair check irp2025_c6e_cocplan: 3/3 groups
+15:02 IRP pair check irp2025_c6e_cochigh: 3/3 groups
+15:02 IRP pair check irp2025_c6e_cocprivate: 3/3 groups
+15:02 IRP pair check irp2025_c6e_coclow: 3/3 groups
+15:02 COST OF CAPITAL CASES DONE
+15:02 check s_windhigh_c6e done; free 30G
+15:02 IRP pair check irp2025_c6e_windhigh: 3/3 groups
+15:02 WIND CASES DONE
+15:02 check s_carbonhold_c6e done; free 30G
+15:02 check s_carbontreasury_c6e done; free 30G
+15:02 IRP pair check irp2025_c6e_carbontreasury: 3/3 groups
+15:02 IRP pair check irp2025_c6e_carbonhold: 3/3 groups
+15:02 CARBON CASES DONE
+15:02 IRP pair nuclear check irp2025_c6e_irpdem, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+15:02 IRP pair nuclear check irp2025_c6e, nuc12000 (NUC_CAPEX_USD=12000): 3/3 groups
+15:02 IRP pair nuclear check irp2025_c6e_irpdem, nuclife60 (NUC_LIFE=60): 3/3 groups
+15:02 IRP pair nuclear check irp2025_c6e, nuclife60 (NUC_LIFE=60): 3/3 groups
+15:02 check null_c6e done; free 30G
+15:02 check s_gascapex25_c6e done; free 30G
+15:02 check s_gas2030_c6e done; free 30G
+15:02 check s_imp_c6e done; free 30G
+15:02 check s_demlowflat_c6e done; free 30G
+15:02 check s_demlowm1_c6e done; free 30G
+15:02 check s_coalpractice_c6e done; free 30G
+15:02 check s_rate48_c6e done; free 30G
+15:02 check s_spotoil_c6e done; free 30G
+15:02 check s_wearp75_c6e done; free 30G
+15:02 check s_koeberg_winter_c6e done; free 30G
+15:02 check s_nogas_dsl_c6e done; free 30G
+15:02 check s_ntcsa_both_c6e done; free 30G
+15:02 check s_std_strict_c6e done; free 30G
+15:02 check s_std_nem_c6e done; free 30G
+15:02 check s_coalsustain_c6e done; free 30G
+15:02 SHORT RUNS DONE
+15:02 check s_nogas_c6e done; free 30G
+15:02 check s_std_strict_nogas_dsl_c6e done; free 30G
+15:02 check s_std_nem_nogas_dsl_c6e done; free 30G
+15:02 STANDARDS DONE
+ok, counter inserted before line 147
+15:06 restart count s_carbontreasury_c6e exit 0
+15:12 restart count s_carbonhold_c6e exit 0
+15:16 restart count s_coalsustain_c6e exit 0
+15:32 restart count irp2025_c6e exit 0
+15:49 restart count irp2025_c6e_irpdem exit 0
+15:49 C6E SET DONE
+16:23 IRP pair check irp2025_c6e_coalsustain (coalFomAdd from s_coalsustain_c6e): 3/3 groups
