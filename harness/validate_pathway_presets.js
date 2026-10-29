@@ -3,9 +3,9 @@
  * validate_pathway_presets.js: the generated pathway presets against the runs they were generated from (user, 19 Oct 2026,
  * messages 213, 227 (2) and 232 (2)).
  *
- *   'Least-cost path 2035'  c5f's pathway (harness/pathway/c5f/pathway_c5f.json) and its engine check for 2031-35
- *   'IRP path 2035'         IRP 2025's Table 1 build on c5f's inputs (harness/pathway/irp2025/pathway_irp2025.json) and its check
- *   "IRP's 2030 targets"    the same build file's 2030 state and its engine check for 2026-30 (pathcheck_irp2025_a.json)
+ *   'Least-cost path 2035'  the central run's pathway (c6e from 29 Oct 2026: harness/pathway/c6e/pathway_c6e.json, PR #128; c5f before) and its engine check for 2031-35
+ *   'IRP path 2035'         IRP 2025's Table 1 build on the central run's inputs (harness/pathway/c6e/pathway_irp2025_c6e.json) and its check
+ *   "IRP's 2030 targets"    the same build file's 2030 state and its engine check for 2026-30 (pathcheck_irp2025_c6e_a.json)
  *   "..., grid delayed"     a variant with no run of its own: the 2030 state with a share of its new wind and solar held back
  *
  * The blocks are written into index.html by harness/pathway/gen_pathway_presets.py. For each preset with a run this script
@@ -29,9 +29,9 @@ const ROOT = process.argv[2] || 'testroot';
 const COST_TOL_PCT = 0.01, UNS_TOL_PCT_TARGET = 1;
 const SEED_BASE = 71830529;   // pathcheck.js's default, with which both engine checks ran
 const RUNS = [
-  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/irp2025/pathway_irp2025.json', check: 'harness/pathway/irp2025/pathcheck_irp2025_a.json' },
-  { name: 'Least-cost path 2035', build: 'harness/pathway/c5f/pathway_c5f.json', check: 'harness/pathway/c5f/pathcheck_c5f_b.json' },
-  { name: 'IRP path 2035', build: 'harness/pathway/irp2025/pathway_irp2025.json', check: 'harness/pathway/irp2025/pathcheck_irp2025_b.json' },
+  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_a.json' },
+  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_b.json' },
+  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_b.json' },
 ];
 
 let npass = 0, nfail = 0; const fails = [];
@@ -80,7 +80,7 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
       .map(([k, v]) => `${k} page ${JSON.stringify(st(k))}, check ${JSON.stringify(v)}`);
     check(`${NAME}: the page state is the engine check's ${Y} state`, off.length === 0, off.join('; '));
     check(`${NAME}: the run recorded no setting the preset cannot carry`,
-          (P.importsEndYear ?? 0) === +w.eval('FIXED.importsEndYear') && !P.gasFinPremium && !P.comply && P.gas.fuelRFlat == null);
+          (P.importsEndYear ?? 0) === +w.eval('FIXED.importsEndYear') && (P.cocCase ?? w.eval('FIXED.bldCocCase')) === w.eval('FIXED.bldCocCase') && !P.gasFinPremium && !P.comply && P.gas.fuelRFlat == null);   // the cost-of-capital case from build 2026-10-28a, as the generator's guard
     // The page's coal settings are the run's (PR C, build 2026-10-24a): a run recorded before PR C carries none and ran on COAL_PRE_C.
     const coalOff = JSON.parse(w.eval(`(function(){ const R = ${JSON.stringify(P.coal || null)} || COAL_PRE_C;
       return JSON.stringify(Object.keys(COAL_PRE_C).filter(k => JSON.stringify(state[k] ?? FIXED[k]) !== JSON.stringify(R[k])).map(k => k + ' page ' + JSON.stringify(state[k] ?? FIXED[k]) + ', run ' + JSON.stringify(R[k]))); })()`));
@@ -109,7 +109,7 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
     console.log(`  unserved   page ${r.mean.toFixed(4)} GWh   check ${ROW.mean.toFixed(4)} GWh   target ${ROW.target.toFixed(4)} GWh`);
     console.log(`  cost       page R${r.cost.toFixed(3)}bn   check R${ROW.cost.toFixed(3)}bn (${dPct.toFixed(4)}%)`);
     console.log(`  CO2        page ${r.co2.toFixed(3)} Mt   check ${ROW.co2.toFixed(3)} Mt`);
-    console.log(`  grid cost  page R${r.gridCost.toFixed(3)}bn   check R${ROW.gridCost.toFixed(3)}bn (the check's on build 2026-10-17g, before M11's fix)`);
+    console.log(`  grid cost  page R${r.gridCost.toFixed(3)}bn   check R${ROW.gridCost.toFixed(3)}bn (grid cost is informational: the check's build may predate M11's fix)`);
   }
   // The grid-delayed variant (message 232 (2)): the 2030 preset's state with a share of its new wind and solar held back and
   // its own curtailment cap; nothing else differs.
