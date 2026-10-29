@@ -53,7 +53,7 @@ j = lambda v: json.dumps(v)
 import re
 def page_defaults():
     h = open('index.html').read()
-    m1 = re.search(r"^\s*importsEndYear:(\d+),", h, re.M); m2 = re.search(r"^bldCocCase:'([a-z]+)'", h, re.M)
+    m1 = re.search(r"^\s*importsEndYear:(\d+),", h, re.M); m2 = re.search(r"^\s*bldCocCase:'([a-z]+)',", h, re.M)
     if not (m1 and m2): raise SystemExit('page defaults not found once (importsEndYear, bldCocCase)')
     return {'importsEndYear': int(m1.group(1)), 'bldCocCase': m2.group(1)}
 
