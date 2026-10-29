@@ -17896,3 +17896,21 @@ against 22/22). Per script: lint 3/3, structure 27/27, geo 43/43, capacity 36/36
 invariants 176/176, response 86/87, weather 68/68, lp 57/57, consistency 82/83 (off-peak, known), benchmarks 28/30, external 8/8,
 solve 9/9, outputs 49/51, pathway_presets 27/40 (the presets built on c5f's runs; c6e's presets PR), public_text 32/32, stored
 panels 86/86 with no 'not used' line, links 48/48, worker 38/38, bids 7/7.
+
+### Fossil-free 2040 sheds 132.4 GWh a year on build 2026-10-29a, against its 2.72 GWh design target and NTCSA's 20 GWh; Deep decarbonisation 2035 1.43 GWh, within its 2.43 (29 Oct 2026, messages 485 (c) and 486; branch claude/site-text)
+
+Settings. harness/ext/preset_rescore.js from harness/ of claude/site-text at 87d9c7c (build 2026-10-29a; engine as 28a), VARIANTS=page
+(the preset as the page runs it), K=20 independent outage draws x twelve weather years (240 runs), seeds 71830529 (Fossil-free 2040,
+as its recorded score) and 120000017 (Deep decarbonisation 2035, as its recorded score), 29 Oct 2026, 06:58-07:02 UTC, nothing beside
+it. Outputs in the session scratchpad (rescore_page_29a_fossil.json, rescore_page_29a_deep.json); gen_preset_scores.py reads them.
+
+- Fossil-free 2040: mean unserved energy 132.40 GWh a year, target 2.72 (half the NEM's 0.002% of customer demand); system cost
+  R434.8bn. Identical at K=1 (12 runs, 132.3998), as expected for a fleet with no thermal units to draw outages for: the shedding is
+  weather, not outages. Recorded score (PRESET_SCORES, build 2026-10-19e): 2.16 GWh on 240 runs. The page's caption has said nothing
+  on unserved energy since build 2026-10-23a (PRESET_SCORE_IMPORTS_END_BUILD): the score predates the central ending Cahora Bassa
+  imports after 2030 (PR B), and the preset's 2040 was searched with those imports in place. Cause to confirm below.
+- Deep decarbonisation 2035: 1.43 GWh against 2.43, cost R335.3bn; recorded 1.53 on build 2026-10-24b, within the draws' spread.
+  At K=1 0.07 GWh.
+
+Decision pending (user): whether the Fossil-free 2040 caption states the miss, stays silent as now, or the preset is re-searched
+(after the note under the scope freeze, message 481 (c)). TODO 14kq.
