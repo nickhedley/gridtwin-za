@@ -99,6 +99,16 @@ the presets built on c5f's runs, are expected to clear; any that stays is traced
   its SOURCES entry or TODO 14cw), and 'no wholesale market' at about lines 15758, 16784 and 16859 (SAWEM wording, as the visible
   text now has). Each replaced by the source now in SOURCES or a TODO number.
 
+## Done on 29 Oct 2026 evening (claude/site-text, build 2026-10-29b)
+
+- Generator pointed at harness/pathway/c6e (PR #128 merged as 5857f03) and run; `--check` matches; the demand-gap constants are
+  signed (-4.79% for 2035, -6.53% for 2030), so the IRP captions read 'IRP plans X% less'.
+- validate_pathway_presets.js pointed at the c6e files and made to apply the runs' recorded rooftop add-back scaling (roof12) before
+  the checks, as pathcheck.js does: 41/41. The live page runs the presets without that scaling, about 1.7 TWh a year more load, so
+  its preset figures sit about 0.3% above the checks until the exact fix (RESULTS 'Presets on c6e, build 2026-10-29b').
+- Option A for the LCOE anchor notes (done 29 Oct, above). Stored panels rewritten; suite run; a comment reworded for the audit's
+  shouting check and the panels and suite rerun on the final page; the presets PR follows with the visible-text diff.
+
 ## Open
 
 - Option A or B for the LCOE anchor notes (above).

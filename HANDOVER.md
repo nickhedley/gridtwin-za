@@ -95,6 +95,10 @@
   forbids; a new tool is TODO 14ky). The run session runs s_nogas_maxp6_c6e, then s_nogas_maxp10_c6e if six passes still fall
   short; 'nogasbest' takes the first of those two that meets the standard, in that order, and while neither is in prints 'A rerun
   with a higher pass limit follows.' The half-hourly check from 02:00 SAST watches main for either file.
+- Presets on c6e (29 Oct evening, claude/site-text, build 2026-10-29b): generator and validator on the c6e files; states match the
+  checks to the key; the checks' rooftop add-back scaling (roof12, K 0.8895) explains the 0.3% cost gap to the live page; audit
+  items (marker path; a quoted span carrying RESULTS) fixed; panels rewritten twice; suite rerun on the final page before the PR
+  (RESULTS 'Presets on c6e, build 2026-10-29b'; PRESETS_C6E_CAPTIONS.md 'Done on 29 Oct 2026 evening').
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
