@@ -431,6 +431,12 @@ generation; batteries 8.0% of evening-peak supply against gas's 5.1%: a benchmar
 solar curtailment 6.7% and wind 2.5% (network), solar offloading 5.9%: benchmarks for the curtailment band. Source: AEMO,
 Quarterly Energy Dynamics Q3 2026, pp. 4, 26, 35-37 (to SOURCES with the work).
 
+14ks. AEMO 2026 ESOO practice to test after the send (user, 29 Oct 2026, message 489 (b)): (i) a commissioning-delay sensitivity,
+AEMO delaying committed projects six months and anticipated ones to the later of a year or July 2028 (ESOO p. 23), applied to the
+committed floors and the near-term build; (ii) more weather years, AEMO using 24 against the model's twelve (p. 23); (iii) coal
+availability declining toward retirement (p. 14), against the model's flat coal-only EAF. Source: AEMO, 2026 Electricity Statement
+of Opportunities (SOURCES 'Adequacy criteria').
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
