@@ -42,6 +42,9 @@
   snapshot, filled from the merged outputs. 499: 495's wording applies to every run that stopped at the pass limit (s_nogas, the
   two no-gas standard runs, the cover note's no-gas line included): packfill 'status' gives 'the optimiser reached its pass limit;
   the engine check gives ...' with the years over the run's own standard; never 'infeasible' or 'cannot be met'.
+- 500: sections 5 and 6 keep c6c's no-gas lines as the engine check measured them on that plan. c6e at 32 of 33 runs at 13:32
+  SAST (only s_std_nem_nogas_dsl and the restart counts left); the session checks main for the merged c6e outputs every 30
+  minutes from 15:30 SAST and starts the fill as soon as they are there.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
