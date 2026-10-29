@@ -1,0 +1,4 @@
+c6e: adequate PV R2314.7bn (grid R2323.1bn) CO2 2030/35/40 140.0/90.5/67.5 cum 1739 Mt | unserved max mean 5.46 worst run 174.0 GWh, target 20.0-20.0, over: none | ocgtCF max 1.9% over6: none
+   2030 GW: wind 7.2 pv 8.2 roof 5.8 li 3.7 (3.0h) ccgt 0.00 ocgt-gas 0.00 ocgt-dsl 0.00 fe 0.0 vrfb 0.0 phes 0.0 off 0.0 coal 32.4
+   2035 GW: wind 22.6 pv 22.7 roof 11.8 li 11.3 (5.1h) ccgt 0.55 ocgt-gas 0.65 ocgt-dsl 0.00 fe 0.0 vrfb 0.0 phes 0.0 off 0.0 coal 25.9
+   2040 GW: wind 31.4 pv 33.8 roof 17.8 li 15.2 (6.2h) ccgt 6.07 ocgt-gas 1.13 ocgt-dsl 0.15 fe 0.0 vrfb 0.0 phes 0.0 off 0.0 coal 17.9
