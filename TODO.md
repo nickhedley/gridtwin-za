@@ -417,6 +417,12 @@ page quotes 1.1-3.5% in three ordinary weeks and 26% in the 2040 stress week, me
 rules and the 24-hour down time; the page now dates the figures by that build. Several hours; after the note if the presets PR is
 short of time.
 
+14kq. Fossil-free 2040 fails the adequacy standard on the current page (29 Oct 2026; RESULTS 'Fossil-free 2040 sheds 132.4 GWh'):
+132.4 GWh a year against its 2.72 GWh design target and NTCSA's 20 GWh, on 240 runs; its recorded score (2.16, build 19e) predates
+the central ending imports after 2030. You: the caption for Friday (state the miss, or stay silent as the build-date guard does
+now). After the note: re-search the preset on the current page (harness/ext/preset_search.js, no coal, DRAWS=1 and a confirm set),
+rescore, gen_preset_scores.py; the 2045 horizon question (message 471) with it.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
