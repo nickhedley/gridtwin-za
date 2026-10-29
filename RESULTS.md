@@ -17917,3 +17917,21 @@ it. Outputs in the session scratchpad (rescore_page_29a_fossil.json, rescore_pag
 
 Decision pending (user): whether the Fossil-free 2040 caption states the miss, stays silent as now, or the preset is re-searched
 (after the note under the scope freeze, message 481 (c)). TODO 14kq.
+
+### LCOE anchor notes on c6e's 2030: lithium 254.6 full cycles a year, the diesel fleet 1.32%, new wind 40.56% (user, 29 Oct 2026, message 487 (2); branch claude/site-text, page constants LCP_2030_*)
+
+Settings. harness/pathcheck.js with LCOE=1 (added 29 Oct 2026: per run it records lithium discharge, lithium energy in service,
+diesel output and fleet, wind output and the new and existing fleets' uncurtailed potentials; r.lcoe on the row; inert otherwise),
+LNG=1 GRID=1 K=20 YEARS=2030, on claude/c6e-snapshot's pathway_c6e.json (8ee155e; the central run on f7921b7, build 2026-10-28a),
+29 Oct 2026, 07:36-07:43 UTC, beside the Fossil-free 2040 preset search. Output harness/ext/lcoe_c6e_2030_k20.json; the three
+constants written by harness/ext/gen_lcoe_anchors.py (block 'GENERATED LCP_2030'), with --check. To confirm tonight: the merged
+outputs PR's pathway_c6e.json is identical to the snapshot's; if not, rerun (message 487 (2)).
+
+2030 row, 240 runs, mean unserved 1.05 GWh: lithium 2.969 TWh discharged from 11,662 MWh in service (3,730 MW new at 3.05 hours
+plus the 292 MWh existing), 254.58 full cycles a year (c5f's 2030: 102.69 on 16,011 MWh; c6e carries less lithium energy in 2030
+and cycles it more); the diesel fleet 0.392 TWh from 3,400 MW, 1.317% (c5f 2.70%); new wind 25.75 TWh from 7,246 MW, 40.564%
+(c5f 41.71%). New-wind output is the engine's wind output split pro rata between the new fleet's uncurtailed potential on its
+profile (the modern twin, the run's correction, capped at 1 per unit: 26.98 TWh) and the existing fleet's on the national profile
+(15.15 TWh): 40.21 TWh x 26.98 / 42.13; the engine reports wind as one fleet, so the split is a definition, stated in pathcheck.js.
+New wind to 2030 is 7,246 MW in both c5f and c6e: both build at the binding caps and committed floors to 2030, which are the same
+in the two sets. Lithium cycles and the diesel factor depend on the outage draws (one draw gave 252.1 and 1.18%); new wind does not.

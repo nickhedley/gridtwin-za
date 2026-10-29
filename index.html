@@ -10672,15 +10672,17 @@ FIXED.lcoePv = Math.round(bldLcoeAnchor(_pvAnchorKey(), 'pv', 'pv', NEW_PVTRK_CF
 //    Cost of Energy+, June 2025, Appendix A, LCOE v18.0 key assumptions, p.37; read 18 Oct 2026, message 199 (1)). An international
 //    gas-peaker reference, not a South African diesel figure. On new open-cycle's central capex (bldOcgtCentralCost) and fixed
 //    O&M, plus fuel, variable O&M and carbon at the compliance rate, as the CCGT readout (dieselSrmcR).
-// The least-cost pathway's 2030 engine check is held for the slider notes only (user, 19 Oct 2026, message 236 (1); c5e's until
-// build 2026-10-19d): c5f (pathway_c5f.json, build 2026-10-17g), its hooked 2026-30 check, twelve weather years x 20 draws:
-// lithium 102.688 full cycles a year (1.644 TWh from 16,011 MWh: 15,719 new and 292 existing), the diesel fleet 2.7045%
-// (0.805 TWh from 3,400 MW), new wind 41.707% (26.47 TWh from 7,246 MW). The same method gives c5e's 81.141, 2.8529% and 41.740%
-// (RESULTS 'LCOE anchors on reference parameters', which has c5e's run-based costs). Vanadium flow, iron-air,
+// The least-cost pathway's 2030 engine check is held for the slider notes only (user, 19 Oct 2026, message 236 (1)): the central
+// run's hooked 2030 check (harness/pathcheck.js LCOE=1, twelve weather years x 20 draws), written below by
+// harness/ext/gen_lcoe_anchors.py from its output file, never typed (message 487 (2); c5f's figures, 102.688 cycles, 2.7045% and
+// 41.707%, and c5e's before them are in RESULTS 'LCOE anchors on reference parameters' and 'Message 236'). Vanadium flow, iron-air,
 // nuclear, CSP, new coal and pumped storage stay typed (messages 159 (2) and 191 (6)). Each anchor is rounded to its slider's step.
 // FIXED_PV_CF_12Y re-measured 26 Oct 2026 with the tracking figure above: 0.22398 to 0.22361.
 const FIXED_PV_CF_12Y = 0.22361, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
-const LCP_2030_LI_CYCLES = 102.688, LCP_2030_DSL_CF = 0.027045, LCP_2030_WIND_CF = 0.41707;
+// BEGIN GENERATED LCP_2030 (harness/ext/gen_lcoe_anchors.py from harness/ext/lcoe_c6e_2030_k20.json; do not edit by hand)
+// c6e (harness/pathway/c6e/pathway_c6e.json, build 2026-10-28a), 2030 row, 240 runs (twelve weather years x 20 draws): lithium 2.969 TWh discharged from 11,662 MWh; diesel 0.392 TWh from 3,400 MW; new wind 25.75 TWh from 7,246 MW.
+const LCP_2030_LI_CYCLES = 254.582, LCP_2030_DSL_CF = 0.013174, LCP_2030_WIND_CF = 0.40564;
+// END GENERATED LCP_2030
 function bldLcoeAt(capex, fom, life, mwhPerKwYr, tech){
   return (bldAnnuity(capex, life, tech) + fom) / mwhPerKwYr;   // R/MWh, at the technology's cost of capital (message 468)
 }
