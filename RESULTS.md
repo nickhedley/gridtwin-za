@@ -18449,3 +18449,42 @@ the preset's comment block carries the top-up and the rejected iron-air version)
 to the digit; harness/ext/rescore_page_29a_fossil_topped.json) and written to PRESET_SCORES by gen_preset_scores.py. The caption
 reads 'Unserved 2.55 GWh/yr, within NTCSA's 20 GWh.' The preset remains built to c5f's demand for 2040 (C5F_DEMAND); the full
 re-search on c6e's basis and the 2045 horizon question stay after the note (TODO 14kq).
+
+### Site tidy on build 2026-10-30a: the page scales the rooftop add-back to the twelve-year mean itself (K 0.8895, 202.79 to 201.25 TWh a year); preset scores Deep decarbonisation 2035 1.20 GWh (was 1.43) and Fossil-free 2040 1.40 (was 2.55), both within their design targets; comment capitals and two slider notes (user, 30 Oct 2026, message 518; TODO 14jf, 391 (b); branch claude/site-tidy)
+
+(a) Code comments (message 487 (3)): 2,584 emphasis capitals in 867 distinct forms lower-cased in index.html's comments only;
+acronyms, identifiers, file names and the GENERATED markers kept; ESKOM, EMBER, SOUTH AFRICAN, months and places title-cased.
+Visible text unchanged by the sweep (diff_public_text.js, 0 sentences). audit.py's 'PRICING RUN' search follows the comment it
+looks for ('pricing run'). (b) Site copy (messages 377, 378): the carbon capture panel's note states the default and its basis
+('Off by default: no South African coal plant captures CO2 today.'), without the old instruction to tick a box; the unit-commitment
+note ends with the practice floor and its years from the page's constants (FIXED.coalMslPracticeFloor 71.5% until 2029,
+coalMslDesignFromYear 2030) in place of 'This is why coal cannot drop far enough at midday ...'.
+
+(c) The rooftop add-back (message 391 (b), TODO 14jf): the page now applies the pathway runs' scaling in its own twelve-weather-year
+runs. FIXED.bldRoof12 (1) and twelveYearDemand(): demand - rooftopMW x rooftopDerate x solar x (1 - K), K = FIXED_PV_CF_12Y over
+the mean of the 2025 solar profile = 0.8894755082046188, the same K roof12.js records in the runs. Annual demand 202.79 to 201.25
+TWh on the default profile. Used by the adequacy test (bldAdequacyTest), the weather panel and the preset checks
+(weatherProfileFactory); PROFILES.demand itself is unchanged. Guards against double scaling: roof12.js marks the demand it scales
+(PROFILES.roof12Applied) and twelveYearDemand() then returns it as is; pathway_perfail.js without ROOF12=1, and pathcheck.js for a
+run that recorded no roofAddback12, switch bldRoof12 off. validate_pathway_presets.js no longer scales the demand itself: it
+asserts the page's switch is on and that the runs' K equals roofTwelveYearK(), and checks the presets on twelveYearDemand(); 41/41,
+the presets matching their engine checks without the validator's own scaling (the 0.3% gap of RESULTS 'Presets on c6e, build
+2026-10-29b' closed). Not scaled, after the note: the page's own build optimiser (its representative days and stress-window
+ranking read PROFILES.demand).
+
+Preset scores (harness/ext/preset_rescore.js, VARIANTS=page K=20, twelve weather years x 20 draws, 240 runs; the same seeds as 29a's;
+30 Oct 2026, about 10:15-11:06 UTC): Deep decarbonisation 2035 SEED=120000017, 1.2015 GWh against 2.4086 (29a: 1.4314 against
+2.4281), cost R334.9bn, CO2 22.8 Mt; Fossil-free 2040 SEED=71830529, 1.3951 against 2.7012 (29a: 2.5527 against 2.7236), cost
+R451.8bn. Files harness/ext/rescore_page_30a_deep.json and _fossil.json; written to PRESET_SCORES by gen_preset_scores.py (--check
+matches); the captions read 'Unserved 1.20 GWh/yr' and 'Unserved 1.40 GWh/yr, within NTCSA's 20 GWh.' Caveat: Fossil-free 2040's
+seed is the one its top-up was confirmed on (as 29a's score), not an independent set.
+
+Stored panels rewritten first (fingerprint 1177c449aa6038, 9/9 while writing). Visible text against main (27f2c4e, diff_public_text.js):
+10 sentences added or changed and 6 removed, all from (b) and the two preset captions.
+
+Suite on build 2026-10-30a (branch claude/site-tidy at c895ee5, ESK19679.csv present, nothing running beside it after the first
+minutes, 30 Oct 2026 about 11:33-13:23 UTC): node checks 998/1007, audit 88/88, eng5 5/6. Equal to main's suite on 29b (RESULTS
+'Presets on c6e, build 2026-10-29b', second suite: 998/1007, 88/88, 5/6) by count in every script and by failure name: validate_findings
+37/40, validate_response 86/87, validate_consistency 82/83 (high-season off-peak), validate_benchmarks 28/30, validate_outputs 49/51,
+eng5 storage vs unserved; validate_external 8/8 (EDMSA Scenario A CO2 2035 117.0 against 124 Mt). All known (RESULTS 'Known
+failures').
