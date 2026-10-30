@@ -8052,7 +8052,7 @@ not reach the retail panel; it now reads bldCostEntry, as the optimiser and the 
 the central capex, R1.118 on BW6's. The pathway records the 2026 wind and solar capex it used (capex2026), and the engine check
 records its own in every row and stops if they differ.
 
-### New central inputs (messages 125 (1)-(2) and 126 (2)-(4), build 2026-10-15e): wind and tracking solar capex calibrated to awarded tariffs at 8% real (wind R17,773/kW from BW5, the low end of the evidence; solar R11,755/kW from the MW-weighted mean of all 18 BW7 awards), new wind uncorrected (42.5%), the optimiser's days matched to the twelve-year wind and solar, and the spur double count removed; BW7's wind bid prices are not published
+### New central inputs (build 2026-10-15e; messages 125 (1)-(2) and 126 (2)-(4)): wind and tracking solar capex calibrated to awarded tariffs at 8% real (wind R17,773/kW from BW5, the low end of the evidence; solar R11,755/kW from the MW-weighted mean of all 18 BW7 awards), new wind uncorrected (42.5%), the optimiser's days matched to the twelve-year wind and solar, and the spur double count removed; BW7's wind bid prices are not published
 
 | Input | Before (c5b_14r) | Now | Source and assumptions |
 |---|---|---|---|
@@ -16918,7 +16918,7 @@ base), not faster growth: like for like, it does not hold. ESRG's Mode 1 total m
 reading error but not the stated 255 TWh in 2030 (268.6), so it is not shown to be IRP 2025's forecast restated. The pair's IRP
 path waits for IRP 2025's demand table (page) from the user, before Monday's runs.
 
-### c6 PR C, message 369 (a)-(e): forced-outage cost of a start, reserve limited by coal's ramp, start-up time, the floor recalibrated to 0.75 (user, 24 Oct 2026, message 369; branch claude/c6-coal at 07dff8b, build 2026-10-24a)
+### c6 PR C, coal rules: forced-outage cost of a start, reserve limited by coal's ramp, start-up time, the floor recalibrated to 0.75 (user, 24 Oct 2026, message 369; branch claude/c6-coal at 07dff8b, build 2026-10-24a)
 
 Settings: PR C's central otherwise (FIXED); acceptance as before (Today 2026 and Least-cost path 2035, twelve weather years x ten
 outage draws, seeds 71830529 + k x 104729 + year x 7919, scratchpad m369/acc.sh with m359/acc_page.js and m369/acc_page_c.js);
@@ -16974,7 +16974,7 @@ Reading: 2026 starts 19.2 a unit a year against Eskom's costing assumption of ab
 2035's 70 starts fall to 28 and its two-shifting nearly stops, at 2.5 TWh more curtailment and 3 Mt more CO2. Cost falls slightly in
 both: fewer starts outweigh the extra coal running (curtailment is unpaid: no deemed energy).
 
-### c6 PR C, message 370: the MIP benchmark of coal commitment, instantaneous reserve kept uncapped, IRP 2025's own demand path for the pair (user, 24 Oct 2026, messages 369 (d), 370 (a)-(e); branch claude/c6-coal, build 2026-10-24b)
+### c6 PR C, the MIP benchmark of coal commitment, instantaneous reserve kept uncapped, IRP 2025's own demand path for the pair (user, 24 Oct 2026, messages 369 (d), 370 (a)-(e); branch claude/c6-coal, build 2026-10-24b)
 
 (d) MIP benchmark (369 (d), 370 (d)): finding. The engine's coal commitment problem for one run (Today 2026 and Least-cost path
 2035, weather year 2025, outage seed 71830529 + 2025 x 7919; recorded with the engine's own unit commitment by scratchpad
@@ -17098,7 +17098,7 @@ each unit's refuelling outage as a whole-unit outage of about one to two months 
 sourced), placed as Eskom schedules them, keeping the annual factor at the measured value; and test a winter-outage case on the
 2025-2026 pattern.
 
-### Message 376: c6 meets both criteria of NTCSA's medium-term adequacy test (wording corrected, message 381); s_koeberg_winter and s_ntcsa_both built; forced-outage restarts a cost line (user, 25 Oct 2026; PR D, build 2026-10-25a)
+### c6 meets both criteria of NTCSA's medium-term adequacy test (messages 376 and 381); s_koeberg_winter and s_ntcsa_both built; forced-outage restarts a cost line (user, 25 Oct 2026; PR D, build 2026-10-25a)
 
 Wording (376 (c), corrected 25 Oct 2026 by message 381 after the 380 (a) reconciliation): c6 is planned to NTCSA's unserved-energy
 criterion (i), mean unserved energy at most 20 GWh a year, and meets both criteria of NTCSA's medium-term adequacy test (the system
@@ -17138,7 +17138,7 @@ DEM_BLOCK=2027:930 IMP_AVG_MW=1066 CAPE_WIND=1580:4 RP_EXCL=wind MIN_BUILD=wind:
 pv:2028:3405 LI_MIN=2026:360:1440,2027:760.5:3059,2028:760.5:3719 SOLVER=native STD=ntcsa; each sensitivity the same line with its
 change and MAXP=3, TL=7200 (s_std_nem_nogas rerun at TL=14400 after its third solve hit the 2-hour limit; message 381 (b)). Engine
 check: pathcheck.js, LNG=1 GRID=1, the run's recorded standard, twelve weather years by ten outage draws (120 runs a year). The strict
-set (s_std_strict) is the 24-25 Oct set on a37d4fd (TF=0.5), its open-cycle factor computed apart (RESULTS 'Message 376'). Runs
+set (s_std_strict) is the 24-25 Oct set on a37d4fd (TF=0.5), its open-cycle factor computed apart (RESULTS 'c6 meets both criteria'). Runs
 25 Oct 10:13-17:12 UTC; no-gas-with-peakers 17:14-19:16 UTC; s_std_nem_nogas rerun 19:17-22:06 UTC. The 2026 to 2040 engine present
 value is at 8% real. Restart line: forced-outage returns counted on each run's own coal fleet (two draws per weather year,
 scratch zz_pathcheck_ret.js), costed cold at the 360 rates; present value at 8%.
@@ -17541,6 +17541,359 @@ were built on; they clear with the presets rebuild (TODO). Every other script's 
 Flags: the March 2026 dip in the monthly series without wheeled plant is the interpolation meeting Mooi Plaats's March subtraction;
 October-December are an extrapolation; unnamed earlier private plant may still sit inside the series.
 
+### c6a, the new central: c6 with gas from 2032, the 2026 fleet for its share of the year and rooftop on 2025's basis; the central set against NTCSA's 20 GWh, the IRP pair, the CO2 split against c6 (user, 26-27 Oct 2026, messages 389, 391-393, 401, 404, 405; c6 kept as the earlier result; provisional until the note)
+
+Settings. Run worktree at 86f2362 (main 02cb281's page, data and pathway scripts: #119 rooftop, build 2026-10-26b, and #118 c6a
+harness), harness/pathway/env_c6a.sh: c6's settings (env_c6.sh) with GAS_FIRST=2032, FLEET_2026=windMW:-187,pvUtilityMW:-115,hybridMW:-41,
+ROOF12=1, ROOF_FROM_END2026=1, MIN_BUILD=wind:2026:287,wind:2027:2245.5,pv:2026:156,pv:2027:2276,pv:2028:3405, STD=ntcsa; MAXP=6 for c6a,
+3 for each sensitivity, TL=7200 (s_std_nem_nogas_c6a 14400). Engine check pathcheck.js, LNG=1 GRID=1, twelve weather years by ten
+outage draws (120 runs a year). Runs 26 Oct 16:44 UTC to 27 Oct; the container restarted at about 16:56, 23:27 and 00:52 UTC and the
+chain resumed each time (a finished run or check is skipped; an interrupted check is redone). Present value 2026-40 at 8% real.
+
+c6a meets both of NTCSA's medium-term adequacy criteria in every year: mean unserved energy at most 4.3 GWh against 20 (worst single
+run 163 GWh) and an open-cycle capacity factor of at most 1.4%. Every landed run meets both except s_nogas (no new gas, no new
+open-cycle), over 20 GWh from 2037, as in c6.
+
+Central set (NTCSA 20 GWh unless the name says otherwise):
+
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV, R bn | Against c6a, R bn | CO2 2026–40, Mt |
+|---|---|---|---|---|---|---|---|
+| c6a | met | 4.3 | 163 | 1.4% | 2294.7 | – | 1810 |
+| null | met | 4.3 | 163 | 1.4% | 2294.7 | +0.0 | 1810 |
+| s_ntcsa_both | met | 4.3 | 163 | 1.4% | 2294.7 | +0.0 | 1810 |
+| s_koeberg_winter | met | 4.7 | 193 | 1.3% | 2305.8 | +11.1 | 1794 |
+| s_gascapex25 | met | 4.6 | 151 | 1.8% | 2303.1 | +8.4 | 1775 |
+| s_gas2030 | met | 3.7 | 126 | 1.3% | 2295.0 | +0.3 | 1811 |
+| s_nogas | not met: unserved over 20 GWh in 2037, 2038, 2039, 2040 | 133.4 | 317 | 2.1% | 2346.6 | +51.9 | 1620 |
+| s_nogas_dsl | met | 11.0 | 157 | 1.4% | 2304.3 | +9.6 | 1622 |
+| s_imp | met | 3.3 | 107 | 1.4% | 2284.8 | −9.9 | 1782 |
+| s_demlowflat | met | 3.2 | 135 | 1.3% | 1981.4 | −313.3 | 1720 |
+| s_demlowm1 | met | 2.1 | 80 | 1.4% | 1894.5 | −400.3 | 1713 |
+| c6a_irpdem | met | 3.4 | 104 | 1.2% | 2181.2 | −113.6 | 1753 |
+| s_coalpractice | met | 3.8 | 138 | 1.0% | 2314.7 | +20.0 | 1924 |
+| s_mindn24 | met | 4.4 | 163 | 1.4% | 2286.6 | −8.1 | 1835 |
+| s_rate48 | met | 4.3 | 164 | 1.4% | 2296.6 | +1.9 | 1822 |
+| s_spotoil | met | 4.4 | 164 | 1.4% | 2295.5 | +0.8 | 1811 |
+| s_wearp75 | met | 4.3 | 164 | 1.4% | 2296.0 | +1.3 | 1811 |
+| s_be6 | met | 1.1 | 42 | 1.0% | 2334.7 | +40.0 | 1789 |
+| s_be7 | met | 4.3 | 159 | 1.4% | 2326.4 | +31.7 | 1783 |
+| s_irpgas | met | 0.3 | 27 | 0.5% | 2484.4 | +189.7 | 1793 |
+| s_std_strict | met | 2.4 | 190 | 1.2% | 2299.3 | +4.5 | 1768 |
+| s_std_strict_nogas_dsl | met | 5.0 | 237 | 1.2% | 2310.4 | +15.7 | 1583 |
+| s_nofleet | met | 4.3 | 163 | 1.4% | 2294.6 | −0.1 | 1805 |
+| s_noroofh | met | 4.3 | 155 | 1.3% | 2300.8 | +6.1 | 1766 |
+| s_windbw6 | met | 11.2 | 353 | 2.7% | 2355.0 | +60.3 | 1943 |
+
+Not landed by 03:30 UTC 27 Oct: s_std_nem_c6a, s_std_nem_nogas_c6a, s_std_nem_nogas_dsl_c6a (running), the restart-cost line (after
+them). s_std_strict_nogas_c6a stopped with no output: a build pass reached the 2-hour limit (TL=7200) at 03:04 UTC, slowed by runs
+beside it; reported as it stands (message 401 (a)); c6's s_std_strict_nogas did not meet the standard either.
+
+The IRP 2025 build on c6a's paths (Table 1's wind and solar, s_irpgas_c6a's gas with its 51% floor, s_be6_c6a's storage, s_be7_c6a's
+5.2 GW of nuclear from 2036, coal on Figure 3's dates; build_irp_c6.py with CENTRAL=c6a IRPDEM=c6a_irpdem BASEGAP=0), checked by the
+same engine at c6a's demand and at IRP 2025's own:
+
+| Run | 20 GWh | Strict (half NEM) | Mean unserved, highest year / worst run, GWh | Open-cycle CF, highest year | Engine PV, R bn | Against the optimised plan at the same demand | CO2 2030 / 2035 / 2040, Mt | CO2 2026-40, Mt | Curtailed wind and solar 2026-40, TWh | Restart line PV, R bn |
+|---|---|---|---|---|---|---|---|---|---|---|
+| IRP 2025 build, c6a demand | met | met | 0.00 / 0 | 0.15% | 2591.8 | +297.1 against c6a (2294.7) | 125.3 / 104.7 / 62.4 | 1731 (c6a 1810) | 271.3 (c6a 139.9) | – |
+| IRP 2025 build, IRP 2025 demand | met | met | 0.00 / 0 | 0.10% | 2527.4 | +346.3 against c6a_irpdem (2181.2) | 116.8 / 96.7 / 55.8 | 1607 (c6a_irpdem 1753) | 339.9 (c6a_irpdem 144.5) | – |
+
+c6a's 2026 against Eskom (ESK19679 annual sums, local; derived totals only; Eskom credited, analysis ours) and the backcast; the
+calendar-2026 column is each line's calendar 2025 times January-August 2026 over January-August 2025 (message 392 (a)):
+
+| Line, TWh | c6a 2026 | c6 2026 | Eskom FY2026 | 2025, as modelled (25a) | Eskom calendar 2025 | Eskom calendar 2026 at Jan-Aug trend | c6a less FY2026 | Effect on c6a coal against FY2026 | Effect against calendar 2026 trend | Backcast less calendar 2025 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Coal (sent out) | 150.4 | 146.8 | 165.4 | 169.1 | 170.4 | 153.9 | -14.9 |  |  | -1.3 |
+| Nuclear | 10.9 | 10.9 | 11.6 | 10.2 | 10.2 | 11.2 | -0.8 | +0.8 | +0.3 | +0.0 |
+| Open-cycle (Eskom and IPP) | 0.1 | 0.1 | 2.0 | 2.2 | 3.4 | 1.0 | -1.9 | +1.9 | +0.9 | -1.1 |
+| Hydro | 1.9 | 1.9 | 2.4 | 1.8 | 1.8 | 3.0 | -0.5 | +0.5 | +1.1 | -0.0 |
+| Pumped storage, generation less pumping | -1.6 | -1.6 | -1.5 | -1.2 | -1.5 | -1.3 | -0.2 | +0.2 | +0.3 | +0.3 |
+| Batteries, discharge less charge | -0.0 | -0.0 | 0.0 | -0.0 | 0.0 | 0.0 | -0.0 | +0.0 | +0.0 | -0.0 |
+| Wind | 14.6 | 17.5 | 11.6 | 12.0 | 11.3 | 10.9 | +3.0 | -3.0 | -3.7 | +0.6 |
+| Utility solar | 6.7 | 8.3 | 5.3 | 5.7 | 5.1 | 5.1 | +1.4 | -1.4 | -1.6 | +0.6 |
+| CSP and other renewables (model: CSP and RMIPPPP hybrid) | 3.1 | 3.3 | 1.8 | 3.3 | 1.7 | 2.0 | +1.3 | -1.3 | -1.1 | +1.6 |
+| Imports | 9.3 | 9.3 | 6.8 | 6.6 | 6.6 | 8.3 | +2.6 | -2.6 | -1.0 | -0.0 |
+| Exports | 6.6 | 6.6 | 14.5 | 15.1 | 14.9 | 8.7 | -7.9 | -7.9 | -2.1 | +0.2 |
+| Domestic grid load met (supply less exports) | 188.8 | 189.8 | 190.9 | 194.5 | 194.0 | 185.4 | -2.1 | -2.1 | +3.4 | +0.6 |
+
+c6a's coal 150.4 TWh is 3.5 TWh (2.3%) below Eskom's calendar 2026 on its January-August trend and 14.9 TWh below FY2026, of which
+7.9 TWh is exports (c6a carries firm exports only, 6.6 TWh; Mozal's suspension from February 2026 takes about 2 TWh a year of
+non-firm exports out). Coal's share of generation with rooftop in and imports and storage out: 75.1% for the year, against Ember's
+80.5% for January-August 2026 (coal 80.5%, solar 8.0%, wind 4.8%; Ember, monthly electricity data, CC BY 4.0; 84.6% is August alone).
+
+Generation mix, the mean of the engine check's 24 runs (twelve weather years by two draws; scratch zz_mix.js, the engine check with
+each run's energy by carrier kept):
+
+c6a (TWh, share of the total in brackets)
+| Carrier | 2026 | 2030 | 2035 | 2040 |
+|---|---|---|---|---|
+| Coal | 150.4 (70.0%) | 122.7 (49.8%) | 88.7 (30.6%) | 64.5 (18.9%) |
+| Nuclear | 10.9 (5.1%) | 10.9 (4.4%) | 10.9 (3.7%) | 10.9 (3.2%) |
+| Wind | 14.6 (6.8%) | 40.2 (16.3%) | 99.4 (34.2%) | 127.2 (37.2%) |
+| Utility solar | 6.7 (3.1%) | 28.4 (11.5%) | 37.4 (12.9%) | 58.3 (17.1%) |
+| Rooftop solar | 12.4 (5.8%) | 21.3 (8.6%) | 30.5 (10.5%) | 39.6 (11.6%) |
+| CSP | 1.5 (0.7%) | 1.5 (0.6%) | 1.5 (0.5%) | 1.5 (0.4%) |
+| RMIPPPP hybrid (solar and storage) | 1.6 (0.7%) | 1.7 (0.7%) | 1.3 (0.4%) | 1.0 (0.3%) |
+| Hydro | 1.9 (0.9%) | 1.9 (0.8%) | 1.9 (0.7%) | 1.9 (0.6%) |
+| Gas (CCGT and open-cycle LNG) | 0.0 (0.0%) | 0.0 (0.0%) | 1.7 (0.6%) | 8.6 (2.5%) |
+| Diesel open-cycle | 0.1 (0.1%) | 0.3 (0.1%) | 0.2 (0.1%) | 0.1 (0.0%) |
+| Batteries (discharge) | 0.2 (0.1%) | 3.0 (1.2%) | 9.7 (3.3%) | 19.0 (5.6%) |
+| Pumped storage (discharge) | 5.1 (2.4%) | 4.9 (2.0%) | 7.1 (2.5%) | 8.8 (2.6%) |
+| Imports | 9.3 (4.3%) | 9.3 (3.8%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Demand response | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Total | 214.8 | 246.3 | 290.2 | 341.6 |
+| Curtailed wind and solar | 1.1 | 2.9 | 10.3 | 19.5 |
+| CO2, Mt | 167.5 | 138.3 | 100.1 | 74.6 |
+| Runs | 24 | 24 | 24 | 24 |
+
+c6 (TWh, share of the total in brackets)
+| Carrier | 2026 | 2030 | 2035 | 2040 |
+|---|---|---|---|---|
+| Coal | 146.8 (67.6%) | 121.3 (48.9%) | 84.9 (29.0%) | 63.3 (18.3%) |
+| Nuclear | 10.9 (5.0%) | 10.9 (4.4%) | 10.9 (3.7%) | 10.9 (3.1%) |
+| Wind | 17.5 (8.1%) | 44.5 (17.9%) | 102.7 (35.0%) | 126.4 (36.5%) |
+| Utility solar | 8.3 (3.8%) | 28.2 (11.4%) | 41.4 (14.1%) | 64.7 (18.7%) |
+| Rooftop solar | 13.7 (6.3%) | 21.0 (8.5%) | 30.2 (10.3%) | 39.4 (11.4%) |
+| CSP | 1.5 (0.7%) | 1.5 (0.6%) | 1.5 (0.5%) | 1.5 (0.4%) |
+| RMIPPPP hybrid (solar and storage) | 1.8 (0.8%) | 1.7 (0.7%) | 1.3 (0.4%) | 1.0 (0.3%) |
+| Hydro | 1.9 (0.9%) | 1.9 (0.8%) | 1.9 (0.7%) | 1.9 (0.6%) |
+| Gas (CCGT and open-cycle LNG) | 0.0 (0.0%) | 0.0 (0.0%) | 1.4 (0.5%) | 7.9 (2.3%) |
+| Diesel open-cycle | 0.1 (0.0%) | 0.4 (0.1%) | 0.2 (0.1%) | 0.1 (0.0%) |
+| Batteries (discharge) | 0.2 (0.1%) | 2.4 (1.0%) | 9.7 (3.3%) | 20.1 (5.8%) |
+| Pumped storage (discharge) | 5.1 (2.4%) | 4.7 (1.9%) | 7.3 (2.5%) | 8.9 (2.6%) |
+| Imports | 9.3 (4.3%) | 9.3 (3.8%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Demand response | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) | 0.0 (0.0%) |
+| Total | 217.1 | 247.8 | 293.3 | 346.1 |
+| Curtailed wind and solar | 2.0 | 2.6 | 12.0 | 20.8 |
+| CO2, Mt | 163.5 | 136.7 | 95.9 | 73.1 |
+| Runs | 24 | 24 | 24 | 24 |
+
+c6a's CO2 against c6, 2026-40, year by year (message 404): each column a one-change difference on c6a: the gas date (c6a less
+s_gas2030_c6a), the 2026 fleet correction (c6a less s_nofleet_c6a: FLEET_2026 off, c6's 2026 floors), the pathway's rooftop settings
+(c6a less s_noroofh_c6a: ROOF12 and ROOF_FROM_END2026 off), and the remainder (the page's rooftop basis and wheeled solar from #119,
+the re-measured solar constants, interactions):
+
+| Year | c6 CO2, Mt | c6a CO2, Mt | Difference | Gas from 2032 | 2026 fleet | Rooftop settings | Remainder | c6a coal TWh (vs c6) | c6a gas TWh (vs c6) |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026 | 163.5 | 167.5 | +4.0 | +0.0 | +5.1 | -1.3 | +0.2 | 150.4 (+3.7) | 0.0 (+0.0) |
+| 2027 | 168.2 | 166.8 | -1.4 | +0.0 | +0.0 | -1.3 | -0.1 | 149.7 (-1.3) | 0.0 (+0.0) |
+| 2028 | 166.2 | 168.5 | +2.4 | -0.0 | +0.0 | +2.3 | +0.0 | 151.3 (+2.1) | 0.0 (+0.0) |
+| 2029 | 158.4 | 161.0 | +2.6 | -0.0 | +0.0 | +2.5 | +0.1 | 144.6 (+2.3) | 0.0 (+0.0) |
+| 2030 | 136.7 | 138.2 | +1.5 | -0.1 | +0.0 | +1.6 | +0.1 | 122.7 (+1.4) | 0.0 (+0.0) |
+| 2031 | 131.2 | 133.4 | +2.2 | -0.5 | +0.0 | +2.1 | +0.6 | 118.7 (+2.1) | 0.0 (-0.2) |
+| 2032 | 117.8 | 122.8 | +5.0 | +0.0 | +0.0 | +5.0 | -0.1 | 109.1 (+4.7) | 0.6 (+0.2) |
+| 2033 | 109.9 | 114.5 | +4.7 | +0.0 | +0.0 | +4.5 | +0.1 | 101.6 (+4.3) | 0.8 (+0.2) |
+| 2034 | 102.4 | 106.9 | +4.5 | +0.0 | +0.0 | +4.4 | +0.1 | 94.8 (+4.1) | 1.5 (+0.3) |
+| 2035 | 95.9 | 100.1 | +4.2 | +0.0 | +0.0 | +4.1 | +0.0 | 88.7 (+3.8) | 1.7 (+0.3) |
+| 2036 | 91.2 | 99.7 | +8.6 | -0.1 | +0.0 | +8.3 | +0.3 | 88.4 (+7.7) | 2.6 (+0.8) |
+| 2037 | 86.6 | 93.3 | +6.7 | +0.0 | +0.0 | +6.5 | +0.2 | 82.5 (+5.9) | 3.7 (+0.9) |
+| 2038 | 82.2 | 84.6 | +2.4 | +0.0 | +0.0 | +2.4 | +0.0 | 74.5 (+2.1) | 4.7 (+0.7) |
+| 2039 | 77.0 | 78.3 | +1.3 | +0.0 | +0.0 | +1.2 | +0.1 | 68.4 (+1.1) | 6.5 (+0.6) |
+| 2040 | 73.0 | 74.5 | +1.5 | +0.0 | +0.0 | +1.4 | +0.1 | 64.4 (+1.2) | 8.7 (+0.7) |
+| 2026-40 | 1760 | 1810 | +50.1 | -0.6 | +5.1 | +43.9 | +1.7 | | |
+
+Reading: the rooftop settings explain 43.9 of the 50.1 Mt. With them, 2027 starts with about 1 GW more rooftop and the rooftop
+add-back follows the twelve-year solar mean; the build optimiser takes out 1.1 GW of wind by 2030 and 2.0 and 3.0 GW of utility solar
+by 2035 and 2040, and coal fills the gap. c6a costs R6.1bn less than s_noroofh_c6a. The two settings are not yet separated (one run).
+The 2026 fleet correction adds 5.1 Mt, in 2026 only; gas from 2032 rather than 2030 moves CO2 by -0.6 Mt (c6 built almost no gas before
+2032 either).
+
+Wind cost (message 405; reference, pending Nick's decision on the central, messages 406 (a), 408 (a), 409): s_windbw6_c6a, BW6's
+compliant wind bids (bldWindCase 'bw6', R28,462/kW), with the IRP build checked on the same wind cost:
+
+| Run | Wind GW 2030/35/40 | Utility solar GW 2030/35/40 | Lithium GW 2035/40 | Gas GW 2035/40 | Engine PV R bn | CO2 2026-40 Mt | Mean unserved max / worst run GWh | IRP build PV, same wind cost | IRP gap R bn |
+|---|---|---|---|---|---|---|---|---|---|
+| c6a (wind central: capex implied by BW5's awarded tariff, R20,874/kW) | 7.3 / 24.8 / 33.7 | 9.3 / 13.9 / 24.0 | 9.0 / 12.7 | 3.3 / 9.2 | 2294.7 | 1810 | 4.3 / 163 | 2591.8 | +297.1 |
+| s_windbw6_c6a (BW6 compliant bids, R28,462/kW) | 2.7 / 17.1 / 31.0 | 9.5 / 16.9 / 26.3 | 9.3 / 13.6 | 3.5 / 8.8 | 2355.0 | 1943 | 11.2 / 353 | 2666.5 | +311.5 |
+
+At BW6's bid capex the optimiser builds little wind beyond the committed 2026-27 floors (2.53 GW) by 2030, more utility solar, and
+burns more coal: +R60.3bn and +133 Mt over 2026-40; the IRP gap widens by R14.4bn. s_windhigh_c6a and s_windbw6cf_c6a (message 410)
+and the IRP pair at USD 12,000/kW nuclear (message 415) follow the chain.
+
+### Coal sustaining capital: how far c6a's plan is from retiring coal early (27 Oct 2026, 11:30 UTC; user, messages 426 and 429)
+
+c6a's final pathway re-run on build 2026-10-26b (run worktree at 86f2362, env_c6a.sh, MAXP=6) with a scratch copy of
+pathway_perfail.js that saves the final solve's reduced costs of rc_<y> and the duals of the rcmono_<y> rows; the plan reproduces
+c6a exactly (same schedule, objective R1,547,211.2m, done adequate in 456 s). The objective cost of retiring 1 MW of coal from
+year y onward is the sum of rc_t's reduced costs for t >= y plus rcmono_y's dual; dividing by 1,000 x the sum of the discount
+factors gives the extra coal fixed cost, R/kW-yr (January 2026 rands), at which that retirement starts to pay:
+
+| Retire from | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Break-even extra, R/kW-yr | 1,600 | 1,959 | 2,249 | 2,289 | 2,348 | 2,475 | 2,429 | 2,479 | 2,893 | 3,169 | 3,595 | 3,176 |
+
+Early retirement is allowed from 2029 (RC_FROM); were it allowed from 2026, the break-even would be R599 (from 2026), R859 (2027)
+and R1,161 (2028). The working range for sustaining capital, R350-500/kW-yr, is under a third of the smallest margin, so the
+charge should not move c6a's plan; consistent with c5b, where R1,746/kW-yr on in-scope coal retired nothing. Caveat: reduced
+costs are first-order and the LP is degenerate; s_coalsustain (R500, in c6b's set) is the direct test. fomCoal R1,160/kW-yr,
+discount 8%.
+
+### Extreme midday solar on the page (27 Oct 2026, 11:28 UTC; user, messages 407 and 421 (e); report only)
+
+Build 2026-10-27e (claude/c6b-wind), Least-cost path 2035 with newPvMW 45,000 and newRooftopMW 25,000 (the preset's 14,736 and
+10,800; everything else the preset's: wind 23,362 MW, lithium 8,647 MW at 3.45 h, syncMinMW 6,000), one simulate() on the page's
+own profiles (scratchpad m407/probe407.js, a jsdom driver; aggregates only). Days 8-14 January (profile days 7-13): coal at midday
+(10:00-14:59 minimum) 1,525-3,299 MW; evening (17:00-20:59 maximum) 2,352-9,284 MW; largest hourly rise and fall 4,043 MW, at the
+fleet ramp limit (24% of available coal an hour); committed coal switched on 1,313-8,423 MW a day, about 3 to 17 starts at the
+fleet's mean unit size (489 MW, UC_FLEET); curtailment 103.6 TWh and coal 67.6 TWh over the year. Mechanism: in these hours coal's
+minimum is the larger of the national synchronous floor (SYNC_MIN_MW 6,000 MW of spinning plant less nuclear, hydro and
+grid-forming batteries at 0.30 of their power; imports do not count) and the committed units' minimum stable levels; the model
+has no unit-level or regional system-strength requirement, so commitment can fall to the floor every midday. Pack limitation 31.
+
+### Coal minimum down time: what it does to the extreme-solar case and to c6a (27 Oct 2026, 11:45 UTC; user, message 442)
+
+Page probe (scratchpad m407/probe407.js), build 2026-10-27e, Least-cost path 2035 with newPvMW 45,000 and newRooftopMW 25,000, one
+simulate() on the page's own profiles, 8-14 January (profile days 7-13), state.coalMinDownH (raises every unit's minimum down time
+to at least that; null keeps UC_FLEET's, 4 h on 40,130 of 41,530 MW, 8 h on 160 MW, 48 h on 1,240 MW):
+
+| Minimum down time | Midday coal, MW | Evening coal, MW | Coal switched on a day, MW (mean) | Starts a day at 489 MW (mean) | Curtailed in the week, GWh | Curtailed in the year, TWh | Coal in the year, TWh |
+|---|---|---|---|---|---|---|---|
+| UC_FLEET (4 h) | 1,525-3,299 | 2,352-9,284 | 1,313-8,423 (3,940) | 8.1 | 3,253 | 103.6 | 67.6 |
+| 12 h | 1,926-4,468 | 2,352-9,491 | 0-8,423 (2,137) | 4.4 | 3,304 | 104.6 | 68.5 |
+| 24 h | 1,926-4,468 | 2,352-9,491 | 0-8,423 (2,137) | 4.4 | 3,304 | 104.6 | 68.6 |
+
+12 h and 24 h give the same week: no unit comes off at midday and back the same evening, starts halve, curtailment rises 1.6%
+(week) and 1.0 TWh (year). Restarts remain after multi-day low-coal spells (8,423 MW on 13 January).
+
+c6a with coalMinDownH 24 (s_mindn24_c6a, run 26 Oct on build 2026-10-26b): the build is identical to c6a's (same schedule and
+objective: the build LP does not see the minimum down time), both NTCSA criteria met (highest-year mean unserved 4.4 GWh, worst run
+163 GWh, open-cycle 1.4%), engine PV R2,286.6bn against R2,294.7bn (-R8.1bn: fewer start costs), CO2 2026-40 1,835 Mt against
+1,810 (+25), curtailment 2026-40 162.7 TWh against 139.9 (+22.8).
+
+Sources (message 442 (b)): no source opened gives a measured minimum down time for large subcritical or supercritical coal.
+NREL/Intertek APTECH (2012, NREL/SR-5500-55433), Table 1-1 p.12: warm starts after 12-40 h offline for large subcritical and 12-72 h
+for supercritical (below the band hot, above cold). Agora Energiewende (2017), p.44: hot under 8 h offline, warm 8-48 h, cold over
+48 h; Table 1 p.48: start-up 2.5-3 h hot, 5-10 h cold for common hard-coal plants. PyPSA-Eur's data/unit_commitment.csv: coal 8 h
+minimum up and 8 h minimum down (no source stated). Meridian Economics' briefing note (26 Oct 2026, p.1, fn.1): many South African
+units cannot shut down and restart within a day and run through to the evening peak. The AEMO 2025 Thermal Audit and Meridian's
+2025 flexibility study could not be opened from the container. Local cross-check (Eskom's flexibilisation studies pack, Oct 2025):
+no minimum down time or start durations given; nothing from it is used here.
+
+### Deep decarbonisation 2035's new-build capital moved with PR C's preset rebuild (27 Oct 2026, 12:00 UTC; TODO 14jz, message 441 (c))
+
+validate_consistency's 'new-build capital matches the hand computation' (retailComponents(0.40, true, 2035) on Deep decarbonisation
+2035) measured on main's history with the check's own code, one page each (scratch worktree, deleted after):
+
+| Commit | Build | New-build capital, R/kWh |
+|---|---|---|
+| df2eecf (#91, where R0.904 was set) | 2026-10-19e | 0.9038 |
+| 0118e42 (audit PR 1) | 2026-10-21k | 0.9038 |
+| 021feb2 (c6 PR B) | 2026-10-23a | 0.9040 |
+| 1b0dad0 (c6 PR C) | 2026-10-24b | 0.9532 |
+| 7cc6f23 (#119, rooftop) | 2026-10-26b | 0.9507 |
+| 02cb281 (main) | 2026-10-26b | 0.9507 |
+
+The move is PR C's: it re-sized the preset (wind 43,000 -> 40,500 MW, tracking solar 38,750 -> 42,750 MW, iron-air 2,000 -> 3,250 MW,
+coal flexibility tier 1 -> 2), a deliberate scenario change; PR B's imports change adds 0.0002 and #119's rooftop -0.0024. The
+check's figure was not re-measured then because the move stayed inside its 0.06 tolerance. #121 re-measures it (R1.056). The
+presets PR, which rebuilds Deep decarbonisation 2035 again, re-measures it once more and records this cause in the check's comment.
+
+### c6c set: results (user, 27 Oct 2026, messages 443, 448 and 449 (c); build 2026-10-27f, run commit: to fill) – tables to fill when claude/c6c-runs lands
+
+Settings. harness/pathway/env_c6.sh, then env_c6a.sh; the page's FIXED at build 27f (coalMinDownH 24, coalMslPracticeFloor 0.715,
+BW6 wind bids, rooftop R10,500/kW DC, carbon on the legislated path); each run's own changes as chain_c6c.sh lists them; NTCSA's
+20 GWh unless a run sets STD; engine check twelve weather years x ten outage draws, seeds as before. Tables from
+`node pathway/tables/settables.js out out/c6c c6c c6b` on the run commit; the high nuclear charge checks withheld (message 417 (b)).
+
+Runs: (to fill)
+
+IRP 2025 build against the optimised plan, by case: (to fill)
+
+c6c against c6b, run by run: (to fill)
+
+s_coalsustain's IRP check (irpcheck_coalsustain.sh, CENTRAL=c6c): (to fill)
+
+Not run: (to fill)
+
+### c6b set: results, the 4-hour down-time sensitivity: adequate at NTCSA's 20 GWh, engine PV R2,341.5bn, CO2 1,943 Mt 2026-40; the IRP 2025 build costs R317.4bn more and emits 214 Mt less (R1,517 a tonne, tax out); on the Treasury carbon path the optimised plan emits less than the IRP build (user, 27 Oct 2026, messages 432, 443, 449 (b) and 452 (a); build 2026-10-27e, run commit 2603be5)
+
+Settings. c6c's settings at build 27e: UC_FLEET's minimum down time (4 h on 40,130 of 41,530 MW), the 0.75 practice floor and
+COAL_PARTLOAD_2026 1.0262 (emisCoal 1.080); env_c6.sh then env_c6a.sh; each run's changes as chain_c6b.sh lists them; NTCSA's 20 GWh
+unless STD is set; engine check twelve weather years x ten outage draws, seeds as before. Outputs: branch claude/c6b-runs (26a6c74),
+harness/pathway/c6b/. Tables: node pathway/tables/settables.js out out/c6b c6b, on a checkout of that branch with the outputs laid out
+in harness/out (27 Oct 2026, 20:48 UTC). The s_coalsustain IRP check was run here (irpcheck_coalsustain.sh, CENTRAL=c6b, on 2603be5's
+pathcheck.js, which applies coalFomAdd; 27 Oct 2026, 21:00-21:13 UTC). Cost per tonne: RESULTS 'message 222 (1)' method, engine PV
+2026-40 at 8% with the carbon tax (co2 x carbonTaxRPerT by year) taken out, over cumulative CO2 cut (scratch m452/pertonne.js).
+
+Runs:
+
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV 2026–40, R bn | Against c6b, R bn | CO2 2026–40, Mt | CO2 2030 / 2035 / 2040, Mt |
+|---|---|---|---|---|---|---|---|---|
+| c6b | met | 11.2 | 353 | 2.7% | 2341.5 | – | 1943 | 152.5 / 116.5 / 77.2 |
+| c6b_irpdem | met | 5.8 | 243 | 2.3% | 2221.0 | −120.6 | 1899 | 142.6 / 114.8 / 76.6 |
+| null | met | 11.2 | 353 | 2.7% | 2341.5 | +0.0 | 1943 | 152.5 / 116.5 / 77.2 |
+| s_irpgas | met | 0.8 | 36 | 1.8% | 2500.9 | +159.4 | 2075 | 142.8 / 131.3 / 90.8 |
+| s_be6 | met | 1.9 | 87 | 1.7% | 2385.7 | +44.1 | 1948 | 146.5 / 117.5 / 83.4 |
+| s_be7 | met | 11.2 | 353 | 2.7% | 2370.2 | +28.6 | 1921 | 152.5 / 115.6 / 73.0 |
+| s_windlow | met | 4.3 | 163 | 1.4% | 2281.3 | −60.3 | 1810 | 138.2 / 100.1 / 74.5 |
+| s_windhigh | met | 12.2 | 374 | 2.9% | 2351.1 | +9.6 | 1962 | 153.6 / 118.3 / 77.1 |
+| s_carbontreasury | met | 3.3 | 120 | 0.9% | 2689.7 | +348.2 | 1644 | 127.8 / 85.3 / 63.5 |
+| s_carbonhold | met | 3.7 | 110 | 0.9% | 2611.6 | +270.1 | 1689 | 128.1 / 88.8 / 68.8 |
+| s_gascapex25 | met | 11.2 | 353 | 2.7% | 2349.4 | +7.9 | 1895 | 152.5 / 113.4 / 71.0 |
+| s_gas2030 | met | 4.3 | 213 | 2.2% | 2342.2 | +0.7 | 1954 | 154.3 / 116.5 / 77.1 |
+| s_imp | met | 7.0 | 284 | 2.2% | 2327.3 | −14.3 | 1942 | 154.3 / 115.9 / 76.2 |
+| s_demlowflat | met | 5.1 | 149 | 1.6% | 1995.7 | −345.9 | 1858 | 140.1 / 115.4 / 61.1 |
+| s_demlowm1 | met | 3.1 | 110 | 1.3% | 1894.5 | −447.1 | 1860 | 134.1 / 115.0 / 67.3 |
+| s_coalpractice | met | 9.3 | 292 | 1.6% | 2356.0 | +14.5 | 2032 | 158.7 / 126.5 / 84.1 |
+| s_rate48 | met | 11.1 | 349 | 2.7% | 2344.4 | +2.8 | 1957 | 152.3 / 117.1 / 78.9 |
+| s_spotoil | met | 11.2 | 353 | 2.7% | 2342.1 | +0.5 | 1945 | 152.5 / 116.5 / 77.1 |
+| s_wearp75 | met | 11.2 | 354 | 2.7% | 2342.4 | +0.8 | 1945 | 152.5 / 116.5 / 77.1 |
+| s_koeberg_winter | met | 8.4 | 331 | 2.1% | 2352.8 | +11.3 | 1921 | 146.7 / 115.8 / 76.2 |
+| s_ntcsa_both | met | 11.2 | 353 | 2.7% | 2341.5 | +0.0 | 1943 | 152.5 / 116.5 / 77.2 |
+| s_nogas_dsl | met | 14.0 | 301 | 2.2% | 2352.4 | +10.8 | 1713 | 149.8 / 96.6 / 39.4 |
+| s_std_strict | met | 2.6 | 187 | 1.1% | 2354.4 | +12.8 | 1891 | 133.9 / 116.7 / 77.3 |
+| s_std_nem | met | 3.6 | 187 | 1.3% | 2347.8 | +6.3 | 1908 | 138.8 / 116.6 / 77.2 |
+| s_coalsustain | met | 11.2 | 353 | 2.7% | 2486.9 | +145.4 | 1943 | 152.5 / 116.5 / 77.2 |
+| s_nogas | unserved over 20 GWh in 2037, 2038, 2039, 2040 | 187.5 | 407 | 2.5% | 2387.6 | +46.1 | 1696 | 148.6 / 95.8 / 29.9 |
+| s_std_strict_nogas_dsl | met | 11.2 | 266 | 1.2% | 2368.0 | +26.4 | 1650 | 139.4 / 84.5 / 39.8 |
+
+s_mindn24_c6b (24-hour down time on c6b's 0.75 floor, the double count message 447 found): engine PV R2,332.9bn (-R8.6bn), CO2
+1,962 Mt (+19), curtailment 117.8 TWh 2026-40 against 100.1, mean unserved 11.2 GWh (worst run 355). Superseded by c6c, which pairs
+the 24-hour down time with the recalibrated 0.715 floor.
+
+Build standing, GW:
+
+| Run | Year | Wind | Utility PV | Rooftop | Lithium (hours) | CCGT | Open-cycle gas | Open-cycle diesel | Iron-air | Vanadium | Pumped storage | Offshore | Coal |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| c6b | 2030 | 2.7 | 9.5 | 5.8 | 4.3 (3.1) | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 32.4 |
+| c6b | 2035 | 17.1 | 16.9 | 11.8 | 9.3 (4.5) | 3.5 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 25.9 |
+| c6b | 2040 | 31.0 | 26.3 | 17.8 | 13.6 (5.4) | 8.7 | 0.1 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 17.9 |
+
+IRP 2025 build against the optimised plan, by case:
+
+| Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026–40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |
+|---|---|---|---|---|---|---|
+| central demand | 2659.0 | 2341.5 | +317.4 | 1729 | 1943 | 0.00 / 0 |
+| IRP 2025 demand | 2594.8 | 2221.0 | +373.8 | 1605 | 1899 | 0.00 / 0 |
+| wind, central cost case | 2584.3 | 2281.3 | +303.0 | 1729 | 1810 | 0.00 / 0 |
+| wind, high cost case | 2674.7 | 2351.1 | +323.6 | 1729 | 1962 | 0.00 / 0 |
+| carbon, Treasury path | 2996.9 | 2689.7 | +307.2 | 1729 | 1644 | 0.00 / 0 |
+| carbon, 2030 rate held | 2909.1 | 2611.6 | +297.5 | 1729 | 1689 | 0.00 / 0 |
+| coal sustaining capital R500/kW-yr | 2804.3 | 2486.9 | +317.4 | 1729 | 1943 | 0.00 / 0 |
+
+Cost per tonne of CO2 cut by the IRP 2025 build, tax out (with the tax): at c6b's demand R1,517 (R1,483), 214 Mt over 2026-40; at
+the IRP's demand R1,306 (R1,273), 294 Mt; on the Treasury carbon path the optimised plan emits 86 Mt less than the IRP build
+(1,644 against 1,729 Mt) and costs R307.2bn less, so the IRP build has no abatement cost there; with coal sustaining capital at
+R500/kW-yr, as at the central (R1,517), since both plans retire coal on Figure 3's dates and carry the same charge.
+
+s_coalsustain_c6b: the same build and CO2 as c6b (no early coal retirement), engine PV +R145.4bn; the IRP gap unchanged at
++R317.4bn.
+
+Nuclear's high case, released (user, 28 Oct 2026, message 455 (a); central USD 7,500/kW confirmed, R10,500/kW-yr, about
+R125,200/kW overnight; high USD 12,000/kW, R16,800/kW-yr, about R200,300/kW): the IRP pair checked at NUC_ACAP=16800
+(pathcheck_irp2025_c6b_nuc16800 and _irpdem_nuc16800, run in the chain): IRP build engine PV R2,702.2bn at c6b's demand, gap
++R360.7bn (+R43.2bn on the central charge); R2,638.0bn at the IRP's demand, gap +R417.0bn (+R43.2bn). CO2 and adequacy unchanged; the
+optimised plans build no nuclear. Like for like with IRP 2025's Figure 9 (both overnight, January 2026 rands at x1.0681): the central
+is 52-74% above Figure 9's large reactor (R71,810-82,595/kW) and inside its SMR range (R100,095-166,492/kW); the high case is 2.4-2.8
+times the large reactor. All capital costs in the model are overnight, annuitised at 8% without interest during construction; at 8%
+IDC adds roughly a third for an eight-year build and a few percent for one- to three-year builds (TODO 14ke).
+
+Not run: s_std_nem_nogas_dsl_c6b's engine check groups b and c (the run finished; superseded by c6c); s_std_strict_nogas_c6b and
+s_std_nem_nogas_c6b (not in the set: their solves exceed two hours); restart counts (superseded by c6c). The high nuclear charge
+checks (R16,800/kW-yr) ran and are withheld until the nuclear cost is reconciled.
+
+Caveats. c6b differs from c6c in three settings (down time, floor, coal emission factor), so c6c against c6b is not the down time
+alone. s_windlow_c6b reproduces c6a's build (wind on the BW5-implied capex; engine PV R13.4bn below c6a's on c6b's cheaper rooftop).
+
 ### Fossil-free 2040's caption no longer quotes 2.16 GWh (build 2026-10-27a, with the c6b cost changes; user, 26 Oct 2026, message 402 (c))
 
 Fossil-free 2040's reliability sentence quoted its score from build 2026-10-19e (PRESET_SCORES: 2.16 GWh/yr against half the
@@ -17843,6 +18196,92 @@ off-peak check), so node checks 974/996. New: validate_bids 7/7. validate_stored
 86/86 with no 'not used' line; validate_worker 38/38 after the engine worker was given the cost-of-capital functions (it failed on
 its first preset without them; message 478: the stored panels were rewritten after that fix, as the fingerprint covers the page's
 inline scripts).
+
+### COAL_PARTLOAD_2026 against c6c's 2026: 1.0337 against the recorded 1.0324, +0.13 percentage points, over message 450's 0.1 (user, 28 Oct 2026, messages 450 and 480 (b); TODO 14kc; build 2026-10-28a)
+
+Settings. harness/pathway/partload_check.js (pack branch) run from harness/ of main at f7921b7 (build 2026-10-28a; COAL_PARTLOAD_2026,
+FIXED.emisCoal and the diesel and CCGT factors unchanged from 27f), 28 Oct 2026, about 21:24 UTC, on c6c's engine check for 2026-30
+(harness/pathway/c6c/pathcheck_c6c_a.json, 120 runs; run on acb2451, build 2026-10-27f). The run's 2026 coal rate is its CO2 less
+open-cycle diesel and gas at their factors, over its coal output; the part-load mean is that rate over emisCoal (1.074 t/MWh).
+
+- c6c: coal 150.21 TWh, CO2 166.89 Mt; coal rate 1.1102 t/MWh against Eskom's FY2026 1.1084; part-load mean 1.0337 against the
+  recorded 1.0324 (from Today 2026 on 27f): +0.13 percentage points.
+- c6c at IRP 2025's demand (pathcheck_c6c_irpdem_a.json): coal 146.31 TWh, rate 1.1113, part-load mean 1.0348: +0.24 points.
+
+Over message 450's 0.1-point threshold, so flagged before the pack uses c6c's CO2. Effect: the page sets emisCoal to Eskom's FY2026
+rate over COAL_PARTLOAD_2026, so re-recording the constant at 1.0337 would lower emisCoal from 1.074 to 1.072 t/MWh (three decimals)
+and, on the same coal output, coal CO2 by about 0.2% (about 0.3 Mt in 2026; about 3 Mt over 2026-40 on c6c's coal); the 2026 coal
+rate would then sit on Eskom's (1.108) instead of 0.16% above it. Corrected 28 Oct 2026, about 22:00 UTC: this paragraph first
+gave the direction the wrong way round (a rise). The constant is not changed here; Nick decides
+whether to re-record it from c6c's 2026 (the documented central-run method) before c6e's CO2 is used.
+
+
+### c6c set: results, the headline set: both NTCSA criteria met (mean unserved at most 11.7 GWh, open-cycle at most 2.8%), engine PV R2,340.0bn, CO2 1,937 Mt 2026-40; the IRP 2025 build costs R316.9bn more and emits 204 Mt less (R1,584 a tonne, tax out) (user, 28 Oct 2026, message 480 (a))
+
+Settings. c6c's chain (harness/pathway/chain_c6c.sh) on acb2451 (build 2026-10-27f, PR #122), outputs merged as PR #126 into
+harness/pathway/c6c/. Tables from `node pathway/tables/settables.js out out/c6c c6c c6b` (pack branch's settables.js, fixed below),
+28 Oct 2026, about 21:45 UTC; each run's engine check is twelve weather years by ten outage draws, judged on the mean against
+20 GWh. The three cost runs (s_pvbw6, s_disc5, s_discirp) are in RESULTS 'Costs on the latest market evidence per technology';
+their IRP checks were started as a tracked job (out/c6c/irp in the pvbw6 worktree) and stopped by that job's ID at 21:35 UTC under message 482 (c6e replaces c6c in the pack; the c6c tables are not filled further), with one of nine check files written (pathcheck_irp2025_c6c_pvbw6_a); the three IRP gaps stay unfilled.
+
+| Run | Both NTCSA criteria | Mean unserved, highest year, GWh | Worst run, GWh | Open-cycle capacity factor, highest year | Engine PV 2026–40, R bn | Against c6c, R bn | CO2 2026–40, Mt | CO2 2030 / 2035 / 2040, Mt |
+|---|---|---|---|---|---|---|---|---|
+| c6c | met | 11.7 | 363 | 2.8% | 2340.0 | – | 1937 | 152.4 / 116.1 / 77.1 |
+| c6c_irpdem | met | 5.9 | 247 | 2.3% | 2219.8 | −120.2 | 1890 | 141.9 / 114.3 / 76.5 |
+| null | met | 11.7 | 363 | 2.8% | 2340.0 | +0.0 | 1937 | 152.4 / 116.1 / 77.1 |
+| s_irpgas | met | 0.8 | 36 | 1.8% | 2499.5 | +159.5 | 2064 | 142.1 / 130.7 / 90.6 |
+| s_be6 | met | 1.9 | 90 | 1.7% | 2384.1 | +44.1 | 1943 | 146.1 / 117.3 / 83.4 |
+| s_be7 | met | 11.7 | 363 | 2.8% | 2368.5 | +28.5 | 1914 | 152.4 / 115.1 / 73.0 |
+| s_windlow | met | 4.4 | 163 | 1.4% | 2280.0 | −60.0 | 1808 | 138.2 / 100.4 / 74.6 |
+| s_windhigh | met | 12.2 | 374 | 2.9% | 2349.6 | +9.6 | 1953 | 152.9 / 117.7 / 77.1 |
+| s_carbontreasury | met | 3.8 | 120 | 0.9% | 2689.6 | +349.6 | 1646 | 128.4 / 85.9 / 64.5 |
+| s_carbonhold | met | 3.7 | 112 | 0.9% | 2610.6 | +270.6 | 1693 | 129.1 / 90.5 / 69.1 |
+| s_gascapex25 | met | 11.7 | 363 | 2.8% | 2347.9 | +7.9 | 1889 | 152.4 / 112.9 / 70.9 |
+| s_gas2030 | met | 4.3 | 213 | 2.2% | 2340.7 | +0.7 | 1946 | 153.5 / 116.0 / 77.1 |
+| s_imp | met | 7.0 | 284 | 2.2% | 2325.8 | −14.3 | 1933 | 153.5 / 115.4 / 76.1 |
+| s_demlowflat | met | 5.1 | 149 | 1.6% | 1993.9 | −346.1 | 1849 | 139.8 / 114.7 / 60.8 |
+| s_demlowm1 | met | 3.1 | 110 | 1.3% | 1892.7 | −447.3 | 1851 | 133.9 / 114.4 / 66.9 |
+| s_coalpractice | met | 10.9 | 346 | 1.9% | 2350.9 | +10.9 | 2007 | 157.4 / 123.9 / 82.9 |
+| s_rate48 | met | 11.1 | 352 | 2.7% | 2342.8 | +2.8 | 1950 | 151.7 / 116.9 / 78.9 |
+| s_spotoil | met | 11.7 | 363 | 2.8% | 2340.4 | +0.3 | 1938 | 152.4 / 116.1 / 77.1 |
+| s_wearp75 | met | 11.8 | 364 | 2.8% | 2340.6 | +0.5 | 1938 | 152.5 / 116.1 / 77.1 |
+| s_koeberg_winter | met | 8.5 | 334 | 2.1% | 2351.4 | +11.3 | 1913 | 146.2 / 115.4 / 76.2 |
+| s_ntcsa_both | met | 11.7 | 363 | 2.8% | 2340.0 | +0.0 | 1937 | 152.4 / 116.1 / 77.1 |
+| s_nogas_dsl | met | 14.6 | 301 | 2.2% | 2351.9 | +11.8 | 1707 | 149.2 / 96.1 / 40.0 |
+| s_std_strict | met | 2.5 | 186 | 1.1% | 2352.4 | +12.4 | 1886 | 133.8 / 116.1 / 77.2 |
+| s_std_nem | met | 3.6 | 187 | 1.3% | 2346.0 | +6.0 | 1902 | 138.6 / 116.1 / 77.2 |
+| s_coalsustain | met | 11.7 | 363 | 2.8% | 2485.4 | +145.4 | 1937 | 152.4 / 116.1 / 77.1 |
+| s_nogas | unserved over 20 GWh in 2036, 2037, 2038, 2039, 2040 | 188.2 | 412 | 2.5% | 2386.2 | +46.2 | 1689 | 147.8 / 95.2 / 30.7 |
+| s_std_strict_nogas_dsl | met | 11.7 | 267 | 1.3% | 2367.2 | +27.2 | 1648 | 139.3 / 84.4 / 40.5 |
+| s_std_nem_nogas_dsl | unserved over 20 GWh in 2040 | 20.2 | 298 | 1.3% | 2360.8 | +20.7 | 1662 | 141.1 / 86.1 / 40.7 |
+
+| Case | IRP build engine PV, R bn | Optimised plan, R bn | Gap, R bn | IRP build CO2 2026–40, Mt | Optimised plan, Mt | IRP build mean unserved, highest year / worst run, GWh |
+|---|---|---|---|---|---|---|
+| central demand | 2656.9 | 2340.0 | +316.9 | 1732 | 1937 | 0.00 / 0 |
+| IRP 2025 demand | 2592.6 | 2219.8 | +372.7 | 1614 | 1890 | 0.00 / 0 |
+| wind, central cost case | 2582.2 | 2280.0 | +302.2 | 1732 | 1808 | 0.00 / 0 |
+| wind, high cost case | 2672.7 | 2349.6 | +323.1 | 1732 | 1953 | 0.00 / 0 |
+| carbon, Treasury path | 2996.3 | 2689.6 | +306.7 | 1732 | 1646 | 0.00 / 0 |
+| carbon, 2030 rate held | 2907.7 | 2610.6 | +297.1 | 1732 | 1693 | 0.00 / 0 |
+| coal sustaining capital R500/kW-yr | 2802.3 | 2485.4 | +316.9 | 1732 | 1937 | 0.00 / 0 |
+
+Nuclear's high case (USD 12,000/kW, R16,800/kW-yr; pathcheck_irp2025_c6c_nuc16800 and _irpdem_nuc16800, from #126): IRP build
+engine PV R2,700.1bn at c6c's demand and R2,635.8bn at the IRP's, +R43.2bn at both; gaps +R360.1bn and +R416.0bn.
+
+Cost per tonne of CO2 cut by the IRP build (each year's carbon tax at the run's own rate, discounted at 8%, taken out; the method
+reproduces c6b's R1,517 and R1,306): at c6c's demand R1,584 (R1,549 with the tax), 204 Mt; at the IRP's R1,382 (R1,348), 276 Mt;
+on the Treasury carbon path the optimised plan emits 86 Mt less (1,646 against 1,732) and costs R306.7bn less.
+
+New gas (CCGT and open-cycle on LNG) standing: 3,550 MW in 2035 and 8,831 MW in 2040 (c6b 3,541 and 8,830). Against their own
+standards: s_std_strict is 0.3 GWh over its 2.2 GWh in 2031 (2.54, 95% half-interval 1.0; c6b 2.61 there); s_std_nem meets its own
+in every year; no new gas with diesel open-cycle misses half the NEM standard from 2033 and the NEM's from 2034 (loop cap reached),
+and meets NTCSA's 20 GWh. c6c against c6b: engine PV -R1.5bn, CO2 1,937 against 1,943 Mt, curtailment 100.3 against 100.1 TWh;
+c6c_irpdem against c6b_irpdem -R1.2bn, 1,890 against 1,899 Mt. Not run: s_std_strict_nogas and s_std_nem_nogas (solves over two
+hours). Caveat: the part-load flag (RESULTS 'COAL_PARTLOAD_2026 against c6c's 2026').
+
+settables.js fix: the comparison table mapped each run to the other set's by swapping its trailing set name, so c6c_irpdem, which
+carries the set name first, was compared with itself (2,219.8 against 2,219.8). It now maps c6c_irpdem to c6b_irpdem. No earlier
+table in the pack or RESULTS carried the self-comparison.
 
 ### Presets on c6e, build 2026-10-29b: the four run-based presets regenerated from the c6e pair, states matching their engine checks to the key; the live page's preset figures sit about 0.3% above the checks because the checks scale the rooftop add-back to the twelve-year mean and the page does not (user, 29 Oct 2026, messages 483 (b) and 486 (b); branch claude/site-text)
 

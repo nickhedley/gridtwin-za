@@ -4,6 +4,10 @@ Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05g
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
+Reviewer pack sent to two reviewers at 11:47 SAST, 30 Oct 2026 (the Google Doc 'GridTwin ZA reviewer documentation', version 'Sent
+30 October'; message 517). Changes to that Doc follow 494's rules (HANDOVER 'Reviewer pack: Google Doc copy'); new results go in a
+dated addendum.
+
 Done this session, removed: control_inventory.json and response_matrix.json compared and regenerated (14u3, RESULTS 6 Oct); pathcheck given its own outage seeds and both pathways re-checked (14u2, RESULTS 5 Oct); offshore file placed in nodal/; ESK19679.csv added to MANIFEST's
 upload set as local-only; licence check read (it tests presence only; the zip copy was stale);
 eng5 check 3 fixed and shown to fail on an injected defect; rooftop footer relabelled (the figure
@@ -403,6 +407,246 @@ allocation for power by 36%, SOURCES 'Context for the pack, 26 Oct 2026'). Repor
   applications from June 2026) and the GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027; as
   reported, no original found yet).
 
+14ji. Pack validation against public coal shares (user, 26 Oct 2026, messages 394 (a) and 397 (a); for the pack): c6a's 2026 coal
+share beside Ember January-August 2026 (coal 80.5%, solar 8.0%, wind 4.8%; 84.6% is August alone and is used nowhere in the
+repository as a January-August figure, checked 26 Oct) and GridPulse ZA's about 80% over a year (https://gridpulse.org.za/, coal
+section, read 26 Oct 2026), with one line on the difference from the 384 reconciliation: calendar against financial year, exports
+after Mozal, definitions.
+14jj. Forecast error for the imperfect-foresight test, 358 (b) (user, 26 Oct 2026, messages 394 (b) and 397 (b); next note):
+GridPulse ZA's comparison of Eskom's day-ahead forecasts with delivered output, past year (https://gridpulse.org.za/, forecast
+section, read 26 Oct 2026; cite as GridPulse's analysis): wind and solar about 5% over-forecast, roughly 400 MW in a typical hour,
+read as the bias; demand within about 2%. The typical hourly error from a published source on day-ahead wind and solar forecast
+errors; where sources disagree, the larger error, flagged.
+14jk. Product backlog (user, 26 Oct 2026, message 394 (c)): plain-data pages beside charts; a published emission-factor glossary;
+chart export; a feedback form.
+14jl. Global Energy Monitor cross-check (user, 26 Oct 2026, message 395; after the note, with the project tracker update): the Global
+Integrated Power Tracker, latest release (CC BY 4.0, attribute GEM; Nick may need to fetch it by hand if a form is required):
+South Africa's entries against nodal/regional_renewable_capacity.json, the nodal fleet and the tracker leads (missing plants,
+capacity or location differences, status). GEM entries are leads; confirm each from a primary source (IPP Office, PFL monitor,
+NERSA, developer) before adding. Cite GEM directly, not GridPulse ZA, which re-publishes it.
+14jm. TDP line length (user, 26 Oct 2026, messages 396 (a) and 397 (c); next page PR): the two code comments that give 10,209 km as
+the plan (index.html near the transmission-plan slider; nodal/capacity_siting.js, 'HEADROOM GROWS') say instead 14,494 km of new
+line, 210 transformers (765, 400 and 275 kV; NTCSA's own figure as reported, and the voltage split in nodal/tdp_projects.json's
+meta from the Public Report's 'Planned overhead lines' tables: 765 kV 6,957, 400 kV 7,477), and that 10,209 km was our sum of the
+mapped projects' route lengths at an earlier compile (11,251 km now). The visible text is already right. Open: whether the total
+counts strengthened lines; the reports seen describe it as new line (search results, 26 Oct 2026); the Public Report itself could
+not be opened from this environment on 26 Oct (network policy), so confirm from it before the pack quotes it.
+14jn. Next note, Where to build and Cape wind (user, 26 Oct 2026, message 396 (b)): read NTCSA's practice note on congestion
+curtailment (October 2025; SOURCES says not yet read) and its curtailment capacity dashboard on the grid access page: capacity
+released by accepting curtailment (1,580 MW reported), reserved (940 MW by end July 2026, per GridPulse ZA) and the 2028 figure
+(7,205 MW reported). Compare with bldCapeCurtPct and the 3,470 MW at 10% in the code. NTCSA data stays under the consent rule.
+14jo. SAWEM, next note (user, 26 Oct 2026, message 398 (b); SOURCES 'Krutham 2026 trading'): (1) NTCSA's internal SAWEM clearing
+prices, planned from January 2027 (Krutham p.6), as a check on the model's hourly shadow prices once published; pre-vesting prices
+are not a market reference. (2) Capacity and ancillary services markets from 2030 as a sensitivity, on the existing
+capacity-payment and reserve-pricing settings. (3) Battery revenue from intraday arbitrage against SAWEM prices for the battery
+revenue panels (p.5). (4) Retail (311): fixed distribution and notified maximum demand charges apply whoever supplies the energy
+(pp.1, 4).
+14jp. Southern Africa regional version, scoping (user, 26 Oct 2026, message 399; after the next note, with 330): South Africa plus
+Mozambique, Zimbabwe, Botswana, Namibia, Zambia, Lesotho and Eswatini as linked nodes (later more). Candidate open data: JRC-TEMBA
+(OSeMOSYS, 47 African countries with trade links, CC BY 4.0, Zenodo 10.5281/zenodo.3521841, GitHub KTH-dESA/jrc_temba; 2019-2020
+vintage) and the CCG OSeMOSYS starter data kits as the skeleton; SAPP's draft Master Plan and national IRPs for interconnectors and
+plant timing; Renewables.ninja for hourly profiles; Kariba and Cahora Bassa hydro with drought years. Open model data are leads;
+confirm against primary national sources. Report: data gaps by country, what the hourly engine needs to become multi-node, and an
+estimate of the work.
+
+14jq. Coal operation after this note, in this order (user, 26 Oct 2026, message 403; an estimate for each before starting):
+(a) Implied cycling cost: calibrate a start-cost multiplier so the MIP unit-commitment benchmark reproduces observed starts per
+unit (AEMO NEMweb black-coal units; Eskom unit-level data if consent and data allow), NREL's 75th percentile as a cross-check;
+then the calibrated start costs in the engine and the build optimiser. (b) Unit commitment by optimisation: the cost-weighing rule
+replaced by a rolling-horizon commitment (for example 48-hour windows, day-ahead) on the page's MIP machinery; run time and results
+benchmarked against the rule. (c) Commitment on a forecast with realistic error (GridPulse ZA's bias plus a published hourly error,
+14jj), re-committing within the day. (d) System strength as a minimum number of synchronous units per region (AEMO practice), via
+the network model, once NTCSA data allows. (e) With the next note's all-options pathway (curtailment sinks, 14jb), how coal starts
+and midday output change. Calibration sources for (a) in a high-solar system (user, 27 Oct 2026, message 418 (c)): PyPSA-Chile's (PyPSA-CL) treatment
+of coal (minimum loads, start costs, commitment; its README does not describe them, so read the code), and the Chilean system
+operator CEN's unit-level operating data (starts per unit). Findings, 27 Oct 2026 (message 445; research only):
+PyPSA-CL (commit e3042ae) commits every existing coal and gas unit of 50 MW or more (main.py:523, 774-790), solves with linearised
+unit commitment by default (main.py:1972-1976), splits start_up_cost half into start and half into shut-down cost (main.py:788-789),
+caps minimum up and down times at the representative days' length (24 h by default; main.py:785-787) and sets no ramp limits; the
+values (p_min_pu, start_up_cost, min_up_time, min_down_time) sit in data/Topology.xlsx, sheet 'Generators', which is not in the
+repository (a Ministry SharePoint link, blocked from the container): to obtain. Chile's coal fleet (about 3-4 GW, 2025-26) met
+midday solar mainly by turning down: operators cut minimum loads from 30-60% to 20-35% of capacity (Coal Transition Commission,
+From Flex to Phase-Out, Nov 2025), and 31-66% was the 2017 range (IISD/Inodu); no published fleet start count found (CEN's 2025
+wear-cost study and GIZ's 2018/19 flexibility study are the likely sources). All of the Chilean figures are from search snippets,
+unverified: confirm before any goes into the pack beside Australia's one start a day.
+
+14jr. Note recommendation, planning transparency (user, 27 Oct 2026, message 418 (b); draft for Nick and the advisor): publish
+the IRP's model, data and code so others can reproduce the official plan, as Chile's Ministry of Energy did for PELP 2028-2032
+(PyPSA-CL, built by the Ministry's Planning and Climate Change Unit on open-source PyPSA, MIT licence,
+https://github.com/paredes-vergara/PyPSA-CL), against the IRP's PLEXOS modelling, whose input workbook is published but not the
+model. To confirm before it goes in the note: that the Ministry's PELP repository (energia.gob.cl/pelp/repositorio) holds the
+model-ready inputs (the README says the data is not distributed with the code); energia.gob.cl and docs.pypsa.org are blocked
+from the cloud container.
+
+14js. Capacity-mechanism sensitivity, next note (user, 27 Oct 2026, message 419 (d); Meridian Economics briefing note,
+26 Oct 2026, p.8, Box 1 "What is capacity?"; page checked by the advisor, message 428 (c)): capacity payments from 2030, variable renewables credited at their reliability contribution. The
+existing settings (capacityPaymentOn, capacityPaymentRkWyr, BLD_DERATE) cover part of it: payments apply in every year (no start
+year), wind and solar are credited at zero (BLD_DERATE), and the build LP nets the payment off each technology's annuity, so the
+run shows what an investor-facing payment shifts, not a cheaper plan; system cost must be reported gross of the transfer. Needs:
+a start year, and wind and solar credits measured on the twelve weather years.
+
+14jt. Carbon paths in the IRPs, after the note (user, 27 Oct 2026, message 422 (c)): find the carbon path in IRP 2023 (the rand per
+tonne penalty in DMRE's input assumptions) and IRP 2025 (input workbook) and compare them with c6b's treasury path, s_carbonlegis
+and s_carbonhold.
+
+14ju. c6b carbon results for the pack (user, 27 Oct 2026, message 423 (c)-(e)): from c6b's set, s_carbontreasury against c6b
+(build, cost, CO2), and the IRP build's cost per tonne avoided at the central rate and on s_carbontreasury, beside the carbon tax
+path. If s_carbontreasury does not fit in tonight's set, run it first after the set. Meridian's briefing note (p.10, price
+neutrality) is read and confirmed by the advisor (message 425). The DBSA/PCC/NPC/SA-TIED study (launched 5 Nov 2025) stays out of the pack until read
+(message 424 (d)); search summaries say it sets emissions limits, and one also lists a carbon tax among its inputs.
+
+14jv. Page dispatch carbon rate, after the note (user, 27 Oct 2026, message 424 (e)): the page's single-year dispatch charges
+carbonTaxRPerT (R46/t) in every scenario year, while the pathway optimiser and its engine check follow carbonTaxAt; match the
+page's rate to the scenario year. The slider note stays as it is until then.
+
+14jw. Coal flexibilisation as a build decision, after the note; no work before Friday 30 Oct (user, 27 Oct 2026, message 427):
+(a) the three flexibilisation steps (Tier 1, Tiers 1-3) become a choice the build optimiser makes by station and year, each with a
+retrofit cost (capex, its fixed O&M and outage time) and what it buys (lower minimum stable level, faster ramps, cheaper starts);
+the hourly engine checks the chosen retrofits like any other build. (b) Costs from public sources only, each cited in SOURCES:
+start with Agora Energiewende, Flexibility in thermal power plants (2017), and NREL / 21st Century Power Partnership's work on
+flexible coal (India and China retrofit costs). The Eskom flexibilisation report (RES/TRR/21/1962944) stays local, a cross-check
+only, no figures from it in the repository. (c) The checkbox stays as a setting for runs that fix the choice. (d) Report it beside
+s_coalpractice: what flexibilisation is worth against coal held at the 75% floor.
+
+14jx. Coal sustaining capital (user, 27 Oct 2026, messages 426 and 429): s_coalsustain (COAL_FOM_ADD=500, R/kW-yr) runs in c6b's
+set; add its effect on system cost (2026-40 PV) and on the IRP gap to pack limitation 30. Done 27 Oct: c6a's cheapest allowed early
+retirement (from 2029) pays only at about R1,600/kW-yr extra (RESULTS 'Coal sustaining capital: how far ...'). If s_coalsustain or the margin shows coal
+retiring early, fold the charge into the central after the note. To check: the Sargent & Lundy / EIA coefficients (16.53 + 0.126 x
+age + 5.68 x FGD, 2017 $/kW-yr; eia.gov blocked from the container) and NERSA's MYPD6 reasons for decision (Generation capex).
+
+14jy. Private repository, public site, after the pack goes on Friday 30 Oct; no work before then (user, 27 Oct 2026, message 431).
+(a) Before Nick makes the repository private: list every file the live site serves now, and propose a .assetsignore that keeps
+internal files off the site (CLAUDE.md, HANDOVER.md, TODO.md, STATE.md, RULES.md, MANIFEST.md, CALENDAR.md, FIRST_SESSION.md,
+scratch and backup files, and anything under the NTCSA or Eskom terms) while keeping the page, its data and the public docs.
+(b) Next note: assumptions, results and sources as proper pages on the site, rendered, with internal message references removed,
+not raw markdown. (c) After the switch: confirm Cloudflare still builds main (one retry), Claude Code can still push and open pull
+requests, and the reviewer has read access; update the pack's section 7 (reproducing these results) to match.
+
+14jz. Traced 27 Oct 2026 (RESULTS 'Deep decarbonisation 2035's new-build capital moved with PR C's preset rebuild'): the R0.904 ->
+R0.951 drift is c6 PR C's re-sizing of the preset. Remaining: the presets PR re-measures the check after its rebuild and records the
+cause in the check's comment.
+
+14ka. Coal minimum down time in the build optimiser, after the note (user, 27 Oct 2026, message 443 (d)): the build LP does not see
+coalMinDownH, so builds are unchanged by it except through the adequacy loop's engine verdicts (s_mindn24_c6a: same build, same
+objective). Give the build LP a commitment rule that matches: a unit (or block) that comes off stays off for the minimum down time,
+in the representative days and the stress windows, and measure the build's move against c6c.
+
+14kb. Practice floor and down time together (user, 27 Oct 2026, messages 447 and 448): done in #122, floor 0.75 -> 0.715 so the
+2026 replay's sunny low-demand midday statistic matches Eskom's 0.623 again (0.624) with the 24-hour down time. Open: the replay's
+mean winter midday peak is 5.2 GW against NTCSA's one reported 3 GW day (flag kept). When 14ka gives the build LP the down time,
+recheck the floor's calibration on the same statistic; any later change to coal commitment settings recalibrates the floor too.
+
+14kc. COAL_PARTLOAD_2026 against c6c's 2026 (user, 27 Oct 2026, message 450): re-recorded on 27f from Today 2026 (1.0324; emisCoal
+1.074), a departure from the central-run method so that c6c runs on a calibrated value. When claude/c6c-runs lands, compute the
+part-load mean from c6c's 2026 and report the difference; if it is over 0.1 percentage point, say so before any pack table uses
+c6c's CO2. Done 28 Oct 2026 (message 480 (b); RESULTS 'COAL_PARTLOAD_2026 against c6c's 2026'): c6c's 2026 part-load mean is
+1.0337 against the recorded 1.0324, +0.13 percentage points, over the threshold; flagged, constant unchanged pending Nick's decision.
+Decision (user, 28 Oct 2026, message 484 (1)): option (a). 1.0324 stays as recorded for this pack; the pack states the check (c6c's
+2026 gives 1.0337; re-recording would lower emisCoal from 1.074 to 1.072 t/MWh and coal CO2 by about 0.2% in every run). Re-record
+it from c6e's 2026 in the first page build after the send (TODO 14kp, the first after-the-note page change).
+
+14kd. Gas IPP briefing postponed (user, 28 Oct 2026, message 454 (b)): the government briefing on the Gas IPP Procurement Programme
+set for Wed 28 Oct 2026, 09:00, was postponed with no new date. s_gascommit is not run for the pack (its script stays on main for
+later). The pack is unchanged for now: no source has been read. A web search (28 Oct 2026) found one press report, Green Building
+Africa, 28 Oct 2026, 'Ramokgopa postpones gas power procurement programme briefing' (greenbuildingafrica.co.za), which reports the
+department announced it on social media; this container cannot open .co.za pages, so it was not read. Once the article, a
+department or IPP Office notice is read: one line beside the gas-from-2032 assumption in the pack, and the three '[Briefing: one
+sentence to follow.]' placeholders in section 4 replaced with it (or removed if no source is confirmed before the pack goes out). Closed 28 Oct 2026 (message 456): source read by the advisor; the pack line and the three placeholders are done; the
+determination comparison (5,000 MW of gas by 2037 against c6c's new gas by 2035 and 2040) fills when c6c lands.
+
+14ke. Interest during construction by build time, for every technology, after the note (user, 28 Oct 2026, message 455 (a); standard
+practice, rule 366): all capital costs are overnight, annuitised at 8% without IDC. Add IDC from each technology's build time and
+spend profile (nuclear about eight years, adding roughly a third at 8%; coal and pumped storage several years; wind, solar,
+batteries and gas one to three years, a few percent), in the build optimiser and the engine's capital charge alike, and rerun the
+central.
+
+14kf. Cost of capital by technology, for the next note, not this pack (user, 28 Oct 2026, messages 459 (d), 461, 462 and 463).
+Separate the two rates: one discount rate, 8% real, for comparing costs across years; a cost of capital per technology for capital
+charges, all from one evidence base (IEA World Energy Outlook and Cost of Capital Observatory figures for emerging economies; NREL
+ATB financing cases; academic estimates such as Steffen 2020), cross-checked against South African bids where they exist (REIPPPP
+solar and wind, BESIPPPP storage). Every technology on the same framework, including gas, nuclear and coal. Now (c6c): solar's
+capex from BW7's tariffs (about 5% real over 30 years implied), everything else annuitised at 8% real over BLD_LIFE (wind and
+solar 25 years); s_pvbw6_c6c and s_disc5_c6c (every technology on construction cost at 8% and 5%; message 466) bracket it, with
+s_discirp_c6c at IRP 2025's 11.3% (pack limitation 32). 30-year lives for wind and solar go with it (BLD_LIFE is a page constant, not a harness setting).
+
+14kn. Blended public and private cost of capital for the next note (user, 28 Oct 2026, message 481 (a)). Decision: the central keeps
+wind and solar on state-backed finance at 5.5% real; private finance (s_cocprivate, CEPA's premiums) stays a sensitivity for this
+pack. The next note uses a blended rate per technology: source the public/private split of built capacity (REIPPPP and BESIPPPP
+awards against private wheeled and embedded plant in service, from the project register and Eskom's connected-capacity lines; not
+NERSA registrations, which count intent), set the blend from it, and record both in SOURCES beside 'Cost of capital by technology'.
+
+14ko. Reviewer pack schedule and scope (user, 28 Oct 2026, messages 481 (b)-(d), 482 and 483; HANDOVER 'Decisions of 28 Oct 2026').
+The pack goes Friday 30 October 2026, about 14:00 SAST, on c6e, with whatever c6e results are in by Thursday 22:00 SAST; any
+missing result is named with when it follows (packfill.js's 'Not yet in'). Scope frozen: no new runs or sensitivities before the
+send, only reruns of failed runs; anything new goes on this list under 'after the note'. The advisor may merge the c6e outputs PR
+and the presets PR without Nick when their checks pass (the conditions in HANDOVER). Thursday: preset captions and figures from
+c6e's outputs, panels, suite, PR with the visible-text list; if not merged by Friday 10:00 SAST the pack links the site as it stands.
+Still to restate on c6e once section 4 is filled: the pack's section 6 questions (written on c5e).
+Timing (message 486, 29 Oct 08:31 SAST): c6e's end line expected 19:00–20:00 SAST, outputs PR about 20:30; the final fill and the
+presets PR's page work run after that merge, the suite overnight, the merge Friday morning before 10:00 SAST. claude/c6e-snapshot
+(finished runs only) is for testing the scripts this afternoon, never a source of figures. Caption draft: harness/pathway/PRESETS_C6E_CAPTIONS.md.
+
+14kp. First after-the-note page change (user, 28 Oct 2026, message 484 (1)): re-record COAL_PARTLOAD_2026 from c6e's 2026
+(harness/pathway/partload_check.js on c6e's engine check, the documented central-run method; 1.0324 now, from Today 2026 on 27f).
+emisCoal follows from it (Eskom's FY2026 rate over the constant), so the page, the stored panels and the suite change with it; record
+the before and after in RESULTS with the run it was taken from. Not before the pack goes on 30 Oct 2026.
+
+14kq. Fossil-free 2040 (29 Oct 2026; RESULTS 'Fossil-free 2040 sheds 132.4 GWh' and 'Fossil-free 2040 topped up', on claude/site-text):
+failed the adequacy standard on the current page (132.4 GWh a year; the central ended imports after 2030 after the preset was built)
+and was topped up the same day by the search tool with iron-air excluded (user, messages 487 (1) and 490): solar 56.5 to 64.5 GW,
+offshore 1.75 to 2.75 GW, 2.55 GWh against 2.72 on 240 runs; the iron-air version (R2.6bn a year cheaper) not used, rule 366. After
+the note: re-search the preset on c6e's basis (its demand is still c5f's 2040), with a version without iron-air (it carries 13 GW of
+100-hour iron-air from its original design; message 491), and the 2045 horizon question (message 471).
+
+14kg. 'Strategy savings' demand case, after the note (user, 28 Oct 2026, message 444 (a)), for the consultation submission on the
+National Energy Efficiency Strategy 2026-2035: the pathway at demand reduced by the strategy's 2035 savings (132 PJ: industry 40.7,
+transport 43.3, commercial and public 34.8, residential 13.3 PJ), with the electricity share of each sector's savings estimated by
+us and flagged as ours (the strategy gives no electricity share and no peak target; SOURCES 'National Energy Efficiency Strategy
+2026-2035'). Report build, system cost, CO2 and the IRP gap against the central.
+
+14kh. Gas IPP bid window 1 (user, 28 Oct 2026, messages 475 (b), (c) and 477): the department's statement of 28 Oct 2026 confirms no
+preferred bidders were appointed (SOURCES 'Gas timing'); c6e's central takes new gas from 2035. Closed for the pack. For the next note, if bid window 1 has
+failed: test gas from 2035 as the central (s_gas2035_c6e in c6e is the first look), and coal life extension as an option the build
+optimiser can choose.
+
+14ki. Long-duration storage winter reserve, next note (user, 28 Oct 2026, message 476 (a)): an operating rule that keeps stores of
+24 hours or more above a stated charge level through the winter months (as hydro reservoir rule curves do), released only in
+deficit hours; tested against the current one-week look-ahead on the twelve weather years.
+
+14kj. Hydrogen as a build option, next note (user, 28 Oct 2026, message 476 (b)): electrolysers (from surplus and curtailment),
+storage (South Africa lacks salt caverns: price tanks, pipeline packing or ammonia, and state which), and hydrogen-capable
+turbines (new build, and conversion of gas or diesel peakers), with round-trip efficiency and costs from one sourced basis (e.g.
+NREL ATB, IEA, CSIR or Hive/Coega disclosures); tested as seasonal storage against peakers and iron-air on the twelve weather
+years.
+
+14kk. Iron-air (user, 28 Oct 2026, message 476 (c)): the finding "with gas, 20 GW of 100-hour iron-air barely moves July" stays
+out of any note until its check (validate_findings, a known failure since 13h) is settled.
+
+14kw. More draws for years near a standard, after the note (user, 29 Oct 2026, message 502 (d)): the engine check's 120 runs a year
+(twelve weather years by ten outage draws) leave standard errors of 1-2 GWh at the 4-6 GWh level of c6e's 2031-33 means, as large
+as the margins against the Australian 0.002% standard (2031 4.74 ± 1.74 against 4.46; 2032 5.46 ± 1.79 against 4.56). Raise the
+draws for years whose mean sits within about two standard errors of a standard (NTCSA's 20 GWh, the NEM's 0.002%, half of it) until
+the verdict is stable, and report mean ± standard error wherever a year is judged against a standard (packfill's nemover,
+overownfig).
+
+14kx. When new gas runs, after the send (user, 29 Oct 2026, message 506): from the hourly check of the least-cost plan, new gas output by
+month and in wind and solar lulls (hours below a set share of mean wind-plus-solar output, and multi-day lulls), 2035 and 2040, so the
+pack can say whether gas runs mainly in winter lulls; a packfill key for the sentence.
+
+14ky. A no-gas adequacy top-up tool, after the note (user, 29 Oct 2026, message 510): the harness's adequacy top-up adds only diesel
+open-cycle, which a no-new-gas-and-no-peakers run forbids, so such a run that stops at the optimiser's pass limit has no fallback; a
+top-up that adds from the run's own allowed technologies (storage, wind, solar, pumped storage) until the engine check meets the
+standard, reported as what it added, and a packfill key for it.
+
+14kz. The optimiser-engine gap without gas, after the note (user, 29 Oct 2026, message 511): in the no-gas run the optimiser's stress
+windows hold expected unserved energy at or below 20 GWh in 2037-40 while the hourly check finds 27-134 GWh, and a six-pass rerun
+stopped on the stall rule at the same result. Find why the windows miss the shortfall (window selection, the daily storage balance,
+the coal rules in the LP) and what closes it, so a no-gas plan can be planned to the standard; with 14ky.
+
+14la. Done 30 Oct 2026 (message 517): REVIEWER_PACK.md rebuilt from the sent Doc 'GridTwin ZA reviewer documentation'
+(1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg), 71 fill markers, word for word against the Doc when filled from main 016641e; the old
+master at d5383c2 kept whole in REVIEWER_PACK_RECORD.md (HANDOVER, message 517).
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
@@ -416,13 +660,6 @@ it with a matching discount rate; (3) the synchronous floor, 6 GW (SYNC_MIN_MW),
 page quotes 1.1-3.5% in three ordinary weeks and 26% in the 2040 stress week, measured on build 2026-10-14r, before PR C's coal
 rules and the 24-hour down time; the page now dates the figures by that build. Several hours; after the note if the presets PR is
 short of time.
-
-14kq. Fossil-free 2040 (29 Oct 2026; RESULTS 'Fossil-free 2040 sheds 132.4 GWh' and 'Fossil-free 2040 topped up'): it failed the
-adequacy standard on the current page (132.4 GWh a year; the central ended imports after 2030 after the preset was built) and was
-topped up the same day by the search tool with iron-air excluded (user, messages 487 (1) and 490): solar 56.5 to 64.5 GW, offshore
-1.75 to 2.75 GW, 2.55 GWh against 2.72 on 240 runs; the iron-air version (R2.6bn a year cheaper) not used, rule 366. After the
-note: re-search the preset on c6e's basis (its demand is still c5f's 2040, C5F_DEMAND), with a version without iron-air (it carries
-13 GW of 100-hour iron-air from its original design; message 491), and the 2045 horizon question (message 471).
 
 14kr. AEMO Quarterly Energy Dynamics Q3 2026 benchmarks (user, 29 Oct 2026, message 488; after the send, no action before):
 (a) battery cycling: take the figure from the report's battery section (p. 37), not the advisor's estimate (message 488 (d)):
@@ -647,7 +884,7 @@ although Ember's includes upstream emissions. Ember's monthly and yearly files a
 against 169.7 Mt). Hydro settled (user, 23 Oct 2026, message 357 (b); c6 PR B): the reference is now measured 2025 hydro from Eskom's hourly
 data (1.79 TWh; Ember's 1.80 if the file is absent), tolerance unchanged; the model's 1.91 passes (+6.8%). CO2 stays failing
 until Ember's basis is reconciled (option open: CO2 against Eskom's reported figure, Ember as a report-only line).
-14ix. Queued builds (user, 22 Oct 2026): the presets build, about Wed 28 Oct, with stored panels regenerated (message 340 (b), (c)): an installed-capacity table
+14ix. Queued builds (user, 22 Oct 2026): the presets build, brought forward by message 402 (26 Oct 2026; replaces 'after the pack' in 362 (b) and 373 (d)): as soon as c6a's runs land, Least-cost path 2035, IRP path 2035 and IRP's 2030 targets rebuilt from c6a's runs, captions to NTCSA's 20 GWh test with mean and worst-run unserved; Deep decarbonisation 2035 and Fossil-free 2040 re-searched on c6a's settings against 20 GWh, rescored on fresh draws, captions with the build-limit overshoot; until then, Fossil-free 2040's caption no longer claims 2.16 GWh (scored before imports end in 2030); one presets PR with the suite, the visible-text list and the render check, ready for Nick's merge by Wed 28 Oct evening at the latest. Also in the presets build, with stored panels regenerated (message 340 (b), (c)): an installed-capacity table
 beside the annual electricity mix (GW existing remaining, new build and total for the year shown, storage also in GWh; the
 reviewer pack points to it); a line in the Provincial electricity mix panel that its capacity is today's fleet, whatever preset. The coal flexibilisation checkbox's note relabelled to say it changes the ramp rate only, and that Eskom's
 own flexibility work targets minimum load and start-up time (Eskom, Oct 2025; analysis ours) (message 349 (d)).

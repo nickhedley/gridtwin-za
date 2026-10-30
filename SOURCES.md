@@ -337,6 +337,51 @@ These do not populate a JSON file, but a number in `FIXED` rests on each. Changi
 source means changing the constant, so they belong in this register.
 
 ```
+GridPulse ZA           https://gridpulse.org.za/ , home page, read 26 Oct 2026 (user, messages 394 and 397).
+                         Forecast section: GridPulse's comparison of Eskom's day-ahead forecasts with
+                         delivered output over the past year: wind and solar about 5% over-forecast,
+                         roughly 400 MW in a typical hour (a bias, not the hourly spread); demand
+                         within about 2%. Cite as GridPulse's analysis (TODO 14jj). Coal section:
+                         about 80% of generation from coal over a year (TODO 14ji). Its plant data
+                         re-publish Global Energy Monitor's tracker: cite GEM directly for those
+                         (message 395 (b); TODO 14jl). Its reserved-curtailment figure (940 MW by end
+                         July 2026) is a lead for TODO 14jn.
+PyPSA-CL (Chile)       PyPSA-CL, capacity expansion model of Chile's National Electric System,
+                         https://github.com/paredes-vergara/PyPSA-CL (MIT licence). Read 27 Oct 2026
+                         (README only; message 418). The README credits the Unit of Planning and
+                         Climate Change, Ministry of Energy of Chile, and says it was developed for
+                         the Long-Term Energy Planning process (PELP 2028-2032); input data is not
+                         distributed with the code. That the Ministry publishes each PELP report's
+                         databases (energia.gob.cl/pelp/repositorio) rests on search snippets only:
+                         unconfirmed. Uses: note recommendation (TODO 14jr); coal calibration lead
+                         (TODO 14jq (a)).
+Meridian 2026 reform   Meridian Economics (N. van Doesburgh, G. Steyn, B. Cohen), Electricity market reform
+                         in South Africa: the public interest rationale and key risks ahead (briefing note,
+                         October 2026; published 26 Oct 2026), https://meridianeconomics.co.za/wp-content/
+                         uploads/2026/10/Electricity-market-reform-briefing-note.pdf ; 12 pages. Read
+                         27 Oct 2026 from Nick's Drive copy (the site is blocked from the container); pages
+                         confirmed by the advisor (message 425). p.1 fn.1: many coal units cannot shut down
+                         and restart within a day, so they run for the evening peak, causing curtailment
+                         (pack limitation 13, item 6). p.9: SAWEM as drafted is energy-only; the only
+                         capacity payments are in Eskom's vesting contracts; missing money for batteries
+                         and peakers (limitation 29). p.10: electricity-price neutrality to 2030 "largely
+                         shields electricity generation from the tax" (carbon row). Box 1: wind and solar
+                         should be eligible for capacity payments in line with their reliability
+                         contribution (TODO 14js).
+Krutham 2026 trading   Krutham, Trading electricity: Is SA ready for the next financial market?
+                         (October 2026), https://www.krutham.com/reports/trading-electricity/ ;
+                         6 pages, page numbers from the PDF. Read 26 Oct 2026 (user, messages 398
+                         and 400). p.2: SAWEM phases (Eskom Generation to Distribution internally
+                         since April 2026; commercial launch Q2 2027; full balancing Q1 2028;
+                         capacity and ancillary services markets from 2030) and the expectation of
+                         an Eskom-dominated market with little external price discovery until the
+                         early 2030s: the basis for the coal practice floor's duration to 2029 and
+                         the design minimums from 2030 (pack section 1b). p.6: NTCSA aims to publish
+                         internal clearing prices from January 2027; pre-vesting prices are not a
+                         market reference. p.5: battery intraday arbitrage and revenue swaps.
+                         pp.1, 4: notified maximum demand and fixed distribution charges apply
+                         whoever supplies the energy. Paraphrase; cite by page.
+
 Coal minimum down time (user, 27 Oct 2026, messages 442 and 443): FIXED.coalMinDownH 24 h, central from c6c. Our reading of
                          Meridian Economics, Electricity market reform in South Africa (briefing note, 26 Oct 2026), p.1,
                          fn.1: "many coal units are unable to shut down and restart within a day, so they are run continuously
@@ -1487,6 +1532,12 @@ rebasing'): Merafe Resources SENS, 13 Jun 2025; Business Report, 30 Jul 2025; En
   reserve margin in the build LP').
 
 
+- AEMO, 2026 Electricity Statement of Opportunities (ESOO): the NEM reliability standard, expected unserved energy at most 0.002% of
+  demand in a region in a year (pp. 5, 24-25; as reported by the user, 29 Oct 2026, message 489; not read here). The pack measures the
+  c6e central against it as a caveat (mean unserved energy against 0.002% of each year's served energy; packfill.js 'nemover'). Also
+  noted for after the note (TODO 14ks): commissioning delays applied to committed and anticipated projects (p. 23), 24 weather years
+  (p. 23), coal availability declining toward retirement (p. 14).
+
 ## Eskom Distribution, EEBI webinar deck, 14 Oct 2026: rooftop cross-check and cost-to-serve (user, 16 Oct 2026, message 147; record only, no input changed)
 
 Eskom Distribution, 'Time-of-Use Tariffs, Feed-in Tariffs and Smart Metering', EEBI webinar, 14 October 2026, slide 3. Figures
@@ -1681,6 +1732,9 @@ the cloud environment (web reader and proxy refused; Firecrawl out of credits). 
   escalated to each plant's in-service year (nominal dollars of 2026-2031), unconfirmed. Not found: whether it splits out EPC,
   owner's costs, interconnection or financing during construction; it takes what each filing reported, and Halcyon's tracker
   marks records as overnight or including construction financing, so the filings may mix the two (our inference).
+
+- Lead times, October 2026: Bloomberg, 27 October 2026, Mitsubishi Power quoting deliveries for new orders around 2031 (entry under
+  'Gas timing', message 492). Bears on gas capex too: a seller's market at 70-80 GW of orders a year.
 
 ## Eskom performance report FY2026: unit costs, coal levies, volumes, OCGTs, renewable IPPs (user, 21 Oct 2026, messages 278-281)
 
@@ -1973,6 +2027,66 @@ Pointer: C. Yelland, EE Business Intelligence weekly note, 26 October 2026 (Nick
 - eThekwini: Project Smart Solar with Plentify, 280 households and facilities with solar and batteries, applications from June 2026
   (Engineering News, 3 Jun 2026). GreenCape VPP sandbox (1-4 providers, about 150 households, February-September 2027): as
   reported, no original found.
+
+Private South African solar, disclosed costs 2024-26 (user, 28 Oct 2026, message 455 (d); reference only, a cross-check like the
+wind high case; from search-result summaries of 28 Oct 2026, the articles not opened from this container (.co.za pages blocked):
+confirm scope, AC or DC, and whether the figure is total capex or the financing raised before any use):
+                         Sibanye-Stillwater, Springbok solar, 150 MW, estimated R2.8bn, commercial operation September 2025:
+                         about R18,700/kW (Engineering News, Sibanye-Stillwater renewable energy projects update, 29 May 2026).
+                         SolarAfrica, SunCentral 2, 114 MW, financial close R1.5bn, February 2026: about R13,200/kW, possibly
+                         financing only (Engineering News, 10 Feb 2026; SolarQuarter, 20 Aug 2026). SolarAfrica, SunCentral 1,
+                         114 MW: R1.8bn reported at financial close (Engineering News, 25 Feb 2025) and R5bn capex in a later
+                         update (Engineering News, 2 Oct 2026); scopes differ, unresolved. For comparison (January 2026 rands):
+                         BW6 tracker bids R16,786/kW, IRP 2025 Figure 9 R16,785-21,101/kW, the central's BW7-implied R10,998/kW.
+
+BW7 solar as the reference (user, 28 Oct 2026, message 457; solar only, wind stays on BW6 as BW7 awarded no wind). Three points, in
+January 2026 rands, on the central's basis (8% real, 25 years, fixed O&M R287/kW-yr, new tracking solar's run capacity factor 28.6%):
+                         Lower (bid tariff): the first eight BW7 awards (1,760 MW, DMRE preferred bidders list, Dec 2024, as
+                         held in BW7_SOLAR_AWARDS) average R461.15/MWh MW-weighted, the "average bid tariff R0.46/kWh" of Green
+                         Building Africa, 'Eight solar projects awarded preferred bidder status in REIPPPP BW 7', and Engineering
+                         News, 6 Jan 2025. Price base date not stated in the DMRE lists; no IPP Office or DBSA note giving it was
+                         found (web search, 28 Oct 2026); the model takes January 2024 (RFP issued 14 Dec 2023, bids due Aug
+                         2024), so x1.0681 to R492.6/MWh and an implied capex of about R10,100/kW, R0.49/kWh.
+                         High (disclosed investment): R31.4bn for the same 1,760 MW (department statement, as reported in both
+                         articles), R17,841/kW, taken as early-2025 rands, x1.035 to about R18,470/kW, about R0.81/kWh; like
+                         wind's disclosed investment values, it may include connection, development and financing costs. The
+                         later 890 MW tranche reported R16bn, about R18,000/kW (allAfrica, "Ramokgopa Announces 890mw Solar Boost", 17 Dec 2025, as summarised by a web search, not read).
+                         Central (compliant bid capex): no BW7 bid capex has been published by the IPP Office (searched 28 Oct
+                         2026), so there is no BW7 central point; the nearest published compliant-bid figure is BW6's tracker
+                         bids, R16,786/kW, about R0.74/kWh.
+                         The solar central now: R10,998/kW, R0.53/kWh, backed out of all 18 BW7 awards' MW-weighted tariff
+                         (R492.53/MWh over 3,940 MW), so it sits near the lower point.
+
+## National Energy Efficiency Strategy 2026-2035 (user, 28 Oct 2026, message 444 (a); reference for a later demand case, no input changed)
+
+- Department of Electricity and Energy, NEES 2026-2035 presentation (October 2026; PDF held by Nick; the strategy document of
+  19 Sep 2026 also seen): 132 PJ of savings by 2035, by sector: industry 40.7, transport 43.3, commercial and public 34.8,
+  residential 13.3 PJ. No electricity share and no peak-demand target are given. It states that efficiency is absent from the IRP
+  and proposes treating it as a supply-side-equivalent resource. It cites IRP 2025's R2.33 trillion of investment to 2050.
+
+## Gas timing (user, 28 Oct 2026, message 475)
+
+- NERSA, Feedback report on the NERSA gas dialogues of 1 July 2026 (October 2026;
+  https://www.nersa.org.za/files/files/2026/10/FeedbackReportontheNERSAGasDialoguesof1July2026.pdf; quoted by Nick, not read from
+  this container): "Standard procurement may be too rigid"; LNG expected around 2029-30; bankability depends on infrastructure
+  finance and anchor demand. Basis for s_gas2035_c6e beside the gas-from-2032 central.
+- Department of Electricity and Energy, statement of 28 October 2026 (PDF held by Nick, to be placed in Drive; message 477): Gas IPP
+  bid window 1 (2,000 MW sought; four bids for 2,830 MW, received 29 May 2026) appointed no preferred bidders, mainly because
+  bidders could not assure gas supply (imports from Mozambique; no LNG terminal); a bid window 1.5 is to follow, with details before
+  the end of 2026. Basis for c6e's central taking new gas from 2035 (bid window 1.5's rules by early 2027, financial close 2028-29 at
+  the earliest once an LNG terminal is committed, three to four years to build a CCGT); 2032 is the sensitivity s_gas2032_c6e.
+
+- Bloomberg, 'Mitsubishi Power: High Gas Turbine Demand Is Pushing Out Deliveries to 2031', 27 October 2026 (paywalled; the user
+  holds the text; as reported by the user, 29 Oct 2026, message 492; not read here). Mitsubishi Power Asia Pacific's chief
+  executive: new orders deliver around 2031; the 2028 and 2029 slots are almost full; global orders this year about 70-80 GW.
+  Bearing on gas build timing: new gas before about 2034 assumes turbines already ordered (the pack, section 4, beside the
+  gas-timing sensitivities). See also 'Gas turbine prices and lead times' below.
+
+- Engineering News, 'IRP 2025 raises gas load factor to 50% as adjustments are also made to accommodate nuclear and "clean coal"',
+  19 October 2025 (as reported by the user, 29 Oct 2026, message 497; not read here): the Minister's briefing, gas-to-power to anchor
+  gas demand for industrial users and the LNG imports needed as Sasol's Mozambican supply runs down. The article gives 50%; the
+  Gazette gives 51% (Government Gazette 53596, p.34), the figure the model and the note use. Used for the note's first agreed text
+  (NOTE_DRAFT.md) and the pack's s_irpgas finding.
 
 ## Cost of capital by technology (user, 28 Oct 2026, messages 468 and 469; build 2026-10-28a)
 

@@ -1,4 +1,220 @@
-# GridTwin ZA - handover, current state (kept current; updated 14 Oct 2026, 07:30 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 28 Oct 2026, 22:00 UTC)
+
+## Decisions of 29 Oct 2026 (user, messages 485, 487, 489 and 490), in force
+
+- Fossil-free 2040 (487 (1), 490): it fails the adequacy standard on the current page (132.4 GWh a year; the central ended imports
+  after 2030 after the preset was built; RESULTS 'Fossil-free 2040 sheds 132.4 GWh'). Top it up today with the preset search tools
+  (harness/ext/preset_search.js: FEASIBLE then the greedy, confirm on the preset check's 240 runs, seed 71830529) to its 2.72 GWh
+  design target and at least NTCSA's 20 GWh; imports end after 2030 as in the central. First run (iron-air allowed) met the target
+  in the feasible phase with +6.0 GW solar and +0.5 GW iron-air. Rule 366: rerun with iron-air excluded (EXCLUDE=newIronAirMW; the
+  tool searches wind, utility solar, lithium and offshore; pumped storage is not a search technology); use the exclusion if it
+  meets 2.72 GWh on the 240-run confirm and report its cost against the iron-air version; use the iron-air version only if the
+  exclusion fails, flagged in the caption's source note and the pack's known failures (iron-air's finding is a known failure, TODO
+  14gm). Time box 18:00 SAST; if nothing meets 20 GWh, the caption states the miss and the pack says the top-up follows.
+  Done 10:05 SAST: the exclusion run met the target (solar 64.5 GW, offshore 2.75 GW; 2.55 against 2.72 GWh; R2.6bn a year dearer
+  than the iron-air version); in the page on claude/site-text with its rescore in PRESET_SCORES (RESULTS 'Fossil-free 2040 topped up').
+- LCOE anchor notes (487 (2)): option A, done on claude/c6e-snapshot's central (harness/pathcheck.js LCOE=1, K=20, 2030;
+  harness/ext/gen_lcoe_anchors.py writes LCP_2030_*; RESULTS 'LCOE anchor notes on c6e's 2030'). After the outputs PR merges,
+  confirm pathway_c6e.json is identical to the snapshot's; if not, rerun.
+- Code comments (487 (3)): the remaining emphasis capitals and the comment phrases go in a separate PR after the send.
+- Pack (489 (a)): one caveat line, the c6e central against the Australian 0.002% standard (AEMO 2026 ESOO, pp. 5, 24-25), computed
+  by packfill (nemover) from the engine check; the snapshot reproduces the advisor's preliminary 2031 and 2032 figures.
+- Pack caveats, no new runs (491, 492): beside Fossil-free 2040, its 13 GW of 100-hour iron-air from the original design (figures
+  from the page through packfill; the re-search after the note includes a version without iron-air); beside the gas-timing
+  sensitivities, Mitsubishi Power's turbine deliveries for new orders around 2031 (Bloomberg, 27 Oct 2026; SOURCES 'Gas timing'
+  and 'Gas turbine prices and lead times'), so new gas before about 2034 assumes turbines already ordered. TODO 14kt: a high LNG
+  price case after the send.
+- Pack review 493 (advisor, on 4ca4eef): done on ce840f8 and 9b0df4a: the new-gas row led by c6e's basis with the 2032 text as
+  c6's record; new gas's capacity factor by year from the engine check (packfill gascf; built as backup capacity) in the cover note
+  and section 4; the two working notes cut; NTCSA's 20 GWh against the 0.002% test as a computed range (nemratio). Section 6 as
+  drafted is recommended by the advisor; Nick confirms on his Friday read.
+- Standard runs (495): s_std_strict and s_std_nem stopped at the optimiser's pass limit on c6e (both met their standard in c6c). The
+  pack reports each from its engine check against its own standard, worded 'the optimiser reached its pass limit; the engine check
+  gives ...' (packfill passlimit, overownfig), never 'infeasible' or 'cannot be met': a higher pass limit is untested (TODO 14ku,
+  after the send).
+- The note (497): NOTE_DRAFT.md on the pack branch is the note's master, started with the first agreed text, 'Gas: IRP 2025's 51%
+  minimum', every figure a packfill marker (s_irpgas against c6e: cost per MWh served, the range of the yearly percentage differences
+  across 2030-40, avgcostpct; the PV difference, dpvabs). The same finding is in the pack's cover note and section 4. The advisor's
+  14.0-14.4% were the 2030 and 2040 endpoints; across every year the snapshot gives 12.3-15.9% (R128-156/MWh), the reading used
+  pending Nick's call. The minimum alone and its pass-through to Megaflex is TODO 14kv; the sentence is updated when it lands.
+  Source: Engineering News, 19 Oct 2025 (50%; the Gazette's 51% is used), under SOURCES 'Gas timing'.
+- 498: the note's range is the full yearly range across 2030-40 (the advisor's 14.0-14.4% sampled three years); 12.3-15.9% on the
+  snapshot, filled from the merged outputs. 499: 495's wording applies to every run that stopped at the pass limit (s_nogas, the
+  two no-gas standard runs, the cover note's no-gas line included): packfill 'status' gives 'the optimiser reached its pass limit;
+  the engine check gives ...' with the years over the run's own standard; never 'infeasible' or 'cannot be met'.
+- 500: sections 5 and 6 keep c6c's no-gas lines as the engine check measured them on that plan. c6e at 32 of 33 runs at 13:32
+  SAST (only s_std_nem_nogas_dsl and the restart counts left); the session checks main for the merged c6e outputs every 30
+  minutes from 15:30 SAST and starts the fill as soon as they are there.
+- 501: section 1's cost basis restated for c6e: 'Cost basis' is a table of each technology's cost of capital, basis, interest
+  during construction, 2026 capex and capex basis, the four cases and the private premium, with c6c's text kept below it as the
+  record; the Figure 9 subsection, the c5e table's Discount rate row and limitation 9 updated or marked superseded. Rates, factors
+  and capex come from the page through packfill's page.* keys (harness/pathway/tables/page_costs.js reads index.html in jsdom), so
+  none is typed; nuclear against Figure 9 reads +53% to +75% (was +52% to +74%, typed at about R16.69 against the page's R16.80).
+- 502: the Australian-standard line overstated precision (the advisor's error in 489): the engine check's standard errors are as
+  large as the margins (central 2031 4.74 ± 1.74 against 4.46, 2032 5.46 ± 1.79 against 4.56). packfill's nemover now prints each
+  year's mean ± standard error and counts a year as over only when the mean less one standard error is still above the limit, else
+  'at the limit within sampling error'; nemfig_YYYY gives one year, nemshort the span form for section 6's question 3. s_gas2032's
+  2031 comparison is dropped; its 2032 figure stays. TODO 14kw: more draws for years near a standard.
+- 503 and 504: plain language for everything the reviewer reads. The cover note and the opening of 'What this is' are the advisor's
+  text with a fill marker behind every figure (packfill's plain keys: pvbn, dpvplain, dpvabsbn, dco2plain, verdictplain, nemplain,
+  gasgw, gascfplain, avgcostpctplain, gapbn, gapplain, cutmt, cutplain, cocgapmax, co2r); 504 (a) and (b) added. Rule for the cover
+  note, the introduction and sections 1-6 prose: no run codes, filenames, TODO numbers, build stamps or results-log headings, no
+  '+' on rands; runs named by what they change (harness/pathway/tables/plain.js, one table). Section 6 rewritten; section 4's
+  record subsections moved to a new section 8; section 7 carries the glossary (fill key 'glossary'), the version history and the
+  script names. Sections 1-5 went through a mechanical pass from the same table, then leftovers by hand; sections 7, 8 and the
+  headings list keep codes by design. packfill fails (exit 1, after writing) if the cover note, the introduction or section 6
+  carries a run code, a script or data filename or 'TODO'. Nick's own cover-note wording replaces the advisor's on Friday morning
+  (504 (c)); the markers and the rule stay. Snapshot fill reproduces the advisor's figures except the IRP-gap move across the
+  cost-of-capital cases (R3bn from the outputs against the advisor's R4bn); the fill decides.
+- 505: section 4 gains 'What gets built, year by year', two fill tables (packfill 'table:What gets built, least-cost plan' and
+  '…, IRP 2025') of MW added each year by technology from each run's build schedule, total and coal standing, all-zero columns
+  dropped, rooftop noted as an input; one sentence names the lumpy years from the schedule (key 'lumpy', from 2027); the cover note
+  points to it in one line. Nick and the advisor are rewriting the cover note, introduction and section 6 in a Google Doc (plain
+  draft 2), carried into the master Friday morning; tonight only the markers and the sections 1-5 rule are maintained.
+- 506: reviewer-facing style: hyphens in number and year ranges, 'R368 billion' written out, finding labels with a colon. packfill's
+  plain keys write 'R… billion' and hyphenated spans ('2031-32'), tables come out with hyphens, the year-by-year tables carry
+  draft 2's column names and a 'Total' row. Draft 2 (Google Doc 'plain-language draft 2', 16:00 SAST) is the final wording for
+  'About', 'Main findings', the build tables and 'Questions' (one question: coal operating rules); the advisor carries it into the
+  master Friday morning. Every figure in it has a fill key (new: nemlimits, gascfr_YYYY, coalgw_YYYY, addgw_T) except 'the
+  replay of 2025 matches Eskom's coal output to within about 1%', a section 2 record with no run key. TODO 14kx: when new gas runs.
+- 507: #128 merged (5857f03, 19:30 SAST); the pack and NOTE_DRAFT filled from main's harness/pathway/c6e (run layout built in the
+  scratchpad as out/ with out/c6e/irp and out/c6c/irp; settables with c6c as the comparison set). (a) settables already maps the
+  IRP-demand run by name (c6e_irpdem against c6c_irpdem, R2,219.8bn); every other row maps to the same run. (b) one line and the
+  comparison table added to section 4 through packfill (prev run = PREV, default c6c; dco2absmt, dco2prevabs); the cost-of-capital
+  part uses the plan with gas from 2032 against c6c, which also took gas from 2032 (112 Mt), where the message named gas from 2030
+  (111 Mt). (c) the pass-limit runs fill in 499's form. Every result is in: the missing list reads 'None'.
+- 508: the no-gas rerun (s_nogas_maxp6_c6e, higher pass limit; s_nogas_topup_c6e, adequacy top-up as fallback; results in the early
+  hours, the advisor merges its outputs PR). packfill's virtual run 'nogasbest' is the first of the two whose check meets NTCSA's
+  criteria; 'nogasbest.finding' (cover note finding 7 and section 4) prints its verdict, cost against the plan, CO2 and what stands
+  beyond the pass-limit run in 2040 (iron-air flagged when added), and while neither is in prints 'A rerun ... follows'; the
+  pass-limit result stays as the record. The advisor keeps the finding-7 marker when carrying draft 2 into the master. If neither
+  run meets the standard by Friday 09:00 SAST the finding stays as filled, naming the rerun as following (the fallback sentence).
+  To fill after the merge: rebuild the run layout from main (c6e and c6c folders into out/, each set's IRP files under its irp/)
+  and run BASE=c6e packfill on REVIEWER_PACK.md and NOTE_DRAFT.md.
+- 510 (replaces 508's fallback and 509's names): no no-gas top-up tonight (the harness's top-up adds only diesel, which the run
+  forbids; a new tool is TODO 14ky). The run session runs s_nogas_maxp6_c6e, then s_nogas_maxp10_c6e if six passes still fall
+  short; 'nogasbest' takes the first of those two that meets the standard, in that order, and while neither is in prints 'A rerun
+  with a higher pass limit follows.' The half-hourly check from 02:00 SAST watches main for either file.
+- Presets on c6e (29 Oct evening, claude/site-text, build 2026-10-29b): generator and validator on the c6e files; states match the
+  checks to the key; the checks' rooftop add-back scaling (roof12, K 0.8895) explains the 0.3% cost gap to the live page; audit
+  items (marker path; a quoted span carrying RESULTS) fixed; panels rewritten twice; suite rerun on the final page before the PR
+  (RESULTS 'Presets on c6e, build 2026-10-29b'; PRESETS_C6E_CAPTIONS.md 'Done on 29 Oct 2026 evening').
+- 511 (replaces 510's fallback): the six-pass no-gas rerun stopped at pass 4 on the stall rule with the same result; no ten-pass
+  run. Finding 7 and section 4 carry 511's wording from the fill (key 'shortfall': the years over 20 GWh and the range of their
+  means from the hourly check), the pass-limit status kept as the record; limitation 33 added; TODO 14kz. The 02:00 SAST check
+  is cancelled: nothing follows for the pack's no-gas finding.
+- 511 (second message, the final no-gas wording): the finding leads with the no-gas plan that allows diesel peakers (passes the
+  test; cost difference with its share; CO2; new peakers in GW; their capacity factor), then the no-peaker shortfall; keys
+  dpvword, dpvpctplain, dslgw_YYYY, ocmaxplain added; the same text is NOTE_DRAFT.md's 'No new gas' section; limitation 33 reads
+  'without gas or peakers'.
+- 512 (replaces 511's no-gas wording; the rest of 511 stands): the finding's last sentence reads 'falls short of the standard in
+  2037-40 when tested hourly' without the range (key shortfallshort); the ranged form stays in section 4's record and limitation 33.
+- Presets PR opened 29 Oct 23:58 SAST: #130 'Presets on c6e; site text of messages 470, 471, 473 and 485 (build 2026-10-29b)',
+  claude/site-text at 6e968cf; suite 998/1007, 88/88, 5/6 against main 974/996, 88/88, 5/6 (public_text and pathway_presets the
+  only scripts that moved, both up); visible-text diff in the body (69 added or changed, 78 removed). The advisor merges before
+  10:00 SAST Friday under 481 (b) if the checks pass; else the pack links the site as it stands (483 (c)).
+- 513 (Friday 30 Oct): main (016641e: #128, the six-pass no-gas run #129, presets #130) merged into claude/c6a-results; Nick's
+  draft 2 (Google Doc 1GaFYowxrqBnnTJqUvgXzjgxufZoFLiZNi7P8eW2ZGDQ, unchanged since 29 Oct 16:00) carried in as the front: title,
+  'About', 'Main findings' (ten findings, finding 8 the agreed 512 no-gas text), 'Still to come', 'What gets built, year by year'
+  (the two fill tables; '(preliminary)' dropped from its heading), and section 6 as one question. The how-to-read list is kept
+  after the tables: it carries the Eskom credit the data terms require. Every figure is a fill marker (new keys nemnearyears,
+  addgwr_T, dpvabsplain, servedr_YYYY, page.discr, page.cocr, page.privrange); one typed figure stays, 'within about 1%' in
+  finding 10 (the 2025 replay, a section 2 record with no run key). The IRP's demand: section 4's design bullet said 'sized for
+  higher demand'; it now reads the IRP's own, lower demand, 230 against 244 TWh served in 2035 (the least-cost plan at the two
+  demands), from the fill; no other mention found in the pack or the note. The plain check now covers About, Main findings,
+  What gets built, How to read and section 6, and passes. #120 merges after the send.
+- 514 (Friday 30 Oct, before the Google Doc): fragments the plain-language pass left (headings cut at an apostrophe, brackets
+  of bare build stamps and quoted headings, spaces before punctuation) repaired in sections 1-7, and bracketed references to the
+  results log and HANDOVER removed; run codes in sections 1-5 prose and tables written as plain names, the filled tables'
+  labels too (packfill maps them; section 7's glossary and section 8's record keep codes); finding 9 and question 1's effect
+  line in 514's wording from the fill; the About sentence on outstanding results and the 'Still to come' block removed; every
+  number and year range in the pack and the note uses a hyphen (packfill writes them that way). Plain check passes.
+- 515: the reviewer's copy is the Google Doc 'GridTwin ZA reviewer documentation' (1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE),
+  made from 3ceb663; the old working draft is superseded ('Reviewer pack: Google Doc copy').
+- 516: the reviewer's copy is now Nick's cut, 'GridTwin ZA reviewer documentation' (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg);
+  515's copy superseded. After the send the master is rebuilt from it and Nick's cuts kept in a record file (TODO 14la).
+- 517: the pack went to two reviewers at 11:47 SAST, 30 Oct 2026, as the Google Doc 'GridTwin ZA reviewer documentation'
+  (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg); Nick names that version 'Sent 30 October'. From now on the Doc changes only under
+  494's rules ('Reviewer pack: Google Doc copy'). REVIEWER_PACK.md is rebuilt from the sent Doc (TODO 14la, done): its sections are
+  About, Main findings, Build plan, Assumptions, Known limitations and Reproducing these results; 71 fill markers, filled from main
+  016641e, give the Doc's text word for word (bold styling aside). Figures with no run or page key stay typed: in the findings, the
+  2025 replay 'within about 1%' and the CSIR shares (51% against 55%, 43% against 40%); in the assumptions, the fixed inputs other
+  than capex, cost of capital, demand growth, the smelter block, rooftop additions, coal standing and Eskom's rate; in the known
+  limitations, 120 runs, 1-2 GWh, Meridian's degradation rates and coal's R1,160/kW-yr; in Reproducing, the run build and the
+  18 hours. The old master at d5383c2 is kept whole, filled and frozen, in REVIEWER_PACK_RECORD.md (the fill script does not
+  touch it). packfill's plain check covers the sent sections (About to Known limitations); its key list adds demandpctr_YYYY,
+  blockmw_YYYY, roofadd_YYYY and shortyears. NOTE_DRAFT's references point at the record file and the sent findings.
+- After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
+  14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
+
+## Decisions of 28 Oct 2026, 23:24 SAST (user, messages 481, 482 and 483), in force
+
+- Cost of capital (481 (a)): the central keeps wind and solar on state-backed finance at 5.5% real; private finance stays a
+  sensitivity (s_cocprivate). The next note uses a blended public and private rate; sourcing the split (built capacity, not NERSA
+  registrations) and setting the blend is TODO 14kn.
+- Merges without Nick (481 (b)): the advisor may merge two pull requests if their checks pass. The c6e outputs PR: outputs folder
+  only (harness/pathway/c6e/), the progress file ending 'C6E SET DONE', and figures that match the log. The presets PR: suite counts
+  match main's, stored panels rewritten, the visible-text list reviewed by the advisor, no conflict.
+- Scope freeze (481 (c), kept by 482 (d)): no new runs or sensitivities before the pack goes out, only reruns of failed runs.
+  Anything new goes on TODO's after-the-note list.
+- The pack (482, replacing 480 (a) and (c) and 481 (d)): goes Friday 30 October 2026, about 14:00 SAST (the reviewer travels the
+  following week), on c6e; c6c's tables are not filled. REVIEWER_PACK.md on claude/c6a-results carries c6e's table shells, findings
+  list and cover note, every figure a placeholder filled by `BASE=c6e node pathway/tables/packfill.js out out/c6e ../REVIEWER_PACK.md`
+  from c6e's outputs, never typed. It goes with whatever c6e results are in by Thursday 29 October, 22:00 SAST; a missing result is
+  named, with when it follows. The coal part-load check (14kc) runs on c6e's 2026 as a check; if it moves a headline figure, Nick and
+  the advisor are told straight away.
+- Message 484 (28 Oct 2026, about 00:10 SAST on the 29th): (1) part-load, option (a): 1.0324 stays for this pack, the pack states
+  the check, re-record from c6e's 2026 in the first page build after the send (TODO 14kp). (2) The Google Doc: the advisor mirrors
+  it after Nick's read on Friday morning; Claude does not touch it. (3) The c6e chain started 23:10 SAST on f7921b7 (PID 284 in the
+  run session), the central first; the advisor passes the last line of harness/out/c6e/progress.txt each morning.
+- Message 486 (29 Oct 2026, 08:31 SAST), c6e status: 18 of 33 runs done with their IRP checks (central, IRP-schedule runs,
+  both gas-timing runs, the four cost-of-capital cases, high wind, both carbon cases, null, s_gascapex25); to come, 12 short runs,
+  s_coalsustain, three long no-gas solves, the restart counts; end line expected 19:00–20:00 SAST, outputs PR about 20:30; one
+  container restart so far. The run session pushes claude/c6e-snapshot (finished runs only, read-only) for testing packfill and
+  the caption generation; no figure from the snapshot goes into the pack or the page. Tonight after the merge: packfill, section 6,
+  captions, panels, suite overnight; the advisor reviews and merges Friday before 10:00 SAST, else 483 (c).
+- The presets PR (483, replacing 482 (b)): in scope for Friday. Wednesday night: the 470, 471 and 473 items that do not depend on c6e
+  figures on a branch from main (28a), panels rewritten, full suite overnight in tracked pieces with nothing beside it (done on
+  claude/site-text, build 2026-10-29a). Thursday, once the c6e outputs PR is merged: preset captions and figures from c6e's outputs,
+  panels, suite, PR with the visible-text list; the advisor reviews and merges under 481 (b). If it is not merged by Friday 10:00
+  SAST, the pack links the site as it stands and the PR follows after the send.
+
+## Reviewer pack: Google Doc copy (user, 28 Oct 2026, message 474; new Docs 30 Oct 2026, messages 515 and 516)
+
+The reviewer's copy is the Google Doc "GridTwin ZA reviewer documentation" in Nick's Drive, ID
+1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg (https://docs.google.com/document/d/1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg/edit):
+Nick's cut of the pack, fact-checked by the advisor and checked word for word against the advisor's source (30 Oct 2026, message
+516). Superseded and no longer updated: 1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE (the copy made from 3ceb663, message 515) and
+1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc (the earlier working draft). Every report that changes the pack ends with one line
+listing the sections changed, so the advisor knows what to carry into the Doc.
+
+Sent to two reviewers at 11:47 SAST, 30 Oct 2026 (message 517); the version is named 'Sent 30 October' in the Doc's history.
+
+Done after the send (message 517; TODO 14la): REVIEWER_PACK.md is rebuilt from this Doc, with a fill marker behind each of its figures
+so the fill script still writes them, and everything Nick cut moves into a separate record file in the repository rather than
+being deleted. The plain-language check and a dry fill run on the rebuilt master before it is pushed.
+
+After the send (user, 29 Oct 2026, 10:57 SAST, message 494; applies to this Doc, messages 515 and 516): the reviewer's copy is the
+one live Google Doc; there is no frozen copy. Nick names the sent version "Sent 30 October" in its version history. After the send
+the advisor makes only targeted edits (single figures and sentences, never whole sections), puts new results in a dated addendum at
+the end, reads the open comments before each update, and leaves commented passages alone unless Nick agrees first.
+
+## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
+
+On 27 Oct the cloud machine restarted five times in two hours and killed every job started with nohup (the #121 suite, the c6a
+chain). Each restart followed an idle gap after a reply; none happened while replies came less than 6 minutes apart. Times SAST,
+from the session transcript and uptime:
+
+| Previous reply ended | Next wake | Idle gap | Machine restarted |
+|---|---|---|---|
+| 08:35 | 08:43 | 8 min | yes |
+| 08:57 | 09:18 | 21 min | yes |
+| 09:21 | 09:35 | 14 min | yes |
+| 09:57 | 10:07 | 10 min | yes |
+| 10:08 | 10:39 | 31 min | yes |
+| 09:37-09:57, replies 0-4 min apart | - | under 6 min | no (up 13-22 min) |
+
+Rule since then (CLAUDE.md, 'Long runs'): long jobs start with run_in_background in pieces under 2 hours, never nohup or &.
 
 ## The note is delayed: fix first, then one rebuild as c6 (user, 22 Oct 2026, message 321)
 
