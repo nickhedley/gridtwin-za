@@ -1,0 +1,35 @@
+[GridTwin] TDP loaded: 221 projects
+[GridTwin] Headroom lookup loaded: 10 regions
+[GridTwin] Offshore profile: 7 regions, CF 0.462 scaled x1.117 to ESMAP 0.516
+[GridTwin] Coal availability traces: 2023, 2024, 2025
+[GridTwin] stored risk panels not used: computed for fingerprint 030bb9c5fafa49, this page is null
+[GridTwin] Weather years loaded: 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 (capacity-weighted)
+{
+ "build": "2026-10-29b",
+ "trace": 2025,
+ "coalTWh": 169.17544636691892,
+ "co2": 185.60776704017553,
+ "shedGWh": 1.2328107289495955,
+ "E_TWh": {
+  "rooftop": 11.22,
+  "wind": 11.955,
+  "pv": 5.651,
+  "csp": 1.518,
+  "hybrid": 1.767,
+  "nuclear": 10.211,
+  "hydro": 1.788,
+  "imports": 6.568,
+  "coal": 169.175,
+  "ps": 3.889,
+  "batt": 0.035,
+  "ccgt": 0,
+  "diesel": 2.226,
+  "unserved": 0.001,
+  "curtailed": 0,
+  "dr": 0.088,
+  "exported": 0,
+  "exportedFirm": 15.097,
+  "vreCurtailed": 0
+ }
+}
+2025, as modelled (build 2026-10-29b): coal 169.2 TWh against Eskom's 170.4 (-0.7%)
