@@ -18601,3 +18601,8 @@ The CSIR and EDMSA figures equal 29b's at the same years (the 30a change, the ro
 runs on PROFILES). Recorded for the pack's figures: harness/pathway/c6e/validate_external_30a.txt (the after-run); packfill's
 ext.csircoal and .csirre read it (the newest validate_external_*.txt), so the master's CSIR line fills 52% and 42%, the reviewer Doc's
 figures from 30 Oct 2026 (message 527 (a)).
+
+PR #135's Cloudflare 'Workers Builds: gridtwin-za' check failed on its head f0c8fdc (started and completed at 21:40:26 UTC, no build
+step run), having passed on this branch's 8e4976f and a86b9d3 and on main's 5739c83 and fda846f 1-3 minutes before; the PR changes no
+file the site serves differently (index.html unchanged). Its log is only on the Cloudflare dashboard. This note's commit starts a
+fresh build (message 533 (a)); if that fails too, the user reruns it from GitHub.
