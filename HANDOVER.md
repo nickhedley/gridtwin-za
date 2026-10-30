@@ -202,6 +202,12 @@ one live Google Doc; there is no frozen copy. Nick names the sent version "Sent 
 the advisor makes only targeted edits (single figures and sentences, never whole sections), puts new results in a dated addendum at
 the end, reads the open comments before each update, and leaves commented passages alone unless Nick agrees first.
 
+Update cadence, amending 494 (Nick, 30 Oct 2026, message 523 (a)), in force: corrections, and anything that changes a finding's figure
+or meaning, go into the Doc the same day, each tagged '(updated DD Mon)' in the text where it changes and listed in a dated 'Updates
+since 30 October' section at the end of the Doc; Nick then names the version in the Doc's history and emails the reviewers. Additions
+and new results that do not change a finding go in weekly. 494's other rules stand (targeted edits only, open comments read first,
+commented passages left alone unless Nick agrees). Each report that changes the pack says which of the two its changes are.
+
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 
 On 27 Oct the cloud machine restarted five times in two hours and killed every job started with nohup (the #121 suite, the c6a
