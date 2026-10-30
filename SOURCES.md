@@ -2162,3 +2162,21 @@ above BW5 (BW5's prices do not hold: 784 MW of BW5 wind signed by December 2022,
 bids rejected as too high; message 469 (c)); lithium below BW3 (equipment prices fell after the bid: BNEF turnkey survey, USD 165/kWh
 in 2024, 117 in 2025, as in BLD_COST.batt). RMIPPPP not checked (hybrids to a firm profile; powerships bundle fuel and a 72.7%
 take-or-pay; weighted average evaluation price R1,575/MWh, April 2020 base; search snippet).
+
+### Public and private split of new build, for a blended rate (TODO 14kn; sources found and read by the advisor, 30 Oct 2026, message 519)
+
+Not re-read in the repository; figures as the advisor reported them. For the next note's blended cost of capital, not the sent pack.
+
+- Private share of new utility-scale wind and solar: 48% of 1.4 GW in 2025, and 73% of 2.3 GW expected in 2026 (BloombergNEF, South
+  Africa Transition Factbook 2026, p.9); 54% of 1,920 MW in the first half of 2026, with government programmes at 874 MW (UCT Power
+  Futures Lab, as reported on 19 Aug 2026).
+- Corporate procurement: corporates have signed about 5 GW since 2020, 3.1 GW of it standalone (BloombergNEF, South Africa
+  Transition Factbook 2026, p.10).
+- State procurement in service: REIPPPP had built about 7 GW by end-2025 (Engineering News, January 2026).
+- Storage: new storage is led by BESIPPPP (BloombergNEF, South Africa Transition Factbook 2026, p.29), so lithium stays on the
+  state-backed rate.
+
+Proposed basis for the next note (the advisor, 30 Oct 2026; Nick decides before the next note's runs): weight wind and solar by the
+share of new build, about 60% private; a corporate-PPA premium of +0.75 to +1.5 points, below CEPA's merchant +1.5 median (Table 5.22)
+because corporate PPAs are contracted; so wind and solar at 5.5% + 0.6 x (0.75 to 1.5) = 5.95-6.40%, about 6.0-6.4% real pre-tax.
+Open: a South African source for the corporate-PPA premium, for example lender margins on wheeled projects against REIPPPP deals.
