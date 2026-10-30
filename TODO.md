@@ -657,15 +657,15 @@ the coal rules in the LP) and what closes it, so a no-gas plan can be planned to
 (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg), 71 fill markers, word for word against the Doc when filled from main 016641e; the old
 master at d5383c2 kept whole in REVIEWER_PACK_RECORD.md (HANDOVER, message 517).
 
-14lb. An 'EPP 2026 as drafted' case for the rooftop and retail panels, after the note (user, 30 Oct 2026, message 520), once the
-advisor has the primary text (Government Gazette 55257, 28 Aug 2026, the revised Electricity Pricing Policy). Settings, by Policy
-Position: mandatory time-of-use tariffs for grid-tied embedded generation (33(b), 36(e)); export credited at the avoided purchase
-cost only (33(e)); network and retail charges payable regardless of export (33(f)), plus an extra billing charge (33(h)); fixed
-network capacity charges for small customers, phased in over five years (30); generation standby charges on all customers (15).
-Measure rooftop payback and household bills under the case against today's tariffs. Also check Policy Position 19's 50/50 split of
-transmission costs between generators and load against how the model charges network costs. Source of the list so far: OUTA's
-comments on the revised EPP, 28 Oct 2026 (in Drive); verify each position against the Gazette before modelling, and record the
-Gazette text in SOURCES then.
+14lb. An 'EPP 2026 as drafted' case for the rooftop and retail panels, after the note (user, 30 Oct 2026, messages 520 and 522;
+SOURCES 'Revised Electricity Pricing Policy, draft of 28 Aug 2026'). Gate cleared 30 Oct 2026: the advisor read the primary text
+(Government Gazette 55257, GN 7852, 28 Aug 2026) and confirmed OUTA's list, adding 33(d). Settings, by Policy Position: mandatory
+time-of-use tariffs for grid-tied embedded generation (33(b), 36(e)); DUoS or TUoS on exported energy for net-billing customers
+(33(d)); export credited at the avoided purchase cost only (33(e)); network and retail charges payable regardless of export (33(f)),
+plus an extra billing charge (33(h)); fixed network capacity charges for small customers, phased in over five years (30(d)-(f));
+generation standby charges on all customers (15). Measure rooftop payback and household bills under the case against today's
+tariffs. Also check Policy Position 19(a)-(b)'s 50/50 split of transmission costs between generators and load against how the model
+charges network costs. Where the Gazette sets no rate for a charge, record the value assumed and its basis.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
