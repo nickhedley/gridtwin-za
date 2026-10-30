@@ -16,7 +16,9 @@ import json, sys
 # decision on its caption (TODO 14kq): on 29a it sheds 132.4 GWh, the central having ended imports after 2030 since the preset was built.
 # Fossil-free 2040 topped up on build 2026-10-29a (user, messages 487 (1) and 490; RESULTS 'Fossil-free 2040 topped up') and rescored
 # on the same runs the top-up was confirmed on (seed 71830529, K=20).
-SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_29a_deep.json', 'Fossil-free 2040': 'harness/ext/rescore_page_29a_fossil_topped.json'}
+# Both rescored on build 2026-10-30a, with the page applying the twelve-year rooftop add-back itself (user, 30 Oct 2026, message 518 (c);
+# TODO 391 (b)), on the same seeds and K as 29a's; 29a's files are kept as the record.
+SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_30a_deep.json', 'Fossil-free 2040': 'harness/ext/rescore_page_30a_fossil.json'}
 sc = {}
 for n, src in SRCS.items():
     R = json.load(open(src)); v = R['presets'][n]['page']

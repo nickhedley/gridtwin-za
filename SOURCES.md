@@ -39,7 +39,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | DFFE REEA | rolling | 2,597 authorisations | permits, not commissioning. Used for profile SITE LOCATIONS (build_profile_sites.py) and | `reea_projects.json` - permits, not commissioning |
 | DFFE REEA, grid-language subset | derived | 161 of 2,597 | `private_grid_candidates.json` - candidate private grid assets |
 | Eskom TDP | annual | 2025-2034 edition | `tdp_projects.json`; also underpins the storage and transmission capex constants |
-| Revised Electricity Pricing Policy | one-off, for comment | Gazette 55257, gn 7852, 28 Aug 2026 | the price-component mapping in results.md; submission made 27 Sep |
+| Revised Electricity Pricing Policy | one-off, for comment | Gazette 55257, gn 7852, 28 Aug 2026 | the price-component mapping in results.md; submission made 27 Sep; the embedded-generation and network positions for TODO 14lb, section 'Revised Electricity Pricing Policy, draft of 28 Aug 2026' |
 | NERSA Wholesale Electricity Pricing Methodology | consultation | May 2026 | independent cross-check on the price-component mapping; names balancing costs, which GridTwin lacks |
 | Energy Council of South Africa, Electricity Wholesale Tariff Series, ch. 1-3 | one-off, 2026 (UK PACT-funded) | flip-book at energycouncil.org.za/insights/analysis/; PDFs held by the user | retail stack and the planned SAWEM transition basis (TODO 14af-14ai); no constant reads it yet |
 | NERSA Trading Rules | consultation, v3 | June 2026; comments extended to 28 Sep 2026 (dashboard Issue 04) | governs wheeling and trading - see calendar |
@@ -2180,3 +2180,21 @@ Proposed basis for the next note (the advisor, 30 Oct 2026; Nick decides before 
 share of new build, about 60% private; a corporate-PPA premium of +0.75 to +1.5 points, below CEPA's merchant +1.5 median (Table 5.22)
 because corporate PPAs are contracted; so wind and solar at 5.5% + 0.6 x (0.75 to 1.5) = 5.95-6.40%, about 6.0-6.4% real pre-tax.
 Open: a South African source for the corporate-PPA premium, for example lender margins on wheeled projects against REIPPPP deals.
+
+## Revised Electricity Pricing Policy, draft of 28 Aug 2026: embedded generation and network charges (TODO 14lb; user, 30 Oct 2026, messages 520 and 522)
+
+Department of Electricity and Energy, draft Revised Electricity Pricing Policy, Government Gazette 55257, GN 7852, 28 August 2026,
+for comment (https://www.gov.za/sites/default/files/gcis_document/202608/55257gon7852.pdf). A draft, not in force. The positions
+were first listed from OUTA's comments on the draft (28 Oct 2026, held in the user's Drive); the advisor read the Gazette's primary
+text on 30 Oct 2026 and confirmed each as OUTA describes it, with one addition (33(d)). Not read in this repository: gov.za is not
+reachable from the session.
+
+- Policy Position 15 (p.30): generation standby charges on all customers.
+- Policy Position 19(a)-(b) (p.36): transmission costs split 50/50 between generators and load.
+- Policy Position 30(d)-(f) (p.45): fixed network capacity charges for small customers, phased in over five years.
+- Policy Position 33(a)-(h) (p.48), grid-tied embedded generation: mandatory time-of-use tariffs (33(b)); net-billing customers also
+  pay DUoS or TUoS on exported energy (33(d), the advisor's addition); export credited at the avoided purchase cost only (33(e));
+  network and retail charges payable regardless of export (33(f)); an extra billing charge (33(h)).
+- Policy Position 36(b)-(e) (p.50): mandatory time-of-use tariffs for grid-tied embedded generation (36(e)).
+
+Use: the 'EPP 2026 as drafted' case for the rooftop and retail panels, after the note (TODO 14lb). No model input changed.

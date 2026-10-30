@@ -47,6 +47,11 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 plant'): (1) 2026 plant counted from each plant's commercial operation, not 1 January (adds 4.7 TWh of coal and 5.1 Mt in 2026
 only); (2) the rooftop add-back in build_demand_2026.py on the same solar the engine check removes (each weather year's, or the
 twelve-year mean), not 2025's (about -1.5 TWh of coal a year, every year). Also TODO 16c, the RMIPPPP hybrids' 2026 dates.
+Page done 30 Oct 2026 (user, message 518 (c); build 2026-10-30a, branch claude/site-tidy; RESULTS 'Site tidy on build 2026-10-30a'):
+the page applies the same scaling (FIXED.bldRoof12, twelveYearDemand(), K 0.8895) in the adequacy test, the weather panel and the
+preset checks, so the preset figures match the run checks without the validator's own scaling; the pathway runs' roof12.js marks the
+demand as already scaled. Still unscaled, after the note: the page's own build optimiser (its representative days and stress-window
+ranking read PROFILES.demand).
 14je. s_gascommit (user, 26 Oct 2026, message 386 (a)): prepared, not run (PR #118: GAS_COMMIT in pathway_perfail.js,
 harness/pathway/s_gascommit.sh). c6 with a committed first gas round forced into the build, the rest re-optimised, engine check
 against 20 GWh. Start within an hour of Nick's instruction after the Gas IPP Procurement Programme briefing (Wed 28 Oct 09:00 SAST),
@@ -652,15 +657,15 @@ the coal rules in the LP) and what closes it, so a no-gas plan can be planned to
 (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg), 71 fill markers, word for word against the Doc when filled from main 016641e; the old
 master at d5383c2 kept whole in REVIEWER_PACK_RECORD.md (HANDOVER, message 517).
 
-14lb. An 'EPP 2026 as drafted' case for the rooftop and retail panels, after the note (user, 30 Oct 2026, message 520), once the
-advisor has the primary text (Government Gazette 55257, 28 Aug 2026, the revised Electricity Pricing Policy). Settings, by Policy
-Position: mandatory time-of-use tariffs for grid-tied embedded generation (33(b), 36(e)); export credited at the avoided purchase
-cost only (33(e)); network and retail charges payable regardless of export (33(f)), plus an extra billing charge (33(h)); fixed
-network capacity charges for small customers, phased in over five years (30); generation standby charges on all customers (15).
-Measure rooftop payback and household bills under the case against today's tariffs. Also check Policy Position 19's 50/50 split of
-transmission costs between generators and load against how the model charges network costs. Source of the list so far: OUTA's
-comments on the revised EPP, 28 Oct 2026 (in Drive); verify each position against the Gazette before modelling, and record the
-Gazette text in SOURCES then.
+14lb. An 'EPP 2026 as drafted' case for the rooftop and retail panels, after the note (user, 30 Oct 2026, messages 520 and 522;
+SOURCES 'Revised Electricity Pricing Policy, draft of 28 Aug 2026'). Gate cleared 30 Oct 2026: the advisor read the primary text
+(Government Gazette 55257, GN 7852, 28 Aug 2026) and confirmed OUTA's list, adding 33(d). Settings, by Policy Position: mandatory
+time-of-use tariffs for grid-tied embedded generation (33(b), 36(e)); DUoS or TUoS on exported energy for net-billing customers
+(33(d)); export credited at the avoided purchase cost only (33(e)); network and retail charges payable regardless of export (33(f)),
+plus an extra billing charge (33(h)); fixed network capacity charges for small customers, phased in over five years (30(d)-(f));
+generation standby charges on all customers (15). Measure rooftop payback and household bills under the case against today's
+tariffs. Also check Policy Position 19(a)-(b)'s 50/50 split of transmission costs between generators and load against how the model
+charges network costs. Where the Gazette sets no rate for a charge, record the value assumed and its basis.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
