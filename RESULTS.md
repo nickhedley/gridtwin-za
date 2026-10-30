@@ -18569,3 +18569,24 @@ the synchronous basis, ramps) raise 2035 coal output at 2035's rules too; the 20
 
 Taken off CLAUDE.md's known failures (message 524 (b)). Caveat: the check compares a 2035 build run under 2026 operating rules; whether
 it should run at scenarioYear 2035 is a check correction for the user (TODO 14lc), not made here.
+
+### Scenarios table on build 2026-10-30a: Deep decarbonisation 2035 1.20 GWh, R334.9bn a year, 22.8 Mt against Least-cost path 2035's 4.32 GWh, R260.9bn, 90.5 Mt; Fossil-free 2040 1.40 GWh on either seed, R451.8bn, 0 Mt against Least-cost 2040's 0.60 GWh, R305.3bn, 67.5 Mt (user, 30 Oct 2026, messages 523 (b), 528-533; branch claude/preset-table)
+
+harness/ext/preset_table.js on main fda846f (build 2026-10-30a), 30 Oct 2026, finished about 23:45 UTC; output harness/ext/preset_table.json;
+the table PRESET_TABLE.md, every figure a packfill marker (preset.* keys). Each column one year on the page's engine, twelve weather
+years x 20 outage draws (240 runs) on twelveYearDemand, as the preset scores; each preset paired with the least-cost pathway on the same
+seed (message 533 (b)): Deep decarbonisation 2035 and Least-cost path 2035 on 120000017; Fossil-free 2040 and Least-cost path 2040 on
+71830529 and 260000011. Least-cost path 2040 is the c6e pathway's 2040 state from gen_pathway_presets.py's block() with year 2040
+(harness/ext/preset_table_lcp2040.js; not a page preset). Cost of capital: the page's central case, c6e's (no preset overrides it).
+System cost: the engine's systemCostR (fuel, carbon tax, annualised capital of new build including rooftop, fixed O&M, IPP contracts,
+demand response, start-up costs, less export revenue, plus unserved energy at its penalty), the quantity behind the pathway's PV.
+The two searched presets reproduce PRESET_SCORES to four decimals on their own seeds (the script stops otherwise).
+
+Findings: Fossil-free 2040 scores 1.3951 GWh on both seeds, identical to every digit with its cost: with no coal, gas or diesel
+standing in 2040 the outage draws reach no plant, so its runs vary only with the weather year and the top-up-sample caveat has no
+effect on its score. Least-cost path 2035 is 4.32 GWh on Deep's seed, above the presets' half-0.002% target (2.39) and within NTCSA's
+20 GWh, the standard it was built to. Both presets rely on 100-hour iron-air (Deep 3.25 GW, 65% of its new stored energy; Fossil-free
+13 GW, 84%), whose finding is a known failure; the pathway builds none. Peaking plant capacity factor: 0.36% (Deep), 1.42% and 1.38%
+(Least-cost 2035, 2040); Fossil-free has none. Two first runs of the script were discarded: one computed the peaking capacity factor
+without the 8,760 hours, and one counted the 1.58 GW of Cape wind under the curtailment approval as new wind (now its own row, so new
+wind matches the pack's 22.6 and 31.4 GW).
