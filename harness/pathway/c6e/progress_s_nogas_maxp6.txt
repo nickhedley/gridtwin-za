@@ -1,0 +1,12 @@
+2026-10-29T19:30Z start, PID 422, on 5857f03 c6e run set outputs (runs on f7921b7, build 2026-10-, BUILD_STAMP = '2026-10-28a
+19:30 start s_nogas_maxp6_c6e (GAS_CAP=0 OCGD=0) MAXP=6 TL=7200; free 30G
+19:33 stopped by PID (422, 442, 443) 3 min in, deliberately: the script is changed to keep its LP cache for a possible MAXP=10 run (Nick's answer); counter reset to 0
+2026-10-29T19:34Z start, PID 576, on 5857f03 c6e run set outputs (runs on f7921b7, build 2026-10-, BUILD_STAMP = '2026-10-28a
+19:34 start s_nogas_maxp6_c6e (GAS_CAP=0 OCGD=0) MAXP=6 TL=7200; free 30G
+20:08 check-in: running (PID 576), 2 solves done (19:38, 19:49), pass 3 under way; peak memory 4.3 GB; container booted 19:29 (previous reply ended about 16:27)
+20:40 check-in: running (PID 576), 4 solves done (19:38, 19:49, 20:08, 20:37; passes taking 11, 19, 29 min), pass 5 under way; peak memory 5.6 GB; no restart
+20:42 end s_nogas_maxp6_c6e rc=0 done stall stop 4106s
+20:56 check s_nogas_maxp6_c6e done
+20:56 MAXP6 DONE
+21:05 s_nogas_maxp6_c6e: stall stop after 4 passes (STALL=0.1 from pass 4, env_c6.sh, as in the set); passes 1-3 identical to s_nogas_c6e; engine check over 20 GWh in 2037-2040; MAXP=10 held for Nick's decision (same settings would stall at pass 4 again). Nothing running.
+21:15 Nick: no MAXP=10 run; LP cache deleted; outputs PR
