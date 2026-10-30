@@ -52,14 +52,13 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
 (async () => {
   await new Promise(r => setTimeout(r, 6000)); const w = dom.window;
   await w.eval('loadWeatherYears()');
-  // The runs' rooftop add-back scaled to the twelve-year mean (messages 391 (b), 392 (c); roof12.js), recorded as roofAddback12 and
-  // applied by pathcheck.js before every check: applied here the same way, once, so the page is compared under the check's own demand
-  // series. The live page does not apply it (about 1.7 TWh a year more grid load), so the page's preset figures sit about 0.3% above
-  // the check's until the exact fix lands (TODO 391 (b)); every run checked here must record the same K.
-  { const Ks = RUNS.map(R => JSON.parse(fs.readFileSync(path.join(ROOT, R.build), 'utf8')).roofAddback12 || null).filter(Boolean);
-    if (Ks.length){ const K = require('./pathway/roof12.js')(w); const bad = Ks.filter(k => Math.abs(k - K) > 1e-9);
-      check('the runs record the page\'s rooftop add-back scaling (roof12)', bad.length === 0 && Ks.length === RUNS.length, `page K ${K}, runs ${Ks.join(', ')}`);
-      console.log(`roof12: rooftop add-back scaled by ${K.toFixed(4)}, as the runs record`); } }
+  // The runs' rooftop add-back scaled to the twelve-year mean (messages 391 (b), 392 (c)), recorded as roofAddback12. From build
+  // 2026-10-30a the page applies the same scaling itself in its twelve-weather-year runs (twelveYearDemand, message 518 (c)), so
+  // this check uses the page's series as it stands and only asserts that every run records the page's K.
+  { const Ks = RUNS.map(R => JSON.parse(fs.readFileSync(path.join(ROOT, R.build), 'utf8')).roofAddback12 || null);
+    const K = +w.eval('roofTwelveYearK()'), on = !!w.eval('FIXED.bldRoof12');
+    check('the page scales the rooftop add-back as the runs record it (roof12)', on && Ks.every(k => k != null && Math.abs(k - K) <= 1e-9), `page ${on ? 'on' : 'off'}, K ${K}, runs ${Ks.join(', ')}`);
+    console.log(`roof12: the page scales the rooftop add-back by ${K.toFixed(4)}; the runs record ${Ks.join(', ')}`); }
   const same = (a, b) => (typeof a === 'number' && typeof b === 'number') ? Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b)) : a === b;
   for (const R of RUNS){
     const NAME = R.name, Y = R.year || 2035, P = JSON.parse(fs.readFileSync(path.join(ROOT, R.build), 'utf8'));
@@ -103,7 +102,7 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
     // 3. The engine check's profiles and outage draws.
     const K = ROW.draws, YRS = JSON.parse(w.eval('JSON.stringify(bldWeatherYears.meta.years)')), t0 = Date.now(), o = [];
     for (const yy of YRS) for (let k = 0; k < K; k++) o.push(JSON.parse(w.eval(`(function(){ const nat=weatherYearNational(String(${yy}));
-        const x=simulate({...state,outageSeed:${SEED_BASE}+${k}*104729+${yy}*7919},{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
+        const x=simulate({...state,outageSeed:${SEED_BASE}+${k}*104729+${yy}*7919},{demand:twelveYearDemand(),solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
         return JSON.stringify([x.E.unserved/1e3, x.systemCostR/1e9, x.co2, (x.systemCostR-x.btmCapexR)/1e9]); })()`)));
     const m = i => o.reduce((a, b) => a + b[i], 0) / o.length;
     const r = { nRuns: o.length, mean: m(0), cost: m(1), co2: m(2), gridCost: m(3) }, dPct = 100 * (r.cost - ROW.cost) / ROW.cost;

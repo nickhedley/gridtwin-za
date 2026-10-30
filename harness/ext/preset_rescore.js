@@ -1,6 +1,6 @@
 // Provenance (19 Oct 2026, messages 214 (2), 230 (3), 231): the rescore that wrote harness/ext/rescore_page_19c.json (VARIANTS=page),
 // run with the repository at build 2026-10-19c; from 19e it reads the repository it sits in (or ROOT) and writes OUT (default
-// harness/ext/rescore.json).
+// harness/ext/rescore.json). From build 2026-10-30a the twelve weather years run on the page's twelveYearDemand (message 518 (c)).
 // Message 214 (2) / 227 (4): Deep decarbonisation 2035 and Fossil-free 2040 rescored on the aligned defaults (build 19b) and
 // the c5f base: twelve weather years x K independent outage draws (seeds 71830529 + k*104729 + year*7919, as pathcheck.js and
 // the preset check), mean unserved energy against half the 0.002% standard on customer demand (pathcheck's target), and cost.
@@ -30,7 +30,7 @@ const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToB
    w.eval(`applyState(PRESETS[${JSON.stringify(name)}]); Object.assign(state, ${JSON.stringify(over)});`);
    const t0=Date.now();
    const r=JSON.parse(w.eval(`(function(){ let sh=0,c=0,cu=0,co=0,n=0; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
-     for (let k=0;k<${K};k++){ const x=simulate({...state,outageSeed:${SEED}+k*104729+yy*7919},{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
+     for (let k=0;k<${K};k++){ const x=simulate({...state,outageSeed:${SEED}+k*104729+yy*7919},{demand:(typeof twelveYearDemand==='function'?twelveYearDemand():PROFILES.demand),solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
        let dem=0,chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
        sh+=x.E.unserved/1e3; c+=x.systemCostR/1e9; cu+=(dem-chg)*0.00002/1e3; co+=x.co2; n++; } }
      return JSON.stringify({n, shed:sh/n, cost:c/n, target:0.5*cu/n, co2:co/n, demandGrowthPct:state.demandGrowthPct, carbon:state.carbonTaxRPerT}); })()`));

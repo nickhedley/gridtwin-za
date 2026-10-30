@@ -193,7 +193,7 @@ let ROOF_STEP27=0; const ROOT='testroot', OUT=process.env.OUT||'pathway.json', G
    w.fetch=async(u)=>{try{const cl=String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config)/,'');const t=fs.readFileSync(path.join(path.resolve(ROOT),cl),'utf8');return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}};}});
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
  // ROOF12=1 (messages 391 (b), 392 (c)): rooftop add-back on the twelve-year mean solar (pathway/roof12.js); recorded as roofAddback12.
- const ROOF12K = process.env.ROOF12==='1' ? require('./roof12.js')(w) : null; if (ROOF12K) console.log('ROOF12: rooftop add-back scaled by', ROOF12K.toFixed(4));
+ const ROOF12K = process.env.ROOF12==='1' ? require('./roof12.js')(w) : null; if (!ROOF12K) w.eval("if ('bldRoof12' in FIXED) FIXED.bldRoof12 = 0;");   // a run without ROOF12 keeps the unscaled series (build 2026-10-30a) if (ROOF12K) console.log('ROOF12: rooftop add-back scaled by', ROOF12K.toFixed(4));
  // ROOF_FROM_END2026=1 (user, 26 Oct 2026, message 392 (b)): FIXED.rooftopMW is the 2026 mean; the trajectory starts from the
  // latest installed level, so 2027's new rooftop is ROOF_MW plus the end-2026 level (nodal/rooftop_ntcsa_2026.json, latest NTCSA
  // point plus the recent pace; build_rooftop_2026.py) less the 2026 mean. Recorded as roofStep2027. Unset: 2027 adds ROOF_MW only.

@@ -17,6 +17,9 @@
   harness/ext/gen_lcoe_anchors.py writes LCP_2030_*; RESULTS 'LCOE anchor notes on c6e's 2030'). After the outputs PR merges,
   confirm pathway_c6e.json is identical to the snapshot's; if not, rerun.
 - Code comments (487 (3)): the remaining emphasis capitals and the comment phrases go in a separate PR after the send.
+  Done 30 Oct 2026 on claude/site-tidy (message 518 (a)), with the carbon capture and unit-commitment notes restated as the default
+  and its basis (518 (b)) and the page's own twelve-year rooftop scaling (518 (c), TODO 14jf; build 2026-10-30a; RESULTS 'Site tidy
+  on build 2026-10-30a').
 - Pack (489 (a)): one caveat line, the c6e central against the Australian 0.002% standard (AEMO 2026 ESOO, pp. 5, 24-25), computed
   by packfill (nemover) from the engine check; the snapshot reproduces the advisor's preliminary 2031 and 2032 figures.
 - Pack caveats, no new runs (491, 492): beside Fossil-free 2040, its 13 GW of 100-hour iron-air from the original design (figures
@@ -198,6 +201,15 @@ After the send (user, 29 Oct 2026, 10:57 SAST, message 494; applies to this Doc,
 one live Google Doc; there is no frozen copy. Nick names the sent version "Sent 30 October" in its version history. After the send
 the advisor makes only targeted edits (single figures and sentences, never whole sections), puts new results in a dated addendum at
 the end, reads the open comments before each update, and leaves commented passages alone unless Nick agrees first.
+
+Update cadence, amending 494 (Nick, 30 Oct 2026, message 523 (a)), in force: corrections, and anything that changes a finding's figure
+or meaning, go into the Doc the same day, each tagged '(updated DD Mon)' in the text where it changes and listed in a dated 'Updates
+since 30 October' section at the end of the Doc; Nick then names the version in the Doc's history and emails the reviewers. Additions
+and new results that do not change a finding go in weekly. 494's other rules stand (targeted edits only, open comments read first,
+commented passages left alone unless Nick agrees). Each report that changes the pack says which of the two its changes are.
+Tags (Nick, 30 Oct 2026, message 525): the 30 Oct update went in without tags or an updates section, deliberately, because the
+reviewers had not yet opened the Doc. From now on, once the reviewers have the Doc, a correction carries an '(Updated DD Month)' tag
+and a line in the updates section. The master (REVIEWER_PACK.md) takes a tag or an updates line only when it appears in the Doc.
 
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 

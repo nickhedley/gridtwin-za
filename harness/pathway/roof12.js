@@ -9,5 +9,5 @@ module.exports = function roof12(w){
   return +w.eval(`(function(){ const S = PROFILES.solar, n = S.length; let m = 0; for (let h = 0; h < n; h++) m += S[h]; m /= n;
     const K = FIXED_PV_CF_12Y / m, R = FIXED.rooftopMW * FIXED.rooftopDerate * (1 - K), D = PROFILES.demand, out = new Array(D.length);
     for (let h = 0; h < D.length; h++) out[h] = D[h] - R * S[h % n];
-    PROFILES.demand = out; return K; })()`);
+    PROFILES.demand = out; PROFILES.roof12Applied = true; return K; })()`);   // the marker stops the page's twelveYearDemand scaling again (build 2026-10-30a)
 };
