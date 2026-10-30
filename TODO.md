@@ -576,9 +576,14 @@ s_discirp_c6c at IRP 2025's 11.3% (pack limitation 32). 30-year lives for wind a
 
 14kn. Blended public and private cost of capital for the next note (user, 28 Oct 2026, message 481 (a)). Decision: the central keeps
 wind and solar on state-backed finance at 5.5% real; private finance (s_cocprivate, CEPA's premiums) stays a sensitivity for this
-pack. The next note uses a blended rate per technology: source the public/private split of built capacity (REIPPPP and BESIPPPP
-awards against private wheeled and embedded plant in service, from the project register and Eskom's connected-capacity lines; not
-NERSA registrations, which count intent), set the blend from it, and record both in SOURCES beside 'Cost of capital by technology'.
+pack. The next note uses a blended rate per technology: source the public/private split of built capacity (REIPPPP and BESIPPPP awards
+against private wheeled and embedded plant in service, from the project register and Eskom's connected-capacity lines; not NERSA
+registrations, which count intent), set the blend from it, and record both in SOURCES beside 'Cost of capital by technology'. Sources
+found by the advisor, 30 Oct 2026 (message 519; SOURCES 'Public and private split of new build, for a blended rate'): private share of
+new utility-scale wind and solar 48% in 2025, 73% expected in 2026 (BNEF), 54% in the first half of 2026 (UCT Power Futures Lab);
+storage led by BESIPPPP, so lithium stays state-backed. Proposed basis: about 60% private for wind and solar, a corporate-PPA premium
+of +0.75 to +1.5 points, so wind and solar at about 6.0-6.4% real. Open: a South African source for the corporate-PPA premium (lender
+margins on wheeled against REIPPPP deals). You: decide the basis before the next note's runs.
 
 14ko. Reviewer pack schedule and scope (user, 28 Oct 2026, messages 481 (b)-(d), 482 and 483; HANDOVER 'Decisions of 28 Oct 2026').
 The pack goes Friday 30 October 2026, about 14:00 SAST, on c6e, with whatever c6e results are in by Thursday 22:00 SAST; any
@@ -651,6 +656,16 @@ the coal rules in the LP) and what closes it, so a no-gas plan can be planned to
 14la. Done 30 Oct 2026 (message 517): REVIEWER_PACK.md rebuilt from the sent Doc 'GridTwin ZA reviewer documentation'
 (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg), 71 fill markers, word for word against the Doc when filled from main 016641e; the old
 master at d5383c2 kept whole in REVIEWER_PACK_RECORD.md (HANDOVER, message 517).
+
+14lb. An 'EPP 2026 as drafted' case for the rooftop and retail panels, after the note (user, 30 Oct 2026, message 520), once the
+advisor has the primary text (Government Gazette 55257, 28 Aug 2026, the revised Electricity Pricing Policy). Settings, by Policy
+Position: mandatory time-of-use tariffs for grid-tied embedded generation (33(b), 36(e)); export credited at the avoided purchase
+cost only (33(e)); network and retail charges payable regardless of export (33(f)), plus an extra billing charge (33(h)); fixed
+network capacity charges for small customers, phased in over five years (30); generation standby charges on all customers (15).
+Measure rooftop payback and household bills under the case against today's tariffs. Also check Policy Position 19's 50/50 split of
+transmission costs between generators and load against how the model charges network costs. Source of the list so far: OUTA's
+comments on the revised EPP, 28 Oct 2026 (in Drive); verify each position against the Gazette before modelling, and record the
+Gazette text in SOURCES then.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
