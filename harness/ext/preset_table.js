@@ -40,7 +40,7 @@ const PRESETS_RUN=[['deep','Deep decarbonisation 2035',null,true],['lcp35','Leas
       let d0=0,c0=0; for(let i=0;i<x.loadS.length;i++){ d0+=x.loadS[i]; c0+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); } cu+=(d0-c0)*0.00002/1e3;
       ocE+=(x.E.diesel||0)+(x.ocgtMWh||0); ocC+=dieselAvailMW({...FIXED,...st})+Math.max(0,st.newOcgtMW||0); n++; } }
     const s=st0, y=s.scenarioYear, g=v=>(+v||0)/1000;
-    const newGW={wind:g(s.newWindMW)+g(s.windCapeMW), solar:g(s.newPvMW), offshore:g(s.newOffshoreMW), rooftop:g(s.newRooftopMW),
+    const newGW={wind:g(s.newWindMW), windCape:g(s.windCapeMW), solar:g(s.newPvMW), offshore:g(s.newOffshoreMW), rooftop:g(s.newRooftopMW),
       lithium:g(s.newBattMW), lithiumHours:+s.newBattHours||0, ironAir:g(s.newIronAirMW), ironAirHours:+(s.newIronAirHours??FIXED.newIronAirHours), vrfb:g(s.newVrfbMW),
       pumpedStorage:g(s.newPsMW), ccgt:g(s.newCcgtMW), ocgtGas:g(s.newOcgtMW), ocgtDiesel:g(s.newOcgdMW), nuclear:g(s.newNuclearMW)};
     const remGW={coal:g(Math.max(0,s.coalInstalledMW-s.coalDecomMW)), nuclear:g(s.nuclearMW), hydro:g(s.hydroMW), pumpedStorage:g(s.psPowerMW),
