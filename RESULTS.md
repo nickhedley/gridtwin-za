@@ -18488,3 +18488,84 @@ first scripts only, 30 Oct 2026 about 11:33-13:23 UTC): node checks 998/1007, au
 37/40, validate_response 86/87, validate_consistency 82/83 (high-season off-peak), validate_benchmarks 28/30, validate_outputs 49/51,
 eng5 storage vs unserved; validate_external 8/8 (EDMSA Scenario A CO2 2035 117.0 against 124 Mt). All known (RESULTS 'Known
 failures').
+
+### The 51% gas minimum alone (s_gasfloor_c6e): +R25.6bn, -14.6 Mt, +70.9 TWh of gas over 2026-40, cost per MWh served +R6 (2035) to +R77 (2040); the 2025 replay 169.2 against Eskom's 170.4 TWh (-0.7%); validate_external 8/8; c6e's new gas runs March to August, most in April and May (user, 30 Oct 2026, messages 496, 506 and 524 (a); TODO 14kv (a) and 14kx; PR #131, build 2026-10-29b)
+
+Runs: engine only, no optimiser, on 016641e (BUILD_STAMP '2026-10-29b'), 30 Oct 2026 10:56-11:25 UTC, the run session; files in
+harness/pathway/c6e/ (results_29b.md has every table and setting; run log progress_29b.txt). Eskom figures are ESK19679 annual sums as
+recorded in RESULTS (Eskom credited; the analysis is ours, not Eskom's).
+
+The minimum alone (TODO 14kv (a)): pathway_s_gasfloor_c6e.json is pathway_c6e.json with gasFloor.engine=1 (the engine's annual minimum:
+51% capacity factor on up to 6,000 MW of CCGT, 2030-40); the same build, the optimiser not run, so the difference is the minimum alone.
+Engine check as the set (pathcheck.js, LNG=1 GRID=1, groups a, b and c, 120 runs a year). Comparator: c6e's own build checked on 29b
+(pathcheck_c6e_29b_*), identical in every year to the recorded check on 28a (pathcheck_c6e_*).
+- Engine PV 2026-40 at 8% real: R2,340.3bn against R2,314.7bn, +R25.6bn (with grid: R2,348.8bn against R2,323.1bn, +R25.6bn).
+- CO2 2026-40: 1,724.0 against 1,738.6 Mt, -14.6 Mt; the forced gas displaces coal (2040 coal 50.5 against 59.1 TWh).
+- Gas 2026-40: 86.1 against 15.2 TWh, +70.9 TWh.
+- No effect before 2035: 2026-29 have no minimum and 2030-34 no CCGT standing. New CCGT: 551 MW in 2035, 6,074 MW by 2040.
+- Cost per MWh served (the engine's avgCost over gridServed, served-weighted across runs), above c6e: +R6.3 (2035), +R14.0, +R27.5,
+  +R45.6, +R60.5, +R77.0 (2040); 2040 is 1,097.1 against 1,020.1 R/MWh, +7.5%.
+- The minimum is met: at most 0.07 TWh a year short of its target (2040, target 26.81 TWh).
+- Curtailed wind and solar in 2040: 36.6 against 25.1 TWh, +11.5 TWh.
+- Against s_irpgas (IRP 2025's gas build with the minimum, +12-16% a MWh over 2030-40, +R198bn): most of that run's cost comes from
+  IRP 2025's larger and earlier gas build, not the minimum alone. The pass-through to Megaflex is TODO 14kv (b).
+
+The 2025 replay: the preset '2025, as modelled' as the page runs it (applyState, simulate on PROFILES, coal availability trace 2025),
+one run (replay2025_29b.js): coal 169.2 TWh against Eskom's 170.4 (-0.7%); CO2 185.6 Mt; unserved 1.2 GWh.
+
+validate_external on 016641e, every check's detail printed (a copy whose check() also logs passes; the checks unchanged;
+validate_external_29b.txt): 8/8. CSIR 2030 coal share 55.3% against 55% (band 6 points); renewable share 38.2% against 40% (band 8);
+EDMSA Scenario A CO2 2035 117.0 against 124 Mt (band 22; CLAUDE.md's known failure 1, cause below in its own entry); EDMSA Scenario A
+wind 2035 65.6 against 64 TWh (band 12); MTSAO 2030 unserved 5.2 TWh against 'more than 4'; MTSAO 2030 open-cycle utilisation 56.5%
+against 'about 45%' (band 35-58%); build pace 10.2 GW a year against GreenCape's 12.9 GW to 2030; the presets inside CSIR's ranges.
+
+When c6e's new gas runs (TODO 14kx; gashourly_c6e.js, pathcheck.js with per-run gas tallies added, YEARS=2035,2040, 120 runs a year;
+its cost, CO2 and gas match pathcheck_c6e_c.json). Gas is stack.ccgt (new CCGT and open-cycle on LNG; no existing CCGT). Wind and
+solar resource: each hour's weather-year national profiles times the fleet standing that year, before dispatch and curtailment.
+- By month, GWh, 2035 (539 a year): Jan 32, Feb 25, Mar 50, Apr 95, May 100, Jun 84, Jul 58, Aug 52, Sep 22, Oct 11, Nov 6, Dec 4.
+  2040 (5,299): 313, 421, 625, 836, 851, 608, 463, 510, 321, 178, 108, 65. Mostly March to August, most in April and May, least in
+  October to December.
+- Share in the lowest tenth of hours by wind and solar (876 hours): 43.5% in 2035, 51.2% in 2040.
+- Share in hours below half the mean: 84.8% (3,102 hours a year) and 91.9% (3,150); those hours are over a third of the year, mostly
+  windless nights, so the share says gas runs at night more than that it runs in lulls.
+- Multi-day lulls (three or more consecutive days below 60% of the mean day): half a day a year, 2.0% and 1.2% of gas; the threshold
+  is too strict to separate winter lulls; a looser one is a rerun of gashourly_c6e.js.
+
+Carried into the reviewer pack master and NOTE_DRAFT with fill markers (message 524 (c), (d)): s_gasfloor.dpvabsbn, .avgcostpctr_2040,
+.dco2absmt and .dcurt_2040; replay.coal, .eskom and .withinpct; ext.csircoal and .csirre (new packfill keys); each fills to the figure
+in the reviewer Doc's update of 30 Oct 2026.
+
+### EDMSA Scenario A CO2 2035: 87.4 Mt on 2026-10-23a to 118.6 on 2026-10-24b (PR C's coal rules), then 117.0 from 2026-10-27f; the check runs its 2035 build at the page's default year, 2026, so PR C's 2026 practice floor applies; at 2035's rules it reads 108.1, also within its 22 Mt (user, 30 Oct 2026, message 524 (b))
+
+What moved: validate_external's 'EDMSA Scenario A CO2 2035 within 22 Mt of the published figure' (124 Mt), CLAUDE.md's known failure 1
+from the repository's first build. Recorded 83.3 Mt on 14r (RESULTS, mid-October) and 117.0 on 29b (PR #131). Measured here with
+harness/validate_external.js unchanged since 22e, run on each main build from 22e to 29b (git archive of each merge commit) through a
+copy that also prints passing checks' detail (scratchpad m524/vext_detail.js; the checks unchanged), one at a time, 30 Oct 2026 about
+13:25-13:43 UTC:
+
+| Build (main merge) | EDMSA A CO2 2035, Mt | EDMSA A wind 2035, TWh |
+|---|---|---|
+| 2026-10-22e (a51f79b, PR A) | 87.4 | 75.2 |
+| 2026-10-23a (021feb2, PR B) | 87.4 | 75.2 |
+| 2026-10-24b (1b0dad0, PR C) | 118.6 | 65.0 |
+| 2026-10-25a, 25b | 118.6 | 65.0 |
+| 2026-10-26b, 27e | 118.5 | 65.1 |
+| 2026-10-27f (acb2451: 24 h minimum down time, practice floor 0.715) | 117.0 | 65.6 |
+| 2026-10-28a, 29b | 117.0 | 65.6 |
+
+The 14r to 22e move (83.3 to 87.4, both failing) is not bisected here. The step that made the check pass is PR C (+31.2 Mt). PR C's
+seven traced copies (scratchpad bisectC, build 24a head 182176f, each with one group of coal settings switched back to COAL_PRE_C;
+RESULTS 'Suite on build 2026-10-24a'), EDMSA A CO2 2035: all switched back 87.4 (equal to 23a); practice floor switched back 90.2;
+design minimums 105.7; synchronous-floor basis 105.5; ramp honoured 104.6; commitment weighing starts 100.0; start-cost basis 99.9.
+The practice floor alone accounts for most of the rise (28 of 31 Mt); the groups are not additive.
+
+Why the practice floor reaches a 2035 build: the check's EDMSA_A state sets no scenarioYear, so simulate runs it at the page's default
+(FIXED.scenarioYear 2026): the 2026 practice floor (coalMslPracticeFloor, 'until 2029') holds coal units at or above 75% (24b) or
+71.5% (27f) of capacity, and imports run (importsEndYear 2030). The 27f step (-1.5 Mt) is the floor's recalibration from 0.75 to
+0.715. A probe with scenarioYear set (scratchpad m524/vext_year.js, EDMSA_YEAR; not a change to the check): 29b at 2026 117.0 Mt
+(the check as it stands), at 2035 108.1 Mt (gap -15.9, within 22) and wind 72.7 TWh (gap +8.7, within 12); 23a at 2035 97.4 Mt (gap
+-26.6, failing). So the check passes at either year on the current page: PR C's commitment rules (design minimums, start weighing,
+the synchronous basis, ramps) raise 2035 coal output at 2035's rules too; the 2026 floor adds a further 8.9 Mt.
+
+Taken off CLAUDE.md's known failures (message 524 (b)). Caveat: the check compares a 2035 build run under 2026 operating rules; whether
+it should run at scenarioYear 2035 is a check correction for the user (TODO 14lc), not made here.

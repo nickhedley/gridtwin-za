@@ -58,6 +58,7 @@
 //   Draft 2 (message 513): RUN.nemnearyears, RUN.addgwr_T (whole GW), RUN.dpvabsplain, RUN.servedr_YYYY; page.discr, page.cocr.[CASE.]TECH,
 //                        page.privrange
 //   Sent Doc (message 517): RUN.demandpctr_YYYY, RUN.blockmw_YYYY, RUN.roofadd_YYYY, RUN.shortyears
+//   30 Oct update (message 524 (d)): RUN.avgcostpctr_YYYY, RUN.dcurt_YYYY; replay.coal / .eskom / .withinpct; ext.csircoal / .csirre
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -155,6 +156,17 @@ function value(k){
   if (k==='page.ff2040ironairGW'||k==='page.ironairHours'){ if (!fs.existsSync('testroot/index.html')) return null; const h=fs.readFileSync('testroot/index.html','utf8');
     if (k==='page.ironairHours'){ const m=h.match(/\bnewIronAirHours:(\d+)/); return m?m[1]:null; }   // FIXED's, the first occurrence
     const m=h.match(/'Fossil-free 2040':\{[^\n]*?newIronAirMW:(\d+)/); return m?nf(+m[1]/1e3,0):null; }
+  // The 2025 replay and the external checks as recorded in the set's folder (message 524 (d)): the newest replay2025_*.txt and
+  // validate_external_*.txt by name. replay.coal and .eskom, TWh; .withinpct, the gap rounded up to a whole percent; ext.csircoal and
+  // .csirre, the CSIR 2030 shares, whole percent.
+  if (k.startsWith('replay.')||k.startsWith('ext.')){ const pre=k.startsWith('replay.')?'replay2025_':'validate_external_';
+    const f=fs.existsSync(N)?fs.readdirSync(N).filter(x=>x.startsWith(pre)&&x.endsWith('.txt')).sort().pop():null; if (!f){ missing.add(k.split('.')[0]); return null; }
+    const t=fs.readFileSync(`${N}/${f}`,'utf8');
+    if (k.startsWith('replay.')){ const q=t.match(/coal ([\d.]+) TWh against Eskom's ([\d.]+)/); if (!q) throw new Error('packfill: no replay line in '+f);
+      const a=+q[1], e=+q[2], m2=k.slice(7); if (m2==='coal') return nf(a,1); if (m2==='eskom') return nf(e,1); if (m2==='withinpct') return nf(Math.ceil(Math.abs(100*(a/e-1))),0)+'%';
+      throw new Error('packfill: unknown replay key '+k); }
+    const id={csircoal:'csir2030CoalShare',csirre:'csir2030ReShare'}[k.slice(4)]; if (!id) throw new Error('packfill: unknown ext key '+k);
+    const q=t.match(new RegExp('CHECK \\w+ \\| '+id+'[^|]*\\| model ([\\d.]+)%')); if (!q) throw new Error('packfill: no '+id+' line in '+f); return nf(+q[1],0)+'%'; }
   const [r,m]=[k.slice(0,k.lastIndexOf('.')),k.slice(k.lastIndexOf('.')+1)];
   if (r==='base'&&['coal2026','rate2026','partload','partloaddiff','partloadrec','eskomrate'].includes(m)){ const p=partload(); if (!p){ missing.add(`${C} (2026 check)`); return null; }
     return m==='coal2026'?nf(p.coalTWh,1):m==='rate2026'?nf(p.rate,3):m==='partload'?nf(p.partloadRun,4):m==='partloadrec'?nf(p.recorded,4):m==='eskomrate'?nf(p.eskomFY26,3):sg(p.diffPp,2); }
@@ -162,6 +174,10 @@ function value(k){
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
+    // One year's figures against the plan (message 524 (d)): system cost per MWh served, whole % above the plan's; extra curtailed wind
+    // and solar, TWh.
+    case 'avgcostpctr': { if (!b) return null; const x=s.rows.find(q=>q.y===y), c=b.rows.find(q=>q.y===y); return x&&c?nf(Math.round(100*(x.avgCostRMWh/c.avgCostRMWh-1)),0)+'%':null; }
+    case 'dcurt': { if (!b) return null; const x=s.rows.find(q=>q.y===y), c=b.rows.find(q=>q.y===y); return x&&c&&x.curt!=null&&c.curt!=null?nf(x.curt-c.curt,1):null; }
     // The sent Doc's figures (message 517): demand growth on 2026 by year, whole %; the smelter block, MW; rooftop added in a year, MW;
     // the years the hourly check finds over 20 GWh, as a span.
     case 'demandpctr': { const x=s.rows.find(q=>q.y===y); return x&&x.demandGrowthPct!=null?nf(x.demandGrowthPct,0)+'%':null; }
