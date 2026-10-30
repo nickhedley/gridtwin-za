@@ -17,6 +17,9 @@
   harness/ext/gen_lcoe_anchors.py writes LCP_2030_*; RESULTS 'LCOE anchor notes on c6e's 2030'). After the outputs PR merges,
   confirm pathway_c6e.json is identical to the snapshot's; if not, rerun.
 - Code comments (487 (3)): the remaining emphasis capitals and the comment phrases go in a separate PR after the send.
+  Done 30 Oct 2026 on claude/site-tidy (message 518 (a)), with the carbon capture and unit-commitment notes restated as the default
+  and its basis (518 (b)) and the page's own twelve-year rooftop scaling (518 (c), TODO 14jf; build 2026-10-30a; RESULTS 'Site tidy
+  on build 2026-10-30a').
 - Pack (489 (a)): one caveat line, the c6e central against the Australian 0.002% standard (AEMO 2026 ESOO, pp. 5, 24-25), computed
   by packfill (nemover) from the engine check; the snapshot reproduces the advisor's preliminary 2031 and 2032 figures.
 - Pack caveats, no new runs (491, 492): beside Fossil-free 2040, its 13 GW of 100-hour iron-air from the original design (figures
