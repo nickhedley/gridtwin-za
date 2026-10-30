@@ -639,6 +639,14 @@ windows hold expected unserved energy at or below 20 GWh in 2037-40 while the ho
 stopped on the stall rule at the same result. Find why the windows miss the shortfall (window selection, the daily storage balance,
 the coal rules in the LP) and what closes it, so a no-gas plan can be planned to the standard; with 14ky.
 
+14la. Rebuild the master from the sent Doc, after the send (user, 30 Oct 2026, message 516): rebuild REVIEWER_PACK.md from the Google
+Doc 'GridTwin ZA reviewer documentation' (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg), Nick's cut, keeping its wording and putting a
+fill marker behind every figure (the keys the current master uses; new keys where a figure has none; any figure with no run behind
+it listed). Move every section and passage Nick cut into a separate record file in the repository (for example
+REVIEWER_PACK_RECORD.md, headed with the commit it comes from, 0655b9e or later), not deleted. Then the plain-language check, a dry
+fill on main's outputs, a word-for-word comparison of the filled master against the Doc (differences listed), HANDOVER, and the
+commit; before #120 merges.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's

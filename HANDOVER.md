@@ -131,6 +131,8 @@
   number and year range in the pack and the note uses a hyphen (packfill writes them that way). Plain check passes.
 - 515: the reviewer's copy is the Google Doc 'GridTwin ZA reviewer documentation' (1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE),
   made from 3ceb663; the old working draft is superseded ('Reviewer pack: Google Doc copy').
+- 516: the reviewer's copy is now Nick's cut, 'GridTwin ZA reviewer documentation' (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg);
+  515's copy superseded. After the send the master is rebuilt from it and Nick's cuts kept in a record file (TODO 14la).
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
@@ -166,22 +168,25 @@
   panels, suite, PR with the visible-text list; the advisor reviews and merges under 481 (b). If it is not merged by Friday 10:00
   SAST, the pack links the site as it stands and the PR follows after the send.
 
-## Reviewer pack: Google Doc copy (user, 28 Oct 2026, message 474; new Doc 30 Oct 2026, message 515)
+## Reviewer pack: Google Doc copy (user, 28 Oct 2026, message 474; new Docs 30 Oct 2026, messages 515 and 516)
 
-REVIEWER_PACK.md on the pack branch (claude/c6a-results) is the master. The reviewer's copy is the Google Doc "GridTwin ZA reviewer
-documentation" in Nick's Drive, ID 1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE
-(https://docs.google.com/document/d/1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE/edit), made by the advisor from the master at
-3ceb663 and checked against it word for word (30 Oct 2026). The earlier working draft (1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc)
-is renamed as superseded and is no longer updated. Every report that changes the pack ends with one line listing the sections
-changed, so the advisor knows what to carry into the Doc.
+The reviewer's copy is the Google Doc "GridTwin ZA reviewer documentation" in Nick's Drive, ID
+1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg (https://docs.google.com/document/d/1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg/edit):
+Nick's cut of the pack, fact-checked by the advisor and checked word for word against the advisor's source (30 Oct 2026, message
+516). Superseded and no longer updated: 1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE (the copy made from 3ceb663, message 515) and
+1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc (the earlier working draft). Every report that changes the pack ends with one line
+listing the sections changed, so the advisor knows what to carry into the Doc.
 
-Before the send, Nick may edit the new Doc; the advisor reports his edits so they are carried into the master, and the master is
-refilled and checked after them.
+Until the send, REVIEWER_PACK.md on claude/c6a-results (3ceb663 and after) stays as it is: the Doc is the version that goes.
 
-After the send (user, 29 Oct 2026, 10:57 SAST, message 494; applies to the new Doc, message 515): the reviewer's copy is the one live
-Google Doc; there is no frozen copy. Nick names the sent version "Sent 30 October" in its version history. After the send the advisor
-makes only targeted edits (single figures and sentences, never whole sections), puts new results in a dated addendum at the end,
-reads the open comments before each update, and leaves commented passages alone unless Nick agrees first.
+After the send (message 516; TODO 14la): REVIEWER_PACK.md is rebuilt from this Doc, with a fill marker behind each of its figures
+so the fill script still writes them, and everything Nick cut moves into a separate record file in the repository rather than
+being deleted. The plain-language check and a dry fill run on the rebuilt master before it is pushed.
+
+After the send (user, 29 Oct 2026, 10:57 SAST, message 494; applies to this Doc, messages 515 and 516): the reviewer's copy is the
+one live Google Doc; there is no frozen copy. Nick names the sent version "Sent 30 October" in its version history. After the send
+the advisor makes only targeted edits (single figures and sentences, never whole sections), puts new results in a dated addendum at
+the end, reads the open comments before each update, and leaves commented passages alone unless Nick agrees first.
 
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 
