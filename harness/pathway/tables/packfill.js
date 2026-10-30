@@ -282,12 +282,16 @@ const built=run=>{ const s=S(run); if (!s||!s.sched) return null; const ys=Objec
   return '\n\n'+[head,sep,...rows].join('\n')+'\n\n'; };
 let tables=null; const table=t=>{ if (/^What gets built/.test(t)) return built(/IRP/.test(t)?'irp':'base'); if (!tables){ const out=cp.execFileSync('node',[path.join(__dirname,'settables.js'),O,N,C,PV],{encoding:'utf8'}); tables={};   // PV: the comparison set, for 'against <set>' (message 507 (b))
     for (const b of out.split('\n### ').slice(1)){ const i=b.indexOf('\n'); tables[b.slice(0,i).replace(new RegExp('\\b'+C+'\\b','g'),'').replace(/\s+/g,' ').trim()]=b.slice(i).trim(); } }
-  const k=Object.keys(tables).find(h=>h.startsWith(t)); return k?'\n\n'+tables[k].replace(/\u2013/g,'-')+'\n\n':null; };   // hyphens in ranges (message 506)
+  // Run codes in the tables' labels and headers written as plain names (message 514 (b)): the central as the least-cost plan, earlier
+  // sets by date, runs by what they change; the glossary in section 7 keeps the codes.
+  const tname=c=>c===C?'the least-cost plan':VERSIONS[c]?VERSIONS[c]:plainName(c);
+  const k=Object.keys(tables).find(h=>h.startsWith(t)); return k?'\n\n'+tables[k].replace(/\u2013/g,'-').replace(/\b(c[456][a-z]?(?:_irpdem)?|s_[a-z0-9_]+|irp2025_[a-z0-9_]+)\b/g,m=>tname(m))+'\n\n':null; };   // hyphens in ranges (message 506)
 
 const src=fs.readFileSync(PACK,'utf8'); let changed=0; const unknown=[];
 // Every key but 'missing' first, so the missing list is complete when it is written.
 const fill=s=>s.replace(re,(all,k,old)=>{ if (k==='missing') return all; let v;
   try { v=k.startsWith('table:')?table(k.slice(6)):value(k); } catch(e){ unknown.push(k); return all; }
+  if (typeof v==='string') v=v.replace(/(\d)\u2013(\d)/g,'$1-$2');   // hyphens in number and year ranges (messages 506, 514)
   if (v==null) v=k.startsWith('table:')?`\n\n[not yet available: table ${k.slice(6)}]\n\n`:`[not yet available: ${plainName(k.split('.')[0])}]`;
   if (v!==old) changed++; return `<!--fill:${k}-->${v}<!--/fill-->`; });
 let out=fill(src);

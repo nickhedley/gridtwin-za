@@ -123,6 +123,12 @@
   higher demand'; it now reads the IRP's own, lower demand, 230 against 244 TWh served in 2035 (the least-cost plan at the two
   demands), from the fill; no other mention found in the pack or the note. The plain check now covers About, Main findings,
   What gets built, How to read and section 6, and passes. #120 merges after the send.
+- 514 (Friday 30 Oct, before the Google Doc): fragments the plain-language pass left (headings cut at an apostrophe, brackets
+  of bare build stamps and quoted headings, spaces before punctuation) repaired in sections 1-7, and bracketed references to the
+  results log and HANDOVER removed; run codes in sections 1-5 prose and tables written as plain names, the filled tables'
+  labels too (packfill maps them; section 7's glossary and section 8's record keep codes); finding 9 and question 1's effect
+  line in 514's wording from the fill; the About sentence on outstanding results and the 'Still to come' block removed; every
+  number and year range in the pack and the note uses a hyphen (packfill writes them that way). Plain check passes.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
