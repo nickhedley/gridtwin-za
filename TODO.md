@@ -636,7 +636,10 @@ overownfig).
 
 14kx. When new gas runs, after the send (user, 29 Oct 2026, message 506): from the hourly check of the least-cost plan, new gas output by
 month and in wind and solar lulls (hours below a set share of mean wind-plus-solar output, and multi-day lulls), 2035 and 2040, so the
-pack can say whether gas runs mainly in winter lulls; a packfill key for the sentence.
+pack can say whether gas runs mainly in winter lulls; a packfill key for the sentence. Measured 30 Oct 2026 (PR #131; RESULTS 'The 51% gas minimum alone'): March
+to August, most in April and May; 43.5% (2035) and 51.2% (2040) of gas in the lowest tenth of hours by wind and solar. Open: the
+multi-day lull threshold (60% of the mean day finds half a day a year; a looser one is a rerun of gashourly_c6e.js), and the packfill
+key if the pack takes the sentence.
 
 14ky. A no-gas adequacy top-up tool, after the note (user, 29 Oct 2026, message 510): the harness's adequacy top-up adds only diesel
 open-cycle, which a no-new-gas-and-no-peakers run forbids, so such a run that stops at the optimiser's pass limit has no fallback; a
@@ -707,6 +710,9 @@ s_irpgas on the snapshot (the advisor, 29 Oct 2026): system cost +R142-152/MWh i
 changes the gas build (GAS_FIRST=2032, forced and minimum gas), so it is not the floor alone and is not quoted as such. The note's
 first agreed text (NOTE_DRAFT.md on the pack branch, message 497) quotes s_irpgas with that caveat; its sentence is updated when (a)
 and (b) land.
+(a) done 30 Oct 2026 (PR #131, build 2026-10-29b; RESULTS 'The 51% gas minimum alone'): +R25.6bn, -14.6 Mt, +70.9 TWh of gas over
+2026-40, cost per MWh served +R6 (2035) to +R77 (2040); in the reviewer Doc's update of 30 Oct, the pack master and NOTE_DRAFT
+(message 524). (b) open.
 
 ## Follow-through on the engine change
 

@@ -18449,3 +18449,49 @@ the preset's comment block carries the top-up and the rejected iron-air version)
 to the digit; harness/ext/rescore_page_29a_fossil_topped.json) and written to PRESET_SCORES by gen_preset_scores.py. The caption
 reads 'Unserved 2.55 GWh/yr, within NTCSA's 20 GWh.' The preset remains built to c5f's demand for 2040 (C5F_DEMAND); the full
 re-search on c6e's basis and the 2045 horizon question stay after the note (TODO 14kq).
+
+### The 51% gas minimum alone (s_gasfloor_c6e): +R25.6bn, -14.6 Mt, +70.9 TWh of gas over 2026-40, cost per MWh served +R6 (2035) to +R77 (2040); the 2025 replay 169.2 against Eskom's 170.4 TWh (-0.7%); validate_external 8/8; c6e's new gas runs March to August, most in April and May (user, 30 Oct 2026, messages 496, 506 and 524 (a); TODO 14kv (a) and 14kx; PR #131, build 2026-10-29b)
+
+Runs: engine only, no optimiser, on 016641e (BUILD_STAMP '2026-10-29b'), 30 Oct 2026 10:56-11:25 UTC, the run session; files in
+harness/pathway/c6e/ (results_29b.md has every table and setting; run log progress_29b.txt). Eskom figures are ESK19679 annual sums as
+recorded in RESULTS (Eskom credited; the analysis is ours, not Eskom's).
+
+The minimum alone (TODO 14kv (a)): pathway_s_gasfloor_c6e.json is pathway_c6e.json with gasFloor.engine=1 (the engine's annual minimum:
+51% capacity factor on up to 6,000 MW of CCGT, 2030-40); the same build, the optimiser not run, so the difference is the minimum alone.
+Engine check as the set (pathcheck.js, LNG=1 GRID=1, groups a, b and c, 120 runs a year). Comparator: c6e's own build checked on 29b
+(pathcheck_c6e_29b_*), identical in every year to the recorded check on 28a (pathcheck_c6e_*).
+- Engine PV 2026-40 at 8% real: R2,340.3bn against R2,314.7bn, +R25.6bn (with grid: R2,348.8bn against R2,323.1bn, +R25.6bn).
+- CO2 2026-40: 1,724.0 against 1,738.6 Mt, -14.6 Mt; the forced gas displaces coal (2040 coal 50.5 against 59.1 TWh).
+- Gas 2026-40: 86.1 against 15.2 TWh, +70.9 TWh.
+- No effect before 2035: 2026-29 have no minimum and 2030-34 no CCGT standing. New CCGT: 551 MW in 2035, 6,074 MW by 2040.
+- Cost per MWh served (the engine's avgCost over gridServed, served-weighted across runs), above c6e: +R6.3 (2035), +R14.0, +R27.5,
+  +R45.6, +R60.5, +R77.0 (2040); 2040 is 1,097.1 against 1,020.1 R/MWh, +7.5%.
+- The minimum is met: at most 0.07 TWh a year short of its target (2040, target 26.81 TWh).
+- Curtailed wind and solar in 2040: 36.6 against 25.1 TWh, +11.5 TWh.
+- Against s_irpgas (IRP 2025's gas build with the minimum, +12-16% a MWh over 2030-40, +R198bn): most of that run's cost comes from
+  IRP 2025's larger and earlier gas build, not the minimum alone. The pass-through to Megaflex is TODO 14kv (b).
+
+The 2025 replay: the preset '2025, as modelled' as the page runs it (applyState, simulate on PROFILES, coal availability trace 2025),
+one run (replay2025_29b.js): coal 169.2 TWh against Eskom's 170.4 (-0.7%); CO2 185.6 Mt; unserved 1.2 GWh.
+
+validate_external on 016641e, every check's detail printed (a copy whose check() also logs passes; the checks unchanged;
+validate_external_29b.txt): 8/8. CSIR 2030 coal share 55.3% against 55% (band 6 points); renewable share 38.2% against 40% (band 8);
+EDMSA Scenario A CO2 2035 117.0 against 124 Mt (band 22; CLAUDE.md's known failure 1, cause below in its own entry); EDMSA Scenario A
+wind 2035 65.6 against 64 TWh (band 12); MTSAO 2030 unserved 5.2 TWh against 'more than 4'; MTSAO 2030 open-cycle utilisation 56.5%
+against 'about 45%' (band 35-58%); build pace 10.2 GW a year against GreenCape's 12.9 GW to 2030; the presets inside CSIR's ranges.
+
+When c6e's new gas runs (TODO 14kx; gashourly_c6e.js, pathcheck.js with per-run gas tallies added, YEARS=2035,2040, 120 runs a year;
+its cost, CO2 and gas match pathcheck_c6e_c.json). Gas is stack.ccgt (new CCGT and open-cycle on LNG; no existing CCGT). Wind and
+solar resource: each hour's weather-year national profiles times the fleet standing that year, before dispatch and curtailment.
+- By month, GWh, 2035 (539 a year): Jan 32, Feb 25, Mar 50, Apr 95, May 100, Jun 84, Jul 58, Aug 52, Sep 22, Oct 11, Nov 6, Dec 4.
+  2040 (5,299): 313, 421, 625, 836, 851, 608, 463, 510, 321, 178, 108, 65. Mostly March to August, most in April and May, least in
+  October to December.
+- Share in the lowest tenth of hours by wind and solar (876 hours): 43.5% in 2035, 51.2% in 2040.
+- Share in hours below half the mean: 84.8% (3,102 hours a year) and 91.9% (3,150); those hours are over a third of the year, mostly
+  windless nights, so the share says gas runs at night more than that it runs in lulls.
+- Multi-day lulls (three or more consecutive days below 60% of the mean day): half a day a year, 2.0% and 1.2% of gas; the threshold
+  is too strict to separate winter lulls; a looser one is a rerun of gashourly_c6e.js.
+
+Carried into the reviewer pack master and NOTE_DRAFT with fill markers (message 524 (c), (d)): s_gasfloor.dpvabsbn, .avgcostpctr_2040,
+.dco2absmt and .dcurt_2040; replay.coal, .eskom and .withinpct; ext.csircoal and .csirre (new packfill keys); each fills to the figure
+in the reviewer Doc's update of 30 Oct 2026.
