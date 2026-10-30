@@ -1,0 +1,12 @@
+2026-10-30T10:56Z start, PID 783, on 016641e Presets on c6e; site text of messages 470,, BUILD_STAMP = '2026-10-29b
+11:13 check s_gasfloor_c6e: 3/3 groups
+11:20 check c6e_29b: 3/3 groups
+11:20 gas hourly exit 0 NO OUTPUT
+11:20 BC DONE
+11:20 gas hourly: script's relative requires fixed (./pathway -> ../../pathway, it sits in pathway/c6e); rerun
+2026-10-30T11:21Z start, PID 1221, on 016641e Presets on c6e; site text of messages 470,, BUILD_STAMP = '2026-10-29b
+11:21 check s_gasfloor_c6e: 3/3 groups
+11:21 check c6e_29b: 3/3 groups
+11:23 gas hourly exit 0 written
+11:23 BC DONE
+11:25 results written (results_29b.md); outputs PR
