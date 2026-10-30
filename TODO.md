@@ -4,6 +4,10 @@ Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05g
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
+Reviewer pack sent to two reviewers at 11:47 SAST, 30 Oct 2026 (the Google Doc 'GridTwin ZA reviewer documentation', version 'Sent
+30 October'; message 517). Changes to that Doc follow 494's rules (HANDOVER 'Reviewer pack: Google Doc copy'); new results go in a
+dated addendum.
+
 Done this session, removed: control_inventory.json and response_matrix.json compared and regenerated (14u3, RESULTS 6 Oct); pathcheck given its own outage seeds and both pathways re-checked (14u2, RESULTS 5 Oct); offshore file placed in nodal/; ESK19679.csv added to MANIFEST's
 upload set as local-only; licence check read (it tests presence only; the zip copy was stale);
 eng5 check 3 fixed and shown to fail on an injected defect; rooftop footer relabelled (the figure
@@ -639,13 +643,9 @@ windows hold expected unserved energy at or below 20 GWh in 2037-40 while the ho
 stopped on the stall rule at the same result. Find why the windows miss the shortfall (window selection, the daily storage balance,
 the coal rules in the LP) and what closes it, so a no-gas plan can be planned to the standard; with 14ky.
 
-14la. Rebuild the master from the sent Doc, after the send (user, 30 Oct 2026, message 516): rebuild REVIEWER_PACK.md from the Google
-Doc 'GridTwin ZA reviewer documentation' (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg), Nick's cut, keeping its wording and putting a
-fill marker behind every figure (the keys the current master uses; new keys where a figure has none; any figure with no run behind
-it listed). Move every section and passage Nick cut into a separate record file in the repository (for example
-REVIEWER_PACK_RECORD.md, headed with the commit it comes from, 0655b9e or later), not deleted. Then the plain-language check, a dry
-fill on main's outputs, a word-for-word comparison of the filled master against the Doc (differences listed), HANDOVER, and the
-commit; before #120 merges.
+14la. Done 30 Oct 2026 (message 517): REVIEWER_PACK.md rebuilt from the sent Doc 'GridTwin ZA reviewer documentation'
+(1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg), 71 fill markers, word for word against the Doc when filled from main 016641e; the old
+master at d5383c2 kept whole in REVIEWER_PACK_RECORD.md (HANDOVER, message 517).
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a

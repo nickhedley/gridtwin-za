@@ -133,6 +133,17 @@
   made from 3ceb663; the old working draft is superseded ('Reviewer pack: Google Doc copy').
 - 516: the reviewer's copy is now Nick's cut, 'GridTwin ZA reviewer documentation' (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg);
   515's copy superseded. After the send the master is rebuilt from it and Nick's cuts kept in a record file (TODO 14la).
+- 517: the pack went to two reviewers at 11:47 SAST, 30 Oct 2026, as the Google Doc 'GridTwin ZA reviewer documentation'
+  (1EyNAfDDcB4fsX6YtuydSfryOeIlMAmlcuIKwnNvF6Gg); Nick names that version 'Sent 30 October'. From now on the Doc changes only under
+  494's rules ('Reviewer pack: Google Doc copy'). REVIEWER_PACK.md is rebuilt from the sent Doc (TODO 14la, done): its sections are
+  About, Main findings, Build plan, Assumptions, Known limitations and Reproducing these results; 71 fill markers, filled from main
+  016641e, give the Doc's text word for word (bold styling aside). Figures with no run or page key stay typed: in the findings, the
+  2025 replay 'within about 1%' and the CSIR shares (51% against 55%, 43% against 40%); in the assumptions, the fixed inputs other
+  than capex, cost of capital, demand growth, the smelter block, rooftop additions, coal standing and Eskom's rate; in the known
+  limitations, 120 runs, 1-2 GWh, Meridian's degradation rates and coal's R1,160/kW-yr; in Reproducing, the run build and the
+  18 hours. The old master at d5383c2 is kept whole, filled and frozen, in REVIEWER_PACK_RECORD.md (the fill script does not
+  touch it). packfill's plain check covers the sent sections (About to Known limitations); its key list adds demandpctr_YYYY,
+  blockmw_YYYY, roofadd_YYYY and shortyears. NOTE_DRAFT's references point at the record file and the sent findings.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
@@ -177,9 +188,9 @@ Nick's cut of the pack, fact-checked by the advisor and checked word for word ag
 1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc (the earlier working draft). Every report that changes the pack ends with one line
 listing the sections changed, so the advisor knows what to carry into the Doc.
 
-Until the send, REVIEWER_PACK.md on claude/c6a-results (3ceb663 and after) stays as it is: the Doc is the version that goes.
+Sent to two reviewers at 11:47 SAST, 30 Oct 2026 (message 517); the version is named 'Sent 30 October' in the Doc's history.
 
-After the send (message 516; TODO 14la): REVIEWER_PACK.md is rebuilt from this Doc, with a fill marker behind each of its figures
+Done after the send (message 517; TODO 14la): REVIEWER_PACK.md is rebuilt from this Doc, with a fill marker behind each of its figures
 so the fill script still writes them, and everything Nick cut moves into a separate record file in the repository rather than
 being deleted. The plain-language check and a dry fill run on the rebuilt master before it is pushed.
 

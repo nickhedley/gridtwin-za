@@ -57,6 +57,7 @@
 //                        diesel peakers standing in GW; the open-cycle capacity factor's highest year since new peakers first stand
 //   Draft 2 (message 513): RUN.nemnearyears, RUN.addgwr_T (whole GW), RUN.dpvabsplain, RUN.servedr_YYYY; page.discr, page.cocr.[CASE.]TECH,
 //                        page.privrange
+//   Sent Doc (message 517): RUN.demandpctr_YYYY, RUN.blockmw_YYYY, RUN.roofadd_YYYY, RUN.shortyears
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -161,6 +162,12 @@ function value(k){
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
+    // The sent Doc's figures (message 517): demand growth on 2026 by year, whole %; the smelter block, MW; rooftop added in a year, MW;
+    // the years the hourly check finds over 20 GWh, as a span.
+    case 'demandpctr': { const x=s.rows.find(q=>q.y===y); return x&&x.demandGrowthPct!=null?nf(x.demandGrowthPct,0)+'%':null; }
+    case 'blockmw': { const x=s.rows.find(q=>q.y===y); return x&&x.demandBlockMW!=null?nf(x.demandBlockMW,0):null; }
+    case 'roofadd': { const v=s.sched&&s.sched[y]; return v?nf(v.rooftop||0,0):null; }
+    case 'shortyears': { const o=s.rows.filter(x=>x.mean>20).map(x=>x.y); return o.length?spanH(o):'none'; }
     // Draft 2's wording (message 513): the years the plan sits at or over the Australian limit, as a span; new build in whole GW; the
     // cost difference without its verb; served energy in a year, TWh.
     case 'nemnearyears': { const o=s.rows.filter(x=>x.mean>0.00002*x.servedTWh*1e3).map(x=>x.y); return o.length?spanH(o):'none'; }
@@ -278,7 +285,7 @@ const built=run=>{ const s=S(run); if (!s||!s.sched) return null; const ys=Objec
   const tot=y=>cols.reduce((a,[,f])=>a+f(y),0);
   const head=`| Year | ${cols.map(c=>c[0]).join(' | ')} | Total new | Remaining coal |`, sep='|'+'---|'.repeat(cols.length+3);
   const rows=ys.map(y=>`| ${y} | ${cols.map(([,f])=>nf(f(y),0)).join(' | ')} | ${nf(tot(y),0)} | ${nf(g(y,'coalMW'),0)} |`);
-  rows.push(`| Total | ${cols.map(([,f])=>nf(ys.reduce((a,y)=>a+f(y),0),0)).join(' | ')} | ${nf(ys.reduce((a,y)=>a+tot(y),0),0)} | – |`);
+  rows.push(`| Total | ${cols.map(([,f])=>nf(ys.reduce((a,y)=>a+f(y),0),0)).join(' | ')} | ${nf(ys.reduce((a,y)=>a+tot(y),0),0)} | - |`);
   return '\n\n'+[head,sep,...rows].join('\n')+'\n\n'; };
 let tables=null; const table=t=>{ if (/^What gets built/.test(t)) return built(/IRP/.test(t)?'irp':'base'); if (!tables){ const out=cp.execFileSync('node',[path.join(__dirname,'settables.js'),O,N,C,PV],{encoding:'utf8'}); tables={};   // PV: the comparison set, for 'against <set>' (message 507 (b))
     for (const b of out.split('\n### ').slice(1)){ const i=b.indexOf('\n'); tables[b.slice(0,i).replace(new RegExp('\\b'+C+'\\b','g'),'').replace(/\s+/g,' ').trim()]=b.slice(i).trim(); } }
@@ -301,8 +308,8 @@ if (unknown.length){ console.error('unknown keys: '+unknown.join(', ')); process
 // Plain-language check (message 503 (f)): the About, Main findings, What gets built, How to read and section 6 parts, as filled, carry no run code, no script or
 // data filename and no TODO reference. Markers are stripped first, so a key name never counts; table rows do.
 const plainFail=(()=>{ const txt=out.replace(/<!--\/?fill[^>]*-->/g,''); const secs=[...txt.matchAll(/^## (.+)$/gm)]; const bad=[];
-  // The parts the reviewer reads first (messages 503 (f), 513).
-  secs.forEach((h,i)=>{ if (!/^(About|Main findings|What gets built|How to read|6\.)/.test(h[1])) return; const body=txt.slice(h.index,secs[i+1]?secs[i+1].index:txt.length);
+  // The parts the reviewer reads first (messages 503 (f), 513; the sent Doc's sections, 517).
+  secs.forEach((h,i)=>{ if (!/^(About|Main findings|Build plan|Assumptions|Known limitations|What gets built|How to read|6\.)/.test(h[1])) return; const body=txt.slice(h.index,secs[i+1]?secs[i+1].index:txt.length);
     for (const [what,re] of [['run code',/\b(?:c[56][a-z]?(?:_[a-z0-9_]+)?|s_[a-z0-9_]+|irp2025_[a-z0-9_]+|irp_[a-z0-9_]+|null_c\d[a-z]?)\b/g],['filename',/\b[\w/.-]+\.(?:md|js|json|py|sh|csv)\b/g],['TODO',/\bTODO\b/g]]){
       for (const m of body.matchAll(re)) bad.push(`${h[1].slice(0,12)}: ${what} '${m[0]}'`); } });
   return [...new Set(bad)]; })();
