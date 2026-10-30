@@ -207,6 +207,9 @@ or meaning, go into the Doc the same day, each tagged '(updated DD Mon)' in the 
 since 30 October' section at the end of the Doc; Nick then names the version in the Doc's history and emails the reviewers. Additions
 and new results that do not change a finding go in weekly. 494's other rules stand (targeted edits only, open comments read first,
 commented passages left alone unless Nick agrees). Each report that changes the pack says which of the two its changes are.
+Tags (Nick, 30 Oct 2026, message 525): the 30 Oct update went in without tags or an updates section, deliberately, because the
+reviewers had not yet opened the Doc. From now on, once the reviewers have the Doc, a correction carries an '(Updated DD Month)' tag
+and a line in the updates section. The master (REVIEWER_PACK.md) takes a tag or an updates line only when it appears in the Doc.
 
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 
