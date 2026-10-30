@@ -113,6 +113,7 @@ const EXTERNAL = {
       demandGrowthPct: 30,   // 285 TWh by 2030 - CSIR Table 1, Least-cost scenario
       coalEAFPct: 65,        // CSIR Table 1: 65% EAF in 2030
       bldWindModern: 0,      // the study's own basis: its wind on the current-turbine profile (user, 7 Oct 2026)
+      scenarioYear: 2030,    // the year the check names (user, 30 Oct 2026, message 526 (b)): unset, it ran at the page's 2026 rules
     },
     why: 'CSIR reports coal at roughly 55% of energy by 2030 in its least-cost '
        + 'case, with solar 15-40 GW and wind 20-45 GW installed. This runs '
@@ -138,6 +139,7 @@ const EXTERNAL = {
       demandGrowthPct: 30,   // 285 TWh by 2030 - CSIR Table 1, Least-cost scenario
       coalEAFPct: 65,        // CSIR Table 1: 65% EAF in 2030
       bldWindModern: 0,      // the study's own basis: its wind on the current-turbine profile (user, 7 Oct 2026)
+      scenarioYear: 2030,    // the year the check names (user, 30 Oct 2026, message 526 (b)): unset, it ran at the page's 2026 rules
     },
     why: 'The complement of the coal figure, less nuclear, hydro and imports. '
        + 'Stated separately because coal share and RE share can both drift '
@@ -273,7 +275,8 @@ function check(name, ok, detail) {
   const mtsao = (() => {
     const s = w.document.createElement('script');
     s.textContent = `
-      { const ov = { coalEAFPct: coalEafFromFleet(60), coalDecomMW: 8400, importsMW: 288,
+      // scenarioYear: the year the check names (user, 30 Oct 2026, message 526 (b)); unset, it ran at the page's 2026 rules.
+      { const ov = { scenarioYear: 2030, coalEAFPct: coalEafFromFleet(60), coalDecomMW: 8400, importsMW: 288,
                      dieselDecomMW: 340, newWindMW: 3500, newPvMW: 7000, newRooftopMW: 1200,
                      newBattMW: 1900, newBattHours: 4, newCcgtMW: 0 };
         // The target, from the derivation above: 264 TWh national over the 2024 ratio 243 / 204.7.
@@ -393,7 +396,10 @@ function check(name, ok, detail) {
   // below as a sensitivity (RESULTS, 7 Oct 2026), not checked.
   const EDMSA_A = { coalEAFPct: 70, demandGrowthPct: gA,
     newWindMW: 20000, newPvMW: 25000, newBattMW: 8000, newBattHours: 4,
-    newCcgtMW: 4000, coalDecomMW: 4100 };
+    newCcgtMW: 4000, coalDecomMW: 4100,
+    // Run at the year the check names (user, 30 Oct 2026, message 526 (b)). Unset, it ran at the page's 2026 rules, the 2026 coal
+    // practice floor included, which put 8.9 Mt of 2035's CO2 down to 2026 operation (RESULTS 'EDMSA Scenario A CO2 2035').
+    scenarioYear: 2035 };
   const edmsa = run({ ...EDMSA_A, bldWindModern: 0 });
   {
     const cs = run({ ...EXTERNAL.csir2030CoalShare.scenario, bldWindModern: 1 }), es = run({ ...EDMSA_A, bldWindModern: 1 });
