@@ -156,6 +156,27 @@ function value(k){
   if (k==='page.ff2040ironairGW'||k==='page.ironairHours'){ if (!fs.existsSync('testroot/index.html')) return null; const h=fs.readFileSync('testroot/index.html','utf8');
     if (k==='page.ironairHours'){ const m=h.match(/\bnewIronAirHours:(\d+)/); return m?m[1]:null; }   // FIXED's, the first occurrence
     const m=h.match(/'Fossil-free 2040':\{[^\n]*?newIronAirMW:(\d+)/); return m?nf(+m[1]/1e3,0):null; }
+  // The scenarios table (messages 523 (b), 528, 529): harness/ext/preset_table.json from harness/ext/preset_table.js, each preset in its
+  // own year. preset.<code>.<metric>, code deep, ff, fffresh or lcp; metric year, runs, seed, unserved and target (GWh a year), cost
+  // (R bn a year), co2 (Mt), avgcost (R/MWh served), peakcf (%), served (TWh), new_<tech> and rem_<tech> (GW, '-' when none), ironair
+  // (GW), ironairh (hours), ironairpow and ironairen (% of new storage power and energy), meets ('within' or 'above' the target).
+  if (k.startsWith('preset.')){ const f=path.join(__dirname,'..','..','ext','preset_table.json'); if (!fs.existsSync(f)){ missing.add('the scenarios table (preset_table.js)'); return null; }
+    const T=JSON.parse(fs.readFileSync(f,'utf8')), [,c,mm]=k.split('.'), p=T.presets[c]; if (!p) throw new Error('packfill: no preset '+c+' in preset_table.json');
+    const g=v=>v>0.05?nf(v,1):'-', n=p.newGW, st=n.lithium+n.ironAir+n.vrfb+n.pumpedStorage, en=n.lithium*n.lithiumHours+n.ironAir*n.ironAirHours;
+    const [m0,t]=mm.split('_');
+    // A sum of technologies with '+' (new_ccgt+ocgtGas).
+    const sum=(o,w)=>t.split('+').reduce((a,x)=>{ if (!(x in o)) throw new Error('packfill: no '+w+' '+x); return a+o[x]; },0);
+    if (m0==='new') return g(sum(n,'new'));
+    if (m0==='rem') return g(sum(p.remGW,'remaining'));
+    switch (mm){
+      case 'year': return String(p.year); case 'runs': return nf(p.n,0); case 'seed': return String(p.seed);
+      case 'unserved': return nf(p.unservedGWh,2); case 'target': return nf(p.targetGWh,2); case 'meets': return p.unservedGWh<=p.targetGWh?'within':'above';
+      case 'cost': return nf(p.costBn,1); case 'co2': return nf(p.co2Mt,1); case 'avgcost': return nf(p.avgCostRMWh,0);
+      case 'peakcf': return nf(100*p.peakerCF,2)+'%'; case 'served': return nf(p.servedTWh,1);
+      case 'ironair': return nf(n.ironAir,2); case 'ironairh': return nf(n.ironAirHours,0);
+      case 'ironairpow': return st>0?nf(100*n.ironAir/st,0)+'%':'-'; case 'ironairen': return en>0?nf(100*n.ironAir*n.ironAirHours/en,0)+'%':'-';
+      case 'stamp': return T.stamp; }
+    throw new Error('packfill: unknown preset key '+k); }
   // The 2025 replay and the external checks as recorded in the set's folder (message 524 (d)): the newest replay2025_*.txt and
   // validate_external_*.txt by name. replay.coal and .eskom, TWh; .withinpct, the gap rounded up to a whole percent; ext.csircoal and
   // .csirre, the CSIR 2030 shares, whole percent.
