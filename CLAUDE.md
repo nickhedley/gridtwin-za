@@ -59,15 +59,17 @@ validate_public_text: 22 checks, internal labels, missing values, Eskom Data Por
 takes over 30 minutes: run it in parts or in the foreground. The known failures, each with its
 cause and the build it first failed on in RESULTS 'Known failures on build 2026-10-18i' (message 205 (8)):
 
-1. validate_external: 'EDMSA Scenario A CO2 2035 within 22 Mt of the published figure' (cause partly traced; failing on the
-   repository's first build, 2026-10-01a).
-2. validate_findings: 'with gas, 20 GW of 100-hour iron-air barely moves July' (failing on 13h).
-3. validate_consistency: 'high-season off-peak is the cheapest block modelled' (from 14d; the user's decision to replace it
+1. validate_findings: 'with gas, 20 GW of 100-hour iron-air barely moves July' (failing on 13h).
+2. validate_consistency: 'high-season off-peak is the cheapest block modelled' (from 14d; the user's decision to replace it
    after the note, TODO 14dy; the NERSA-note premise in its message is contradicted by the 2026/27 booklet, TODO 14gd).
-4. validate_benchmarks: 'peakerSeasonRatio is physically plausible' (from 14a).
-5. eng5 check 6, 'storage cuts unserved': intended behaviour (user, 16 Oct 2026, message 141): since build 15e spare gas charges
+3. validate_benchmarks: 'peakerSeasonRatio is physically plausible' (from 14a).
+4. eng5 check 6, 'storage cuts unserved': intended behaviour (user, 16 Oct 2026, message 141): since build 15e spare gas charges
    the existing stores ahead of a forecast shortfall, so 30 GW of new batteries cut unserved 8.3% against the check's 10%; its
    redesign waits for after the note (TODO 14ew).
+
+No longer a known failure (message 524 (b)): validate_external's 'EDMSA Scenario A CO2 2035 within 22 Mt', failing from 2026-10-01a
+to 2026-10-23a, passes from 2026-10-24b (PR C's coal rules; 117.0 against 124 Mt on 29b). Cause in RESULTS 'EDMSA Scenario A CO2
+2035'; the check runs its 2035 build at the page's default year, 2026 (TODO 14lc).
 
 Each is to be settled after the note by fixing the model, correcting the check with its cause, or withdrawing the finding (TODO 14gm); the iron-air finding stays out of the note and the pack until then. The preset curtailment band passes from the presets build (17i, TODO 14ef). Pumped-storage output passes from 15f (the
 storage fix). 'The build stamp is not stale' (validate_structure)

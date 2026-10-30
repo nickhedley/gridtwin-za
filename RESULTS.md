@@ -18495,3 +18495,38 @@ solar resource: each hour's weather-year national profiles times the fleet stand
 Carried into the reviewer pack master and NOTE_DRAFT with fill markers (message 524 (c), (d)): s_gasfloor.dpvabsbn, .avgcostpctr_2040,
 .dco2absmt and .dcurt_2040; replay.coal, .eskom and .withinpct; ext.csircoal and .csirre (new packfill keys); each fills to the figure
 in the reviewer Doc's update of 30 Oct 2026.
+
+### EDMSA Scenario A CO2 2035: 87.4 Mt on 2026-10-23a to 118.6 on 2026-10-24b (PR C's coal rules), then 117.0 from 2026-10-27f; the check runs its 2035 build at the page's default year, 2026, so PR C's 2026 practice floor applies; at 2035's rules it reads 108.1, also within its 22 Mt (user, 30 Oct 2026, message 524 (b))
+
+What moved: validate_external's 'EDMSA Scenario A CO2 2035 within 22 Mt of the published figure' (124 Mt), CLAUDE.md's known failure 1
+from the repository's first build. Recorded 83.3 Mt on 14r (RESULTS, mid-October) and 117.0 on 29b (PR #131). Measured here with
+harness/validate_external.js unchanged since 22e, run on each main build from 22e to 29b (git archive of each merge commit) through a
+copy that also prints passing checks' detail (scratchpad m524/vext_detail.js; the checks unchanged), one at a time, 30 Oct 2026 about
+13:25-13:43 UTC:
+
+| Build (main merge) | EDMSA A CO2 2035, Mt | EDMSA A wind 2035, TWh |
+|---|---|---|
+| 2026-10-22e (a51f79b, PR A) | 87.4 | 75.2 |
+| 2026-10-23a (021feb2, PR B) | 87.4 | 75.2 |
+| 2026-10-24b (1b0dad0, PR C) | 118.6 | 65.0 |
+| 2026-10-25a, 25b | 118.6 | 65.0 |
+| 2026-10-26b, 27e | 118.5 | 65.1 |
+| 2026-10-27f (acb2451: 24 h minimum down time, practice floor 0.715) | 117.0 | 65.6 |
+| 2026-10-28a, 29b | 117.0 | 65.6 |
+
+The 14r to 22e move (83.3 to 87.4, both failing) is not bisected here. The step that made the check pass is PR C (+31.2 Mt). PR C's
+seven traced copies (scratchpad bisectC, build 24a head 182176f, each with one group of coal settings switched back to COAL_PRE_C;
+RESULTS 'Suite on build 2026-10-24a'), EDMSA A CO2 2035: all switched back 87.4 (equal to 23a); practice floor switched back 90.2;
+design minimums 105.7; synchronous-floor basis 105.5; ramp honoured 104.6; commitment weighing starts 100.0; start-cost basis 99.9.
+The practice floor alone accounts for most of the rise (28 of 31 Mt); the groups are not additive.
+
+Why the practice floor reaches a 2035 build: the check's EDMSA_A state sets no scenarioYear, so simulate runs it at the page's default
+(FIXED.scenarioYear 2026): the 2026 practice floor (coalMslPracticeFloor, 'until 2029') holds coal units at or above 75% (24b) or
+71.5% (27f) of capacity, and imports run (importsEndYear 2030). The 27f step (-1.5 Mt) is the floor's recalibration from 0.75 to
+0.715. A probe with scenarioYear set (scratchpad m524/vext_year.js, EDMSA_YEAR; not a change to the check): 29b at 2026 117.0 Mt
+(the check as it stands), at 2035 108.1 Mt (gap -15.9, within 22) and wind 72.7 TWh (gap +8.7, within 12); 23a at 2035 97.4 Mt (gap
+-26.6, failing). So the check passes at either year on the current page: PR C's commitment rules (design minimums, start weighing,
+the synchronous basis, ramps) raise 2035 coal output at 2035's rules too; the 2026 floor adds a further 8.9 Mt.
+
+Taken off CLAUDE.md's known failures (message 524 (b)). Caveat: the check compares a 2035 build run under 2026 operating rules; whether
+it should run at scenarioYear 2035 is a check correction for the user (TODO 14lc), not made here.
