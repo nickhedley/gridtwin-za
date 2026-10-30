@@ -55,6 +55,8 @@
 //                        year when tested hourly' (message 511)
 //   RUN.dpvword / .dpvpctplain / .dslgw_YYYY / .ocmaxplain   'more' or 'less'; the cost difference as a share of the plan, '0.6%'; new
 //                        diesel peakers standing in GW; the open-cycle capacity factor's highest year since new peakers first stand
+//   Draft 2 (message 513): RUN.nemnearyears, RUN.addgwr_T (whole GW), RUN.dpvabsplain, RUN.servedr_YYYY; page.discr, page.cocr.[CASE.]TECH,
+//                        page.privrange
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -115,6 +117,11 @@ function pageCost(k){
     const a=pct(hi), b=pct(lo); const f=x=>(x>=0?'+':'−')+nf(Math.abs(x)*100,0)+'%'; return a===b?f(a):`${f(Math.min(a,b))} to ${f(Math.max(a,b))}`; }
   if (w==='privprem') return nf(g.privatePrem[q[1]]*100,1)+' points';
   if (w==='disc') return pc1(g.disc);
+  // Whole-number rates where the figure is whole ('8%', '5.5%'), and the private premium as a range of points ('1.5-2'), for draft 2.
+  const pcr=v=>{ const x=Math.round(v*1000)/10; return (Number.isInteger(x)?nf(x,0):nf(x,1))+'%'; };
+  if (w==='discr') return pcr(g.disc);
+  if (w==='cocr') return q.length===2?pcr(g.coc.central[T(q[1])]):pcr(g.coc[q[1]][T(q[2])]);
+  if (w==='privrange'){ const a=g.privatePrem.re*100, b2=g.privatePrem.store*100, f=x=>Number.isInteger(Math.round(x*10)/10)?nf(x,0):nf(x,1); return a===b2?f(a):`${f(Math.min(a,b2))}-${f(Math.max(a,b2))}`; }
   if (w==='pvCase') return g.pvCase; if (w==='cocCase') return g.cocCase; if (w==='fx') return nf(g.fx,2); if (w==='nucUsd') return nf(g.nucUsd,0); if (w==='coalUsd') return nf(g.coalUsd,0);
   throw new Error('packfill: unknown page key '+k);
 }
@@ -154,6 +161,12 @@ function value(k){
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
+    // Draft 2's wording (message 513): the years the plan sits at or over the Australian limit, as a span; new build in whole GW; the
+    // cost difference without its verb; served energy in a year, TWh.
+    case 'nemnearyears': { const o=s.rows.filter(x=>x.mean>0.00002*x.servedTWh*1e3).map(x=>x.y); return o.length?spanH(o):'none'; }
+    case 'addgwr': { const v=value(k.replace('.addgwr_','.addgw_')); return v==null?null:nf(Math.round(parseFloat(String(v).replace(/,/g,''))),0); }
+    case 'dpvabsplain': { if (!b) return null; const d=s.pv-b.pv; return Math.abs(d)<1?'less than R1 billion':Rb(d); }
+    case 'servedr': { const x=s.rows.find(q=>q.y===y); return x?nf(x.servedTWh,0):null; }
     // The no-gas finding (message 511, second): cost difference as a word and as a share of the plan, new diesel peakers standing, GW,
     // and the open-cycle capacity factor's highest year from the first year new peakers stand, as 'about X%'.
     case 'dpvword': return b&&((s.pv-b.pv)>=0?'more':'less');
@@ -281,10 +294,11 @@ let out=fill(src);
 out=out.replace(/<!--fill:missing-->([\s\S]*?)<!--\/fill-->/g,()=>{ const l=[...missing].sort().map(n=>`- ${plainName(n)}: ${why(n)}`);
   return `<!--fill:missing-->\n${l.length?l.join('\n'):'- None: every result in this pack is in.'}\n<!--/fill-->`; });
 if (unknown.length){ console.error('unknown keys: '+unknown.join(', ')); process.exit(1); }
-// Plain-language check (message 503 (f)): the cover note, the introduction and section 6, as filled, carry no run code, no script or
+// Plain-language check (message 503 (f)): the About, Main findings, What gets built, How to read and section 6 parts, as filled, carry no run code, no script or
 // data filename and no TODO reference. Markers are stripped first, so a key name never counts; table rows do.
 const plainFail=(()=>{ const txt=out.replace(/<!--\/?fill[^>]*-->/g,''); const secs=[...txt.matchAll(/^## (.+)$/gm)]; const bad=[];
-  secs.forEach((h,i)=>{ if (!/^(Cover note|What this is|6\.)/.test(h[1])) return; const body=txt.slice(h.index,secs[i+1]?secs[i+1].index:txt.length);
+  // The parts the reviewer reads first (messages 503 (f), 513).
+  secs.forEach((h,i)=>{ if (!/^(About|Main findings|What gets built|How to read|6\.)/.test(h[1])) return; const body=txt.slice(h.index,secs[i+1]?secs[i+1].index:txt.length);
     for (const [what,re] of [['run code',/\b(?:c[56][a-z]?(?:_[a-z0-9_]+)?|s_[a-z0-9_]+|irp2025_[a-z0-9_]+|irp_[a-z0-9_]+|null_c\d[a-z]?)\b/g],['filename',/\b[\w/.-]+\.(?:md|js|json|py|sh|csv)\b/g],['TODO',/\bTODO\b/g]]){
       for (const m of body.matchAll(re)) bad.push(`${h[1].slice(0,12)}: ${what} '${m[0]}'`); } });
   return [...new Set(bad)]; })();

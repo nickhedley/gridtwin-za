@@ -113,6 +113,16 @@
   claude/site-text at 6e968cf; suite 998/1007, 88/88, 5/6 against main 974/996, 88/88, 5/6 (public_text and pathway_presets the
   only scripts that moved, both up); visible-text diff in the body (69 added or changed, 78 removed). The advisor merges before
   10:00 SAST Friday under 481 (b) if the checks pass; else the pack links the site as it stands (483 (c)).
+- 513 (Friday 30 Oct): main (016641e: #128, the six-pass no-gas run #129, presets #130) merged into claude/c6a-results; Nick's
+  draft 2 (Google Doc 1GaFYowxrqBnnTJqUvgXzjgxufZoFLiZNi7P8eW2ZGDQ, unchanged since 29 Oct 16:00) carried in as the front: title,
+  'About', 'Main findings' (ten findings, finding 8 the agreed 512 no-gas text), 'Still to come', 'What gets built, year by year'
+  (the two fill tables; '(preliminary)' dropped from its heading), and section 6 as one question. The how-to-read list is kept
+  after the tables: it carries the Eskom credit the data terms require. Every figure is a fill marker (new keys nemnearyears,
+  addgwr_T, dpvabsplain, servedr_YYYY, page.discr, page.cocr, page.privrange); one typed figure stays, 'within about 1%' in
+  finding 10 (the 2025 replay, a section 2 record with no run key). The IRP's demand: section 4's design bullet said 'sized for
+  higher demand'; it now reads the IRP's own, lower demand, 230 against 244 TWh served in 2035 (the least-cost plan at the two
+  demands), from the fill; no other mention found in the pack or the note. The plain check now covers About, Main findings,
+  What gets built, How to read and section 6, and passes. #120 merges after the send.
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 

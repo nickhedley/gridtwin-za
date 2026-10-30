@@ -18,7 +18,6 @@ const PLAIN = {
   s_gascapex25:       ['gas capex 25% higher', 'CCGT and open-cycle capex raised a quarter'],
   s_nogas:            ['no new gas or diesel peakers', 'no new gas plant of any kind and no new diesel open-cycle'],
   s_nogas_maxp6:      ['no new gas or diesel peakers, pass limit 6', 'the no-gas run with the optimiser allowed six passes instead of the default (messages 508, 510)'],
-  s_nogas_maxp10:     ['no new gas or diesel peakers, pass limit 10', 'the no-gas run with the optimiser allowed ten passes, run if six still fall short (message 510)'],
   s_nogas_dsl:        ['no new gas, diesel peakers allowed', 'no new gas plant; new open-cycle on diesel may be built'],
   s_std_strict:       ['half the Australian standard', 'planned to half of 0.002% of customer demand instead of NTCSA’s 20 GWh'],
   s_std_nem:          ['the Australian standard', 'planned to 0.002% of customer demand'],
