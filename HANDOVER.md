@@ -129,6 +129,8 @@
   labels too (packfill maps them; section 7's glossary and section 8's record keep codes); finding 9 and question 1's effect
   line in 514's wording from the fill; the About sentence on outstanding results and the 'Still to come' block removed; every
   number and year range in the pack and the note uses a hyphen (packfill writes them that way). Plain check passes.
+- 515: the reviewer's copy is the Google Doc 'GridTwin ZA reviewer documentation' (1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE),
+  made from 3ceb663; the old working draft is superseded ('Reviewer pack: Google Doc copy').
 - After the send (488, 489 (b)): TODO 14kr (AEMO QED Q3 2026 benchmarks; the cycling figure from the battery section, p. 37) and
   14ks (commissioning-delay sensitivity, 24 weather years, coal availability declining toward retirement).
 
@@ -164,17 +166,22 @@
   panels, suite, PR with the visible-text list; the advisor reviews and merges under 481 (b). If it is not merged by Friday 10:00
   SAST, the pack links the site as it stands and the PR follows after the send.
 
-## Reviewer pack: Google Doc copy (user, 28 Oct 2026, message 474)
+## Reviewer pack: Google Doc copy (user, 28 Oct 2026, message 474; new Doc 30 Oct 2026, message 515)
 
-REVIEWER_PACK.md on the pack branch (claude/c6a-results) is the master. A Google Doc copy is kept for reviewers in Nick's Drive:
-https://docs.google.com/document/d/1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc/edit. The advisor mirrors changed sections into it
-at each milestone; superseded sets (c6, c5e) stay in the repository only. Every report that changes the pack ends with one line
-listing the sections changed, so the advisor knows what to carry into the Doc.
+REVIEWER_PACK.md on the pack branch (claude/c6a-results) is the master. The reviewer's copy is the Google Doc "GridTwin ZA reviewer
+documentation" in Nick's Drive, ID 1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE
+(https://docs.google.com/document/d/1UwGhIWDTF6XWn04aHx9xSwPOjaRYyrTOouCWhNZ6OAE/edit), made by the advisor from the master at
+3ceb663 and checked against it word for word (30 Oct 2026). The earlier working draft (1MraUH-rK-LT1mSMBK7EBYqgWxzvDhaFetIeINDpKksc)
+is renamed as superseded and is no longer updated. Every report that changes the pack ends with one line listing the sections
+changed, so the advisor knows what to carry into the Doc.
 
-After the send (user, 29 Oct 2026, 10:57 SAST, message 494): the reviewer's copy is the one live Google Doc; there is no frozen copy.
-Nick names the sent version "Sent 30 October" in its version history. After the send the advisor makes only targeted edits (single
-figures and sentences, never whole sections), puts new results in a dated addendum at the end, reads the open comments before each
-update, and leaves commented passages alone unless Nick agrees first.
+Before the send, Nick may edit the new Doc; the advisor reports his edits so they are carried into the master, and the master is
+refilled and checked after them.
+
+After the send (user, 29 Oct 2026, 10:57 SAST, message 494; applies to the new Doc, message 515): the reviewer's copy is the one live
+Google Doc; there is no frozen copy. Nick names the sent version "Sent 30 October" in its version history. After the send the advisor
+makes only targeted edits (single figures and sentences, never whole sections), puts new results in a dated addendum at the end,
+reads the open comments before each update, and leaves commented passages alone unless Nick agrees first.
 
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 
