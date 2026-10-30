@@ -18473,7 +18473,7 @@ the presets matching their engine checks without the validator's own scaling (th
 ranking read PROFILES.demand).
 
 Preset scores (harness/ext/preset_rescore.js, VARIANTS=page K=20, twelve weather years x 20 draws, 240 runs; the same seeds as 29a's;
-30 Oct 2026, about 10:15-11:06 UTC): Deep decarbonisation 2035 SEED=120000017, 1.2015 GWh against 2.4086 (29a: 1.4314 against
+30 Oct 2026, finished 11:04 and 11:06 UTC): Deep decarbonisation 2035 SEED=120000017, 1.2015 GWh against 2.4086 (29a: 1.4314 against
 2.4281), cost R334.9bn, CO2 22.8 Mt; Fossil-free 2040 SEED=71830529, 1.3951 against 2.7012 (29a: 2.5527 against 2.7236), cost
 R451.8bn. Files harness/ext/rescore_page_30a_deep.json and _fossil.json; written to PRESET_SCORES by gen_preset_scores.py (--check
 matches); the captions read 'Unserved 1.20 GWh/yr' and 'Unserved 1.40 GWh/yr, within NTCSA's 20 GWh.' Caveat: Fossil-free 2040's
@@ -18482,8 +18482,8 @@ seed is the one its top-up was confirmed on (as 29a's score), not an independent
 Stored panels rewritten first (fingerprint 1177c449aa6038, 9/9 while writing). Visible text against main (27f2c4e, diff_public_text.js):
 10 sentences added or changed and 6 removed, all from (b) and the two preset captions.
 
-Suite on build 2026-10-30a (branch claude/site-tidy at c895ee5, ESK19679.csv present, nothing running beside it after the first
-minutes, 30 Oct 2026 about 11:33-13:23 UTC): node checks 998/1007, audit 88/88, eng5 5/6. Equal to main's suite on 29b (RESULTS
+Suite on build 2026-10-30a (branch claude/site-tidy at c895ee5, ESK19679.csv present, diff_public_text.js running beside it during the
+first scripts only, 30 Oct 2026 about 11:33-13:23 UTC): node checks 998/1007, audit 88/88, eng5 5/6. Equal to main's suite on 29b (RESULTS
 'Presets on c6e, build 2026-10-29b', second suite: 998/1007, 88/88, 5/6) by count in every script and by failure name: validate_findings
 37/40, validate_response 86/87, validate_consistency 82/83 (high-season off-peak), validate_benchmarks 28/30, validate_outputs 49/51,
 eng5 storage vs unserved; validate_external 8/8 (EDMSA Scenario A CO2 2035 117.0 against 124 Mt). All known (RESULTS 'Known
