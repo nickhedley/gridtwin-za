@@ -172,7 +172,7 @@ function value(k){
       case 'year': return String(p.year); case 'runs': return nf(p.n,0); case 'seed': return String(p.seed);
       case 'unserved': return nf(p.unservedGWh,2); case 'target': return nf(p.targetGWh,2); case 'meets': return p.unservedGWh<=p.targetGWh?'within':'above';
       case 'cost': return nf(p.costBn,1); case 'co2': return nf(p.co2Mt,1); case 'avgcost': return nf(p.avgCostRMWh,0);
-      case 'peakcf': return nf(100*p.peakerCF,2)+'%'; case 'served': return nf(p.servedTWh,1);
+      case 'peakcf': return p.peakerCF==null?'none':nf(100*p.peakerCF,2)+'%'; case 'served': return nf(p.servedTWh,1);
       case 'ironair': return nf(n.ironAir,2); case 'ironairh': return nf(n.ironAirHours,0);
       case 'ironairpow': return st>0?nf(100*n.ironAir/st,0)+'%':'-'; case 'ironairen': return en>0?nf(100*n.ironAir*n.ironAirHours/en,0)+'%':'-';
       case 'stamp': return T.stamp; }

@@ -47,7 +47,7 @@ const PRESETS_RUN=[['deep','Deep decarbonisation 2035',null,true],['lcp35','Leas
       csp:g(s.cspMW), ocgtDiesel:g(Math.max(0,(s.ocgtDieselMW||0)-(s.dieselDecomMW||0))), wind:g(s.windMW), solar:g(s.pvUtilityMW),
       hybrid:g(s.hybridMW), rooftop:g(s.rooftopMW), lithium:g(s.battPowerMW),
       imports:(s.importsEndYear>0 && y>s.importsEndYear)?0:g(s.importsMW)};
-    return JSON.stringify({year:y, n, unservedGWh:sh/n, targetGWh:0.5*cu/n, co2Mt:co/n, costBn:cs/n, avgCostRMWh:cw/sv, servedTWh:sv/n/1e6, peakerCF:ocC>0?ocE/ocC:null,
+    return JSON.stringify({year:y, n, unservedGWh:sh/n, targetGWh:0.5*cu/n, co2Mt:co/n, costBn:cs/n, avgCostRMWh:cw/sv, servedTWh:sv/n/1e6, peakerCF:ocC>0?ocE/(ocC*8760):null,
       peakerCapGW:ocC/n/1000, demandGrowthPct:s.demandGrowthPct, demandBlockMW:s.demandBlockMW||0, newGW, remGW}); })()`));
   r.preset=name; r.seed=SEED; r.secs=Math.round((Date.now()-t0)/1000); r.score=sc;
   // The page's own score must be what this loop reproduces; a mismatch means the table is not the page's preset check.
