@@ -37,7 +37,9 @@ CHECKS = [
     ("2030 targets",                                                 'IRP preset name'),
     # The IRP 2030 presets are generated from the IRP engine check's 2030 state from build 2026-10-19e (user, message 232 (2)),
     # which retires coal on Figure 3's dates (7,259 MW by 2030, as irpFig3CoalRetiredMW gave; the function is gone with its caller).
-    ("// BEGIN GENERATED 'IRP's 2030 targets' (harness/pathway/gen_pathway_presets.py from harness/pathway/irp2025/pathway_irp2025.json",
+    # The marker records the build file's path, which changes with the central (irp2025 to c6e on 29 Oct 2026), so the check reads
+    # the marker up to the folder, not the file.
+    ("// BEGIN GENERATED 'IRP's 2030 targets' (harness/pathway/gen_pathway_presets.py from harness/pathway/",
                                                                    'IRP preset generated from the IRP engine check (Table 1, coal on Figure 3\'s dates)'),
     ('Deep decarbonisation 2035',                                     'deep decarbonisation preset'),
     # costCoal moved to Eskom's FY2026 coal cost without the environmental levy on build 2026-10-22e (user, messages 306 (a) and 322; c6

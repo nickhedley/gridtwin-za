@@ -45,11 +45,15 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   console.log('battery case', w.eval('bldBattCase()'), 'R/kW', Math.round(w.eval('bldCostEntry("batt").c2026')));
   const stamp = w.eval('BUILD_STAMP'), years = JSON.parse(w.eval('JSON.stringify(bldWeatherYears.meta.years)'));
   const offCap = (P0.scenarioYear || 2035) <= 2035 ? 1000 : 5000;
+  // EXCLUDE=newIronAirMW[,newOffshoreMW] (user, 29 Oct 2026, message 490): technologies left out of every move; the preset's
+  // existing capacity of them stays as it is. Pumped storage is not a search technology (the preset carries Tubatse only).
+  const EXCL = (process.env.EXCLUDE || '').split(',').filter(Boolean);
   const TECH = [
     { k: 'newWindMW', steps: [2000, 1000, 500] }, { k: 'newPvMW', steps: [2000, 1000, 500] },
     { k: 'newBattMW', steps: [2000, 1000, 500] }, { k: 'newIronAirMW', steps: [500, 250, 125] },
     { k: 'newOffshoreMW', steps: [1000, 500, 250], cap: offCap },
-  ];
+  ].filter(t => !EXCL.includes(t.k));
+  if (EXCL.length) console.log('EXCLUDE', EXCL.join(','), '-> searching', TECH.map(t => t.k).join(','));
   const cache = new Map();
   // Mean shed (GWh), mean system cost (R bn) and mean served energy (TWh) over years x draws.
   const evaluate = (b, draws) => {

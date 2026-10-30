@@ -143,6 +143,12 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  const CAPEX26={wind:+w.eval("bldCapex('wind', 2026)"), pv:+w.eval("bldCapex('pv', 2026)")};
  console.log('capex 2026, engine check:', JSON.stringify(CAPEX26), 'optimiser:', JSON.stringify(P.capex2026||null));
  if (P.capex2026 && (Math.abs(P.capex2026.wind-CAPEX26.wind)>0.01 || Math.abs(P.capex2026.pv-CAPEX26.pv)>0.01)) throw new Error('capex differs from the optimiser\'s: '+JSON.stringify(CAPEX26)+' against '+JSON.stringify(P.capex2026));
+ // LCOE=1 (29 Oct 2026, message 487 (2)): the LCOE anchor notes' run-based figures (LCP_2030_*), per run: lithium discharge (E.batt,
+ // MWh) over the lithium energy in service (new MW x hours plus the existing fleet); diesel output over the diesel fleet
+ // (FIXED.ocgtDieselMW plus new diesel open-cycle) x 8,760; new-wind output as the engine's wind output split pro rata between
+ // the new fleet's uncurtailed potential on its profile (the modern twin with the run's correction, capped at 1 per unit) and the
+ // existing fleet's on the national profile, over new wind MW x 8,760. Written to the row as r.lcoe; nothing else changes.
+ const LCOE_ON=process.env.LCOE?'true':'false';
  const rows=[];
  for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0; cwCum+=P.sched[y].cw||0;
    // YEARS=2036,2037 (8 Oct 2026, TODO 14bk): check only these years; builds of the skipped years still accumulate.
@@ -172,7 +178,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
        let dem=0, chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
-       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW({...FIXED,...st})+Math.max(0,st.newOcgtMW||0)}]); } }
+       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW({...FIXED,...st})+Math.max(0,st.newOcgtMW||0),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; return (st.windMW||FIXED.windMW)*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)+(st.newOcgdMW||0)}:{})}]); } }
       return JSON.stringify(o); })()`));
    // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
@@ -198,6 +204,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // storage), the floor's target and shortfall, and all gas output, TWh, mean over the runs. Zero when no floor applies.
    { const L=o[0].length-1, m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/o.length/1e6;
      r.gasFloorTWh={floored:m('fl'), target:m('tg'), unmet:m('un'), totalGas:m('gas'), unfloored:m('gas')-m('fl')}; }
+   if (process.env.LCOE){ const L=o[0].length-1, m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/o.length, wd=m('wd'), wn=m('wn'), we=m('we'), nw=over.newWindMW||0;
+     r.lcoe={battDisTWh:m('bd')/1e6, battMWh:m('bE'), liCycles:m('bE')>0?m('bd')/m('bE'):null, dieselTWh:m('ds')/1e6, dieselCapMW:m('dc'), dslCF:m('dc')>0?m('ds')/(m('dc')*8760):null,
+       windTWh:wd/1e6, windNewPotTWh:wn/1e6, windExistPotTWh:we/1e6, windNewMW:nw, windNewTWh:(wn+we)>0?wd*wn/(wn+we)/1e6:0, windNewCF:nw>0&&(wn+we)>0?wd*wn/(wn+we)/(nw*8760):null}; }
    // NTCSA'S SECOND ADEQUACY CRITERION (user, 25 Oct 2026, messages 373, 375; MTSAO 2026-2030 section 3, p.11): open-cycle gas
    // turbine capacity factor under 6% a year, reported, not planned to. All open-cycle plant: diesel turbines (Eskom's and the IPP
    // peakers, with Avon and Dedisa's contract output) and open-cycle on LNG; energy over capacity x 8,760, mean over the runs.

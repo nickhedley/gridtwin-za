@@ -1,0 +1,130 @@
+{
+ "stamp": "2026-10-29a",
+ "preset": "Fossil-free 2040",
+ "override": null,
+ "draws": 1,
+ "target": 2.722749023056319,
+ "start": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 64500,
+   "newBattMW": 20000,
+   "newOffshoreMW": 2750
+  },
+  "shed": 2.5527099487909113,
+  "cost": 451.9455708903002,
+  "served": 326.4262864105536,
+  "cust": 272.36369576374454
+ },
+ "searched": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 64500,
+   "newBattMW": 20000,
+   "newOffshoreMW": 2750
+  },
+  "shed": 2.5527099487909113,
+  "cost": 451.9455708903002,
+  "served": 326.4262864105536,
+  "cust": 272.36369576374454
+ },
+ "log": [
+  {
+   "step": "start",
+   "build": {
+    "newWindMW": 50500,
+    "newPvMW": 56500,
+    "newBattMW": 20000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 132.39981925377074,
+   "cost": 434.8164189967426,
+   "served": 330.0589812025436,
+   "cust": 272.2749023056319
+  },
+  {
+   "step": "feasible 1",
+   "build": {
+    "newWindMW": 50500,
+    "newPvMW": 58500,
+    "newBattMW": 20000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 75.664441213823,
+   "cost": 437.15419406642576,
+   "served": 329.8212346787546,
+   "cust": 272.30146168706506
+  },
+  {
+   "step": "feasible 2",
+   "build": {
+    "newWindMW": 50500,
+    "newPvMW": 60500,
+    "newBattMW": 20000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 30.09071035890143,
+   "cost": 439.639904497068,
+   "served": 329.57590270794304,
+   "cust": 272.31868892418674
+  },
+  {
+   "step": "feasible 3",
+   "build": {
+    "newWindMW": 50500,
+    "newPvMW": 62500,
+    "newBattMW": 20000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 7.84874631345852,
+   "cost": 442.3559531187223,
+   "served": 329.29926083483747,
+   "cust": 272.3355218700707
+  },
+  {
+   "step": "feasible 4",
+   "build": {
+    "newWindMW": 50500,
+    "newPvMW": 64500,
+    "newBattMW": 20000,
+    "newOffshoreMW": 1750
+   },
+   "shed": 5.763318184408369,
+   "cost": 445.3177201491378,
+   "served": 328.9888832717331,
+   "cust": 272.34361389401687
+  },
+  {
+   "step": "feasible 5",
+   "build": {
+    "newWindMW": 50500,
+    "newPvMW": 64500,
+    "newBattMW": 20000,
+    "newOffshoreMW": 2750
+   },
+   "shed": 2.5527099487909113,
+   "cost": 451.9455708903002,
+   "served": 326.4262864105536,
+   "cust": 272.36369576374454
+  }
+ ],
+ "confirm": {
+  "draws": 20,
+  "shed": 2.5527099487909064,
+  "cost": 451.94557089030076,
+  "served": 326.4262864105541,
+  "cust": 272.3636957637444
+ },
+ "final": {
+  "build": {
+   "newWindMW": 50500,
+   "newPvMW": 64500,
+   "newBattMW": 20000,
+   "newOffshoreMW": 2750
+  },
+  "shed": 2.5527099487909064,
+  "cost": 451.94557089030076,
+  "served": 326.4262864105541,
+  "cust": 272.3636957637444
+ }
+}

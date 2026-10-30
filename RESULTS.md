@@ -17843,3 +17843,170 @@ off-peak check), so node checks 974/996. New: validate_bids 7/7. validate_stored
 86/86 with no 'not used' line; validate_worker 38/38 after the engine worker was given the cost-of-capital functions (it failed on
 its first preset without them; message 478: the stored panels were rewritten after that fix, as the fingerprint covers the page's
 inline scripts).
+
+### Presets on c6e, build 2026-10-29b: the four run-based presets regenerated from the c6e pair, states matching their engine checks to the key; the live page's preset figures sit about 0.3% above the checks because the checks scale the rooftop add-back to the twelve-year mean and the page does not (user, 29 Oct 2026, messages 483 (b) and 486 (b); branch claude/site-text)
+
+Generator (harness/pathway/gen_pathway_presets.py) pointed at harness/pathway/c6e (PR #128, runs on f7921b7, build 2026-10-28a):
+Least-cost path 2035 from pathway_c6e.json and pathcheck_c6e_b.json; IRP path 2035 and the two 2030 presets from
+pathway_irp2025_c6e.json with pathcheck_irp2025_c6e_b.json and _a.json; the two demand-gap constants from the pair's own run
+files (gap_run pathway_c6e_irpdem.json): IRP2035_DEMAND_GAP_PCT -4.79 and IRP2030_DEMAND_GAP_PCT -6.53 (the IRP's own forecast
+sits below the model's demand, so the captions read 'IRP plans 4.8% less' and '6.5% less'). `--check` matches. The generated
+identifiers keep the C5F_ names (message 486 (b)); the block's comment says whose figures they are.
+
+Presets as generated, GW: Least-cost path 2035 wind 22.6, utility solar 22.7, rooftop 11.8, batteries 11.3 (5.1 hours), CCGT
+0.55, open-cycle gas 0.65, no diesel peakers, nuclear or pumped storage; IRP path 2035 wind 21.0, solar 17.5, rooftop 8.1,
+batteries 4.7 (5.6 hours), CCGT 9.4, open-cycle 1.3; IRP's 2030 targets wind 7.3, solar 10.3, rooftop 3.6, batteries 1.9 (3.0
+hours), CCGT 6.0 at the 51% floor; coal standing 25,916 MW in 2035 and 32,433 in 2030 in both. Captions from the generator's
+templates (PRESETS_C6E_CAPTIONS.md): each states unserved energy against NTCSA's 20 GWh from PRESET_SCORES.
+
+validate_pathway_presets.js pointed at the same files (41 checks, 812 s). First run against the old c5f and irp2025 check
+files: 26/40, the states differing on every generated key, as expected. Against the c6e files: every state key matches (41, 37
+and 41 keys, 0 differ), unserved energy within tolerance, and system cost 0.18-0.33% above the check in all three presets
+(IRP's 2030 targets R281.987bn against R281.132bn; Least-cost path 2035 R261.794 against R260.944; IRP path 2035 R308.882
+against R308.323). Cause: the pathway runs record roofAddback12 (K 0.8895, pathway/roof12.js, messages 391 (b) and 392 (c)),
+which pathcheck.js applies before every check (demand less rooftopMW x derate x S x (1 - K), about 1.7 TWh a year); the page
+does not apply it. The validator now applies the recorded scaling once before the checks, as pathcheck.js does, and asserts
+every run records the page's K: 41/41. The live page's preset figures (the captions' unserved energy from PRESET_SCORES, and the
+cost and CO2 a visitor sees) therefore sit about 0.3% above the run's check until the exact fix lands (TODO, after the note).
+
+Audit on the regenerated page, first suite: 86/88. (1) The 'IRP preset generated from the IRP engine check' item searched for
+the BEGIN marker with the irp2025 path, which the marker no longer carries; the check now reads the marker up to the folder.
+(2) 'No shouted emphasis in user-facing strings' read a span between the apostrophe of "c5e's" and the quote opening 'LCOE
+anchors on reference parameters' in the LCOE-anchor comment (the class recorded under 'Site text on build 2026-10-29a', third
+suite); the comment is reworded without a possessive before the reference. Audit on the reworded page: 88/88 (standalone). The
+reword changes the inline script, so the stored panels were rewritten again and the suite rerun on the final page (next
+paragraph).
+
+First suite, build 2026-10-29b, 29 Oct 2026 18:03-19:52 UTC, branch claude/site-text at 3fdba0f (the validator with the roof12
+scaling in place when the suite reached it), ESK19679.csv present, nothing running beside it, stored panels rewritten first
+(fingerprint 102875a3379486): node checks 998/1007, audit 86/88, eng5 5/6. Against the branch's third suite on 29a (RESULTS 'Site
+text on build 2026-10-29a', 985/1006, 88/88, 5/6), every script equal by count and failure name except validate_pathway_presets
+27/40 to 41/41 (the 13 c5f-era failures cleared; one check added) and audit 88/88 to 86/88 (the two items above). Against main
+(28a: 974/996, 88/88, 5/6), the same plus the 29a text changes recorded in that entry. Failing by name: validate_findings 37/40
+(the three of main); validate_response 86/87 (baseline, 35 cells); validate_consistency 82/83 (high-season off-peak);
+validate_benchmarks 28/30 (Ember CO2, peakerSeasonRatio); validate_outputs 49/51 (curtailment at defaults, the coal-curtailment
+anchor); eng5 storage vs unserved. All known (RESULTS 'Known failures').
+
+Second suite, build 2026-10-29b, 29 Oct 2026 19:27-21:51 UTC, branch claude/site-text at 66cb5eb (the comment reworded, the
+audit's marker check on the folder, stored panels rewritten first, fingerprint 030bb9c5fafa49, 9/9 while writing), ESK19679.csv
+present, nothing running beside it: node checks 998/1007, audit 88/88, eng5 5/6. Every script equal to the first suite by count
+and by failure name; the two audit items cleared. Against the branch's third suite on 29a (985/1006, 88/88, 5/6): equal by name
+except validate_pathway_presets 27/40 to 41/41. Against main (28a: 974/996, 88/88, 5/6): the same, plus the 29a text changes.
+These are the counts the presets pull request reports.
+
+### Site text on build 2026-10-29a: the 2025 wind note subtracted today's Eskom wind line, not 2025's; the rest is wording (user, 28 Oct 2026, messages 470, 471 and 473; branch claude/site-text, no PR yet)
+
+Wind, validation panel, '2025, as modelled' against Ember: the note printed "-243 MW of privately wheeled wind". The preset's
+3,900 MW is the 2025 Eskom-visible wind plus that year's private wheeled wind (its comment), but the note subtracted
+ESKOM_WIND_LINE_MW, today's line (4,142.6 MW, Week 32 2026). The 2025 line, from Eskom data (ESK19679 'Wind Installed Capacity',
+mean of the 8,760 hourly rows of calendar 2025; our averaging, not Eskom's), is 3,642.2 MW, so the run carries 258 MW of private
+wheeled wind. Added as ESKOM_WIND_LINE_2025_MW. The line's year-end values in the same series: 2024 3,442.6, 2025 3,862.6, 2026
+4,142.6 MW. The engine does not read either constant; no result moves.
+
+Wording only, no engine change (index.html, commit be26b56): the price-duration tooltip's first and last points read 'Highest
+hour' and 'Lowest hour' (was 'Top 0% of hours'); the CCS panel names its checkbox (was 'check the box in the ... box'); the CCS
+note says capture is a fleet average (the engine's cost and emissions factors are share-weighted over all coal; commitment is
+by unit); the storage chart counts pumped storage and batteries together and the lithium slider says it counts batteries only;
+the storage-price caveat appears once, in the price-setting panel; SAWEM replaces 'no wholesale market' in the prices panel;
+GCCA is NTCSA's; Hive's superlative dropped; Leandra dated (as of August 2026); the tutorial lines of message 471 (l) cut or
+stated plainly; 7 of the 67 'not' and 'rather than' contrasts trimmed (the rest carry scope or definitions); header and footer per
+message 473; the PyPSA unit-commitment comparison dated by its build (14r; re-measure, TODO 14km). Labelled as assumptions, no
+basis found: the pre-feasibility R2.50/kWh, the rooftop escalation options (were '5% Eskom historical'), the 6 GW synchronous
+floor (were 'Eskom's historical practice'); TODO 14kl. Pumped storage R1.40/kWh keeps its 'no published source' flag (Meridian's
+review is the candidate; its PDF does not open here).
+
+validate_public_text: ten new patterns (messages 470 (d) and 471 (n)); 32/32 on this build, 22/32 on main (28a), each new
+pattern failing there on the text it was written for.
+
+First suite on 29a (28 Oct 2026, 21:55 UTC to 23:27 UTC, branch claude/site-text at 36ed859, ESK19679.csv present, stored panels
+rewritten first (fingerprint 139d0414070f99, 9/9 while writing), nothing beside it): 19 of 20 node scripts before the container
+restarted inside validate_worker at about 23:27 UTC (the two-hour cloud limit was not reached; HANDOVER 'Restarts were idle
+shutdowns'). Against main (28a): one extra failure, validate_findings 36/40 against 37/40: 'fleet figures in slider notes match the
+constants: newBattMW: no figure'. Cause: the lithium slider's note was reworded to say what it counts and lost the 'on X GW
+existing' form the check reads (validate_findings.js, added 5 Oct 2026). Fixed in the note, not the check (commit 819b113): "on
+0.1 GW existing (grid batteries only, 4h); the 2.7 GW of pumped storage is separate", both figures still from FIXED. The note is in
+the page's inline script, so the stored panels are rewritten again and the suite rerun in full. Same as main in that run:
+validate_response 86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, validate_pathway_presets
+27/40; validate_public_text 32/32 (22 checks on main), validate_stored_panels 86/86, validate_links 48/48, validate_external 8/8.
+
+Second suite on 29a (29 Oct 2026, 00:06 to 01:14 UTC, at 79d981e, panels rewritten first, fingerprint 02627976993aa9, nothing
+beside it): node checks 984/1006 (main 974/996; the ten new public-text checks all pass, every other script equal to main by
+count: findings 37/40, response 86/87, consistency 82/83, benchmarks 28/30, outputs 49/51, pathway_presets 27/40; stored panels
+86/86, links 48/48, worker 38/38, bids 7/7); eng5 5/6 (check 6, as on main); audit 87/88 against main's 88/88. The audit miss, 'no
+shouted emphasis in user-facing strings: SOURCES': the RT_TYPES comment written tonight read "the 2025-26 installer price guides'
+range for its size (SOURCES 'Rooftop PV installed cost, 2025-26'", and the audit's string scanner takes the possessive apostrophe
+as opening a quoted string, so SOURCES fell inside one. Reworded (commit e17023c, "the range the 2025-26 installer price guides give
+for its size"); audit alone then 88/88, prose 4,174 of 4,250 words. The comment is inline script, so the stored panels are
+rewritten a third time and the suite rerun; counts below.
+
+Third suite on 29a, the final one for the branch (29 Oct 2026, 01:53 to 03:01 UTC, at ed0e9eb, panels rewritten first, fingerprint
+08cb010dfeb386, 9/9 while writing, nothing beside it): node checks 984/1006, audit 88/88, eng5 5/6 (check 6, as on main). Against
+main (28a, 974/996, 88/88, 5/6): every script equal by count and by failure name; the ten added public-text checks pass (32/32
+against 22/22). Per script: lint 3/3, structure 27/27, geo 43/43, capacity 36/36, inputs 37/37, findings 37/40 (the three known),
+invariants 176/176, response 86/87, weather 68/68, lp 57/57, consistency 82/83 (off-peak, known), benchmarks 28/30, external 8/8,
+solve 9/9, outputs 49/51, pathway_presets 27/40 (the presets built on c5f's runs; c6e's presets PR), public_text 32/32, stored
+panels 86/86 with no 'not used' line, links 48/48, worker 38/38, bids 7/7.
+
+### Fossil-free 2040 sheds 132.4 GWh a year on build 2026-10-29a, against its 2.72 GWh design target and NTCSA's 20 GWh; Deep decarbonisation 2035 1.43 GWh, within its 2.43 (29 Oct 2026, messages 485 (c) and 486; branch claude/site-text)
+
+Settings. harness/ext/preset_rescore.js from harness/ of claude/site-text at 87d9c7c (build 2026-10-29a; engine as 28a), VARIANTS=page
+(the preset as the page runs it), K=20 independent outage draws x twelve weather years (240 runs), seeds 71830529 (Fossil-free 2040,
+as its recorded score) and 120000017 (Deep decarbonisation 2035, as its recorded score), 29 Oct 2026, 06:58-07:02 UTC, nothing beside
+it. Outputs in the session scratchpad (rescore_page_29a_fossil.json, rescore_page_29a_deep.json); gen_preset_scores.py reads them.
+
+- Fossil-free 2040: mean unserved energy 132.40 GWh a year, target 2.72 (half the NEM's 0.002% of customer demand); system cost
+  R434.8bn. Identical at K=1 (12 runs, 132.3998), as expected for a fleet with no thermal units to draw outages for: the shedding is
+  weather, not outages. Recorded score (PRESET_SCORES, build 2026-10-19e): 2.16 GWh on 240 runs. The page's caption has said nothing
+  on unserved energy since build 2026-10-23a (PRESET_SCORE_IMPORTS_END_BUILD): the score predates the central ending Cahora Bassa
+  imports after 2030 (PR B), and the preset's 2040 was searched with those imports in place. Cause confirmed: the same one-draw
+  rescore on a scratch copy of the page with FIXED.importsEndYear set to 0 (imports to 2040, as when the preset was built; K=1,
+  seed 71830529, 07:10 UTC) sheds 3.40 GWh (cost R441.3bn) against 132.40 with the central's 2030 end; the rest of the gap to its
+  2.72 target is within one draw's noise and the engine changes since 19e.
+- Deep decarbonisation 2035: 1.43 GWh against 2.43, cost R335.3bn; recorded 1.53 on build 2026-10-24b, within the draws' spread.
+  At K=1 0.07 GWh.
+
+Decision pending (user): whether the Fossil-free 2040 caption states the miss, stays silent as now, or the preset is re-searched
+(after the note under the scope freeze, message 481 (c)). TODO 14kq.
+
+### LCOE anchor notes on c6e's 2030: lithium 254.6 full cycles a year, the diesel fleet 1.32%, new wind 40.56% (user, 29 Oct 2026, message 487 (2); branch claude/site-text, page constants LCP_2030_*)
+
+Settings. harness/pathcheck.js with LCOE=1 (added 29 Oct 2026: per run it records lithium discharge, lithium energy in service,
+diesel output and fleet, wind output and the new and existing fleets' uncurtailed potentials; r.lcoe on the row; inert otherwise),
+LNG=1 GRID=1 K=20 YEARS=2030, on claude/c6e-snapshot's pathway_c6e.json (8ee155e; the central run on f7921b7, build 2026-10-28a),
+29 Oct 2026, 07:36-07:43 UTC, beside the Fossil-free 2040 preset search. Output harness/ext/lcoe_c6e_2030_k20.json; the three
+constants written by harness/ext/gen_lcoe_anchors.py (block 'GENERATED LCP_2030'), with --check. To confirm tonight: the merged
+outputs PR's pathway_c6e.json is identical to the snapshot's; if not, rerun (message 487 (2)).
+
+2030 row, 240 runs, mean unserved 1.05 GWh: lithium 2.969 TWh discharged from 11,662 MWh in service (3,730 MW new at 3.05 hours
+plus the 292 MWh existing), 254.58 full cycles a year (c5f's 2030: 102.69 on 16,011 MWh; c6e carries less lithium energy in 2030
+and cycles it more); the diesel fleet 0.392 TWh from 3,400 MW, 1.317% (c5f 2.70%); new wind 25.75 TWh from 7,246 MW, 40.564%
+(c5f 41.71%). New-wind output is the engine's wind output split pro rata between the new fleet's uncurtailed potential on its
+profile (the modern twin, the run's correction, capped at 1 per unit: 26.98 TWh) and the existing fleet's on the national profile
+(15.15 TWh): 40.21 TWh x 26.98 / 42.13; the engine reports wind as one fleet, so the split is a definition, stated in pathcheck.js.
+New wind to 2030 is 7,246 MW in both c5f and c6e: both build at the binding caps and committed floors to 2030, which are the same
+in the two sets. Lithium cycles and the diesel factor depend on the outage draws (one draw gave 252.1 and 1.18%); new wind does not.
+
+### Fossil-free 2040 topped up to its design target on build 2026-10-29a: utility solar 56.5 to 64.5 GW and offshore 1.75 to 2.75 GW, 2.55 GWh a year against 2.72 on 240 runs; iron-air excluded under rule 366 (user, 29 Oct 2026, messages 487 (1) and 490; branch claude/site-text)
+
+Settings. harness/ext/preset_search.js from harness/ of claude/site-text (page at 0da780d, build 2026-10-29a; imports end after 2030,
+FIXED.importsEndYear, as in the central), PRESET='Fossil-free 2040' FEASIBLE=1 DRAWS=1 CONFIRM=20 SEED=71830529: the feasible phase adds
+capacity by the largest step until the target is met (half the NEM's 0.002% of customer demand at the start, 2.72 GWh), the greedy
+then accepts only moves that meet it and cost less, the confirm scores on twelve weather years x 20 draws (240 runs, the preset
+check's seeds). DRAWS=1 for the search phase: this fleet has no thermal units to draw outages for, and its score is identical at 1
+and 20 draws. Two runs, 29 Oct 2026, 07:36-07:50 and 07:51-08:01 UTC:
+
+| Run | Moves | Final build, MW (wind, solar, lithium at 12 h, iron-air, offshore) | Shed, GWh (240 runs) | Search cost, R bn | File |
+|---|---|---|---|---|---|
+| Preset as written | - | 50,500 / 56,500 / 20,000 / 13,000 / 1,750 | 132.40 | 434.8 | RESULTS 'Fossil-free 2040 sheds 132.4 GWh' |
+| Iron-air allowed | solar +2,000 x3, iron-air +500, solar +2,000; greedy: no cheaper move | 50,500 / 64,500 / 20,000 / 13,500 / 1,750 | 2.685 | 449.3 | harness/ext/search_fossil_29a.json |
+| Iron-air excluded (EXCLUDE=newIronAirMW) | solar +2,000 x4, offshore +1,000; greedy: no cheaper move | 50,500 / 64,500 / 20,000 / 13,000 / 2,750 | 2.553 | 451.9 | harness/ext/search_fossil_29a_noironair.json |
+
+Decision (message 490): the excluded version is used, since it meets the target; it costs R2.6bn a year more than the iron-air
+version (451.9 against 449.3, 0.6%). The tool searches wind, utility solar, lithium, iron-air and offshore; pumped storage is not a
+search technology (the preset carries Tubatse only), so the exclusion run covered wind, solar, lithium and offshore (offshore
+2,750 MW is within ESMAP's 5 GW deployable by 2040). Written into PRESETS['Fossil-free 2040'] (newPvMW 64500, newOffshoreMW 2750;
+the preset's comment block carries the top-up and the rejected iron-air version); rescored on the page as it runs it
+(harness/ext/preset_rescore.js, VARIANTS=page K=20 SEED=71830529: 2.5527 GWh against 2.7236, cost R451.9bn, the confirm's figures
+to the digit; harness/ext/rescore_page_29a_fossil_topped.json) and written to PRESET_SCORES by gen_preset_scores.py. The caption
+reads 'Unserved 2.55 GWh/yr, within NTCSA's 20 GWh.' The preset remains built to c5f's demand for 2040 (C5F_DEMAND); the full
+re-search on c6e's basis and the 2045 horizon question stay after the note (TODO 14kq).
