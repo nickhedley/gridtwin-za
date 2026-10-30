@@ -69,7 +69,8 @@ cause and the build it first failed on in RESULTS 'Known failures on build 2026-
 
 No longer a known failure (message 524 (b)): validate_external's 'EDMSA Scenario A CO2 2035 within 22 Mt', failing from 2026-10-01a
 to 2026-10-23a, passes from 2026-10-24b (PR C's coal rules; 117.0 against 124 Mt on 29b). Cause in RESULTS 'EDMSA Scenario A CO2
-2035'; the check runs its 2035 build at the page's default year, 2026 (TODO 14lc).
+2035'. From 30 Oct 2026 every validate_external check runs at the year it names (message 526 (b); RESULTS 'Every external
+check at the year it names'): EDMSA 108.1 Mt at 2035.
 
 Each is to be settled after the note by fixing the model, correcting the check with its cause, or withdrawing the finding (TODO 14gm); the iron-air finding stays out of the note and the pack until then. The preset curtailment band passes from the presets build (17i, TODO 14ef). Pumped-storage output passes from 15f (the
 storage fix). 'The build stamp is not stale' (validate_structure)

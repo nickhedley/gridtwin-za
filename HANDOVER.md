@@ -210,6 +210,9 @@ commented passages left alone unless Nick agrees). Each report that changes the 
 Tags (Nick, 30 Oct 2026, message 525): the 30 Oct update went in without tags or an updates section, deliberately, because the
 reviewers had not yet opened the Doc. From now on, once the reviewers have the Doc, a correction carries an '(Updated DD Month)' tag
 and a line in the updates section. The master (REVIEWER_PACK.md) takes a tag or an updates line only when it appears in the Doc.
+Tag form from 30 Oct 2026 (message 527 (c)): '(Updated on DD Month.)'. The Doc's yellow highlight on tags and updates lines stays in
+the Doc, not the master. Figures at their own year (message 526 (b)): every check runs at the year it names, and any figure the pack
+quotes comes from a run at its own year (the CSIR 2030 shares from validate_external at 2030: 52% and 42%, in the Doc on 30 Oct).
 
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 
