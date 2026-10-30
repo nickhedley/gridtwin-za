@@ -639,6 +639,52 @@ windows hold expected unserved energy at or below 20 GWh in 2037-40 while the ho
 stopped on the stall rule at the same result. Find why the windows miss the shortfall (window selection, the daily storage balance,
 the coal rules in the LP) and what closes it, so a no-gas plan can be planned to the standard; with 14ky.
 
+14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
+build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
+source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
+Megaflex rates on a stated load shape, or keep it as a labelled default); the wheeling R1.50 and grid-sale R0.55 defaults have no
+recorded source either; (2) the rooftop tab's escalation options, 3, 5 and 8% a year, discounted at 10%: real or nominal is not
+recorded, and 'Eskom historical' had no source (Eskom's nominal increases since 2008 were far above 5%); state the basis and pair
+it with a matching discount rate; (3) the synchronous floor, 6 GW (SYNC_MIN_MW), 'about 15% of peak': no South African source
+(RESULTS, the inertia limitation entry); NTCSA's system-strength or inertia requirement if published, else keep it labelled.
+
+14km. Re-measure the engine against the single-node PyPSA unit-commitment optimum (message 470 (a)) on the presets PR's build: the
+page quotes 1.1-3.5% in three ordinary weeks and 26% in the 2040 stress week, measured on build 2026-10-14r, before PR C's coal
+rules and the 24-hour down time; the page now dates the figures by that build. Several hours; after the note if the presets PR is
+short of time.
+
+14kr. AEMO Quarterly Energy Dynamics Q3 2026 benchmarks (user, 29 Oct 2026, message 488; after the send, no action before):
+(a) battery cycling: take the figure from the report's battery section (p. 37), not the advisor's estimate (message 488 (d)):
+the 13.4 GWh a day of charging is daytime charging only, so 'half a cycle a day' understates it; the lithium LCOE anchor assumes
+365 cycles a year, so test it against the report's own cycling figure. (b) Gas at 3.4% of NEM
+generation; batteries 8.0% of evening-peak supply against gas's 5.1%: a benchmark for c6e's low gas capacity factor. (c) Utility
+solar curtailment 6.7% and wind 2.5% (network), solar offloading 5.9%: benchmarks for the curtailment band. Source: AEMO,
+Quarterly Energy Dynamics Q3 2026, pp. 4, 26, 35-37 (to SOURCES with the work).
+
+14ks. AEMO 2026 ESOO practice to test after the send (user, 29 Oct 2026, message 489 (b)): (i) a commissioning-delay sensitivity,
+AEMO delaying committed projects six months and anticipated ones to the later of a year or July 2028 (ESOO p. 23), applied to the
+committed floors and the near-term build; (ii) more weather years, AEMO using 24 against the model's twelve (p. 23); (iii) coal
+availability declining toward retirement (p. 14), against the model's flat coal-only EAF. Source: AEMO, 2026 Electricity Statement
+of Opportunities (SOURCES 'Adequacy criteria').
+
+14kt. High LNG price case, after the send (user, 29 Oct 2026, message 492 (c)): European gas at a four-year high in October 2026
+against the central's LNG at 13.25% of Brent at USD 80 (SOURCES 'Gas price cases'); run the existing high gas price case on c6e's
+settings, or a case indexed to the October 2026 European level, and report cost, CO2 and the gas build against the central.
+
+14ku. s_std_strict and s_std_nem on c6e with a higher pass limit, after the send (user, 29 Oct 2026, message 495): both stopped at the
+optimiser's pass limit on c6e (both met their standard in c6c, with new gas from 2032); the pack reports each from its engine check
+against its own standard and says a higher limit is untested. Rerun both with MAXP raised (chain_c6e.sh's one() takes a pass count)
+to settle whether the standard is reachable with new gas from 2035; report cost, build and the years over the standard.
+
+14kv. Cost of IRP 2025's 51% gas minimum to industry, after the send (user, 29 Oct 2026, message 496). (a) Engine check of c6e's
+central build with only the gas minimum on (GASFLOOR engine-only: 51% of up to 6,000 MW of CCGT, 2030-40), against the central:
+system cost per MWh by year, engine PV and CO2; the same build, so the difference is the floor alone. (b) Pass both through the retail
+tariff calculator to Megaflex: c/kWh and the percentage change for a typical industrial load. (c) First indication, from c6e's
+s_irpgas on the snapshot (the advisor, 29 Oct 2026): system cost +R142-152/MWh in 2030-40, PV +R198bn, CO2 +155 Mt; that run also
+changes the gas build (GAS_FIRST=2032, forced and minimum gas), so it is not the floor alone and is not quoted as such. The note's
+first agreed text (NOTE_DRAFT.md on the pack branch, message 497) quotes s_irpgas with that caveat; its sentence is updated when (a)
+and (b) land.
+
 ## Follow-through on the engine change
 
 17. You: a deeper-coal-retirement preset with firm capacity alongside – worth building as a third scenario?
