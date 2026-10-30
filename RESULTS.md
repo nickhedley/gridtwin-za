@@ -18572,7 +18572,7 @@ it should run at scenarioYear 2035 is a check correction for the user (TODO 14lc
 
 ### Scenarios table on build 2026-10-30a: Deep decarbonisation 2035 1.20 GWh, R334.9bn a year, 22.8 Mt against Least-cost path 2035's 4.32 GWh, R260.9bn, 90.5 Mt; Fossil-free 2040 1.40 GWh on either seed, R451.8bn, 0 Mt against Least-cost 2040's 0.60 GWh, R305.3bn, 67.5 Mt (user, 30 Oct 2026, messages 523 (b), 528-533; branch claude/preset-table)
 
-harness/ext/preset_table.js on main fda846f (build 2026-10-30a), 30 Oct 2026, finished about 23:45 UTC; output harness/ext/preset_table.json;
+harness/ext/preset_table.js on main fda846f (build 2026-10-30a), 30 Oct 2026, finished 22:30 UTC; output harness/ext/preset_table.json;
 the table PRESET_TABLE.md, every figure a packfill marker (preset.* keys). Each column one year on the page's engine, twelve weather
 years x 20 outage draws (240 runs) on twelveYearDemand, as the preset scores; each preset paired with the least-cost pathway on the same
 seed (message 533 (b)): Deep decarbonisation 2035 and Least-cost path 2035 on 120000017; Fossil-free 2040 and Least-cost path 2040 on
