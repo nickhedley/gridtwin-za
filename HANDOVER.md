@@ -1,5 +1,12 @@
 # GridTwin ZA - handover, current state (kept current; updated 28 Oct 2026, 22:00 UTC)
 
+## Eskom terms: the hourly dispatch export leaves out demand (31 Oct 2026; user, message 566 (c); rule 366, Nick may overrule)
+
+The page's hourly dispatch CSV (downloadDispatchCSV, 'Download hourly dispatch') exported a demand_mw column: the model's hourly
+demand, built on Eskom's 2025 hourly shape (ESK19679). Until Eskom consents to publication (CLAUDE.md, Eskom terms), that column is
+removed, not aggregated (the conservative choice), and the file carries a line saying why. The generation, charging and curtailment
+columns stay. Restore the column, or switch to daily totals, only on Nick's word or Eskom's consent. Site-copy PR, build 2026-10-31d.
+
 ## Decisions of 29 Oct 2026 (user, messages 485, 487, 489 and 490), in force
 
 - Fossil-free 2040 (487 (1), 490): it fails the adequacy standard on the current page (132.4 GWh a year; the central ended imports
