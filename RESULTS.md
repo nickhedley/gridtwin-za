@@ -18644,3 +18644,40 @@ year, 11,802 and 17,802 MW; same 240 runs and seeds; 31 Oct 2026 about 06:22-06:
 (2.1 above the pathway), 1.08 GWh against 2.39, R336.2bn a year, 22.7 Mt; Fossil-free 2040 279.8 TWh (4.7 above), 1.07 GWh against
 2.69, R453.2bn, 0 Mt. Added to PRESET_TABLE.md as a second table with fill markers; the first table keeps the presets as the page
 runs them.
+
+### The grid charge for new wind and solar (txRPerKWyr, R402/kW-yr) against TDP 2024's R440bn to 2034: R4.8bn per GW of new grid-connected generation for generation integration, R7.9-9.4bn per GW for the whole plan; at c6e's 7.1% network rate the charge would be R364/kW-yr, not R402 (user, 31 Oct 2026, message 540 (a); no run, no input changed)
+
+Figures as recorded (RESULTS 'Transmission reconciled to what the TDP buys', 22 Sep 2026, build 2026-09-22ad; SOURCES 'Eskom TDP 2024'):
+TDP 2024's decade total about R440bn (DBSA; NTCSA CEO, August 2026) for 56 GW of new generation, 9 GW of it rooftop, so 46.9 GW
+grid-connected; generation integration with land pro rata is 51.1% of Table 4's first five years, applied to the decade: R225bn.
+Per GW of new grid-connected generation and as an annual charge over 40 years (annuity factors 0.0839 at 8%, 0.0759 at 7.1%):
+
+| Basis | Capital per kW (R bn per GW) | At 8% | At 7.1% (c6e's network rate) |
+|---|---|---|---|
+| Generation integration, R225bn over 46.9 GW (the model's basis) | R4,797 | R402/kW-yr | R364/kW-yr |
+| Whole TDP, R440bn over 46.9 GW | R9,382 | R787/kW-yr | R712/kW-yr |
+| Whole TDP, R440bn over 56 GW (rooftop included) | R7,857 | R659/kW-yr | R596/kW-yr |
+
+Finding: the model's R402/kW-yr is the generation-integration share annuitised at 8% real over 40 years, the rate before build
+2026-10-28a. Since then every capital charge takes its technology's own cost of capital and network investment is priced at 7.1%
+(NERSA's allowed return for Eskom; c6e's basis), but txRPerKWyr is a fixed constant and kept 8%: at 7.1% it would be R364/kW-yr,
+9.5% lower, applied to every GW of new wind, utility solar and offshore in every c6e run. The whole-plan figures include network
+strengthening, refurbishment, telecoms and IT that serve load and reliability as well as new generation, so they bound the charge
+from above rather than replace it. Not changed: a decision for the user after the optimised runs (TODO 14lj). The R440bn and Table 4
+split are as recorded on 22 Sep and 18 Oct 2026; the primary PDF has not been re-read (www.ntcsa.co.za is not reachable from the session).
+
+### Suite on build 2026-10-31a (the optimised preset options, off by default): equal to main's 30a by count in every script and by failure name (PR #137; message 551 (b))
+
+Suite on build 2026-10-31a (branch claude/optimised-presets; index.html as at 8838490, unchanged since; ESK19679.csv present),
+31 Oct 2026 about 10:00-13:28 UTC, in resumable pieces, with the Deep decarbonisation 2035 optimiser run (s_co2cap2035_c6e) solving
+beside it throughout, so the timings are not clean. Node checks 998/1007, audit 88/88, eng5 5/6. Equal to main's suite on 30a (RESULTS
+'Suite on build 2026-10-30a', 998/1007, 88/88, 5/6) by count in every script and by failure name: validate_findings 37/40 (a low build
+rate stays at the congestion floor; with gas, 20 GW of 100-hour iron-air barely moves July; turn-up is a growing share of constraint
+cost), validate_response 86/87 (response matrix matches baseline), validate_consistency 82/83 (high-season off-peak), validate_benchmarks
+28/30 (CO2 against Ember; peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost in the
+coal-curtailment scenario), eng5 storage vs unserved; validate_external 8/8. All known (RESULTS 'Known failures').
+
+Stored panels: the first run read 66/86, because stored_panels.json still carried 30a's fingerprint (1177c449aa6038) and the page
+computes a new one (0c174878d1d78d) from the changed index.html; rewritten (validate_stored_panels --write, 9/9 while writing; commit
+a14d7e0), then 86/86. With the new options at their defaults the risk panels' inputs are unchanged; the fingerprint follows the page
+source.

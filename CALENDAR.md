@@ -130,6 +130,20 @@ Q2 2027        Final RFP. Financial close and a three-year build would put first
 Bears on tdp_projects.json and the 2030 presets: if the seven corridors sit in the TDP with
 2029-2030 dates, the headroom path releases their capacity a year early.
 
+## Expected market publications (Operation Vulindlela Q2 report, Engineering News, 30 Oct 2026; user, 31 Oct 2026, message 543)
+
+```
+Nov 2026       NERSA Electricity Trading Rules and Market Code, final. Check the reviewer Doc's market-design
+               line ('SAWEM as drafted is an energy-only market') against the final text (TODO 14ll).
+Dec 2026       Wholesale Electricity Pricing Methodology. If it sets a price ceiling and a scarcity rule,
+               replace the market-price panel's ceiling (R87,000/MWh) and its ERCOT-based scarcity rule with
+               SAWEM's (TODO 14ll).
+Dec 2026       Vesting Contract Framework, final. Check the retail panel's market-basis contract levy against
+               it (TODO 14ll).
+Dec 2026       ERTT Phase II report: the TSO implementation plan.
+Apr 2027       SAWEM launch (the Vulindlela report gives September 2026 as the earlier date; see SAWEM below).
+```
+
 ## SAWEM
 
 ```

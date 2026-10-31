@@ -213,6 +213,12 @@ and a line in the updates section. The master (REVIEWER_PACK.md) takes a tag or 
 Tag form from 30 Oct 2026 (message 527 (c)): '(Updated on DD Month.)'. The Doc's yellow highlight on tags and updates lines stays in
 the Doc, not the master. Figures at their own year (message 526 (b)): every check runs at the year it names, and any figure the pack
 quotes comes from a run at its own year (the CSIR 2030 shares from validate_external at 2030: 52% and 42%, in the Doc on 30 Oct).
+Order of work from 31 Oct 2026 (messages 537, 546): the two optimised runs (Deep decarbonisation 2035 with a 22.8 Mt cap from 2035,
+Fossil-free 2040 with fossil output ending after 2039; branch claude/optimised-presets), then one page change (TODO 14ln: expired
+REIPPPP plant pays fixed O&M; the grid charge at 7.1%, R364/kW-yr) with c6e measured with it, then the preset swap (537 (f)).
+Next weekly Doc update (user, 31 Oct 2026, message 539 (b)), drafted by the advisor: three Known limitations, that coal fuel cost
+is held flat in real terms (TODO 14ld), that coal emissions (MES) compliance costs are not included (TODO 14le) and that health and
+water costs are excluded (TODO 14lh). The master takes them once they are in the Doc.
 
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 

@@ -863,6 +863,17 @@ to January 2026 1.2953; SA CPI January 2024 to January 2026 1.0681; R16.50/USD).
   for the berth, 3.6 Mt/yr; Richards Bay R7bn for 2 mtpa; Standard Bank, ENN 23 Jul 2026, USD 1.5bn for two
   terminals; computed at 8% over 25 years, 53.37 GJ/t, 6,900 kJ/kWh), applied with GAS_FOM_ADD to new gas in the
   optimiser and the cost readout alike.
+- The terminal stays a fixed charge per kW of new gas, not an adder per MMBtu (user, 31 Oct 2026, message 544 (a)(3)): new gas
+  runs at a 5-8% capacity factor in c6e (2035-40), so a per-MMBtu terminal tariff set for a baseload throughput would understate
+  what a terminal costs per unit when it serves backup plant; the fixed charge recovers it whatever the throughput.
+- Cross-check, not an input (TODO 14lm): a pre-war LNG cost stack from an analyst (private communication, 31 Oct 2026; not named;
+  figures read off a chart, approximate, USD/MMBtu): FOB 8.5, shipping about 0.25, terminal and regasification about 1.0, credit
+  and marketing about 0.6, inland pipeline about 0.5 (Richards Bay to local KwaZulu-Natal) or about 2.6-3.0 (to Gauteng); totals
+  10.93 (Richards Bay, local), 12.86 (Matola to Gauteng), 13.48 (Richards Bay to Gauteng).
+- Shipping depends on the LNG source (user, 31 Oct 2026, message 545): the central case assumes Qatar (Ras Laffan, about 4,200 nm,
+  the 2018 charter breakeven above, about USD 1.1/MMBtu); the analyst's about 0.25 fits a short haul such as Mozambique. The central
+  case stands as the long-run basis, since new gas arrives only from 2035; a Mozambique-sourced case is a low-shipping sensitivity
+  after the note (TODO 14lm).
 
 ## Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)
 
@@ -2198,3 +2209,21 @@ reachable from the session.
 - Policy Position 36(b)-(e) (p.50): mandatory time-of-use tariffs for grid-tied embedded generation (36(e)).
 
 Use: the 'EPP 2026 as drafted' case for the rooftop and retail panels, after the note (TODO 14lb). No model input changed.
+
+## Rooftop: the model's basis (user, 31 Oct 2026, message 542 (a))
+
+The model takes Eskom's estimate for the installed rooftop stock (NTCSA weekly system status 'Estimated Rooftop PV' rows; 8.1 GW in
+2026 after wheeled plant is netted off, SOURCES register) and its own growth assumption (1,200 MW a year from 2028, after the 2027
+step to the end-2026 level). It does not use NTCSA's growth path (the MTSAO 2027-2036 SSEG trajectories, 273 and 560 MW a year) or
+GreenCape's: the user's decision is that those paths are conservative.
+
+## Long-duration storage: DNV, BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; held in the user's Drive; DNV's figures, recorded as DNV's)
+
+- As of Q2 2026 DNV had reviewed no bankable non-lithium long-duration storage project, and judges non-lithium unlikely to compete
+  below about 6 hours (pp. 32-33). Recorded beside the model's iron-air flag: iron-air's finding is a known failure of the suite
+  (CLAUDE.md, 'with gas, 20 GW of 100-hour iron-air barely moves July'), the optimised presets are run with iron-air off (message 537),
+  and the hand-built presets that rely on it carry the caveat (PRESET_TABLE.md).
+- Battery wear: contract capacity guarantees of 60-80% of nameplate at year 10, with augmentation as standard practice (pp. 15-16);
+  the model has neither (TODO 14lp (1)).
+- 8-hour tenders in California, Australia and the UK chose lithium (p. 31) (TODO 14lp (2)).
+
