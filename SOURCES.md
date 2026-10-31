@@ -863,6 +863,14 @@ to January 2026 1.2953; SA CPI January 2024 to January 2026 1.0681; R16.50/USD).
   for the berth, 3.6 Mt/yr; Richards Bay R7bn for 2 mtpa; Standard Bank, ENN 23 Jul 2026, USD 1.5bn for two
   terminals; computed at 8% over 25 years, 53.37 GJ/t, 6,900 kJ/kWh), applied with GAS_FOM_ADD to new gas in the
   optimiser and the cost readout alike.
+- The terminal stays a fixed charge per kW of new gas, not an adder per MMBtu (user, 31 Oct 2026, message 544 (a)(3)): new gas
+  runs at a 5-8% capacity factor in c6e (2035-40), so a per-MMBtu terminal tariff set for a baseload throughput would understate
+  what a terminal costs per unit when it serves backup plant; the fixed charge recovers it whatever the throughput.
+- Cross-check, not an input (TODO 14lm): a pre-war LNG cost stack from an analyst (private communication, 31 Oct 2026; not named;
+  figures read off a chart, approximate, USD/MMBtu): FOB 8.5, shipping about 0.25, terminal and regasification about 1.0, credit
+  and marketing about 0.6, inland pipeline about 0.5 (Richards Bay to local KwaZulu-Natal) or about 2.6-3.0 (to Gauteng); totals
+  10.93 (Richards Bay, local), 12.86 (Matola to Gauteng), 13.48 (Richards Bay to Gauteng). The central case's shipping, about
+  USD 1.1/MMBtu from Ras Laffan on the 2018 charter breakeven, is well above his about 0.25.
 
 ## Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)
 

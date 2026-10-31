@@ -739,6 +739,13 @@ reviewer Doc's market-design line ('energy-only as drafted'). (2) The Wholesale 
 rule with SAWEM's. (3) The Vesting Contract Framework, final (expected December 2026): check the retail panel's market-basis contract
 levy.
 
+14lm. The central gas case against an analyst's pre-war LNG cost stack, after the note (user, 31 Oct 2026, message 544; private
+communication, the analyst not named; figures in SOURCES 'Gas price cases'). (1) Shipping: the central's about USD 1.1/MMBtu from
+Ras Laffan (a 2018 charter breakeven, CPI-adjusted) against his about 0.25; recheck with a current, citable source (charter rates
+and voyage), and record which is used and why. (2) A sensitivity adding a credit and marketing margin (USD 0.6/MMBtu) to the fuel
+price and, for any gas sited inland, the pipeline (USD 2.6-3.0/MMBtu to Gauteng; about 0.5 for Richards Bay to local KwaZulu-Natal).
+(3) Done in SOURCES: the terminal stays a fixed charge per kW, not a per-MMBtu adder, because new gas runs at a 5-8% capacity factor.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
