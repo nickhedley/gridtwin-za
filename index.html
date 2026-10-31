@@ -20946,7 +20946,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-31e';
+const BUILD_STAMP = '2026-10-31f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -22145,20 +22145,21 @@ function downloadDispatchCSV() {
   const sourceNote = usingNodal
     ? '# Source: GridTwin ZA national engine (nodal run active – KPI banner shows network-aware unserved energy)'
     : '# Source: GridTwin ZA national dispatch engine';
-  // Eskom's terms (user, 31 Oct 2026, message 566 (c), rule 366; HANDOVER): the modelled hourly demand is built on Eskom's 2025
-  // hourly shape, so it is left out of the export until Eskom consents to publication. The generation columns stay.
-  const rows = [sourceNote, '# Hourly demand is not included: it is built on Eskom\u2019s 2025 hourly data, published only with Eskom\u2019s consent.',
-    'hour,date_approx,storage_charging_mw,curtailed_mw,' + carriers.map(k=>names[k]).join(',')];
+  // The modelled hourly demand is the model's output, not an Eskom series, so the export keeps it (user, 31 Oct 2026, message 567 (a),
+  // cancelling 566 (c); HANDOVER).
+  const rows = [sourceNote, 'hour,date_approx,demand_mw,storage_charging_mw,curtailed_mw,' +
+    carriers.map(k=>names[k]).join(',')];
   const N = 8760;
   for(let h=0;h<N;h++){
     const month = Math.floor(h/730)+1;
     const day = Math.floor((h%730)/24)+1;
     const hour = h%24;
     const date = `2025-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}T${String(hour).padStart(2,'0')}:00`;
+    const demand = r.loadS ? r.loadS[h] : 0;
     const charging = r.chargeMW ? r.chargeMW[h] : 0;
     const curtailed = r.curtailMW ? r.curtailMW[h] : 0;
     const cols = carriers.map(k => r.stack[k] ? r.stack[k][h].toFixed(1) : '0');
-    rows.push(`${h},${date},${charging.toFixed(1)},${curtailed.toFixed(1)},${cols.join(',')}`);
+    rows.push(`${h},${date},${demand.toFixed(1)},${charging.toFixed(1)},${curtailed.toFixed(1)},${cols.join(',')}`);
   }
   const blob = new Blob([rows.join('\n')], {type:'text/csv'});
   const a = document.createElement('a');

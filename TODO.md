@@ -831,6 +831,12 @@ GenX's long-duration storage method (Mallapragada et al. 2020) or Kotzur et al.'
 plan. (4) Every cost sourced (electrolyser, storage per kg or MWh, turbine and conversion premium, round-trip efficiency), with low,
 central and high cases. (5) Report the scope, the time needed and the sources before any build.
 
+14ls. Battery reserve eligibility as the MTSAO models it, after the note (user, 31 Oct 2026, message 568 (b)): c6e's engine check with
+only Eskom's BESS programme and the BESIPPPP bid window 1-3 batteries eligible for instantaneous, regulating and ten-minute reserve
+(NTCSA MTSAO 2027-2036, Section 2.2.3, p.17), every other battery for energy only. Report the change in unserved energy and cost
+against c6e. The model's current rule (every battery eligible) is a stated assumption (SOURCES 'Batteries eligible for operating
+reserve'; 568 (a)).
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's

@@ -1,11 +1,10 @@
 # GridTwin ZA - handover, current state (kept current; updated 28 Oct 2026, 22:00 UTC)
 
-## Eskom terms: the hourly dispatch export leaves out demand (31 Oct 2026; user, message 566 (c); rule 366, Nick may overrule)
+## Eskom terms: the hourly dispatch export keeps its demand column (31 Oct 2026; user, message 567 (a), cancelling 566 (c))
 
-The page's hourly dispatch CSV (downloadDispatchCSV, 'Download hourly dispatch') exported a demand_mw column: the model's hourly
-demand, built on Eskom's 2025 hourly shape (ESK19679). Until Eskom consents to publication (CLAUDE.md, Eskom terms), that column is
-removed, not aggregated (the conservative choice), and the file carries a line saying why. The generation, charging and curtailment
-columns stay. Restore the column, or switch to daily totals, only on Nick's word or Eskom's consent. Site-copy PR, build 2026-10-31d.
+Decided: the page's hourly dispatch CSV (downloadDispatchCSV) stays as it was, demand_mw included. The modelled hourly demand is the
+model's output, not an Eskom series, so the Eskom terms (CLAUDE.md: no raw or per-unit hourly Eskom series published) do not apply
+to it. Message 566 (c) had removed the column as a rule 366 precaution; 567 (a) restored it before the site-copy PR opened.
 
 ## Decisions of 29 Oct 2026 (user, messages 485, 487, 489 and 490), in force
 
@@ -225,7 +224,13 @@ Fossil-free 2040 with fossil output ending after 2039; branch claude/optimised-p
 REIPPPP plant pays fixed O&M; the grid charge at 7.1%, R364/kW-yr) with c6e measured with it, then the preset swap (537 (f)).
 Next weekly Doc update (user, 31 Oct 2026, message 539 (b)), drafted by the advisor: three Known limitations, that coal fuel cost
 is held flat in real terms (TODO 14ld), that coal emissions (MES) compliance costs are not included (TODO 14le) and that health and
-water costs are excluded (TODO 14lh). The master takes them once they are in the Doc.
+water costs are excluded (TODO 14lh). The master takes them once they are in the Doc. Added (user, 31 Oct 2026, message 568 (a)):
+a stated assumption for the reviewer pack's assumptions in the same weekly update, that the model lets every battery, new and
+existing, private or public, provide instantaneous, regulating and ten-minute reserve, while NTCSA's MTSAO 2027-2036 (Section 2.2.3,
+p.17) credits only Eskom's BESS programme and BESIPPPP bid windows 1-3 (SOURCES 'Batteries eligible for operating reserve').
+The reviewer Doc's 'Decarbonisation scenarios' section (advisor, 31 Oct 2026, 20:55 SAST, from the hypothetical runs) goes into
+REVIEWER_PACK.md with fill markers once Nick has edited it in the Doc (message 567 (b)); the keys are in RESULTS 'Fill markers for
+the reviewer Doc's scenarios section' (#138).
 
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 
