@@ -789,6 +789,23 @@ the power and energy split against DNV and current bids; state the split assumed
 the iron-air flag). If the fossil-free optimised run stalls without iron-air (537 (d)), tell the user before the iron-air rerun: a
 rerun with LI_EH=8 may be the better second attempt (message 548 (b)).
 
+14lq. Distributed flexibility and grid-enhancing technologies, after the note (user, 31 Oct 2026, message 550; from the advisor's
+project doc 'claude/vpp-gets-modelling-2026-10-31.md', not in the repository: obtain it and record its figures and sources in SOURCES).
+Scope and measure first; no build without your go-ahead.
+(1) Behind-the-meter batteries: a passive share on a self-consumption profile (charging from rooftop surplus, discharging in the
+evening) and a coordinated share dispatched as storage. First report how much c6e's evening peak and firm build change per GW and GWh
+of passive batteries, at 1, 3 and 5 GWh. No South African stock estimate exists; GreenCape gives about 400 MWh a year of business
+batteries.
+(2) A VPP build option: devices x enrolment x kW, event limits (Brattle: home batteries 15-100 events of 2-3 hours a year), credited
+at delivered capacity (about a third of nameplate, California DSGS 2024), programme cost about US$43/kW-yr (Brattle 2023); linear build
+up to a cap.
+(3) Heat-stress line derating: apply the derating the heat panel computes to the inter-area transfer limits in hot, calm hours;
+measure the effect on curtailment and unserved energy (the regional engine).
+(4) Dynamic line ratings and reconductoring as sensitivities on the Cape corridors: DLR as an hourly wind-linked uplift capped at 1.3
+(PyPSA-Eur practice) or a flat 10% in windy hours (RMI/Quanta); reconductoring as a build option at about twice the corridor capacity
+with a 1-3 year lead time. Check for overlap with the TDP-based grid charge (txRPerKWyr, 14lj) and the Cape curtailment approval
+(bldCapeWindMW) before any is charged.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
