@@ -732,6 +732,13 @@ system cost from then; a fixed O&M charge on expired plant is a candidate correc
 from 2029, 13.42 GWh in 2036, open-cycle use below 1%), with the scenario settings needed to reproduce them; no check changes without
 your go-ahead.
 
+14ll. Market documents, watch items after the note (user, 31 Oct 2026, message 543; CALENDAR 'Expected market publications'). No
+change until each is published. (1) NERSA's Electricity Trading Rules and Market Code, final (expected November 2026): check the
+reviewer Doc's market-design line ('energy-only as drafted'). (2) The Wholesale Electricity Pricing Methodology (expected December
+2026): if it sets a price ceiling and a scarcity rule, replace the market-price panel's ceiling (R87,000/MWh) and ERCOT-based scarcity
+rule with SAWEM's. (3) The Vesting Contract Framework, final (expected December 2026): check the retail panel's market-basis contract
+levy.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
