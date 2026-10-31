@@ -59,6 +59,8 @@
 //                        page.privrange
 //   Sent Doc (message 517): RUN.demandpctr_YYYY, RUN.blockmw_YYYY, RUN.roofadd_YYYY, RUN.shortyears
 //   30 Oct update (message 524 (d)): RUN.avgcostpctr_YYYY, RUN.dcurt_YYYY; replay.coal / .eskom / .withinpct; ext.csircoal / .csirre
+//   Optimised presets (message 559): RUN.cpta (R per tonne of CO2 avoided against BASE, 2026-40), RUN.curtshare_YYYY (curtailed share
+//                        of available wind and solar output)
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -198,6 +200,11 @@ function value(k){
     // One year's figures against the plan (message 524 (d)): system cost per MWh served, whole % above the plan's; extra curtailed wind
     // and solar, TWh.
     case 'avgcostpctr': { if (!b) return null; const x=s.rows.find(q=>q.y===y), c=b.rows.find(q=>q.y===y); return x&&c?nf(Math.round(100*(x.avgCostRMWh/c.avgCostRMWh-1)),0)+'%':null; }
+    // The optimised presets (message 559): cost per tonne of CO2 avoided against the plan, PV cost difference over the CO2 difference,
+    // 2026-40, R/t (PV at 8% over undiscounted tonnes); curtailment as a share of available wind and solar output in a year,
+    // curt / (vreUsedTWh + curt), whole % (needs pathcheck's vreUsedTWh, from 31 Oct 2026).
+    case 'cpta': { if (!b) return null; const dt=b.co2Cum-s.co2Cum; return dt>0?nf(Math.round((s.pv-b.pv)*1e3/dt),0):null; }
+    case 'curtshare': { const x=s.rows.find(q=>q.y===y); if (!x||x.vreUsedTWh==null){ missing.add(`${s.n} (vreUsedTWh, ${y})`); return null; } return nf(Math.round(100*x.curt/(x.vreUsedTWh+x.curt)),0)+'%'; }
     case 'dcurt': { if (!b) return null; const x=s.rows.find(q=>q.y===y), c=b.rows.find(q=>q.y===y); return x&&c&&x.curt!=null&&c.curt!=null?nf(x.curt-c.curt,1):null; }
     // The sent Doc's figures (message 517): demand growth on 2026 by year, whole %; the smelter block, MW; rooftop added in a year, MW;
     // the years the hourly check finds over 20 GWh, as a span.
