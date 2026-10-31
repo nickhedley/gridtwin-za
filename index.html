@@ -19155,7 +19155,7 @@ const SLIDERS=[
    def:FIXED.tdpConfidencePct,fmt:v=>v+'% of planned',
    // Moved from the note (messages 377, 378): the TDP plans 10,209 km of line, concentrated where headroom is already
    // zero (Northern Cape 4,737 km, Western Cape 1,159 km); it is explicitly not an investment decision.
-   note:'How much of NTCSA\u2019s Transmission Development Plan gets built, after weighting projects by published phase; <span data-num="tdpExecPct"></span> are in execution. Defaults to '+FIXED.tdpConfidencePct+'%. At zero, headroom stays at the 2025 snapshot and new build pays for every line.'},
+   note:'Share of NTCSA\u2019s Transmission Development Plan built, weighting projects by published phase; <span data-num="tdpExecPct"></span> are in execution. Defaults to '+FIXED.tdpConfidencePct+'%. At zero, headroom stays at the 2025 snapshot and new build pays for every line.'},
   {id:'congestionCurtailPct',label:'Curtailment',min:0,max:15,step:0.1,def:FIXED.congestionCurtailPct,fmt:v=>(+v).toFixed(1)+'% of utility wind and solar',
    // Moved from the note (messages 377, 378): NERSA's R402m of deemed energy in 2025; NERSA's 4% is a cap on new wind
    // connecting in the Eastern and Western Cape, not a fleet-wide rate.
@@ -20946,7 +20946,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-31h';
+const BUILD_STAMP = '2026-10-31i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
