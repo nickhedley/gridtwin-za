@@ -471,7 +471,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Results are for one weather year. <strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Existing REIPPPP plant is charged both its contract price and fixed O&amp;M, so that O&amp;M is counted twice: about 1% of avg energy cost on the presets (0.8&ndash;1.5%), a known overstatement still to be removed. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure in constant 2020 rands, not escalated, and shown beneath system cost when it occurs. Replacement cost instead prices the mix at full lifecycle cost, as if it were built new today: generation per MWh, and storage and gas on the capacity the scenario holds. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
+    <p class="kpinote">Results are for one weather year. <strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Existing REIPPPP plants are charged both their contract price and fixed O&amp;M, so that O&amp;M is counted twice: about 1% of avg energy cost on the presets (0.8&ndash;1.5%), a known overstatement still to be removed. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure in constant 2020 rands, not escalated, and shown beneath system cost when it occurs. Replacement cost instead prices the mix at full lifecycle cost, as if it were built new today: generation per MWh, and storage and gas on the capacity the scenario holds. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -1112,7 +1112,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
-        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. The default hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>; the twelve weather years (2014&ndash;2025) behind the risk panel, the extremes and the pathway checks are Renewables.ninja/MERRA-2 wind and PVGIS-SARAH3 solar. Fleet parameters – EAF, OCGT load factor, rooftop PV, structural demand level – are compared with Eskom&rsquo;s weekly system status reports (<span data-num="eskomAsOf"></span>): EAF &asymp; <span data-num="eskomEaf"></span>% calendar year to date, OCGT load factor &asymp; <span data-num="eskomOcgtLf"></span>%, <strong><span data-num="rooftopGW"></span>&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA&rsquo;s August 2026 estimate less the ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline. <strong>Transmission and distribution
+        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. The default hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>; the twelve weather years (2014&ndash;2025) behind the risk panel, the extremes and the pathway checks are Renewables.ninja/MERRA-2 wind and PVGIS-SARAH3 solar. Fleet parameters – EAF, OCGT load factor, rooftop PV, structural demand level – are compared with Eskom&rsquo;s weekly system status reports (<span data-num="eskomAsOf"></span>): EAF &asymp; <span data-num="eskomEaf"></span>% calendar year to date, OCGT load factor &asymp; <span data-num="eskomOcgtLf"></span>%, <strong><span data-num="rooftopGW"></span>&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA&rsquo;s August 2026 estimate less the ground-mounted wheeled plants this model counts as utility supply), post-2023 structural demand decline. <strong>Transmission and distribution
         losses are not modelled separately, and should not be:</strong> the demand series is Eskom&rsquo;s
         transmission-level demand &ndash; what generators must send out &ndash; and is therefore already
         gross of downstream losses. Adding a loss factor on top would double-count them. Output is compared with
@@ -1133,7 +1133,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         an inference &ndash; NTCSA derives it from residual load on sunny versus cloudy days
         and counts only systems under 100&nbsp;kWp &ndash; and analysts have questioned whether it runs
         high. The remaining gap is not calibrated away: Ember reports metered output, already net of the network curtailment Eskom applies
-        to Cape wind, and it does not count privately wheeled plant or fully capture behind-the-meter
+        to Cape wind, and it does not count privately wheeled plants or fully capture behind-the-meter
         rooftop. Calibrating the derates to close that gap would bake curtailment into a technical
         assumption and then double-count it whenever a scenario curtails. The validation panel shows
         the four carriers against Ember so the difference stays visible.</p>
@@ -14195,7 +14195,7 @@ function renderCapacityPayment(res){
       + '<td class="mono" style="text-align:right;padding:3px 5px;font-weight:600">'
         + (noOutput ? '<span style="color:var(--ink2)">\u2013</span>'
            : neverRuns ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
-           : noCapex ? '<span style="color:var(--ink2)">existing plant</span>'
+           : noCapex ? '<span style="color:var(--ink2)">existing plants</span>'
            : 'R' + (breakEven >= 100 ? breakEven.toFixed(0) : breakEven.toFixed(2))) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px;color:var(--ink2)">'
         + (cycles === null ? '\u2013' : cycles.toFixed(cycles < 10 ? 2 : 0)) + '</td>'
@@ -14218,8 +14218,8 @@ function renderCapacityPayment(res){
     + 'year. <strong>Needs R/kW-yr</strong> is the capacity rate that would cover the capital, '
     + 'on the same de-rated basis the payment is made on \u2013 capex only, no fixed O&amp;M and '
     + 'no energy margin netted, so it overstates the need for anything that cycles often. It is '
-    + 'left blank where the asset barely runs. Existing plant that is not a '
-    + 'build option, such as the pumped storage fleet, has no build cost to recover and is '
+    + 'left blank where the asset barely runs. Existing plants that are not a '
+    + 'build option, such as the pumped storage fleet, have no build cost to recover and are '
     + 'marked as such rather than scored. '
     // Gas burnt to charge storage stays in the CCGT row's output, said in one line (user, 21 Oct 2026, message 271 (6)).
     + 'The Gas CCGT row\u2019s output includes gas burnt to charge storage.</p>'
@@ -15645,7 +15645,7 @@ const ESKOM_ACTUALS = {
     { k: 'Coal fleet EAF',        model: () => state.coalEAFPct,
       get actual(){ return +coalEafFromFleet(ESKOM_FLEET_EAF_PCT).toFixed(1); }, unit: '%',
       note: () => 'Coal only: Eskom\u2019s whole-fleet ' + ESKOM_FLEET_EAF_PCT + '% (calendar year to date, Week 42 2026; '
-          + '2025 full year 62.44%) less nuclear, hydro, pumped storage and open-cycle plant at their own availability, as the presets '
+          + '2025 full year 62.44%) less nuclear, hydro, pumped storage and open-cycle plants at their own availability, as the presets '
           + 'convert it.' },
     // One boundary (mechanics audit G7-M4, fix 3): the row divided all open-cycle output, Avon and Dedisa's contracted running
     // included (0.899 of Today 2026's 0.913 TWh), by the 3,400 MW fleet that includes them, and read 3.1% against Eskom's 1.17%.
@@ -15669,7 +15669,7 @@ const ESKOM_ACTUALS = {
     { k: 'Rooftop PV installed, latest',  model: () => (NTCSA_ROOFTOP_LATEST.mw - PV_WHEELED_MW) / 1000,
       get actual(){ return +(NTCSA_ROOFTOP_LATEST.mw / 1000).toFixed(2); }, unit: 'GW',
       note: () => 'NTCSA, ' + NTCSA_ROOFTOP_LATEST.asOf + ', up about 35% on a year earlier. The model reads lower by design: NTCSA\u2019s '
-          + 'rooftop line includes ' + (PV_WHEELED_MW / 1000).toFixed(2) + ' GW of ground-mounted wheeled plant (their bucket is '
+          + 'rooftop line includes ' + (PV_WHEELED_MW / 1000).toFixed(2) + ' GW of ground-mounted wheeled plants (their bucket is '
           + 'contractual, not physical), which this model counts as utility supply instead. Scenarios run on the 2026 mean, '
           + (FIXED.rooftopMW / 1000).toFixed(1) + ' GW. '
           + 'Treat the benchmark itself with care: NTCSA does not meter this fleet, it infers it '
@@ -15696,7 +15696,7 @@ const ESKOM_ACTUALS = {
     { k: 'Utility PV installed',  model: () => FIXED.pvUtilityMW/1000,
       actual: 2.78, unit: 'GW',
       note: () => 'Eskom Week 32 (9 August 2026) "PV" = NTCSA-contracted utility solar only. The model reads higher '
-          + 'by design: it adds ' + (PV_WHEELED_MW / 1000).toFixed(2) + ' GW of privately wheeled ground-mounted plant that Eskom '
+          + 'by design: it adds ' + (PV_WHEELED_MW / 1000).toFixed(2) + ' GW of privately wheeled ground-mounted plants that Eskom '
           + 'books under Rooftop, and its REIPPPP figure is the 31 Mar 2026 reporting date '
           + '(Eskom\u2019s Aug line adds Graspan +75 MW and ~42 MW of later CODs).', expectedGap: true },
     { k: 'Coal sent out, calendar 2025',  model: () => _e25('coal'),
@@ -15704,7 +15704,7 @@ const ESKOM_ACTUALS = {
       note: () => 'The model\u2019s \u20182025, as modelled\u2019 run against calendar 2025 coal sent-out energy, from Eskom data (our sum of '
           + 'Eskom\u2019s hourly data; the analysis is ours, not Eskom\u2019s). Ember\u2019s calendar 2025 coal, '
           + (EMBER_2025 ? EMBER_2025.coal.toFixed(1) : '\u2013') + ' TWh, is higher because Ember tops Eskom\u2019s figure up from Stats SA '
-          + 'to cover coal plant outside Eskom\u2019s data, which this model leaves out with the load it serves.' },
+          + 'to cover coal plants outside Eskom\u2019s data, which this model leaves out with the load it serves.' },
     { k: 'Wind generation, 2025', model: () => _e25('wind'),
       get actual(){ return EMBER_2025 ? +EMBER_2025.wind.toFixed(1) : null; }, unit: 'TWh/yr',
       note: () => '\u20182025, as modelled\u2019 against ' + emberNote() + ', which takes South Africa\u2019s monthly figures from Eskom, '
@@ -15798,7 +15798,7 @@ function renderValidation(){
     + 'padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">'
     + '<strong>Why dispatch is not compared the same way</strong><br>'
     + 'This model dispatches on merit order \u2013 cheapest plant first. In South Africa the system operator, NTCSA, '
-    + 'schedules plant around contracted obligations, and the wholesale market, SAWEM, has traded inside Eskom since April 2026, '
+    + 'schedules plants around contracted obligations, and the wholesale market, SAWEM, has traded inside Eskom since April 2026, '
     + 'with commercial launch targeted for 2027 (Krutham, October 2026). In February '
     + 'and March 2026 Eskom spent about <strong>R93 million running IPP diesel turbines to meet '
     + 'contractual minimum load factors while holding excess coal capacity in cold reserve</strong>. '
@@ -18712,7 +18712,7 @@ function renderQueuePressure(){
       '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
     + 'Capacity registered with NERSA against the connection headroom NTCSA publishes for each '
     + 'supply area. A region above 100% has more registered than grid to take it. '
-    + '<strong>Registrations are cumulative since 2018 and include plant already built.</strong> '
+    + '<strong>Registrations are cumulative since 2018 and include plants already built.</strong> '
     + 'NERSA has confirmed it cannot track which registered projects were implemented, and a '
     + 'certificate never expires \u2013 so this overstates the queue wherever registrations have '
     + 'already connected. The Western Cape reads 253&#37; on all registrations and nearer 116&#37; '
@@ -19076,8 +19076,8 @@ const SLIDERS=[
    note:'The cap is the national technical potential from the World Bank and ESMAP strategic '
      + 'framework of September 2026: 95 GW across five regions: Boegoebaai, Saldanha, '
      + 'Durban-Richards Bay, Cape Point and Coega. Almost all of it is floating.'},
-  {id:'newPvMW',label:'New utility solar',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.pvUtilityMW/1000).toFixed(1)} GW existing, including ${(PV_WHEELED_MW/1000).toFixed(2)} GW of wheeled plant.`},
-  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.rooftopMW/1000).toFixed(1)} GW existing, behind the meter: the 2026 average of Eskom's estimate (9.4 GW by August 2026), less ${(PV_WHEELED_MW/1000).toFixed(2)} GW of wheeled plant, modelled as utility supply.`},
+  {id:'newPvMW',label:'New utility solar',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.pvUtilityMW/1000).toFixed(1)} GW existing, including ${(PV_WHEELED_MW/1000).toFixed(2)} GW of wheeled plants.`},
+  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:`on ${(FIXED.rooftopMW/1000).toFixed(1)} GW existing, behind the meter: the 2026 average of Eskom's estimate (9.4 GW by August 2026), less ${(PV_WHEELED_MW/1000).toFixed(2)} GW of wheeled plants, modelled as utility supply.`},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup and is rarely dispatched when storage is ample, unless the IRP&rsquo;s minimum load factor is applied.'},
   {id:'ccgtForceLoad',label:'Force 51% load factor (IRP 2025)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,// Moved from the note (messages 377, 378): IRP 2025 is Government Gazette 53596, 28 Oct 2025; the hourly version
    // (ccgtForceHourly, 51% in every hour) is a sensitivity for the comparison runs, not on this panel.
@@ -19121,7 +19121,7 @@ const SLIDERS=[
    // called it in 252 hours of 2025, peaking at 1,021 MW (Eskom data, analysis ours).
    note:'Contracted industrial load Eskom can drop in a shortage, for a fee. Defaults to '+FIXED.drInterruptMW.toLocaleString('en-US')+' MW, rounding Eskom\u2019s certified 1,014 MW (NREL). Used before any shedding and reported apart from unserved energy.'},
   {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString('en-US')+'/MWh',ctrlStyle:SUB_CTRL,
-   note:`What a customer is paid to cut use. The default sits below diesel (R${(FIXED.costDiesel+FIXED.vomDiesel).toLocaleString('en-US')}/MWh) and the R${FIXED.costUnservedR.toLocaleString('en-US')}/MWh at which system cost charges unserved energy, so it is called after OCGT plant and before shedding.`},
+   note:`What a customer is paid to cut use. The default sits below diesel (R${(FIXED.costDiesel+FIXED.vomDiesel).toLocaleString('en-US')}/MWh) and the R${FIXED.costUnservedR.toLocaleString('en-US')}/MWh at which system cost charges unserved energy, so it is called after OCGT plants and before shedding.`},
   // Label corrected 17 Sep 2026. It read "% of daily load", which is not what the control
   // does: the dispatch takes this share of each of the six highest net-load hours, so the
   // share of annual energy actually moved is about a quarter of the slider value. Measured
@@ -20946,7 +20946,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-31f';
+const BUILD_STAMP = '2026-10-31g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
