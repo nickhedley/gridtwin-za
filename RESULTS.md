@@ -18682,7 +18682,7 @@ computes a new one (0c174878d1d78d) from the changed index.html; rewritten (vali
 a14d7e0), then 86/86. With the new options at their defaults the risk panels' inputs are unchanged; the fingerprint follows the page
 source.
 
-### Deep decarbonisation 2035 at the deliverable build rates without iron-air: the 22.8 Mt cap from 2035 is met in the build LP only by planned shedding of 17.0 TWh in 2035 and 7.4 TWh in 2036; pass 4 did not solve in about 7.5 hours (user, 31 Oct 2026, messages 537, 553 (b) and (c); run s_co2cap2035_c6e, stopped on message 555 (c))
+### Deep decarbonisation 2035 at the deliverable build rates without iron-air: from the LP's planning passes 1-3, not engine-checked, the 22.8 Mt cap from 2035 is met in the build LP only by planned shedding of 17.0 TWh in 2035 and 7.4 TWh in 2036; pass 4 did not solve in about 7.5 hours (user, 31 Oct 2026, messages 537, 553 (b) and (c); run s_co2cap2035_c6e, stopped on message 555 (c))
 
 Run: pathway_perfail.js on claude/optimised-presets (index.html at 8838490, BUILD_STAMP '2026-10-31a'), c6e's settings (env_c6a.sh,
 GAS_FIRST=2035, MAXP=6, TL=7200, the deliverable build rates, c6's WIND_CAP 3,500 from 2031, LI_CAP 3,000), CO2CAP=22.809:2035 (a hard
@@ -18701,7 +18701,7 @@ with storage energy caps (ecap) in most years. New build by 2040 (pass 3): wind 
 CCGT 7.2 GW, diesel open cycle 9.4 GW. The engine check after each pass (no cap in the engine) found 2035 mean unserved of 39.6, 40.3 and
 46.6 GWh against 20.
 
-Finding: at the deliverable build rates and without iron-air, the 22.8 Mt cap from 2035 is not met by building: the LP meets it by
+Finding (from the LP's planning passes 1-3, not engine-checked; message 558 (b): quote it with that label): at the deliverable build rates and without iron-air, the 22.8 Mt cap from 2035 is not met by building: the LP meets it by
 planning about 17 TWh of shedding in 2035 and 7.4 TWh in 2036 (about 5% and 2% of demand), at a penalty far above any build cost. By
 2037 the cap is met with almost no shedding and from 2038 with none. Caveat: the LP's adequacy and shedding terms cover its
 representative and stress days, not every hour; the engine, which carries no cap, burns more coal and sheds less. Not a preset: the

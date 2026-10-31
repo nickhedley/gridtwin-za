@@ -235,7 +235,7 @@ let ROOF_STEP27=0; const ROOT='testroot', OUT=process.env.OUT||'pathway.json', G
    // each optimal solution is kept under lpcache/ (or LPCACHE, a run's own folder, so it can be deleted after the run's check;
    // message 371 (b)), keyed by a hash of the LP text. A restarted run replays the
    // solves it already finished (identical LP, identical answer) and only redoes the one that was cut off.
-   const LPT=hypo(liMinRows(gasCumRows(gasMinRows(gasFloorVint(pvCap(tcapYr(gasCommit(gasLift(fixBuild(fix(lp))))))))))), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=process.env.LPCACHE?path.resolve(process.env.LPCACHE):path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
+   const LPT=hypo(liMinRows(gasCumRows(gasMinRows(gasFloorVint(pvCap(tcapYr(gasCommit(gasLift(fixBuild(fix(lp))))))))))), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=process.env.LPCACHE?path.resolve(process.env.LPCACHE):path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json'); w.__lpKey=key;
    // DUMP_LP=<prefix> (8 Oct 2026, diagnostics): write each LP to <prefix>_pass<n>.lp; DUMP_STOP=<n> exits after the n-th.
    if (w.__coalAvailSum && !w.__coalAvailPrinted){ w.__coalAvailPrinted=1; console.log('COAL_AVAIL: stress-window coal limit = available coal; per window: weather year, start day, days, seed, recorded mean / min, available mean / min (fraction of standing coal), hours equal / hours');
      for (const r of w.__coalAvailSum) console.log('  '+r[0]+' '+r[1]+' '+r[2]+' '+r[3]+'  recorded '+r[4].toFixed(4)+' / '+r[5].toFixed(4)+'  available '+r[6].toFixed(4)+' / '+r[7].toFixed(4)+'  equal '+r[8]+' / '+r[9]); }
@@ -270,7 +270,10 @@ let ROOF_STEP27=0; const ROOT='testroot', OUT=process.env.OUT||'pathway.json', G
    // Per pass (message 555 (c), (d)): the cache key, the solver method (kept with the cached solution; highs-js or unrecorded before
    // 31 Oct 2026) and each year's CO2 above the cap, tonnes, where the cap is elastic.
    const sl={}; if (CO2_ELASTIC!==null) for (const [n,c] of Object.entries(last.Columns||{})) if (n.startsWith('co2sl_')) sl[n.slice(6)]=Math.round(c.Primal);
-   (w.__passLog=w.__passLog||[]).push({key:key.slice(0,10), method:last.Method||(process.env.SOLVER==='native'?'unrecorded':'highs-js'), objective:last.ObjectiveValue, ...(CO2_ELASTIC!==null?{co2Slack:sl}:{})});
+   // Planned shedding above the adequacy target, MWh a year (tsl_<y>; message 558 (a)), reported beside the engine check's unserved.
+   const tsl={}; for (const [n,c] of Object.entries(last.Columns||{})) if (n.startsWith('tsl_') && c.Primal>0.5) tsl[n.slice(4)]=Math.round(c.Primal);
+   (w.__passLog=w.__passLog||[]).push({key:(w.__lpKey||'').slice(0,10), method:last.Method||(process.env.SOLVER==='native'?'unrecorded':'highs-js'), objective:last.ObjectiveValue, shedAboveTargetMWh:tsl, ...(CO2_ELASTIC!==null?{co2Slack:sl}:{})});
+   console.log('LP shed above the target, MWh:', JSON.stringify(tsl));
    if (CO2_ELASTIC!==null) console.log('CO2 above the cap, t:', JSON.stringify(sl));
    return last; };
  // COMMIT / PSE (6 Oct 2026): coal commitment and pumped-storage energy in the build LP; unset = FIXED defaults.
