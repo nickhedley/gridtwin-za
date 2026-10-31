@@ -740,9 +740,10 @@ rule with SAWEM's. (3) The Vesting Contract Framework, final (expected December 
 levy.
 
 14lm. The central gas case against an analyst's pre-war LNG cost stack, after the note (user, 31 Oct 2026, message 544; private
-communication, the analyst not named; figures in SOURCES 'Gas price cases'). (1) Shipping: the central's about USD 1.1/MMBtu from
-Ras Laffan (a 2018 charter breakeven, CPI-adjusted) against his about 0.25; recheck with a current, citable source (charter rates
-and voyage), and record which is used and why. (2) A sensitivity adding a credit and marketing margin (USD 0.6/MMBtu) to the fuel
+communication, the analyst not named; figures in SOURCES 'Gas price cases'). (1) Amended (user, 31 Oct 2026, message 545): the central gas case stands, the long-run basis with new gas only from 2035; no
+recheck of the charter rate. Shipping depends on the source (SOURCES 'Gas price cases'): the central assumes Qatar, about 4,200 nm on
+the 2018 charter breakeven; the analyst's about 0.25 fits a short haul such as Mozambique. Add a Mozambique-sourced case as a
+low-shipping sensitivity, after the note (its distance and charter basis sourced first). (2) A sensitivity adding a credit and marketing margin (USD 0.6/MMBtu) to the fuel
 price and, for any gas sited inland, the pipeline (USD 2.6-3.0/MMBtu to Gauteng; about 0.5 for Richards Bay to local KwaZulu-Natal).
 (3) Done in SOURCES: the terminal stays a fixed charge per kW, not a per-MMBtu adder, because new gas runs at a 5-8% capacity factor.
 

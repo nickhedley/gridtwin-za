@@ -869,8 +869,11 @@ to January 2026 1.2953; SA CPI January 2024 to January 2026 1.0681; R16.50/USD).
 - Cross-check, not an input (TODO 14lm): a pre-war LNG cost stack from an analyst (private communication, 31 Oct 2026; not named;
   figures read off a chart, approximate, USD/MMBtu): FOB 8.5, shipping about 0.25, terminal and regasification about 1.0, credit
   and marketing about 0.6, inland pipeline about 0.5 (Richards Bay to local KwaZulu-Natal) or about 2.6-3.0 (to Gauteng); totals
-  10.93 (Richards Bay, local), 12.86 (Matola to Gauteng), 13.48 (Richards Bay to Gauteng). The central case's shipping, about
-  USD 1.1/MMBtu from Ras Laffan on the 2018 charter breakeven, is well above his about 0.25.
+  10.93 (Richards Bay, local), 12.86 (Matola to Gauteng), 13.48 (Richards Bay to Gauteng).
+- Shipping depends on the LNG source (user, 31 Oct 2026, message 545): the central case assumes Qatar (Ras Laffan, about 4,200 nm,
+  the 2018 charter breakeven above, about USD 1.1/MMBtu); the analyst's about 0.25 fits a short haul such as Mozambique. The central
+  case stands as the long-run basis, since new gas arrives only from 2035; a Mozambique-sourced case is a low-shipping sensitivity
+  after the note (TODO 14lm).
 
 ## Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)
 
