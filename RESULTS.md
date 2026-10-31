@@ -18607,6 +18607,44 @@ step run), having passed on this branch's 8e4976f and a86b9d3 and on main's 5739
 file the site serves differently (index.html unchanged). Its log is only on the Cloudflare dashboard. This note's commit starts a
 fresh build (message 533 (a)); if that fails too, the user reruns it from GitHub.
 
+### Scenarios table on build 2026-10-30a: Deep decarbonisation 2035 1.20 GWh, R334.9bn a year, 22.8 Mt against Least-cost path 2035's 4.32 GWh, R260.9bn, 90.5 Mt; Fossil-free 2040 1.40 GWh on either seed, R451.8bn, 0 Mt against Least-cost 2040's 0.60 GWh, R305.3bn, 67.5 Mt (user, 30 Oct 2026, messages 523 (b), 528-533; branch claude/preset-table)
+
+harness/ext/preset_table.js on main fda846f (build 2026-10-30a), 30 Oct 2026, finished 22:30 UTC; output harness/ext/preset_table.json;
+the table PRESET_TABLE.md, every figure a packfill marker (preset.* keys). Each column one year on the page's engine, twelve weather
+years x 20 outage draws (240 runs) on twelveYearDemand, as the preset scores; each preset paired with the least-cost pathway on the same
+seed (message 533 (b)): Deep decarbonisation 2035 and Least-cost path 2035 on 120000017; Fossil-free 2040 and Least-cost path 2040 on
+71830529 and 260000011. Least-cost path 2040 is the c6e pathway's 2040 state from gen_pathway_presets.py's block() with year 2040
+(harness/ext/preset_table_lcp2040.js; not a page preset). Cost of capital: the page's central case, c6e's (no preset overrides it).
+System cost: the engine's systemCostR (fuel, carbon tax, annualised capital of new build including rooftop, fixed O&M, IPP contracts,
+demand response, start-up costs, less export revenue, plus unserved energy at its penalty), the quantity behind the pathway's PV.
+The two searched presets reproduce PRESET_SCORES to four decimals on their own seeds (the script stops otherwise).
+
+Findings: Fossil-free 2040 scores 1.3951 GWh on both seeds, identical to every digit with its cost: with no coal, gas or diesel
+standing in 2040 the outage draws reach no plant, so its runs vary only with the weather year and the top-up-sample caveat has no
+effect on its score. Least-cost path 2035 is 4.32 GWh on Deep's seed, above the presets' half-0.002% target (2.39) and within NTCSA's
+20 GWh, the standard it was built to. Both presets rely on 100-hour iron-air (Deep 3.25 GW, 65% of its new stored energy; Fossil-free
+13 GW, 84%), whose finding is a known failure; the pathway builds none. Peaking plant capacity factor: 0.36% (Deep), 1.42% and 1.38%
+(Least-cost 2035, 2040); Fossil-free has none. Two first runs of the script were discarded: one computed the peaking capacity factor
+without the 8,760 hours, and one counted the 1.58 GW of Cape wind under the curtailment approval as new wind (now its own row, so new
+wind matches the pack's 22.6 and 31.4 GW).
+
+### Why the presets serve more energy than the least-cost pathway in the same year (2035: 247.9 against 244.2 TWh; 2040: 281.4 against 275.1): 1 GW less rooftop and larger storage losses, not a demand setting (user, 31 Oct 2026, message 534 (a); branch claude/preset-table)
+
+The demand settings are the same in each pair: demand growth 26.75% (2035) and 45.89% (2040) on 2026, the 930 MW block, the same
+twelveYearDemand. Energy served is the engine's gridServed: all generation less rooftop and storage discharge, so it counts customer
+demand net of rooftop, firm exports and storage charging losses. A probe on one weather year (2020, seed 71830529; scratchpad
+m534/probe.js, build 2026-10-30a) splits the gap: 2035, 3.3 TWh = 1.5 TWh less rooftop (the preset's 10.8 GW against the pathway's
+11.8 GW) + 1.8 TWh more storage losses; 2040, 5.2 TWh = 1.5 TWh rooftop (16.8 against 17.8 GW) + 3.7 TWh storage losses (Fossil-free
+2040's 13 GW of 100-hour iron-air at 45% round trip and 20 GW of 12-hour lithium). The rooftop difference is a settings difference:
+the presets carry rooftop at 1.2 GW a year from 2027, c6e the 2027 catch-up step to the end-2026 level (ROOF_FROM_END2026). The storage
+losses belong to the builds.
+
+Rerun on the pathway's rooftop (harness/ext/preset_table.js rows deeproof and ffroof, newRooftopMW from the least-cost state of that
+year, 11,802 and 17,802 MW; same 240 runs and seeds; 31 Oct 2026 about 06:22-06:35 UTC): Deep decarbonisation 2035 serves 246.3 TWh
+(2.1 above the pathway), 1.08 GWh against 2.39, R336.2bn a year, 22.7 Mt; Fossil-free 2040 279.8 TWh (4.7 above), 1.07 GWh against
+2.69, R453.2bn, 0 Mt. Added to PRESET_TABLE.md as a second table with fill markers; the first table keeps the presets as the page
+runs them.
+
 ### The grid charge for new wind and solar (txRPerKWyr, R402/kW-yr) against TDP 2024's R440bn to 2034: R4.8bn per GW of new grid-connected generation for generation integration, R7.9-9.4bn per GW for the whole plan; at c6e's 7.1% network rate the charge would be R364/kW-yr, not R402 (user, 31 Oct 2026, message 540 (a); no run, no input changed)
 
 Figures as recorded (RESULTS 'Transmission reconciled to what the TDP buys', 22 Sep 2026, build 2026-09-22ad; SOURCES 'Eskom TDP 2024'):
