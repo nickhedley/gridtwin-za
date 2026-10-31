@@ -702,7 +702,8 @@ cost and not in it.
 4 hours or more, run through the twelve weather years; report firm output in winter lulls against the claimed 11.9 GW at 90%. The
 source document is confidential: it is never committed or quoted in the repository; the advisor supplies the inputs.
 
-14lj. The grid charge's cost of capital (found 31 Oct 2026, message 540 (a); RESULTS 'The grid charge for new wind and solar'):
+14lj. Decided 31 Oct 2026 (user, message 546 (b)): the grid charge takes c6e's network rate, 7.1%, R364/kW-yr in place of R402; in
+the page change of 14ln. Was: The grid charge's cost of capital (found 31 Oct 2026, message 540 (a); RESULTS 'The grid charge for new wind and solar'):
 txRPerKWyr is fixed at R402/kW-yr, TDP 2024's generation integration (R225bn for 46.9 GW) annuitised at 8% over 40 years, while
 c6e prices network investment at 7.1%; at 7.1% it would be R364/kW-yr. You: whether to derive it from the network cost of capital
 (bldCoc), which moves every run with new wind and solar; after the optimised runs and the preset swap.
@@ -746,6 +747,13 @@ the 2018 charter breakeven; the analyst's about 0.25 fits a short haul such as M
 low-shipping sensitivity, after the note (its distance and charter basis sourced first). (2) A sensitivity adding a credit and marketing margin (USD 0.6/MMBtu) to the fuel
 price and, for any gas sited inland, the pipeline (USD 2.6-3.0/MMBtu to Gauteng; about 0.5 for Richards Bay to local KwaZulu-Natal).
 (3) Done in SOURCES: the terminal stays a fixed charge per kW, not a per-MMBtu adder, because new gas runs at a 5-8% capacity factor.
+
+14ln. One page change after the two optimised runs and before the preset swap (user, 31 Oct 2026, message 546), suite before and
+after: (a) expired REIPPPP plant pays its technology's existing fixed O&M per kW from the year its PPA ends (REIPPPP_WINDOWS expiry),
+so merchant output is not free in system cost (TODO 14lk (4)); (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
+Then measure c6e's PV, CO2 and build with (a) and (b) together and each alone (engine check of c6e's build; a re-optimised build only
+if needed to see whether the build moves). If c6e's headline figures move, report before rerunning anything else (the user corrects
+the reviewer Doc). Rerun the optimised runs only if the change moves their builds.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
