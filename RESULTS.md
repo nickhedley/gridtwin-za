@@ -18741,3 +18741,26 @@ wind at 4,300 MW in every year 2026-35, solar at its cap in 2030-35 (7,354 MW in
 Iron-air: none built in any year (0% of new stored energy), so no iron-air flag is needed for this run. The CO2 rerun (message 537 (d))
 follows with each year's cap tightened by its gap (CO2CAP_YEARS 2035:17.509, 2036:15.857, 2037:13.255, 2038:11.735, 2039:13.519,
 2040:17.653; run s_hypo_deep2035r_c6e).
+
+### Deep decarbonisation 2035, hypothetical, CO2 rerun: engine CO2 17.2-21.3 Mt in 2035-40, below 22.8 in every year; adequate in every year; no iron-air; engine PV R2,607.6bn (+R292.9bn on c6e, +R86.8bn on the first run), CO2 2026-40 957.4 Mt; curtailment 97-111 TWh a year from 2035 (user, 31 Oct 2026, messages 537 (d) and 555; run s_hypo_deep2035r_c6e, the preset candidate)
+
+Run: as s_hypo_deep2035_c6e (RESULTS above) plus CO2CAP_YEARS=2035:17.509,2036:15.857,2037:13.255,2038:11.735,2039:13.519,2040:17.653
+(each year's cap tightened by the first run's engine gap, still elastic at R50,000/t), runner at 741dee8, 31 Oct 2026 16:16-16:24 UTC
+(pass 1 Optimal on native simplex 16:16-16:20), engine check 16:24-16:31 UTC. One pass (verdict adequate); LP CO2 slack 0 t and LP
+shed above the target none in every year. Files: harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json and
+pathcheck_s_hypo_deep2035r_c6e_{a,b,c}.json. Run once, as the rule says; no further rerun.
+
+| Year | 2030 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+|---|---|---|---|---|---|---|---|
+| Engine CO2, Mt | 81.9 | 21.1 | 20.7 | 21.3 | 20.1 | 20.2 | 17.2 |
+| First run's engine CO2, Mt | 92.0 | 28.1 | 29.8 | 32.4 | 33.9 | 32.1 | 28.0 |
+| Mean unserved, GWh | 2.23 | 0.00 | 0.01 | 0.00 | 0.00 | 0.00 | 0.00 |
+| System cost, R bn | 253.6 | 331.3 | 341.1 | 348.5 | 364.1 | 357.7 | 361.7 |
+| Curtailed wind and solar, TWh | 28.2 | 100.8 | 104.9 | 110.6 | 110.0 | 104.5 | 97.5 |
+
+Highest mean unserved 4.40 GWh (2032), worst run 32 GWh (2032). New build by 2040: wind 45.0 GW, solar 60.9 GW, rooftop 17.8 GW,
+lithium 24.5 GW and 171.2 GWh, CCGT 8.3 GW, offshore 1.0 GW; no open cycle, vanadium, pumped hydro or iron-air (iron-air 0 MW in every
+year, 0% of new stored energy). Coal standing 16,416 MW in 2035 and 6,214 MW in 2040 (c6e 25,916 and 17,890). Engine PV 2026-40
+R2,607.6bn against c6e's R2,314.7bn. Caveat: curtailment of about 100 TWh a year from 2035 (964 TWh over 2026-40, against c6e's 159),
+the cost of holding the cap with wind and solar where the engine's coal and the LP's representative days disagree; a hypothetical plan,
+built faster than the deliverable rates.
