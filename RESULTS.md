@@ -18706,3 +18706,38 @@ planning about 17 TWh of shedding in 2035 and 7.4 TWh in 2036 (about 5% and 2% o
 2037 the cap is met with almost no shedding and from 2038 with none. Caveat: the LP's adequacy and shedding terms cover its
 representative and stress days, not every hour; the engine, which carries no cap, burns more coal and sheds less. Not a preset: the
 runs are redone as hypothetical plans with relaxed rates, iron-air up to 5 GW and an elastic cap (message 555).
+
+### Deep decarbonisation 2035, hypothetical (relaxed build rates, iron-air up to 5 GW, elastic cap): adequate in every year; no iron-air built; the LP meets the 22.8 Mt cap from 2035 with no slack, but the engine check finds 28.0-33.9 Mt in 2035-40; engine PV R2,520.8bn (+R206.1bn on c6e), CO2 2026-40 1,094.6 Mt (-644.0) (user, 31 Oct 2026, messages 531, 537 and 555; run s_hypo_deep2035_c6e)
+
+Run: pathway_perfail.js on claude/optimised-presets (runner at 741dee8, index.html at 8838490, BUILD_STAMP '2026-10-31a'), 31 Oct 2026
+16:00-16:08 UTC (pass 1 solved 16:00-16:04 on native HiGHS simplex, 4 min), engine check 16:08-16:16 UTC. c6e's settings (env_c6a.sh,
+GAS_FIRST=2035, MAXP=6, TL=7200) with PACE=grid (wind 4,300, solar 4,000 growing with the page's solar cap, lithium 4,000, vanadium 500,
+gas 2,000 MW a year; c6's WIND_CAP unset), LI_CAP=4000, LI_EH=8 (32,000 MWh a year), IA_TOTAL=5000, CO2CAP=22.809:2035 with
+CO2_ELASTIC=50000 (R/t, discounted at 8%), the 2,000 MW turbine cap kept (all accepted, message 558 (c)). Files: harness/pathway/opt/
+pathway_s_hypo_deep2035_c6e.json (pace, rates, iaTotal, co2Elastic and passLog recorded) and pathcheck_s_hypo_deep2035_c6e_{a,b,c}.json
+(LNG=1 GRID=1, 120 runs a year). Comparator: c6e's recorded check (pathcheck_c6e_29b_*, identical to 31a).
+
+Passes: one. Pass 1 Optimal (simplex), CO2 above the cap in the LP 0 t in every year 2035-40; the engine found pass 1's build adequate
+in every year (verdict adequate), so the loop stopped.
+
+| | Deep, hypothetical | c6e |
+|---|---|---|
+| Engine PV 2026-40 at 8%, R bn | 2,520.8 | 2,314.7 |
+| CO2 2026-40, Mt | 1,094.6 | 1,738.6 |
+| CO2 2030 / 2035 / 2040, Mt | 92.0 / 28.1 / 28.0 | 140.0 / 90.5 / 67.5 |
+| Mean unserved, highest year, GWh | 4.82 (2032) | |
+| Worst run, highest year, GWh | 42 (2032) | |
+| Curtailed wind and solar 2026-40, TWh | 781.1 | 158.8 |
+| Curtailed 2035 / 2040, TWh | 88.1 / 85.1 | 12.9 / 25.1 |
+| New wind / solar / rooftop by 2040, GW | 47.2 / 48.6 / 17.8 | 31.4 / 33.8 / 17.8 |
+| New lithium by 2040, GW / GWh | 18.2 / 133.1 | 15.2 / 94.3 |
+| New CCGT / open cycle (LNG, diesel) / offshore by 2040, GW | 7.0 / 0, 0 / 1.0 | 6.1 / 1.1, 0.2 / 0 |
+| New iron-air, vanadium, pumped hydro | none | none |
+| Coal standing 2035 / 2040, MW | 20,329 / 12,303 | 25,916 / 17,890 |
+
+Engine CO2 against the cap, 2035-40: 28.1, 29.8, 32.4, 33.9, 32.1 and 28.0 Mt, 5.2-11.1 Mt above 22.8 in every year, while the LP's
+slack is zero: the LP's representative and stress days do not reproduce the engine's full-year coal burn. Build at the relaxed caps:
+wind at 4,300 MW in every year 2026-35, solar at its cap in 2030-35 (7,354 MW in 2035), lithium at 4,000 MW and 32,000 MWh in 2035.
+Iron-air: none built in any year (0% of new stored energy), so no iron-air flag is needed for this run. The CO2 rerun (message 537 (d))
+follows with each year's cap tightened by its gap (CO2CAP_YEARS 2035:17.509, 2036:15.857, 2037:13.255, 2038:11.735, 2039:13.519,
+2040:17.653; run s_hypo_deep2035r_c6e).
