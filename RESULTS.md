@@ -18569,3 +18569,40 @@ the synchronous basis, ramps) raise 2035 coal output at 2035's rules too; the 20
 
 Taken off CLAUDE.md's known failures (message 524 (b)). Caveat: the check compares a 2035 build run under 2026 operating rules; whether
 it should run at scenarioYear 2035 is a check correction for the user (TODO 14lc), not made here.
+
+### Every external check at the year it names: CSIR 2030 coal share 52.3% (was 55.3% at the page's 2026 rules) and renewables 42.0% (was 38.2%); EDMSA Scenario A 2035 CO2 108.1 Mt (was 117.0) and wind 72.7 TWh (was 65.6); MTSAO 2030 open-cycle use 57.0% (was 56.5%); 8/8 before and after (user, 30 Oct 2026, messages 526 and 527; TODO 14lc; branch claude/checks-own-year)
+
+Cause (rule 2): validate_external's scenario states set no scenarioYear, so every check ran at the page's default year, 2026, whatever
+year it names: the 2026 coal practice floor (coalMslPracticeFloor, until 2029), 2026 imports and the 2026 Avon and Dedisa shape
+applied to 2030 and 2035 builds (RESULTS 'EDMSA Scenario A CO2 2035'). The user's decision (message 526 (b)): every check runs at the
+year it names, and any figure the pack quotes comes from a run at its own year. Change (8e4976f): scenarioYear 2030 in both CSIR
+scenarios and in the MTSAO risk-adjusted run (ov), 2035 in EDMSA_A; the MTSAO checks are included because they name 2030 too (flagged
+in the PR). No band, target or other setting changed.
+
+Measured first without changing the check (message 526 (a); scratchpad m524/vext_years.js, CSIR_YEAR=2030, on build 29b, 016641e):
+CSIR 2030 coal 52.3% against 55% (gap -2.7, band 6) and renewables 42.0% against 40% (gap +2.0, band 8), against 55.3% and 38.2% at
+the default year. The 2025 replay already runs at its own year: '2025, as modelled' sets scenarioYear 2025 and outage trace 2025, so
+the engine applies 2025's rules (the 0.715 practice floor, imports on; scratchpad m526/replay_year.js on 29b).
+
+Before and after on build 2026-10-30a (main at 5739c83 with #134's branch; validate_external through a copy that also prints passing
+checks, before = the check on main, after = the branch's; 30 Oct 2026, finished 21:34 and 21:35 UTC), 8/8 both:
+
+| Check | Before (2026 rules) | After (its own year) | Published, band |
+|---|---|---|---|
+| CSIR 2030 coal share | 55.3% | 52.3% | 55%, 6 points |
+| CSIR 2030 renewable share | 38.2% | 42.0% | 40%, 8 points |
+| MTSAO 2030 unserved energy | 5.2 TWh | 5.2 TWh | 'more than 4 TWh' (3-8) |
+| MTSAO 2030 open-cycle utilisation | 56.5% | 57.0% | 'about 45%' (35-58%) |
+| EDMSA Scenario A CO2 2035 | 117.0 Mt | 108.1 Mt | 124 Mt, 22 |
+| EDMSA Scenario A wind 2035 | 65.6 TWh | 72.7 TWh | 64 TWh, 12 |
+| Build pace; presets in CSIR's ranges | pass | pass (unchanged) | |
+
+The CSIR and EDMSA figures equal 29b's at the same years (the 30a change, the rooftop add-back scaling, does not reach these single
+runs on PROFILES). Recorded for the pack's figures: harness/pathway/c6e/validate_external_30a.txt (the after-run); packfill's
+ext.csircoal and .csirre read it (the newest validate_external_*.txt), so the master's CSIR line fills 52% and 42%, the reviewer Doc's
+figures from 30 Oct 2026 (message 527 (a)).
+
+PR #135's Cloudflare 'Workers Builds: gridtwin-za' check failed on its head f0c8fdc (started and completed at 21:40:26 UTC, no build
+step run), having passed on this branch's 8e4976f and a86b9d3 and on main's 5739c83 and fda846f 1-3 minutes before; the PR changes no
+file the site serves differently (index.html unchanged). Its log is only on the Cloudflare dashboard. This note's commit starts a
+fresh build (message 533 (a)); if that fails too, the user reruns it from GitHub.

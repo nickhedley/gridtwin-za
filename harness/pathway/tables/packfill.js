@@ -158,7 +158,7 @@ function value(k){
     const m=h.match(/'Fossil-free 2040':\{[^\n]*?newIronAirMW:(\d+)/); return m?nf(+m[1]/1e3,0):null; }
   // The 2025 replay and the external checks as recorded in the set's folder (message 524 (d)): the newest replay2025_*.txt and
   // validate_external_*.txt by name. replay.coal and .eskom, TWh; .withinpct, the gap rounded up to a whole percent; ext.csircoal and
-  // .csirre, the CSIR 2030 shares, whole percent.
+  // .csirre, the CSIR 2030 shares, whole percent. From 30 Oct 2026 the newest is the run at each check's own year (message 526 (b)).
   if (k.startsWith('replay.')||k.startsWith('ext.')){ const pre=k.startsWith('replay.')?'replay2025_':'validate_external_';
     const f=fs.existsSync(N)?fs.readdirSync(N).filter(x=>x.startsWith(pre)&&x.endsWith('.txt')).sort().pop():null; if (!f){ missing.add(k.split('.')[0]); return null; }
     const t=fs.readFileSync(`${N}/${f}`,'utf8');
