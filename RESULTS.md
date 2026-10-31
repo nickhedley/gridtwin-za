@@ -18627,3 +18627,28 @@ Finding: the model's R402/kW-yr is the generation-integration share annuitised a
 strengthening, refurbishment, telecoms and IT that serve load and reliability as well as new generation, so they bound the charge
 from above rather than replace it. Not changed: a decision for the user after the optimised runs (TODO 14lj). The R440bn and Table 4
 split are as recorded on 22 Sep and 18 Oct 2026; the primary PDF has not been re-read (www.ntcsa.co.za is not reachable from the session).
+
+### The grid charge at c6e's network rate alone (txRPerKWyr R364 against R402): c6e's engine PV 2026-40 R2,309.8bn against R2,314.7bn, -R4.9bn (-0.2%); CO2 and unserved unchanged on the same build (user, 31 Oct 2026, messages 546 (b) and 552 (b); TODO 14ln (b); build 2026-10-31b, not yet a PR)
+
+Change: index.html on claude/cost-corrections at 60906de (BUILD_STAMP '2026-10-31b'): txRPerKWyr derived from TDP 2024's generation
+integration (R225bn for 46.9 GW) annuitised over 40 years at BLD_COC_NETWORK.central (7.1%), R364/kW-yr in place of R402 at 8%.
+Measured: c6e's own build (harness/pathway/c6e/pathway_c6e.json), the optimiser not rerun, engine check as the set (pathcheck.js,
+LNG=1 GRID=1, groups a, b and c, 120 runs a year). 31 Oct 2026: on 31b 13:31-13:38 UTC (pathcheck_c6e_31b_*.json); comparator the same
+build on 31a, claude/optimised-presets with index.html at 8838490, 13:39-13:46 UTC (pathcheck_c6e_31a_*.json). The 31a check is
+identical in every year to the recorded check on 29b (cost, CO2 and mean unserved), so builds 30a and 31a do not move c6e. The Deep
+decarbonisation 2035 optimiser run was solving beside both checks.
+
+| | 31a (R402) | 31b (R364) | Change |
+|---|---|---|---|
+| Engine PV 2026-40 at 8%, R bn | 2,314.7 | 2,309.8 | -4.9 |
+| System cost 2030, R bn | 238.67 | 238.45 | -0.23 |
+| System cost 2035, R bn | 260.94 | 259.98 | -0.97 |
+| System cost 2040, R bn | 305.37 | 304.00 | -1.37 |
+| Grid charge 2040 (engTxBn), R bn | 21.25 | 19.24 | -2.01 |
+| CO2 2026-40, Mt | 1,738.6 | 1,738.6 | 0 |
+| Mean unserved, every year | | | identical |
+
+The grid charge falls by 9.45% in every year (364/402), as derived; system cost falls by less than the grid charge alone (about -1.37
+against -2.01 in 2040), the rest being the engine's other cost terms on the same build. Caveat: the build is c6e's as optimised at
+R402; a re-optimised build at R364 may hold more new wind and solar. Not rerun (message 546 (c): report before rerunning anything).
+The REIPPPP contract-year change (14ln (a)) is not in this build; it waits for REIPPPP MW by bid window and technology.
