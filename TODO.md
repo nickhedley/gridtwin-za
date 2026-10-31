@@ -677,6 +677,29 @@ floor, imports). At scenarioYear 2035 it reads 108.1 against 124 Mt (within 22) 
 117.0 and 65.6 as it stands. You: whether the check runs at 2035 (a check correction with its cause, rule 2), and the same question
 for the CSIR 2030 checks (scenarioYear not set either).
 
+The next six (user, 31 Oct 2026, message 539 (a)) come after the optimised runs (531, 537) and the preset swap (537 (f)); no runs
+before then. Sources first in each case; record them in SOURCES before any input changes.
+
+14ld. Coal fuel cost real escalation: sensitivities at +2% and +4% a year real from 2026, on the c6e basis. Source the trend first,
+from Eskom's primary energy cost history (the central holds coal fuel flat in real terms, R553/MWh sent out).
+
+14le. Coal emissions compliance (MES) in full: station-level capital and operating costs with a comply-or-retire choice per station in
+the optimiser, building on TODO 14eo and 14em's fleet-level COMPLY switch (none, compromise, full). Figures to source: R257bn capital
+and R6.3bn a year operating for full compliance; about R90bn of it for Hendrina, Camden and Grootvlei.
+
+14lf. Rooftop at 2 and 3 GW a year on the c6e basis, as a grid-defection proxy (the central adds 1.2 GW a year); later, rooftop uptake
+that responds to tariffs, through the retail panel.
+
+14lg. Battery capital cost against BNEF's 2025 turnkey survey (US$117/kWh): compare the model's lithium cost on a like basis (turnkey,
+the same duration, the exchange rate stated); a low-cost battery sensitivity if the model's sits above it.
+
+14lh. Health and water costs per scenario, from a published damage factor (source to be chosen and recorded), reported beside system
+cost and not in it.
+
+14li. A RE-Max test case: about 60 GW of solar and wind on the 18.6 GW of existing and pipeline grid connections, 242 GWh of storage at
+4 hours or more, run through the twelve weather years; report firm output in winter lulls against the claimed 11.9 GW at 90%. The
+source document is confidential: it is never committed or quoted in the repository; the advisor supplies the inputs.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
