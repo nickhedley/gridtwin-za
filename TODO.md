@@ -670,7 +670,8 @@ generation standby charges on all customers (15). Measure rooftop payback and ho
 tariffs. Also check Policy Position 19(a)-(b)'s 50/50 split of transmission costs between generators and load against how the model
 charges network costs. Where the Gazette sets no rate for a charge, record the value assumed and its basis.
 
-14lc. The EDMSA Scenario A check's year, after the note (found 30 Oct 2026, message 524 (b); RESULTS 'EDMSA Scenario A CO2 2035').
+14lc. Done 30 Oct 2026 (user, messages 526 (b) and 527; branch claude/checks-own-year; RESULTS 'Every external check at the year it
+names'): every check runs at the year it names, CSIR and MTSAO at 2030 and EDMSA at 2035; 8/8. Was: The EDMSA Scenario A check's year, after the note (found 30 Oct 2026, message 524 (b); RESULTS 'EDMSA Scenario A CO2 2035').
 validate_external's EDMSA_A state sets no scenarioYear, so its 2035 build runs under the page's 2026 rules (the 2026 coal practice
 floor, imports). At scenarioYear 2035 it reads 108.1 against 124 Mt (within 22) and wind 72.7 against 64 TWh (within 12), against
 117.0 and 65.6 as it stands. You: whether the check runs at 2035 (a check correction with its cause, rule 2), and the same question

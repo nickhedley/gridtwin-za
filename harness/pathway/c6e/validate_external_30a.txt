@@ -1,0 +1,18 @@
+validate_external.js at its own years (message 526 (b); branch claude/checks-own-year, 8e4976f), build 2026-10-30a, 30 Oct 2026; every check's detail printed (a copy whose check() also logs passes; the checks as committed). CSIR and EDMSA figures equal build 29b's at the same years (RESULTS 'Every external check at the year it names').
+CHECK pass | csir2030CoalShare within 6 points of CSIR least-cost study (PLEXOS), extended IRP analysis | model 52.3% vs published 55% (gap -2.7 pts, band ±6)
+CHECK pass | csir2030ReShare within 8 points of CSIR least-cost study — renewable share implied by the coal figure | model 42.0% vs published 40% (gap 2.0 pts, band ±8)
+CHECK pass | NTCSA MTSAO 2030 risk-adjusted: unserved energy above 4 TWh | 5.2 TWh over 24 draws against the MTSAO's "more than 4 TWh"
+CHECK pass | NTCSA MTSAO 2030 risk-adjusted: OCGT utilisation near 45% | 57.0% against the MTSAO's about 45%
+CHECK pass | the default build pace is not below the investable pipeline | 10.2 GW a year allowed against GreenCape's 12.9 GW to 2030, about 3.2 GW a year of investable pipeline
+CHECK pass | preset builds sit inside the CSIR least-cost capacity ranges | Deep decarbonisation 45.2 GW wind and 46.3 solar; Fossil-free 57.9 and 68.1
+CHECK pass | EDMSA Scenario A CO2 2035 within 22 Mt of the published figure | 108.1 against 124 Mt, gap -15.9
+CHECK pass | EDMSA Scenario A wind 2035 within 12 TWh of the published figure | 72.7 against 64 TWh, gap +8.7
+  metric                    model   published      gap     band
+  csir2030CoalShare          52.3%         55%     -2.7       ±6
+  csir2030ReShare            42.0%         40%     +2.0       ±8
+8/8 external comparison checks passed
+  NTCSA MTSAO 2030 demand: growth derived each run, mean +16.7% across weather years, served 222.4 TWh against the 222.4 TWh target; unserved 5.2 TWh, OCGT utilisation 57.0%
+  Sensitivity, new wind on the modern-turbine profile (not checked): CSIR 2030 coal 49.4%, renewables 44.8%; EDMSA A 2035 CO2 96.8 Mt, wind 83.0 TWh
+  Run at CSIR’s published assumptions: 285 TWh demand and 65% EAF by 2030, both from Table 1 of the report (their Least-cost scenario; the IRP 2019 scenario used 306 TWh). Measured sensitivity is 0.45 points of coal share per 1% of demand, so this assumption dominates the comparison.
+  None of these are validation. They bracket: a model landing far outside published territory has a problem worth finding; one landing inside has not been proved right.
+  No cost comparison against PyPSA-ZA: it co-optimises investment and operation, so its +20% figure compares two optimised builds. GridTwin dispatches a specified build, which is not the same question. See the comment above for what would make it comparable.
