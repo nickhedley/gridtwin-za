@@ -47,6 +47,16 @@ PRESETS = [
                   "  // build at the transition presets' +5% demand, the page's R2,003 gas and R46/t carbon, lcoeCcgt 2500, reserve and inertia\n"
                   "  // pricing on (git history). The IRP's own 51% gas floor on 6 GW applies, as in the run.\n")},
     {'name': 'Least-cost path 2035', 'build': 'harness/pathway/c6e/pathway_c6e.json', 'check': 'harness/pathway/c6e/pathcheck_c6e_b.json'},
+    # The two hypothetical presets (user, 31 Oct 2026, messages 537 (f), 555 and 558): optimised builds at relaxed build rates (the grid
+    # pace) with iron-air capped at 5 GW, replacing the hand-searched builds; the comments above each hand-written line, kept, are the
+    # record of the builds they replace. Deep decarbonisation 2035: the CO2 cap from 2035, elastic at R50,000/t (no slack used);
+    # Fossil-free 2040: no coal, gas or diesel after 2039, a hard rule.
+    {'name': 'Deep decarbonisation 2035', 'build': 'harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json', 'check': 'harness/pathway/opt/pathcheck_s_hypo_deep2035r_c6e_b.json',
+     'first_from': "  'Deep decarbonisation 2035':{demandGrowthPct:C5F_DEMAND[2035]", 'first_to': "newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},\n",
+     'preamble': "  // Replaced 1 Nov 2026 by the optimised hypothetical build (user, messages 537 (f) and 555; harness/pathway/opt/, RESULTS 'Deep\n  // decarbonisation 2035, hypothetical'): the hand-searched build described above is in git history before build 2026-10-31k.\n"},
+    {'name': 'Fossil-free 2040', 'year': 2040, 'build': 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', 'check': 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_c.json',
+     'first_from': "  'Fossil-free 2040':{demandGrowthPct:C5F_DEMAND[2040]", 'first_to': "newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},\n",
+     'preamble': "  // Replaced 1 Nov 2026 by the optimised hypothetical build (user, messages 537 (f), 555 and 558; harness/pathway/opt/, RESULTS\n  // 'Fossil-free 2040, hypothetical'): the hand-searched build described above is in git history before build 2026-10-31k.\n"},
 ]
 j = lambda v: json.dumps(v)
 
@@ -70,7 +80,10 @@ def block(cfg):
     blk = P['demand'].get('block') or {}
     blkMW = max(((int(y), mw) for y, mw in blk.items() if int(y) <= Y), default=(0, 0))[1]
     nuc = sum(mw for y, mw in (P.get('nuclearAdd') or {}).items() if int(y) <= Y)
-    if ps: raise SystemExit(cfg['name'] + f': pumped storage built by {Y}: carry PHES hours and acapPs before using the generator')
+    # New pumped storage (from 1 Nov 2026, Fossil-free 2040's optimised build): carried as pathcheck.js prices it, at the run's recorded
+    # hours and the build LP's annuity on its cost basis (acapPs), which is not the page's derived acapPs (FIXED, its own basis).
+    PH = P.get('phes') or {}
+    if ps and (cum('phel') or PH.get('hours2')): raise SystemExit(cfg['name'] + ': a second pumped-storage duration: carry it before using the generator')
     if P['gas'].get('fuelRFlat') is not None or P.get('gasFinPremium') or P.get('comply'):
         raise SystemExit(cfg['name'] + ': a recorded setting this generator does not carry is set: extend it first')
     # Settings the run records that are the page's own defaults, not preset state (29 Oct 2026, for c6e; the same rule as the
@@ -88,13 +101,17 @@ def block(cfg):
          'newWindMW': cum('wind'), 'newPvMW': cum('pv'), 'newRooftopMW': cum('rooftop'), 'newBattMW': batt,
          'newBattHours': max(1, min(20, mwh / batt)) if batt > 0 else 4, 'newVrfbMW': cum('vrfb'), 'newIronAirMW': cum('ironair'),
          'newCcgtMW': cum('ccgt'), 'newOcgtMW': cum('ocgt'), 'newOcgdMW': cum('ocgd'), 'newOffshoreMW': cum('off'), 'newNuclearMW': nuc,
-         'newPsMW': 0,
+         'newPsMW': ps,
          'demandGrowthPct': (P['demand']['index'][str(Y)] - 1) * 100, 'demandBlockMW': blkMW, 'windCapeMW': cum('cw'),
          'costCcgt': P['gas']['fuelR'][str(Y)],
          'importsMW': P['importsMW'], 'importsCF': P['importsCF'], 'bldPvTracking': P['pvTracking'], 'bldCapeCurtPct': P['capeWind']['curtPct'],
          'carbonAllowancePath': P.get('carbonPath') or 'cut2027', 'carbonTaxFull': 1 if P.get('carbonFull') else 0,
          'bldWindCorr': P['windCorr'], 'bldWindCase': P['windCase'], 'bldPvCase': P['pvCase'], 'bldTariffCfBasis': P['tariffCfBasis'],
          'bldGridIntVreShare': P['gridIntVreShare'], 'bldGridCost': 1, 'bldOcgtCostCase': P['ocgt']['costCase']}
+    fe = P.get('fossilEnd')
+    if fe and Y > fe:   # FOSSIL_END (message 531 (c)), as pathcheck.js applies it: no coal, gas or diesel standing after the last fossil year
+        if S[str(Y)]['coalMW'] > 0: raise SystemExit(cfg['name'] + f': fossilEnd {fe} but coal standing in {Y}')
+        f.update({'newCcgtMW': 0, 'newOcgtMW': 0, 'newOcgdMW': 0})
     gf = P.get('gasFloor') or {}
     if gf.get('engine'):   # the 51% floor, as pathcheck.js applies it (state.ccgtForceLoad, and its MW where recorded)
         f['ccgtForceLoad'] = 1
@@ -107,7 +124,9 @@ def block(cfg):
     # The carbon price is the page's own carbonTaxAt on the run's path, as pathcheck.js prices it, so its value is not copied here.
     body += (f",get carbonTaxRPerT(){{ return carbonTaxAt({Y}, {{...FIXED, carbonAllowancePath:{j(f['carbonAllowancePath'])}, carbonTaxFull:{f['carbonTaxFull']}}}); }}"
              f",get coalDecomMW(){{ return Math.max(0, Math.round(FIXED.coalInstalledMW - {j(S[str(Y)]['coalMW'])})); }}"
-             + (f",get reserveVreRefWindMW(){{ return Math.round(FIXED.windMW + {j(w30)}); }},get reserveVreRefPvMW(){{ return Math.round(FIXED.pvUtilityMW + {j(p30)}); }}" if Y > 2030 else ''))
+             + (f",get reserveVreRefWindMW(){{ return Math.round(FIXED.windMW + {j(w30)}); }},get reserveVreRefPvMW(){{ return Math.round(FIXED.pvUtilityMW + {j(p30)}); }}" if Y > 2030 else '')
+             + (",get dieselDecomMW(){ return FIXED.ocgtDieselMW; }" if fe and Y > fe else '')
+             + (f",newPsHours:{j(PH.get('hours', 14))},get acapPs(){{ return bldAnnuity(bldPhesCapexKW({j(PH['basis'])}, {j(PH.get('hours', 14))}), 60, 'phes') + FIXED.bldPhesFomRkW; }}" if ps else ''))
     n = cfg['name']; BEGIN = f"  // BEGIN GENERATED '{n}' (harness/pathway/gen_pathway_presets.py from {cfg['build']}; do not edit by hand)"
     END = f"  // END GENERATED '{n}'"
     return BEGIN, END, f"{BEGIN}\n  '{n.replace(chr(39), chr(92) + chr(39))}':{{{body}}},\n{END}", f, S[str(Y)]['coalMW']
@@ -204,6 +223,32 @@ for cfg in PRESETS:
             new = new.replace(anchor, gblk + '\n' + anchor, 1)
     if '--check' not in sys.argv:
         print('written:', cfg['name'], Y, {k: round(f[k], 4) if isinstance(f[k], float) else f[k] for k in ('newWindMW', 'newPvMW', 'newRooftopMW', 'newBattMW', 'newCcgtMW', 'newOcgtMW', 'newNuclearMW', 'demandGrowthPct', 'costCcgt')}, 'coal standing', coal, 'gas floor', f.get('ccgtForceLoad', 0))
+# The hypothetical presets' captions (user, 31 Oct 2026, message 555 (f)): the CO2 cap and its first year, or the last fossil year, read
+# from each run. A caption says 'at or below' the cap only if the engine check's CO2 is at or below it in every year from the cap's
+# first year and the build LP used no slack above it; otherwise the generator stops.
+hyp = {}
+for cfg in PRESETS:
+    P = json.load(open(cfg['build']))
+    if not (P.get('co2cap') or P.get('fossilEnd')): continue
+    e = {'pace': P.get('pace'), 'ironAirMW': sum(P['sched'][y].get('ironair', 0) for y in P['sched'] if int(y) <= cfg.get('year', 2035))}
+    if P.get('co2cap'):
+        c = P['co2cap']; rows = [r for g in 'abc' for r in json.load(open(cfg['check'][:-6] + g + '.json'))]
+        over = [(r['y'], round(r['co2'], 2)) for r in rows if r['y'] >= c['fromYear'] and r['co2'] > c['mt'] + 1e-9]
+        slack = [(k, y, v) for L in (P.get('passLog') or []) for k, d in [(L.get('key'), L.get('co2Slack') or {})] for y, v in d.items() if v > 1e-9]
+        if over or slack: raise SystemExit(cfg['name'] + f': CO2 above the cap in the engine check {over} or slack in the build LP {slack}: the caption cannot say at or below')
+        e.update({'co2CapMt': c['mt'], 'co2CapFrom': c['fromYear']})
+    if P.get('fossilEnd'): e['fossilFreeFrom'] = P['fossilEnd'] + 1
+    hyp[cfg['name']] = e
+HB = "// BEGIN GENERATED HYPO_PRESETS (harness/pathway/gen_pathway_presets.py from the hypothetical presets' run files; do not edit by hand)"
+HE = "// END GENERATED HYPO_PRESETS"
+hblk = (f"{HB}\n// The hypothetical presets' caption facts (message 555 (f)): the build LP's pace, iron-air built to the preset's year (MW), the CO2 cap (Mt a year)\n"
+        f"// and its first year, or the first fossil-free year\nconst HYPO_PRESETS = {j(hyp)};\n{HE}")
+if replace_block(new, HB, HE, hblk) is not None:
+    new = replace_block(new, HB, HE, hblk)
+else:
+    anchor = "const _gw = mw => String(+(mw / 1000).toFixed(1));"
+    if new.count(anchor) != 1: raise SystemExit('caption anchor not found once')
+    new = new.replace(anchor, hblk + '\n' + anchor, 1)
 if '--check' in sys.argv:
     print('index.html blocks match the generator' if new == html else 'index.html blocks DIFFER from the generator'); sys.exit(0 if new == html else 1)
 open('index.html', 'w').write(new)
