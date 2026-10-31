@@ -18820,3 +18820,25 @@ known failure 1) and its cost is a developer's target. Coal standing 25,916 MW i
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Fossil-free, hypothetical | <!--fill:s_hypo_ff2040.curtshare_2026-->18%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2027-->30%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2028-->30%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2029-->24%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2030-->8%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2031-->10%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2032-->15%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2033-->21%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2034-->26%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2035-->32%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2036-->37%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2037-->41%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2038-->45%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2039-->48%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2040-->51%<!--/fill--> |
 | c6e | <!--fill:base.curtshare_2026-->5%<!--/fill--> | <!--fill:base.curtshare_2027-->11%<!--/fill--> | <!--fill:base.curtshare_2028-->16%<!--/fill--> | <!--fill:base.curtshare_2029-->19%<!--/fill--> | <!--fill:base.curtshare_2030-->3%<!--/fill--> | <!--fill:base.curtshare_2031-->4%<!--/fill--> | <!--fill:base.curtshare_2032-->5%<!--/fill--> | <!--fill:base.curtshare_2033-->6%<!--/fill--> | <!--fill:base.curtshare_2034-->8%<!--/fill--> | <!--fill:base.curtshare_2035-->8%<!--/fill--> | <!--fill:base.curtshare_2036-->8%<!--/fill--> | <!--fill:base.curtshare_2037-->9%<!--/fill--> | <!--fill:base.curtshare_2038-->10%<!--/fill--> | <!--fill:base.curtshare_2039-->11%<!--/fill--> | <!--fill:base.curtshare_2040-->11%<!--/fill--> |
+
+### The 2027-29 curtailment peak is the coal practice floor: c6e's 2028 build with design minimums from 2028 curtails 0.8% of available wind and solar against the recorded 15.8% (user, 31 Oct 2026, message 562 (a); report only, no change)
+
+Test: c6e's run file with one coal setting changed, coalMslDesignFromYear 2028 in place of 2030 (the design minimums 0.57/0.52 replace
+the practice floor of 0.715 two years early); everything else, the build included, as c6e. Engine check (pathcheck.js at c524730, LNG=1
+GRID=1, 120 runs a year), YEARS=2027,2028,2029, 31 Oct 2026 about 17:25-17:33 UTC, on index.html 8838490 (build 31a). File:
+harness/pathway/c6e/pathcheck_c6e_dmin2028.json. Comparator: pathcheck_c6e_vre_a.json (c6e as recorded).
+
+| | 2027 (control) | 2028 | 2029 |
+|---|---|---|---|
+| Curtailed share of available wind and solar, design minimums from 2028 | 11.4% | 0.8% | 2.4% |
+| As recorded (practice floor to 2029) | 11.4% | 15.8% | 18.7% |
+| Curtailed, TWh (recorded) | 4.1 (4.1) | 0.3 (6.0) | 1.2 (9.6) |
+| Coal output, TWh (recorded) | 149.2 (149.2) | 143.9 (150.8) | 135.0 (144.4) |
+| CO2, Mt (recorded) | 166.1 (166.1) | 161.3 (167.8) | 151.6 (160.6) |
+| System cost, R bn (recorded) | 234.0 (234.0) | 241.4 (239.3) | 234.0 (232.8) |
+| Mean unserved, GWh (recorded) | 0.00 (0.00) | 0.00 (0.00) | 0.03 (0.01) |
+
+Finding: the 2027-29 peak is caused by the practice floor; at the design minimums the 2028 and 2029 curtailment falls to the level of
+2030 (3%). 2027 is unchanged, as it should be (the floor applies there in both). With the floor lifted, coal output falls 6.9 TWh in
+2028 and 9.4 TWh in 2029, CO2 6.5 and 9.0 Mt, while system cost rises R2.1bn and R1.2bn (the engine's coal start costs and part-load
+terms, not decomposed here). Deep decarbonisation's 2027-29 peak (24-31%) has the same setting and is not tested separately.
