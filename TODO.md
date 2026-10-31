@@ -756,7 +756,16 @@ included; no change needed. The reverse is open, for your decision: in contract 
 delivered output) and fixed O&M on top, though a PPA price covers the IPP's O&M: about R3.3bn a year while every contract is live
 (4,042 MW wind x R392, 2,783 MW solar x R287, 600 MW CSP x R1,480 per kW-yr), falling with expiry (R1.75bn by 2040; live share by bid
 window energy), about R27bn in PV over 2026-40 at 8%, some 1.2% of c6e's R2,315bn; the same in every scenario on the existing fleet, so
-gaps between scenarios do not move. Candidate correction: no fixed O&M on REIPPPP capacity in its contract years. (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
+gaps between scenarios do not move. Decided (user, 31 Oct 2026, message 552 (a)): no fixed O&M on REIPPPP capacity in its contract
+years, the PPA price covering it; from each window's expiry the plant pays its technology's fixed O&M, as now; Eskom-owned plant (e.g.
+Sere) keeps its fixed O&M throughout; state the MW split used. Same page change as (b), after the optimised runs and before the preset
+swap; suite before and after; c6e measured with both and each alone, reported before anything is rerun; the reviewer Doc changes only
+after Nick has seen the figures. Data needed first: REIPPPP MW by bid window and technology. The model holds totals only (FIXED
+reipppWindMW 4,042, reipppSolarMW 2,783, CSP 600) and REIPPPP_WINDOWS gives energy and cost by window, not MW. In hand: solar by window
+for BW1-BW4 (627, 417, 435, 813 MW; parliamentary reply NW368, 2019, SOURCES) and the MTSAO 2027-2036's retirements at contract end in
+2033-36 (1.3 GW solar, 1.5 GW wind, 0.2 GW CSP; message 541), which do not agree on solar (BW1 and BW2, expiring by 2036, hold 1,044 MW
+in NW368). Wind and CSP by window are not in the repository: the IPP Office's window summary (or its historical data note of 7 Nov 2025)
+is the source to use; not to be filled from memory. (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
 Then measure c6e's PV, CO2 and build with (a) and (b) together and each alone (engine check of c6e's build; a re-optimised build only
 if needed to see whether the build moves). If c6e's headline figures move, report before rerunning anything else (the user corrects
 the reviewer Doc). Rerun the optimised runs only if the change moves their builds.
