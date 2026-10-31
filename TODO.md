@@ -755,6 +755,20 @@ Then measure c6e's PV, CO2 and build with (a) and (b) together and each alone (e
 if needed to see whether the build moves). If c6e's headline figures move, report before rerunning anything else (the user corrects
 the reviewer Doc). Rerun the optimised runs only if the change moves their builds.
 
+14lo. System strength: replace the synchronous floor with the advisor's formulation (user, 31 Oct 2026, message 547), after the
+preset swap, the two cost corrections (14ln) and the note, on a new branch, suite before and after. The advisor's note (project doc
+'claude/system-strength-2026-10-31.md') is not in the repository: obtain it first and record its figures and sources in SOURCES.
+First, report only (547 (b)): today's treatment on c6e and both optimised plans, the hours the current floor (6 GW synchronous plus
+grid-forming batteries at SYNC_GFM_SHARE 0.30 of their power) binds, and inertia by source each year.
+Then the build: (1) an hourly inertia floor, online H x S >= 50 x largest contingency / (2 x RoCoF): central 1 Hz/s, the contingency
+from the largest units online (2,160 MW today, NTCSA ASTR 2026 section 3.4.2); sensitivities at 0.5 Hz/s and a flat 40 GW.s.
+(2) Every synchronous machine counts at its own H, new gas included (ASTR section 5.1C). (3) TDP 2024's synchronous condensers as
+committed plant (5,850 MVAr in 2025-29, 900 MVAr in 2030-34; H 1.3 s), and a condenser build option at Eskom's conversion and
+new-build costs (from the note). (4) Grid-forming batteries as a costed build option (5% of capex), counting toward inertia only;
+SYNC_GFM_SHARE's free 30% retired. (5) A fault-level cost per kW of new inverter capacity, net of what the TDP-based grid charge
+already covers; AEMO's A$137k/MW as the upper bound. (6) Per scenario: hours below the floor, inertia by source, and the cost of
+meeting it. This replaces the reviewer pack's limitation on inertia and system strength once results are in.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
