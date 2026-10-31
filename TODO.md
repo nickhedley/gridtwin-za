@@ -792,6 +792,7 @@ ElectraNet: A$0.75-5.9m per unit). (c) A grid-forming battery's inertia each hou
 (d) Check: on a plan close to CSIR's 2030, the share of hours below a 1 Hz/s floor before condensers, against CSIR's (Chown, Wright et
 al. 2017) about 5%. (e) Limitations to state: fault level national, not by substation; no voltage control; the 1 Hz/s limit borrowed
 from Ireland and AEMO, as South Africa has none.
+Minimum version for the note: 573 (a); what it leaves out, and the full version after the note: 14lt (message 574).
 
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
@@ -820,6 +821,7 @@ measure the effect on curtailment and unserved energy (the regional engine).
 (PyPSA-Eur practice) or a flat 10% in windy hours (RMI/Quanta); reconductoring as a build option at about twice the corridor capacity
 with a 1-3 year lead time. Check for overlap with the TDP-based grid charge (txRPerKWyr, 14lj) and the Cape curtailment approval
 (bldCapeWindMW) before any is charged.
+Minimum version for the note: 573 (a); what it leaves out, and the full version after the note: 14lu (message 574).
 
 14lr. Hydrogen as seasonal storage, built by the optimiser, after the note (user, 31 Oct 2026, message 557; replaces 556: no quick
 hydrogen turbine). Scope first; nothing is built without your go-ahead. (1) The chain: electrolysers fed by surplus wind and solar;
