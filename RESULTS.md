@@ -18764,3 +18764,24 @@ year, 0% of new stored energy). Coal standing 16,416 MW in 2035 and 6,214 MW in 
 R2,607.6bn against c6e's R2,314.7bn. Caveat: curtailment of about 100 TWh a year from 2035 (964 TWh over 2026-40, against c6e's 159),
 the cost of holding the cap with wind and solar where the engine's coal and the LP's representative days disagree; a hypothetical plan,
 built faster than the deliverable rates.
+
+### Cost per tonne of CO2 avoided and curtailment share: Deep decarbonisation 2035, hypothetical, R<!--fill:s_hypo_deep2035r.cpta-->375<!--/fill-->/t against c6e; curtailment <!--fill:s_hypo_deep2035r.curtshare_2035-->32%<!--/fill--> of available wind and solar in 2035 against c6e's <!--fill:base.curtshare_2035-->8%<!--/fill--> (user, 31 Oct 2026, message 559)
+
+Definitions: cost per tonne of CO2 avoided = (engine PV 2026-40 of the run less c6e's) / (c6e's CO2 2026-40 less the run's), PV at 8%
+over undiscounted tonnes (packfill RUN.cpta). Curtailment share = curtailed wind and solar / (wind and solar delivered + curtailed),
+the page's own definition (renderCurtailRisk; packfill RUN.curtshare_YYYY, from pathcheck's vreUsedTWh, added 31 Oct 2026 at c524730).
+Checks: pathcheck.js at c524730 (LNG=1 GRID=1, 120 runs a year), 31 Oct 2026 16:32-16:52 UTC, on index.html 8838490 (build 31a):
+harness/pathway/opt/pathcheck_s_hypo_deep2035r_c6e_{a,b,c}.json (replacing the earlier files: cost, CO2 and curtailment identical
+in every year) and harness/pathway/c6e/pathcheck_c6e_vre_{a,b,c}.json (identical to pathcheck_c6e_29b in cost and CO2). Fill with
+the run folder holding these files and pathway_c6e.json, BASE=c6e.
+
+Deep decarbonisation 2035, hypothetical (run s_hypo_deep2035r_c6e): engine PV R<!--fill:s_hypo_deep2035r.pv-->2,607.6<!--/fill-->bn against
+c6e's R<!--fill:base.pv-->2,314.7<!--/fill-->bn; CO2 2026-40 957.4 Mt against 1,738.6; R<!--fill:s_hypo_deep2035r.cpta-->375<!--/fill-->
+per tonne avoided. Curtailment over 2026-40: 28.7% of available wind and solar (c6e 8.7%).
+
+| Curtailed share | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Deep, hypothetical | <!--fill:s_hypo_deep2035r.curtshare_2026-->11%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2027-->24%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2028-->31%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2029-->30%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2030-->19%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2031-->20%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2032-->24%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2033-->25%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2034-->28%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2035-->32%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2036-->33%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2037-->33%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2038-->32%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2039-->31%<!--/fill--> | <!--fill:s_hypo_deep2035r.curtshare_2040-->29%<!--/fill--> |
+| c6e | <!--fill:base.curtshare_2026-->5%<!--/fill--> | <!--fill:base.curtshare_2027-->11%<!--/fill--> | <!--fill:base.curtshare_2028-->16%<!--/fill--> | <!--fill:base.curtshare_2029-->19%<!--/fill--> | <!--fill:base.curtshare_2030-->3%<!--/fill--> | <!--fill:base.curtshare_2031-->4%<!--/fill--> | <!--fill:base.curtshare_2032-->5%<!--/fill--> | <!--fill:base.curtshare_2033-->6%<!--/fill--> | <!--fill:base.curtshare_2034-->8%<!--/fill--> | <!--fill:base.curtshare_2035-->8%<!--/fill--> | <!--fill:base.curtshare_2036-->8%<!--/fill--> | <!--fill:base.curtshare_2037-->9%<!--/fill--> | <!--fill:base.curtshare_2038-->10%<!--/fill--> | <!--fill:base.curtshare_2039-->11%<!--/fill--> | <!--fill:base.curtshare_2040-->11%<!--/fill--> |
+
+Fossil-free 2040, hypothetical: to follow when its run and check are in.
