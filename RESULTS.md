@@ -18822,8 +18822,8 @@ derived FIXED.acapPs (R2,482); the preset carries the run's so the page reproduc
 New failures against main from the swap (pre-checks on 31k, 31 Oct 2026, 21:44-21:58 UTC; left failing and unchanged, rule 366, for
 the user's decision: each checks the purpose of the hand-searched builds, so correcting it is a decision about the presets, not a fix):
 - validate_findings 'preset curtailment sits within its weather band': Deep 124.9 TWh against the pinned 84.8 +/-15%, Fossil-free 319.1
-  against 128. Cause: the optimised builds carry more wind and solar (Deep 43.0 and 52.0 GW against 40.5 and 42.8; Fossil-free 64.5 and
-  100.5 against 50.5 and 64.5) and less long-duration storage.
+  against 128. The builds differ (wind and solar: Deep 43.0 and 52.0 GW against 40.5 and 42.8; Fossil-free 64.5 and 100.5 against 50.5
+  and 64.5; iron-air Deep 0 against 3.25, Fossil-free 5.0 against 13.0); the rise is not decomposed by cause.
 - validate_findings 'the deep decarbonisation preset keeps gas at zero': newCcgtMW 2,000. Cause: the build LP chose 2,000 MW of CCGT in
   2035 under the CO2 cap (gas allowed from 2035; no commitment, minimum or forced build in the run file). The 555 (f) caption names wind,
   solar and batteries only, so it does not mention this gas (flagged).
