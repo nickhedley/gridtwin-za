@@ -18785,3 +18785,12 @@ per tonne avoided. Curtailment over 2026-40: 28.7% of available wind and solar (
 | c6e | <!--fill:base.curtshare_2026-->5%<!--/fill--> | <!--fill:base.curtshare_2027-->11%<!--/fill--> | <!--fill:base.curtshare_2028-->16%<!--/fill--> | <!--fill:base.curtshare_2029-->19%<!--/fill--> | <!--fill:base.curtshare_2030-->3%<!--/fill--> | <!--fill:base.curtshare_2031-->4%<!--/fill--> | <!--fill:base.curtshare_2032-->5%<!--/fill--> | <!--fill:base.curtshare_2033-->6%<!--/fill--> | <!--fill:base.curtshare_2034-->8%<!--/fill--> | <!--fill:base.curtshare_2035-->8%<!--/fill--> | <!--fill:base.curtshare_2036-->8%<!--/fill--> | <!--fill:base.curtshare_2037-->9%<!--/fill--> | <!--fill:base.curtshare_2038-->10%<!--/fill--> | <!--fill:base.curtshare_2039-->11%<!--/fill--> | <!--fill:base.curtshare_2040-->11%<!--/fill--> |
 
 Fossil-free 2040, hypothetical: to follow when its run and check are in.
+
+### Native HiGHS reproduces highs-js on three full-size build LPs: identical objective and identical build in passes 1-3 (user, 31 Oct 2026, message 554 (a): the condition for using native HiGHS)
+
+Test: the pass 1-3 LPs of s_co2cap2035_c6e (RESULTS above) dumped from the same settings with pathway_perfail.js (DUMP_LP, cache hits,
+nothing solved by the runner), each LP's sha1 equal to its cache key (76fe5e6eed, c95b9dbbe9, c29d9a8fd1); each solved with native
+HiGHS (highspy, simplex, highs_native.py's settings, logged) and compared with the highs-js solution cached on 31 Oct 2026 06:35-07:26 UTC.
+31 Oct 2026 15:52-16:49 UTC, beside other jobs. Objective: relative difference 0.00e+00 in all three (3.7590512835e+14,
+3.7977944479e+14, 3.8257257662e+14). Build: all 180 build variables equal, largest difference 0.0 MW, in all three. Script and logs in
+the session scratchpad (repro/run.sh, compare.py).
