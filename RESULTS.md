@@ -18840,5 +18840,4 @@ harness/pathway/c6e/pathcheck_c6e_dmin2028.json. Comparator: pathcheck_c6e_vre_a
 
 Finding: the 2027-29 peak is caused by the practice floor; at the design minimums the 2028 and 2029 curtailment falls to the level of
 2030 (3%). 2027 is unchanged, as it should be (the floor applies there in both). With the floor lifted, coal output falls 6.9 TWh in
-2028 and 9.4 TWh in 2029, CO2 6.5 and 9.0 Mt, while system cost rises R2.1bn and R1.2bn (the engine's coal start costs and part-load
-terms, not decomposed here). Deep decarbonisation's 2027-29 peak (24-31%) has the same setting and is not tested separately.
+2028 and 9.4 TWh in 2029, CO2 6.5 and 9.0 Mt, while system cost rises R2.1bn and R1.2bn (cause not established). Deep decarbonisation's 2027-29 peak (24-31%) has the same setting and is not tested separately.
