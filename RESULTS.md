@@ -18841,3 +18841,25 @@ harness/pathway/c6e/pathcheck_c6e_dmin2028.json. Comparator: pathcheck_c6e_vre_a
 Finding: the 2027-29 peak is caused by the practice floor; at the design minimums the 2028 and 2029 curtailment falls to the level of
 2030 (3%). 2027 is unchanged, as it should be (the floor applies there in both). With the floor lifted, coal output falls 6.9 TWh in
 2028 and 9.4 TWh in 2029, CO2 6.5 and 9.0 Mt, while system cost rises R2.1bn and R1.2bn (cause not established). Deep decarbonisation's 2027-29 peak (24-31%) has the same setting and is not tested separately.
+
+### Fill markers for the reviewer Doc's scenarios section: both hypothetical presets against c6e (user, 31 Oct 2026, message 565 (b))
+
+New packfill key RUN.ironairshare (iron-air's share of new stored energy by the horizon; lithium from the schedule's battMWh, vanadium
+and iron-air at the page's newVrfbHours and newIronAirHours, pumped hydro at the run's phes.hours). Fill with BASE=c6e from the folder
+holding pathway_c6e.json, pathway_s_hypo_deep2035r_c6e.json, pathway_s_hypo_ff2040_c6e.json and their pathcheck files (c6e's as
+pathcheck_c6e_vre_*); the Doc is not changed until Nick has seen the figures (messages 551 (d), 552 (b)).
+
+| | Deep decarbonisation 2035, hypothetical | Fossil-free 2040, hypothetical |
+|---|---|---|
+| CO2 avoided against c6e, 2026-40, Mt | <!--fill:s_hypo_deep2035r.dco2absmt-->781<!--/fill--> | <!--fill:s_hypo_ff2040.dco2absmt-->953<!--/fill--> |
+| Cost per tonne avoided, R/t | <!--fill:s_hypo_deep2035r.cpta-->375<!--/fill--> | <!--fill:s_hypo_ff2040.cpta-->1,065<!--/fill--> |
+| New wind by 2040, GW | <!--fill:s_hypo_deep2035r.addgw_wind-->45<!--/fill--> | <!--fill:s_hypo_ff2040.addgw_wind-->65<!--/fill--> |
+| New solar by 2040, GW | <!--fill:s_hypo_deep2035r.addgw_solar-->61<!--/fill--> | <!--fill:s_hypo_ff2040.addgw_solar-->101<!--/fill--> |
+| New offshore wind by 2040, GW | <!--fill:s_hypo_deep2035r.addgw_offshore-->1.0<!--/fill--> | <!--fill:s_hypo_ff2040.addgw_offshore-->5.0<!--/fill--> |
+| New lithium by 2040, GW | <!--fill:s_hypo_deep2035r.addgw_batt-->24<!--/fill--> | <!--fill:s_hypo_ff2040.addgw_batt-->60<!--/fill--> |
+| New iron-air by 2040, GW | <!--fill:s_hypo_deep2035r.addgw_ironair-->0.0<!--/fill--> | <!--fill:s_hypo_ff2040.addgw_ironair-->5.0<!--/fill--> |
+| Iron-air's share of new stored energy | <!--fill:s_hypo_deep2035r.ironairshare-->0%<!--/fill--> | <!--fill:s_hypo_ff2040.ironairshare-->47%<!--/fill--> |
+| Curtailed share of available wind and solar, 2040 | <!--fill:s_hypo_deep2035r.curtshare_2040-->29%<!--/fill--> | <!--fill:s_hypo_ff2040.curtshare_2040-->51%<!--/fill--> |
+
+Fossil-free's CO2 avoided is 953.3 Mt unrounded (1,738.6 less 785.3); the key rounds to whole Mt. Iron-air in Fossil-free is flagged:
+its finding is a known failure of the model's checks and its cost is a developer's target.
