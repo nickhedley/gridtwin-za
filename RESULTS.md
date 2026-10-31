@@ -18693,3 +18693,30 @@ falling as BW1 (2034), BW2 (2035), BW3 (2037) and BW3.5 (2039) expire, to R1.18b
 Caveat: c6e's build as optimised on 31a; the REIPPPP change touches only the existing fleet, so it does not move the build LP; the grid
 charge could. Not rerun (message 554 (b): both corrections go into the next central rebuild; the reviewer Doc's headline costs get one
 combined correction).
+
+### Both cost corrections on the Doc's comparison builds: IRP 2025 and five sensitivities each fall R30.2-31.6bn in engine PV 2026-40; every gap to c6e moves by at most R0.8bn; CO2 and unserved unchanged (user, 31 Oct 2026, messages 565 (a) and 572 (a); build 2026-10-31c)
+
+Settings: each run's recorded build (harness/pathway/c6e/pathway_<run>.json, as optimised on its own build), engine-checked unchanged
+on two builds: 31a (main at 179e289, index.html as merged in #137; worktree on claude/hypo-presets-results) and 31c
+(claude/cost-corrections, index.html at 2b830b4: the grid charge at R364/kW-yr and no fixed O&M on REIPPPP capacity in its contract
+years). pathcheck.js with LNG=1 GRID=1, year groups a, b and c (120 runs a year), 31 Oct 2026: IRP 2025 finished 19:29 UTC, the five
+sensitivities 19:20-21:12 UTC. Engine PV is the sum of each year's cost discounted at 8% real to 2026 (pathway/tables/summ.js), for
+every run including the two cost-of-capital runs. c6e from pathcheck_c6e_31a_* and _31c_* (entry above). Files:
+pathcheck_<run>_31a_{a,b,c}.json and _31c_{a,b,c}.json in harness/pathway/c6e/.
+
+| Run | 31a PV | 31c PV | Change | Gap to c6e, 31a | Gap to c6e, 31c | CO2 2026-40, Mt | Max mean unserved, GWh |
+|---|---|---|---|---|---|---|---|
+| c6e | 2,314.7 | 2,283.9 | −30.8 | – | – | 1,738.6 | 5.46 |
+| IRP 2025 (irp2025_c6e) | 2,682.9 | 2,652.2 | −30.7 | +368.2 | +368.3 | 1,730.2 | 0.00 |
+| No new gas, diesel peakers (s_nogas_dsl) | 2,327.8 | 2,296.2 | −31.6 | +13.1 | +12.3 | 1,632.9 | 11.48 |
+| Cost of capital, planned (s_cocplan) | 2,397.8 | 2,367.6 | −30.2 | +83.1 | +83.7 | 1,818.8 | 7.85 |
+| Cost of capital, private (s_cocprivate) | 2,371.2 | 2,340.8 | −30.3 | +56.5 | +56.9 | 1,797.7 | 7.44 |
+| Gas floor (s_gasfloor_c6e) | 2,340.3 | 2,309.5 | −30.8 | +25.6 | +25.6 | 1,724.0 | 5.46 |
+| Coal sustained (s_coalsustain) | 2,460.0 | 2,429.3 | −30.8 | +145.4 | +145.4 | 1,738.6 | 5.46 |
+
+R bn, engine PV 2026-40. CO2 and max mean unserved are identical on 31a and 31c for every run.
+Check: every 31a check is identical in every year (cost, CO2, mean unserved) to the run's recorded check in harness/pathway/c6e/, so
+builds 30a and 31a do not move these runs. The changes differ by run by up to R1.4bn; the split between the two corrections per run is
+not measured.
+Caveat: each build as optimised before the corrections; no re-optimisation (message 554 (b): both corrections go into the next central
+rebuild). The reviewer Doc's headline costs get one combined correction.
