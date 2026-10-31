@@ -18819,3 +18819,16 @@ standard." Fossil-free, 34 words, adds "with 5 GW of unproven iron-air storage".
 flagged): Fossil-free's eight technologies with the 555 (f) wording come to about 47 words, over the 40-word cap.
 Flag: the run's pumped-storage charge (R2,114.7/kW-yr, bldPhesCapexKW('anu2026', 14) over 60 years plus fixed O&M) is not the page's
 derived FIXED.acapPs (R2,482); the preset carries the run's so the page reproduces the check. Cause of the difference not established.
+New failures against main from the swap (pre-checks on 31k, 31 Oct 2026, 21:44-21:58 UTC; left failing and unchanged, rule 366, for
+the user's decision: each checks the purpose of the hand-searched builds, so correcting it is a decision about the presets, not a fix):
+- validate_findings 'preset curtailment sits within its weather band': Deep 124.9 TWh against the pinned 84.8 +/-15%, Fossil-free 319.1
+  against 128. Cause: the optimised builds carry more wind and solar (Deep 43.0 and 52.0 GW against 40.5 and 42.8; Fossil-free 64.5 and
+  100.5 against 50.5 and 64.5) and less long-duration storage.
+- validate_findings 'the deep decarbonisation preset keeps gas at zero': newCcgtMW 2,000. Cause: the build LP chose 2,000 MW of CCGT in
+  2035 under the CO2 cap (gas allowed from 2035; no commitment, minimum or forced build in the run file). The 555 (f) caption names wind,
+  solar and batteries only, so it does not mention this gas (flagged).
+- validate_findings 'the deep decarbonisation preset uses 12-hour storage': 5.6 h. Cause: the build LP's lithium energy over power.
+- validate_external 'preset builds sit inside the CSIR least-cost capacity ranges': Fossil-free 2040 wind 74.2 GW and solar 104.1 GW (the
+  check's own totals, existing fleet included). Cause: the hypothetical build rates (the grid pace).
+Unchanged against main: validate_consistency 82/83, validate_outputs 49/51, validate_response 86/87 (35 cells, as main), invariants
+176/176, weather 68/68, solve 9/9, public text 32/32.
