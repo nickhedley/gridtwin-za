@@ -724,8 +724,9 @@ schedule (IRP 2025 Figure 3); its retirement of about 3 GW of REIPPPP plant at c
 plants become merchant plants at contract end and keep running. Confirmed 31 Oct 2026: the existing fleet (FIXED windMW 4,681,
 pvUtilityMW 3,568.5, cspMW 600) is a fixed stock that never retires; a window's expiry (REIPPPP_WINDOWS, reipppRate) ends only its PPA
 payment. In any adequacy comparison with the outlook, note the roughly 3 GW of REIPPPP plant it retires in 2033-36 that the model
-keeps. Flag: after expiry the model charges these plants nothing (no market payment and no fixed O&M), so their output is free in
-system cost from then; a fixed O&M charge on expired plant is a candidate correction (your decision).
+keeps. Correction (31 Oct 2026): the flag that expired plant is free was wrong. The engine charges fixed O&M on the whole existing
+wind, solar and CSP fleet in every year (index.html fixedOMR: windMW x BLD_FOM.wind, pvUtilityMW x BLD_FOM.pv, cspMW x fomCsp), so
+expired REIPPPP plant already pays its fixed O&M as a merchant plant; see 14ln (a).
 (5) Data centres: its 5.1 GW (central) by 2036; establish whether the model's demand (UCT ESRG's IRP reference forecast and the
 930 MW smelter block) includes any.
 (6) Curtailment: its actual excess energy of 2,580 GWh in 2026 to September against the model's 2026 curtailment, the same months.
@@ -749,8 +750,13 @@ price and, for any gas sited inland, the pipeline (USD 2.6-3.0/MMBtu to Gauteng;
 (3) Done in SOURCES: the terminal stays a fixed charge per kW, not a per-MMBtu adder, because new gas runs at a 5-8% capacity factor.
 
 14ln. One page change after the two optimised runs and before the preset swap (user, 31 Oct 2026, message 546), suite before and
-after: (a) expired REIPPPP plant pays its technology's existing fixed O&M per kW from the year its PPA ends (REIPPPP_WINDOWS expiry),
-so merchant output is not free in system cost (TODO 14lk (4)); (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
+after: (a) expired REIPPPP plant pays its technology's existing fixed O&M per kW from the year its PPA ends. Found 31 Oct 2026: already
+so: fixedOMR charges fixed O&M on all existing wind (4,681 MW), utility solar (3,568.5 MW) and CSP (600 MW) every year, REIPPPP plant
+included; no change needed. The reverse is open, for your decision: in contract years the REIPPPP fleet pays its PPA (reipppRate, on
+delivered output) and fixed O&M on top, though a PPA price covers the IPP's O&M: about R3.3bn a year while every contract is live
+(4,042 MW wind x R392, 2,783 MW solar x R287, 600 MW CSP x R1,480 per kW-yr), falling with expiry (R1.75bn by 2040; live share by bid
+window energy), about R27bn in PV over 2026-40 at 8%, some 1.2% of c6e's R2,315bn; the same in every scenario on the existing fleet, so
+gaps between scenarios do not move. Candidate correction: no fixed O&M on REIPPPP capacity in its contract years. (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
 Then measure c6e's PV, CO2 and build with (a) and (b) together and each alone (engine check of c6e's build; a re-optimised build only
 if needed to see whether the build moves). If c6e's headline figures move, report before rerunning anything else (the user corrects
 the reviewer Doc). Rerun the optimised runs only if the change moves their builds.
