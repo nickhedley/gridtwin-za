@@ -11,7 +11,12 @@ build option with event limits and a cost; target Fri 6 Nov; stock cases 1, 3 an
 fallback if it slips: behind-the-meter batteries as a sensitivity in the note, not in c7; (4) Mon 9 Nov: one central rebuild, c7,
 with both cost corrections, system strength and (3); then IRP, no-gas with diesel peakers and the two hypothetical plans on c7;
 Wed 11 Nov: every pack figure from c7 with fill markers; (5) everything else after the note. Inputs needed first: the advisor's
-system strength note (condenser costs, TDP 2024 MVAr, ASTR contingency) and VPP note (event limits, costs), neither in the repository.
+system strength note (condenser costs, TDP 2024 MVAr, ASTR contingency) and VPP note (event limits, costs). Since 31 Oct 2026
+(message 575 (a)) both are on branch claude/advisor-notes (0e7cd9b; no PR): docs/advisor/system-strength-2026-10-31.md and
+docs/advisor/vpp-gets-modelling-2026-10-31.md; what each implementation uses is copied into SOURCES with it. The Thu 5 Nov midday
+checkpoint is accepted (575 (b)): the passive stock and the coordinated share go into c7; the VPP build option goes in only if it
+passes the suite by then, otherwise it is a sensitivity in the note. The central behind-the-meter battery stock figure follows from
+the advisor by Monday 2 Nov (575 (c)).
 After the note (message 574): the full versions of the minimum upgrades, TODO 14lt (system strength) and 14lu (behind-the-meter
 batteries and VPPs), and any other shortcut taken to hold the date, TODO 14lv (added as taken). Each minimum version gets a line in
 the reviewer pack's Known limitations saying what is simplified; the advisor drafts these for the Doc with the 11 Nov refresh, and
