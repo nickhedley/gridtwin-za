@@ -767,7 +767,16 @@ committed plant (5,850 MVAr in 2025-29, 900 MVAr in 2030-34; H 1.3 s), and a con
 new-build costs (from the note). (4) Grid-forming batteries as a costed build option (5% of capex), counting toward inertia only;
 SYNC_GFM_SHARE's free 30% retired. (5) A fault-level cost per kW of new inverter capacity, net of what the TDP-based grid charge
 already covers; AEMO's A$137k/MW as the upper bound. (6) Per scenario: hours below the floor, inertia by source, and the cost of
-meeting it. This replaces the reviewer pack's limitation on inertia and system strength once results are in.
+meeting it. This replaces the reviewer pack's limitation on inertia and system strength once results are in. Amended to planning-model practice (user,
+31 Oct 2026, message 549): (a) the inertia floor goes into the build LP (representative days and stress windows) as well as the
+engine, so condensers and grid-forming batteries are chosen with the build, not added after (Wogrin et al. 2020: enforcing it only
+after planning added 0.5-3.1% to system cost); one contingency value per year in the LP, the largest credible loss standing that year.
+(b) Synchronous inertia counts only when the machine spins: coal and nuclear as committed, pumped storage when pumping or generating,
+hydro at output; new gas whenever it runs, or in condenser mode at a small energy cost (stated) plus the clutch cost (GHD for
+ElectraNet: A$0.75-5.9m per unit). (c) A grid-forming battery's inertia each hour is limited by its unused power, not its rating.
+(d) Check: on a plan close to CSIR's 2030, the share of hours below a 1 Hz/s floor before condensers, against CSIR's (Chown, Wright et
+al. 2017) about 5%. (e) Limitations to state: fault level national, not by substation; no voltage control; the 1 Hz/s limit borrowed
+from Ireland and AEMO, as South Africa has none.
 
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
