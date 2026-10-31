@@ -18785,3 +18785,37 @@ holds regulating at 1,140 MW from 2030 and adds a share of wind and solar output
 over 1,300 MW (3,500 on Fossil-free 2040). (2) From 2026 to 2030 the model's 2,200 MW matches the outlook's 2,200 MW. The adequacy
 panel now shows one figure where the mean and the peak are equal (presets to 2030); the 2035 and 2040 presets still show two. No
 change made.
+
+### Preset swap: Deep decarbonisation 2035 and Fossil-free 2040 are the optimised hypothetical builds; each reproduces its engine check to the digit on the page and meets NTCSA's standard on 240 independent runs (user, 31 Oct 2026, messages 537 (f), 555 and 558; build 2026-10-31k)
+
+Change (claude/preset-swap, from claude/site-copy-561 at f02e1fb): harness/pathway/gen_pathway_presets.py writes both presets from their
+runs, as it writes the other pathway presets: Deep decarbonisation 2035 from pathway_s_hypo_deep2035r_c6e.json (the CO2 rerun, cap
+22.809 Mt a year from 2035, elastic at R50,000/t, no slack used) at 2035; Fossil-free 2040 from pathway_s_hypo_ff2040_c6e.json (no coal,
+gas or diesel after 2039, a hard rule) at 2040; both at the grid pace with iron-air capped at 5 GW (RESULTS on claude/hypo-presets-results,
+PR #138: 'Deep decarbonisation 2035, hypothetical' and 'Fossil-free 2040, hypothetical'). The generator now carries new pumped storage
+(newPsMW, the run's hours and acapPs priced as pathcheck.js prices it) and the fossil-free year (no new gas standing, existing diesel
+retired), and writes HYPO_PRESETS, the captions' facts; it stops if the engine check's CO2 exceeds the cap in any year from 2035 or the
+build LP used slack. newPsHours and acapPs join PRESET_NON_SLIDER_KEYS. The hand-searched builds are kept in the comments above each
+generated block and in git history (Deep: wind 40,500, solar 42,750, rooftop 10,800, lithium 14,625 at 12 h, iron-air 3,250, 27 GW coal
+retired; Fossil-free: wind 50,500, solar 64,500, offshore 2,750, rooftop 16,800, lithium 20,000 at 12 h, iron-air 13,000 MW).
+
+| Preset | Wind | Solar | Rooftop | Lithium (h) | Offshore | Vanadium | Pumped storage | Iron-air | New gas | Coal standing |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Deep decarbonisation 2035 | 43,000 | 51,982 | 11,802 | 21,599 (5.6) | 1,000 | 0 | 0 | 0 | 2,000 | 16,416 |
+| Fossil-free 2040 | 64,500 | 100,516 | 17,802 | 59,915 (8.0) | 5,000 | 7,500 | 1,500 (14 h) | 5,000 | 0 standing | 0 |
+
+New MW standing in the preset's year.
+
+Checks, 31 Oct 2026, 21:27-21:44 UTC, beside two suites on other worktrees:
+- validate_pathway_presets.js 65/65: page state equal to each engine check's state key by key (39 keys each, dieselDecomMW and acapPs now
+  among them), and the preset on the check's own profiles and draws (120 runs) equal to the stored row: Deep 2035 R331.339bn,
+  0.0000 GWh, 21.075 Mt; Fossil-free 2040 R607.421bn, 0.0000 GWh, 0 Mt (0.0000% cost difference in both).
+- Rescore on the page (harness/ext/preset_rescore.js, VARIANTS=page, K=20, 240 runs, seed 120000017 for both, disjoint from the
+  engine check's seed 71830529; rule 366, flagged): Deep 0.0021 GWh against 2.39, R331.34bn, 21.08 Mt; Fossil-free 0 against 2.69,
+  R607.42bn. PRESET_SCORES regenerated (gen_preset_scores.py); both captions read 'Meets NTCSA's reliability standard.'
+Captions (message 555 (f), the user's drafts with the figures from HYPO_PRESETS): Deep, 30 words: "Optimised to keep CO2 at or below 22.8
+Mt a year from 2035. Builds wind, solar and batteries faster than our deliverable rates: a hypothetical plan. Meets NTCSA's reliability
+standard." Fossil-free, 34 words, adds "with 5 GW of unproven iron-air storage". The 561 'Adds' lists are not used for these two (rule 366,
+flagged): Fossil-free's eight technologies with the 555 (f) wording come to about 47 words, over the 40-word cap.
+Flag: the run's pumped-storage charge (R2,114.7/kW-yr, bldPhesCapexKW('anu2026', 14) over 60 years plus fixed O&M) is not the page's
+derived FIXED.acapPs (R2,482); the preset carries the run's so the page reproduces the check. Cause of the difference not established.
