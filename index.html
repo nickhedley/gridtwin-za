@@ -6758,8 +6758,10 @@ const FIXED = {
   // shared pro rata, generation integration is 51% of the plan; 51% of the decade's R440bn is
   // R225bn for 46.9 GW of grid-connected new generation (the TDP's 56 GW less 9 GW rooftop):
   // R4,800/kW, R402/kW-yr over 40 years at 8%. The old R600 was the whole TDP over 56 GW,
-  // refurbishment and load strengthening included.
-  txRPerKWyr:402,
+  // refurbishment and load strengthening included. From build 2026-10-31b (user, 31 Oct 2026, message 546 (b)): annuitised at the
+  // central case's network cost of capital (BLD_COC_NETWORK.central, 7.1%, as every other network cost), R364/kW-yr; set below,
+  // after BLD_COC_NETWORK, from TDP_GEN_INTEG_RKW. RESULTS 'The grid charge for new wind and solar'.
+  txRPerKWyr:null,
   // long-duration storage capex, added 28 Aug 2026. Until then vanadium, iron-air and
   // pumped storage appeared in newCapexR nowhere, so the model showed 20 GW of 100-hour
   // iron-air as costing zero and slightly reducing average cost. Same annuity method as
@@ -10494,6 +10496,10 @@ FIXED.ccsWaccPct = BLD_DISC * 100;
 const BLD_COC_LEVEL = { central: 0.055, private: 0.055, high: 0.090, low: 0.045 };
 const BLD_COC_GAP = { re: 0, store: 0.013, gas: 0.025, nuclear: 0.030, coal: 0.025 };
 const BLD_COC_NETWORK = { central: 0.071, private: 0.071, high: 0.090, low: 0.071 };
+// The grid charge's capital (message 546 (b)): TDP 2024's generation integration, R225bn for 46.9 GW of grid-connected new
+// generation (see FIXED.txRPerKWyr), R/kW, annuitised over 40 years at the central network rate.
+const TDP_GEN_INTEG_RKW = 225e9 / 46.9e6, TDP_GEN_INTEG_LIFE = 40;
+FIXED.txRPerKWyr = Math.round(TDP_GEN_INTEG_RKW * BLD_COC_NETWORK.central / (1 - Math.pow(1 + BLD_COC_NETWORK.central, -TDP_GEN_INTEG_LIFE)));
 // Private and merchant finance (messages 469 (f) and 472): corporate PPAs, wheeling via traders and the wholesale market from 2027
 // carry more offtaker and price risk than state-backed contracts. CEPA for DESNZ (July 2025), Table 5.22 (p.116), investor survey: a
 // merchant revenue model adds +1.5% to +3% to the overall hurdle rate, median +1.5% (Brookfield +1.2-1.3%, Table 5.23; Europe
@@ -20916,7 +20922,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-31a';
+const BUILD_STAMP = '2026-10-31b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
