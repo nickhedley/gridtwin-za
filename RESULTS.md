@@ -18606,3 +18606,24 @@ PR #135's Cloudflare 'Workers Builds: gridtwin-za' check failed on its head f0c8
 step run), having passed on this branch's 8e4976f and a86b9d3 and on main's 5739c83 and fda846f 1-3 minutes before; the PR changes no
 file the site serves differently (index.html unchanged). Its log is only on the Cloudflare dashboard. This note's commit starts a
 fresh build (message 533 (a)); if that fails too, the user reruns it from GitHub.
+
+### The grid charge for new wind and solar (txRPerKWyr, R402/kW-yr) against TDP 2024's R440bn to 2034: R4.8bn per GW of new grid-connected generation for generation integration, R7.9-9.4bn per GW for the whole plan; at c6e's 7.1% network rate the charge would be R364/kW-yr, not R402 (user, 31 Oct 2026, message 540 (a); no run, no input changed)
+
+Figures as recorded (RESULTS 'Transmission reconciled to what the TDP buys', 22 Sep 2026, build 2026-09-22ad; SOURCES 'Eskom TDP 2024'):
+TDP 2024's decade total about R440bn (DBSA; NTCSA CEO, August 2026) for 56 GW of new generation, 9 GW of it rooftop, so 46.9 GW
+grid-connected; generation integration with land pro rata is 51.1% of Table 4's first five years, applied to the decade: R225bn.
+Per GW of new grid-connected generation and as an annual charge over 40 years (annuity factors 0.0839 at 8%, 0.0759 at 7.1%):
+
+| Basis | Capital per kW (R bn per GW) | At 8% | At 7.1% (c6e's network rate) |
+|---|---|---|---|
+| Generation integration, R225bn over 46.9 GW (the model's basis) | R4,797 | R402/kW-yr | R364/kW-yr |
+| Whole TDP, R440bn over 46.9 GW | R9,382 | R787/kW-yr | R712/kW-yr |
+| Whole TDP, R440bn over 56 GW (rooftop included) | R7,857 | R659/kW-yr | R596/kW-yr |
+
+Finding: the model's R402/kW-yr is the generation-integration share annuitised at 8% real over 40 years, the rate before build
+2026-10-28a. Since then every capital charge takes its technology's own cost of capital and network investment is priced at 7.1%
+(NERSA's allowed return for Eskom; c6e's basis), but txRPerKWyr is a fixed constant and kept 8%: at 7.1% it would be R364/kW-yr,
+9.5% lower, applied to every GW of new wind, utility solar and offshore in every c6e run. The whole-plan figures include network
+strengthening, refurbishment, telecoms and IT that serve load and reliability as well as new generation, so they bound the charge
+from above rather than replace it. Not changed: a decision for the user after the optimised runs (TODO 14lj). The R440bn and Table 4
+split are as recorded on 22 Sep and 18 Oct 2026; the primary PDF has not been re-read (www.ntcsa.co.za is not reachable from the session).

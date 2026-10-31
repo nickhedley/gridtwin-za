@@ -681,7 +681,9 @@ The next six (user, 31 Oct 2026, message 539 (a)) come after the optimised runs 
 before then. Sources first in each case; record them in SOURCES before any input changes.
 
 14ld. Coal fuel cost real escalation: sensitivities at +2% and +4% a year real from 2026, on the c6e basis. Source the trend first,
-from Eskom's primary energy cost history (the central holds coal fuel flat in real terms, R553/MWh sent out).
+from Eskom's primary energy cost history (the central holds coal fuel flat in real terms, R553/MWh sent out). Also (message 540 (b)): source coal life-extension
+costs per MWh from a citable publication, as the anchor for this test and for 14le. A confidential deck the user has seen gives a range;
+it is not citable and its figures are not recorded in the repository.
 
 14le. Coal emissions compliance (MES) in full: station-level capital and operating costs with a comply-or-retire choice per station in
 the optimiser, building on TODO 14eo and 14em's fleet-level COMPLY switch (none, compromise, full). Figures to source: R257bn capital
@@ -699,6 +701,11 @@ cost and not in it.
 14li. A RE-Max test case: about 60 GW of solar and wind on the 18.6 GW of existing and pipeline grid connections, 242 GWh of storage at
 4 hours or more, run through the twelve weather years; report firm output in winter lulls against the claimed 11.9 GW at 90%. The
 source document is confidential: it is never committed or quoted in the repository; the advisor supplies the inputs.
+
+14lj. The grid charge's cost of capital (found 31 Oct 2026, message 540 (a); RESULTS 'The grid charge for new wind and solar'):
+txRPerKWyr is fixed at R402/kW-yr, TDP 2024's generation integration (R225bn for 46.9 GW) annuitised at 8% over 40 years, while
+c6e prices network investment at 7.1%; at 7.1% it would be R364/kW-yr. You: whether to derive it from the network cost of capital
+(bldCoc), which moves every run with new wind and solar; after the optimised runs and the preset swap.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
