@@ -707,6 +707,26 @@ txRPerKWyr is fixed at R402/kW-yr, TDP 2024's generation integration (R225bn for
 c6e prices network investment at 7.1%; at 7.1% it would be R364/kW-yr. You: whether to derive it from the network cost of capital
 (bldCoc), which moves every run with new wind and solar; after the optimised runs and the preset swap.
 
+14lk. The model against NTCSA's Medium-Term System Adequacy Outlook 2027-2036 (published 30 Oct 2026; public, cited), after the
+optimised runs and the preset swap (user, 31 Oct 2026, message 541). Each comparison recorded in RESULTS; nothing in the model changes
+without your go-ahead. Record the outlook in SOURCES with page references when first read.
+(1) Demand growth: c6e's 2026-35 growth against the outlook's Low (230.4 to 285.3 TWh sent out, 2026-36) and High (238.3 to 329.7)
+trajectories and peaks (34.7-42.3 GW Low, 35.8-49.1 GW High). Compare growth, not levels, and state the basis difference (sent out
+against the model's customer demand with rooftop netted, firm exports and the smelter block).
+(2) Rooftop: the model's 1,200 MW a year against the outlook's SSEG trajectories, 273 and 560 MW a year (GreenCape's revised 2026 for
+the high case); establish whether SSEG covers the same systems as the model's rooftop figure (size bands, embedded and wheeled plant).
+(3) Coal availability: the model's coal-only 65% against the outlook's fleet EAF, 66% rising to 70% from FY2031 (upper) and 65% flat
+(lower); queue a sensitivity on the lower trajectory.
+(4) Closures: its 16.2 GW of Eskom shutdowns by 2036 (8.75 GW in 2029-30, Acacia and Port Rex included) against the model's
+schedule (IRP 2025 Figure 3); its retirement of about 3 GW of REIPPPP plant at contract end in 2033-36 (1.3 GW solar, 1.5 GW wind,
+0.2 GW CSP) against what the model does with REIPPPP plant after its contract (as far as known, it keeps running).
+(5) Data centres: its 5.1 GW (central) by 2036; establish whether the model's demand (UCT ESRG's IRP reference forecast and the
+930 MW smelter block) includes any.
+(6) Curtailment: its actual excess energy of 2,580 GWh in 2026 to September against the model's 2026 curtailment, the same months.
+(7) validate_external: its MTSAO checks use the 2026-2030 outlook. Propose replacements from this one (Reference Case below 20 GWh
+from 2029, 13.42 GWh in 2036, open-cycle use below 1%), with the scenario settings needed to reproduce them; no check changes without
+your go-ahead.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
