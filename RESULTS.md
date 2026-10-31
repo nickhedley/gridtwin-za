@@ -18654,3 +18654,42 @@ exempts new solar on retired-coal connection points (repurposing) and charges of
 all new wind, solar and offshore standing. On the optimiser's grid-cost basis (costGrid) the PV is 2,323.1 against 2,317.5, -5.7. Caveat: the build is c6e's as optimised at
 R402; a re-optimised build at R364 may hold more new wind and solar. Not rerun (message 546 (c): report before rerunning anything).
 The REIPPPP contract-year change (14ln (a)) is not in this build; it waits for REIPPPP MW by bid window and technology.
+
+### REIPPPP pays no fixed O&M in its contract years, alone and with the grid charge at R364: c6e's engine PV 2026-40 R2,288.8bn alone (-R25.9bn) and R2,283.9bn with both (-R30.8bn); CO2, unserved and build unchanged (user, 31 Oct 2026, messages 546, 552, 554 (b) and 560; TODO 14ln (a) and (b); build 2026-10-31c)
+
+Change (claude/cost-corrections at 2b830b4, BUILD_STAMP '2026-10-31c'): fixedOMR charges existing wind, utility solar and CSP only on
+the MW outside a live REIPPPP PPA (reipppLiveMW: FIXED.reipppWindMW 4,042, reipppSolarMW 2,783 and cspMW 600, less each window that
+has expired, y >= expires; FIXED.reipppFomInPpa 1, 0 restores the old charge). MW split used (message 560 (a); the Minister of Energy's
+reply to NW368, asked 15 Mar 2019, summed by the advisor from its 92 project rows): BW1 wind 648.53, solar 626.81, CSP 150 (expires
+2034); BW2 558.90, 417.12, 50 (2035); BW3 787.06, 435.00, 200 (2037); BW3.5 CSP 200 (2039). Each window's expiry is REIPPPP_WINDOWS'
+(commercial operation plus 20 years; the reply's part (f)). The rest of the fleet (wind 2,047.5, solar 1,304.1, CSP 0) is BW4 onwards,
+whose contracts end after 2040, so it is under contract in every modelled year. Eskom's Sere and private plant pay fixed O&M throughout.
+
+Reconciliation (message 560 (b)): BW1-4 hold wind 3,357.30 and solar 2,291.83 MW (the reply's rows sum to 6,322.73 MW against its
+stated 6,422.73; BW4's rows are 100 MW below the stated total). The model's totals are the IPP Office's capacity online at 31 Mar 2026
+(Q4 2025/26). Wind remainder 684.70 MW: BW5's Koruson 1 cluster (Coleskop, San Kraal, Phezukomoya, 140 MW each, commercial operation
+December 2025 to February 2026) and Brandvalley and Rietkloof (140 MW each, April 2025) make 700 MW (Engineering News, BW5 update, 22
+May 2026); 15.3 MW unexplained. Solar remainder 491.17 MW: BW5's solar plants are 75 MW each (13, 975 MW), and BW6's first two (360 MW)
+reached commercial close on 30 Apr 2024 with about 24 months to build, so probably not online by 31 Mar 2026; no public commercial
+operation dates for BW5 solar were found, and 491 MW is not a whole number of 75 MW plants: unexplained. Neither remainder moves the
+measurement (both expire after 2040). Not checked against the reply's per-project table: pmg.org.za is outside this session's network.
+
+Measured: c6e's own build (pathway_c6e.json), the optimiser not rerun, engine check as the set (pathcheck.js, LNG=1 GRID=1, groups a, b
+and c, 120 runs a year), 31 Oct 2026 16:43-17:15 UTC: build 31c (both; pathcheck_c6e_31c_*.json) and 31c with txRPerKWyr set to 402
+(the REIPPPP change alone; a scratch copy of index.html, one line changed; pathcheck_c6e_31c_reiponly_*.json); comparators 31a
+(pathcheck_c6e_31a_*) and 31b (the grid charge alone, RESULTS above).
+
+| c6e, same build | 31a | Grid charge alone (31b) | REIPPPP alone | Both (31c) |
+|---|---|---|---|---|
+| Engine PV 2026-40 at 8%, R bn | 2,314.7 | 2,309.8 | 2,288.8 | 2,283.9 |
+| Change, R bn | | -4.9 | -25.9 | -30.8 |
+| System cost change 2030, R bn | | -0.23 | -3.27 | -3.50 |
+| System cost change 2035, R bn | | -0.97 | -2.20 | -3.17 |
+| System cost change 2040, R bn | | -1.37 | -1.18 | -2.54 |
+| CO2 2026-40, Mt | 1,738.6 | 1,738.6 | 1,738.6 | 1,738.6 |
+
+The two changes add exactly (-4.9 and -25.9 make -30.8). The REIPPPP saving is R3.27bn a year while every window is live (2026-33),
+falling as BW1 (2034), BW2 (2035), BW3 (2037) and BW3.5 (2039) expire, to R1.18bn from 2039. Mean unserved identical in every year.
+Caveat: c6e's build as optimised on 31a; the REIPPPP change touches only the existing fleet, so it does not move the build LP; the grid
+charge could. Not rerun (message 554 (b): both corrections go into the next central rebuild; the reviewer Doc's headline costs get one
+combined correction).
