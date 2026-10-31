@@ -160,6 +160,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
+   // FOSSIL_END (message 531 (c)): after the run's last fossil year no coal (its coalMW is 0 from its dates), no gas and no diesel stand.
+   if (P.fossilEnd && y > P.fossilEnd){ if (over.coalDecomMW < +w.eval('FIXED.coalInstalledMW')) throw new Error('fossilEnd: coal standing in '+y);
+     Object.assign(over, {newCcgtMW:0, newOcgtMW:0, newOcgdMW:0, dieselDecomMW:+w.eval('FIXED.ocgtDieselMW')}); }
    // FLEET_2026 (message 391 (a)): the run's 2026 existing-fleet adjustment, recorded by pathway_perfail.js, in 2026 only.
    if (y===2026 && P.fleet2026) for (const [k,d] of Object.entries(P.fleet2026)){ over[k]=+w.eval('FIXED.'+k)+d; console.log('FLEET_2026: '+k+' '+over[k]+' MW in 2026'); }
    // ASTR reserve after 2030/31 (user, message 86): the growth term is measured from this run's own 2030 wind and solar fleet,

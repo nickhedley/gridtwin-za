@@ -677,6 +677,160 @@ floor, imports). At scenarioYear 2035 it reads 108.1 against 124 Mt (within 22) 
 117.0 and 65.6 as it stands. You: whether the check runs at 2035 (a check correction with its cause, rule 2), and the same question
 for the CSIR 2030 checks (scenarioYear not set either).
 
+The next six (user, 31 Oct 2026, message 539 (a)) come after the optimised runs (531, 537) and the preset swap (537 (f)); no runs
+before then. Sources first in each case; record them in SOURCES before any input changes.
+
+14ld. Coal fuel cost real escalation: sensitivities at +2% and +4% a year real from 2026, on the c6e basis. Source the trend first,
+from Eskom's primary energy cost history (the central holds coal fuel flat in real terms, R553/MWh sent out). Also (message 540 (b)): source coal life-extension
+costs per MWh from a citable publication, as the anchor for this test and for 14le. A confidential deck the user has seen gives a range;
+it is not citable and its figures are not recorded in the repository.
+
+14le. Coal emissions compliance (MES) in full: station-level capital and operating costs with a comply-or-retire choice per station in
+the optimiser, building on TODO 14eo and 14em's fleet-level COMPLY switch (none, compromise, full). Figures to source: R257bn capital
+and R6.3bn a year operating for full compliance; about R90bn of it for Hendrina, Camden and Grootvlei.
+
+14lf. Rooftop at 2 and 3 GW a year on the c6e basis, as a grid-defection proxy (the central adds 1.2 GW a year); later, rooftop uptake
+that responds to tariffs, through the retail panel.
+
+14lg. Battery capital cost against BNEF's 2025 turnkey survey (US$117/kWh): compare the model's lithium cost on a like basis (turnkey,
+the same duration, the exchange rate stated); a low-cost battery sensitivity if the model's sits above it.
+
+14lh. Health and water costs per scenario, from a published damage factor (source to be chosen and recorded), reported beside system
+cost and not in it.
+
+14li. A RE-Max test case: about 60 GW of solar and wind on the 18.6 GW of existing and pipeline grid connections, 242 GWh of storage at
+4 hours or more, run through the twelve weather years; report firm output in winter lulls against the claimed 11.9 GW at 90%. The
+source document is confidential: it is never committed or quoted in the repository; the advisor supplies the inputs.
+
+14lj. Decided 31 Oct 2026 (user, message 546 (b)): the grid charge takes c6e's network rate, 7.1%, R364/kW-yr in place of R402; in
+the page change of 14ln. Was: The grid charge's cost of capital (found 31 Oct 2026, message 540 (a); RESULTS 'The grid charge for new wind and solar'):
+txRPerKWyr is fixed at R402/kW-yr, TDP 2024's generation integration (R225bn for 46.9 GW) annuitised at 8% over 40 years, while
+c6e prices network investment at 7.1%; at 7.1% it would be R364/kW-yr. You: whether to derive it from the network cost of capital
+(bldCoc), which moves every run with new wind and solar; after the optimised runs and the preset swap.
+
+14lk. The model against NTCSA's Medium-Term System Adequacy Outlook 2027-2036 (published 30 Oct 2026; public, cited), after the
+optimised runs and the preset swap (user, 31 Oct 2026, message 541). Each comparison recorded in RESULTS; nothing in the model changes
+without your go-ahead. Record the outlook in SOURCES with page references when first read.
+(1) Demand growth: c6e's 2026-35 growth against the outlook's Low (230.4 to 285.3 TWh sent out, 2026-36) and High (238.3 to 329.7)
+trajectories and peaks (34.7-42.3 GW Low, 35.8-49.1 GW High). Compare growth, not levels, and state the basis difference (sent out
+against the model's customer demand with rooftop netted, firm exports and the smelter block).
+(2) Dropped (user, 31 Oct 2026, message 542 (a)): NTCSA's and GreenCape's rooftop growth paths are conservative and are not used;
+the model takes Eskom's estimate for the installed rooftop stock (SOURCES 'Rooftop: the model's basis').
+(3) Coal availability: the model's coal-only 65% against the outlook's fleet EAF, 66% rising to 70% from FY2031 (upper) and 65% flat
+(lower); queue a sensitivity on the lower trajectory.
+(4) Closures: its 16.2 GW of Eskom shutdowns by 2036 (8.75 GW in 2029-30, Acacia and Port Rex included) against the model's
+schedule (IRP 2025 Figure 3); its retirement of about 3 GW of REIPPPP plant at contract end in 2033-36 (1.3 GW solar, 1.5 GW wind,
+0.2 GW CSP) against what the model does with REIPPPP plant after its contract. Decided (user, 31 Oct 2026, message 542 (b)): REIPPPP
+plants become merchant plants at contract end and keep running. Confirmed 31 Oct 2026: the existing fleet (FIXED windMW 4,681,
+pvUtilityMW 3,568.5, cspMW 600) is a fixed stock that never retires; a window's expiry (REIPPPP_WINDOWS, reipppRate) ends only its PPA
+payment. In any adequacy comparison with the outlook, note the roughly 3 GW of REIPPPP plant it retires in 2033-36 that the model
+keeps. Correction (31 Oct 2026): the flag that expired plant is free was wrong. The engine charges fixed O&M on the whole existing
+wind, solar and CSP fleet in every year (index.html fixedOMR: windMW x BLD_FOM.wind, pvUtilityMW x BLD_FOM.pv, cspMW x fomCsp), so
+expired REIPPPP plant already pays its fixed O&M as a merchant plant; see 14ln (a).
+(5) Data centres: its 5.1 GW (central) by 2036; establish whether the model's demand (UCT ESRG's IRP reference forecast and the
+930 MW smelter block) includes any.
+(6) Curtailment: its actual excess energy of 2,580 GWh in 2026 to September against the model's 2026 curtailment, the same months.
+(7) validate_external: its MTSAO checks use the 2026-2030 outlook. Propose replacements from this one (Reference Case below 20 GWh
+from 2029, 13.42 GWh in 2036, open-cycle use below 1%), with the scenario settings needed to reproduce them; no check changes without
+your go-ahead.
+
+14ll. Market documents, watch items after the note (user, 31 Oct 2026, message 543; CALENDAR 'Expected market publications'). No
+change until each is published. (1) NERSA's Electricity Trading Rules and Market Code, final (expected November 2026): check the
+reviewer Doc's market-design line ('energy-only as drafted'). (2) The Wholesale Electricity Pricing Methodology (expected December
+2026): if it sets a price ceiling and a scarcity rule, replace the market-price panel's ceiling (R87,000/MWh) and ERCOT-based scarcity
+rule with SAWEM's. (3) The Vesting Contract Framework, final (expected December 2026): check the retail panel's market-basis contract
+levy.
+
+14lm. The central gas case against an analyst's pre-war LNG cost stack, after the note (user, 31 Oct 2026, message 544; private
+communication, the analyst not named; figures in SOURCES 'Gas price cases'). (1) Amended (user, 31 Oct 2026, message 545): the central gas case stands, the long-run basis with new gas only from 2035; no
+recheck of the charter rate. Shipping depends on the source (SOURCES 'Gas price cases'): the central assumes Qatar, about 4,200 nm on
+the 2018 charter breakeven; the analyst's about 0.25 fits a short haul such as Mozambique. Add a Mozambique-sourced case as a
+low-shipping sensitivity, after the note (its distance and charter basis sourced first). (2) A sensitivity adding a credit and marketing margin (USD 0.6/MMBtu) to the fuel
+price and, for any gas sited inland, the pipeline (USD 2.6-3.0/MMBtu to Gauteng; about 0.5 for Richards Bay to local KwaZulu-Natal).
+(3) Done in SOURCES: the terminal stays a fixed charge per kW, not a per-MMBtu adder, because new gas runs at a 5-8% capacity factor.
+
+14ln. One page change after the two optimised runs and before the preset swap (user, 31 Oct 2026, message 546), suite before and
+after: (a) expired REIPPPP plant pays its technology's existing fixed O&M per kW from the year its PPA ends. Found 31 Oct 2026: already
+so: fixedOMR charges fixed O&M on all existing wind (4,681 MW), utility solar (3,568.5 MW) and CSP (600 MW) every year, REIPPPP plant
+included; no change needed. The reverse is open, for your decision: in contract years the REIPPPP fleet pays its PPA (reipppRate, on
+delivered output) and fixed O&M on top, though a PPA price covers the IPP's O&M: about R3.3bn a year while every contract is live
+(4,042 MW wind x R392, 2,783 MW solar x R287, 600 MW CSP x R1,480 per kW-yr), falling with expiry (R1.75bn by 2040; live share by bid
+window energy), about R27bn in PV over 2026-40 at 8%, some 1.2% of c6e's R2,315bn; the same in every scenario on the existing fleet, so
+gaps between scenarios do not move. Decided (user, 31 Oct 2026, message 552 (a)): no fixed O&M on REIPPPP capacity in its contract
+years, the PPA price covering it; from each window's expiry the plant pays its technology's fixed O&M, as now; Eskom-owned plant (e.g.
+Sere) keeps its fixed O&M throughout; state the MW split used. Same page change as (b), after the optimised runs and before the preset
+swap; suite before and after; c6e measured with both and each alone, reported before anything is rerun; the reviewer Doc changes only
+after Nick has seen the figures. Data needed first: REIPPPP MW by bid window and technology. The model holds totals only (FIXED
+reipppWindMW 4,042, reipppSolarMW 2,783, CSP 600) and REIPPPP_WINDOWS gives energy and cost by window, not MW. In hand: solar by window
+for BW1-BW4 (627, 417, 435, 813 MW; parliamentary reply NW368, 2019, SOURCES) and the MTSAO 2027-2036's retirements at contract end in
+2033-36 (1.3 GW solar, 1.5 GW wind, 0.2 GW CSP; message 541), which do not agree on solar (BW1 and BW2, expiring by 2036, hold 1,044 MW
+in NW368). Wind and CSP by window are not in the repository: the IPP Office's window summary (or its historical data note of 7 Nov 2025)
+is the source to use; not to be filled from memory. Lead found 31 Oct 2026 (a web search extract of an IPP Office technology table, not yet read at source; the hosts holding the IPP Office's overview and bidders' conference deck, rise.esmap.org and ccib.ro, are outside this session's network): wind BW1-BW4 649, 559, 787, 1,362 MW; solar 627, 417, 435, 813 MW (the same as NW368); CSP BW1 150, BW2 50, BW3 200, BW3.5 200 MW (600 in all). If confirmed, the MTSAO's 2033-36 figures fit: BW1 and BW2 (1,208 MW wind, 1,044 solar, 200 CSP) plus the part of BW3 whose contracts end in 2036. Still missing: BW4+ (expedited), BW5 and BW6 MW by technology, and which windows FIXED reipppWindMW and reipppSolarMW include. (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
+Then measure c6e's PV, CO2 and build with (a) and (b) together and each alone (engine check of c6e's build; a re-optimised build only
+if needed to see whether the build moves). If c6e's headline figures move, report before rerunning anything else (the user corrects
+the reviewer Doc). Rerun the optimised runs only if the change moves their builds.
+
+14lo. System strength: replace the synchronous floor with the advisor's formulation (user, 31 Oct 2026, message 547), after the
+preset swap, the two cost corrections (14ln) and the note, on a new branch, suite before and after. The advisor's note (project doc
+'claude/system-strength-2026-10-31.md') is not in the repository: obtain it first and record its figures and sources in SOURCES.
+First, report only (547 (b)): today's treatment on c6e and both optimised plans, the hours the current floor (6 GW synchronous plus
+grid-forming batteries at SYNC_GFM_SHARE 0.30 of their power) binds, and inertia by source each year.
+Then the build: (1) an hourly inertia floor, online H x S >= 50 x largest contingency / (2 x RoCoF): central 1 Hz/s, the contingency
+from the largest units online (2,160 MW today, NTCSA ASTR 2026 section 3.4.2); sensitivities at 0.5 Hz/s and a flat 40 GW.s.
+(2) Every synchronous machine counts at its own H, new gas included (ASTR section 5.1C). (3) TDP 2024's synchronous condensers as
+committed plant (5,850 MVAr in 2025-29, 900 MVAr in 2030-34; H 1.3 s), and a condenser build option at Eskom's conversion and
+new-build costs (from the note). (4) Grid-forming batteries as a costed build option (5% of capex), counting toward inertia only;
+SYNC_GFM_SHARE's free 30% retired. (5) A fault-level cost per kW of new inverter capacity, net of what the TDP-based grid charge
+already covers; AEMO's A$137k/MW as the upper bound. (6) Per scenario: hours below the floor, inertia by source, and the cost of
+meeting it. This replaces the reviewer pack's limitation on inertia and system strength once results are in. Amended to planning-model practice (user,
+31 Oct 2026, message 549): (a) the inertia floor goes into the build LP (representative days and stress windows) as well as the
+engine, so condensers and grid-forming batteries are chosen with the build, not added after (Wogrin et al. 2020: enforcing it only
+after planning added 0.5-3.1% to system cost); one contingency value per year in the LP, the largest credible loss standing that year.
+(b) Synchronous inertia counts only when the machine spins: coal and nuclear as committed, pumped storage when pumping or generating,
+hydro at output; new gas whenever it runs, or in condenser mode at a small energy cost (stated) plus the clutch cost (GHD for
+ElectraNet: A$0.75-5.9m per unit). (c) A grid-forming battery's inertia each hour is limited by its unused power, not its rating.
+(d) Check: on a plan close to CSIR's 2030, the share of hours below a 1 Hz/s floor before condensers, against CSIR's (Chown, Wright et
+al. 2017) about 5%. (e) Limitations to state: fault level national, not by substation; no voltage control; the 1 Hz/s limit borrowed
+from Ireland and AEMO, as South Africa has none.
+
+14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
+storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
+standard (pp. 15-16); the model has neither. First check how much of the gap to BW3's capacity charge (the model 20-25% below) an
+augmentation allowance would explain; then propose a treatment (an augmentation cost or a capacity fade). (2) Longer lithium: the
+optimiser already chooses lithium's duration (power b_batt and energy eb_batt priced separately, BATT_POWER_SHARE 0.278 of the 4-hour
+capex on power; durations up to LI_MAX_HOURS 20; c6e builds 5.1 hours by 2035 and 6.2 by 2040). What limits long lithium is the yearly
+energy cap, bldLiEnergyHours 4 x the 3 GW power cap (LI_EH). So: test LI_EH 6 and 8 (6- and 8-hour lithium at the power cap), and check
+the power and energy split against DNV and current bids; state the split assumed. (3) Done in SOURCES (the non-lithium finding beside
+the iron-air flag). If the fossil-free optimised run stalls without iron-air (537 (d)), tell the user before the iron-air rerun: a
+rerun with LI_EH=8 may be the better second attempt (message 548 (b)).
+
+14lq. Distributed flexibility and grid-enhancing technologies, after the note (user, 31 Oct 2026, message 550; from the advisor's
+project doc 'claude/vpp-gets-modelling-2026-10-31.md', not in the repository: obtain it and record its figures and sources in SOURCES).
+Scope and measure first; no build without your go-ahead.
+(1) Behind-the-meter batteries: a passive share on a self-consumption profile (charging from rooftop surplus, discharging in the
+evening) and a coordinated share dispatched as storage. First report how much c6e's evening peak and firm build change per GW and GWh
+of passive batteries, at 1, 3 and 5 GWh. No South African stock estimate exists; GreenCape gives about 400 MWh a year of business
+batteries.
+(2) A VPP build option: devices x enrolment x kW, event limits (Brattle: home batteries 15-100 events of 2-3 hours a year), credited
+at delivered capacity (about a third of nameplate, California DSGS 2024), programme cost about US$43/kW-yr (Brattle 2023); linear build
+up to a cap.
+(3) Heat-stress line derating: apply the derating the heat panel computes to the inter-area transfer limits in hot, calm hours;
+measure the effect on curtailment and unserved energy (the regional engine).
+(4) Dynamic line ratings and reconductoring as sensitivities on the Cape corridors: DLR as an hourly wind-linked uplift capped at 1.3
+(PyPSA-Eur practice) or a flat 10% in windy hours (RMI/Quanta); reconductoring as a build option at about twice the corridor capacity
+with a 1-3 year lead time. Check for overlap with the TDP-based grid charge (txRPerKWyr, 14lj) and the Cape curtailment approval
+(bldCapeWindMW) before any is charged.
+
+14lr. Hydrogen as seasonal storage, built by the optimiser, after the note (user, 31 Oct 2026, message 557; replaces 556: no quick
+hydrogen turbine). Scope first; nothing is built without your go-ahead. (1) The chain: electrolysers fed by surplus wind and solar;
+hydrogen storage, with the South African options and costs (tanks, line pack, ammonia) and whether salt caverns exist here;
+hydrogen-fired turbines (new open-cycle and combined-cycle) and conversion of the existing diesel open-cycle plants (Ankerlig,
+Gourikwa). (2) Seasonal storage in the build LP: link the representative days so a store carries energy across the year, adapting
+GenX's long-duration storage method (Mallapragada et al. 2020) or Kotzur et al.'s inter-period method (2018); state which and why.
+(3) The hourly engine: a full-year dispatch rule for a seasonal store (charge on surplus, hold for lulls), checked against the LP's
+plan. (4) Every cost sourced (electrolyser, storage per kg or MWh, turbine and conversion premium, round-trip efficiency), with low,
+central and high cases. (5) Report the scope, the time needed and the sources before any build.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's

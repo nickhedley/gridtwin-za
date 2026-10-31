@@ -6125,7 +6125,7 @@ const FIXED = {
   // capacity-expansion study actually pose the question. The dual on that
   // constraint is the marginal abatement cost: what the last tonne costs to
   // avoid, which is the number a carbon price ought to be set against.
-  carbonCapEnabled:0, carbonCapMt:140,
+  carbonCapEnabled:0, carbonCapMt:140, carbonCapFromYear:0, carbonCapByYear:null, bldFossilEndYear:0,
   // ── calibration against ember, 16 Aug 2026 ──────────────────────────────
   // Ember's metered generation (12 months to May 2026) showed the model running
   // non-fossil high. One real fix, and one mistake worth recording:
@@ -11667,6 +11667,16 @@ function bldBuildLP(opts){
   for (const t of T.concat(['offshore', 'phes', 'phel'], OC_T)) GA[t] = GRID_ON ? bldGridAnn(t, S) : 0;
   const L = ['Minimize', ' obj:'];
   const obj = [];
+  // bldFossilEndYear (user, 31 Oct 2026, message 531 (c)): the last year fossil plant runs. New gas and diesel built by then pay their
+  // way by then: the capital annuity over the years to that year (life cut to them) and no charge after it. Coal, gas and diesel
+  // output after it is held at zero by the carbon cap (carbonCapMt 0 from the next year, set with it). 0: off, as before.
+  const FOSSIL_END = +(S.bldFossilEndYear || 0), FOSSIL_T = ['ccgt', 'ocgt', 'ocgd'];
+  const fossilCut = t => FOSSIL_END > 0 && FOSSIL_T.includes(t);
+  const capCharge = (t, y, yy, m) => {
+    if (!fossilCut(t)) return bldNetAnnuityAt(t, y, m);
+    if (yy > FOSSIL_END) return 0;
+    const life = Math.max(1, FOSSIL_END - y + 1);
+    return Math.max(0, (bldAnnuity(bldCapex(t, y), life, t) + bldFom(t, y)) * (m || 1) - capPayRate(t) * (BLD_DERATE[t] ?? 0)); };
   for (const t of T) for (const y of Y){
     let cost = 0;
     // Lithium's capital scales with the duration this scenario builds at: see bldStoreList.
@@ -11677,8 +11687,8 @@ function bldBuildLP(opts){
     // is the PyPSA formulation. Vanadium and iron-air keep fixed durations: neither has a
     // published power/energy split, and inventing one would be worse than stating the limit.
     const _m = (t === 'batt') ? BATT_POWER_SHARE : 1;
-    for (const yy of Y) if (yy >= y)
-      cost += (bldNetAnnuityAt(t, y, _m) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);   // GA: grid cost, per MW of power
+    for (const yy of Y) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END))
+      cost += (capCharge(t, y, yy, _m) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);   // GA: grid cost, per MW of power
     // x1000: bldNetAnnuity is R/kW/yr and b_ is in MW. Without this the whole
     // capex side is 1000x too cheap against the fuel terms, building is
     // effectively free, and the optimiser just overbuilds VRE and spills.
@@ -11686,7 +11696,7 @@ function bldBuildLP(opts){
   }
   for (const t of OC_T) for (const y of Y){
     let cost = 0;
-    for (const yy of Y) if (yy >= y) cost += (bldNetAnnuityAt(t, y) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);
+    for (const yy of Y) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END)) cost += (capCharge(t, y, yy) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_' + t + '_' + y);
   }
   // The energy half of lithium, per MWh of cells: the 4-hour constant's energy share spread over
@@ -12131,8 +12141,10 @@ function bldBuildLP(opts){
     // weight scaling them to a full year, so the same weights used in the
     // objective give annual tonnes here. Applied to the final year only: the NDC
     // is a 2030 target, and constraining every intermediate year would impose a
-    // trajectory the target itself does not specify.
-    if (CAP_ON && y === Y[Y.length - 1]){
+    // trajectory the target itself does not specify. carbonCapFromYear (user, 31 Oct 2026, message 531 (b)): set, the cap binds
+    // in that year and every later one, one row per year (co2cap_<y>); unset, the final year only, as before.
+    const CAP_FROM = S.carbonCapFromYear || 0;
+    if (CAP_ON && (CAP_FROM ? y >= CAP_FROM : y === Y[Y.length - 1])){
       const capTerms = [];
       for (const r of rdY(y)) for (let h = 0; h < 24; h++){
         const kk = y + '_' + r.d + '_' + h;
@@ -12141,7 +12153,9 @@ function bldBuildLP(opts){
         capTerms.push((EMIS_DIESEL * r.weight).toFixed(6) + ' gd_' + kk);
         if (OCGT_ON) capTerms.push((EMIS_OCGT * r.weight).toFixed(6) + ' go_' + kk);
       }
-      L.push(' co2cap: ' + capTerms.join(' + ') + ' <= ' + (CAP_MT * 1e6).toFixed(0));
+      // carbonCapByYear (message 537 (d)): a year's own cap, Mt, where set (a rerun tightened by the engine's gap); else carbonCapMt.
+      const capY = (S.carbonCapByYear && S.carbonCapByYear[y] != null) ? +S.carbonCapByYear[y] : CAP_MT;
+      L.push(' co2cap' + (CAP_FROM ? '_' + y : '') + ': ' + capTerms.join(' + ') + ' <= ' + (capY * 1e6).toFixed(0));
     }
     // Gas minimum running (TODO 14be step 4, 11 Oct 2026). IRP 2025's minimum annual capacity factor on its gas,
     // ccgtForceLoadPct, in years ccgtForceFromYear-ccgtForceToYear, counted on the weighted representative days (stress
@@ -12532,7 +12546,10 @@ function bldStateForYear(res, y, opts){
     windCapeMW: Math.round(Object.entries(res.Columns || {}).reduce((a, [c, v]) => { const m = c.match(/^cw_([0-9]+)$/); return a + (m && +m[1] <= y ? (v.Primal || 0) : 0); }, 0)),
     ...(opts.gasFuelR ? { costCcgt: bldGasFuelR(opts, y, { ...FIXED, ...opts.state }) } : {}),
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
-        ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}) };
+        ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}),
+    // After bldFossilEndYear (message 531 (c)) no gas or diesel stands, as harness/pathcheck.js runs those years; coal is gone by its dates.
+    ...((+(opts.state.bldFossilEndYear || 0) > 0 && y > +opts.state.bldFossilEndYear)
+        ? { newCcgtMW: 0, newOcgtMW: 0, newOcgdMW: 0, dieselDecomMW: (opts.state.ocgtDieselMW ?? FIXED.ocgtDieselMW) } : {}) };
 }
 
 async function bldStressLoop(opts, onProgress){
@@ -20899,7 +20916,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-30a';
+const BUILD_STAMP = '2026-10-31a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

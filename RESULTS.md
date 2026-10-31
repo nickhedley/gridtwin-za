@@ -18644,3 +18644,123 @@ year, 11,802 and 17,802 MW; same 240 runs and seeds; 31 Oct 2026 about 06:22-06:
 (2.1 above the pathway), 1.08 GWh against 2.39, R336.2bn a year, 22.7 Mt; Fossil-free 2040 279.8 TWh (4.7 above), 1.07 GWh against
 2.69, R453.2bn, 0 Mt. Added to PRESET_TABLE.md as a second table with fill markers; the first table keeps the presets as the page
 runs them.
+
+### The grid charge for new wind and solar (txRPerKWyr, R402/kW-yr) against TDP 2024's R440bn to 2034: R4.8bn per GW of new grid-connected generation for generation integration, R7.9-9.4bn per GW for the whole plan; at c6e's 7.1% network rate the charge would be R364/kW-yr, not R402 (user, 31 Oct 2026, message 540 (a); no run, no input changed)
+
+Figures as recorded (RESULTS 'Transmission reconciled to what the TDP buys', 22 Sep 2026, build 2026-09-22ad; SOURCES 'Eskom TDP 2024'):
+TDP 2024's decade total about R440bn (DBSA; NTCSA CEO, August 2026) for 56 GW of new generation, 9 GW of it rooftop, so 46.9 GW
+grid-connected; generation integration with land pro rata is 51.1% of Table 4's first five years, applied to the decade: R225bn.
+Per GW of new grid-connected generation and as an annual charge over 40 years (annuity factors 0.0839 at 8%, 0.0759 at 7.1%):
+
+| Basis | Capital per kW (R bn per GW) | At 8% | At 7.1% (c6e's network rate) |
+|---|---|---|---|
+| Generation integration, R225bn over 46.9 GW (the model's basis) | R4,797 | R402/kW-yr | R364/kW-yr |
+| Whole TDP, R440bn over 46.9 GW | R9,382 | R787/kW-yr | R712/kW-yr |
+| Whole TDP, R440bn over 56 GW (rooftop included) | R7,857 | R659/kW-yr | R596/kW-yr |
+
+Finding: the model's R402/kW-yr is the generation-integration share annuitised at 8% real over 40 years, the rate before build
+2026-10-28a. Since then every capital charge takes its technology's own cost of capital and network investment is priced at 7.1%
+(NERSA's allowed return for Eskom; c6e's basis), but txRPerKWyr is a fixed constant and kept 8%: at 7.1% it would be R364/kW-yr,
+9.5% lower, applied to every GW of new wind, utility solar and offshore in every c6e run. The whole-plan figures include network
+strengthening, refurbishment, telecoms and IT that serve load and reliability as well as new generation, so they bound the charge
+from above rather than replace it. Not changed: a decision for the user after the optimised runs (TODO 14lj). The R440bn and Table 4
+split are as recorded on 22 Sep and 18 Oct 2026; the primary PDF has not been re-read (www.ntcsa.co.za is not reachable from the session).
+
+### Suite on build 2026-10-31a (the optimised preset options, off by default): equal to main's 30a by count in every script and by failure name (PR #137; message 551 (b))
+
+Suite on build 2026-10-31a (branch claude/optimised-presets; index.html as at 8838490, unchanged since; ESK19679.csv present),
+31 Oct 2026 about 10:00-13:28 UTC, in resumable pieces, with the Deep decarbonisation 2035 optimiser run (s_co2cap2035_c6e) solving
+beside it throughout, so the timings are not clean. Node checks 998/1007, audit 88/88, eng5 5/6. Equal to main's suite on 30a (RESULTS
+'Suite on build 2026-10-30a', 998/1007, 88/88, 5/6) by count in every script and by failure name: validate_findings 37/40 (a low build
+rate stays at the congestion floor; with gas, 20 GW of 100-hour iron-air barely moves July; turn-up is a growing share of constraint
+cost), validate_response 86/87 (response matrix matches baseline), validate_consistency 82/83 (high-season off-peak), validate_benchmarks
+28/30 (CO2 against Ember; peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost in the
+coal-curtailment scenario), eng5 storage vs unserved; validate_external 8/8. All known (RESULTS 'Known failures').
+
+Stored panels: the first run read 66/86, because stored_panels.json still carried 30a's fingerprint (1177c449aa6038) and the page
+computes a new one (0c174878d1d78d) from the changed index.html; rewritten (validate_stored_panels --write, 9/9 while writing; commit
+a14d7e0), then 86/86. With the new options at their defaults the risk panels' inputs are unchanged; the fingerprint follows the page
+source.
+
+### Deep decarbonisation 2035 at the deliverable build rates without iron-air: from the LP's planning passes 1-3, not engine-checked, the 22.8 Mt cap from 2035 is met in the build LP only by planned shedding of 17.0 TWh in 2035 and 7.4 TWh in 2036; pass 4 did not solve in about 7.5 hours (user, 31 Oct 2026, messages 537, 553 (b) and (c); run s_co2cap2035_c6e, stopped on message 555 (c))
+
+Run: pathway_perfail.js on claude/optimised-presets (index.html at 8838490, BUILD_STAMP '2026-10-31a'), c6e's settings (env_c6a.sh,
+GAS_FIRST=2035, MAXP=6, TL=7200, the deliverable build rates, c6's WIND_CAP 3,500 from 2031, LI_CAP 3,000), CO2CAP=22.809:2035 (a hard
+cap, one co2cap_<y> row a year 2035-40), IA_OFF=1, 31 Oct 2026 06:33-15:56 UTC in resumable pieces. Passes 1-3 Optimal on highs-js
+(cached; LP keys 76fe5e6eed, c95b9dbbe9, c29d9a8fd1). Pass 4 (key 06329116a4; 690,773 rows, 446,831 columns, 6.75 million nonzeros
+before presolve, 482,406 by 348,302 after) unsolved: about 3.5 h on highs-js, then native HiGHS simplex in three pieces (77, 77 and 66
+min, each resuming from the saved basis; iterations not logged), and interior point beside it (with crossover 60 min; without crossover,
+logged, 6 iterations in 250 s with the duality gap still 2.0). Stopped by PID on message 555 (c).
+
+What binds, from the cached pass 1-3 solutions (identical in all three): co2cap_2035 to co2cap_2039 at the cap (22.809 Mt), with duals of
+-20.4 million (2035) and -18.9 million (2036) in objective units per tonne against -0.73 million in 2037 and under -600 from 2038; the
+expected shed above NTCSA's 20 GWh target (tsl_<y>, priced at VoLL x 365) 16.6-17.0 TWh in 2035, 7.4 TWh in 2036, 2 GWh in 2037 and none
+after; 14.6 GW of coal retired early from 2035 (rc). Build limits binding in 2035-37: the gas pace (gascap, 1,200 MW a year), the turbine
+cap (tcap, 2,000 MW a year of new CCGT and open cycle), offshore wind's path (offcap) and utility solar's yearly cap in 2035-36 (rpb_pv),
+with storage energy caps (ecap) in most years. New build by 2040 (pass 3): wind 41.7 GW, solar 57.3 GW, lithium 26.2 GW, vanadium 3.0 GW,
+CCGT 7.2 GW, diesel open cycle 9.4 GW. The engine check after each pass (no cap in the engine) found 2035 mean unserved of 39.6, 40.3 and
+46.6 GWh against 20.
+
+Finding (from the LP's planning passes 1-3, not engine-checked; message 558 (b): quote it with that label): at the deliverable build rates and without iron-air, the 22.8 Mt cap from 2035 is not met by building: the LP meets it by
+planning about 17 TWh of shedding in 2035 and 7.4 TWh in 2036 (about 5% and 2% of demand), at a penalty far above any build cost. By
+2037 the cap is met with almost no shedding and from 2038 with none. Caveat: the LP's adequacy and shedding terms cover its
+representative and stress days, not every hour; the engine, which carries no cap, burns more coal and sheds less. Not a preset: the
+runs are redone as hypothetical plans with relaxed rates, iron-air up to 5 GW and an elastic cap (message 555).
+
+### Deep decarbonisation 2035, hypothetical (relaxed build rates, iron-air up to 5 GW, elastic cap): adequate in every year; no iron-air built; the LP meets the 22.8 Mt cap from 2035 with no slack, but the engine check finds 28.0-33.9 Mt in 2035-40; engine PV R2,520.8bn (+R206.1bn on c6e), CO2 2026-40 1,094.6 Mt (-644.0) (user, 31 Oct 2026, messages 531, 537 and 555; run s_hypo_deep2035_c6e)
+
+Run: pathway_perfail.js on claude/optimised-presets (runner at 741dee8, index.html at 8838490, BUILD_STAMP '2026-10-31a'), 31 Oct 2026
+16:00-16:08 UTC (pass 1 solved 16:00-16:04 on native HiGHS simplex, 4 min), engine check 16:08-16:16 UTC. c6e's settings (env_c6a.sh,
+GAS_FIRST=2035, MAXP=6, TL=7200) with PACE=grid (wind 4,300, solar 4,000 growing with the page's solar cap, lithium 4,000, vanadium 500,
+gas 2,000 MW a year; c6's WIND_CAP unset), LI_CAP=4000, LI_EH=8 (32,000 MWh a year), IA_TOTAL=5000, CO2CAP=22.809:2035 with
+CO2_ELASTIC=50000 (R/t, discounted at 8%), the 2,000 MW turbine cap kept (all accepted, message 558 (c)). Files: harness/pathway/opt/
+pathway_s_hypo_deep2035_c6e.json (pace, rates, iaTotal, co2Elastic and passLog recorded) and pathcheck_s_hypo_deep2035_c6e_{a,b,c}.json
+(LNG=1 GRID=1, 120 runs a year). Comparator: c6e's recorded check (pathcheck_c6e_29b_*, identical to 31a).
+
+Passes: one. Pass 1 Optimal (simplex), CO2 above the cap in the LP 0 t in every year 2035-40; the engine found pass 1's build adequate
+in every year (verdict adequate), so the loop stopped.
+
+| | Deep, hypothetical | c6e |
+|---|---|---|
+| Engine PV 2026-40 at 8%, R bn | 2,520.8 | 2,314.7 |
+| CO2 2026-40, Mt | 1,094.6 | 1,738.6 |
+| CO2 2030 / 2035 / 2040, Mt | 92.0 / 28.1 / 28.0 | 140.0 / 90.5 / 67.5 |
+| Mean unserved, highest year, GWh | 4.82 (2032) | |
+| Worst run, highest year, GWh | 42 (2032) | |
+| Curtailed wind and solar 2026-40, TWh | 781.1 | 158.8 |
+| Curtailed 2035 / 2040, TWh | 88.1 / 85.1 | 12.9 / 25.1 |
+| New wind / solar / rooftop by 2040, GW | 47.2 / 48.6 / 17.8 | 31.4 / 33.8 / 17.8 |
+| New lithium by 2040, GW / GWh | 18.2 / 133.1 | 15.2 / 94.3 |
+| New CCGT / open cycle (LNG, diesel) / offshore by 2040, GW | 7.0 / 0, 0 / 1.0 | 6.1 / 1.1, 0.2 / 0 |
+| New iron-air, vanadium, pumped hydro | none | none |
+| Coal standing 2035 / 2040, MW | 20,329 / 12,303 | 25,916 / 17,890 |
+
+Engine CO2 against the cap, 2035-40: 28.1, 29.8, 32.4, 33.9, 32.1 and 28.0 Mt, 5.2-11.1 Mt above 22.8 in every year, while the LP's
+slack is zero: the LP's representative and stress days do not reproduce the engine's full-year coal burn. Build at the relaxed caps:
+wind at 4,300 MW in every year 2026-35, solar at its cap in 2030-35 (7,354 MW in 2035), lithium at 4,000 MW and 32,000 MWh in 2035.
+Iron-air: none built in any year (0% of new stored energy), so no iron-air flag is needed for this run. The CO2 rerun (message 537 (d))
+follows with each year's cap tightened by its gap (CO2CAP_YEARS 2035:17.509, 2036:15.857, 2037:13.255, 2038:11.735, 2039:13.519,
+2040:17.653; run s_hypo_deep2035r_c6e).
+
+### Deep decarbonisation 2035, hypothetical, CO2 rerun: engine CO2 17.2-21.3 Mt in 2035-40, below 22.8 in every year; adequate in every year; no iron-air; engine PV R2,607.6bn (+R292.9bn on c6e, +R86.8bn on the first run), CO2 2026-40 957.4 Mt; curtailment 97-111 TWh a year from 2035 (user, 31 Oct 2026, messages 537 (d) and 555; run s_hypo_deep2035r_c6e, the preset candidate)
+
+Run: as s_hypo_deep2035_c6e (RESULTS above) plus CO2CAP_YEARS=2035:17.509,2036:15.857,2037:13.255,2038:11.735,2039:13.519,2040:17.653
+(each year's cap tightened by the first run's engine gap, still elastic at R50,000/t), runner at 741dee8, 31 Oct 2026 16:16-16:24 UTC
+(pass 1 Optimal on native simplex 16:16-16:20), engine check 16:24-16:31 UTC. One pass (verdict adequate); LP CO2 slack 0 t and LP
+shed above the target none in every year. Files: harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json and
+pathcheck_s_hypo_deep2035r_c6e_{a,b,c}.json. Run once, as the rule says; no further rerun.
+
+| Year | 2030 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+|---|---|---|---|---|---|---|---|
+| Engine CO2, Mt | 81.9 | 21.1 | 20.7 | 21.3 | 20.1 | 20.2 | 17.2 |
+| First run's engine CO2, Mt | 92.0 | 28.1 | 29.8 | 32.4 | 33.9 | 32.1 | 28.0 |
+| Mean unserved, GWh | 2.23 | 0.00 | 0.01 | 0.00 | 0.00 | 0.00 | 0.00 |
+| System cost, R bn | 253.6 | 331.3 | 341.1 | 348.5 | 364.1 | 357.7 | 361.7 |
+| Curtailed wind and solar, TWh | 28.2 | 100.8 | 104.9 | 110.6 | 110.0 | 104.5 | 97.5 |
+
+Highest mean unserved 4.40 GWh (2032), worst run 32 GWh (2032). New build by 2040: wind 45.0 GW, solar 60.9 GW, rooftop 17.8 GW,
+lithium 24.5 GW and 171.2 GWh, CCGT 8.3 GW, offshore 1.0 GW; no open cycle, vanadium, pumped hydro or iron-air (iron-air 0 MW in every
+year, 0% of new stored energy). Coal standing 16,416 MW in 2035 and 6,214 MW in 2040 (c6e 25,916 and 17,890). Engine PV 2026-40
+R2,607.6bn against c6e's R2,314.7bn. Caveat: curtailment of about 100 TWh a year from 2035 (964 TWh over 2026-40, against c6e's 159),
+the cost of holding the cap with wind and solar where the engine's coal and the LP's representative days disagree; a hypothetical plan,
+built faster than the deliverable rates.
