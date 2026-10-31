@@ -765,7 +765,7 @@ reipppWindMW 4,042, reipppSolarMW 2,783, CSP 600) and REIPPPP_WINDOWS gives ener
 for BW1-BW4 (627, 417, 435, 813 MW; parliamentary reply NW368, 2019, SOURCES) and the MTSAO 2027-2036's retirements at contract end in
 2033-36 (1.3 GW solar, 1.5 GW wind, 0.2 GW CSP; message 541), which do not agree on solar (BW1 and BW2, expiring by 2036, hold 1,044 MW
 in NW368). Wind and CSP by window are not in the repository: the IPP Office's window summary (or its historical data note of 7 Nov 2025)
-is the source to use; not to be filled from memory. (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
+is the source to use; not to be filled from memory. Lead found 31 Oct 2026 (a web search extract of an IPP Office technology table, not yet read at source; the hosts holding the IPP Office's overview and bidders' conference deck, rise.esmap.org and ccib.ro, are outside this session's network): wind BW1-BW4 649, 559, 787, 1,362 MW; solar 627, 417, 435, 813 MW (the same as NW368); CSP BW1 150, BW2 50, BW3 200, BW3.5 200 MW (600 in all). If confirmed, the MTSAO's 2033-36 figures fit: BW1 and BW2 (1,208 MW wind, 1,044 solar, 200 CSP) plus the part of BW3 whose contracts end in 2036. Still missing: BW4+ (expedited), BW5 and BW6 MW by technology, and which windows FIXED reipppWindMW and reipppSolarMW include. (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
 Then measure c6e's PV, CO2 and build with (a) and (b) together and each alone (engine check of c6e's build; a re-optimised build only
 if needed to see whether the build moves). If c6e's headline figures move, report before rerunning anything else (the user corrects
 the reviewer Doc). Rerun the optimised runs only if the change moves their builds.
