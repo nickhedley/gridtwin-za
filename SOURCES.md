@@ -2217,3 +2217,13 @@ The model takes Eskom's estimate for the installed rooftop stock (NTCSA weekly s
 step to the end-2026 level). It does not use NTCSA's growth path (the MTSAO 2027-2036 SSEG trajectories, 273 and 560 MW a year) or
 GreenCape's: the user's decision is that those paths are conservative.
 
+## Long-duration storage: DNV, BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; held in the user's Drive; DNV's figures, recorded as DNV's)
+
+- As of Q2 2026 DNV had reviewed no bankable non-lithium long-duration storage project, and judges non-lithium unlikely to compete
+  below about 6 hours (pp. 32-33). Recorded beside the model's iron-air flag: iron-air's finding is a known failure of the suite
+  (CLAUDE.md, 'with gas, 20 GW of 100-hour iron-air barely moves July'), the optimised presets are run with iron-air off (message 537),
+  and the hand-built presets that rely on it carry the caveat (PRESET_TABLE.md).
+- Battery wear: contract capacity guarantees of 60-80% of nameplate at year 10, with augmentation as standard practice (pp. 15-16);
+  the model has neither (TODO 14lp (1)).
+- 8-hour tenders in California, Australia and the UK chose lithium (p. 31) (TODO 14lp (2)).
+

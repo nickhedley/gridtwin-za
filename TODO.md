@@ -769,6 +769,17 @@ SYNC_GFM_SHARE's free 30% retired. (5) A fault-level cost per kW of new inverter
 already covers; AEMO's A$137k/MW as the upper bound. (6) Per scenario: hours below the floor, inertia by source, and the cost of
 meeting it. This replaces the reviewer pack's limitation on inertia and system strength once results are in.
 
+14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
+storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
+standard (pp. 15-16); the model has neither. First check how much of the gap to BW3's capacity charge (the model 20-25% below) an
+augmentation allowance would explain; then propose a treatment (an augmentation cost or a capacity fade). (2) Longer lithium: the
+optimiser already chooses lithium's duration (power b_batt and energy eb_batt priced separately, BATT_POWER_SHARE 0.278 of the 4-hour
+capex on power; durations up to LI_MAX_HOURS 20; c6e builds 5.1 hours by 2035 and 6.2 by 2040). What limits long lithium is the yearly
+energy cap, bldLiEnergyHours 4 x the 3 GW power cap (LI_EH). So: test LI_EH 6 and 8 (6- and 8-hour lithium at the power cap), and check
+the power and energy split against DNV and current bids; state the split assumed. (3) Done in SOURCES (the non-lithium finding beside
+the iron-air flag). If the fossil-free optimised run stalls without iron-air (537 (d)), tell the user before the iron-air rerun: a
+rerun with LI_EH=8 may be the better second attempt (message 548 (b)).
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
