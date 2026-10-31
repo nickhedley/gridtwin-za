@@ -18883,3 +18883,14 @@ pathcheck_c6e_vre_*); the Doc is not changed until Nick has seen the figures (me
 
 Fossil-free's CO2 avoided is 953.3 Mt unrounded (1,738.6 less 785.3); the key rounds to whole Mt. Iron-air in Fossil-free is flagged:
 its finding is a known failure of the model's checks and its cost is a developer's target.
+
+### Suite on build 2026-10-31i (site copy, messages 561-571): equal to main's 31a by count in every script and by failure name (user, 31 Oct 2026, message 576 (a))
+
+Suite on build 2026-10-31i (claude/site-copy-561, index.html at f02e1fb, stored panels rewritten at 99937d1; ESK19679.csv present),
+31 Oct 2026 21:45-23:48 UTC in two pieces, beside two other suites on other worktrees, so the timings are not clean. Node checks
+998/1007, audit 88/88, eng5 5/6. Equal to main's suite on 31a (RESULTS 'Suite on build 2026-10-31a', 998/1007, 88/88, 5/6) by count in
+every script and by failure name: validate_findings 37/40 (congestion floor; iron-air July; turn-up share), validate_response 86/87
+(response matrix matches baseline), validate_consistency 82/83 (high-season off-peak), validate_benchmarks 28/30 (CO2 against Ember;
+peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost), eng5 storage vs unserved. validate_worker
+38/38, validate_public_text 32/32 (the TDP note at 40 words after 31h's 43 failed it; build 31i), validate_external 8/8. The 31h run,
+stopped at validate_worker, had the same failures plus that public-text check.
