@@ -32,6 +32,19 @@ Placeholders for the reviewer Doc (user, 30 Oct 2026, messages 523 (b), 528-531)
 | Average system cost, R/MWh served | <!--fill:preset.deep.avgcost-->1,287<!--/fill--> | <!--fill:preset.lcp35.avgcost-->997<!--/fill--> | <!--fill:preset.ff.avgcost-->1,523<!--/fill--> | <!--fill:preset.lcp40.avgcost-->1,020<!--/fill--> |
 | Peaking plant capacity factor | <!--fill:preset.deep.peakcf-->0.36%<!--/fill--> | <!--fill:preset.lcp35.peakcf-->1.42%<!--/fill--> | <!--fill:preset.ff.peakcf-->none<!--/fill--> | <!--fill:preset.lcp40.peakcf-->1.38%<!--/fill--> |
 
+On the pathway's rooftop. The presets carry rooftop at 1.2 GW a year from 2027, the pathway the 2027 catch-up step, so in each pair the preset has 1 GW less rooftop and more grid demand; the same presets with the pathway's rooftop for their year (<!--fill:preset.deeproof.new_rooftop-->11.8<!--/fill--> and <!--fill:preset.ffroof.new_rooftop-->17.8<!--/fill--> GW), same seeds:
+
+| | Deep decarbonisation 2035 | Least-cost path 2035 | Fossil-free 2040 | Least-cost path 2040 |
+|---|---:|---:|---:|---:|
+| Demand served, TWh | <!--fill:preset.deeproof.served-->246.3<!--/fill--> | <!--fill:preset.lcp35.served-->244.2<!--/fill--> | <!--fill:preset.ffroof.served-->279.8<!--/fill--> | <!--fill:preset.lcp40.served-->275.1<!--/fill--> |
+| Mean unserved energy, GWh a year | <!--fill:preset.deeproof.unserved-->1.08<!--/fill--> | <!--fill:preset.lcp35.unserved-->4.32<!--/fill--> | <!--fill:preset.ffroof.unserved-->1.07<!--/fill--> | <!--fill:preset.lcp40.unserved-->0.60<!--/fill--> |
+| Design target, GWh a year | <!--fill:preset.deeproof.target-->2.39<!--/fill--> | <!--fill:preset.lcp35.target-->2.39<!--/fill--> | <!--fill:preset.ffroof.target-->2.69<!--/fill--> | <!--fill:preset.lcp40.target-->2.69<!--/fill--> |
+| System cost, R billion a year | <!--fill:preset.deeproof.cost-->336.2<!--/fill--> | <!--fill:preset.lcp35.cost-->260.9<!--/fill--> | <!--fill:preset.ffroof.cost-->453.2<!--/fill--> | <!--fill:preset.lcp40.cost-->305.3<!--/fill--> |
+| CO2, Mt | <!--fill:preset.deeproof.co2-->22.7<!--/fill--> | <!--fill:preset.lcp35.co2-->90.5<!--/fill--> | <!--fill:preset.ffroof.co2-->0.0<!--/fill--> | <!--fill:preset.lcp40.co2-->67.5<!--/fill--> |
+| Average system cost, R/MWh served | <!--fill:preset.deeproof.avgcost-->1,294<!--/fill--> | <!--fill:preset.lcp35.avgcost-->997<!--/fill--> | <!--fill:preset.ffroof.avgcost-->1,531<!--/fill--> | <!--fill:preset.lcp40.avgcost-->1,020<!--/fill--> |
+
+What is left of the gap in energy served is the presets' storage losses: energy served counts every MWh generated less rooftop and storage discharge, so charging losses add to it, and the presets store more, Fossil-free 2040 in 100-hour iron-air at 45% round trip.
+
 Basis. Each column is the page's engine run for one year, the mean over twelve weather years (2014-2025) by 20 outage draws, <!--fill:preset.deep.runs-->240<!--/fill--> runs, on the outage seed in its column; each preset is paired with the least-cost pathway on the same seed, so the pair is like for like. Cost of capital: c6e's, by technology for state-backed procurement (the page's central case; no column overrides it). System cost is the engine's annual system cost: fuel, carbon tax, the annualised capital of new build (rooftop included), fixed operating costs, IPP contract payments, demand response and coal start-up costs, less export revenue, plus unserved energy at its penalty price; it is the quantity behind the pathway's present value. Average system cost per MWh served excludes the grid charge, rooftop capital and the unserved-energy penalty, as in the pathway's engine check. Peaking plant is all open-cycle plant (diesel and gas), energy over capacity. The least-cost columns are the c6e pathway's build standing in that year.
 
 Caveats.

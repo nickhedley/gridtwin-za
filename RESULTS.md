@@ -18590,3 +18590,20 @@ effect on its score. Least-cost path 2035 is 4.32 GWh on Deep's seed, above the 
 (Least-cost 2035, 2040); Fossil-free has none. Two first runs of the script were discarded: one computed the peaking capacity factor
 without the 8,760 hours, and one counted the 1.58 GW of Cape wind under the curtailment approval as new wind (now its own row, so new
 wind matches the pack's 22.6 and 31.4 GW).
+
+### Why the presets serve more energy than the least-cost pathway in the same year (2035: 247.9 against 244.2 TWh; 2040: 281.4 against 275.1): 1 GW less rooftop and larger storage losses, not a demand setting (user, 31 Oct 2026, message 534 (a); branch claude/preset-table)
+
+The demand settings are the same in each pair: demand growth 26.75% (2035) and 45.89% (2040) on 2026, the 930 MW block, the same
+twelveYearDemand. Energy served is the engine's gridServed: all generation less rooftop and storage discharge, so it counts customer
+demand net of rooftop, firm exports and storage charging losses. A probe on one weather year (2020, seed 71830529; scratchpad
+m534/probe.js, build 2026-10-30a) splits the gap: 2035, 3.3 TWh = 1.5 TWh less rooftop (the preset's 10.8 GW against the pathway's
+11.8 GW) + 1.8 TWh more storage losses; 2040, 5.2 TWh = 1.5 TWh rooftop (16.8 against 17.8 GW) + 3.7 TWh storage losses (Fossil-free
+2040's 13 GW of 100-hour iron-air at 45% round trip and 20 GW of 12-hour lithium). The rooftop difference is a settings difference:
+the presets carry rooftop at 1.2 GW a year from 2027, c6e the 2027 catch-up step to the end-2026 level (ROOF_FROM_END2026). The storage
+losses belong to the builds.
+
+Rerun on the pathway's rooftop (harness/ext/preset_table.js rows deeproof and ffroof, newRooftopMW from the least-cost state of that
+year, 11,802 and 17,802 MW; same 240 runs and seeds; 31 Oct 2026 about 06:22-06:35 UTC): Deep decarbonisation 2035 serves 246.3 TWh
+(2.1 above the pathway), 1.08 GWh against 2.39, R336.2bn a year, 22.7 Mt; Fossil-free 2040 279.8 TWh (4.7 above), 1.07 GWh against
+2.69, R453.2bn, 0 Mt. Added to PRESET_TABLE.md as a second table with fill markers; the first table keeps the presets as the page
+runs them.
