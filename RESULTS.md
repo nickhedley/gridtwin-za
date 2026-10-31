@@ -18764,3 +18764,24 @@ year, 0% of new stored energy). Coal standing 16,416 MW in 2035 and 6,214 MW in 
 R2,607.6bn against c6e's R2,314.7bn. Caveat: curtailment of about 100 TWh a year from 2035 (964 TWh over 2026-40, against c6e's 159),
 the cost of holding the cap with wind and solar where the engine's coal and the LP's representative days disagree; a hypothetical plan,
 built faster than the deliverable rates.
+
+### Operating reserve against NTCSA's MTSAO 2027-2036 Table 1: the 2035 presets carry 2,595 MW (IRP path 2035) and 2,751 MW (Least-cost path 2035) on average against about 2,588 MW; the model's regulating product stays at 1,140 MW against about 1,527 (user, 31 Oct 2026, message 564 (c); report only)
+
+Measured: each preset run once as the page runs it (applyState, then simulate on PROFILES: one weather year), on the site-copy branch's
+build 2026-10-31d (index.html as main 179e289 plus the copy changes, which do not touch the engine), 31 Oct 2026 about 17:55 UTC.
+The model's rule is 'astr' (ASTR_RESERVE): instantaneous 650 MW at peak and 850 off-peak, regulating 830 MW in 2026 rising to 1,140 in
+2030, ten-minute 720/520 falling to 410/210, 2,200 MW in all from 2030 at peak and off-peak; after 2030, 5% (reserveVrePct) of the
+hour's wind and solar output above what the 2030 fleet would give is added.
+
+| Preset (year) | Model reserve, mean | Model, lowest and highest hour | MTSAO operating reserve | Model regulating | MTSAO regulating |
+|---|---|---|---|---|---|
+| IRP path 2035 (2035) | 2,595 MW | 2,215-3,120 MW | about 2,588 MW (interpolated: 2,278 in 2031 to 2,665 in 2036) | 1,140 MW | about 1,527 MW (interpolated: 908 in 2027 to 1,605 in 2036) |
+| Least-cost path 2035 (2035) | 2,751 MW | 2,217-3,538 MW | about 2,588 MW | 1,140 MW | about 1,527 MW |
+| Fossil-free 2040 (2040) | 4,327 MW | 2,258-7,524 MW | beyond the outlook (2,665 MW in 2036) | 1,140 MW | beyond the outlook (1,605 MW in 2036) |
+
+Findings: (1) the model's total reserve in 2035 is close to the outlook's on IRP path 2035 and about 160 MW above it on Least-cost path
+2035, but it is made differently: the outlook grows the regulating product (about 77-78 MW a year to 1,605 MW in 2036), while the model
+holds regulating at 1,140 MW from 2030 and adds a share of wind and solar output instead, which swings from almost nothing at night to
+over 1,300 MW (3,500 on Fossil-free 2040). (2) From 2026 to 2030 the model's 2,200 MW matches the outlook's 2,200 MW. The adequacy
+panel now shows one figure where the mean and the peak are equal (presets to 2030); the 2035 and 2040 presets still show two. No
+change made.
