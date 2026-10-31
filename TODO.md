@@ -713,13 +713,18 @@ without your go-ahead. Record the outlook in SOURCES with page references when f
 (1) Demand growth: c6e's 2026-35 growth against the outlook's Low (230.4 to 285.3 TWh sent out, 2026-36) and High (238.3 to 329.7)
 trajectories and peaks (34.7-42.3 GW Low, 35.8-49.1 GW High). Compare growth, not levels, and state the basis difference (sent out
 against the model's customer demand with rooftop netted, firm exports and the smelter block).
-(2) Rooftop: the model's 1,200 MW a year against the outlook's SSEG trajectories, 273 and 560 MW a year (GreenCape's revised 2026 for
-the high case); establish whether SSEG covers the same systems as the model's rooftop figure (size bands, embedded and wheeled plant).
+(2) Dropped (user, 31 Oct 2026, message 542 (a)): NTCSA's and GreenCape's rooftop growth paths are conservative and are not used;
+the model takes Eskom's estimate for the installed rooftop stock (SOURCES 'Rooftop: the model's basis').
 (3) Coal availability: the model's coal-only 65% against the outlook's fleet EAF, 66% rising to 70% from FY2031 (upper) and 65% flat
 (lower); queue a sensitivity on the lower trajectory.
 (4) Closures: its 16.2 GW of Eskom shutdowns by 2036 (8.75 GW in 2029-30, Acacia and Port Rex included) against the model's
 schedule (IRP 2025 Figure 3); its retirement of about 3 GW of REIPPPP plant at contract end in 2033-36 (1.3 GW solar, 1.5 GW wind,
-0.2 GW CSP) against what the model does with REIPPPP plant after its contract (as far as known, it keeps running).
+0.2 GW CSP) against what the model does with REIPPPP plant after its contract. Decided (user, 31 Oct 2026, message 542 (b)): REIPPPP
+plants become merchant plants at contract end and keep running. Confirmed 31 Oct 2026: the existing fleet (FIXED windMW 4,681,
+pvUtilityMW 3,568.5, cspMW 600) is a fixed stock that never retires; a window's expiry (REIPPPP_WINDOWS, reipppRate) ends only its PPA
+payment. In any adequacy comparison with the outlook, note the roughly 3 GW of REIPPPP plant it retires in 2033-36 that the model
+keeps. Flag: after expiry the model charges these plants nothing (no market payment and no fixed O&M), so their output is free in
+system cost from then; a fixed O&M charge on expired plant is a candidate correction (your decision).
 (5) Data centres: its 5.1 GW (central) by 2036; establish whether the model's demand (UCT ESRG's IRP reference forecast and the
 930 MW smelter block) includes any.
 (6) Curtailment: its actual excess energy of 2,580 GWh in 2026 to September against the model's 2026 curtailment, the same months.

@@ -2198,3 +2198,11 @@ reachable from the session.
 - Policy Position 36(b)-(e) (p.50): mandatory time-of-use tariffs for grid-tied embedded generation (36(e)).
 
 Use: the 'EPP 2026 as drafted' case for the rooftop and retail panels, after the note (TODO 14lb). No model input changed.
+
+## Rooftop: the model's basis (user, 31 Oct 2026, message 542 (a))
+
+The model takes Eskom's estimate for the installed rooftop stock (NTCSA weekly system status 'Estimated Rooftop PV' rows; 8.1 GW in
+2026 after wheeled plant is netted off, SOURCES register) and its own growth assumption (1,200 MW a year from 2028, after the 2027
+step to the end-2026 level). It does not use NTCSA's growth path (the MTSAO 2027-2036 SSEG trajectories, 273 and 560 MW a year) or
+GreenCape's: the user's decision is that those paths are conservative.
+
