@@ -1,5 +1,18 @@
 # GridTwin ZA - handover, current state (kept current; updated 28 Oct 2026, 22:00 UTC)
 
+## Priorities to the note (user, 31 Oct 2026, message 573): the note out before mid-November, reviewer comments the week after
+
+In order: (1) in flight: the 565/572 cost-correction checks, the site-copy PR, the preset swap (537 (f)), the cost-corrections PR;
+(2) system strength, minimum version (TODO 14lo as amended by 549): the inertia floor in the build LP and the engine, gas counted,
+TDP 2024's condensers committed, a condenser build option, grid-forming batteries at a 5% capex premium, fault-level cost as a
+sensitivity only; first 547 (b)'s report on c6e; target Wed 4 Nov; (3) behind-the-meter batteries and VPPs (TODO 14lq items 1-2),
+minimum version: a passive stock on a self-consumption profile as an input path, a coordinated share dispatched as storage, a VPP
+build option with event limits and a cost; target Fri 6 Nov; stock cases 1, 3 and 5 GWh until the advisor's central figure;
+fallback if it slips: behind-the-meter batteries as a sensitivity in the note, not in c7; (4) Mon 9 Nov: one central rebuild, c7,
+with both cost corrections, system strength and (3); then IRP, no-gas with diesel peakers and the two hypothetical plans on c7;
+Wed 11 Nov: every pack figure from c7 with fill markers; (5) everything else after the note. Inputs needed first: the advisor's
+system strength note (condenser costs, TDP 2024 MVAr, ASTR contingency) and VPP note (event limits, costs), neither in the repository.
+
 ## Eskom terms: the hourly dispatch export keeps its demand column (31 Oct 2026; user, message 567 (a), cancelling 566 (c))
 
 Decided: the page's hourly dispatch CSV (downloadDispatchCSV) stays as it was, demand_mw included. The modelled hourly demand is the
