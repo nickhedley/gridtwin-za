@@ -821,6 +821,16 @@ measure the effect on curtailment and unserved energy (the regional engine).
 with a 1-3 year lead time. Check for overlap with the TDP-based grid charge (txRPerKWyr, 14lj) and the Cape curtailment approval
 (bldCapeWindMW) before any is charged.
 
+14lr. Hydrogen as seasonal storage, built by the optimiser, after the note (user, 31 Oct 2026, message 557; replaces 556: no quick
+hydrogen turbine). Scope first; nothing is built without your go-ahead. (1) The chain: electrolysers fed by surplus wind and solar;
+hydrogen storage, with the South African options and costs (tanks, line pack, ammonia) and whether salt caverns exist here;
+hydrogen-fired turbines (new open-cycle and combined-cycle) and conversion of the existing diesel open-cycle plants (Ankerlig,
+Gourikwa). (2) Seasonal storage in the build LP: link the representative days so a store carries energy across the year, adapting
+GenX's long-duration storage method (Mallapragada et al. 2020) or Kotzur et al.'s inter-period method (2018); state which and why.
+(3) The hourly engine: a full-year dispatch rule for a seasonal store (charge on surplus, hold for lulls), checked against the LP's
+plan. (4) Every cost sourced (electrolyser, storage per kg or MWh, turbine and conversion premium, round-trip efficiency), with low,
+central and high cases. (5) Report the scope, the time needed and the sources before any build.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
