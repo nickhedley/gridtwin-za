@@ -18681,3 +18681,28 @@ Stored panels: the first run read 66/86, because stored_panels.json still carrie
 computes a new one (0c174878d1d78d) from the changed index.html; rewritten (validate_stored_panels --write, 9/9 while writing; commit
 a14d7e0), then 86/86. With the new options at their defaults the risk panels' inputs are unchanged; the fingerprint follows the page
 source.
+
+### Deep decarbonisation 2035 at the deliverable build rates without iron-air: the 22.8 Mt cap from 2035 is met in the build LP only by planned shedding of 17.0 TWh in 2035 and 7.4 TWh in 2036; pass 4 did not solve in about 7.5 hours (user, 31 Oct 2026, messages 537, 553 (b) and (c); run s_co2cap2035_c6e, stopped on message 555 (c))
+
+Run: pathway_perfail.js on claude/optimised-presets (index.html at 8838490, BUILD_STAMP '2026-10-31a'), c6e's settings (env_c6a.sh,
+GAS_FIRST=2035, MAXP=6, TL=7200, the deliverable build rates, c6's WIND_CAP 3,500 from 2031, LI_CAP 3,000), CO2CAP=22.809:2035 (a hard
+cap, one co2cap_<y> row a year 2035-40), IA_OFF=1, 31 Oct 2026 06:33-15:56 UTC in resumable pieces. Passes 1-3 Optimal on highs-js
+(cached; LP keys 76fe5e6eed, c95b9dbbe9, c29d9a8fd1). Pass 4 (key 06329116a4; 690,773 rows, 446,831 columns, 6.75 million nonzeros
+before presolve, 482,406 by 348,302 after) unsolved: about 3.5 h on highs-js, then native HiGHS simplex in three pieces (77, 77 and 66
+min, each resuming from the saved basis; iterations not logged), and interior point beside it (with crossover 60 min; without crossover,
+logged, 6 iterations in 250 s with the duality gap still 2.0). Stopped by PID on message 555 (c).
+
+What binds, from the cached pass 1-3 solutions (identical in all three): co2cap_2035 to co2cap_2039 at the cap (22.809 Mt), with duals of
+-20.4 million (2035) and -18.9 million (2036) in objective units per tonne against -0.73 million in 2037 and under -600 from 2038; the
+expected shed above NTCSA's 20 GWh target (tsl_<y>, priced at VoLL x 365) 16.6-17.0 TWh in 2035, 7.4 TWh in 2036, 2 GWh in 2037 and none
+after; 14.6 GW of coal retired early from 2035 (rc). Build limits binding in 2035-37: the gas pace (gascap, 1,200 MW a year), the turbine
+cap (tcap, 2,000 MW a year of new CCGT and open cycle), offshore wind's path (offcap) and utility solar's yearly cap in 2035-36 (rpb_pv),
+with storage energy caps (ecap) in most years. New build by 2040 (pass 3): wind 41.7 GW, solar 57.3 GW, lithium 26.2 GW, vanadium 3.0 GW,
+CCGT 7.2 GW, diesel open cycle 9.4 GW. The engine check after each pass (no cap in the engine) found 2035 mean unserved of 39.6, 40.3 and
+46.6 GWh against 20.
+
+Finding: at the deliverable build rates and without iron-air, the 22.8 Mt cap from 2035 is not met by building: the LP meets it by
+planning about 17 TWh of shedding in 2035 and 7.4 TWh in 2036 (about 5% and 2% of demand), at a penalty far above any build cost. By
+2037 the cap is met with almost no shedding and from 2038 with none. Caveat: the LP's adequacy and shedding terms cover its
+representative and stress days, not every hour; the engine, which carries no cap, burns more coal and sheds less. Not a preset: the
+runs are redone as hypothetical plans with relaxed rates, iron-air up to 5 GW and an elastic cap (message 555).
