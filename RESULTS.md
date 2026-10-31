@@ -18648,7 +18648,9 @@ decarbonisation 2035 optimiser run was solving beside both checks.
 | CO2 2026-40, Mt | 1,738.6 | 1,738.6 | 0 |
 | Mean unserved, every year | | | identical |
 
-The grid charge falls by 9.45% in every year (364/402), as derived; system cost falls by less than the grid charge alone (about -1.37
-against -2.01 in 2040), the rest being the engine's other cost terms on the same build. Caveat: the build is c6e's as optimised at
+The charge per kW falls by 9.45% (364/402), as derived. System cost falls by less than pathcheck's engTxBn (-1.37 against -2.01 in
+2040; PV -4.9 against -7.0) because the two charge different MW: the engine (index.html, the transmission adder in the cost build-up)
+exempts new solar on retired-coal connection points (repurposing) and charges offshore separately, while engTxBn applies txChargeFor to
+all new wind, solar and offshore standing. On the optimiser's grid-cost basis (costGrid) the PV is 2,323.1 against 2,317.5, -5.7. Caveat: the build is c6e's as optimised at
 R402; a re-optimised build at R364 may hold more new wind and solar. Not rerun (message 546 (c): report before rerunning anything).
 The REIPPPP contract-year change (14ln (a)) is not in this build; it waits for REIPPPP MW by bid window and technology.
