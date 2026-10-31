@@ -837,6 +837,25 @@ only Eskom's BESS programme and the BESIPPPP bid window 1-3 batteries eligible f
 against c6e. The model's current rule (every battery eligible) is a stated assumption (SOURCES 'Batteries eligible for operating
 reserve'; 568 (a)).
 
+14lt. System strength, full version after the note (user, 31 Oct 2026, message 574 (a) 1). The minimum version for the note is
+14lo as amended by 549 and narrowed by 573 (a) 2: the inertia floor in the build LP and the engine, gas counted, TDP 2024's
+condensers committed, a condenser build option, grid-forming batteries at a 5% capex premium, fault-level cost as a sensitivity only.
+Left out, to do after the note: (1) fault level as a constraint by region or substation, not a national cost; (2) fast frequency
+response traded against inertia (CSIR's 40 GW.s case); (3) condenser sizing by location; (4) voltage control; (5) South Africa's
+own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Ireland and AEMO; (6) the check against CSIR 2030 (14lo
+(d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
+(574 (b)).
+
+14lu. Behind-the-meter batteries and VPPs, full version after the note (user, 31 Oct 2026, message 574 (a) 2). The minimum version
+for the note is 14lq (1)-(2) narrowed by 573 (a) 3: a passive stock on a self-consumption profile as an input path (1, 3 and 5 GWh
+cases until the advisor's central figure), a coordinated share dispatched as storage, a VPP build option with event limits and a
+cost. Left out, to do after the note: (1) a sourced battery stock and growth path; (2) a split by household and business; (3) EV
+smart charging once EV demand is in the model; (4) enrolment and delivered capacity calibrated to South African programmes; (5) VPP
+costs per participant; (6) regional distribution. Known limitations line as in 14lt (574 (b)).
+
+14lv. Other shortcuts taken to hold the note's date (user, 31 Oct 2026, message 574 (a) 3), added as each is taken, each with what it
+leaves out and its full version after the note; each gets a Known limitations line (574 (b)). None yet.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's

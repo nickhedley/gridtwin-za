@@ -12,6 +12,10 @@ fallback if it slips: behind-the-meter batteries as a sensitivity in the note, n
 with both cost corrections, system strength and (3); then IRP, no-gas with diesel peakers and the two hypothetical plans on c7;
 Wed 11 Nov: every pack figure from c7 with fill markers; (5) everything else after the note. Inputs needed first: the advisor's
 system strength note (condenser costs, TDP 2024 MVAr, ASTR contingency) and VPP note (event limits, costs), neither in the repository.
+After the note (message 574): the full versions of the minimum upgrades, TODO 14lt (system strength) and 14lu (behind-the-meter
+batteries and VPPs), and any other shortcut taken to hold the date, TODO 14lv (added as taken). Each minimum version gets a line in
+the reviewer pack's Known limitations saying what is simplified; the advisor drafts these for the Doc with the 11 Nov refresh, and
+the master takes them from the Doc.
 
 ## Eskom terms: the hourly dispatch export keeps its demand column (31 Oct 2026; user, message 567 (a), cancelling 566 (c))
 
