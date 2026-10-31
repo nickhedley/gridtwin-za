@@ -18627,3 +18627,19 @@ Finding: the model's R402/kW-yr is the generation-integration share annuitised a
 strengthening, refurbishment, telecoms and IT that serve load and reliability as well as new generation, so they bound the charge
 from above rather than replace it. Not changed: a decision for the user after the optimised runs (TODO 14lj). The R440bn and Table 4
 split are as recorded on 22 Sep and 18 Oct 2026; the primary PDF has not been re-read (www.ntcsa.co.za is not reachable from the session).
+
+### Suite on build 2026-10-31a (the optimised preset options, off by default): equal to main's 30a by count in every script and by failure name (PR #137; message 551 (b))
+
+Suite on build 2026-10-31a (branch claude/optimised-presets; index.html as at 8838490, unchanged since; ESK19679.csv present),
+31 Oct 2026 about 10:00-13:28 UTC, in resumable pieces, with the Deep decarbonisation 2035 optimiser run (s_co2cap2035_c6e) solving
+beside it throughout, so the timings are not clean. Node checks 998/1007, audit 88/88, eng5 5/6. Equal to main's suite on 30a (RESULTS
+'Suite on build 2026-10-30a', 998/1007, 88/88, 5/6) by count in every script and by failure name: validate_findings 37/40 (a low build
+rate stays at the congestion floor; with gas, 20 GW of 100-hour iron-air barely moves July; turn-up is a growing share of constraint
+cost), validate_response 86/87 (response matrix matches baseline), validate_consistency 82/83 (high-season off-peak), validate_benchmarks
+28/30 (CO2 against Ember; peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost in the
+coal-curtailment scenario), eng5 storage vs unserved; validate_external 8/8. All known (RESULTS 'Known failures').
+
+Stored panels: the first run read 66/86, because stored_panels.json still carried 30a's fingerprint (1177c449aa6038) and the page
+computes a new one (0c174878d1d78d) from the changed index.html; rewritten (validate_stored_panels --write, 9/9 while writing; commit
+a14d7e0), then 86/86. With the new options at their defaults the risk panels' inputs are unchanged; the fingerprint follows the page
+source.
