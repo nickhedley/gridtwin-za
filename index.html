@@ -6114,6 +6114,9 @@ const FIXED = {
   // minimum synchronous unit combinations; the conservative choice, rule 366); 'prev' also the hour before's pumped storage, gas and
   // grid-forming inertia (a persistence forecast; on c6e's 2035 it leaves 2.6% of hours short where coal could have been lifted).
   ssMode:'sync6', ssRocofHz:1, ssFlatGWs:null, ssGfmH:null, ssGfmMW:0, ssCondMVA:0, ssCoalLift:1, ssLiftForecast:'mustspin', ssFault:'off',
+  // ssCoalBasis (user, 1 Nov 2026, message 610 (b)): coal's inertia in the build LP. 'ratio' (D1): output x SS_COAL_LAMBDA; 'commit':
+  // the LP's own committed coal cm_ (needs bldCoalCommit). The engine counts committed coal (ucAvail) either way.
+  ssCoalBasis:'ratio',
   // (5) coalRampHonour 1 (message 359 (f)): the commitment pre-pass keeps a block's commitment at least the previous hour's net
   //     load less one hour's ramp, and dispatch's coal floor rises no faster than the ramp. 0: as before (coal moved beyond its
   //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH raises every unit's minimum down time to at
@@ -12167,6 +12170,10 @@ function bldBuildLP(opts){
     // committed condensers.
     const SS_REQ = SSI ? 1000 * ssRequirementGWs(S, ssLossMW(ssCoalUnitsByYear(y), S)) : 0;
     const SS_KC = SSI ? SS_H.coal * SS_MVA_PER_MW * ssCoalLambda(y) : 0, SS_TDP = SSI ? SS_H.cond * ssTdpCondMVA(y) : 0;
+    const SS_BASIS = S.ssCoalBasis ?? FIXED.ssCoalBasis;
+    if (SSI && !['ratio', 'commit'].includes(SS_BASIS)) throw new Error("ssCoalBasis must be 'ratio' or 'commit': " + SS_BASIS);
+    if (SSI && SS_BASIS === 'commit' && !COMMIT_ON) throw new Error("ssCoalBasis 'commit' needs bldCoalCommit (the LP's committed coal cm_)");
+    const SS_COMMIT = SSI && SS_BASIS === 'commit';
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
@@ -12337,7 +12344,7 @@ function bldBuildLP(opts){
         // and built, H on their MVA); grid-forming batteries zg_, at most their MW and the lithium power not charging or discharging.
         const kM = SS_MVA_PER_MW, fx = kM * (SS_H.nuclear * NUC(y)*AV_NUC*NUC_SH(i) + SS_H.hydro * EX.hydro*AV_HYD + SS_H.csp * EX.csp*0.38) + SS_TDP;
         const kP = (SS_H.ps * kM).toFixed(4), kG = (SS_H.ccgt * kM).toFixed(4), kO = (SS_H.ocgt * kM).toFixed(4);
-        L.push(' ssi_' + k + ': ' + SS_KC.toFixed(4) + ' gc_' + k
+        L.push(' ssi_' + k + ': ' + (SS_COMMIT ? (SS_H.coal * kM).toFixed(4) + ' cm_' + k : SS_KC.toFixed(4) + ' gc_' + k)
           + STORE.filter(S2 => S2.t === 'ps' || S2.t === 'phes' || S2.t === 'phel').map(S2 => ' + ' + kP + ' ' + S2.dis + '_' + k + ' + ' + kP + ' ' + S2.chg + '_' + k).join('')
           + ' + ' + kG + ' gg_' + k + (OCGT_ON ? ' + ' + kO + ' go_' + k : '') + ' + ' + kO + ' gd_' + k
           + cum('scc', y).concat(cum('scn', y)).map(v => ' + ' + SS_H.cond.toFixed(4) + ' ' + v).join('')
