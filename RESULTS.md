@@ -19343,3 +19343,25 @@ freed connections as before. The engine check (pathcheck.js) and the preset run 
 TWh in every year), so the published cost, CO2 and adequacy are unaffected.
 Fix (not made; for the user's decision): cut the credit for gas and diesel in years after bldFossilEndYear, or bound their build there
 at zero. The run would then be rerun to confirm only the CCGT line moves. Deep's runs set no fossil end year and are not affected.
+
+### Deep decarbonisation 2035 becomes the no-gas build calibrated to 40 Mt from 2035; both hypothetical captions test NTCSA's two criteria in every year and use the user's wording (user, 1 Nov 2026, messages 599 (a), (b), 600 (b) and 601 (a); build 2026-11-01d)
+
+Deep: harness/pathway/opt/pathway_s_hypo_deep2035nogas_t40n_r3_c6e.json (no new gas; LP caps 36.382 Mt from 2035, calibrated so its
+engine check lands at 40.095 Mt in 2035, cal_t40n.txt), checked on build 31c (pathcheck_..._31c_{a,b,c}.json, gtza-c31l, clean of the
+pathcheck bug). NTCSA's test in every year 2026-40: mean unserved at most 6.35 GWh (2033), open-cycle share at most 0.69% (2033).
+Rescored on the page on build 11-01d, 240 runs, seed 120000017: 0.78 GWh against a 2.39 GWh target, CO2 40.10 Mt.
+Generator (harness/pathway/gen_pathway_presets.py): the caption's cap is the calibration's target (40 Mt, 'about'), allowed only when
+the record converged on this run, the LP's per-year caps equal its last cap, and the engine check's CO2 is within the calibration
+script's tolerance (0.5 Mt, read from run_deep_cal.sh) of the target, or below, in every year from 2035. HYPO_PRESETS carries each
+hypothetical preset's highest mean unserved energy and open-cycle share over its engine check; the generator stops on a missing or null
+figure, except a year with no open-cycle plants standing (capacity 0 MW and output 0 TWh: Fossil-free's 2040). The page says 'Meets
+NTCSA's reliability standard' only if its own rescore and every engine-check year are within 20 GWh and every year's open-cycle share
+is under 6% (NTCSA_OC_SHARE_MAX, MTSAO 2026-2030 section 3, p.11). Deep: 6.35 GWh and 0.69%; Fossil-free: 0.11 GWh and 0.03%.
+Captions, the user's wording, 50-word cap (580 (c), confirmed 601 (a)): Deep 48 words ("No new gas, and CO2 capped at about 40 Mt a year
+from 2035. Retires 13.8 GW of coal by 2035 and adds 41.8 GW of wind, 38.2 GW of solar and 12.9 GW of 4.3-hour batteries. ..."),
+Fossil-free 50 ("... 59.9 GW of lithium batteries, 7.5 GW of vanadium flow batteries, 1.5 GW of pumped storage and 5 GW of unproven
+100-hour iron-air. ..."). Wind counts offshore with onshore in both. REVIEWER_PACK.md: the Deep bullet filled from the new run (R2,424bn,
+R140bn and 6.1% above c6e, 550 Mt less CO2, R254/t; 44 GW wind, 57 GW solar, 25 GW batteries by 2040, no new gas, 17.9 GW of coal
+left; curtailment 27-29% from 2035, 'more than a quarter', against 8-11% in c6e from the c6e_vre checks and the run's 31a checks,
+whose dispatch equals its 31c checks); the Fossil-free bullet in the Doc's wording (599 (b)), vanadium and pumped storage filled
+(packfill's addgw gains vrfb); the Reproducing line as reworded (601 (d)).
