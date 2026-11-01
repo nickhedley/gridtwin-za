@@ -427,7 +427,7 @@ setTimeout(()=>{
       for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
       const res = simulate(state, PROFILES);
       const P = { ...FIXED, ...state };
-      const out = { avgCost: res.avgCost, tx: P.txRPerKWyr };
+      const out = { avgCost: res.avgCost, tx: P.txRPerKWyr, net: (typeof BLD_COC_NETWORK !== 'undefined') ? BLD_COC_NETWORK.central : null };
       Object.assign(state, saved);
       return out;
     `);
@@ -439,19 +439,22 @@ setTimeout(()=>{
       //
       // It passed this morning for the wrong reason and broke today for the right one,
       // which is how it was found. Replaced by the arithmetic it should have checked.
-      const af = 0.08 / (1 - Math.pow(1.08, -40));
+      // UPDATED 31 Oct 2026 (user, message 546 (b); build 2026-10-31b): annuitised at the central case's network cost of capital
+      // (BLD_COC_NETWORK.central, 7.1%), as every other network cost has been since build 2026-10-28a; at the old 8% it was R402.
+      // RESULTS 'The grid charge for new wind and solar'. The capital per kW is unchanged.
+      const net = r.net, af = net ? net / (1 - Math.pow(1 + net, -40)) : NaN;
       // UPDATED 22 Sep 2026. The rate was re-derived from what the TDP buys: TDP 2024 Table 4,
       // generation integration R54.3bn of R112.5bn (51% with land pro rata); 51% of R440bn over
-      // 46.9 GW of grid-connected new generation is R4,800/kW, R402/kW-yr over 40 years at 8%.
+      // 46.9 GW of grid-connected new generation is R4,800/kW.
       const gi = (54277 + 4880 * 54277 / 80707) / 112534;
-      const perKw = gi * 440e9 / 46.9e6;
-      check('transmission: TDP generation integration annuitises to R402/kW-yr',
-            Math.abs(perKw * af - 402) < 1,
+      const perKw = gi * 440e9 / 46.9e6, want = perKw * af;
+      check('transmission: TDP generation integration annuitises at the central network rate',
+            isFinite(want) && Math.abs(want - 364) < 1,
             `${(100 * gi).toFixed(1)}% of R440bn over 46.9 GW is R${perKw.toFixed(0)}/kW, `
-            + `R${(perKw * af).toFixed(0)}/kW-yr`);
-      check('transmission: the engine constant is R402/kW-yr',
-            Math.abs(r.tx - 402) < 1,
-            `R${r.tx}/kW-yr against the R402 derived from TDP 2024 Table 4`);
+            + `R${want.toFixed(0)}/kW-yr over 40 years at ${(100 * net).toFixed(1)}%`);
+      check('transmission: the engine constant is the TDP derivation at the central network rate',
+            isFinite(want) && Math.abs(r.tx - want) < 1,
+            `R${r.tx}/kW-yr against the R${want.toFixed(0)} derived from TDP 2024 Table 4`);
       console.log(`  locational   avgCost R${r.avgCost.toFixed(0)}/MWh \u00b7 tx R${r.tx}/kW-yr`);
     }
   }

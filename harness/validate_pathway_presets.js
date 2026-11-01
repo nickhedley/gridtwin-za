@@ -30,13 +30,16 @@ const { JSDOM } = require('jsdom');
 const ROOT = process.argv[2] || 'testroot';
 const COST_TOL_PCT = 0.01, UNS_TOL_PCT_TARGET = 1;
 const SEED_BASE = 71830529;   // pathcheck.js's default, with which both engine checks ran
+// From build 2026-10-31l the engine checks are those run on build 31c (both cost corrections, messages 552 (a), 560, 565 (a)): the
+// corrections lower each preset's system cost by 1.0-1.3% (unserved and CO2 unchanged), so the 31a checks no longer describe the page.
 const RUNS = [
-  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_a.json' },
-  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_b.json' },
-  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_b.json' },
-  // The hypothetical presets from 1 Nov 2026 (user, messages 537 (f) and 555): optimised builds at relaxed build rates (harness/pathway/opt/)
-  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035r_c6e_b.json' },
-  { name: 'Fossil-free 2040', year: 2040, build: 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_c.json' },
+  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_a.json' },
+  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_31c_b.json' },
+  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_b.json' },
+  // The hypothetical presets from 1 Nov 2026 (user, messages 537 (f) and 555): optimised builds at relaxed build rates (harness/pathway/opt/),
+  // checked against their engine checks on 31c (the 1 Nov corrections; message 596)
+  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035r_c6e_31c_b.json' },
+  { name: 'Fossil-free 2040', year: 2040, build: 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_31c_c.json' },
 ];
 
 let npass = 0, nfail = 0; const fails = [];

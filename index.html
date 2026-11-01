@@ -471,7 +471,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Results are for one weather year. <strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Existing REIPPPP plants are charged both their contract price and fixed O&amp;M, so that O&amp;M is counted twice: about 1% of avg energy cost on the presets (0.8&ndash;1.5%), a known overstatement still to be removed. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure in constant 2020 rands, not escalated, and shown beneath system cost when it occurs. Replacement cost instead prices the mix at full lifecycle cost, as if it were built new today: generation per MWh, and storage and gas on the capacity the scenario holds. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
+    <p class="kpinote">Results are for one weather year. <strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure in constant 2020 rands, not escalated, and shown beneath system cost when it occurs. Replacement cost instead prices the mix at full lifecycle cost, as if it were built new today: generation per MWh, and storage and gas on the capacity the scenario holds. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -5361,9 +5361,16 @@ const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme e
 // 2025), Table 25: Eskom's FY2026 application, cost R million and energy GWh, by bid window.
 // Expiry is COD + 20 years (BW4+ is the expedited fourth round). 22 Sep 2026; replaces an
 // MW-weighted schedule and a single blended rate. FY2026 average: R1,908/MWh on 26.4 TWh.
+// MW by technology for the windows that expire inside the horizon (user, 31 Oct 2026, message 560 (a)): the Minister of Energy's
+// reply to NW368 (asked 15 Mar 2019; pmg.org.za/committee-question/11216), summed from its 92 project rows: BW1 wind 648.53, solar
+// 626.81, CSP 150; BW2 wind 558.90, solar 417.12, CSP 50 (and 14.4 small hydro); BW3 wind 787.06, solar 435.00, CSP 200 (biomass
+// 16.5, landfill gas 13); BW3.5 CSP 200. Later windows carry none here: they expire after 2040, so the rest of the REIPPPP fleet
+// (FIXED.reipppWindMW, reipppSolarMW, cspMW less these) is under contract in every modelled year (reipppLiveMW).
 const REIPPPP_WINDOWS = [
-  { bw:'1',   gwh:3753, costRm:14455, expires:2034 }, { bw:'2',   gwh:3047, costRm:7904, expires:2035 },
-  { bw:'3',   gwh:4617, costRm:9718,  expires:2037 }, { bw:'3.5', gwh:855,  costRm:4249, expires:2039 },
+  { bw:'1',   gwh:3753, costRm:14455, expires:2034, mw:{ wind:648.53, pv:626.81, csp:150 } },
+  { bw:'2',   gwh:3047, costRm:7904,  expires:2035, mw:{ wind:558.90, pv:417.12, csp:50 } },
+  { bw:'3',   gwh:4617, costRm:9718,  expires:2037, mw:{ wind:787.06, pv:435.00, csp:200 } },
+  { bw:'3.5', gwh:855,  costRm:4249,  expires:2039, mw:{ wind:0,      pv:0,      csp:200 } },
   { bw:'4',   gwh:4063, costRm:5185,  expires:2041 }, { bw:'4+',  gwh:3498, costRm:4667, expires:2042 },
   { bw:'5',   gwh:4770, costRm:3094,  expires:2045 }, { bw:'6',   gwh:1776, costRm:1050, expires:2046 },
 ];
@@ -5372,6 +5379,15 @@ function reipppLiveFrac(year){
   const y = year ?? 2026; let live = 0, tot = 0;
   for (const v of REIPPPP_WINDOWS){ tot += v.gwh; if (y < v.expires) live += v.gwh; }
   return tot > 0 ? live / tot : 1;
+}
+// REIPPPP capacity whose PPA still runs in the year, MW by technology (message 552 (a)): the fleet's totals less the windows that
+// have expired (y >= expires, as reipppLiveFrac). Throws if a window's MW exceed the total they come out of.
+function reipppLiveMW(year, p){
+  const y = year ?? 2026, P = p || FIXED;
+  const live = { wind: P.reipppWindMW ?? FIXED.reipppWindMW, pv: P.reipppSolarMW ?? FIXED.reipppSolarMW, csp: P.cspMW ?? FIXED.cspMW };
+  for (const v of REIPPPP_WINDOWS) if (v.mw && y >= v.expires) for (const t of ['wind','pv','csp']) live[t] -= v.mw[t];
+  for (const t of ['wind','pv','csp']) if (live[t] < -1e-6) throw new Error('reipppLiveMW: ' + t + ' below zero in ' + y);
+  return live;
 }
 // Cost per MWh of all REIPPPP output in the year, expired windows contributing nothing. The
 // dearest contracts (BW1 solar, BW3.5 CSP) expire first, so this falls faster than live share.
@@ -5678,6 +5694,7 @@ const FIXED = {
   // Prices are REIPPPP-weighted averages across bid windows; BW4 wind cleared near
   // R620/MWh against BW1 above R1,500, so the spread is wide.
   reipppWindMW:4042, reipppSolarMW:2783,
+  reipppFomInPpa:1,   // 1: no fixed O&M on REIPPPP capacity while its PPA runs (message 552 (a)); 0: the old charge on the whole fleet
   // REIPPPP PPA cost by bid window, with expiry: see REIPPPP_WINDOWS. Was a flat 682/591 R/MWh
   // of bid-year tariffs until 22 Sep 2026, R11.7bn a year against NERSA's R50.3bn for FY2026.
   // The year the scenario represents. The engine had no year concept - the only year in the
@@ -6762,8 +6779,10 @@ const FIXED = {
   // shared pro rata, generation integration is 51% of the plan; 51% of the decade's R440bn is
   // R225bn for 46.9 GW of grid-connected new generation (the TDP's 56 GW less 9 GW rooftop):
   // R4,800/kW, R402/kW-yr over 40 years at 8%. The old R600 was the whole TDP over 56 GW,
-  // refurbishment and load strengthening included.
-  txRPerKWyr:402,
+  // refurbishment and load strengthening included. From build 2026-10-31b (user, 31 Oct 2026, message 546 (b)): annuitised at the
+  // central case's network cost of capital (BLD_COC_NETWORK.central, 7.1%, as every other network cost), R364/kW-yr; set below,
+  // after BLD_COC_NETWORK, from TDP_GEN_INTEG_RKW. RESULTS 'The grid charge for new wind and solar'.
+  txRPerKWyr:null,
   // long-duration storage capex, added 28 Aug 2026. Until then vanadium, iron-air and
   // pumped storage appeared in newCapexR nowhere, so the model showed 20 GW of 100-hour
   // iron-air as costing zero and slightly reducing average cost. Same annuity method as
@@ -9788,6 +9807,10 @@ function simulate(u, prof, outPath, _soc0){
   // run: a fallback that disagrees with its constant is rule 6, and a fallback of zero on an
   // operating cost is rule 7 - it would silently remove R48.8bn a year and still draw a
   // plausible chart, which is the FIXED.psMW failure exactly.
+  // No fixed O&M on REIPPPP capacity in its contract years (user, 31 Oct 2026, message 552 (a)): the PPA price covers the IPP's O&M,
+  // which reipppRate already charges on its output. From each window's expiry the plant pays its technology's fixed O&M, as before.
+  // Eskom's own plant (Sere wind) and private plant pay it throughout. reipppFomInPpa 0 restores the old charge on the whole fleet.
+  const _ippLive = (p.reipppFomInPpa ?? FIXED.reipppFomInPpa) ? reipppLiveMW(p.scenarioYear ?? 2026, p) : { wind:0, pv:0, csp:0 };
   const fixedOMR =
       _coalOnMW               * (p.fomCoal    ?? FIXED.fomCoal)    * 1000
     + (p.nuclearMW||0)        * (p.fomNuclear ?? FIXED.fomNuclear) * 1000
@@ -9795,9 +9818,9 @@ function simulate(u, prof, outPath, _soc0){
     + (p.ccgtMW||0)           * (p.fomCcgt    ?? FIXED.fomCcgt)    * 1000
     + (p.hydroMW||0)          * (p.fomHydro   ?? FIXED.fomHydro)   * 1000
     + (p.psPowerMW||0)        * (p.fomPs      ?? FIXED.fomPs)      * 1000
-    + (p.cspMW||0)            * (p.fomCsp     ?? FIXED.fomCsp)     * 1000
-    + (p.windMW||0)           * (BLD_FOM.wind || 0) * 1000
-    + (p.pvUtilityMW||0)      * (BLD_FOM.pv   || 0) * 1000;
+    + Math.max(0, (p.cspMW||0)       - _ippLive.csp)  * (p.fomCsp ?? FIXED.fomCsp) * 1000
+    + Math.max(0, (p.windMW||0)      - _ippLive.wind) * (BLD_FOM.wind || 0) * 1000
+    + Math.max(0, (p.pvUtilityMW||0) - _ippLive.pv)   * (BLD_FOM.pv   || 0) * 1000;
   // REIPPPP PPA obligation. Only the existing fleet is under contract, so the share of wind
   // and solar output that carries a PPA falls as new capacity is added - a scenario with
   // 45 GW of new wind pays the PPA on 4,042 MW of it and capital plus O&M on the rest, via
@@ -10498,6 +10521,10 @@ FIXED.ccsWaccPct = BLD_DISC * 100;
 const BLD_COC_LEVEL = { central: 0.055, private: 0.055, high: 0.090, low: 0.045 };
 const BLD_COC_GAP = { re: 0, store: 0.013, gas: 0.025, nuclear: 0.030, coal: 0.025 };
 const BLD_COC_NETWORK = { central: 0.071, private: 0.071, high: 0.090, low: 0.071 };
+// The grid charge's capital (message 546 (b)): TDP 2024's generation integration, R225bn for 46.9 GW of grid-connected new
+// generation (see FIXED.txRPerKWyr), R/kW, annuitised over 40 years at the central network rate.
+const TDP_GEN_INTEG_RKW = 225e9 / 46.9e6, TDP_GEN_INTEG_LIFE = 40;
+FIXED.txRPerKWyr = Math.round(TDP_GEN_INTEG_RKW * BLD_COC_NETWORK.central / (1 - Math.pow(1 + BLD_COC_NETWORK.central, -TDP_GEN_INTEG_LIFE)));
 // Private and merchant finance (messages 469 (f) and 472): corporate PPAs, wheeling via traders and the wholesale market from 2027
 // carry more offtaker and price risk than state-backed contracts. CEPA for DESNZ (July 2025), Table 5.22 (p.116), investor survey: a
 // merchant revenue model adds +1.5% to +3% to the overall hurdle rate, median +1.5% (Brookfield +1.2-1.3%, Table 5.23; Europe
@@ -20977,7 +21004,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-01a';
+const BUILD_STAMP = '2026-11-01c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21069,7 +21096,7 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 // The names are simulate()'s closure, with the panel draws', found by static analysis (eslint-scope) on 19 Oct 2026; a name
 // missing here fails in the worker, the page falls back, and validate_worker.js fails.
 const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
-  astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate,
+  astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate, reipppLiveMW,
   otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth, nucShapeAt,
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
