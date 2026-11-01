@@ -858,6 +858,10 @@ costs per participant; (6) regional distribution. Known limitations line as in 1
 14lv. Other shortcuts taken to hold the note's date (user, 31 Oct 2026, message 574 (a) 3), added as each is taken, each with what it
 leaves out and its full version after the note; each gets a Known limitations line (574 (b)). None yet.
 
+14lz. The checks made with the pathcheck bug (RESULTS 'pathcheck: the per-run object', message 598 (c)). Done: the Deep and
+Fossil-free preset 31c checks, rerun with the fixed pathcheck (1 Nov). Left: c6e_vre and dmin2028, rerun if their open-cycle, gas floor
+or LCOE fields are ever used; the 31a checks with null fields are superseded by clean 31c checks and need no rerun.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
