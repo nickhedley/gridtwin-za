@@ -80,7 +80,8 @@ const { collectPublicText, words } = require('./public_text_lib.js');
 // SITE-COPY LENGTH (user, 25 Oct 2026, message 378 (b)): a slider note or a preset caption states the default and its basis in one
 // or two sentences, about 40 words at most. Exemptions only with the user's written decision, recorded with its message.
 const MAX_WORDS = 40;
-// Preset captions may run to 50 words (user, 1 Nov 2026, message 580 (c)): plainer language for the scenario presets. Slider notes keep 40.
+// Preset captions may run to 50 words (user, 1 Nov 2026, message 580 (c), confirmed in 601 (a)): plainer language for the scenario
+// presets. Slider notes keep 40.
 const MAX_WORDS_CAPTION = 50;
 const LONG_EXEMPT = [];
 

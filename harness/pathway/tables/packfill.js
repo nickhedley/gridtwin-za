@@ -110,7 +110,7 @@ let PG=null; const pagecosts=()=>{ if (PG) return PG; if (!fs.existsSync('testro
 const pc1=v=>nf(v*100,1)+'%';
 // New capacity added 2026-40, MW, by technology, from the run's schedule (addgw, addgwr).
 function addMW(s,t){ if (!s.sched) return null; const ys=Object.keys(s.sched); const g=k=>ys.reduce((a,yy)=>a+((s.sched[yy][k])||0),0);
-  const v={wind:g('wind'),solar:g('pv'),rooftop:g('rooftop'),batt:g('batt'),gas:g('ccgt')+g('ocgt'),ccgt:g('ccgt'),ocgt:g('ocgt'),dsl:g('ocgd'),ps:g('phes')+g('phel'),offshore:g('off'),ironair:g('ironair'),
+  const v={wind:g('wind'),solar:g('pv'),rooftop:g('rooftop'),batt:g('batt'),gas:g('ccgt')+g('ocgt'),ccgt:g('ccgt'),ocgt:g('ocgt'),dsl:g('ocgd'),ps:g('phes')+g('phel'),offshore:g('off'),ironair:g('ironair'),vrfb:g('vrfb'),
     nuclear:s.nuclearAdd?Object.values(s.nuclearAdd).reduce((a,b)=>a+b,0):0}[t]; if (v==null) throw new Error('packfill: no addgw technology '+t); return v; }
 function pageCost(k){
   const g=pagecosts(); if (!g){ missing.add('the page (page_costs.js)'); return null; }
@@ -143,14 +143,26 @@ const NOGAS_RERUNS=['s_nogas_maxp6','s_nogas_maxp10'];   // message 510: pass li
 // NTCSA's two criteria read each year's mean unserved energy and open-cycle share (ocgtCF). A null or missing value stops the fill
 // (RULES 4; message 600 (a)): before this, `null>=0.06` was false, so a check made with the pathcheck bug of 31 Oct passed criterion (ii)
 // unseen (RESULTS 'pathcheck: the per-run object').
-// A year with no open-cycle plants standing (Fossil-free 2040 from 2040) has no share: pathcheck writes null for zero capacity. It counts as
-// zero only when the check records capacity 0 MW and output 0 TWh, as harness/pathway/gen_pathway_presets.py does (message 601 (c)); the
-// returned rows carry 0 there, so every reading below sees a number.
-const ocNone=x=>x.ocgtCF===null&&x.ocgtCapMW===0&&x.ocgtTWh===0;
+// A year with no open-cycle plants standing (Fossil-free 2040 from 2040) has no share: pathcheck writes null for zero capacity. Whether a
+// plant stands is taken from the run, not the check (user, 1 Nov 2026, message 602 (a)): the 31 Oct pathcheck bug wrote null with capacity
+// 0 and output 0, the same fields as a true zero. Open-cycle capacity standing in year y, as pathcheck.js builds it (dieselAvailMW plus new
+// open-cycle gas): the page's existing diesel fleet (FIXED.ocgtDieselMW, read from index.html; the run's 2026 fleet adjustment in 2026)
+// less its default decommissioning (FIXED.dieselDecomMW), plus new diesel and gas open-cycle built to y; none after the run's fossilEnd.
+// A peaker retirement schedule (pathcheck PEAK=1) is not counted, so the capacity is never understated. A null share is zero only when
+// that capacity is 0 and the check's output is 0; anything else stops the fill.
+let FX; const fixedMW=k=>{ if (!FX){ const h=fs.readFileSync('testroot/index.html','utf8'); FX={};
+    for (const n of ['ocgtDieselMW','dieselDecomMW']){ const m=h.match(new RegExp('\\n  '+n+':(\\d+(?:\\.\\d+)?),')); if (!m) throw new Error('packfill: FIXED.'+n+' not found in testroot/index.html'); FX[n]=+m[1]; } }
+  return FX[k]; };
+const ocCapRun=(s,y)=>{ if (!s.sched) throw new Error('packfill: no schedule for '+s.n);
+  if (s.fossilEnd!=null && y>s.fossilEnd) return 0;
+  const cum=k=>Object.keys(s.sched).filter(yy=>+yy<=y).reduce((a,yy)=>a+(+s.sched[yy][k]||0),0);
+  const D=fixedMW('ocgtDieselMW')+(y===2026&&s.fleet2026&&s.fleet2026.ocgtDieselMW?s.fleet2026.ocgtDieselMW:0);
+  return Math.max(0,D-fixedMW('dieselDecomMW'))+cum('ocgd')+cum('ocgt'); };
+const ocNone=(s,x)=>x.ocgtCF===null&&x.ocgtTWh===0&&ocCapRun(s,x.y)===0;
 const ntcsaRows=s=>{ const num=v=>typeof v==='number'&&isFinite(v);
-  const bad=s.rows.filter(x=>!num(x.mean)||!(num(x.ocgtCF)||ocNone(x))).map(x=>x.y);
+  const bad=s.rows.filter(x=>!num(x.mean)||!(num(x.ocgtCF)||ocNone(s,x))).map(x=>x.y);
   if (bad.length) throw new Error(`NTCSA test: ${s.n||"run"} has no unserved mean or open-cycle share (ocgtCF null or missing) in ${bad.join(', ')}`);
-  return s.rows.map(x=>ocNone(x)?{...x,ocgtCF:0}:x); };
+  return s.rows.map(x=>ocNone(s,x)?{...x,ocgtCF:0}:x); };
 const meets=s=>{ if (!s) return false; const r=ntcsaRows(s); return !r.some(x=>x.mean>20)&&!r.some(x=>x.ocgtCF>=0.06); };
 const peek=r=>{ const n=opt(r); if (!fs.existsSync(`${O}/pathway_${n}.json`)) return null; if (cache[r]!==undefined) return cache[r]; const q=summ(O,n); if (q) q.dir=O; return q; };
 let NB; const nogasBest=()=>{ if (NB!==undefined) return NB; NB=null; for (const r of NOGAS_RERUNS){ const q=peek(r); if (q&&meets(q)){ NB={r,s:q}; break; } } return NB; };

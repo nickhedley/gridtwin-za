@@ -1489,6 +1489,12 @@ const num = t => {
       // 19e in one page: the old preset R0.737, the old build at the new demand R0.578, the new preset R0.904, so the move is the
       // new build (more capital, partly spread over more sales). Deliberate scenario change, tolerance unchanged.
       //
+      // UPDATED 1 Nov 2026, R0.986 -> R0.723, build 2026-11-01d (user, message 599 (a)): Deep is now the no-gas build calibrated to
+      // 40 Mt from 2035, which in 2035 stands 12.9 GW of 4.3-hour lithium against 21.6 GW of 5.6-hour, 38.2 GW of solar against 52 and
+      // no new gas. Measured with this check's own code on each page: main (d7eb144, the preset swap's optimised Deep) R0.956, inside the
+      // band around R0.986 and so not re-pinned by #140; this build R0.723. The whole move, -R0.233, is the new build. Deliberate
+      // scenario change, tolerance unchanged.
+      //
       // UPDATED 28 Oct 2026, R1.056 -> R0.986, build 2026-10-28a (costs of capital by technology; user, messages 468, 469 and 479).
       // Measured with this check's own code on each page: main (27f) R1.056; 28a with one rate for all (bldCocCase 'planning') and
       // solar backed out of BW7's tariffs (bldPvCase 'central') R1.062, the +0.005 being interest during construction on iron-air
@@ -1550,8 +1556,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 0.986) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.986 for Deep `
+              Math.abs(ncap.newCap - 0.723) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.723 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }
