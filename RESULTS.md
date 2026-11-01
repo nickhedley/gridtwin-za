@@ -18955,3 +18955,18 @@ pathcheck_c6e_vre_*); the Doc is not changed until Nick has seen the figures (me
 
 Fossil-free's CO2 avoided is 953.3 Mt unrounded (1,738.6 less 785.3); the key rounds to whole Mt. Iron-air in Fossil-free is flagged:
 its finding is a known failure of the model's checks and its cost is a developer's target.
+
+### Suite on build 2026-10-31l (both cost corrections): equal to main's 31a by count in every script and by failure name (user, 31 Oct 2026, message 576 (a))
+
+Suite on build 2026-10-31l (claude/cost-corrections, index.html at 7d3411b, stored panels rewritten at 97f1d2d; ESK19679.csv present),
+31 Oct 2026 23:00 to 1 Nov 01:29 UTC in two pieces, beside two other suites, so the timings are not clean. Node checks 998/1007, audit
+88/88, eng5 5/6. Equal to main's suite on 31a by count in every script and by failure name: validate_findings 37/40, validate_response
+86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved, all known.
+validate_worker 38/38, validate_pathway_presets 41/41, validate_external 8/8.
+The suite on 31j (31 Oct 2026, 21:19-22:57 UTC) failed three things main does not: validate_worker ('reipppLiveMW is not defined' in the
+engine worker: the function was not in ENGINE_FNS, so the page's worker would have thrown; added on 31l), validate_outputs' avgCost
+ratchet (1,085.9 against the recorded 1,101.0; the REIPPPP correction alone, -16.64 R/MWh at defaults, measured by switching it back; the
+ratchet moved with that cause, tolerance unchanged) and validate_pathway_presets' three cost checks (the presets' engine checks were run
+on 31a; the validator now reads the 31c checks, which differ from 31a only by the two corrections).
+After the suite, main (cf6050b) was merged in (b4c89d3): index.html identical to 31l (only the build stamp conflicted), no test script
+changed, so the suite stands.
