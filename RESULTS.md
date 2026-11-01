@@ -19528,3 +19528,34 @@ that the row does not use (D1 as decided).
 Caveats: one outage draw per weather year; the one-year test has no stress windows and fixes c6e's builds to 2034, so its levels are
 not a pathway result; RoCoF borrowed from Ireland and AEMO; national, not by substation; no voltage control; condensers not sized by
 location (HANDOVER item 10).
+
+### Daily coal swing and the evening ramp: the model's Today 2026 against Eskom's hourly data; the model's coal swings about 10% less than Eskom's in Jan-Aug 2026 and its pumped storage carries half the evening ramp against a third (user, 1 Nov 2026, message 611; report only, no change)
+
+Model: the Today 2026 preset on the page at main 5168504 (build 2026-11-01d), simulate on the default profiles (profiles.json, calendar
+2025 shapes; the page's dispatch weeks are 17-23 May, hour 3264, and 24-30 Nov, hour 7848, of 2025), each 2026 date taken at the same
+day of the 2025 profile. Eskom: ESK19679 hourly data (Eskom, analysis ours): Thermal Generation (coal), Pumped Water Generation,
+Eskom OCGT Generation plus Dispatchable IPP OCGT (diesel), Eskom Gas, Hydro Water, International Imports; Eskom's data has no
+battery series. 24-30 Nov is compared with Eskom's 2025 (the data end on 31 Aug 2026). Definitions, per day (SAST, hour beginning):
+swing = maximum less minimum hourly coal; evening peak less midday minimum = the highest coal hour 17:00-21:00 less the lowest
+10:00-15:00; evening ramp = each source's mean 18:00-20:00 less its mean 11:00-14:00, shares of the sum over the sources listed.
+Daily coal swing, MW, mean (range):
+| Days | Model, Today 2026 | Eskom 2026 | Eskom 2025 (the model's profile year) |
+|---|---|---|---|
+| 1 Jan-31 Aug (243 days) | 3,330 (766-7,378) | 3,689 (931-6,651) | 2,659 (549-6,365) |
+| 17-23 May | 3,035 (1,743-4,039) | 4,748 (4,151-6,651) | 3,003 (1,399-4,559) |
+| 24-30 Nov | 3,589 (2,179-5,449) | (no 2026 data) | 2,008 (1,544-2,799) |
+Evening peak less midday minimum, MW, mean (range): Jan-Aug model 2,848 (420-5,438), Eskom 2026 3,152 (-300 to 5,836), Eskom 2025
+1,768 (-2,205 to 4,917); 17-23 May model 2,894, Eskom 2026 4,063, Eskom 2025 2,102; 24-30 Nov model 2,846, Eskom 2025 1,272.
+Evening ramp, mean MW and share (coal / pumped storage / batteries / diesel / hydro / imports; gas zero on both sides):
+- Jan-Aug: model 3,481 MW: 48% / 50% / 0% / 2% / 0% / 0%; Eskom 2026 3,918 MW: 59% / 32% / n.a. / 4% / 3% / 1%; Eskom 2025 3,346 MW:
+  37% / 36% / n.a. / 21% / 7% / -1%.
+- 17-23 May: model 4,038 MW: 36% / 61% / 1% / 1% / 0% / 0%; Eskom 2026 4,054 MW: 63% / 30% / n.a. / 4% / 0% / 3%; Eskom 2025
+  4,335 MW: 41% / 25% / n.a. / 29% / 5% / -1%.
+- 24-30 Nov: model 3,045 MW: 62% / 37% / 0% / 1% / 0% / 0%; Eskom 2025 2,708 MW: 32% / 55% / n.a. / 9% / 5% / 0%.
+Findings: over Jan-Aug the model's coal swing is close to Eskom 2026's (about 10% less, mean 3,330 against 3,689 MW), but its
+pumped storage carries half the evening ramp against Eskom's third, and its coal less (48% against 59%); the model holds hydro and
+imports flat through the day (Eskom's hydro adds about 120 MW to the evening). Diesel carries little evening ramp in both 2026 series
+(2% against 4%); Eskom's 2025 diesel share (21%) reflects 2025's operations, not the model's 2026 fleet. In the May week Eskom 2026
+swung coal far harder (4,748 MW) than the model (3,035) and than Eskom in 2025 (3,003). Caveats: the model's days are 2025's demand and
+weather shapes on 2026's fleet, so day-by-day weather differs from 2026's; one deterministic run of the default profile, no outage
+draws; Eskom's thermal series may include non-coal thermal; no battery series on Eskom's side.
