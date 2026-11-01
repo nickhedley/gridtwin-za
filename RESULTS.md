@@ -19059,3 +19059,15 @@ Runs (31a, as run_deepnogas.sh with the 2035 optimiser cap only raised; 2036-40 
 Finding: with Deep's 2036-40 caps in place, a higher 2035 cap alone leaves 2035 CO2 near 24.5 Mt: the build the later caps need is
 already standing in 2035, so the 2035 cap does not bind above about 24.5 Mt. Both runs stopped by their PIDs after round 2 (message 595);
 the 30 and 35 Mt cases are rerun with the cap from 2035 on, every year 2035-40 at the target, as the 40 Mt runs.
+
+### Suite on build 2026-11-01a (the preset swap, decided): main's known failures only, by name (user, 1 Nov 2026, messages 580 (b), (c) and 591)
+
+Suite on build 2026-11-01a (claude/preset-swap, index.html at 77a62fc, stored panels rewritten at 929cd2d; ESK19679.csv present), 1 Nov
+2026 05:30-07:55 UTC in two pieces, beside a second suite, the pack rechecks and the Deep calibration runs, so the timings are not clean.
+Node checks 1021/1030, audit 88/88, eng5 5/6. Failures, all main's known ones by name: validate_findings 36/39 (congestion floor; iron-air
+July; turn-up share; 39 checks, one withdrawn), validate_response 86/87, validate_consistency 82/83 (high-season off-peak),
+validate_benchmarks 28/30 (CO2 against Ember; peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost),
+eng5 storage vs unserved. The four checks updated with their causes pass (curtailment band re-pinned; Deep's CO2 at or below its cap;
+CSIR ranges with the hypothetical presets exempt, 8/8 external); validate_pathway_presets 65/65, validate_public_text 32/32 (preset
+captions at most 50 words), validate_worker 38/38, validate_stored_panels 86/86. Against main's 998/1007: +24 pathway preset checks,
+-1 findings check (withdrawn), no new failure.
