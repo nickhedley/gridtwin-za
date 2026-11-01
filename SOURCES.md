@@ -2235,3 +2235,51 @@ GreenCape's: the user's decision is that those paths are conservative.
   the model has neither (TODO 14lp (1)).
 - 8-hour tenders in California, Australia and the UK chose lithium (p. 31) (TODO 14lp (2)).
 
+
+## System strength: inertia constants and the largest credible loss (user, 1 Nov 2026, message 578; for the minimum version, TODO 14lo, 14lt)
+
+Inertia constants, H in seconds on the machine's MVA base (user, 1 Nov 2026, messages 578 (a), 581 (a) and 585 (a)). Source: ERCOT,
+"Inertia: Basic Concepts and Impacts on the ERCOT Grid", Version 2 (revised 2 Dec 2024), Table 1, read in full by the advisor (message
+585 (a)): nuclear 3.79-5.09 s; coal 2.43-5.2; combustion turbine 0.07-9.3; gas steam 1.18-4.68; combined cycle 1.2-9.3; hydro 2-3;
+reciprocating engine 0.2-2; wind, solar and battery 0.
+https://www.ercot.com/files/docs/2018/04/04/Inertia_Basic%20Concepts%20and%20Impacts%20on%20the%20ERCOT%20Grid_2024.docx
+Central values (the user's, all inside the 2024 ranges): nuclear 4.1, coal 3.7, combined cycle 5.0, open cycle 5.0, CSP steam 3.0, hydro
+and pumped storage 2.5. Low and high sensitivities: each range's ends. MVA = MW / 0.9 unless a unit's MVA is known. The model's open-cycle
+plant, existing and new, on diesel or gas, is combustion turbines (ocgtDieselMW, b_ocgt, b_ocgd), so it takes the combustion-turbine
+range; the model has no reciprocating engines (were they added, the reciprocating range with a central 1.0 s applies).
+South African reference point (the advisor's note): Komati, 1.3 s.
+
+Largest credible loss by year (user, message 578 (b); rule 366, conservative, our assumption, stated as such): 2,160 MW, three 720 MW
+units (NTCSA ASTR, section 3.4.2), while any coal station with three or more such units stands; after that, the largest single unit
+standing: a Koeberg unit, about 930 MW sent out, unless a larger new unit is built.
+
+## Eskom tariff path after 2027/28 (user, 1 Nov 2026, messages 582, 583 and 584; for TODO 14ly, after the note)
+
+Eskom, Annual financial statements 2026, note 3.3.2 (impairment assessment, key assumptions, price), printed page 46: after MYPD6's
+8.76% (2027) and 8.83% (2028), tariff increases of "an average of 5.8% from 2029 until 2050", nominal. Note 3.3.2 does not state its
+inflation rate; Eskom's own long-term price inflation assumption, 4.7%, is from notes 4.3 and 4.4, printed page 50. Eskom's projection
+assumes no new Eskom or IPP capacity and falling sales. Read in the primary source by the user (messages 583, 584; the PDF is in the
+user's Drive and is not committed).
+It is Eskom's impairment assumption, not an approved or proposed tariff path: headroom over carrying value is 2.3%, and the note says
+the recoverable amount "may be lower than the carrying amount if the long-term price path after 2028 is limited to inflationary
+increases". Nothing is approved beyond MYPD6 (to 2027/28).
+The model's cases (user, message 584 (a); replacing 582 (a)'s central and 583 (a)), each computed from its inputs, not typed:
+- Central: (1.058 / 1.047) - 1 = 1.1% a year real from 2028/29 to 2034/35 (Eskom's 5.8% nominal against its own 4.7%), then flat in
+  real terms from 2035/36.
+- Sensitivity, low: flat in real terms throughout after 2027/28.
+- Sensitivity, high: (1.058 / 1.03) - 1 = 2.7% a year real to 2034/35 (5.8% against the model's 3% inflation target), then flat.
+
+## Behind-the-meter batteries: stock and growth (user, 1 Nov 2026, message 592; TODO 14lq minimum version)
+
+- Deye: more than 160,000 residential battery systems in South Africa, 2.7 GWh, to be coordinated through Plentify's VPP platform
+  (announced 20 Jul 2026; energy-storage.news, "South Africa: Plentify aggregates 2.7GWh of Deye home battery systems into virtual power
+  plant"). The same article: over 90% of residential solar systems sold include a battery; 675,000 households had rooftop solar by 2025
+  (citing Stats SA; secondary for the Stats SA figure).
+- GreenCape, Energy Services 2025, pp. 24-25: business behind-the-meter batteries about 400 MWh a year at about R5,000/kWh installed.
+  https://greencape.co.za/wp-content/uploads/2025/04/Energy-Services-2025.pdf
+- The advisor's estimate (ours, labelled as such): about 600,000 homes with batteries (90% of 675,000) x about 10 kWh = about 6 GWh,
+  plus about 2 GWh in businesses = 8 GWh central; 3.2 GW at 2.5 hours. Growth 0.9 GWh a year = 0.4 business (GreenCape) + about 0.5
+  residential (about 50,000 new solar homes a year at 10 kWh, an assumption). Cases 4 and 14 GWh.
+- Coordinated share: Deye's 2.7 GWh is the fleet Plentify can reach, not enrolled capacity; it is the cap on the coordinated share, not
+  the share.
+TODO 14lu (full version, after the note) replaces the estimate with a sourced stock and growth path.

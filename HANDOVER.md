@@ -22,6 +22,18 @@ batteries and VPPs), and any other shortcut taken to hold the date, TODO 14lv (a
 the reviewer pack's Known limitations saying what is simplified; the advisor drafts these for the Doc with the 11 Nov refresh, and
 the master takes them from the Doc.
 
+## Behind-the-meter batteries and VPPs: inputs (user, 1 Nov 2026, messages 577 (e) and 578 (c))
+
+Stock cases 4, 8 and 14 GWh, central 8 GWh (about 3.2 GW; additions about 0.9 GWh a year): the advisor's triangulation from imports,
+Deye's 2.7 GWh fleet and household counts. The coordinated share starts from Plentify's Deye VPP (about 2.7 GWh aggregated, Aug 2026).
+These replace the 1, 3 and 5 GWh placeholder cases (573, 575 (c)). Sources follow in SOURCES from the advisor.
+
+## System strength: the user's inputs (1 Nov 2026, message 578)
+
+Inertia constants: the user's central values with the full ranges of ERCOT's 2024 revision, Table 1 (messages 581 (a), 585 (a)), MVA = MW / 0.9; the largest credible loss rule (2,160 MW while a
+coal station with three or more 720 MW units stands, then the largest single unit, Koeberg about 930 MW), our assumption. Both in SOURCES
+('System strength: inertia constants and the largest credible loss').
+
 ## Eskom terms: the hourly dispatch export keeps its demand column (31 Oct 2026; user, message 567 (a), cancelling 566 (c))
 
 Decided: the page's hourly dispatch CSV (downloadDispatchCSV) stays as it was, demand_mw included. The modelled hourly demand is the
