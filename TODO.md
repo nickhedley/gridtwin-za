@@ -792,6 +792,7 @@ ElectraNet: A$0.75-5.9m per unit). (c) A grid-forming battery's inertia each hou
 (d) Check: on a plan close to CSIR's 2030, the share of hours below a 1 Hz/s floor before condensers, against CSIR's (Chown, Wright et
 al. 2017) about 5%. (e) Limitations to state: fault level national, not by substation; no voltage control; the 1 Hz/s limit borrowed
 from Ireland and AEMO, as South Africa has none.
+Minimum version for the note: 573 (a); what it leaves out, and the full version after the note: 14lt (message 574).
 
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
@@ -820,6 +821,7 @@ measure the effect on curtailment and unserved energy (the regional engine).
 (PyPSA-Eur practice) or a flat 10% in windy hours (RMI/Quanta); reconductoring as a build option at about twice the corridor capacity
 with a 1-3 year lead time. Check for overlap with the TDP-based grid charge (txRPerKWyr, 14lj) and the Cape curtailment approval
 (bldCapeWindMW) before any is charged.
+Minimum version for the note: 573 (a); what it leaves out, and the full version after the note: 14lu (message 574).
 
 14lr. Hydrogen as seasonal storage, built by the optimiser, after the note (user, 31 Oct 2026, message 557; replaces 556: no quick
 hydrogen turbine). Scope first; nothing is built without your go-ahead. (1) The chain: electrolysers fed by surplus wind and solar;
@@ -830,6 +832,31 @@ GenX's long-duration storage method (Mallapragada et al. 2020) or Kotzur et al.'
 (3) The hourly engine: a full-year dispatch rule for a seasonal store (charge on surplus, hold for lulls), checked against the LP's
 plan. (4) Every cost sourced (electrolyser, storage per kg or MWh, turbine and conversion premium, round-trip efficiency), with low,
 central and high cases. (5) Report the scope, the time needed and the sources before any build.
+
+14ls. Battery reserve eligibility as the MTSAO models it, after the note (user, 31 Oct 2026, message 568 (b)): c6e's engine check with
+only Eskom's BESS programme and the BESIPPPP bid window 1-3 batteries eligible for instantaneous, regulating and ten-minute reserve
+(NTCSA MTSAO 2027-2036, Section 2.2.3, p.17), every other battery for energy only. Report the change in unserved energy and cost
+against c6e. The model's current rule (every battery eligible) is a stated assumption (SOURCES 'Batteries eligible for operating
+reserve'; 568 (a)).
+
+14lt. System strength, full version after the note (user, 31 Oct 2026, message 574 (a) 1). The minimum version for the note is
+14lo as amended by 549 and narrowed by 573 (a) 2: the inertia floor in the build LP and the engine, gas counted, TDP 2024's
+condensers committed, a condenser build option, grid-forming batteries at a 5% capex premium, fault-level cost as a sensitivity only.
+Left out, to do after the note: (1) fault level as a constraint by region or substation, not a national cost; (2) fast frequency
+response traded against inertia (CSIR's 40 GW.s case); (3) condenser sizing by location; (4) voltage control; (5) South Africa's
+own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Ireland and AEMO; (6) the check against CSIR 2030 (14lo
+(d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
+(574 (b)).
+
+14lu. Behind-the-meter batteries and VPPs, full version after the note (user, 31 Oct 2026, message 574 (a) 2). The minimum version
+for the note is 14lq (1)-(2) narrowed by 573 (a) 3: a passive stock on a self-consumption profile as an input path (1, 3 and 5 GWh
+cases until the advisor's central figure), a coordinated share dispatched as storage, a VPP build option with event limits and a
+cost. Left out, to do after the note: (1) a sourced battery stock and growth path; (2) a split by household and business; (3) EV
+smart charging once EV demand is in the model; (4) enrolment and delivered capacity calibrated to South African programmes; (5) VPP
+costs per participant; (6) regional distribution. Known limitations line as in 14lt (574 (b)).
+
+14lv. Other shortcuts taken to hold the note's date (user, 31 Oct 2026, message 574 (a) 3), added as each is taken, each with what it
+leaves out and its full version after the note; each gets a Known limitations line (574 (b)). None yet.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a

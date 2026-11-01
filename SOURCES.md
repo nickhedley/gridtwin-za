@@ -1039,6 +1039,14 @@ harness/ext/grid_distances.py.
   harness/derive_avon_dedisa.py from the local file, 24 monthly figures published with Eskom credited, the analysis ours, not
   Eskom's; no hourly series.
 
+## Batteries eligible for operating reserve: a stated assumption (user, 31 Oct 2026, message 568 (a))
+
+The model lets every battery, new and existing, private or public, provide instantaneous, regulating and ten-minute reserve (the
+ASTR products; storage first in the reserve cover, index.html 'ASTR cover'). NTCSA's Medium-Term System Adequacy Outlook 2027-2036,
+Section 2.2.3, p.17, credits only Eskom's BESS programme and the BESIPPPP bid windows 1-3 with reserve. A stated assumption, for the
+reviewer pack's assumptions in the next weekly update; the sensitivity with only those batteries eligible is TODO 14ls, after the
+note.
+
 ## Storage sustain times for operating reserve (user, message 97; build 2026-10-14q)
 
 - Instantaneous 10 minutes: NTCSA ASTR 2026/27-2030/31 (January 2026), p.6.

@@ -1,5 +1,33 @@
 # GridTwin ZA - handover, current state (kept current; updated 28 Oct 2026, 22:00 UTC)
 
+## Priorities to the note (user, 31 Oct 2026, message 573): the note out before mid-November, reviewer comments the week after
+
+In order: (1) in flight: the 565/572 cost-correction checks, the site-copy PR, the preset swap (537 (f)), the cost-corrections PR;
+(2) system strength, minimum version (TODO 14lo as amended by 549): the inertia floor in the build LP and the engine, gas counted,
+TDP 2024's condensers committed, a condenser build option, grid-forming batteries at a 5% capex premium, fault-level cost as a
+sensitivity only; first 547 (b)'s report on c6e; target Wed 4 Nov; (3) behind-the-meter batteries and VPPs (TODO 14lq items 1-2),
+minimum version: a passive stock on a self-consumption profile as an input path, a coordinated share dispatched as storage, a VPP
+build option with event limits and a cost; target Fri 6 Nov; stock cases 1, 3 and 5 GWh until the advisor's central figure;
+fallback if it slips: behind-the-meter batteries as a sensitivity in the note, not in c7; (4) Mon 9 Nov: one central rebuild, c7,
+with both cost corrections, system strength and (3); then IRP, no-gas with diesel peakers and the two hypothetical plans on c7;
+Wed 11 Nov: every pack figure from c7 with fill markers; (5) everything else after the note. Inputs needed first: the advisor's
+system strength note (condenser costs, TDP 2024 MVAr, ASTR contingency) and VPP note (event limits, costs). Since 31 Oct 2026
+(message 575 (a)) both are on branch claude/advisor-notes (0e7cd9b; no PR): docs/advisor/system-strength-2026-10-31.md and
+docs/advisor/vpp-gets-modelling-2026-10-31.md; what each implementation uses is copied into SOURCES with it. The Thu 5 Nov midday
+checkpoint is accepted (575 (b)): the passive stock and the coordinated share go into c7; the VPP build option goes in only if it
+passes the suite by then, otherwise it is a sensitivity in the note. The central behind-the-meter battery stock figure follows from
+the advisor by Monday 2 Nov (575 (c)).
+After the note (message 574): the full versions of the minimum upgrades, TODO 14lt (system strength) and 14lu (behind-the-meter
+batteries and VPPs), and any other shortcut taken to hold the date, TODO 14lv (added as taken). Each minimum version gets a line in
+the reviewer pack's Known limitations saying what is simplified; the advisor drafts these for the Doc with the 11 Nov refresh, and
+the master takes them from the Doc.
+
+## Eskom terms: the hourly dispatch export keeps its demand column (31 Oct 2026; user, message 567 (a), cancelling 566 (c))
+
+Decided: the page's hourly dispatch CSV (downloadDispatchCSV) stays as it was, demand_mw included. The modelled hourly demand is the
+model's output, not an Eskom series, so the Eskom terms (CLAUDE.md: no raw or per-unit hourly Eskom series published) do not apply
+to it. Message 566 (c) had removed the column as a rule 366 precaution; 567 (a) restored it before the site-copy PR opened.
+
 ## Decisions of 29 Oct 2026 (user, messages 485, 487, 489 and 490), in force
 
 - Fossil-free 2040 (487 (1), 490): it fails the adequacy standard on the current page (132.4 GWh a year; the central ended imports
@@ -218,7 +246,13 @@ Fossil-free 2040 with fossil output ending after 2039; branch claude/optimised-p
 REIPPPP plant pays fixed O&M; the grid charge at 7.1%, R364/kW-yr) with c6e measured with it, then the preset swap (537 (f)).
 Next weekly Doc update (user, 31 Oct 2026, message 539 (b)), drafted by the advisor: three Known limitations, that coal fuel cost
 is held flat in real terms (TODO 14ld), that coal emissions (MES) compliance costs are not included (TODO 14le) and that health and
-water costs are excluded (TODO 14lh). The master takes them once they are in the Doc.
+water costs are excluded (TODO 14lh). The master takes them once they are in the Doc. Added (user, 31 Oct 2026, message 568 (a)):
+a stated assumption for the reviewer pack's assumptions in the same weekly update, that the model lets every battery, new and
+existing, private or public, provide instantaneous, regulating and ten-minute reserve, while NTCSA's MTSAO 2027-2036 (Section 2.2.3,
+p.17) credits only Eskom's BESS programme and BESIPPPP bid windows 1-3 (SOURCES 'Batteries eligible for operating reserve').
+The reviewer Doc's 'Decarbonisation scenarios' section (advisor, 31 Oct 2026, 20:55 SAST, from the hypothetical runs) goes into
+REVIEWER_PACK.md with fill markers once Nick has edited it in the Doc (message 567 (b)); the keys are in RESULTS 'Fill markers for
+the reviewer Doc's scenarios section' (#138).
 
 ## Restarts were idle shutdowns (27 Oct 2026, build 2026-10-27e on claude/c6b-wind; user, messages 434 and 436)
 

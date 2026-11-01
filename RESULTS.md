@@ -18857,6 +18857,26 @@ R2,607.6bn against c6e's R2,314.7bn. Caveat: curtailment of about 100 TWh a year
 the cost of holding the cap with wind and solar where the engine's coal and the LP's representative days disagree; a hypothetical plan,
 built faster than the deliverable rates.
 
+### Operating reserve against NTCSA's MTSAO 2027-2036 Table 1: the 2035 presets carry 2,595 MW (IRP path 2035) and 2,751 MW (Least-cost path 2035) on average against about 2,588 MW; the model's regulating product stays at 1,140 MW against about 1,527 (user, 31 Oct 2026, message 564 (c); report only)
+
+Measured: each preset run once as the page runs it (applyState, then simulate on PROFILES: one weather year), on the site-copy branch's
+build 2026-10-31d (index.html as main 179e289 plus the copy changes, which do not touch the engine), 31 Oct 2026 about 17:55 UTC.
+The model's rule is 'astr' (ASTR_RESERVE): instantaneous 650 MW at peak and 850 off-peak, regulating 830 MW in 2026 rising to 1,140 in
+2030, ten-minute 720/520 falling to 410/210, 2,200 MW in all from 2030 at peak and off-peak; after 2030, 5% (reserveVrePct) of the
+hour's wind and solar output above what the 2030 fleet would give is added.
+
+| Preset (year) | Model reserve, mean | Model, lowest and highest hour | MTSAO operating reserve | Model regulating | MTSAO regulating |
+|---|---|---|---|---|---|
+| IRP path 2035 (2035) | 2,595 MW | 2,215-3,120 MW | about 2,588 MW (interpolated: 2,278 in 2031 to 2,665 in 2036) | 1,140 MW | about 1,527 MW (interpolated: 908 in 2027 to 1,605 in 2036) |
+| Least-cost path 2035 (2035) | 2,751 MW | 2,217-3,538 MW | about 2,588 MW | 1,140 MW | about 1,527 MW |
+| Fossil-free 2040 (2040) | 4,327 MW | 2,258-7,524 MW | beyond the outlook (2,665 MW in 2036) | 1,140 MW | beyond the outlook (1,605 MW in 2036) |
+
+Findings: (1) the model's total reserve in 2035 is close to the outlook's on IRP path 2035 and about 160 MW above it on Least-cost path
+2035, but it is made differently: the outlook grows the regulating product (about 77-78 MW a year to 1,605 MW in 2036), while the model
+holds regulating at 1,140 MW from 2030 and adds a share of wind and solar output instead, which swings from almost nothing at night to
+over 1,300 MW (3,500 on Fossil-free 2040). (2) From 2026 to 2030 the model's 2,200 MW matches the outlook's 2,200 MW. The adequacy
+panel now shows one figure where the mean and the peak are equal (presets to 2030); the 2035 and 2040 presets still show two. No
+change made.
 ### Cost per tonne of CO2 avoided and curtailment share: Deep decarbonisation 2035, hypothetical, R<!--fill:s_hypo_deep2035r.cpta-->375<!--/fill-->/t against c6e; curtailment <!--fill:s_hypo_deep2035r.curtshare_2035-->32%<!--/fill--> of available wind and solar in 2035 against c6e's <!--fill:base.curtshare_2035-->8%<!--/fill--> (user, 31 Oct 2026, message 559)
 
 Definitions: cost per tonne of CO2 avoided = (engine PV 2026-40 of the run less c6e's) / (c6e's CO2 2026-40 less the run's), PV at 8%
@@ -18970,3 +18990,13 @@ ratchet moved with that cause, tolerance unchanged) and validate_pathway_presets
 on 31a; the validator now reads the 31c checks, which differ from 31a only by the two corrections).
 After the suite, main (cf6050b) was merged in (b4c89d3): index.html identical to 31l (only the build stamp conflicted), no test script
 changed, so the suite stands.
+### Suite on build 2026-10-31i (site copy, messages 561-571): equal to main's 31a by count in every script and by failure name (user, 31 Oct 2026, message 576 (a))
+
+Suite on build 2026-10-31i (claude/site-copy-561, index.html at f02e1fb, stored panels rewritten at 99937d1; ESK19679.csv present),
+31 Oct 2026 21:45-23:48 UTC in two pieces, beside two other suites on other worktrees, so the timings are not clean. Node checks
+998/1007, audit 88/88, eng5 5/6. Equal to main's suite on 31a (RESULTS 'Suite on build 2026-10-31a', 998/1007, 88/88, 5/6) by count in
+every script and by failure name: validate_findings 37/40 (congestion floor; iron-air July; turn-up share), validate_response 86/87
+(response matrix matches baseline), validate_consistency 82/83 (high-season off-peak), validate_benchmarks 28/30 (CO2 against Ember;
+peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost), eng5 storage vs unserved. validate_worker
+38/38, validate_public_text 32/32 (the TDP note at 40 words after 31h's 43 failed it; build 31i), validate_external 8/8. The 31h run,
+stopped at validate_worker, had the same failures plus that public-text check.
