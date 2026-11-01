@@ -18985,3 +18985,34 @@ Tubatse's R29,200/kW (river-based, PS_TUBATSE_RKW) with no fixed O&M, and simula
 fixed O&M for it): R2,482.0/kW-yr. Same cost of capital and 60-year life in both. So a pumped-storage slider build on the page is priced
 on Tubatse with no fixed O&M, while the optimiser prices off-river sites with fixed O&M. Not changed: the Fossil-free preset carries the
 run's charge so the page reproduces its check; aligning the page's default to the build LP's basis is TODO 14lw (after the note).
+
+### Deep decarbonisation 2035 with no new gas (hypothetical): adequate, CO2 at or below 22.8 Mt in every year 2035-40 in the engine (20.0 at most), engine PV R2,687.5bn, R79.9bn more than the Deep run with gas; 2.1 GW of new diesel peakers by 2040, no iron-air (user, 1 Nov 2026, message 580 (d); build 2026-10-31a)
+
+Run: pathway_perfail.js on 31a (claude/hypo-presets-results worktree, index.html at 179e289's content, BUILD_STAMP '2026-10-31a'),
+s_hypo_deep2035r_c6e's settings unchanged (c6e's env_c6a.sh, GAS_FIRST=2035, PACE=grid, LI_CAP=4000, LI_EH=8, IA_TOTAL=5000,
+CO2CAP=22.809:2035 with the same CO2CAP_YEARS, CO2_ELASTIC=50000, native HiGHS) plus the no-gas plan's GAS_CAP=0 OCGD=1 (no new CCGT or
+gas OCGT; new diesel peakers allowed; their output counts in the cap rows, gd_). 1 Nov 2026 05:06-05:12 UTC, one pass (simplex, LP key
+789ff91405); engine check as the set (pathcheck.js, LNG=1 GRID=1, groups a, b and c, 120 runs a year), finished 05:22 UTC. Files:
+harness/pathway/opt/pathway_s_hypo_deep2035nogas_c6e.json, pathcheck_s_hypo_deep2035nogas_c6e_{a,b,c}.json, run_deepnogas.sh.
+
+| 31a, engine PV 2026-40 | c6e | Deep with gas | Deep, no new gas |
+|---|---|---|---|
+| Verdict | adequate | adequate | adequate |
+| Engine PV, R bn | 2,314.7 | 2,607.6 | 2,687.5 |
+| Against c6e | – | +292.9 | +372.8 |
+| CO2 2026-40, Mt | 1,738.6 | 957.4 | 900.0 |
+| CO2 2035 / 2036 / 2037 / 2038 / 2039 / 2040, Mt | 90.5 / 94.0 / 87.0 / 77.8 / 73.0 / 67.5 | 21.1 / 20.7 / 21.3 / 20.1 / 20.2 / 17.2 | 20.0 / 16.4 / 15.0 / 14.7 / 14.9 / 15.1 |
+| R/t avoided against c6e (tax in) | – | 375 | 445 |
+| Highest yearly mean unserved / worst run, GWh | 5.46 / 174.0 | 4.40 / 32.1 | 3.31 / 52.0 |
+| Build by 2035, MW: wind, solar, lithium (h), offshore | 22,562, 22,746, 11,315 (5.1), 0 | 43,000, 51,982, 21,599 (5.6), 1,000 | 43,000, 55,266, 24,053 (5.4), 1,000 |
+| New gas by 2035 / 2040, MW | 1,200 / 7,200 | 2,000 / 8,322 | 0 / 0 |
+| New diesel peakers by 2035 / 2040, MW | 0 / 152 | 0 / 0 | 1,055 / 2,055 |
+| Build by 2040, MW: wind, solar, lithium (h), offshore | 31,377, 33,830, 15,241 (6.2), 0 | 44,958, 60,889, 24,497 (7.0), 1,000 | 51,932, 75,054, 31,995 (6.6), 1,352 |
+| Coal standing 2035 / 2040, MW | 25,916 / 17,890 | 16,416 / 6,214 | 18,766 / 10,740 |
+| Curtailment 2035-40, TWh a year | – | 98-111 | 108-164 |
+
+Iron-air: none built in either Deep run. The build LP used slack above its own 2035 cap of 17.509 Mt (the engine-gap-tightened cap,
+message 537 (d)): 1.62 Mt at R50,000/t; none in 2036-40. That cap was tightened by the Deep-with-gas run's engine gap; the engine's CO2
+here is at or below 22.8 Mt in every year, so the user's cap holds in the engine. Without gas the plan keeps more coal standing (18.8 GW
+in 2035 against 16.4) and builds more solar, lithium and diesel peakers; diesel output stays small (0.01-0.10 TWh a year 2035-40).
+Caveat: hypothetical build rates (the grid pace), as both Deep runs; one weather year's profiles in the build LP, twelve in the check.
