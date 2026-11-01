@@ -18894,3 +18894,30 @@ every script and by failure name: validate_findings 37/40 (congestion floor; iro
 peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost), eng5 storage vs unserved. validate_worker
 38/38, validate_public_text 32/32 (the TDP note at 40 words after 31h's 43 failed it; build 31i), validate_external 8/8. The 31h run,
 stopped at validate_worker, had the same failures plus that public-text check.
+
+### System strength on c6e, read-only (547 (b)): the 6 GW synchronous floor binds in 2033 only (421 of 105,120 hours, 0.4%); inertia from synchronous output falls from 53.6 GWs at its lowest hour in 2026 to 11.5-13.2 GWs from 2033, and its 5th percentile from 67.6 to 12.9 GWs by 2040 (user, 1 Nov 2026, messages 547 (b), 578, 585 and 591)
+
+Method (no model change): c6e's state in 2026, 2028, 2030, 2033, 2035, 2038 and 2040, written by harness/pathway/gen_pathway_presets.py's
+block() as pathcheck.js builds it (2026 without the run's fleet2026 adjustment), on build 2026-11-01b (main at 1dc9119), each run
+through all twelve weather years (twelveYearDemand, one outage draw per year, seed 71830529 + year x 7919), twice: as is and with
+syncMinMW 0. The floor binds in an hour when coal output differs between the two by more than 1 MW. Inertia by source per hour: H x
+output / 0.9 (MVA), central H from SOURCES ('System strength: inertia constants'; coal 3.7, nuclear 4.1, hydro and pumped storage 2.5,
+CCGT and open cycle 5.0, CSP 3.0 s); imports (HVDC) and inverter-based plant count zero; grid-forming batteries, which the engine credits
+toward the floor at 0.30 of their power, are not counted as inertia. Output, not online capacity: the engine exports neither committed
+coal MW nor unit counts, so the figures are a lower bound (a unit online carries at least its output). 1 Nov 2026 about 10:00 UTC.
+
+| Year | Hours the floor binds (of 105,120) | Coal lifted, TWh | Floor unmet, hours | Inertia mean, GWs | 5th percentile | Lowest hour | Lowest hour by source: coal / nuclear / hydro, GWs | Mean share: coal / nuclear / pumped storage / CCGT |
+|---|---|---|---|---|---|---|---|---|
+| 2026 | 0 | 0 | 0 | 78.6 | 67.6 | 53.6 | 47.3 / 5.7 / 0.6 | 89% / 7% / 2% / 0% |
+| 2028 | 0 | 0 | 0 | 79.5 | 68.6 | 51.9 | 45.7 / 5.7 / 0.6 | 89% / 7% / 2% / 0% |
+| 2030 | 0 | 0 | 0 | 67.3 | 50.5 | 34.0 | 26.7 / 5.7 / 0.6 | 87% / 8% / 2% / 0% |
+| 2033 | 421 (0.4%) | 0.16 | 0 | 52.8 | 26.6 | 13.2 | 6.9 / 5.7 / 0.6 | 82% / 11% / 4% / 0% |
+| 2035 | 0 | 0 | 0 | 47.4 | 19.1 | 11.5 | 5.3 / 5.7 / 0.6 | 79% / 12% / 5% / 1% |
+| 2038 | 0 | 0 | 0 | 43.3 | 13.2 | 11.6 | 5.3 / 5.7 / 0.6 | 75% / 13% / 6% / 3% |
+| 2040 | 0 | 0 | 0 | 40.6 | 12.9 | 11.8 | 5.5 / 5.7 / 0.6 | 68% / 14% / 6% / 8% |
+
+Findings: the floor as built rarely binds because the plants it counts (nuclear and hydro at capacity, imports at their factor, grid-forming
+battery credit at 0.30 of battery power) already exceed 6 GW once batteries grow, and coal's own unit commitment runs above it in the
+other hours. From 2033 the lowest-inertia hours carry about 1.3-1.7 GW of coal output, Koeberg and a little hydro: about 11.5-13 GWs
+against 50-54 GWs in 2026-28. Caveats: output-based lower bound; one outage draw per weather year (the engine checks use 10 or more);
+no inertia requirement or largest-loss test yet (the minimum version, TODO 14lo, uses the user's largest credible loss rule, SOURCES).
