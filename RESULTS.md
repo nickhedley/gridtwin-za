@@ -19326,3 +19326,17 @@ validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_pane
 validate_bids 7/7, validate_external 8/8. Main's #142 (REVIEWER_PACK.md) and #143 (check files, pathcheck.js, RESULTS, TODO) were merged in
 after the suite (917473e, 8aa6bc1); neither touches index.html or a file the suite reads for these presets' costs, so it was not rerun.
 Visible text against main (2b725f1): the two hypothetical captions only, as reviewed (Deep 47 words, Fossil-free 48).
+
+### packfill: a null open-cycle share no longer passes NTCSA's test; the fill stops and says why (user, 1 Nov 2026, message 600 (a))
+
+harness/pathway/tables/packfill.js read criterion (ii) as `x.ocgtCF>=0.06`, which is false for null, so a check made with the pathcheck
+bug of 31 Oct (RESULTS 'pathcheck: the per-run object') passed it unseen. Every NTCSA reading (meets, verdict, verdictplain, ocmax,
+ocmaxplain) now goes through ntcsaRows, which stops on a null or missing ocgtCF or unserved mean in any year (RULES 4), and the
+fill prints each failing key's reason in place of a bare 'unknown keys'. Tests, 1 Nov 2026 on main 72bb1fc: the fill folder built
+only from harness/pathway/c6e and harness/pathway/opt fills REVIEWER_PACK.md to the identical text (0 placeholders changed, none
+missing); the same folder with c6e's 2026-30 check nulled stops: 'base.ocmax (NTCSA test: c6e has no unserved mean or open-cycle share
+(ocgtCF null or missing) in 2026, 2027, 2028, 2029, 2030)', exit 1.
+Agreement with the caption generator (user, 1 Nov 2026, message 601 (c)): a null ocgtCF counts as zero only when the check records open-cycle
+capacity 0 MW and output 0 TWh (no open-cycle plants standing), as harness/pathway/gen_pathway_presets.py does. Fossil-free 2040's 2040
+row is that case: its verdict reads 'met' and ocmax 0.0% (before, the fill stopped on 2040). c6e with its 2026-30 check nulled still
+stops (3,400 MW standing). The pack still fills to the identical text.
