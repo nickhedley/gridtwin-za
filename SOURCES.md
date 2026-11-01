@@ -2278,9 +2278,11 @@ them, not read in the repository unless stated) and the user's decisions:
   central is cautious. Sensitivities 1 s and 11 s; 11 s from ARENA, Hornsdale Power Reserve Upgrade, summary report (15 Dec 2023, p.16):
   about 2,070 MW.s on 150 MW, effective H 11.02 s (as reported by the user; not read in the repository).
 - Fault level, a sensitivity only: AEMO ISP 2024 Appendix 7, p.21, system strength remediation up to A$137k per MW of new inverter
-  capacity (upper bound), and half of it, on new wind, solar and batteries. AUD/ZAR: one SARB rate with its date, as a single constant;
-  not yet recorded (www.resbank.co.za is not reachable from the session; the user or the advisor to supply it). Until then the
-  sensitivity stops with an error rather than run on an unofficial rate.
+  capacity (upper bound), and half of it, on new wind, solar and batteries. AUD/ZAR: South African Reserve Bank, Selected historical
+  rates, series 'Australia: Dollar per Rand', 0.0855 on 2026-10-30 (the latest value; read on the SARB page by the user, 1 Nov 2026,
+  https://www.resbank.co.za/en/home/what-we-do/statistics/key-statistics/selected-historical-rates). Held as SARB publishes it (A$ per
+  rand) in one constant; the code takes its inverse, about R11.70 per A$. A$137k/MW is then about R1,602/kW, half about R801/kW. SARB
+  gives four decimals, so the inverse carries about +/-0.07% from rounding.
 - Largest credible loss: as above ('System strength: inertia constants and the largest credible loss'). In UC_FLEET, Medupi (5 x 720 MW)
   and Kusile (4 x 720 MW) are the stations with three or more 720 MW units; both stand to 2040 in every plan that keeps coal.
 

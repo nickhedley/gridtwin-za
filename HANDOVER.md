@@ -75,7 +75,7 @@ ratio in c6e's low-inertia hours (lower quartile), reported by year. D2 grid-for
 cautious), sensitivities 1 s and 11 s (ARENA, Hornsdale upgrade, 15 Dec 2023, p.16). D3 the engine lifts coal commitment when short,
 as today's floor does, and reports the hours and MWh lifted. D4 condensers: 30-year life (GHD for ElectraNet, 2019, p.20) and 1% of
 capital a year fixed cost (ElectraNet 2018, p.21), both sourced. D5 fault level at A$137k/MW and half, at one SARB AUD/ZAR rate with
-its date as a single constant (pending: resbank.co.za not reachable from the session). Before any long run: the suite before and
+its date as a single constant (SARB 'Australia: Dollar per Rand' 0.0855 on 2026-10-30, about R11.70 per A$). Before any long run: the suite before and
 after, the LP-key test with the switch on the old 6 GW floor, the one-year build test and the engine checks on c6e's states; then
 the c6e rebuild with the floor and the sensitivities. Target Wed 4 Nov.
 
