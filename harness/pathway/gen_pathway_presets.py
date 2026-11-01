@@ -84,6 +84,11 @@ def block(cfg):
     # hours and the build LP's annuity on its cost basis (acapPs), which is not the page's derived acapPs (FIXED, its own basis).
     PH = P.get('phes') or {}
     if ps and (cum('phel') or PH.get('hours2')): raise SystemExit(cfg['name'] + ': a second pumped-storage duration: carry it before using the generator')
+    # System strength (build 2026-11-02a): a run on 'inertia' or with the fault-level adder carries builds (grid-forming MW, condenser
+    # MVA) and settings the presets do not yet carry (c7 adds them).
+    ss = P.get('ss') or {}
+    if ss.get('mode', 'sync6') != 'sync6' or ss.get('fault', 'off') != 'off':
+        raise SystemExit(cfg['name'] + ': the run is on system strength mode ' + str(ss.get('mode')) + ', fault ' + str(ss.get('fault')) + ': extend the generator first')
     if P['gas'].get('fuelRFlat') is not None or P.get('gasFinPremium') or P.get('comply'):
         raise SystemExit(cfg['name'] + ': a recorded setting this generator does not carry is set: extend it first')
     # Settings the run records that are the page's own defaults, not preset state (29 Oct 2026, for c6e; the same rule as the

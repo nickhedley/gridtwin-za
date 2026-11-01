@@ -82,7 +82,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // The LNG terminal charge is the page constant bldGasTerminalRkW from build 2026-10-19b (was an addition to BLD_FOM): set to
  // the run's own, 0 included, so a run without one is not charged the new default.
  w.eval(`if(!('bldGasTerminalRkW' in FIXED)) throw new Error('FIXED.bldGasTerminalRkW missing'); state.bldGasTerminalRkW=${+GFA};`);
- const Y=Object.keys(P.sched).map(Number); const cum={wind:0,pv:0,rooftop:0,batt:0,battMWh:0,vrfb:0,ironair:0,ccgt:0,off:0,phes:0,phel:0,ocgt:0,ocgd:0};
+ const Y=Object.keys(P.sched).map(Number); const cum={wind:0,pv:0,rooftop:0,batt:0,battMWh:0,vrfb:0,ironair:0,ccgt:0,off:0,phes:0,phel:0,ocgt:0,ocgd:0,gfm:0,scc:0,scn:0};
  // Open-cycle gas (build 2026-10-11f): the pathway's capex case, so the engine charges what the optimiser charged.
  if (P.ocgt && P.ocgt.costCase) w.eval(`state.bldOcgtCostCase=${JSON.stringify(P.ocgt.costCase)};`);
  // GAS_CAPEX (7 Oct 2026): CCGT capex at 2026, R/kW, for the IRP-capex sensitivity; read by engine and optimiser alike.
@@ -105,6 +105,15 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // Coal settings (PR C, build 2026-10-24a; messages 359, 363): the pathway's own; a run recorded before PR C has none and replays with
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
+ // System strength (build 2026-11-02a; FIXED.ssMode): the run's own mode and settings (P.ss, pathway_perfail.js SS, ROCOF, SS_FLAT_GWS,
+ // GFM_H, SS_LIFT, FAULT); a run recorded before has none and is checked on 'sync6', the 6 GW floor it was built with. Under 'inertia'
+ // each year's grid-forming MW and condenser MVA built to it reach the engine (ssGfmMW, ssCondMVA), and the row reports the floor.
+ const SSR = P.ss || { mode: 'sync6', fault: 'off' };
+ w.eval(`if(!('ssMode' in FIXED)) throw new Error('ssMode missing'); state.ssMode=${JSON.stringify(SSR.mode)}; state.ssFault=${JSON.stringify(SSR.fault || 'off')};`
+   + (SSR.mode === 'inertia' ? ` state.ssRocofHz=${+SSR.rocofHz}; state.ssFlatGWs=${SSR.flatGWs == null ? 'null' : +SSR.flatGWs}; state.ssGfmH=${SSR.gfmHSet == null ? 'null' : +SSR.gfmHSet}; state.ssCoalLift=${SSR.coalLift == null ? 1 : +SSR.coalLift};` : ''));
+ const SS_ON = SSR.mode === 'inertia';
+ if (SS_ON || SSR.fault !== 'off') console.log('system strength from the pathway:', JSON.stringify(SSR));
+ if (SS_ON && SSR.lambda && JSON.stringify(SSR.lambda) !== w.eval('JSON.stringify(SS_COAL_LAMBDA)')) console.log('note: the run\'s SS_COAL_LAMBDA', JSON.stringify(SSR.lambda), 'differs from the page\'s (the build LP\'s coal credit; the engine does not read it)');
  // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
  // Koeberg's monthly shape (message 376 (b)): the run's own, so s_koeberg_winter is checked on the shape it was built on.
  if (P.nuclearShape){ w.eval(`state.nuclearMonthlyShape=${JSON.stringify(P.nuclearShape)};`); console.log('Koeberg monthly shape from the pathway:', JSON.stringify(P.nuclearShape)); }
@@ -159,6 +168,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    const over={...(PG && PG.fuelR ? {costCcgt:PG.fuelR[y]} : {}),newWindMW:cum.wind,newPvMW:cum.pv,newRooftopMW:cum.rooftop,newBattMW:cum.batt,newBattHours:cum.batt>0?Math.max(1,Math.min(20,cum.battMWh/cum.batt)):4,
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
+   if (SS_ON){ over.ssGfmMW=cum.gfm; over.ssCondMVA=cum.scc+cum.scn; }
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
    // FOSSIL_END (message 531 (c)): after the run's last fossil year no coal (its coalMW is 0 from its dates), no gas and no diesel stand.
    if (P.fossilEnd && y > P.fossilEnd){ if (over.coalDecomMW < +w.eval('FIXED.coalInstalledMW')) throw new Error('fossilEnd: coal standing in '+y);
@@ -182,7 +192,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
        let dem=0, chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
-       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW({...FIXED,...st})+Math.max(0,st.newOcgtMW||0),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; return (st.windMW||FIXED.windMW)*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6]); } }
+       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW({...FIXED,...st})+Math.max(0,st.newOcgtMW||0),...(()=>{ const c=x.coalCommittedMW; if (!c) return {}; let s=0,m=Infinity; for(let i=0;i<c.length;i++){ s+=c[i]; if(c[i]<m) m=c[i]; } return {cmMean:s/c.length, cmMin:m}; })(),...(x.ss?{ssReq:x.ss.reqGWs,ssMin:x.ss.minGWs,ssP5:x.ss.p5GWs,ssShortH:x.ss.shortH,ssShortGWsH:x.ss.shortGWsH,ssLiftH:x.ss.liftH,ssLiftMWh:x.ss.liftMWh,ssLiftFloorMWh:x.ss.liftFloorMWh,ssLiftCappedH:x.ss.liftCappedH}:{}),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; return (st.windMW||FIXED.windMW)*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6]); } }
       return JSON.stringify(o); })()`));
    // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
@@ -221,6 +231,20 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // peakers, with Avon and Dedisa's contract output) and open-cycle on LNG; energy over capacity x 8,760, mean over the runs.
    // Capacity is read from the defaults and the run's state together (25 Oct 2026): the state alone carries no ocgtDieselMW, so the
    // first version counted only new open-cycle gas and read 17% for c6's strict 2034 where all open-cycle plant gives under 1%.
+   // SYSTEM STRENGTH (build 2026-11-02a): committed coal (mean of the runs' means, lowest hour of any run), and under 'inertia' the year's
+   // requirement, inertia's lowest hour (any run) and 5th percentile (mean of the runs'), hours and GW.s-hours short after the lift,
+   // the lift (hours, MW-hours of commitment, MWh of output floor, hours with no coal left to lift), means per run; and the annual
+   // charge of the grid-forming premium and condensers built to this year (ssAnnualRkW, as the optimiser charged it), outside cost.
+   { const L=o[0].findIndex(v=>v!==null&&typeof v==='object'), n=o.length, m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/n;
+     if (o[0][L].cmMean!==undefined) r.committedCoal={meanMW:m('cmMean'), minMW:Math.min(...o.map(b=>b[L].cmMin))};
+     if (SS_ON){ if (o[0][L].ssReq===undefined) throw new Error('the run is inertia but the engine returned no ss');
+       r.ss={reqGWs:o[0][L].ssReq, inertiaMinGWs:Math.min(...o.map(b=>b[L].ssMin)), inertiaP5GWs:m('ssP5'), shortH:m('ssShortH'), shortGWsH:m('ssShortGWsH'),
+         liftH:m('ssLiftH'), liftCommitMWh:m('ssLiftMWh'), liftFloorMWh:m('ssLiftFloorMWh'), liftCappedH:m('ssLiftCappedH'), gfmMW:cum.gfm, condBuiltMVA:cum.scc+cum.scn};
+       let c=0; for (const yy of Object.keys(P.sched)) if (+yy<=y) for (const t of ['gfm','scc','scn']) c+=(+P.sched[yy][t]||0)*(+w.eval(`ssAnnualRkW('${t}', ${+yy})`))*1000;
+       r.ss.costBn=c/1e9; r.costWithSs=r.cost+r.ss.costBn; }
+     if ((SSR.fault||'off')!=='off'){ let f=0; const A=t=>+w.eval(`bldAnnuity(ssFaultRkW({...FIXED,...state}), BLD_LIFE['${t}'], '${t}')`);
+       for (const yy of Object.keys(P.sched)) if (+yy<=y) for (const [k,t] of [['wind','wind'],['pv','pv'],['off','offshore'],['batt','batt'],['vrfb','vrfb'],['ironair','ironair']]) f+=(+P.sched[yy][k]||0)*A(t)*1000;
+       r.faultBn=f/1e9; r.costWithFault=r.cost+r.faultBn+(r.ss?r.ss.costBn:0); } }
    { const L=o[0].findIndex(v=>v!==null&&typeof v==='object'), e=o.reduce((a,b)=>a+(+b[L].ocE||0),0)/o.length, cap=o.reduce((a,b)=>a+(+b[L].ocCap||0),0)/o.length;
      r.ocgtCF=cap>0?e/(cap*8760):null; r.ocgtTWh=e/1e6; r.ocgtCapMW=cap; r.ocgtCFUnder6=r.ocgtCF!=null?r.ocgtCF<0.06:null; }
    // LNG STORAGE ADEQUACY (user, 6 Oct 2026; LNG=1). Gas burned in each of the loop's own stress windows
