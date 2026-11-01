@@ -19055,4 +19055,10 @@ below its 1.9% from later years, so base.ocmax is unchanged). The page's NTCSA c
 the fixed c6e file to five decimals in all five years, because c6e builds no open-cycle gas. On the same formula the Deep preset peaks
 at 0.82% (2032) and Fossil-free 2040 at 0.03% (2026); neither builds open-cycle gas. Both pass criterion (ii) in every year.
 
-Caveat: the formula holds only for runs without new open-cycle gas; the opt checks keep their null fields until rerun (TODO 14lz).
+Rerun (TODO 14lz): the Deep and Fossil-free preset 31c checks, groups a, b and c, on the same build and settings as 577 (a) with the
+fixed pathcheck (gtza-c31l, IN = harness/pathway/opt/pathway_s_hypo_{deep2035r,ff2040}_c6e.json), 1 Nov 2026 10:32-10:46 UTC. Only the
+open-cycle fields (and Deep's gasFloorTWh) differ from the files made with the bug; the measured open-cycle shares equal the formula's
+in every year to two decimals (Deep 0.82% in 2032 at most, Fossil-free 0.03% in 2026). The six files replace those in harness/pathway/opt.
+
+Caveat: the 31a checks listed above keep their null fields; each is superseded for the pack and the presets by a clean 31c check (the
+calibrated Deep runs' 31c checks were made on gtza-c31l, which predates the bug). c6e_vre and dmin2028 keep theirs (TODO 14lz).

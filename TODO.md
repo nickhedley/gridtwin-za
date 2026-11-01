@@ -858,10 +858,9 @@ costs per participant; (6) regional distribution. Known limitations line as in 1
 14lv. Other shortcuts taken to hold the note's date (user, 31 Oct 2026, message 574 (a) 3), added as each is taken, each with what it
 leaves out and its full version after the note; each gets a Known limitations line (574 (b)). None yet.
 
-14lz. Rerun the opt checks made with the pathcheck bug (RESULTS 'pathcheck: the per-run object', message 598 (c)) with the fixed
-pathcheck on their own builds, so their open-cycle fields are measured, not null: the Deep and Fossil-free preset checks (31a and
-31c), the five calibrated Deep runs and deep2035nogas; then c6e_vre and dmin2028. Dispatch is unchanged, so only the open-cycle,
-gas floor and LCOE fields should move; confirm that by diff. Not needed for any published figure (all clean or recomputed).
+14lz. The checks made with the pathcheck bug (RESULTS 'pathcheck: the per-run object', message 598 (c)). Done: the Deep and
+Fossil-free preset 31c checks, rerun with the fixed pathcheck (1 Nov). Left: c6e_vre and dmin2028, rerun if their open-cycle, gas floor
+or LCOE fields are ever used; the 31a checks with null fields are superseded by clean 31c checks and need no rerun.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
