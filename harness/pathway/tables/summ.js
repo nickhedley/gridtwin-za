@@ -11,7 +11,7 @@ function summ(O, n){ const P=JSON.parse(fs.readFileSync(`${O}/pathway_${n}.json`
   return { n, verdict:P.verdict, std:P.standard||null, pv, pvG, co2:Object.fromEntries(rows.map(r=>[r.y,r.co2])), co2Cum:rows.reduce((s,r)=>s+r.co2,0),
     maxMean:Math.max(...rows.map(r=>r.mean)), worstRun:Math.max(...rows.map(r=>r.worst)), target:rows.map(r=>r.target), over,
     ocgtCF:Object.fromEntries(rows.map(r=>[r.y,r.ocgtCF])), ocgtOver:rows.filter(r=>r.ocgtCF>=0.06).map(r=>r.y),
-    build:{2030:at(2030),2035:at(2035),2040:at(2040)}, rows, sched:P.sched, nuclearAdd:P.nuclearAdd||null };
+    build:{2030:at(2030),2035:at(2035),2040:at(2040)}, rows, sched:P.sched, nuclearAdd:P.nuclearAdd||null, fossilEnd:P.fossilEnd??null, fleet2026:P.fleet2026||null };
 }
 module.exports={summ};
 if (require.main===module){ const O=process.argv[2]; for (const n of process.argv.slice(3)){ const s=summ(O,n); if(!s){console.log(n,'incomplete');continue;}
