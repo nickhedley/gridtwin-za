@@ -18952,3 +18952,36 @@ high-season off-peak; validate_benchmarks CO2 against Ember and peakerSeasonRati
 curtailFuelCost; eng5 storage vs unserved), plus the four the swap adds (validate_findings 34/40: preset curtailment band, Deep gas at
 zero, Deep 12-hour storage; validate_external 7/8: CSIR capacity ranges), each with its cause in the preset swap entry above, left for
 the user's decision. validate_worker 38/38, validate_public_text 32/32, validate_stored_panels 86/86.
+
+### Preset swap decided: the four checks updated with their causes, captions in plain language up to 50 words, and the cause of the pumped-storage charge difference (user, 1 Nov 2026, messages 577 (b)-(d) and 580 (b), (c), (e); build 2026-11-01a)
+
+Checks (580 (b), each with its cause; claude/preset-swap, build 2026-11-01a):
+- validate_findings 'preset curtailment sits within its weather band': re-pinned to the optimised builds, Deep 124.9 and Fossil-free 319.1
+  TWh on the default profiles (were 84.8 and 128.0, the hand-searched builds), band unchanged at +/-15%.
+- 'the deep decarbonisation preset keeps gas at zero' replaced by 'the deep decarbonisation preset keeps CO2 at or below its cap': the
+  preset's CO2 on the default profiles against HYPO_PRESETS' cap (19.58 against 22.809 Mt a year). The engine check's CO2 in every year
+  2035-40 against the cap stays gen_pathway_presets.py's.
+- 'the deep decarbonisation preset uses 12-hour storage' withdrawn: it pinned the hand-searched build's duration; the optimised build's
+  (5.6 h) is the build LP's choice, checked against its run by validate_pathway_presets.
+- validate_external 'preset builds sit inside the CSIR least-cost capacity ranges': the hypothetical presets exempt (optimised at build
+  rates beyond the deliverable limits, so outside published least-cost ranges by construction); the check now covers every other preset
+  from 2035 on: IRP path 2035 25.7 GW wind and 21.1 solar, Least-cost path 2035 27.2 and 26.3 (inside 20-70 and 15-75). Before, it
+  covered only the two hypothetical presets, so exempting them alone would have left it checking nothing (flagged).
+validate_findings 36/39 after (main's three known failures; one check withdrawn); validate_external 8/8.
+
+Captions (580 (c), replacing 555 (f)'s and 577 (b)'s): plain language, at most 50 words, generated (new build from PRESETS, the cap and
+the fossil-free year from HYPO_PRESETS, the standard from PRESET_SCORES, the caveat from the least-cost pathway's yearly limits; a zero
+clause dropped). Deep, 47 words: "Retires 23.3 GW of coal by 2035 and caps CO2 at 22.8 Mt a year from then. Adds 43 GW of wind, 52 GW of solar,
+21.6 GW of 5.6-hour batteries and 2 GW of gas. Meets NTCSA's reliability standard. Caveat: build rates exceed our annual limits."
+Fossil-free, 48 words: "No coal, gas or diesel from 2040. Adds 64.5 GW of wind, 5 GW of offshore wind, 100.5 GW of solar, 59.9 GW of 8-hour
+batteries, 9 GW of other storage and 5 GW of unproven iron-air. Meets ..." (same last two sentences). Deep's 1 GW of offshore wind is not
+named: with it the caption is 52 words (flagged). validate_public_text's preset-caption cap is 50 (slider notes keep 40); CLAUDE.md's
+site-copy rule says so.
+
+Pumped-storage charge (577 (d), 580 (e)): cause established, two parts, both in index.html. The build LP and pathcheck.js price new pumped
+storage on bldPhesCostBasis 'anu2026' (off-river sites, USD 1,100/kW + USD 14/kWh at 14 h, R16.50/USD: R21,384/kW; bldPhesCapexKW) and
+add its fixed O&M (bldPhesFomRkW, R297/kW-yr): R1,817.7 + 297 = R2,114.7/kW-yr. The page's FIXED.acapPs (bldDerivedAcaps) annuitises
+Tubatse's R29,200/kW (river-based, PS_TUBATSE_RKW) with no fixed O&M, and simulate charges new pumped storage acapPs alone (no separate
+fixed O&M for it): R2,482.0/kW-yr. Same cost of capital and 60-year life in both. So a pumped-storage slider build on the page is priced
+on Tubatse with no fixed O&M, while the optimiser prices off-river sites with fixed O&M. Not changed: the Fossil-free preset carries the
+run's charge so the page reproduces its check; aligning the page's default to the build LP's basis is TODO 14lw (after the note).

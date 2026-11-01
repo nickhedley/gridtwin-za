@@ -365,7 +365,10 @@ function check(name, ok, detail) {
     const capScript = w.document.createElement('script');
     capScript.textContent = `window.__caps = (function(){ try {
       const out = {};
-      for (const name of ['Deep decarbonisation 2035', 'Fossil-free 2040']){
+      // The hypothetical presets are exempt (user, 1 Nov 2026, messages 577 (c) and 580 (b)): from build 2026-11-01a Deep decarbonisation
+      // 2035 and Fossil-free 2040 are optimised at build rates beyond the model's deliverable limits (HYPO_PRESETS), so they sit outside
+      // published least-cost ranges by construction. The check covers every other preset from 2035 on.
+      for (const name of Object.keys(PRESETS).filter(n => (PRESETS[n].scenarioYear ?? 2026) >= 2035 && !(n in HYPO_PRESETS))){
         const P = { ...FIXED, ...PRESETS[name] };
         out[name] = { wind: (P.windMW + P.newWindMW + (P.newOffshoreMW || 0)) / 1000,
                       solar: (P.pvUtilityMW + P.newPvMW) / 1000 };
@@ -380,12 +383,10 @@ function check(name, ok, detail) {
         if (c.wind < 20 || c.wind > 70) bad.push(`${name} wind ${c.wind.toFixed(1)} GW`);
         if (c.solar < 15 || c.solar > 75) bad.push(`${name} solar ${c.solar.toFixed(1)} GW`);
       }
-      check('preset builds sit inside the CSIR least-cost capacity ranges',
-            bad.length === 0,
+      check('preset builds sit inside the CSIR least-cost capacity ranges (hypothetical presets exempt)',
+            bad.length === 0 && Object.keys(caps).length > 0,
             bad.length ? bad.join('; ')
-              : `Deep decarbonisation ${caps['Deep decarbonisation 2035'].wind.toFixed(1)} GW wind and `
-                + `${caps['Deep decarbonisation 2035'].solar.toFixed(1)} solar; Fossil-free `
-                + `${caps['Fossil-free 2040'].wind.toFixed(1)} and ${caps['Fossil-free 2040'].solar.toFixed(1)}`);
+              : Object.entries(caps).map(([n, c]) => `${n} ${c.wind.toFixed(1)} GW wind and ${c.solar.toFixed(1)} solar`).join('; '));
     }
   }
 

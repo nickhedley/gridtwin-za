@@ -80,6 +80,8 @@ const { collectPublicText, words } = require('./public_text_lib.js');
 // SITE-COPY LENGTH (user, 25 Oct 2026, message 378 (b)): a slider note or a preset caption states the default and its basis in one
 // or two sentences, about 40 words at most. Exemptions only with the user's written decision, recorded with its message.
 const MAX_WORDS = 40;
+// Preset captions may run to 50 words (user, 1 Nov 2026, message 580 (c)): plainer language for the scenario presets. Slider notes keep 40.
+const MAX_WORDS_CAPTION = 50;
 const LONG_EXEMPT = [];
 
 (async () => {
@@ -100,11 +102,11 @@ const LONG_EXEMPT = [];
     for (const [k, v] of hits) console.log(`  ${k}\n      in ${v.join('; ')}`);
     check(`visible text carries no ${name}`, hits.size === 0, `${hits.size} distinct text${hits.size === 1 ? '' : 's'}, listed above`);
   }
-  for (const [kind, list] of [['slider notes', notes], ['preset captions', desc]]){
-    const long = list.filter(x => words(x.t) > MAX_WORDS && !LONG_EXEMPT.some(e => e.text === x.t));
-    console.log(`\n${kind} over ${MAX_WORDS} words: ${long.length} of ${list.length}`);
+  for (const [kind, list, cap] of [['slider notes', notes, MAX_WORDS], ['preset captions', desc, MAX_WORDS_CAPTION]]){
+    const long = list.filter(x => words(x.t) > cap && !LONG_EXEMPT.some(e => e.text === x.t));
+    console.log(`\n${kind} over ${cap} words: ${long.length} of ${list.length}`);
     for (const x of long) console.log(`  ${words(x.t)} words, ${x.src}: ${x.t.slice(0, 120)}...`);
-    check(`${kind} are at most about ${MAX_WORDS} words`, long.length === 0, `${long.length} of ${list.length}, listed above`);
+    check(`${kind} are at most about ${cap} words`, long.length === 0, `${long.length} of ${list.length}, listed above`);
   }
   for (const e of EXEMPT){
     const n = items.filter(it => it.t.includes(e.text)).length;

@@ -19907,12 +19907,12 @@ const _presetScoreHolds = n => { const S = PRESET_SCORES[n];
   return !(S.build < PRESET_SCORE_IMPORTS_END_BUILD && FIXED.importsEndYear > 0 && (PRESETS[n].scenarioYear ?? 2026) > FIXED.importsEndYear); };
 const _presetNtcsa = n => { if (!_presetScoreHolds(n)) return '';
   return PRESET_SCORES[n].shed <= NTCSA_ADEQUACY_GWH ? ' Meets NTCSA\u2019s reliability standard.' : ' Misses NTCSA\u2019s reliability standard.'; };
-// The hypothetical presets' last sentence (message 577 (b)): the standard, then 'builds beyond our annual limits' when the build exceeds
-// the least-cost pathway's yearly limits (_presetOverLimit); each part only when it holds.
-const _hypoTail = (n, P) => { const parts = [];
-  if (_presetScoreHolds(n)) parts.push((PRESET_SCORES[n].shed <= NTCSA_ADEQUACY_GWH ? 'Meets' : 'Misses') + ' NTCSA\u2019s reliability standard');
-  if (_presetOverLimit(P)) parts.push(parts.length ? 'builds beyond our annual limits' : 'Builds beyond our annual limits');
-  return parts.length ? ' ' + parts.join('; ') + '.' : ''; };
+// The hypothetical presets' build list (message 580 (c)): 'Adds X GW of ...', a zero item dropped, the last joined by 'and'.
+const _hypoAdds = items => { const L = items.filter(([mw]) => mw > 0).map(([mw, t]) => `${_gw(mw)} GW of ${t}`);
+  return L.length ? 'Adds ' + (L.length > 1 ? L.slice(0, -1).join(', ') + ' and ' + L.at(-1) : L[0]) + '.' : ''; };
+// Their last sentences (message 580 (c)): the standard (_presetNtcsa), then the caveat when the build exceeds the least-cost pathway's
+// yearly limits (_presetOverLimit).
+const _hypoTail = (n, P) => _presetNtcsa(n) + (_presetOverLimit(P) ? ' Caveat: build rates exceed our annual limits.' : '');
 // Gas in the IRP captions: the floored share named only when it is not all of the gas.
 const _presetGas = P => { const g = (P.newCcgtMW || 0) + (P.newOcgtMW || 0), fl = Math.min(g, P.ccgtForceLoadMW ?? FIXED.ccgtForceLoadMW);
   return fl >= g ? `${_gw(g)} GW gas at a ${FIXED.ccgtForceLoadPct}% load factor` : `${_gw(g)} GW gas (${_gw(fl)} at a ${FIXED.ccgtForceLoadPct}% load factor)`; };
@@ -19926,11 +19926,17 @@ const PRESET_DESC = {
   'IRP\'s 2030 targets, grid delayed': ((P, T) => `IRP\u2019s 2030 targets with ${Math.round(100 * (1 - P.newWindMW / T.newWindMW))}% of the new wind and solar unable to connect (${_gw(P.newWindMW)} GW of wind and ${_gw(P.newPvMW)} GW of solar connect) and curtailment at ${P.congestionCurtailPct}%, for a transmission corridor not built in time.`)(PRESETS['IRP\'s 2030 targets, grid delayed'], PRESETS['IRP\'s 2030 targets']),
   'IRP path 2035': (P => `IRP 2025\u2019s 2035 build on our own demand assumptions. ${_presetAdds(P, {tail: _presetGas(P)})}; retires ${_gw(P.coalDecomMW)} GW coal.`)(PRESETS['IRP path 2035']),
   'Least-cost path 2035': (P => `The model\u2019s least-cost build to 2035. ${_presetAdds(P, {tail: `${_gw(P.newCcgtMW + P.newOcgtMW)} GW gas`})}; retires ${_gw(P.coalDecomMW)} GW coal. Demand ${Math.round(P.demandGrowthPct)}% above 2026, with ${P.demandBlockMW} MW of smelter load.`)(PRESETS['Least-cost path 2035']),
-  // The hypothetical presets in the 561 format (user, 1 Nov 2026, message 577 (b)): new build from PRESETS, the cap and the fossil-free
-  // year from HYPO_PRESETS (generated from the runs), the standard and the limits from data. Deep's 1 GW of offshore wind is not named:
-  // with it the caption is 42 words.
-  'Deep decarbonisation 2035': (P => `Retires ${_gw(P.coalDecomMW)} GW coal by ${P.scenarioYear}. Adds ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newBattMW)} GW ${+P.newBattHours.toFixed(1)}-hour batteries and ${_gw((P.newCcgtMW || 0) + (P.newOcgtMW || 0))} GW gas. CO2 at or below ${HYPO_PRESETS['Deep decarbonisation 2035'].co2CapMt.toFixed(1)} Mt a year from ${HYPO_PRESETS['Deep decarbonisation 2035'].co2CapFrom}.${_hypoTail('Deep decarbonisation 2035', P)}`)(PRESETS['Deep decarbonisation 2035']),
-  'Fossil-free 2040': (P => `No coal, gas or diesel from ${HYPO_PRESETS['Fossil-free 2040'].fossilFreeFrom}. Adds ${_gw(P.newWindMW + (P.newOffshoreMW || 0))} GW wind (${_gw(P.newOffshoreMW || 0)} offshore), ${_gw(P.newPvMW)} GW solar, ${_gw(P.newBattMW)} GW ${+P.newBattHours.toFixed(1)}-hour batteries, ${_gw((P.newVrfbMW || 0) + (P.newPsMW || 0))} GW other storage and ${_gw(P.newIronAirMW || 0)} GW unproven iron-air.${_hypoTail('Fossil-free 2040', P)}`)(PRESETS['Fossil-free 2040']),
+  // The hypothetical presets (user, 1 Nov 2026, message 580 (c)): plain language, at most 50 words, generated from the runs: new build from
+  // PRESETS, the cap and the fossil-free year from HYPO_PRESETS, the standard and the limits caveat from data; a zero clause is dropped.
+  // Deep names onshore wind only, as drafted: with its 1 GW of offshore wind the caption is 52 words.
+  'Deep decarbonisation 2035': (P => { const H = HYPO_PRESETS['Deep decarbonisation 2035'];
+    return `Retires ${_gw(P.coalDecomMW)} GW of coal by ${P.scenarioYear} and caps CO2 at ${H.co2CapMt.toFixed(1)} Mt a year from ${H.co2CapFrom === P.scenarioYear ? 'then' : H.co2CapFrom}. `
+      + _hypoAdds([[P.newWindMW, 'wind'], [P.newPvMW, 'solar'], [P.newBattMW, `${+P.newBattHours.toFixed(1)}-hour batteries`], [(P.newCcgtMW || 0) + (P.newOcgtMW || 0), 'gas']])
+      + _hypoTail('Deep decarbonisation 2035', P); })(PRESETS['Deep decarbonisation 2035']),
+  'Fossil-free 2040': (P => `No coal, gas or diesel from ${HYPO_PRESETS['Fossil-free 2040'].fossilFreeFrom}. `
+      + _hypoAdds([[P.newWindMW, 'wind'], [P.newOffshoreMW || 0, 'offshore wind'], [P.newPvMW, 'solar'], [P.newBattMW, `${+P.newBattHours.toFixed(1)}-hour batteries`],
+                   [(P.newVrfbMW || 0) + (P.newPsMW || 0), 'other storage'], [P.newIronAirMW || 0, 'unproven iron-air']])
+      + _hypoTail('Fossil-free 2040', P))(PRESETS['Fossil-free 2040']),
 };
 const presetsEl=document.getElementById('presets');
 const presetCaptionEl=document.getElementById('presetCaption');
