@@ -2253,6 +2253,37 @@ Largest credible loss by year (user, message 578 (b); rule 366, conservative, ou
 units (NTCSA ASTR, section 3.4.2), while any coal station with three or more such units stands; after that, the largest single unit
 standing: a Koeberg unit, about 930 MW sent out, unless a larger new unit is built.
 
+## System strength, minimum version: the remaining inputs (user, 1 Nov 2026, messages 604 (b) and 606; TODO 14lo, 14lt)
+
+From the advisor's note (docs/advisor/system-strength-2026-10-31.md on claude/advisor-notes; figures as research helpers reported
+them, not read in the repository unless stated) and the user's decisions:
+- Requirement: 50 x the largest credible loss / (2 x RoCoF), RoCoF 1 Hz/s central (0.5 Hz/s and a flat 40 GW.s as sensitivities);
+  54 GW.s at 2,160 MW (Stellenbosch CRSES, Insights into inertia management, Jul 2025, gives the same 54 GW.s at 1 Hz/s). South Africa
+  sets no RoCoF limit (NTCSA ASTR 2026/27-2030/31 sets none): 1 Hz/s is borrowed from Ireland (EirGrid/SONI) and AEMO, stated.
+- TDP 2024 Rev2 synchronous condensers, committed: 5,850 MVAr in 2025-29 (Gromis, Aggeneis, Ferrum, Gamma, Koruson, Grassridge, Vuyani)
+  and 900 MVAr in 2030-34 (pp. 8, 51, 53-54); counted from 2029 and 2034, the end of each window (conservative). No cost given.
+- Condenser inertia: H = 1.3 s on the machine's MVA (Komati's converted 139 MVA machines; Tomlinson et al., CIGRE Science & Engineering
+  33, Eskom RT&D); 5.2 s with a flywheel, not modelled.
+- Condenser costs, 2021 rand (Tomlinson et al., CIGRE S&E 33): conversion of a retired coal unit R265m for the first (about 100 MVAr)
+  and R132m each further unit; new machines R411m (100 MVAr) and R700m (400 MVAr). Modelled: conversions at R132m per 139 MVA machine,
+  one per retired unit (the first unit's premium is not modelled: the LP is linear); new build at R700m per 400 MVAr; escalated to
+  January 2026 by CPI_APR21_TO_JAN26.
+- Condenser economic life 30 years: GHD Advisory, 'Economic life for synchronous condensers', report for ElectraNet, 28 June 2019, p.20
+  ("30 years is recommended as the appropriate economic asset life"). Fixed operating cost 1% of capital a year: ElectraNet, 'System
+  Strength Economic Evaluation Report', 18 February 2018, p.21 ("up to 1% of the total capital cost"). Both are Australian
+  transmission-company figures (message 606).
+- Grid-forming batteries: a build choice at 5% of battery project cost (Transgrid, system strength MCC report, Aug 2025, p.36),
+  counting toward inertia only (not fault level), limited each hour by unused power. Effective H central 1.9 s, half the thermal
+  fleet's H on the user's constants (the engine's existing basis: 0.5 x (0.70 coal + 0.12 nuclear + 0.10 CCGT + 0.08 hydro)); this
+  central is cautious. Sensitivities 1 s and 11 s; 11 s from ARENA, Hornsdale Power Reserve Upgrade, summary report (15 Dec 2023, p.16):
+  about 2,070 MW.s on 150 MW, effective H 11.02 s (as reported by the user; not read in the repository).
+- Fault level, a sensitivity only: AEMO ISP 2024 Appendix 7, p.21, system strength remediation up to A$137k per MW of new inverter
+  capacity (upper bound), and half of it, on new wind, solar and batteries. AUD/ZAR: one SARB rate with its date, as a single constant;
+  not yet recorded (www.resbank.co.za is not reachable from the session; the user or the advisor to supply it). Until then the
+  sensitivity stops with an error rather than run on an unofficial rate.
+- Largest credible loss: as above ('System strength: inertia constants and the largest credible loss'). In UC_FLEET, Medupi (5 x 720 MW)
+  and Kusile (4 x 720 MW) are the stations with three or more 720 MW units; both stand to 2040 in every plan that keeps coal.
+
 ## Eskom tariff path after 2027/28 (user, 1 Nov 2026, messages 582, 583 and 584; for TODO 14ly, after the note)
 
 Eskom, Annual financial statements 2026, note 3.3.2 (impairment assessment, key assumptions, price), printed page 46: after MYPD6's
