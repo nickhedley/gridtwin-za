@@ -2255,3 +2255,11 @@ South African reference point (the advisor's note): Komati, 1.3 s.
 Largest credible loss by year (user, message 578 (b); rule 366, conservative, our assumption, stated as such): 2,160 MW, three 720 MW
 units (NTCSA ASTR, section 3.4.2), while any coal station with three or more such units stands; after that, the largest single unit
 standing: a Koeberg unit, about 930 MW sent out, unless a larger new unit is built.
+
+## Eskom tariff path after 2027/28 (user, 1 Nov 2026, message 582; for TODO 14ly, after the note)
+
+Eskom's own long-term price assumption, used in its impairment test: tariff increases averaging about 6% a year nominal over 2029-50,
+about 2.9% a year real at the 3% inflation target. Eskom 2026 annual financial statements, note 3.3 (impairment), as reported by
+BusinessTech (3 and 25 Sep 2026); secondary until the primary note is read (the statements to be added to Drive). It is Eskom's
+impairment assumption, not an approved or proposed tariff path: nothing is approved beyond MYPD6, so the model's central case stays flat
+in real terms after 2027/28, with +2% and +3% a year real as sensitivities (the user's choice, message 582 (a)).
