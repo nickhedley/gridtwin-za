@@ -500,7 +500,10 @@ setTimeout(()=>{
       // 2040 rebuilt on c5f's demand'.
       // Re-pinned 1 Nov 2026 on build 2026-11-01a (user, messages 537 (f), 577 (c) and 580 (b)): both presets are now the optimised
       // hypothetical builds (more wind and solar, less iron-air; RESULTS 'Preset swap'), so the band follows them (was 84.8 and 128.0).
-      const PIN = { 'Deep decarbonisation 2035': 124.9, 'Fossil-free 2040': 319.1 };
+      // Re-pinned 1 Nov 2026 on build 2026-11-01d for Deep only (user, message 599 (a)): Deep is now the no-gas build calibrated to 40 Mt
+      // from 2035, with less wind and solar standing in 2035 (41.8 GW of wind with offshore and 38.2 GW of solar, against 43 and 52), so
+      // it spills less (was 124.9; RESULTS 'Deep decarbonisation 2035 becomes the no-gas build'). Fossil-free is unchanged.
+      const PIN = { 'Deep decarbonisation 2035': 88.0, 'Fossil-free 2040': 319.1 };
       const bad = [];
       for (const [name, pinned] of Object.entries(PIN)){
         const got = curt[name];

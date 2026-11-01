@@ -21,7 +21,9 @@ import json, sys
 # Both replaced by their optimised hypothetical builds on build 2026-10-31k (user, 31 Oct 2026, messages 537 (f) and 555) and rescored on
 # the page, 240 runs each, both on the disjoint seed 120000017 (their engine checks ran on seed 71830529, K=10; rule 366, so no rescore
 # shares the check's draws); 30a's files are kept as the record of the hand-searched builds.
-SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_31k_deep.json', 'Fossil-free 2040': 'harness/ext/rescore_page_31k_fossil.json'}
+# Deep decarbonisation 2035 replaced by the no-gas build calibrated to 40 Mt from 2035 on build 2026-11-01d (user, 1 Nov 2026, message 599 (a))
+# and rescored on the page the same way (240 runs, seed 120000017): 0.78 GWh, CO2 40.10 Mt; 31k's file is kept as the record.
+SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_01d_deep.json', 'Fossil-free 2040': 'harness/ext/rescore_page_31k_fossil.json'}
 sc = {}
 for n, src in SRCS.items():
     R = json.load(open(src)); v = R['presets'][n]['page']

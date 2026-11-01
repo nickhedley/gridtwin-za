@@ -19327,6 +19327,67 @@ validate_bids 7/7, validate_external 8/8. Main's #142 (REVIEWER_PACK.md) and #14
 after the suite (917473e, 8aa6bc1); neither touches index.html or a file the suite reads for these presets' costs, so it was not rerun.
 Visible text against main (2b725f1): the two hypothetical captions only, as reviewed (Deep 47 words, Fossil-free 48).
 
+### Fossil-free 2040's 2,000 MW of CCGT in 2040: a setup error in the build LP, the freed-connection credit left on for gas built after the last fossil year; the plants never run and cost nothing in the engine; the LP took an illusory credit of about R0.26bn (user, 1 Nov 2026, message 599 (c))
+
+Run: harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json (FOSSIL_END=2039, build LP on build 2026-10-31a's code). It builds b_ccgt_2040 =
+2,000 MW, the annual gas limit (rates.ccgt), all of it on a connection freed by retired coal (sched.2040.rp.ccgt 2,000).
+Cause, in index.html's bldBuildLP: with bldFossilEndYear set, gas and diesel built after that year carry no capital and no grid charge
+(capCharge returns 0 and the cost loop skips every year after it), but the repurposed-connection credit (rp_<t>_<y>, the grid cost
+avoided from then on) is not cut for them. So rp_ccgt_2040, bounded by b_ccgt_2040, is a negative cost with nothing against it, and the
+LP builds to the limit. Not a forced or committed build (minBuild names wind and solar only) and not a reserve requirement: the reserve
+rule is 'astr', where idle gas holds no reserve, and planMarginPct is 0, so the res_ row is off.
+Effect: the credit is GA[ccgt] R382.9/kW-yr (bldGridAnn, grid cost on, build 31l) for 2040 only, discounted at 8% over 14 years:
+R130,400/MW, about R0.26bn for 2,000 MW, off the LP's objective. The pool of freed connections had 347 MW spare in 2040 (39,692 MW
+retired, 39,345 used), so no other build lost a connection; the solar, iron-air, flow and pumped storage built in 2040 sit wholly on
+freed connections as before. The engine check (pathcheck.js) and the preset run 2040 with no gas standing (newCcgtMW 0, gas output 0
+TWh in every year), so the published cost, CO2 and adequacy are unaffected.
+Fix (not made; for the user's decision): cut the credit for gas and diesel in years after bldFossilEndYear, or bound their build there
+at zero. The run would then be rerun to confirm only the CCGT line moves. Deep's runs set no fossil end year and are not affected.
+
+### Deep decarbonisation 2035 becomes the no-gas build calibrated to 40 Mt from 2035; both hypothetical captions test NTCSA's two criteria in every year and use the user's wording (user, 1 Nov 2026, messages 599 (a), (b), 600 (b) and 601 (a); build 2026-11-01d)
+
+Deep: harness/pathway/opt/pathway_s_hypo_deep2035nogas_t40n_r3_c6e.json (no new gas; LP caps 36.382 Mt from 2035, calibrated so its
+engine check lands at 40.095 Mt in 2035, cal_t40n.txt), checked on build 31c (pathcheck_..._31c_{a,b,c}.json, gtza-c31l, clean of the
+pathcheck bug). NTCSA's test in every year 2026-40: mean unserved at most 6.35 GWh (2033), open-cycle share at most 0.69% (2033).
+Rescored on the page on build 11-01d, 240 runs, seed 120000017: 0.78 GWh against a 2.39 GWh target, CO2 40.10 Mt.
+Generator (harness/pathway/gen_pathway_presets.py): the caption's cap is the calibration's target (40 Mt, 'about'), allowed only when
+the record converged on this run, the LP's per-year caps equal its last cap, and the engine check's CO2 is within the calibration
+script's tolerance (0.5 Mt, read from run_deep_cal.sh) of the target, or below, in every year from 2035. HYPO_PRESETS carries each
+hypothetical preset's highest mean unserved energy and open-cycle share over its engine check; the generator stops on a missing or null
+figure, except a year with no open-cycle plants standing (capacity 0 MW and output 0 TWh: Fossil-free's 2040). The page says 'Meets
+NTCSA's reliability standard' only if its own rescore and every engine-check year are within 20 GWh and every year's open-cycle share
+is under 6% (NTCSA_OC_SHARE_MAX, MTSAO 2026-2030 section 3, p.11). Deep: 6.35 GWh and 0.69%; Fossil-free: 0.11 GWh and 0.03%.
+Captions, the user's wording, 50-word cap (580 (c), confirmed 601 (a)): Deep 48 words ("No new gas, and CO2 capped at about 40 Mt a year
+from 2035. Retires 13.8 GW of coal by 2035 and adds 41.8 GW of wind, 38.2 GW of solar and 12.9 GW of 4.3-hour batteries. ..."),
+Fossil-free 50 ("... 59.9 GW of lithium batteries, 7.5 GW of vanadium flow batteries, 1.5 GW of pumped storage and 5 GW of unproven
+100-hour iron-air. ..."). Wind counts offshore with onshore in both. REVIEWER_PACK.md: the Deep bullet filled from the new run (R2,424bn,
+R140bn and 6.1% above c6e, 550 Mt less CO2, R254/t; 44 GW wind, 57 GW solar, 25 GW batteries by 2040, no new gas, 17.9 GW of coal
+left; curtailment 27-29% from 2035, 'more than a quarter', against 8-11% in c6e from the c6e_vre checks and the run's 31a checks,
+whose dispatch equals its 31c checks); the Fossil-free bullet in the Doc's wording (599 (b)), vanadium and pumped storage filled
+(packfill's addgw gains vrfb); the Reproducing line as reworded (601 (d)).
+The caption generator's null rule taken from the run (user, 1 Nov 2026, message 602; the same rule as packfill's ocCapRun, #145): a null
+open-cycle share counts as zero only when the open-cycle capacity standing in that year, computed from the run as pathcheck.js builds it
+(FIXED.ocgtDieselMW less FIXED.dieselDecomMW plus new open-cycle built, none after fossilEnd), is 0 and the check's output is 0. The
+first version trusted the check's own capacity field, which the 31 Oct pathcheck bug also zeroed. Test, 1 Nov 2026 in --check mode:
+Fossil-free pointed at its 31a checks (nulls kept) stops with 2026-2039 listed (2040 a true zero); Deep pointed at its 31a checks stops
+with every year listed; the first version ran through on Fossil-free's 31a checks. On the real 31c checks both presets pass as before
+(index.html blocks match the generator).
+
+### Suite on build 2026-11-01d (Deep no gas at 40 Mt, the captions, the NTCSA test on both criteria): two Deep pins moved with their causes, one audit flag on a comment fixed; otherwise main's known failures by name (user, 1 Nov 2026, messages 599 and 601 (a))
+
+First run (claude/deep-nogas40 at 6aea376 and later harness commits; stored panels rewritten at 6aea376; ESK19679.csv present), 1 Nov 2026
+12:22-14:28 UTC in two pieces, beside a page rescore and the #145 tests. Node checks 1019/1030, audit 87/88, eng5 5/6. Beyond main's nine:
+(1) validate_findings 'preset curtailment sits within its weather band', Deep 88.0 against 124.9: the new build stands less wind and
+solar; re-pinned to 88.0 (6d64a92). (2) validate_consistency 'new-build capital matches the hand computation', R0.723 against R0.986:
+measured with the check's own code on main (d7eb144, the old optimised Deep) R0.956 and on this build R0.723; re-pinned (93f01d2).
+Rerun alone after the re-pins: validate_findings 36/39 and validate_consistency 82/83, main's known failures by name. (3) audit 'no
+shouted emphasis': the new NTCSA_OC_SHARE_MAX comment held an apostrophe and a quote on one line, so the audit's quoted-span scan read
+MTSAO and SOURCES as shouted words; the comment reworded (0cba7e3), audit 88/88. Everything else equal to main by count and failure name:
+validate_response 86/87 (the same 35 cells), validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved;
+validate_pathway_presets 65/65, validate_public_text 32/32 (preset captions within 50), validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38, validate_bids 7/7, validate_external 8/8. The comment changes the page's fingerprint, so the panels are rewritten
+and the full suite rerun on 0cba7e3 (recorded below when done).
+
 ### packfill: a null open-cycle share no longer passes NTCSA's test; the fill stops and says why (user, 1 Nov 2026, message 600 (a))
 
 harness/pathway/tables/packfill.js read criterion (ii) as `x.ocgtCF>=0.06`, which is false for null, so a check made with the pathcheck
@@ -19356,6 +19417,14 @@ when that capacity is 0 and the check's output is 0. Tests, 1 Nov 2026 on main d
 REVIEWER_PACK.md to the identical text; Fossil-free on its 31c checks reads 'met', ocmax 0.0% (2040: fossilEnd 2039, capacity 0);
 with the bugged 31a checks swapped in, both verdicts stop, exit 1 (Fossil-free in 2026-2039, its 2040 a true zero; s_cocplan in every
 year). The caption generator takes the same rule on the 599 branch (claude/deep-nogas40), where its NTCSA test lives.
+Rerun on 0cba7e3 (the comment fix; stored panels rewritten, ba829d1), 1 Nov 2026 14:57-17:04 UTC in two pieces: node checks 1021/1030,
+audit 88/88, eng5 5/6, equal to main (11-01c) by count in every script and by failure name: validate_findings 36/39, validate_response
+86/87 (the same 35 cells), validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved;
+validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38,
+validate_bids 7/7, validate_external 8/8. Main's #145 (packfill's ocCapRun, summ.js, RESULTS) merged in after (user, message 605):
+packfill.js merged without conflict (both ocCapRun and the vrfb build total kept), RESULTS kept both sides; no index.html change, so no
+rerun; the repository-only fill folder fills REVIEWER_PACK.md to the identical text after the merge; both generators match the page.
+
 
 ### Blended cost of capital for c7: cases 'blended' and 'blendedhigh'; 'central' unchanged by the LP-key test (user, 1 Nov 2026, message 604 (a); build 2026-11-01e)
 
