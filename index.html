@@ -12439,7 +12439,7 @@ const BLD_STRESS_STANDARD = 0.00002;   // share of annual demand
 // criteria'). The system operator's adequacy test, not a legislated planning standard. The build optimiser plans to it when
 // opts.targetGWh is set to it (harness/pathway/pathway_perfail.js STD=ntcsa); opts.targetFrac x BLD_STRESS_STANDARD otherwise.
 const NTCSA_ADEQUACY_GWH = 20;
-// NTCSA's second criterion (MTSAO 2026-2030 section 3, p.11; SOURCES 'Adequacy criteria'): open-cycle plants run under 6% of the time,
+// The second NTCSA criterion (MTSAO 2026-2030 section 3, p.11; SOURCES, Adequacy criteria): open-cycle plants run under 6% of the time,
 // each year's open-cycle output over their capacity x 8,760 h (harness/pathcheck.js ocgtCF). The hypothetical presets' captions test
 // both criteria in every year of their engine checks (user, 1 Nov 2026, message 600 (b)).
 const NTCSA_OC_SHARE_MAX = 0.06;
