@@ -19207,3 +19207,63 @@ eng5 5/6. Equal to main's suite (998/1007, 88/88, 5/6) by count in every script 
 validate_response 86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51 (curtailment zero at defaults;
 curtailFuelCost; the avgCost ratchet passes at R1,085.9), eng5 storage vs unserved. validate_worker 38/38 (reipppLiveMW in the worker),
 validate_pathway_presets 41/41 (the 31c engine checks), validate_external 8/8, validate_stored_panels 86/86.
+
+### Deep decarbonisation 2035 at 22.8, 30, 35 and 40 Mt, with and without new gas, each calibrated on its own engine check, on the corrected engine: at 40 Mt without gas R2,423.6bn (+R139.8bn on c6e, R254/t), with gas R2,431.9bn; at 22.8 Mt without gas R2,611.4bn, with gas R2,569.3bn; every run builds 25-44 GW above the deliverable rates (user, 1 Nov 2026, messages 586 (b), 588, 589, 590 and 595)
+
+Runs: pathway_perfail.js on 31a (claude/hypo-presets-results worktree, BUILD_STAMP '2026-10-31a'), all at s_hypo_deep2035r_c6e's settings
+(c6e's env_c6a.sh, GAS_FIRST=2035, PACE=grid, LI_CAP=4000, LI_EH=8, IA_TOTAL=5000, CO2_ELASTIC=50000, native HiGHS), the CO2 cap the only
+change: without gas, GAS_CAP=0 OCGD=1 (diesel peakers allowed, their CO2 in the cap rows). Caps: 22.8 Mt without gas as 588 (a) (2035 cap
+calibrated, 2036-40 as Deep's, CO2CAP_YEARS 15.857, 13.255, 11.735, 13.519, 17.653); 30, 35 and 40 Mt the target from 2035 on, every
+year 2035-40 at the same optimiser cap (messages 589, 595). Calibration (harness/pathway/opt/run_deep_cal.sh, run_deepnogas_cal.sh; logs
+cal_<tag>.txt): first cap target - 0.9 Mt, then cap += target - engine 2035 CO2 (pathcheck.js YEARS=2035) until within 0.5 Mt; the 30 Mt
+run alternated 29.1-30.9 Mt in rounds 1-5 (the engine moved about 2 Mt per Mt of cap) and was continued from 27.92 Mt with half steps,
+within 0.5 at round 6. Then the full engine check of the final build (LNG=1 GRID=1, groups a, b, c, 120 runs a year; CO2, unserved and
+curtailment from it, the cost corrections leaving dispatch unchanged) and its system cost from an engine check on build 31l (7d3411b:
+31c's engine, the 1 Nov corrections; files _31c_). 1 Nov 2026 05:40-09:45 UTC, beside other jobs. Deep with gas at 22.8 Mt is
+s_hypo_deep2035r_c6e (not recalibrated; RESULTS above); c6e from its 31c check. Files: harness/pathway/opt/pathway_<run>.json,
+pathcheck_<run>_{a,b,c}.json and _31c_{a,b,c}.json for s_hypo_deep2035nogas_t228_r2_c6e, _t30u_r6_, _t35u_r3_, _t40n_r3_ and
+s_hypo_deep2035gas_t40g_r5_c6e. Deliverable rates: index.html's c5fBuildLimitMW per year (BLD_PACE.deliverable with C5F_BUILD_CAPS:
+wind 2,500 MW to 2030 and 3,500 after, solar 2,500 growing 7% a year, lithium 2,000 then 3,000 MW from 2028 at 4 hours, gas 1,200,
+vanadium 250, iron-air 150, offshore its path); wind compared without double counting Cape wind (part of the schedule's wind).
+
+| | c6e central | Deep, gas, 22.8 Mt | No gas, 22.8 Mt | No gas, 30 Mt | No gas, 35 Mt | No gas, 40 Mt | Deep, gas, 40 Mt |
+|---|---|---|---|---|---|---|---|
+| System cost 2026-40, R bn (corrected engine) | 2,283.9 | 2,569.3 | 2,611.4 | 2,498.3 | 2,454.8 | 2,423.6 | 2,431.9 |
+| Against c6e, R bn | – | +285.4 | +327.5 | +214.4 | +170.9 | +139.8 | +148.0 |
+| Optimiser 2035 cap, Mt | – | 17.509 | 23.109 | 27.920 | 32.765 | 36.382 | 30.692 |
+| Optimiser 2035 CO2, Mt | – | 17.51 | 23.11 | 27.92 | 32.77 | 36.38 | 30.69 |
+| Engine 2035 CO2, Mt | 90.48 | 21.08 | 22.70 | 30.19 | 34.84 | 40.09 | 40.34 |
+| Engine CO2 2035-40, Mt | 90.5 / 94.0 / 87.0 / 77.8 / 73.0 / 67.5 | 21.1 / 20.7 / 21.3 / 20.1 / 20.2 / 17.2 | 22.7 / 17.0 / 15.0 / 14.7 / 15.1 / 15.2 | 30.2 / 26.7 / 26.5 / 23.8 / 21.4 / 19.9 | 34.8 / 32.4 / 30.7 / 26.6 / 23.9 / 22.6 | 40.1 / 37.7 / 32.9 / 28.8 / 26.0 / 25.1 | 40.3 / 41.0 / 43.0 / 43.7 / 37.4 / 32.0 |
+| CO2 2026-40, Mt | 1,739 | 957 | 947 | 1,069 | 1,148 | 1,189 | 1,228 |
+| R/t avoided against c6e | – | 365 | 414 | 320 | 289 | 254 | 290 |
+| Overrun used (slack), Mt | – | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| Calibration rounds | – | – | 2 | 6 | 3 | 3 | 5 |
+| New build by 2035, GW: wind / solar / lithium (h) / offshore | 22.6 / 22.7 / 11.3 (5.1) / 0.0 | 43.0 / 52.0 / 21.6 (5.6) / 1.0 | 43.0 / 51.5 / 20.8 (5.3) / 1.0 | 43.0 / 43.9 / 15.3 (5.1) / 1.0 | 40.9 / 42.2 / 14.6 (4.8) / 1.0 | 40.8 / 38.2 / 12.9 (4.3) / 1.0 | 41.2 / 37.9 / 11.9 (4.7) / 1.0 |
+| New build by 2035, GW: gas / diesel peakers / iron-air / vanadium / pumped storage | 1.2 / 0.0 / 0.0 / 0.0 / 0.0 | 2.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 2.0 / 0.0 / 0.0 / 0.0 / 0.0 |
+| Coal standing 2035, GW | 25.9 | 16.4 | 20.7 | 25.6 | 25.9 | 25.9 | 25.2 |
+| New build by 2040, GW: wind / solar / lithium (h) / offshore | 31.4 / 33.8 / 15.2 (6.2) / 0.0 | 45.0 / 60.9 / 24.5 (7.0) / 1.0 | 52.7 / 73.0 / 32.0 (6.4) / 1.8 | 48.5 / 63.2 / 28.2 (6.5) / 1.0 | 44.9 / 61.1 / 27.7 (6.3) / 1.0 | 44.4 / 57.1 / 25.4 (6.3) / 1.0 | 48.3 / 43.5 / 17.1 (7.1) / 1.0 |
+| New build by 2040, GW: gas / diesel peakers / iron-air / vanadium / pumped storage | 7.2 / 0.2 / 0.0 / 0.0 / 0.0 | 8.3 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 1.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.6 / 0.0 / 0.0 / 0.0 | 0.0 / 1.6 / 0.0 / 0.0 / 0.0 | 4.6 / 0.0 / 0.0 / 0.0 / 0.0 |
+| Coal standing 2040, GW | 17.9 | 6.2 | 12.6 | 17.6 | 17.9 | 17.9 | 17.2 |
+| Highest yearly mean unserved / worst run, GWh | 5.46 / 174 | 4.40 / 32 | 3.99 / 38 | 3.81 / 73 | 4.43 / 68 | 6.35 / 61 | 6.08 / 50 |
+| Curtailment 2035 / 2040, TWh (share of available wind and solar) | 13 / 25 | 101 / 98 (32% / 29%) | 101 / 157 (32% / 39%) | 90 / 117 (31% / 32%) | 82 / 101 (29% / 29%) | 77 / 91 (28% / 28%) | 78 / 80 (29% / 26%) |
+| Build rates at their limit in the optimiser (years) | – | wind 2026-2035; solar 2027-2035; lithium 2033-2035; CCGT 2036-2038 | wind 2026-2037; solar 2027-2036; lithium 2033-2036, 2038; diesel peakers 2040 | wind 2026-2036; solar 2030-2035; lithium 2035, 2038-2040 | wind 2027-2035; solar 2030-2035; lithium 2035, 2038 | wind 2027-2035; solar 2031-2035; lithium 2039; diesel peakers 2040 | wind 2027-2035; solar 2031-2035; CCGT 2035 |
+| Above the deliverable rates 2026-40: MW (lithium energy MWh) | 0 (0) | 39,176 (80,738) | 43,827 (91,047) | 32,616 (79,976) | 29,501 (70,147) | 25,694 (56,768) | 24,953 (44,221) |
+
+- Deep, gas, 22.8 Mt: wind 2026 +1,800, 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800; solar 2027 +1,605, 2028 +1,718, 2029 +1,837, 2030 +1,966, 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium 2033 +1,000, 2034 +1,000, 2035 +1,000; lithium energy 2033 +17,913, 2034 +20,000, 2035 +20,000, 2038 +10,351, 2040 +12,474; CCGT 2035 +800, 2036 +800, 2037 +800, 2038 +800; offshore 2035 +750
+- No gas, 22.8 Mt: wind 2026 +1,800, 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800, 2036 +800, 2037 +800; solar 2027 +1,605, 2028 +1,718, 2029 +1,837, 2030 +1,966, 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758, 2036 +2,951, 2037 +1,300; lithium 2033 +1,000, 2034 +1,000, 2035 +1,000, 2036 +1,000, 2038 +1,000; lithium energy 2033 +6,505, 2034 +20,000, 2035 +20,000, 2036 +20,000, 2037 +13,499, 2038 +9,898, 2040 +1,145; offshore 2035 +750
+- No gas, 30 Mt: wind 2026 +1,800, 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800, 2036 +800; solar 2030 +1,966, 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium 2035 +1,000, 2038 +1,000, 2039 +1,000, 2040 +1,000; lithium energy 2034 +9,684, 2035 +20,000, 2038 +13,472, 2039 +20,000, 2040 +16,820; offshore 2035 +750
+- No gas, 35 Mt: wind 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800, 2036 +510; solar 2030 +1,966, 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium 2035 +1,000, 2038 +1,000, 2039 +191, 2040 +784; lithium energy 2034 +3,577, 2035 +15,181, 2037 +3,672, 2038 +19,957, 2039 +20,000, 2040 +7,760; offshore 2035 +750
+- No gas, 40 Mt: wind 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800; solar 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium 2038 +644, 2039 +1,000; lithium energy 2034 +7,897, 2037 +16,128, 2038 +17,097, 2039 +13,902, 2040 +1,744; offshore 2035 +750
+- Deep, gas, 40 Mt: wind 2026 +48, 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800; solar 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium energy 2034 +7,895, 2035 +520, 2039 +20,000, 2040 +15,806; CCGT 2035 +800, 2038 +55; offshore 2035 +750
+
+Findings:
+- At 40 Mt from 2035, no gas costs R8.3bn less than with gas (R2,423.6bn against R2,431.9bn) and emits 39 Mt less over 2026-40 (1,189
+  against 1,228); at 22.8 Mt no gas costs R42.1bn more (R2,611.4bn against R2,569.3bn, the with-gas run at 21.1 Mt in the engine).
+- Each step of the cap from 22.8 to 40 Mt saves R187.8bn without gas (R2,611.4bn to R2,423.6bn) for 242 Mt more CO2 over 2026-40 (947 to
+  1,189), about R776 a tonne at the margin.
+- Flag: Deep with gas at 40 Mt meets 40 Mt in 2035 (40.34) but the engine finds 41.0, 43.0 and 43.7 Mt in 2036-38: the calibration sets
+  the cap on 2035 only, and with gas the later years' optimiser-to-engine gap is wider. The no-gas runs stay at or below their target in
+  every year 2035-40.
+- No overrun used in any run; no iron-air, vanadium or pumped storage built in any (pumped storage held at zero until Tubatse's 2038).
+- Every run sits at the relaxed wind limit through 2035 and at the solar limit for most of 2027-36; all build 25-44 GW of capacity above
+  the deliverable rates over 2026-40 (by technology and year in the list above): the flag the page and the Doc carry (message 590).
