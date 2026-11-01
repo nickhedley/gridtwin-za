@@ -5317,6 +5317,84 @@ const COAL_PRE_C = { coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampH
   syncImportsCount:1, syncNucHydroBasis:'installed', coalFlexDeepMsl:0.40, coalFlexDeepAfterYear:2035,
   bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, reserveCoalRampCap:0, coalStartupH:null };
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
+// System strength, minimum version (user, 1 Nov 2026, messages 603 (a), 604 (b), 606; TODO 14lo; HANDOVER 'System strength, minimum
+// version'; SOURCES 'System strength: inertia constants and the largest credible loss' and '... the remaining inputs'). Mode
+// FIXED.ssMode: 'sync6' (the 6 GW floor above, unchanged) or 'inertia'.
+// Inertia constant H, s on the machine's MVA (ERCOT, Inertia: Basic Concepts, v2, 2 Dec 2024, Table 1, the user's central values;
+// condensers 1.3 s, Komati, Tomlinson et al., CIGRE S&E 33). One set, read by the inertia floor and the inertia revenue (simulate, _thermalH).
+// Open cycle on gas or diesel is combustion turbines (ocgt); the engine stacks CCGT and open cycle on LNG together, so both take 5.0.
+const SS_H = { coal: 3.7, nuclear: 4.1, ccgt: 5.0, ocgt: 5.0, csp: 3.0, hydro: 2.5, ps: 2.5, cond: 1.3 };
+const SS_MVA_PER_MW = 1 / 0.9;   // MVA = MW / 0.9 unless a unit's MVA is known; a condenser's MVA is its MVAr
+// The thermal mix the engine has weighted H over since Sep 2026 (unsourced): grid-forming batteries' effective H is SS_GFM_H_SHARE of
+// it on SS_H (1.891 s; the engine's basis, cautious; decision D2). Sensitivities 1 s and 11 s (ARENA, Hornsdale Power Reserve
+// upgrade, 15 Dec 2023, p.16) through ssGfmH.
+const SS_THERMAL_MIX = { coal: 0.70, nuclear: 0.12, ccgt: 0.10, hydro: 0.08 }, SS_GFM_H_SHARE = 0.5;
+// Requirement, GW.s: f0 x L / (2 x RoCoF), f0 50 Hz, RoCoF ssRocofHz (1 Hz/s, borrowed from EirGrid/SONI and AEMO; South Africa sets
+// none). L, the largest credible loss: SS_LOSS_UNITS x SS_LOSS_UNIT_MW (NTCSA ASTR, section 3.4.2) while any coal station has that
+// many units of SS_LOSS_UNIT_MW or more (Medupi, Kusile), else the largest unit standing, a Koeberg unit at FIXED.nuclearMW over
+// KOEBERG_UNITS (our assumption, stated as such; new nuclear's unit size is not modelled).
+const SS_F0_HZ = 50, SS_LOSS_UNIT_MW = 720, SS_LOSS_UNITS = 3, KOEBERG_UNITS = 2;
+// TDP 2024 Rev2 committed condensers, [counted from, MVA]: 5,850 MVAr in 2025-29 and 900 MVAr in 2030-34, from the end of each
+// window (pp. 8, 51, 53-54; conservative).
+const SS_TDP_COND = [[2029, 5850], [2034, 900]];
+// Condenser builds, 2021 rand (Tomlinson et al., CIGRE S&E 33), escalated by CPI_APR21_TO_JAN26: conversion of a retired coal unit
+// R132m per 139 MVA machine, at most one per retired unit (the first unit's R265m is not modelled: the LP is linear); new machines
+// R700m per 400 MVAr. Life 30 years (GHD for ElectraNet, 28 Jun 2019, p.20); fixed cost 1% of capital a year (ElectraNet, System
+// Strength Economic Evaluation Report, 18 Feb 2018, p.21). Capital at the network cost of capital and build time ('grid').
+const SS_COND_CONV = { rm: 132, mva: 139 }, SS_COND_NEW = { rm: 700, mva: 400 }, SS_COND_LIFE = 30, SS_COND_FOM = 0.01;
+// Grid-forming premium: 5% of battery capital (Transgrid, system strength MCC report, Aug 2025, p.36), on the 4-hour lithium capex
+// the LP's power and energy terms split (bldCapex('batt')), annuitised as lithium; no fixed cost, no capacity payment.
+const SS_GFM_CAPEX_SHARE = 0.05;
+// Fault level, a sensitivity (ssFault 'full' or 'half'; 'off' the default): AEMO ISP 2024 Appendix 7, p.21, remediation up to
+// A$137,000 per MW of new inverter capacity, at SARB 'Australia: Dollar per Rand' 0.0855 on 2026-10-30 (A$ per rand, as SARB
+// publishes it; the code takes its inverse).
+const SS_FAULT_AUD_PER_MW = 137000, SARB_AUD_PER_ZAR = 0.0855;
+// Committed-to-output ratio of the engine's coal in c6e's low-inertia hours (lower quartile), by year: the build LP credits coal
+// inertia at output / lambda (decision D1). Derived by harness/pathway/ss_engine_check.js (see its header and RESULTS); linear
+// between the years, flat outside.
+// Rounded down to three decimals (conservative): build 2026-11-02a, harness/pathway/ss_engine_check.js on c6e's states, twelve weather
+// years, the lowest 10% of hours by inertia without the lift (RESULTS 'System strength, minimum version: engine checks and lambda').
+const SS_COAL_LAMBDA = { 2026: 1.254, 2030: 1.099, 2035: 1.839, 2040: 1.923 };
+function ssThermalH(){ return Object.entries(SS_THERMAL_MIX).reduce((a, [k, w]) => a + w * SS_H[k], 0); }
+// Grid-forming batteries' effective H, s: ssGfmH where set (1 and 11 s sensitivities), else SS_GFM_H_SHARE of the thermal mix's.
+function ssGfmH(S){ return (S.ssGfmH != null && +S.ssGfmH > 0) ? +S.ssGfmH : SS_GFM_H_SHARE * ssThermalH(); }
+// The largest credible loss, MW, from the coal units standing ([{st: station, cap: MW}]) and Koeberg (S.nuclearMW).
+function ssLossMW(units, S){
+  const big = {}; let maxU = 0;
+  for (const u of units){ if (u.cap >= SS_LOSS_UNIT_MW) big[u.st] = (big[u.st] || 0) + 1; maxU = Math.max(maxU, u.cap); }
+  if (Object.values(big).some(n => n >= SS_LOSS_UNITS)) return SS_LOSS_UNITS * SS_LOSS_UNIT_MW;
+  return Math.max(maxU, (S.nuclearMW || 0) > 0 ? S.nuclearMW / KOEBERG_UNITS : 0);
+}
+// The hourly requirement, GW.s: a flat ssFlatGWs where set, else f0 x L / (2 x RoCoF).
+function ssRequirementGWs(S, lossMW){
+  if (S.ssFlatGWs != null && +S.ssFlatGWs > 0) return +S.ssFlatGWs;
+  if (!(+S.ssRocofHz > 0)) throw new Error('ssRocofHz must be positive: ' + S.ssRocofHz);
+  return SS_F0_HZ * lossMW / 1000 / (2 * S.ssRocofHz);
+}
+// TDP 2024's committed condensers standing in a year, MVA.
+function ssTdpCondMVA(y){ return SS_TDP_COND.reduce((a, [from, mva]) => a + (y >= from ? mva : 0), 0); }
+// Coal units standing in a year on the build LP's schedule (UC_FLEET's dates, or BLD_COAL_UNIT_DATES where set), [{st, cap}].
+function ssCoalUnitsByYear(year){
+  const out = [];
+  for (const g of UC_FLEET){
+    const st = g.name.replace(/\*+$/, ''), n = Math.max(1, g.n || 1), d = BLD_COAL_UNIT_DATES && BLD_COAL_UNIT_DATES[g.name];
+    if (d){ for (const y of d) if (y > year) out.push({ st, cap: g.cap / d.length }); continue; }
+    const dy = (g.decom === 'beyond 2050') ? 9999 : parseInt(g.decom, 10);
+    if (dy > year) for (let k = 0; k < n; k++) out.push({ st, cap: g.unit_cap || g.cap / n });
+  }
+  return out;
+}
+// Coal units retired on the schedule after 2026 and by a year: the conversions a year allows (early retirement, rc_, not counted).
+function ssRetiredCoalUnits(year){ return Math.max(0, ssCoalUnitsByYear(2026).length - ssCoalUnitsByYear(year).length); }
+// lambda for a year from SS_COAL_LAMBDA ({year: ratio}), linear between its years, flat outside.
+function ssCoalLambda(y){
+  if (!SS_COAL_LAMBDA) throw new Error('SS_COAL_LAMBDA is not set');
+  const ys = Object.keys(SS_COAL_LAMBDA).map(Number).sort((a, b) => a - b);
+  if (y <= ys[0]) return SS_COAL_LAMBDA[ys[0]];
+  if (y >= ys[ys.length - 1]) return SS_COAL_LAMBDA[ys[ys.length - 1]];
+  const i = ys.findIndex(q => q >= y); const a = ys[i - 1], b = ys[i];
+  return SS_COAL_LAMBDA[a] + (SS_COAL_LAMBDA[b] - SS_COAL_LAMBDA[a]) * (y - a) / (b - a);
+}
 // IMPORTS_CF is defined in nodal_engine.js, which loads at line 1124 - before this
 // constant block. So FIXED can read it, and does. That direction is deliberate: the
 // nodal engine is also loaded as a plain script by four harnesses with no access to
@@ -6023,6 +6101,15 @@ const FIXED = {
   //     nuclear only); 'dispatched': at the hour's output (nuclear including new nuclear, at nuclearCF; hydro at hydroCF).
   //     The grid-forming share is syncGfmShare (SYNC_GFM_SHARE, 0.30, unsourced).
   syncImportsCount:0, syncNucHydroBasis:'dispatched',
+  // System strength (user, 1 Nov 2026, messages 603 (a), 604 (b), 606; the constants at SS_H). ssMode 'sync6': the floor above,
+  // unchanged, and no inertia row in the build LP; 'inertia': each hour's inertia (SS_H on MVA, only while spinning) against
+  // ssRequirementGWs, in the engine (coal commitment lifted where coal is available, ssCoalLift 1; 0 reports the shortfall only) and
+  // in the build LP (a row per representative and stress hour, with grid-forming batteries and condensers as build options).
+  // 'sync6' stays the page default until the presets are rebuilt on 'inertia' (c7). ssRocofHz 1 (0.5 a sensitivity); ssFlatGWs: a
+  // flat requirement, GW.s (40 a sensitivity), null for the rule; ssGfmH: grid-forming H, s (null: ssGfmH()'s 1.891; 1 and 11
+  // sensitivities); ssGfmMW: battery MW made grid-forming; ssCondMVA: condensers built (conversions and new), MVA, beside TDP 2024's
+  // committed ones (SS_TDP_COND); ssFault 'off', 'full' or 'half': the fault-level capital adder in the build LP (any mode).
+  ssMode:'sync6', ssRocofHz:1, ssFlatGWs:null, ssGfmH:null, ssGfmMW:0, ssCondMVA:0, ssCoalLift:1, ssFault:'off',
   // (5) coalRampHonour 1 (message 359 (f)): the commitment pre-pass keeps a block's commitment at least the previous hour's net
   //     load less one hour's ramp, and dispatch's coal floor rises no faster than the ramp. 0: as before (coal moved beyond its
   //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH raises every unit's minimum down time to at
@@ -7466,6 +7553,10 @@ function simulate(u, prof, outPath, _soc0){
   }
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
   p.syncFloorMW = (typeof p.syncMinMW === 'number') ? p.syncMinMW : (p.syncMinEnabled !== false ? SYNC_MIN_MW : 0);
+  // System strength (FIXED.ssMode): 'inertia' replaces the 6 GW floor with the inertia floor below, so syncFloorMW is 0.
+  if (p.ssMode !== 'sync6' && p.ssMode !== 'inertia') throw new Error("ssMode must be 'sync6' or 'inertia': " + p.ssMode);
+  const SS_ON = p.ssMode === 'inertia';
+  if (SS_ON) p.syncFloorMW = 0;
   const {solar,wind,csp}=prof;
   // New wind on the modern-TURBINE profile (bldWindModern): onshore wind's per-unit output blends existing MW on the
   // current profile with new MW on the modern twin. Off, or with no new wind: windU is wind itself.
@@ -8317,6 +8408,19 @@ function simulate(u, prof, outPath, _soc0){
   // price and for reporting.
   const partLoadF=new Float64Array(HOURS).fill(1);
   let syncUnmetH = 0;   // hours the synchronous floor could not be met at all
+  // System strength, 'inertia' mode (FIXED.ssMode): the year's requirement (ssRequirementGWs, the largest loss from the coal units
+  // standing as the commitment pre-pass has them), each hour's inertia by source, GW.s, and the coal commitment lifted.
+  let _ss = null;
+  if (SS_ON){
+    const y = p.scenarioYear ?? 2026, cMW = Math.max(0, coalInstalled);
+    const units = ucUnitsStanding(cMW).units.map(q => ({ st: q.name.replace(/\**\s+U\d+$/, ''), cap: q.cap }));
+    const lossMW = ssLossMW(units, p), condMVA = ssTdpCondMVA(y) + Math.max(0, +p.ssCondMVA || 0);
+    const src = {}; for (const k of ['coal', 'nuclear', 'hydro', 'csp', 'ps', 'gas', 'gfm', 'cond']) src[k] = new Float64Array(HOURS);
+    _ss = { year: y, lossMW, reqGWs: ssRequirementGWs(p, lossMW), condMVA, condGWs: SS_H.cond * condMVA / 1000,
+            gfmMW: Math.max(0, +p.ssGfmMW || 0), gfmH: ssGfmH(p), lift: (p.ssCoalLift ?? 1) ? 1 : 0, msl: coalFleetMinShare(p, y, cMW),
+            tot: new Float64Array(HOURS), src, prevDisp: 0, shortH: 0, shortGWsH: 0, liftH: 0, liftMWh: 0, liftFloorMWh: 0, liftCappedH: 0 };
+  }
+  const coalCommittedMW = new Float64Array(HOURS);   // committed coal each hour (the pre-pass's, after outages, plus any lift)
   let coalFuelMWh=0;   // coal output x part-load multiplier = fuel-equivalent MWh
   // Interruptible load actually called each hour, and its contracted size.
   const drMW=new Float64Array(HOURS);
@@ -8611,7 +8715,7 @@ function simulate(u, prof, outPath, _soc0){
     // coal's share twice and capped storage at coal's headroom (stalled-year shed 0 to 83 GWh, found 14 Oct 2026, message 92).
     const reserveOnCoal = !RESERVE.on || _astr ? 0 : Math.max(0, reserveNeed - fastStart);
     reserveMWArr[h] = reserveNeed;
-    const cAvail = Math.max(ucMSLraw(h), cAvailRaw - reserveOnCoal);
+    let cAvail = Math.max(ucMSLraw(h), cAvailRaw - reserveOnCoal);   // let: the inertia floor may lift commitment (below)
     // UC-derived minimum stable load replaces the fleet-average minStableMW.
     // Clamped to cAvail after the reserve withholding, so a committed fleet is
     // never asked to sit below its own minimum stable level.
@@ -8639,6 +8743,18 @@ function simulate(u, prof, outPath, _soc0){
       congestMW[h] = _lost2; congestTot += _lost2;
     }
     const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF*nucShapeAt(p, h), hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
+    // System strength ('inertia', decision D3): inertia from what spins before dispatch (committed coal, nuclear, hydro and CSP at
+    // output, condensers) plus the previous hour's pumped storage, gas and grid-forming batteries (a persistence forecast). Short of
+    // the requirement, coal commitment is lifted where coal is available and not committed (ssCoalLift); the lifted units run at least
+    // at the standing fleet's minimum stable share (coalFleetMinShare). What remains short after dispatch is reported.
+    let _ssLift = 0;
+    if (_ss){
+      const kM = SS_MVA_PER_MW / 1000;
+      const pre = SS_H.coal * kM * cAvailRaw + SS_H.nuclear * kM * nuc + SS_H.hydro * kM * hyd + SS_H.csp * kM * cspGen + _ss.condGWs + _ss.prevDisp;
+      if (_ss.lift && pre < _ss.reqGWs){ const room = Math.max(0, coalAvailableArr[h] - cAvailRaw), need = (_ss.reqGWs - pre) / (SS_H.coal * kM);
+        _ssLift = Math.min(room, need); if (room < need) _ss.liftCappedH++; }
+      if (_ssLift > 0){ cAvail += _ssLift; _ss.liftH++; _ss.liftMWh += _ssLift; _ss.liftFloorMWh += _ssLift * _ss.msl; }
+    }
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is not must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -8748,7 +8864,7 @@ function simulate(u, prof, outPath, _soc0){
     if (syncDeficit > 0 && cAvail <= 0) syncUnmetH++;
     // With coalRampHonour (message 359 (f)) the floor rises no faster than coal can ramp: units committed at a block start load
     // over the hours after it, rather than reaching their minimum in its first hour.
-    const _floorRaw=Math.max(ucMSL, rampAwareFloor, Math.min(cAvail, syncDeficit));
+    const _floorRaw=Math.max(_ssLift > 0 ? Math.min(cAvail, ucMSL + _ssLift * _ss.msl) : ucMSL, rampAwareFloor, Math.min(cAvail, syncDeficit));
     const coalFloorBase=(p.coalRampHonour ?? FIXED.coalRampHonour) ? Math.min(_floorRaw, prevCoalGen + rampAllowedMW) : _floorRaw;
     // Units leaving commitment at a block start walk down at the ramp before they desynchronise (message 359 (f)): coal may run above
     // this hour's committed capacity by up to the capacity that left, as far as one hour's ramp from the hour before requires.
@@ -9386,7 +9502,28 @@ function simulate(u, prof, outPath, _soc0){
     E.hybrid=(E.hybrid||0)+hyb; stack.hybrid[h]=hyb;
     stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
     fuelCost+=nuc*(p.costNuclear+p.vomNuclear)+hyd*p.costHydro+imp*p.costImports;
+    coalCommittedMW[h] = Math.max(cAvailRaw + _ssLift, coalGen);   // units walking down above commitment still spin
+    if (_ss){
+      // Inertia by source after dispatch, GW.s: SS_H x MVA (MW / 0.9) while spinning. Pumped storage pumping or generating; gas and
+      // open cycle (stack.ccgt carries open cycle on LNG, stack.diesel open cycle on diesel) running; grid-forming batteries up to their
+      // MW and the unused battery power (rating less charge and discharge); imports, wind, solar and other batteries none.
+      const kM = SS_MVA_PER_MW / 1000, Q = _ss.src;
+      Q.coal[h] = SS_H.coal * kM * coalCommittedMW[h]; Q.nuclear[h] = SS_H.nuclear * kM * nuc; Q.hydro[h] = SS_H.hydro * kM * hyd;
+      Q.csp[h] = SS_H.csp * kM * cspGen; Q.ps[h] = SS_H.ps * kM * (Math.max(0, stack.ps[h] || 0) + Math.max(0, chargePsMW[h] || 0));
+      Q.gas[h] = SS_H.ccgt * kM * Math.max(0, stack.ccgt[h] || 0) + SS_H.ocgt * kM * Math.max(0, stack.diesel[h] || 0);
+      Q.gfm[h] = _ss.gfmH * kM * Math.min(_ss.gfmMW, Math.max(0, battPower - Math.max(0, stack.batt[h] || 0) - Math.max(0, chargeBattMW[h] || 0)));
+      Q.cond[h] = _ss.condGWs;
+      const t = Q.coal[h] + Q.nuclear[h] + Q.hydro[h] + Q.csp[h] + Q.ps[h] + Q.gas[h] + Q.gfm[h] + Q.cond[h];
+      _ss.tot[h] = t; _ss.prevDisp = Q.ps[h] + Q.gas[h] + Q.gfm[h];
+      if (t < _ss.reqGWs - 1e-9){ _ss.shortH++; _ss.shortGWsH += _ss.reqGWs - t; }
+    }
   }
+  // System strength summary ('inertia'): hours short and GW.s-hours short after the lift, the lift (hours, MW-hours of commitment,
+  // MWh of output floor), and the minimum, 5th percentile and mean of each hour's inertia.
+  const ssOut = _ss ? (() => { const srt = Float64Array.from(_ss.tot).sort(); let m = 0; for (let h = 0; h < HOURS; h++) m += _ss.tot[h];
+    return { mode: 'inertia', year: _ss.year, lossMW: _ss.lossMW, reqGWs: _ss.reqGWs, condMVA: _ss.condMVA, gfmMW: _ss.gfmMW, gfmH: _ss.gfmH,
+             coalLift: _ss.lift, shortH: _ss.shortH, shortGWsH: _ss.shortGWsH, liftH: _ss.liftH, liftMWh: _ss.liftMWh, liftFloorMWh: _ss.liftFloorMWh, liftCappedH: _ss.liftCappedH,
+             minGWs: srt[0], p5GWs: srt[Math.floor(0.05 * HOURS)], meanGWs: m / HOURS, inertiaGWs: _ss.tot, bySource: _ss.src }; })() : null;
   /* ---- negative prices in coal-FORCED surplus HOURS -----------------------
    * Every curtailment hour in this model is coal-forced: renewables are spilled
    * because the coal ramp-down floor is binding, never because VRE alone exceeds
@@ -9771,11 +9908,10 @@ function simulate(u, prof, outPath, _soc0){
   // Stored energy = H x rated MVA, H being the inertia constant in seconds.
   // Standard machine values: large steam sets carry more than hydro, and
   // inverters carry none at all unless grid-forming.
-  const H_CONST = { coal: 3.5, nuclear: 5.0, ccgt: 5.0, hydro: 3.0 };
+  // H: SS_H, the one set the inertia floor reads (user, 1 Nov 2026, message 604 (b); was coal 3.5, nuclear 5.0, hydro 3.0 here).
   // The synchronous floor is what is actually spinning. Weight H across the
-  // machine types that hold it, on roughly the South African thermal mix.
-  const _thermalH = 0.70 * H_CONST.coal + 0.12 * H_CONST.nuclear
-                  + 0.10 * H_CONST.ccgt + 0.08 * H_CONST.hydro;
+  // machine types that hold it, on roughly the South African thermal mix (SS_THERMAL_MIX).
+  const _thermalH = ssThermalH();
   // Grid-forming batteries provide synthetic inertia, credited at half the effective H of a
   // steam set: the response is faster, but it is emulated from a control loop and a finite
   // reservoir rather than stored in a rotor.
@@ -9786,8 +9922,9 @@ function simulate(u, prof, outPath, _soc0){
   // is grid-following and contributes nothing, so half the fleet being grid-forming is the
   // optimistic end. Both sites now move together.
   const _gfmShare = (p.syncGfmShare ?? SYNC_GFM_SHARE);
-  const inertiaCapableMW = (p.syncMinMW ?? 0) + battPower * _gfmShare;
-  const inertiaGVAs = ((p.syncMinMW ?? 0) * _thermalH
+  // 'inertia' mode: the grid-forming MW, and the floor's requirement (GW.s), the quantity the floor procures.
+  const inertiaCapableMW = ssOut ? Math.min(ssOut.gfmMW, battPower) : (p.syncMinMW ?? 0) + battPower * _gfmShare;
+  const inertiaGVAs = ssOut ? ssOut.reqGWs : ((p.syncMinMW ?? 0) * _thermalH
                      + battPower * _gfmShare * _thermalH * 0.5) / 1000;
   // asInertiaRkWyr is now read as R per MVA-second per year. GB's pathfinder
   // implies roughly R100,000 per MVAs per year, so the slider's 0-400 range
@@ -10033,7 +10170,7 @@ function simulate(u, prof, outPath, _soc0){
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
   return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
-          netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
+          netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF, coalCommittedMW, ss:ssOut,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
@@ -11113,6 +11250,22 @@ function bldNetAnnuityAt(tech, year, mult){
   const gross = (bldAnnuity(bldCapex(tech, year), BLD_LIFE[tech], tech) + bldFom(tech, year)) * (mult || 1);
   return Math.max(0, gross - capPayRate(tech) * (BLD_DERATE[tech] ?? 0));
 }
+// System strength builds (SS_COND_CONV, SS_COND_NEW, SS_GFM_CAPEX_SHARE): overnight condenser capital, R per kVA in January 2026
+// rands, and each build's annual charge, R per kW (grid-forming, of battery power) or per kVA (condensers) a year, built in year y.
+function ssCondCapexRkVA(kind){ const c = kind === 'scc' ? SS_COND_CONV : kind === 'scn' ? SS_COND_NEW : null;
+  if (!c) throw new Error('ssCondCapexRkVA: scc or scn: ' + kind); return c.rm * 1e6 * CPI_APR21_TO_JAN26 / (c.mva * 1000); }
+function ssAnnualRkW(kind, y){
+  if (kind === 'gfm') return SS_GFM_CAPEX_SHARE * bldAnnuity(bldCapex('batt', y), BLD_LIFE.batt, 'batt');
+  const k = ssCondCapexRkVA(kind); return bldAnnuity(k, SS_COND_LIFE, 'grid') + SS_COND_FOM * k;
+}
+// The fault-level adder (ssFault), R per kW of new inverter capacity, and the technologies it applies to (transmission-connected
+// wind, solar and batteries; rooftop is distribution-connected and pumped hydro is synchronous).
+const SS_FAULT_T = ['wind', 'pv', 'offshore', 'batt', 'vrfb', 'ironair'];
+function ssFaultRkW(S){
+  const c = S.ssFault ?? FIXED.ssFault;
+  if (!['off', 'full', 'half'].includes(c)) throw new Error("ssFault must be 'off', 'full' or 'half': " + c);
+  return c === 'off' ? 0 : (c === 'half' ? 0.5 : 1) * SS_FAULT_AUD_PER_MW / SARB_AUD_PER_ZAR / 1000;
+}
 function bldNetAnnuity(tech, year){
   // Capital recovery plus fixed O&M, less any capacity payment. Fixed O&M was absent until
   // 18 Sep 2026, so every technology was being built on capital alone and the technologies
@@ -11632,6 +11785,12 @@ function bldBuildLP(opts){
   // an LP that HiGHS refuses to parse.
   const S = { ...FIXED, ...(opts.state || {}) };
   const STORE = bldStoreList(S);   // lithium at the scenario's duration
+  // System strength (FIXED.ssMode; user, 1 Nov 2026, messages 603 (a), 604 (b), 606). 'inertia': a row per representative and stress
+  // hour, inertia (SS_H on MVA) + slack >= the year's requirement, with grid-forming batteries (b_gfm_, MW) and condensers
+  // (b_scc_ conversions and b_scn_ new, MVA) as builds; 'sync6': none of it (LP text unchanged). ssFault: the fault-level adder.
+  const SSI = S.ssMode === 'inertia';
+  if (!SSI && S.ssMode !== 'sync6') throw new Error("ssMode must be 'sync6' or 'inertia': " + S.ssMode);
+  const FAULT_RKW = ssFaultRkW(S);
   // Pumped hydro is A build decision, 5 Oct 2026 (TODO 14z, after Weber et al. 2026). One duration
   // per run (bldPhesHours, 14 from 9 Oct 2026), optionally a second (bldPhesHours2). Capex per kW from
   // bldPhesCapexKW (power + energy x hours; 'anu2026' the default basis since 6 Oct). 60-year life, 78%
@@ -11720,6 +11879,8 @@ function bldBuildLP(opts){
     const _m = (t === 'batt') ? BATT_POWER_SHARE : 1;
     for (const yy of Y) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END))
       cost += (capCharge(t, y, yy, _m) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);   // GA: grid cost, per MW of power
+    // Fault level (ssFault): the adder per kW of power, annuitised as the technology's capital.
+    if (FAULT_RKW > 0 && SS_FAULT_T.includes(t)) for (const yy of Y) if (yy >= y) cost += bldAnnuity(FAULT_RKW, BLD_LIFE[t], t) / Math.pow(1+BLD_DISC, yy-2026);
     // x1000: bldNetAnnuity is R/kW/yr and b_ is in MW. Without this the whole
     // capex side is 1000x too cheap against the fuel terms, building is
     // effectively free, and the optimiser just overbuilds VRE and spills.
@@ -11788,6 +11949,9 @@ function bldBuildLP(opts){
       obj.push((VOLL*(ST_ON ? wObj(r) : (r.tail ? 365 : r.weight))*df).toFixed(3) + ' rsl_' + k);
       if (ST_ON) (ST_TERMS[y] = ST_TERMS[y] || []).push(wObj(r).toFixed(6) + ' u_' + k, wObj(r).toFixed(6) + ' rsl_' + k);
       obj.push((S.lpCurtailCostR*wObj(r)*df).toFixed(3) + ' crt_' + k);
+      // Inertia slack (MW.s short in the hour): VoLL per MW.s, as one MWh shed, weighted as shedding is without the stress target
+      // (a stress day as if it came round every day), so the floor is met wherever a build can meet it; reported, never hidden.
+      if (SSI) obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' ssl_' + k);
       // resolved (14 Aug 2026): lpBattDischargeCostR (20) deliberately stays below
       // the dispatch engine's battCycleCostR (165). They are different quantities.
       // The LP already pays for battery cells through its capex annuity (BLD_LIFE
@@ -11823,6 +11987,7 @@ function bldBuildLP(opts){
   if (OFF_ON) for (const y of Y){
     let cost = 0;
     for (const yy of Y) if (yy >= y) cost += (bldNetAnnuityAt('offshore', y) + GA.offshore) / Math.pow(1+BLD_DISC, yy-2026);
+    if (FAULT_RKW > 0) for (const yy of Y) if (yy >= y) cost += bldAnnuity(FAULT_RKW, BLD_LIFE.offshore, 'offshore') / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_off_' + y);
   }
   if (PHES_ON) for (const y of Y){
@@ -11881,6 +12046,14 @@ function bldBuildLP(opts){
     const ann = bldAnnuity(S.bldPeakerExtRkW, p.irp - p.eol, 'eskom') + S.fomDiesel;
     for (const yy of Y) if (yy >= p.eol) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' le_' + p.id);
+  }
+  // System strength builds: their annual charge (ssAnnualRkW) in every year from the build year, as the other builds. Condensers from
+  // 2026 + their build time (BLD_BUILD_Y.grid); grid-forming on any battery standing.
+  const SS_COND_FROM = 2026 + BLD_BUILD_Y.grid;
+  if (SSI) for (const y of Y){
+    let cg = 0, cc = 0, cn = 0;
+    for (const yy of Y) if (yy >= y){ const d = Math.pow(1+BLD_DISC, yy-2026); cg += ssAnnualRkW('gfm', y) / d; cc += ssAnnualRkW('scc', y) / d; cn += ssAnnualRkW('scn', y) / d; }
+    obj.push((cg * 1000).toFixed(3) + ' b_gfm_' + y, (cc * 1000).toFixed(3) + ' b_scc_' + y, (cn * 1000).toFixed(3) + ' b_scn_' + y);
   }
   L.push('  ' + obj.join(' + ').replace(/\+ -/g, '- '));
   L.push('Subject To');
@@ -11984,6 +12157,11 @@ function bldBuildLP(opts){
   for (const y of Y){
     const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
     const coalCapMean = bldCoalMW(y) * eaf, COMMIT_MIN = COMMIT_ON ? COMMIT_MIN_Y[y] : 0;
+    // System strength: the year's requirement, MW.s (one per year: the largest loss from the coal units standing on the schedule),
+    // coal's coefficient (H / 0.9 x lambda, decision D1: committed = output x the engine's committed-to-output ratio), and TDP 2024's
+    // committed condensers.
+    const SS_REQ = SSI ? 1000 * ssRequirementGWs(S, ssLossMW(ssCoalUnitsByYear(y), S)) : 0;
+    const SS_KC = SSI ? SS_H.coal * SS_MVA_PER_MW * ssCoalLambda(y) : 0, SS_TDP = SSI ? SS_H.cond * ssTdpCondMVA(y) : 0;
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
@@ -12148,6 +12326,20 @@ function bldBuildLP(opts){
       { const _mdr = Math.min(avonDedisaMustRunMW(y, i, S), MDR_CAP(y)); if (_mdr > 0) L.push(' mdr_' + k + ': gd_' + k + ' >= ' + _mdr.toFixed(1)); }   // Avon and Dedisa (message 88), within the independent peakers' diesel (message 182)
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
+      if (SSI){
+        // Inertia, MW.s, while spinning (SS_H x MW / 0.9): coal at output x lambda; nuclear, hydro and CSP at the output this LP gives
+        // them; pumped storage (existing and new) pumping or generating; CCGT, open cycle on LNG and diesel running; condensers (TDP's
+        // and built, H on their MVA); grid-forming batteries zg_, at most their MW and the lithium power not charging or discharging.
+        const kM = SS_MVA_PER_MW, fx = kM * (SS_H.nuclear * NUC(y)*AV_NUC*NUC_SH(i) + SS_H.hydro * EX.hydro*AV_HYD + SS_H.csp * EX.csp*0.38) + SS_TDP;
+        const kP = (SS_H.ps * kM).toFixed(4), kG = (SS_H.ccgt * kM).toFixed(4), kO = (SS_H.ocgt * kM).toFixed(4);
+        L.push(' ssi_' + k + ': ' + SS_KC.toFixed(4) + ' gc_' + k
+          + STORE.filter(S2 => S2.t === 'ps' || S2.t === 'phes' || S2.t === 'phel').map(S2 => ' + ' + kP + ' ' + S2.dis + '_' + k + ' + ' + kP + ' ' + S2.chg + '_' + k).join('')
+          + ' + ' + kG + ' gg_' + k + (OCGT_ON ? ' + ' + kO + ' go_' + k : '') + ' + ' + kO + ' gd_' + k
+          + cum('scc', y).concat(cum('scn', y)).map(v => ' + ' + SS_H.cond.toFixed(4) + ' ' + v).join('')
+          + ' + ' + (ssGfmH(S) * kM).toFixed(4) + ' zg_' + k + ' + ssl_' + k + ' >= ' + (SS_REQ - fx).toFixed(1));
+        L.push(' zgc_' + k + ': zg_' + k + ' - ' + cum('gfm', y).join(' - ') + ' <= 0');
+        L.push(' zgp_' + k + ': zg_' + k + ' + bdis_' + k + ' + bchg_' + k + ' - ' + cum('batt', y).join(' - ') + ' <= ' + EX.batt);
+      }
       // Same power limits for vanadium and iron-air: neither can charge or
       // discharge faster than what has been built.
       for (const S2 of STORE){
@@ -12339,6 +12531,12 @@ function bldBuildLP(opts){
       + ' >= ' + (RC_ON ? (peak*(1 + PLAN_M/100) - firm) : Math.max(0, peak*(1 + PLAN_M/100) - firm)).toFixed(1));
   }
 
+  // System strength: grid-forming MW no more than the lithium power standing; conversions no more than one 139 MVA machine per coal unit
+  // retired on the schedule by the year.
+  if (SSI) for (const y of Y){
+    L.push(' gfmcap_' + y + ': ' + cum('gfm', y).join(' + ') + ' - ' + cum('batt', y).join(' - ') + ' <= ' + EX.batt);
+    L.push(' sccmax_' + y + ': ' + cum('scc', y).join(' + ') + ' <= ' + (SS_COND_CONV.mva * ssRetiredCoalUnits(y)).toFixed(1));
+  }
   // Lithium's duration stays inside 1 to LI_MAX_HOURS, the range the slider offers and the
   // twelve-year dispatch has been tested on. Named battdur_ rather than dmin_/dmax_, which are
   // the diesel rows' prefix.
@@ -12381,6 +12579,10 @@ function bldBuildLP(opts){
   for (const q of CMP) L.push(' 0 <= rca_'+q.y+' <= ' + q.mwA.toFixed(1));
   for (const p of LE_P) L.push(' 0 <= le_' + p.id + ' <= ' + p.mw);
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
+  if (SSI) for (const y of Y){
+    L.push(' 0 <= b_gfm_'+y+' <= 200000');
+    for (const t of ['scc', 'scn']) L.push(' 0 <= b_'+t+'_'+y+' <= ' + (y >= SS_COND_FROM ? 1000000 : 0));
+  }
   for (const y in IMP_MWH) L.push(' ' + IMP_MWH[y].toFixed(1) + ' <= imp_' + y + ' <= ' + IMP_MWH[y].toFixed(1));   // fixed: priced, not chosen
   for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
     L.push(' 0 <= cc_'+S2.t+'_'+y+' <= 200000');
@@ -12399,6 +12601,7 @@ function bldBuildLP(opts){
     L.push(' 0 <= u_'+k+' <= 100000');   // tail days are priced at VoLL x 365 instead of bounded to zero
     L.push(' 0 <= rsl_'+k+' <= 100000');
     L.push(' 0 <= crt_'+k+' <= 200000');
+    if (SSI){ L.push(' 0 <= zg_'+k+' <= 200000'); L.push(' 0 <= ssl_'+k+' <= 1000000'); }
     // Every storage technology needs bounds, or its variables are unbounded and
     // the solve fails. The real limits are the power constraints above; these are
     // just a ceiling.
@@ -12495,6 +12698,7 @@ function bldBuildToState(res){
   // Set, not added to the current value: applying a build twice must not retire the fleet twice.
   if ((_ps.bldPeakerRet | 0) > 0) o.dieselDecomMW = bldPeakerDecomMW(endY, _ps, res && res.Columns);
   if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
+  if ('gfm' in tot || 'scc' in tot || 'scn' in tot){ o.ssGfmMW = Math.round(tot.gfm || 0); o.ssCondMVA = Math.round((tot.scc || 0) + (tot.scn || 0)); }   // 'inertia' builds
   Object.assign(o, bldAstrVreRef(res && res.Columns, endY, _ps));
   return o;
 }
@@ -12575,6 +12779,8 @@ function bldStateForYear(res, y, opts){
     demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, demandBlockMW: bldDemandBlockMW(opts, y), scenarioYear: y,
     ...bldAstrVreRef(res.Columns, y, opts.state),
     windCapeMW: Math.round(Object.entries(res.Columns || {}).reduce((a, [c, v]) => { const m = c.match(/^cw_([0-9]+)$/); return a + (m && +m[1] <= y ? (v.Primal || 0) : 0); }, 0)),
+    // System strength builds to y ('inertia' mode only; a 'sync6' LP has none): grid-forming MW and condenser MVA, for the engine's floor.
+    ...(('gfm' in tot || 'scc' in tot || 'scn' in tot) ? { ssGfmMW: Math.round(tot.gfm || 0), ssCondMVA: Math.round((tot.scc || 0) + (tot.scn || 0)) } : {}),
     ...(opts.gasFuelR ? { costCcgt: bldGasFuelR(opts, y, { ...FIXED, ...opts.state }) } : {}),
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
         ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}),
@@ -21004,7 +21210,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-01c';
+const BUILD_STAMP = '2026-11-02a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21102,7 +21308,8 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
-  bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand });
+  bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
+  ssThermalH, ssGfmH, ssLossMW, ssRequirementGWs, ssTdpCondMVA });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
 const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
@@ -21114,6 +21321,7 @@ const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, S
   BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW, USD_RATE_R, US_CPI_2011_TO_JAN26,
   COAL_START_SUPER, COAL_START_OFFLINE_H, COAL_START_WEAR_USD, COAL_START_OTHER_USD, COAL_START_FUEL_RMW, COAL_START_FUEL_AT_RGJ,
   COAL_KGCO2_PER_GJ, COAL_GJ_PER_MWH, COAL_PRE_C, COAL_START_EFOR_PCT, COAL_EFOR_REPL_RMWH,
+  SS_H, SS_MVA_PER_MW, SS_THERMAL_MIX, SS_GFM_H_SHARE, SS_F0_HZ, SS_LOSS_UNIT_MW, SS_LOSS_UNITS, KOEBERG_UNITS, SS_TDP_COND,
   bldWeatherYears: null, bldWxWeights: null, bldSolarTrk: null, bldWindMod: null, _wxLoading: null, _twelveYearCache: {}, _roof12Cache: null });
 // The scripts the engine shares with the nodal model (IMPORTS_CF and others), loaded in the worker as the page loads them.
 const ENGINE_SCRIPTS = ['nodal/nodal_engine.js', 'nodal/capacity_siting.js'];
