@@ -30,9 +30,9 @@ These replace the 1, 3 and 5 GWh placeholder cases (573, 575 (c)). Sources follo
 
 ## System strength: the user's inputs (1 Nov 2026, message 578)
 
-Inertia constants from ERCOT's Table 1 with the user's central values, MVA = MW / 0.9; the largest credible loss rule (2,160 MW while a
+Inertia constants: the user's central values, with the ranges of ERCOT's 2024 revision for nuclear and coal and the 2018 version's for the other rows until the 2024 rows are read (message 581 (a)), MVA = MW / 0.9; the largest credible loss rule (2,160 MW while a
 coal station with three or more 720 MW units stands, then the largest single unit, Koeberg about 930 MW), our assumption. Both in SOURCES
-('System strength: inertia constants and the largest credible loss'), with the flag that the 2024 revision's ranges differ.
+('System strength: inertia constants and the largest credible loss').
 
 ## Eskom terms: the hourly dispatch export keeps its demand column (31 Oct 2026; user, message 567 (a), cancelling 566 (c))
 
