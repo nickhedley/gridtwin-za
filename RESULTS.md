@@ -19313,3 +19313,16 @@ in every year to two decimals (Deep 0.82% in 2032 at most, Fossil-free 0.03% in 
 
 Caveat: the 31a checks listed above keep their null fields; each is superseded for the pack and the presets by a clean 31c check (the
 calibrated Deep runs' 31c checks were made on gtza-c31l, which predates the bug). c6e_vre and dmin2028 keep theirs (TODO 14lz).
+
+### Suite on build 2026-11-01c (the preset swap merged with main's #141): main's known failures only, by name (user, 1 Nov 2026, messages 596 and 598 (b))
+
+Suite on build 2026-11-01c (claude/preset-swap: main 1dc9119 merged at 8a58a57, the presets on their 31c checks, stored panels rewritten
+at 14a9b7d; ESK19679.csv present), 1 Nov 2026 08:50-11:35 UTC in two pieces, beside the c6e recheck, the preset reruns and a page
+rescore, so the timings are not clean. Node checks 1021/1030, audit 88/88, eng5 5/6, equal to build 11-01a's suite by count in every
+script. Failures, all main's known ones by name: validate_findings 36/39 (congestion floor; iron-air July; turn-up share; 39 checks,
+one withdrawn), validate_response 86/87, validate_consistency 82/83 (high-season off-peak), validate_benchmarks 28/30 (CO2 against
+Ember; peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost), eng5 storage vs unserved.
+validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38,
+validate_bids 7/7, validate_external 8/8. Main's #142 (REVIEWER_PACK.md) and #143 (check files, pathcheck.js, RESULTS, TODO) were merged in
+after the suite (917473e, 8aa6bc1); neither touches index.html or a file the suite reads for these presets' costs, so it was not rerun.
+Visible text against main (2b725f1): the two hypothetical captions only, as reviewed (Deep 47 words, Fossil-free 48).
