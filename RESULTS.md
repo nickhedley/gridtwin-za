@@ -19062,3 +19062,13 @@ in every year to two decimals (Deep 0.82% in 2032 at most, Fossil-free 0.03% in 
 
 Caveat: the 31a checks listed above keep their null fields; each is superseded for the pack and the presets by a clean 31c check (the
 calibrated Deep runs' 31c checks were made on gtza-c31l, which predates the bug). c6e_vre and dmin2028 keep theirs (TODO 14lz).
+
+### packfill: a null open-cycle share no longer passes NTCSA's test; the fill stops and says why (user, 1 Nov 2026, message 600 (a))
+
+harness/pathway/tables/packfill.js read criterion (ii) as `x.ocgtCF>=0.06`, which is false for null, so a check made with the pathcheck
+bug of 31 Oct (RESULTS 'pathcheck: the per-run object') passed it unseen. Every NTCSA reading (meets, verdict, verdictplain, ocmax,
+ocmaxplain) now goes through ntcsaRows, which stops on a null or missing ocgtCF or unserved mean in any year (RULES 4), and the
+fill prints each failing key's reason in place of a bare 'unknown keys'. Tests, 1 Nov 2026 on main 72bb1fc: the fill folder built
+only from harness/pathway/c6e and harness/pathway/opt fills REVIEWER_PACK.md to the identical text (0 placeholders changed, none
+missing); the same folder with c6e's 2026-30 check nulled stops: 'base.ocmax (NTCSA test: c6e has no unserved mean or open-cycle share
+(ocgtCF null or missing) in 2026, 2027, 2028, 2029, 2030)', exit 1.

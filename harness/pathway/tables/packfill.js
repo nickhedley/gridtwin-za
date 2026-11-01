@@ -140,7 +140,13 @@ function pageCost(k){
 // two criteria; its keys are the ordinary run keys plus .which (its plain name), .added (what stands in 2040 beyond the pass-limit
 // run, GW, iron-air flagged) and .finding (one sentence; while neither run is in, the sentence says the rerun follows).
 const NOGAS_RERUNS=['s_nogas_maxp6','s_nogas_maxp10'];   // message 510: pass limit 6, then 10 if 6 still falls short; no top-up tonight
-const meets=s=>!!s&&!s.rows.some(x=>x.mean>20)&&!s.rows.some(x=>x.ocgtCF>=0.06);
+// NTCSA's two criteria read each year's mean unserved energy and open-cycle share (ocgtCF). A null or missing value stops the fill
+// (RULES 4; message 600 (a)): before this, `null>=0.06` was false, so a check made with the pathcheck bug of 31 Oct passed criterion (ii)
+// unseen (RESULTS 'pathcheck: the per-run object').
+const ntcsaRows=s=>{ const bad=s.rows.filter(x=>!(typeof x.mean==='number'&&isFinite(x.mean))||!(typeof x.ocgtCF==='number'&&isFinite(x.ocgtCF))).map(x=>x.y);
+  if (bad.length) throw new Error(`NTCSA test: ${s.n||"run"} has no unserved mean or open-cycle share (ocgtCF null or missing) in ${bad.join(', ')}`);
+  return s.rows; };
+const meets=s=>!!s&&!ntcsaRows(s).some(x=>x.mean>20)&&!s.rows.some(x=>x.ocgtCF>=0.06);
 const peek=r=>{ const n=opt(r); if (!fs.existsSync(`${O}/pathway_${n}.json`)) return null; if (cache[r]!==undefined) return cache[r]; const q=summ(O,n); if (q) q.dir=O; return q; };
 let NB; const nogasBest=()=>{ if (NB!==undefined) return NB; NB=null; for (const r of NOGAS_RERUNS){ const q=peek(r); if (q&&meets(q)){ NB={r,s:q}; break; } } return NB; };
 const nogasAdded=q=>{ const z=S('s_nogas'); if (!z) return null; const a=q.build[2040], b=z.build[2040];
@@ -248,7 +254,7 @@ function value(k){
     case 'dpvpctr': return b&&nf(Math.round(Math.abs(100*(s.pv-b.pv)/b.pv)),0)+'%';   // the same in whole percent, where the Doc gives one ('44%'; message 593 (c))
     case 'dslgw': return nf(at(q=>q.ocgtDsl||0)/1e3,1);
     case 'ocmaxplain': { const ys=Object.keys(s.sched||{}).map(Number).sort(); let first=null, cum=0; for (const yy of ys){ cum+=(s.sched[yy].ocgd||0); if (cum>=1&&first==null) first=yy; }
-      const rows=s.rows.filter(x=>first!=null&&x.y>=first&&x.ocgtCF!=null); if (!rows.length) return null; const v=100*Math.max(...rows.map(x=>x.ocgtCF)); return v<0.5?'under 1%':'about '+Math.round(v)+'%'; }
+      const rows=ntcsaRows(s).filter(x=>first!=null&&x.y>=first); if (!rows.length) return null; const v=100*Math.max(...rows.map(x=>x.ocgtCF)); return v<0.5?'under 1%':'about '+Math.round(v)+'%'; }
     // The no-gas finding's clause (message 511): the years the hourly check finds over 20 GWh, as a span, and the range of their means.
     case 'shortfallshort': { const o=s.rows.filter(x=>x.mean>20); return o.length?`falls short of the standard in ${spanH(o.map(x=>x.y))} when tested hourly`:'meets the standard in every year when tested hourly'; }   // message 512
     case 'shortfall': { const o=s.rows.filter(x=>x.mean>20); if (!o.length) return 'meets the 20 GWh standard in every year when tested hourly';
@@ -265,7 +271,7 @@ function value(k){
     case 'dco2absmt': return b&&nf(Math.abs(s.co2Cum-b.co2Cum),0);   // against the plan, unsigned (message 507 (b))
     case 'dco2prevabs': { const q=S('prev'); return q&&nf(Math.abs(s.co2Cum-q.co2Cum),0); }   // against the previous central, unsigned
     case 'dco2plain': { if (!b) return null; const d=s.co2Cum-b.co2Cum; return Math.abs(d)<0.5?'less than 1 Mt':nf(Math.abs(d),0)+' Mt '+(d>0?'more':'less'); }
-    case 'verdictplain': { const u=s.rows.filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
+    case 'verdictplain': { const u=ntcsaRows(s).filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
       if (!u.length&&!o.length) return "meets the system operator's adequacy test in every year to 2040";
       return [u.length?`exceeds the system operator's 20 GWh limit on expected unserved energy in ${spanH(u)}`:'',o.length?`runs open-cycle plant more than 6% of the time in ${spanH(o)}`:''].filter(Boolean).join(' and '); }
     case 'nemplain': { const lim=x=>0.00002*x.servedTWh*1e3; const over=s.rows.filter(x=>x.mean-(x.seMean||0)>lim(x)), near=s.rows.filter(x=>x.mean>lim(x)&&!(x.mean-(x.seMean||0)>lim(x)));
@@ -282,7 +288,7 @@ function value(k){
     case 'dco2': return b&&sg(s.co2Cum-b.co2Cum,0);
     case 'maxmean': return nf(s.maxMean,1);
     case 'worst': return nf(s.worstRun,0);
-    case 'ocmax': return nf(100*Math.max(...s.rows.map(x=>x.ocgtCF)),1)+'%';
+    case 'ocmax': return nf(100*Math.max(...ntcsaRows(s).map(x=>x.ocgtCF)),1)+'%';
     case 'mean': { const x=s.rows.find(q=>q.y===y); return x?nf(x.mean,1):null; }
     case 'overown': return s.over.length?span(s.over):'none';
     // The years over the run's own standard with their figures (mean against that year's target, GWh), and how the optimiser ended
@@ -318,7 +324,7 @@ function value(k){
       return a.length?a.join('; '):'under it in every year'; }
     case 'nemfig': { const x=s.rows.find(r=>r.y===y); if (!x) return null; const l=0.00002*x.servedTWh*1e3, se=x.seMean||0;
       return `${nf(x.mean,2)} ± ${nf(se,2)} GWh against ${nf(l,2)}, ${x.mean-se>l?'over it':x.mean>l?'at the limit within sampling error':'under it'}`; }
-    case 'verdict': { const u=s.rows.filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
+    case 'verdict': { const u=ntcsaRows(s).filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
       return !u.length&&!o.length?'met':[u.length?`unserved over 20 GWh in ${span(u)}`:'',o.length?`open-cycle over 6% in ${span(o)}`:''].filter(Boolean).join('; '); }
     case 'wind': return nf(at(q=>q.wind)/1e3,1);
     case 'solar': return nf(at(q=>q.pv)/1e3,1);
@@ -362,7 +368,7 @@ let tables=null; const table=t=>{ if (/^What gets built/.test(t)) return built(/
 const src=fs.readFileSync(PACK,'utf8'); let changed=0; const unknown=[];
 // Every key but 'missing' first, so the missing list is complete when it is written.
 const fill=s=>s.replace(re,(all,k,old)=>{ if (k==='missing') return all; let v;
-  try { v=k.startsWith('table:')?table(k.slice(6)):value(k); } catch(e){ unknown.push(k); return all; }
+  try { v=k.startsWith('table:')?table(k.slice(6)):value(k); } catch(e){ unknown.push(k+(e&&e.message?' ('+e.message+')':'')); return all; }   // the reason with the key (message 600 (a))
   if (typeof v==='string') v=v.replace(/(\d)\u2013(\d)/g,'$1-$2');   // hyphens in number and year ranges (messages 506, 514)
   if (v==null) v=k.startsWith('table:')?`\n\n[not yet available: table ${k.slice(6)}]\n\n`:`[not yet available: ${plainName(k.split('.')[0])}]`;
   if (v!==old) changed++; return `<!--fill:${k}-->${v}<!--/fill-->`; });
