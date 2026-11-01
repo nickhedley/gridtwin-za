@@ -18941,3 +18941,14 @@ every script and by failure name: validate_findings 37/40 (congestion floor; iro
 peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost), eng5 storage vs unserved. validate_worker
 38/38, validate_public_text 32/32 (the TDP note at 40 words after 31h's 43 failed it; build 31i), validate_external 8/8. The 31h run,
 stopped at validate_worker, had the same failures plus that public-text check.
+
+### Suite on build 2026-10-31k (the preset swap): main's failures plus the four the swap adds, each with its cause above (user, 31 Oct 2026, messages 537 (f) and 576 (a))
+
+Suite on build 2026-10-31k (claude/preset-swap, index.html at b60f884, stored panels rewritten at 4ad673d; ESK19679.csv present), 31 Oct
+2026 22:00 to 1 Nov 00:28 UTC in two pieces, beside two other suites, so the timings are not clean. Node checks 1018/1031, audit 88/88,
+eng5 5/6. validate_pathway_presets 65/65 (24 checks more than main's 41: the two presets added). Against main's 31a (998/1007): every
+known failure by name (validate_findings congestion floor, iron-air July, turn-up share; validate_response matrix; validate_consistency
+high-season off-peak; validate_benchmarks CO2 against Ember and peakerSeasonRatio; validate_outputs curtailment zero at defaults and
+curtailFuelCost; eng5 storage vs unserved), plus the four the swap adds (validate_findings 34/40: preset curtailment band, Deep gas at
+zero, Deep 12-hour storage; validate_external 7/8: CSIR capacity ranges), each with its cause in the preset swap entry above, left for
+the user's decision. validate_worker 38/38, validate_public_text 32/32, validate_stored_panels 86/86.
