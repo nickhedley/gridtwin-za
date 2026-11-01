@@ -102,6 +102,9 @@ available; otherwise a Playwright script against /opt/pw-browsers/chromium.
 - Lead with what changed and what it measured. Short. One flag beats five paragraphs.
 - State the finding, the scenario and the caveat; do not explain mechanisms in prose.
 - En dashes, never em dashes. No italics. No words in all caps.
+- "Plant" (user, 31 Oct 2026, messages 569 (a) and 570 (a)): never as a collective noun for several power plants ("REIPPPP
+  plant", "coal plant" meaning the fleet, "peaking plant", "spinning plant"); write "plants". "Plant" for one power plant ("the
+  Medupi plant") and "plant" describing another noun ("plant outages", "plant-level") are fine.
 - End every message with a short running list of the pressing outstanding tasks.
 - Push back when something is asserted as safe or settled; never fudge a test to pass.
 - Site copy (user, 25 Oct 2026, messages 377 and 378): a slider note or preset caption states the default and its basis in one
