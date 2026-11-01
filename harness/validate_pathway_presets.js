@@ -38,7 +38,8 @@ const RUNS = [
   { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_b.json' },
   // The hypothetical presets from 1 Nov 2026 (user, messages 537 (f) and 555): optimised builds at relaxed build rates (harness/pathway/opt/),
   // checked against their engine checks on 31c (the 1 Nov corrections; message 596)
-  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035r_c6e_31c_b.json' },
+  // Deep from build 2026-11-01d: the no-gas run calibrated to 40 Mt from 2035 (message 599 (a)); its 31c check was made on gtza-c31l.
+  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035nogas_t40n_r3_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035nogas_t40n_r3_c6e_31c_b.json' },
   { name: 'Fossil-free 2040', year: 2040, build: 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_31c_c.json' },
 ];
 

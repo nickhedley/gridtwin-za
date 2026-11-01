@@ -110,7 +110,7 @@ let PG=null; const pagecosts=()=>{ if (PG) return PG; if (!fs.existsSync('testro
 const pc1=v=>nf(v*100,1)+'%';
 // New capacity added 2026-40, MW, by technology, from the run's schedule (addgw, addgwr).
 function addMW(s,t){ if (!s.sched) return null; const ys=Object.keys(s.sched); const g=k=>ys.reduce((a,yy)=>a+((s.sched[yy][k])||0),0);
-  const v={wind:g('wind'),solar:g('pv'),rooftop:g('rooftop'),batt:g('batt'),gas:g('ccgt')+g('ocgt'),ccgt:g('ccgt'),ocgt:g('ocgt'),dsl:g('ocgd'),ps:g('phes')+g('phel'),offshore:g('off'),ironair:g('ironair'),
+  const v={wind:g('wind'),solar:g('pv'),rooftop:g('rooftop'),batt:g('batt'),gas:g('ccgt')+g('ocgt'),ccgt:g('ccgt'),ocgt:g('ocgt'),dsl:g('ocgd'),ps:g('phes')+g('phel'),offshore:g('off'),ironair:g('ironair'),vrfb:g('vrfb'),
     nuclear:s.nuclearAdd?Object.values(s.nuclearAdd).reduce((a,b)=>a+b,0):0}[t]; if (v==null) throw new Error('packfill: no addgw technology '+t); return v; }
 function pageCost(k){
   const g=pagecosts(); if (!g){ missing.add('the page (page_costs.js)'); return null; }

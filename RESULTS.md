@@ -19326,3 +19326,20 @@ validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_pane
 validate_bids 7/7, validate_external 8/8. Main's #142 (REVIEWER_PACK.md) and #143 (check files, pathcheck.js, RESULTS, TODO) were merged in
 after the suite (917473e, 8aa6bc1); neither touches index.html or a file the suite reads for these presets' costs, so it was not rerun.
 Visible text against main (2b725f1): the two hypothetical captions only, as reviewed (Deep 47 words, Fossil-free 48).
+
+### Fossil-free 2040's 2,000 MW of CCGT in 2040: a setup error in the build LP, the freed-connection credit left on for gas built after the last fossil year; the plants never run and cost nothing in the engine; the LP took an illusory credit of about R0.26bn (user, 1 Nov 2026, message 599 (c))
+
+Run: harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json (FOSSIL_END=2039, build LP on build 2026-10-31a's code). It builds b_ccgt_2040 =
+2,000 MW, the annual gas limit (rates.ccgt), all of it on a connection freed by retired coal (sched.2040.rp.ccgt 2,000).
+Cause, in index.html's bldBuildLP: with bldFossilEndYear set, gas and diesel built after that year carry no capital and no grid charge
+(capCharge returns 0 and the cost loop skips every year after it), but the repurposed-connection credit (rp_<t>_<y>, the grid cost
+avoided from then on) is not cut for them. So rp_ccgt_2040, bounded by b_ccgt_2040, is a negative cost with nothing against it, and the
+LP builds to the limit. Not a forced or committed build (minBuild names wind and solar only) and not a reserve requirement: the reserve
+rule is 'astr', where idle gas holds no reserve, and planMarginPct is 0, so the res_ row is off.
+Effect: the credit is GA[ccgt] R382.9/kW-yr (bldGridAnn, grid cost on, build 31l) for 2040 only, discounted at 8% over 14 years:
+R130,400/MW, about R0.26bn for 2,000 MW, off the LP's objective. The pool of freed connections had 347 MW spare in 2040 (39,692 MW
+retired, 39,345 used), so no other build lost a connection; the solar, iron-air, flow and pumped storage built in 2040 sit wholly on
+freed connections as before. The engine check (pathcheck.js) and the preset run 2040 with no gas standing (newCcgtMW 0, gas output 0
+TWh in every year), so the published cost, CO2 and adequacy are unaffected.
+Fix (not made; for the user's decision): cut the credit for gas and diesel in years after bldFossilEndYear, or bound their build there
+at zero. The run would then be rerun to confirm only the CCGT line moves. Deep's runs set no fossil end year and are not affected.
