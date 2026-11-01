@@ -19367,3 +19367,80 @@ battery credit at 0.30 of battery power) already exceed 6 GW once batteries grow
 other hours. From 2033 the lowest-inertia hours carry about 1.3-1.7 GW of coal output, Koeberg and a little hydro: about 11.5-13 GWs
 against 50-54 GWs in 2026-28. Caveats: output-based lower bound; one outage draw per weather year (the engine checks use 10 or more);
 no inertia requirement or largest-loss test yet (the minimum version, TODO 14lo, uses the user's largest credible loss rule, SOURCES).
+
+### System strength, minimum version: engine checks, lambda and the one-year build test, build 2026-11-02a on claude/system-strength-min. With 'sync6' (the page default) the build LP is byte-identical to main's and every engine output equal but inertiaGVAs; on 'inertia' c6e's own build is short of 54 GW.s in 12% of 2035 hours and 29% of 2040 hours before the coal lift, and the 2035 build LP meets the floor with 9.0 GW of grid-forming batteries and 5.8 GVA of converted units for R6.2bn (+0.57%) of discounted cost to 2035, no slack (user, 1 Nov 2026, messages 603 (a), 604 (b), 606; TODO 14lo)
+
+What changed (FIXED.ssMode, page default 'sync6'; 'inertia' as decided in HANDOVER 'System strength, minimum version'): one H set
+(SS_H) read by the floor and by the inertia revenue block, which had coal 3.5, nuclear 5.0, hydro 3.0; the engine computes each hour's
+inertia by source (coal on committed capacity), the requirement 50 x L / (2 x RoCoF) with L from the coal units standing, lifts coal
+commitment where coal is available and reports what remains; the build LP gains a row per representative and stress hour with
+grid-forming batteries (b_gfm_), conversions (b_scc_) and new condensers (b_scn_) as builds and a slack (ssl_) at VoLL per MW.s; the
+fault-level adder is ssFault. Settings not stated below are the page defaults of build 2026-11-02a.
+
+1. LP-key test (18:00 UTC; repeated 18:30 UTC on the final index.html, the same three hashes): lpkey.js (Least-cost path 2035, bldGridCost 1, cost of capital central, bldBuildLP growth 0.02, eaf 0.64),
+sha1 of the LP text: main (d7eb144, /home/user/gtza-oc at 72afbd9, same index.html) 4e0b77a5f1f45ef650aa162102001d814c344c45, 13,918,952
+characters; this build at the default and with ssMode 'sync6' the same hash and length; 'inertia' 39f092d5e626d5fb42aa9c5767bb5b1517db9138,
+15,405,807 characters; ssFault 'full' on 'sync6' 7078c168bc00943aa61f21477f5015c7a1db80bb (new wind 2026's coefficient 12,409,603 to
+12,924,701, the R1,602.3/kW adder at A$137,000/MW over SARB's 0.0855).
+
+2. Engine, 'sync6' against main (18:20 UTC; first run 17:55 UTC on 2026-11-01c with the same result): harness/pathway/ss_engine_check.js
+MODES=sync6 DIGEST on both pages, c6e's 2026, 2030, 2035 and 2040 states x twelve weather years (48 runs): 97 of 98 output keys equal to
+the digit in every run; inertiaGVAs differs in all 48 (it now reads SS_H: thermal H 3.782 against 3.79 s). The keys this change adds
+(coalCommittedMW, ss) are not compared.
+
+3. Engine, 'inertia' (18:21-18:23 UTC): harness/pathway/ss_engine_check.js, c6e's states built as gen_pathway_presets.py's block() writes
+them (2026 without fleet2026), applyState, twelveYearDemand, one outage draw per weather year (seed 71830529 + weather year x 7919),
+twelve weather years, ssLiftForecast 'mustspin' (the default); no condensers built, no grid-forming batteries. Hours of 105,120;
+inertia GW.s mean / 5th percentile / minimum; coal lifted is the lift run's coal output less the run without the lift, TWh a year.
+
+| Year | Requirement, GW.s | TDP condensers, MVA | Short before the lift, h (GW.s-h) | Short after, h (GW.s-h) | Coal lifted, TWh/yr | Inertia after | Inertia before | Committed coal mean / min, MW, after (before) | lambda |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026 | 54.0 | 0 | 0 | 0 | 0 | 104.5 / 91.1 / 72.4 | same | 22,866 / 16,091 (same) | 1.255 |
+| 2030 | 54.0 | 5,850 | 0 | 0 | 0 | 100.7 / 88.3 / 63.9 | same | 20,084 / 12,116 (same) | 1.100 |
+| 2035 | 54.0 | 6,750 | 12,809 (150,962) | 0 | 2.21 | 79.2 / 59.3 / 54.0 | 76.9 / 40.9 / 24.7 | 13,962 / 9,000 (13,416 / 2,352) | 1.840 |
+| 2040 | 54.0 | 6,750 | 30,046 (413,417) | 1,384 (4,498) | 5.92 | 67.3 / 54.1 / 35.6 | 61.7 / 33.2 / 25.6 | 10,311 / 5,013 (8,910 / 2,574) | 1.923 |
+
+By source after the lift, mean GW.s: 2035 coal 57.4, nuclear 5.7, hydro 0.6, CSP 0.6, pumped storage 5.7, gas 0.4, condensers 8.8; 2040
+coal 42.4, pumped storage 6.0, gas 3.3, condensers 8.8. In 2040 no coal was left to lift in 7,101 hours; unserved energy falls from 0.230
+GWh a year ('sync6') to 0.000 with the lift, and in 2035 from 0.316 to 0.221. With ssLiftForecast 'prev' (the hour before's pumped storage,
+gas and grid-forming inertia counted before dispatch; 18:10 UTC) 2035 is short in 2,725 hours (6,762 GW.s-h) after the lift and 2040 in
+6,852 (17,700), coal lifted 1.38 and 4.02 TWh: the short hours follow a fall in pumped storage's inertia from the hour before (2.8 GW.s on
+average in 2035).
+lambda (decision D1) is the committed-to-output ratio of coal in the lowest 10% of hours by inertia without the lift (coal output above
+1 MW, about 10,500 hours a year pooled), at its lower quartile; the median and the lowest 5% are 1.348 and 1.253 (2026), 1.281 and 1.070
+(2030), 1.869 and 1.840 (2035), 1.923 and 1.923 (2040). SS_COAL_LAMBDA holds 1.254, 1.099, 1.839 and 1.923 (rounded down), linear between
+the years. The build LP credits coal at output x lambda: committed = output x committed/output. The decision's wording, output / lambda,
+would credit less than output with lambda above 1; the lower quartile is the conservative choice only for the product.
+
+4. One-year build test (18:03-18:07 UTC, 4 minutes): pathway_perfail.js on env_c6a.sh with GAS_FIRST=2035 (c6e's settings, as
+chain_c6e.sh), HORIZON=2035, FIX_FROM=pathway/c6e/pathway_c6e.json FIX_TO=2034 (every build to 2034 fixed at c6e's; 2035's builds and
+every system strength build free), MAXP=1 (one pass, no stress windows), native HiGHS, SS=sync6 and SS=inertia. Both Optimal, verdict
+adequate. Objective (discounted system cost 2026-2035): 'sync6' R1,079.931bn, 'inertia' R1,086.093bn (+R6.162bn, +0.57%). 'inertia'
+builds grid-forming batteries 1,861 MW (2030), 2,194 (2031), 1,126 (2032), 1,025 (2033), 2,079 (2034), 760 (2035): 9,045 MW by 2035
+against 11,930 MW of lithium standing (68 existing); conversions 5,004 MVA (2032), 278 (2033), 417 (2034), 139 (2035): 5,838 MVA, 42 units; no new
+condensers; slack zero in every year. 2035's other builds: lithium 547 MW where 'sync6' builds none, open cycle on LNG 649 MW (612),
+wind 1,949 MW (1,947). Annual charges: grid-forming R65.7/kW-yr built in 2030 (R56.5 in 2035), conversions R117.6/kVA-yr, new condensers
+R216.6/kVA-yr (network rate 7.1%, construction factor 1.072). Engine check of 2035 (pathcheck.js, K=1, 12 runs, GRID=1): with the LP's
+9,045 MW and 5,838 MVA, ssLiftForecast 'mustspin', no hour short, inertia minimum 54.0 GW.s, 5th percentile 72.6, coal commitment lifted
+in 1,064 hours a year, cost R259.017bn against R258.241bn with 'prev' (102 hours short a year, minimum 36.7 GW.s) and R257.906bn for the
+'sync6' build; the builds' annual charge R1.24bn (costWithSs).
+
+5. Quick suite, from harness/ (before 17:44-17:51 UTC on 2026-11-01c; after 18:23-18:30 UTC on 2026-11-02a with the final index.html): validate_lint 3/3, validate_structure 27/27,
+validate_lp 57/57, validate_invariants 176/176, validate_solve 9/9, validate_outputs 49/51 (main's two: 'Curtailment is zero at
+defaults' and 'curtailFuelCost'), validate_public_text 32/32, before and after.
+
+Choices made in the build, each for review: the lift counts only what must spin before dispatch ('mustspin', conservative; operators
+schedule synchronous units ahead, EirGrid's minimum units online and AEMO's minimum synchronous combinations), so grid-forming batteries
+the LP builds do not reduce the engine's coal lift; committed coal in the engine is ucAvail after the hour's outage draw (cAvailRaw), plus
+the lift, and at least the hour's output; the lifted units run at least at the standing fleet's minimum stable share; condensers can be
+built from 2028 (2026 plus the network build time); conversions are capped by units retired on the schedule after 2026 (COAL_DATES where
+set), not by early retirement; grid-forming MW is capped by lithium power (not vanadium or iron-air) and its premium is 5% of the 4-hour
+lithium capital, annuitised as lithium, no fixed cost; condensers at the network cost of capital with grid's construction factor; the
+fault adder applies to new wind, solar, offshore, lithium, vanadium and iron-air, not rooftop or pumped hydro, annuitised as each
+technology's capital; the LP's slack is VoLL per MW.s per hour, weighted as shedding is without the stress target (365 on stress days);
+without coal the largest loss is a Koeberg unit at FIXED.nuclearMW / 2, 940 MW, so 23.5 GW.s (SOURCES says about 930 MW); new nuclear's
+unit size is not modelled. inertiaGVAs on 'inertia' is the year's requirement. The LP has committed coal (cm_, bldCoalCommit 1 in c6)
+that the row does not use (D1 as decided).
+Caveats: one outage draw per weather year; the one-year test has no stress windows and fixes c6e's builds to 2034, so its levels are
+not a pathway result; RoCoF borrowed from Ireland and AEMO; national, not by substation; no voltage control; condensers not sized by
+location (HANDOVER item 10).

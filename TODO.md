@@ -793,6 +793,20 @@ ElectraNet: A$0.75-5.9m per unit). (c) A grid-forming battery's inertia each hou
 al. 2017) about 5%. (e) Limitations to state: fault level national, not by substation; no voltage control; the 1 Hz/s limit borrowed
 from Ireland and AEMO, as South Africa has none.
 Minimum version for the note: 573 (a); what it leaves out, and the full version after the note: 14lt (message 574).
+Progress (build 2026-11-02a, branch claude/system-strength-min, messages 603 (a), 604 (b), 606): the minimum version is built behind
+FIXED.ssMode, page default 'sync6' (today's floor; LP text and every engine output as main's except inertiaGVAs, which now reads the
+one H set); 'inertia' adds the floor to the engine (coal commitment lifted, D3) and the build LP (grid-forming batteries, condenser
+conversions and new condensers, slack at VoLL per MW.s), the fault-level adder (ssFault), pathway SS/ROCOF/SS_FLAT_GWS/GFM_H/SS_LIFT/FAULT
+recorded and applied by pathcheck.js, and harness/pathway/ss_engine_check.js (lambda by year, SS_COAL_LAMBDA). RESULTS 'System strength,
+minimum version: engine checks, lambda and the one-year build test'. Open, for the parent session and Nick: (1) the full suite and
+stored panels on this build; (2) review, then the c6e rebuild on 'inertia' (about 1-2 h) and the 0.5 Hz/s, 40 GW.s, GFM_H 1 and 11 s
+and fault-level sensitivities; (3) the engine's lift counts only what must spin before dispatch (ssLiftForecast 'mustspin', chosen as
+the conservative option: no short hours where coal can be lifted, but grid-forming batteries the LP builds do not reduce the coal lift);
+'prev' (the hour before's pumped storage, gas and grid-forming inertia) leaves 2.6% of c6e's 2035 hours short: decide, or have the
+engine reserve battery headroom for the grid-forming MW; (4) D1 as written divides coal output by lambda, which with lambda the
+committed-to-output ratio would credit less than output: implemented as output x lambda (conservative at the lower quartile), and the
+LP's own committed coal (cm_, bldCoalCommit 1 in c6) is not used: confirm; (5) c7: page default to 'inertia' when the presets are
+regenerated (gen_pathway_presets.py stops on an 'inertia' run until it carries ssGfmMW and ssCondMVA).
 
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
