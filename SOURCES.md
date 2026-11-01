@@ -2238,18 +2238,15 @@ GreenCape's: the user's decision is that those paths are conservative.
 
 ## System strength: inertia constants and the largest credible loss (user, 1 Nov 2026, message 578; for the minimum version, TODO 14lo, 14lt)
 
-Inertia constants, H in seconds on the generator's MVA base (nameplate) (user, 1 Nov 2026, messages 578 (a) and 581 (a)). Central
-values (user's choice, inside both revisions below): nuclear 4.1, coal 3.7, CCGT 5.0, OCGT 5.0, CSP steam 3.0, hydro and pumped storage
-2.5. MVA = MW / 0.9 unless a unit's MVA is known. Inverter-based plant (wind, solar, batteries) contributes no synchronous inertia.
-Low and high sensitivities: the ranges of ERCOT, "Inertia: Basic Concepts and Impacts on the ERCOT Grid", Version 2 (revised 2 Dec 2024),
-Table 1: nuclear 3.79-5.09 s (MVA base 1,410-1,504), coal 2.43-5.2 s (MVA base 194-1,120).
+Inertia constants, H in seconds on the machine's MVA base (user, 1 Nov 2026, messages 578 (a), 581 (a) and 585 (a)). Source: ERCOT,
+"Inertia: Basic Concepts and Impacts on the ERCOT Grid", Version 2 (revised 2 Dec 2024), Table 1, read in full by the advisor (message
+585 (a)): nuclear 3.79-5.09 s; coal 2.43-5.2; combustion turbine 0.07-9.3; gas steam 1.18-4.68; combined cycle 1.2-9.3; hydro 2-3;
+reciprocating engine 0.2-2; wind, solar and battery 0.
 https://www.ercot.com/files/docs/2018/04/04/Inertia_Basic%20Concepts%20and%20Impacts%20on%20the%20ERCOT%20Grid_2024.docx
-Read from web search extracts only (www.ercot.com is outside this session's network; the user said not to open it): the extracts show
-the 2024 table's nuclear and coal rows and its ranking (hydro, simple-cycle combustion turbines, gas steam and coal below nuclear and
-combined cycle), not its other rows. For those, until the 2024 figures are read, the 2018 version's ranges as the user gave them (v0,
-Table 1, p.5): combined cycle 1.1-9 s, combustion turbine 1-12.5, gas steam 1-5.4, hydro 2-3 (rule 366, flagged). The 2018 version
-gives nuclear 3.8-4.34 and coal 2.9-4.5 (superseded here by the 2024 ranges).
-https://www.ercot.com/files/docs/2018/04/04/Inertia_Basic_Concepts_Impacts_On_ERCOT_v0.pdf
+Central values (the user's, all inside the 2024 ranges): nuclear 4.1, coal 3.7, combined cycle 5.0, open cycle 5.0, CSP steam 3.0, hydro
+and pumped storage 2.5. Low and high sensitivities: each range's ends. MVA = MW / 0.9 unless a unit's MVA is known. The model's open-cycle
+plant, existing and new, on diesel or gas, is combustion turbines (ocgtDieselMW, b_ocgt, b_ocgd), so it takes the combustion-turbine
+range; the model has no reciprocating engines (were they added, the reciprocating range with a central 1.0 s applies).
 South African reference point (the advisor's note): Komati, 1.3 s.
 
 Largest credible loss by year (user, message 578 (b); rule 366, conservative, our assumption, stated as such): 2,160 MW, three 720 MW
