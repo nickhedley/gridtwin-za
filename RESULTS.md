@@ -19016,3 +19016,19 @@ message 537 (d)): 1.62 Mt at R50,000/t; none in 2036-40. That cap was tightened 
 here is at or below 22.8 Mt in every year, so the user's cap holds in the engine. Without gas the plan keeps more coal standing (18.8 GW
 in 2035 against 16.4) and builds more solar, lithium and diesel peakers; diesel output stays small (0.01-0.10 TWh a year 2035-40).
 Caveat: hypothetical build rates (the grid pace), as both Deep runs; one weather year's profiles in the build LP, twelve in the check.
+Cost with and without the overrun penalty, and the limit that leaves the 2035 cap unmet (user, 1 Nov 2026, message 585 (b)):
+- The engine's system cost carries no penalty: engine PV 2026-40 R2,687.5bn is the cost without it. The penalty on its own: 1.624 Mt
+  above the build LP's 2035 cap at R50,000/t is R81.2bn in 2035 (real 2026 rands), R40.6bn in PV at 8% to 2026 (the LP's own objective
+  coefficient, 50,000 / 1.08^9 = R25,012 a tonne). With it: R2,728.1bn.
+- Against Deep with gas, on cost without the penalty: R2,687.5bn against R2,607.6bn, +R79.9bn; Deep with gas used no slack, this run
+  1.624 Mt in 2035 (none in 2036-40).
+- What binds through 2035 (the LP solution, LP key 789ff91405; a binding limit shows the build at its bound with a negative reduced
+  cost): the yearly build rates of the grid pace: wind 4,300 MW in every year 2026-35; utility solar at its growing cap in every year
+  (5,243 MW in 2030 to 7,354 in 2035); lithium 4,000 MW in 2032-35 and its energy cap of 32,000 MWh a year in 2033-35; new diesel
+  peakers 1,000 MW in 2035 (dieselRateMW); and new pumped storage, held at zero until Tubatse's 2038 date (BLD_PHES_CAPS central,
+  1,500 MW from 2038; reduced cost about -R108m per MW in 2035, the largest). Offshore wind reaches its path's 1,000 MW in 2035.
+  Not binding: iron-air (none built; the 5 GW total, iatot, has a zero dual, and its yearly reduced costs are zero or positive, so at the
+  margin it costs more than the R50,000/t penalty), vanadium (none; positive reduced costs). The 2035 cap row binds with the slack at its
+  price (dual -R25,012 a tonne, the discounted penalty).
+- The engine check's 2035 CO2 is 20.0 Mt, below the user's 22.8 Mt: the overrun is against the build LP's tightened cap of 17.509 Mt
+  (the LP's own 2035 emissions about 19.13 Mt), not against 22.8.
