@@ -19267,3 +19267,18 @@ Findings:
 - No overrun used in any run; no iron-air, vanadium or pumped storage built in any (pumped storage held at zero until Tubatse's 2038).
 - Every run sits at the relaxed wind limit through 2035 and at the solar limit for most of 2027-36; all build 25-44 GW of capacity above
   the deliverable rates over 2026-40 (by technology and year in the list above): the flag the page and the Doc carry (message 590).
+Addendum (user, 1 Nov 2026, message 598 (c)): NTCSA's adequacy test in every year 2026-40 (mean unserved at most 20 GWh, open-cycle
+plant under 6% of the time), and the highest open-cycle run share in any year:
+
+| | c6e central | Deep, gas, 22.8 Mt | No gas, 22.8 Mt | No gas, 30 Mt | No gas, 35 Mt | No gas, 40 Mt | Deep, gas, 40 Mt |
+|---|---|---|---|---|---|---|---|
+| Highest open-cycle share (year) | 1.85% (2036) | 0.82% (2032) | 0.74% (2032) | 0.76% (2033) | 0.60% (2030) | 0.69% (2033) | 0.69% (2033) |
+| Highest yearly mean unserved, GWh | 5.46 | 4.40 | 3.99 | 3.81 | 4.43 | 6.35 | 6.08 |
+| Passes NTCSA's test in every year | yes | yes | yes | yes | yes | yes | yes |
+
+The open-cycle share for the Deep runs is diesel output over open-cycle capacity (the 3,400 MW diesel fleet plus new diesel peakers):
+their checks recorded no open-cycle share (pathcheck.js read the per-run object by position after vreUsedTWh was appended, 31 Oct
+2026; fixed on claude/pack-checks, RESULTS 'pathcheck: the per-run object'). None of these runs builds open-cycle gas, so diesel is all
+their open-cycle output; the same formula reproduces c6e's recorded share exactly in every year without open-cycle gas (2026-34). c6e's
+share is as recorded. The advisor recommends Deep move to no gas at 40 Mt; the user decides before Mon 9 Nov (message 598 (c)); Deep with
+gas at 40 Mt is not recalibrated unless the user asks.
