@@ -863,6 +863,10 @@ decided'): the page's FIXED.acapPs annuitises Tubatse's R29,200/kW with no fixed
 price off-river sites ('anu2026', R21,384/kW at 14 h) plus R297/kW-yr fixed O&M (R2,114.7). Propose one basis for both, with its source,
 and report what it moves (presets with new pumped storage carry the run's charge until then).
 
+14lz. The checks made with the pathcheck bug (RESULTS 'pathcheck: the per-run object', message 598 (c)). Done: the Deep and
+Fossil-free preset 31c checks, rerun with the fixed pathcheck (1 Nov). Left: c6e_vre and dmin2028, rerun if their open-cycle, gas floor
+or LCOE fields are ever used; the 31a checks with null fields are superseded by clean 31c checks and need no rerun.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
