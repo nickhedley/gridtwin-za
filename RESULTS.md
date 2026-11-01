@@ -19005,7 +19005,7 @@ stopped at validate_worker, had the same failures plus that public-text check.
 
 Settings: each run's recorded build (harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json and pathway_s_hypo_ff2040_c6e.json, optimised
 on 31a), engine-checked unchanged on build 31l (claude/cost-corrections at 7d3411b: 31c's engine, both corrections, plus the worker list
-and the cost note), pathcheck.js with LNG=1 GRID=1, groups a, b and c (120 runs a year), 1 Nov 2026 04:52-05:07 UTC
+and the cost note), pathcheck.js with LNG=1 GRID=1, groups a, b and c (120 runs a year), 1 Nov 2026, finished 05:00 (Deep) and 05:07 UTC (Fossil-free)
 (harness/pathway/opt/pathcheck_<run>_31c_{a,b,c}.json). Before: the runs' recorded checks on 31a (harness/pathway/opt/pathcheck_<run>_*).
 c6e from pathcheck_c6e_31a_* and _31c_*. Engine PV at 8% real to 2026 (pathway/tables/summ.js); cost per tonne avoided is the PV
 difference over the CO2 difference against c6e, 2026-40 (packfill RUN.cpta, tax in).
