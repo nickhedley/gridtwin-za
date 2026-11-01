@@ -59,6 +59,7 @@
 //                        page.privrange
 //   Sent Doc (message 517): RUN.demandpctr_YYYY, RUN.blockmw_YYYY, RUN.roofadd_YYYY, RUN.shortyears
 //   30 Oct update (message 524 (d)): RUN.avgcostpctr_YYYY, RUN.dcurt_YYYY; replay.coal / .eskom / .withinpct; ext.csircoal / .csirre
+//   1 Nov (message 593): RUN.dpvpctr (the cost difference as a share of the plan in whole percent); page.txr (the grid integration charge).
 //   Optimised presets (message 565 (b)): RUN.ironairshare (iron-air's share of new stored energy by the horizon)
 //   Optimised presets (message 559): RUN.cpta (R per tonne of CO2 avoided against BASE, 2026-40), RUN.curtshare_YYYY (curtailed share
 //                        of available wind and solar output)
@@ -107,6 +108,10 @@ let PG=null; const pagecosts=()=>{ if (PG) return PG; if (!fs.existsSync('testro
   catch(e){ console.error('page_costs.js failed (run from harness/ with testroot): '+e.message.split('\n')[0]); PG=null; }
   return PG; };
 const pc1=v=>nf(v*100,1)+'%';
+// New capacity added 2026-40, MW, by technology, from the run's schedule (addgw, addgwr).
+function addMW(s,t){ if (!s.sched) return null; const ys=Object.keys(s.sched); const g=k=>ys.reduce((a,yy)=>a+((s.sched[yy][k])||0),0);
+  const v={wind:g('wind'),solar:g('pv'),rooftop:g('rooftop'),batt:g('batt'),gas:g('ccgt')+g('ocgt'),ccgt:g('ccgt'),ocgt:g('ocgt'),dsl:g('ocgd'),ps:g('phes')+g('phel'),offshore:g('off'),ironair:g('ironair'),
+    nuclear:s.nuclearAdd?Object.values(s.nuclearAdd).reduce((a,b)=>a+b,0):0}[t]; if (v==null) throw new Error('packfill: no addgw technology '+t); return v; }
 function pageCost(k){
   const g=pagecosts(); if (!g){ missing.add('the page (page_costs.js)'); return null; }
   const q=k.split('.').slice(1); const w=q[0];
@@ -120,6 +125,7 @@ function pageCost(k){
   if (w==='capexvs'){ const v=Math.round(g.capex[T(q[1])]), lo=+q[2], hi=q[3]!=null?+q[3]:+q[2]; const pct=x=>v/x-1;
     if (v>=lo&&v<=hi) return lo===hi?'equal':'within';
     const a=pct(hi), b=pct(lo); const f=x=>(x>=0?'+':'−')+nf(Math.abs(x)*100,0)+'%'; return a===b?f(a):`${f(Math.min(a,b))} to ${f(Math.max(a,b))}`; }
+  if (w==='txr') return 'R'+nf(g.txR,0);   // the grid integration charge, R/kW-yr (message 593 (a))
   if (w==='privprem') return nf(g.privatePrem[q[1]]*100,1)+' points';
   if (w==='disc') return pc1(g.disc);
   // Whole-number rates where the figure is whole ('8%', '5.5%'), and the private premium as a range of points ('1.5-2'), for draft 2.
@@ -183,6 +189,12 @@ function value(k){
   // The 2025 replay and the external checks as recorded in the set's folder (message 524 (d)): the newest replay2025_*.txt and
   // validate_external_*.txt by name. replay.coal and .eskom, TWh; .withinpct, the gap rounded up to a whole percent; ext.csircoal and
   // .csirre, the CSIR 2030 shares, whole percent. From 30 Oct 2026 the newest is the run at each check's own year (message 526 (b)).
+  // The design-minimums check (message 562; RESULTS 'practice floor'): c6e's build with design minimums from 2028, engine-checked for
+  // 2028 (pathcheck_c6e_dmin2028.json in the set's folder). dmin2028.curtshare_YYYY: its curtailed share of available wind and solar
+  // (message 593 (e)).
+  if (k.startsWith('dmin2028.')){ const f=`${N}/pathcheck_c6e_dmin2028.json`; if (!fs.existsSync(f)){ missing.add('the design-minimums check (pathcheck_c6e_dmin2028.json)'); return null; }
+    const y=+k.split('_').pop(), x=JSON.parse(fs.readFileSync(f,'utf8')).find(q=>q.y===y);
+    if (!x||x.vreUsedTWh==null){ missing.add(`the design-minimums check (vreUsedTWh, ${y})`); return null; } return nf(Math.round(100*x.curt/(x.vreUsedTWh+x.curt)),0)+'%'; }
   if (k.startsWith('replay.')||k.startsWith('ext.')){ const pre=k.startsWith('replay.')?'replay2025_':'validate_external_';
     const f=fs.existsSync(N)?fs.readdirSync(N).filter(x=>x.startsWith(pre)&&x.endsWith('.txt')).sort().pop():null; if (!f){ missing.add(k.split('.')[0]); return null; }
     const t=fs.readFileSync(`${N}/${f}`,'utf8');
@@ -224,13 +236,16 @@ function value(k){
     // Draft 2's wording (message 513): the years the plan sits at or over the Australian limit, as a span; new build in whole GW; the
     // cost difference without its verb; served energy in a year, TWh.
     case 'nemnearyears': { const o=s.rows.filter(x=>x.mean>0.00002*x.servedTWh*1e3).map(x=>x.y); return o.length?spanH(o):'none'; }
-    case 'addgwr': { const v=value(k.replace('.addgwr_','.addgw_')); return v==null?null:nf(Math.round(parseFloat(String(v).replace(/,/g,''))),0); }
+    // Whole GW from the unrounded MW, half up (message 593 (b): 24.5 GW or more is 25), not from addgw's one-decimal figure, which
+    // rounded twice (4.46 to 4.5 to 5).
+    case 'addgwr': { const v=addMW(s,m.split('_')[1]); return v==null?null:nf(Math.floor(v/1e3+0.5),0); }
     case 'dpvabsplain': { if (!b) return null; const d=s.pv-b.pv; return Math.abs(d)<1?'less than R1 billion':Rb(d); }
     case 'servedr': { const x=s.rows.find(q=>q.y===y); return x?nf(x.servedTWh,0):null; }
     // The no-gas finding (message 511, second): cost difference as a word and as a share of the plan, new diesel peakers standing, GW,
     // and the open-cycle capacity factor's highest year from the first year new peakers stand, as 'about X%'.
     case 'dpvword': return b&&((s.pv-b.pv)>=0?'more':'less');
     case 'dpvpctplain': return b&&nf(Math.abs(100*(s.pv-b.pv)/b.pv),1)+'%';
+    case 'dpvpctr': return b&&nf(Math.round(Math.abs(100*(s.pv-b.pv)/b.pv)),0)+'%';   // the same in whole percent, where the Doc gives one ('44%'; message 593 (c))
     case 'dslgw': return nf(at(q=>q.ocgtDsl||0)/1e3,1);
     case 'ocmaxplain': { const ys=Object.keys(s.sched||{}).map(Number).sort(); let first=null, cum=0; for (const yy of ys){ cum+=(s.sched[yy].ocgd||0); if (cum>=1&&first==null) first=yy; }
       const rows=s.rows.filter(x=>first!=null&&x.y>=first&&x.ocgtCF!=null); if (!rows.length) return null; const v=100*Math.max(...rows.map(x=>x.ocgtCF)); return v<0.5?'under 1%':'about '+Math.round(v)+'%'; }
@@ -291,10 +306,7 @@ function value(k){
     case 'nemlimits': { const r=s.rows.map(x=>0.00002*x.servedTWh*1e3); const f=v=>nf(Math.round(v*2)/2,Number.isInteger(Math.round(v*2)/2)?0:1); return `${f(Math.min(...r))}-${f(Math.max(...r))} GWh`; }
     case 'gascfr': { const x=s.rows.find(q=>q.y===y); return x&&x.gasCF!=null?nf(100*x.gasCF,0)+'%':null; }
     case 'coalgw': { const v=s.sched&&s.sched[y]&&s.sched[y].coalMW; return v==null?null:nf(v/1e3,1); }
-    case 'addgw': { if (!s.sched) return null; const t=m.split('_')[1]; const ys=Object.keys(s.sched); const g=k=>ys.reduce((a,yy)=>a+((s.sched[yy][k])||0),0);
-      const v={wind:g('wind'),solar:g('pv'),rooftop:g('rooftop'),batt:g('batt'),gas:g('ccgt')+g('ocgt'),ccgt:g('ccgt'),ocgt:g('ocgt'),dsl:g('ocgd'),ps:g('phes')+g('phel'),offshore:g('off'),ironair:g('ironair'),
-        nuclear:s.nuclearAdd?Object.values(s.nuclearAdd).reduce((a,b)=>a+b,0):0}[t]; if (v==null) throw new Error('packfill: no addgw technology '+t);
-      return v<9.95e3?nf(v/1e3,1):nf(v/1e3,0); }
+    case 'addgw': { const v=addMW(s,m.split('_')[1]); if (v==null) return null; return v<9.95e3?nf(v/1e3,1):nf(v/1e3,0); }
     // Against the Australian standard with the engine check's sampling error (message 502 (a)): a year is over only when the mean less
     // one standard error is still above 0.002% of served energy; a year whose mean is above but within one standard error is 'at the
     // limit within sampling error'. nemover is the phrase after 'the central is'; nemfig_YYYY one year's figure; nemshort the span form.

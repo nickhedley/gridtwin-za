@@ -18666,6 +18666,98 @@ strengthening, refurbishment, telecoms and IT that serve load and reliability as
 from above rather than replace it. Not changed: a decision for the user after the optimised runs (TODO 14lj). The R440bn and Table 4
 split are as recorded on 22 Sep and 18 Oct 2026; the primary PDF has not been re-read (www.ntcsa.co.za is not reachable from the session).
 
+### The grid charge at c6e's network rate alone (txRPerKWyr R364 against R402): c6e's engine PV 2026-40 R2,309.8bn against R2,314.7bn, -R4.9bn (-0.2%); CO2 and unserved unchanged on the same build (user, 31 Oct 2026, messages 546 (b) and 552 (b); TODO 14ln (b); build 2026-10-31b, not yet a PR)
+
+Change: index.html on claude/cost-corrections at 60906de (BUILD_STAMP '2026-10-31b'): txRPerKWyr derived from TDP 2024's generation
+integration (R225bn for 46.9 GW) annuitised over 40 years at BLD_COC_NETWORK.central (7.1%), R364/kW-yr in place of R402 at 8%.
+Measured: c6e's own build (harness/pathway/c6e/pathway_c6e.json), the optimiser not rerun, engine check as the set (pathcheck.js,
+LNG=1 GRID=1, groups a, b and c, 120 runs a year). 31 Oct 2026: on 31b 13:31-13:38 UTC (pathcheck_c6e_31b_*.json); comparator the same
+build on 31a, claude/optimised-presets with index.html at 8838490, 13:39-13:46 UTC (pathcheck_c6e_31a_*.json). The 31a check is
+identical in every year to the recorded check on 29b (cost, CO2 and mean unserved), so builds 30a and 31a do not move c6e. The Deep
+decarbonisation 2035 optimiser run was solving beside both checks.
+
+| | 31a (R402) | 31b (R364) | Change |
+|---|---|---|---|
+| Engine PV 2026-40 at 8%, R bn | 2,314.7 | 2,309.8 | -4.9 |
+| System cost 2030, R bn | 238.67 | 238.45 | -0.23 |
+| System cost 2035, R bn | 260.94 | 259.98 | -0.97 |
+| System cost 2040, R bn | 305.37 | 304.00 | -1.37 |
+| Grid charge 2040 (engTxBn), R bn | 21.25 | 19.24 | -2.01 |
+| CO2 2026-40, Mt | 1,738.6 | 1,738.6 | 0 |
+| Mean unserved, every year | | | identical |
+
+The charge per kW falls by 9.45% (364/402), as derived. System cost falls by less than pathcheck's engTxBn (-1.37 against -2.01 in
+2040; PV -4.9 against -7.0) because the two charge different MW: the engine (index.html, the transmission adder in the cost build-up)
+exempts new solar on retired-coal connection points (repurposing) and charges offshore separately, while engTxBn applies txChargeFor to
+all new wind, solar and offshore standing. On the optimiser's grid-cost basis (costGrid) the PV is 2,323.1 against 2,317.5, -5.7. Caveat: the build is c6e's as optimised at
+R402; a re-optimised build at R364 may hold more new wind and solar. Not rerun (message 546 (c): report before rerunning anything).
+The REIPPPP contract-year change (14ln (a)) is not in this build; it waits for REIPPPP MW by bid window and technology.
+
+### REIPPPP pays no fixed O&M in its contract years, alone and with the grid charge at R364: c6e's engine PV 2026-40 R2,288.8bn alone (-R25.9bn) and R2,283.9bn with both (-R30.8bn); CO2, unserved and build unchanged (user, 31 Oct 2026, messages 546, 552, 554 (b) and 560; TODO 14ln (a) and (b); build 2026-10-31c)
+
+Change (claude/cost-corrections at 2b830b4, BUILD_STAMP '2026-10-31c'): fixedOMR charges existing wind, utility solar and CSP only on
+the MW outside a live REIPPPP PPA (reipppLiveMW: FIXED.reipppWindMW 4,042, reipppSolarMW 2,783 and cspMW 600, less each window that
+has expired, y >= expires; FIXED.reipppFomInPpa 1, 0 restores the old charge). MW split used (message 560 (a); the Minister of Energy's
+reply to NW368, asked 15 Mar 2019, summed by the advisor from its 92 project rows): BW1 wind 648.53, solar 626.81, CSP 150 (expires
+2034); BW2 558.90, 417.12, 50 (2035); BW3 787.06, 435.00, 200 (2037); BW3.5 CSP 200 (2039). Each window's expiry is REIPPPP_WINDOWS'
+(commercial operation plus 20 years; the reply's part (f)). The rest of the fleet (wind 2,047.5, solar 1,304.1, CSP 0) is BW4 onwards,
+whose contracts end after 2040, so it is under contract in every modelled year. Eskom's Sere and private plant pay fixed O&M throughout.
+
+Reconciliation (message 560 (b)): BW1-4 hold wind 3,357.30 and solar 2,291.83 MW (the reply's rows sum to 6,322.73 MW against its
+stated 6,422.73; BW4's rows are 100 MW below the stated total). The model's totals are the IPP Office's capacity online at 31 Mar 2026
+(Q4 2025/26). Wind remainder 684.70 MW: BW5's Koruson 1 cluster (Coleskop, San Kraal, Phezukomoya, 140 MW each, commercial operation
+December 2025 to February 2026) and Brandvalley and Rietkloof (140 MW each, April 2025) make 700 MW (Engineering News, BW5 update, 22
+May 2026); 15.3 MW unexplained. Solar remainder 491.17 MW: BW5's solar plants are 75 MW each (13, 975 MW), and BW6's first two (360 MW)
+reached commercial close on 30 Apr 2024 with about 24 months to build, so probably not online by 31 Mar 2026; no public commercial
+operation dates for BW5 solar were found, and 491 MW is not a whole number of 75 MW plants: unexplained. Neither remainder moves the
+measurement (both expire after 2040). Not checked against the reply's per-project table: pmg.org.za is outside this session's network.
+
+Measured: c6e's own build (pathway_c6e.json), the optimiser not rerun, engine check as the set (pathcheck.js, LNG=1 GRID=1, groups a, b
+and c, 120 runs a year), 31 Oct 2026 16:43-17:15 UTC: build 31c (both; pathcheck_c6e_31c_*.json) and 31c with txRPerKWyr set to 402
+(the REIPPPP change alone; a scratch copy of index.html, one line changed; pathcheck_c6e_31c_reiponly_*.json); comparators 31a
+(pathcheck_c6e_31a_*) and 31b (the grid charge alone, RESULTS above).
+
+| c6e, same build | 31a | Grid charge alone (31b) | REIPPPP alone | Both (31c) |
+|---|---|---|---|---|
+| Engine PV 2026-40 at 8%, R bn | 2,314.7 | 2,309.8 | 2,288.8 | 2,283.9 |
+| Change, R bn | | -4.9 | -25.9 | -30.8 |
+| System cost change 2030, R bn | | -0.23 | -3.27 | -3.50 |
+| System cost change 2035, R bn | | -0.97 | -2.20 | -3.17 |
+| System cost change 2040, R bn | | -1.37 | -1.18 | -2.54 |
+| CO2 2026-40, Mt | 1,738.6 | 1,738.6 | 1,738.6 | 1,738.6 |
+
+The two changes add exactly (-4.9 and -25.9 make -30.8). The REIPPPP saving is R3.27bn a year while every window is live (2026-33),
+falling as BW1 (2034), BW2 (2035), BW3 (2037) and BW3.5 (2039) expire, to R1.18bn from 2039. Mean unserved identical in every year.
+Caveat: c6e's build as optimised on 31a; the REIPPPP change touches only the existing fleet, so it does not move the build LP; the grid
+charge could. Not rerun (message 554 (b): both corrections go into the next central rebuild; the reviewer Doc's headline costs get one
+combined correction).
+
+### Both cost corrections on the Doc's comparison builds: IRP 2025 and five sensitivities each fall R30.2-31.6bn in engine PV 2026-40; every gap to c6e moves by at most R0.8bn; CO2 and unserved unchanged (user, 31 Oct 2026, messages 565 (a) and 572 (a); build 2026-10-31c)
+
+Settings: each run's recorded build (harness/pathway/c6e/pathway_<run>.json, as optimised on its own build), engine-checked unchanged
+on two builds: 31a (main at 179e289, index.html as merged in #137; worktree on claude/hypo-presets-results) and 31c
+(claude/cost-corrections, index.html at 2b830b4: the grid charge at R364/kW-yr and no fixed O&M on REIPPPP capacity in its contract
+years). pathcheck.js with LNG=1 GRID=1, year groups a, b and c (120 runs a year), 31 Oct 2026: IRP 2025 finished 19:29 UTC, the five
+sensitivities 19:20-21:12 UTC. Engine PV is the sum of each year's cost discounted at 8% real to 2026 (pathway/tables/summ.js), for
+every run including the two cost-of-capital runs. c6e from pathcheck_c6e_31a_* and _31c_* (entry above). Files:
+pathcheck_<run>_31a_{a,b,c}.json and _31c_{a,b,c}.json in harness/pathway/c6e/.
+
+| Run | 31a PV | 31c PV | Change | Gap to c6e, 31a | Gap to c6e, 31c | CO2 2026-40, Mt | Max mean unserved, GWh |
+|---|---|---|---|---|---|---|---|
+| c6e | 2,314.7 | 2,283.9 | −30.8 | – | – | 1,738.6 | 5.46 |
+| IRP 2025 (irp2025_c6e) | 2,682.9 | 2,652.2 | −30.7 | +368.2 | +368.3 | 1,730.2 | 0.00 |
+| No new gas, diesel peakers (s_nogas_dsl) | 2,327.8 | 2,296.2 | −31.6 | +13.1 | +12.3 | 1,632.9 | 11.48 |
+| Cost of capital, planned (s_cocplan) | 2,397.8 | 2,367.6 | −30.2 | +83.1 | +83.7 | 1,818.8 | 7.85 |
+| Cost of capital, private (s_cocprivate) | 2,371.2 | 2,340.8 | −30.3 | +56.5 | +56.9 | 1,797.7 | 7.44 |
+| Gas floor (s_gasfloor_c6e) | 2,340.3 | 2,309.5 | −30.8 | +25.6 | +25.6 | 1,724.0 | 5.46 |
+| Coal sustained (s_coalsustain) | 2,460.0 | 2,429.3 | −30.8 | +145.4 | +145.4 | 1,738.6 | 5.46 |
+
+R bn, engine PV 2026-40. CO2 and max mean unserved are identical on 31a and 31c for every run.
+Check: every 31a check is identical in every year (cost, CO2, mean unserved) to the run's recorded check in harness/pathway/c6e/, so
+builds 30a and 31a do not move these runs. The changes differ by run by up to R1.4bn; the split between the two corrections per run is
+not measured.
+Caveat: each build as optimised before the corrections; no re-optimisation (message 554 (b): both corrections go into the next central
+rebuild). The reviewer Doc's headline costs get one combined correction.
 ### Suite on build 2026-10-31a (the optimised preset options, off by default): equal to main's 30a by count in every script and by failure name (PR #137; message 551 (b))
 
 Suite on build 2026-10-31a (branch claude/optimised-presets; index.html as at 8838490, unchanged since; ESK19679.csv present),
@@ -18884,6 +18976,20 @@ pathcheck_c6e_vre_*); the Doc is not changed until Nick has seen the figures (me
 Fossil-free's CO2 avoided is 953.3 Mt unrounded (1,738.6 less 785.3); the key rounds to whole Mt. Iron-air in Fossil-free is flagged:
 its finding is a known failure of the model's checks and its cost is a developer's target.
 
+### Suite on build 2026-10-31l (both cost corrections): equal to main's 31a by count in every script and by failure name (user, 31 Oct 2026, message 576 (a))
+
+Suite on build 2026-10-31l (claude/cost-corrections, index.html at 7d3411b, stored panels rewritten at 97f1d2d; ESK19679.csv present),
+31 Oct 2026 23:00 to 1 Nov 01:29 UTC in two pieces, beside two other suites, so the timings are not clean. Node checks 998/1007, audit
+88/88, eng5 5/6. Equal to main's suite on 31a by count in every script and by failure name: validate_findings 37/40, validate_response
+86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved, all known.
+validate_worker 38/38, validate_pathway_presets 41/41, validate_external 8/8.
+The suite on 31j (31 Oct 2026, 21:19-22:57 UTC) failed three things main does not: validate_worker ('reipppLiveMW is not defined' in the
+engine worker: the function was not in ENGINE_FNS, so the page's worker would have thrown; added on 31l), validate_outputs' avgCost
+ratchet (1,085.9 against the recorded 1,101.0; the REIPPPP correction alone, -16.64 R/MWh at defaults, measured by switching it back; the
+ratchet moved with that cause, tolerance unchanged) and validate_pathway_presets' three cost checks (the presets' engine checks were run
+on 31a; the validator now reads the 31c checks, which differ from 31a only by the two corrections).
+After the suite, main (cf6050b) was merged in (b4c89d3): index.html identical to 31l (only the build stamp conflicted), no test script
+changed, so the suite stands.
 ### Suite on build 2026-10-31i (site copy, messages 561-571): equal to main's 31a by count in every script and by failure name (user, 31 Oct 2026, message 576 (a))
 
 Suite on build 2026-10-31i (claude/site-copy-561, index.html at f02e1fb, stored panels rewritten at 99937d1; ESK19679.csv present),
@@ -18894,3 +19000,34 @@ every script and by failure name: validate_findings 37/40 (congestion floor; iro
 peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost), eng5 storage vs unserved. validate_worker
 38/38, validate_public_text 32/32 (the TDP note at 40 words after 31h's 43 failed it; build 31i), validate_external 8/8. The 31h run,
 stopped at validate_worker, had the same failures plus that public-text check.
+
+### Both cost corrections on the two hypothetical builds: Deep decarbonisation 2035 -R38.3bn and Fossil-free 2040 -R42.4bn in engine PV 2026-40; gaps to c6e -R7.5bn and -R11.6bn; cost per tonne avoided R375 to R365 and R1,065 to R1,053 (user, 1 Nov 2026, message 577 (a); build 2026-10-31l)
+
+Settings: each run's recorded build (harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json and pathway_s_hypo_ff2040_c6e.json, optimised
+on 31a), engine-checked unchanged on build 31l (claude/cost-corrections at 7d3411b: 31c's engine, both corrections, plus the worker list
+and the cost note), pathcheck.js with LNG=1 GRID=1, groups a, b and c (120 runs a year), 1 Nov 2026, finished 05:00 (Deep) and 05:07 UTC (Fossil-free)
+(harness/pathway/opt/pathcheck_<run>_31c_{a,b,c}.json). Before: the runs' recorded checks on 31a (harness/pathway/opt/pathcheck_<run>_*).
+c6e from pathcheck_c6e_31a_* and _31c_*. Engine PV at 8% real to 2026 (pathway/tables/summ.js); cost per tonne avoided is the PV
+difference over the CO2 difference against c6e, 2026-40 (packfill RUN.cpta, tax in).
+
+| Run | 31a PV | 31c PV | Change | Gap to c6e, 31a | Gap to c6e, 31c | CO2 2026-40, Mt | R/t avoided, 31a | R/t avoided, 31c |
+|---|---|---|---|---|---|---|---|---|
+| c6e | 2,314.7 | 2,283.9 | −30.8 | – | – | 1,738.6 | – | – |
+| Deep decarbonisation 2035 (hypothetical) | 2,607.6 | 2,569.3 | −38.3 | +292.9 | +285.4 | 957.4 | 375 | 365 |
+| Fossil-free 2040 (hypothetical) | 3,330.4 | 3,288.0 | −42.4 | +1,015.7 | +1,004.1 | 785.3 | 1,065 | 1,053 |
+
+R bn. CO2 and the highest yearly mean unserved (Deep 4.40, Fossil-free 0.11 GWh) identical on 31a and 31c. The 31a figures equal those
+recorded for both runs (RESULTS 'cost per tonne avoided'), so the before-checks are the recorded ones. The hypothetical builds fall more
+than c6e, so their gaps narrow; the split between the two corrections per run is not measured.
+Caveat: each build as optimised before the corrections; no re-optimisation (message 554 (b)). The reviewer Doc's correction follows
+once the user has seen these with the 572 table.
+
+### Suite on build 2026-11-01b (both cost corrections, merged with main's #139): equal to main by count in every script and by failure name (user, 1 Nov 2026, messages 580 (a) and 591)
+
+Suite on build 2026-11-01b (claude/cost-corrections: main 754f6b1 merged at 3a90206, the cost note keeping #139's text without the
+REIPPPP double-count sentence; stored panels rewritten at c9dae6d; ESK19679.csv present), 1 Nov 2026 05:30-08:05 UTC in two pieces,
+beside a second suite, the pack rechecks and the Deep calibration runs, so the timings are not clean. Node checks 998/1007, audit 88/88,
+eng5 5/6. Equal to main's suite (998/1007, 88/88, 5/6) by count in every script and by failure name: validate_findings 37/40,
+validate_response 86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51 (curtailment zero at defaults;
+curtailFuelCost; the avgCost ratchet passes at R1,085.9), eng5 storage vs unserved. validate_worker 38/38 (reipppLiveMW in the worker),
+validate_pathway_presets 41/41 (the 31c engine checks), validate_external 8/8, validate_stored_panels 86/86.

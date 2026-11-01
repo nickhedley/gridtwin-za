@@ -28,7 +28,7 @@ const ROOT=process.argv[2]||'testroot';
    return { build:BUILD_STAMP, cocCase:FIXED.bldCocCase, pvCase:FIXED.bldPvCase, disc:BLD_DISC, level:BLD_COC_LEVEL, gap:BLD_COC_GAP, network:BLD_COC_NETWORK,
      privatePrem:BLD_COC_PRIVATE_PREM, buildYears:BLD_BUILD_Y, life:Object.assign({},BLD_LIFE,{nuclear:NUC_LIFE,coal:COAL_NEW_LIFE,phes:PS_LIFE}),
      nucUsd:NUC_CAPEX_USD, coalUsd:COAL_NEW_CAPEX_USD, fx:NUC_COAL_FX, coc, idc, capex, acap:{nuclear:d.acapNuclear,coal:d.acapCoal,phes:d.acapPs},
-     battHoursCost:BATT_COST_HOURS };
+     battHoursCost:BATT_COST_HOURS, txR:FIXED.txRPerKWyr };   // txR: the grid integration charge, R/kW-yr (message 593 (a))
  })()`);
  console.log(JSON.stringify(out)); w.close(); process.exit(0);
 })().catch(e=>{console.error(e.message);process.exit(1);});

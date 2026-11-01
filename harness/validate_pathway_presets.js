@@ -28,10 +28,12 @@ const { JSDOM } = require('jsdom');
 const ROOT = process.argv[2] || 'testroot';
 const COST_TOL_PCT = 0.01, UNS_TOL_PCT_TARGET = 1;
 const SEED_BASE = 71830529;   // pathcheck.js's default, with which both engine checks ran
+// From build 2026-10-31l the engine checks are those run on build 31c (both cost corrections, messages 552 (a), 560, 565 (a)): the
+// corrections lower each preset's system cost by 1.0-1.3% (unserved and CO2 unchanged), so the 31a checks no longer describe the page.
 const RUNS = [
-  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_a.json' },
-  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_b.json' },
-  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_b.json' },
+  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_a.json' },
+  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_31c_b.json' },
+  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_b.json' },
 ];
 
 let npass = 0, nfail = 0; const fails = [];
