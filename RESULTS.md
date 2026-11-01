@@ -19317,7 +19317,7 @@ calibrated Deep runs' 31c checks were made on gtza-c31l, which predates the bug)
 ### Suite on build 2026-11-01c (the preset swap merged with main's #141): main's known failures only, by name (user, 1 Nov 2026, messages 596 and 598 (b))
 
 Suite on build 2026-11-01c (claude/preset-swap: main 1dc9119 merged at 8a58a57, the presets on their 31c checks, stored panels rewritten
-at 14a9b7d; ESK19679.csv present), 1 Nov 2026 08:50-11:35 UTC in two pieces, beside the c6e recheck, the preset reruns and a page
+at 14a9b7d; ESK19679.csv present), 1 Nov 2026 09:28-11:27 UTC in two pieces, beside the c6e recheck, the preset reruns and a page
 rescore, so the timings are not clean. Node checks 1021/1030, audit 88/88, eng5 5/6, equal to build 11-01a's suite by count in every
 script. Failures, all main's known ones by name: validate_findings 36/39 (congestion floor; iron-air July; turn-up share; 39 checks,
 one withdrawn), validate_response 86/87, validate_consistency 82/83 (high-season off-peak), validate_benchmarks 28/30 (CO2 against
