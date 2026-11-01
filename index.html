@@ -19392,7 +19392,11 @@ const PRESETS={
   // draws, confirm on 40): search wind 40,500, solar 39,750, lithium 14,125, iron-air 3,250 (2.33 GWh on the search's draws,
   // R323.5bn); on independent draws (seed 71830529, 240 runs) that build shed 4.57 against 2.42, so it was topped up, seven
   // rounds: solar 42,750 and lithium 14,625 MW; 2.41 against 2.42 GWh, R328.3bn a year (scratchpad deep_c6b, build 2026-10-24b).
-  'Deep decarbonisation 2035':{demandGrowthPct:C5F_DEMAND[2035].growthPct,demandBlockMW:C5F_DEMAND[2035].blockMW,coalDecomMW:27000,coalFlexPct:2,newWindMW:40500,newPvMW:42750,bldPvTracking:1,newOffshoreMW:0,newRooftopMW:10800,newBattMW:14625,newBattHours:12,newIronAirMW:3250,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // Replaced 1 Nov 2026 by the optimised hypothetical build (user, messages 537 (f) and 555; harness/pathway/opt/, RESULTS 'Deep
+  // decarbonisation 2035, hypothetical'): the hand-searched build described above is in git history before build 2026-10-31k.
+  // BEGIN GENERATED 'Deep decarbonisation 2035' (harness/pathway/gen_pathway_presets.py from harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json; do not edit by hand)
+  'Deep decarbonisation 2035':{scenarioYear:2035,newWindMW:43000,newPvMW:51982,newRooftopMW:11802,newBattMW:21599,newBattHours:5.643316820223158,newVrfbMW:0,newIronAirMW:0,newCcgtMW:2000,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:1000,newNuclearMW:0,newPsMW:0,demandGrowthPct:26.745400000000007,demandBlockMW:930,windCapeMW:1580,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"bw6",bldPvCase:"bw6",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",get carbonTaxRPerT(){ return carbonTaxAt(2035, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 16416)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 21500); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 19719); }},
+  // END GENERATED 'Deep decarbonisation 2035'
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,
@@ -19416,7 +19420,11 @@ const PRESETS={
   // iron-air excluded from the moves (rule 366; its finding is a known failure, TODO 14gm): solar 56,500 to 64,500 and offshore
   // 1,750 to 2,750 MW, 2.55 GWh against 2.72 (harness/ext/search_fossil_29a_noironair.json). With iron-air allowed the tool took
   // solar 64,500 and iron-air 13,500 instead, R2.6bn a year cheaper (449.3 against 451.9; search_fossil_29a.json); not used.
-  'Fossil-free 2040':{demandGrowthPct:C5F_DEMAND[2040].growthPct,demandBlockMW:C5F_DEMAND[2040].blockMW,coalDecomMW:FIXED.coalInstalledMW,dieselDecomMW:FIXED.ocgtDieselMW,coalFlexPct:2,newWindMW:50500,newPvMW:64500,bldPvTracking:1,newOffshoreMW:2750,newRooftopMW:16800,newBattMW:20000,newBattHours:12,newIronAirMW:13000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  // Replaced 1 Nov 2026 by the optimised hypothetical build (user, messages 537 (f), 555 and 558; harness/pathway/opt/, RESULTS
+  // 'Fossil-free 2040, hypothetical'): the hand-searched build described above is in git history before build 2026-10-31k.
+  // BEGIN GENERATED 'Fossil-free 2040' (harness/pathway/gen_pathway_presets.py from harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json; do not edit by hand)
+  'Fossil-free 2040':{scenarioYear:2040,newWindMW:64500,newPvMW:100516,newRooftopMW:17802,newBattMW:59915,newBattHours:8.011349411666528,newVrfbMW:7500,newIronAirMW:5000,newCcgtMW:0,newOcgtMW:0,newOcgdMW:0,newOffshoreMW:5000,newNuclearMW:0,newPsMW:1500,demandGrowthPct:45.889599999999994,demandBlockMW:930,windCapeMW:0,costCcgt:1298.42,importsMW:1150,importsCF:0.9269565217391305,bldPvTracking:1,bldCapeCurtPct:4,carbonAllowancePath:"kept2030",carbonTaxFull:0,bldWindCorr:"none",bldWindCase:"bw6",bldPvCase:"bw6",bldTariffCfBasis:"run",bldGridIntVreShare:1,bldGridCost:1,bldOcgtCostCase:"central",get carbonTaxRPerT(){ return carbonTaxAt(2040, {...FIXED, carbonAllowancePath:"kept2030", carbonTaxFull:0}); },get coalDecomMW(){ return Math.max(0, Math.round(FIXED.coalInstalledMW - 0)); },get reserveVreRefWindMW(){ return Math.round(FIXED.windMW + 21500); },get reserveVreRefPvMW(){ return Math.round(FIXED.pvUtilityMW + 23003); },get dieselDecomMW(){ return FIXED.ocgtDieselMW; },newPsHours:14,get acapPs(){ return bldAnnuity(bldPhesCapexKW("anu2026", 14), 60, 'phes') + FIXED.bldPhesFomRkW; }},
+  // END GENERATED 'Fossil-free 2040'
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -19847,7 +19855,9 @@ const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'roofto
                                'newOcgtMW', 'newOcgdMW', 'demandBlockMW', 'windCapeMW', 'bldCapeCurtPct', 'carbonAllowancePath', 'carbonTaxFull',
                                'bldWindCorr', 'bldWindCase', 'bldPvCase', 'bldTariffCfBasis', 'bldGridIntVreShare', 'bldGridCost', 'bldOcgtCostCase',
                                'reserveVreRefWindMW', 'reserveVreRefPvMW',
-                               'ccgtForceLoadMW'];   // the gas floor's MW, set by 'IRP path 2035' from its run (message 227 (2))
+                               'ccgtForceLoadMW',   // the gas floor's MW, set by 'IRP path 2035' from its run (message 227 (2))
+                               // New pumped storage's hours and charge, set by 'Fossil-free 2040' from its run as pathcheck.js prices it (537 (f))
+                               'newPsHours', 'acapPs'];
 // One description per preset, read by the caption under the buttons, the hover tooltip and the screen-reader
 // description alike, so the text lives only here. Hover tooltips alone appeared late and never on touch
 // screens; the caption shows the hovered or focused preset, and the active one otherwise. 7 Oct 2026.
@@ -19857,9 +19867,14 @@ const IRP2035_DEMAND_GAP_PCT = -4.792573521804244;   // the IRP's demand path ag
 // BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_c6e_irpdem.json; do not edit by hand)
 const IRP2030_DEMAND_GAP_PCT = -6.531248397471545;   // the IRP's demand path against the pathway's in 2030, signed (negative: below), customer demand plus firm exports
 // END GENERATED IRP's 2030 targets demand gap
-// BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from harness/ext/rescore_page_30a_deep.json and harness/ext/rescore_page_30a_fossil.json; do not edit by hand)
-const PRESET_SCORES = {"Deep decarbonisation 2035": {"shed": 1.2015, "target": 2.4086, "runs": 240, "build": "2026-10-30a", "seed": 120000017}, "Fossil-free 2040": {"shed": 1.3951, "target": 2.7012, "runs": 240, "build": "2026-10-30a", "seed": 71830529}};
+// BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from harness/ext/rescore_page_31k_deep.json and harness/ext/rescore_page_31k_fossil.json; do not edit by hand)
+const PRESET_SCORES = {"Deep decarbonisation 2035": {"shed": 0.0021, "target": 2.3935, "runs": 240, "build": "2026-10-31k", "seed": 120000017}, "Fossil-free 2040": {"shed": 0, "target": 2.6871, "runs": 240, "build": "2026-10-31k", "seed": 120000017}};
 // END GENERATED PRESET_SCORES
+// BEGIN GENERATED HYPO_PRESETS (harness/pathway/gen_pathway_presets.py from the hypothetical presets' run files; do not edit by hand)
+// The hypothetical presets' caption facts (message 555 (f)): the build LP's pace, iron-air built to the preset's year (MW), the CO2 cap (Mt a year)
+// and its first year, or the first fossil-free year
+const HYPO_PRESETS = {"Deep decarbonisation 2035": {"pace": "grid", "ironAirMW": 0, "co2CapMt": 22.809, "co2CapFrom": 2035}, "Fossil-free 2040": {"pace": "grid", "ironAirMW": 5000, "fossilFreeFrom": 2040}};
+// END GENERATED HYPO_PRESETS
 const _gw = mw => String(+(mw / 1000).toFixed(1));
 // The searched presets' reliability sentence, from PRESET_SCORES (their rescore as the page runs them, twelve weather years x
 // 20 outage draws other than the search's): it says the build meets half the standard only when the measured shed does.
@@ -19915,9 +19930,16 @@ const _presetAdds = (P, opts) => { const o = opts || {}, items = [`${_gw(P.newWi
   return 'Adds ' + (last ? items.join(', ') + ' and ' + last : items.slice(0, -1).join(', ') + ' and ' + items.at(-1)); };
 // The optimised presets' reliability sentence (message 561): against NTCSA's medium-term test, from PRESET_SCORES; nothing when the
 // score no longer holds (the imports rule above).
-const _presetNtcsa = n => { const S = PRESET_SCORES[n];
-  if (S.build < PRESET_SCORE_IMPORTS_END_BUILD && FIXED.importsEndYear > 0 && (PRESETS[n].scenarioYear ?? 2026) > FIXED.importsEndYear) return '';
-  return S.shed <= NTCSA_ADEQUACY_GWH ? ' Meets NTCSA\u2019s reliability standard.' : ' Misses NTCSA\u2019s reliability standard.'; };
+const _presetScoreHolds = n => { const S = PRESET_SCORES[n];
+  return !(S.build < PRESET_SCORE_IMPORTS_END_BUILD && FIXED.importsEndYear > 0 && (PRESETS[n].scenarioYear ?? 2026) > FIXED.importsEndYear); };
+const _presetNtcsa = n => { if (!_presetScoreHolds(n)) return '';
+  return PRESET_SCORES[n].shed <= NTCSA_ADEQUACY_GWH ? ' Meets NTCSA\u2019s reliability standard.' : ' Misses NTCSA\u2019s reliability standard.'; };
+// The hypothetical presets' build list (message 580 (c)): 'Adds X GW of ...', a zero item dropped, the last joined by 'and'.
+const _hypoAdds = items => { const L = items.filter(([mw]) => mw > 0).map(([mw, t]) => `${_gw(mw)} GW of ${t}`);
+  return L.length ? 'Adds ' + (L.length > 1 ? L.slice(0, -1).join(', ') + ' and ' + L.at(-1) : L[0]) + '.' : ''; };
+// Their last sentences (message 580 (c)): the standard (_presetNtcsa), then the caveat when the build exceeds the least-cost pathway's
+// yearly limits (_presetOverLimit).
+const _hypoTail = (n, P) => _presetNtcsa(n) + (_presetOverLimit(P) ? ' Caveat: build rates exceed our annual limits.' : '');
 // Gas in the IRP captions: the floored share named only when it is not all of the gas.
 const _presetGas = P => { const g = (P.newCcgtMW || 0) + (P.newOcgtMW || 0), fl = Math.min(g, P.ccgtForceLoadMW ?? FIXED.ccgtForceLoadMW);
   return fl >= g ? `${_gw(g)} GW gas at a ${FIXED.ccgtForceLoadPct}% load factor` : `${_gw(g)} GW gas (${_gw(fl)} at a ${FIXED.ccgtForceLoadPct}% load factor)`; };
@@ -19931,8 +19953,17 @@ const PRESET_DESC = {
   'IRP\'s 2030 targets, grid delayed': ((P, T) => `IRP\u2019s 2030 targets with ${Math.round(100 * (1 - P.newWindMW / T.newWindMW))}% of the new wind and solar unable to connect (${_gw(P.newWindMW)} GW of wind and ${_gw(P.newPvMW)} GW of solar connect) and curtailment at ${P.congestionCurtailPct}%, for a transmission corridor not built in time.`)(PRESETS['IRP\'s 2030 targets, grid delayed'], PRESETS['IRP\'s 2030 targets']),
   'IRP path 2035': (P => `IRP 2025\u2019s 2035 build on our own demand assumptions. ${_presetAdds(P, {tail: _presetGas(P)})}; retires ${_gw(P.coalDecomMW)} GW coal.`)(PRESETS['IRP path 2035']),
   'Least-cost path 2035': (P => `The model\u2019s least-cost build to 2035. ${_presetAdds(P, {tail: `${_gw(P.newCcgtMW + P.newOcgtMW)} GW gas`})}; retires ${_gw(P.coalDecomMW)} GW coal. Demand ${Math.round(P.demandGrowthPct)}% above 2026, with ${P.demandBlockMW} MW of smelter load.`)(PRESETS['Least-cost path 2035']),
-  'Deep decarbonisation 2035': (P => `Retires ${_gw(P.coalDecomMW)} GW coal by 2035${(P.newCcgtMW || 0) + (P.newOcgtMW || 0) > 0 ? '' : '; no new gas'}. ${_presetAdds(P)}.${_presetNtcsa('Deep decarbonisation 2035')}${_presetOverLimit(P)}`)(PRESETS['Deep decarbonisation 2035']),
-  'Fossil-free 2040': (P => `No coal, gas or diesel from 2040. ${_presetAdds(P, {offshore: true})}.${_presetNtcsa('Fossil-free 2040')}${_presetOverLimit(P)}`)(PRESETS['Fossil-free 2040']),
+  // The hypothetical presets (user, 1 Nov 2026, message 580 (c)): plain language, at most 50 words, generated from the runs: new build from
+  // PRESETS, the cap and the fossil-free year from HYPO_PRESETS, the standard and the limits caveat from data; a zero clause is dropped.
+  // Deep names onshore wind only, as drafted: with its 1 GW of offshore wind the caption is 52 words.
+  'Deep decarbonisation 2035': (P => { const H = HYPO_PRESETS['Deep decarbonisation 2035'];
+    return `Retires ${_gw(P.coalDecomMW)} GW of coal by ${P.scenarioYear} and caps CO2 at ${H.co2CapMt.toFixed(1)} Mt a year from ${H.co2CapFrom === P.scenarioYear ? 'then' : H.co2CapFrom}. `
+      + _hypoAdds([[P.newWindMW, 'wind'], [P.newPvMW, 'solar'], [P.newBattMW, `${+P.newBattHours.toFixed(1)}-hour batteries`], [(P.newCcgtMW || 0) + (P.newOcgtMW || 0), 'gas']])
+      + _hypoTail('Deep decarbonisation 2035', P); })(PRESETS['Deep decarbonisation 2035']),
+  'Fossil-free 2040': (P => `No coal, gas or diesel from ${HYPO_PRESETS['Fossil-free 2040'].fossilFreeFrom}. `
+      + _hypoAdds([[P.newWindMW, 'wind'], [P.newOffshoreMW || 0, 'offshore wind'], [P.newPvMW, 'solar'], [P.newBattMW, `${+P.newBattHours.toFixed(1)}-hour batteries`],
+                   [(P.newVrfbMW || 0) + (P.newPsMW || 0), 'other storage'], [P.newIronAirMW || 0, 'unproven iron-air']])
+      + _hypoTail('Fossil-free 2040', P))(PRESETS['Fossil-free 2040']),
 };
 const presetsEl=document.getElementById('presets');
 const presetCaptionEl=document.getElementById('presetCaption');
@@ -20973,7 +21004,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-01b';
+const BUILD_STAMP = '2026-11-01c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

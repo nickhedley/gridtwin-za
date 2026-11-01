@@ -143,10 +143,15 @@ const NOGAS_RERUNS=['s_nogas_maxp6','s_nogas_maxp10'];   // message 510: pass li
 // NTCSA's two criteria read each year's mean unserved energy and open-cycle share (ocgtCF). A null or missing value stops the fill
 // (RULES 4; message 600 (a)): before this, `null>=0.06` was false, so a check made with the pathcheck bug of 31 Oct passed criterion (ii)
 // unseen (RESULTS 'pathcheck: the per-run object').
-const ntcsaRows=s=>{ const bad=s.rows.filter(x=>!(typeof x.mean==='number'&&isFinite(x.mean))||!(typeof x.ocgtCF==='number'&&isFinite(x.ocgtCF))).map(x=>x.y);
+// A year with no open-cycle plants standing (Fossil-free 2040 from 2040) has no share: pathcheck writes null for zero capacity. It counts as
+// zero only when the check records capacity 0 MW and output 0 TWh, as harness/pathway/gen_pathway_presets.py does (message 601 (c)); the
+// returned rows carry 0 there, so every reading below sees a number.
+const ocNone=x=>x.ocgtCF===null&&x.ocgtCapMW===0&&x.ocgtTWh===0;
+const ntcsaRows=s=>{ const num=v=>typeof v==='number'&&isFinite(v);
+  const bad=s.rows.filter(x=>!num(x.mean)||!(num(x.ocgtCF)||ocNone(x))).map(x=>x.y);
   if (bad.length) throw new Error(`NTCSA test: ${s.n||"run"} has no unserved mean or open-cycle share (ocgtCF null or missing) in ${bad.join(', ')}`);
-  return s.rows; };
-const meets=s=>!!s&&!ntcsaRows(s).some(x=>x.mean>20)&&!s.rows.some(x=>x.ocgtCF>=0.06);
+  return s.rows.map(x=>ocNone(x)?{...x,ocgtCF:0}:x); };
+const meets=s=>{ if (!s) return false; const r=ntcsaRows(s); return !r.some(x=>x.mean>20)&&!r.some(x=>x.ocgtCF>=0.06); };
 const peek=r=>{ const n=opt(r); if (!fs.existsSync(`${O}/pathway_${n}.json`)) return null; if (cache[r]!==undefined) return cache[r]; const q=summ(O,n); if (q) q.dir=O; return q; };
 let NB; const nogasBest=()=>{ if (NB!==undefined) return NB; NB=null; for (const r of NOGAS_RERUNS){ const q=peek(r); if (q&&meets(q)){ NB={r,s:q}; break; } } return NB; };
 const nogasAdded=q=>{ const z=S('s_nogas'); if (!z) return null; const a=q.build[2040], b=z.build[2040];
@@ -271,7 +276,7 @@ function value(k){
     case 'dco2absmt': return b&&nf(Math.abs(s.co2Cum-b.co2Cum),0);   // against the plan, unsigned (message 507 (b))
     case 'dco2prevabs': { const q=S('prev'); return q&&nf(Math.abs(s.co2Cum-q.co2Cum),0); }   // against the previous central, unsigned
     case 'dco2plain': { if (!b) return null; const d=s.co2Cum-b.co2Cum; return Math.abs(d)<0.5?'less than 1 Mt':nf(Math.abs(d),0)+' Mt '+(d>0?'more':'less'); }
-    case 'verdictplain': { const u=ntcsaRows(s).filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
+    case 'verdictplain': { const r=ntcsaRows(s), u=r.filter(x=>x.mean>20).map(x=>x.y), o=r.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
       if (!u.length&&!o.length) return "meets the system operator's adequacy test in every year to 2040";
       return [u.length?`exceeds the system operator's 20 GWh limit on expected unserved energy in ${spanH(u)}`:'',o.length?`runs open-cycle plant more than 6% of the time in ${spanH(o)}`:''].filter(Boolean).join(' and '); }
     case 'nemplain': { const lim=x=>0.00002*x.servedTWh*1e3; const over=s.rows.filter(x=>x.mean-(x.seMean||0)>lim(x)), near=s.rows.filter(x=>x.mean>lim(x)&&!(x.mean-(x.seMean||0)>lim(x)));
@@ -324,7 +329,7 @@ function value(k){
       return a.length?a.join('; '):'under it in every year'; }
     case 'nemfig': { const x=s.rows.find(r=>r.y===y); if (!x) return null; const l=0.00002*x.servedTWh*1e3, se=x.seMean||0;
       return `${nf(x.mean,2)} ± ${nf(se,2)} GWh against ${nf(l,2)}, ${x.mean-se>l?'over it':x.mean>l?'at the limit within sampling error':'under it'}`; }
-    case 'verdict': { const u=ntcsaRows(s).filter(x=>x.mean>20).map(x=>x.y), o=s.rows.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
+    case 'verdict': { const r=ntcsaRows(s), u=r.filter(x=>x.mean>20).map(x=>x.y), o=r.filter(x=>x.ocgtCF>=0.06).map(x=>x.y);
       return !u.length&&!o.length?'met':[u.length?`unserved over 20 GWh in ${span(u)}`:'',o.length?`open-cycle over 6% in ${span(o)}`:''].filter(Boolean).join('; '); }
     case 'wind': return nf(at(q=>q.wind)/1e3,1);
     case 'solar': return nf(at(q=>q.pv)/1e3,1);

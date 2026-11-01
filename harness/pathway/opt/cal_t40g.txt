@@ -1,0 +1,8 @@
+round 1 cap 39.1 engine2035 50.029 target 40
+round 2 cap 29.071 engine2035 37.968 target 40
+round 1 cap 39.1 engine2035 50.029 target 40
+round 2 cap 29.071 engine2035 37.968 target 40
+round 3 cap 31.103 engine2035 41.116 target 40
+round 4 cap 29.987 engine2035 39.295 target 40
+round 5 cap 30.692 engine2035 40.341 target 40
+final s_hypo_deep2035gas_t40g_r5_c6e 3/3
