@@ -150,5 +150,5 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 ## Reproducing these results
 
 - The model runs in a browser at [gridtwinza.org](http://gridtwinza.org).
-- The code, the run scripts and every run's outputs are public at github.com/nickhedley/gridtwin-za. The runs in this document are in harness/pathway/c6e (made on build 2026-10-28a) and harness/pathway/opt (the Deep decarbonisation and Fossil-free runs); their costs were rechecked by the engine on build 2026-10-31l with the 1 November corrections. A full set of runs takes about 18 hours.
+- The code, the run scripts and every run's outputs are public at github.com/nickhedley/gridtwin-za. The runs in this document are in harness/pathway/c6e and harness/pathway/opt (the Deep decarbonisation and Fossil-free runs). Their costs were rechecked by the engine on build 2026-10-31l with 1 November updates. A full set of runs takes about 18 hours.
 - Eskom's hourly data are not in the repository, given the terms on which Eskom supplied them. Figures derived from them are credited above.
