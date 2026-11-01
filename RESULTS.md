@@ -19037,3 +19037,10 @@ every year 2035-40) at +R79.9bn against Deep with gas (engine PV, no penalty in 
 own tightened 2035 cap (17.509 Mt), not against 22.8. That tightening (5.3 Mt) was measured on Deep with gas and does not hold without
 gas: here the optimiser gave 19.1 Mt and the engine 20.0, so this build was planned for about 20 Mt, not 22.8. The no-gas runs at a set
 engine CO2 for 2035 (22.8, 30 and 35 Mt) set their optimiser caps from their own engine checks (message 588 (a), entry below).
+
+### Where Deep decarbonisation's 22.8 Mt cap came from (user, 1 Nov 2026, message 589)
+
+The 2035 cap of 22.809 Mt a year used by every optimised Deep run (s_co2cap2035_c6e, s_hypo_deep2035_c6e, s_hypo_deep2035r_c6e, the
+no-gas runs) is the old hand-built Deep decarbonisation 2035 preset's own CO2 at 2035 on the page (22.8 Mt; RESULTS 'Scenarios table on
+build 2026-10-30a', and the 30a rescore). It is not a policy target. Runs at 40 Mt from 2035, with and without new gas, at the same
+relaxed rates as s_hypo_deep2035r_c6e, are under way for the user's decision on Deep's cap before the c7 rebuild (messages 589, 590).
