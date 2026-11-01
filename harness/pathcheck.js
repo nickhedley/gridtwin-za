@@ -112,6 +112,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  w.eval(`if(!('ssMode' in FIXED)) throw new Error('ssMode missing'); state.ssMode=${JSON.stringify(SSR.mode)}; state.ssFault=${JSON.stringify(SSR.fault || 'off')};`
    + (SSR.mode === 'inertia' ? ` state.ssRocofHz=${+SSR.rocofHz}; state.ssFlatGWs=${SSR.flatGWs == null ? 'null' : +SSR.flatGWs}; state.ssGfmH=${SSR.gfmHSet == null ? 'null' : +SSR.gfmHSet}; state.ssCoalLift=${SSR.coalLift == null ? 1 : +SSR.coalLift};` + (SSR.liftForecast ? ` state.ssLiftForecast=${JSON.stringify(SSR.liftForecast)};` : '') : ''));
  const SS_ON = SSR.mode === 'inertia';
+ // SS_FC=prev|mustspin (user, 1 Nov 2026, message 610 (c)): check a run under another lift forecast than it recorded, the engine's only;
+ // the build LP does not read it. 'prev' is c7's central, 'mustspin' the cautious sensitivity. Recorded in each row (ssLiftForecast).
+ if (process.env.SS_FC !== undefined){ if (!SS_ON) throw new Error('SS_FC needs an inertia run'); if (!['prev','mustspin'].includes(process.env.SS_FC)) throw new Error('SS_FC must be prev or mustspin: '+process.env.SS_FC);
+   w.eval(`state.ssLiftForecast=${JSON.stringify(process.env.SS_FC)};`); console.log('lift forecast for this check:', process.env.SS_FC); }
+ const SS_FC_USED = SS_ON ? w.eval('state.ssLiftForecast ?? FIXED.ssLiftForecast') : null;
  if (SS_ON || SSR.fault !== 'off') console.log('system strength from the pathway:', JSON.stringify(SSR));
  if (SS_ON && SSR.lambda && JSON.stringify(SSR.lambda) !== w.eval('JSON.stringify(SS_COAL_LAMBDA)')) console.log('note: the run\'s SS_COAL_LAMBDA', JSON.stringify(SSR.lambda), 'differs from the page\'s (the build LP\'s coal credit; the engine does not read it)');
  // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
@@ -239,7 +244,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      if (o[0][L].cmMean!==undefined) r.committedCoal={meanMW:m('cmMean'), minMW:Math.min(...o.map(b=>b[L].cmMin))};
      if (SS_ON){ if (o[0][L].ssReq===undefined) throw new Error('the run is inertia but the engine returned no ss');
        r.ss={reqGWs:o[0][L].ssReq, inertiaMinGWs:Math.min(...o.map(b=>b[L].ssMin)), inertiaP5GWs:m('ssP5'), shortH:m('ssShortH'), shortGWsH:m('ssShortGWsH'),
-         liftH:m('ssLiftH'), liftCommitMWh:m('ssLiftMWh'), liftFloorMWh:m('ssLiftFloorMWh'), liftCappedH:m('ssLiftCappedH'), gfmMW:cum.gfm, condBuiltMVA:cum.scc+cum.scn};
+         liftH:m('ssLiftH'), liftCommitMWh:m('ssLiftMWh'), liftFloorMWh:m('ssLiftFloorMWh'), liftCappedH:m('ssLiftCappedH'), gfmMW:cum.gfm, condBuiltMVA:cum.scc+cum.scn, liftForecast:SS_FC_USED};
        let c=0; for (const yy of Object.keys(P.sched)) if (+yy<=y) for (const t of ['gfm','scc','scn']) c+=(+P.sched[yy][t]||0)*(+w.eval(`ssAnnualRkW('${t}', ${+yy})`))*1000;
        r.ss.costBn=c/1e9; r.costWithSs=r.cost+r.ss.costBn; }
      if ((SSR.fault||'off')!=='off'){ let f=0; const A=t=>+w.eval(`bldAnnuity(ssFaultRkW({...FIXED,...state}), BLD_LIFE['${t}'], '${t}')`);
