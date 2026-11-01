@@ -19903,11 +19903,16 @@ const _presetAdds = (P, opts) => { const o = opts || {}, items = [`${_gw(P.newWi
   return 'Adds ' + (last ? items.join(', ') + ' and ' + last : items.slice(0, -1).join(', ') + ' and ' + items.at(-1)); };
 // The optimised presets' reliability sentence (message 561): against NTCSA's medium-term test, from PRESET_SCORES; nothing when the
 // score no longer holds (the imports rule above).
-// The hypothetical presets' build sentence (message 555 (f)): faster than the model's deliverable rates, any iron-air named.
-const _hypoBuilds = H => `Builds wind, solar and batteries faster than our deliverable rates${H.ironAirMW > 0 ? `, with ${_gw(H.ironAirMW)} GW of unproven iron-air storage` : ''}: a hypothetical plan.`;
-const _presetNtcsa = n => { const S = PRESET_SCORES[n];
-  if (S.build < PRESET_SCORE_IMPORTS_END_BUILD && FIXED.importsEndYear > 0 && (PRESETS[n].scenarioYear ?? 2026) > FIXED.importsEndYear) return '';
-  return S.shed <= NTCSA_ADEQUACY_GWH ? ' Meets NTCSA\u2019s reliability standard.' : ' Misses NTCSA\u2019s reliability standard.'; };
+const _presetScoreHolds = n => { const S = PRESET_SCORES[n];
+  return !(S.build < PRESET_SCORE_IMPORTS_END_BUILD && FIXED.importsEndYear > 0 && (PRESETS[n].scenarioYear ?? 2026) > FIXED.importsEndYear); };
+const _presetNtcsa = n => { if (!_presetScoreHolds(n)) return '';
+  return PRESET_SCORES[n].shed <= NTCSA_ADEQUACY_GWH ? ' Meets NTCSA\u2019s reliability standard.' : ' Misses NTCSA\u2019s reliability standard.'; };
+// The hypothetical presets' last sentence (message 577 (b)): the standard, then 'builds beyond our annual limits' when the build exceeds
+// the least-cost pathway's yearly limits (_presetOverLimit); each part only when it holds.
+const _hypoTail = (n, P) => { const parts = [];
+  if (_presetScoreHolds(n)) parts.push((PRESET_SCORES[n].shed <= NTCSA_ADEQUACY_GWH ? 'Meets' : 'Misses') + ' NTCSA\u2019s reliability standard');
+  if (_presetOverLimit(P)) parts.push(parts.length ? 'builds beyond our annual limits' : 'Builds beyond our annual limits');
+  return parts.length ? ' ' + parts.join('; ') + '.' : ''; };
 // Gas in the IRP captions: the floored share named only when it is not all of the gas.
 const _presetGas = P => { const g = (P.newCcgtMW || 0) + (P.newOcgtMW || 0), fl = Math.min(g, P.ccgtForceLoadMW ?? FIXED.ccgtForceLoadMW);
   return fl >= g ? `${_gw(g)} GW gas at a ${FIXED.ccgtForceLoadPct}% load factor` : `${_gw(g)} GW gas (${_gw(fl)} at a ${FIXED.ccgtForceLoadPct}% load factor)`; };
@@ -19921,10 +19926,11 @@ const PRESET_DESC = {
   'IRP\'s 2030 targets, grid delayed': ((P, T) => `IRP\u2019s 2030 targets with ${Math.round(100 * (1 - P.newWindMW / T.newWindMW))}% of the new wind and solar unable to connect (${_gw(P.newWindMW)} GW of wind and ${_gw(P.newPvMW)} GW of solar connect) and curtailment at ${P.congestionCurtailPct}%, for a transmission corridor not built in time.`)(PRESETS['IRP\'s 2030 targets, grid delayed'], PRESETS['IRP\'s 2030 targets']),
   'IRP path 2035': (P => `IRP 2025\u2019s 2035 build on our own demand assumptions. ${_presetAdds(P, {tail: _presetGas(P)})}; retires ${_gw(P.coalDecomMW)} GW coal.`)(PRESETS['IRP path 2035']),
   'Least-cost path 2035': (P => `The model\u2019s least-cost build to 2035. ${_presetAdds(P, {tail: `${_gw(P.newCcgtMW + P.newOcgtMW)} GW gas`})}; retires ${_gw(P.coalDecomMW)} GW coal. Demand ${Math.round(P.demandGrowthPct)}% above 2026, with ${P.demandBlockMW} MW of smelter load.`)(PRESETS['Least-cost path 2035']),
-  // The hypothetical presets (user, 31 Oct 2026, message 555 (f)): the optimised builds at relaxed build rates, captioned as hypothetical,
-  // with any iron-air named; the cap and the fossil-free year from HYPO_PRESETS (generated from the runs).
-  'Deep decarbonisation 2035': (H => `Optimised to keep CO2 at or below ${H.co2CapMt.toFixed(1)} Mt a year from ${H.co2CapFrom}. ${_hypoBuilds(H)}${_presetNtcsa('Deep decarbonisation 2035')}`)(HYPO_PRESETS['Deep decarbonisation 2035']),
-  'Fossil-free 2040': (H => `Optimised for zero coal, gas and diesel output from ${H.fossilFreeFrom}. ${_hypoBuilds(H)}${_presetNtcsa('Fossil-free 2040')}`)(HYPO_PRESETS['Fossil-free 2040']),
+  // The hypothetical presets in the 561 format (user, 1 Nov 2026, message 577 (b)): new build from PRESETS, the cap and the fossil-free
+  // year from HYPO_PRESETS (generated from the runs), the standard and the limits from data. Deep's 1 GW of offshore wind is not named:
+  // with it the caption is 42 words.
+  'Deep decarbonisation 2035': (P => `Retires ${_gw(P.coalDecomMW)} GW coal by ${P.scenarioYear}. Adds ${_gw(P.newWindMW)} GW wind, ${_gw(P.newPvMW)} GW solar, ${_gw(P.newBattMW)} GW ${+P.newBattHours.toFixed(1)}-hour batteries and ${_gw((P.newCcgtMW || 0) + (P.newOcgtMW || 0))} GW gas. CO2 at or below ${HYPO_PRESETS['Deep decarbonisation 2035'].co2CapMt.toFixed(1)} Mt a year from ${HYPO_PRESETS['Deep decarbonisation 2035'].co2CapFrom}.${_hypoTail('Deep decarbonisation 2035', P)}`)(PRESETS['Deep decarbonisation 2035']),
+  'Fossil-free 2040': (P => `No coal, gas or diesel from ${HYPO_PRESETS['Fossil-free 2040'].fossilFreeFrom}. Adds ${_gw(P.newWindMW + (P.newOffshoreMW || 0))} GW wind (${_gw(P.newOffshoreMW || 0)} offshore), ${_gw(P.newPvMW)} GW solar, ${_gw(P.newBattMW)} GW ${+P.newBattHours.toFixed(1)}-hour batteries, ${_gw((P.newVrfbMW || 0) + (P.newPsMW || 0))} GW other storage and ${_gw(P.newIronAirMW || 0)} GW unproven iron-air.${_hypoTail('Fossil-free 2040', P)}`)(PRESETS['Fossil-free 2040']),
 };
 const presetsEl=document.getElementById('presets');
 const presetCaptionEl=document.getElementById('presetCaption');
@@ -20965,7 +20971,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-31k';
+const BUILD_STAMP = '2026-11-01a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
