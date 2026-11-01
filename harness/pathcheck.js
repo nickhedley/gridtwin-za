@@ -194,6 +194,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    const STDR=P.standard||null;
    if (STDR && process.env.TF!==undefined && STDR.targetFrac!=null && +process.env.TF!==STDR.targetFrac) throw new Error('TF '+process.env.TF+' disagrees with the run\'s standard '+JSON.stringify(STDR));
    const TFR=STDR&&STDR.targetFrac!=null?STDR.targetFrac:+(process.env.TF||0.5), TGWH=STDR&&STDR.targetGWh!=null?STDR.targetGWh:null, KMAX=+(process.env.KMAX||40), KSTEP=10;
+   // The per-run object (gas floor, LCOE and open-cycle fields) is found by type, not as the last element: vreUsedTWh was appended after
+   // it on 31 Oct 2026 (0dbfb06), so 'the last element' read a number and the gas floor output, the LCOE fields and the open-cycle
+   // capacity factor came out zero or null in every check made since (fixed 1 Nov 2026, message 598; RESULTS 'pathcheck: the per-run object').
    // vreUsedTWh (user, 31 Oct 2026, message 559): wind and solar delivered (E.wind + E.pv), so curtailment as a share of available wind
    // and solar output is curt / (vreUsedTWh + curt), the page's own definition (renderCurtailRisk).
    const agg=(o)=>{      const n=o.length,m=i=>o.reduce((a,b)=>a+b[i],0)/n; return ({seMean:n>1?Math.sqrt(o.reduce((a,b)=>a+(b[0]-m(0))**2,0)/(n-1)/n):null,nRuns:n,mean:m(0),worst:Math.max(...o.map(a=>a[0])),cost:m(1),curt:m(2),std:m(3),co2:m(4),coal:m(5),diesel:m(6),gridCost:m(7),gasTWh:m(8),gasHours:m(9),gasCF:m(10)>0?m(8)*1e6/(m(10)*8760):0,gas14dMaxGWh:Math.max(...o.map(a=>a[11])),
@@ -208,9 +211,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first
    // min(CCGT standing, ccgtForceLoadMW) MW of each hour's gas output, which includes OCGT on LNG and gas burnt to charge
    // storage), the floor's target and shortfall, and all gas output, TWh, mean over the runs. Zero when no floor applies.
-   { const L=o[0].length-1, m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/o.length/1e6;
+   { const L=o[0].findIndex(v=>v!==null&&typeof v==='object'), m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/o.length/1e6;
      r.gasFloorTWh={floored:m('fl'), target:m('tg'), unmet:m('un'), totalGas:m('gas'), unfloored:m('gas')-m('fl')}; }
-   if (process.env.LCOE){ const L=o[0].length-1, m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/o.length, wd=m('wd'), wn=m('wn'), we=m('we'), nw=over.newWindMW||0;
+   if (process.env.LCOE){ const L=o[0].findIndex(v=>v!==null&&typeof v==='object'), m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/o.length, wd=m('wd'), wn=m('wn'), we=m('we'), nw=over.newWindMW||0;
      r.lcoe={battDisTWh:m('bd')/1e6, battMWh:m('bE'), liCycles:m('bE')>0?m('bd')/m('bE'):null, dieselTWh:m('ds')/1e6, dieselCapMW:m('dc'), dslCF:m('dc')>0?m('ds')/(m('dc')*8760):null,
        windTWh:wd/1e6, windNewPotTWh:wn/1e6, windExistPotTWh:we/1e6, windNewMW:nw, windNewTWh:(wn+we)>0?wd*wn/(wn+we)/1e6:0, windNewCF:nw>0&&(wn+we)>0?wd*wn/(wn+we)/(nw*8760):null}; }
    // NTCSA'S SECOND ADEQUACY CRITERION (user, 25 Oct 2026, messages 373, 375; MTSAO 2026-2030 section 3, p.11): open-cycle gas
@@ -218,7 +221,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // peakers, with Avon and Dedisa's contract output) and open-cycle on LNG; energy over capacity x 8,760, mean over the runs.
    // Capacity is read from the defaults and the run's state together (25 Oct 2026): the state alone carries no ocgtDieselMW, so the
    // first version counted only new open-cycle gas and read 17% for c6's strict 2034 where all open-cycle plant gives under 1%.
-   { const L=o[0].length-1, e=o.reduce((a,b)=>a+(+b[L].ocE||0),0)/o.length, cap=o.reduce((a,b)=>a+(+b[L].ocCap||0),0)/o.length;
+   { const L=o[0].findIndex(v=>v!==null&&typeof v==='object'), e=o.reduce((a,b)=>a+(+b[L].ocE||0),0)/o.length, cap=o.reduce((a,b)=>a+(+b[L].ocCap||0),0)/o.length;
      r.ocgtCF=cap>0?e/(cap*8760):null; r.ocgtTWh=e/1e6; r.ocgtCapMW=cap; r.ocgtCFUnder6=r.ocgtCF!=null?r.ocgtCF<0.06:null; }
    // LNG STORAGE ADEQUACY (user, 6 Oct 2026; LNG=1). Gas burned in each of the loop's own stress windows
    // that bind this model year (fromYear <= y), re-dispatched on that window's weather year and outage seed,
