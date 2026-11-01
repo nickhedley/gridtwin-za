@@ -20,7 +20,7 @@ validate_pathway_presets.js checks they still do.
 
   python3 harness/pathway/gen_pathway_presets.py [--check]   (from the repository root; --check: exit 1 if index.html differs)
 """
-import json, sys
+import json, sys, math, os
 Y = 2035
 PRE2030 = ("  // IRP's 2030 targets and its grid-delayed variant (from build 2026-10-19d; user, message 232 (2)): generated from the IRP\n"
            "  // engine check's 2030 state (harness/pathway/c6e/, as IRP path 2035), so their demand, gas price, carbon path, coal dates\n"
@@ -51,10 +51,13 @@ PRESETS = [
     # pace) with iron-air capped at 5 GW, replacing the hand-searched builds; the comments above each hand-written line, kept, are the
     # record of the builds they replace. Deep decarbonisation 2035: the CO2 cap from 2035, elastic at R50,000/t (no slack used);
     # Fossil-free 2040: no coal, gas or diesel after 2039, a hard rule.
-    {'name': 'Deep decarbonisation 2035', 'build': 'harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json', 'check': 'harness/pathway/opt/pathcheck_s_hypo_deep2035r_c6e_b.json',
+    # From 1 Nov 2026 (user, message 599 (a)) Deep is the no-gas run calibrated to 40 Mt from 2035 on its own engine check (RESULTS
+    # 'Deep decarbonisation 2035 at 22.8, 30, 35 and 40 Mt'); 'cal' is its calibration record, read for the caption's cap.
+    {'name': 'Deep decarbonisation 2035', 'build': 'harness/pathway/opt/pathway_s_hypo_deep2035nogas_t40n_r3_c6e.json',
+     'check': 'harness/pathway/opt/pathcheck_s_hypo_deep2035nogas_t40n_r3_c6e_31c_b.json', 'cal': 'harness/pathway/opt/cal_t40n.txt',
      'first_from': "  'Deep decarbonisation 2035':{demandGrowthPct:C5F_DEMAND[2035]", 'first_to': "newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},\n",
-     'preamble': "  // Replaced 1 Nov 2026 by the optimised hypothetical build (user, messages 537 (f) and 555; harness/pathway/opt/, RESULTS 'Deep\n  // decarbonisation 2035, hypothetical'): the hand-searched build described above is in git history before build 2026-10-31k.\n"},
-    {'name': 'Fossil-free 2040', 'year': 2040, 'build': 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', 'check': 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_c.json',
+     'preamble': "  // Replaced 1 Nov 2026 by the optimised hypothetical build (user, messages 537 (f) and 555; harness/pathway/opt/, RESULTS 'Deep\n  // decarbonisation 2035, hypothetical'): the hand-searched build described above is in git history before build 2026-10-31k.\n  // From build 2026-11-01d the no-gas build calibrated to 40 Mt from 2035 (message 599 (a)).\n"},
+    {'name': 'Fossil-free 2040', 'year': 2040, 'build': 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', 'check': 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_31c_c.json',
      'first_from': "  'Fossil-free 2040':{demandGrowthPct:C5F_DEMAND[2040]", 'first_to': "newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},\n",
      'preamble': "  // Replaced 1 Nov 2026 by the optimised hypothetical build (user, messages 537 (f), 555 and 558; harness/pathway/opt/, RESULTS\n  // 'Fossil-free 2040, hypothetical'): the hand-searched build described above is in git history before build 2026-10-31k.\n"},
 ]
@@ -224,25 +227,68 @@ for cfg in PRESETS:
     if '--check' not in sys.argv:
         print('written:', cfg['name'], Y, {k: round(f[k], 4) if isinstance(f[k], float) else f[k] for k in ('newWindMW', 'newPvMW', 'newRooftopMW', 'newBattMW', 'newCcgtMW', 'newOcgtMW', 'newNuclearMW', 'demandGrowthPct', 'costCcgt')}, 'coal standing', coal, 'gas floor', f.get('ccgtForceLoad', 0))
 # The hypothetical presets' captions (user, 31 Oct 2026, message 555 (f)): the CO2 cap and its first year, or the last fossil year, read
-# from each run. A caption says 'at or below' the cap only if the engine check's CO2 is at or below it in every year from the cap's
+# from each run, and NTCSA's two criteria from its engine check (message 600 (b)). A caption says 'at or below' the cap only if the engine check's CO2 is at or below it in every year from the cap's
 # first year and the build LP used no slack above it; otherwise the generator stops.
 hyp = {}
 for cfg in PRESETS:
     P = json.load(open(cfg['build']))
     if not (P.get('co2cap') or P.get('fossilEnd')): continue
     e = {'pace': P.get('pace'), 'ironAirMW': sum(P['sched'][y].get('ironair', 0) for y in P['sched'] if int(y) <= cfg.get('year', 2035))}
+    rows = [r for g in 'abc' for r in json.load(open(cfg['check'][:-6] + g + '.json'))]
+    # NTCSA's two criteria in every year (user, 1 Nov 2026, message 600 (b)): the caption says 'Meets' only if each year's mean unserved
+    # energy is within the standard and each year's open-cycle share under its limit (the page compares, with its own constants).
+    # A missing or null figure stops the generator (RULES 4): a check made with the pathcheck bug of 31 Oct has null open-cycle shares.
+    num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+    # A year with no open-cycle plants standing (Fossil-free from 2040) has no share (pathcheck writes null for zero capacity). Whether a
+    # plant stands comes from the run, not the check (user, 1 Nov 2026, message 602 (a)): the 31 Oct pathcheck bug wrote null with
+    # capacity 0 and output 0, the same fields as a true zero. Capacity standing in year y as pathcheck.js builds it (dieselAvailMW plus
+    # new open-cycle gas): the page's diesel fleet (FIXED.ocgtDieselMW; the run's 2026 fleet adjustment in 2026) less FIXED.dieselDecomMW,
+    # plus new diesel and gas open-cycle built to y, none after the run's fossilEnd; a peaker retirement schedule (PEAK=1) is not counted,
+    # so capacity is never understated. The rule is harness/pathway/tables/packfill.js's ocCapRun. A null share is zero only when that
+    # capacity is 0 and the check's output is 0.
+    fx = {k: re.findall(r'\n  ' + k + r':(\d+(?:\.\d+)?),', html) for k in ('ocgtDieselMW', 'dieselDecomMW')}
+    if any(len(v) != 1 for v in fx.values()): raise SystemExit('FIXED.ocgtDieselMW or FIXED.dieselDecomMW not found once in index.html')
+    def oc_cap(y):
+        fe = P.get('fossilEnd')
+        if fe is not None and y > fe: return 0.0
+        D = float(fx['ocgtDieselMW'][0]) + ((P.get('fleet2026') or {}).get('ocgtDieselMW', 0) if y == 2026 else 0)
+        cum = lambda k: sum(P['sched'][yy].get(k, 0) or 0 for yy in P['sched'] if int(yy) <= y)
+        return max(0.0, D - float(fx['dieselDecomMW'][0])) + cum('ocgd') + cum('ocgt')
+    none = lambda r: r.get('ocgtCF', 0) is None and r.get('ocgtTWh') == 0 and oc_cap(r['y']) == 0
+    oc = lambda r: 0.0 if none(r) else r.get('ocgtCF')
+    bad = sorted(r['y'] for r in rows if not (num(r.get('mean')) and num(oc(r))))
+    if bad or len(rows) != len({r['y'] for r in rows}): raise SystemExit(cfg['name'] + f': no unserved mean or open-cycle share (ocgtCF) in {bad}, or a year repeated, in its engine check')
+    e.update({'unservedMaxGWh': max(r['mean'] for r in rows), 'ocShareMax': max(oc(r) for r in rows)})
     if P.get('co2cap'):
-        c = P['co2cap']; rows = [r for g in 'abc' for r in json.load(open(cfg['check'][:-6] + g + '.json'))]
-        over = [(r['y'], round(r['co2'], 2)) for r in rows if r['y'] >= c['fromYear'] and r['co2'] > c['mt'] + 1e-9]
+        c = P['co2cap']
         slack = [(k, y, v) for L in (P.get('passLog') or []) for k, d in [(L.get('key'), L.get('co2Slack') or {})] for y, v in d.items() if v > 1e-9]
-        if over or slack: raise SystemExit(cfg['name'] + f': CO2 above the cap in the engine check {over} or slack in the build LP {slack}: the caption cannot say at or below')
-        e.update({'co2CapMt': c['mt'], 'co2CapFrom': c['fromYear']})
+        if c.get('byYear'):
+            # A run calibrated on its own engine check (messages 588 and 599 (a)): the build LP's per-year caps sit below the target so the
+            # engine lands on it. The caption states the target from the calibration record, as 'about', and holds only if the record
+            # converged ('final' on this run) and the engine check's CO2 is within the calibration's tolerance of the target, or below it,
+            # in every year from the cap's first year. The tolerance is read from the calibration script, not typed here.
+            if 'cal' not in cfg: raise SystemExit(cfg['name'] + ': per-year caps without a calibration record')
+            cal = open(cfg['cal']).read()
+            rnd = re.findall(r'round \d+ cap ([0-9.]+) engine2035 ([0-9.]+) target ([0-9.]+)', cal)
+            run = os.path.basename(cfg['build'])[len('pathway_'):-len('.json')]
+            if not rnd or not re.search(r'^final ' + re.escape(run) + r' 3/3$', cal, re.M): raise SystemExit(cfg['name'] + ': the calibration record did not converge on ' + run)
+            capLast, eng, T = map(float, rnd[-1])
+            tol = float(re.search(r'abs\(\$e-\$T\)<=([0-9.]+)', open('harness/pathway/opt/run_deep_cal.sh').read()).group(1))
+            if any(abs(v - capLast) > 1e-9 for v in c['byYear'].values()): raise SystemExit(cfg['name'] + ': the per-year caps are not the calibration\'s last cap')
+            over = [(r['y'], round(r['co2'], 2)) for r in rows if r['y'] >= c['fromYear'] and r['co2'] > T + tol + 1e-9]
+            if over or slack: raise SystemExit(cfg['name'] + f': CO2 more than {tol} Mt above the target {T} in the engine check {over} or slack in the build LP {slack}')
+            e.update({'co2CapMt': T, 'co2CapFrom': c['fromYear'], 'co2CapAbout': True})
+        else:
+            over = [(r['y'], round(r['co2'], 2)) for r in rows if r['y'] >= c['fromYear'] and r['co2'] > c['mt'] + 1e-9]
+            if over or slack: raise SystemExit(cfg['name'] + f': CO2 above the cap in the engine check {over} or slack in the build LP {slack}: the caption cannot say at or below')
+            e.update({'co2CapMt': c['mt'], 'co2CapFrom': c['fromYear']})
     if P.get('fossilEnd'): e['fossilFreeFrom'] = P['fossilEnd'] + 1
     hyp[cfg['name']] = e
 HB = "// BEGIN GENERATED HYPO_PRESETS (harness/pathway/gen_pathway_presets.py from the hypothetical presets' run files; do not edit by hand)"
 HE = "// END GENERATED HYPO_PRESETS"
 hblk = (f"{HB}\n// The hypothetical presets' caption facts (message 555 (f)): the build LP's pace, iron-air built to the preset's year (MW), the CO2 cap (Mt a year)\n"
-        f"// and its first year, or the first fossil-free year\nconst HYPO_PRESETS = {j(hyp)};\n{HE}")
+        f"// and its first year (co2CapAbout: a calibration target, message 599 (a)), or the first fossil-free year; the highest mean unserved\n"
+        f"// energy (GWh) and open-cycle share in any year of the engine check, for NTCSA's two criteria (message 600 (b))\nconst HYPO_PRESETS = {j(hyp)};\n{HE}")
 if replace_block(new, HB, HE, hblk) is not None:
     new = replace_block(new, HB, HE, hblk)
 else:

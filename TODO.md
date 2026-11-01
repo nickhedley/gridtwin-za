@@ -867,6 +867,12 @@ and report what it moves (presets with new pumped storage carry the run's charge
 Fossil-free preset 31c checks, rerun with the fixed pathcheck (1 Nov). Left: c6e_vre and dmin2028, rerun if their open-cycle, gas floor
 or LCOE fields are ever used; the 31a checks with null fields are superseded by clean 31c checks and need no rerun.
 
+14ma. Fossil-free 2040's 2040 CCGT, in c7 (user, 1 Nov 2026, messages 599 (c), 601 (b) and 603 (b); RESULTS 'Fossil-free 2040's 2,000
+MW of CCGT in 2040'): in bldBuildLP cut the freed-connection credit (rp_) for gas and diesel in years after bldFossilEndYear (or bound
+their build there at zero), as capCharge already gives them no cost. Test with the LP-key test: the LP text and key unchanged for every
+run without a fossil end year. Rerun Fossil-free 2040 as part of c7 and confirm only the 2040 CCGT line moves. The plants never run and
+appear in no published figure (the engine check and the preset carry no gas from 2040).
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
