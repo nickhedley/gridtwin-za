@@ -19031,3 +19031,28 @@ eng5 5/6. Equal to main's suite (998/1007, 88/88, 5/6) by count in every script 
 validate_response 86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51 (curtailment zero at defaults;
 curtailFuelCost; the avgCost ratchet passes at R1,085.9), eng5 storage vs unserved. validate_worker 38/38 (reipppLiveMW in the worker),
 validate_pathway_presets 41/41 (the 31c engine checks), validate_external 8/8, validate_stored_panels 86/86.
+
+### pathcheck: the per-run object read by position, so open-cycle shares, the gas floor output and the LCOE fields came out null or zero in 34 committed checks since 31 Oct; cost, CO2, unserved and curtailment unaffected (user, 1 Nov 2026, message 598 (c))
+
+Cause: 0dbfb06 (#138, 31 Oct) appended vreUsedTWh to each run's result after the per-run object, and pathcheck.js found that object
+as the last element (`o[0].length-1`), so it read a number. Fixed at 7a287e9 (claude/pack-checks): the object is found by type. Fields
+affected per year: ocgtCF, ocgtTWh, ocgtCapMW, ocgtCFUnder6, gasFloorTWh and, with LCOE=1, the lcoe block. Every other field is read
+from the run's own result and is unaffected.
+
+Test: c6e 2026-30 rechecked on build 2026-10-31l (gtza-c31l at 7d3411b, LNG=1 GRID=1, the fixed pathcheck), 1 Nov 2026 09:06-10:23 UTC.
+Every field identical to the file made with the bug except the four open-cycle fields, which now equal the pre-bug 31c check exactly
+(2026-30: 0.50%, 0.33%, 0.30%, 0.28%, 1.30%). The file replaces harness/pathway/c6e/pathcheck_c6e_31c_a.json.
+
+Committed checks with the bug (key present, value null): c6e/pathcheck_c6e_dmin2028, c6e/pathcheck_c6e_vre_{a,b,c}, the c6e 31a
+checks of irp2025, s_coalsustain, s_cocplan, s_cocprivate, s_gasfloor and s_nogas_dsl ({a,b,c} each; their 31c checks are clean),
+opt/pathcheck_s_hypo_deep2035r_c6e{,_31c}_{a,b,c} and opt/pathcheck_s_hypo_ff2040_c6e{,_31c}_{a,b,c}; on claude/preset-swap also the
+five calibrated Deep runs (t228_r2, t30u_r6, t35u_r3, t40n_r3, t40g_r5) and deep2035nogas. Thirteen older checks (c5f, irp2025,
+variants_6oct) predate the field and lack the key.
+
+What it touched: no reviewer pack fill (base.ocmax and s_nogas_dsl.ocmaxplain read clean checks; c6e's 2026-30 maximum of 1.30% is
+below its 1.9% from later years, so base.ocmax is unchanged). The page's NTCSA caption tests unserved energy only. The combined table
+(598 (c)) took open-cycle shares from diesel output over open-cycle capacity (3,400 MW plus new diesel peakers); that formula reproduces
+the fixed c6e file to five decimals in all five years, because c6e builds no open-cycle gas. On the same formula the Deep preset peaks
+at 0.82% (2032) and Fossil-free 2040 at 0.03% (2026); neither builds open-cycle gas. Both pass criterion (ii) in every year.
+
+Caveat: the formula holds only for runs without new open-cycle gas; the opt checks keep their null fields until rerun (TODO 14lz).
