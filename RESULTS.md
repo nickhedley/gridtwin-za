@@ -19446,3 +19446,8 @@ validate_public_text 32/32, validate_stored_panels 86/86, validate_links 48/48, 
 scan read SOLA as a shouted word; the comment reworded, audit 88/88; the panels rewritten and the suite rerun (below).
 LP-key test after merging main (5168504), 1 Nov 2026 about 18:15 UTC: 'central' sha1 4e0b77a5f1f4 on main and on this branch, identical;
 'blended' differs in the objective line only, as before.
+Rerun on 598e830 (the comment fix; stored panels rewritten, 5437a03), 1 Nov 2026 20:30-22:28 UTC in two pieces, beside the c6e
+system-strength rebuild: node checks 1021/1030, audit 88/88, eng5 5/6, equal to main (b810c2d) by count in every script and by failure
+name (validate_findings 36/39, validate_response 86/87 with the same 35 cells, validate_consistency 82/83, validate_benchmarks 28/30,
+validate_outputs 49/51, eng5 storage vs unserved; validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_panels
+86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Visible text against main: none changed.
