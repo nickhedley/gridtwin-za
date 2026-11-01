@@ -19365,3 +19365,10 @@ R140bn and 6.1% above c6e, 550 Mt less CO2, R254/t; 44 GW wind, 57 GW solar, 25 
 left; curtailment 27-29% from 2035, 'more than a quarter', against 8-11% in c6e from the c6e_vre checks and the run's 31a checks,
 whose dispatch equals its 31c checks); the Fossil-free bullet in the Doc's wording (599 (b)), vanadium and pumped storage filled
 (packfill's addgw gains vrfb); the Reproducing line as reworded (601 (d)).
+The caption generator's null rule taken from the run (user, 1 Nov 2026, message 602; the same rule as packfill's ocCapRun, #145): a null
+open-cycle share counts as zero only when the open-cycle capacity standing in that year, computed from the run as pathcheck.js builds it
+(FIXED.ocgtDieselMW less FIXED.dieselDecomMW plus new open-cycle built, none after fossilEnd), is 0 and the check's output is 0. The
+first version trusted the check's own capacity field, which the 31 Oct pathcheck bug also zeroed. Test, 1 Nov 2026 in --check mode:
+Fossil-free pointed at its 31a checks (nulls kept) stops with 2026-2039 listed (2040 a true zero); Deep pointed at its 31a checks stops
+with every year listed; the first version ran through on Fossil-free's 31a checks. On the real 31c checks both presets pass as before
+(index.html blocks match the generator).

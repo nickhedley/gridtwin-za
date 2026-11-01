@@ -239,9 +239,22 @@ for cfg in PRESETS:
     # energy is within the standard and each year's open-cycle share under its limit (the page compares, with its own constants).
     # A missing or null figure stops the generator (RULES 4): a check made with the pathcheck bug of 31 Oct has null open-cycle shares.
     num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
-    # A year with no open-cycle plants standing (Fossil-free from 2040) has no share (pathcheck writes null for zero capacity): it counts
-    # as zero only when the check records both keys, capacity 0 MW and output 0 TWh.
-    none = lambda r: r.get('ocgtCF', 0) is None and r.get('ocgtCapMW') == 0 and r.get('ocgtTWh') == 0
+    # A year with no open-cycle plants standing (Fossil-free from 2040) has no share (pathcheck writes null for zero capacity). Whether a
+    # plant stands comes from the run, not the check (user, 1 Nov 2026, message 602 (a)): the 31 Oct pathcheck bug wrote null with
+    # capacity 0 and output 0, the same fields as a true zero. Capacity standing in year y as pathcheck.js builds it (dieselAvailMW plus
+    # new open-cycle gas): the page's diesel fleet (FIXED.ocgtDieselMW; the run's 2026 fleet adjustment in 2026) less FIXED.dieselDecomMW,
+    # plus new diesel and gas open-cycle built to y, none after the run's fossilEnd; a peaker retirement schedule (PEAK=1) is not counted,
+    # so capacity is never understated. The rule is harness/pathway/tables/packfill.js's ocCapRun. A null share is zero only when that
+    # capacity is 0 and the check's output is 0.
+    fx = {k: re.findall(r'\n  ' + k + r':(\d+(?:\.\d+)?),', html) for k in ('ocgtDieselMW', 'dieselDecomMW')}
+    if any(len(v) != 1 for v in fx.values()): raise SystemExit('FIXED.ocgtDieselMW or FIXED.dieselDecomMW not found once in index.html')
+    def oc_cap(y):
+        fe = P.get('fossilEnd')
+        if fe is not None and y > fe: return 0.0
+        D = float(fx['ocgtDieselMW'][0]) + ((P.get('fleet2026') or {}).get('ocgtDieselMW', 0) if y == 2026 else 0)
+        cum = lambda k: sum(P['sched'][yy].get(k, 0) or 0 for yy in P['sched'] if int(yy) <= y)
+        return max(0.0, D - float(fx['dieselDecomMW'][0])) + cum('ocgd') + cum('ocgt')
+    none = lambda r: r.get('ocgtCF', 0) is None and r.get('ocgtTWh') == 0 and oc_cap(r['y']) == 0
     oc = lambda r: 0.0 if none(r) else r.get('ocgtCF')
     bad = sorted(r['y'] for r in rows if not (num(r.get('mean')) and num(oc(r))))
     if bad or len(rows) != len({r['y'] for r in rows}): raise SystemExit(cfg['name'] + f': no unserved mean or open-cycle share (ocgtCF) in {bad}, or a year repeated, in its engine check')
