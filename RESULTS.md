@@ -19372,3 +19372,18 @@ first version trusted the check's own capacity field, which the 31 Oct pathcheck
 Fossil-free pointed at its 31a checks (nulls kept) stops with 2026-2039 listed (2040 a true zero); Deep pointed at its 31a checks stops
 with every year listed; the first version ran through on Fossil-free's 31a checks. On the real 31c checks both presets pass as before
 (index.html blocks match the generator).
+
+### Suite on build 2026-11-01d (Deep no gas at 40 Mt, the captions, the NTCSA test on both criteria): two Deep pins moved with their causes, one audit flag on a comment fixed; otherwise main's known failures by name (user, 1 Nov 2026, messages 599 and 601 (a))
+
+First run (claude/deep-nogas40 at 6aea376 and later harness commits; stored panels rewritten at 6aea376; ESK19679.csv present), 1 Nov 2026
+12:22-14:28 UTC in two pieces, beside a page rescore and the #145 tests. Node checks 1019/1030, audit 87/88, eng5 5/6. Beyond main's nine:
+(1) validate_findings 'preset curtailment sits within its weather band', Deep 88.0 against 124.9: the new build stands less wind and
+solar; re-pinned to 88.0 (6d64a92). (2) validate_consistency 'new-build capital matches the hand computation', R0.723 against R0.986:
+measured with the check's own code on main (d7eb144, the old optimised Deep) R0.956 and on this build R0.723; re-pinned (93f01d2).
+Rerun alone after the re-pins: validate_findings 36/39 and validate_consistency 82/83, main's known failures by name. (3) audit 'no
+shouted emphasis': the new NTCSA_OC_SHARE_MAX comment held an apostrophe and a quote on one line, so the audit's quoted-span scan read
+MTSAO and SOURCES as shouted words; the comment reworded (0cba7e3), audit 88/88. Everything else equal to main by count and failure name:
+validate_response 86/87 (the same 35 cells), validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved;
+validate_pathway_presets 65/65, validate_public_text 32/32 (preset captions within 50), validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38, validate_bids 7/7, validate_external 8/8. The comment changes the page's fingerprint, so the panels are rewritten
+and the full suite rerun on 0cba7e3 (recorded below when done).
