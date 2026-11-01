@@ -28,6 +28,54 @@ Stock cases 4, 8 and 14 GWh, central 8 GWh (about 3.2 GW; additions about 0.9 GW
 Deye's 2.7 GWh fleet and household counts. The coordinated share starts from Plentify's Deye VPP (about 2.7 GWh aggregated, Aug 2026).
 These replace the 1, 3 and 5 GWh placeholder cases (573, 575 (c)). Sources follow in SOURCES from the advisor.
 
+## System strength, minimum version: design for approval (user, 1 Nov 2026, message 603 (a); TODO 14lo, 14lt)
+
+Branch claude/system-strength-min (from main d7eb144, with claude/system-strength merged). Nothing long runs before approval.
+Inputs: SOURCES ('System strength: inertia constants and the largest credible loss') and the advisor's note
+(docs/advisor/system-strength-2026-10-31.md on claude/advisor-notes; what is used is copied into SOURCES with the change).
+
+What exists: the engine lifts coal to a 6 GW synchronous floor (SYNC_MIN_MW, unsourced) counting nuclear, hydro, imports, 30% of
+battery power (SYNC_GFM_SHARE, unsourced) and condensers (0); the build LP has no system-strength row; the engine's unit-commitment
+pre-pass already holds committed coal each hour (ucAvail) but does not export it; its H constants (coal 3.5, nuclear 5.0, hydro 3.0)
+differ from the user's central values (coal 3.7, nuclear 4.1, hydro and pumped storage 2.5, CCGT and open cycle 5.0, CSP 3.0).
+
+1. Requirement each hour: 50 x L_y / (2 x RoCoF) GW.s, RoCoF 1 Hz/s central (sensitivities 0.5 Hz/s and a flat 40 GW.s). L_y is the
+   largest credible loss standing in year y, from UC_FLEET: 2,160 MW while a station with three or more units of 720 MW or more stands
+   (Medupi and Kusile, 720 MW units, stand to 2040 in every plan with coal), else the largest unit standing (Koeberg, about 930 MW
+   sent out). So 54 GW.s in every year with coal, 23.25 GW.s in Fossil-free's 2040.
+2. Supply, at the user's H on MVA = MW / 0.9, only while spinning: coal on committed capacity (ucAvail, not output: removes the 547 (b)
+   lower-bound caveat); nuclear when available; hydro and CSP at output; pumped storage pumping or generating; CCGT and open cycle
+   (gas or diesel) when running; condensers always (H 1.3 s on their MVA, Komati); grid-forming batteries limited each hour by unused
+   power (rating less charge and discharge), at an effective H (decision D2). Imports, wind, solar, grid-following batteries: zero.
+3. TDP 2024 condensers committed: 5,850 MVAr and 900 MVAr (7.6 and 1.2 GW.s at 1.3 s), each counted from the end of its window (2029,
+   2034; conservative).
+4. Build options in the LP: grid-forming batteries, MW of the battery fleet made grid-forming, at 5% of battery capital (Transgrid MCC
+   p.36), counting toward inertia only (not fault level); condensers at Eskom's 2021 costs (Tomlinson et al., CIGRE S&E 33) escalated by
+   CPI_APR21_TO_JAN26: conversions of retired coal units at R132m per 139 MVA machine (the first unit's R265m not modelled, the LP is
+   linear), at most one per retired unit; new 400 MVAr machines at R700m. Life and fixed O&M: decision D4.
+5. The floor in the build LP: one row per representative hour and stress-window hour: coal (output / lambda_y, decision D1) +
+   nuclear + hydro + pumped storage + gas + CSP + condensers + grid-forming >= requirement, with a slack priced high and reported.
+   One requirement per year. The engine: the same floor each hour on the 12-year weather; when short, coal commitment is lifted where
+   coal can be (decision D3); what remains is reported.
+6. Reporting each hour and per run: committed coal MW (new export), inertia by source, hours below the floor and GW.s short, the cost
+   of condensers and grid-forming premium. pathcheck rows gain inertia minimum, 5th percentile, hours short and committed coal.
+7. Fault level, sensitivity only: a cost per kW of new inverter capacity (wind, solar, batteries) in the LP, at AEMO's A$137k/MW
+   (upper bound, ISP 2024 App. 7 p.21) and half of it, net of nothing (the TDP grid charge's share is not separable: stated).
+8. Switch: systemStrengthMode 'sync6' (today's floor, for comparison) or 'inertia' (new, the default). SYNC_GFM_SHARE's free credit
+   and SYNC_MIN_MW apply only under 'sync6'. The engine's inertia revenue (asInertiaOn) reads the new measure. LP-key test: with
+   'sync6' the LP text and key are unchanged from main.
+9. Tests before any long run: the suite before and after; the LP-key test; a one-year LP (2035, c6e's build) with and without the
+   floor; the engine on c6e's 2026, 2030, 2035 and 2040 states (inertia by source, hours short, committed coal against 547 (b)).
+   Then, with approval: c6e rebuilt with the floor (one pathway, about 1-2 h) and the 0.5 Hz/s and fault-level sensitivities.
+10. Known limitations line (574 (b)): national, not by substation; no voltage control; RoCoF borrowed from Ireland and AEMO; condenser
+   sizing not by location; no fast frequency response traded against inertia.
+
+Decisions for the user: D1 coal in the LP (no commitment variable): output / lambda_y, lambda_y the engine's committed-to-output ratio
+in low-inertia hours of c6e (its lower quartile, conservative), or output alone (lower bound; overbuilds). D2 grid-forming effective H:
+half the thermal mix's H (the engine's existing basis, about 1.9 s on the user's constants), with 1 and 4 s as sensitivities. D3 engine
+shortfall: lift coal commitment as today's floor does, or report only. D4 condensers: 30-year life and 2% of capital a year fixed O&M,
+both unsourced placeholders until a source. D5 fault-level sensitivity values (full and half of A$137k/MW at a stated exchange rate).
+
 ## System strength: the user's inputs (1 Nov 2026, message 578)
 
 Inertia constants: the user's central values with the full ranges of ERCOT's 2024 revision, Table 1 (messages 581 (a), 585 (a)), MVA = MW / 0.9; the largest credible loss rule (2,160 MW while a
