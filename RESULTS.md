@@ -19559,3 +19559,12 @@ imports flat through the day (Eskom's hydro adds about 120 MW to the evening). D
 swung coal far harder (4,748 MW) than the model (3,035) and than Eskom in 2025 (3,003). Caveats: the model's days are 2025's demand and
 weather shapes on 2026's fleet, so day-by-day weather differs from 2026's; one deterministic run of the default profile, no outage
 draws; Eskom's thermal series may include non-coal thermal; no battery series on Eskom's side.
+Suite on build 2026-11-02a (claude/system-strength-min with main's #146 merged at 9468b68; stored panels rewritten at 2feb8ef; page
+default ssMode 'sync6'; ESK19679.csv present), 1 Nov 2026 about 18:40-21:00 UTC in two pieces, beside the cost-of-capital suite: node
+checks 1021/1030, audit 88/88, eng5 5/6, equal to main (5168504) by count in every script and by failure name (validate_findings 36/39,
+validate_response 86/87 with the same 35 cells, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5
+storage vs unserved; validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_panels 86/86, validate_links 48/48,
+validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Checked by the parent session after the merge: the LP-key test on
+current main (default and 'sync6' sha1 4e0b77a5f1f4, identical to main; 'inertia' 39f092d5e626), and the engine on c6e's states
+re-run (hours short and coal lifted as above) with every 'sync6' output key equal to main's page in all 48 runs except inertiaGVAs
+(4,704 keys compared). Later commits on the branch before the rebuild change harness and docs only (pathcheck.js SS_FC, TODO, RESULTS).
