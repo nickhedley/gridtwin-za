@@ -106,11 +106,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
  // System strength (build 2026-11-02a; FIXED.ssMode): the run's own mode and settings (P.ss, pathway_perfail.js SS, ROCOF, SS_FLAT_GWS,
- // GFM_H, SS_LIFT, FAULT); a run recorded before has none and is checked on 'sync6', the 6 GW floor it was built with. Under 'inertia'
+ // GFM_H, SS_LIFT, SS_FC, FAULT); a run recorded before has none and is checked on 'sync6', the 6 GW floor it was built with. Under 'inertia'
  // each year's grid-forming MW and condenser MVA built to it reach the engine (ssGfmMW, ssCondMVA), and the row reports the floor.
  const SSR = P.ss || { mode: 'sync6', fault: 'off' };
  w.eval(`if(!('ssMode' in FIXED)) throw new Error('ssMode missing'); state.ssMode=${JSON.stringify(SSR.mode)}; state.ssFault=${JSON.stringify(SSR.fault || 'off')};`
-   + (SSR.mode === 'inertia' ? ` state.ssRocofHz=${+SSR.rocofHz}; state.ssFlatGWs=${SSR.flatGWs == null ? 'null' : +SSR.flatGWs}; state.ssGfmH=${SSR.gfmHSet == null ? 'null' : +SSR.gfmHSet}; state.ssCoalLift=${SSR.coalLift == null ? 1 : +SSR.coalLift};` : ''));
+   + (SSR.mode === 'inertia' ? ` state.ssRocofHz=${+SSR.rocofHz}; state.ssFlatGWs=${SSR.flatGWs == null ? 'null' : +SSR.flatGWs}; state.ssGfmH=${SSR.gfmHSet == null ? 'null' : +SSR.gfmHSet}; state.ssCoalLift=${SSR.coalLift == null ? 1 : +SSR.coalLift};` + (SSR.liftForecast ? ` state.ssLiftForecast=${JSON.stringify(SSR.liftForecast)};` : '') : ''));
  const SS_ON = SSR.mode === 'inertia';
  if (SS_ON || SSR.fault !== 'off') console.log('system strength from the pathway:', JSON.stringify(SSR));
  if (SS_ON && SSR.lambda && JSON.stringify(SSR.lambda) !== w.eval('JSON.stringify(SS_COAL_LAMBDA)')) console.log('note: the run\'s SS_COAL_LAMBDA', JSON.stringify(SSR.lambda), 'differs from the page\'s (the build LP\'s coal credit; the engine does not read it)');

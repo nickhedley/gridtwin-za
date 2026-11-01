@@ -11,10 +11,13 @@
 // SS_COAL_LAMBDA in index.html (decision D1).
 // DIGEST=<file>: also writes, for 'sync6' only, a sha1 of every output key of every run, to compare with another commit's page
 // (ROOT=<that root>): the 'sync6' outputs must equal main's (the keys this change adds, coalCommittedMW and ss, aside).
-// JSON=<file>: the table as JSON.
+// JSON=<file>: the table as JSON. EXTRA='<json>': settings added to every state (e.g. '{"ssGfmMW":9045,"ssCondMVA":5838}', a build's
+// grid-forming MW and condenser MVA); SS_FC=prev|mustspin: the lift's forecast (FIXED.ssLiftForecast); the short hours after the lift are then split by what fell from the hour before (the lift's
+// forecast of pumped storage, gas and grid-forming batteries is the hour before's).
 const fs = require('fs'), path = require('path'), crypto = require('crypto'); const { JSDOM } = require('jsdom');
 const ROOT = process.env.ROOT || 'testroot', BUILD = process.env.BUILD || 'pathway/c6e/pathway_c6e.json';
 const YEARS = (process.env.YEARS || '2026,2030,2035,2040').split(',').map(Number), SEED_BASE = +(process.env.SEED_BASE || 71830529);
+const EXTRA = process.env.EXTRA ? JSON.parse(process.env.EXTRA) : {};
 const LOW_Q = +(process.env.LOW_Q || 0.10), MODES = (process.env.MODES || 'sync6,lift,nolift').split(',');
 (async () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
@@ -50,11 +53,11 @@ const LOW_Q = +(process.env.LOW_Q || 0.10), MODES = (process.env.MODES || 'sync6
   const q = (a, p) => { const s = Float64Array.from(a).sort(); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
   const out = {}, digest = {};
   for (const Y of YEARS){
-    w.eval(`applyState(${block(Y)}); window.__ssBase = {...state};`);
+    w.eval(`applyState(${block(Y)}); window.__ssBase = {...state, ...${JSON.stringify(EXTRA)}};`);
     const res = {};
     for (const M of MODES){
       if (M !== 'sync6' && !hasSS) continue;
-      const extra = M === 'sync6' ? '{}' : M === 'lift' ? "{ssMode:'inertia', ssCoalLift:1}" : "{ssMode:'inertia', ssCoalLift:0}";
+      const extra = M === 'sync6' ? '{}' : M === 'lift' ? `{ssMode:'inertia', ssCoalLift:1${process.env.SS_FC ? ", ssLiftForecast:'" + process.env.SS_FC + "'" : ''}}` : "{ssMode:'inertia', ssCoalLift:0}";
       const r = JSON.parse(w.eval(`(function(){ const o=[], dg=[];
         for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
           const x=simulate({...window.__ssBase, ...${extra}, outageSeed:${SEED_BASE}+yy*7919}, {demand:twelveYearDemand(), solar:nat.solar, wind:nat.wind, csp:PROFILES.csp, real:true});
@@ -90,17 +93,25 @@ const LOW_Q = +(process.env.LOW_Q || 0.10), MODES = (process.env.MODES || 'sync6
           low5: { n: r5.length, p25: r5.length ? q(r5, 0.25) : null }, belowReq: { n: rReq.length, p25: rReq.length ? q(rReq, 0.25) : null } };
       }
     }
+    if (res.lift){ // short hours after the lift: the fall from the hour before in each dispatch-dependent source (the lift's forecast)
+      const d = { n: 0, ps: 0, gas: 0, gfm: 0, coalAvailCapped: 0 };
+      for (const r of res.lift) for (let h = 1; h < r.tot.length; h++) if (r.tot[h] < r.req - 1e-9){ d.n++;
+        for (const k of ['ps', 'gas', 'gfm']) d[k] += Math.max(0, r.src[k][h - 1] - r.src[k][h]); }
+      if (d.n) for (const k of ['ps', 'gas', 'gfm']) d[k] /= d.n;
+      row.shortAfterSplit = d;
+    }
     if (row.lift && row.nolift) row.coalLiftedTWh = row.lift.coalTWh - row.nolift.coalTWh;   // mean over weather years
     out[Y] = row;
     const f1 = v => v == null ? '-' : (+v).toFixed(1), f3 = v => v == null ? '-' : (+v).toFixed(3);
-    if (row.lift) console.log(`${Y}: requirement ${f1(row.lift.reqGWs)} GW.s (loss ${row.lift.lossMW} MW); TDP condensers ${row.lift.condMVA} MVA; short before the lift ${row.nolift.shortH} h `
+    if (row.lift) console.log(`${Y}: requirement ${f1(row.lift.reqGWs)} GW.s (loss ${row.lift.lossMW} MW); condensers ${row.lift.condMVA} MVA (TDP 2024 and EXTRA); short before the lift ${row.nolift.shortH} h `
       + `(${f1(row.nolift.shortGWsH)} GW.s-h), after ${row.lift.shortH} h (${f1(row.lift.shortGWsH)} GW.s-h) of ${row.lift.hours}; lift hours ${row.lift.liftH} (no coal left to lift in ${row.lift.liftCappedH}), coal output lifted ${f3(row.coalLiftedTWh)} TWh/yr `
       + `(commitment ${f3(row.lift.liftCommitTWh / 12)} TWh/yr); inertia after (mean/p5/min) ${f1(row.lift.inertia.mean)}/${f1(row.lift.inertia.p5)}/${f1(row.lift.inertia.min)}, before ${f1(row.nolift.inertia.mean)}/${f1(row.nolift.inertia.p5)}/${f1(row.nolift.inertia.min)}; `
       + `committed coal mean/min ${f1(row.lift.committedMW.mean)}/${f1(row.lift.committedMW.min)} MW (before ${f1(row.nolift.committedMW.mean)}/${f1(row.nolift.committedMW.min)}); lambda p25 ${f3(row.lambda.p25)} (n ${row.lambda.n}; median ${f3(row.lambda.median)}; lowest 5% ${f3(row.lambda.low5.p25)}; below requirement ${f3(row.lambda.belowReq.p25)}, n ${row.lambda.belowReq.n})`);
     if (row.lift) console.log('  by source after the lift, mean/p5/min GW.s: ' + Object.entries(row.lift.bySource).map(([k, v]) => `${k} ${f1(v.mean)}/${f1(v.p5)}/${f1(v.min)}`).join('; '));
+    if (row.shortAfterSplit && row.shortAfterSplit.n) console.log(`  short after the lift: ${row.shortAfterSplit.n} h; mean fall from the hour before, GW.s: pumped storage ${f1(row.shortAfterSplit.ps)}, gas ${f1(row.shortAfterSplit.gas)}, grid-forming ${f1(row.shortAfterSplit.gfm)}`);
     if (row.sync6) console.log(`  sync6: coal ${f3(row.sync6.coalTWh)} TWh/yr, unserved ${f3(row.sync6.unservedGWh)} GWh/yr; inertia lift: coal ${row.lift ? f3(row.lift.coalTWh) : '-'}, unserved ${row.lift ? f3(row.lift.unservedGWh) : '-'}; no lift: coal ${row.nolift ? f3(row.nolift.coalTWh) : '-'}`);
   }
-  console.log('build', stamp, 'root', ROOT, 'state from', BUILD, 'seed base', SEED_BASE, 'lowQ', LOW_Q);
+  console.log('build', stamp, 'root', ROOT, 'state from', BUILD, 'seed base', SEED_BASE, 'lowQ', LOW_Q, 'lift forecast', process.env.SS_FC || 'page default', 'extra', JSON.stringify(EXTRA));
   if (process.env.DIGEST) fs.writeFileSync(process.env.DIGEST, JSON.stringify({ stamp, digest }));
   if (process.env.JSON) fs.writeFileSync(process.env.JSON, JSON.stringify({ stamp, build: BUILD, seedBase: SEED_BASE, lowQ: LOW_Q, out }, null, 1));
   process.exit(0);

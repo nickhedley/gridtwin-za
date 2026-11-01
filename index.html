@@ -6109,7 +6109,11 @@ const FIXED = {
   // flat requirement, GW.s (40 a sensitivity), null for the rule; ssGfmH: grid-forming H, s (null: ssGfmH()'s 1.891; 1 and 11
   // sensitivities); ssGfmMW: battery MW made grid-forming; ssCondMVA: condensers built (conversions and new), MVA, beside TDP 2024's
   // committed ones (SS_TDP_COND); ssFault 'off', 'full' or 'half': the fault-level capital adder in the build LP (any mode).
-  ssMode:'sync6', ssRocofHz:1, ssFlatGWs:null, ssGfmH:null, ssGfmMW:0, ssCondMVA:0, ssCoalLift:1, ssFault:'off',
+  // ssLiftForecast, what the lift counts before dispatch beside what must spin (committed coal, nuclear, hydro, CSP, condensers):
+  // 'mustspin' nothing else (central: operators schedule synchronous units ahead of dispatch, EirGrid's minimum units online and AEMO's
+  // minimum synchronous unit combinations; the conservative choice, rule 366); 'prev' also the hour before's pumped storage, gas and
+  // grid-forming inertia (a persistence forecast; on c6e's 2035 it leaves 2.6% of hours short where coal could have been lifted).
+  ssMode:'sync6', ssRocofHz:1, ssFlatGWs:null, ssGfmH:null, ssGfmMW:0, ssCondMVA:0, ssCoalLift:1, ssLiftForecast:'mustspin', ssFault:'off',
   // (5) coalRampHonour 1 (message 359 (f)): the commitment pre-pass keeps a block's commitment at least the previous hour's net
   //     load less one hour's ramp, and dispatch's coal floor rises no faster than the ramp. 0: as before (coal moved beyond its
   //     ramp at about 700 block starts a year in Least-cost path 2035). coalMinDownH raises every unit's minimum down time to at
@@ -8417,7 +8421,8 @@ function simulate(u, prof, outPath, _soc0){
     const lossMW = ssLossMW(units, p), condMVA = ssTdpCondMVA(y) + Math.max(0, +p.ssCondMVA || 0);
     const src = {}; for (const k of ['coal', 'nuclear', 'hydro', 'csp', 'ps', 'gas', 'gfm', 'cond']) src[k] = new Float64Array(HOURS);
     _ss = { year: y, lossMW, reqGWs: ssRequirementGWs(p, lossMW), condMVA, condGWs: SS_H.cond * condMVA / 1000,
-            gfmMW: Math.max(0, +p.ssGfmMW || 0), gfmH: ssGfmH(p), lift: (p.ssCoalLift ?? 1) ? 1 : 0, msl: coalFleetMinShare(p, y, cMW),
+            gfmMW: Math.max(0, +p.ssGfmMW || 0), gfmH: ssGfmH(p), lift: p.ssCoalLift ? 1 : 0, msl: coalFleetMinShare(p, y, cMW),
+            fcPrev: (() => { const f = p.ssLiftForecast; if (f !== 'prev' && f !== 'mustspin') throw new Error("ssLiftForecast must be 'prev' or 'mustspin': " + f); return f === 'prev'; })(),
             tot: new Float64Array(HOURS), src, prevDisp: 0, shortH: 0, shortGWsH: 0, liftH: 0, liftMWh: 0, liftFloorMWh: 0, liftCappedH: 0 };
   }
   const coalCommittedMW = new Float64Array(HOURS);   // committed coal each hour (the pre-pass's, after outages, plus any lift)
@@ -8744,13 +8749,13 @@ function simulate(u, prof, outPath, _soc0){
     }
     const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF*nucShapeAt(p, h), hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
     // System strength ('inertia', decision D3): inertia from what spins before dispatch (committed coal, nuclear, hydro and CSP at
-    // output, condensers) plus the previous hour's pumped storage, gas and grid-forming batteries (a persistence forecast). Short of
+    // output, condensers), and with ssLiftForecast 'prev' the previous hour's pumped storage, gas and grid-forming batteries. Short of
     // the requirement, coal commitment is lifted where coal is available and not committed (ssCoalLift); the lifted units run at least
     // at the standing fleet's minimum stable share (coalFleetMinShare). What remains short after dispatch is reported.
     let _ssLift = 0;
     if (_ss){
       const kM = SS_MVA_PER_MW / 1000;
-      const pre = SS_H.coal * kM * cAvailRaw + SS_H.nuclear * kM * nuc + SS_H.hydro * kM * hyd + SS_H.csp * kM * cspGen + _ss.condGWs + _ss.prevDisp;
+      const pre = SS_H.coal * kM * cAvailRaw + SS_H.nuclear * kM * nuc + SS_H.hydro * kM * hyd + SS_H.csp * kM * cspGen + _ss.condGWs + (_ss.fcPrev ? _ss.prevDisp : 0);
       if (_ss.lift && pre < _ss.reqGWs){ const room = Math.max(0, coalAvailableArr[h] - cAvailRaw), need = (_ss.reqGWs - pre) / (SS_H.coal * kM);
         _ssLift = Math.min(room, need); if (room < need) _ss.liftCappedH++; }
       if (_ssLift > 0){ cAvail += _ssLift; _ss.liftH++; _ss.liftMWh += _ssLift; _ss.liftFloorMWh += _ssLift * _ss.msl; }
@@ -9522,7 +9527,7 @@ function simulate(u, prof, outPath, _soc0){
   // MWh of output floor), and the minimum, 5th percentile and mean of each hour's inertia.
   const ssOut = _ss ? (() => { const srt = Float64Array.from(_ss.tot).sort(); let m = 0; for (let h = 0; h < HOURS; h++) m += _ss.tot[h];
     return { mode: 'inertia', year: _ss.year, lossMW: _ss.lossMW, reqGWs: _ss.reqGWs, condMVA: _ss.condMVA, gfmMW: _ss.gfmMW, gfmH: _ss.gfmH,
-             coalLift: _ss.lift, shortH: _ss.shortH, shortGWsH: _ss.shortGWsH, liftH: _ss.liftH, liftMWh: _ss.liftMWh, liftFloorMWh: _ss.liftFloorMWh, liftCappedH: _ss.liftCappedH,
+             coalLift: _ss.lift, liftForecast: _ss.fcPrev ? 'prev' : 'mustspin', shortH: _ss.shortH, shortGWsH: _ss.shortGWsH, liftH: _ss.liftH, liftMWh: _ss.liftMWh, liftFloorMWh: _ss.liftFloorMWh, liftCappedH: _ss.liftCappedH,
              minGWs: srt[0], p5GWs: srt[Math.floor(0.05 * HOURS)], meanGWs: m / HOURS, inertiaGWs: _ss.tot, bySource: _ss.src }; })() : null;
   /* ---- negative prices in coal-FORCED surplus HOURS -----------------------
    * Every curtailment hour in this model is coal-forced: renewables are spilled

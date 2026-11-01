@@ -387,18 +387,20 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
  w.eval(`if(!('bldCumVars' in FIXED)) throw new Error('bldCumVars missing');`+(process.env.CUMV!==undefined?` state.bldCumVars=${+process.env.CUMV};`:''));
  // System strength (build 2026-11-02a; user, 1 Nov 2026, messages 603 (a), 604 (b), 606; FIXED.ssMode). SS=inertia: the inertia floor in
  // the build LP and the engine (unset or sync6: the page default, today's 6 GW floor); ROCOF (Hz/s, default 1), SS_FLAT_GWS (a flat
- // requirement, GW.s), GFM_H (grid-forming H, s), SS_LIFT=0 (the engine reports the shortfall without lifting coal), FAULT=full|half
+ // requirement, GW.s), GFM_H (grid-forming H, s), SS_LIFT=0 (the engine reports the shortfall without lifting coal), SS_FC=prev|mustspin
+ // (what the engine's lift counts before dispatch beside what must spin, FIXED.ssLiftForecast), FAULT=full|half
  // (the fault-level adder, any mode). Recorded as ss; pathcheck.js applies it. Each year's grid-forming MW (b_gfm_) and condenser
  // MVA (b_scc_ conversions, b_scn_ new) are sched[y].gfm, .scc, .scn, and its inertia slack sched[y].ssSlack (MW.s-hours, hours).
  const SS_ENV={mode:process.env.SS||null, rocofHz:process.env.ROCOF!==undefined?+process.env.ROCOF:null, flatGWs:process.env.SS_FLAT_GWS!==undefined?+process.env.SS_FLAT_GWS:null,
-   gfmH:process.env.GFM_H!==undefined?+process.env.GFM_H:null, coalLift:process.env.SS_LIFT!==undefined?+process.env.SS_LIFT:null, fault:process.env.FAULT||null};
+   gfmH:process.env.GFM_H!==undefined?+process.env.GFM_H:null, coalLift:process.env.SS_LIFT!==undefined?+process.env.SS_LIFT:null, liftForecast:process.env.SS_FC||null, fault:process.env.FAULT||null};
+ if (SS_ENV.liftForecast && !['prev','mustspin'].includes(SS_ENV.liftForecast)) throw new Error('SS_FC must be prev or mustspin: '+SS_ENV.liftForecast);
  if (SS_ENV.mode && !['sync6','inertia'].includes(SS_ENV.mode)) throw new Error('SS must be sync6 or inertia: '+SS_ENV.mode);
  if (SS_ENV.fault && !['off','full','half'].includes(SS_ENV.fault)) throw new Error('FAULT must be off, full or half: '+SS_ENV.fault);
- if ((SS_ENV.rocofHz!==null || SS_ENV.flatGWs!==null || SS_ENV.gfmH!==null || SS_ENV.coalLift!==null) && SS_ENV.mode!=='inertia') throw new Error('ROCOF, SS_FLAT_GWS, GFM_H and SS_LIFT need SS=inertia');
+ if ((SS_ENV.rocofHz!==null || SS_ENV.flatGWs!==null || SS_ENV.gfmH!==null || SS_ENV.coalLift!==null || SS_ENV.liftForecast!==null) && SS_ENV.mode!=='inertia') throw new Error('ROCOF, SS_FLAT_GWS, GFM_H, SS_LIFT and SS_FC need SS=inertia');
  if (SS_ENV.rocofHz!==null && !(SS_ENV.rocofHz>0)) throw new Error('ROCOF: '+process.env.ROCOF);
  w.eval(`if(!('ssMode' in FIXED)) throw new Error('ssMode missing');`+(SS_ENV.mode?` state.ssMode=${JSON.stringify(SS_ENV.mode)};`:'')+(SS_ENV.rocofHz!==null?` state.ssRocofHz=${SS_ENV.rocofHz};`:'')
-   +(SS_ENV.flatGWs!==null?` state.ssFlatGWs=${SS_ENV.flatGWs};`:'')+(SS_ENV.gfmH!==null?` state.ssGfmH=${SS_ENV.gfmH};`:'')+(SS_ENV.coalLift!==null?` state.ssCoalLift=${SS_ENV.coalLift};`:'')+(SS_ENV.fault?` state.ssFault=${JSON.stringify(SS_ENV.fault)};`:''));
- const SS_REC=JSON.parse(w.eval(`JSON.stringify({mode:state.ssMode??FIXED.ssMode, rocofHz:state.ssRocofHz??FIXED.ssRocofHz, flatGWs:state.ssFlatGWs??FIXED.ssFlatGWs, gfmH:ssGfmH({...FIXED,...state}), gfmHSet:state.ssGfmH??FIXED.ssGfmH, coalLift:state.ssCoalLift??FIXED.ssCoalLift, fault:state.ssFault??FIXED.ssFault, lambda:SS_COAL_LAMBDA})`));
+   +(SS_ENV.flatGWs!==null?` state.ssFlatGWs=${SS_ENV.flatGWs};`:'')+(SS_ENV.gfmH!==null?` state.ssGfmH=${SS_ENV.gfmH};`:'')+(SS_ENV.coalLift!==null?` state.ssCoalLift=${SS_ENV.coalLift};`:'')+(SS_ENV.liftForecast?` state.ssLiftForecast=${JSON.stringify(SS_ENV.liftForecast)};`:'')+(SS_ENV.fault?` state.ssFault=${JSON.stringify(SS_ENV.fault)};`:''));
+ const SS_REC=JSON.parse(w.eval(`JSON.stringify({mode:state.ssMode??FIXED.ssMode, rocofHz:state.ssRocofHz??FIXED.ssRocofHz, flatGWs:state.ssFlatGWs??FIXED.ssFlatGWs, gfmH:ssGfmH({...FIXED,...state}), gfmHSet:state.ssGfmH??FIXED.ssGfmH, coalLift:state.ssCoalLift??FIXED.ssCoalLift, liftForecast:state.ssLiftForecast??FIXED.ssLiftForecast, fault:state.ssFault??FIXED.ssFault, lambda:SS_COAL_LAMBDA})`));
  if (SS_REC.mode==='inertia' || SS_REC.fault!=='off') console.log('system strength', JSON.stringify(SS_REC));
  // SHRINK TESTS (user, 8 Oct 2026: ways to shrink the pass-2 LP, each tested for its effect on cost and build).
  // REP_DAYS=<n>: n representative days instead of 12. MERGE_WIN=1: stress windows from the same weather year and outage
