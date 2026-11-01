@@ -19424,3 +19424,30 @@ validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_pane
 validate_bids 7/7, validate_external 8/8. Main's #145 (packfill's ocCapRun, summ.js, RESULTS) merged in after (user, message 605):
 packfill.js merged without conflict (both ocCapRun and the vrfb build total kept), RESULTS kept both sides; no index.html change, so no
 rerun; the repository-only fill folder fills REVIEWER_PACK.md to the identical text after the merge; both generators match the page.
+
+
+### Blended cost of capital for c7: cases 'blended' and 'blendedhigh'; 'central' unchanged by the LP-key test (user, 1 Nov 2026, message 604 (a); build 2026-11-01e)
+
+bldCoc gains two cases (index.html; BLD_COC_PRIVATE_SHARE, BLD_COC_NAB_GAP, the lithium gap computed as the mean of wind and solar):
+rate = state-backed central + private share x gap, for utility wind, utility solar and lithium only. Rates read back from the page,
+real pre-tax: 'blended' wind 5.788%, solar 5.842%, lithium 6.879%; 'blendedhigh' (CEPA's premiums as the gap) 6.4%, 6.4%, 7.1%;
+offshore wind, vanadium, iron-air, pumped storage, gas, nuclear, coal, network and rooftop unchanged in both. The page default
+(FIXED.bldCocCase) stays 'central', so no preset or published figure changes until c7.
+LP-key test, 1 Nov 2026 about 17:20 UTC: bldBuildLP on the Least-cost path 2035 preset with grid cost on (validate_lp's call, growth
+0.02, eaf 0.64): 'central' on main (9035b59) and on this branch both sha1 4e0b77a5f1f4 (13,918,952 characters); 'blended' 479696b5560c
+and 'blendedhigh' 63167b3268d5 differ from 'central' in one line only, the objective, and there only in the coefficients of b_wind_y,
+b_pv_y, b_batt_y and eb_batt_y (five years each at that horizon); every row is identical.
+Suite on build 2026-11-01e (claude/coc-blended with main's #146 merged at 4c1a22c; stored panels rewritten at c18d394; ESK19679.csv
+present), 1 Nov 2026 18:03-20:02 UTC in two pieces, beside the system-strength suite: node checks 1021/1030, eng5 5/6, equal to main
+(5168504) by count in every script and by failure name (validate_findings 36/39, validate_response 86/87 with the same 35 cells,
+validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved; validate_pathway_presets 65/65,
+validate_public_text 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external
+8/8). audit 87/88: the new BLD_COC_PRIVATE_SHARE comment held two apostrophes on one line (Eskom's, SOLA's), so the audit's quoted-span
+scan read SOLA as a shouted word; the comment reworded, audit 88/88; the panels rewritten and the suite rerun (below).
+LP-key test after merging main (5168504), 1 Nov 2026 about 18:15 UTC: 'central' sha1 4e0b77a5f1f4 on main and on this branch, identical;
+'blended' differs in the objective line only, as before.
+Rerun on 598e830 (the comment fix; stored panels rewritten, 5437a03), 1 Nov 2026 20:30-22:28 UTC in two pieces, beside the c6e
+system-strength rebuild: node checks 1021/1030, audit 88/88, eng5 5/6, equal to main (b810c2d) by count in every script and by failure
+name (validate_findings 36/39, validate_response 86/87 with the same 35 cells, validate_consistency 82/83, validate_benchmarks 28/30,
+validate_outputs 49/51, eng5 storage vs unserved; validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_panels
+86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Visible text against main: none changed.
