@@ -756,7 +756,16 @@ included; no change needed. The reverse is open, for your decision: in contract 
 delivered output) and fixed O&M on top, though a PPA price covers the IPP's O&M: about R3.3bn a year while every contract is live
 (4,042 MW wind x R392, 2,783 MW solar x R287, 600 MW CSP x R1,480 per kW-yr), falling with expiry (R1.75bn by 2040; live share by bid
 window energy), about R27bn in PV over 2026-40 at 8%, some 1.2% of c6e's R2,315bn; the same in every scenario on the existing fleet, so
-gaps between scenarios do not move. Candidate correction: no fixed O&M on REIPPPP capacity in its contract years. (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
+gaps between scenarios do not move. Decided (user, 31 Oct 2026, message 552 (a)): no fixed O&M on REIPPPP capacity in its contract
+years, the PPA price covering it; from each window's expiry the plant pays its technology's fixed O&M, as now; Eskom-owned plant (e.g.
+Sere) keeps its fixed O&M throughout; state the MW split used. Same page change as (b), after the optimised runs and before the preset
+swap; suite before and after; c6e measured with both and each alone, reported before anything is rerun; the reviewer Doc changes only
+after Nick has seen the figures. Data needed first: REIPPPP MW by bid window and technology. The model holds totals only (FIXED
+reipppWindMW 4,042, reipppSolarMW 2,783, CSP 600) and REIPPPP_WINDOWS gives energy and cost by window, not MW. In hand: solar by window
+for BW1-BW4 (627, 417, 435, 813 MW; parliamentary reply NW368, 2019, SOURCES) and the MTSAO 2027-2036's retirements at contract end in
+2033-36 (1.3 GW solar, 1.5 GW wind, 0.2 GW CSP; message 541), which do not agree on solar (BW1 and BW2, expiring by 2036, hold 1,044 MW
+in NW368). Wind and CSP by window are not in the repository: the IPP Office's window summary (or its historical data note of 7 Nov 2025)
+is the source to use; not to be filled from memory. Lead found 31 Oct 2026 (a web search extract of an IPP Office technology table, not yet read at source; the hosts holding the IPP Office's overview and bidders' conference deck, rise.esmap.org and ccib.ro, are outside this session's network): wind BW1-BW4 649, 559, 787, 1,362 MW; solar 627, 417, 435, 813 MW (the same as NW368); CSP BW1 150, BW2 50, BW3 200, BW3.5 200 MW (600 in all). If confirmed, the MTSAO's 2033-36 figures fit: BW1 and BW2 (1,208 MW wind, 1,044 solar, 200 CSP) plus the part of BW3 whose contracts end in 2036. Still missing: BW4+ (expedited), BW5 and BW6 MW by technology, and which windows FIXED reipppWindMW and reipppSolarMW include. (b) txRPerKWyr from c6e's network rate, 7.1%, R364/kW-yr (14lj).
 Then measure c6e's PV, CO2 and build with (a) and (b) together and each alone (engine check of c6e's build; a re-optimised build only
 if needed to see whether the build moves). If c6e's headline figures move, report before rerunning anything else (the user corrects
 the reviewer Doc). Rerun the optimised runs only if the change moves their builds.
@@ -811,6 +820,16 @@ measure the effect on curtailment and unserved energy (the regional engine).
 (PyPSA-Eur practice) or a flat 10% in windy hours (RMI/Quanta); reconductoring as a build option at about twice the corridor capacity
 with a 1-3 year lead time. Check for overlap with the TDP-based grid charge (txRPerKWyr, 14lj) and the Cape curtailment approval
 (bldCapeWindMW) before any is charged.
+
+14lr. Hydrogen as seasonal storage, built by the optimiser, after the note (user, 31 Oct 2026, message 557; replaces 556: no quick
+hydrogen turbine). Scope first; nothing is built without your go-ahead. (1) The chain: electrolysers fed by surplus wind and solar;
+hydrogen storage, with the South African options and costs (tanks, line pack, ammonia) and whether salt caverns exist here;
+hydrogen-fired turbines (new open-cycle and combined-cycle) and conversion of the existing diesel open-cycle plants (Ankerlig,
+Gourikwa). (2) Seasonal storage in the build LP: link the representative days so a store carries energy across the year, adapting
+GenX's long-duration storage method (Mallapragada et al. 2020) or Kotzur et al.'s inter-period method (2018); state which and why.
+(3) The hourly engine: a full-year dispatch rule for a seasonal store (charge on surplus, hold for lulls), checked against the LP's
+plan. (4) Every cost sourced (electrolyser, storage per kg or MWh, turbine and conversion premium, round-trip efficiency), with low,
+central and high cases. (5) Report the scope, the time needed and the sources before any build.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a

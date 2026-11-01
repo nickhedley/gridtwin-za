@@ -59,6 +59,9 @@
 //                        page.privrange
 //   Sent Doc (message 517): RUN.demandpctr_YYYY, RUN.blockmw_YYYY, RUN.roofadd_YYYY, RUN.shortyears
 //   30 Oct update (message 524 (d)): RUN.avgcostpctr_YYYY, RUN.dcurt_YYYY; replay.coal / .eskom / .withinpct; ext.csircoal / .csirre
+//   Optimised presets (message 565 (b)): RUN.ironairshare (iron-air's share of new stored energy by the horizon)
+//   Optimised presets (message 559): RUN.cpta (R per tonne of CO2 avoided against BASE, 2026-40), RUN.curtshare_YYYY (curtailed share
+//                        of available wind and solar output)
 //   missing              the list of results not yet available, with the chain's reason
 const fs=require('fs'), path=require('path'), cp=require('child_process'); const {summ}=require('./summ.js'); const {PLAIN,VERSIONS,plainName}=require('./plain.js');
 const args=process.argv.slice(2), dry=args.includes('--dry');
@@ -156,6 +159,27 @@ function value(k){
   if (k==='page.ff2040ironairGW'||k==='page.ironairHours'){ if (!fs.existsSync('testroot/index.html')) return null; const h=fs.readFileSync('testroot/index.html','utf8');
     if (k==='page.ironairHours'){ const m=h.match(/\bnewIronAirHours:(\d+)/); return m?m[1]:null; }   // FIXED's, the first occurrence
     const m=h.match(/'Fossil-free 2040':\{[^\n]*?newIronAirMW:(\d+)/); return m?nf(+m[1]/1e3,0):null; }
+  // The scenarios table (messages 523 (b), 528, 529): harness/ext/preset_table.json from harness/ext/preset_table.js, each preset in its
+  // own year. preset.<code>.<metric>, code deep, ff, fffresh or lcp; metric year, runs, seed, unserved and target (GWh a year), cost
+  // (R bn a year), co2 (Mt), avgcost (R/MWh served), peakcf (%), served (TWh), new_<tech> and rem_<tech> (GW, '-' when none), ironair
+  // (GW), ironairh (hours), ironairpow and ironairen (% of new storage power and energy), meets ('within' or 'above' the target).
+  if (k.startsWith('preset.')){ const f=path.join(__dirname,'..','..','ext','preset_table.json'); if (!fs.existsSync(f)){ missing.add('the scenarios table (preset_table.js)'); return null; }
+    const T=JSON.parse(fs.readFileSync(f,'utf8')), [,c,mm]=k.split('.'), p=T.presets[c]; if (!p) throw new Error('packfill: no preset '+c+' in preset_table.json');
+    const g=v=>v>0.05?nf(v,1):'-', n=p.newGW, st=n.lithium+n.ironAir+n.vrfb+n.pumpedStorage, en=n.lithium*n.lithiumHours+n.ironAir*n.ironAirHours;
+    const [m0,t]=mm.split('_');
+    // A sum of technologies with '+' (new_ccgt+ocgtGas).
+    const sum=(o,w)=>t.split('+').reduce((a,x)=>{ if (!(x in o)) throw new Error('packfill: no '+w+' '+x); return a+o[x]; },0);
+    if (m0==='new') return g(sum(n,'new'));
+    if (m0==='rem') return g(sum(p.remGW,'remaining'));
+    switch (mm){
+      case 'year': return String(p.year); case 'runs': return nf(p.n,0); case 'seed': return String(p.seed);
+      case 'unserved': return nf(p.unservedGWh,2); case 'target': return nf(p.targetGWh,2); case 'meets': return p.unservedGWh<=p.targetGWh?'within':'above';
+      case 'cost': return nf(p.costBn,1); case 'co2': return nf(p.co2Mt,1); case 'avgcost': return nf(p.avgCostRMWh,0);
+      case 'peakcf': return p.peakerCF==null?'none':nf(100*p.peakerCF,2)+'%'; case 'served': return nf(p.servedTWh,1);
+      case 'ironair': return nf(n.ironAir,2); case 'ironairh': return nf(n.ironAirHours,0);
+      case 'ironairpow': return st>0?nf(100*n.ironAir/st,0)+'%':'-'; case 'ironairen': return en>0?nf(100*n.ironAir*n.ironAirHours/en,0)+'%':'-';
+      case 'stamp': return T.stamp; }
+    throw new Error('packfill: unknown preset key '+k); }
   // The 2025 replay and the external checks as recorded in the set's folder (message 524 (d)): the newest replay2025_*.txt and
   // validate_external_*.txt by name. replay.coal and .eskom, TWh; .withinpct, the gap rounded up to a whole percent; ext.csircoal and
   // .csirre, the CSIR 2030 shares, whole percent. From 30 Oct 2026 the newest is the run at each check's own year (message 526 (b)).
@@ -177,6 +201,19 @@ function value(k){
     // One year's figures against the plan (message 524 (d)): system cost per MWh served, whole % above the plan's; extra curtailed wind
     // and solar, TWh.
     case 'avgcostpctr': { if (!b) return null; const x=s.rows.find(q=>q.y===y), c=b.rows.find(q=>q.y===y); return x&&c?nf(Math.round(100*(x.avgCostRMWh/c.avgCostRMWh-1)),0)+'%':null; }
+    // The optimised presets (message 559): cost per tonne of CO2 avoided against the plan, PV cost difference over the CO2 difference,
+    // 2026-40, R/t (PV at 8% over undiscounted tonnes); curtailment as a share of available wind and solar output in a year,
+    // curt / (vreUsedTWh + curt), whole % (needs pathcheck's vreUsedTWh, from 31 Oct 2026).
+    case 'cpta': { if (!b) return null; const dt=b.co2Cum-s.co2Cum; return dt>0?nf(Math.round((s.pv-b.pv)*1e3/dt),0):null; }
+    // Iron-air's share of the new stored energy by the horizon (message 565 (b)): MWh of iron-air over the MWh of every new store,
+    // lithium from the schedule (battMWh), vanadium and iron-air at the page's hours (FIXED newVrfbHours, newIronAirHours, read from
+    // index.html), pumped hydro at the run's own (phes.hours, phel at hours2).
+    case 'ironairshare': { const P=JSON.parse(fs.readFileSync(`${s.dir}/pathway_${s.n}.json`,'utf8')), html=fs.readFileSync(path.join(__dirname,'../../testroot/index.html'),'utf8');
+      const hr=k=>{ const q=html.match(new RegExp(k+':(\\d+(?:\\.\\d+)?)')); if (!q) throw new Error('packfill: no '+k+' in index.html'); return +q[1]; };
+      const g=k=>Object.values(P.sched).reduce((a,x)=>a+(x[k]||0),0), ph=P.phes||{};
+      const ia=g('ironair')*hr('newIronAirHours'), tot=g('battMWh')+g('vrfb')*hr('newVrfbHours')+ia+g('phes')*(ph.hours||0)+g('phel')*(ph.hours2||0);
+      return tot>0?nf(Math.round(100*ia/tot),0)+'%':null; }
+    case 'curtshare': { const x=s.rows.find(q=>q.y===y); if (!x||x.vreUsedTWh==null){ missing.add(`${s.n} (vreUsedTWh, ${y})`); return null; } return nf(Math.round(100*x.curt/(x.vreUsedTWh+x.curt)),0)+'%'; }
     case 'dcurt': { if (!b) return null; const x=s.rows.find(q=>q.y===y), c=b.rows.find(q=>q.y===y); return x&&c&&x.curt!=null&&c.curt!=null?nf(x.curt-c.curt,1):null; }
     // The sent Doc's figures (message 517): demand growth on 2026 by year, whole %; the smelter block, MW; rooftop added in a year, MW;
     // the years the hourly check finds over 20 GWh, as a span.
