@@ -807,6 +807,12 @@ engine reserve battery headroom for the grid-forming MW; (4) D1 as written divid
 committed-to-output ratio would credit less than output: implemented as output x lambda (conservative at the lower quartile), and the
 LP's own committed coal (cm_, bldCoalCommit 1 in c6) is not used: confirm; (5) c7: page default to 'inertia' when the presets are
 regenerated (gen_pathway_presets.py stops on an 'inertia' run until it carries ssGfmMW and ssCondMVA).
+Decided 1 Nov 2026 (message 610): (a) the page default stays 'sync6' (today's 6 GW floor); 'inertia' is a run setting for c7, and the
+page switches when c7 regenerates the presets. (b) D1 is coal output x the committed-to-output ratio (lower quartile); c6e is rebuilt
+on it. Before c7: the one-year 2035 test with the build LP's own coal commitment variable (cm_) in place of the ratio, both reported;
+c7 uses the commitment variable if it solves in reasonable time. (c) The engine's lift: 'prev' (grid-forming batteries' spare power,
+pumped storage and gas from the hour before) is c7's central ssLiftForecast, 'mustspin' the cautious sensitivity; coal lifted (TWh)
+and hours short reported under both for 2035 and 2040, on the one-year build and the c6e rebuild (pathcheck.js SS_FC).
 
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
