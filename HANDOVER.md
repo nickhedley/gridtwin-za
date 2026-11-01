@@ -70,11 +70,14 @@ differ from the user's central values (coal 3.7, nuclear 4.1, hydro and pumped s
 10. Known limitations line (574 (b)): national, not by substation; no voltage control; RoCoF borrowed from Ireland and AEMO; condenser
    sizing not by location; no fast frequency response traded against inertia.
 
-Decisions for the user: D1 coal in the LP (no commitment variable): output / lambda_y, lambda_y the engine's committed-to-output ratio
-in low-inertia hours of c6e (its lower quartile, conservative), or output alone (lower bound; overbuilds). D2 grid-forming effective H:
-half the thermal mix's H (the engine's existing basis, about 1.9 s on the user's constants), with 1 and 4 s as sensitivities. D3 engine
-shortfall: lift coal commitment as today's floor does, or report only. D4 condensers: 30-year life and 2% of capital a year fixed O&M,
-both unsourced placeholders until a source. D5 fault-level sensitivity values (full and half of A$137k/MW at a stated exchange rate).
+Decided (user, 1 Nov 2026, messages 604 (b) and 606): D1 coal in the LP at output / lambda_y, lambda_y the engine's committed-to-output
+ratio in c6e's low-inertia hours (lower quartile), reported by year. D2 grid-forming effective H 1.9 s central (the engine's basis,
+cautious), sensitivities 1 s and 11 s (ARENA, Hornsdale upgrade, 15 Dec 2023, p.16). D3 the engine lifts coal commitment when short,
+as today's floor does, and reports the hours and MWh lifted. D4 condensers: 30-year life (GHD for ElectraNet, 2019, p.20) and 1% of
+capital a year fixed cost (ElectraNet 2018, p.21), both sourced. D5 fault level at A$137k/MW and half, at one SARB AUD/ZAR rate with
+its date as a single constant (pending: resbank.co.za not reachable from the session). Before any long run: the suite before and
+after, the LP-key test with the switch on the old 6 GW floor, the one-year build test and the engine checks on c6e's states; then
+the c6e rebuild with the floor and the sensitivities. Target Wed 4 Nov.
 
 ## System strength: the user's inputs (1 Nov 2026, message 578)
 
