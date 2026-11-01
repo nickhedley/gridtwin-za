@@ -19000,3 +19000,24 @@ every script and by failure name: validate_findings 37/40 (congestion floor; iro
 peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost), eng5 storage vs unserved. validate_worker
 38/38, validate_public_text 32/32 (the TDP note at 40 words after 31h's 43 failed it; build 31i), validate_external 8/8. The 31h run,
 stopped at validate_worker, had the same failures plus that public-text check.
+
+### Both cost corrections on the two hypothetical builds: Deep decarbonisation 2035 -R38.3bn and Fossil-free 2040 -R42.4bn in engine PV 2026-40; gaps to c6e -R7.5bn and -R11.6bn; cost per tonne avoided R375 to R365 and R1,065 to R1,053 (user, 1 Nov 2026, message 577 (a); build 2026-10-31l)
+
+Settings: each run's recorded build (harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json and pathway_s_hypo_ff2040_c6e.json, optimised
+on 31a), engine-checked unchanged on build 31l (claude/cost-corrections at 7d3411b: 31c's engine, both corrections, plus the worker list
+and the cost note), pathcheck.js with LNG=1 GRID=1, groups a, b and c (120 runs a year), 1 Nov 2026 04:52-05:07 UTC
+(harness/pathway/opt/pathcheck_<run>_31c_{a,b,c}.json). Before: the runs' recorded checks on 31a (harness/pathway/opt/pathcheck_<run>_*).
+c6e from pathcheck_c6e_31a_* and _31c_*. Engine PV at 8% real to 2026 (pathway/tables/summ.js); cost per tonne avoided is the PV
+difference over the CO2 difference against c6e, 2026-40 (packfill RUN.cpta, tax in).
+
+| Run | 31a PV | 31c PV | Change | Gap to c6e, 31a | Gap to c6e, 31c | CO2 2026-40, Mt | R/t avoided, 31a | R/t avoided, 31c |
+|---|---|---|---|---|---|---|---|---|
+| c6e | 2,314.7 | 2,283.9 | −30.8 | – | – | 1,738.6 | – | – |
+| Deep decarbonisation 2035 (hypothetical) | 2,607.6 | 2,569.3 | −38.3 | +292.9 | +285.4 | 957.4 | 375 | 365 |
+| Fossil-free 2040 (hypothetical) | 3,330.4 | 3,288.0 | −42.4 | +1,015.7 | +1,004.1 | 785.3 | 1,065 | 1,053 |
+
+R bn. CO2 and the highest yearly mean unserved (Deep 4.40, Fossil-free 0.11 GWh) identical on 31a and 31c. The 31a figures equal those
+recorded for both runs (RESULTS 'cost per tonne avoided'), so the before-checks are the recorded ones. The hypothetical builds fall more
+than c6e, so their gaps narrow; the split between the two corrections per run is not measured.
+Caveat: each build as optimised before the corrections; no re-optimisation (message 554 (b)). The reviewer Doc's correction follows
+once the user has seen these with the 572 table.
