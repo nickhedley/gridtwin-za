@@ -108,7 +108,7 @@ available; otherwise a Playwright script against /opt/pw-browsers/chromium.
 - End every message with a short running list of the pressing outstanding tasks.
 - Push back when something is asserted as safe or settled; never fudge a test to pass.
 - Site copy (user, 25 Oct 2026, messages 377 and 378): a slider note or preset caption states the default and its basis in one
-  or two sentences, at most about 40 words; no model history, no tutorial wording, no Eskom Data Portal IDs on the page. Every
+  or two sentences, at most about 40 words (preset captions at most 50, in plain language: user, 1 Nov 2026, message 580 (c)); no model history, no tutorial wording, no Eskom Data Portal IDs on the page. Every
   pull request that changes visible text includes a "Visible text changed" section from
   `node diff_public_text.js testroot --base <base commit>`; the advisor reviews it before merge (RULES.md, 'Site copy').
 - Times (user, 16 Oct 2026, message 165): in chat and PR descriptions, give times in South Africa time (SAST, UTC+2) and

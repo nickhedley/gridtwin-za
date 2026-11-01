@@ -18877,6 +18877,53 @@ holds regulating at 1,140 MW from 2030 and adds a share of wind and solar output
 over 1,300 MW (3,500 on Fossil-free 2040). (2) From 2026 to 2030 the model's 2,200 MW matches the outlook's 2,200 MW. The adequacy
 panel now shows one figure where the mean and the peak are equal (presets to 2030); the 2035 and 2040 presets still show two. No
 change made.
+
+### Preset swap: Deep decarbonisation 2035 and Fossil-free 2040 are the optimised hypothetical builds; each reproduces its engine check to the digit on the page and meets NTCSA's standard on 240 independent runs (user, 31 Oct 2026, messages 537 (f), 555 and 558; build 2026-10-31k)
+
+Change (claude/preset-swap, from claude/site-copy-561 at f02e1fb): harness/pathway/gen_pathway_presets.py writes both presets from their
+runs, as it writes the other pathway presets: Deep decarbonisation 2035 from pathway_s_hypo_deep2035r_c6e.json (the CO2 rerun, cap
+22.809 Mt a year from 2035, elastic at R50,000/t, no slack used) at 2035; Fossil-free 2040 from pathway_s_hypo_ff2040_c6e.json (no coal,
+gas or diesel after 2039, a hard rule) at 2040; both at the grid pace with iron-air capped at 5 GW (RESULTS on claude/hypo-presets-results,
+PR #138: 'Deep decarbonisation 2035, hypothetical' and 'Fossil-free 2040, hypothetical'). The generator now carries new pumped storage
+(newPsMW, the run's hours and acapPs priced as pathcheck.js prices it) and the fossil-free year (no new gas standing, existing diesel
+retired), and writes HYPO_PRESETS, the captions' facts; it stops if the engine check's CO2 exceeds the cap in any year from 2035 or the
+build LP used slack. newPsHours and acapPs join PRESET_NON_SLIDER_KEYS. The hand-searched builds are kept in the comments above each
+generated block and in git history (Deep: wind 40,500, solar 42,750, rooftop 10,800, lithium 14,625 at 12 h, iron-air 3,250, 27 GW coal
+retired; Fossil-free: wind 50,500, solar 64,500, offshore 2,750, rooftop 16,800, lithium 20,000 at 12 h, iron-air 13,000 MW).
+
+| Preset | Wind | Solar | Rooftop | Lithium (h) | Offshore | Vanadium | Pumped storage | Iron-air | New gas | Coal standing |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Deep decarbonisation 2035 | 43,000 | 51,982 | 11,802 | 21,599 (5.6) | 1,000 | 0 | 0 | 0 | 2,000 | 16,416 |
+| Fossil-free 2040 | 64,500 | 100,516 | 17,802 | 59,915 (8.0) | 5,000 | 7,500 | 1,500 (14 h) | 5,000 | 0 standing | 0 |
+
+New MW standing in the preset's year.
+
+Checks, 31 Oct 2026, 21:27-21:44 UTC, beside two suites on other worktrees:
+- validate_pathway_presets.js 65/65: page state equal to each engine check's state key by key (39 keys each, dieselDecomMW and acapPs now
+  among them), and the preset on the check's own profiles and draws (120 runs) equal to the stored row: Deep 2035 R331.339bn,
+  0.0000 GWh, 21.075 Mt; Fossil-free 2040 R607.421bn, 0.0000 GWh, 0 Mt (0.0000% cost difference in both).
+- Rescore on the page (harness/ext/preset_rescore.js, VARIANTS=page, K=20, 240 runs, seed 120000017 for both, disjoint from the
+  engine check's seed 71830529; rule 366, flagged): Deep 0.0021 GWh against 2.39, R331.34bn, 21.08 Mt; Fossil-free 0 against 2.69,
+  R607.42bn. PRESET_SCORES regenerated (gen_preset_scores.py); both captions read 'Meets NTCSA's reliability standard.'
+Captions (message 555 (f), the user's drafts with the figures from HYPO_PRESETS): Deep, 30 words: "Optimised to keep CO2 at or below 22.8
+Mt a year from 2035. Builds wind, solar and batteries faster than our deliverable rates: a hypothetical plan. Meets NTCSA's reliability
+standard." Fossil-free, 34 words, adds "with 5 GW of unproven iron-air storage". The 561 'Adds' lists are not used for these two (rule 366,
+flagged): Fossil-free's eight technologies with the 555 (f) wording come to about 47 words, over the 40-word cap.
+Flag: the run's pumped-storage charge (R2,114.7/kW-yr, bldPhesCapexKW('anu2026', 14) over 60 years plus fixed O&M) is not the page's
+derived FIXED.acapPs (R2,482); the preset carries the run's so the page reproduces the check. Cause of the difference not established.
+New failures against main from the swap (pre-checks on 31k, 31 Oct 2026, 21:44-21:58 UTC; left failing and unchanged, rule 366, for
+the user's decision: each checks the purpose of the hand-searched builds, so correcting it is a decision about the presets, not a fix):
+- validate_findings 'preset curtailment sits within its weather band': Deep 124.9 TWh against the pinned 84.8 +/-15%, Fossil-free 319.1
+  against 128. The builds differ (wind and solar: Deep 43.0 and 52.0 GW against 40.5 and 42.8; Fossil-free 64.5 and 100.5 against 50.5
+  and 64.5; iron-air Deep 0 against 3.25, Fossil-free 5.0 against 13.0); the rise is not decomposed by cause.
+- validate_findings 'the deep decarbonisation preset keeps gas at zero': newCcgtMW 2,000. Cause: the build LP chose 2,000 MW of CCGT in
+  2035 under the CO2 cap (gas allowed from 2035; no commitment, minimum or forced build in the run file). The 555 (f) caption names wind,
+  solar and batteries only, so it does not mention this gas (flagged).
+- validate_findings 'the deep decarbonisation preset uses 12-hour storage': 5.6 h. Cause: the build LP's lithium energy over power.
+- validate_external 'preset builds sit inside the CSIR least-cost capacity ranges': Fossil-free 2040 wind 74.2 GW and solar 104.1 GW (the
+  check's own totals, existing fleet included). Cause: the hypothetical build rates (the grid pace).
+Unchanged against main: validate_consistency 82/83, validate_outputs 49/51, validate_response 86/87 (35 cells, as main), invariants
+176/176, weather 68/68, solve 9/9, public text 32/32.
 ### Cost per tonne of CO2 avoided and curtailment share: Deep decarbonisation 2035, hypothetical, R<!--fill:s_hypo_deep2035r.cpta-->375<!--/fill-->/t against c6e; curtailment <!--fill:s_hypo_deep2035r.curtshare_2035-->32%<!--/fill--> of available wind and solar in 2035 against c6e's <!--fill:base.curtshare_2035-->8%<!--/fill--> (user, 31 Oct 2026, message 559)
 
 Definitions: cost per tonne of CO2 avoided = (engine PV 2026-40 of the run less c6e's) / (c6e's CO2 2026-40 less the run's), PV at 8%
@@ -19001,6 +19048,135 @@ peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtai
 38/38, validate_public_text 32/32 (the TDP note at 40 words after 31h's 43 failed it; build 31i), validate_external 8/8. The 31h run,
 stopped at validate_worker, had the same failures plus that public-text check.
 
+### Suite on build 2026-10-31k (the preset swap): main's failures plus the four the swap adds, each with its cause above (user, 31 Oct 2026, messages 537 (f) and 576 (a))
+
+Suite on build 2026-10-31k (claude/preset-swap, index.html at b60f884, stored panels rewritten at 4ad673d; ESK19679.csv present), 31 Oct
+2026 22:00 to 1 Nov 00:28 UTC in two pieces, beside two other suites, so the timings are not clean. Node checks 1018/1031, audit 88/88,
+eng5 5/6. validate_pathway_presets 65/65 (24 checks more than main's 41: the two presets added). Against main's 31a (998/1007): every
+known failure by name (validate_findings congestion floor, iron-air July, turn-up share; validate_response matrix; validate_consistency
+high-season off-peak; validate_benchmarks CO2 against Ember and peakerSeasonRatio; validate_outputs curtailment zero at defaults and
+curtailFuelCost; eng5 storage vs unserved), plus the four the swap adds (validate_findings 34/40: preset curtailment band, Deep gas at
+zero, Deep 12-hour storage; validate_external 7/8: CSIR capacity ranges), each with its cause in the preset swap entry above, left for
+the user's decision. validate_worker 38/38, validate_public_text 32/32, validate_stored_panels 86/86.
+
+### Preset swap decided: the four checks updated with their causes, captions in plain language up to 50 words, and the cause of the pumped-storage charge difference (user, 1 Nov 2026, messages 577 (b)-(d) and 580 (b), (c), (e); build 2026-11-01a)
+
+Checks (580 (b), each with its cause; claude/preset-swap, build 2026-11-01a):
+- validate_findings 'preset curtailment sits within its weather band': re-pinned to the optimised builds, Deep 124.9 and Fossil-free 319.1
+  TWh on the default profiles (were 84.8 and 128.0, the hand-searched builds), band unchanged at +/-15%.
+- 'the deep decarbonisation preset keeps gas at zero' replaced by 'the deep decarbonisation preset keeps CO2 at or below its cap': the
+  preset's CO2 on the default profiles against HYPO_PRESETS' cap (19.58 against 22.809 Mt a year). The engine check's CO2 in every year
+  2035-40 against the cap stays gen_pathway_presets.py's.
+- 'the deep decarbonisation preset uses 12-hour storage' withdrawn: it pinned the hand-searched build's duration; the optimised build's
+  (5.6 h) is the build LP's choice, checked against its run by validate_pathway_presets.
+- validate_external 'preset builds sit inside the CSIR least-cost capacity ranges': the hypothetical presets exempt (optimised at build
+  rates beyond the deliverable limits, so outside published least-cost ranges by construction); the check now covers every other preset
+  from 2035 on: IRP path 2035 25.7 GW wind and 21.1 solar, Least-cost path 2035 27.2 and 26.3 (inside 20-70 and 15-75). Before, it
+  covered only the two hypothetical presets, so exempting them alone would have left it checking nothing (flagged).
+validate_findings 36/39 after (main's three known failures; one check withdrawn); validate_external 8/8.
+
+Captions (580 (c), replacing 555 (f)'s and 577 (b)'s): plain language, at most 50 words, generated (new build from PRESETS, the cap and
+the fossil-free year from HYPO_PRESETS, the standard from PRESET_SCORES, the caveat from the least-cost pathway's yearly limits; a zero
+clause dropped). Deep, 47 words: "Retires 23.3 GW of coal by 2035 and caps CO2 at 22.8 Mt a year from then. Adds 43 GW of wind, 52 GW of solar,
+21.6 GW of 5.6-hour batteries and 2 GW of gas. Meets NTCSA's reliability standard. Caveat: build rates exceed our annual limits."
+Fossil-free, 48 words: "No coal, gas or diesel from 2040. Adds 64.5 GW of wind, 5 GW of offshore wind, 100.5 GW of solar, 59.9 GW of 8-hour
+batteries, 9 GW of other storage and 5 GW of unproven iron-air. Meets ..." (same last two sentences). Deep's 1 GW of offshore wind is not
+named: with it the caption is 52 words (flagged). validate_public_text's preset-caption cap is 50 (slider notes keep 40); CLAUDE.md's
+site-copy rule says so.
+
+Pumped-storage charge (577 (d), 580 (e)): cause established, two parts, both in index.html. The build LP and pathcheck.js price new pumped
+storage on bldPhesCostBasis 'anu2026' (off-river sites, USD 1,100/kW + USD 14/kWh at 14 h, R16.50/USD: R21,384/kW; bldPhesCapexKW) and
+add its fixed O&M (bldPhesFomRkW, R297/kW-yr): R1,817.7 + 297 = R2,114.7/kW-yr. The page's FIXED.acapPs (bldDerivedAcaps) annuitises
+Tubatse's R29,200/kW (river-based, PS_TUBATSE_RKW) with no fixed O&M, and simulate charges new pumped storage acapPs alone (no separate
+fixed O&M for it): R2,482.0/kW-yr. Same cost of capital and 60-year life in both. So a pumped-storage slider build on the page is priced
+on Tubatse with no fixed O&M, while the optimiser prices off-river sites with fixed O&M. Not changed: the Fossil-free preset carries the
+run's charge so the page reproduces its check; aligning the page's default to the build LP's basis is TODO 14lw (after the note).
+
+### Deep decarbonisation 2035 with no new gas (hypothetical): adequate, CO2 at or below 22.8 Mt in every year 2035-40 in the engine (20.0 at most), engine PV R2,687.5bn, R79.9bn more than the Deep run with gas; 2.1 GW of new diesel peakers by 2040, no iron-air (user, 1 Nov 2026, message 580 (d); build 2026-10-31a)
+
+Run: pathway_perfail.js on 31a (claude/hypo-presets-results worktree, index.html at 179e289's content, BUILD_STAMP '2026-10-31a'),
+s_hypo_deep2035r_c6e's settings unchanged (c6e's env_c6a.sh, GAS_FIRST=2035, PACE=grid, LI_CAP=4000, LI_EH=8, IA_TOTAL=5000,
+CO2CAP=22.809:2035 with the same CO2CAP_YEARS, CO2_ELASTIC=50000, native HiGHS) plus the no-gas plan's GAS_CAP=0 OCGD=1 (no new CCGT or
+gas OCGT; new diesel peakers allowed; their output counts in the cap rows, gd_). 1 Nov 2026 05:06-05:12 UTC, one pass (simplex, LP key
+789ff91405); engine check as the set (pathcheck.js, LNG=1 GRID=1, groups a, b and c, 120 runs a year), finished 05:22 UTC. Files:
+harness/pathway/opt/pathway_s_hypo_deep2035nogas_c6e.json, pathcheck_s_hypo_deep2035nogas_c6e_{a,b,c}.json, run_deepnogas.sh.
+
+| 31a, engine PV 2026-40 | c6e | Deep with gas | Deep, no new gas |
+|---|---|---|---|
+| Verdict | adequate | adequate | adequate |
+| Engine PV, R bn | 2,314.7 | 2,607.6 | 2,687.5 |
+| Against c6e | – | +292.9 | +372.8 |
+| CO2 2026-40, Mt | 1,738.6 | 957.4 | 900.0 |
+| CO2 2035 / 2036 / 2037 / 2038 / 2039 / 2040, Mt | 90.5 / 94.0 / 87.0 / 77.8 / 73.0 / 67.5 | 21.1 / 20.7 / 21.3 / 20.1 / 20.2 / 17.2 | 20.0 / 16.4 / 15.0 / 14.7 / 14.9 / 15.1 |
+| R/t avoided against c6e (tax in) | – | 375 | 445 |
+| Highest yearly mean unserved / worst run, GWh | 5.46 / 174.0 | 4.40 / 32.1 | 3.31 / 52.0 |
+| Build by 2035, MW: wind, solar, lithium (h), offshore | 22,562, 22,746, 11,315 (5.1), 0 | 43,000, 51,982, 21,599 (5.6), 1,000 | 43,000, 55,266, 24,053 (5.4), 1,000 |
+| New gas by 2035 / 2040, MW | 1,200 / 7,200 | 2,000 / 8,322 | 0 / 0 |
+| New diesel peakers by 2035 / 2040, MW | 0 / 152 | 0 / 0 | 1,055 / 2,055 |
+| Build by 2040, MW: wind, solar, lithium (h), offshore | 31,377, 33,830, 15,241 (6.2), 0 | 44,958, 60,889, 24,497 (7.0), 1,000 | 51,932, 75,054, 31,995 (6.6), 1,352 |
+| Coal standing 2035 / 2040, MW | 25,916 / 17,890 | 16,416 / 6,214 | 18,766 / 10,740 |
+| Curtailment 2035-40, TWh a year | – | 98-111 | 108-164 |
+
+Iron-air: none built in either Deep run. The build LP used slack above its own 2035 cap of 17.509 Mt (the engine-gap-tightened cap,
+message 537 (d)): 1.62 Mt at R50,000/t; none in 2036-40. That cap was tightened by the Deep-with-gas run's engine gap; the engine's CO2
+here is at or below 22.8 Mt in every year, so the user's cap holds in the engine. Without gas the plan keeps more coal standing (18.8 GW
+in 2035 against 16.4) and builds more solar, lithium and diesel peakers; diesel output stays small (0.01-0.10 TWh a year 2035-40).
+Caveat: hypothetical build rates (the grid pace), as both Deep runs; one weather year's profiles in the build LP, twelve in the check.
+Cost with and without the overrun penalty, and the limit that leaves the 2035 cap unmet (user, 1 Nov 2026, message 585 (b)):
+- The engine's system cost carries no penalty: engine PV 2026-40 R2,687.5bn is the cost without it. The penalty on its own: 1.624 Mt
+  above the build LP's 2035 cap at R50,000/t is R81.2bn in 2035 (real 2026 rands), R40.6bn in PV at 8% to 2026 (the LP's own objective
+  coefficient, 50,000 / 1.08^9 = R25,012 a tonne). With it: R2,728.1bn.
+- Against Deep with gas, on cost without the penalty: R2,687.5bn against R2,607.6bn, +R79.9bn; Deep with gas used no slack, this run
+  1.624 Mt in 2035 (none in 2036-40).
+- What binds through 2035 (the LP solution, LP key 789ff91405; a binding limit shows the build at its bound with a negative reduced
+  cost): the yearly build rates of the grid pace: wind 4,300 MW in every year 2026-35; utility solar at its growing cap in every year
+  (5,243 MW in 2030 to 7,354 in 2035); lithium 4,000 MW in 2032-35 and its energy cap of 32,000 MWh a year in 2033-35; new diesel
+  peakers 1,000 MW in 2035 (dieselRateMW); and new pumped storage, held at zero until Tubatse's 2038 date (BLD_PHES_CAPS central,
+  1,500 MW from 2038; reduced cost about -R108m per MW in 2035, the largest). Offshore wind reaches its path's 1,000 MW in 2035.
+  Not binding: iron-air (none built; the 5 GW total, iatot, has a zero dual, and its yearly reduced costs are zero or positive, so at the
+  margin it costs more than the R50,000/t penalty), vanadium (none; positive reduced costs). The 2035 cap row binds with the slack at its
+  price (dual -R25,012 a tonne, the discounted penalty).
+- The engine check's 2035 CO2 is 20.0 Mt, below the user's 22.8 Mt: the overrun is against the build LP's tightened cap of 17.509 Mt
+  (the LP's own 2035 emissions about 19.13 Mt), not against 22.8.
+Reading of this run (user, 1 Nov 2026, message 588 (c)): it met 22.8 Mt in the engine check (20.0 Mt in 2035, and at or below 22.8 in
+every year 2035-40) at +R79.9bn against Deep with gas (engine PV, no penalty in either). The 1.624 Mt overrun was against the optimiser's
+own tightened 2035 cap (17.509 Mt), not against 22.8. That tightening (5.3 Mt) was measured on Deep with gas and does not hold without
+gas: here the optimiser gave 19.1 Mt and the engine 20.0, so this build was planned for about 20 Mt, not 22.8. The no-gas runs at a set
+engine CO2 for 2035 (22.8, 30 and 35 Mt) set their optimiser caps from their own engine checks (message 588 (a), entry below).
+
+### Where Deep decarbonisation's 22.8 Mt cap came from (user, 1 Nov 2026, message 589)
+
+The 2035 cap of 22.809 Mt a year used by every optimised Deep run (s_co2cap2035_c6e, s_hypo_deep2035_c6e, s_hypo_deep2035r_c6e, the
+no-gas runs) is the old hand-built Deep decarbonisation 2035 preset's own CO2 at 2035 on the page (22.8 Mt; RESULTS 'Scenarios table on
+build 2026-10-30a', and the 30a rescore). It is not a policy target. Runs at 40 Mt from 2035, with and without new gas, at the same
+relaxed rates as s_hypo_deep2035r_c6e, are under way for the user's decision on Deep's cap before the c7 rebuild (messages 589, 590).
+
+### Deep without gas at a higher 2035 cap only, with Deep's 2036-40 caps in place: 2035 CO2 stays near 24.5 Mt whatever the 2035 cap (user, 1 Nov 2026, messages 586, 588 and 595)
+
+Runs (31a, as run_deepnogas.sh with the 2035 optimiser cap only raised; 2036-40 caps as in Deep, CO2CAP_YEARS 15.857, 13.255, 11.735,
+13.519, 17.653; calibration as 588 (a), harness/out/opt/run_deepnogas_cal.sh), 1 Nov 2026 05:40-06:58 UTC; engine checks for 2035
+(pathcheck.js YEARS=2035, LNG=1 GRID=1, 120 runs):
+
+| Target, engine 2035 CO2 | Round 1: optimiser 2035 cap -> engine 2035 CO2 | Round 2 |
+|---|---|---|
+| 30 Mt | 29.1 -> 24.55 Mt | 34.551 -> 24.29 Mt |
+| 35 Mt | 34.1 -> 24.29 Mt | 44.815 -> 24.29 Mt |
+
+Finding: with Deep's 2036-40 caps in place, a higher 2035 cap alone leaves 2035 CO2 near 24.5 Mt: the build the later caps need is
+already standing in 2035, so the 2035 cap does not bind above about 24.5 Mt. Both runs stopped by their PIDs after round 2 (message 595);
+the 30 and 35 Mt cases are rerun with the cap from 2035 on, every year 2035-40 at the target, as the 40 Mt runs.
+
+### Suite on build 2026-11-01a (the preset swap, decided): main's known failures only, by name (user, 1 Nov 2026, messages 580 (b), (c) and 591)
+
+Suite on build 2026-11-01a (claude/preset-swap, index.html at 77a62fc, stored panels rewritten at 929cd2d; ESK19679.csv present), 1 Nov
+2026 05:30-07:55 UTC in two pieces, beside a second suite, the pack rechecks and the Deep calibration runs, so the timings are not clean.
+Node checks 1021/1030, audit 88/88, eng5 5/6. Failures, all main's known ones by name: validate_findings 36/39 (congestion floor; iron-air
+July; turn-up share; 39 checks, one withdrawn), validate_response 86/87, validate_consistency 82/83 (high-season off-peak),
+validate_benchmarks 28/30 (CO2 against Ember; peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost),
+eng5 storage vs unserved. The four checks updated with their causes pass (curtailment band re-pinned; Deep's CO2 at or below its cap;
+CSIR ranges with the hypothetical presets exempt, 8/8 external); validate_pathway_presets 65/65, validate_public_text 32/32 (preset
+captions at most 50 words), validate_worker 38/38, validate_stored_panels 86/86. Against main's 998/1007: +24 pathway preset checks,
+-1 findings check (withdrawn), no new failure.
 ### Both cost corrections on the two hypothetical builds: Deep decarbonisation 2035 -R38.3bn and Fossil-free 2040 -R42.4bn in engine PV 2026-40; gaps to c6e -R7.5bn and -R11.6bn; cost per tonne avoided R375 to R365 and R1,065 to R1,053 (user, 1 Nov 2026, message 577 (a); build 2026-10-31l)
 
 Settings: each run's recorded build (harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json and pathway_s_hypo_ff2040_c6e.json, optimised
@@ -19032,6 +19208,81 @@ validate_response 86/87, validate_consistency 82/83, validate_benchmarks 28/30, 
 curtailFuelCost; the avgCost ratchet passes at R1,085.9), eng5 storage vs unserved. validate_worker 38/38 (reipppLiveMW in the worker),
 validate_pathway_presets 41/41 (the 31c engine checks), validate_external 8/8, validate_stored_panels 86/86.
 
+### Deep decarbonisation 2035 at 22.8, 30, 35 and 40 Mt, with and without new gas, each calibrated on its own engine check, on the corrected engine: at 40 Mt without gas R2,423.6bn (+R139.8bn on c6e, R254/t), with gas R2,431.9bn; at 22.8 Mt without gas R2,611.4bn, with gas R2,569.3bn; every run builds 25-44 GW above the deliverable rates (user, 1 Nov 2026, messages 586 (b), 588, 589, 590 and 595)
+
+Runs: pathway_perfail.js on 31a (claude/hypo-presets-results worktree, BUILD_STAMP '2026-10-31a'), all at s_hypo_deep2035r_c6e's settings
+(c6e's env_c6a.sh, GAS_FIRST=2035, PACE=grid, LI_CAP=4000, LI_EH=8, IA_TOTAL=5000, CO2_ELASTIC=50000, native HiGHS), the CO2 cap the only
+change: without gas, GAS_CAP=0 OCGD=1 (diesel peakers allowed, their CO2 in the cap rows). Caps: 22.8 Mt without gas as 588 (a) (2035 cap
+calibrated, 2036-40 as Deep's, CO2CAP_YEARS 15.857, 13.255, 11.735, 13.519, 17.653); 30, 35 and 40 Mt the target from 2035 on, every
+year 2035-40 at the same optimiser cap (messages 589, 595). Calibration (harness/pathway/opt/run_deep_cal.sh, run_deepnogas_cal.sh; logs
+cal_<tag>.txt): first cap target - 0.9 Mt, then cap += target - engine 2035 CO2 (pathcheck.js YEARS=2035) until within 0.5 Mt; the 30 Mt
+run alternated 29.1-30.9 Mt in rounds 1-5 (the engine moved about 2 Mt per Mt of cap) and was continued from 27.92 Mt with half steps,
+within 0.5 at round 6. Then the full engine check of the final build (LNG=1 GRID=1, groups a, b, c, 120 runs a year; CO2, unserved and
+curtailment from it, the cost corrections leaving dispatch unchanged) and its system cost from an engine check on build 31l (7d3411b:
+31c's engine, the 1 Nov corrections; files _31c_). 1 Nov 2026 05:40-09:45 UTC, beside other jobs. Deep with gas at 22.8 Mt is
+s_hypo_deep2035r_c6e (not recalibrated; RESULTS above); c6e from its 31c check. Files: harness/pathway/opt/pathway_<run>.json,
+pathcheck_<run>_{a,b,c}.json and _31c_{a,b,c}.json for s_hypo_deep2035nogas_t228_r2_c6e, _t30u_r6_, _t35u_r3_, _t40n_r3_ and
+s_hypo_deep2035gas_t40g_r5_c6e. Deliverable rates: index.html's c5fBuildLimitMW per year (BLD_PACE.deliverable with C5F_BUILD_CAPS:
+wind 2,500 MW to 2030 and 3,500 after, solar 2,500 growing 7% a year, lithium 2,000 then 3,000 MW from 2028 at 4 hours, gas 1,200,
+vanadium 250, iron-air 150, offshore its path); wind compared without double counting Cape wind (part of the schedule's wind).
+
+| | c6e central | Deep, gas, 22.8 Mt | No gas, 22.8 Mt | No gas, 30 Mt | No gas, 35 Mt | No gas, 40 Mt | Deep, gas, 40 Mt |
+|---|---|---|---|---|---|---|---|
+| System cost 2026-40, R bn (corrected engine) | 2,283.9 | 2,569.3 | 2,611.4 | 2,498.3 | 2,454.8 | 2,423.6 | 2,431.9 |
+| Against c6e, R bn | – | +285.4 | +327.5 | +214.4 | +170.9 | +139.8 | +148.0 |
+| Optimiser 2035 cap, Mt | – | 17.509 | 23.109 | 27.920 | 32.765 | 36.382 | 30.692 |
+| Optimiser 2035 CO2, Mt | – | 17.51 | 23.11 | 27.92 | 32.77 | 36.38 | 30.69 |
+| Engine 2035 CO2, Mt | 90.48 | 21.08 | 22.70 | 30.19 | 34.84 | 40.09 | 40.34 |
+| Engine CO2 2035-40, Mt | 90.5 / 94.0 / 87.0 / 77.8 / 73.0 / 67.5 | 21.1 / 20.7 / 21.3 / 20.1 / 20.2 / 17.2 | 22.7 / 17.0 / 15.0 / 14.7 / 15.1 / 15.2 | 30.2 / 26.7 / 26.5 / 23.8 / 21.4 / 19.9 | 34.8 / 32.4 / 30.7 / 26.6 / 23.9 / 22.6 | 40.1 / 37.7 / 32.9 / 28.8 / 26.0 / 25.1 | 40.3 / 41.0 / 43.0 / 43.7 / 37.4 / 32.0 |
+| CO2 2026-40, Mt | 1,739 | 957 | 947 | 1,069 | 1,148 | 1,189 | 1,228 |
+| R/t avoided against c6e | – | 365 | 414 | 320 | 289 | 254 | 290 |
+| Overrun used (slack), Mt | – | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| Calibration rounds | – | – | 2 | 6 | 3 | 3 | 5 |
+| New build by 2035, GW: wind / solar / lithium (h) / offshore | 22.6 / 22.7 / 11.3 (5.1) / 0.0 | 43.0 / 52.0 / 21.6 (5.6) / 1.0 | 43.0 / 51.5 / 20.8 (5.3) / 1.0 | 43.0 / 43.9 / 15.3 (5.1) / 1.0 | 40.9 / 42.2 / 14.6 (4.8) / 1.0 | 40.8 / 38.2 / 12.9 (4.3) / 1.0 | 41.2 / 37.9 / 11.9 (4.7) / 1.0 |
+| New build by 2035, GW: gas / diesel peakers / iron-air / vanadium / pumped storage | 1.2 / 0.0 / 0.0 / 0.0 / 0.0 | 2.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 2.0 / 0.0 / 0.0 / 0.0 / 0.0 |
+| Coal standing 2035, GW | 25.9 | 16.4 | 20.7 | 25.6 | 25.9 | 25.9 | 25.2 |
+| New build by 2040, GW: wind / solar / lithium (h) / offshore | 31.4 / 33.8 / 15.2 (6.2) / 0.0 | 45.0 / 60.9 / 24.5 (7.0) / 1.0 | 52.7 / 73.0 / 32.0 (6.4) / 1.8 | 48.5 / 63.2 / 28.2 (6.5) / 1.0 | 44.9 / 61.1 / 27.7 (6.3) / 1.0 | 44.4 / 57.1 / 25.4 (6.3) / 1.0 | 48.3 / 43.5 / 17.1 (7.1) / 1.0 |
+| New build by 2040, GW: gas / diesel peakers / iron-air / vanadium / pumped storage | 7.2 / 0.2 / 0.0 / 0.0 / 0.0 | 8.3 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 1.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 | 0.0 / 0.6 / 0.0 / 0.0 / 0.0 | 0.0 / 1.6 / 0.0 / 0.0 / 0.0 | 4.6 / 0.0 / 0.0 / 0.0 / 0.0 |
+| Coal standing 2040, GW | 17.9 | 6.2 | 12.6 | 17.6 | 17.9 | 17.9 | 17.2 |
+| Highest yearly mean unserved / worst run, GWh | 5.46 / 174 | 4.40 / 32 | 3.99 / 38 | 3.81 / 73 | 4.43 / 68 | 6.35 / 61 | 6.08 / 50 |
+| Curtailment 2035 / 2040, TWh (share of available wind and solar) | 13 / 25 | 101 / 98 (32% / 29%) | 101 / 157 (32% / 39%) | 90 / 117 (31% / 32%) | 82 / 101 (29% / 29%) | 77 / 91 (28% / 28%) | 78 / 80 (29% / 26%) |
+| Build rates at their limit in the optimiser (years) | – | wind 2026-2035; solar 2027-2035; lithium 2033-2035; CCGT 2036-2038 | wind 2026-2037; solar 2027-2036; lithium 2033-2036, 2038; diesel peakers 2040 | wind 2026-2036; solar 2030-2035; lithium 2035, 2038-2040 | wind 2027-2035; solar 2030-2035; lithium 2035, 2038 | wind 2027-2035; solar 2031-2035; lithium 2039; diesel peakers 2040 | wind 2027-2035; solar 2031-2035; CCGT 2035 |
+| Above the deliverable rates 2026-40: MW (lithium energy MWh) | 0 (0) | 39,176 (80,738) | 43,827 (91,047) | 32,616 (79,976) | 29,501 (70,147) | 25,694 (56,768) | 24,953 (44,221) |
+
+- Deep, gas, 22.8 Mt: wind 2026 +1,800, 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800; solar 2027 +1,605, 2028 +1,718, 2029 +1,837, 2030 +1,966, 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium 2033 +1,000, 2034 +1,000, 2035 +1,000; lithium energy 2033 +17,913, 2034 +20,000, 2035 +20,000, 2038 +10,351, 2040 +12,474; CCGT 2035 +800, 2036 +800, 2037 +800, 2038 +800; offshore 2035 +750
+- No gas, 22.8 Mt: wind 2026 +1,800, 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800, 2036 +800, 2037 +800; solar 2027 +1,605, 2028 +1,718, 2029 +1,837, 2030 +1,966, 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758, 2036 +2,951, 2037 +1,300; lithium 2033 +1,000, 2034 +1,000, 2035 +1,000, 2036 +1,000, 2038 +1,000; lithium energy 2033 +6,505, 2034 +20,000, 2035 +20,000, 2036 +20,000, 2037 +13,499, 2038 +9,898, 2040 +1,145; offshore 2035 +750
+- No gas, 30 Mt: wind 2026 +1,800, 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800, 2036 +800; solar 2030 +1,966, 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium 2035 +1,000, 2038 +1,000, 2039 +1,000, 2040 +1,000; lithium energy 2034 +9,684, 2035 +20,000, 2038 +13,472, 2039 +20,000, 2040 +16,820; offshore 2035 +750
+- No gas, 35 Mt: wind 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800, 2036 +510; solar 2030 +1,966, 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium 2035 +1,000, 2038 +1,000, 2039 +191, 2040 +784; lithium energy 2034 +3,577, 2035 +15,181, 2037 +3,672, 2038 +19,957, 2039 +20,000, 2040 +7,760; offshore 2035 +750
+- No gas, 40 Mt: wind 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800; solar 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium 2038 +644, 2039 +1,000; lithium energy 2034 +7,897, 2037 +16,128, 2038 +17,097, 2039 +13,902, 2040 +1,744; offshore 2035 +750
+- Deep, gas, 40 Mt: wind 2026 +48, 2027 +1,800, 2028 +1,800, 2029 +1,800, 2030 +1,800, 2031 +800, 2032 +800, 2033 +800, 2034 +800, 2035 +800; solar 2031 +2,104, 2032 +2,251, 2033 +2,409, 2034 +2,578, 2035 +2,758; lithium energy 2034 +7,895, 2035 +520, 2039 +20,000, 2040 +15,806; CCGT 2035 +800, 2038 +55; offshore 2035 +750
+
+Findings:
+- At 40 Mt from 2035, no gas costs R8.3bn less than with gas (R2,423.6bn against R2,431.9bn) and emits 39 Mt less over 2026-40 (1,189
+  against 1,228); at 22.8 Mt no gas costs R42.1bn more (R2,611.4bn against R2,569.3bn, the with-gas run at 21.1 Mt in the engine).
+- Each step of the cap from 22.8 to 40 Mt saves R187.8bn without gas (R2,611.4bn to R2,423.6bn) for 242 Mt more CO2 over 2026-40 (947 to
+  1,189), about R776 a tonne at the margin.
+- Flag: Deep with gas at 40 Mt meets 40 Mt in 2035 (40.34) but the engine finds 41.0, 43.0 and 43.7 Mt in 2036-38: the calibration sets
+  the cap on 2035 only, and with gas the later years' optimiser-to-engine gap is wider. The no-gas runs stay at or below their target in
+  every year 2035-40.
+- No overrun used in any run; no iron-air, vanadium or pumped storage built in any (pumped storage held at zero until Tubatse's 2038).
+- Every run sits at the relaxed wind limit through 2035 and at the solar limit for most of 2027-36; all build 25-44 GW of capacity above
+  the deliverable rates over 2026-40 (by technology and year in the list above): the flag the page and the Doc carry (message 590).
+Addendum (user, 1 Nov 2026, message 598 (c)): NTCSA's adequacy test in every year 2026-40 (mean unserved at most 20 GWh, open-cycle
+plant under 6% of the time), and the highest open-cycle run share in any year:
+
+| | c6e central | Deep, gas, 22.8 Mt | No gas, 22.8 Mt | No gas, 30 Mt | No gas, 35 Mt | No gas, 40 Mt | Deep, gas, 40 Mt |
+|---|---|---|---|---|---|---|---|
+| Highest open-cycle share (year) | 1.85% (2036) | 0.82% (2032) | 0.74% (2032) | 0.76% (2033) | 0.60% (2030) | 0.69% (2033) | 0.69% (2033) |
+| Highest yearly mean unserved, GWh | 5.46 | 4.40 | 3.99 | 3.81 | 4.43 | 6.35 | 6.08 |
+| Passes NTCSA's test in every year | yes | yes | yes | yes | yes | yes | yes |
+
+The open-cycle share for the Deep runs is diesel output over open-cycle capacity (the 3,400 MW diesel fleet plus new diesel peakers):
+their checks recorded no open-cycle share (pathcheck.js read the per-run object by position after vreUsedTWh was appended, 31 Oct
+2026; fixed on claude/pack-checks, RESULTS 'pathcheck: the per-run object'). None of these runs builds open-cycle gas, so diesel is all
+their open-cycle output; the same formula reproduces c6e's recorded share exactly in every year without open-cycle gas (2026-34). c6e's
+share is as recorded. The advisor recommends Deep move to no gas at 40 Mt; the user decides before Mon 9 Nov (message 598 (c)); Deep with
+gas at 40 Mt is not recalibrated unless the user asks.
+
 ### pathcheck: the per-run object read by position, so open-cycle shares, the gas floor output and the LCOE fields came out null or zero in 34 committed checks since 31 Oct; cost, CO2, unserved and curtailment unaffected (user, 1 Nov 2026, message 598 (c))
 
 Cause: 0dbfb06 (#138, 31 Oct) appended vreUsedTWh to each run's result after the per-run object, and pathcheck.js found that object
@@ -19062,3 +19313,16 @@ in every year to two decimals (Deep 0.82% in 2032 at most, Fossil-free 0.03% in 
 
 Caveat: the 31a checks listed above keep their null fields; each is superseded for the pack and the presets by a clean 31c check (the
 calibrated Deep runs' 31c checks were made on gtza-c31l, which predates the bug). c6e_vre and dmin2028 keep theirs (TODO 14lz).
+
+### Suite on build 2026-11-01c (the preset swap merged with main's #141): main's known failures only, by name (user, 1 Nov 2026, messages 596 and 598 (b))
+
+Suite on build 2026-11-01c (claude/preset-swap: main 1dc9119 merged at 8a58a57, the presets on their 31c checks, stored panels rewritten
+at 14a9b7d; ESK19679.csv present), 1 Nov 2026 09:28-11:27 UTC in two pieces, beside the c6e recheck, the preset reruns and a page
+rescore, so the timings are not clean. Node checks 1021/1030, audit 88/88, eng5 5/6, equal to build 11-01a's suite by count in every
+script. Failures, all main's known ones by name: validate_findings 36/39 (congestion floor; iron-air July; turn-up share; 39 checks,
+one withdrawn), validate_response 86/87, validate_consistency 82/83 (high-season off-peak), validate_benchmarks 28/30 (CO2 against
+Ember; peakerSeasonRatio), validate_outputs 49/51 (curtailment zero at defaults; curtailFuelCost), eng5 storage vs unserved.
+validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38,
+validate_bids 7/7, validate_external 8/8. Main's #142 (REVIEWER_PACK.md) and #143 (check files, pathcheck.js, RESULTS, TODO) were merged in
+after the suite (917473e, 8aa6bc1); neither touches index.html or a file the suite reads for these presets' costs, so it was not rerun.
+Visible text against main (2b725f1): the two hypothetical captions only, as reviewed (Deep 47 words, Fossil-free 48).

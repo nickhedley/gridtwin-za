@@ -1,0 +1,8 @@
+round 1 cap 29.1 engine2035 31.546 target 30
+round 2 cap 27.554 engine2035 29.085 target 30
+round 3 cap 28.469 engine2035 30.864 target 30
+round 4 cap 27.605 engine2035 29.377 target 30
+round 5 cap 28.228 engine2035 30.6 target 30
+not within 0.5 Mt after 5 rounds
+round 6 cap 27.92 engine2035 30.189 target 30
+final s_hypo_deep2035nogas_t30u_r6_c6e 3/3

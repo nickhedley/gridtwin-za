@@ -18,7 +18,10 @@ import json, sys
 # on the same runs the top-up was confirmed on (seed 71830529, K=20).
 # Both rescored on build 2026-10-30a, with the page applying the twelve-year rooftop add-back itself (user, 30 Oct 2026, message 518 (c);
 # TODO 391 (b)), on the same seeds and K as 29a's; 29a's files are kept as the record.
-SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_30a_deep.json', 'Fossil-free 2040': 'harness/ext/rescore_page_30a_fossil.json'}
+# Both replaced by their optimised hypothetical builds on build 2026-10-31k (user, 31 Oct 2026, messages 537 (f) and 555) and rescored on
+# the page, 240 runs each, both on the disjoint seed 120000017 (their engine checks ran on seed 71830529, K=10; rule 366, so no rescore
+# shares the check's draws); 30a's files are kept as the record of the hand-searched builds.
+SRCS = {'Deep decarbonisation 2035': 'harness/ext/rescore_page_31k_deep.json', 'Fossil-free 2040': 'harness/ext/rescore_page_31k_fossil.json'}
 sc = {}
 for n, src in SRCS.items():
     R = json.load(open(src)); v = R['presets'][n]['page']

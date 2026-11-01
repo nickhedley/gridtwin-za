@@ -498,7 +498,9 @@ setTimeout(()=>{
       // Re-pinned 19 Oct 2026 on build 2026-10-19e for the presets rebuilt at c5f's demand for their year (message 231; was 46.9
       // and 114.9): twelve-year means 66.8 (51.6-77.7) and 96.7 (71.1-114.8), RESULTS 'Deep decarbonisation 2035 and Fossil-free
       // 2040 rebuilt on c5f's demand'.
-      const PIN = { 'Deep decarbonisation 2035': 84.8, 'Fossil-free 2040': 128.0 };
+      // Re-pinned 1 Nov 2026 on build 2026-11-01a (user, messages 537 (f), 577 (c) and 580 (b)): both presets are now the optimised
+      // hypothetical builds (more wind and solar, less iron-air; RESULTS 'Preset swap'), so the band follows them (was 84.8 and 128.0).
+      const PIN = { 'Deep decarbonisation 2035': 124.9, 'Fossil-free 2040': 319.1 };
       const bad = [];
       for (const [name, pinned] of Object.entries(PIN)){
         const got = curt[name];
@@ -597,7 +599,8 @@ setTimeout(()=>{
       applyState(PRESETS['Deep decarbonisation 2035']);
       const P = { ...FIXED, ...state };
       const out = { wind: P.newWindMW, pv: P.newPvMW, batt: P.newBattMW,
-                    hours: P.newBattHours, ccgt: P.newCcgtMW };
+                    hours: P.newBattHours, ccgt: P.newCcgtMW,
+                    co2: simulate({ ...state }, PROFILES).co2, cap: HYPO_PRESETS['Deep decarbonisation 2035'].co2CapMt };
       // Replaced, not merged (user, 18 Oct 2026, message 203 (3)): a merge cannot delete the preset's scenarioYear, which
       // then ran every later probe at the preset's year. Same fix as validate_consistency's.
       for (const k of Object.keys(state)) delete state[k];
@@ -605,19 +608,16 @@ setTimeout(()=>{
       return out;
     `);
     if (r && !r.error){
-      check('the deep decarbonisation preset keeps gas at zero',
-            r.ccgt === 0,
-            `newCcgtMW is ${r.ccgt} - this preset exists to show a no-gas build`);
-      // RE-DERIVED 23 Sep 2026, 8h -> 12h, when battery capital split into power and energy.
-      // With inverters priced separately, duration is cheaper per kilowatt-hour than the old
-      // straight scaling made it: at the same reliability, 20 GW at 12h costs R293.8bn against
-      // R296.3bn for 30 GW at 8h and R294.8bn for 24 GW at 10h. Fossil-free 2040 shows the same
-      // ordering and identical shedding across 8, 10 and 12 hours, so that system is
-      // energy-limited rather than power-limited.
-      check('the deep decarbonisation preset uses 12-hour storage',
-            r.hours === 12,
-            `newBattHours is ${r.hours}, chosen as 12 on 23 Sep 2026 with the power and energy `
-            + `capital split. If this changed, confirm the trade was re-derived.`);
+      // Replaced 1 Nov 2026 (user, messages 577 (c) and 580 (b)): 'keeps gas at zero' checked the hand-searched build's purpose, a
+      // no-gas plan; the preset is now the optimised build under a CO2 cap, which chose 2,000 MW of gas in 2035. The check is now that
+      // purpose: the preset's CO2 at or below the cap (HYPO_PRESETS, from its run) on the default profiles. The engine check's twelve-year
+      // CO2 against the cap in every year from 2035 is gen_pathway_presets.py's (it stops if any year is above).
+      check('the deep decarbonisation preset keeps CO2 at or below its cap',
+            r.co2 <= r.cap,
+            `${r.co2.toFixed(2)} Mt against the cap of ${r.cap} Mt a year from 2035, on the default profiles`);
+      // Withdrawn 1 Nov 2026 (user, messages 577 (c) and 580 (b)): 'uses 12-hour storage' pinned the hand-searched build's duration,
+      // chosen on 23 Sep 2026 (20 GW at 12 h R293.8bn against 30 GW at 8 h R296.3bn). The optimised build's duration is the build LP's
+      // choice (5.6 h on its lithium energy over power), which validate_pathway_presets checks against its run.
     }
   }
 

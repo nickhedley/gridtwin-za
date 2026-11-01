@@ -7,6 +7,8 @@
  *   'IRP path 2035'         IRP 2025's Table 1 build on the central run's inputs (harness/pathway/c6e/pathway_irp2025_c6e.json) and its check
  *   "IRP's 2030 targets"    the same build file's 2030 state and its engine check for 2026-30 (pathcheck_irp2025_c6e_a.json)
  *   "..., grid delayed"     a variant with no run of its own: the 2030 state with a share of its new wind and solar held back
+ *   'Deep decarbonisation 2035' and 'Fossil-free 2040'   from 1 Nov 2026, the optimised hypothetical builds (harness/pathway/opt/,
+ *                          messages 537 (f) and 555) and their engine checks for 2035 and 2040
  *
  * The blocks are written into index.html by harness/pathway/gen_pathway_presets.py. For each preset with a run this script
  *   1. confirms the blocks are the generator's output (no hand edits);
@@ -34,6 +36,10 @@ const RUNS = [
   { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_a.json' },
   { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_31c_b.json' },
   { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_b.json' },
+  // The hypothetical presets from 1 Nov 2026 (user, messages 537 (f) and 555): optimised builds at relaxed build rates (harness/pathway/opt/),
+  // checked against their engine checks on 31c (the 1 Nov corrections; message 596)
+  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035r_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035r_c6e_31c_b.json' },
+  { name: 'Fossil-free 2040', year: 2040, build: 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_31c_c.json' },
 ];
 
 let npass = 0, nfail = 0; const fails = [];
@@ -77,7 +83,7 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
     const want = {};
     for (const k of ['newWindMW', 'newPvMW', 'newRooftopMW', 'newBattMW', 'newBattHours', 'newVrfbMW', 'newIronAirMW', 'newCcgtMW', 'newOcgtMW', 'newOcgdMW',
                      'newOffshoreMW', 'newNuclearMW', 'newPsMW', 'newPsHours', 'coalDecomMW', 'demandGrowthPct', 'demandBlockMW', 'windCapeMW', 'scenarioYear',
-                     'carbonTaxRPerT', 'costCcgt', 'reserveVreRefWindMW', 'reserveVreRefPvMW']) want[k] = (k in ROW) ? ROW[k] : JSON.parse(w.eval(`JSON.stringify(FIXED['${k}'] ?? null)`));
+                     'carbonTaxRPerT', 'costCcgt', 'reserveVreRefWindMW', 'reserveVreRefPvMW', 'dieselDecomMW', 'acapPs']) want[k] = (k in ROW) ? ROW[k] : JSON.parse(w.eval(`JSON.stringify(FIXED['${k}'] ?? null)`));
     Object.assign(want, { importsMW: P.importsMW, importsCF: P.importsCF, bldPvTracking: P.pvTracking, bldCapeCurtPct: P.capeWind.curtPct,
       carbonAllowancePath: P.carbonPath ?? 'cut2027', carbonTaxFull: P.carbonFull ? 1 : 0, bldWindCorr: P.windCorr, bldWindCase: P.windCase, bldPvCase: P.pvCase,
       bldTariffCfBasis: P.tariffCfBasis, bldGridIntVreShare: P.gridIntVreShare, bldOcgtCostCase: P.ocgt.costCase, bldGridCost: 1 });

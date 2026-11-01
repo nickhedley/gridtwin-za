@@ -858,6 +858,11 @@ costs per participant; (6) regional distribution. Known limitations line as in 1
 14lv. Other shortcuts taken to hold the note's date (user, 31 Oct 2026, message 574 (a) 3), added as each is taken, each with what it
 leaves out and its full version after the note; each gets a Known limitations line (574 (b)). None yet.
 
+14lw. New pumped storage priced on one basis, after the note (user, 1 Nov 2026, messages 577 (d) and 580 (e); RESULTS 'Preset swap
+decided'): the page's FIXED.acapPs annuitises Tubatse's R29,200/kW with no fixed O&M (R2,482/kW-yr), while the build LP and pathcheck.js
+price off-river sites ('anu2026', R21,384/kW at 14 h) plus R297/kW-yr fixed O&M (R2,114.7). Propose one basis for both, with its source,
+and report what it moves (presets with new pumped storage carry the run's charge until then).
+
 14lz. The checks made with the pathcheck bug (RESULTS 'pathcheck: the per-run object', message 598 (c)). Done: the Deep and
 Fossil-free preset 31c checks, rerun with the fixed pathcheck (1 Nov). Left: c6e_vre and dmin2028, rerun if their open-cycle, gas floor
 or LCOE fields are ever used; the 31a checks with null fields are superseded by clean 31c checks and need no rerun.

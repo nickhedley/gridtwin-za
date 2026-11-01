@@ -1,0 +1,7 @@
+round 1 cap 39.1 engine2035 43.265 target 40
+round 2 cap 35.835 engine2035 39.453 target 40
+round 3 cap 36.382 engine2035 40.095 target 40
+round 1 cap 39.1 engine2035 43.265 target 40
+round 2 cap 35.835 engine2035 39.453 target 40
+round 3 cap 36.382 engine2035 40.095 target 40
+final s_hypo_deep2035nogas_t40n_r3_c6e 3/3
