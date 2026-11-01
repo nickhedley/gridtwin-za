@@ -19021,3 +19021,13 @@ recorded for both runs (RESULTS 'cost per tonne avoided'), so the before-checks 
 than c6e, so their gaps narrow; the split between the two corrections per run is not measured.
 Caveat: each build as optimised before the corrections; no re-optimisation (message 554 (b)). The reviewer Doc's correction follows
 once the user has seen these with the 572 table.
+
+### Suite on build 2026-11-01b (both cost corrections, merged with main's #139): equal to main by count in every script and by failure name (user, 1 Nov 2026, messages 580 (a) and 591)
+
+Suite on build 2026-11-01b (claude/cost-corrections: main 754f6b1 merged at 3a90206, the cost note keeping #139's text without the
+REIPPPP double-count sentence; stored panels rewritten at c9dae6d; ESK19679.csv present), 1 Nov 2026 05:30-08:05 UTC in two pieces,
+beside a second suite, the pack rechecks and the Deep calibration runs, so the timings are not clean. Node checks 998/1007, audit 88/88,
+eng5 5/6. Equal to main's suite (998/1007, 88/88, 5/6) by count in every script and by failure name: validate_findings 37/40,
+validate_response 86/87, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51 (curtailment zero at defaults;
+curtailFuelCost; the avgCost ratchet passes at R1,085.9), eng5 storage vs unserved. validate_worker 38/38 (reipppLiveMW in the worker),
+validate_pathway_presets 41/41 (the 31c engine checks), validate_external 8/8, validate_stored_panels 86/86.
