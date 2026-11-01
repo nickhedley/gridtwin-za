@@ -2235,3 +2235,20 @@ GreenCape's: the user's decision is that those paths are conservative.
   the model has neither (TODO 14lp (1)).
 - 8-hour tenders in California, Australia and the UK chose lithium (p. 31) (TODO 14lp (2)).
 
+
+## System strength: inertia constants and the largest credible loss (user, 1 Nov 2026, message 578; for the minimum version, TODO 14lo, 14lt)
+
+Inertia constants, H in seconds on the generator's MVA base (nameplate). Source as given by the user: ERCOT, "Inertia: Basic Concepts
+and Impacts on the ERCOT Grid" (2018, v0), Table 1, p.5: nuclear 3.8-4.34 s, coal 2.9-4.5, combined cycle 1.1-9, combustion turbine
+1-12.5, gas steam 1-5.4, hydro 2-3. https://www.ercot.com/files/docs/2018/04/04/Inertia_Basic_Concepts_Impacts_On_ERCOT_v0.pdf
+Central values (user's choice): nuclear 4.1, coal 3.7, CCGT 5.0, OCGT 5.0, CSP steam 3.0, hydro and pumped storage 2.5; each range's
+ends are the low and high sensitivities. MVA = MW / 0.9 unless a unit's MVA is known. Inverter-based plant (wind, solar, batteries)
+contributes no synchronous inertia.
+Not yet read at source: www.ercot.com is outside this session's network. A web search extract of the paper's 2024 revision (Revision 2,
+same address, .docx) gives different ranges for the two rows it shows: nuclear 3.79-5.09 s (MVA 1,410-1,504) and coal 2.43-5.2 s
+(MVA 194-1,120). The central values sit inside both; the sensitivities' ends depend on which revision is used (flagged to the user).
+South African reference point (the advisor's note): Komati, 1.3 s.
+
+Largest credible loss by year (user, message 578 (b); rule 366, conservative, our assumption, stated as such): 2,160 MW, three 720 MW
+units (NTCSA ASTR, section 3.4.2), while any coal station with three or more such units stands; after that, the largest single unit
+standing: a Koeberg unit, about 930 MW sent out, unless a larger new unit is built.

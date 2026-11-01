@@ -858,6 +858,20 @@ costs per participant; (6) regional distribution. Known limitations line as in 1
 14lv. Other shortcuts taken to hold the note's date (user, 31 Oct 2026, message 574 (a) 3), added as each is taken, each with what it
 leaves out and its full version after the note; each gets a Known limitations line (574 (b)). None yet.
 
+14lx. For the note's release, on one branch, merged when the note goes out, filled from the c7 rebuild (user, 1 Nov 2026, messages 579 and
+580 (f)). Order: after system strength and behind-the-meter batteries; generator and page template this week on c6e data as a
+placeholder; regenerated from c7 on 10-11 Nov; a visible-text diff for the advisor before merge. (1) A preset 'No gas 2035': the no-gas
+pathway with diesel peakers (s_nogas_dsl re-run on c7) at 2035 (2040 only if the user says so), generated like the other pathway presets;
+caption in the plain style of message 580 (c), beginning "No gas" (South Africa's open-cycle plants run on diesel), e.g. "No gas;
+diesel peakers as backup. Adds [w] GW of wind, [s] GW of solar, [b] GW of [h]-hour batteries and [d] GW of diesel peakers; retires [c] GW
+of coal. Costs [x]% more than the least-cost pathway over 2026-40. Meets NTCSA's reliability standard." (2) Four build-plan pages, one
+per plan (Least-cost, No gas, Deep decarbonisation, Fossil-free): new build by year and technology in MW, 2026-40, with totals and
+remaining coal (the reviewer Doc's build-table layout); a short description (what the plan is; system cost and CO2 2026-40 against the
+least-cost pathway; cost per tonne avoided where relevant; caveats: hypothetical build rates and unproven iron-air where they apply,
+simplified system strength). Every figure generated from the run files by a script, with a check that the pages match the runs; the
+site's styling; the site-copy rules; no internal codes. (3) The four captions end "See the optimiser's build plan here", 'here' linking
+to the page, outside the word cap; validate_links and validate_public_text cover the new pages.
+
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
 source or a decision. You: (1) the pre-feasibility own-use tariff, R2.50/kWh, a round figure (derive it from the 2026/27 booklet's
