@@ -19340,3 +19340,19 @@ Agreement with the caption generator (user, 1 Nov 2026, message 601 (c)): a null
 capacity 0 MW and output 0 TWh (no open-cycle plants standing), as harness/pathway/gen_pathway_presets.py does. Fossil-free 2040's 2040
 row is that case: its verdict reads 'met' and ocmax 0.0% (before, the fill stopped on 2040). c6e with its 2026-30 check nulled still
 stops (3,400 MW standing). The pack still fills to the identical text.
+
+### packfill: "no open-cycle plant" taken from the run, not the check; a check made with the 31 Oct pathcheck bug no longer passes NTCSA's test (user, 1 Nov 2026, message 602)
+
+The hole (in #144, merged at d7eb144): ntcsaRows accepted a null ocgtCF as zero when the check recorded ocgtCapMW 0 and ocgtTWh 0. The
+pathcheck bug of 31 Oct (RESULTS 'pathcheck: the per-run object') wrote exactly those fields, so a bugged check read as 'no open-cycle
+plant' and passed. Shown on main's packfill: with Fossil-free's 31a checks (pathcheck_s_hypo_ff2040_c6e_{a,b,c}.json, nulls kept) and
+s_cocplan's 31a checks in the fill folder, s_hypo_ff2040.verdict and s_cocplan.verdict both read 'met'. My 600/601 test nulled only
+ocgtCF on a file that kept its capacity, so it missed the case.
+Fix (harness/pathway/tables/packfill.js, summ.js): open-cycle capacity standing in each year is computed from the run as pathcheck.js
+builds it (dieselAvailMW plus new open-cycle gas): FIXED.ocgtDieselMW (3,400 MW, read from index.html; the run's 2026 fleet adjustment
+in 2026) less FIXED.dieselDecomMW (0), plus new diesel and gas open-cycle built to that year, and none after the run's fossilEnd. A
+peaker retirement schedule (pathcheck PEAK=1) is not counted, so the capacity is never understated. A null share counts as zero only
+when that capacity is 0 and the check's output is 0. Tests, 1 Nov 2026 on main d7eb144: the repository-only fill folder fills
+REVIEWER_PACK.md to the identical text; Fossil-free on its 31c checks reads 'met', ocmax 0.0% (2040: fossilEnd 2039, capacity 0);
+with the bugged 31a checks swapped in, both verdicts stop, exit 1 (Fossil-free in 2026-2039, its 2040 a true zero; s_cocplan in every
+year). The caption generator takes the same rule on the 599 branch (claude/deep-nogas40), where its NTCSA test lives.
