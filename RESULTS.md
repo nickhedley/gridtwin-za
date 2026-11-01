@@ -19044,3 +19044,18 @@ The 2035 cap of 22.809 Mt a year used by every optimised Deep run (s_co2cap2035_
 no-gas runs) is the old hand-built Deep decarbonisation 2035 preset's own CO2 at 2035 on the page (22.8 Mt; RESULTS 'Scenarios table on
 build 2026-10-30a', and the 30a rescore). It is not a policy target. Runs at 40 Mt from 2035, with and without new gas, at the same
 relaxed rates as s_hypo_deep2035r_c6e, are under way for the user's decision on Deep's cap before the c7 rebuild (messages 589, 590).
+
+### Deep without gas at a higher 2035 cap only, with Deep's 2036-40 caps in place: 2035 CO2 stays near 24.5 Mt whatever the 2035 cap (user, 1 Nov 2026, messages 586, 588 and 595)
+
+Runs (31a, as run_deepnogas.sh with the 2035 optimiser cap only raised; 2036-40 caps as in Deep, CO2CAP_YEARS 15.857, 13.255, 11.735,
+13.519, 17.653; calibration as 588 (a), harness/out/opt/run_deepnogas_cal.sh), 1 Nov 2026 05:40-06:58 UTC; engine checks for 2035
+(pathcheck.js YEARS=2035, LNG=1 GRID=1, 120 runs):
+
+| Target, engine 2035 CO2 | Round 1: optimiser 2035 cap -> engine 2035 CO2 | Round 2 |
+|---|---|---|
+| 30 Mt | 29.1 -> 24.55 Mt | 34.551 -> 24.29 Mt |
+| 35 Mt | 34.1 -> 24.29 Mt | 44.815 -> 24.29 Mt |
+
+Finding: with Deep's 2036-40 caps in place, a higher 2035 cap alone leaves 2035 CO2 near 24.5 Mt: the build the later caps need is
+already standing in 2035, so the 2035 cap does not bind above about 24.5 Mt. Both runs stopped by their PIDs after round 2 (message 595);
+the 30 and 35 Mt cases are rerun with the cap from 2035 on, every year 2035-40 at the target, as the 40 Mt runs.
