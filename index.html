@@ -10517,7 +10517,7 @@ FIXED.ccsWaccPct = BLD_DISC * 100;
 //  - rooftop at the discount rate: owners' finance, outside state procurement, no evidence for a different rate.
 // Cases: 'private' (wind, solar and lithium financed privately, central plus BLD_COC_PRIVATE_PREM); 'high' (the same gaps on the
 // IEA's South African solar figure, 9.0% real pre-tax); 'low' (central less one point; network unchanged); 'planning' (one rate for
-// all, BLD_DISC, as IRP 2025 does).
+// all, BLD_DISC, as IRP 2025 does); 'blended' and 'blendedhigh' (below; message 604 (a)).
 const BLD_COC_LEVEL = { central: 0.055, private: 0.055, high: 0.090, low: 0.045 };
 const BLD_COC_GAP = { re: 0, store: 0.013, gas: 0.025, nuclear: 0.030, coal: 0.025 };
 const BLD_COC_NETWORK = { central: 0.071, private: 0.071, high: 0.090, low: 0.071 };
@@ -10532,12 +10532,24 @@ FIXED.txRPerKWyr = Math.round(TDP_GEN_INTEG_RKW * BLD_COC_NETWORK.central / (1 -
 // storage is more exposed to price swings. South African private deals are mostly corporate PPAs, partly contracted, so this case
 // is an upper bound for private finance (SOURCES 'Cost of capital by technology').
 const BLD_COC_PRIVATE_PREM = { re: 0.015, store: 0.020 };
+// Blended public and private finance (user, 1 Nov 2026, message 604 (a); TODO 14kn; SOURCES 'Cost of capital by technology', 'Blended
+// rate'): rate = state-backed central + private share x the private-offtake gap, for utility wind, utility solar and lithium only.
+// Shares: wind and solar 60% private (BNEF 48% in 2025, 73% expected in 2026; UCT Power Futures Lab 54% in H1 2026); lithium 15%, our
+// estimate from project lists (BESIPPPP and Eskom's batteries state-backed; SOLA's Naos-1, 660 MWh, wheeled, private), range 10-25%.
+// Gaps ('blended'): NAB, WACC report for the NSW Electricity Infrastructure Roadmap (Nov 2020), section 2.5: investment-grade retailer
+// offtake against sovereign or near-sovereign offtake, wind 0.48 and solar 0.57 points (Australian, nominal vanilla WACC, applied here
+// as points on real rates); lithium the mean of the two, our assumption, as NAB does not cover storage. 'blendedhigh': the same
+// shares with CEPA's merchant premiums (BLD_COC_PRIVATE_PREM) as the gap. Offshore wind, other storage, gas and the rest: unchanged.
+const BLD_COC_PRIVATE_SHARE = { wind: 0.60, pv: 0.60, batt: 0.15 };
+const BLD_COC_NAB_GAP = { wind: 0.0048, pv: 0.0057 };
+BLD_COC_NAB_GAP.batt = (BLD_COC_NAB_GAP.wind + BLD_COC_NAB_GAP.pv) / 2;
 const BLD_COC_GROUP = { pv:'re', wind:'re', offshore:'re', batt:'store', vrfb:'store', ironair:'store', phes:'store', phel:'store',
   ccgt:'gas', ocgt:'gas', ocgd:'gas', nuclear:'nuclear', coal:'coal', tx:'network', grid:'network', eskom:'network', rooftop:'disc' };
 function bldCocCase(){
   let st = null; try { st = state; } catch (e) { /* state is declared later in the file; at load, use FIXED */ }
   const c = (st && st.bldCocCase != null) ? st.bldCocCase : FIXED.bldCocCase;
-  if (!['central', 'private', 'high', 'low', 'planning'].includes(c)) throw new Error('bldCocCase must be central, private, high, low or planning: ' + c);
+  if (!['central', 'private', 'high', 'low', 'planning', 'blended', 'blendedhigh'].includes(c))
+    throw new Error('bldCocCase must be central, private, high, low, planning, blended or blendedhigh: ' + c);
   return c;
 }
 // A technology's real pre-tax cost of capital in the current case.
@@ -10546,6 +10558,14 @@ function bldCoc(tech){
   if (!g) throw new Error('bldCoc: no cost-of-capital group for ' + tech);
   const c = bldCocCase();
   if (c === 'planning' || g === 'disc') return BLD_DISC;
+  if (c === 'blended' || c === 'blendedhigh'){   // state-backed central plus the private share of the gap (message 604 (a))
+    const base = g === 'network' ? BLD_COC_NETWORK.central : BLD_COC_LEVEL.central + BLD_COC_GAP[g];
+    const sh = BLD_COC_PRIVATE_SHARE[tech];
+    if (sh == null) return base;
+    const gap = c === 'blended' ? BLD_COC_NAB_GAP[tech] : BLD_COC_PRIVATE_PREM[g];
+    if (gap == null) throw new Error('bldCoc: no private gap for ' + tech + ' in ' + c);
+    return base + sh * gap;
+  }
   if (g === 'network') return BLD_COC_NETWORK[c];
   const prem = (c === 'private' && (g === 're' || g === 'store')) ? BLD_COC_PRIVATE_PREM[g] : 0;
   if (prem == null) throw new Error('bldCoc: BLD_COC_PRIVATE_PREM.' + g + ' is not set');
@@ -21004,7 +21024,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-01c';
+const BUILD_STAMP = '2026-11-01e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

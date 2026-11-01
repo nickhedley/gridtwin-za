@@ -574,16 +574,22 @@ capex from BW7's tariffs (about 5% real over 30 years implied), everything else 
 solar 25 years); s_pvbw6_c6c and s_disc5_c6c (every technology on construction cost at 8% and 5%; message 466) bracket it, with
 s_discirp_c6c at IRP 2025's 11.3% (pack limitation 32). 30-year lives for wind and solar go with it (BLD_LIFE is a page constant, not a harness setting).
 
-14kn. Blended public and private cost of capital for the next note (user, 28 Oct 2026, message 481 (a)). Decision: the central keeps
-wind and solar on state-backed finance at 5.5% real; private finance (s_cocprivate, CEPA's premiums) stays a sensitivity for this
-pack. The next note uses a blended rate per technology: source the public/private split of built capacity (REIPPPP and BESIPPPP awards
-against private wheeled and embedded plant in service, from the project register and Eskom's connected-capacity lines; not NERSA
-registrations, which count intent), set the blend from it, and record both in SOURCES beside 'Cost of capital by technology'. Sources
-found by the advisor, 30 Oct 2026 (message 519; SOURCES 'Public and private split of new build, for a blended rate'): private share of
-new utility-scale wind and solar 48% in 2025, 73% expected in 2026 (BNEF), 54% in the first half of 2026 (UCT Power Futures Lab);
-storage led by BESIPPPP, so lithium stays state-backed. Proposed basis: about 60% private for wind and solar, a corporate-PPA premium
-of +0.75 to +1.5 points, so wind and solar at about 6.0-6.4% real. Open: a South African source for the corporate-PPA premium (lender
-margins on wheeled against REIPPPP deals). You: decide the basis before the next note's runs.
+14kn. Blended public and private cost of capital, for c7 (user, 28 Oct 2026, message 481 (a); decided 1 Nov 2026, message 604 (a)). Per
+technology, rate = state-backed central + private share x the private-offtake gap: case 'blended' (bldCocCase; constants
+BLD_COC_PRIVATE_SHARE and BLD_COC_NAB_GAP, read wherever used). Shares: utility wind and solar 60% private (BNEF 48% in 2025, 73% expected
+in 2026; UCT Power Futures Lab 54% in H1 2026); lithium 15%, our estimate from project lists, range 10-25%. Gaps: NAB's WACC report for
+the NSW Electricity Infrastructure Roadmap (Nov 2020, section 2.5), retailer against sovereign offtake, wind 0.48 and solar 0.57 points;
+lithium 0.525, their mean, our assumption. Result, real: wind 5.79%, solar 5.84%, lithium 6.88%; gas and other technologies unchanged.
+Sensitivities: 'blendedhigh' (the same shares with CEPA's premiums as the gap: wind and solar 6.4%, lithium 7.1%); the existing
+all-state ('central', today's runs) and all-private ('private', s_cocprivate). Into c7 with the LP-key test ('central' unchanged); the
+page default and the current presets stay on 'central' until c7 is regenerated. SOURCES 'Cost of capital by technology', 'Blended rate'.
+
+14mb. Heat batteries and the gas cliff (user, 1 Nov 2026, message 607). Record only: no work before c7 and system strength are done. A
+standalone note after c7, and the first chapter of the industrial electrification study. A flexible demand option: electric heater (MW)
+plus thermal store (MWh) serving a flat heat demand by temperature band, sized by the build LP and dispatched hourly by the engine; heat
+pumps for heat below about 150 C as a separate option. Outputs: delivered heat cost against LNG and Sasol gas (break-even price),
+curtailment absorbed and system effects at 10, 50 and 100 PJ a year, on c7 and on Deep. The advisor is sourcing the inputs; scope in the
+project doc claude/heat-batteries-scope-2026-11-01.md (not in the repository: obtain it first and record its figures in SOURCES).
 
 14ko. Reviewer pack schedule and scope (user, 28 Oct 2026, messages 481 (b)-(d), 482 and 483; HANDOVER 'Decisions of 28 Oct 2026').
 The pack goes Friday 30 October 2026, about 14:00 SAST, on c6e, with whatever c6e results are in by Thursday 22:00 SAST; any

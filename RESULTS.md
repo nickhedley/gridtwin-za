@@ -19356,3 +19356,15 @@ when that capacity is 0 and the check's output is 0. Tests, 1 Nov 2026 on main d
 REVIEWER_PACK.md to the identical text; Fossil-free on its 31c checks reads 'met', ocmax 0.0% (2040: fossilEnd 2039, capacity 0);
 with the bugged 31a checks swapped in, both verdicts stop, exit 1 (Fossil-free in 2026-2039, its 2040 a true zero; s_cocplan in every
 year). The caption generator takes the same rule on the 599 branch (claude/deep-nogas40), where its NTCSA test lives.
+
+### Blended cost of capital for c7: cases 'blended' and 'blendedhigh'; 'central' unchanged by the LP-key test (user, 1 Nov 2026, message 604 (a); build 2026-11-01e)
+
+bldCoc gains two cases (index.html; BLD_COC_PRIVATE_SHARE, BLD_COC_NAB_GAP, the lithium gap computed as the mean of wind and solar):
+rate = state-backed central + private share x gap, for utility wind, utility solar and lithium only. Rates read back from the page,
+real pre-tax: 'blended' wind 5.788%, solar 5.842%, lithium 6.879%; 'blendedhigh' (CEPA's premiums as the gap) 6.4%, 6.4%, 7.1%;
+offshore wind, vanadium, iron-air, pumped storage, gas, nuclear, coal, network and rooftop unchanged in both. The page default
+(FIXED.bldCocCase) stays 'central', so no preset or published figure changes until c7.
+LP-key test, 1 Nov 2026 about 17:20 UTC: bldBuildLP on the Least-cost path 2035 preset with grid cost on (validate_lp's call, growth
+0.02, eaf 0.64): 'central' on main (9035b59) and on this branch both sha1 4e0b77a5f1f4 (13,918,952 characters); 'blended' 479696b5560c
+and 'blendedhigh' 63167b3268d5 differ from 'central' in one line only, the objective, and there only in the coefficients of b_wind_y,
+b_pv_y, b_batt_y and eb_batt_y (five years each at that horizon); every row is identical.
