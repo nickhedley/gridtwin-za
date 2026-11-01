@@ -19568,3 +19568,24 @@ validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Checked by the
 current main (default and 'sync6' sha1 4e0b77a5f1f4, identical to main; 'inertia' 39f092d5e626), and the engine on c6e's states
 re-run (hours short and coal lifted as above) with every 'sync6' output key equal to main's page in all 48 runs except inertiaGVAs
 (4,704 keys compared). Later commits on the branch before the rebuild change harness and docs only (pathcheck.js SS_FC, TODO, RESULTS).
+
+### System strength: the build LP's own coal commitment (cm_) in place of the ratio solves as fast and costs a little less; the engine's 'prev' lift leaves about 1% of 2035 hours short on the one-year build, 'mustspin' none (user, 1 Nov 2026, message 610 (b), (c))
+
+One-year 2035 build test, as the agent's on 2026-11-02a (env_c6a.sh, GAS_FIRST=2035, HORIZON=2035, builds to 2034 fixed at c6e's,
+one pass, native HiGHS, SS=inertia), on claude/ss-commit-basis (75a30dd: FIXED.ssCoalBasis 'commit', pathway env SS_COAL; default
+'ratio', LP-key unchanged, sha1 39f092d5e626 on 'inertia' and 4e0b77a5f1f4 on 'sync6'), 1 Nov 2026 21:00-21:04 UTC beside the c6e
+rebuild and a suite:
+| Coal in the inertia row | Objective, R bn | Over 'sync6' (1,079.931) | Grid-forming MW | Conversions MVA | New condensers | Slack | Run |
+|---|---|---|---|---|---|---|---|
+| ratio (output x lambda, D1) | 1,086.093 | +6.162 (+0.57%) | 9,045 | 5,838 | 0 | 0 | about 4 min (agent, alone) |
+| commit (cm_, H on its MVA) | 1,085.024 | +5.093 (+0.47%) | 8,985 | 5,838 | 0 | 0 | 197 s, Optimal (beside two jobs) |
+Engine on each build's 2035 state (c6e's 2035 plus the grid-forming MW and conversions; twelve weather years), coal lifted and hours
+short of 105,120 after the lift:
+| Build | 'prev' (c7's central) | 'mustspin' (cautious) |
+|---|---|---|
+| ratio | 0.124 TWh; 1,121 h short (3,902 GW.s-h) | 1.213 TWh; 0 h short |
+| commit | 0.124 TWh; 1,128 h short (3,907 GW.s-h) | 1.213 TWh; 0 h short |
+Findings: the commitment variable solves in reasonable time and gives a slightly cheaper floor (R1.1bn less to 2035): per decision
+610 (b) c7 takes it. Under 'prev' the hours left short follow falls in grid-forming headroom from the hour before (mean fall 5.4
+GW.s), which the lift's forecast credits but the hour does not deliver; 'mustspin' meets the floor in every hour at about ten times
+the coal lifted. 2040 under both comes from the c6e rebuild.
