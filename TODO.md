@@ -872,12 +872,12 @@ simplified system strength). Every figure generated from the run files by a scri
 site's styling; the site-copy rules; no internal codes. (3) The four captions end "See the optimiser's build plan here", 'here' linking
 to the page, outside the word cap; validate_links and validate_public_text cover the new pages.
 
-14ly. Eskom's tariff path after 2027/28 as a sensitivity, after the note (user, 1 Nov 2026, message 582). In the retail panel and
+14ly. Eskom's tariff path after 2027/28 as a sensitivity, after the note (user, 1 Nov 2026, messages 582 and 583). In the retail panel and
 everything that reads it (household bills, rooftop and wheeling paybacks): central flat in real terms after MYPD6 (nothing approved
-beyond it; unchanged), +2% and +3% a year real as sensitivities. Basis: Eskom's own long-term price assumption in its impairment test
-(2026 annual financial statements, note 3.3), as reported (SOURCES 'Eskom tariff path after 2027/28'); read and cite the primary note
-when the statements are in Drive. Show the range in the outputs that depend on it (bill paths, payback years) and record the results in
-RESULTS.
+beyond it; unchanged). Sensitivities (message 583 (a)): +2.7% and +1.1% a year real, computed in the code from Eskom's 5.8% nominal
+(2029-50) and the inflation rate (the model's 3% target; Eskom's own 4.7%), not typed. Basis: Eskom's impairment-test assumption, 2026
+annual financial statements note 3.3.2, p.46, and notes 4.3-4.4, p.50 (SOURCES 'Eskom tariff path after 2027/28'). Show the range in the
+outputs that depend on it (bill paths, payback years) and record the results in RESULTS.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a
