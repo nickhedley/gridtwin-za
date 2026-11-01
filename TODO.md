@@ -872,12 +872,13 @@ simplified system strength). Every figure generated from the run files by a scri
 site's styling; the site-copy rules; no internal codes. (3) The four captions end "See the optimiser's build plan here", 'here' linking
 to the page, outside the word cap; validate_links and validate_public_text cover the new pages.
 
-14ly. Eskom's tariff path after 2027/28 as a sensitivity, after the note (user, 1 Nov 2026, messages 582 and 583). In the retail panel and
-everything that reads it (household bills, rooftop and wheeling paybacks): central flat in real terms after MYPD6 (nothing approved
-beyond it; unchanged). Sensitivities (message 583 (a)): +2.7% and +1.1% a year real, computed in the code from Eskom's 5.8% nominal
-(2029-50) and the inflation rate (the model's 3% target; Eskom's own 4.7%), not typed. Basis: Eskom's impairment-test assumption, 2026
-annual financial statements note 3.3.2, p.46, and notes 4.3-4.4, p.50 (SOURCES 'Eskom tariff path after 2027/28'). Show the range in the
-outputs that depend on it (bill paths, payback years) and record the results in RESULTS.
+14ly. Eskom's tariff path after 2027/28, after the note (user, 1 Nov 2026, messages 582, 583 and 584; 584 replaces 583 (a) and 582 (a)'s
+central). In the retail panel and everything that reads it (household bills, rooftop and wheeling paybacks). Central: +1.1% a year real
+from 2028/29 to 2034/35 (Eskom's 5.8% nominal against its own 4.7%), flat in real terms from 2035/36. Sensitivities: flat in real terms
+throughout; +2.7% a year real to 2034/35 (5.8% against the model's 3%), then flat. Each computed in the code from its inputs (5.8%,
+4.7%, 3%), not typed. This changes the central bills and paybacks from the year after MYPD6: state it on the page and in RESULTS. Basis:
+Eskom's impairment-test assumption, 2026 annual financial statements note 3.3.2, p.46, and notes 4.3-4.4, p.50 (SOURCES 'Eskom tariff
+path after 2027/28'). Show the range in the outputs that depend on it (bill paths, payback years) and record the results in RESULTS.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a

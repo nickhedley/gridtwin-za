@@ -2256,15 +2256,18 @@ Largest credible loss by year (user, message 578 (b); rule 366, conservative, ou
 units (NTCSA ASTR, section 3.4.2), while any coal station with three or more such units stands; after that, the largest single unit
 standing: a Koeberg unit, about 930 MW sent out, unless a larger new unit is built.
 
-## Eskom tariff path after 2027/28 (user, 1 Nov 2026, messages 582 and 583; for TODO 14ly, after the note)
+## Eskom tariff path after 2027/28 (user, 1 Nov 2026, messages 582, 583 and 584; for TODO 14ly, after the note)
 
 Eskom, Annual financial statements 2026, note 3.3.2 (impairment assessment, key assumptions, price), printed page 46: after MYPD6's
-8.76% (2027) and 8.83% (2028), tariff increases of "an average of 5.8% from 2029 until 2050", nominal. Eskom's own long-term price
-inflation assumption: 4.7% (notes 4.3 and 4.4, printed page 50). Read in the primary source by the user (message 583; the PDF is in the
+8.76% (2027) and 8.83% (2028), tariff increases of "an average of 5.8% from 2029 until 2050", nominal. Note 3.3.2 does not state its
+inflation rate; Eskom's own long-term price inflation assumption, 4.7%, is from notes 4.3 and 4.4, printed page 50. Eskom's projection
+assumes no new Eskom or IPP capacity and falling sales. Read in the primary source by the user (messages 583, 584; the PDF is in the
 user's Drive and is not committed).
 It is Eskom's impairment assumption, not an approved or proposed tariff path: headroom over carrying value is 2.3%, and the note says
 the recoverable amount "may be lower than the carrying amount if the long-term price path after 2028 is limited to inflationary
-increases". Nothing is approved beyond MYPD6, so the model's central case stays flat in real terms after 2027/28. Sensitivities (user,
-message 583 (a)), computed from the two inputs, not typed: 5.8% nominal against the model's 3% inflation target, (1.058 / 1.03) - 1 =
-2.7% a year real; against Eskom's own 4.7%, (1.058 / 1.047) - 1 = 1.1% a year real. (Replaces message 582's +2% and +3% and its
-secondary report.)
+increases". Nothing is approved beyond MYPD6 (to 2027/28).
+The model's cases (user, message 584 (a); replacing 582 (a)'s central and 583 (a)), each computed from its inputs, not typed:
+- Central: (1.058 / 1.047) - 1 = 1.1% a year real from 2028/29 to 2034/35 (Eskom's 5.8% nominal against its own 4.7%), then flat in
+  real terms from 2035/36.
+- Sensitivity, low: flat in real terms throughout after 2027/28.
+- Sensitivity, high: (1.058 / 1.03) - 1 = 2.7% a year real to 2034/35 (5.8% against the model's 3% inflation target), then flat.
