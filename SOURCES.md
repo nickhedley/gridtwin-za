@@ -2268,3 +2268,18 @@ The model's cases (user, message 584 (a); replacing 582 (a)'s central and 583 (a
   real terms from 2035/36.
 - Sensitivity, low: flat in real terms throughout after 2027/28.
 - Sensitivity, high: (1.058 / 1.03) - 1 = 2.7% a year real to 2034/35 (5.8% against the model's 3% inflation target), then flat.
+
+## Behind-the-meter batteries: stock and growth (user, 1 Nov 2026, message 592; TODO 14lq minimum version)
+
+- Deye: more than 160,000 residential battery systems in South Africa, 2.7 GWh, to be coordinated through Plentify's VPP platform
+  (announced 20 Jul 2026; energy-storage.news, "South Africa: Plentify aggregates 2.7GWh of Deye home battery systems into virtual power
+  plant"). The same article: over 90% of residential solar systems sold include a battery; 675,000 households had rooftop solar by 2025
+  (citing Stats SA; secondary for the Stats SA figure).
+- GreenCape, Energy Services 2025, pp. 24-25: business behind-the-meter batteries about 400 MWh a year at about R5,000/kWh installed.
+  https://greencape.co.za/wp-content/uploads/2025/04/Energy-Services-2025.pdf
+- The advisor's estimate (ours, labelled as such): about 600,000 homes with batteries (90% of 675,000) x about 10 kWh = about 6 GWh,
+  plus about 2 GWh in businesses = 8 GWh central; 3.2 GW at 2.5 hours. Growth 0.9 GWh a year = 0.4 business (GreenCape) + about 0.5
+  residential (about 50,000 new solar homes a year at 10 kWh, an assumption). Cases 4 and 14 GWh.
+- Coordinated share: Deye's 2.7 GWh is the fleet Plentify can reach, not enrolled capacity; it is the cap on the coordinated share, not
+  the share.
+TODO 14lu (full version, after the note) replaces the estimate with a sourced stock and growth path.
