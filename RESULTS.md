@@ -19032,3 +19032,8 @@ Cost with and without the overrun penalty, and the limit that leaves the 2035 ca
   price (dual -R25,012 a tonne, the discounted penalty).
 - The engine check's 2035 CO2 is 20.0 Mt, below the user's 22.8 Mt: the overrun is against the build LP's tightened cap of 17.509 Mt
   (the LP's own 2035 emissions about 19.13 Mt), not against 22.8.
+Reading of this run (user, 1 Nov 2026, message 588 (c)): it met 22.8 Mt in the engine check (20.0 Mt in 2035, and at or below 22.8 in
+every year 2035-40) at +R79.9bn against Deep with gas (engine PV, no penalty in either). The 1.624 Mt overrun was against the optimiser's
+own tightened 2035 cap (17.509 Mt), not against 22.8. That tightening (5.3 Mt) was measured on Deep with gas and does not hold without
+gas: here the optimiser gave 19.1 Mt and the engine 20.0, so this build was planned for about 20 Mt, not 22.8. The no-gas runs at a set
+engine CO2 for 2035 (22.8, 30 and 35 Mt) set their optimiser caps from their own engine checks (message 588 (a), entry below).
