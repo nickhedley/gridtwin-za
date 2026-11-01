@@ -19568,3 +19568,28 @@ validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Checked by the
 current main (default and 'sync6' sha1 4e0b77a5f1f4, identical to main; 'inertia' 39f092d5e626), and the engine on c6e's states
 re-run (hours short and coal lifted as above) with every 'sync6' output key equal to main's page in all 48 runs except inertiaGVAs
 (4,704 keys compared). Later commits on the branch before the rebuild change harness and docs only (pathcheck.js SS_FC, TODO, RESULTS).
+
+### c6e rebuilt with the inertia floor: R5.0bn (0.22%) more over 2026-40 with the engine's 'prev' lift, R8.5bn (0.37%) with 'mustspin'; 8.9 GW of grid-forming batteries and 7.8 GVA of coal-unit conversions, no new condensers; 'prev' leaves about 100-120 hours a year short from 2035, 'mustspin' none (user, 1 Nov 2026, messages 609 (c) and 610 (b), (c))
+
+Run: c6e's settings (chain_c6e.sh: env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=7200) plus SS=inertia SS_FC=prev, coal in the LP at output x
+SS_COAL_LAMBDA (D1), on claude/system-strength-min at 9ce8265 (build 2026-11-02a), 1 Nov 2026 20:57-21:31 UTC (one pass, adequate,
+2,027 s; harness/out/ss/pathway_c6e_ss.json, not committed). Checks: pathcheck.js, LNG=1 GRID=1, groups a-c, under SS_FC=prev and
+SS_FC=mustspin (21:31-21:46 UTC); c6e's own build checked on the same page in 'sync6' (pathcheck_c6e_ref, 21:48-22:03 UTC), so all
+three share one engine.
+Builds against c6e's: grid-forming 8,877 MW (2030-2037); conversions of retired coal units 7,784 MVA (2032-2040); no new
+condensers; lithium 16,578 MW (15,241), CCGT 5,421 (6,074), open cycle on LNG 1,779 (1,126), new diesel 0 (152), pumped storage 433
+(0); wind 31,842 (31,377), solar 33,958 (33,830). The LP's inertia slack is zero in every year.
+| | c6e, 'sync6' | Rebuild, 'prev' | Rebuild, 'mustspin' |
+|---|---|---|---|
+| System cost PV 2026-40 (8%), R bn | 2,283.9 | 2,283.6 | 2,287.1 |
+| Including the condensers' and grid-forming premium's annual charge | 2,283.9 | 2,288.9 (+5.0) | 2,292.4 (+8.5) |
+| CO2 2026-40, Mt | 1,739 | 1,736 | 1,752 |
+| Highest mean unserved, GWh/yr; highest open-cycle share | 5.46; 1.85% | 5.72; 1.84% | 5.72; 1.82% |
+| 2035: coal TWh; coal lifted TWh; hours short a year; minimum GW.s | 80.15; -; -; - | 80.37; 0.14; 99.5; 35.8 | 81.45; 1.37; 0; 54.0 |
+| 2040: coal TWh; coal lifted TWh; hours short a year; minimum GW.s | 59.06; -; -; - | 57.51; 0.21; 122.9; 36.7 | 60.71; 3.62; 0.1; 50.1 |
+Hours short are means over the twelve weather years and the outage draws (of 8,760). Findings: meeting a 54 GW.s floor from 2026 to
+2040 costs about R5-8.5bn (0.2-0.4%) on c6e, at the low end of the planning studies' 0.01-0.22% to under 1% (SOURCES); the LP buys
+grid-forming batteries and converts retired coal units rather than building new condensers; under 'prev' the engine leaves about 1.1-1.4%
+of hours from 2035 short (the forecast credits grid-forming headroom the hour does not deliver), under 'mustspin' it lifts ten to
+seventeen times the coal and meets the floor. Caveats: one pathway pass; coal in the LP by the ratio (c7 takes the commitment variable,
+which on the one-year test cost R1.1bn less); national, not by substation; no fault-level cost in the central.
