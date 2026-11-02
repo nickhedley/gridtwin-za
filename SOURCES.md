@@ -1831,9 +1831,13 @@ page, PDF page = printed + 2; figures Eskom's, the analysis ours). Read 21 Oct 2
   OCGTs 811 / 2,176 / 3,634; hydro 2,416 / 710 / 1,448; IPPs 19,596 / 19,365 / 20,183; imports 4,090 / 7,570 / 9,150.
 - Coal on the validation panel (user, 21 Oct 2026, message 303 (a); build 2026-10-21l): the coal row compares the model with
   170.4 TWh, labelled calendar 2025 coal sent-out energy, from Eskom data, the analysis ours (ESKOM_2025_COAL_TWH: our sum of
-  Eskom's hourly data, ESK19679, one annual total). It is not the report's 179.4 TWh (179,426 GWh, p.7): that is coal-fired
-  production in FY2025 (April 2024 to March 2025), a different period, and generation rather than sent-out energy (station
-  own use not deducted). The two are not reconciled here; the panel quotes only the 170.4 TWh.
+  Eskom's hourly data, ESK19679, one annual total). It is not the report's 179.4 TWh (179,426 GWh, p.7), which is FY2025 (April
+  2024 to March 2025), a different period. Both are sent out: the report's ten-year statistics (p.70) list coal-fired stations,
+  165,431 GWh in FY2026 and 179,426 in FY2025, under 'Electricity output - Power sent out by Eskom stations' (184,966 GWh in FY2026),
+  and the report publishes no production or own-use figure for coal; p.56's '7.8% decline in production' uses the word loosely for
+  the same series (corrected 2 Nov 2026, message 656 (a): this note had called the p.7 figure production, station own use not
+  deducted). So FIXED.costCoal (R91.5bn over 165,431 GWh sent out, R553/MWh) and COAL_CO2_PER_MWH_FY26 (1.108 t/MWh) stand on sent
+  out, as the engine counts coal. The panel quotes only the 170.4 TWh.
 - OCGTs (p.20): Eskom and IPP-owned OCGTs 1,079 GWh (FY2025 2,838) at load factors of 3.9% (Eskom) and 3.0% (IPP); IPP OCGT
   production 268 GWh at R2,144m (FY2025 662 GWh, R4,374m; FY2024 1,509 GWh, R10,054m); Eskom budgets a 3% load factor for both its own and
   the IPP OCGTs from FY2027, rising to 5.5% in FY2030. The two IPP OCGTs are 1,005 MW (p.23,
