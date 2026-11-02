@@ -912,6 +912,24 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mj. Geyser pre-heating, after the note (user, 2 Nov 2026, message 641): shift enrolled geysers' heating earlier into the solar
+afternoon within tank and comfort limits, beside the deferral option. Source: LBNL/Wits Executive Summary (May 2024), PVDay scenario:
+-2,242 MW winter, but comfort 76% in winter against 99% for controlled switching; report the comfort trade-off with the result.
+
+14mi. Planning-reserve peak (user, 2 Nov 2026, message 638 (c)): the build LP's res_ rows take the annual peak from demand with rooftop
+added back (PROFILES.demand), which peaks at about 10:00, so evening-only resources (geyser control, enrolled batteries' evening
+discharge) get no planning credit there. A known limit for any run with a planning margin (bldPlanMarginPct > 0); c7 keeps the margin
+at 0. Fix (after the note): take res_'s peak from net demand after rooftop, in the hours the evening peak falls.
+
+14mh. Geyser control (and pool pumps) as a VPP build option, before c7 (user, 2 Nov 2026, message 633): design in HANDOVER 'Geyser
+control (and pool pumps) as a VPP build option'; the advisor sources geyser count, diversified peak load, controller cost and
+participation. Limitation recorded: EV managed charging stays out until EV demand is in the model.
+
+14mg. Behind-the-meter batteries and VPPs, minimum version built (user, 2 Nov 2026, messages 621 (b), 622-629; RESULTS 'Behind-the-meter
+batteries and the VPP option, minimum version'). Open: (1) enrolled batteries under 622's rule are never chosen; the user to decide
+whether they keep the daily cycle and are called for events; (2) the regional LP and the stress-target demand do not see the options;
+(3) c7 launches only after the advisor's best-practice review of the system strength, cost of capital and BTM/VPP designs (message 629).
+
 14lu. Behind-the-meter batteries and VPPs, full version after the note (user, 31 Oct 2026, message 574 (a) 2). The minimum version
 for the note is 14lq (1)-(2) narrowed by 573 (a) 3: a passive stock on a self-consumption profile as an input path (1, 3 and 5 GWh
 cases until the advisor's central figure), a coordinated share dispatched as storage, a VPP build option with event limits and a

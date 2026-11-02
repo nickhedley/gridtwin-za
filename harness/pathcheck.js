@@ -110,6 +110,21 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    w.eval(`if(!('coalEafByYear' in FIXED) || !('avonDedisaRemoveAfter' in FIXED) || !('reipppRetireByYear' in FIXED)) throw new Error('coalEafByYear, avonDedisaRemoveAfter or reipppRetireByYear missing');`
      +` state.coalEafByYear=${JSON.stringify(P.coalEafByYear ?? null)}; state.avonDedisaRemoveAfter=${+(P.avonDedisaRemoveAfter || 0)}; state.reipppRetireByYear=${JSON.stringify(P.reipppRetireByYear ?? null)};`);
    if (P.coalEafByYear || P.avonDedisaRemoveAfter || P.reipppRetireByYear) console.log('MTSAO inputs from the pathway: coal availability', JSON.stringify(P.coalEafByYear), 'Avon and Dedisa out after', P.avonDedisaRemoveAfter || 'never', 'REIPPPP retired', JSON.stringify(P.reipppRetireByYear)); }
+ // Behind-the-meter batteries and the virtual power plant (HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum
+ // version: design'; messages 621-625): the run's own settings, recorded by pathway_perfail.js (P.btm). A run recorded before build
+ // 2026-11-02i has none and ran with both off, the page default, so nothing is set. With the virtual power plant on, each year's
+ // enrolled energy is the run's sched[y].vppGWh (below).
+ const BTM_VPP = !!(P.btm && (P.btm.vppBuildOn | 0) > 0);
+ // vppEvents and vppEventHours (withdrawn in build 2026-11-02s, message 637) are dropped from a run made with the virtual power plant
+ // off; a run made with it on used the event rule and is refused (check it on its own commit).
+ if (P.btm){ const BT={...P.btm}; for (const k of ['vppEvents','vppEventHours']) if (k in BT){ if ((BT.vppBuildOn|0)>0) throw new Error('the run used the withdrawn VPP event rule ('+k+'): check it on its own commit'); delete BT[k]; }
+   w.eval(`for (const k of ${JSON.stringify(Object.keys(BT))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02i or later'); Object.assign(state, ${JSON.stringify(BT)});`);
+   console.log('behind-the-meter batteries and virtual power plant from the pathway:', JSON.stringify(P.btm)); }
+ // Geyser control (messages 633-635): the run's own settings (P.geyser), recorded by pathway_perfail.js; a run recorded before build
+ // 2026-11-02q has none and ran with it off. With it on, each year's enrolled MW is the run's sched[y].gyMW (below).
+ const GY_RUN = !!(P.geyser && (P.geyser.gyBuildOn | 0) > 0);
+ if (P.geyser){ w.eval(`for (const k of ${JSON.stringify(Object.keys(P.geyser))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02q or later'); Object.assign(state, ${JSON.stringify(P.geyser)});`);
+   console.log('geyser control from the pathway:', JSON.stringify(P.geyser)); }
  // Coal settings (PR C, build 2026-10-24a; messages 359, 363): the pathway's own; a run recorded before PR C has none and replays with
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
@@ -186,6 +201,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (SS_ON){ over.ssGfmMW=cum.gfm; over.ssCondMVA=cum.scc+cum.scn; }
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
+   if (GY_RUN){ if (!(P.sched[y].gyMW>=0)) throw new Error('the run has geyser control on but no sched['+y+'].gyMW'); over.gyEnrolMW=P.sched[y].gyMW; }
+   if (BTM_VPP){ if (!(P.sched[y].vppGWh>=0)) throw new Error('the run has the virtual power plant on but no sched['+y+'].vppGWh'); over.vppEnrolGWh=P.sched[y].vppGWh; }
    // FOSSIL_END (message 531 (c)): after the run's last fossil year no coal (its coalMW is 0 from its dates), no gas and no diesel stand.
    if (P.fossilEnd && y > P.fossilEnd){ if (over.coalDecomMW < +w.eval('FIXED.coalInstalledMW')) throw new Error('fossilEnd: coal standing in '+y);
      Object.assign(over, {newCcgtMW:0, newOcgtMW:0, newOcgdMW:0, dieselDecomMW:+w.eval('FIXED.ocgtDieselMW')}); }

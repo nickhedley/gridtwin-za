@@ -19912,3 +19912,86 @@ dispatch, coal lifted for the whole gap): system cost with the floor's charge R2
 coal lifted 4.58 TWh a year in 2035 and 10.11 in 2040, hours short 0.1 a year in 2035 and 115.3 in 2040 (minimum 38.8 GW.s: no coal
 left to lift), highest unserved 5.33 GWh/yr, open-cycle 1.80%. The plan's floor rests on grid-forming headroom: counted only as what
 must spin, the 3.9 GW build meets 62.9 GW.s by lifting coal to 2039 and falls short in 2040.
+
+### Behind-the-meter batteries and the VPP option, minimum version: built default off; the stock added since 2026 takes about 135 MW off the evening peak per GWh; with 622's rule the optimiser enrols no VPP (user, 2 Nov 2026, messages 621 (b), 622-625, 627-629; HANDOVER design)
+
+Build (claude/btm-vpp-min, 2026-11-02i, main's #152 merged at 5042133, event budget 3e2780d, build 2026-11-02l): the design in HANDOVER
+'Behind-the-meter batteries and virtual power plants, minimum version'. FIXED keys, all off by default: btmStockGWh 0 (8 central),
+btmBackupPath 'glide', btmReservePct 25, btmHours 2.5, btmEff 0.9, btmCapexRkWh 5000, vppBuildOn 0, vppEnrolCapPct 20, vppEvents 15,
+vppEventHours 3, vppCostUsdKwYr 42.85 (at USD_RATE_R). Pathway: BTM_STOCK, BTM_BACKUP, VPP, VPP_CAP_PCT, VPP_EVENTS; pathcheck
+applies them from the run.
+Checks (2 Nov 2026, about 09:30-11:10 UTC):
+- Defaults: LP-key test (Least-cost path 2035, grid cost on) default and 'sync6' sha1 4e0b77a5f1f4, 'inertia' 39f092d5e626, identical
+  to main de004de; engine outputs on Today 2026 and Least-cost path 2035 identical to main's.
+- LP with the stock on: only balance-row right-hand sides change (1,180 of 2,280 rows; night hours untouched); with the VPP on, only
+  its own columns and rows (vppe_, vppd_, vppc_, vppdmax_, vppcmax_, vppsoc_, vppdur_, vppev_, vppevs_, vppev1_) and its terms in the
+  balance rows. HiGHS solves the default, stock and stock-plus-VPP LPs (Optimal, 57, 61 and 140 s).
+- Engine, stock on (Least-cost path 2035, only btmStockGWh changed): per GWh of cycling stock added since 2026, the evening (17:00-22:00)
+  mean falls about 130 MW and the annual peak about 135 MW, linear to 5 GWh (1, 3, 5 GWh: -135, -405, -675 MW); at 8 GWh central (12.1
+  GWh added by 2035) -1,431 MW at the peak, CO2 79.29 to 78.01 Mt, system cost +R3.80bn of which R4.73bn is the new battery capital in
+  btmCapexR. Hourly energy balance error at most 1.5e-11 MW; the identity B S + (C - E) + E = S holds every year.
+- Engine, VPP at its enrolment cap (3.22 GWh, 429 MW delivered): no hour forecast short on Least-cost path 2035; at coal EAF 50%, 21 h
+  forecast short, 13 event-hours used, unserved 66.90 GWh/yr against 66.65 with the stock alone, system cost +R0.52bn over the stock
+  alone (the enrolled batteries give up their daily evening cycle, message 622).
+One-year build test (message 628; c6e's settings, env_c6a.sh, GAS_FIRST=2035, HORIZON=2035, builds to 2034 fixed at c6e's with the
+VPP's enrolment free in every year, one pass, build 2026-11-02l, 11:02-11:07 UTC; scratchpad btm1y/run.sh):
+| | Objective, R bn | Against c6e's build | VPP enrolled, GW delivered by year 2026-35 | Event-hours used of 45 |
+|---|---|---|---|---|
+| c6e's build | 1,079.931 | - | - | - |
+| Stock on (8 GWh, glide) | 1,075.552 | -4.379 | - | - |
+| Stock and VPP option | 1,075.552 | -4.379 (0.000 against the stock alone) | 0 in every year | 0 |
+The stock's saving is the LP's; the household battery capital (btmCapexR) is outside the LP objective and is counted in the engine.
+Finding: under 622's rule (enrolled batteries leave the self-consumption profile) the optimiser never enrols: each enrolled GWh gives
+up a daily evening discharge, valued every day, for at most 45 event-hours a year; and this 2035 test builds no new utility batteries,
+so short-duration firm capacity has little value in it. Open for the user (message 628's second point): keep 622's rule or let enrolled
+batteries cycle daily and be called for events.
+
+VPP after messages 630 and 631 (c)-(f) (build 2026-11-02o, 541ffd9: enrolled batteries cycle daily and are called for events; cost
+Brattle's battery participant cost, $500 + $140 per 7.5 kW a year, 2022 dollars, CPI-U to 2026, US$94.84, about R1,565/kW-yr of
+nameplate, R4,671 per kW delivered at 33.5%; planning credit min(1, 3 h/4); one event a day, events only on stress days, 45 h a year):
+- One-year build tests (as above, 11:16-11:21 UTC on 02m and repeated by the break-even search on 02o): enrolment 0 in every year
+  2026-35, no event-hours used, cost equal to the stock alone (R1,075.552bn, R4.379bn under c6e's build), unserved unchanged.
+- Engine, Least-cost path 2035 at coal EAF 50%, stock 8 GWh, enrolment at its cap (3.22 GWh, 431 MW delivered): 19 hours forecast
+  short, 4 event-hours on 2 days, 1,370 MWh shifted within those evenings, unserved 66.65 GWh/yr (the same as the stock alone: the
+  shifted energy leaves later evening hours that are also short), system cost +R2.0bn (the participant cost).
+- Break-even (message 632 (a); one-year build test at 2030 and at 2035, c6e's builds to the year before fixed, stock 8 GWh, the VPP's
+  cost bisected; scratchpad vppbe/search.sh, 11:28-11:56 UTC): at zero cost the LP enrols to the cap (2.32 GWh in 2030, 3.22 in 2035);
+  at US$1.48/kW-yr of nameplate (about R24/kW-yr, R73 per kW delivered) and above it enrols none, in both years. The break-even lies
+  between US$0 and $1.48: against R1,565, the VPP as modelled has almost no value to the plan.
+Finding: with enrolled batteries already cycling daily on the self-consumption profile, an event can only move their evening energy
+earlier within the evening, which the plan values at almost nothing; the option is kept (default off) and recorded as a finding, not
+used in c7. Caveat: one-year tests on c6e's fixed builds; no outage at the customer modelled.
+
+### Enrolled home batteries as coordinated storage, and geyser control with a fixed staggered return: with Least-cost path 2035's batteries, geyser deferral moves the winter evening net peak later rather than lowering it (user, 2 Nov 2026, messages 637-641; build 2026-11-02t)
+
+VPP (message 637, replacing 630): enrolled batteries leave the passive profile (622's identity) and are dispatched as storage in the
+build LP (a 'vpp' store: power E / 2.5 h, usable 75%, 90% round trip, res_ credit by the storage rule on 1.875 usable hours) and in the
+engine (added to the lithium tier); cost the battery participant cost (about R1,565/kW-yr of power); no event cap. Checks: default LP
+sha1 4e0b77a5f1f4 and engine identical to main; the option on adds only its own rows and columns. Test LP (Least-cost path 2035 preset,
+2026-30, stock 8 GWh): enrolled at the cap in 2026 (320 MW), none after; that LP's new lithium is capped at 68 MW a year by the page's
+build-rate box as loaded in the harness, so in 2026 enrolment stands in for lithium that cannot be built; utility lithium at the same
+1.875 usable hours costs R1,127/kW-yr in 2026, R997 in 2030 and R856 in 2035 (annuity and fixed O&M x battDurationMult), against
+R1,565. Engine, coal EAF 50%, stock 8 GWh, enrolment at its 3.22 GWh cap (1,288 MW): unserved 66.04 GWh/yr against 66.65 with the
+stock alone; battery discharge in the 15 hours the stock alone sheds 6,929 MWh against 4,791; system cost +R1.80bn (the participant
+cost R2.02bn). Break-even on c6e's one-year builds (message 640): below, when the search finishes.
+Geyser control (messages 633-635, 638, 641): inputs in SOURCES 'Geyser control: inputs (message 635)': 5.2 to 6.4 million geysers,
+30% cap, 0.4 kW gross per enrolled geyser (638), 4-hour deferral ('hold', central) or the LBNL/Wits rotation (a quarter off for an hour
+each, 'rotation', cautious), windows 06:00-09:00 and 17:00-21:00 (LBNL/Wits Table ES 2), 0% loss central, R2,000/kW-yr; one fixed
+return rule in both models (641): each hour's deferred heating returns evenly over the following deferral hours. The LBNL/Wits 157 MW
+is their rotation's reduction of the geysers' own load; ours holds all enrolled geysers for up to 4 hours (638): a design difference,
+not calibration. Winter check (Least-cost path 2035, June-August, against the stock alone; the grid's 17:00-22:00 maximum after
+rooftop and storage; stock alone peaks at 35,065 MW, no unserved):
+| | Hold, 0.4 kW | Rotation, 0.4 kW |
+|---|---|---|
+| Enrolled; off per window hour | 768 MW; 768 MW | 768 MW; 192 MW |
+| Daily evening net peak, mean change (median) | +20 MW (0) | +0.7 MW (0) |
+| Winter net maximum, change; its hour | +469 MW; 21:00 | +378 MW; 20:00 |
+| Unserved | 0 (the earlier water-filling return gave 1.09 GWh) | 0 |
+| Energy shifted a year; per controlled day-window | 770 GWh; 1,629 MWh | 193 GWh; 407 MWh |
+| Cost per MWh shifted (R23/GBP, unsourced) | R1,994 (about GBP 87) | R7,976 (about GBP 347) |
+NESO's Demand Flexibility Service paid about GBP 174/MWh (SOURCES; a benchmark, not an input): DFS pays per MWh for occasional events,
+the geyser option per kW-yr. Finding (message 641): with Least-cost path 2035's 11 GW of batteries flattening the evening, deferring
+geyser heating mainly moves the net peak later (the return sets a new evening maximum at 20:00-21:00), not lower; the geysers' own load
+falls by its gross amount in the windows. Test LP (stock and geyser, 2026-30): enrolled at the cap in 2026 (667 MW), none after.
+Caveats: one preset, no rebuild; the planning-reserve peak (TODO 14mi) gives geysers no credit; pre-heating into the solar afternoon is
+TODO 14mj.

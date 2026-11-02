@@ -1731,3 +1731,121 @@ lines from live code cost a day the week before. Both are in RULES.md now.
 
 **Share before reporting.** Three times files were described as delivered when only the copy had
 run. The fix is mechanical: end the turn with the file, never write "above" in prose.
+
+## Behind-the-meter batteries and virtual power plants, minimum version: design (user, 2 Nov 2026, messages 621 (b) and 622-624; TODO 14lq (1)-(2), 14lu)
+
+Design for the user's decisions before anything is built; built and checked by Wed 4 Nov. Sources: SOURCES 'Behind-the-meter
+batteries: stock and growth' (the advisor's estimate, labelled ours; the modes and reserve, our assumptions) and 'Virtual power plants:
+costs to source'. Defaults off on the page (LP key and every page output unchanged) until c7 rebuilds the presets; c7's central sets them.
+
+The stock and its modes
+- P1. Stock S(y): 8 GWh in 2026 (about 6 GWh homes, 2 GWh businesses), +0.9 GWh a year; cases 4 and 14 GWh (growth scaled 4/8 and
+  14/8, 0.45 and 1.58 GWh a year; agreed, message 625). Power at 2.5 hours (3.2 GW in 2026); round trip 90% (14cd).
+- P2. Modes (message 624, replacing 623). Each battery is in one mode at a time:
+  backup-only: held full for load-shedding, not cycled, no effect on demand; share B(y) of the whole stock, 2026 stock included: 50% in
+  2026 falling linearly to 0% by 2030 (50, 37.5, 25, 12.5, 0%), 0 after; sensitivity: 50% throughout (load-shedding returns);
+  cycling: the self-consumption profile (P3) on the energy above an owner reserve of 25% of capacity; share 1 - B(y);
+  enrolled in a VPP (V1; message 637, replacing 630's rule and restoring 622's): enrolled batteries leave the self-consumption
+  profile and are coordinated storage, dispatched by the build LP and the engine like utility storage (AEMO separates passive and
+  coordinated consumer storage): usable energy 75% of capacity, power at 2.5 hours, round trip 90%, charging from any surplus or the
+  grid as other storage does, no event cap.
+  The 50% start, the glide path and the 25% reserve are our assumptions; no source found yet (SOURCES).
+- P3. The profile, fixed and the same in the engine and the build LP: each day the cycling stock charges from rooftop output, in
+  proportion to the day's rooftop profile, up to the smaller of its usable energy (75% of capacity) and half the day's rooftop output,
+  and discharges that energy x 0.90 evenly over 17:00-22:00, within its power. Applied to demand before dispatch, as rooftop is; no
+  forecast, no price response.
+- P4. Cost (message 625): household and business battery capital in btmCapexR, as rooftop is, at GreenCape's R5,000/kWh installed, on
+  the stock added after 2026.
+
+How each mode enters demand and the build (messages 622-624)
+- The 2026 base demand is Eskom's metered grid demand, so the 2026 stock, as it behaved in 2026, is already in it. With S0 = S(2026),
+  C(y) = (1 - B(y)) S(y) the cycling stock, C0 = C(2026) = 0.5 S0 and E(y) the enrolled energy (a build-LP variable):
+  backup-only, B(y) S(y): nothing (no demand, no build, no capacity credit; outages are not modelled at the customer);
+  cycling, not enrolled: the passive profile per GWh of usable energy x 0.75 x [C(y) - E(y) - C0] added to demand before dispatch, in
+  the engine and the build LP's balance rows (linear in E): only the change from 2026, that is the 2026 stock moving from backup to
+  cycling plus the stock added since, less what is enrolled; negative when enrolment exceeds that change, the enrolled batteries'
+  metered self-consumption then put back into demand before they are dispatched (messages 622 and 637);
+  enrolled, E: coordinated storage of usable energy 0.75 E and power E / 2.5 h at 90% (build LP: STORE 'vpp', variable vppp_<y> =
+  power, on the daily and chained state-of-charge rows lithium uses; engine: added to the lithium tier's MW and MWh, the tier's round
+  trip weighted by energy); credited in the planning reserve rows by the storage rule on its usable hours, bldStorageCredit(0.75 x
+  2.5 h) x power (about 0.47); cost V4 per kW of power.
+- Double-count check (messages 623 and 637). Every GWh of S(y) is in one place: B(y) S(y) + [C(y) - E(y)] + E(y) = S(y). Against 2026's
+  metered behaviour only [C(y) - E(y)] - C0 enters demand, so the 2026 stock is never added again. Within the cycling and enrolled
+  stock, 25% is held back and 75% used. The engine asserts the identities each year (and that the lithium tier carries E / 2.5 h of
+  enrolled power) and reports each term; the build LP carries them as linear terms in E.
+
+The virtual power plant (a build option)
+- V1. A build variable in the build LP, GWh of enrolled battery energy by year (E), linear build. Enrolment cap (message 625): 20% of
+  the cycling stock, Brattle's participation rate (Real Reliability, Technical Appendix, 5 May 2023, Tables 1-2: 20% of eligible
+  customers); high case 50%; in 2026 no more than the Plentify-Deye 2.7 GWh (energy-storage.news, 20 Jul 2026). No battery enrolment
+  rate is published: LBNL, '30 Proven Strategies to Increase VPP Enrollment' (Dec 2024), p.5, has over half of eligible customers only
+  for Xcel's air-conditioning control.
+- V2 and V3 (withdrawn, message 637): the delivered share of nameplate (CEC DSGS, 33.5%) and the event budget (15 events of 3 hours;
+  100 of 2 a sensitivity) applied to event-called batteries; coordinated storage has neither. The build LP's event rows (vppev_,
+  vppevs_, vppev1_), the engine's event dispatch, vppEvents, vppEventHours and BTM_STOCK.vppDeliveredShare are removed;
+  engineForecastShort stays for ssLiftForecast 'reservecoal'.
+- V4. Cost (message 631 (c), replacing US$42.85/kW-yr per kW delivered, Brattle's Table 4 net system cost of a mostly non-battery VPP,
+  which was also converted without escalation): Brattle's battery participant cost, $500 incentive plus $140 other costs per
+  participant a year over 7.5 kW of participant battery (Real Reliability, Technical Appendix, 3 May 2023, Tables 1, 3, 4; 2022
+  dollars) = $85.3/kW-yr, x US CPI-U January 2026 over the 2022 annual average (325.252 / 292.655, as the model escalates US costs) =
+  about $94.8/kW-yr, at R16.50/US$ about R1,564/kW-yr, per kW of enrolled power (E / 2.5 h). In index.html: VPP_BATT_PARTICIPANT,
+  US_CPI_2022_TO_JAN26, FIXED.vppCostUsdKwYr.
+- V5. The existing VPP slider (a 4 GW geyser pool x enrolment, with 0.35 kW of 4-hour batteries per geyser kW, no cost) stays for
+  geysers; with the build option on, its battery component is off, so the same batteries are not counted twice.
+
+Checks: the LP-key test (default unchanged; each option on changes only its own rows and columns); the engine's energy balance and
+the identities; with the stock on, the evening peak and firm build per GWh at 1, 3 and 5 GWh (14lq (1)'s first report); the presets
+unchanged at the default; the full suite before the PR.
+Decided: the 2026 stock not added again (622); the modes, glide path and reserve (624); P1's cases scale growth, P4 in btmCapexR, V1's
+20% cap (50% high), V5 (625); V4 Brattle's battery participant cost escalated to 2026 and one forecast function (631); enrolled
+batteries as coordinated storage, out of the passive profile, no event cap, credited by the storage rule (637, replacing 630's daily
+cycling with events and 631's event-length credit).
+
+## Geyser control (and pool pumps) as a VPP build option: design (user, 2 Nov 2026, message 633)
+
+Updated by messages 635, 638 and 641 (RESULTS 'Enrolled home batteries as coordinated storage, and geyser control with a fixed staggered
+return'): the inputs are sourced (SOURCES 'Geyser control: inputs (message 635)'); the central gross reduction is 0.4 kW per enrolled
+geyser with the LBNL/Wits rotation as the cautious sensitivity; both windows are sourced; the return is one fixed staggered rule in
+both models (each hour's deferral returned evenly over the following deferral hours), replacing G3's band and G4's water-filling below;
+pool pumps are out (a limitation).
+
+Design for the user's decisions before anything is built; c7 waits for it with 631-632. The advisor is sourcing the inputs marked
+[advisor]; none is filled from memory. Default off (LP key and page outputs unchanged) until c7 sets it.
+
+What exists: the VPP slider (FIXED vppGeyserPoolMW 4,000 x vppEnrolPct, default 0) moves a fixed MW block of geyser load each day out
+of the six highest net-load hours into the twelve lowest (water-filled, 6% more returned than taken: drShiftLossPct), in the engine
+only, with no cost, no cap from device counts and no row in the build LP.
+
+G1. Size. Controllable diversified load at the evening peak, MW = devices x participation x diversified kW per device at peak:
+  geysers: electric geyser count [advisor], diversified kW per geyser at the winter evening peak [advisor]; pool pumps if the data
+  allow (count, kW, run hours [advisor]), else left out and stated. The enrolled MW is a build-LP variable gy_<y> (linear build),
+  capped by devices x a participation cap [advisor] (the best programmes' share, as V1 for batteries), and in 2026 by pilots in hand
+  (Plentify, Cape Town's Smart Geyser pilot) [advisor].
+G2. What a controlled geyser does: its heating is shifted, not removed. Within a day the shifted energy is returned in other hours,
+  with a standing-loss uplift (drShiftLossPct 6%, recorded, unsourced today; [advisor] to source or replace). Thermal storage in the
+  tank limits the shift: at most H_max hours of a geyser's heating deferred [advisor; about 4-6 h typical for a 150-200 l tank on
+  a standard element, to be sourced], and no unmet hot water (all deferred heating returned the same day, before the morning peak
+  where it would collide).
+G3. Shifting rule in the build LP (representative and stress days): per hour, geyser load reduction gs_h <= enrolled MW x the hour's
+  share of the geyser profile [advisor: the geyser load profile, or the existing pool shape]; returned load gr_h >= 0 in the other
+  hours; per day sum gr = (1 + loss) x sum gs; the deferral window: each hour's reduction returned within H_max hours (a band of
+  rows), so the LP cannot move the morning peak's heating to the afternoon beyond the tank's reach. Linear in gy_<y>.
+G4. Shifting rule in the engine: the existing water-filling heuristic, driven by the enrolled MW from the build (in place of the
+  slider's pool x share), with the same H_max window and the same loss; the engine and the LP shift by the same rule so the build is
+  checked on its own terms.
+G5. Event or shifting limits: geyser control is a daily shift, not an event, so no event budget; the limit is the deferral window
+  (G2) and the cap on the share of an hour's load that can be moved (today 45% of the hour, kept as a guard).
+G6. Cost: controller capital (per device, R [advisor]) annuitised over its life [advisor] at the household rate (as rooftop), plus
+  running cost (platform, communications, per device a year [advisor]), divided by diversified kW at peak = R per kW-yr; participant
+  payments are transfers, not system cost. Planning credit in the reserve rows at the enrolled MW x the share of the peak hour moved
+  (credited as demand reduction at the peak).
+G7. Double count (as 622): today's geyser load, controlled or not, is inside the 2026 metered demand. Only the shift enters: the
+  enrolled MW's reduction and return are net of 2026's controlled share, which is small (pilots; Eskom's ripple control largely
+  lapsed [advisor to confirm]); stated as an identity: demand after control = metered demand - shifted + returned, energy up by the
+  loss only. The VPP slider's geyser component is off when the build option is on (as V5 for batteries).
+G8. Limitations recorded: EV managed charging is out of scope until EV demand is in the model; pool pumps only if sourced; one
+  national pool, not regional.
+Checks: LP-key test (default unchanged; the option on changes only its own rows and columns); the engine's energy balance (energy up
+by the loss only); the evening peak cut and morning return per GW enrolled; the identity each year; a one-year build test (2030 and
+2035) with enrolment by year and cost against the stock alone; suite before the PR.
+For the user: G1's participation cap and pool pumps; G2's deferral window; G3/G4 one rule in both; G6's cost basis once sourced.

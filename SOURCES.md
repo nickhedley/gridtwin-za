@@ -2018,6 +2018,42 @@ weekly System Status report, 2026 Week 42 (12-18 October). The arithmetic is our
   participant cost (the VPP slider's note says so from build 22e). Participant bill savings and payments are transfers, for the
   retail panels, not system cost.
 
+
+## Geyser control: inputs (message 635)
+
+Inputs for geyser control as a VPP build option (user, 2 Nov 2026, message 635; HANDOVER 'Geyser control (and pool pumps) as a VPP
+build option: design', G1-G8), as given; each is one named constant or FIXED key in index.html (GEYSER_CTL, gy*).
+- Electric geysers: 5.2 million in 2023 rising to 6.4 million in 2033, linear between (Yen, Nixon, de la Rue du Can, Covary, Lutz,
+  Dekenah, 'Residential Water Heating DSM - South Africa, Executive Summary', LBNL/Wits, May 2024, p.2); range 4.5-7 million. Before
+  2023 and after 2033 the end values are held (our choice, conservative).
+- Enrolment cap: 30% of geysers (Brattle, Real Reliability, Technical Appendix, 2023, Table 1, p.10; the LBNL/Wits scenario); range
+  10-55% (Ausgrid hot water load control trials, Aug 2016, about 56% on controlled load).
+- Gross peak reduction per enrolled geyser: 0.4 kW central (message 638 (a), replacing 0.5), range 0.3-0.9 (Plentify HotBot trial,
+  up to 0.43 kW measured, UCT M&V body, Business Day 10 Dec 2023; Brattle 0.27-0.51 kW). The model computes the comeback after the
+  shift itself.
+- Rotation, the cautious sensitivity (message 638 (a); gyMode 'rotation', central 'hold'): LBNL/Wits Executive Summary (May 2024),
+  Tables ES 2-3, CSwitch-2033: a quarter of the 30% enrolled geysers switched off for one hour each, in rotation over 17:00-21:00
+  (about 7.5% of all geysers off at a time): -157 MW in winter, -24 W ADMD across 6.4 million geysers. In the model a window hour's
+  reduction is a quarter of the enrolled MW, returned in the next hour (each geyser's one hour off; message 641). Under 'hold'
+  each hour's reduction returns spread evenly over the following gyDeferH hours (a staggered controller, message 641).
+- Deferral window: 4 hours, range 2-6 (LBNL/Wits Tables ES 2-3, 17:00-21:00 at 99% comfort; Ausgrid 2016).
+- Extra loss from shifting: 0% central (LBNL/Wits Table ES 3: controlled switching slightly reduced annual energy); 6% a sensitivity
+  (the existing drShiftLossPct).
+- Cost: R2,000 per kW-yr of gross reduction, range R1,000-4,500 (HotBot R5,399-6,399 including installation and 5 years' service,
+  Investec/Plentify FAQ, Jun-Jul 2023; Brattle; Cadmus for BPA 2018, US$72-122/kW-yr); our derivation.
+- Geyser shape: the model has no hourly geyser load profile, so the control windows stand in for it, share 1 inside each: 06:00-09:00
+  and 17:00-21:00, the hours LBNL/Wits's controlled switches are off (Table ES 2; message 638 (a), which sources the morning window).
+- Pool pumps: about 700,000 (Covary and Gotz, bigee.net, Jul 2015); no source for their load at the peak, so they are left out
+  (a limitation, G8).
+- Benchmark, not an input (message 639): NESO's Demand Flexibility Service, winter 2024/25 (27 Nov 2024 - 28 Mar 2025): nearly 2
+  million households and businesses registered, 44 events, 3,917.7 MWh reduced or shifted (3,759 MWh in 2023/24), 5,421 MWh of bids
+  accepted at GBP 1,233,311, GBP 943,983 paid out, about GBP 174/MWh paid (our division: 943,983 / 5,421). NESO news release
+  'Nearly 2 million households and businesses registered for Demand Flexibility Service (DFS) last winter' (2025). DFS is
+  behaviour-based and paid per MWh; the geyser option is device-based and paid per kW-yr.
+- LBNL/Wits's 157 MW against the model (messages 635 and 638 (a)): the gap is one of design, not calibration. Their 157 MW is a
+  rotation, a quarter of the enrolled geysers off for an hour each (about 7.5% of all geysers at a time, -24 W ADMD); the model's
+  central 'hold' takes all enrolled geysers off for up to 4 hours. The comparison is made on the system's evening net peak (the
+  grid's evening maximum after rooftop and storage, against the stock alone), with gyMode 'rotation' for theirs.
 ## Coal flexibility benchmarks for UC_FLEET (user, 22 Oct 2026, messages 336 (b), 341 (c), 343 (a) and 344 (a); recorded, no model change)
 
 What other fleets show or what the literature measures, beside the model's UC_FLEET (minimum stable 0.65 for 15 groups and 0.50, our
