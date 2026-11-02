@@ -905,6 +905,11 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mi. Planning-reserve peak (user, 2 Nov 2026, message 638 (c)): the build LP's res_ rows take the annual peak from demand with rooftop
+added back (PROFILES.demand), which peaks at about 10:00, so evening-only resources (geyser control, enrolled batteries' evening
+discharge) get no planning credit there. A known limit for any run with a planning margin (bldPlanMarginPct > 0); c7 keeps the margin
+at 0. Fix (after the note): take res_'s peak from net demand after rooftop, in the hours the evening peak falls.
+
 14mh. Geyser control (and pool pumps) as a VPP build option, before c7 (user, 2 Nov 2026, message 633): design in HANDOVER 'Geyser
 control (and pool pumps) as a VPP build option'; the advisor sources geyser count, diversified peak load, controller cost and
 participation. Limitation recorded: EV managed charging stays out until EV demand is in the model.
