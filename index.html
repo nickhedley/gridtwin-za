@@ -8786,6 +8786,10 @@ function simulate(u, prof, outPath, _soc0){
     // held for the inertia floor ('reserve'). Equal to battPower in every other mode. The look-ahead's own discharge (_laAhead) is capped
     // at it too: uncapped, it left 324 hours short of the floor in the 2035 one-year test (RESULTS 'Reserved grid-forming headroom').
     const battPowerH = battPower - _ssBattRes;
+    // With headroom held, charge and discharge together stay within battPowerH: each path is capped alone, so a charge after a
+    // discharge in the same hour could eat the headroom (2034 on the c6e rebuild, RESULTS 'Reserved grid-forming headroom'). Infinity
+    // when nothing is held, so every other mode is unchanged.
+    const _resRoom = () => _ssBattRes > 0 ? Math.max(0, battPowerH - Math.max(0, stack.batt[h] || 0) - Math.max(0, chargeBattMW[h] || 0)) : Infinity;
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is not must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -8915,7 +8919,7 @@ function simulate(u, prof, outPath, _soc0){
       const coalFloor=Math.min(cAvail+_walkMW,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
-      let btChg=Math.min(surplus,battPowerH,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
+      let btChg=Math.min(surplus,battPowerH,battEnergy-battSoc,_resRoom()); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       // export before curtailing, but after storage. Stored energy can be sold
       // into the domestic evening peak at more than the regional pool pays, so
@@ -8995,7 +8999,7 @@ function simulate(u, prof, outPath, _soc0){
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
         const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
-        let btChg=Math.min(forcedSurplus,battPowerH,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
+        let btChg=Math.min(forcedSurplus,battPowerH,battEnergy-battSoc,_resRoom()); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
         // off instantly), then coal trips if the oversupply still exceeds all renewable output.
@@ -9173,7 +9177,7 @@ function simulate(u, prof, outPath, _soc0){
           addCharge(h,'ps',psChg,_gasChgCost); psSoc+=psChg*psEffTot; excess-=psChg; chargeMW[h]+=psChg;
         }
         if(excess>0){
-          let btChg=Math.min(excess,battPowerH,battEnergy-battSoc);
+          let btChg=Math.min(excess,battPowerH,battEnergy-battSoc,_resRoom());
           btChg=tierChargeAt(btChg,h,_gasChgCost); addCharge(h,'batt',btChg,_gasChgCost);
           syncBattSoc(); excess-=btChg; chargeMW[h]+=btChg;
         }
@@ -9212,7 +9216,7 @@ function simulate(u, prof, outPath, _soc0){
       // Look-ahead (14do): after gas, the short stores give what they hold above the later hours' need beyond coal, gas and
       // diesel (energy held against later shedding stays), ahead of diesel; the rest only against this hour's shed, below.
       if (_laOn && residual > 1e-6){
-        const _lim = Math.min(battPowerH - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
+        const _lim = Math.min(battPowerH - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc), _resRoom());
         if (_lim > 0){ _disHour = h; const _b3 = tierDischarge(Math.min(residual, _lim), Math.max(0, _laSoc() - _laReq(h, 0, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p), _laGR * ccgtCap))); _disHour = -1; syncBattSoc(); residual -= _b3; E.batt += _b3; stack.batt[h] += _b3; }
       }
       if (_laPsOn && _laPsLastH && residual > 1e-6) _psGive(psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p), _laGR * ccgtCap));
@@ -9293,16 +9297,16 @@ function simulate(u, prof, outPath, _soc0){
         // added up to 80% of the rating again (c5b_14r's 15 stress weeks: 243 hours, 386 GWh above the rating).
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,Math.max(0,psPowerTot-chargePsMW[h]),psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
         if(!_laOn){
-          if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPowerH*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
+          if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPowerH*0.6,battTargetCeiling-battSoc,head,_resRoom()); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
         } else {
           // Look-ahead (14do): the short stores take coal only for what the window needs beyond coal and its own surplus;
           // the long stores only against the forecast shortfall over their horizon, with no daily floor.
           const _sNow = _laSoc(), _sTgt = _laReq(h, 0, coalGen, rampAllowedMW);
-          if(head>0&&_sNow<_sTgt-1e-6){let w=Math.min(_laP*0.6,_sTgt-_sNow,head); w=_chargeGroup(w,h,chgC,_shortTiers); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w; head-=w;}
+          if(head>0&&_sNow<_sTgt-1e-6){let w=Math.min(_laP*0.6,_sTgt-_sNow,head,_resRoom()); w=_chargeGroup(w,h,chgC,_shortTiers); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w; head-=w;}
           if(_longTiers.length){
             const _lE=_longTiers.reduce((a,t)=>a+t.mwh,0), _lP=_longTiers.reduce((a,t)=>a+t.mw,0), _lS=_longTiers.reduce((a,t)=>a+t.soc,0);
             const _lTgt=Math.min(_lE*0.8, anticipatedShortfall[h]);
-            if(head>0&&_lS<_lTgt){let w=Math.min(_lP*0.6,_lTgt-_lS,head); w=_chargeGroup(w,h,chgC,_longTiers); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w; head-=w;}
+            if(head>0&&_lS<_lTgt){let w=Math.min(_lP*0.6,_lTgt-_lS,head,_resRoom()); w=_chargeGroup(w,h,chgC,_longTiers); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w; head-=w;}
           }
         }
         // Gas headroom charges storage too when the forecast shortfall exceeds coal and gas
@@ -9316,13 +9320,13 @@ function simulate(u, prof, outPath, _soc0){
           const btG=Math.min(battEnergy*0.8, anticipatedShortfallG[h]);
           if(gh>0&&psSoc<psG){const w=Math.min(psPowerTot*0.8,Math.max(0,psPowerTot-chargePsMW[h]),psG-psSoc,gh); if(w>0){addCharge(h,'ps',w,gC); psSoc+=w*psEffTot; gh-=w; chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
           if(!_laOn){
-            if(gh>0&&battSoc<btG){let w=Math.min(battPowerH*0.6,btG-battSoc,gh); w=tierChargeAt(w,h,gC); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
+            if(gh>0&&battSoc<btG){let w=Math.min(battPowerH*0.6,btG-battSoc,gh,_resRoom()); w=tierChargeAt(w,h,gC); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
           } else {
             const _gTgtS=_laReq(h, 0, coalGen, rampAllowedMW, ccgtCap), _gS=_laSoc();
             const _gGroups=[[_shortTiers, _laP, _gS, _gTgtS]];
             if(_longTiers.length){ const _lE=_longTiers.reduce((a,t)=>a+t.mwh,0); _gGroups.push([_longTiers, _longTiers.reduce((a,t)=>a+t.mw,0), _longTiers.reduce((a,t)=>a+t.soc,0), Math.min(_lE*0.8, anticipatedShortfallG[h])]); }
             for(const [tiers, pw, soc, tgt] of _gGroups){
-              if(gh>0&&soc<tgt-1e-6){let w=Math.min(pw*0.6,tgt-soc,gh); w=_chargeGroup(w,h,gC,tiers); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; gh-=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
+              if(gh>0&&soc<tgt-1e-6){let w=Math.min(pw*0.6,tgt-soc,gh,_resRoom()); w=_chargeGroup(w,h,gC,tiers); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; gh-=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
             }
           }
         }
@@ -9364,7 +9368,7 @@ function simulate(u, prof, outPath, _soc0){
       if (_laPsOn && !_laPsLastS && residual > 1e-6) _psGive(psSoc);
       // Look-ahead (14do): energy still held for later hours serves this hour's shed.
       if (_laOn && residual > 1e-6){
-        const _lim = Math.min(battPowerH - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
+        const _lim = Math.min(battPowerH - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc), _resRoom());
         if (_lim > 0){ _disHour = h; const _b4 = tierDischarge(Math.min(residual, _lim)); _disHour = -1; syncBattSoc(); residual -= _b4; E.batt += _b4; stack.batt[h] += _b4; }
       }
       if (_laPsOn && _laPsLastS && residual > 1e-6) _psGive(psSoc);
@@ -21278,7 +21282,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02d';
+const BUILD_STAMP = '2026-11-02e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
