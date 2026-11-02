@@ -20087,3 +20087,32 @@ with main's reference logs (28af9d5's set): validate_findings 36/39, validate_re
 off-peak), validate_benchmarks 28/30, validate_outputs 49/51, eng5 'storage vs unserved'; the same names in each. Passing that
 failed on build x (the claude/coc-closed rename): validate_pathway_presets 65/65, validate_weather 68/68, validate_worker 38/38.
 Visible text against main: none changed (diff_public_text.js, 2,187 sentences before and after).
+
+### c7's central: R2,467.7bn over 2026-40 with the system strength and emissions compliance charges, R182bn above the reviewed c6e rebuild; CO2 1,715 Mt; adequate in every year (highest unserved 6.41 GWh, 2032); the VPP enrols up to 3.0 GWh, geyser control none; coal standing unchanged (user, 2 Nov 2026, messages 642-659; build 2026-11-02y)
+
+Run: chain_c7.sh phase 1 on claude/c7-runs (371f35b; index.html as claude/c7-inputs 0616683), 2 Nov 2026 19:43-20:05 UTC: c6e's settings
+(env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=7200, NTCSA's 20 GWh) plus SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1
+COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1; adequate on the first pass (817 s); engine check pathcheck.js
+LNG=1 GRID=1 SS_FC=reservecoal, 120 runs a year. Recorded: cocCase blended (solar 6.34%, wind 6.29%, lithium 6.88%), coalCost
+{3, 1.1, floor on}, comply, btm and geyser as the plan.
+| | c7 | c6e rebuilt under the reviewed rules (c6e_ssr) | c6e (31a check) |
+|---|---|---|---|
+| Engine PV 2026-40 (8%), R bn | 2,416.4 | 2,284.1 | 2,314.7 |
+| + system strength charge | 1.3 | 1.3 | - |
+| + emissions compliance (Eskom's plan, from 2031) | 49.9 | - | - |
+| Total, R bn | 2,467.7 | 2,285.4 | 2,314.7 |
+| CO2 2026-40, Mt | 1,715 | 1,734 | 1,739 |
+| Highest mean unserved, GWh/yr (year) | 6.41 (2032) | 5.34 (2032) | 5.46 (2032) |
+| Highest open-cycle share | 1.76% | 1.87% | 1.85% |
+| Hours short of the inertia floor | 0 | 0 | 0 |
+| 2040: wind / solar / lithium GW, lithium GWh, gas GW, coal GW | 33.0 / 33.2 / 13.1, 81, 7.2, 17.9 | 32.3 / 33.9 / 15.1, 95, 7.2, 17.9 | |
+| Enrolled VPP, GWh (peak year) | 3.04 (2034); 0.6-2.2 in 2029-31 | - | - |
+| Geyser control, MW | 0 every year | - | - |
+Indicative split of the cost difference by setting, R bn in the year (c7's own builds, one draw per year, each setting off in turn
+on the page's engine): coal fuel +3% a year 9.0 (2030), 13.5 (2035), 16.1 (2040); the blended cost of capital 1.7, 5.0, 6.5; the
+behind-the-meter stock's capital (households' batteries, now in system cost) 1.7, 3.4, 4.8; coal fixed O&M +1.1% a year 1.7, 3.1, 3.4;
+coal's carbon floor -4.7 in 2030 (none after); geyser control 0. With compliance (R49.9bn PV) these account for the R182bn; the phase 3
+single sensitivities give the pathway split. Finding: c7's coal cost and finance assumptions add about 8% to system cost over the
+rebuild with the same coal fleet and slightly lower CO2; coordinated home batteries displace about 2 GW (14 GWh) of utility lithium by
+2040. Caveats: the indicative split is per year on one draw; the compliance charge sits beside the engine's cost (costComply), not in
+it; the behind-the-meter stock's capital is a household cost now counted in system cost, absent from c6e.
