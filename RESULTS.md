@@ -20058,3 +20058,23 @@ Finding for the model: FIXED.costCoal is R553/MWh (ESKOM_FY26.coalCostRbn R91.5b
 about 6% lower. The cause is the cost line taken (R91.5bn against R97.8bn implied); to be established before any change (Rule 366:
 not changed). Gaps: rand costs for most years, one cost definition across years, the road share after 2019, the contract split's
 labels (p.33's charts need a visual check).
+
+### Coal's carbon charge at the law's floor to 2030 (c7's central): R2.4-4.7bn a year less than the present charge on c6e's 2026-2030 coal, R3.9bn less on IRP's 2030 targets, with coal output and CO2 unchanged (user decision, 2 Nov 2026, message 657 (a); build 2026-11-02y)
+
+The floor: R0.035/kWh nominal after the renewable-premium deduction (s6(2) as substituted by the Taxation Laws Amendment Act 5 of
+2026), per MWh of coal output, in 2026 rands at the model's 3% deflator; the present charge: the rates in law less the tax-free
+allowances (carbonTaxAt, 'kept2030'), x emisCoal x the 2026 part-load factor (1.0324), R/MWh:
+| Year | Coal TWh (c6e's engine check, pathcheck_c6e_31a_a) | Present charge | Floor | Change, R bn |
+|---|---|---|---|---|
+| 2026 | 150.2 | 51.0 | 35.0 | -2.4 |
+| 2027 | 149.2 | 55.8 | 34.0 | -3.3 |
+| 2028 | 150.8 | 60.1 | 33.0 | -4.1 |
+| 2029 | 144.4 | 64.3 | 32.0 | -4.7 |
+| 2030 | 125.1 | 68.0 | 31.1 | -4.6 |
+(Our arithmetic at the 2026 part-load factor; the engine's own part-load varies by hour.) Engine, IRP's 2030 targets preset (2030,
+build 2026-11-02y, coalCarbonFloorOn 0 against 1, 2 Nov 2026): carbon cost R7.562bn against R3.637bn, system cost R276.10bn against
+R272.18bn (-R3.92bn), coal 98.77 TWh and CO2 123.36 Mt in both (the dispatch order does not change: coal stays the cheapest
+thermal). Gas and diesel unchanged; from 2031 the existing path. Checks: the page default's LP key unchanged (4e0b77a5f1f4); the
+floor setting changes only its own key (690fa139da48); the engine identical to main's on the three presets at the defaults.
+Caveat: the floor assumes Eskom's renewable-premium deduction takes its liability to the floor each year, not checked against
+Eskom's accounts; the present charge stays as the sensitivity 'carbongross'.

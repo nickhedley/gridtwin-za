@@ -387,9 +387,10 @@ const fix=lp=>{ const oc=/^ 0 <= b_ocgt_\d{4} <= /m.test(lp); return lp.replace(
  const COAL_FOM_ADD = process.env.COAL_FOM_ADD!==undefined ? +process.env.COAL_FOM_ADD : 0;
  // Coal cost paths (user, 2 Nov 2026, messages 651 and 653): COAL_FUEL_ESC, coal fuel % a year real from 2026 (coalFuelEscPct; c7's
  // central 3, sensitivities 0 and 5); COAL_FOM_ESC, labour and coal fixed O&M % a year real (coalFomEscPct; c7's central 1.1);
- // COAL_AGE=1, fixed O&M by unit age (coalFomAgeOn). Recorded as coalCost; pathcheck.js applies them to the engine check.
- const COAL_COST={}; for (const [e,k] of [['COAL_FUEL_ESC','coalFuelEscPct'],['COAL_FOM_ESC','coalFomEscPct'],['COAL_AGE','coalFomAgeOn']]) if (process.env[e]!==undefined){
-   const v=+process.env[e]; if (process.env[e]==='' || !isFinite(v) || (k==='coalFomAgeOn' && ![0,1].includes(v))) throw new Error(e+': '+process.env[e]); COAL_COST[k]=v; }
+ // COAL_AGE=1, fixed O&M by unit age (coalFomAgeOn). COAL_CARBON_FLOOR=1 (message 657 (a)): coal's carbon to 2030 at the law's floor
+ // (coalCarbonFloorOn). Recorded as coalCost; pathcheck.js applies them to the engine check.
+ const COAL_COST={}; for (const [e,k] of [['COAL_FUEL_ESC','coalFuelEscPct'],['COAL_FOM_ESC','coalFomEscPct'],['COAL_AGE','coalFomAgeOn'],['COAL_CARBON_FLOOR','coalCarbonFloorOn']]) if (process.env[e]!==undefined){
+   const v=+process.env[e]; if (process.env[e]==='' || !isFinite(v) || ((k==='coalFomAgeOn'||k==='coalCarbonFloorOn') && ![0,1].includes(v))) throw new Error(e+': '+process.env[e]); COAL_COST[k]=v; }
  w.eval(`for (const k of ${JSON.stringify(Object.keys(COAL_COST))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02x or later'); Object.assign(state, ${JSON.stringify(COAL_COST)}); coalFomMult({...FIXED,...state}, 2040); coalFuelMult({...FIXED,...state}, 2040);`);
  if (!(COAL_FOM_ADD >= 0)) throw new Error('COAL_FOM_ADD must be a number of R/kW-yr, 0 or more');
  w.eval(`if(!('fomCoal' in FIXED)) throw new Error('fomCoal missing');`+(COAL_FOM_ADD?` state.fomCoal=FIXED.fomCoal+${COAL_FOM_ADD};`:''));

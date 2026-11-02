@@ -5824,6 +5824,10 @@ const FIXED = {
   // 1.1, Eskom's cost per employee FY2015-FY2025); coalFomAgeOn, fixed O&M by unit age (COAL_FOM_AGE, the senior contact's curve,
   // unsourced), relative to the 2026 fleet. All 0 by default: the page and its LP unchanged; c7 sets them through the run settings.
   coalFuelEscPct:0, coalFomEscPct:0, coalFomAgeOn:0,
+  // coalCarbonFloorOn (user decision, 2 Nov 2026, message 657 (a)): coal's carbon charge to 2030 the law's floor on a generator's
+  // liability after the renewable-premium deduction (CARBON_COAL_FLOOR_R_KWH, per MWh of coal output), from 2031 the carbon path as
+  // before; coal only. 0 on the page (the rates in law less allowances, carbonTaxAt); c7's central sets 1 through the run settings.
+  coalCarbonFloorOn:0,
   fomNuclear:4260,    // was 3300. Koeberg is 40 years old and in long-term operation.
   fomCcgt:720,        // was 560
   fomDiesel:360,      // was 280. Peakers are cheap to hold relative to their rating.
@@ -7252,12 +7256,13 @@ function coalFuelAt(S, y){ return S.costCoal * coalFuelMult(S, y); }
 function coalFomAt(S, y){ const m = coalFomMult(S, y); return m === 1 ? S.fomCoal : S.fomCoal + FIXED.fomCoal * (m - 1); }
 // Unit commissioning years by UC_FLEET row, in unit order (coalFomAgeOn; user, 2 Nov 2026, message 653 (b); SOURCES 'Coal unit
 // commissioning years'): Global Energy Monitor's station pages and news reports, read as search extracts (to verify against the
-// pages); the original year for units returned to service (Camden, Grootvlei, Komati, Arnot) and for Medupi unit 4's repair; where the
+// pages; Kelvin's 1962 and 1964 and the stations in SOURCES' Global Energy Monitor row read from the pages, 12 Oct 2026); the
+// original year for units returned to service (Camden, Grootvlei, Komati, Arnot) and for Medupi unit 4's repair; where the
 // model's unit groups are not published (Camden, Hendrina, Medupi, Grootvlei, Kelvin), units mapped in order (ours).
 const COAL_UNIT_COD = {
   'Arnot*': [1972, 1971, 1971], 'Arnot**': [1973, 1974, 1975], 'Camden*': [1968, 1967, 1967], 'Camden**': [1967, 1967, 1968, 1969, 1969],
   'Duvha*': [1980, 1980], 'Duvha**': [1982, 1983, 1984], 'Grootvlei*': [1973, 1970], 'Grootvlei**': [1969],
-  'Hendrina*': [1971, 1970, 1971, 1973], 'Hendrina**': [1974, 1977], 'Kelvin': [1969, 1969],
+  'Hendrina*': [1971, 1970, 1971, 1973], 'Hendrina**': [1974, 1977], 'Kelvin': [1962, 1964],
   'Kendal*': [1988, 1989, 1990], 'Kendal**': [1991, 1992, 1993], 'Komati': [1966],
   'Kriel*': [1976, 1976, 1977], 'Kriel**': [1978, 1979, 1979], 'Kusile*': [2017, 2020, 2021, 2022], 'Kusile**': [2024], 'Kusile***': [2025],
   'Lethabo*': [1985, 1986, 1987], 'Lethabo**': [1987, 1989, 1990], 'Majuba*': [1996, 1997, 1998], 'Majuba**': [1999, 2000, 2001],
@@ -8240,7 +8245,9 @@ function simulate(u, prof, outPath, _soc0){
   const _mdAt = h => Math.min(_mdIpp, avonDedisaMustRunMW(p.scenarioYear ?? 2026, h, p));
   let _mdUnmet = 0, _mdMWh = 0;
   const _mdArr = new Float64Array(HOURS);   // must-run output by hour: price-taking, so it never sets the price (message 93)
-  const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
+  // Coal's carbon at the law's floor per MWh of output to 2030 when set (657): no part-load factor, no allowance share.
+  const _cFloor = coalCarbonFloorR(p, p.scenarioYear ?? 2026);
+  const cC=_cFloor ?? p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
   // today's real SA fleet rate and the flexibilised rate based on the flexibilisation slider.
   // Applied both up (can't instantly meet a sudden peak) and down (can't instantly get out of
@@ -9868,7 +9875,7 @@ function simulate(u, prof, outPath, _soc0){
       : ((stack.diesel[h]||0) - _mdArr[h] > 1) ? p.costDiesel + cD + p.vomDiesel
       : ((stack.ccgt[h]||0) > 1)         ? (_ocMW > 1 ? (p.costCcgt + cG)*_ocK + p.vomOcgt : p.costCcgt + cG + p.vomCcgt)
       : ((curtailMW[h]||0) > 1)          ? 0
-      : (coalGen > 1)                    ? coalMarginalCost(coalGen) * partLoadF[h] * ccsCostMult + ccsCostAdd + cC * partLoadF[h]
+      : (coalGen > 1)                    ? coalMarginalCost(coalGen) * partLoadF[h] * ccsCostMult + ccsCostAdd + (_cFloor ?? cC * partLoadF[h])
       : (imp > 1)                        ? p.costImports
       : (hyd > 1)                        ? p.costHydro
       : (nuc > 1)                        ? p.costNuclear + p.vomNuclear
@@ -9901,7 +9908,7 @@ function simulate(u, prof, outPath, _soc0){
     coalFuelMWh += coalGen * plF;   // fuel-equivalent MWh, for emissions
     fuelCost+=coalGen*(p.costCoal*plF+p.vomCoal);
     startUpCostR+=(isNaN(ucStartCost[h])?0:ucStartCost[h]);   // the pre-pass's unit starts, reported as start-up cost (14dl)
-    carbonCost+=coalGen*cC*plF;
+    carbonCost+=coalGen*(_cFloor ?? cC*plF);
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
     reserveAvailArr[h] = !_psResOnce ? Math.max(0, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen)
@@ -10931,6 +10938,15 @@ const CARBON_AIM_2050_USD = 120, CARBON_AIM_USD_INFL_PA = 0.02;
 // The rates in law are nominal. South Africa's inflation target, 3% from 12 Nov 2025 (National Treasury and SARB joint
 // announcement), states them in 2026 rands like every other cost in the model. Used by every path but 'cut2027'.
 const CARBON_CPI_PA = 0.03;
+// The floor on a generator's carbon tax liability after the renewable-premium deduction, R/kWh nominal (s6(2) as substituted by the
+// Taxation Laws Amendment Act 5 of 2026; SOURCES 'Coal cost paths', carbon), applied to coal to 2030 when coalCarbonFloorOn is set.
+const CARBON_COAL_FLOOR_R_KWH = 0.035, CARBON_COAL_FLOOR_TO = 2030;
+// Coal's carbon charge in year y, R per MWh of coal output, at the floor in 2026 rands (the model's 3% deflator), or null when the
+// floor does not apply (off, or after 2030) and the carbon path prices coal as before.
+function coalCarbonFloorR(S, y){
+  if (!((S.coalCarbonFloorOn | 0) > 0) || y > CARBON_COAL_FLOOR_TO) return null;
+  return CARBON_COAL_FLOOR_R_KWH * 1000 / Math.pow(1 + CARBON_CPI_PA, Math.max(0, y - 2026));
+}
 // Effective carbon price for year y, R/t in 2026 rands, as the build optimiser (CARBON_AT) and the engine check
 // (pathcheck.js) both read it. S: FIXED overlaid with the scenario state.
 function carbonTaxAt(y, S){
@@ -12492,7 +12508,7 @@ function bldBuildLP(opts){
       if (e > 0){ obj.push((S.costImports * df).toFixed(3) + ' imp_' + y); IMP_MWH[y] = e; } }
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       const k = y + '_' + r.d + '_' + h;
-      obj.push(((coalFuelAt(S, y) + S.vomCoal + CARBON_AT(y)*EMIS_COAL)*wObj(r)*df).toFixed(3) + ' gc_' + k);   // coal fuel by year (653)
+      obj.push(((coalFuelAt(S, y) + S.vomCoal + (coalCarbonFloorR(S, y) ?? CARBON_AT(y)*EMIS_COAL))*wObj(r)*df).toFixed(3) + ' gc_' + k);   // coal fuel by year (653); carbon at the floor to 2030 when set (657)
       if (COMMIT_SU_Y[y] > 0) obj.push((COMMIT_SU_Y[y]*wObj(r)*df).toFixed(3) + ' su_' + k);
       obj.push(((bldGasFuelR(opts, y, S) + S.vomCcgt + CARBON_AT(y)*EMIS_CCGT)*wObj(r)*df).toFixed(3) + ' gg_' + k);
       obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*wObj(r)*df).toFixed(3) + ' gd_' + k);
@@ -21836,7 +21852,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02x';
+const BUILD_STAMP = '2026-11-02y';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21934,19 +21950,19 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
-  bldCoc, bldCocCase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
+  bldCoc, bldCocCase, bldCocBase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
   bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
   btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
   ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
-  coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt });
+  coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt, coalCarbonFloorR });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
 const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
-  ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
+  ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, CARBON_COAL_FLOOR_R_KWH, CARBON_COAL_FLOOR_TO, CARBON_CPI_PA, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
   WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
-  BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK, BLD_COC_PRIVATE_PREM, BLD_COC_GROUP, BLD_BUILD_Y,
+  BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK, BLD_COC_PRIVATE_PREM, BLD_COC_GROUP, BLD_COC_NAB_GAP, BLD_COC_PRIVATE_SHARE, BLD_COC_PVWIND_CLOSED, BLD_COC_PVWIND_TECH, BLD_BUILD_Y,
   BLD_COAL_UNIT_DATES, EIA_AEO2023_CT_KW, EIA_AEO2023_CC_KW, USD_RATE_R, US_CPI_2011_TO_JAN26,
   COAL_START_SUPER, COAL_START_OFFLINE_H, COAL_START_WEAR_USD, COAL_START_OTHER_USD, COAL_START_FUEL_RMW, COAL_START_FUEL_AT_RGJ,
   COAL_KGCO2_PER_GJ, COAL_GJ_PER_MWH, COAL_PRE_C, COAL_START_EFOR_PCT, COAL_EFOR_REPL_RMWH,
