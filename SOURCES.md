@@ -2331,4 +2331,9 @@ The model's cases (user, message 584 (a); replacing 582 (a)'s central and 583 (a
   residential (about 50,000 new solar homes a year at 10 kWh, an assumption). Cases 4 and 14 GWh.
 - Coordinated share: Deye's 2.7 GWh is the fleet Plentify can reach, not enrolled capacity; it is the cap on the coordinated share, not
   the share.
+- Backup mode (user, 2 Nov 2026, message 623): many South African home batteries are set up as load-shedding backup, held mostly full
+  and rarely cycled. Our assumption, no source found (the advisor and the user are looking: installers, Plentify): 50% of the stock not
+  enrolled is in backup mode, cases 30% and 70%; the rest runs the self-consumption profile. Enrolled batteries keep an owner backup
+  reserve of 50% of capacity (our assumption) and are dispatched only above it. Design: HANDOVER 'Behind-the-meter batteries and
+  virtual power plants, minimum version' (claude/btm-vpp-min).
 TODO 14lu (full version, after the note) replaces the estimate with a sourced stock and growth path.
