@@ -1927,15 +1927,18 @@ Phase 3, the new c7 sensitivities:
 | s_gyrot_c7 | GY_MODE=rotation (LBNL/Wits, a quarter off for an hour each) |
 | s_ff2040novrfb_c7 | Fossil-free 2040 without vanadium flow batteries (651 (d)): s_ff2040_c7's settings plus VRFB_OFF=1 (built, 653 (b)) |
 | coal costs (653 (a), (b)) | s_coalfuel0_c7 (COAL_FUEL_ESC=0, flat), s_coalfuel5_c7 (COAL_FUEL_ESC=5), s_coalage_c7 (COAL_AGE=1), s_comply_full_c7 (COMPLY=full), s_carbontreasury_c7 (CARBON_PATH=treasury), s_ageingcoal_c7 (the bundle: COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full); s_coalsustain_c7 is in phase 2 |
+| the senior contact's stack (message 654 (a)), each engine-checked | s_contact_c7: the central plus COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full CARBON_PATH=treasury (labour and fixed O&M +1.1% as the central); s_deep40nogas_contact_c7: Deep without gas at 40 Mt on the same costs, its cap calibrated on the engine as s_deep40nogas_c7's, starting from that run's cap; s_ff2040_contact_c7: Fossil-free 2040 on the same costs. Reported: each run's cost, its extra cost over s_contact_c7 (the least-cost run under the same costs), CO2 and coal standing in 2030, 2035 and 2040, beside his LP-only figures (least-cost R2,624bn, Deep R2,640bn, Fossil-free R3,532bn; coal 30.3, 21.9 and 7.6 GW), with his caveat that his CO2 is the optimiser's own estimate, not an engine check |
 
 Phase 4, after the pack is filled: 618's six MTSAO runs, (i) the outlook's High demand without gas (DEMAND=index:<3.30% a year path>,
 619) and with gas (GAS_FIRST unchanged); (ii) the Reference Case's inputs without gas: High demand, COAL_EAF_PATH=2027:66,2028:67,
 2029:68,2030:69 and 70 for each year 2031-2040 (years not listed keep coalEAFPct, so all are listed), AVDED_OFF_AFTER=2030,
 REIPPP_RETIRE 0.75 GW a year 2033-36 (wind 375, solar 325, CSP 50), and with gas; (ii) again with the REIPPPP plants kept (620).
 
-Totals: 32 solves plus Deep's 1-3 further calibration rounds (phase 1: 1; phase 2: 13; phase 3: 12; phase 4: 6) and 36 engine checks,
-two at a time: about 22-35 hours of wall time in 24-30 pieces under 2 hours (a pair of runs per piece where both fit). Phase 1 about
-2.5 hours; phase 2 about 10-14 hours; phase 3 about 8-12 hours; phase 4 about 4-6 hours.
+Totals: 35 solves plus Deep's further calibration rounds, its own and the contact's (phase 1: 1; phase 2: 13; phase 3: 15; phase
+4: 6) and 39 engine checks, two at a time: about 26-40 hours of wall time in 27-34 pieces under 2 hours (a pair of runs per piece
+where both fit). Phase 1 about 2.5 hours; phase 2 about 10-14 hours; phase 3 about 12-18 hours; phase 4 about 4-6 hours.
+The early-retirement fixed cost is counted once in the build LP (rc_<y>, cumulative, at the year's fixed cost) and the engine (fixed
+O&M only on coal standing), checked for message 654 (b): no double count.
 
 Reported per run, as c6e's: system cost PV 2026-40 (8%) with the system strength charge, CO2, highest unserved, open-cycle share,
 coal lifted, hours short of the floor, builds by year, and for the new options: enrolled VPP MW and geyser MW by year (pathcheck rows'

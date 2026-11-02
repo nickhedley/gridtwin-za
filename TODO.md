@@ -912,9 +912,14 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
-14ml. Sodium-ion storage (CATL), after the note (user, 2 Nov 2026, message 651 (e), the senior contact's coal-cost feedback): a build
-option beside lithium, with its own capex per kW and per kWh, round trip, cycle life and calendar life; cost basis to source (no
-figure used until sourced).
+14ml. Sodium-ion storage, after the note, queued behind c7 (user, 2 Nov 2026, messages 651 (e) and 655; our own sources, not the
+senior contact's settings). A storage class 'sodium' built like lithium (the same duration choice, wear and power share), no central,
+two named sensitivities: 'natender', capex = lithium's + CNY 0.517/Wh (Renqiu Zhihong, Hebei, 4-hour tender, 15 Sep 2026: sodium
+1.035 against LFP 0.518 CNY/Wh) at the model's FX, flat in real terms, with lithium's life and round trip; 'namaker', capex = lithium's
+from 2027 (CATL's stated system parity), 25-year life (CATL 25-30 years), lithium's round trip. Report the sodium each case builds and
+the change in cost and CO2 for least-cost, Deep and Fossil-free, engine-checked. Not modelled, stated in the pack if used: freight
+and import duty on the gap, heat tolerance. Inputs and links: the project document claude/sodium-ion-inputs-2026-11-02.md, each to
+SOURCES.md; not found in the repository, its branches or the Drive on 2 Nov 2026 (asked for).
 
 14mk. Presets reset the c7 settings keys, after the note (user, 2 Nov 2026, message 648). applyState does not reset ssMode,
 bldCocCase, btmStockGWh, btmBackupPath, btmReservePct, vppBuildOn, vppEnrolCapPct, vppCostCase, vppCostUsdKwYr, gyBuildOn, gyMode and
