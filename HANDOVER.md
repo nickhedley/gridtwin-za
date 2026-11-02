@@ -1679,16 +1679,28 @@ Passive stock (households and businesses, not dispatched by anyone):
   reported beside it at GreenCape's R5,000/kWh. Alternative: add it to btmCapexR as rooftop is.
 
 Virtual power plant (the coordinated share, a build option):
-- V1. A build variable in the build LP, MW of enrolled battery nameplate by year, linear build. Enrolment cap: half the stock
+- V1. A build variable in the build LP, GWh of enrolled battery energy by year (E above), linear build. Enrolment cap: half the stock
   (US DOE, Pathways to Commercial Liftoff: Virtual Power Plants, 2023 and 2025: the best programmes enrol about 50% of eligible
   customers), and in 2026 no more than the Plentify-Deye 2.7 GWh (1.08 GW at 2.5 hours; energy-storage.news, 20 Jul 2026). Decided
   (message 622): enrolled batteries leave the passive profile and are dispatched instead.
-- Double-count check (message 622). With S(y) the stock, S0 = S(2026) and E(y) the enrolled energy, the passive profile is applied
-  to demand for P(y) = S(y) - S0 - E(y) GWh, which is negative when enrolment exceeds the stock added since 2026: the enrolled share
-  of the 2026 stock then has its metered self-consumption added back to demand before it is dispatched. Every GWh is counted once:
-  S0 + P(y) + E(y) = S(y), where S0 + min(0, P(y)) is the passive behaviour inside (or put back into) metered demand and E(y) is
-  dispatched. The engine asserts the identity each year; the build LP holds it linearly (the profile per GWh times E(y) in the
-  balance rows).
+- Three modes (user, 2 Nov 2026, message 623). Each battery is in one mode at a time:
+  backup: held near full for load-shedding, not cycled, no effect on demand outside outages; share b of the stock not enrolled,
+  central 50%, cases 30% and 70% (our assumption, no source found; SOURCES);
+  self-consumption: the passive profile (P3); share 1 - b of the stock not enrolled;
+  enrolled in a VPP: dispatched, using only the energy above an owner backup reserve r, central 50% of capacity held back (our
+  assumption); dispatchable energy (1 - r) E(y), delivered power a third of nameplate (V2).
+- How each enters demand and the build. With S(y) the stock, S0 = S(2026) (inside metered demand, in the same mix), dS = S(y) - S0,
+  and E(y) the enrolled energy (a build-LP variable, cap V1):
+  backup, b (dS - E): nothing (no demand, no build, no capacity credit; outages are not modelled at the customer, so the conservative
+  choice is no credit);
+  self-consumption, P(y) = (1 - b)(dS - E): the passive profile per GWh x P(y) added to demand before dispatch, in the engine and in
+  the build LP's balance rows (linear in E). P(y) is negative when enrolment exceeds the stock added since 2026: the enrolled share of
+  the 2026 stock then has its metered self-consumption put back into demand before it is dispatched (message 622);
+  enrolled, E: storage of power E / 2.5 h / 3 and energy (1 - r) E, within the event limits (V3), charged at that power, credited in
+  the planning reserve rows at the delivered power; cost V4 per kW delivered.
+- Double-count check (messages 622 and 623). Every GWh is in one place: S0 + b (dS - E) + (1 - b)(dS - E) + E = S0 + dS = S(y); and
+  within E, r E held back (no effect) + (1 - r) E dispatched = E. The engine asserts both identities each year and reports each term
+  (GWh) beside the run; the build LP carries them as linear terms in E, so no row counts a battery twice.
 - V2. Delivered capacity a third of nameplate (California's Demand Side Grid Support programme, batteries, 2024: about 91 MW above
   baseline from 270 MW nameplate, about 34%; secondary, the primary evaluation being looked for), credited at that in the
   planning reserve rows and dispatched as storage at that power, 2.5 hours.
@@ -1704,5 +1716,6 @@ Virtual power plant (the coordinated share, a build option):
 Checks: the LP-key test (default unchanged; each option on changes only its own rows and columns); the engine's energy balance with
 the profile; with the stock on, the evening peak and firm build per GWh at 1, 3 and 5 GWh (14lq (1)'s first report); the presets
 unchanged at the default; the full suite before the PR.
-Decisions for the user: P2's cases (growth scaled 4/8 and 14/8); P4 outside system cost or in btmCapexR; V3's 100 events; V5.
+Decisions for the user: P2's cases (growth scaled 4/8 and 14/8); P4 outside system cost or in btmCapexR; V3's 100 events; V5; the
+backup share applied to the post-2026 stock only (the 2026 stock's mix is in metered demand and is not reassigned except as enrolled).
 Decided: P2 and V1's enrolled batteries out of the passive profile (message 622).
