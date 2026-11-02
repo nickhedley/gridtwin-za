@@ -19804,6 +19804,7 @@ count in every script and by failure name (validate_findings 36/39, validate_res
 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Later
 commits change SOURCES, TODO and RESULTS only, and merge main's #150 and #151 (docs and harness/ext). LP-key test on 2026-11-02f:
 default and 'sync6' sha1 4e0b77a5f1f4, identical to main; 'inertia' 39f092d5e626. Visible text against main (39b3625): none changed.
+<<<<<<< HEAD
 
 ### Cost of capital on closed REIPPPP projects only: solar implies about 6.0%, above the 5.5% central by 0.5 points (user, 2 Nov 2026, messages 631 (g) and 632 (b); report and proposal, nothing changed)
 
@@ -19845,3 +19846,73 @@ audit 88/88, eng5 5/6, equal to main (de004de) by count in every script and by f
 LP-key test against main (de004de): default and 'sync6' sha1 4e0b77a5f1f4 and 'inertia' 39f092d5e626, identical; engine outputs on
 Today 2026, Least-cost path 2035 and Fossil-free 2040 identical to main's. A 2028 fossil end year changes only the five rp_ccgt
 credits; each MTSAO option alone changes only its expected rows. Visible text against main: none changed. Later commits are RESULTS only.
+||||||| de004de
+=======
+
+### System strength review (message 631): the requirement rises from 54.0 to 62.88 GW.s in every year with coal (the three units' own 8.88 GW.s); with grid-forming H at 11 s, c6e's one-year 2035 build (9,045 MW grid-forming, 5,838 MVA conversions) lifts 0.011 TWh of coal and is short in no hour after the lift, once two look-ahead charge paths stay within the held headroom (9 hours short before that fix); its synchronous-only minimum is 32.3 GW.s (user, 2 Nov 2026, message 631 (a), (b), (f); build 2026-11-02n, claude/ss-review from main de004de)
+
+What changed (index.html; sources in SOURCES 'System strength, minimum version: the remaining inputs'): (a) ssLoss returns the loss and
+the inertia of the units lost (SS_H on MW / 0.9; AEMO, Inertia Requirements Methodology v1.0, s.11.2.2, p.20); ssRequirementGWs adds it
+(a flat ssFlatGWs stays the whole requirement). ssRocofHz 1.5 accepted and documented as a sensitivity. (b) ssGfmH null is now 11 s
+(SS_GFM_H_HPR, ARENA Hornsdale upgrade pp.12, 16); 'thermal' gives 1.891 s, the central to 2026-11-02f. The engine's ss output gains
+trippedGWs and syncMinGWs (lowest hour from coal, nuclear, hydro, CSP, pumped storage, gas and condensers, no grid-forming); pathcheck.js
+(ss.syncMinGWs, the lowest over runs) and pathway/ss_engine_check.js report it. pathcheck.js replays a run's recorded effective
+grid-forming H and notes a run recorded without the units' inertia; pathway_perfail.js records reqTripped and takes GFM_H=thermal.
+(f) CSP's inertia only in hours it runs: in the engine at its output (unchanged arithmetic: the profile is never negative); in the build
+LP at the engine's hourly profile (PROFILES.csp, zero in 2,298 of 8,760 hours) in place of a flat 0.38 every hour. Koeberg's unit
+940 MW (sourced, p.23), from FIXED.nuclearMW / KOEBERG_UNITS as before; SOURCES' 'about 930 MW' corrected. Lambda wording: committed
+= output x lambda, in HANDOVER and the code comment.
+
+Checks (2 Nov 2026, 11:24-11:35 UTC): LP-key test (Least-cost path 2035, lpkey616.js): default and 'sync6' sha1 4e0b77a5f1f4 (13,918,952),
+identical to main; 'inertia' 42f0077f240b (was 39f092d5e626): of 168,290 lines the 2,280 ssi_ rows differ, only in their right-hand
+side (+7,781.5 to +9,640.0 MW.s: 8,880 for the units lost, less or plus the CSP change) and the zg_ coefficient (2.1011 to 12.2222).
+'sync6' engine outputs on the three presets (eng_cmp.js) byte-identical to main's (sha1 7ce96ead49ed).
+Requirement on c6e's coal schedule, 2026-2040 (engine units and the LP's schedule agree): 2,160 MW lost every year; 54.00 GW.s before,
+62.88 after (44.88 at 1.5 Hz/s). With a Koeberg unit the largest: 940 MW, 4.28 GW.s, 27.78 GW.s.
+One-year 2035 (ss_engine_check.js YEARS=2035, EXTRA '{"ssGfmMW":9045,"ssCondMVA":5838}', 'reservecoal'):
+| Page | Requirement | Short before / after the lift, h | Coal lifted, TWh/yr | Unserved, GWh/yr | Inertia min, GW.s | Synchronous-only min, GW.s |
+|---|---|---|---|---|---|---|
+| 2026-11-02n (11 s) | 62.88 | 1,813 / 0 | 0.011 | 0.195 | 62.9 | 32.3 |
+| 2026-11-02n before the charge-path fix | 62.88 | 1,813 / 9 | 0.012 | 0.195 | 49.1 | 32.3 |
+| main, ssGfmH 11 | 54.0 | 966 / 2 | 0.004 | not recorded | 49.1 | - |
+| main, 1.891 s (RESULTS 'Coal first in hours forecast short') | 54.0 | - / 0 | 0.272 | 0.495 | - | - |
+The 9 hours short (traced 2 Nov 2026, 11:45-12:09 UTC, a logging copy of the page in a scratch root): every one was a surplus hour
+(net load before storage -7.6 to -12.4 GW) with headroom held (695-1,746 MW), no battery discharge and battery charge above battPowerH
+(up to the fleet's full 11,383 MW), so grid-forming inertia fell to 0-13.7 GW.s. Two look-ahead charge paths were capped at the short
+stores' power (_laP) but not at the held headroom (_resRoom): the coal top-up after a surplus (2 hours: weather 2021, hours 3469-3470)
+and the charge ahead of a forecast shortfall from spare coal and gas, _fill (7 hours: 2018, 5243-5245; 2021, 4234-4237). Both now take
+_resRoom (Infinity when nothing is held, so every other mode is unchanged). Checked: with only the first cap, 7 hours stay short; with
+both, none; LP-key default and 'sync6' 4e0b77a5f1f4, 'inertia' 42f0077f240b (unchanged: the LP does not read the engine); 'sync6'
+engine outputs byte-identical to main's (7ce96ead49ed). On main at 11 s the same paths left 2 hours short against 54 GW.s. lambda (SS_COAL_LAMBDA) is
+unchanged: its derivation ranks hours without grid-forming MW and does not read the requirement.
+
+### c6e rebuilt under the reviewed system strength rules (62.9 GW.s with the tripped units' inertia, grid-forming H 11 s, 'reservecoal'): R1.5bn (0.07%) more than c6e over 2026-40, no hour short in any year, 3.9 GW of grid-forming batteries and no conversions or condensers (user, 2 Nov 2026, messages 631 and the user's request after 641)
+
+Run: c6e's settings (env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=7200) plus SS=inertia SS_FC=reservecoal on claude/ss-review at 6c92935
+(build 2026-11-02n: requirement 50 x L / (2 x RoCoF) + the tripped units' inertia = 62.88 GW.s at 1 Hz/s, grid-forming H 11 s, coal in
+the LP by the ratio), 2 Nov 2026 12:10-12:38 UTC (one pass, adequate; harness/out/ss/pathway_c6e_ssr.json, not committed). Check:
+pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal, groups a-c (12:38 UTC on); c6e's own build checked in 'sync6' (pathcheck_c6e_ref, the
+same 'sync6' engine outputs), so the comparison shares one engine. Today's rebuild for comparison: RESULTS 'Coal first in hours
+forecast short' ('reservecoal' check of the 54 GW.s, 1.891 s rebuild).
+| | c6e, 'sync6' | Rebuild on 54 GW.s, 1.891 s ('reservecoal') | Reviewed rebuild, 62.9 GW.s, 11 s |
+|---|---|---|---|
+| System cost PV 2026-40 (8%) with the floor's annual charge, R bn | 2,283.9 | 2,289.7 (+5.8) | 2,285.4 (+1.5) |
+| CO2 2026-40, Mt | 1,739 | 1,737 | 1,734 |
+| Highest mean unserved, GWh/yr; highest open-cycle share | 5.46; 1.85% | 5.72; 1.92% | 5.34; 1.87% |
+| Hours short a year, highest 2026-40 | - | 0 | 0 |
+| Coal lifted, TWh a year, highest 2026-40 | - | 0.12 (2035) | 0.01 |
+| Grid-forming batteries, MW; conversions, MVA; new condensers | 0; 0; 0 | 8,877; 7,784; 0 | 3,883; 0; 0 |
+| Lithium MW (MWh); CCGT; open cycle on LNG; new diesel; pumped storage | 15,241 (94,265); 6,074; 1,126; 152; 0 | 16,578 (93,146); 5,421; 1,779; 0; 433 | 15,066 (94,648); 5,640; 1,560; 83; 0 |
+| Wind; solar, MW | 31,377; 33,830 | 31,842; 33,958 | 32,267; 33,854 |
+Synchronous-only inertia, lowest hour (grid-forming left out): 72.4 GW.s in 2026, 62.3 in 2030, 48.0 in 2031, 23.5-25.6 GW.s from 2033
+to 2040, against the 62.9 GW.s floor, which grid-forming headroom makes up (an 11 s battery credits about six times what 1.891 s did).
+Findings: with the tripped units' inertia in the requirement and the Hornsdale grid-forming constant, the floor costs about R1.5bn over
+c6e and is met by 3.9 GW of grid-forming batteries, without converting retired coal units; no hour is short in any year. Caveats: at
+11 s, synchronous inertia alone is below half the floor from 2033 (AEMO, Sep 2024, cautions against treating grid-forming inertia as a
+direct replacement); 1.891 s is the cautious sensitivity; one pathway pass.
+'mustspin' check of the same rebuild (pathcheck SS_FC=mustspin, groups a-c, 12:38-13:21 UTC; no battery headroom counted before
+dispatch, coal lifted for the whole gap): system cost with the floor's charge R2,296.5bn (+R12.6bn over c6e), CO2 1,785 Mt (+46),
+coal lifted 4.58 TWh a year in 2035 and 10.11 in 2040, hours short 0.1 a year in 2035 and 115.3 in 2040 (minimum 38.8 GW.s: no coal
+left to lift), highest unserved 5.33 GWh/yr, open-cycle 1.80%. The plan's floor rests on grid-forming headroom: counted only as what
+must spin, the 3.9 GW build meets 62.9 GW.s by lifting coal to 2039 and falls short in 2040.
+>>>>>>> origin/claude/ss-review

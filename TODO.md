@@ -819,6 +819,13 @@ on it. Before c7: the one-year 2035 test with the build LP's own coal commitment
 c7 uses the commitment variable if it solves in reasonable time. (c) The engine's lift: 'prev' (grid-forming batteries' spare power,
 pumped storage and gas from the hour before) is c7's central ssLiftForecast, 'mustspin' the cautious sensitivity; coal lifted (TWh)
 and hours short reported under both for 2035 and 2040, on the one-year build and the c6e rebuild (pathcheck.js SS_FC).
+The user's review (2 Nov 2026, message 631), system strength parts, build 2026-11-02n on claude/ss-review: (a) requirement + the
+inertia of the units lost (62.88 GW.s at 1 Hz/s), 1.5 Hz/s a RoCoF sensitivity; (b) grid-forming H central 11 s, 'thermal' 1.891 s
+the cautious sensitivity, the synchronous-only minimum (ss.syncMinGWs) in the engine, pathcheck.js and ss_engine_check.js; (f) lambda
+wording (committed = output x lambda), Koeberg 940 MW (sourced; SOURCES' 'about 930 MW' corrected), CSP credited only in hours it
+runs (engine and LP). RESULTS 'System strength review (message 631)'. Open: the suite and stored panels on this build; c6e rebuilt
+on 'inertia' with the new requirement and H (the c7 runs). The 9 hours short after the lift on the one-year 2035 build at 11 s: two
+look-ahead charge paths now capped at the held headroom, none short (RESULTS, same entry).
 
 14mc. Coal daily swing, after the note (user, 2 Nov 2026, message 614; message 611, RESULTS 'Daily coal swing and the evening ramp').
 Over January-August 2026 the model's daily coal swing is about 10% below Eskom's (3,330 against 3,689 MW), and pumped storage carries

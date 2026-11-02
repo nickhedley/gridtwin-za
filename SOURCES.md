@@ -2323,7 +2323,9 @@ South African reference point (the advisor's note): Komati, 1.3 s.
 
 Largest credible loss by year (user, message 578 (b); rule 366, conservative, our assumption, stated as such): 2,160 MW, three 720 MW
 units (NTCSA ASTR, section 3.4.2), while any coal station with three or more such units stands; after that, the largest single unit
-standing: a Koeberg unit, about 930 MW sent out, unless a larger new unit is built.
+standing: a Koeberg unit, 940 MW (both units rerated to 940 MW in March 2026: Eskom performance report FY2026, p.23, under 'c6 inputs'
+above; the model's FIXED.nuclearMW 1,880 over KOEBERG_UNITS 2), unless a larger new unit is built. Corrected 2 Nov 2026 (message
+631 (f)): this line said 'about 930 MW sent out', with no source.
 
 ## System strength, minimum version: the remaining inputs (user, 1 Nov 2026, messages 604 (b) and 606; TODO 14lo, 14lt)
 
@@ -2332,6 +2334,12 @@ them, not read in the repository unless stated) and the user's decisions:
 - Requirement: 50 x the largest credible loss / (2 x RoCoF), RoCoF 1 Hz/s central (0.5 Hz/s and a flat 40 GW.s as sensitivities);
   54 GW.s at 2,160 MW (Stellenbosch CRSES, Insights into inertia management, Jul 2025, gives the same 54 GW.s at 1 Hz/s). South Africa
   sets no RoCoF limit (NTCSA ASTR 2026/27-2030/31 sets none): 1 Hz/s is borrowed from Ireland (EirGrid/SONI) and AEMO, stated.
+- The user's review (2 Nov 2026, message 631 (a)): the requirement adds the inertia of the units lost, as AEMO's methodology does
+  (AEMO, Inertia Requirements Methodology, v1.0, 29 Jun 2018, s.11.2.2, p.20): 50 x L / (2 x RoCoF) + H x MVA of the tripped units.
+  Under the three-unit rule 3 x 3.7 s x 800 MVA (720 MW / 0.9) = 8.88 GW.s, so 62.88 GW.s at 1 Hz/s; with a Koeberg unit the largest,
+  4.1 s x 940 / 0.9 MVA = 4.28 GW.s, 27.8 GW.s in all. RoCoF 1.5 Hz/s a further sensitivity: South Africa's renewable grid code
+  withstand (Stellenbosch CRSES, 11 Jul 2025), 44.88 GW.s under the three-unit rule. As reported by the user; not read in the
+  repository.
 - TDP 2024 Rev2 synchronous condensers, committed: 5,850 MVAr in 2025-29 (Gromis, Aggeneis, Ferrum, Gamma, Koruson, Grassridge, Vuyani)
   and 900 MVAr in 2030-34 (pp. 8, 51, 53-54); counted from 2029 and 2034, the end of each window (conservative). No cost given.
 - Condenser inertia: H = 1.3 s on the machine's MVA (Komati's converted 139 MVA machines; Tomlinson et al., CIGRE Science & Engineering
@@ -2349,6 +2357,12 @@ them, not read in the repository unless stated) and the user's decisions:
   fleet's H on the user's constants (the engine's existing basis: 0.5 x (0.70 coal + 0.12 nuclear + 0.10 CCGT + 0.08 hydro)); this
   central is cautious. Sensitivities 1 s and 11 s; 11 s from ARENA, Hornsdale Power Reserve Upgrade, summary report (15 Dec 2023, p.16):
   about 2,070 MW.s on 150 MW, effective H 11.02 s (as reported by the user; not read in the repository).
+  Replaced by the user's review (2 Nov 2026, message 631 (b)), build 2026-11-02n: central 11 s on the headroom's MVA (ARENA, as above,
+  pp.12, 16; SS_GFM_H_HPR); 1.891 s, the derivation above, the cautious sensitivity (ssGfmH 'thermal'). AEMO, 'Quantifying synthetic
+  inertia from grid-forming BESS' (Sep 2024), cautions against treating synthetic inertia as a direct replacement for synchronous
+  inertia; the engine reports each year's synchronous-only minimum (no grid-forming) beside the floor. Both as reported by the user;
+  not read in the repository. Open: ARENA's 11.02 s is on the plant's own MVA (2,070 / 11.02 = about 188 MVA for 150 MW); the model
+  takes MVA = MW / 0.9.
 - Fault level, a sensitivity only: AEMO ISP 2024 Appendix 7, p.21, system strength remediation up to A$137k per MW of new inverter
   capacity (upper bound), and half of it, on new wind, solar and batteries. AUD/ZAR: South African Reserve Bank, Selected historical
   rates, series 'Australia: Dollar per Rand', 0.0855 on 2026-10-30 (the latest value; read on the SARB page by the user, 1 Nov 2026,
