@@ -3,7 +3,7 @@
 #   bash harness/pathway/chain_c7.sh <phase> [name ...]    phase 1: the central; later phases are added as they are reached.
 # Outputs in harness/out (runs, checks) and harness/out/c7/progress.txt. Resumable, in pieces under 2 hours (the caller's
 # run_in_background timeout): a finished pathway or check group is skipped, an interrupted pathway replays its finished passes from its
-# LP cache (lpcache_<name>), and a run with no output after two attempts is reported as not run. Each run's LP cache is deleted once
+# LP cache (lpcache_<name>), and a run with no output after four pieces is reported as not run. Each run's LP cache is deleted once
 # its check is written. At most two solves at a time; at least 5 GB free before each piece (message 646). PIDs to the session log.
 REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd); H=$REPO/harness; N=${N:-$H/out/c7}; P=$N/progress.txt
 PIDLOG=${PIDLOG:-/dev/null}
@@ -27,14 +27,12 @@ check(){ local n=$1
 one(){ local name=$1 chg=$2 maxp=${3:-6} tl=${4:-7200}
   if [ ! -s out/pathway_$name.json ]; then
     local att=$N/attempts_$name k; k=$(cat $att 2>/dev/null || echo 0)
-    if [ "$k" -ge 2 ]; then echo "$(date -u +%H:%M) NOT RUN $name: no output after $k attempts" >> $P; return 0; fi
+    if [ "$k" -ge 4 ]; then echo "$(date -u +%H:%M) NOT RUN $name: no output after $k pieces" >> $P; return 0; fi
     echo $((k+1)) > $att
     echo "$(date -u +%H:%M) start $name ($C7 $chg) MAXP=$maxp TL=$tl; free $(free_gb) GB" >> $P
     eval "env $C7 $chg LPCACHE=lpcache_$name MAXP=$maxp OUT=out/pathway_$name.json TL=$tl nice -n 10 node --max-old-space-size=8192 pathway/pathway_perfail.js" > out/$name.log 2>&1 &
     local pid=$!; echo "$(date -u +%FT%H:%MZ) c7 pathway $name pid $pid" >> $PIDLOG; wait $pid; local rc=$?
     echo "$(date -u +%H:%M) end $name rc=$rc$([ -s out/pathway_$name.json ] || echo ' NO OUTPUT (resumes from its LP cache next piece)')" >> $P
-    # an interrupted piece is not an attempt that failed: it resumes from the cache
-    [ -s out/pathway_$name.json ] || [ $rc -ne 0 ] || true
   fi
   [ -s out/pathway_$name.json ] && check $name; return 0; }
 case "${1:-1}" in
