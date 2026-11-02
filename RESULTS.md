@@ -19707,3 +19707,48 @@ unserved energy rises about fourteenfold on the one-year build and to 3-7 GWh a 
 standard. Caveat: whether held headroom should yield to load in a shedding
 hour, or coal be lifted first in hours of forecast scarcity, is the user's decision (Rule 366: not changed; the central as
 specified).
+
+### Coal first in hours forecast short ('reservecoal', c7's central): unserved energy back to the rebuild's level (highest 5.72 GWh/yr, as 'prev' and 'mustspin'), no hour short of the floor in any year, R5.8bn (0.25%) over c6e; the 2034 residual hour was charge and discharge together above the held headroom, fixed (user, 2 Nov 2026, message 616; TODO 14md)
+
+What changed (claude/system-strength-min): (1) ssLiftForecast 'reservecoal' (f687cbf, build 2026-11-02d): as 'reserve', but in an hour
+the engine forecasts short, coal is lifted first and grid-forming headroom held only for what coal cannot cover. The forecast: net load
+before storage (netLoadPre) above committed coal (cAvail), diesel and gas capacity (dieselAvailMW, ccgtCap), pumped storage's power
+within its store, and the batteries' power less the headroom 'reserve' would hold, within their store. (2) The 2034 residual (14md (b),
+31932e8, build 2026-11-02e): from a logging copy of pathcheck on 2034 under 'reserve', the one short hour is hour 5,621 of one weather
+year, in every outage draw: discharge at battPowerH (7,127 MW, 4,260 held of 11,387) and a charge of 433 MW in the same hour, each path
+capped alone, inertia 53.65 of 54.0 GW.s. Fix: with headroom held, every battery charge path and the look-ahead's two later discharge
+paths are capped at battPowerH less what the hour has already charged and discharged (_resRoom; Infinity when nothing is held, so
+'sync6', 'prev' and 'mustspin' are unchanged). (3) FIXED.ssLiftForecast 'reservecoal' (build 2026-11-02f): the default when ssMode is
+'inertia'; the page default stays 'sync6'. ss_engine_check.js's no-lift mode pins 'mustspin', so lambda's basis does not move.
+Checks on 2026-11-02f: LP-key test (Least-cost path 2035, as before) default and 'sync6' sha1 4e0b77a5f1f4, identical to main, 'inertia'
+39f092d5e626 (the LP does not read the forecast); 'sync6' engine outputs on c6e's 2035, 1,176 output keys, identical to 8895326's
+(only the stamp differs); 'reserve' on 2026-11-02e reproduces its one-year figures exactly (0 h, 0.259 TWh, 4.423 GWh/yr).
+
+One-year 2035 test (ss_engine_check.js YEARS=2035, EXTRA each build's grid-forming MW and conversions, 2 Nov 2026 07:20-07:50 UTC):
+| Build: coal lifted TWh; hours short; unserved GWh/yr ('sync6' 0.316) | 'prev' | 'mustspin' | 'reserve' | 'reservecoal' |
+|---|---|---|---|---|
+| ratio (9,045 MW; 5,838 MVA) | 0.124; 1,121; 0.316 | 1.213; 0; 0.299 | 0.259; 0; 4.423 | 0.272; 0; 0.495 |
+| commit (8,985 MW; 5,838 MVA) | 0.124; 1,128; 0.316 | 1.213; 0; 0.299 | 0.261; 0; 4.335 | 0.272; 0; 0.489 |
+What remains above 'sync6' on the ratio build (logging copy): 11 unserved hours, 0.495 GWh/yr; 7 with headroom held, 0.196 GWh/yr, all
+of it meetable by the held MW, coal room left in each: hours the forecast did not flag short (it counts gas, diesel and pumped storage at
+full power and ignores their fuel, hold and floor limits). The other 0.30 GWh/yr falls in hours with nothing held.
+
+c6e rebuild (harness/out/ss/pathway_c6e_ss.json), pathcheck.js LNG=1 GRID=1, groups a-c, build 2026-11-02e (the 02f change is the
+default only), 2 Nov 2026 07:50-08:05 UTC; 'reserve' rerun on 02e gives the same figures as 02b to the digit shown, its 2034 hour now 0:
+| | c6e, 'sync6' | 'prev' | 'mustspin' | 'reserve' | 'reservecoal' |
+|---|---|---|---|---|---|
+| System cost PV 2026-40 (8%) with the floor's annual charge, R bn | 2,283.9 | 2,288.9 (+5.0) | 2,292.4 (+8.5) | 2,289.9 (+6.0) | 2,289.7 (+5.8) |
+| CO2 2026-40, Mt | 1,739 | 1,736 | 1,752 | 1,737 | 1,737 |
+| Highest mean unserved, GWh/yr; highest open-cycle share | 5.46; 1.85% | 5.72; 1.84% | 5.72; 1.82% | 7.43; 1.92% | 5.72; 1.92% |
+| Hours short a year, highest 2026-40 | - | 145.2 (2038) | 0.1 (2040) | 0 | 0 |
+| 2035: coal lifted TWh; unserved GWh/yr | -; 1.40 | 0.14; 1.38 | 1.37; 1.28 | 0.11; 4.04 | 0.12; 1.46 |
+| 2040: the same | -; 0.89 | 0.21; 0.58 | 3.62; 0.56 | 0.00; 3.89 | 0.00; 0.59 |
+Mean unserved by year under 'reservecoal' against 'mustspin' (the rebuilt fleet with no headroom held): 2033 4.32 against 4.20, 2034
+3.47 against 3.11, 2035 1.46 against 1.28, 2038 2.26 against 2.24, other years within 0.03. Coal-first hours a year 1-5 (2033-40).
+
+Findings: coal first in hours forecast short brings unserved energy back to the rebuilt fleet's own level (within 0.4 GWh a year of
+'mustspin' in every year, the same highest year), holds the floor in every hour of every year to 2050, and costs R5.8bn over c6e,
+between 'prev' (R5.0bn, which leaves up to 145 hours a year short) and 'mustspin' (R8.5bn); per message 616 it is c7's central.
+Caveats: the forecast misses a few hours (0.2 GWh/yr on the one-year build); the open-cycle share's highest year rises to 1.92% (from
+1.84%), under the 6% criterion; one pathway pass, the build optimised under 'prev'; the coal unit lifted is assumed able to start in
+the hour.

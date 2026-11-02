@@ -9,6 +9,8 @@
 // (mean, minimum), and lambda: the committed-to-output ratio of coal in the low-inertia hours of the no-lift runs (the lowest
 // LOW_Q of hours by inertia, pooled over the weather years, coal output above 1 MW), at its lower quartile. lambda by year is
 // SS_COAL_LAMBDA in index.html (decision D1).
+// The no-lift mode pins ssLiftForecast 'mustspin' (no headroom held), so it stays the shortfall before the lift and lambda's basis
+// whatever FIXED's default (message 616 made it 'reservecoal').
 // DIGEST=<file>: also writes, for 'sync6' only, a sha1 of every output key of every run, to compare with another commit's page
 // (ROOT=<that root>): the 'sync6' outputs must equal main's (the keys this change adds, coalCommittedMW and ss, aside).
 // JSON=<file>: the table as JSON. EXTRA='<json>': settings added to every state (e.g. '{"ssGfmMW":9045,"ssCondMVA":5838}', a build's
@@ -57,7 +59,7 @@ const LOW_Q = +(process.env.LOW_Q || 0.10), MODES = (process.env.MODES || 'sync6
     const res = {};
     for (const M of MODES){
       if (M !== 'sync6' && !hasSS) continue;
-      const extra = M === 'sync6' ? '{}' : M === 'lift' ? `{ssMode:'inertia', ssCoalLift:1${process.env.SS_FC ? ", ssLiftForecast:'" + process.env.SS_FC + "'" : ''}}` : "{ssMode:'inertia', ssCoalLift:0}";
+      const extra = M === 'sync6' ? '{}' : M === 'lift' ? `{ssMode:'inertia', ssCoalLift:1${process.env.SS_FC ? ", ssLiftForecast:'" + process.env.SS_FC + "'" : ''}}` : "{ssMode:'inertia', ssCoalLift:0, ssLiftForecast:'mustspin'}";
       const r = JSON.parse(w.eval(`(function(){ const o=[], dg=[];
         for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
           const x=simulate({...window.__ssBase, ...${extra}, outageSeed:${SEED_BASE}+yy*7919}, {demand:twelveYearDemand(), solar:nat.solar, wind:nat.wind, csp:PROFILES.csp, real:true});

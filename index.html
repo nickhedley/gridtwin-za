@@ -6110,15 +6110,16 @@ const FIXED = {
   // sensitivities); ssGfmMW: battery MW made grid-forming; ssCondMVA: condensers built (conversions and new), MVA, beside TDP 2024's
   // committed ones (SS_TDP_COND); ssFault 'off', 'full' or 'half': the fault-level capital adder in the build LP (any mode).
   // ssLiftForecast, what the lift counts before dispatch beside what must spin (committed coal, nuclear, hydro, CSP, condensers):
-  // 'mustspin' nothing else (central: operators schedule synchronous units ahead of dispatch, EirGrid's minimum units online and AEMO's
-  // minimum synchronous unit combinations; the conservative choice, rule 366); 'prev' also the hour before's pumped storage, gas and
+  // 'mustspin' nothing else (operators schedule synchronous units ahead of dispatch, EirGrid's minimum units online and AEMO's
+  // minimum synchronous unit combinations; the cautious sensitivity); 'prev' also the hour before's pumped storage, gas and
   // grid-forming inertia (a persistence forecast; on c6e's 2035 it leaves 2.6% of hours short where coal could have been lifted).
-  // 'reserve' (user, 2 Nov 2026, message 612; c7's central, set by the runs): the grid-forming headroom needed is credited and held free
+  // 'reserve' (user, 2 Nov 2026, message 612): the grid-forming headroom needed is credited and held free
   // that hour (battery dispatch capped at battPowerH), so the credit is delivered; then coal is lifted for what remains.
   // 'reservecoal' (user, 2 Nov 2026, message 616): as 'reserve', but in an hour the engine forecasts short (net load before storage
   // above committed coal, gas, pumped storage and the batteries' power less the headroom 'reserve' would hold) coal is lifted first and
-  // headroom held only for what coal cannot cover, so the batteries stay free to discharge.
-  ssMode:'sync6', ssRocofHz:1, ssFlatGWs:null, ssGfmH:null, ssGfmMW:0, ssCondMVA:0, ssCoalLift:1, ssLiftForecast:'mustspin', ssFault:'off',
+  // headroom held only for what coal cannot cover, so the batteries stay free to discharge. c7's central (message 616: unserved energy
+  // back to the rebuild's level, RESULTS 'Coal first in hours forecast short'); the default when ssMode is 'inertia'.
+  ssMode:'sync6', ssRocofHz:1, ssFlatGWs:null, ssGfmH:null, ssGfmMW:0, ssCondMVA:0, ssCoalLift:1, ssLiftForecast:'reservecoal', ssFault:'off',
   // ssCoalBasis (user, 1 Nov 2026, message 610 (b)): coal's inertia in the build LP. 'ratio' (D1): output x SS_COAL_LAMBDA; 'commit':
   // the LP's own committed coal cm_ (needs bldCoalCommit). The engine counts committed coal (ucAvail) either way.
   ssCoalBasis:'ratio',
@@ -21282,7 +21283,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02e';
+const BUILD_STAMP = '2026-11-02f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

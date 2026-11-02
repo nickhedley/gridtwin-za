@@ -113,7 +113,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    + (SSR.mode === 'inertia' ? ` state.ssRocofHz=${+SSR.rocofHz}; state.ssFlatGWs=${SSR.flatGWs == null ? 'null' : +SSR.flatGWs}; state.ssGfmH=${SSR.gfmHSet == null ? 'null' : +SSR.gfmHSet}; state.ssCoalLift=${SSR.coalLift == null ? 1 : +SSR.coalLift};` + (SSR.liftForecast ? ` state.ssLiftForecast=${JSON.stringify(SSR.liftForecast)};` : '') : ''));
  const SS_ON = SSR.mode === 'inertia';
  // SS_FC=prev|mustspin (user, 1 Nov 2026, message 610 (c)): check a run under another lift forecast than it recorded, the engine's only;
- // the build LP does not read it. 'prev' is c7's central, 'mustspin' the cautious sensitivity. Recorded in each row (ssLiftForecast).
+ // the build LP does not read it. 'reservecoal' is c7's central (FIXED, message 616), 'mustspin' the cautious sensitivity. Recorded in each row (ssLiftForecast).
  if (process.env.SS_FC !== undefined){ if (!SS_ON) throw new Error('SS_FC needs an inertia run'); if (!['prev','mustspin','reserve','reservecoal'].includes(process.env.SS_FC)) throw new Error('SS_FC must be prev, mustspin, reserve or reservecoal: '+process.env.SS_FC);
    w.eval(`state.ssLiftForecast=${JSON.stringify(process.env.SS_FC)};`); console.log('lift forecast for this check:', process.env.SS_FC); }
  const SS_FC_USED = SS_ON ? w.eval('state.ssLiftForecast ?? FIXED.ssLiftForecast') : null;

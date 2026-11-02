@@ -826,12 +826,10 @@ about half the model's evening ramp against about a third in Eskom's data. Test 
 time against Eskom's daily swing and evening ramp shares, and change the model only if a test closes the gap without breaking the
 midday calibration.
 
-14md. System strength 'reserve', two open points (2 Nov 2026, message 612; RESULTS 'Reserved grid-forming headroom').
-(a) For the user: the held grid-forming headroom is withheld in hours that shed load (4.1 of 4.4 GWh/yr on the one-year 2035 build,
-coal available but uncommitted in every such hour). Options: keep it as specified; let the headroom yield to load in a shedding
-hour; or lift coal first in hours of forecast scarcity. Not changed without a decision (Rule 366).
-(b) The c6e rebuild under 'reserve' leaves 0.08 hours a year short in 2034 (0.03 GW.s-h, no capped lift): cause not established.
-Suspect several charge calls in one hour summing above battPowerH (each is capped alone); log the short hours on 2034 to confirm.
+14md. Done (2 Nov 2026, message 616; RESULTS 'Coal first in hours forecast short'). (a) Held headroom stays held through shedding;
+in an hour forecast short coal is lifted first ('reservecoal', c7's central): unserved back to the rebuild's level. (b) The 2034 hour
+was a charge and a discharge together above the held headroom; capped (build 2026-11-02e). Open: the forecast misses a few hours
+(0.2 GWh/yr on the one-year build); a tighter forecast (gas fuel and pumped-storage floor limits) only if c7 shows it matters.
 
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
