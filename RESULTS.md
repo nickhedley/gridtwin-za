@@ -20030,3 +20030,31 @@ Finding: on c6e's builds, coordinating home batteries is worth about R310 per kW
 below the R346-347 it costs to coordinate them in both years; the wear on incremental cycling is about 1% of the cost. Caveats: one-year
 builds with everything before Y fixed at c6e's, which already holds the storage the system needs; c7's full pathway lets the option
 compete in every year (central, Deep and Fossil-free, message 645), where a system short of storage values it more.
+
+### Eskom's coal cost FY2017-FY2026, price against volume: R/MWh about doubled (R291 to R591), 8.2% a year nominal, about 3.4% a year real, not the 10% nominal quoted; burn and output fell, so price rose faster than the bill; and the model's R553/MWh sits 6% under Eskom's published FY2026 R591 (user, 2 Nov 2026, message 651 (c); report only, nothing changed)
+
+Sources: Eskom's FY2026 performance report (Drive copy: ten-year table pp.70-73, coal supply pp.32-33, primary energy and unit costs
+pp.55-56) and annual financial statements (notes 34-35, pp.104-105); secondary sources for earlier years (S: search extracts, not the
+documents): Polity 3 May 2018 (FY2017 total coal cost R58.5bn), de Saxe (University of Pretoria repository; 2018/19 road haulage),
+Mining Weekly 24 Jul 2015 (2015 road share), BusinessTech (FY2015 cost per employee), Stats SA and FRED for CPI (calendar years as a
+proxy for April-March). Eskom credited; the arithmetic is ours. No eskom.co.za reads.
+| FY | Coal cost, R bn | Coal burnt, Mt | Coal sent out, TWh | R/t | R/MWh |
+|---|---|---|---|---|---|
+| 2017 | 58.5 (S) | 113.7 | 200.9 | 514 | 291 |
+| 2024 | 72.0 (MYPD6 'coal usage', a projection; another basis) | 99.5 | 166.6 | 723 | 432 |
+| 2025 | 98.0 implied by the published R546/MWh (91 reported, unreconciled) | 106.2 | 179.4 | 922 | 546 (published) |
+| 2026 | 97.8 implied by the published R591/MWh | 96.5 | 165.4 | 1,013 | 591 (published) |
+Rand costs for FY2015-16 and FY2018-23 not found (the Drive holds FY2026 documents only). Growth FY2017-26: R/MWh x2.03, 8.2% a year
+nominal; CPI about 4.7% a year; about 3.4% a year real (R/t 7.8% nominal, 3.0% real). The contact's 10% a year nominal appears only
+against FY2017's narrower purchase-plus-transport cost (R47bn); the two ends may be on different bases, so the trend is indicative.
+Price against volume (midpoint weights), FY2017-26: cost +R39.3bn = price +R54.9bn, volume -R15.6bn (per MWh basis). FY2025-26: Eskom
+reports coal cost (levies excluded) +0.5% on coal output -7.8%, from a 10.1% coal purchase price rise and higher take-or-pay, partly
+offset by burn efficiency and mix (performance report p.55). Sent out per tonne burnt fell from 1.767 to 1.714 MWh/t (a small part of
+the price effect). Road haulage: about 30% of coal by road in 2015 (40 Mt) and 2018/19 (35.4 Mt of 118 Mt, about R4.1bn a year of R7bn
+coal transport; S); no share found for FY2020-26. Cost per employee: R557k (FY2015, S) to R1.03m (FY2025 restated; R1.11m FY2026):
+6.3% a year nominal, about 1.3% a year real (the contact's +1.1% real is consistent).
+Finding for the model: FIXED.costCoal is R553/MWh (ESKOM_FY26.coalCostRbn R91.5bn, 'coal and other generation', over coal sent out
+165,431 GWh), against Eskom's published FY2026 coal unit cost of R591/MWh on the same sent-out base (R97.8bn): the model's fuel cost is
+about 6% lower. The cause is the cost line taken (R91.5bn against R97.8bn implied); to be established before any change (Rule 366:
+not changed). Gaps: rand costs for most years, one cost definition across years, the road share after 2019, the contract split's
+labels (p.33's charts need a visual check).
