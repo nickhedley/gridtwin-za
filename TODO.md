@@ -912,6 +912,10 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14ml. Sodium-ion storage (CATL), after the note (user, 2 Nov 2026, message 651 (e), the senior contact's coal-cost feedback): a build
+option beside lithium, with its own capex per kW and per kWh, round trip, cycle life and calendar life; cost basis to source (no
+figure used until sourced).
+
 14mk. Presets reset the c7 settings keys, after the note (user, 2 Nov 2026, message 648). applyState does not reset ssMode,
 bldCocCase, btmStockGWh, btmBackupPath, btmReservePct, vppBuildOn, vppEnrolCapPct, vppCostCase, vppCostUsdKwYr, gyBuildOn, gyMode and
 the other gy* keys, ssLiftForecast or the MTSAO options (coalEafByYear, avonDedisaRemoveAfter, reipppRetireByYear), so a second
