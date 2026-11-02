@@ -19853,3 +19853,37 @@ nameplate, R4,671 per kW delivered at 33.5%; planning credit min(1, 3 h/4); one 
 Finding: with enrolled batteries already cycling daily on the self-consumption profile, an event can only move their evening energy
 earlier within the evening, which the plan values at almost nothing; the option is kept (default off) and recorded as a finding, not
 used in c7. Caveat: one-year tests on c6e's fixed builds; no outage at the customer modelled.
+
+### Enrolled home batteries as coordinated storage, and geyser control with a fixed staggered return: with Least-cost path 2035's batteries, geyser deferral moves the winter evening net peak later rather than lowering it (user, 2 Nov 2026, messages 637-641; build 2026-11-02t)
+
+VPP (message 637, replacing 630): enrolled batteries leave the passive profile (622's identity) and are dispatched as storage in the
+build LP (a 'vpp' store: power E / 2.5 h, usable 75%, 90% round trip, res_ credit by the storage rule on 1.875 usable hours) and in the
+engine (added to the lithium tier); cost the battery participant cost (about R1,565/kW-yr of power); no event cap. Checks: default LP
+sha1 4e0b77a5f1f4 and engine identical to main; the option on adds only its own rows and columns. Test LP (Least-cost path 2035 preset,
+2026-30, stock 8 GWh): enrolled at the cap in 2026 (320 MW), none after; that LP's new lithium is capped at 68 MW a year by the page's
+build-rate box as loaded in the harness, so in 2026 enrolment stands in for lithium that cannot be built; utility lithium at the same
+1.875 usable hours costs R1,127/kW-yr in 2026, R997 in 2030 and R856 in 2035 (annuity and fixed O&M x battDurationMult), against
+R1,565. Engine, coal EAF 50%, stock 8 GWh, enrolment at its 3.22 GWh cap (1,288 MW): unserved 66.04 GWh/yr against 66.65 with the
+stock alone; battery discharge in the 15 hours the stock alone sheds 6,929 MWh against 4,791; system cost +R1.80bn (the participant
+cost R2.02bn). Break-even on c6e's one-year builds (message 640): below, when the search finishes.
+Geyser control (messages 633-635, 638, 641): inputs in SOURCES 'Geyser control: inputs (message 635)': 5.2 to 6.4 million geysers,
+30% cap, 0.4 kW gross per enrolled geyser (638), 4-hour deferral ('hold', central) or the LBNL/Wits rotation (a quarter off for an hour
+each, 'rotation', cautious), windows 06:00-09:00 and 17:00-21:00 (LBNL/Wits Table ES 2), 0% loss central, R2,000/kW-yr; one fixed
+return rule in both models (641): each hour's deferred heating returns evenly over the following deferral hours. The LBNL/Wits 157 MW
+is their rotation's reduction of the geysers' own load; ours holds all enrolled geysers for up to 4 hours (638): a design difference,
+not calibration. Winter check (Least-cost path 2035, June-August, against the stock alone; the grid's 17:00-22:00 maximum after
+rooftop and storage; stock alone peaks at 35,065 MW, no unserved):
+| | Hold, 0.4 kW | Rotation, 0.4 kW |
+|---|---|---|
+| Enrolled; off per window hour | 768 MW; 768 MW | 768 MW; 192 MW |
+| Daily evening net peak, mean change (median) | +20 MW (0) | +0.7 MW (0) |
+| Winter net maximum, change; its hour | +469 MW; 21:00 | +378 MW; 20:00 |
+| Unserved | 0 (the earlier water-filling return gave 1.09 GWh) | 0 |
+| Energy shifted a year; per controlled day-window | 770 GWh; 1,629 MWh | 193 GWh; 407 MWh |
+| Cost per MWh shifted (R23/GBP, unsourced) | R1,994 (about GBP 87) | R7,976 (about GBP 347) |
+NESO's Demand Flexibility Service paid about GBP 174/MWh (SOURCES; a benchmark, not an input): DFS pays per MWh for occasional events,
+the geyser option per kW-yr. Finding (message 641): with Least-cost path 2035's 11 GW of batteries flattening the evening, deferring
+geyser heating mainly moves the net peak later (the return sets a new evening maximum at 20:00-21:00), not lower; the geysers' own load
+falls by its gross amount in the windows. Test LP (stock and geyser, 2026-30): enrolled at the cap in 2026 (667 MW), none after.
+Caveats: one preset, no rebuild; the planning-reserve peak (TODO 14mi) gives geysers no credit; pre-heating into the solar afternoon is
+TODO 14mj.

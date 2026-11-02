@@ -1794,6 +1794,12 @@ cycling with events and 631's event-length credit).
 
 ## Geyser control (and pool pumps) as a VPP build option: design (user, 2 Nov 2026, message 633)
 
+Updated by messages 635, 638 and 641 (RESULTS 'Enrolled home batteries as coordinated storage, and geyser control with a fixed staggered
+return'): the inputs are sourced (SOURCES 'Geyser control: inputs (message 635)'); the central gross reduction is 0.4 kW per enrolled
+geyser with the LBNL/Wits rotation as the cautious sensitivity; both windows are sourced; the return is one fixed staggered rule in
+both models (each hour's deferral returned evenly over the following deferral hours), replacing G3's band and G4's water-filling below;
+pool pumps are out (a limitation).
+
 Design for the user's decisions before anything is built; c7 waits for it with 631-632. The advisor is sourcing the inputs marked
 [advisor]; none is filled from memory. Default off (LP key and page outputs unchanged) until c7 sets it.
 
