@@ -912,6 +912,16 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mk. Presets reset the c7 settings keys, after the note (user, 2 Nov 2026, message 648). applyState does not reset ssMode,
+bldCocCase, btmStockGWh, btmBackupPath, btmReservePct, vppBuildOn, vppEnrolCapPct, vppCostCase, vppCostUsdKwYr, gyBuildOn, gyMode and
+the other gy* keys, ssLiftForecast or the MTSAO options (coalEafByYear, avonDedisaRemoveAfter, reipppRetireByYear), so a second
+preset applied after a setting carries it over (found in the 642 LP-key test, where one case's settings leaked into the next).
+No page control sets any of them today (bldCocCase only through the harness's bldApplyCocCase), so visitors are not exposed; harness
+scripts and any future control are. Fix: add them to PRESET_NON_SLIDER_KEYS (reset to FIXED unless the preset sets them), after
+checking every harness script that calls applyState (22) sets its keys after the preset, not before; plus a validate_links-style
+check that a preset click after each key is moved and a fresh load of the same preset compute the same. Not trivial because of
+that audit; c7's runs set every key after applyState (pathway_perfail.js, pathcheck.js), so c7 is not affected.
+
 14mj. Geyser pre-heating, after the note (user, 2 Nov 2026, message 641): shift enrolled geysers' heating earlier into the solar
 afternoon within tank and comfort limits, beside the deferral option. Source: LBNL/Wits Executive Summary (May 2024), PVDay scenario:
 -2,242 MW winter, but comfort 76% in winter against 99% for controlled switching; report the comfort trade-off with the result.
