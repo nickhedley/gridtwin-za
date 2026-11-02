@@ -1668,18 +1668,42 @@ page (LP key and every page output unchanged) until c7 rebuilds the presets; c7'
 
 Passive stock (households and businesses, not dispatched by anyone):
 - P1. The stock path: 8 GWh in 2026 (about 6 GWh homes, 2 GWh businesses), +0.9 GWh a year; cases 4 and 14 GWh. Power at 2.5 hours
-  (3.2 GW in 2026), round trip 90% (14cd), usable depth 80% (our assumption, to source).
+  (3.2 GW in 2026), round trip 90% (14cd), usable energy 75% of capacity above the owner reserve (message 624).
 - P2. Decided (user, 2 Nov 2026, message 622): the 2026 base demand is Eskom's metered grid demand, so the 2026 stock is already in
   it; only the stock added after 2026 goes on the self-consumption profile. The 4 and 14 GWh cases scale that growth by 4/8 and 14/8
   (0.45 and 1.58 GWh a year; our reading, for the user to confirm).
 - P3. The profile, fixed and the same in the engine and the build LP: each day the stock charges from rooftop output, in proportion to
-  the day's rooftop profile, up to the smaller of its usable energy and half the day's rooftop output, and discharges that energy x
+  the day's rooftop profile, up to the smaller of its usable energy (75%) and half the day's rooftop output, and discharges that energy x
   0.90 evenly over 17:00-22:00, within its power. Applied to demand before dispatch, as rooftop is; no forecast, no price response.
 - P4. Cost: household and business capital, the same in every scenario, kept outside system cost (no decision depends on it) and
   reported beside it at GreenCape's R5,000/kWh. Alternative: add it to btmCapexR as rooftop is.
 
 Virtual power plant (the coordinated share, a build option):
 - V1. A build variable in the build LP, GWh of enrolled battery energy by year (E above), linear build. Enrolment cap: half the stock
+  (US DOE, Pathways to Commercial Liftoff: Virtual Power Plants, 2023 and 2025: the best programmes enrol about 50% of eligible
+  customers), and in 2026 no more than the Plentify-Deye 2.7 GWh (1.08 GW at 2.5 hours; energy-storage.news, 20 Jul 2026). Decided
+  (message 622): enrolled batteries leave the passive profile and are dispatched instead.
+- Modes (user, 2 Nov 2026, message 624, replacing 623's shares). Each battery is in one mode at a time:
+  backup-only: held full for load-shedding, not cycled, no effect on demand; share B(y) of the whole stock (the 2026 stock included),
+  50% in 2026 falling linearly to 0% by 2030 (B = 50, 37.5, 25, 12.5, 0% in 2026-30, 0 after); sensitivity: 50% held throughout
+  (load-shedding returns);
+  cycling: the self-consumption profile (P3) on the energy above an owner reserve of 25% of capacity, share 1 - B(y);
+  enrolled in a VPP (V1): taken from the cycling stock, dispatched on the same 75% of capacity above the reserve.
+  The 50% start, the glide path and the 25% reserve are our assumptions (SOURCES; no source found yet).
+- How each enters demand and the build. With S(y) the stock (S0 = S(2026), metered in 2026's mix: B(2026) = 50% backup, the rest
+  cycling), C(y) = (1 - B(y)) S(y) the cycling stock, C0 = C(2026) = 0.5 S0, and E(y) the enrolled energy (a build-LP variable):
+  backup-only, B(y) S(y): nothing (no demand, no build, no capacity credit; outages are not modelled at the customer);
+  cycling, not enrolled: the passive profile per GWh of usable energy x 0.75 x [C(y) - E(y) - C0] added to demand before dispatch, in
+  the engine and the build LP's balance rows (linear in E): only the change from 2026's metered behaviour, that is the 2026 stock
+  moving from backup to cycling plus the stock added since 2026, less what is enrolled. Negative when enrolment exceeds that change:
+  the enrolled batteries' metered self-consumption is then put back into demand before they are dispatched (message 622);
+  enrolled, E: storage of energy 0.75 E and power E / 2.5 h / 3 (delivered, V2), within the event limits (V3), credited in the
+  planning reserve rows at the delivered power; cost V4 per kW delivered.
+- Double-count check (messages 622-624). Every GWh of S(y) is in one place: B(y) S(y) + [C(y) - E(y)] + E(y) = S(y); against 2026's
+  metered behaviour only [C(y) - E(y)] - C0 enters demand, so the 2026 stock is never added again; within the cycling and enrolled
+  stock, 25% is held back and 75% used. The engine asserts the identities each year and reports each term (GWh) beside the run; the
+  build LP carries them as linear terms in E.
+- V1. A build variable in the build LP, GWh of enrolled battery energy by year (E above), linear build. Enrolment cap: half the cycling stock
   (US DOE, Pathways to Commercial Liftoff: Virtual Power Plants, 2023 and 2025: the best programmes enrol about 50% of eligible
   customers), and in 2026 no more than the Plentify-Deye 2.7 GWh (1.08 GW at 2.5 hours; energy-storage.news, 20 Jul 2026). Decided
   (message 622): enrolled batteries leave the passive profile and are dispatched instead.
@@ -1716,6 +1740,6 @@ Virtual power plant (the coordinated share, a build option):
 Checks: the LP-key test (default unchanged; each option on changes only its own rows and columns); the engine's energy balance with
 the profile; with the stock on, the evening peak and firm build per GWh at 1, 3 and 5 GWh (14lq (1)'s first report); the presets
 unchanged at the default; the full suite before the PR.
-Decisions for the user: P2's cases (growth scaled 4/8 and 14/8); P4 outside system cost or in btmCapexR; V3's 100 events; V5; the
-backup share applied to the post-2026 stock only (the 2026 stock's mix is in metered demand and is not reassigned except as enrolled).
+Decisions for the user: P2's cases (growth scaled 4/8 and 14/8); P4 outside system cost or in btmCapexR; V3's 100 events; V5.
+Decided: P2, the modes and the double count (messages 622-624).
 Decided: P2 and V1's enrolled batteries out of the passive profile (message 622).
