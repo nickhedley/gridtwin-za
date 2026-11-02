@@ -814,6 +814,12 @@ c7 uses the commitment variable if it solves in reasonable time. (c) The engine'
 pumped storage and gas from the hour before) is c7's central ssLiftForecast, 'mustspin' the cautious sensitivity; coal lifted (TWh)
 and hours short reported under both for 2035 and 2040, on the one-year build and the c6e rebuild (pathcheck.js SS_FC).
 
+14mc. Coal daily swing, after the note (user, 2 Nov 2026, message 614; message 611, RESULTS 'Daily coal swing and the evening ramp').
+Over January-August 2026 the model's daily coal swing is about 10% below Eskom's (3,330 against 3,689 MW), and pumped storage carries
+about half the model's evening ramp against about a third in Eskom's data. Test a lower 2026-29 coal minimum and a shorter minimum down
+time against Eskom's daily swing and evening ramp shares, and change the model only if a test closes the gap without breaking the
+midday calibration.
+
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
 standard (pp. 15-16); the model has neither. First check how much of the gap to BW3's capacity charge (the model 20-25% below) an

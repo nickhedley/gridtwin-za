@@ -6113,6 +6113,8 @@ const FIXED = {
   // 'mustspin' nothing else (central: operators schedule synchronous units ahead of dispatch, EirGrid's minimum units online and AEMO's
   // minimum synchronous unit combinations; the conservative choice, rule 366); 'prev' also the hour before's pumped storage, gas and
   // grid-forming inertia (a persistence forecast; on c6e's 2035 it leaves 2.6% of hours short where coal could have been lifted).
+  // 'reserve' (user, 2 Nov 2026, message 612; c7's central, set by the runs): the grid-forming headroom needed is credited and held free
+  // that hour (battery dispatch capped at battPowerH), so the credit is delivered; then coal is lifted for what remains.
   ssMode:'sync6', ssRocofHz:1, ssFlatGWs:null, ssGfmH:null, ssGfmMW:0, ssCondMVA:0, ssCoalLift:1, ssLiftForecast:'mustspin', ssFault:'off',
   // ssCoalBasis (user, 1 Nov 2026, message 610 (b)): coal's inertia in the build LP. 'ratio' (D1): output x SS_COAL_LAMBDA; 'commit':
   // the LP's own committed coal cm_ (needs bldCoalCommit). The engine counts committed coal (ucAvail) either way.
@@ -8425,7 +8427,8 @@ function simulate(u, prof, outPath, _soc0){
     const src = {}; for (const k of ['coal', 'nuclear', 'hydro', 'csp', 'ps', 'gas', 'gfm', 'cond']) src[k] = new Float64Array(HOURS);
     _ss = { year: y, lossMW, reqGWs: ssRequirementGWs(p, lossMW), condMVA, condGWs: SS_H.cond * condMVA / 1000,
             gfmMW: Math.max(0, +p.ssGfmMW || 0), gfmH: ssGfmH(p), lift: p.ssCoalLift ? 1 : 0, msl: coalFleetMinShare(p, y, cMW),
-            fcPrev: (() => { const f = p.ssLiftForecast; if (f !== 'prev' && f !== 'mustspin') throw new Error("ssLiftForecast must be 'prev' or 'mustspin': " + f); return f === 'prev'; })(),
+            fc: (() => { const f = p.ssLiftForecast; if (f !== 'prev' && f !== 'mustspin' && f !== 'reserve') throw new Error("ssLiftForecast must be 'prev', 'mustspin' or 'reserve': " + f); return f; })(),
+            resH: 0, resMWh: 0,
             tot: new Float64Array(HOURS), src, prevDisp: 0, shortH: 0, shortGWsH: 0, liftH: 0, liftMWh: 0, liftFloorMWh: 0, liftCappedH: 0 };
   }
   const coalCommittedMW = new Float64Array(HOURS);   // committed coal each hour (the pre-pass's, after outages, plus any lift)
@@ -8755,14 +8758,23 @@ function simulate(u, prof, outPath, _soc0){
     // output, condensers), and with ssLiftForecast 'prev' the previous hour's pumped storage, gas and grid-forming batteries. Short of
     // the requirement, coal commitment is lifted where coal is available and not committed (ssCoalLift); the lifted units run at least
     // at the standing fleet's minimum stable share (coalFleetMinShare). What remains short after dispatch is reported.
-    let _ssLift = 0;
+    let _ssLift = 0, _ssBattRes = 0;
     if (_ss){
       const kM = SS_MVA_PER_MW / 1000;
-      const pre = SS_H.coal * kM * cAvailRaw + SS_H.nuclear * kM * nuc + SS_H.hydro * kM * hyd + SS_H.csp * kM * cspGen + _ss.condGWs + (_ss.fcPrev ? _ss.prevDisp : 0);
+      let pre = SS_H.coal * kM * cAvailRaw + SS_H.nuclear * kM * nuc + SS_H.hydro * kM * hyd + SS_H.csp * kM * cspGen + _ss.condGWs + (_ss.fc === 'prev' ? _ss.prevDisp : 0);
+      // 'reserve' (user, 2 Nov 2026, message 612; c7's central): the grid-forming headroom credited toward the floor is held free this
+      // hour, as operating reserve is: battery charge and discharge are capped at battPowerH = battPower less it, so the credit is
+      // delivered by construction. Credited before coal is lifted (the plan bought it to avoid coal), and only as much as is needed.
+      if (_ss.fc === 'reserve' && pre < _ss.reqGWs && _ss.gfmMW > 0){ const kG = _ss.gfmH * kM;
+        _ssBattRes = Math.max(0, Math.min(_ss.gfmMW, battPower, (_ss.reqGWs - pre) / kG)); pre += _ssBattRes * kG;
+        if (_ssBattRes > 0){ _ss.resH++; _ss.resMWh += _ssBattRes; } }
       if (_ss.lift && pre < _ss.reqGWs){ const room = Math.max(0, coalAvailableArr[h] - cAvailRaw), need = (_ss.reqGWs - pre) / (SS_H.coal * kM);
         _ssLift = Math.min(room, need); if (room < need) _ss.liftCappedH++; }
       if (_ssLift > 0){ cAvail += _ssLift; _ss.liftH++; _ss.liftMWh += _ssLift; _ss.liftFloorMWh += _ssLift * _ss.msl; }
     }
+    // The battery fleet's power this hour for charge, discharge and operating reserve: all of it, less any grid-forming headroom
+    // held for the inertia floor ('reserve'). Equal to battPower in every other mode.
+    const battPowerH = battPower - _ssBattRes;
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is not must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -8892,7 +8904,7 @@ function simulate(u, prof, outPath, _soc0){
       const coalFloor=Math.min(cAvail+_walkMW,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
-      let btChg=Math.min(surplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
+      let btChg=Math.min(surplus,battPowerH,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       // export before curtailing, but after storage. Stored energy can be sold
       // into the domestic evening peak at more than the regional pool pays, so
@@ -8972,7 +8984,7 @@ function simulate(u, prof, outPath, _soc0){
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
         const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
-        let btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
+        let btChg=Math.min(forcedSurplus,battPowerH,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
         // off instantly), then coal trips if the oversupply still exceeds all renewable output.
@@ -9031,10 +9043,10 @@ function simulate(u, prof, outPath, _soc0){
       if (RESERVE.on && !_forceTwoSided){
         const _spin = Math.max(0, coalCeiling - coalGen)
           + Math.min(psPowerTot, Math.max(0, psSoc) / _asHoldH)
-          + Math.min(battPower, Math.max(0, battSoc) / _asHoldH);
+          + Math.min(battPowerH, Math.max(0, battSoc) / _asHoldH);
         // ASTR: coal and storage may serve the residual up to coal headroom less coal's share of the reserve, plus the storage power
         // left after its own share; gas already running this hour (must-run and early gas) holds its online headroom.
-        const _cv = _astr ? _astrCover(h, battPower, Math.max(0, battSoc), psPowerTot, Math.max(0, psSoc),
+        const _cv = _astr ? _astrCover(h, battPowerH, Math.max(0, battSoc), psPowerTot, Math.max(0, psSoc),
           astrOnlineHeadroom(_mustAt(h) + _gasEarly, ccgtCap, _gasMSF) + astrOnlineHeadroom(_mdAt(h), dieselAvailMW(p), _gasMSF)) : null;
         // Joint (message 97): the most coal and storage may serve this hour while what is left of them still covers the reserve;
         // which store serves, and so which holds the reserve, is decided by dispatch.
@@ -9056,11 +9068,11 @@ function simulate(u, prof, outPath, _soc0){
         if (!(_laOn && _laP > 0 && residual > 0)) return;
         const s0 = _laSoc(), room = s0 - _laReq(h, s0, coalGen, rampAllowedMW);
         if (room > 1e-6){ _disHour = h; _laDis = _laDischarge(Math.min(residual, room)); _disHour = -1; syncBattSoc(); residual -= _laDis; E.batt += _laDis;
-          btLim = Math.min(battPower - _laDis, Math.max(0, battSoc)); }
+          btLim = Math.min(battPowerH - _laDis, Math.max(0, battSoc)); }
       };
       // psPeakFloor can be negative; the old ancillary floor clamped it at zero.
       const psLim=Math.min(psPowerTot, Math.max(0, psSoc - Math.max(0, psPeakFloor[h])));
-      let btLim=Math.min(battPower, Math.max(0, battSoc));
+      let btLim=Math.min(battPowerH, Math.max(0, battSoc));
       // Adequacy hold, 22 Sep 2026. Selling ahead of coal empties the batteries while coal
       // still has room; when a shortfall follows within LDES_LOOKAHEAD_H, the store is empty.
       // Deep decarbonisation 2035 shed 16.5 GWh in 2016 and 8.3 in 2020 that perfect-foresight
@@ -9150,7 +9162,7 @@ function simulate(u, prof, outPath, _soc0){
           addCharge(h,'ps',psChg,_gasChgCost); psSoc+=psChg*psEffTot; excess-=psChg; chargeMW[h]+=psChg;
         }
         if(excess>0){
-          let btChg=Math.min(excess,battPower,battEnergy-battSoc);
+          let btChg=Math.min(excess,battPowerH,battEnergy-battSoc);
           btChg=tierChargeAt(btChg,h,_gasChgCost); addCharge(h,'batt',btChg,_gasChgCost);
           syncBattSoc(); excess-=btChg; chargeMW[h]+=btChg;
         }
@@ -9189,7 +9201,7 @@ function simulate(u, prof, outPath, _soc0){
       // Look-ahead (14do): after gas, the short stores give what they hold above the later hours' need beyond coal, gas and
       // diesel (energy held against later shedding stays), ahead of diesel; the rest only against this hour's shed, below.
       if (_laOn && residual > 1e-6){
-        const _lim = Math.min(battPower - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
+        const _lim = Math.min(battPowerH - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
         if (_lim > 0){ _disHour = h; const _b3 = tierDischarge(Math.min(residual, _lim), Math.max(0, _laSoc() - _laReq(h, 0, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p), _laGR * ccgtCap))); _disHour = -1; syncBattSoc(); residual -= _b3; E.batt += _b3; stack.batt[h] += _b3; }
       }
       if (_laPsOn && _laPsLastH && residual > 1e-6) _psGive(psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p), _laGR * ccgtCap));
@@ -9270,7 +9282,7 @@ function simulate(u, prof, outPath, _soc0){
         // added up to 80% of the rating again (c5b_14r's 15 stress weeks: 243 hours, 386 GWh above the rating).
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,Math.max(0,psPowerTot-chargePsMW[h]),psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
         if(!_laOn){
-          if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
+          if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPowerH*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
         } else {
           // Look-ahead (14do): the short stores take coal only for what the window needs beyond coal and its own surplus;
           // the long stores only against the forecast shortfall over their horizon, with no daily floor.
@@ -9293,7 +9305,7 @@ function simulate(u, prof, outPath, _soc0){
           const btG=Math.min(battEnergy*0.8, anticipatedShortfallG[h]);
           if(gh>0&&psSoc<psG){const w=Math.min(psPowerTot*0.8,Math.max(0,psPowerTot-chargePsMW[h]),psG-psSoc,gh); if(w>0){addCharge(h,'ps',w,gC); psSoc+=w*psEffTot; gh-=w; chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
           if(!_laOn){
-            if(gh>0&&battSoc<btG){let w=Math.min(battPower*0.6,btG-battSoc,gh); w=tierChargeAt(w,h,gC); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
+            if(gh>0&&battSoc<btG){let w=Math.min(battPowerH*0.6,btG-battSoc,gh); w=tierChargeAt(w,h,gC); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
           } else {
             const _gTgtS=_laReq(h, 0, coalGen, rampAllowedMW, ccgtCap), _gS=_laSoc();
             const _gGroups=[[_shortTiers, _laP, _gS, _gTgtS]];
@@ -9341,7 +9353,7 @@ function simulate(u, prof, outPath, _soc0){
       if (_laPsOn && !_laPsLastS && residual > 1e-6) _psGive(psSoc);
       // Look-ahead (14do): energy still held for later hours serves this hour's shed.
       if (_laOn && residual > 1e-6){
-        const _lim = Math.min(battPower - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
+        const _lim = Math.min(battPowerH - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
         if (_lim > 0){ _disHour = h; const _b4 = tierDischarge(Math.min(residual, _lim)); _disHour = -1; syncBattSoc(); residual -= _b4; E.batt += _b4; stack.batt[h] += _b4; }
       }
       if (_laPsOn && _laPsLastS && residual > 1e-6) _psGive(psSoc);
@@ -9530,7 +9542,7 @@ function simulate(u, prof, outPath, _soc0){
   // MWh of output floor), and the minimum, 5th percentile and mean of each hour's inertia.
   const ssOut = _ss ? (() => { const srt = Float64Array.from(_ss.tot).sort(); let m = 0; for (let h = 0; h < HOURS; h++) m += _ss.tot[h];
     return { mode: 'inertia', year: _ss.year, lossMW: _ss.lossMW, reqGWs: _ss.reqGWs, condMVA: _ss.condMVA, gfmMW: _ss.gfmMW, gfmH: _ss.gfmH,
-             coalLift: _ss.lift, liftForecast: _ss.fcPrev ? 'prev' : 'mustspin', shortH: _ss.shortH, shortGWsH: _ss.shortGWsH, liftH: _ss.liftH, liftMWh: _ss.liftMWh, liftFloorMWh: _ss.liftFloorMWh, liftCappedH: _ss.liftCappedH,
+             coalLift: _ss.lift, liftForecast: _ss.fc, resH: _ss.resH, resMWh: _ss.resMWh, shortH: _ss.shortH, shortGWsH: _ss.shortGWsH, liftH: _ss.liftH, liftMWh: _ss.liftMWh, liftFloorMWh: _ss.liftFloorMWh, liftCappedH: _ss.liftCappedH,
              minGWs: srt[0], p5GWs: srt[Math.floor(0.05 * HOURS)], meanGWs: m / HOURS, inertiaGWs: _ss.tot, bySource: _ss.src }; })() : null;
   /* ---- negative prices in coal-FORCED surplus HOURS -----------------------
    * Every curtailment hour in this model is coal-forced: renewables are spilled
