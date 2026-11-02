@@ -1668,7 +1668,7 @@ costs to source'. Defaults off on the page (LP key and every page output unchang
 
 The stock and its modes
 - P1. Stock S(y): 8 GWh in 2026 (about 6 GWh homes, 2 GWh businesses), +0.9 GWh a year; cases 4 and 14 GWh (growth scaled 4/8 and
-  14/8, 0.45 and 1.58 GWh a year: our reading, for the user to confirm). Power at 2.5 hours (3.2 GW in 2026); round trip 90% (14cd).
+  14/8, 0.45 and 1.58 GWh a year; agreed, message 625). Power at 2.5 hours (3.2 GW in 2026); round trip 90% (14cd).
 - P2. Modes (message 624, replacing 623). Each battery is in one mode at a time:
   backup-only: held full for load-shedding, not cycled, no effect on demand; share B(y) of the whole stock, 2026 stock included: 50% in
   2026 falling linearly to 0% by 2030 (50, 37.5, 25, 12.5, 0%), 0 after; sensitivity: 50% throughout (load-shedding returns);
@@ -1679,8 +1679,8 @@ The stock and its modes
   proportion to the day's rooftop profile, up to the smaller of its usable energy (75% of capacity) and half the day's rooftop output,
   and discharges that energy x 0.90 evenly over 17:00-22:00, within its power. Applied to demand before dispatch, as rooftop is; no
   forecast, no price response.
-- P4. Cost: household and business capital, the same in every scenario, kept outside system cost (no decision depends on it) and
-  reported beside it at GreenCape's R5,000/kWh. Alternative: add it to btmCapexR as rooftop is.
+- P4. Cost (message 625): household and business battery capital in btmCapexR, as rooftop is, at GreenCape's R5,000/kWh installed, on
+  the stock added after 2026.
 
 How each mode enters demand and the build (messages 622-624)
 - The 2026 base demand is Eskom's metered grid demand, so the 2026 stock, as it behaved in 2026, is already in it. With S0 = S(2026),
@@ -1698,28 +1698,28 @@ How each mode enters demand and the build (messages 622-624)
   as linear terms in E.
 
 The virtual power plant (a build option)
-- V1. A build variable in the build LP, GWh of enrolled battery energy by year (E), linear build. Enrolment cap: half the cycling stock
-  (US DOE Liftoff VPP fact sheet, October 2024: "best-in-class programs near 50%+ enrollment"; the 2025 update's example is over 50%
-  of eligible residential customers in Xcel's air-conditioning load control, not batteries; the 2023 report's page not yet read,
-  liftoff.energy.gov blocked from the session), and in 2026 no more than the Plentify-Deye 2.7 GWh (energy-storage.news, 20 Jul 2026).
-- V2. Delivered power about a third of nameplate. California's Demand Side Grid Support programme, Option 3 batteries, 2024: the
-  CEC's staff deck 'Staff Analysis of the DSGS Program 2024 Performance Data' (docket 22-RENEW-01, TN 266629, workshop 15 Oct 2025)
-  gives 287.9 MW nameplate (October 2024) and about 89 MW September incremental capacity against the measured baseline, monthly
-  average: about 31%, not the 34% (91 of 270 MW) quoted secondhand (the 91 MW looks like the whole programme, EDF). Read from search
-  excerpts only: efiling.energy.ca.gov is blocked from the session; to confirm against the deck before citing.
-- V3. Event limits (Brattle 2023: 15-100 events of 2-3 hours a year): at most 100 events of 3 hours, so at most 300 hours at full
-  delivered power a year; in the engine the VPP discharges only in hours the engine forecasts short (the 'reservecoal' forecast); in
-  the build LP its energy over the representative and stress days is capped pro rata.
-- V4. Cost US$42.85/kW-yr per kW delivered (Brattle, Real Reliability: The Value of Virtual Power, May 2023, technical appendix Table
-  4: net cost per kW-year for 400 MW of resource adequacy, net of energy, ancillary, network deferral, resilience and emissions
-  values). Not yet confirmed: no indexed excerpt shows $42.85; the table has a system and a societal row (the headline 40-60% saving
-  is the system row), and the dollar year is not verified; brattle.com is blocked from the session. To confirm before citing; at R16.50/US$ (the
-  model's pinned rate), about R707/kW-yr; participant payments are transfers (retail panels), not system cost.
+- V1. A build variable in the build LP, GWh of enrolled battery energy by year (E), linear build. Enrolment cap (message 625): 20% of
+  the cycling stock, Brattle's participation rate (Real Reliability, Technical Appendix, 5 May 2023, Tables 1-2: 20% of eligible
+  customers); high case 50%; in 2026 no more than the Plentify-Deye 2.7 GWh (energy-storage.news, 20 Jul 2026). No battery enrolment
+  rate is published: LBNL, '30 Proven Strategies to Increase VPP Enrollment' (Dec 2024), p.5, has over half of eligible customers only
+  for Xcel's air-conditioning control.
+- V2. Delivered power a third of nameplate: CEC, 'Staff Analysis of the DSGS Program 2024 Performance Data' (15 Oct 2025, TN 266629):
+  residential 2-hour incremental discharge 34.0% of nameplate in September 2024 (slide 17), season-weighted 33.5% (slide 29, with the
+  deck's caution that a share of nameplate is not a performance indicator).
+- V3. Event limits (message 625): central 15 events a year of 3 hours (Brattle 2023's VPP case, Tables 1-2, footnote 24; 7.5 kW and
+  22.5 kWh per participant), so at most 45 hours at full delivered power a year, matching the cost basis; sensitivity 100 events of 2
+  hours (Brattle for GridLab, 2024). In the engine the VPP discharges only in hours the engine forecasts short (the 'reservecoal'
+  forecast), up to the year's event-hours; in the build LP its energy over the representative and stress days is capped pro rata.
+- V4. Cost US$42.85/kW-yr per kW delivered (Brattle, Real Reliability, Technical Appendix, 5 May 2023, Table 4, p.19: VPP net
+  resource adequacy cost $17.14 million a year for 400 MW, system row, 2022 dollars; battery $27.47m, gas peaker $41.40m; societal row
+  not used), at R16.50/US$ (the model's pinned rate), about R707/kW-yr; participant payments are transfers (retail panels), not system
+  cost.
 - V5. The existing VPP slider (a 4 GW geyser pool x enrolment, with 0.35 kW of 4-hour batteries per geyser kW, no cost) stays for
   geysers; with the build option on, its battery component is off, so the same batteries are not counted twice.
 
 Checks: the LP-key test (default unchanged; each option on changes only its own rows and columns); the engine's energy balance and
 the identities; with the stock on, the evening peak and firm build per GWh at 1, 3 and 5 GWh (14lq (1)'s first report); the presets
 unchanged at the default; the full suite before the PR.
-Decided: the 2026 stock not added again, enrolled batteries out of the passive profile (622); the modes, glide path and reserve (624).
-For the user: P1's cases (growth scaled); P4 outside system cost or in btmCapexR; V3's 100 events; V5.
+Decided: the 2026 stock not added again, enrolled batteries out of the passive profile (622); the modes, glide path and reserve (624);
+P1's cases scale growth, P4 in btmCapexR, V1's 20% cap (50% high), V2 a third, V3 15 events of 3 hours (100 of 2 a sensitivity), V4
+the system row, V5 (625). Build next, with the checks above.
