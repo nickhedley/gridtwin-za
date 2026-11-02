@@ -1699,15 +1699,21 @@ How each mode enters demand and the build (messages 622-624)
 
 The virtual power plant (a build option)
 - V1. A build variable in the build LP, GWh of enrolled battery energy by year (E), linear build. Enrolment cap: half the cycling stock
-  (US DOE, Pathways to Commercial Liftoff: Virtual Power Plants, 2023 and 2025: the best programmes enrol about 50% of eligible
-  customers), and in 2026 no more than the Plentify-Deye 2.7 GWh (energy-storage.news, 20 Jul 2026).
-- V2. Delivered power a third of nameplate (California's Demand Side Grid Support programme, batteries, 2024: about 91 MW above
-  baseline from 270 MW nameplate, about 34%; secondary, the primary evaluation being looked for).
+  (US DOE Liftoff VPP fact sheet, October 2024: "best-in-class programs near 50%+ enrollment"; the 2025 update's example is over 50%
+  of eligible residential customers in Xcel's air-conditioning load control, not batteries; the 2023 report's page not yet read,
+  liftoff.energy.gov blocked from the session), and in 2026 no more than the Plentify-Deye 2.7 GWh (energy-storage.news, 20 Jul 2026).
+- V2. Delivered power about a third of nameplate. California's Demand Side Grid Support programme, Option 3 batteries, 2024: the
+  CEC's staff deck 'Staff Analysis of the DSGS Program 2024 Performance Data' (docket 22-RENEW-01, TN 266629, workshop 15 Oct 2025)
+  gives 287.9 MW nameplate (October 2024) and about 89 MW September incremental capacity against the measured baseline, monthly
+  average: about 31%, not the 34% (91 of 270 MW) quoted secondhand (the 91 MW looks like the whole programme, EDF). Read from search
+  excerpts only: efiling.energy.ca.gov is blocked from the session; to confirm against the deck before citing.
 - V3. Event limits (Brattle 2023: 15-100 events of 2-3 hours a year): at most 100 events of 3 hours, so at most 300 hours at full
   delivered power a year; in the engine the VPP discharges only in hours the engine forecasts short (the 'reservecoal' forecast); in
   the build LP its energy over the representative and stress days is capped pro rata.
 - V4. Cost US$42.85/kW-yr per kW delivered (Brattle, Real Reliability: The Value of Virtual Power, May 2023, technical appendix Table
-  4: net cost per kW-year for 400 MW of resource adequacy; being checked against the PDF before it is cited), at R16.50/US$ (the
+  4: net cost per kW-year for 400 MW of resource adequacy, net of energy, ancillary, network deferral, resilience and emissions
+  values). Not yet confirmed: no indexed excerpt shows $42.85; the table has a system and a societal row (the headline 40-60% saving
+  is the system row), and the dollar year is not verified; brattle.com is blocked from the session. To confirm before citing; at R16.50/US$ (the
   model's pinned rate), about R707/kW-yr; participant payments are transfers (retail panels), not system cost.
 - V5. The existing VPP slider (a 4 GW geyser pool x enrolment, with 0.35 kW of 4-hour batteries per geyser kW, no cost) stays for
   geysers; with the build option on, its battery component is off, so the same batteries are not counted twice.
