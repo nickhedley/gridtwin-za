@@ -19724,7 +19724,8 @@ Checks on 2026-11-02f: LP-key test (Least-cost path 2035, as before) default and
 39f092d5e626 (the LP does not read the forecast); 'sync6' engine outputs on c6e's 2035, 1,176 output keys, identical to 8895326's
 (only the stamp differs); 'reserve' on 2026-11-02e reproduces its one-year figures exactly (0 h, 0.259 TWh, 4.423 GWh/yr).
 
-One-year 2035 test (ss_engine_check.js YEARS=2035, EXTRA each build's grid-forming MW and conversions, 2 Nov 2026 07:20-07:50 UTC):
+One-year 2035 test (ss_engine_check.js YEARS=2035, EXTRA each build's grid-forming MW and conversions, 2 Nov 2026 07:27-07:28 UTC on 02e; the same
+figures on 02d, 07:24-07:25 UTC):
 | Build: coal lifted TWh; hours short; unserved GWh/yr ('sync6' 0.316) | 'prev' | 'mustspin' | 'reserve' | 'reservecoal' |
 |---|---|---|---|---|
 | ratio (9,045 MW; 5,838 MVA) | 0.124; 1,121; 0.316 | 1.213; 0; 0.299 | 0.259; 0; 4.423 | 0.272; 0; 0.495 |
@@ -19734,7 +19735,7 @@ of it meetable by the held MW, coal room left in each: hours the forecast did no
 full power and ignores their fuel, hold and floor limits). The other 0.30 GWh/yr falls in hours with nothing held.
 
 c6e rebuild (harness/out/ss/pathway_c6e_ss.json), pathcheck.js LNG=1 GRID=1, groups a-c, build 2026-11-02e (the 02f change is the
-default only), 2 Nov 2026 07:50-08:05 UTC; 'reserve' rerun on 02e gives the same figures as 02b to the digit shown, its 2034 hour now 0:
+default only), 2 Nov 2026 07:28-07:40 UTC; 'reserve' rerun on 02e gives the same figures as 02b to the digit shown, its 2034 hour now 0:
 | | c6e, 'sync6' | 'prev' | 'mustspin' | 'reserve' | 'reservecoal' |
 |---|---|---|---|---|---|
 | System cost PV 2026-40 (8%) with the floor's annual charge, R bn | 2,283.9 | 2,288.9 (+5.0) | 2,292.4 (+8.5) | 2,289.9 (+6.0) | 2,289.7 (+5.8) |

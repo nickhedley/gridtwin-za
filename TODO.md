@@ -831,6 +831,16 @@ in an hour forecast short coal is lifted first ('reservecoal', c7's central): un
 was a charge and a discharge together above the held headroom; capped (build 2026-11-02e). Open: the forecast misses a few hours
 (0.2 GWh/yr on the one-year build); a tighter forecast (gas fuel and pumped-storage floor limits) only if c7 shows it matters.
 
+14me. NTCSA's MTSAO 2027-2036 against the model's inputs, and two c7 sensitivities (user, 2 Nov 2026, message 617; extends 14lk).
+(a) Compare our inputs against its Reference Case, reading the report itself (Drive, added 31 Oct 2026), and report each difference
+with its effect before changing anything: demand path (high case 238.3 TWh / 35.8 GW in 2026 to 329.7 TWh / 49.1 GW in 2036, as
+quoted by EE Business Intelligence, 1 Nov 2026; check against the report); Eskom availability (66% FY2027 to 70% by 2031, downside 65%)
+against the model's coal availability path; Eskom shutdowns (about 16.2 GW by 2036, 8.75 GW in 2029-30) against the model's coal
+schedule; Cahora Bassa (1,150 MW) and Avon and Dedisa (1,005 MW) contracts ending in 2030; about 3 GW of existing renewables at
+contract end in 2033-36 (the model keeps REIPPPP plants running after their PPAs, message 542 (b)). (b) After c7's central: two c7
+sensitivities, no new gas with coal availability on the MTSAO's 65% downside path, and no new gas on its high-demand path, each
+against c7: cost, CO2, unserved energy and open-cycle share by year.
+
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
 standard (pp. 15-16); the model has neither. First check how much of the gap to BW3's capacity charge (the model 20-25% below) an
