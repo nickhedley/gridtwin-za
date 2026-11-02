@@ -842,7 +842,9 @@ contract end in 2033-36 (the model keeps REIPPPP plants running after their PPAs
 two rebuilt runs: (i) no new gas at the MTSAO's High demand (served growth calibrated as in 617 (a)); (ii) the MTSAO Reference Case's
 inputs without new gas: High demand, 70% coal availability, Avon and Dedisa removed after 2030, 3 GW of REIPPPP retired in 2033-36.
 Each also with gas allowed. Report each against c7 and against the same inputs with gas: cost, CO2, unserved energy and open-cycle
-share by year, and new builds by 2036. c7's central demand stays on UCT ESRG's IRP reference forecast unless the user says otherwise.
+share by year, and new builds by 2036. (ii) is also run with the REIPPPP plants kept (message 620), so that one assumption's effect shows on a rebuilt plan;
+the report states that (ii) retires them only to match the outlook (the central keeps them, SOURCES). Choices for the inputs: message
+619, SOURCES under the outlook's entry (PR #151). c7's central demand stays on UCT ESRG's IRP reference forecast unless the user says otherwise.
 Needs first: pathway options for a coal availability path by year, Avon and Dedisa removed (engine and build LP), and the existing
 REIPPPP fleet retired by year in the build LP and engine (DEMAND=index:<file> already takes the demand path). Open points, to be
 put to the user with the design: the High path's years after 2036 (the outlook stops there); 2027-35 by chart reading (about 1 TWh)
