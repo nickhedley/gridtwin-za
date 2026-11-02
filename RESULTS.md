@@ -19837,3 +19837,19 @@ Finding: under 622's rule (enrolled batteries leave the self-consumption profile
 up a daily evening discharge, valued every day, for at most 45 event-hours a year; and this 2035 test builds no new utility batteries,
 so short-duration firm capacity has little value in it. Open for the user (message 628's second point): keep 622's rule or let enrolled
 batteries cycle daily and be called for events.
+
+VPP after messages 630 and 631 (c)-(f) (build 2026-11-02o, 541ffd9: enrolled batteries cycle daily and are called for events; cost
+Brattle's battery participant cost, $500 + $140 per 7.5 kW a year, 2022 dollars, CPI-U to 2026, US$94.84, about R1,565/kW-yr of
+nameplate, R4,671 per kW delivered at 33.5%; planning credit min(1, 3 h/4); one event a day, events only on stress days, 45 h a year):
+- One-year build tests (as above, 11:16-11:21 UTC on 02m and repeated by the break-even search on 02o): enrolment 0 in every year
+  2026-35, no event-hours used, cost equal to the stock alone (R1,075.552bn, R4.379bn under c6e's build), unserved unchanged.
+- Engine, Least-cost path 2035 at coal EAF 50%, stock 8 GWh, enrolment at its cap (3.22 GWh, 431 MW delivered): 19 hours forecast
+  short, 4 event-hours on 2 days, 1,370 MWh shifted within those evenings, unserved 66.65 GWh/yr (the same as the stock alone: the
+  shifted energy leaves later evening hours that are also short), system cost +R2.0bn (the participant cost).
+- Break-even (message 632 (a); one-year build test at 2030 and at 2035, c6e's builds to the year before fixed, stock 8 GWh, the VPP's
+  cost bisected; scratchpad vppbe/search.sh, 11:28-11:56 UTC): at zero cost the LP enrols to the cap (2.32 GWh in 2030, 3.22 in 2035);
+  at US$1.48/kW-yr of nameplate (about R24/kW-yr, R73 per kW delivered) and above it enrols none, in both years. The break-even lies
+  between US$0 and $1.48: against R1,565, the VPP as modelled has almost no value to the plan.
+Finding: with enrolled batteries already cycling daily on the self-consumption profile, an event can only move their evening energy
+earlier within the evening, which the plan values at almost nothing; the option is kept (default off) and recorded as a finding, not
+used in c7. Caveat: one-year tests on c6e's fixed builds; no outage at the customer modelled.
