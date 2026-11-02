@@ -149,7 +149,7 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 - We do not charge sustaining capital on existing coal. Coal's fixed cost (R1,160/kW-yr) is calibrated to MYPD6 operating costs, which exclude capital, so future refurbishment and sustaining costs are not charged, though early retirement would avoid these costs.
 - Extreme midday solar: With very large solar the engine still cycles coal more than current practice.
 - Coal fuel costs rise at Eskom's past rate per tonne; the trend rests on few years of published costs, whose definitions may differ.
-- Coal's carbon charge to 2030 assumes Eskom's renewable-premium deduction takes its liability to the law's floor each year; not checked against Eskom's accounts.
+- Coal's carbon charge to 2030 assumes Eskom's renewable-premium deduction takes its liability to the law's floor each year; not checked against Eskom's accounts. The floor is charged per kWh sent out; if it falls on total production, as the environmental levy it replaced appears to have, coal's carbon charge is about 10% higher, about R0.5 billion a year.
 - Health and water costs of coal are not included in system costs.
 - REIPPPP plants keep running as merchant plants after their contracts end, paying fixed operating costs. NTCSA's 2027-2036 outlook retires about 3 GW of them in 2033-36.
 - Every battery, existing or new, private or public, can provide operating reserve. NTCSA's 2027-2036 outlook counts only Eskom's batteries and those from the public battery bid windows 1-3.
