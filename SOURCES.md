@@ -1877,10 +1877,12 @@ ESKOM_FY26.coalCostRbn R91.5bn over coal-fired sent out 165,431 GWh), sits under
 'Unit cost, R/MWh': coal 591, 2025 546) by the environmental levy alone: p.56 gives 'coal and other generation' R91.5bn as 'excluding
 environmental levies' (+0.5% on R91.0bn) and the levies as a separate slice; the annual financial statements give the levy as R6,826m
 (note 47, p.111; 2025 R7,273m); shared over non-renewable sent out (coal 165,431, nuclear 11,618, OCGT 811 GWh), coal's part is
-R6.35bn, and (91.5 + 6.35) / 165.431 = R591.5/MWh (2025: R545 against the published 546). The levy is a tax on non-renewable
-generation, a transfer, not a resource cost, so it stays out of system cost (as the carbon tax's allowances are a policy setting, not a
-cost of coal). Its effective rate, about 3.84c/kWh sent out against the statutory 3.5c, suggests a wider charging base (gross
-generation; our inference). Eskom credited; the arithmetic ours.
+R6.35bn, and (91.5 + 6.35) / 165.431 = R591.5/MWh (2025: R545 against the published 546). The levy stays out of the model's coal
+cost because it was repealed from 1 Jan 2026 and folded into the carbon tax, which the model charges (the generation levy replaced by
+the carbon tax, with a floor on a generator's liability of R0.035/kWh after the renewable-premium deduction: s6(2) as substituted by
+the Taxation Laws Amendment Act 5 of 2026; the carbon path entry above). Charging both would count it twice (user, 2 Nov 2026,
+message 656 (b)). The levy's effective rate in FY2026, R6,826m over the non-renewable production above, about 3.84c/kWh against the
+statutory 3.5c, is unexplained. Eskom credited; the arithmetic ours.
 
 ## Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)
 
@@ -2506,10 +2508,13 @@ TODO 14lu (full version, after the note) replaces the estimate with a sourced st
   beyond 40 (linear on the base, ours), MW-weighted over the units standing in each year (UC_FLEET's closure years) and taken relative
   to the 2026 fleet, so 2026 stays on the calibrated R1,160 (the factor is 0.96 in 2030, as the oldest stations close, 1.00 in 2035 and
   1.04 in 2040).
-- Unit commissioning years (index.html COAL_UNIT_COD): Global Energy Monitor's station pages (gem.wiki: Arnot, Camden, Duvha, Grootvlei,
-  Hendrina, Kelvin, Kendal, Kriel, Lethabo, Majuba, Matimba, Matla, Tutuka), POWER magazine (Camden), TimesLIVE 31 Oct 2022 (Komati),
-  Creamer Media and SAnews (Kusile, Medupi), africa-energy.com (Medupi unit 4), all read as search extracts (the pages could not be
-  opened in the session; to verify before the pack cites them). Choices, ours: the original year for units returned to service
+- Unit commissioning years (index.html COAL_UNIT_COD): for Arnot, Camden, Duvha, Grootvlei, Hendrina, Kelvin, Kendal, Kriel,
+  Lethabo, Majuba, Matimba, Matla and Tutuka, Global Energy Monitor's unit start years as read from the pages through Firecrawl on
+  12 Oct 2026 (the row 'Global Energy Monitor, Global Coal Plant Tracker' in the table at the top; COAL_UNIT_COD matches it for every
+  station listed there); Kelvin's two units 1962 and 1964, as that row gives them for our 160 MW (Phase B units 1962-1969; the
+  search-extract reading of 1969 and 1969 replaced, message 656 (c)). For Medupi, Kusile and Komati, not in that row: Creamer Media
+  and SAnews (Kusile, Medupi), africa-energy.com (Medupi unit 4) and TimesLIVE 31 Oct 2022 (Komati), read as search extracts on
+  2 Nov 2026; to verify on gem.wiki through Firecrawl (credits out on 2 Nov; they refresh 3 Nov) before the age sensitivity runs. Choices, ours: the original year for units returned to service
   (Camden 2005-08, Grootvlei 2007-11, Komati 2009, three Arnot units 1997-98) and for Medupi unit 4's 2025 repair; where the model's
   unit groups are not published (Camden's 190 MW units, Hendrina's 169 MW units, Medupi's 717 MW unit, Grootvlei's three operating
   units, Kelvin's two), units mapped in order. Conflicts in the extracts (Camden U1 1967 or 1968, Matla U1 1979 or 1980, Arnot U4
