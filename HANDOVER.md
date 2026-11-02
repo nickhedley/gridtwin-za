@@ -1736,7 +1736,10 @@ The stock and its modes
   backup-only: held full for load-shedding, not cycled, no effect on demand; share B(y) of the whole stock, 2026 stock included: 50% in
   2026 falling linearly to 0% by 2030 (50, 37.5, 25, 12.5, 0%), 0 after; sensitivity: 50% throughout (load-shedding returns);
   cycling: the self-consumption profile (P3) on the energy above an owner reserve of 25% of capacity; share 1 - B(y);
-  enrolled in a VPP (V1): taken from the cycling stock, dispatched on the same 75% above the reserve.
+  enrolled in a VPP (V1; message 630, replacing 622's rule): enrolled batteries stay on the self-consumption profile every day, like
+  the rest of the cycling stock, and in an event hour add incremental delivered power on top of it (a third of nameplate, measured by
+  DSGS above the baseline, so incremental by construction), within the day's usable energy (75%) and charge: an energy-neutral shift
+  of the day's discharge into the event hours.
   The 50% start, the glide path and the 25% reserve are our assumptions; no source found yet (SOURCES).
 - P3. The profile, fixed and the same in the engine and the build LP: each day the cycling stock charges from rooftop output, in
   proportion to the day's rooftop profile, up to the smaller of its usable energy (75% of capacity) and half the day's rooftop output,
@@ -1749,16 +1752,16 @@ How each mode enters demand and the build (messages 622-624)
 - The 2026 base demand is Eskom's metered grid demand, so the 2026 stock, as it behaved in 2026, is already in it. With S0 = S(2026),
   C(y) = (1 - B(y)) S(y) the cycling stock, C0 = C(2026) = 0.5 S0 and E(y) the enrolled energy (a build-LP variable):
   backup-only, B(y) S(y): nothing (no demand, no build, no capacity credit; outages are not modelled at the customer);
-  cycling, not enrolled: the passive profile per GWh of usable energy x 0.75 x [C(y) - E(y) - C0] added to demand before dispatch, in
-  the engine and the build LP's balance rows (linear in E): only the change from 2026, that is the 2026 stock moving from backup to
-  cycling plus the stock added since, less what is enrolled; negative when enrolment exceeds that change, the enrolled batteries'
-  metered self-consumption then put back into demand before they are dispatched (message 622);
-  enrolled, E: storage of energy 0.75 E and delivered power E / 2.5 h / 3 (V2), within the event limits (V3), credited in the planning
-  reserve rows at the delivered power; cost V4 per kW delivered.
-- Double-count check. Every GWh of S(y) is in one place: B(y) S(y) + [C(y) - E(y)] + E(y) = S(y). Against 2026's metered behaviour
-  only [C(y) - E(y)] - C0 enters demand, so the 2026 stock is never added again. Within the cycling and enrolled stock, 25% is held
-  back and 75% used. The engine asserts the identities each year and reports each term (GWh) beside the run; the build LP carries them
-  as linear terms in E.
+  cycling, enrolled or not: the passive profile per GWh of usable energy x 0.75 x [C(y) - C0] added to demand before dispatch, in the
+  engine and the build LP's balance rows: only the change from 2026, that is the 2026 stock moving from backup to cycling plus the
+  stock added since (message 630: enrolment removes nothing from the profile);
+  enrolled, E: in an event hour up to P = E / 2.5 h / 3 more discharge, and the enrolled share of that day's profile discharge in its
+  other hours falls by the same energy (net zero a day); events only on the stress days within the budget (V3); credited in the
+  planning reserve rows at the delivered power; cost V4 per kW delivered.
+- Double-count check (message 630). Every GWh of S(y) is backup-only or cycling: B(y) S(y) + C(y) = S(y). Against 2026's metered
+  behaviour only C(y) - C0 enters demand, so the 2026 stock is never added again. Enrolment adds only the event increment, which is
+  energy-neutral within the day (the event hours' extra discharge equals the fall in the enrolled share's other profile hours). The
+  engine asserts both each year and reports each term; the build LP carries them as linear terms in E.
 
 The virtual power plant (a build option)
 - V1. A build variable in the build LP, GWh of enrolled battery energy by year (E), linear build. Enrolment cap (message 625): 20% of
@@ -1783,6 +1786,7 @@ The virtual power plant (a build option)
 Checks: the LP-key test (default unchanged; each option on changes only its own rows and columns); the engine's energy balance and
 the identities; with the stock on, the evening peak and firm build per GWh at 1, 3 and 5 GWh (14lq (1)'s first report); the presets
 unchanged at the default; the full suite before the PR.
-Decided: the 2026 stock not added again, enrolled batteries out of the passive profile (622); the modes, glide path and reserve (624);
+Decided: the 2026 stock not added again (622); the modes, glide path and reserve (624); enrolled batteries cycle daily and are called
+for events, replacing 622's removal from the profile (630);
 P1's cases scale growth, P4 in btmCapexR, V1's 20% cap (50% high), V2 a third, V3 15 events of 3 hours (100 of 2 a sensitivity), V4
 the system row, V5 (625). Build next, with the checks above.
