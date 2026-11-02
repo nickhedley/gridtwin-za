@@ -1737,7 +1737,7 @@ The stock and its modes
   2026 falling linearly to 0% by 2030 (50, 37.5, 25, 12.5, 0%), 0 after; sensitivity: 50% throughout (load-shedding returns);
   cycling: the self-consumption profile (P3) on the energy above an owner reserve of 25% of capacity; share 1 - B(y);
   enrolled in a VPP (V1; message 630, replacing 622's rule): enrolled batteries stay on the self-consumption profile every day, like
-  the rest of the cycling stock, and in an event hour add incremental delivered power on top of it (a third of nameplate, measured by
+  the rest of the cycling stock, and in an event hour add incremental delivered power on top of it (33.5% of nameplate, measured by
   DSGS above the baseline, so incremental by construction), within the day's usable energy (75%) and charge: an energy-neutral shift
   of the day's discharge into the event hours.
   The 50% start, the glide path and the 25% reserve are our assumptions; no source found yet (SOURCES).
@@ -1755,9 +1755,10 @@ How each mode enters demand and the build (messages 622-624)
   cycling, enrolled or not: the passive profile per GWh of usable energy x 0.75 x [C(y) - C0] added to demand before dispatch, in the
   engine and the build LP's balance rows: only the change from 2026, that is the 2026 stock moving from backup to cycling plus the
   stock added since (message 630: enrolment removes nothing from the profile);
-  enrolled, E: in an event hour up to P = E / 2.5 h / 3 more discharge, and the enrolled share of that day's profile discharge in its
-  other hours falls by the same energy (net zero a day); events only on the stress days within the budget (V3); credited in the
-  planning reserve rows at the delivered power; cost V4 per kW delivered.
+  enrolled, E: in an event hour up to P = E / 2.5 h x 33.5% more discharge, and the enrolled share of that day's profile discharge in
+  its other hours falls by the same energy (net zero a day); events only in the profile's discharge hours (17:00-22:00, rule 366) and
+  on the stress days within the budget (V3); credited in the planning reserve rows at the delivered power x the storage credit rule on
+  the event length, min(1, 3 h / 4) = 0.75 (message 631 (d)); cost V4 per kW of enrolled nameplate.
 - Double-count check (message 630). Every GWh of S(y) is backup-only or cycling: B(y) S(y) + C(y) = S(y). Against 2026's metered
   behaviour only C(y) - C0 enters demand, so the 2026 stock is never added again. Enrolment adds only the event increment, which is
   energy-neutral within the day (the event hours' extra discharge equals the fall in the enrolled share's other profile hours). The
@@ -1769,17 +1770,20 @@ The virtual power plant (a build option)
   customers); high case 50%; in 2026 no more than the Plentify-Deye 2.7 GWh (energy-storage.news, 20 Jul 2026). No battery enrolment
   rate is published: LBNL, '30 Proven Strategies to Increase VPP Enrollment' (Dec 2024), p.5, has over half of eligible customers only
   for Xcel's air-conditioning control.
-- V2. Delivered power a third of nameplate: CEC, 'Staff Analysis of the DSGS Program 2024 Performance Data' (15 Oct 2025, TN 266629):
+- V2. Delivered power 33.5% of nameplate (message 631 (e); was a third): CEC, 'Staff Analysis of the DSGS Program 2024 Performance Data' (15 Oct 2025, TN 266629):
   residential 2-hour incremental discharge 34.0% of nameplate in September 2024 (slide 17), season-weighted 33.5% (slide 29, with the
   deck's caution that a share of nameplate is not a performance indicator).
 - V3. Event limits (message 625): central 15 events a year of 3 hours (Brattle 2023's VPP case, Tables 1-2, footnote 24; 7.5 kW and
   22.5 kWh per participant), so at most 45 hours at full delivered power a year, matching the cost basis; sensitivity 100 events of 2
-  hours (Brattle for GridLab, 2024). In the engine the VPP discharges only in hours the engine forecasts short (the 'reservecoal'
-  forecast), up to the year's event-hours; in the build LP its energy over the representative and stress days is capped pro rata.
-- V4. Cost US$42.85/kW-yr per kW delivered (Brattle, Real Reliability, Technical Appendix, 5 May 2023, Table 4, p.19: VPP net
-  resource adequacy cost $17.14 million a year for 400 MW, system row, 2022 dollars; battery $27.47m, gas peaker $41.40m; societal row
-  not used), at R16.50/US$ (the model's pinned rate), about R707/kW-yr; participant payments are transfers (retail panels), not system
-  cost.
+  hours (Brattle for GridLab, 2024). In the engine an event falls only in a discharge hour of the profile the engine forecasts short
+  (engineForecastShort, the one function 'reservecoal' also calls, message 631 (f)), one event a day of consecutive hours, at most
+  vppEventHours, within the year's event-hours; in the build LP events only on the stress days (messages 627-628).
+- V4. Cost (message 631 (c), replacing US$42.85/kW-yr per kW delivered, Brattle's Table 4 net system cost of a mostly non-battery VPP,
+  which was also converted without escalation): Brattle's battery participant cost, $500 incentive plus $140 other costs per
+  participant a year over 7.5 kW of participant battery (Real Reliability, Technical Appendix, 3 May 2023, Tables 1, 3, 4; 2022
+  dollars) = $85.3/kW-yr, x US CPI-U January 2026 over the 2022 annual average (325.252 / 292.655, as the model escalates US costs) =
+  about $94.8/kW-yr, at R16.50/US$ about R1,564/kW-yr, per kW of enrolled nameplate (E / 2.5 h). In index.html: VPP_BATT_PARTICIPANT,
+  US_CPI_2022_TO_JAN26, FIXED.vppCostUsdKwYr.
 - V5. The existing VPP slider (a 4 GW geyser pool x enrolment, with 0.35 kW of 4-hour batteries per geyser kW, no cost) stays for
   geysers; with the build option on, its battery component is off, so the same batteries are not counted twice.
 
@@ -1788,5 +1792,6 @@ the identities; with the stock on, the evening peak and firm build per GWh at 1,
 unchanged at the default; the full suite before the PR.
 Decided: the 2026 stock not added again (622); the modes, glide path and reserve (624); enrolled batteries cycle daily and are called
 for events, replacing 622's removal from the profile (630);
-P1's cases scale growth, P4 in btmCapexR, V1's 20% cap (50% high), V2 a third, V3 15 events of 3 hours (100 of 2 a sensitivity), V4
-the system row, V5 (625). Build next, with the checks above.
+P1's cases scale growth, P4 in btmCapexR, V1's 20% cap (50% high), V3 15 events of 3 hours (100 of 2 a sensitivity), V5 (625); V2
+33.5%, V4 Brattle's battery participant cost escalated to 2026, the planning credit at 0.75 of delivered power, one consecutive event a
+day in the engine and one forecast function (631). Build next, with the checks above.
