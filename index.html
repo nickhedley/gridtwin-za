@@ -8773,7 +8773,8 @@ function simulate(u, prof, outPath, _soc0){
       if (_ssLift > 0){ cAvail += _ssLift; _ss.liftH++; _ss.liftMWh += _ssLift; _ss.liftFloorMWh += _ssLift * _ss.msl; }
     }
     // The battery fleet's power this hour for charge, discharge and operating reserve: all of it, less any grid-forming headroom
-    // held for the inertia floor ('reserve'). Equal to battPower in every other mode.
+    // held for the inertia floor ('reserve'). Equal to battPower in every other mode. The look-ahead's own discharge (_laAhead) is capped
+    // at it too: uncapped, it left 324 hours short of the floor in the 2035 one-year test (RESULTS 'Reserved grid-forming headroom').
     const battPowerH = battPower - _ssBattRes;
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is not must-run - it is
@@ -9067,7 +9068,7 @@ function simulate(u, prof, outPath, _soc0){
       const _laAhead = () => {
         if (!(_laOn && _laP > 0 && residual > 0)) return;
         const s0 = _laSoc(), room = s0 - _laReq(h, s0, coalGen, rampAllowedMW);
-        if (room > 1e-6){ _disHour = h; _laDis = _laDischarge(Math.min(residual, room)); _disHour = -1; syncBattSoc(); residual -= _laDis; E.batt += _laDis;
+        if (room > 1e-6){ _disHour = h; _laDis = _laDischarge(Math.min(residual, room, Math.max(0, battPowerH))); _disHour = -1; syncBattSoc(); residual -= _laDis; E.batt += _laDis;
           btLim = Math.min(battPowerH - _laDis, Math.max(0, battSoc)); }
       };
       // psPeakFloor can be negative; the old ancillary floor clamped it at zero.
@@ -21247,7 +21248,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02a';
+const BUILD_STAMP = '2026-11-02b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
