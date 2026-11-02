@@ -107,7 +107,10 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // 2026-11-02i has none and ran with both off, the page default, so nothing is set. With the virtual power plant on, each year's
  // enrolled energy is the run's sched[y].vppGWh (below).
  const BTM_VPP = !!(P.btm && (P.btm.vppBuildOn | 0) > 0);
- if (P.btm){ w.eval(`for (const k of ${JSON.stringify(Object.keys(P.btm))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02i or later'); Object.assign(state, ${JSON.stringify(P.btm)});`);
+ // vppEvents and vppEventHours (withdrawn in build 2026-11-02s, message 637) are dropped from a run made with the virtual power plant
+ // off; a run made with it on used the event rule and is refused (check it on its own commit).
+ if (P.btm){ const BT={...P.btm}; for (const k of ['vppEvents','vppEventHours']) if (k in BT){ if ((BT.vppBuildOn|0)>0) throw new Error('the run used the withdrawn VPP event rule ('+k+'): check it on its own commit'); delete BT[k]; }
+   w.eval(`for (const k of ${JSON.stringify(Object.keys(BT))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02i or later'); Object.assign(state, ${JSON.stringify(BT)});`);
    console.log('behind-the-meter batteries and virtual power plant from the pathway:', JSON.stringify(P.btm)); }
  // Geyser control (messages 633-635): the run's own settings (P.geyser), recorded by pathway_perfail.js; a run recorded before build
  // 2026-11-02q has none and ran with it off. With it on, each year's enrolled MW is the run's sched[y].gyMW (below).
