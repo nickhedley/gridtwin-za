@@ -19614,3 +19614,25 @@ grid-forming batteries and converts retired coal units rather than building new 
 of hours from 2035 short (the forecast credits grid-forming headroom the hour does not deliver), under 'mustspin' it lifts ten to
 seventeen times the coal and meets the floor. Caveats: one pathway pass; coal in the LP by the ratio (c7 takes the commitment variable,
 which on the one-year test cost R1.1bn less); national, not by substation; no fault-level cost in the central.
+
+### System strength sensitivities on c6e: the 0.5 Hz/s requirement (108 GW.s) costs R54.9bn (2.4%) over c6e, the fault-level adder R23.5-41.1bn; a flat 40 GW.s or an 11 s grid-forming H brings the floor's cost down to about R1.5bn (user, 1 Nov 2026, message 609 (c))
+
+Each is the c6e rebuild with the inertia floor (settings as above, coal at output x lambda, SS_FC=prev) with one change, on
+claude/system-strength-min at ecdee6e (build 2026-11-02a), 1 Nov 2026 21:56 UTC to 2 Nov 00:38 UTC, two at a time; each checked under
+'prev' (pathcheck.js LNG=1 GRID=1, groups a-c). PV 2026-40 at 8%, including the condensers' and grid-forming premium's annual charge
+and, for the fault cases, the fault-level adder (pathcheck costWithFault); against c6e on the same page, R2,283.9bn.
+| Case | PV, R bn (over c6e) | Grid-forming MW | Conversions / new condensers MVA | Lithium MW | Hours short a year 2035 / 2040 ('prev') | Highest mean unserved, GWh |
+|---|---|---|---|---|---|---|
+| Central (1 Hz/s, 54 GW.s; H_gfm 1.891 s) | 2,288.9 (+5.0) | 8,877 | 7,784 / 0 | 16,578 | 99.5 / 122.9 | 5.72 |
+| RoCoF 0.5 Hz/s (108 GW.s) | 2,338.8 (+54.9) | 10,664 | 7,784 / 38,655 | 17,181 | 142.3 / 178.8 | 7.59 |
+| Flat 40 GW.s | 2,285.3 (+1.4) | 7,111 | 74 / 0 | 16,073 | 40.7 / 79.7 | 5.66 |
+| Grid-forming H 1 s | 2,291.2 (+7.3) | 9,090 | 7,784 / 5,557 | 16,297 | 94.0 / 129.6 | 6.18 |
+| Grid-forming H 11 s (Hornsdale) | 2,285.4 (+1.5) | 3,117 | 0 / 0 | 15,033 | 52.6 / 129.1 | 5.39 |
+| Fault level, A$137k/MW (R1,602/kW) | 2,325.0 (+41.1; adder R38.2bn) | 8,186 | 7,784 / 0 | 14,884 | 88.9 / 159.7 | 5.47 |
+| Fault level, half (R801/kW) | 2,307.4 (+23.5; adder R19.3bn) | 8,946 | 7,784 / 0 | 16,520 | 98.6 / 122.1 | 6.22 |
+CO2 2026-40, Mt: central 1,736; 0.5 Hz/s 1,779; flat 40 1,737; H 1 s 1,746; H 11 s 1,738; fault full 1,760, half 1,749 (c6e 1,739).
+Findings: the requirement's level dominates: halving the RoCoF limit doubles it and adds R50bn, almost all in 38.7 GVA of new condensers;
+the grid-forming H decides how much battery headroom the LP buys (3.1 GW at 11 s against 9.1 GW and 5.6 GVA of new condensers at 1 s);
+the fault-level adder, a cost on new inverter capacity, is the largest single item at full rate and shifts the build from lithium
+(14.9 against 16.6 GW) towards gas. Every case passes NTCSA's unserved test. Caveats: one pathway pass each; checked under 'prev' only,
+which leaves hours short as in the central; coal in the LP by the ratio, not the commitment variable c7 will use.
