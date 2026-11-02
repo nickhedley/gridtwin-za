@@ -905,6 +905,10 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mj. Geyser pre-heating, after the note (user, 2 Nov 2026, message 641): shift enrolled geysers' heating earlier into the solar
+afternoon within tank and comfort limits, beside the deferral option. Source: LBNL/Wits Executive Summary (May 2024), PVDay scenario:
+-2,242 MW winter, but comfort 76% in winter against 99% for controlled switching; report the comfort trade-off with the result.
+
 14mi. Planning-reserve peak (user, 2 Nov 2026, message 638 (c)): the build LP's res_ rows take the annual peak from demand with rooftop
 added back (PROFILES.demand), which peaks at about 10:00, so evening-only resources (geyser control, enrolled batteries' evening
 discharge) get no planning credit there. A known limit for any run with a planning margin (bldPlanMarginPct > 0); c7 keeps the margin
