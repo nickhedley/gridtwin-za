@@ -12,6 +12,11 @@ export GAS_FIRST=2035
 # c7's common settings (HANDOVER 'c7 launch plan'): system strength, cost of capital blended, behind-the-meter stock, VPP, geyser
 # control, coal costs and coal's carbon floor to 2030. Every run below takes them; a run's own change is added after them.
 C7="SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1"
+# Each piece has a deadline (PIECE_S seconds, default 6,600, under the caller's 2-hour limit): a solve gets the time left less 15 minutes
+# (pathway_perfail.js RESUME=1 JOB_DEADLINE), keeps its basis if it stops there, and the next piece resumes it; no new run starts with
+# under 20 minutes left. Sensitivities take 3 passes and the central 6, as c6e's chain did.
+DEADLINE=$(( $(date +%s) + ${PIECE_S:-6600} ))
+left(){ echo $(( DEADLINE - $(date +%s) )); }
 free_gb(){ df -BG / | awk 'NR==2{gsub("G","",$4); print $4}'; }
 [ "$(free_gb)" -ge 5 ] || { echo "$(date -u +%H:%M) STOP: under 5 GB free ($(free_gb) GB)" >> $P; exit 1; }
 echo "$(date -u +%Y-%m-%dT%H:%MZ) chain_c7 piece, PID $$, on $(git -C $REPO log --oneline -1 | cut -c1-60), $(grep -o "BUILD_STAMP = .[0-9a-z-]*" $REPO/index.html)" >> $P
@@ -24,13 +29,14 @@ check(){ local n=$1
   if [ -s out/pathcheck_${n}_a.json ] && [ -s out/pathcheck_${n}_b.json ] && [ -s out/pathcheck_${n}_c.json ]; then
     rm -rf lpcache_$n; echo "$(date -u +%H:%M) check $n done; free $(free_gb) GB" >> $P
   else echo "$(date -u +%H:%M) check $n INCOMPLETE (see out/pathcheck_${n}_*.log)" >> $P; fi; }
-one(){ local name=$1 chg=$2 maxp=${3:-6} tl=${4:-7200}
+one(){ local name=$1 chg=$2 maxp=${3:-3} tl=${4:-7200}
   if [ ! -s out/pathway_$name.json ]; then
+    if [ "$(left)" -lt 1200 ]; then echo "$(date -u +%H:%M) $name left to the next piece (under 20 minutes left)" >> $P; return 0; fi
     local att=$N/attempts_$name k; k=$(cat $att 2>/dev/null || echo 0)
     if [ "$k" -ge 4 ]; then echo "$(date -u +%H:%M) NOT RUN $name: no output after $k pieces" >> $P; return 0; fi
     echo $((k+1)) > $att
     echo "$(date -u +%H:%M) start $name ($C7 $chg) MAXP=$maxp TL=$tl; free $(free_gb) GB" >> $P
-    eval "env $C7 $chg LPCACHE=lpcache_$name MAXP=$maxp OUT=out/pathway_$name.json TL=$tl nice -n 10 node --max-old-space-size=8192 pathway/pathway_perfail.js" > out/$name.log 2>&1 &
+    eval "env $C7 $chg RESUME=1 JOB_DEADLINE=$DEADLINE LPCACHE=lpcache_$name MAXP=$maxp OUT=out/pathway_$name.json TL=$tl nice -n 10 node --max-old-space-size=8192 pathway/pathway_perfail.js" > out/$name.log 2>&1 &
     local pid=$!; echo "$(date -u +%FT%H:%MZ) c7 pathway $name pid $pid" >> $PIDLOG; wait $pid; local rc=$?
     echo "$(date -u +%H:%M) end $name rc=$rc$([ -s out/pathway_$name.json ] || echo ' NO OUTPUT (resumes from its LP cache next piece)')" >> $P
   fi
@@ -54,7 +60,8 @@ deep(){ local T=40 cap=${DEEP_CAP0:-36.382} L=$N/cal_deep40.txt
     local Y="2035:$cap,2036:$cap,2037:$cap,2038:$cap,2039:$cap,2040:$cap"
     if [ ! -s out/pathway_$n.json ]; then
       echo "$(date -u +%H:%M) start $n (target $T, cap $cap)" >> $P
-      eval "env $C7 SOLVER=native GAS_CAP=0 OCGD=1 PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 CO2CAP=22.809:2035 CO2CAP_YEARS=$Y LPCACHE=lpcache_$n MAXP=6 OUT=out/pathway_$n.json TL=7200 nice -n 10 node --max-old-space-size=8192 pathway/pathway_perfail.js" > out/$n.log 2>&1 &
+      if [ "$(left)" -lt 1200 ]; then echo "$(date -u +%H:%M) $n left to the next piece" >> $P; return 0; fi
+      eval "env $C7 RESUME=1 JOB_DEADLINE=$DEADLINE SOLVER=native GAS_CAP=0 OCGD=1 PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 CO2CAP=22.809:2035 CO2CAP_YEARS=$Y LPCACHE=lpcache_$n MAXP=6 OUT=out/pathway_$n.json TL=7200 nice -n 10 node --max-old-space-size=8192 pathway/pathway_perfail.js" > out/$n.log 2>&1 &
       local pid=$!; echo "$(date -u +%FT%H:%MZ) c7 pathway $n pid $pid" >> $PIDLOG; wait $pid
       echo "$(date -u +%H:%M) end $n$([ -s out/pathway_$n.json ] || echo ' NO OUTPUT (resumes next piece)')" >> $P
       [ -s out/pathway_$n.json ] || return 0
@@ -84,7 +91,7 @@ extras(){ mkdir -p $N/irp
   [ -s $N/validate_external_c7.txt ] || node validate_external.js testroot > $N/validate_external_c7.txt 2>&1
   echo "$(date -u +%H:%M) extras: irp $(ls $N/irp/pathcheck_irp2025_c7*_?.json 2>/dev/null | wc -l)/6, dmin2028 $([ -s $N/pathcheck_c7_dmin2028.json ] && echo done), replay $([ -s $N/replay2025_c7.txt ] && echo done), external $([ -s $N/validate_external_c7.txt ] && echo done)" >> $P; }
 case "${1:-1}" in
-  1) one c7 "" ;;
+  1) one c7 "" 6 ;;
   2) # every run the reviewer pack reads, on c7's settings (HANDOVER 'c7 launch plan', phase 2), two at a time
      pair c7_irpdem "DEMAND=index:$REPO/harness/pathway/irp2025/index_irp2025fig2_c6.json" s_nogas_c7 "GAS_CAP=0 OCGD=0"
      pair s_nogas_dsl_c7 "GAS_CAP=0 OCGD=1" s_irpgas_c7 "GAS_FIRST=2032 GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1 GASFLOOR=1 GASFLOOR_VINT=2029-2030 TCAP_YR=2029:4000,2030:4000"
