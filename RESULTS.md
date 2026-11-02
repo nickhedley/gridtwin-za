@@ -19451,3 +19451,13 @@ system-strength rebuild: node checks 1021/1030, audit 88/88, eng5 5/6, equal to 
 name (validate_findings 36/39, validate_response 86/87 with the same 35 cells, validate_consistency 82/83, validate_benchmarks 28/30,
 validate_outputs 49/51, eng5 storage vs unserved; validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_panels
 86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Visible text against main: none changed.
+
+### Reviewer pack: the coal swing sentence filled from harness/ext/coal_swing.json (user, 2 Nov 2026, message 615)
+
+harness/ext/coal_swing.js recomputes RESULTS 'Daily coal swing and the evening ramp' (message 611) from the page (Today 2026, main
+004a2dc, build 2026-11-01e) and ESK19679.csv (local, not committed) and writes derived figures only to harness/ext/coal_swing.json
+(means, ranges and shares; no hourly series; Eskom credited, analysis ours). It reproduces 611 exactly: 243 days, swing 3,330 against
+3,689 MW, pumped storage 50% against 32% of the evening ramp. packfill.js's swing.* keys read it; the share words are the nearest plain
+fraction (within 6 points or the fill stops), and the percentage stops if the model's swing is not below Eskom's. The repository-only
+fill folder (with the Deep decarbonisation run) fills the five new placeholders, none missing; every other line of REVIEWER_PACK.md is
+unchanged, and the 'Checks against reality' bullet's existing text is unchanged, the sentence appended.
