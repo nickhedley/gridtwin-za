@@ -19804,3 +19804,44 @@ count in every script and by failure name (validate_findings 36/39, validate_res
 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Later
 commits change SOURCES, TODO and RESULTS only, and merge main's #150 and #151 (docs and harness/ext). LP-key test on 2026-11-02f:
 default and 'sync6' sha1 4e0b77a5f1f4, identical to main; 'inertia' 39f092d5e626. Visible text against main (39b3625): none changed.
+
+### Cost of capital on closed REIPPPP projects only: solar implies about 6.0%, above the 5.5% central by 0.5 points (user, 2 Nov 2026, messages 631 (g) and 632 (b); report and proposal, nothing changed)
+
+Method as SOURCES 'Central rates and their basis' (message 469): the real rate at which BW6's compliant tracker bid capex (R16,786/kW in
+2026), BW6's fixed O&M (R287/kW-yr) and a 25-year life reproduce the tariff at the bids' 30.1% capacity factor; wind on its BW6
+compliant capex (R28,462/kW), R392/kW-yr and 37.2%; tariffs to January 2026 by the model's CPI factors (BW5 base April 2021, BW6 April
+2022, BW7 January 2024 taken). Script: the page's own constants (scratchpad coc_close/backsolve.js), 2 Nov 2026. The method reproduces
+the recorded rates: all BW6 solar bids 5.65% (recorded 5.6%), all BW5 solar bids 4.69% (4.7%).
+Closed projects and their tariffs (Fully Indexed Price at each window's base date), from search extracts of the DMRE statements of
+28 Oct 2021 and 8 Dec 2022, the DBSA and SAWEA preferred-bidder lists, NERSA's licence approvals (SolarQuarter, 7 Jul 2023), EDF,
+Scatec, Juwi and IPP Office close statements; no page could be opened from the session, so the figures are to be checked against the
+PDFs: BW5 wind Phezukomoya, San Kraal (140 MW each, R564.45), Coleskop (140, R601.17), Brandvalley (140, R496.90), Rietkloof (140,
+R502.70), Wolf (84, R617.70): 784 MW, R553.62 MW-weighted (all BW5 wind bids R495.22); BW5 solar Grootfontein PV1-3 (3 x 75, R484.60),
+Graspan (75, R470.00), Grootspruit (75, R476.50): 375 MW, R480.06 (all R428.79; the cheapest, R374.79, did not close); BW6 solar
+Virginia (240, R486.50), Doornhoek (120, R540.00): 360 MW, R504.33 (all R490.48); BW7 Middlepunt (240, R458, press at close, base date
+unconfirmed), the only BW7 close found.
+| Basis | Tariff, 2026 R/MWh | Implied real rate |
+|---|---|---|
+| Solar, all BW6 bids (today's central basis) | 589.7 | 5.65% |
+| Solar, BW6 closed | 606.4 | 6.00% |
+| Solar, BW5 closed | 611.2 | 6.10% |
+| Solar, BW5 and BW6 closed, MW-weighted | 608.9 | 6.05% |
+| Solar, BW7 Middlepunt alone | 489.2 | 3.37% |
+| Wind, all BW5 bids | 630.6 | 3.17% |
+| Wind, BW5 closed | 704.9 | 4.44% |
+Findings: on the projects that closed, solar implies about 6.0%, 0.55 points above the 5.5% central, more than message 632's 0.3-point
+threshold; the gap is the attrition of the cheapest bids. Wind's own back-solve stays below 5.5% on BW6's compliant wind capex (bids
+rejected as too high), so wind's rate rests on parity with solar (same revenue model, CEPA for DESNZ), as now. Caveats: tariffs at
+the bid, not as adjusted at close (BW5 adjusted at close for exchange and interest rates); BW6's capex applied to every window; one BW7
+close, at a tariff that implies far less, with an unconfirmed base date.
+Proposal for the user's decision before c7 (632 (b)): solar and onshore wind central 6.0% (was 5.5%), on the closed BW5 and BW6
+projects; the blended case on top of it as now (private share x the NAB gap added); 5.5% kept as a sensitivity (all bids).
+
+Suite on build 2026-11-02j (claude/c7-prep at d68a8f8: the Fossil-free freed-connection credit fix, TODO 14ma, and the MTSAO input
+options, each default off; main's #152 merged at 5f6c038; stored panels rewritten; ESK19679.csv present), 2 Nov 2026 10:14-12:56 UTC
+in two pieces (the first stopped at the 2-hour limit in validate_worker, resumed), beside other suites and runs: node checks 1021/1030,
+audit 88/88, eng5 5/6, equal to main (de004de) by count in every script and by failure name (validate_findings 36/39, validate_response
+86/87 with the same 35 cells, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved).
+LP-key test against main (de004de): default and 'sync6' sha1 4e0b77a5f1f4 and 'inertia' 39f092d5e626, identical; engine outputs on
+Today 2026, Least-cost path 2035 and Fossil-free 2040 identical to main's. A 2028 fossil end year changes only the five rp_ccgt
+credits; each MTSAO option alone changes only its expected rows. Visible text against main: none changed. Later commits are RESULTS only.

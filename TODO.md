@@ -930,6 +930,13 @@ their build there at zero), as capCharge already gives them no cost. Test with t
 run without a fossil end year. Rerun Fossil-free 2040 as part of c7 and confirm only the 2040 CCGT line moves. The plants never run and
 appear in no published figure (the engine check and the preset carry no gas from 2040).
 
+14mf. The MTSAO input options' known limits (user, 2 Nov 2026, message 626; options coalEafByYear, avonDedisaRemoveAfter and
+reipppRetireByYear, build 2026-11-02h, for the runs of message 618). Agreed (626): REIPPPP retirements come out of the expired bid
+windows first; with Avon and Dedisa removed after 2030, Avon's 2031 share (to 20 July) stops too. Two gaps, open: (1) the regional LP
+(bldBuildRegionalLP) keeps one coal availability figure for every year; (2) the reserve growth term: the engine nets REIPPPP
+retirements against its 2030 reference while the build LP counts only new builds after 2030, a gap of about 5% of the retired output
+(tens of MW). Both only with the options on; fix if the 618 runs show they matter.
+
 14lx. For the note's release, on one branch, merged when the note goes out, filled from the c7 rebuild (user, 1 Nov 2026, messages 579 and
 580 (f)). Order: after system strength and behind-the-meter batteries; generator and page template this week on c6e data as a
 placeholder; regenerated from c7 on 10-11 Nov; a visible-text diff for the advisor before merge. (1) A preset 'No gas 2035': the no-gas

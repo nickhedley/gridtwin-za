@@ -5460,12 +5460,36 @@ function reipppLiveFrac(year){
 }
 // REIPPPP capacity whose PPA still runs in the year, MW by technology (message 552 (a)): the fleet's totals less the windows that
 // have expired (y >= expires, as reipppLiveFrac). Throws if a window's MW exceed the total they come out of.
-function reipppLiveMW(year, p){
+// ret (message 618/619): MW retired (reipppRetiredMW) and already out of P's totals; they come out of the expired windows' MW first,
+// so only what exceeds those leaves the live windows.
+function reipppLiveMW(year, p, ret){
   const y = year ?? 2026, P = p || FIXED;
   const live = { wind: P.reipppWindMW ?? FIXED.reipppWindMW, pv: P.reipppSolarMW ?? FIXED.reipppSolarMW, csp: P.cspMW ?? FIXED.cspMW };
   for (const v of REIPPPP_WINDOWS) if (v.mw && y >= v.expires) for (const t of ['wind','pv','csp']) live[t] -= v.mw[t];
+  if (ret){ const ex = reipppExpiredMW(y); for (const t of ['wind','pv','csp']) live[t] += Math.min(ret[t], ex[t]); }
   for (const t of ['wind','pv','csp']) if (live[t] < -1e-6) throw new Error('reipppLiveMW: ' + t + ' below zero in ' + y);
   return live;
+}
+// REIPPPP MW in the windows expired by the year, by technology.
+function reipppExpiredMW(year){
+  const y = year ?? 2026, ex = { wind: 0, pv: 0, csp: 0 };
+  for (const v of REIPPPP_WINDOWS) if (v.mw && y >= v.expires) for (const t of ['wind','pv','csp']) ex[t] += v.mw[t];
+  return ex;
+}
+// REIPPPP MW retired by the year (FIXED.reipppRetireByYear, message 618/619; TODO 14me), by technology: the sum of the entries for
+// that year and earlier. null when the option is off. Throws on a malformed entry.
+function reipppRetiredMW(year, p){
+  const R = (p || FIXED).reipppRetireByYear ?? FIXED.reipppRetireByYear;
+  if (R == null) return null;
+  if (typeof R !== 'object' || Array.isArray(R)) throw new Error('reipppRetireByYear: an object {year: {wind, pv, csp}} or null');
+  const y = year ?? 2026, out = { wind: 0, pv: 0, csp: 0 };
+  for (const [k, v] of Object.entries(R)){
+    if (!/^[0-9]{4}$/.test(k) || !v || typeof v !== 'object' || Object.keys(v).sort().join() !== 'csp,pv,wind'
+        || ['wind','pv','csp'].some(t => typeof v[t] !== 'number' || !(v[t] >= 0) || !isFinite(v[t])))
+      throw new Error('reipppRetireByYear: ' + k + ' needs {wind, pv, csp}, MW of 0 or more: ' + JSON.stringify(v));
+    if (+k <= y) for (const t of ['wind','pv','csp']) out[t] += v[t];
+  }
+  return out;
 }
 // Cost per MWh of all REIPPPP output in the year, expired windows contributing nothing. The
 // dearest contracts (BW1 solar, BW3.5 CSP) expire first, so this falls faster than live share.
@@ -5580,6 +5604,11 @@ const FIXED = {
   // Coal-only estimated from ESK19679 (EAF_HISTORY, below FIXED). 65 is the 2026 figure. 22 Sep 2026; previously
   // justified as the fleet EAF for FY2026, which is a different measure.
   coalEAFPct:65,
+  // Coal availability by model year (user, 2 Nov 2026, message 618/619; TODO 14me): null off; {year: %} replaces coalEAFPct for
+  // that year's coal in the build optimiser (bldBuildLP; years not listed keep its opts.eaf) and in the engine (simulate, for the
+  // scenarioYear; years not listed keep coalEAFPct). For the NTCSA MTSAO 2027-2036 sensitivity: 66 in 2027, a point a year to
+  // 70 from 2031, flat after.
+  coalEafByYear:null,
   nuclearMW:1880, hydroMW:602,
   importsMW:1150,
   // Regional imports END year (user, 13 Oct 2026, TODO 14dv (6)): 0 keeps importsMW in every year; a year Y sets imports to
@@ -5772,6 +5801,12 @@ const FIXED = {
   // Prices are REIPPPP-weighted averages across bid windows; BW4 wind cleared near
   // R620/MWh against BW1 above R1,500, so the spread is wide.
   reipppWindMW:4042, reipppSolarMW:2783,
+  // REIPPPP plant retired (user, 2 Nov 2026, message 618/619; TODO 14me): null off; {year: {wind: MW, pv: MW, csp: MW}}, each
+  // entry retired from its year on, so the sum of the entries to a year is out of the existing wind (windMW), utility solar
+  // (pvUtilityMW) and CSP (cspMW) fleets, and of the REIPPPP totals, in the build optimiser and the engine (scenarioYear).
+  // Retired MW come out of the expired bid windows' MW first (reipppLiveMW), so they carry no fixed O&M and leave the live
+  // windows' PPA payments as they were. NTCSA MTSAO 2027-2036 sensitivity: wind 375, solar 325 and CSP 50 MW a year, 2033-2036.
+  reipppRetireByYear:null,
   reipppFomInPpa:1,   // 1: no fixed O&M on REIPPPP capacity while its PPA runs (message 552 (a)); 0: the old charge on the whole fleet
   // REIPPPP PPA cost by bid window, with expiry: see REIPPPP_WINDOWS. Was a flat 682/591 R/MWh
   // of bid-year tariffs until 22 Sep 2026, R11.7bn a year against NERSA's R50.3bn for FY2026.
@@ -6202,6 +6237,10 @@ const FIXED = {
   avonDedisaDayMW:[52, 51, 50, 51, 43, 38, 45, 47, 27, 31, 33, 35],
   avonDedisaEveMW:[56, 81, 66, 110, 48, 40, 60, 83, 29, 46, 37, 38],
   avonMW:670, dedisaMW:335, dedisaEndYear:2030, avonEndYear:2031, avonEndDoy:200,
+  // Avon and Dedisa out of the system (user, 2 Nov 2026, message 618/619; TODO 14me): 0 off; a year Y takes both (avonMW +
+  // dedisaMW, 1,005 MW) out of the diesel fleet (ocgtDieselMW) in every year after Y, on top of dieselDecomMW, in the build
+  // optimiser and the engine, and ends their contract output (avonDedisaMustRunMW). NTCSA MTSAO 2027-2036 sensitivity: 2030.
+  avonDedisaRemoveAfter:0,
   // Regulating reserve grows with variable generation, and the ASTR figure above does not:
   // it is sized to 2030/31 on today's fleet. NREL's Operating Reserves and Variable Generation
   // (TP-5500-51978, 2011) sets out the 3+5 rule, 3% of load plus 5% of variable generation,
@@ -7485,6 +7524,38 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts
 function dieselAvailMW(p){
   return Math.max(0, (p.ocgtDieselMW || 0) - (p.dieselDecomMW || 0)) + Math.max(0, p.newOcgdMW || 0);   // new OCGT on diesel (11 Oct 2026)
 }
+// Coal availability for model year y, % (FIXED.coalEafByYear, message 618/619; TODO 14me): the year's entry, or null where the
+// option is off or the year is not listed. Throws on a malformed path.
+function coalEafAt(p, y){
+  const M = (p || FIXED).coalEafByYear ?? FIXED.coalEafByYear;
+  if (M == null) return null;
+  if (typeof M !== 'object' || Array.isArray(M)) throw new Error('coalEafByYear: an object {year: %} or null');
+  for (const [k, v] of Object.entries(M))
+    if (!/^[0-9]{4}$/.test(k) || typeof v !== 'number' || !(v >= 0 && v <= 100)) throw new Error('coalEafByYear: ' + k + ': ' + v + ' (a % from 0 to 100)');
+  const v = M[y];
+  return v == null ? null : v;
+}
+// Avon and Dedisa's MW out of the system in model year y (FIXED.avonDedisaRemoveAfter, message 618/619; TODO 14me): avonMW +
+// dedisaMW after the year set, else 0.
+function avonDedisaOffMW(p, y){
+  const P = p || FIXED, a = P.avonDedisaRemoveAfter ?? FIXED.avonDedisaRemoveAfter;
+  if (!(a === 0 || (Number.isInteger(a) && a >= 2000 && a <= 2100))) throw new Error('avonDedisaRemoveAfter: 0 or a year: ' + a);
+  return a > 0 && (y ?? 2026) > a ? (P.avonMW ?? FIXED.avonMW) + (P.dedisaMW ?? FIXED.dedisaMW) : 0;
+}
+// The three year options above, applied to an engine parameter set p ({...FIXED, ...state}) for its scenarioYear, in place:
+// the year's coal availability, Avon and Dedisa out of the diesel fleet, and REIPPPP retirements out of the existing wind, utility
+// solar and CSP fleets and the REIPPPP totals. Each changes nothing while its option is off. Apply once per parameter set.
+function applyYearFleetOptions(p){
+  const y = p.scenarioYear ?? 2026;
+  const eaf = coalEafAt(p, y); if (eaf != null) p.coalEAFPct = eaf;
+  const off = avonDedisaOffMW(p, y); if (off > 0) p.ocgtDieselMW = Math.max(0, p.ocgtDieselMW - off);
+  const ret = reipppRetiredMW(y, p);
+  if (ret) for (const [k, t] of [['windMW','wind'], ['pvUtilityMW','pv'], ['cspMW','csp'], ['reipppWindMW','wind'], ['reipppSolarMW','pv']]){
+    p[k] -= ret[t];
+    if (p[k] < -1e-6) throw new Error('reipppRetireByYear: ' + k + ' below zero in ' + y);
+  }
+  return p;
+}
 
 // IRP 2025 gas floor as an annual minimum, 6 Oct 2026. The IRP sets a minimum annual capacity factor
 // (51% on 6 GW, 2030-2040), not an hourly must-run. Gas first dispatches on merit; if the floored fleet's
@@ -7524,6 +7595,7 @@ function simulateGasAnnualFloor(u, prof, outPath){
 function simulate(u, prof, outPath, _soc0){
   const p={...FIXED,...u};
   if (p.importsEndYear > 0 && (p.scenarioYear ?? 2026) > p.importsEndYear) p.importsMW = 0;   // importsEndYear, FIXED
+  applyYearFleetOptions(p);   // coalEafByYear, avonDedisaRemoveAfter, reipppRetireByYear (FIXED)
   if (!_soc0 && u.__ccgtFloor === undefined && !p.ccgtForceHourly && ccgtFloorActive(p)) return simulateGasAnnualFloor(u, prof, outPath);
   // ── clean coal (CCS) ──────────────────────────────────────────────────────
   // Applied here so every downstream calculation - dispatch, cost, emissions,
@@ -9983,7 +10055,10 @@ function simulate(u, prof, outPath, _soc0){
   // No fixed O&M on REIPPPP capacity in its contract years (user, 31 Oct 2026, message 552 (a)): the PPA price covers the IPP's O&M,
   // which reipppRate already charges on its output. From each window's expiry the plant pays its technology's fixed O&M, as before.
   // Eskom's own plant (Sere wind) and private plant pay it throughout. reipppFomInPpa 0 restores the old charge on the whole fleet.
-  const _ippLive = (p.reipppFomInPpa ?? FIXED.reipppFomInPpa) ? reipppLiveMW(p.scenarioYear ?? 2026, p) : { wind:0, pv:0, csp:0 };
+  // REIPPPP MW retired by the scenario year (reipppRetireByYear) are out of p's fleets and totals (applyYearFleetOptions), taken from
+  // the expired windows first: what stays out of contract, and pays fixed O&M, is the expired MW not retired.
+  const _rRet = reipppRetiredMW(p.scenarioYear ?? 2026, p);
+  const _ippLive = (p.reipppFomInPpa ?? FIXED.reipppFomInPpa) ? reipppLiveMW(p.scenarioYear ?? 2026, p, _rRet) : { wind:0, pv:0, csp:0 };
   const fixedOMR =
       _coalOnMW               * (p.fomCoal    ?? FIXED.fomCoal)    * 1000
     + (p.nuclearMW||0)        * (p.fomNuclear ?? FIXED.fomNuclear) * 1000
@@ -10007,7 +10082,19 @@ function simulate(u, prof, outPath, _soc0){
       (E.wind || 0) * Math.min(1, (p.reipppWindMW  || 0) / Math.max(1, _windTotMW))
     + (E.pv   || 0) * Math.min(1, (p.reipppSolarMW || 0) / Math.max(1, _pvTotMW))
     + (E.csp  || 0);
-  const ppaCostR = reipppOutputMWh * reipppRate(p.scenarioYear ?? 2026);
+  // With REIPPPP retirements (message 618/619): reipppRate prices all REIPPPP output at the live windows' cost over every window's
+  // energy, so retired expired MW, which were paid nothing, must not lower the live windows' payments. The charge is on the
+  // REIPPPP MW before retirement (at the remaining fleet's output per MW), less the retired live-window MW in proportion.
+  const _ppaMWh = !(_rRet && (_rRet.wind > 0 || _rRet.pv > 0 || _rRet.csp > 0)) ? reipppOutputMWh : (() => {
+    const yr = p.scenarioYear ?? 2026, ln = reipppLiveMW(yr, p, _rRet), ex = reipppExpiredMW(yr);
+    const net = { wind: p.reipppWindMW || 0, pv: p.reipppSolarMW || 0, csp: p.cspMW || 0 }, mw = {};
+    for (const t of ['wind','pv','csp']){ const lo = ln[t] + Math.max(0, _rRet[t] - ex[t]), tot = net[t] + _rRet[t];
+      mw[t] = lo > 0 ? tot * ln[t] / lo : tot; }
+    return (E.wind || 0) * Math.min(1, mw.wind / Math.max(1, _windTotMW))
+         + (E.pv   || 0) * Math.min(1, mw.pv   / Math.max(1, _pvTotMW))
+         + (net.csp > 0 ? (E.csp || 0) * mw.csp / net.csp : 0);
+  })();
+  const ppaCostR = _ppaMWh * reipppRate(p.scenarioYear ?? 2026);
   const otherIppCostR = otherIppR(p.scenarioYear ?? 2026);
   // Regional grid reinforcement used to be charged here, on the MW beyond each region's
   // headroom, while every MW also paid the flat TDP-average transmission rate. Both priced the
@@ -11891,7 +11978,9 @@ function bldBuildLP(opts){
   // Peakers by year (BLD_PEAKERS; off: the whole fleet every year). DSL(y) is the fleet left on its dates, LEV(y) the
   // life-extension variables that add back to it.
   const PK_ON = (S.bldPeakerRet | 0) > 0;
-  const DSL = y => PK_ON ? Math.max(0, EX.diesel - BLD_PEAKERS.filter(p => y >= bldPeakerOffYear(p, S)).reduce((a, p) => a + p.mw, 0)) : EX.diesel;
+  // Avon and Dedisa leave the fleet after avonDedisaRemoveAfter (message 618/619), on top of any peaker retirement.
+  const DSL = y => { const d = PK_ON ? Math.max(0, EX.diesel - BLD_PEAKERS.filter(p => y >= bldPeakerOffYear(p, S)).reduce((a, p) => a + p.mw, 0)) : EX.diesel;
+    const off = avonDedisaOffMW(S, y); return off > 0 ? Math.max(0, d - off) : d; };
   // Avon and Dedisa's must-run is capped at the independent peakers' diesel standing in the year (user, 17 Oct 2026, message 182;
   // TODO 14fk), the engine's rule (simulate, '_mdIpp'): existing diesel less Eskom's own tank-fed plant (dslTankMW). Before build
   // 2026-10-17b the row had no cap, so retiring diesel before Avon's contract ends made the LP infeasible. New diesel open-cycle,
@@ -12081,7 +12170,9 @@ function bldBuildLP(opts){
   const RP_T = GRID_ON ? T.filter(t => t !== 'rooftop' && GA[t] > 0 && !RP_EX.has(t)).concat(PHES_ON && !RP_EX.has('phes') ? ['phes'] : [], PHES2_ON && !RP_EX.has('phel') ? ['phel'] : []) : [];
   for (const t of RP_T) for (const y of Y){
     let credit = 0;
-    for (const yy of Y) if (yy >= y) credit += GA[t] / Math.pow(1+BLD_DISC, yy-2026);
+    // Gas and diesel avoid no grid cost after bldFossilEndYear, where they stand idle and capCharge charges nothing (TODO 14ma,
+    // messages 599 (c), 601 (b), 603 (b): Fossil-free 2040 took an illusory R0.26bn credit for 2,000 MW of CCGT built in 2040).
+    for (const yy of Y) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END)) credit += GA[t] / Math.pow(1+BLD_DISC, yy-2026);
     obj.push('-' + (credit * 1000).toFixed(3) + ' rp_' + t + '_' + y);
   }
   // Cape wind allowance (FIXED.bldCapeWindMW): cw_<y> MW of that year's wind on the curtailment allowance, which avoids the
@@ -12212,7 +12303,12 @@ function bldBuildLP(opts){
   }).join('');
   for (const y of Y){
     const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
-    const coalCapMean = bldCoalMW(y) * eaf, COMMIT_MIN = COMMIT_ON ? COMMIT_MIN_Y[y] : 0;
+    // The year's coal availability (coalEafByYear, message 618/619), else opts.eaf; the year's existing wind, utility solar and CSP,
+    // less REIPPPP retirements (reipppRetireByYear).
+    const eafY = (v => v == null ? eaf : v / 100)(coalEafAt(S, y)), RET = reipppRetiredMW(y, S);
+    const exWind = RET ? EX.wind - RET.wind : EX.wind, exPv = RET ? EX.pv - RET.pv : EX.pv, exCsp = RET ? EX.csp - RET.csp : EX.csp;
+    if (Math.min(exWind, exPv, exCsp) < -1e-6) throw new Error('bldBuildLP: reipppRetireByYear retires more than the fleet in ' + y);
+    const coalCapMean = bldCoalMW(y) * eafY, COMMIT_MIN = COMMIT_ON ? COMMIT_MIN_Y[y] : 0;
     // System strength: the year's requirement, MW.s (one per year: the largest loss from the coal units standing on the schedule),
     // coal's coefficient (H / 0.9 x lambda, decision D1: committed = output x the engine's committed-to-output ratio), and TDP 2024's
     // committed condensers.
@@ -12245,7 +12341,7 @@ function bldBuildLP(opts){
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
-                  + EX.wind*wp*AV_CONG + EX.pv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + EX.csp*0.38;
+                  + exWind*wp*AV_CONG + exPv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
@@ -12255,7 +12351,7 @@ function bldBuildLP(opts){
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
         + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
         + ' = ' + (dem - fixed).toFixed(1));
-      const _rcf = r.coalFrac ? r.coalFrac[h] : (r.tail ? eaf * TAIL_COAL_FACTOR : eaf);
+      const _rcf = r.coalFrac ? r.coalFrac[h] : (r.tail ? eafY * TAIL_COAL_FACTOR : eafY);
       // Rounding, 7 Oct 2026: coalCap is bldCoalMW(y) x _rcf, but the coefficient was written to 4 decimals and the
       // right-hand side to 1, so the capacity they imply drifted by up to 7 MW either way. Retiring all coal (rc_ at
       // its bound, the Fossil-free proposal) then required negative commitment on some stress hours: infeasible
@@ -12283,7 +12379,7 @@ function bldBuildLP(opts){
       // VRE output is a number, new VRE output is a variable - and the base is subtracted so
       // today's fleet reads the ASTR figure, as in the engine.
       if (RES_MW > 0 || RES_VRE > 0){
-        const exVre = EX.wind*wp + (EX.pv + EX.rooftop)*sp;
+        const exVre = exWind*wp + (exPv + EX.rooftop)*sp;
         // Pumped storage is reserve-capable headroom in the engine too, and is not dispatched
         // explicitly in this LP, so its full power counts. A slack rsl_ priced at VoLL keeps the
         // problem feasible in early years, where the fleet cannot be changed fast enough to meet
@@ -12587,7 +12683,7 @@ function bldBuildLP(opts){
       + ' + ' + cum('ccgt',y).join(' + ')
       + OC_T.map(t => ' + ' + cum(t,y).join(' + ')).join('')
       + LEV(y).map(v => ' + ' + v).join('')
-      + (RC_ON ? ' - ' + eaf.toFixed(4) + ' rc_' + y : '')
+      + (RC_ON ? ' - ' + eafY.toFixed(4) + ' rc_' + y : '')
       + ' >= ' + (RC_ON ? (peak*(1 + PLAN_M/100) - firm) : Math.max(0, peak*(1 + PLAN_M/100) - firm)).toFixed(1));
   }
 
@@ -14941,10 +15037,11 @@ function astrOnlineHeadroom(gen, cap, m){
 }
 // Avon and Dedisa's contract-driven output in hour h of year y, MW (FIXED.avonDedisaMustRun notes): the month's daytime or
 // evening level, times the share of the pair still under contract (both through dedisaEndYear; Avon's share in avonEndYear
-// before day avonEndDoy, 20 July; none after).
+// before day avonEndDoy, 20 July; none after). None in a year the pair is out of the system (avonDedisaRemoveAfter).
 function avonDedisaMustRunMW(y, h, P){
   const F = P || FIXED;
   if (!(F.avonDedisaMustRun ?? FIXED.avonDedisaMustRun)) return 0;
+  if (avonDedisaOffMW(F, y) > 0) return 0;
   const yr = y ?? 2026, hy = h % 8760, hr = hy % 24, m = hourMonth(hy);
   const lvl = (hr >= 5 && hr <= 16) ? (F.avonDedisaDayMW ?? FIXED.avonDedisaDayMW)[m]
             : (hr >= 17 && hr <= 20) ? (F.avonDedisaEveMW ?? FIXED.avonDedisaEveMW)[m] : 0;
@@ -21283,7 +21380,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02f';
+const BUILD_STAMP = '2026-11-02j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21376,6 +21473,7 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 // missing here fails in the worker, the page falls back, and validate_worker.js fails.
 const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
   astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate, reipppLiveMW,
+  reipppExpiredMW, reipppRetiredMW, coalEafAt, avonDedisaOffMW, applyYearFleetOptions,
   otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth, nucShapeAt,
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
