@@ -1039,6 +1039,62 @@ harness/ext/grid_distances.py.
   harness/derive_avon_dedisa.py from the local file, 24 monthly figures published with Eskom credited, the analysis ours, not
   Eskom's; no hourly series.
 
+## NTCSA, Medium-Term System Adequacy Outlook 2027-2036 (read 2 Nov 2026, message 617)
+
+NTCSA (System Operator), Medium-Term System Adequacy Outlook 2027-2036, cover dated 30 October 2026, 68 pages; the copy read is the
+user's Drive copy (added 31 Oct 2026), whose PDF properties read "MTSAO 2027-2036 - Refined Draft" ("Streamlined draft with duplicate
+material removed"): confirm it is the final published version before citing it in the pack. Public; cite, do not commit the PDF.
+Inputs used (page numbers as printed, equal to the PDF's):
+- Scenarios (Table 2, p.42-43): Reference Case, Perfect Storm, Accelerated Build; sensitivities Climate Stress and Reduced Storage.
+  The Reference Case "uses High demand, the 70% Eskom fleet performance trajectory, connected or in-execution private capacity, the
+  higher SSEG growth path and planned TDP corridors" (p.43). Perfect Storm: High demand, 65% EAF, no new gas, lower SSEG growth.
+- Demand (s.3.1.2, p.23-25, Figures 2-3): sent out, including international sales and transmission (2.1%) and distribution (11.2%)
+  losses (p.28); load shedding and buybacks added back (p.22); SSEG modelled as generation after being added back to gross demand
+  (p.19), so the published figures appear net of SSEG (not stated). High 238.3 TWh (2026) to 329.7 TWh (2036), peak 35.8 to 49.1 GW;
+  Low 230.4 to 285.3 TWh, 34.7 to 42.3 GW (p.23-24); load factor close to 76%. Data centres in both trajectories (p.8, p.26);
+  hydrogen not committed demand (p.27). Figure 2 has no data labels; 2027-35 energy only by chart reading (about 1 TWh).
+- Eskom fleet EAF (s.3.4, p.32-33, Figure 6): upper 66% from FY2027, one point a year to 70% in FY2031, flat to FY2036; lower 65%
+  flat (used in Perfect Storm). "Eskom fleet" (coal only not stated), implemented through planned maintenance and forced outage inputs
+  in 200 Monte Carlo samples a year, not as a single derating. Figure 6 (axis "Calendar year") shows the path one year earlier (70%
+  from 2030) than the text.
+- Shutdowns (s.3.5, p.33, Figure 7 p.34): Eskom shutdowns about 16.2 GW by 2036, 8.75 GW in 2029-2030, mostly coal plus the Acacia and
+  Port Rex diesel peakers; no station-by-year schedule in the report ("Period totals are shown where annual allocations are not
+  available", p.34). REIPPPP at the end of its contract: about 3 GW in 2033-2036 (1.3 GW solar, 1.5 GW wind, 0.2 GW CSP), removed, no
+  split by year. Cahora Bassa (1,150 MW) and Avon and Dedisa (1,005 MW: Dedisa 335, Avon 670, p.66) contracts end in 2030, supply
+  removed, no extension case (p.19, p.33).
+- Installed fleet 2026 (Figure 5, p.31): 60,019 MW, coal 43,031 MW, OCGT 2,883 MW.
+- Reference Case new build (p.36-39): no new gas before 2032, then 9.75 GW by 2036; batteries 5.79 GW (four-hour) by 2036; solar PV
+  17.7 GW and wind 22.1 GW in 2036; 1,250 MW new nuclear in 2036; SSEG about 560 MW a year (273 in Perfect Storm).
+- Reference Case results (s.4, Figures 14-16, p.46-48): unserved energy 260 GWh (2027) and 168 (2028), almost all from a substation
+  transformer limit relieved in 2029 (p.44); 3 (2029), 8 (2030), 0 (2031-32), about 1-3 (2033-35), 13.42 GWh in 2036 (LOLH 377,
+  CVaR 30.63 MW, p.10); open-cycle utilisation below 1% throughout (p.46). Criteria: 20 GWh unserved and 6% open-cycle capacity
+  factor.
+Reading notes: Figure 11 states 70% battery round trip against 85% in the text (p.9, 17, 38); Figure 3's axis says MW for GW values.
+Comparison with the model: RESULTS 'NTCSA's MTSAO 2027-2036 against the model's inputs'.
+Our choices for the runs on the outlook's inputs (user, 2 Nov 2026, message 619; TODO 14me (b)); these are ours, not NTCSA's:
+- Demand 2027-35: a constant annual growth rate between the outlook's High figures, 238.3 TWh (2026) and 329.7 TWh (2036): x1.0330
+  a year (3.30%), not the chart reading of Figure 2. The model's served energy is calibrated to grow at this rate from its own 2026
+  level (as RESULTS 'NTCSA's MTSAO 2027-2036 against the model's inputs'), not set to the outlook's sent-out level.
+- Demand 2037-40: our extension, not the outlook's (it stops at 2036): the same 3.30% a year continued to 2040.
+- Coal availability: 66% in 2027 rising one point a year to 70% from 2031, flat to 2040, per the text (p.32: 70% in FY2031), not
+  Figure 6 (70% from 2030); applied to the model's coal EAF (coal only; the outlook's is "Eskom fleet").
+- REIPPPP retirements: each project at its commercial operation date plus 20 years, by technology, if the project data carried those
+  dates. It does not: the repository holds no project-level commercial operation dates (nodal/reea_projects.json is the environmental
+  register; REIPPPP_WINDOWS in index.html carries one expiry year per bid window, COD plus 20, from NERSA's MYPD6 decision, Table 25,
+  with MW by technology summed from the NW368 reply's project rows). So the fallback applies: 0.75 GW a year in 2033-36 (wind 375,
+  solar 325, CSP 50 MW a year; the outlook's 1.5, 1.3 and 0.2 GW over four years). For comparison, the window-level expiries would
+  retire nothing in 2033, 1,425 MW in 2034 (bid window 1: wind 649, solar 627, CSP 150), 1,026 MW in 2035 (bid window 2: wind 559,
+  solar 417, CSP 50), none in 2036: 2,451 MW by 2036 against the outlook's 3 GW, then 1,422 MW in 2037 (bid window 3) and 200 MW of
+  CSP in 2039 (bid window 3.5). Project-level dates would come from the IPP Office's project list (TODO 14ln's lead), not filled from
+  memory.
+- The REIPPPP retirement reproduces the outlook's assumption only (user, 2 Nov 2026, message 620). The model's central keeps REIPPPP
+  plants running after their PPAs at their own technology's fixed O&M (message 542 (b); the 1 November correction, 14ln), as merchant
+  or re-contracted supply. No published framework for REIPPPP plants after their PPAs was found (web searches, 2 Nov 2026: the IPP
+  Office, the Department and NERSA publish none; industry comment only, e.g. ESI Africa on wind owners' options of life extension,
+  repowering, hybridising or private offtake, esi-africa.com/news/south-africa-wind/, and SAPVIA's 2019 proposal to extend early PPAs
+  to 30 years, pv-tech.org/news/pv-body-warns-against-south-african-plans-to-reopen-old-ppas). The run on the outlook's inputs is
+  also reported with the REIPPPP plants kept, so that one assumption's effect is shown on a rebuilt plan.
+
 ## Batteries eligible for operating reserve: a stated assumption (user, 31 Oct 2026, message 568 (a))
 
 The model lets every battery, new and existing, private or public, provide instantaneous, regulating and ten-minute reserve (the

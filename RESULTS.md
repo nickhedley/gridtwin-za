@@ -19762,3 +19762,36 @@ between 'prev' (R5.0bn, which leaves up to 145 hours a year short) and 'mustspin
 Caveats: the forecast misses a few hours (0.2 GWh/yr on the one-year build); the open-cycle share's highest year rises to 1.92% (from
 1.84%), under the 6% criterion; one pathway pass, the build optimised under 'prev'; the coal unit lifted is assumed able to start in
 the hour.
+
+### NTCSA's MTSAO 2027-2036 against the model's inputs: the model's demand grows like the outlook's Low path, not its Reference (High) path, and that gap moves 2036 unserved energy from 0.35 to 33.5 GWh a year on c6e's build; the outlook's higher coal availability more than offsets its removals in 2031 (user, 2 Nov 2026, message 617 (a); report only, nothing changed)
+
+Source: SOURCES 'NTCSA, Medium-Term System Adequacy Outlook 2027-2036' (the user's Drive copy, marked "Refined Draft"). Figures from
+the report, not the EE Business Intelligence article; every figure the article gives matches the report. Effects measured on c6e's
+build: harness/ext/mtsao_compare.js, YEARS=2031,2036, c6e's state in each year (pathway_c6e.json), twelve weather years, one outage
+draw a year (seed base 71830529), page default ('sync6'), one input changed at a time; run on claude/system-strength-min build
+2026-11-02f, 2 Nov 2026 07:47-07:52 UTC, and repeated for 2036 on main (build 2026-11-01e) with identical figures. VARIANTS: eaf
+{coalEAFPct: 70} (2031 and 2036 both at the upper path's 70%); demand {demandGrowthPct: 16.69 (2031), 41.95 (2036)}, calibrated so the
+model's served energy grows as the outlook's High path from 2026 (x1.1624 to 2031 by chart reading, x1.3836 to 2036; 197.0 to 229.0
+and 272.6 TWh; the 930 MW smelter block kept); reippp (2036) {windMW 3,181, pvUtilityMW 2,268.5, cspMW 400}; avded {dieselDecomMW
+1,005}; all, the four together.
+
+| Input | The outlook (Reference Case) | The model (c6e) | Effect on c6e, against its own (2031; 2036) |
+|---|---|---|---|
+| Demand growth 2026-36 | High: 238.3 to 329.7 TWh sent out (x1.384, 3.3% a year), peak 35.8 to 49.1 GW; Low x1.238 | served 197.0 to 249.0 TWh (x1.264, 2.4% a year), between Low and High, near Low; customer demand with rooftop netted, firm exports, the 930 MW smelter block from 2027 | at High growth: unserved +4.6 GWh/yr (2.3 to 7.0), cost +R4.8bn, CO2 +5.1 Mt; 2036 unserved 0.35 to 33.5 GWh/yr (worst weather year 166), cost +R22.5bn, CO2 +18.2 Mt, diesel capacity factor 0.7% to 4.2% |
+| Coal availability | Eskom fleet EAF 66% (FY2027) rising to 70% (FY2031) and flat; downside 65% flat (Perfect Storm only) | coal EAF 65% flat in every year, the outlook's downside | at 70%: unserved -2.3 GWh/yr (to 0.0), cost -R0.3bn, CO2 +1.8 Mt; 2036 unserved -0.34 (to 0.01), CO2 +1.5 Mt |
+| Eskom shutdowns | about 16.2 GW by 2036, 8.75 GW in 2029-30, coal plus Acacia and Port Rex; no schedule by station; installed coal 43,031 MW in 2026 | IRP 2025 Figure 3: coal 39,692 MW to 2028, 32,433 in 2030, 25,348 in 2036 (14.3 GW by 2036, 7.3 GW in 2029-30); Acacia and Port Rex (314 MW) retire in 2027 | not measured: without the outlook's station schedule its standing coal by year is not known; from its totals, about 27 GW stands in 2036 (43.0 less about 15.9 GW coal) against the model's 25.3 GW, but the two installed bases differ by 3.3 GW for reasons the report does not give |
+| Cahora Bassa | 1,150 MW, contract ends 2030, supply removed | 1,150 MW at 92.7%, ends 2030 (importsEndYear) | none: the same |
+| Avon and Dedisa | 1,005 MW, contracts end 2030, supply removed | contracts end 2030 (Dedisa) and 20 July 2031 (Avon); both stay as ordinary peakers in the 3,400 MW diesel fleet afterwards | removed: unserved +4.6 GWh/yr (2.3 to 6.9), cost -R0.2bn; 2036 +0.44 GWh/yr; diesel capacity factor up on the smaller fleet |
+| REIPPPP at contract end | about 3 GW retired 2033-36 (1.3 GW solar, 1.5 GW wind, 0.2 GW CSP) | kept running as merchant plants after the PPA (message 542 (b)) | retired (2036): CO2 +4.9 Mt, cost +R2.7bn, coal +4.5 TWh; unserved -0.20 GWh/yr |
+| All four measured inputs | | | 2031: unserved 2.3 to 0.5 GWh/yr, cost +R3.5bn, CO2 +7.0 Mt; 2036: unserved 0.35 to 18.9 GWh/yr (worst year 63), cost +R21.1bn, CO2 +26.0 Mt, diesel capacity factor 3.3% |
+
+Outside the five inputs, for the record: the Reference Case adds 9.75 GW of gas from 2032 (none before), 5.79 GW of four-hour batteries
+by 2036 and 1,250 MW of nuclear in 2036; its unserved energy is 13.42 GWh in 2036 and its 2027-28 figures (260 and 168 GWh) come from
+one substation limit, a network effect the model does not represent.
+Findings: the largest difference is demand. The model's growth sits near the outlook's Low path; on its Reference (High) path c6e's
+2036 build would breach the 20 GWh standard (33.5 GWh/yr) and run diesel at 4.2%, and with the outlook's higher availability and its
+removals together it sits just under (18.9). The model's coal availability is the outlook's downside, conservative against its
+Reference Case. Removing Avon and Dedisa after 2030 adds about 4.6 GWh/yr in 2031. Retiring 3 GW of REIPPPP plants raises CO2 by
+about 5 Mt a year by 2036. Caveats: c6e's build held fixed (a re-optimised build would add capacity against higher demand); demand
+compared by growth, not level (sent out against served); 2031's High-path point read off a chart; one draw a year; no change made
+(message 617 (a)); the two c7 sensitivities (617 (b)) follow c7's central.
