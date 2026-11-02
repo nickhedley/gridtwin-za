@@ -19804,7 +19804,6 @@ count in every script and by failure name (validate_findings 36/39, validate_res
 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Later
 commits change SOURCES, TODO and RESULTS only, and merge main's #150 and #151 (docs and harness/ext). LP-key test on 2026-11-02f:
 default and 'sync6' sha1 4e0b77a5f1f4, identical to main; 'inertia' 39f092d5e626. Visible text against main (39b3625): none changed.
-<<<<<<< HEAD
 
 ### Cost of capital on closed REIPPPP projects only: solar implies about 6.0%, above the 5.5% central by 0.5 points (user, 2 Nov 2026, messages 631 (g) and 632 (b); report and proposal, nothing changed)
 
@@ -19846,8 +19845,6 @@ audit 88/88, eng5 5/6, equal to main (de004de) by count in every script and by f
 LP-key test against main (de004de): default and 'sync6' sha1 4e0b77a5f1f4 and 'inertia' 39f092d5e626, identical; engine outputs on
 Today 2026, Least-cost path 2035 and Fossil-free 2040 identical to main's. A 2028 fossil end year changes only the five rp_ccgt
 credits; each MTSAO option alone changes only its expected rows. Visible text against main: none changed. Later commits are RESULTS only.
-||||||| de004de
-=======
 
 ### System strength review (message 631): the requirement rises from 54.0 to 62.88 GW.s in every year with coal (the three units' own 8.88 GW.s); with grid-forming H at 11 s, c6e's one-year 2035 build (9,045 MW grid-forming, 5,838 MVA conversions) lifts 0.011 TWh of coal and is short in no hour after the lift, once two look-ahead charge paths stay within the held headroom (9 hours short before that fix); its synchronous-only minimum is 32.3 GW.s (user, 2 Nov 2026, message 631 (a), (b), (f); build 2026-11-02n, claude/ss-review from main de004de)
 
@@ -19915,4 +19912,3 @@ dispatch, coal lifted for the whole gap): system cost with the floor's charge R2
 coal lifted 4.58 TWh a year in 2035 and 10.11 in 2040, hours short 0.1 a year in 2035 and 115.3 in 2040 (minimum 38.8 GW.s: no coal
 left to lift), highest unserved 5.33 GWh/yr, open-cycle 1.80%. The plan's floor rests on grid-forming headroom: counted only as what
 must spin, the 3.9 GW build meets 62.9 GW.s by lifting coal to 2039 and falls short in 2040.
->>>>>>> origin/claude/ss-review
