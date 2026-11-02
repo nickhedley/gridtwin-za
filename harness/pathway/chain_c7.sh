@@ -99,7 +99,7 @@ case "${1:-1}" in
      pair s_gas2032_c7 "GAS_FIRST=2032" s_cocplan_c7 "COC=planning"
      pair s_cocprivate_c7 "COC=private" s_coalsustain_c7 "COAL_FOM_ADD=500"
      pair s_cocunblended_c7 "COC=central" s_allbids_c7 "COC=allbids"
-     pair s_blendedhigh_c7 "COC=blendedhigh" s_ff2040_c7 "SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039"
+     one s_blendedhigh_c7 "COC=blendedhigh" & one s_ff2040_c7 "SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039" 6 & wait   # Fossil-free at 6 passes, as c6e's
      extras
      deep ;;
   *) echo "phase $1 not yet in this script" >> $P ;;
