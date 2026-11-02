@@ -225,7 +225,7 @@ function value(k){
   // The design-minimums check (message 562; RESULTS 'practice floor'): c6e's build with design minimums from 2028, engine-checked for
   // 2028 (pathcheck_c6e_dmin2028.json in the set's folder). dmin2028.curtshare_YYYY: its curtailed share of available wind and solar
   // (message 593 (e)).
-  if (k.startsWith('dmin2028.')){ const f=`${N}/pathcheck_c6e_dmin2028.json`; if (!fs.existsSync(f)){ missing.add('the design-minimums check (pathcheck_c6e_dmin2028.json)'); return null; }
+  if (k.startsWith('dmin2028.')){ const f=`${N}/pathcheck_${C}_dmin2028.json`; if (!fs.existsSync(f)){ missing.add(`the design-minimums check (pathcheck_${C}_dmin2028.json)`); return null; }   // the central's own (BASE; c6e's file before c7)
     const y=+k.split('_').pop(), x=JSON.parse(fs.readFileSync(f,'utf8')).find(q=>q.y===y);
     if (!x||x.vreUsedTWh==null){ missing.add(`the design-minimums check (vreUsedTWh, ${y})`); return null; } return nf(Math.round(100*x.curt/(x.vreUsedTWh+x.curt)),0)+'%'; }
   // The daily coal swing against Eskom's (user, 2 Nov 2026, messages 611 and 615): harness/ext/coal_swing.json from harness/ext/coal_swing.js
