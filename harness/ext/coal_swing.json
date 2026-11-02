@@ -1,0 +1,52 @@
+{
+ "note": "Derived figures only (no hourly series). Eskom: ESK19679 hourly data, analysis ours. RESULTS: Daily coal swing and the evening ramp (message 611).",
+ "build": "2026-11-01e",
+ "from": "2026-01-01",
+ "to": "2026-08-31",
+ "model": {
+  "days": 243,
+  "swingMW": {
+   "mean": 3330.0458146851743,
+   "min": 766.094912005572,
+   "max": 7377.636997756452
+  },
+  "eveningLessMiddayMW": {
+   "mean": 2848.054309352029,
+   "min": 420.64519391983777,
+   "max": 5438.684872716065
+  },
+  "eveningRampMW": 3481.4981866032645,
+  "rampShare": {
+   "coal": 0.48246828801532643,
+   "ps": 0.49866607754047587,
+   "batt": 0.00311505892414704,
+   "diesel": 0.015750575520050682,
+   "gas": 0,
+   "hydro": 0,
+   "imports": 0
+  }
+ },
+ "eskom": {
+  "days": 243,
+  "swingMW": {
+   "mean": 3688.5864609053483,
+   "min": 930.7039999999997,
+   "max": 6650.716
+  },
+  "eveningLessMiddayMW": {
+   "mean": 3151.6809958847707,
+   "min": -299.85099999999875,
+   "max": 5836.067999999999
+  },
+  "eveningRampMW": 3918.3551484910836,
+  "rampShare": {
+   "coal": 0.5945457219993056,
+   "ps": 0.32129147431225696,
+   "batt": null,
+   "diesel": 0.040650057774896116,
+   "gas": -0.000008569985527348544,
+   "hydro": 0.030432303486116457,
+   "imports": 0.01308901241295214
+  }
+ }
+}

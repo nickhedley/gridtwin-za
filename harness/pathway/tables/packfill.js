@@ -59,6 +59,7 @@
 //                        page.privrange
 //   Sent Doc (message 517): RUN.demandpctr_YYYY, RUN.blockmw_YYYY, RUN.roofadd_YYYY, RUN.shortyears
 //   30 Oct update (message 524 (d)): RUN.avgcostpctr_YYYY, RUN.dcurt_YYYY; replay.coal / .eskom / .withinpct; ext.csircoal / .csirre
+//   2 Nov update (message 615): swing.modelmw / .eskommw / .pctbelow / .psmodel / .pseskom (harness/ext/coal_swing.json)
 //   1 Nov (message 593): RUN.dpvpctr (the cost difference as a share of the plan in whole percent); page.txr (the grid integration charge).
 //   Optimised presets (message 565 (b)): RUN.ironairshare (iron-air's share of new stored energy by the horizon)
 //   Optimised presets (message 559): RUN.cpta (R per tonne of CO2 avoided against BASE, 2026-40), RUN.curtshare_YYYY (curtailed share
@@ -218,6 +219,18 @@ function value(k){
   if (k.startsWith('dmin2028.')){ const f=`${N}/pathcheck_c6e_dmin2028.json`; if (!fs.existsSync(f)){ missing.add('the design-minimums check (pathcheck_c6e_dmin2028.json)'); return null; }
     const y=+k.split('_').pop(), x=JSON.parse(fs.readFileSync(f,'utf8')).find(q=>q.y===y);
     if (!x||x.vreUsedTWh==null){ missing.add(`the design-minimums check (vreUsedTWh, ${y})`); return null; } return nf(Math.round(100*x.curt/(x.vreUsedTWh+x.curt)),0)+'%'; }
+  // The daily coal swing against Eskom's (user, 2 Nov 2026, messages 611 and 615): harness/ext/coal_swing.json from harness/ext/coal_swing.js
+  // (derived figures only). swing.modelmw and .eskommw, the mean daily swing, MW; .pctbelow, how far the model's is below Eskom's, whole
+  // percent (stops if it is not below: the sentence says smaller); .psmodel and .pseskom, pumped storage's share of the evening ramp as
+  // the nearest plain fraction (stops if none is within 6 points).
+  if (k.startsWith('swing.')){ const f=path.join(__dirname,'..','..','ext','coal_swing.json'); if (!fs.existsSync(f)){ missing.add('the coal swing figures (coal_swing.js)'); return null; }
+    const T=JSON.parse(fs.readFileSync(f,'utf8')), m=k.slice(6), M=T.model.swingMW.mean, E=T.eskom.swingMW.mean;
+    const frac=v=>{ const F=[['a quarter',1/4],['a third',1/3],['half',1/2],['two thirds',2/3],['three quarters',3/4]]; const b=F.reduce((x,y)=>Math.abs(y[1]-v)<Math.abs(x[1]-v)?y:x);
+      if (!(typeof v==='number'&&Math.abs(b[1]-v)<=0.06)) throw new Error('packfill: no plain fraction near '+v); return b[0]; };
+    if (m==='modelmw') return nf(M,0); if (m==='eskommw') return nf(E,0);
+    if (m==='pctbelow'){ if (!(M<E)) throw new Error('packfill: the model\'s coal swing is not below Eskom\'s'); return nf(Math.round(100*(E-M)/E),0)+'%'; }
+    if (m==='psmodel') return frac(T.model.rampShare.ps); if (m==='pseskom') return frac(T.eskom.rampShare.ps);
+    throw new Error('packfill: no key '+k); }
   if (k.startsWith('replay.')||k.startsWith('ext.')){ const pre=k.startsWith('replay.')?'replay2025_':'validate_external_';
     const f=fs.existsSync(N)?fs.readdirSync(N).filter(x=>x.startsWith(pre)&&x.endsWith('.txt')).sort().pop():null; if (!f){ missing.add(k.split('.')[0]); return null; }
     const t=fs.readFileSync(`${N}/${f}`,'utf8');
