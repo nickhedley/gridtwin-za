@@ -837,9 +837,17 @@ with its effect before changing anything: demand path (high case 238.3 TWh / 35.
 quoted by EE Business Intelligence, 1 Nov 2026; check against the report); Eskom availability (66% FY2027 to 70% by 2031, downside 65%)
 against the model's coal availability path; Eskom shutdowns (about 16.2 GW by 2036, 8.75 GW in 2029-30) against the model's coal
 schedule; Cahora Bassa (1,150 MW) and Avon and Dedisa (1,005 MW) contracts ending in 2030; about 3 GW of existing renewables at
-contract end in 2033-36 (the model keeps REIPPPP plants running after their PPAs, message 542 (b)). (b) After c7's central: two c7
-sensitivities, no new gas with coal availability on the MTSAO's 65% downside path, and no new gas on its high-demand path, each
-against c7: cost, CO2, unserved energy and open-cycle share by year.
+contract end in 2033-36 (the model keeps REIPPPP plants running after their PPAs, message 542 (b)). (a) is done: RESULTS 'NTCSA's MTSAO 2027-2036 against the model's inputs' (PR #150).
+(b) Replaced (user, 2 Nov 2026, message 618): the 65% case is c7's own availability, dropped. After c7's central, on c7's settings,
+two rebuilt runs: (i) no new gas at the MTSAO's High demand (served growth calibrated as in 617 (a)); (ii) the MTSAO Reference Case's
+inputs without new gas: High demand, 70% coal availability, Avon and Dedisa removed after 2030, 3 GW of REIPPPP retired in 2033-36.
+Each also with gas allowed. Report each against c7 and against the same inputs with gas: cost, CO2, unserved energy and open-cycle
+share by year, and new builds by 2036. c7's central demand stays on UCT ESRG's IRP reference forecast unless the user says otherwise.
+Needs first: pathway options for a coal availability path by year, Avon and Dedisa removed (engine and build LP), and the existing
+REIPPPP fleet retired by year in the build LP and engine (DEMAND=index:<file> already takes the demand path). Open points, to be
+put to the user with the design: the High path's years after 2036 (the outlook stops there); 2027-35 by chart reading (about 1 TWh)
+or a smooth path between the stated end points; the availability path on the text's financial years (70% from 2031) or Figure 6's
+calendar years (70% from 2030); the REIPPPP retirements by year (the report gives 2033-36 as a block).
 
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
