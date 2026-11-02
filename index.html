@@ -10690,8 +10690,16 @@ FIXED.ccsWaccPct = BLD_DISC * 100;
 //  - rooftop at the discount rate: owners' finance, outside state procurement, no evidence for a different rate.
 // Cases: 'private' (wind, solar and lithium financed privately, central plus BLD_COC_PRIVATE_PREM); 'high' (the same gaps on the
 // IEA's South African solar figure, 9.0% real pre-tax); 'low' (central less one point; network unchanged); 'planning' (one rate for
-// all, BLD_DISC, as IRP 2025 does); 'blended' and 'blendedhigh' (below; message 604 (a)).
+// all, BLD_DISC, as IRP 2025 does); 'blended' and 'blendedhigh' (below; message 604 (a)); 'allbids' (central with solar and onshore
+// wind at all bids' 5.5% instead of the closed projects' 6.0%; message 634 (a)).
 const BLD_COC_LEVEL = { central: 0.055, private: 0.055, high: 0.090, low: 0.045 };
+// Utility solar and onshore wind on the projects that reached close (user, 2 Nov 2026, messages 631 (g), 632 (b) and 634 (a); RESULTS
+// 'Cost of capital on closed REIPPPP projects only'; SOURCES 'Closed REIPPPP projects'): the same back-solve on the BW5 and BW6 projects
+// that reached commercial or financial close gives 6.05% (BW5 6.10%, BW6 6.00%) against 5.65% on all BW6 bids; 6.0% for solar and
+// onshore wind, by parity as before. BW7's Middlepunt (3.4% at R458) is left out: one project, its price base unconfirmed. The level
+// above stays the anchor for the other groups' gaps (lithium, gas, nuclear, coal), so only solar and onshore wind move; 'allbids'
+// keeps all bids' 5.5% as a sensitivity. Offshore wind (its own capex basis) is unchanged.
+const BLD_COC_PVWIND_CLOSED = 0.060, BLD_COC_PVWIND_TECH = ['pv', 'wind'];
 const BLD_COC_GAP = { re: 0, store: 0.013, gas: 0.025, nuclear: 0.030, coal: 0.025 };
 const BLD_COC_NETWORK = { central: 0.071, private: 0.071, high: 0.090, low: 0.071 };
 // The grid charge's capital (message 546 (b)): TDP 2024's generation integration, R225bn for 46.9 GW of grid-connected new
@@ -10721,15 +10729,21 @@ const BLD_COC_GROUP = { pv:'re', wind:'re', offshore:'re', batt:'store', vrfb:'s
 function bldCocCase(){
   let st = null; try { st = state; } catch (e) { /* state is declared later in the file; at load, use FIXED */ }
   const c = (st && st.bldCocCase != null) ? st.bldCocCase : FIXED.bldCocCase;
-  if (!['central', 'private', 'high', 'low', 'planning', 'blended', 'blendedhigh'].includes(c))
-    throw new Error('bldCocCase must be central, private, high, low, planning, blended or blendedhigh: ' + c);
+  if (!['central', 'private', 'high', 'low', 'planning', 'blended', 'blendedhigh', 'allbids'].includes(c))
+    throw new Error('bldCocCase must be central, private, high, low, planning, blended, blendedhigh or allbids: ' + c);
   return c;
 }
-// A technology's real pre-tax cost of capital in the current case.
+// A technology's real pre-tax cost of capital in the current case: the case's rate, plus for utility solar and onshore wind the step
+// from all bids to the closed projects (BLD_COC_PVWIND_CLOSED less the central level) in every case built on the central level.
 function bldCoc(tech){
+  const c = bldCocCase();
+  const r = bldCocBase(tech, c === 'allbids' ? 'central' : c);
+  const onClosed = BLD_COC_PVWIND_TECH.includes(tech) && ['central', 'private', 'low', 'blended', 'blendedhigh'].includes(c);
+  return onClosed ? r + (BLD_COC_PVWIND_CLOSED - BLD_COC_LEVEL.central) : r;
+}
+function bldCocBase(tech, c){
   const g = BLD_COC_GROUP[tech];
   if (!g) throw new Error('bldCoc: no cost-of-capital group for ' + tech);
-  const c = bldCocCase();
   if (c === 'planning' || g === 'disc') return BLD_DISC;
   if (c === 'blended' || c === 'blendedhigh'){   // state-backed central plus the private share of the gap (message 604 (a))
     const base = g === 'network' ? BLD_COC_NETWORK.central : BLD_COC_LEVEL.central + BLD_COC_GAP[g];
@@ -21283,7 +21297,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02f';
+const BUILD_STAMP = '2026-11-02p';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
