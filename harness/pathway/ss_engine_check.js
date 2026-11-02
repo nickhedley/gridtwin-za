@@ -4,7 +4,9 @@
 // harness/pathway/c6e/pathway_c6e.json (2026 without the run's fleet2026 adjustment), set with applyState, each run through the twelve
 // weather years (twelveYearDemand, one outage draw per year, seed SEED_BASE + weather year x 7919), as RESULTS 'System strength on
 // c6e, read-only (547 (b))', in three modes: 'sync6' (the page default), 'inertia' with the coal lift and 'inertia' without it
-// (ssCoalLift 0, the shortfall before the lift). Prints, by year: the requirement, inertia by source (mean, 5th percentile, minimum),
+// (ssCoalLift 0, the shortfall before the lift). Prints, by year: the requirement (and the inertia of the units lost in it, message
+// 631 (a)), inertia by source (mean, 5th percentile, minimum), the lowest hour from synchronous sources only (no grid-forming, the
+// engine's ss.syncMinGWs, message 631 (b)),
 // hours short before and after the lift, coal output lifted (TWh, the lift run's coal less the no-lift run's), committed coal
 // (mean, minimum), and lambda: the committed-to-output ratio of coal in the low-inertia hours of the no-lift runs (the lowest
 // LOW_Q of hours by inertia, pooled over the weather years, coal output above 1 MW), at its lower quartile. lambda by year is
@@ -67,7 +69,7 @@ const LOW_Q = +(process.env.LOW_Q || 0.10), MODES = (process.env.MODES || 'sync6
               const s=JSON.stringify(v, (kk, vv)=> (vv instanceof Float64Array || vv instanceof Float32Array || vv instanceof Uint8Array) ? Array.from(vv) : vv); d[k]=s===undefined?'undefined':s; } dg.push(d); }` : ''}
           const H=x.loadS.length, ss=x.ss;
           const row={wy:yy, coalTWh:x.E.coal/1e6, unservedGWh:x.E.unserved/1e3, committed:Array.from(x.coalCommittedMW||[]), coal:Array.from(x.stack.coal)};
-          if (ss){ row.req=ss.reqGWs; row.lossMW=ss.lossMW; row.shortH=ss.shortH; row.shortGWsH=ss.shortGWsH; row.liftH=ss.liftH; row.liftMWh=ss.liftMWh; row.liftCappedH=ss.liftCappedH; row.tot=Array.from(ss.inertiaGWs);
+          if (ss){ row.req=ss.reqGWs; row.lossMW=ss.lossMW; row.trippedGWs=ss.trippedGWs===undefined?null:ss.trippedGWs; row.syncMin=ss.syncMinGWs===undefined?null:ss.syncMinGWs; row.shortH=ss.shortH; row.shortGWsH=ss.shortGWsH; row.liftH=ss.liftH; row.liftMWh=ss.liftMWh; row.liftCappedH=ss.liftCappedH; row.tot=Array.from(ss.inertiaGWs);
             row.src=Object.fromEntries(Object.entries(ss.bySource).map(([k,v])=>[k,Array.from(v)])); row.condMVA=ss.condMVA; }
           o.push(row); }
         return JSON.stringify({o, dg}); })()`));
@@ -80,7 +82,8 @@ const LOW_Q = +(process.env.LOW_Q || 0.10), MODES = (process.env.MODES || 'sync6
       const R = res[M], tot = [].concat(...R.map(r => r.tot)), n = tot.length, src = {};
       for (const k of Object.keys(R[0].src)){ const a = [].concat(...R.map(r => r.src[k])); src[k] = { mean: a.reduce((s, v) => s + v, 0) / n, p5: q(a, 0.05), min: Math.min(...a) }; }
       const com = [].concat(...R.map(r => r.committed));
-      row[M] = { reqGWs: R[0].req, lossMW: R[0].lossMW, condMVA: R[0].condMVA, hours: n, shortH: R.reduce((a, r) => a + r.shortH, 0), shortGWsH: R.reduce((a, r) => a + r.shortGWsH, 0),
+      const sm = R.map(r => r.syncMin);
+      row[M] = { reqGWs: R[0].req, lossMW: R[0].lossMW, trippedGWs: R[0].trippedGWs, syncMinGWs: sm.some(v => v == null) ? null : Math.min(...sm), condMVA: R[0].condMVA, hours: n, shortH: R.reduce((a, r) => a + r.shortH, 0), shortGWsH: R.reduce((a, r) => a + r.shortGWsH, 0),
         liftH: R.reduce((a, r) => a + r.liftH, 0), liftCappedH: R.reduce((a, r) => a + r.liftCappedH, 0), liftCommitTWh: R.reduce((a, r) => a + r.liftMWh, 0) / 1e6, coalTWh: R.reduce((a, r) => a + r.coalTWh, 0) / R.length,
         unservedGWh: R.reduce((a, r) => a + r.unservedGWh, 0) / R.length,
         inertia: { mean: tot.reduce((s, v) => s + v, 0) / n, p5: q(tot, 0.05), min: Math.min(...tot) }, bySource: src,
@@ -105,7 +108,8 @@ const LOW_Q = +(process.env.LOW_Q || 0.10), MODES = (process.env.MODES || 'sync6
     if (row.lift && row.nolift) row.coalLiftedTWh = row.lift.coalTWh - row.nolift.coalTWh;   // mean over weather years
     out[Y] = row;
     const f1 = v => v == null ? '-' : (+v).toFixed(1), f3 = v => v == null ? '-' : (+v).toFixed(3);
-    if (row.lift) console.log(`${Y}: requirement ${f1(row.lift.reqGWs)} GW.s (loss ${row.lift.lossMW} MW); condensers ${row.lift.condMVA} MVA (TDP 2024 and EXTRA); short before the lift ${row.nolift.shortH} h `
+    if (row.lift) console.log(`${Y}: requirement ${f1(row.lift.reqGWs)} GW.s (loss ${row.lift.lossMW} MW; units' own inertia ${f1(row.lift.trippedGWs)} GW.s); `
+      + `synchronous only, lowest hour: ${f1(row.lift.syncMinGWs)} GW.s after the lift, ${f1(row.nolift.syncMinGWs)} before; condensers ${row.lift.condMVA} MVA (TDP 2024 and EXTRA); short before the lift ${row.nolift.shortH} h `
       + `(${f1(row.nolift.shortGWsH)} GW.s-h), after ${row.lift.shortH} h (${f1(row.lift.shortGWsH)} GW.s-h) of ${row.lift.hours}; lift hours ${row.lift.liftH} (no coal left to lift in ${row.lift.liftCappedH}), coal output lifted ${f3(row.coalLiftedTWh)} TWh/yr `
       + `(commitment ${f3(row.lift.liftCommitTWh / 12)} TWh/yr); inertia after (mean/p5/min) ${f1(row.lift.inertia.mean)}/${f1(row.lift.inertia.p5)}/${f1(row.lift.inertia.min)}, before ${f1(row.nolift.inertia.mean)}/${f1(row.nolift.inertia.p5)}/${f1(row.nolift.inertia.min)}; `
       + `committed coal mean/min ${f1(row.lift.committedMW.mean)}/${f1(row.lift.committedMW.min)} MW (before ${f1(row.nolift.committedMW.mean)}/${f1(row.nolift.committedMW.min)}); lambda p25 ${f3(row.lambda.p25)} (n ${row.lambda.n}; median ${f3(row.lambda.median)}; lowest 5% ${f3(row.lambda.low5.p25)}; below requirement ${f3(row.lambda.belowReq.p25)}, n ${row.lambda.belowReq.n})`);

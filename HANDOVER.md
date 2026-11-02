@@ -41,8 +41,10 @@ differ from the user's central values (coal 3.7, nuclear 4.1, hydro and pumped s
 
 1. Requirement each hour: 50 x L_y / (2 x RoCoF) GW.s, RoCoF 1 Hz/s central (sensitivities 0.5 Hz/s and a flat 40 GW.s). L_y is the
    largest credible loss standing in year y, from UC_FLEET: 2,160 MW while a station with three or more units of 720 MW or more stands
-   (Medupi and Kusile, 720 MW units, stand to 2040 in every plan with coal), else the largest unit standing (Koeberg, about 930 MW
-   sent out). So 54 GW.s in every year with coal, 23.25 GW.s in Fossil-free's 2040.
+   (Medupi and Kusile, 720 MW units, stand to 2040 in every plan with coal), else the largest unit standing (Koeberg, 940 MW, Eskom
+   performance report FY2026, p.23; was 'about 930 MW sent out', unsourced, corrected 2 Nov 2026, message 631 (f)). So 54 GW.s in every
+   year with coal, 23.5 GW.s in Fossil-free's 2040. From build 2026-11-02n the inertia of the units lost is added (message 631 (a)):
+   62.88 GW.s in every year with coal, 27.8 GW.s with Koeberg the largest unit.
 2. Supply, at the user's H on MVA = MW / 0.9, only while spinning: coal on committed capacity (ucAvail, not output: removes the 547 (b)
    lower-bound caveat); nuclear when available; hydro and CSP at output; pumped storage pumping or generating; CCGT and open cycle
    (gas or diesel) when running; condensers always (H 1.3 s on their MVA, Komati); grid-forming batteries limited each hour by unused
@@ -53,7 +55,7 @@ differ from the user's central values (coal 3.7, nuclear 4.1, hydro and pumped s
    p.36), counting toward inertia only (not fault level); condensers at Eskom's 2021 costs (Tomlinson et al., CIGRE S&E 33) escalated by
    CPI_APR21_TO_JAN26: conversions of retired coal units at R132m per 139 MVA machine (the first unit's R265m not modelled, the LP is
    linear), at most one per retired unit; new 400 MVAr machines at R700m. Life and fixed O&M: decision D4.
-5. The floor in the build LP: one row per representative hour and stress-window hour: coal (output / lambda_y, decision D1) +
+5. The floor in the build LP: one row per representative hour and stress-window hour: coal (committed = output x lambda_y, decision D1) +
    nuclear + hydro + pumped storage + gas + CSP + condensers + grid-forming >= requirement, with a slack priced high and reported.
    One requirement per year. The engine: the same floor each hour on the 12-year weather; when short, coal commitment is lifted where
    coal can be (decision D3); what remains is reported.
@@ -70,7 +72,7 @@ differ from the user's central values (coal 3.7, nuclear 4.1, hydro and pumped s
 10. Known limitations line (574 (b)): national, not by substation; no voltage control; RoCoF borrowed from Ireland and AEMO; condenser
    sizing not by location; no fast frequency response traded against inertia.
 
-Decided (user, 1 Nov 2026, messages 604 (b) and 606): D1 coal in the LP at output / lambda_y, lambda_y the engine's committed-to-output
+Decided (user, 1 Nov 2026, messages 604 (b) and 606): D1 coal in the LP on committed = output x lambda_y, lambda_y the engine's committed-to-output
 ratio in c6e's low-inertia hours (lower quartile), reported by year. D2 grid-forming effective H 1.9 s central (the engine's basis,
 cautious), sensitivities 1 s and 11 s (ARENA, Hornsdale upgrade, 15 Dec 2023, p.16). D3 the engine lifts coal commitment when short,
 as today's floor does, and reports the hours and MWh lifted. D4 condensers: 30-year life (GHD for ElectraNet, 2019, p.20) and 1% of
@@ -79,10 +81,17 @@ its date as a single constant (SARB 'Australia: Dollar per Rand' 0.0855 on 2026-
 after, the LP-key test with the switch on the old 6 GW floor, the one-year build test and the engine checks on c6e's states; then
 the c6e rebuild with the floor and the sensitivities. Target Wed 4 Nov.
 
+The user's review (2 Nov 2026, message 631), build 2026-11-02n, branch claude/ss-review: (a) the requirement adds the inertia of the
+units lost (AEMO, Inertia Requirements Methodology v1.0, 29 Jun 2018, s.11.2.2, p.20): 62.88 GW.s at 1 Hz/s while the three-unit rule
+applies; 1.5 Hz/s (South Africa's renewable grid code withstand, Stellenbosch CRSES, 11 Jul 2025) a RoCoF sensitivity beside 0.5.
+(b) D2 replaced: grid-forming H central 11 s on headroom MVA (ARENA, Hornsdale Power Reserve Upgrade summary, 15 Dec 2023, pp.12, 16),
+1.891 s ('thermal') the cautious sensitivity; AEMO (Sep 2024) cautions against direct replacement, so the engine reports each year's
+synchronous-only minimum (ss.syncMinGWs) beside the floor. (f) CSP credited only in hours it runs, in the engine and the build LP.
+
 ## System strength: the user's inputs (1 Nov 2026, message 578)
 
 Inertia constants: the user's central values with the full ranges of ERCOT's 2024 revision, Table 1 (messages 581 (a), 585 (a)), MVA = MW / 0.9; the largest credible loss rule (2,160 MW while a
-coal station with three or more 720 MW units stands, then the largest single unit, Koeberg about 930 MW), our assumption. Both in SOURCES
+coal station with three or more 720 MW units stands, then the largest single unit, Koeberg 940 MW), our assumption. Both in SOURCES
 ('System strength: inertia constants and the largest credible loss').
 
 ## Eskom terms: the hourly dispatch export keeps its demand column (31 Oct 2026; user, message 567 (a), cancelling 566 (c))
