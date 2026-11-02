@@ -912,6 +912,11 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mm. The coal carbon floor's base, after the note (user, 2 Nov 2026, messages 658 (a) and 659): charge the floor (s6(2), R0.035/kWh
+after the renewable-premium deduction) on the levy's base rather than per kWh of coal sent out: Eskom's FY2026 environmental levy came
+to 3.84c per kWh sent out (R6.35bn over 165,431 GWh), about 3.5c on total production including own use; about R0.5bn a year more to
+2030. The limitation line stays in SOURCES and the pack, since c7's figures carry it until the fix.
+
 14ml. Sodium-ion storage, after the note, queued behind c7 (user, 2 Nov 2026, messages 651 (e) and 655; our own sources, not the
 senior contact's settings). A storage class 'sodium' built like lithium (the same duration choice, wear and power share), no central,
 two named sensitivities: 'natender', capex = lithium's + CNY 0.517/Wh (Renqiu Zhihong, Hebei, 4-hour tender, 15 Sep 2026: sodium
@@ -919,7 +924,9 @@ two named sensitivities: 'natender', capex = lithium's + CNY 0.517/Wh (Renqiu Zh
 from 2027 (CATL's stated system parity), 25-year life (CATL 25-30 years), lithium's round trip. Report the sodium each case builds and
 the change in cost and CO2 for least-cost, Deep and Fossil-free, engine-checked. Not modelled, stated in the pack if used: freight
 and import duty on the gap, heat tolerance. Inputs and links: the project document claude/sodium-ion-inputs-2026-11-02.md, each to
-SOURCES.md; not found in the repository, its branches or the Drive on 2 Nov 2026 (asked for).
+SOURCES.md: docs/sodium-ion-inputs-2026-11-02.md (copied from the Drive reference folder, message 658 (b)); its sources go to
+SOURCES.md when the option is built. Its own figures: the gap about CNY 0.5/Wh, about R1,200/kWh at R2.3 per yuan, one 40 MWh
+sodium bid from one supplier; no system round-trip published (Hithium's system at least 88% over 24 hours).
 
 14mk. Presets reset the c7 settings keys, after the note (user, 2 Nov 2026, message 648). applyState does not reset ssMode,
 bldCocCase, btmStockGWh, btmBackupPath, btmReservePct, vppBuildOn, vppEnrolCapPct, vppCostCase, vppCostUsdKwYr, gyBuildOn, gyMode and
