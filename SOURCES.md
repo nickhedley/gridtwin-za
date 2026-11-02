@@ -1071,6 +1071,29 @@ Inputs used (page numbers as printed, equal to the PDF's):
   factor.
 Reading notes: Figure 11 states 70% battery round trip against 85% in the text (p.9, 17, 38); Figure 3's axis says MW for GW values.
 Comparison with the model: RESULTS 'NTCSA's MTSAO 2027-2036 against the model's inputs'.
+Our choices for the runs on the outlook's inputs (user, 2 Nov 2026, message 619; TODO 14me (b)); these are ours, not NTCSA's:
+- Demand 2027-35: a constant annual growth rate between the outlook's High figures, 238.3 TWh (2026) and 329.7 TWh (2036): x1.0330
+  a year (3.30%), not the chart reading of Figure 2. The model's served energy is calibrated to grow at this rate from its own 2026
+  level (as RESULTS 'NTCSA's MTSAO 2027-2036 against the model's inputs'), not set to the outlook's sent-out level.
+- Demand 2037-40: our extension, not the outlook's (it stops at 2036): the same 3.30% a year continued to 2040.
+- Coal availability: 66% in 2027 rising one point a year to 70% from 2031, flat to 2040, per the text (p.32: 70% in FY2031), not
+  Figure 6 (70% from 2030); applied to the model's coal EAF (coal only; the outlook's is "Eskom fleet").
+- REIPPPP retirements: each project at its commercial operation date plus 20 years, by technology, if the project data carried those
+  dates. It does not: the repository holds no project-level commercial operation dates (nodal/reea_projects.json is the environmental
+  register; REIPPPP_WINDOWS in index.html carries one expiry year per bid window, COD plus 20, from NERSA's MYPD6 decision, Table 25,
+  with MW by technology summed from the NW368 reply's project rows). So the fallback applies: 0.75 GW a year in 2033-36 (wind 375,
+  solar 325, CSP 50 MW a year; the outlook's 1.5, 1.3 and 0.2 GW over four years). For comparison, the window-level expiries would
+  retire nothing in 2033, 1,425 MW in 2034 (bid window 1: wind 649, solar 627, CSP 150), 1,026 MW in 2035 (bid window 2: wind 559,
+  solar 417, CSP 50), none in 2036: 2,451 MW by 2036 against the outlook's 3 GW, then 1,422 MW in 2037 (bid window 3) and 200 MW of
+  CSP in 2039 (bid window 3.5). Project-level dates would come from the IPP Office's project list (TODO 14ln's lead), not filled from
+  memory.
+- The REIPPPP retirement reproduces the outlook's assumption only (user, 2 Nov 2026, message 620). The model's central keeps REIPPPP
+  plants running after their PPAs at their own technology's fixed O&M (message 542 (b); the 1 November correction, 14ln), as merchant
+  or re-contracted supply. No published framework for REIPPPP plants after their PPAs was found (web searches, 2 Nov 2026: the IPP
+  Office, the Department and NERSA publish none; industry comment only, e.g. ESI Africa on wind owners' options of life extension,
+  repowering, hybridising or private offtake, esi-africa.com/news/south-africa-wind/, and SAPVIA's 2019 proposal to extend early PPAs
+  to 30 years, pv-tech.org/news/pv-body-warns-against-south-african-plans-to-reopen-old-ppas). The run on the outlook's inputs is
+  also reported with the REIPPPP plants kept, so that one assumption's effect is shown on a rebuilt plan.
 
 ## Batteries eligible for operating reserve: a stated assumption (user, 31 Oct 2026, message 568 (a))
 
