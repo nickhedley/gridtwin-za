@@ -60,6 +60,15 @@
 //   Sent Doc (message 517): RUN.demandpctr_YYYY, RUN.blockmw_YYYY, RUN.roofadd_YYYY, RUN.shortyears
 //   30 Oct update (message 524 (d)): RUN.avgcostpctr_YYYY, RUN.dcurt_YYYY; replay.coal / .eskom / .withinpct; ext.csircoal / .csirre
 //   2 Nov update (message 615): swing.modelmw / .eskommw / .pctbelow / .psmodel / .pseskom (harness/ext/coal_swing.json)
+//   c7 (message 649 (b)): RUN.sspvbn the system strength charge (grid-forming premium and condensers) as PV 2026-40, 'R1.5 billion';
+//                        RUN.pvssbn the engine PV with it; RUN.gfmgw_YYYY grid-forming batteries standing, GW; RUN.condgva_YYYY
+//                        condensers built, GVA; RUN.ssshortyears the years with an hour short of the inertia floor, or 'none';
+//                        RUN.syncmingws_YYYY the lowest hour's inertia from synchronous sources only, GW.s; RUN.btmgwh_YYYY the
+//                        behind-the-meter battery stock, GWh; RUN.vppmw_YYYY / .vppmaxmw enrolled VPP power, MW, in a year / at most;
+//                        RUN.gymw_YYYY / .gymaxmw geyser control enrolled, MW (pathcheck rows' ss, btm and geyser, from build
+//                        2026-11-02w); vppcoord.gain_YYYY / .cost_YYYY / .be_YYYY / .cap_YYYY / .resource the VPP's coordination gain,
+//                        coordination cost, break-even (net gain at the cap), R/kW-yr of enrolled power, and its cap, MW, and the
+//                        resource cost (harness/ext/vpp_coordination.json, ext/vpp_coordination.js; message 647)
 //   1 Nov (message 593): RUN.dpvpctr (the cost difference as a share of the plan in whole percent); page.txr (the grid integration charge).
 //   Optimised presets (message 565 (b)): RUN.ironairshare (iron-air's share of new stored energy by the horizon)
 //   Optimised presets (message 559): RUN.cpta (R per tonne of CO2 avoided against BASE, 2026-40), RUN.curtshare_YYYY (curtailed share
@@ -231,6 +240,12 @@ function value(k){
     if (m==='pctbelow'){ if (!(M<E)) throw new Error('packfill: the model\'s coal swing is not below Eskom\'s'); return nf(Math.round(100*(E-M)/E),0)+'%'; }
     if (m==='psmodel') return frac(T.model.rampShare.ps); if (m==='pseskom') return frac(T.eskom.rampShare.ps);
     throw new Error('packfill: no key '+k); }
+  // The VPP's coordination gain against its cost (message 647): harness/ext/vpp_coordination.json from ext/vpp_coordination.js.
+  if (k.startsWith('vppcoord.')){ const f=path.join(__dirname,'..','..','ext','vpp_coordination.json'); if (!fs.existsSync(f)){ missing.add('the VPP coordination figures (vpp_coordination.js)'); return null; }
+    const T=JSON.parse(fs.readFileSync(f,'utf8')), [m,yy]=k.slice(9).split('_'); if (m==='resource') return 'R'+nf(Math.round(T.resourceCostR),0);
+    const v=T.years[yy]; if (!v){ missing.add(`the VPP coordination figures (${yy})`); return null; }
+    if (m==='gain') return 'R'+nf(Math.round(v.gainR),0); if (m==='cost') return 'R'+nf(Math.round(v.costR),0); if (m==='be') return 'R'+nf(Math.round(v.netGainR),0);
+    if (m==='cap') return nf(Math.round(v.capMW),0); throw new Error('packfill: no key '+k); }
   if (k.startsWith('replay.')||k.startsWith('ext.')){ const pre=k.startsWith('replay.')?'replay2025_':'validate_external_';
     const f=fs.existsSync(N)?fs.readdirSync(N).filter(x=>x.startsWith(pre)&&x.endsWith('.txt')).sort().pop():null; if (!f){ missing.add(k.split('.')[0]); return null; }
     const t=fs.readFileSync(`${N}/${f}`,'utf8');
@@ -246,6 +261,18 @@ function value(k){
   const at=(f)=>f(s.build[y]);
   switch (m.split('_')[0]){
     case 'pv': return nf(s.pv,1);
+    // c7's system strength, behind-the-meter batteries, VPP and geyser control (message 649 (b)): from the engine check's rows (ss from
+    // build 2026-11-02a, btm and geyser from 2026-11-02w); a run without them is reported missing, not zero (Rule 4).
+    case 'sspvbn': case 'pvssbn': { if (!s.rows.every(x=>x.ss&&x.ss.costBn!=null)){ missing.add(`${s.n} (system strength rows)`); return null; }
+      const c=s.rows.reduce((a,x)=>a+x.ss.costBn*Math.pow(1.08,-(x.y-2026)),0); return m==='sspvbn'?'R'+nf(c,1)+' billion':Rb(s.pv+c); }
+    case 'gfmgw': case 'condgva': case 'syncmingws': { const x=s.rows.find(q=>q.y===y); if (!x||!x.ss){ missing.add(`${s.n} (system strength, ${y})`); return null; }
+      return m.startsWith('gfm')?nf(x.ss.gfmMW/1e3,1):m.startsWith('cond')?nf(x.ss.condBuiltMVA/1e3,1):x.ss.syncMinGWs==null?null:nf(x.ss.syncMinGWs,1); }
+    case 'ssshortyears': { if (!s.rows.every(x=>x.ss)){ missing.add(`${s.n} (system strength rows)`); return null; } const o=s.rows.filter(x=>x.ss.shortH>=0.5).map(x=>x.y); return o.length?spanH(o):'none'; }
+    case 'btmgwh': case 'vppmw': { const x=s.rows.find(q=>q.y===y); if (!x||!x.btm){ missing.add(`${s.n} (behind-the-meter rows, ${y})`); return null; }
+      return m.startsWith('btm')?nf(x.btm.stockGWh,1):nf(Math.round(x.btm.vppMW),0); }
+    case 'vppmaxmw': { if (!s.rows.every(x=>x.btm)){ missing.add(`${s.n} (behind-the-meter rows)`); return null; } return nf(Math.round(Math.max(...s.rows.map(x=>x.btm.vppMW))),0); }
+    case 'gymw': { const x=s.rows.find(q=>q.y===y); if (!x||!x.geyser){ missing.add(`${s.n} (geyser rows, ${y})`); return null; } return nf(Math.round(x.geyser.enrolledMW),0); }
+    case 'gymaxmw': { if (!s.rows.every(x=>x.geyser)){ missing.add(`${s.n} (geyser rows)`); return null; } return nf(Math.round(Math.max(...s.rows.map(x=>x.geyser.enrolledMW))),0); }
     // One year's figures against the plan (message 524 (d)): system cost per MWh served, whole % above the plan's; extra curtailed wind
     // and solar, TWh.
     case 'avgcostpctr': { if (!b) return null; const x=s.rows.find(q=>q.y===y), c=b.rows.find(q=>q.y===y); return x&&c?nf(Math.round(100*(x.avgCostRMWh/c.avgCostRMWh-1)),0)+'%':null; }

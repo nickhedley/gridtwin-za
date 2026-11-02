@@ -15,8 +15,9 @@ const ROOT=process.argv[2]||'testroot';
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window; const ev=x=>w.eval(x);
  const out=ev(`(function(){
    const techs=['pv','wind','offshore','batt','ironair','vrfb','phes','ccgt','ocgt','ocgd','nuclear','coal','tx','grid','rooftop'];
-   const cases=['central','private','high','low','planning']; const coc={}, idc={};
+   // c7 (message 649 (b)): the blended cases and 'allbids' too, each only where the page has it (bldCocCase throws on an unknown case).
    const saved=state.bldCocCase;
+   const cases=['central','private','high','low','planning','blended','blendedhigh','allbids'].filter(c=>{ state.bldCocCase=c; try { bldCocCase(); return true; } catch(e){ return false; } }); const coc={}, idc={};
    for (const c of cases){ state.bldCocCase=c; coc[c]={}; idc[c]={}; for (const t of techs){ coc[c][t]=bldCoc(t); idc[c][t]=bldIdcFactor(t); } }
    state.bldCocCase=saved;
    // 2026 capex as the pathway runs cost it: tracking solar on the page's bldPvCase, the other entries as bldCostEntry resolves them.
