@@ -6286,6 +6286,24 @@ const FIXED = {
   // of the policy answer for none of the solve cost.
   gridBeyondGccaPct:0,
   vppEnabled:1, vppEnrolPct:0, vppGeyserPoolMW:4000, vppBattPerGeyserKW:0.35,
+  // ── behind-the-meter batteries and the virtual power plant as a build option ─────────────────────────────────────────────
+  // HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum version: design' (user, 2 Nov 2026, messages 621 (b)
+  // and 622-625; TODO 14lq (1)-(2), 14lu). Off by default (btmStockGWh 0, vppBuildOn 0): the build LP text and every engine output
+  // are unchanged until c7 rebuilds the presets. The design's fixed numbers are in BTM_STOCK beside btmStock().
+  // btmStockGWh: the 2026 stock S0, GWh; 0 off; 8 central (P1), cases 4 and 14, growth scaled with it (message 625).
+  // btmBackupPath: 'glide' (backup-only 50% of the stock in 2026 falling to 0% by 2030, P2) or 'hold' (50% throughout, the
+  // load-shedding-returns sensitivity). btmReservePct: the owner reserve held back on cycling and enrolled batteries (P2, 25%).
+  // btmHours: power at 2.5 hours of capacity; btmEff: round trip 90% (P1, TODO 14cd). btmCapexRkWh: GreenCape's R5,000/kWh
+  // installed, charged in btmCapexR on the stock added after 2026 (P4). The 50% start, the glide path and the 25% reserve are
+  // our assumptions (SOURCES 'Behind-the-meter batteries: stock and growth').
+  btmStockGWh:0, btmBackupPath:'glide', btmReservePct:25, btmHours:2.5, btmEff:0.9, btmCapexRkWh:5000,
+  // vppBuildOn: enrolled battery energy as a build-LP variable (vppe_<y>, MWh) and dispatched by the engine (V1-V5); with it on
+  // the slider VPP's battery component (vppBattPerGeyserKW) is off and its geysers stay (V5). vppEnrolCapPct: enrolment at most
+  // this share of the cycling stock (V1: 20%, Brattle's participation rate; 50% the high case). vppEvents x vppEventHours: the
+  // year's event-hours at full delivered power (V3: 15 of 3 hours central; 100 of 2 hours a sensitivity). vppCostUsdKwYr: per
+  // delivered kW (V4: Brattle, Real Reliability, Technical Appendix, Table 4, p.19, system row), at USD_RATE_R.
+  // vppEnrolGWh: the enrolled energy the engine runs (set from the build LP's vppe_<y>; 0 unless vppBuildOn).
+  vppBuildOn:0, vppEnrolCapPct:20, vppEvents:15, vppEventHours:3, vppCostUsdKwYr:42.85, vppEnrolGWh:0,
   // Where the VPP is. 'National' spreads the enrolled pool across regions by
   // their share of electricity demand; naming a region concentrates the whole
   // pool there, which is what a municipal programme like Cape Town's actually
@@ -7386,6 +7404,72 @@ function dieselAvailMW(p){
   return Math.max(0, (p.ocgtDieselMW || 0) - (p.dieselDecomMW || 0)) + Math.max(0, p.newOcgdMW || 0);   // new OCGT on diesel (11 Oct 2026)
 }
 
+// ── Behind-the-meter batteries and the virtual power plant build option, minimum version ─────────────────────────────────────
+// HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum version: design' (user, 2 Nov 2026, messages 621 (b) and
+// 622-625). The design's fixed numbers; the switches, cases and costs are FIXED keys (btm*, vppBuildOn and the vpp* after it).
+const BTM_STOCK = {
+  y0: 2026,                            // the base year: its metered demand already holds the 2026 stock as it then behaved (message 622)
+  s0GWh: 8, growthGWh: 0.9,            // P1: 8 GWh in 2026, +0.9 GWh a year (the advisor's estimate, labelled ours); another 2026 stock
+                                       //     scales the growth with it (cases 4 and 14: growth x 4/8 and 14/8, message 625)
+  backup0: 0.5, backupEndYear: 2030,   // P2: backup-only share of the whole stock, 50% in 2026 falling linearly to 0% by 2030 (message 624)
+  roofShare: 0.5,                      // P3: the cycling stock charges at most half the day's rooftop output
+  dischFromH: 17, dischToH: 22,        // P3: and discharges evenly over 17:00-22:00
+  vppMax2026GWh: 2.7,                  // V1: in 2026 no more than the Plentify-Deye 2.7 GWh (energy-storage.news, 20 Jul 2026)
+  vppDeliveredShare: 1 / 3,            // V2: delivered power a third of nameplate (CEC, DSGS staff analysis, TN 266629, slides 17 and 29)
+};
+// The stock in year y and its modes (P1, P2, V1-V4; messages 622-625), from the FIXED keys in S. GWh throughout. S(y) the stock,
+// B(y) the backup-only share, C(y) = (1 - B(y)) S(y) the cycling stock (enrolled batteries are drawn from it), C0 = C(2026). use is
+// the share above the owner reserve. The engine and the build LP both read this, so the two cannot differ.
+function btmStock(S, y){
+  const s0 = +S.btmStockGWh, vppOn = (S.vppBuildOn | 0) > 0;
+  if (!(s0 >= 0)) throw new Error('btmStockGWh must be 0 or more: ' + S.btmStockGWh);
+  if (vppOn && !(s0 > 0)) throw new Error('vppBuildOn needs btmStockGWh above 0: the enrolled batteries come from the cycling stock');
+  if (S.btmBackupPath !== 'glide' && S.btmBackupPath !== 'hold') throw new Error("btmBackupPath must be 'glide' or 'hold': " + S.btmBackupPath);
+  const res = +S.btmReservePct, hrs = +S.btmHours, eff = +S.btmEff;
+  if (!(res >= 0 && res < 100) || !(hrs > 0) || !(eff > 0 && eff <= 1)) throw new Error('btmReservePct (0 to under 100), btmHours (above 0) or btmEff (0 to 1) out of range');
+  const K = BTM_STOCK, g = K.growthGWh * s0 / K.s0GWh;
+  const stockAt = yy => s0 + g * Math.max(0, yy - K.y0);
+  const backupAt = yy => S.btmBackupPath === 'hold' ? K.backup0
+    : K.backup0 * Math.max(0, Math.min(1, (K.backupEndYear - yy) / (K.backupEndYear - K.y0)));
+  const St = stockAt(y), B = backupAt(y), C = (1 - B) * St, C0 = (1 - backupAt(K.y0)) * s0, use = 1 - res / 100;
+  let vppCapGWh = 0, vppEventH = 0;
+  if (vppOn){
+    const capPct = +S.vppEnrolCapPct, ev = +S.vppEvents, evH = +S.vppEventHours;
+    if (!(capPct >= 0 && capPct <= 100) || !(ev >= 0) || !(evH >= 0) || !(+S.vppCostUsdKwYr >= 0)) throw new Error('vppEnrolCapPct (0-100), vppEvents, vppEventHours or vppCostUsdKwYr out of range');
+    vppCapGWh = C * capPct / 100;                                         // V1: a share of the cycling stock
+    if (y <= K.y0) vppCapGWh = Math.min(vppCapGWh, K.vppMax2026GWh);      // V1: and in 2026 no more than 2.7 GWh
+    vppEventH = ev * evH;                                                 // V3: full-power hours a year
+  }
+  return { s0, S: St, B, C, C0, use, eff, hours: hrs,
+    powerPerUsable: 1 / hrs / use,                                        // MW per MWh of usable energy (P1: 2.5 hours on capacity)
+    vppOn, vppCapGWh, vppEventH,
+    vppMWperMWh: K.vppDeliveredShare / hrs,                               // V2: delivered MW per MWh enrolled, E / 2.5 h / 3
+    vppCostRkWyr: vppOn ? +S.vppCostUsdKwYr * USD_RATE_R : 0 };           // V4, at the model's pinned rate
+}
+// The cycling stock's fixed daily profile (P3), per MWh of usable energy: 24 values, MW, charging positive and discharging
+// negative, added to demand before dispatch in the engine and in the build LP's balance rows alike. sol: the day's solar per unit;
+// roofMW and derate: the rooftop fleet the stock charges from; usableMWh: the whole cycling stock's usable energy, whose charge is
+// at most half the day's rooftop output; pwr: MW per MWh usable; eff: round trip. Charges in proportion to the day's rooftop
+// profile, up to the smaller of its usable energy and half the day's rooftop output, and discharges that energy x eff evenly over
+// 17:00-22:00, within its power. No forecast, no price response.
+function btmPassiveDay(sol, roofMW, derate, usableMWh, pwr, eff){
+  const d = new Array(24).fill(0), K = BTM_STOCK;
+  let solSum = 0; for (let h = 0; h < 24; h++) solSum += Math.max(0, sol[h]);
+  if (!(solSum > 0) || !(usableMWh > 0)) return { d, chg: 0, dis: 0 };
+  const q = Math.min(1, K.roofShare * roofMW * derate * solSum / usableMWh);   // MWh charged per MWh usable
+  let chg = 0;
+  for (let h = 0; h < 24; h++){ const c = Math.min(pwr, q * Math.max(0, sol[h]) / solSum); d[h] = c; chg += c; }
+  const n = K.dischToH - K.dischFromH, per = Math.min(pwr, chg * eff / n);
+  for (let h = K.dischFromH; h < K.dischToH; h++) d[h] -= per;
+  return { d, chg, dis: per * n };
+}
+// A short hour as the engine forecasts it (V3): net load before storage above committed coal, gas and diesel capacity, and pumped
+// storage and battery power within their stores. The formula of ssLiftForecast 'reservecoal' (branch claude/system-strength-min,
+// message 616) with no grid-forming headroom held; that code is not on main, so the formula is repeated here.
+function vppForecastShort(netLoadPre, coalMW, dieselMW, gasMW, psMW, psSoc, battMW, battSoc){
+  return netLoadPre > coalMW + dieselMW + gasMW + Math.min(psMW, Math.max(0, psSoc)) + Math.min(battMW, Math.max(0, battSoc));
+}
+
 // IRP 2025 gas floor as an annual minimum, 6 Oct 2026. The IRP sets a minimum annual capacity factor
 // (51% on 6 GW, 2030-2040), not an hourly must-run. Gas first dispatches on merit; if the floored fleet's
 // output falls short of the factor, the floor is set at the fleet's capacity in the highest net-load hours
@@ -7521,7 +7605,9 @@ function simulate(u, prof, outPath, _soc0){
   // Enrolled VPP batteries join the dispatchable fleet - turning a scattered
   // household fleet into one plant is exactly what a VPP is for. Sized at 4h,
   // the usual residential configuration.
-  const _vppB = (p.vppEnabled ?? 1) ? (p.vppGeyserPoolMW ?? 4000)
+  // With the virtual power plant as a build option (vppBuildOn) the slider's battery component is off and its geysers stay, so the
+  // same batteries are not counted twice (V5, message 625).
+  const _vppB = ((p.vppEnabled ?? 1) && !((p.vppBuildOn | 0) > 0)) ? (p.vppGeyserPoolMW ?? 4000)
                 * (Math.max(0, Math.min(100, p.vppEnrolPct ?? 0))/100)
                 * (p.vppBattPerGeyserKW ?? 0.35) : 0;
   // Storage aggregates. Pumped storage additions join the PS fleet, being the
@@ -8069,11 +8155,51 @@ function simulate(u, prof, outPath, _soc0){
     return _expBase * (1 + (_expPk - 1) * (2 * f - 1));
   };
 
+  // Behind-the-meter batteries and the virtual power plant (HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum
+  // version: design'; messages 621 (b) and 622-625). Off (btmStockGWh 0, vppBuildOn 0) none of this runs and load is as before.
+  // Only the change from 2026 enters demand: the passive profile per MWh usable x 0.75 x [C(y) - E(y) - C0], the 2026 stock as it
+  // behaved in 2026 being already in the metered demand (message 622). The day's charge is capped against the existing rooftop
+  // fleet (rooftopMW), as in the build LP, where new rooftop is a decision and could not enter a fixed profile.
+  const _btm = (+p.btmStockGWh > 0 || (p.vppBuildOn | 0) > 0) ? btmStock(p, p.scenarioYear) : null;
+  let _btmD = null, _btmOut = null, _vpp = null;
+  if (_btm){
+    const Eg = +p.vppEnrolGWh;   // the cap is checked to 0.1 MWh, the precision the build LP writes its bound to
+    if (!(Eg >= 0)) throw new Error('vppEnrolGWh must be 0 or more: ' + p.vppEnrolGWh);
+    if (Eg > _btm.vppCapGWh + 1e-4) throw new Error('vppEnrolGWh ' + Eg + ' above the enrolment cap ' + _btm.vppCapGWh.toFixed(4) + ' GWh (vppBuildOn ' + (p.vppBuildOn | 0) + ')');
+    // Double-count identities (message 623): every GWh of S(y) is in one place, B(y) S(y) + [C(y) - E(y)] + E(y) = S(y), and the
+    // enrolled energy is drawn from the cycling stock. Asserted every year; the terms are reported in the output (btm).
+    const tB = _btm.B * _btm.S, tC = _btm.C - Eg, tE = Eg;
+    if (Math.abs(tB + tC + tE - _btm.S) > 1e-9 * Math.max(1, _btm.S)) throw new Error('btm identity B S + (C - E) + E = S fails: ' + [tB, tC, tE, _btm.S].join(', '));
+    if (tC < -1e-9) throw new Error('btm identity: enrolled ' + tE + ' GWh above the cycling stock ' + _btm.C + ' GWh');
+    if (Math.abs(_btm.C - (1 - _btm.B) * _btm.S) > 1e-9 * Math.max(1, _btm.S)) throw new Error('btm identity C = (1 - B) S fails');
+    const dU = _btm.use * (_btm.C - Eg - _btm.C0) * 1000;               // MWh of usable energy whose profile enters demand
+    const usableAll = _btm.use * _btm.C * 1000;                          // the whole cycling stock's usable energy, MWh (P3's cap)
+    _btmD = new Float64Array(HOURS);
+    let pChg = 0, pDis = 0;
+    for (let d0 = 0; d0 + 24 <= HOURS; d0 += 24){
+      const day = btmPassiveDay(solar.slice(d0, d0 + 24), p.rooftopMW, p.rooftopDerate, usableAll, _btm.powerPerUsable, _btm.eff);
+      if (day.dis > day.chg * _btm.eff + 1e-9) throw new Error('btm profile discharges more than it stored on day ' + d0 / 24);
+      for (let k = 0; k < 24; k++) _btmD[d0 + k] = day.d[k] * dU;
+      pChg += day.chg * dU; pDis += day.dis * dU;
+    }
+    let net = 0; for (let h = 0; h < HOURS; h++) net += _btmD[h];
+    if (Math.abs(net - (pChg - pDis)) > 1e-6 * Math.max(1, Math.abs(pChg))) throw new Error('btm profile energy does not balance: ' + net + ' against ' + (pChg - pDis));
+    // V2-V4: the enrolled batteries as a store of 0.75 E and E / 2.5 h / 3 delivered power, starting full.
+    if (_btm.vppOn && Eg > 0) _vpp = { mwh: _btm.use * Eg * 1000, mw: Eg * 1000 * _btm.vppMWperMWh, eff: _btm.eff, soc: _btm.use * Eg * 1000,
+      evLeft: _btm.vppEventH, dis: 0, chg: 0, evH: 0, shortH: 0, solMax: new Float64Array(Math.ceil(HOURS / 24)) };
+    if (_vpp) for (let h = 0; h < HOURS; h++){ const dd = Math.floor(h / 24); if (solar[h] > _vpp.solMax[dd]) _vpp.solMax[dd] = solar[h]; }
+    const vppMW = _vpp ? _vpp.mw : 0;
+    _btmOut = { year: p.scenarioYear, stockGWh: _btm.S, backupShare: _btm.B, backupGWh: tB, cyclingNotEnrolledGWh: tC, enrolledGWh: tE,
+      cycling2026GWh: _btm.C0, demandChangeGWh: _btm.C - Eg - _btm.C0, usableChangeGWh: dU / 1000,
+      passiveChargeGWh: pChg / 1000, passiveDischargeGWh: pDis / 1000, passiveNetGWh: net / 1000,
+      addedSince2026GWh: _btm.S - _btm.s0, vppCapGWh: _btm.vppCapGWh, vppMW, vppMWh: _vpp ? _vpp.mwh : 0, vppEventHoursCap: _btm.vppEventH,
+      vppCostR: vppMW * 1000 * _btm.vppCostRkWyr, deltaMW: _btmD };
+  }
   const netLoadPre=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
     const rawDemand=demandDR[h]*growth + demBlock;
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
-    const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
+    const load=rawDemand-rooftopGen+expAt(h)+(_btmD ? _btmD[h] : 0);   // firm exports are a load on the SA system; the stock's profile (P3)
     // Offshore on its own shape where the profile loaded, onshore's where it did not.
     let windGen=windCap*windU[h] - capeCurtMW*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
         pvGen=pvCap*solarU[h];
@@ -8618,7 +8744,22 @@ function simulate(u, prof, outPath, _soc0){
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
     const rawDemand=demandDR[h]*growth + demBlock;   // same shaped series the UC saw
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
-    const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
+    // The enrolled batteries (V2-V3; messages 621-625): behind the meter, so their discharge takes load off the demand line and
+    // their charging adds to it. They discharge at full delivered power only in an hour the engine forecasts short
+    // (vppForecastShort), each such hour using one of the year's event-hours; otherwise they recharge in proportion to the day's
+    // solar shape, as the passive profile charges. Off: _vpp is null and _vppH 0.
+    let _vppH = 0;
+    if (_vpp){
+      if (vppForecastShort(netLoadPre[h], cAvail, dieselAvailMW(p), ccgtCap, psPowerTot, psSoc, battPower, battSoc)){
+        _vpp.shortH++;
+        if (_vpp.evLeft >= 1 && _vpp.soc > 1e-6){ const x = Math.min(_vpp.mw, _vpp.soc); _vpp.soc -= x; _vpp.dis += x; _vpp.evLeft--; _vpp.evH++; _vppH = -x; }
+      } else if (_vpp.soc < _vpp.mwh - 1e-6 && solar[h] > 0){
+        const x = Math.min(_vpp.mw * solar[h] / _vpp.solMax[Math.floor(h / 24)], (_vpp.mwh - _vpp.soc) / _vpp.eff);
+        _vpp.soc += x * _vpp.eff; _vpp.chg += x; _vppH = x;
+      }
+      if (_vpp.soc < -1e-6 || _vpp.soc > _vpp.mwh + 1e-6) throw new Error('vpp store outside 0 to its energy at hour ' + h);
+    }
+    const load=rawDemand-rooftopGen+expAt(h)+(_btmD ? _btmD[h] + _vppH : 0);   // firm exports are a load on the SA system; the stock's profile (P3) and the enrolled batteries
     // Firm export volume, booked 15 Sep 2026. expAt(h) had been added to the load line
     // since 8 Sep and recorded nowhere: 6.62 TWh a year served by the fleet, carrying fuel
     // and carbon, earning nothing. E.exported is not this - it is the surplus channel, fed
@@ -9563,7 +9704,14 @@ function simulate(u, prof, outPath, _soc0){
   const acapAt = (tech, flat) => (typeof BLD_COST === 'undefined' || !BLD_COST[tech])
     ? flat
     : bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint, p);
-  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(coalFlexTier(u)>=2?Math.max(0,p.coalInstalledMW-u.coalDecomMW)*coalDeepShare(Math.max(0,p.coalInstalledMW-u.coalDecomMW)):0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
+  // Behind-the-meter battery capital on the stock added after 2026 (P4, message 625): GreenCape's R5,000/kWh, annuitised as rooftop
+  // is (bldAnnuity at rooftop's cost of capital, below in btmCapexR) over lithium's life, no fixed O&M. In newCapexR and in btmCapexR,
+  // as rooftop is, so it is a system cost but not a grid cost. The virtual power plant's payment (V4, US$42.85/kW-yr per delivered
+  // kW at USD_RATE_R) is a grid cost: in newCapexR only. Both null or 0 when off, so newCapexR is as before.
+  const _btmCapR = _btmOut ? Math.max(0, _btmOut.addedSince2026GWh) * 1e6 * bldAnnuity(p.btmCapexRkWh, BLD_LIFE.batt, 'rooftop') : 0;
+  if (_btmOut) _btmOut.capexR = _btmCapR;
+  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(coalFlexTier(u)>=2?Math.max(0,p.coalInstalledMW-u.coalDecomMW)*coalDeepShare(Math.max(0,p.coalInstalledMW-u.coalDecomMW)):0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000   // tiered regional charge, R/yr
+    + (_btmOut ? _btmCapR + _btmOut.vppCostR : 0);   // behind-the-meter batteries (P4) and the enrolled batteries' payment (V4), when on
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
   // report it against NERSA's "transmission network charges" component. It is a build
   // cost, not a use-of-system charge, which is why the decomposition marks it partial.
@@ -9597,7 +9745,7 @@ function simulate(u, prof, outPath, _soc0){
   // the flat acapRooftop, R1,150/kW-yr, while newCapexR priced it at acapAt('rooftop'), R2,088 in 2026 falling to R1,701 by
   // 2040, so the difference stayed in gridCapexR, avgCost and pathcheck's gridCost: R32.0bn of present value on c5e and
   // R42.7bn on c5f (RESULTS 'Retail panel audit, part 1'). systemCostR (engine PV) and the build LP were right throughout.
-  const btmCapexR = u.newRooftopMW * acapAt('rooftop', p.acapRooftop) * 1000;
+  const btmCapexR = u.newRooftopMW * acapAt('rooftop', p.acapRooftop) * 1000 + _btmCapR;   // with the behind-the-meter batteries' capital when on (P4; 0 off)
   const gridCapexR = newCapexR - btmCapexR;
   // Export revenue. The energy was going to be spilled, so this is incremental
   // revenue rather than avoided cost, and it offsets the system bill directly -
@@ -10032,8 +10180,12 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
+  // The enrolled store's year (V3): energy out and in, event-hours used, hours forecast short.
+  if (_btmOut) Object.assign(_btmOut, { vppDisGWh: _vpp ? _vpp.dis / 1000 : 0, vppChgGWh: _vpp ? _vpp.chg / 1000 : 0,
+    vppEventHoursUsed: _vpp ? _vpp.evH : 0, vppShortHours: _vpp ? _vpp.shortH : 0, vppSocEndMWh: _vpp ? _vpp.soc : 0 });
   return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
+          ...(_btmOut ? { btm: _btmOut } : {}),   // behind-the-meter batteries and the enrolled store, when on (messages 621-625)
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
@@ -11687,6 +11839,27 @@ function bldBuildLP(opts){
   const NUC = y => EX.nuclear + bldNuclearAddedMW(S, y);
   // Imports standing in year y: none after importsEndYear when it is set (FIXED), as the engine does.
   const IMP = y => (S.importsEndYear > 0 && y > S.importsEndYear) ? 0 : EX.imports;
+  // Behind-the-meter batteries and the virtual power plant as a build option (HANDOVER 'Behind-the-meter batteries and virtual
+  // power plants, minimum version: design'; messages 621 (b) and 622-625). Off (btmStockGWh 0, vppBuildOn 0): nothing below is
+  // written and the LP text is as before. On: the cycling stock's fixed profile (btmPassiveDay, the engine's own) per MWh usable
+  // x 0.75 x [C(y) - E(y) - C0] enters each balance row, the constant part on the right and the enrolled part as a term in
+  // vppe_<y> (MWh enrolled, a variable, linear build, V1), so the enrolled batteries' passive profile leaves demand as they enrol.
+  // vppe_<y> is a store of 0.75 E and E / 2.5 h / 3 delivered power (vppd_ out, vppc_ in; V2; vdis_ and vchg_ are vanadium's),
+  // within its event-hours (V3), credited in the planning reserve row at delivered power, at US$42.85/kW-yr per delivered kW (V4).
+  const BTM_ON = +S.btmStockGWh > 0;
+  if (!BTM_ON && (S.vppBuildOn | 0) > 0) btmStock(S, Y[0]);   // refuses: the enrolled batteries come from the stock
+  const VPP_ON = BTM_ON && (S.vppBuildOn | 0) > 0;
+  const BTM_Y = {}; if (BTM_ON) for (const y of Y) BTM_Y[y] = btmStock(S, y);
+  // The profile of representative or stress day r in year y, MW per MWh usable, on that day's own solar (as sp below) and the
+  // existing rooftop fleet (EX.rooftop: new rooftop is a decision here, so it cannot set a fixed profile; the engine does the same).
+  const _btmDays = new Map();
+  const btmDay = (y, r) => { const key = y + '_' + r.d; if (_btmDays.has(key)) return _btmDays.get(key);
+    const b = BTM_Y[y], sol = [];
+    for (let h = 0; h < 24; h++) sol.push(r.solar ? r.solar[h] : PROFILES.solar[(r.dem !== undefined ? r.dem : r.d)*24 + h]);
+    const d = btmPassiveDay(sol, EX.rooftop, S.rooftopDerate, b.use * b.C * 1000, b.powerPerUsable, b.eff).d;
+    _btmDays.set(key, d); return d; };
+  // A signed LP term, or nothing when the coefficient rounds to zero.
+  const lpTerm = (c, v, dp) => { const t = Math.abs(c).toFixed(dp); return +t === 0 ? '' : (c < 0 ? ' - ' : ' + ') + t + ' ' + v; };
   // Open-cycle gas options (FIXED notes, 11 Oct 2026). b_ocgt / go_: new OCGT on LNG, OC_K times a CCGT MWh's gas and
   // carbon. b_ocgd: new OCGT on diesel, dispatched in the diesel variable gd_ at the fleet's price.
   const OCGT_ON = (S.bldOcgtOn | 0) > 0, OCGD_ON = (S.bldOcgdOn | 0) > 0;
@@ -11902,6 +12075,9 @@ function bldBuildLP(opts){
     for (const yy of Y) if (yy >= p.eol) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' le_' + p.id);
   }
+  // The enrolled batteries' payment (V4): per MWh enrolled, its delivered kW x US$42.85 at USD_RATE_R, each year it is enrolled.
+  if (VPP_ON) for (const y of Y)
+    obj.push((BTM_Y[y].vppMWperMWh * 1000 * BTM_Y[y].vppCostRkWyr / Math.pow(1+BLD_DISC, y-2026)).toFixed(3) + ' vppe_' + y);
   L.push('  ' + obj.join(' + ').replace(/\+ -/g, '- '));
   L.push('Subject To');
   if (RC_ON) for (let i = 1; i < Y.length; i++)
@@ -12036,7 +12212,15 @@ function bldBuildLP(opts){
         + ' + ' + cum('pv',y).map(v => (spN*AV_CONG).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
         + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
-        + ' = ' + (dem - fixed).toFixed(1));
+        // Enrolled batteries (V1-V2): their discharge and charging, and their passive profile taken out of demand (message 622).
+        + (VPP_ON ? ' + vppd_' + k + ' - vppc_' + k + lpTerm(btmDay(y, r)[h] * BTM_Y[y].use, 'vppe_' + y, 6) : '')
+        // The cycling stock's profile on the change from 2026, [C(y) - C0], in demand (P3, messages 622-624).
+        + ' = ' + (BTM_ON ? dem - fixed + btmDay(y, r)[h] * BTM_Y[y].use * (BTM_Y[y].C - BTM_Y[y].C0) * 1000 : dem - fixed).toFixed(1));
+      if (VPP_ON){
+        const pv = BTM_Y[y].vppMWperMWh.toFixed(6);   // V2: delivered MW per MWh enrolled, charging and discharging alike
+        L.push(' vppdmax_' + k + ': vppd_' + k + ' - ' + pv + ' vppe_' + y + ' <= 0');
+        L.push(' vppcmax_' + k + ': vppc_' + k + ' - ' + pv + ' vppe_' + y + ' <= 0');
+      }
       const _rcf = r.coalFrac ? r.coalFrac[h] : (r.tail ? eaf * TAIL_COAL_FACTOR : eaf);
       // Rounding, 7 Oct 2026: coalCap is bldCoalMW(y) x _rcf, but the coefficient was written to 4 decimals and the
       // right-hand side to 1, so the capacity they imply drifted by up to 7 MW either way. Retiring all coal (rc_ at
@@ -12305,6 +12489,22 @@ function bldBuildLP(opts){
         L.push(' dur_'+kk+': ' + dis.join(' + ') + ' - ' + capTerms.join(' - ')
           + ' <= ' + (ex*S2.hours));
       }
+      // Enrolled batteries (V2): each day puts back what it takes at the round trip, and discharges no more than 0.75 E.
+      if (VPP_ON){
+        const vk = y + '_' + r.d, hs = [...Array(24).keys()];
+        L.push(' vppsoc_' + vk + ': ' + hs.map(h => BTM_Y[y].eff.toFixed(4) + ' vppc_' + vk + '_' + h).join(' + ') + hs.map(h => ' - vppd_' + vk + '_' + h).join('') + ' = 0');
+        L.push(' vppdur_' + vk + ': ' + hs.map(h => 'vppd_' + vk + '_' + h).join(' + ') + ' - ' + BTM_Y[y].use.toFixed(4) + ' vppe_' + y + ' <= 0');
+      }
+    }
+    // Event limits (V3): the year's event-hours at full delivered power, pro rata to the days that stand for them, on the weighted
+    // representative days (their weights over 365) and on the stress days (their number over 365) separately.
+    if (VPP_ON){
+      const pv = BTM_Y[y].vppMWperMWh, cal = rdY(y).filter(r => !r.tail), tl = rdY(y).filter(r => r.tail);
+      const wSum = cal.reduce((a, r) => a + r.weight, 0);
+      if (cal.length) L.push(' vppev_' + y + ': ' + cal.flatMap(r => [...Array(24).keys()].map(h => r.weight.toFixed(4) + ' vppd_' + y + '_' + r.d + '_' + h)).join(' + ')
+        + ' - ' + (BTM_Y[y].vppEventH * pv * wSum / 365).toFixed(6) + ' vppe_' + y + ' <= 0');
+      if (tl.length) L.push(' vppevs_' + y + ': ' + tl.flatMap(r => [...Array(24).keys()].map(h => 'vppd_' + y + '_' + r.d + '_' + h)).join(' + ')
+        + ' - ' + (BTM_Y[y].vppEventH * pv * tl.length / 365).toFixed(6) + ' vppe_' + y + ' <= 0');
     }
     // Firm-capacity reserve margin at the annual peak. Wind and solar get no
     // capacity credit: South Africa's system peak is a winter evening, when
@@ -12355,6 +12555,7 @@ function bldBuildLP(opts){
       + ' + ' + cum('ccgt',y).join(' + ')
       + OC_T.map(t => ' + ' + cum(t,y).join(' + ')).join('')
       + LEV(y).map(v => ' + ' + v).join('')
+      + (VPP_ON ? ' + ' + BTM_Y[y].vppMWperMWh.toFixed(6) + ' vppe_' + y : '')   // enrolled batteries at delivered power (V2)
       + (RC_ON ? ' - ' + eaf.toFixed(4) + ' rc_' + y : '')
       + ' >= ' + (RC_ON ? (peak*(1 + PLAN_M/100) - firm) : Math.max(0, peak*(1 + PLAN_M/100) - firm)).toFixed(1));
   }
@@ -12401,6 +12602,8 @@ function bldBuildLP(opts){
   for (const q of CMP) L.push(' 0 <= rca_'+q.y+' <= ' + q.mwA.toFixed(1));
   for (const p of LE_P) L.push(' 0 <= le_' + p.id + ' <= ' + p.mw);
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
+  // Enrolment cap (V1): vppEnrolCapPct of the cycling stock, and in 2026 no more than 2.7 GWh; MWh.
+  if (VPP_ON) for (const y of Y) L.push(' 0 <= vppe_' + y + ' <= ' + (BTM_Y[y].vppCapGWh * 1000).toFixed(1));
   for (const y in IMP_MWH) L.push(' ' + IMP_MWH[y].toFixed(1) + ' <= imp_' + y + ' <= ' + IMP_MWH[y].toFixed(1));   // fixed: priced, not chosen
   for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
     L.push(' 0 <= cc_'+S2.t+'_'+y+' <= 200000');
@@ -12519,6 +12722,8 @@ function bldBuildToState(res){
   // Set, not added to the current value: applying a build twice must not retire the fleet twice.
   if ((_ps.bldPeakerRet | 0) > 0) o.dieselDecomMW = bldPeakerDecomMW(endY, _ps, res && res.Columns);
   if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
+  // The enrolled battery energy in the final year (vppe_<y>, V1), only when the option is on (messages 621-625).
+  if ((_ps.vppBuildOn | 0) > 0) o.vppEnrolGWh = (((res && res.Columns && res.Columns['vppe_' + endY]) || {}).Primal || 0) / 1000;
   Object.assign(o, bldAstrVreRef(res && res.Columns, endY, _ps));
   return o;
 }
@@ -12599,6 +12804,8 @@ function bldStateForYear(res, y, opts){
     demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, demandBlockMW: bldDemandBlockMW(opts, y), scenarioYear: y,
     ...bldAstrVreRef(res.Columns, y, opts.state),
     windCapeMW: Math.round(Object.entries(res.Columns || {}).reduce((a, [c, v]) => { const m = c.match(/^cw_([0-9]+)$/); return a + (m && +m[1] <= y ? (v.Primal || 0) : 0); }, 0)),
+    // The enrolled battery energy the build chose for this year (vppe_<y>, MWh; V1), only when the option is on (messages 621-625).
+    ...(((opts.state.vppBuildOn ?? FIXED.vppBuildOn) | 0) > 0 ? { vppEnrolGWh: (((res.Columns || {})['vppe_' + y] || {}).Primal || 0) / 1000 } : {}),
     ...(opts.gasFuelR ? { costCcgt: bldGasFuelR(opts, y, { ...FIXED, ...opts.state }) } : {}),
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
         ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}),
@@ -21037,7 +21244,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-01e';
+const BUILD_STAMP = '2026-11-02i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21135,9 +21342,10 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
-  bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand });
+  bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
+  btmStock, btmPassiveDay, vppForecastShort });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
-const ENGINE_DATA = () => ({ FIXED, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
+const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
   ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
   WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, _MSTART_H, COAL_MINSTABLE_CURVE,
@@ -25072,7 +25280,8 @@ function runMIP(mode) {
       const b = { ...(alloc.batt || {}) };
       const pool = vppPoolByRegion();
       Object.entries(pool).forEach(([r, mw]) => {
-        b[r] = (b[r] || 0) + mw * (state.vppBattPerGeyserKW ?? 0.35);
+        // Off with the virtual power plant as a build option (vppBuildOn; V5, message 625): geysers stay, batteries do not.
+        if (!((state.vppBuildOn ?? FIXED.vppBuildOn) | 0)) b[r] = (b[r] || 0) + mw * (state.vppBattPerGeyserKW ?? 0.35);
       });
       return b;
     })(),
