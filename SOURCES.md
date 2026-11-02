@@ -1831,9 +1831,13 @@ page, PDF page = printed + 2; figures Eskom's, the analysis ours). Read 21 Oct 2
   OCGTs 811 / 2,176 / 3,634; hydro 2,416 / 710 / 1,448; IPPs 19,596 / 19,365 / 20,183; imports 4,090 / 7,570 / 9,150.
 - Coal on the validation panel (user, 21 Oct 2026, message 303 (a); build 2026-10-21l): the coal row compares the model with
   170.4 TWh, labelled calendar 2025 coal sent-out energy, from Eskom data, the analysis ours (ESKOM_2025_COAL_TWH: our sum of
-  Eskom's hourly data, ESK19679, one annual total). It is not the report's 179.4 TWh (179,426 GWh, p.7): that is coal-fired
-  production in FY2025 (April 2024 to March 2025), a different period, and generation rather than sent-out energy (station
-  own use not deducted). The two are not reconciled here; the panel quotes only the 170.4 TWh.
+  Eskom's hourly data, ESK19679, one annual total). It is not the report's 179.4 TWh (179,426 GWh, p.7), which is FY2025 (April
+  2024 to March 2025), a different period. Both are sent out: the report's ten-year statistics (p.70) list coal-fired stations,
+  165,431 GWh in FY2026 and 179,426 in FY2025, under 'Electricity output - Power sent out by Eskom stations' (184,966 GWh in FY2026),
+  and the report publishes no production or own-use figure for coal; p.56's '7.8% decline in production' uses the word loosely for
+  the same series (corrected 2 Nov 2026, message 656 (a): this note had called the p.7 figure production, station own use not
+  deducted). So FIXED.costCoal (R91.5bn over 165,431 GWh sent out, R553/MWh) and COAL_CO2_PER_MWH_FY26 (1.108 t/MWh) stand on sent
+  out, as the engine counts coal. The panel quotes only the 170.4 TWh.
 - OCGTs (p.20): Eskom and IPP-owned OCGTs 1,079 GWh (FY2025 2,838) at load factors of 3.9% (Eskom) and 3.0% (IPP); IPP OCGT
   production 268 GWh at R2,144m (FY2025 662 GWh, R4,374m; FY2024 1,509 GWh, R10,054m); Eskom budgets a 3% load factor for both its own and
   the IPP OCGTs from FY2027, rising to 5.5% in FY2030. The two IPP OCGTs are 1,005 MW (p.23,
@@ -1871,6 +1875,19 @@ of international purchases R897 and R866/MWh, p.56 only (p.7 carries the volume,
 operating and capacity charges; IPP OCGT output 268 GWh, p.20. The must-run at 268 GWh (null_c5f_ad268, RESULTS 's_eskom26') is a
 single-year choice: Avon and Dedisa ran 1,509, 662 and 268 GWh in FY2024-26, a falling series, and 268 is its lowest year.
 s_eskom26's results are in RESULTS ('s_eskom26'), with the levy (about R41/MWh, FY2026) and hydro years (FY2023-26) beside them.
+
+Coal cost basis, the levy excluded (user, 2 Nov 2026, message 653 (c)): the model's coal fuel cost, R553/MWh (FIXED.costCoal =
+ESKOM_FY26.coalCostRbn R91.5bn over coal-fired sent out 165,431 GWh), sits under Eskom's published coal unit cost of R591/MWh (p.56,
+'Unit cost, R/MWh': coal 591, 2025 546) by the environmental levy alone: p.56 gives 'coal and other generation' R91.5bn as 'excluding
+environmental levies' (+0.5% on R91.0bn) and the levies as a separate slice; the annual financial statements give the levy as R6,826m
+(note 47, p.111; 2025 R7,273m); shared over non-renewable sent out (coal 165,431, nuclear 11,618, OCGT 811 GWh), coal's part is
+R6.35bn, and (91.5 + 6.35) / 165.431 = R591.5/MWh (2025: R545 against the published 546). The levy stays out of the model's coal
+cost because it was repealed from 1 Jan 2026 and folded into the carbon tax, which the model charges (the generation levy replaced by
+the carbon tax, with a floor on a generator's liability of R0.035/kWh after the renewable-premium deduction: s6(2) as substituted by
+the Taxation Laws Amendment Act 5 of 2026; the carbon path entry above). Charging both would count it twice (user, 2 Nov 2026,
+message 656 (b)). The levy's effective rate in FY2026, R6,826m over the non-renewable energy sent out above, about 3.84c/kWh against
+the statutory 3.5c, is 3.5c on a base about 10% larger, consistent with the levy being charged on total production including the
+stations' own use (our inference; message 657 (b)). Eskom credited; the arithmetic ours.
 
 ## Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)
 
@@ -2017,7 +2034,65 @@ weekly System Status report, 2026 Week 42 (12-18 October). The arithmetic is our
 - The model today: enrolled geysers bring batteries at 0.35 kW per geyser kW, 4 hours, with no enablement, programme or
   participant cost (the VPP slider's note says so from build 22e). Participant bill savings and payments are transfers, for the
   retail panels, not system cost.
+- The cost basis (user, 2 Nov 2026, message 645, replacing 631 (c)'s participant cost as the central; build 2026-11-02v,
+  FIXED.vppCostCase): system cost is a whole-economy view, and the household battery's capital is already counted (btmCapexRkWh, in
+  newCapexR and btmCapexR), so the central counts the resource cost only, as Brattle's system perspective does (Technical Appendix,
+  Table 4 and its system against societal perspectives; household devices excluded as already owned): the non-incentive cost, $140
+  per participant a year over 7.5 kW = $18.7/kW-yr in 2022 dollars, x US CPI-U January 2026 over the 2022 average (325.252 /
+  292.655) = $20.7, about R342/kW-yr of enrolled power (E / 2.5 h) at R16.50/US$; plus the cells' wear at the model's lithium
+  degradation cost, battCycleCostR R165/MWh (FIXED; its derivation beside it in index.html: replacement pack $130/kWh at R16.21/US$
+  over 8,000 cycles at 80% depth = R329/MWh, the cycling half of it marginal; range about R100-R250), charged only on each day's
+  incremental cycling (message 647, build 2026-11-02w): the enrolled batteries' discharge above what the same batteries would have
+  discharged that day on the passive profile; passive cycling carries no wear, so enrolment is not charged for cycling the owner would
+  have done anyway. The same rule in the build LP (vpx_<y>_<d> and row vpxr_) and the engine's cost (the enrolled share of the
+  lithium tier's discharge, pro rata by usable energy, day by day against the passive profile). The $500 incentive is a transfer from the grid to the household, so it is not a system cost. Willingness to join stays in
+  the enrolment cap (20% of the cycling stock, 50% high) and the 25% owner reserve. Sensitivity 'participant': $500 + $140 = about
+  $94.8, R1,565/kW-yr, with the wear inside the incentive (the LP's own lpBattDischargeCostR R20/MWh only). Geyser control keeps
+  R2,000/kW-yr: the controller and its service are resource costs. Known limitation: the resource basis assumes households join at
+  the cap without being paid more than the programme's own cost would justify; the incentive needed to reach 20% in South Africa is
+  not known (below).
+- No South African programme publishes its costs (user, 2 Nov 2026, message 644): Plentify-Deye (the 2.7 GWh pool; participant terms
+  undisclosed); Eskom's demand response pilot of 2023 (an energy payment per verified MWh, rate unpublished); Cape Town's Power
+  Heroes, run through the Ontec Karebo joint venture (terms private); NERSA has no regulatory category for VPPs (Oxpeckers, published
+  in Business Day, 26 Jul 2026). So the participant cost stays Brattle's, escalated, and the VPP is reported as its coordination
+  gain against its coordination cost, with the break-even programme cost (message 647: enrolment adds no new battery, so not against
+  utility lithium; RESULTS 'VPP coordination gain against coordination cost').
 
+## Geyser control: inputs (message 635)
+
+Inputs for geyser control as a VPP build option (user, 2 Nov 2026, message 635; HANDOVER 'Geyser control (and pool pumps) as a VPP
+build option: design', G1-G8), as given; each is one named constant or FIXED key in index.html (GEYSER_CTL, gy*).
+- Electric geysers: 5.2 million in 2023 rising to 6.4 million in 2033, linear between (Yen, Nixon, de la Rue du Can, Covary, Lutz,
+  Dekenah, 'Residential Water Heating DSM - South Africa, Executive Summary', LBNL/Wits, May 2024, p.2); range 4.5-7 million. Before
+  2023 and after 2033 the end values are held (our choice, conservative).
+- Enrolment cap: 30% of geysers (Brattle, Real Reliability, Technical Appendix, 2023, Table 1, p.10; the LBNL/Wits scenario); range
+  10-55% (Ausgrid hot water load control trials, Aug 2016, about 56% on controlled load).
+- Gross peak reduction per enrolled geyser: 0.4 kW central (message 638 (a), replacing 0.5), range 0.3-0.9 (Plentify HotBot trial,
+  up to 0.43 kW measured, UCT M&V body, Business Day 10 Dec 2023; Brattle 0.27-0.51 kW). The model computes the comeback after the
+  shift itself.
+- Rotation, the cautious sensitivity (message 638 (a); gyMode 'rotation', central 'hold'): LBNL/Wits Executive Summary (May 2024),
+  Tables ES 2-3, CSwitch-2033: a quarter of the 30% enrolled geysers switched off for one hour each, in rotation over 17:00-21:00
+  (about 7.5% of all geysers off at a time): -157 MW in winter, -24 W ADMD across 6.4 million geysers. In the model a window hour's
+  reduction is a quarter of the enrolled MW, returned in the next hour (each geyser's one hour off; message 641). Under 'hold'
+  each hour's reduction returns spread evenly over the following gyDeferH hours (a staggered controller, message 641).
+- Deferral window: 4 hours, range 2-6 (LBNL/Wits Tables ES 2-3, 17:00-21:00 at 99% comfort; Ausgrid 2016).
+- Extra loss from shifting: 0% central (LBNL/Wits Table ES 3: controlled switching slightly reduced annual energy); 6% a sensitivity
+  (the existing drShiftLossPct).
+- Cost: R2,000 per kW-yr of gross reduction, range R1,000-4,500 (HotBot R5,399-6,399 including installation and 5 years' service,
+  Investec/Plentify FAQ, Jun-Jul 2023; Brattle; Cadmus for BPA 2018, US$72-122/kW-yr); our derivation.
+- Geyser shape: the model has no hourly geyser load profile, so the control windows stand in for it, share 1 inside each: 06:00-09:00
+  and 17:00-21:00, the hours LBNL/Wits's controlled switches are off (Table ES 2; message 638 (a), which sources the morning window).
+- Pool pumps: about 700,000 (Covary and Gotz, bigee.net, Jul 2015); no source for their load at the peak, so they are left out
+  (a limitation, G8).
+- Benchmark, not an input (message 639): NESO's Demand Flexibility Service, winter 2024/25 (27 Nov 2024 - 28 Mar 2025): nearly 2
+  million households and businesses registered, 44 events, 3,917.7 MWh reduced or shifted (3,759 MWh in 2023/24), 5,421 MWh of bids
+  accepted at GBP 1,233,311, GBP 943,983 paid out, about GBP 174/MWh paid (our division: 943,983 / 5,421). NESO news release
+  'Nearly 2 million households and businesses registered for Demand Flexibility Service (DFS) last winter' (2025). DFS is
+  behaviour-based and paid per MWh; the geyser option is device-based and paid per kW-yr.
+- LBNL/Wits's 157 MW against the model (messages 635 and 638 (a)): the gap is one of design, not calibration. Their 157 MW is a
+  rotation, a quarter of the enrolled geysers off for an hour each (about 7.5% of all geysers at a time, -24 W ADMD); the model's
+  central 'hold' takes all enrolled geysers off for up to 4 hours. The comparison is made on the system's evening net peak (the
+  grid's evening maximum after rooftop and storage, against the stock alone), with gyMode 'rotation' for theirs.
 ## Coal flexibility benchmarks for UC_FLEET (user, 22 Oct 2026, messages 336 (b), 341 (c), 343 (a) and 344 (a); recorded, no model change)
 
 What other fleets show or what the literature measures, beside the model's UC_FLEET (minimum stable 0.65 for 15 groups and 0.50, our
@@ -2172,6 +2247,21 @@ as real: its costs are in constant January 2024 rands). Capital charges and inte
 real pre-tax cost of capital (bldCoc). The central is the cost of capital for state-backed procurement (REIPPPP, BESIPPPP), the only
 South African bid evidence.
 
+Closed REIPPPP projects (user, 2 Nov 2026, messages 631 (g), 632 (b) and 634 (a)): from build 2026-11-02p the central for utility
+solar and onshore wind is 6.0% real, the same back-solve on the BW5 and BW6 projects that reached commercial or financial close (BW5
+closed solar 6.10%, BW6 closed 6.00%, MW-weighted 6.05%, against 5.65% on all BW6 bids); all bids' 5.5% becomes the 'allbids'
+sensitivity; the blended case adds the private-offtake gap on top as before. Tariffs (Fully Indexed Price at each window's base date)
+from search extracts of the DMRE media statements of 28 Oct 2021 and 8 Dec 2022, the DBSA and SAWEA BW5 preferred-bidder lists, NERSA's
+licence approvals as reported by SolarQuarter (7 Jul 2023), and EDF, Scatec, Juwi, Red Rocket and IPP Office close statements; no source
+page could be opened from the session, so each figure is to be checked against the DMRE, DBSA or NERSA documents before the pack cites
+it: BW5 closed wind Phezukomoya and San Kraal (140 MW each, R564.45/MWh), Coleskop (140, R601.17), Brandvalley (140, R496.90),
+Rietkloof (140, R502.70), Wolf (84, R617.70): 784 MW at R553.62 MW-weighted, all BW5 wind bids R495.22; BW5 closed solar Grootfontein
+PV1-3 (3 x 75 MW, R484.60), Graspan (75, R470.00), Grootspruit (75, R476.50): 375 MW at R480.06, all BW5 solar bids R428.79 (the
+cheapest, R374.79, did not close); BW6 closed solar Virginia (240 MW, R486.50) and Doornhoek (120 MW, R540.00): R504.33, all BW6 bids
+R490.48. Tariffs as bid, not as adjusted at close (BW5 adjusted at close for exchange and interest rates). Excluded: BW7's Middlepunt
+(240 MW, R458/MWh in press at its financial close, 14 Apr 2026), which would imply 3.4%: one project, and its price base (taken here as
+January 2024) is unconfirmed. Results: RESULTS 'Cost of capital on closed REIPPPP projects only'.
+
 Central rates and their basis (message 469 as amended):
 - Utility solar 5.5%: the rate at which BW6's compliant tracker bid capex (R15,715/kW, IPP Office REIPPPP historical data note,
   7 Nov 2025, January 2024 terms; R16,786 in 2026) with BW6's fixed O&M reproduces BW6's average tariff (R490.48/MWh, base 1 April
@@ -2323,7 +2413,9 @@ South African reference point (the advisor's note): Komati, 1.3 s.
 
 Largest credible loss by year (user, message 578 (b); rule 366, conservative, our assumption, stated as such): 2,160 MW, three 720 MW
 units (NTCSA ASTR, section 3.4.2), while any coal station with three or more such units stands; after that, the largest single unit
-standing: a Koeberg unit, about 930 MW sent out, unless a larger new unit is built.
+standing: a Koeberg unit, 940 MW (both units rerated to 940 MW in March 2026: Eskom performance report FY2026, p.23, under 'c6 inputs'
+above; the model's FIXED.nuclearMW 1,880 over KOEBERG_UNITS 2), unless a larger new unit is built. Corrected 2 Nov 2026 (message
+631 (f)): this line said 'about 930 MW sent out', with no source.
 
 ## System strength, minimum version: the remaining inputs (user, 1 Nov 2026, messages 604 (b) and 606; TODO 14lo, 14lt)
 
@@ -2332,6 +2424,12 @@ them, not read in the repository unless stated) and the user's decisions:
 - Requirement: 50 x the largest credible loss / (2 x RoCoF), RoCoF 1 Hz/s central (0.5 Hz/s and a flat 40 GW.s as sensitivities);
   54 GW.s at 2,160 MW (Stellenbosch CRSES, Insights into inertia management, Jul 2025, gives the same 54 GW.s at 1 Hz/s). South Africa
   sets no RoCoF limit (NTCSA ASTR 2026/27-2030/31 sets none): 1 Hz/s is borrowed from Ireland (EirGrid/SONI) and AEMO, stated.
+- The user's review (2 Nov 2026, message 631 (a)): the requirement adds the inertia of the units lost, as AEMO's methodology does
+  (AEMO, Inertia Requirements Methodology, v1.0, 29 Jun 2018, s.11.2.2, p.20): 50 x L / (2 x RoCoF) + H x MVA of the tripped units.
+  Under the three-unit rule 3 x 3.7 s x 800 MVA (720 MW / 0.9) = 8.88 GW.s, so 62.88 GW.s at 1 Hz/s; with a Koeberg unit the largest,
+  4.1 s x 940 / 0.9 MVA = 4.28 GW.s, 27.8 GW.s in all. RoCoF 1.5 Hz/s a further sensitivity: South Africa's renewable grid code
+  withstand (Stellenbosch CRSES, 11 Jul 2025), 44.88 GW.s under the three-unit rule. As reported by the user; not read in the
+  repository.
 - TDP 2024 Rev2 synchronous condensers, committed: 5,850 MVAr in 2025-29 (Gromis, Aggeneis, Ferrum, Gamma, Koruson, Grassridge, Vuyani)
   and 900 MVAr in 2030-34 (pp. 8, 51, 53-54); counted from 2029 and 2034, the end of each window (conservative). No cost given.
 - Condenser inertia: H = 1.3 s on the machine's MVA (Komati's converted 139 MVA machines; Tomlinson et al., CIGRE Science & Engineering
@@ -2349,6 +2447,12 @@ them, not read in the repository unless stated) and the user's decisions:
   fleet's H on the user's constants (the engine's existing basis: 0.5 x (0.70 coal + 0.12 nuclear + 0.10 CCGT + 0.08 hydro)); this
   central is cautious. Sensitivities 1 s and 11 s; 11 s from ARENA, Hornsdale Power Reserve Upgrade, summary report (15 Dec 2023, p.16):
   about 2,070 MW.s on 150 MW, effective H 11.02 s (as reported by the user; not read in the repository).
+  Replaced by the user's review (2 Nov 2026, message 631 (b)), build 2026-11-02n: central 11 s on the headroom's MVA (ARENA, as above,
+  pp.12, 16; SS_GFM_H_HPR); 1.891 s, the derivation above, the cautious sensitivity (ssGfmH 'thermal'). AEMO, 'Quantifying synthetic
+  inertia from grid-forming BESS' (Sep 2024), cautions against treating synthetic inertia as a direct replacement for synchronous
+  inertia; the engine reports each year's synchronous-only minimum (no grid-forming) beside the floor. Both as reported by the user;
+  not read in the repository. Open: ARENA's 11.02 s is on the plant's own MVA (2,070 / 11.02 = about 188 MVA for 150 MW); the model
+  takes MVA = MW / 0.9.
 - Fault level, a sensitivity only: AEMO ISP 2024 Appendix 7, p.21, system strength remediation up to A$137k per MW of new inverter
   capacity (upper bound), and half of it, on new wind, solar and batteries. AUD/ZAR: South African Reserve Bank, Selected historical
   rates, series 'Australia: Dollar per Rand', 0.0855 on 2026-10-30 (the latest value; read on the SARB page by the user, 1 Nov 2026,
@@ -2393,3 +2497,47 @@ The model's cases (user, message 584 (a); replacing 582 (a)'s central and 583 (a
   cycles the energy above an owner reserve of 25% of capacity; enrolled VPP batteries come from the cycling stock and use the energy
   above the same reserve. Design: HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum version' (claude/btm-vpp-min).
 TODO 14lu (full version, after the note) replaces the estimate with a sourced stock and growth path.
+
+## Coal cost paths and coal unit commissioning years (user, 2 Nov 2026, messages 651 and 653; build 2026-11-02x)
+
+- Coal fuel, c7's central +3.0% a year real from 2026 (FIXED.coalFuelEscPct, set by the run, COAL_FUEL_ESC=3): Eskom's coal cost per
+  tonne burnt, R514 (FY2017) to R1,013 (FY2026), 7.8% a year nominal, about 3.0% real (RESULTS 'Eskom's coal cost FY2017-FY2026, price
+  against volume'; indicative, the cost definitions may differ across years). Sensitivities: flat (0%) and +5% (the senior contact's
+  figure: Eskom's coal cost per MWh about 10% a year nominal FY2017-FY2026 against CPI about 5%).
+- Labour and coal fixed O&M, c7's central +1.1% a year real (FIXED.coalFomEscPct, COAL_FOM_ESC=1.1): Eskom's cost per employee,
+  R557k (FY2015, BusinessTech, search extract) to R1.03m (FY2025, annual financial statements, restated), about 1.3% a year real;
+  1.1% the contact's figure. Applies to the base fixed cost (FIXED.fomCoal R1,160/kW-yr, MYPD6 operating cost), not to the sustaining
+  capital add-on (s_coalsustain, R500/kW-yr, flat).
+- Fixed O&M by unit age, a sensitivity (FIXED.coalFomAgeOn, COAL_AGE=1): the senior contact's curve, unsourced, recorded as their
+  assumption: +25% in a unit's first year tapering to none at ten years, flat from 10 to 30 years, +2% a year from 30 to 40, +5% a year
+  beyond 40 (linear on the base, ours), MW-weighted over the units standing in each year (UC_FLEET's closure years) and taken relative
+  to the 2026 fleet, so 2026 stays on the calibrated R1,160 (the factor is 0.96 in 2030, as the oldest stations close, 1.00 in 2035 and
+  1.04 in 2040).
+- Unit commissioning years (index.html COAL_UNIT_COD): for Arnot, Camden, Duvha, Grootvlei, Hendrina, Kelvin, Kendal, Kriel,
+  Lethabo, Majuba, Matimba, Matla and Tutuka, Global Energy Monitor's unit start years as read from the pages through Firecrawl on
+  12 Oct 2026 (the row 'Global Energy Monitor, Global Coal Plant Tracker' in the table at the top; COAL_UNIT_COD matches it for every
+  station listed there); Kelvin's two units 1962 and 1964, as that row gives them for our 160 MW (Phase B units 1962-1969; the
+  search-extract reading of 1969 and 1969 replaced, message 656 (c)). For Medupi, Kusile and Komati, not in that row: Creamer Media
+  and SAnews (Kusile, Medupi), africa-energy.com (Medupi unit 4) and TimesLIVE 31 Oct 2022 (Komati), read as search extracts on
+  2 Nov 2026; to verify on gem.wiki through Firecrawl (credits out on 2 Nov; they refresh 3 Nov) before the age sensitivity runs. Choices, ours: the original year for units returned to service
+  (Camden 2005-08, Grootvlei 2007-11, Komati 2009, three Arnot units 1997-98) and for Medupi unit 4's 2025 repair; where the model's
+  unit groups are not published (Camden's 190 MW units, Hendrina's 169 MW units, Medupi's 717 MW unit, Grootvlei's three operating
+  units, Kelvin's two), units mapped in order. Conflicts in the extracts (Camden U1 1967 or 1968, Matla U1 1979 or 1980, Arnot U4
+  1973 or 1974, Hendrina U10 1976 or 1977, Medupi U3 2018 or 2019) take Global Energy Monitor's year.
+- Minimum Emissions Standards in c7's central: Eskom's recommended plan, R77bn capital plus R2.1bn a year (COMPLY=compromise, the
+  existing basis: Eskom to the NCOP, 10 Jun 2025, on Medupi, Majuba, Matimba, Kendal, Lethabo and Tutuka); full compliance, R257bn plus
+  R6.3bn a year (COMPLY=full), a sensitivity.
+- Carbon on coal to 2030, c7's central (user decision, 2 Nov 2026, message 657 (a); FIXED.coalCarbonFloorOn, set by the run,
+  COAL_CARBON_FLOOR=1): the law's floor on a generator's liability, R0.035/kWh nominal after the renewable-premium deduction (s6(2) as
+  substituted by the Taxation Laws Amendment Act 5 of 2026), in 2026 rands at the model's deflator (3% a year): R35.0, 34.0, 33.0,
+  32.0 and 31.1 per MWh of coal output in 2026-2030; from 2031 the existing path, unchanged; coal only, gas and diesel unchanged.
+  Assumes Eskom's renewable-premium deduction takes its liability to the floor each year, not checked against Eskom's accounts. And the
+  floor is charged per kWh of coal sent out, the engine's coal; if, like the environmental levy it replaced (FY2026: 3.84c per kWh sent
+  out, about 3.5c on total production including the stations' own use, our inference above), it falls on total production, c7
+  understates coal's carbon charge to 2030 by about 10% of the floor, about R0.5bn a year (user, 2 Nov 2026, message 658 (a); no model
+  change before c7). The
+  charge it replaces, the rates in law less the tax-free allowances only (R46 to R61/t, R51 to R68/MWh at 1.108 t/MWh), is the
+  sensitivity 'carbongross' (COAL_CARBON_FLOOR=0). After 2030: the 2030 rate and allowance share held flat in real terms (our
+  assumption: no rate or allowance after 2030 is in law); Treasury's stated path (allowances to none by 2031, then to US$120/t by
+  2050) a sensitivity (CARBON_PATH=treasury, from 2026, as the senior contact ran it). The environmental levy on non-renewable
+  generation stays excluded as a tax (Eskom performance report FY2026 entry above).

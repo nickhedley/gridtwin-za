@@ -819,6 +819,13 @@ on it. Before c7: the one-year 2035 test with the build LP's own coal commitment
 c7 uses the commitment variable if it solves in reasonable time. (c) The engine's lift: 'prev' (grid-forming batteries' spare power,
 pumped storage and gas from the hour before) is c7's central ssLiftForecast, 'mustspin' the cautious sensitivity; coal lifted (TWh)
 and hours short reported under both for 2035 and 2040, on the one-year build and the c6e rebuild (pathcheck.js SS_FC).
+The user's review (2 Nov 2026, message 631), system strength parts, build 2026-11-02n on claude/ss-review: (a) requirement + the
+inertia of the units lost (62.88 GW.s at 1 Hz/s), 1.5 Hz/s a RoCoF sensitivity; (b) grid-forming H central 11 s, 'thermal' 1.891 s
+the cautious sensitivity, the synchronous-only minimum (ss.syncMinGWs) in the engine, pathcheck.js and ss_engine_check.js; (f) lambda
+wording (committed = output x lambda), Koeberg 940 MW (sourced; SOURCES' 'about 930 MW' corrected), CSP credited only in hours it
+runs (engine and LP). RESULTS 'System strength review (message 631)'. Open: the suite and stored panels on this build; c6e rebuilt
+on 'inertia' with the new requirement and H (the c7 runs). The 9 hours short after the lift on the one-year 2035 build at 11 s: two
+look-ahead charge paths now capped at the held headroom, none short (RESULTS, same entry).
 
 14mc. Coal daily swing, after the note (user, 2 Nov 2026, message 614; message 611, RESULTS 'Daily coal swing and the evening ramp').
 Over January-August 2026 the model's daily coal swing is about 10% below Eskom's (3,330 against 3,689 MW), and pumped storage carries
@@ -904,6 +911,53 @@ response traded against inertia (CSIR's 40 GW.s case); (3) condenser sizing by l
 own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Ireland and AEMO; (6) the check against CSIR 2030 (14lo
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
+
+14mm. The coal carbon floor's base, after the note (user, 2 Nov 2026, messages 658 (a) and 659): charge the floor (s6(2), R0.035/kWh
+after the renewable-premium deduction) on the levy's base rather than per kWh of coal sent out: Eskom's FY2026 environmental levy came
+to 3.84c per kWh sent out (R6.35bn over 165,431 GWh), about 3.5c on total production including own use; about R0.5bn a year more to
+2030. The limitation line stays in SOURCES and the pack, since c7's figures carry it until the fix.
+
+14ml. Sodium-ion storage, after the note, queued behind c7 (user, 2 Nov 2026, messages 651 (e) and 655; our own sources, not the
+senior contact's settings). A storage class 'sodium' built like lithium (the same duration choice, wear and power share), no central,
+two named sensitivities: 'natender', capex = lithium's + CNY 0.517/Wh (Renqiu Zhihong, Hebei, 4-hour tender, 15 Sep 2026: sodium
+1.035 against LFP 0.518 CNY/Wh) at the model's FX, flat in real terms, with lithium's life and round trip; 'namaker', capex = lithium's
+from 2027 (CATL's stated system parity), 25-year life (CATL 25-30 years), lithium's round trip. Report the sodium each case builds and
+the change in cost and CO2 for least-cost, Deep and Fossil-free, engine-checked. Not modelled, stated in the pack if used: freight
+and import duty on the gap, heat tolerance. Inputs and links: the project document claude/sodium-ion-inputs-2026-11-02.md, each to
+SOURCES.md: docs/sodium-ion-inputs-2026-11-02.md (copied from the Drive reference folder, message 658 (b)); its sources go to
+SOURCES.md when the option is built. Its own figures: the gap about CNY 0.5/Wh, about R1,200/kWh at R2.3 per yuan, one 40 MWh
+sodium bid from one supplier; no system round-trip published (Hithium's system at least 88% over 24 hours).
+
+14mk. Presets reset the c7 settings keys, after the note (user, 2 Nov 2026, message 648). applyState does not reset ssMode,
+bldCocCase, btmStockGWh, btmBackupPath, btmReservePct, vppBuildOn, vppEnrolCapPct, vppCostCase, vppCostUsdKwYr, gyBuildOn, gyMode and
+the other gy* keys, ssLiftForecast or the MTSAO options (coalEafByYear, avonDedisaRemoveAfter, reipppRetireByYear), so a second
+preset applied after a setting carries it over (found in the 642 LP-key test, where one case's settings leaked into the next).
+No page control sets any of them today (bldCocCase only through the harness's bldApplyCocCase), so visitors are not exposed; harness
+scripts and any future control are. Fix: add them to PRESET_NON_SLIDER_KEYS (reset to FIXED unless the preset sets them), after
+checking every harness script that calls applyState (22) sets its keys after the preset, not before; plus a validate_links-style
+check that a preset click after each key is moved and a fresh load of the same preset compute the same. Not trivial because of
+that audit; c7's runs set every key after applyState (pathway_perfail.js, pathcheck.js), so c7 is not affected.
+
+14mj. Geyser pre-heating, after the note (user, 2 Nov 2026, message 641): shift enrolled geysers' heating earlier into the solar
+afternoon within tank and comfort limits, beside the deferral option. Source: LBNL/Wits Executive Summary (May 2024), PVDay scenario:
+-2,242 MW winter, but comfort 76% in winter against 99% for controlled switching; report the comfort trade-off with the result.
+
+14mi. Planning-reserve peak (user, 2 Nov 2026, message 638 (c)): the build LP's res_ rows take the annual peak from demand with rooftop
+added back (PROFILES.demand), which peaks at about 10:00, so evening-only resources (geyser control, enrolled batteries' evening
+discharge) get no planning credit there. A known limit for any run with a planning margin (bldPlanMarginPct > 0); c7 keeps the margin
+at 0. Fix (after the note): take res_'s peak from net demand after rooftop, in the hours the evening peak falls.
+
+14mh. Geyser control (and pool pumps) as a VPP build option, before c7 (user, 2 Nov 2026, message 633): design in HANDOVER 'Geyser
+control (and pool pumps) as a VPP build option'; the advisor sources geyser count, diversified peak load, controller cost and
+participation. Limitation recorded: EV managed charging stays out until EV demand is in the model.
+
+14mg. Behind-the-meter batteries and VPPs, minimum version built (user, 2 Nov 2026, messages 621 (b), 622-629; RESULTS 'Behind-the-meter
+batteries and the VPP option, minimum version'). Open: (1) enrolled batteries under 622's rule are never chosen; the user to decide
+whether they keep the daily cycle and are called for events; (2) the regional LP and the stress-target demand do not see the options;
+(3) c7 launches only after the advisor's best-practice review of the system strength, cost of capital and BTM/VPP designs (message 629). (4) Message 645 (build 2026-11-02v): the VPP's central cost is the resource cost (R342/kW-yr of power plus R165/MWh
+wear on incremental cycling, 647), the participant cost (R1,565) the sensitivity with its break-even (644); c7 runs the VPP and geyser options on in the
+central, Deep and Fossil-free runs. Known limitations line: the resource basis assumes 20% of the cycling stock joins without an
+incentive above the programme's cost; no South African programme publishes what it pays (SOURCES).
 
 14lu. Behind-the-meter batteries and VPPs, full version after the note (user, 31 Oct 2026, message 574 (a) 2). The minimum version
 for the note is 14lq (1)-(2) narrowed by 573 (a) 3: a passive stock on a self-consumption profile as an input path (1, 3 and 5 GWh

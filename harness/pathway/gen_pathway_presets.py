@@ -103,7 +103,11 @@ def block(cfg):
     pg = page_defaults()
     if P.get('importsEndYear') is not None and P['importsEndYear'] != pg['importsEndYear']:
         raise SystemExit(cfg['name'] + f": the run's imports end year {P['importsEndYear']} is not the page's {pg['importsEndYear']}")
-    if P.get('cocCase') is not None and P['cocCase'] != pg['bldCocCase']:
+    # The cases were renamed when the closed-project base came in (messages 634 and 636, build 2026-11-02r): the old 'central'
+    # (solar and wind 5.5%) is today's 'allbids', the page default until c7. A run recorded under the old name matches only if its
+    # recorded rates are that base's (cocRates pv and wind 0.055); anything else still stops.
+    legacy = P.get('cocCase') == 'central' and pg['bldCocCase'] == 'allbids' and (P.get('cocRates') or {}).get('pv') == 0.055 and (P.get('cocRates') or {}).get('wind') == 0.055
+    if P.get('cocCase') is not None and P['cocCase'] != pg['bldCocCase'] and not legacy:
         raise SystemExit(cfg['name'] + f": the run's cost-of-capital case {P['cocCase']} is not the page's {pg['bldCocCase']}")
     f = {'scenarioYear': Y,
          'newWindMW': cum('wind'), 'newPvMW': cum('pv'), 'newRooftopMW': cum('rooftop'), 'newBattMW': batt,

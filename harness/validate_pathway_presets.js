@@ -96,7 +96,7 @@ const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', pr
       .map(([k, v]) => `${k} page ${JSON.stringify(st(k))}, check ${JSON.stringify(v)}`);
     check(`${NAME}: the page state is the engine check's ${Y} state`, off.length === 0, off.join('; '));
     check(`${NAME}: the run recorded no setting the preset cannot carry`,
-          (P.importsEndYear ?? 0) === +w.eval('FIXED.importsEndYear') && (P.cocCase ?? w.eval('FIXED.bldCocCase')) === w.eval('FIXED.bldCocCase') && !P.gasFinPremium && !P.comply && P.gas.fuelRFlat == null);   // the cost-of-capital case from build 2026-10-28a, as the generator's guard
+          (P.importsEndYear ?? 0) === +w.eval('FIXED.importsEndYear') && ((P.cocCase ?? w.eval('FIXED.bldCocCase')) === w.eval('FIXED.bldCocCase') || (P.cocCase === 'central' && w.eval('FIXED.bldCocCase') === 'allbids' && (P.cocRates || {}).pv === 0.055 && (P.cocRates || {}).wind === 0.055)) && !P.gasFinPremium && !P.comply && P.gas.fuelRFlat == null);   // the cost-of-capital case from build 2026-10-28a, as the generator's guard; a run recorded as 'central' before the closed-project base (build 2026-11-02r) is today's 'allbids' when its recorded solar and wind rates are 5.5%
     // The page's coal settings are the run's (PR C, build 2026-10-24a): a run recorded before PR C carries none and ran on COAL_PRE_C.
     const coalOff = JSON.parse(w.eval(`(function(){ const R = ${JSON.stringify(P.coal || null)} || COAL_PRE_C;
       return JSON.stringify(Object.keys(COAL_PRE_C).filter(k => JSON.stringify(state[k] ?? FIXED[k]) !== JSON.stringify(R[k])).map(k => k + ' page ' + JSON.stringify(state[k] ?? FIXED[k]) + ', run ' + JSON.stringify(R[k]))); })()`));

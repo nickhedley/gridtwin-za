@@ -41,8 +41,10 @@ differ from the user's central values (coal 3.7, nuclear 4.1, hydro and pumped s
 
 1. Requirement each hour: 50 x L_y / (2 x RoCoF) GW.s, RoCoF 1 Hz/s central (sensitivities 0.5 Hz/s and a flat 40 GW.s). L_y is the
    largest credible loss standing in year y, from UC_FLEET: 2,160 MW while a station with three or more units of 720 MW or more stands
-   (Medupi and Kusile, 720 MW units, stand to 2040 in every plan with coal), else the largest unit standing (Koeberg, about 930 MW
-   sent out). So 54 GW.s in every year with coal, 23.25 GW.s in Fossil-free's 2040.
+   (Medupi and Kusile, 720 MW units, stand to 2040 in every plan with coal), else the largest unit standing (Koeberg, 940 MW, Eskom
+   performance report FY2026, p.23; was 'about 930 MW sent out', unsourced, corrected 2 Nov 2026, message 631 (f)). So 54 GW.s in every
+   year with coal, 23.5 GW.s in Fossil-free's 2040. From build 2026-11-02n the inertia of the units lost is added (message 631 (a)):
+   62.88 GW.s in every year with coal, 27.8 GW.s with Koeberg the largest unit.
 2. Supply, at the user's H on MVA = MW / 0.9, only while spinning: coal on committed capacity (ucAvail, not output: removes the 547 (b)
    lower-bound caveat); nuclear when available; hydro and CSP at output; pumped storage pumping or generating; CCGT and open cycle
    (gas or diesel) when running; condensers always (H 1.3 s on their MVA, Komati); grid-forming batteries limited each hour by unused
@@ -53,7 +55,7 @@ differ from the user's central values (coal 3.7, nuclear 4.1, hydro and pumped s
    p.36), counting toward inertia only (not fault level); condensers at Eskom's 2021 costs (Tomlinson et al., CIGRE S&E 33) escalated by
    CPI_APR21_TO_JAN26: conversions of retired coal units at R132m per 139 MVA machine (the first unit's R265m not modelled, the LP is
    linear), at most one per retired unit; new 400 MVAr machines at R700m. Life and fixed O&M: decision D4.
-5. The floor in the build LP: one row per representative hour and stress-window hour: coal (output / lambda_y, decision D1) +
+5. The floor in the build LP: one row per representative hour and stress-window hour: coal (committed = output x lambda_y, decision D1) +
    nuclear + hydro + pumped storage + gas + CSP + condensers + grid-forming >= requirement, with a slack priced high and reported.
    One requirement per year. The engine: the same floor each hour on the 12-year weather; when short, coal commitment is lifted where
    coal can be (decision D3); what remains is reported.
@@ -70,7 +72,7 @@ differ from the user's central values (coal 3.7, nuclear 4.1, hydro and pumped s
 10. Known limitations line (574 (b)): national, not by substation; no voltage control; RoCoF borrowed from Ireland and AEMO; condenser
    sizing not by location; no fast frequency response traded against inertia.
 
-Decided (user, 1 Nov 2026, messages 604 (b) and 606): D1 coal in the LP at output / lambda_y, lambda_y the engine's committed-to-output
+Decided (user, 1 Nov 2026, messages 604 (b) and 606): D1 coal in the LP on committed = output x lambda_y, lambda_y the engine's committed-to-output
 ratio in c6e's low-inertia hours (lower quartile), reported by year. D2 grid-forming effective H 1.9 s central (the engine's basis,
 cautious), sensitivities 1 s and 11 s (ARENA, Hornsdale upgrade, 15 Dec 2023, p.16). D3 the engine lifts coal commitment when short,
 as today's floor does, and reports the hours and MWh lifted. D4 condensers: 30-year life (GHD for ElectraNet, 2019, p.20) and 1% of
@@ -79,10 +81,17 @@ its date as a single constant (SARB 'Australia: Dollar per Rand' 0.0855 on 2026-
 after, the LP-key test with the switch on the old 6 GW floor, the one-year build test and the engine checks on c6e's states; then
 the c6e rebuild with the floor and the sensitivities. Target Wed 4 Nov.
 
+The user's review (2 Nov 2026, message 631), build 2026-11-02n, branch claude/ss-review: (a) the requirement adds the inertia of the
+units lost (AEMO, Inertia Requirements Methodology v1.0, 29 Jun 2018, s.11.2.2, p.20): 62.88 GW.s at 1 Hz/s while the three-unit rule
+applies; 1.5 Hz/s (South Africa's renewable grid code withstand, Stellenbosch CRSES, 11 Jul 2025) a RoCoF sensitivity beside 0.5.
+(b) D2 replaced: grid-forming H central 11 s on headroom MVA (ARENA, Hornsdale Power Reserve Upgrade summary, 15 Dec 2023, pp.12, 16),
+1.891 s ('thermal') the cautious sensitivity; AEMO (Sep 2024) cautions against direct replacement, so the engine reports each year's
+synchronous-only minimum (ss.syncMinGWs) beside the floor. (f) CSP credited only in hours it runs, in the engine and the build LP.
+
 ## System strength: the user's inputs (1 Nov 2026, message 578)
 
 Inertia constants: the user's central values with the full ranges of ERCOT's 2024 revision, Table 1 (messages 581 (a), 585 (a)), MVA = MW / 0.9; the largest credible loss rule (2,160 MW while a
-coal station with three or more 720 MW units stands, then the largest single unit, Koeberg about 930 MW), our assumption. Both in SOURCES
+coal station with three or more 720 MW units stands, then the largest single unit, Koeberg 940 MW), our assumption. Both in SOURCES
 ('System strength: inertia constants and the largest credible loss').
 
 ## Eskom terms: the hourly dispatch export keeps its demand column (31 Oct 2026; user, message 567 (a), cancelling 566 (c))
@@ -1722,3 +1731,221 @@ lines from live code cost a day the week before. Both are in RULES.md now.
 
 **Share before reporting.** Three times files were described as delivered when only the copy had
 run. The fix is mechanical: end the turn with the file, never write "above" in prose.
+
+## Behind-the-meter batteries and virtual power plants, minimum version: design (user, 2 Nov 2026, messages 621 (b) and 622-624; TODO 14lq (1)-(2), 14lu)
+
+Design for the user's decisions before anything is built; built and checked by Wed 4 Nov. Sources: SOURCES 'Behind-the-meter
+batteries: stock and growth' (the advisor's estimate, labelled ours; the modes and reserve, our assumptions) and 'Virtual power plants:
+costs to source'. Defaults off on the page (LP key and every page output unchanged) until c7 rebuilds the presets; c7's central sets them.
+
+The stock and its modes
+- P1. Stock S(y): 8 GWh in 2026 (about 6 GWh homes, 2 GWh businesses), +0.9 GWh a year; cases 4 and 14 GWh (growth scaled 4/8 and
+  14/8, 0.45 and 1.58 GWh a year; agreed, message 625). Power at 2.5 hours (3.2 GW in 2026); round trip 90% (14cd).
+- P2. Modes (message 624, replacing 623). Each battery is in one mode at a time:
+  backup-only: held full for load-shedding, not cycled, no effect on demand; share B(y) of the whole stock, 2026 stock included: 50% in
+  2026 falling linearly to 0% by 2030 (50, 37.5, 25, 12.5, 0%), 0 after; sensitivity: 50% throughout (load-shedding returns);
+  cycling: the self-consumption profile (P3) on the energy above an owner reserve of 25% of capacity; share 1 - B(y);
+  enrolled in a VPP (V1; message 637, replacing 630's rule and restoring 622's): enrolled batteries leave the self-consumption
+  profile and are coordinated storage, dispatched by the build LP and the engine like utility storage (AEMO separates passive and
+  coordinated consumer storage): usable energy 75% of capacity, power at 2.5 hours, round trip 90%, charging from any surplus or the
+  grid as other storage does, no event cap.
+  The 50% start, the glide path and the 25% reserve are our assumptions; no source found yet (SOURCES).
+- P3. The profile, fixed and the same in the engine and the build LP: each day the cycling stock charges from rooftop output, in
+  proportion to the day's rooftop profile, up to the smaller of its usable energy (75% of capacity) and half the day's rooftop output,
+  and discharges that energy x 0.90 evenly over 17:00-22:00, within its power. Applied to demand before dispatch, as rooftop is; no
+  forecast, no price response.
+- P4. Cost (message 625): household and business battery capital in btmCapexR, as rooftop is, at GreenCape's R5,000/kWh installed, on
+  the stock added after 2026.
+
+How each mode enters demand and the build (messages 622-624)
+- The 2026 base demand is Eskom's metered grid demand, so the 2026 stock, as it behaved in 2026, is already in it. With S0 = S(2026),
+  C(y) = (1 - B(y)) S(y) the cycling stock, C0 = C(2026) = 0.5 S0 and E(y) the enrolled energy (a build-LP variable):
+  backup-only, B(y) S(y): nothing (no demand, no build, no capacity credit; outages are not modelled at the customer);
+  cycling, not enrolled: the passive profile per GWh of usable energy x 0.75 x [C(y) - E(y) - C0] added to demand before dispatch, in
+  the engine and the build LP's balance rows (linear in E): only the change from 2026, that is the 2026 stock moving from backup to
+  cycling plus the stock added since, less what is enrolled; negative when enrolment exceeds that change, the enrolled batteries'
+  metered self-consumption then put back into demand before they are dispatched (messages 622 and 637);
+  enrolled, E: coordinated storage of usable energy 0.75 E and power E / 2.5 h at 90% (build LP: STORE 'vpp', variable vppp_<y> =
+  power, on the daily and chained state-of-charge rows lithium uses; engine: added to the lithium tier's MW and MWh, the tier's round
+  trip weighted by energy); credited in the planning reserve rows by the storage rule on its usable hours, bldStorageCredit(0.75 x
+  2.5 h) x power (about 0.47); cost V4 per kW of power.
+- Double-count check (messages 623 and 637). Every GWh of S(y) is in one place: B(y) S(y) + [C(y) - E(y)] + E(y) = S(y). Against 2026's
+  metered behaviour only [C(y) - E(y)] - C0 enters demand, so the 2026 stock is never added again. Within the cycling and enrolled
+  stock, 25% is held back and 75% used. The engine asserts the identities each year (and that the lithium tier carries E / 2.5 h of
+  enrolled power) and reports each term; the build LP carries them as linear terms in E.
+
+The virtual power plant (a build option)
+- V1. A build variable in the build LP, GWh of enrolled battery energy by year (E), linear build. Enrolment cap (message 625): 20% of
+  the cycling stock, Brattle's participation rate (Real Reliability, Technical Appendix, 5 May 2023, Tables 1-2: 20% of eligible
+  customers); high case 50%; in 2026 no more than the Plentify-Deye 2.7 GWh (energy-storage.news, 20 Jul 2026). No battery enrolment
+  rate is published: LBNL, '30 Proven Strategies to Increase VPP Enrollment' (Dec 2024), p.5, has over half of eligible customers only
+  for Xcel's air-conditioning control.
+- V2 and V3 (withdrawn, message 637): the delivered share of nameplate (CEC DSGS, 33.5%) and the event budget (15 events of 3 hours;
+  100 of 2 a sensitivity) applied to event-called batteries; coordinated storage has neither. The build LP's event rows (vppev_,
+  vppevs_, vppev1_), the engine's event dispatch, vppEvents, vppEventHours and BTM_STOCK.vppDeliveredShare are removed;
+  engineForecastShort stays for ssLiftForecast 'reservecoal'.
+- V4. Cost (message 631 (c), replacing US$42.85/kW-yr per kW delivered, Brattle's Table 4 net system cost of a mostly non-battery VPP,
+  which was also converted without escalation): Brattle's battery participant cost, $500 incentive plus $140 other costs per
+  participant a year over 7.5 kW of participant battery (Real Reliability, Technical Appendix, 3 May 2023, Tables 1, 3, 4; 2022
+  dollars) = $85.3/kW-yr, x US CPI-U January 2026 over the 2022 annual average (325.252 / 292.655, as the model escalates US costs) =
+  about $94.8/kW-yr, at R16.50/US$ about R1,564/kW-yr, per kW of enrolled power (E / 2.5 h). Replaced as the central by message
+  645 (build 2026-11-02v): the resource cost, $140 / 7.5 kW escalated = $20.7, about R342/kW-yr, plus battCycleCostR (R165/MWh) on
+  the enrolled batteries' incremental cycling only, each day's discharge above their passive profile's (647, build 2026-11-02w), the
+  incentive being a transfer and the household battery already counted; the participant cost is the
+  sensitivity (FIXED.vppCostCase 'resource' | 'participant'; pathway VPP_COST_CASE; VPP_COST_USD overrides for break-even searches).
+  In index.html: VPP_BATT_PARTICIPANT, VPP_COST_USD_KW_YR, vppCostUsd(), US_CPI_2022_TO_JAN26. SOURCES 'Virtual power plants: costs
+  to source'.
+- V5. The existing VPP slider (a 4 GW geyser pool x enrolment, with 0.35 kW of 4-hour batteries per geyser kW, no cost) stays for
+  geysers; with the build option on, its battery component is off, so the same batteries are not counted twice.
+
+Checks: the LP-key test (default unchanged; each option on changes only its own rows and columns); the engine's energy balance and
+the identities; with the stock on, the evening peak and firm build per GWh at 1, 3 and 5 GWh (14lq (1)'s first report); the presets
+unchanged at the default; the full suite before the PR.
+Decided: the 2026 stock not added again (622); the modes, glide path and reserve (624); P1's cases scale growth, P4 in btmCapexR, V1's
+20% cap (50% high), V5 (625); V4 Brattle's battery participant cost escalated to 2026 and one forecast function (631); enrolled
+batteries as coordinated storage, out of the passive profile, no event cap, credited by the storage rule (637, replacing 630's daily
+cycling with events and 631's event-length credit). V4's central the resource cost, the participant cost a sensitivity; in c7 the VPP
+and geyser options on in the central, Deep (no gas, 40 Mt) and Fossil-free runs (645).
+
+## Geyser control (and pool pumps) as a VPP build option: design (user, 2 Nov 2026, message 633)
+
+Updated by messages 635, 638 and 641 (RESULTS 'Enrolled home batteries as coordinated storage, and geyser control with a fixed staggered
+return'): the inputs are sourced (SOURCES 'Geyser control: inputs (message 635)'); the central gross reduction is 0.4 kW per enrolled
+geyser with the LBNL/Wits rotation as the cautious sensitivity; both windows are sourced; the return is one fixed staggered rule in
+both models (each hour's deferral returned evenly over the following deferral hours), replacing G3's band and G4's water-filling below;
+pool pumps are out (a limitation).
+
+Design for the user's decisions before anything is built; c7 waits for it with 631-632. The advisor is sourcing the inputs marked
+[advisor]; none is filled from memory. Default off (LP key and page outputs unchanged) until c7 sets it.
+
+What exists: the VPP slider (FIXED vppGeyserPoolMW 4,000 x vppEnrolPct, default 0) moves a fixed MW block of geyser load each day out
+of the six highest net-load hours into the twelve lowest (water-filled, 6% more returned than taken: drShiftLossPct), in the engine
+only, with no cost, no cap from device counts and no row in the build LP.
+
+G1. Size. Controllable diversified load at the evening peak, MW = devices x participation x diversified kW per device at peak:
+  geysers: electric geyser count [advisor], diversified kW per geyser at the winter evening peak [advisor]; pool pumps if the data
+  allow (count, kW, run hours [advisor]), else left out and stated. The enrolled MW is a build-LP variable gy_<y> (linear build),
+  capped by devices x a participation cap [advisor] (the best programmes' share, as V1 for batteries), and in 2026 by pilots in hand
+  (Plentify, Cape Town's Smart Geyser pilot) [advisor].
+G2. What a controlled geyser does: its heating is shifted, not removed. Within a day the shifted energy is returned in other hours,
+  with a standing-loss uplift (drShiftLossPct 6%, recorded, unsourced today; [advisor] to source or replace). Thermal storage in the
+  tank limits the shift: at most H_max hours of a geyser's heating deferred [advisor; about 4-6 h typical for a 150-200 l tank on
+  a standard element, to be sourced], and no unmet hot water (all deferred heating returned the same day, before the morning peak
+  where it would collide).
+G3. Shifting rule in the build LP (representative and stress days): per hour, geyser load reduction gs_h <= enrolled MW x the hour's
+  share of the geyser profile [advisor: the geyser load profile, or the existing pool shape]; returned load gr_h >= 0 in the other
+  hours; per day sum gr = (1 + loss) x sum gs; the deferral window: each hour's reduction returned within H_max hours (a band of
+  rows), so the LP cannot move the morning peak's heating to the afternoon beyond the tank's reach. Linear in gy_<y>.
+G4. Shifting rule in the engine: the existing water-filling heuristic, driven by the enrolled MW from the build (in place of the
+  slider's pool x share), with the same H_max window and the same loss; the engine and the LP shift by the same rule so the build is
+  checked on its own terms.
+G5. Event or shifting limits: geyser control is a daily shift, not an event, so no event budget; the limit is the deferral window
+  (G2) and the cap on the share of an hour's load that can be moved (today 45% of the hour, kept as a guard).
+G6. Cost: controller capital (per device, R [advisor]) annuitised over its life [advisor] at the household rate (as rooftop), plus
+  running cost (platform, communications, per device a year [advisor]), divided by diversified kW at peak = R per kW-yr; participant
+  payments are transfers, not system cost. Planning credit in the reserve rows at the enrolled MW x the share of the peak hour moved
+  (credited as demand reduction at the peak).
+G7. Double count (as 622): today's geyser load, controlled or not, is inside the 2026 metered demand. Only the shift enters: the
+  enrolled MW's reduction and return are net of 2026's controlled share, which is small (pilots; Eskom's ripple control largely
+  lapsed [advisor to confirm]); stated as an identity: demand after control = metered demand - shifted + returned, energy up by the
+  loss only. The VPP slider's geyser component is off when the build option is on (as V5 for batteries).
+G8. Limitations recorded: EV managed charging is out of scope until EV demand is in the model; pool pumps only if sourced; one
+  national pool, not regional.
+Checks: LP-key test (default unchanged; the option on changes only its own rows and columns); the engine's energy balance (energy up
+by the loss only); the evening peak cut and morning return per GW enrolled; the identity each year; a one-year build test (2030 and
+2035) with enrolment by year and cost against the stock alone; suite before the PR.
+For the user: G1's participation cap and pool pumps; G2's deferral window; G3/G4 one rule in both; G6's cost basis once sourced.
+
+## c7 launch plan: ready to start when claude/c7-inputs merges (user, 2 Nov 2026, message 649 (a); revised for the advisor's review, message 652)
+
+Starts on the merged main's commit, from a new branch (claude/c7-runs), once Nick has reviewed this plan and the advisor's review
+(629) is done. Nothing else heavy runs beside it. Disk: at least 5 GB free before each piece (message 646); each run's LP cache is
+deleted once its check is written (chain_c6e.sh's rule).
+
+Common settings, every c7 run: c6e's (env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=7200, NTCSA's 20 GWh standard), plus:
+- system strength: SS=inertia SS_FC=reservecoal (62.9 GW.s with the tripped units' inertia; grid-forming H 11 s; coal first in hours
+  forecast short);
+- cost of capital: COC=blended (messages 604, 634, 652 (a)): the closed-project base, solar and onshore wind 6.0%, plus the private
+  share x NAB's gap; lithium blended. Read back from the page on build 2026-11-02w (bldCoc, real pre-tax): solar 6.34%, onshore
+  wind 6.29%, lithium 6.88%, pumped storage 6.8%, gas 8.0%, network 7.1%; for the sensitivities, 'central' (unblended) solar and wind
+  6.0%, lithium 6.8%; 'allbids' 5.5%, 6.8%; 'blendedhigh' 6.9%, 7.1%; 'private' 7.5%, 8.8%; 'planning' 8.0% for every technology;
+- behind-the-meter batteries: BTM_STOCK=8 (backup share glide, 25% owner reserve, the defaults);
+- VPP: VPP=1 (coordinated storage, 20% enrolment cap, the resource cost basis with wear on incremental cycling, the defaults);
+- geyser control: GY=1 (0.4 kW per geyser, 30% cap, 4 h hold, R2,000/kW-yr, the defaults);
+- planning margin 0 (FIXED.bldPlanMarginPct, the default; 638 (c), TODO 14mi);
+- coal costs (message 653 (a)): COAL_FUEL_ESC=3 (coal fuel +3.0% a year real from 2026), COAL_FOM_ESC=1.1 (labour and coal fixed O&M
+  +1.1% a year real), COMPLY=compromise (Eskom's recommended emissions plan, R77bn plus R2.1bn a year); COAL_CARBON_FLOOR=1 (coal's
+  carbon charge to 2030 the law's floor, R0.035/kWh nominal after the renewable-premium deduction, message 657 (a)); after 2030 the
+  existing path, the 2030 rate held flat (stated in the pack).
+Run names follow c6e's (s_<case>_c7, the central c7), so the reviewer pack's keys find them (packfill.js: RUN 's_x' is s_x_<BASE>).
+Each run is one pathway (pathway_perfail.js) then its engine check in three groups (pathcheck.js LNG=1 GRID=1, years a 2026-30,
+b 2031-35, c 2036-40, run together), as chain_c6e.sh's one() and check(), with SS_FC=reservecoal on the check.
+
+Pieces: each run is its own background job under 2 hours (run_in_background, timeout 7,000 s), resumable: a finished pathway
+(out/pathway_<name>.json) or check group is skipped, and an interrupted pathway replays its finished passes from its LP cache
+(lpcache_<name>) and continues. A pathway that needs more than one piece is relaunched until its output exists; a run with no output
+after two attempts is reported as not run, as chain_c6e.sh does. Two solves at a time at most (memory, 15 GB).
+
+Expected time per run (from c6e_ssr on build 2026-11-02n, pathway 28 min and check 43 min, and the c6e system strength sensitivities,
+25-42 min and 7-15 min; the VPP, geyser and stock rows add about 10% to the LP, so allow 1.5x): a pathway 40-90 min, a check 15-45
+min; Deep's calibration 2-4 rounds of 1-2 hours.
+
+Phase 1, the central, reported before anything else:
+| Run | Change from the common settings |
+|---|---|
+| c7 | none |
+Then: the 2025 replay (replay2025) and validate_external on the run commit, the design-minimums check of c7's build (2028, the pack's
+dmin2028 key), and coal_swing.js (ESK19679.csv local), as for c6e. Report c7 against c6e and the reviewed c6e rebuild.
+
+Phase 2, every run the reviewer pack reads (from packfill.js's keys in REVIEWER_PACK.md on claude/c7-pack: base, irp, irpdem,
+s_nogas, s_nogas_dsl, s_irpgas, s_gasfloor, s_gas2032, s_cocplan, s_cocprivate, s_coalsustain, s_cocunblended, s_allbids,
+s_blendedhigh, Deep and Fossil-free), each on c7's settings with c6e's change:
+| Run | Change |
+|---|---|
+| c7_irpdem | DEMAND=index:harness/pathway/irp2025/index_irp2025fig2_c6.json (IRP 2025's demand) |
+| irp2025_c7, irp2025_c7_irpdem | no solve: build_irp_c6.py (CENTRAL=c7 IRPDEM=c7_irpdem) writes the IRP 2025 build at each demand; two checks |
+| s_nogas_c7 | GAS_CAP=0 OCGD=0 |
+| s_nogas_dsl_c7 | GAS_CAP=0 OCGD=1 (diesel peakers allowed) |
+| s_irpgas_c7 | GAS_FIRST=2032 GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1 GASFLOOR=1 GASFLOOR_VINT=2029-2030 TCAP_YR=2029:4000,2030:4000 |
+| s_gasfloor_c7 | no solve: c7's build with gasFloor.engine=1 (the 51% minimum alone), one check |
+| s_gas2032_c7 | GAS_FIRST=2032 |
+| s_cocplan_c7 | COC=planning (single 8%) |
+| s_cocprivate_c7 | COC=private |
+| s_coalsustain_c7 | COAL_FOM_ADD=500 (sustenance capex, flat) |
+| s_cocunblended_c7 | COC=central (unblended 6.0%) |
+| s_allbids_c7 | COC=allbids (5.5% base) |
+| s_blendedhigh_c7 | COC=blendedhigh |
+| s_deep40nogas_c7 | Deep decarbonisation without gas at 40 Mt: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 GAS_CAP=0 OCGD=1, CO2CAP 40 Mt from 2035, calibrated on the engine as run_deepnogas_cal.sh (cap += target - engine 2035 CO2 until within 0.5 Mt) |
+| s_ff2040_c7 | Fossil-free 2040: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 (14ma's fix in main from #153: confirm the 2040 CCGT line is gone and nothing else moves) |
+Then fill the pack (packfill.js on claude/c7-pack, BASE=c7 PREV=c6e) and report.
+
+Phase 3, the new c7 sensitivities (one more solve, s_carbongross_c7, 657 (a)):
+| Run | Change |
+|---|---|
+| s_gfm1891_c7 | GFM_H=thermal (grid-forming H 1.891 s) |
+| s_rocof05_c7, s_rocof15_c7 | ROCOF=0.5; ROCOF=1.5 |
+| s_vpppart_c7 | VPP_COST_CASE=participant (R1,565/kW-yr, wear in the incentive) |
+| s_gyrot_c7 | GY_MODE=rotation (LBNL/Wits, a quarter off for an hour each) |
+| s_ff2040novrfb_c7 | Fossil-free 2040 without vanadium flow batteries (651 (d)): s_ff2040_c7's settings plus VRFB_OFF=1 (built, 653 (b)) |
+| coal costs (653 (a), (b)) | s_coalfuel0_c7 (COAL_FUEL_ESC=0, flat), s_coalfuel5_c7 (COAL_FUEL_ESC=5), s_coalage_c7 (COAL_AGE=1), s_comply_full_c7 (COMPLY=full), s_carbongross_c7 (COAL_CARBON_FLOOR=0: the rates in law less allowances only, 657 (a)), s_carbontreasury_c7 (COAL_CARBON_FLOOR=0 CARBON_PATH=treasury, Treasury's path from 2026), s_ageingcoal_c7 (the bundle: COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full); s_coalsustain_c7 is in phase 2 |
+| the senior contact's stack (message 654 (a)), each engine-checked | s_contact_c7: the central plus COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury (his Treasury path from 2026, as he ran it) (labour and fixed O&M +1.1% as the central); s_deep40nogas_contact_c7: Deep without gas at 40 Mt on the same costs, its cap calibrated on the engine as s_deep40nogas_c7's, starting from that run's cap; s_ff2040_contact_c7: Fossil-free 2040 on the same costs. Reported: each run's cost, its extra cost over s_contact_c7 (the least-cost run under the same costs), CO2 and coal standing in 2030, 2035 and 2040, beside his LP-only figures (least-cost R2,624bn, Deep R2,640bn, Fossil-free R3,532bn; coal 30.3, 21.9 and 7.6 GW), with his caveat that his CO2 is the optimiser's own estimate, not an engine check |
+
+Phase 4, after the pack is filled: 618's six MTSAO runs, (i) the outlook's High demand without gas (DEMAND=index:<3.30% a year path>,
+619) and with gas (GAS_FIRST unchanged); (ii) the Reference Case's inputs without gas: High demand, COAL_EAF_PATH=2027:66,2028:67,
+2029:68,2030:69 and 70 for each year 2031-2040 (years not listed keep coalEAFPct, so all are listed), AVDED_OFF_AFTER=2030,
+REIPPP_RETIRE 0.75 GW a year 2033-36 (wind 375, solar 325, CSP 50), and with gas; (ii) again with the REIPPPP plants kept (620).
+
+Totals: 35 solves plus Deep's further calibration rounds, its own and the contact's (phase 1: 1; phase 2: 13; phase 3: 15; phase
+4: 6) and 39 engine checks, two at a time: about 26-40 hours of wall time in 27-34 pieces under 2 hours (a pair of runs per piece
+where both fit). Phase 1 about 2.5 hours; phase 2 about 10-14 hours; phase 3 about 12-18 hours; phase 4 about 4-6 hours.
+The early-retirement fixed cost is counted once in the build LP (rc_<y>, cumulative, at the year's fixed cost) and the engine (fixed
+O&M only on coal standing), checked for message 654 (b): no double count.
+
+Reported per run, as c6e's: system cost PV 2026-40 (8%) with the system strength charge, CO2, highest unserved, open-cycle share,
+coal lifted, hours short of the floor, builds by year, and for the new options: enrolled VPP MW and geyser MW by year (pathcheck rows'
+btm and geyser, from build 2026-11-02w), with the VPP's coordination gain against its cost where it enrols (RESULTS 'VPP coordination
+gain against coordination cost'). After the central: the presets regenerated from it (validate_pathway_presets.js), the stored
+panels and the full suite.
+Known limitations to carry into the pack (the advisor's final text): TODO 14mi (planning-reserve peak at 10:00), 14mj (geyser
+pre-heating), 14mk (presets do not reset the c7 keys; c7's scripts unaffected), 14mf (MTSAO option limits), the VPP's resource basis
+(no South African programme publishes costs), the regional LP and stress-target demand not seeing the BTM, VPP and geyser options.

@@ -110,15 +110,36 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    w.eval(`if(!('coalEafByYear' in FIXED) || !('avonDedisaRemoveAfter' in FIXED) || !('reipppRetireByYear' in FIXED)) throw new Error('coalEafByYear, avonDedisaRemoveAfter or reipppRetireByYear missing');`
      +` state.coalEafByYear=${JSON.stringify(P.coalEafByYear ?? null)}; state.avonDedisaRemoveAfter=${+(P.avonDedisaRemoveAfter || 0)}; state.reipppRetireByYear=${JSON.stringify(P.reipppRetireByYear ?? null)};`);
    if (P.coalEafByYear || P.avonDedisaRemoveAfter || P.reipppRetireByYear) console.log('MTSAO inputs from the pathway: coal availability', JSON.stringify(P.coalEafByYear), 'Avon and Dedisa out after', P.avonDedisaRemoveAfter || 'never', 'REIPPPP retired', JSON.stringify(P.reipppRetireByYear)); }
+ // Behind-the-meter batteries and the virtual power plant (HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum
+ // version: design'; messages 621-625): the run's own settings, recorded by pathway_perfail.js (P.btm). A run recorded before build
+ // 2026-11-02i has none and ran with both off, the page default, so nothing is set. With the virtual power plant on, each year's
+ // enrolled energy is the run's sched[y].vppGWh (below).
+ const BTM_VPP = !!(P.btm && (P.btm.vppBuildOn | 0) > 0);
+ // vppEvents and vppEventHours (withdrawn in build 2026-11-02s, message 637) are dropped from a run made with the virtual power plant
+ // off; a run made with it on used the event rule and is refused (check it on its own commit).
+ if (P.btm){ const BT={...P.btm}; for (const k of ['vppEvents','vppEventHours']) if (k in BT){ if ((BT.vppBuildOn|0)>0) throw new Error('the run used the withdrawn VPP event rule ('+k+'): check it on its own commit'); delete BT[k]; }
+   // A run recorded before build 2026-11-02v (message 645) has no vppCostCase and carried the participant cost as vppCostUsdKwYr:
+   // checked as it ran, under 'participant' (that cost, no wear beyond the LP's own).
+   if ('vppCostUsdKwYr' in BT && !('vppCostCase' in BT)){ BT.vppCostCase = 'participant';
+     if (Math.abs(+BT.vppCostUsdKwYr - +w.eval('VPP_COST_USD_KW_YR.participant')) < 1e-9) BT.vppCostUsdKwYr = null; }
+   w.eval(`for (const k of ${JSON.stringify(Object.keys(BT))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02i or later'); Object.assign(state, ${JSON.stringify(BT)});`);
+   console.log('behind-the-meter batteries and virtual power plant from the pathway:', JSON.stringify(P.btm)); }
+ // Geyser control (messages 633-635): the run's own settings (P.geyser), recorded by pathway_perfail.js; a run recorded before build
+ // 2026-11-02q has none and ran with it off. With it on, each year's enrolled MW is the run's sched[y].gyMW (below).
+ const GY_RUN = !!(P.geyser && (P.geyser.gyBuildOn | 0) > 0);
+ if (P.geyser){ w.eval(`for (const k of ${JSON.stringify(Object.keys(P.geyser))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02q or later'); Object.assign(state, ${JSON.stringify(P.geyser)});`);
+   console.log('geyser control from the pathway:', JSON.stringify(P.geyser)); }
  // Coal settings (PR C, build 2026-10-24a; messages 359, 363): the pathway's own; a run recorded before PR C has none and replays with
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
  // System strength (build 2026-11-02a; FIXED.ssMode): the run's own mode and settings (P.ss, pathway_perfail.js SS, ROCOF, SS_FLAT_GWS,
  // GFM_H, SS_LIFT, SS_FC, FAULT); a run recorded before has none and is checked on 'sync6', the 6 GW floor it was built with. Under 'inertia'
  // each year's grid-forming MW and condenser MVA built to it reach the engine (ssGfmMW, ssCondMVA), and the row reports the floor.
+ // Grid-forming H is the run's recorded effective value (gfmH): a run recorded before build 2026-11-02n with ssGfmH null was built on
+ // 1.891 s, the central then (11 s from 2026-11-02n, message 631 (b)).
  const SSR = P.ss || { mode: 'sync6', fault: 'off' };
  w.eval(`if(!('ssMode' in FIXED)) throw new Error('ssMode missing'); state.ssMode=${JSON.stringify(SSR.mode)}; state.ssFault=${JSON.stringify(SSR.fault || 'off')};`
-   + (SSR.mode === 'inertia' ? ` state.ssRocofHz=${+SSR.rocofHz}; state.ssFlatGWs=${SSR.flatGWs == null ? 'null' : +SSR.flatGWs}; state.ssGfmH=${SSR.gfmHSet == null ? 'null' : +SSR.gfmHSet}; state.ssCoalLift=${SSR.coalLift == null ? 1 : +SSR.coalLift};` + (SSR.liftForecast ? ` state.ssLiftForecast=${JSON.stringify(SSR.liftForecast)};` : '') : ''));
+   + (SSR.mode === 'inertia' ? ` state.ssRocofHz=${+SSR.rocofHz}; state.ssFlatGWs=${SSR.flatGWs == null ? 'null' : +SSR.flatGWs}; state.ssGfmH=${SSR.gfmH != null ? +SSR.gfmH : SSR.gfmHSet == null ? 'null' : JSON.stringify(SSR.gfmHSet)}; state.ssCoalLift=${SSR.coalLift == null ? 1 : +SSR.coalLift};` + (SSR.liftForecast ? ` state.ssLiftForecast=${JSON.stringify(SSR.liftForecast)};` : '') : ''));
  const SS_ON = SSR.mode === 'inertia';
  // SS_FC=prev|mustspin (user, 1 Nov 2026, message 610 (c)): check a run under another lift forecast than it recorded, the engine's only;
  // the build LP does not read it. 'reservecoal' is c7's central (FIXED, message 616), 'mustspin' the cautious sensitivity. Recorded in each row (ssLiftForecast).
@@ -126,6 +147,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    w.eval(`state.ssLiftForecast=${JSON.stringify(process.env.SS_FC)};`); console.log('lift forecast for this check:', process.env.SS_FC); }
  const SS_FC_USED = SS_ON ? w.eval('state.ssLiftForecast ?? FIXED.ssLiftForecast') : null;
  if (SS_ON || SSR.fault !== 'off') console.log('system strength from the pathway:', JSON.stringify(SSR));
+ if (SS_ON && !SSR.reqTripped && SSR.flatGWs == null) console.log('note: the run was built on a requirement without the inertia of the units lost (before build 2026-11-02n); this check uses the page\'s, which includes it (message 631 (a))');
  if (SS_ON && SSR.lambda && JSON.stringify(SSR.lambda) !== w.eval('JSON.stringify(SS_COAL_LAMBDA)')) console.log('note: the run\'s SS_COAL_LAMBDA', JSON.stringify(SSR.lambda), 'differs from the page\'s (the build LP\'s coal credit; the engine does not read it)');
  // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
  // Koeberg's monthly shape (message 376 (b)): the run's own, so s_koeberg_winter is checked on the shape it was built on.
@@ -135,6 +157,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  const BLK = (P.demand && P.demand.block) ? P.demand.block : null;
  if (BLK) console.log('demand block from the pathway:', JSON.stringify(BLK));
  // Coal sustaining capital (s_coalsustain, message 429): the pathway's own add-on to fomCoal, R/kW-yr.
+ // Coal cost paths (messages 651 and 653): the run's own coalFuelEscPct, coalFomEscPct and coalFomAgeOn (P.coalCost, from build
+ // 2026-11-02x); the engine escalates coal fuel and the base fixed cost to each check year. A run without them ran flat.
+ if (P.coalCost){ w.eval(`for (const k of ${JSON.stringify(Object.keys(P.coalCost))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02x or later'); Object.assign(state, ${JSON.stringify(P.coalCost)});`); console.log('coal cost paths from the pathway:', JSON.stringify(P.coalCost)); }
  if (P.coalFomAdd) { w.eval(`if(!('fomCoal' in FIXED)) throw new Error('fomCoal missing'); state.fomCoal=FIXED.fomCoal+${+P.coalFomAdd};`); console.log('coal fixed cost add-on from the pathway:', P.coalFomAdd); }
  // Cape wind allowance (14 Oct 2026): the pathway's curtailment share; each year's MW from sched[y].cw, cumulated below.
  if (P.capeWind) { w.eval(`state.bldCapeCurtPct=${+P.capeWind.curtPct};`); console.log('Cape wind allowance from the pathway:', JSON.stringify(P.capeWind)); }
@@ -183,6 +208,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (SS_ON){ over.ssGfmMW=cum.gfm; over.ssCondMVA=cum.scc+cum.scn; }
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
+   if (GY_RUN){ if (!(P.sched[y].gyMW>=0)) throw new Error('the run has geyser control on but no sched['+y+'].gyMW'); over.gyEnrolMW=P.sched[y].gyMW; }
+   if (BTM_VPP){ if (!(P.sched[y].vppGWh>=0)) throw new Error('the run has the virtual power plant on but no sched['+y+'].vppGWh'); over.vppEnrolGWh=P.sched[y].vppGWh; }
    // FOSSIL_END (message 531 (c)): after the run's last fossil year no coal (its coalMW is 0 from its dates), no gas and no diesel stand.
    if (P.fossilEnd && y > P.fossilEnd){ if (over.coalDecomMW < +w.eval('FIXED.coalInstalledMW')) throw new Error('fossilEnd: coal standing in '+y);
      Object.assign(over, {newCcgtMW:0, newOcgtMW:0, newOcgdMW:0, dieselDecomMW:+w.eval('FIXED.ocgtDieselMW')}); }
@@ -205,7 +232,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
        let dem=0, chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
-       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW(applyYearFleetOptions({...FIXED,...st}))+Math.max(0,st.newOcgtMW||0),...(()=>{ const c=x.coalCommittedMW; if (!c) return {}; let s=0,m=Infinity; for(let i=0;i<c.length;i++){ s+=c[i]; if(c[i]<m) m=c[i]; } return {cmMean:s/c.length, cmMin:m}; })(),...(x.ss?{ssReq:x.ss.reqGWs,ssMin:x.ss.minGWs,ssP5:x.ss.p5GWs,ssShortH:x.ss.shortH,ssShortGWsH:x.ss.shortGWsH,ssLiftH:x.ss.liftH,ssLiftMWh:x.ss.liftMWh,ssLiftFloorMWh:x.ss.liftFloorMWh,ssResH:x.ss.resH||0,ssResMWh:x.ss.resMWh||0, ssCoalFirstH:x.ss.coalFirstH||0,ssLiftCappedH:x.ss.liftCappedH}:{}),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; const rt=reipppRetiredMW(st.scenarioYear,{...FIXED,...st}); return ((st.windMW||FIXED.windMW)-(rt?rt.wind:0))*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)-avonDedisaOffMW({...FIXED,...st},st.scenarioYear)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6]); } }
+       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW(applyYearFleetOptions({...FIXED,...st}))+Math.max(0,st.newOcgtMW||0),...(()=>{ const c=x.coalCommittedMW; if (!c) return {}; let s=0,m=Infinity; for(let i=0;i<c.length;i++){ s+=c[i]; if(c[i]<m) m=c[i]; } return {cmMean:s/c.length, cmMin:m}; })(),...(x.ss?{ssReq:x.ss.reqGWs,ssMin:x.ss.minGWs,ssSyncMin:x.ss.syncMinGWs,ssP5:x.ss.p5GWs,ssShortH:x.ss.shortH,ssShortGWsH:x.ss.shortGWsH,ssLiftH:x.ss.liftH,ssLiftMWh:x.ss.liftMWh,ssLiftFloorMWh:x.ss.liftFloorMWh,ssResH:x.ss.resH||0,ssResMWh:x.ss.resMWh||0, ssCoalFirstH:x.ss.coalFirstH||0,ssLiftCappedH:x.ss.liftCappedH}:{}),...(x.btm?{btmStock:x.btm.stockGWh,btmDemChg:x.btm.demandChangeGWh,vppMW:x.btm.vppMW||0,vppDis:x.btm.vppDischargeMWh||0,vppInc:x.btm.vppIncrementalDischargeMWh||0,vppCost:x.btm.vppCostR||0,vppWear:x.btm.vppWearR||0}:{}),...(x.geyser?{gyMW:x.geyser.enrolledMW,gyRed:x.geyser.reducedGWh,gyCost:x.geyser.costR}:{}),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; const rt=reipppRetiredMW(st.scenarioYear,{...FIXED,...st}); return ((st.windMW||FIXED.windMW)-(rt?rt.wind:0))*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)-avonDedisaOffMW({...FIXED,...st},st.scenarioYear)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6]); } }
       return JSON.stringify(o); })()`));
    // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
@@ -245,13 +272,19 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // Capacity is read from the defaults and the run's state together (25 Oct 2026): the state alone carries no ocgtDieselMW, so the
    // first version counted only new open-cycle gas and read 17% for c6's strict 2034 where all open-cycle plant gives under 1%.
    // SYSTEM STRENGTH (build 2026-11-02a): committed coal (mean of the runs' means, lowest hour of any run), and under 'inertia' the year's
-   // requirement, inertia's lowest hour (any run) and 5th percentile (mean of the runs'), hours and GW.s-hours short after the lift,
+   // requirement, inertia's lowest hour (any run) and 5th percentile (mean of the runs'), the lowest hour from synchronous sources only
+   // (any run; grid-forming out, message 631 (b)), hours and GW.s-hours short after the lift,
    // the lift (hours, MW-hours of commitment, MWh of output floor, hours with no coal left to lift), means per run; and the annual
    // charge of the grid-forming premium and condensers built to this year (ssAnnualRkW, as the optimiser charged it), outside cost.
    { const L=o[0].findIndex(v=>v!==null&&typeof v==='object'), n=o.length, m=k=>o.reduce((a,b)=>a+(+b[L][k]||0),0)/n;
      if (o[0][L].cmMean!==undefined) r.committedCoal={meanMW:m('cmMean'), minMW:Math.min(...o.map(b=>b[L].cmMin))};
+     // Behind-the-meter batteries, the VPP and geyser control (messages 621-647; 649 (b)): the year's stock and demand change, GWh; enrolled
+     // VPP MW, its discharge and incremental discharge (wear basis, 647), MWh; its cost and wear, R bn; geyser MW enrolled, GWh deferred,
+     // cost, R bn; means over the runs. Reported only; the costs are already in r.cost (newCapexR).
+     if (o[0][L].btmStock!==undefined) r.btm={stockGWh:o[0][L].btmStock, demandChangeGWh:o[0][L].btmDemChg, vppMW:o[0][L].vppMW, vppDischargeMWh:m('vppDis'), vppIncrementalMWh:m('vppInc'), vppCostBn:m('vppCost')/1e9, vppWearBn:m('vppWear')/1e9};
+     if (o[0][L].gyMW!==undefined) r.geyser={enrolledMW:o[0][L].gyMW, reducedGWh:m('gyRed'), costBn:m('gyCost')/1e9};
      if (SS_ON){ if (o[0][L].ssReq===undefined) throw new Error('the run is inertia but the engine returned no ss');
-       r.ss={reqGWs:o[0][L].ssReq, inertiaMinGWs:Math.min(...o.map(b=>b[L].ssMin)), inertiaP5GWs:m('ssP5'), shortH:m('ssShortH'), shortGWsH:m('ssShortGWsH'),
+       r.ss={reqGWs:o[0][L].ssReq, inertiaMinGWs:Math.min(...o.map(b=>b[L].ssMin)), syncMinGWs:o[0][L].ssSyncMin===undefined?null:Math.min(...o.map(b=>b[L].ssSyncMin)), inertiaP5GWs:m('ssP5'), shortH:m('ssShortH'), shortGWsH:m('ssShortGWsH'),
          liftH:m('ssLiftH'), liftCommitMWh:m('ssLiftMWh'), liftFloorMWh:m('ssLiftFloorMWh'), resH:m('ssResH'), resMWh:m('ssResMWh'), coalFirstH:m('ssCoalFirstH'), liftCappedH:m('ssLiftCappedH'), gfmMW:cum.gfm, condBuiltMVA:cum.scc+cum.scn, liftForecast:SS_FC_USED};
        let c=0; for (const yy of Object.keys(P.sched)) if (+yy<=y) for (const t of ['gfm','scc','scn']) c+=(+P.sched[yy][t]||0)*(+w.eval(`ssAnnualRkW('${t}', ${+yy})`))*1000;
        r.ss.costBn=c/1e9; r.costWithSs=r.cost+r.ss.costBn; }

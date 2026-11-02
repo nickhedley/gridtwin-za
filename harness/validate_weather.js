@@ -267,7 +267,14 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
   // here from the page's tables (messages 468 and 469).
   {
     const a = probe(`const runcf = FIXED.bldTariffCfBasis === 'run';
-      const cc = FIXED.bldCocCase, rate = t => { const g = BLD_COC_GROUP[t]; return cc === 'planning' || g === 'disc' ? BLD_DISC_CENTRAL : BLD_COC_LEVEL[cc] + BLD_COC_GAP[g]; };
+      // The cases as bldCoc names them from the closed-project base (build 2026-11-02r, messages 634 and 636): 'allbids' is the
+      // state-backed level (the former 'central'); 'central', 'private', 'low', 'blended' and 'blendedhigh' put solar and onshore wind
+      // on the closed-project rate (BLD_COC_PVWIND_CLOSED in place of the central level). The blended cases are not recomputed here.
+      const cc = FIXED.bldCocCase, lv = cc === 'allbids' ? 'central' : cc;
+      if (cc === 'blended' || cc === 'blendedhigh') throw new Error('validate_weather: the anchors are not recomputed for the blended cost-of-capital cases');
+      const rate = t => { const g = BLD_COC_GROUP[t]; if (cc === 'planning' || g === 'disc') return BLD_DISC_CENTRAL;
+        const closed = BLD_COC_PVWIND_TECH.includes(t) && ['central', 'private', 'low'].includes(cc) ? BLD_COC_PVWIND_CLOSED - BLD_COC_LEVEL.central : 0;
+        return BLD_COC_LEVEL[lv] + BLD_COC_GAP[g] + closed; };
       return { r: Object.fromEntries(['wind', 'pv', 'batt', 'rooftop', 'ocgd'].map(t => [t, rate(t)])), by: BLD_BUILD_Y, cc,
         L: BLD_LIFE, F: BLD_FOM, share: BLD_FOM_BATT_SHARE, bh: BATT_COST_HOURS,
         cw: (FIXED.bldWindCase === 'central' ? BLD_COST[runcf ? 'wind_runcf' : 'wind'] : BLD_COST['wind_' + FIXED.bldWindCase]).c2026,
