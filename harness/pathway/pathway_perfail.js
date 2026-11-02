@@ -393,7 +393,7 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
  // MVA (b_scc_ conversions, b_scn_ new) are sched[y].gfm, .scc, .scn, and its inertia slack sched[y].ssSlack (MW.s-hours, hours).
  const SS_ENV={mode:process.env.SS||null, rocofHz:process.env.ROCOF!==undefined?+process.env.ROCOF:null, flatGWs:process.env.SS_FLAT_GWS!==undefined?+process.env.SS_FLAT_GWS:null,
    gfmH:process.env.GFM_H!==undefined?+process.env.GFM_H:null, coalLift:process.env.SS_LIFT!==undefined?+process.env.SS_LIFT:null, liftForecast:process.env.SS_FC||null, fault:process.env.FAULT||null, coalBasis:process.env.SS_COAL||null};
- if (SS_ENV.liftForecast && !['prev','mustspin','reserve'].includes(SS_ENV.liftForecast)) throw new Error('SS_FC must be prev, mustspin or reserve: '+SS_ENV.liftForecast);
+ if (SS_ENV.liftForecast && !['prev','mustspin','reserve','reservecoal'].includes(SS_ENV.liftForecast)) throw new Error('SS_FC must be prev, mustspin, reserve or reservecoal: '+SS_ENV.liftForecast);
  // SS_COAL=ratio|commit (message 610 (b)): coal's inertia in the build LP (FIXED.ssCoalBasis).
  if (SS_ENV.coalBasis && !['ratio','commit'].includes(SS_ENV.coalBasis)) throw new Error('SS_COAL must be ratio or commit: '+SS_ENV.coalBasis);
  if (SS_ENV.coalBasis && SS_ENV.mode!=='inertia') throw new Error('SS_COAL needs SS=inertia');

@@ -6115,6 +6115,9 @@ const FIXED = {
   // grid-forming inertia (a persistence forecast; on c6e's 2035 it leaves 2.6% of hours short where coal could have been lifted).
   // 'reserve' (user, 2 Nov 2026, message 612; c7's central, set by the runs): the grid-forming headroom needed is credited and held free
   // that hour (battery dispatch capped at battPowerH), so the credit is delivered; then coal is lifted for what remains.
+  // 'reservecoal' (user, 2 Nov 2026, message 616): as 'reserve', but in an hour the engine forecasts short (net load before storage
+  // above committed coal, gas, pumped storage and the batteries' power less the headroom 'reserve' would hold) coal is lifted first and
+  // headroom held only for what coal cannot cover, so the batteries stay free to discharge.
   ssMode:'sync6', ssRocofHz:1, ssFlatGWs:null, ssGfmH:null, ssGfmMW:0, ssCondMVA:0, ssCoalLift:1, ssLiftForecast:'mustspin', ssFault:'off',
   // ssCoalBasis (user, 1 Nov 2026, message 610 (b)): coal's inertia in the build LP. 'ratio' (D1): output x SS_COAL_LAMBDA; 'commit':
   // the LP's own committed coal cm_ (needs bldCoalCommit). The engine counts committed coal (ucAvail) either way.
@@ -8427,8 +8430,8 @@ function simulate(u, prof, outPath, _soc0){
     const src = {}; for (const k of ['coal', 'nuclear', 'hydro', 'csp', 'ps', 'gas', 'gfm', 'cond']) src[k] = new Float64Array(HOURS);
     _ss = { year: y, lossMW, reqGWs: ssRequirementGWs(p, lossMW), condMVA, condGWs: SS_H.cond * condMVA / 1000,
             gfmMW: Math.max(0, +p.ssGfmMW || 0), gfmH: ssGfmH(p), lift: p.ssCoalLift ? 1 : 0, msl: coalFleetMinShare(p, y, cMW),
-            fc: (() => { const f = p.ssLiftForecast; if (f !== 'prev' && f !== 'mustspin' && f !== 'reserve') throw new Error("ssLiftForecast must be 'prev', 'mustspin' or 'reserve': " + f); return f; })(),
-            resH: 0, resMWh: 0,
+            fc: (() => { const f = p.ssLiftForecast; if (f !== 'prev' && f !== 'mustspin' && f !== 'reserve' && f !== 'reservecoal') throw new Error("ssLiftForecast must be 'prev', 'mustspin', 'reserve' or 'reservecoal': " + f); return f; })(),
+            resH: 0, resMWh: 0, coalFirstH: 0,
             tot: new Float64Array(HOURS), src, prevDisp: 0, shortH: 0, shortGWsH: 0, liftH: 0, liftMWh: 0, liftFloorMWh: 0, liftCappedH: 0 };
   }
   const coalCommittedMW = new Float64Array(HOURS);   // committed coal each hour (the pre-pass's, after outages, plus any lift)
@@ -8765,11 +8768,18 @@ function simulate(u, prof, outPath, _soc0){
       // 'reserve' (user, 2 Nov 2026, message 612; c7's central): the grid-forming headroom credited toward the floor is held free this
       // hour, as operating reserve is: battery charge and discharge are capped at battPowerH = battPower less it, so the credit is
       // delivered by construction. Credited before coal is lifted (the plan bought it to avoid coal), and only as much as is needed.
-      if (_ss.fc === 'reserve' && pre < _ss.reqGWs && _ss.gfmMW > 0){ const kG = _ss.gfmH * kM;
+      // 'reservecoal' (message 616): in an hour forecast short with that headroom held, coal is lifted first (below the reserve), so
+      // the headroom held is only what coal cannot cover.
+      const kC = SS_H.coal * kM, room = Math.max(0, coalAvailableArr[h] - cAvailRaw);
+      if (_ss.fc === 'reservecoal' && _ss.lift && pre < _ss.reqGWs && room > 0){
+        const resMax = _ss.gfmMW > 0 ? Math.max(0, Math.min(_ss.gfmMW, battPower, (_ss.reqGWs - pre) / (_ss.gfmH * kM))) : 0;
+        const supply = cAvail + dieselAvailMW(p) + ccgtCap + Math.min(psPowerTot, Math.max(0, psSoc)) + Math.min(battPower - resMax, Math.max(0, battSoc));
+        if (netLoadPre[h] > supply){ _ssLift = Math.min(room, (_ss.reqGWs - pre) / kC); pre += _ssLift * kC; _ss.coalFirstH++; } }
+      if ((_ss.fc === 'reserve' || _ss.fc === 'reservecoal') && pre < _ss.reqGWs && _ss.gfmMW > 0){ const kG = _ss.gfmH * kM;
         _ssBattRes = Math.max(0, Math.min(_ss.gfmMW, battPower, (_ss.reqGWs - pre) / kG)); pre += _ssBattRes * kG;
         if (_ssBattRes > 0){ _ss.resH++; _ss.resMWh += _ssBattRes; } }
-      if (_ss.lift && pre < _ss.reqGWs){ const room = Math.max(0, coalAvailableArr[h] - cAvailRaw), need = (_ss.reqGWs - pre) / (SS_H.coal * kM);
-        _ssLift = Math.min(room, need); if (room < need) _ss.liftCappedH++; }
+      if (_ss.lift && pre < _ss.reqGWs){ const left = room - _ssLift, need = (_ss.reqGWs - pre) / kC;
+        _ssLift += Math.min(left, need); if (left < need) _ss.liftCappedH++; }
       if (_ssLift > 0){ cAvail += _ssLift; _ss.liftH++; _ss.liftMWh += _ssLift; _ss.liftFloorMWh += _ssLift * _ss.msl; }
     }
     // The battery fleet's power this hour for charge, discharge and operating reserve: all of it, less any grid-forming headroom
@@ -9543,7 +9553,7 @@ function simulate(u, prof, outPath, _soc0){
   // MWh of output floor), and the minimum, 5th percentile and mean of each hour's inertia.
   const ssOut = _ss ? (() => { const srt = Float64Array.from(_ss.tot).sort(); let m = 0; for (let h = 0; h < HOURS; h++) m += _ss.tot[h];
     return { mode: 'inertia', year: _ss.year, lossMW: _ss.lossMW, reqGWs: _ss.reqGWs, condMVA: _ss.condMVA, gfmMW: _ss.gfmMW, gfmH: _ss.gfmH,
-             coalLift: _ss.lift, liftForecast: _ss.fc, resH: _ss.resH, resMWh: _ss.resMWh, shortH: _ss.shortH, shortGWsH: _ss.shortGWsH, liftH: _ss.liftH, liftMWh: _ss.liftMWh, liftFloorMWh: _ss.liftFloorMWh, liftCappedH: _ss.liftCappedH,
+             coalLift: _ss.lift, liftForecast: _ss.fc, resH: _ss.resH, resMWh: _ss.resMWh, coalFirstH: _ss.coalFirstH, shortH: _ss.shortH, shortGWsH: _ss.shortGWsH, liftH: _ss.liftH, liftMWh: _ss.liftMWh, liftFloorMWh: _ss.liftFloorMWh, liftCappedH: _ss.liftCappedH,
              minGWs: srt[0], p5GWs: srt[Math.floor(0.05 * HOURS)], meanGWs: m / HOURS, inertiaGWs: _ss.tot, bySource: _ss.src }; })() : null;
   /* ---- negative prices in coal-FORCED surplus HOURS -----------------------
    * Every curtailment hour in this model is coal-forced: renewables are spilled
@@ -21268,7 +21278,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02c';
+const BUILD_STAMP = '2026-11-02d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -12,7 +12,7 @@
 // DIGEST=<file>: also writes, for 'sync6' only, a sha1 of every output key of every run, to compare with another commit's page
 // (ROOT=<that root>): the 'sync6' outputs must equal main's (the keys this change adds, coalCommittedMW and ss, aside).
 // JSON=<file>: the table as JSON. EXTRA='<json>': settings added to every state (e.g. '{"ssGfmMW":9045,"ssCondMVA":5838}', a build's
-// grid-forming MW and condenser MVA); SS_FC=prev|mustspin: the lift's forecast (FIXED.ssLiftForecast); the short hours after the lift are then split by what fell from the hour before (the lift's
+// grid-forming MW and condenser MVA); SS_FC=prev|mustspin|reserve|reservecoal: the lift's forecast (FIXED.ssLiftForecast); the short hours after the lift are then split by what fell from the hour before (the lift's
 // forecast of pumped storage, gas and grid-forming batteries is the hour before's).
 const fs = require('fs'), path = require('path'), crypto = require('crypto'); const { JSDOM } = require('jsdom');
 const ROOT = process.env.ROOT || 'testroot', BUILD = process.env.BUILD || 'pathway/c6e/pathway_c6e.json';
