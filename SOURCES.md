@@ -1087,6 +1087,13 @@ Our choices for the runs on the outlook's inputs (user, 2 Nov 2026, message 619;
   solar 417, CSP 50), none in 2036: 2,451 MW by 2036 against the outlook's 3 GW, then 1,422 MW in 2037 (bid window 3) and 200 MW of
   CSP in 2039 (bid window 3.5). Project-level dates would come from the IPP Office's project list (TODO 14ln's lead), not filled from
   memory.
+- The REIPPPP retirement reproduces the outlook's assumption only (user, 2 Nov 2026, message 620). The model's central keeps REIPPPP
+  plants running after their PPAs at their own technology's fixed O&M (message 542 (b); the 1 November correction, 14ln), as merchant
+  or re-contracted supply. No published framework for REIPPPP plants after their PPAs was found (web searches, 2 Nov 2026: the IPP
+  Office, the Department and NERSA publish none; industry comment only, e.g. ESI Africa on wind owners' options of life extension,
+  repowering, hybridising or private offtake, esi-africa.com/news/south-africa-wind/, and SAPVIA's 2019 proposal to extend early PPAs
+  to 30 years, pv-tech.org/news/pv-body-warns-against-south-african-plans-to-reopen-old-ppas). The run on the outlook's inputs is
+  also reported with the REIPPPP plants kept, so that one assumption's effect is shown on a rebuilt plan.
 
 ## Batteries eligible for operating reserve: a stated assumption (user, 31 Oct 2026, message 568 (a))
 
