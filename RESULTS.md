@@ -20078,3 +20078,12 @@ thermal). Gas and diesel unchanged; from 2031 the existing path. Checks: the pag
 floor setting changes only its own key (690fa139da48); the engine identical to main's on the three presets at the defaults.
 Caveat: the floor assumes Eskom's renewable-premium deduction takes its liability to the floor each year, not checked against
 Eskom's accounts; the present charge stays as the sensitivity 'carbongross'.
+
+### Suite on claude/c7-inputs, build 2026-11-02y: node checks 1021/1030, audit 88/88, eng5 5/6, every failure main's known one by name (message 657 (c), 2 Nov 2026)
+
+Run on commit 29aea8d's index.html (stored panels regenerated on build y), ESK19679.csv present, nothing else running; one piece
+stopped at its 2-hour limit in validate_worker and was resumed (run_suite10.sh skips finished scripts). Failures, compared by name
+with main's reference logs (28af9d5's set): validate_findings 36/39, validate_response 86/87, validate_consistency 82/83 (high-season
+off-peak), validate_benchmarks 28/30, validate_outputs 49/51, eng5 'storage vs unserved'; the same names in each. Passing that
+failed on build x (the claude/coc-closed rename): validate_pathway_presets 65/65, validate_weather 68/68, validate_worker 38/38.
+Visible text against main: none changed (diff_public_text.js, 2,187 sentences before and after).
