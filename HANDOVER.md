@@ -1874,8 +1874,9 @@ Common settings, every c7 run: c6e's (env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=720
 - geyser control: GY=1 (0.4 kW per geyser, 30% cap, 4 h hold, R2,000/kW-yr, the defaults);
 - planning margin 0 (FIXED.bldPlanMarginPct, the default; 638 (c), TODO 14mi);
 - coal costs (message 653 (a)): COAL_FUEL_ESC=3 (coal fuel +3.0% a year real from 2026), COAL_FOM_ESC=1.1 (labour and coal fixed O&M
-  +1.1% a year real), COMPLY=compromise (Eskom's recommended emissions plan, R77bn plus R2.1bn a year); carbon on the law to 2030,
-  held flat after (the default, stated in the pack).
+  +1.1% a year real), COMPLY=compromise (Eskom's recommended emissions plan, R77bn plus R2.1bn a year); COAL_CARBON_FLOOR=1 (coal's
+  carbon charge to 2030 the law's floor, R0.035/kWh nominal after the renewable-premium deduction, message 657 (a)); after 2030 the
+  existing path, the 2030 rate held flat (stated in the pack).
 Run names follow c6e's (s_<case>_c7, the central c7), so the reviewer pack's keys find them (packfill.js: RUN 's_x' is s_x_<BASE>).
 Each run is one pathway (pathway_perfail.js) then its engine check in three groups (pathcheck.js LNG=1 GRID=1, years a 2026-30,
 b 2031-35, c 2036-40, run together), as chain_c6e.sh's one() and check(), with SS_FC=reservecoal on the check.
@@ -1918,7 +1919,7 @@ s_blendedhigh, Deep and Fossil-free), each on c7's settings with c6e's change:
 | s_ff2040_c7 | Fossil-free 2040: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 (14ma's fix in main from #153: confirm the 2040 CCGT line is gone and nothing else moves) |
 Then fill the pack (packfill.js on claude/c7-pack, BASE=c7 PREV=c6e) and report.
 
-Phase 3, the new c7 sensitivities:
+Phase 3, the new c7 sensitivities (one more solve, s_carbongross_c7, 657 (a)):
 | Run | Change |
 |---|---|
 | s_gfm1891_c7 | GFM_H=thermal (grid-forming H 1.891 s) |
@@ -1926,8 +1927,8 @@ Phase 3, the new c7 sensitivities:
 | s_vpppart_c7 | VPP_COST_CASE=participant (R1,565/kW-yr, wear in the incentive) |
 | s_gyrot_c7 | GY_MODE=rotation (LBNL/Wits, a quarter off for an hour each) |
 | s_ff2040novrfb_c7 | Fossil-free 2040 without vanadium flow batteries (651 (d)): s_ff2040_c7's settings plus VRFB_OFF=1 (built, 653 (b)) |
-| coal costs (653 (a), (b)) | s_coalfuel0_c7 (COAL_FUEL_ESC=0, flat), s_coalfuel5_c7 (COAL_FUEL_ESC=5), s_coalage_c7 (COAL_AGE=1), s_comply_full_c7 (COMPLY=full), s_carbontreasury_c7 (CARBON_PATH=treasury), s_ageingcoal_c7 (the bundle: COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full); s_coalsustain_c7 is in phase 2 |
-| the senior contact's stack (message 654 (a)), each engine-checked | s_contact_c7: the central plus COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full CARBON_PATH=treasury (labour and fixed O&M +1.1% as the central); s_deep40nogas_contact_c7: Deep without gas at 40 Mt on the same costs, its cap calibrated on the engine as s_deep40nogas_c7's, starting from that run's cap; s_ff2040_contact_c7: Fossil-free 2040 on the same costs. Reported: each run's cost, its extra cost over s_contact_c7 (the least-cost run under the same costs), CO2 and coal standing in 2030, 2035 and 2040, beside his LP-only figures (least-cost R2,624bn, Deep R2,640bn, Fossil-free R3,532bn; coal 30.3, 21.9 and 7.6 GW), with his caveat that his CO2 is the optimiser's own estimate, not an engine check |
+| coal costs (653 (a), (b)) | s_coalfuel0_c7 (COAL_FUEL_ESC=0, flat), s_coalfuel5_c7 (COAL_FUEL_ESC=5), s_coalage_c7 (COAL_AGE=1), s_comply_full_c7 (COMPLY=full), s_carbongross_c7 (COAL_CARBON_FLOOR=0: the rates in law less allowances only, 657 (a)), s_carbontreasury_c7 (COAL_CARBON_FLOOR=0 CARBON_PATH=treasury, Treasury's path from 2026), s_ageingcoal_c7 (the bundle: COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full); s_coalsustain_c7 is in phase 2 |
+| the senior contact's stack (message 654 (a)), each engine-checked | s_contact_c7: the central plus COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury (his Treasury path from 2026, as he ran it) (labour and fixed O&M +1.1% as the central); s_deep40nogas_contact_c7: Deep without gas at 40 Mt on the same costs, its cap calibrated on the engine as s_deep40nogas_c7's, starting from that run's cap; s_ff2040_contact_c7: Fossil-free 2040 on the same costs. Reported: each run's cost, its extra cost over s_contact_c7 (the least-cost run under the same costs), CO2 and coal standing in 2030, 2035 and 2040, beside his LP-only figures (least-cost R2,624bn, Deep R2,640bn, Fossil-free R3,532bn; coal 30.3, 21.9 and 7.6 GW), with his caveat that his CO2 is the optimiser's own estimate, not an engine check |
 
 Phase 4, after the pack is filled: 618's six MTSAO runs, (i) the outlook's High demand without gas (DEMAND=index:<3.30% a year path>,
 619) and with gas (GAS_FIRST unchanged); (ii) the Reference Case's inputs without gas: High demand, COAL_EAF_PATH=2027:66,2028:67,

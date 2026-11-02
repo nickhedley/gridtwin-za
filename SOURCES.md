@@ -1885,8 +1885,9 @@ R6.35bn, and (91.5 + 6.35) / 165.431 = R591.5/MWh (2025: R545 against the publis
 cost because it was repealed from 1 Jan 2026 and folded into the carbon tax, which the model charges (the generation levy replaced by
 the carbon tax, with a floor on a generator's liability of R0.035/kWh after the renewable-premium deduction: s6(2) as substituted by
 the Taxation Laws Amendment Act 5 of 2026; the carbon path entry above). Charging both would count it twice (user, 2 Nov 2026,
-message 656 (b)). The levy's effective rate in FY2026, R6,826m over the non-renewable production above, about 3.84c/kWh against the
-statutory 3.5c, is unexplained. Eskom credited; the arithmetic ours.
+message 656 (b)). The levy's effective rate in FY2026, R6,826m over the non-renewable energy sent out above, about 3.84c/kWh against
+the statutory 3.5c, is 3.5c on a base about 10% larger, consistent with the levy being charged on total production including the
+stations' own use (our inference; message 657 (b)). Eskom credited; the arithmetic ours.
 
 ## Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)
 
@@ -2526,7 +2527,13 @@ TODO 14lu (full version, after the note) replaces the estimate with a sourced st
 - Minimum Emissions Standards in c7's central: Eskom's recommended plan, R77bn capital plus R2.1bn a year (COMPLY=compromise, the
   existing basis: Eskom to the NCOP, 10 Jun 2025, on Medupi, Majuba, Matimba, Kendal, Lethabo and Tutuka); full compliance, R257bn plus
   R6.3bn a year (COMPLY=full), a sensitivity.
-- Carbon: the law to 2030 (rates R308 to R462/t nominal, the 2026 tax-free allowance share kept to 2030) and that rate and share held
-  flat in real terms after 2030 (our assumption: no rate or allowance after 2030 is in law); Treasury's stated path (allowances to none
-  by 2031, then to US$120/t by 2050) a sensitivity (carbonAllowancePath 'treasury'). The environmental levy on non-renewable
+- Carbon on coal to 2030, c7's central (user decision, 2 Nov 2026, message 657 (a); FIXED.coalCarbonFloorOn, set by the run,
+  COAL_CARBON_FLOOR=1): the law's floor on a generator's liability, R0.035/kWh nominal after the renewable-premium deduction (s6(2) as
+  substituted by the Taxation Laws Amendment Act 5 of 2026), in 2026 rands at the model's deflator (3% a year): R35.0, 34.0, 33.0,
+  32.0 and 31.1 per MWh of coal output in 2026-2030; from 2031 the existing path, unchanged; coal only, gas and diesel unchanged.
+  Assumes Eskom's renewable-premium deduction takes its liability to the floor each year, not checked against Eskom's accounts. The
+  charge it replaces, the rates in law less the tax-free allowances only (R46 to R61/t, R51 to R68/MWh at 1.108 t/MWh), is the
+  sensitivity 'carbongross' (COAL_CARBON_FLOOR=0). After 2030: the 2030 rate and allowance share held flat in real terms (our
+  assumption: no rate or allowance after 2030 is in law); Treasury's stated path (allowances to none by 2031, then to US$120/t by
+  2050) a sensitivity (CARBON_PATH=treasury, from 2026, as the senior contact ran it). The environmental levy on non-renewable
   generation stays excluded as a tax (Eskom performance report FY2026 entry above).
