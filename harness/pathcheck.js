@@ -157,6 +157,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  const BLK = (P.demand && P.demand.block) ? P.demand.block : null;
  if (BLK) console.log('demand block from the pathway:', JSON.stringify(BLK));
  // Coal sustaining capital (s_coalsustain, message 429): the pathway's own add-on to fomCoal, R/kW-yr.
+ // Coal cost paths (messages 651 and 653): the run's own coalFuelEscPct, coalFomEscPct and coalFomAgeOn (P.coalCost, from build
+ // 2026-11-02x); the engine escalates coal fuel and the base fixed cost to each check year. A run without them ran flat.
+ if (P.coalCost){ w.eval(`for (const k of ${JSON.stringify(Object.keys(P.coalCost))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02x or later'); Object.assign(state, ${JSON.stringify(P.coalCost)});`); console.log('coal cost paths from the pathway:', JSON.stringify(P.coalCost)); }
  if (P.coalFomAdd) { w.eval(`if(!('fomCoal' in FIXED)) throw new Error('fomCoal missing'); state.fomCoal=FIXED.fomCoal+${+P.coalFomAdd};`); console.log('coal fixed cost add-on from the pathway:', P.coalFomAdd); }
  // Cape wind allowance (14 Oct 2026): the pathway's curtailment share; each year's MW from sched[y].cw, cumulated below.
  if (P.capeWind) { w.eval(`state.bldCapeCurtPct=${+P.capeWind.curtPct};`); console.log('Cape wind allowance from the pathway:', JSON.stringify(P.capeWind)); }

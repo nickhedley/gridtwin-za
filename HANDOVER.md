@@ -1872,7 +1872,10 @@ Common settings, every c7 run: c6e's (env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=720
 - behind-the-meter batteries: BTM_STOCK=8 (backup share glide, 25% owner reserve, the defaults);
 - VPP: VPP=1 (coordinated storage, 20% enrolment cap, the resource cost basis with wear on incremental cycling, the defaults);
 - geyser control: GY=1 (0.4 kW per geyser, 30% cap, 4 h hold, R2,000/kW-yr, the defaults);
-- planning margin 0 (FIXED.bldPlanMarginPct, the default; 638 (c), TODO 14mi).
+- planning margin 0 (FIXED.bldPlanMarginPct, the default; 638 (c), TODO 14mi);
+- coal costs (message 653 (a)): COAL_FUEL_ESC=3 (coal fuel +3.0% a year real from 2026), COAL_FOM_ESC=1.1 (labour and coal fixed O&M
+  +1.1% a year real), COMPLY=compromise (Eskom's recommended emissions plan, R77bn plus R2.1bn a year); carbon on the law to 2030,
+  held flat after (the default, stated in the pack).
 Run names follow c6e's (s_<case>_c7, the central c7), so the reviewer pack's keys find them (packfill.js: RUN 's_x' is s_x_<BASE>).
 Each run is one pathway (pathway_perfail.js) then its engine check in three groups (pathcheck.js LNG=1 GRID=1, years a 2026-30,
 b 2031-35, c 2036-40, run together), as chain_c6e.sh's one() and check(), with SS_FC=reservecoal on the check.
@@ -1907,7 +1910,7 @@ s_blendedhigh, Deep and Fossil-free), each on c7's settings with c6e's change:
 | s_gas2032_c7 | GAS_FIRST=2032 |
 | s_cocplan_c7 | COC=planning (single 8%) |
 | s_cocprivate_c7 | COC=private |
-| s_coalsustain_c7 | COAL_FOM_ADD=500 |
+| s_coalsustain_c7 | COAL_FOM_ADD=500 (sustenance capex, flat) |
 | s_cocunblended_c7 | COC=central (unblended 6.0%) |
 | s_allbids_c7 | COC=allbids (5.5% base) |
 | s_blendedhigh_c7 | COC=blendedhigh |
@@ -1922,15 +1925,15 @@ Phase 3, the new c7 sensitivities:
 | s_rocof05_c7, s_rocof15_c7 | ROCOF=0.5; ROCOF=1.5 |
 | s_vpppart_c7 | VPP_COST_CASE=participant (R1,565/kW-yr, wear in the incentive) |
 | s_gyrot_c7 | GY_MODE=rotation (LBNL/Wits, a quarter off for an hour each) |
-| s_ff2040novrfb_c7 | Fossil-free 2040 without vanadium flow batteries (651 (d)): s_ff2040_c7's settings plus a no-vanadium bound, to be built like IA_OFF |
-| coal costs (651 (b)), once their settings are built and agreed | s_coalfuel5_c7 (coal fuel +5% a year real), s_coalfuel25_c7 (+2.5%), s_coalfom11_c7 (labour and fixed O&M +1.1% a year real), s_coalage_c7 (fixed O&M by unit age), s_ageingcoal_c7 (the bundle: fuel +5%, fixed O&M +1.1%, age, sustenance R500/kW-yr); s_comply_full_c7 (COMPLY=full) and s_carbontreasury_c7 (carbonAllowancePath 'treasury') on the existing settings if the user keeps them separate from the bundle |
+| s_ff2040novrfb_c7 | Fossil-free 2040 without vanadium flow batteries (651 (d)): s_ff2040_c7's settings plus VRFB_OFF=1 (built, 653 (b)) |
+| coal costs (653 (a), (b)) | s_coalfuel0_c7 (COAL_FUEL_ESC=0, flat), s_coalfuel5_c7 (COAL_FUEL_ESC=5), s_coalage_c7 (COAL_AGE=1), s_comply_full_c7 (COMPLY=full), s_carbontreasury_c7 (CARBON_PATH=treasury), s_ageingcoal_c7 (the bundle: COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full); s_coalsustain_c7 is in phase 2 |
 
 Phase 4, after the pack is filled: 618's six MTSAO runs, (i) the outlook's High demand without gas (DEMAND=index:<3.30% a year path>,
 619) and with gas (GAS_FIRST unchanged); (ii) the Reference Case's inputs without gas: High demand, COAL_EAF_PATH=2027:66,2028:67,
 2029:68,2030:69 and 70 for each year 2031-2040 (years not listed keep coalEAFPct, so all are listed), AVDED_OFF_AFTER=2030,
 REIPPP_RETIRE 0.75 GW a year 2033-36 (wind 375, solar 325, CSP 50), and with gas; (ii) again with the REIPPPP plants kept (620).
 
-Totals: 35 solves (phase 1: 1; phase 2: 13 plus Deep's 2-4 calibration rounds; phase 3: 13; phase 4: 6) and 38 engine checks,
+Totals: 32 solves plus Deep's 1-3 further calibration rounds (phase 1: 1; phase 2: 13; phase 3: 12; phase 4: 6) and 36 engine checks,
 two at a time: about 22-35 hours of wall time in 24-30 pieces under 2 hours (a pair of runs per piece where both fit). Phase 1 about
 2.5 hours; phase 2 about 10-14 hours; phase 3 about 8-12 hours; phase 4 about 4-6 hours.
 

@@ -5818,6 +5818,12 @@ const FIXED = {
   // An application, not an outturn, and it includes centralised services allocated to
   // Generation. Treat as an upper bound.
   fomCoal:1160,       // was 900 on benchmarks alone
+  // Coal cost paths (user, 2 Nov 2026, messages 651 and 653; RESULTS 'Eskom's coal cost FY2017-FY2026, price against volume'):
+  // coalFuelEscPct, coal fuel (costCoal) % a year real from 2026 (c7's central 3.0, Eskom's coal cost per tonne FY2017-FY2026,
+  // indicative; 0 and 5 the sensitivities); coalFomEscPct, labour and coal fixed O&M (the fomCoal base) % a year real (c7's central
+  // 1.1, Eskom's cost per employee FY2015-FY2025); coalFomAgeOn, fixed O&M by unit age (COAL_FOM_AGE, the senior contact's curve,
+  // unsourced), relative to the 2026 fleet. All 0 by default: the page and its LP unchanged; c7 sets them through the run settings.
+  coalFuelEscPct:0, coalFomEscPct:0, coalFomAgeOn:0,
   fomNuclear:4260,    // was 3300. Koeberg is 40 years old and in long-term operation.
   fomCcgt:720,        // was 560
   fomDiesel:360,      // was 280. Peakers are cheap to hold relative to their rating.
@@ -7210,6 +7216,53 @@ function touWindowBlock(season, dow, hod){
 }
 
 
+// Coal cost paths (messages 651 and 653): multipliers on the 2026 coal fuel cost and on the 2026 base fixed cost, by year. Both 1
+// exactly at the defaults. The fixed-cost multiplier applies to the base (FIXED.fomCoal, MYPD6's operating cost, labour included), not
+// to the sustaining-capital add-on (COAL_FOM_ADD, s_coalsustain), which is held flat.
+function coalFuelMult(S, y){
+  const g = +(S.coalFuelEscPct ?? 0); if (!(g > -20 && g < 20)) throw new Error('coalFuelEscPct out of range: ' + S.coalFuelEscPct);
+  return g === 0 ? 1 : Math.pow(1 + g / 100, Math.max(0, y - 2026));
+}
+// The senior contact's fixed O&M by age (message 651 (b), unsourced, recorded as their assumption): +25% in the first year tapering
+// to none at ten years, flat from 10 to 30, +2% a year from 30 to 40, +5% a year beyond 40 (linear on the base; ours).
+function coalFomAgeCurve(age){
+  if (age < 10) return 1 + 0.25 * (10 - Math.max(0, age)) / 10;
+  if (age <= 30) return 1;
+  if (age <= 40) return 1 + 0.02 * (age - 30);
+  return 1.2 + 0.05 * (age - 40);
+}
+// The fleet's MW-weighted age factor in year y: every UC_FLEET unit standing in y (its decom year after y) at its commissioning year
+// (COAL_UNIT_COD, by row in unit order). Needs COAL_UNIT_COD.
+function coalFleetAgeFactor(y){
+  if (!COAL_UNIT_COD) throw new Error('coalFomAgeOn needs COAL_UNIT_COD (unit commissioning years)');
+  let mw = 0, f = 0;
+  for (const u of UC_FLEET){ const cod = COAL_UNIT_COD[u.name]; if (!cod || cod.length !== u.n) throw new Error('COAL_UNIT_COD: ' + u.n + ' years needed for ' + u.name);
+    const end = /beyond/.test(u.decom) ? 9999 : +u.decom; if (!(end > y)) continue;
+    for (const c of cod){ mw += u.unit_cap; f += u.unit_cap * coalFomAgeCurve(y - c); } }
+  return mw > 0 ? f / mw : 1;
+}
+function coalFomMult(S, y){
+  const g = +(S.coalFomEscPct ?? 0); if (!(g > -20 && g < 20)) throw new Error('coalFomEscPct out of range: ' + S.coalFomEscPct);
+  let m = g === 0 ? 1 : Math.pow(1 + g / 100, Math.max(0, y - 2026));
+  if ((S.coalFomAgeOn | 0) > 0) m *= coalFleetAgeFactor(y) / coalFleetAgeFactor(2026);
+  return m;
+}
+// The year's coal fuel cost and fixed cost, R/MWh and R/kW-yr: the base escalated, the add-on (state fomCoal above FIXED.fomCoal) flat.
+function coalFuelAt(S, y){ return S.costCoal * coalFuelMult(S, y); }
+function coalFomAt(S, y){ const m = coalFomMult(S, y); return m === 1 ? S.fomCoal : S.fomCoal + FIXED.fomCoal * (m - 1); }
+// Unit commissioning years by UC_FLEET row, in unit order (coalFomAgeOn; user, 2 Nov 2026, message 653 (b); SOURCES 'Coal unit
+// commissioning years'): Global Energy Monitor's station pages and news reports, read as search extracts (to verify against the
+// pages); the original year for units returned to service (Camden, Grootvlei, Komati, Arnot) and for Medupi unit 4's repair; where the
+// model's unit groups are not published (Camden, Hendrina, Medupi, Grootvlei, Kelvin), units mapped in order (ours).
+const COAL_UNIT_COD = {
+  'Arnot*': [1972, 1971, 1971], 'Arnot**': [1973, 1974, 1975], 'Camden*': [1968, 1967, 1967], 'Camden**': [1967, 1967, 1968, 1969, 1969],
+  'Duvha*': [1980, 1980], 'Duvha**': [1982, 1983, 1984], 'Grootvlei*': [1973, 1970], 'Grootvlei**': [1969],
+  'Hendrina*': [1971, 1970, 1971, 1973], 'Hendrina**': [1974, 1977], 'Kelvin': [1969, 1969],
+  'Kendal*': [1988, 1989, 1990], 'Kendal**': [1991, 1992, 1993], 'Komati': [1966],
+  'Kriel*': [1976, 1976, 1977], 'Kriel**': [1978, 1979, 1979], 'Kusile*': [2017, 2020, 2021, 2022], 'Kusile**': [2024], 'Kusile***': [2025],
+  'Lethabo*': [1985, 1986, 1987], 'Lethabo**': [1987, 1989, 1990], 'Majuba*': [1996, 1997, 1998], 'Majuba**': [1999, 2000, 2001],
+  'Matimba*': [1987, 1987, 1988], 'Matimba**': [1989, 1990, 1991], 'Matla*': [1979, 1980, 1980], 'Matla**': [1981, 1982, 1983],
+  'Medupi*': [2021, 2019, 2019, 2017, 2017], 'Medupi**': [2015], 'Tutuka*': [1985, 1985, 1986], 'Tutuka**': [1987, 1988, 1990] };
 // ── Unit Commitment Fleet Data (from PyPSA-RSA fleet_by_region_v2.csv) ────────
 // That file left the public repository on build 2026-10-16c (TODO 14dh) and stays in its history; nodal/fleet_units.csv
 // holds the columns the nodal readers use.
@@ -7783,6 +7836,7 @@ function simulate(u, prof, outPath, _soc0){
   const p={...FIXED,...u};
   if (p.importsEndYear > 0 && (p.scenarioYear ?? 2026) > p.importsEndYear) p.importsMW = 0;   // importsEndYear, FIXED
   applyYearFleetOptions(p);   // coalEafByYear, avonDedisaRemoveAfter, reipppRetireByYear (FIXED)
+  { const _y = p.scenarioYear ?? 2026; p.fomCoal = coalFomAt(p, _y); p.costCoal = coalFuelAt(p, _y); }   // coal cost paths (653); 1 at the defaults
   if (!_soc0 && u.__ccgtFloor === undefined && !p.ccgtForceHourly && ccgtFloorActive(p)) return simulateGasAnnualFloor(u, prof, outPath);
   // ── clean coal (CCS) ──────────────────────────────────────────────────────
   // Applied here so every downstream calculation - dispatch, cost, emissions,
@@ -12438,7 +12492,7 @@ function bldBuildLP(opts){
       if (e > 0){ obj.push((S.costImports * df).toFixed(3) + ' imp_' + y); IMP_MWH[y] = e; } }
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       const k = y + '_' + r.d + '_' + h;
-      obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*wObj(r)*df).toFixed(3) + ' gc_' + k);
+      obj.push(((coalFuelAt(S, y) + S.vomCoal + CARBON_AT(y)*EMIS_COAL)*wObj(r)*df).toFixed(3) + ' gc_' + k);   // coal fuel by year (653)
       if (COMMIT_SU_Y[y] > 0) obj.push((COMMIT_SU_Y[y]*wObj(r)*df).toFixed(3) + ' su_' + k);
       obj.push(((bldGasFuelR(opts, y, S) + S.vomCcgt + CARBON_AT(y)*EMIS_CCGT)*wObj(r)*df).toFixed(3) + ' gg_' + k);
       obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*wObj(r)*df).toFixed(3) + ' gd_' + k);
@@ -12518,7 +12572,7 @@ function bldBuildLP(opts){
   const RC_ON = !!(S.bldCoalEarlyOn ?? 1);
   if (RC_ON) for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
-    obj.push('-' + (S.fomCoal * 1000 * df).toFixed(3) + ' rc_' + y);
+    obj.push('-' + (coalFomAt(S, y) * 1000 * df).toFixed(3) + ' rc_' + y);   // the year's coal fixed cost (653)
   }
   // Compliance (COMPLY_MES): rca_<y>, in-scope coal retired early by year y (within rc_<y>), avoids the year's compliance charge per MW.
   // The charge on what stays is a constant, outside the LP. 'none' adds nothing, so the LP text is unchanged.
@@ -21782,7 +21836,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02w';
+const BUILD_STAMP = '2026-11-02x';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21883,11 +21937,12 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   bldCoc, bldCocCase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
   bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
   btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
-  ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA });
+  ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
+  coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
 const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
-  ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
+  ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
   WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,

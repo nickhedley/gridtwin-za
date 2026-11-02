@@ -1872,6 +1872,16 @@ operating and capacity charges; IPP OCGT output 268 GWh, p.20. The must-run at 2
 single-year choice: Avon and Dedisa ran 1,509, 662 and 268 GWh in FY2024-26, a falling series, and 268 is its lowest year.
 s_eskom26's results are in RESULTS ('s_eskom26'), with the levy (about R41/MWh, FY2026) and hydro years (FY2023-26) beside them.
 
+Coal cost basis, the levy excluded (user, 2 Nov 2026, message 653 (c)): the model's coal fuel cost, R553/MWh (FIXED.costCoal =
+ESKOM_FY26.coalCostRbn R91.5bn over coal-fired sent out 165,431 GWh), sits under Eskom's published coal unit cost of R591/MWh (p.56,
+'Unit cost, R/MWh': coal 591, 2025 546) by the environmental levy alone: p.56 gives 'coal and other generation' R91.5bn as 'excluding
+environmental levies' (+0.5% on R91.0bn) and the levies as a separate slice; the annual financial statements give the levy as R6,826m
+(note 47, p.111; 2025 R7,273m); shared over non-renewable sent out (coal 165,431, nuclear 11,618, OCGT 811 GWh), coal's part is
+R6.35bn, and (91.5 + 6.35) / 165.431 = R591.5/MWh (2025: R545 against the published 546). The levy is a tax on non-renewable
+generation, a transfer, not a resource cost, so it stays out of system cost (as the carbon tax's allowances are a policy setting, not a
+cost of coal). Its effective rate, about 3.84c/kWh sent out against the statutory 3.5c, suggests a wider charging base (gross
+generation; our inference). Eskom credited; the arithmetic ours.
+
 ## Cahora Bassa: the contract's end and what might replace it (user, 21 Oct 2026, messages 300-302; search-level, checked 21 Oct 2026)
 
 The model holds 1,150 MW of must-take imports (FIXED.importsMW, the Cahora Bassa contract) at 1,066 MW on average (IMPORTS_AVG_MW,
@@ -2480,3 +2490,34 @@ The model's cases (user, message 584 (a); replacing 582 (a)'s central and 583 (a
   cycles the energy above an owner reserve of 25% of capacity; enrolled VPP batteries come from the cycling stock and use the energy
   above the same reserve. Design: HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum version' (claude/btm-vpp-min).
 TODO 14lu (full version, after the note) replaces the estimate with a sourced stock and growth path.
+
+## Coal cost paths and coal unit commissioning years (user, 2 Nov 2026, messages 651 and 653; build 2026-11-02x)
+
+- Coal fuel, c7's central +3.0% a year real from 2026 (FIXED.coalFuelEscPct, set by the run, COAL_FUEL_ESC=3): Eskom's coal cost per
+  tonne burnt, R514 (FY2017) to R1,013 (FY2026), 7.8% a year nominal, about 3.0% real (RESULTS 'Eskom's coal cost FY2017-FY2026, price
+  against volume'; indicative, the cost definitions may differ across years). Sensitivities: flat (0%) and +5% (the senior contact's
+  figure: Eskom's coal cost per MWh about 10% a year nominal FY2017-FY2026 against CPI about 5%).
+- Labour and coal fixed O&M, c7's central +1.1% a year real (FIXED.coalFomEscPct, COAL_FOM_ESC=1.1): Eskom's cost per employee,
+  R557k (FY2015, BusinessTech, search extract) to R1.03m (FY2025, annual financial statements, restated), about 1.3% a year real;
+  1.1% the contact's figure. Applies to the base fixed cost (FIXED.fomCoal R1,160/kW-yr, MYPD6 operating cost), not to the sustaining
+  capital add-on (s_coalsustain, R500/kW-yr, flat).
+- Fixed O&M by unit age, a sensitivity (FIXED.coalFomAgeOn, COAL_AGE=1): the senior contact's curve, unsourced, recorded as their
+  assumption: +25% in a unit's first year tapering to none at ten years, flat from 10 to 30 years, +2% a year from 30 to 40, +5% a year
+  beyond 40 (linear on the base, ours), MW-weighted over the units standing in each year (UC_FLEET's closure years) and taken relative
+  to the 2026 fleet, so 2026 stays on the calibrated R1,160 (the factor is 0.96 in 2030, as the oldest stations close, 1.00 in 2035 and
+  1.04 in 2040).
+- Unit commissioning years (index.html COAL_UNIT_COD): Global Energy Monitor's station pages (gem.wiki: Arnot, Camden, Duvha, Grootvlei,
+  Hendrina, Kelvin, Kendal, Kriel, Lethabo, Majuba, Matimba, Matla, Tutuka), POWER magazine (Camden), TimesLIVE 31 Oct 2022 (Komati),
+  Creamer Media and SAnews (Kusile, Medupi), africa-energy.com (Medupi unit 4), all read as search extracts (the pages could not be
+  opened in the session; to verify before the pack cites them). Choices, ours: the original year for units returned to service
+  (Camden 2005-08, Grootvlei 2007-11, Komati 2009, three Arnot units 1997-98) and for Medupi unit 4's 2025 repair; where the model's
+  unit groups are not published (Camden's 190 MW units, Hendrina's 169 MW units, Medupi's 717 MW unit, Grootvlei's three operating
+  units, Kelvin's two), units mapped in order. Conflicts in the extracts (Camden U1 1967 or 1968, Matla U1 1979 or 1980, Arnot U4
+  1973 or 1974, Hendrina U10 1976 or 1977, Medupi U3 2018 or 2019) take Global Energy Monitor's year.
+- Minimum Emissions Standards in c7's central: Eskom's recommended plan, R77bn capital plus R2.1bn a year (COMPLY=compromise, the
+  existing basis: Eskom to the NCOP, 10 Jun 2025, on Medupi, Majuba, Matimba, Kendal, Lethabo and Tutuka); full compliance, R257bn plus
+  R6.3bn a year (COMPLY=full), a sensitivity.
+- Carbon: the law to 2030 (rates R308 to R462/t nominal, the 2026 tax-free allowance share kept to 2030) and that rate and share held
+  flat in real terms after 2030 (our assumption: no rate or allowance after 2030 is in law); Treasury's stated path (allowances to none
+  by 2031, then to US$120/t by 2050) a sensitivity (carbonAllowancePath 'treasury'). The environmental levy on non-renewable
+  generation stays excluded as a tax (Eskom performance report FY2026 entry above).
