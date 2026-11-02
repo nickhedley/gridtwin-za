@@ -1659,3 +1659,42 @@ lines from live code cost a day the week before. Both are in RULES.md now.
 
 **Share before reporting.** Three times files were described as delivered when only the copy had
 run. The fix is mechanical: end the turn with the file, never write "above" in prose.
+
+## Behind-the-meter batteries and virtual power plants, minimum version: design (user, 2 Nov 2026, message 621 (b); TODO 14lq (1)-(2), 14lu)
+
+Design for the user's decisions before anything is built; built and checked by Wed 4 Nov. Figures from SOURCES 'Behind-the-meter
+batteries: stock and growth' (the advisor's estimate, labelled ours) and 'Virtual power plants: costs to source'. Defaults off on the
+page (LP key and every page output unchanged) until c7 rebuilds the presets; c7's central sets them.
+
+Passive stock (households and businesses, not dispatched by anyone):
+- P1. The stock path: 8 GWh in 2026 (about 6 GWh homes, 2 GWh businesses), +0.9 GWh a year; cases 4 and 14 GWh. Power at 2.5 hours
+  (3.2 GW in 2026), round trip 90% (14cd), usable depth 80% (our assumption, to source).
+- P2. The double count. The model's demand is Eskom's measured demand plus a rooftop add-back (SOURCES 'demand coverage gap'): the
+  2025 stock's self-consumption shift is already inside the measured profile. Options: (a) model the whole stock on top, which counts
+  the 2025 stock twice and overstates evening relief; (b) model only the stock above 2025's (+0.9 GWh a year from 2026), with the 4 and
+  14 GWh cases scaling that growth by 4/8 and 14/8. Recommended (b), the conservative choice (rule 366).
+- P3. The profile, fixed and the same in the engine and the build LP: each day the stock charges from rooftop output, in proportion to
+  the day's rooftop profile, up to the smaller of its usable energy and half the day's rooftop output, and discharges that energy x
+  0.90 evenly over 17:00-22:00, within its power. Applied to demand before dispatch, as rooftop is; no forecast, no price response.
+- P4. Cost: household and business capital, the same in every scenario, kept outside system cost (no decision depends on it) and
+  reported beside it at GreenCape's R5,000/kWh. Alternative: add it to btmCapexR as rooftop is.
+
+Virtual power plant (the coordinated share, a build option):
+- V1. A build variable in the build LP, MW of enrolled battery nameplate by year, linear build, capped by the reachable fleet: the
+  Plentify-Deye 2.7 GWh (1.08 GW at 2.5 hours) in 2026, growing with the passive stock's share. Enrolled devices keep their
+  self-consumption profile; the VPP adds discharge on call within their headroom.
+- V2. Delivered capacity a third of nameplate (California DSGS 2024; source to record in SOURCES before use), credited at that in the
+  planning reserve rows and dispatched as storage at that power, 2.5 hours.
+- V3. Event limits (Brattle 2023: 15-100 events of 2-3 hours a year): at most 100 events of 3 hours, so at most 300 hours at full
+  delivered power a year; in the engine the VPP discharges only in hours the engine forecasts short (the same forecast as
+  'reservecoal'), in the build LP its energy over the representative and stress days is capped pro rata.
+- V4. Cost US$42.85/kW-yr per kW of delivered capacity (Brattle 2023, Table 4, net cost, 2022 dollars, household devices excluded),
+  at R16.50/US$ (the model's pinned rate), about R707/kW-yr; participant payments are transfers (retail panels), not system cost.
+- V5. The existing VPP slider (a 4 GW geyser pool x enrolment, with 0.35 kW of 4-hour batteries per geyser kW, no cost) stays for
+  geysers; with the build option on, its battery component is off, so the same batteries are not counted twice.
+
+Checks: the LP-key test (default unchanged; each option on changes only its own rows and columns); the engine's energy balance with
+the profile; with the stock on, the evening peak and firm build per GWh at 1, 3 and 5 GWh (14lq (1)'s first report); the presets
+unchanged at the default; the full suite before the PR.
+Decisions for the user: P2 (a) or (b); P4 outside system cost or in btmCapexR; V2's third of nameplate pending its source; V3's 100
+events; V5.
