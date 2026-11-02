@@ -19996,7 +19996,7 @@ falls by its gross amount in the windows. Test LP (stock and geyser, 2026-30): e
 Caveats: one preset, no rebuild; the planning-reserve peak (TODO 14mi) gives geysers no credit; pre-heating into the solar afternoon is
 TODO 14mj.
 
-### VPP coordination gain against coordination cost, wear on incremental cycling only: on c6e's one-year builds coordinating the enrolled batteries is worth R310/kW-yr of enrolled power in 2030 and R169 in 2035, against a coordination cost of about R346 (the R342 programme cost plus R4-5 of wear); none enrols under the central, so the VPP is not built on cost in either year (user, 2 Nov 2026, messages 632 (a), 640, 644-647)
+### VPP coordination gain against coordination cost, wear on incremental cycling only: on c6e's one-year builds coordinating the enrolled batteries is worth R310/kW-yr of enrolled power in 2030 and R169 in 2035, against a coordination cost of about R346-347 (the R342 programme cost plus R4-5 of wear); none enrols under the central, so the VPP is not built on cost in either year (user, 2 Nov 2026, messages 632 (a), 640, 644-647)
 
 Basis (645-647): enrolment adds no new battery (the household's battery and its capital are already in the system cost), so the
 comparison is the system's gain from coordinating batteries that exist against the cost of coordinating them: the programme's own
@@ -20010,7 +20010,7 @@ enrolled power is the batteries' nameplate and also what they can deliver (the 2
 | Coordination gain (system cost avoided, before wear) | 309.5 | 169.4 |
 | Wear on incremental cycling | 3.8 (21,300 MWh a year) | 4.7 (37,000 MWh a year) |
 | Net gain at the cap: the break-even programme cost | 305.7 (US$18.53) | 164.6 (US$9.98) |
-| Coordination cost under the central: R342 + wear | 345.8 | 346.7 |
+| Coordination cost under the central: R342.3 + wear | 346.1 | 347.0 |
 | Enrolled under the central (R342) | 0 | 0 |
 | Enrolled at a programme cost of R300 / R312 (2030); R160 / R170 (2035) | 881 MW / 156 MW | 1,288 MW / 0 |
 | Participant cost sensitivity (R1,565, build 2026-11-02v) | 0 | 0 |
@@ -20021,10 +20021,12 @@ test it did, in 2026, where that LP's lithium was capped at 68 MW a year). Three
 programme cost, and the central. Net gain = the LP objective without enrolment less the objective at zero programme cost, undiscounted
 to year Y (8%) and divided by the kW enrolled; wear from the solved vpx_ columns at their objective coefficients; gain = net gain +
 wear. The bracket solves at fixed programme costs (VPP_COST_USD 18.18, 18.91, 9.70, 10.30) show the marginal value: in 2030 it falls
-across the last tenth of the cap. Runs on build 2026-11-02w (c7e165a), 2 Nov 2026 13:54-14:12 UTC. The earlier search on build
+across the last tenth of the cap. Runs on build 2026-11-02w (c7e165a), 2 Nov 2026 13:54-14:12 UTC. Reduced by harness/ext/vpp_coordination.js (written to
+harness/ext/vpp_coordination.json; the runs from a scratch copy of pathway_perfail.js whose VPP_YEAR option is now in the script, with
+harness/ext/vpp_coordination.sh to rerun them). The earlier search on build
 2026-11-02s (wear at the LP's R20/MWh on all enrolled discharge) bracketed the same break-evens: US$18.53-19.27 (2030), US$9.64-10.01
 (2035), 13:10-13:48 UTC.
 Finding: on c6e's builds, coordinating home batteries is worth about R310 per kW of enrolled power a year in 2030 and R169 in 2035,
-below the R346 it costs to coordinate them in both years; the wear on incremental cycling is about 1% of the cost. Caveats: one-year
+below the R346-347 it costs to coordinate them in both years; the wear on incremental cycling is about 1% of the cost. Caveats: one-year
 builds with everything before Y fixed at c6e's, which already holds the storage the system needs; c7's full pathway lets the option
 compete in every year (central, Deep and Fossil-free, message 645), where a system short of storage values it more.

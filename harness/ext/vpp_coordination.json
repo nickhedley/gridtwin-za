@@ -1,0 +1,52 @@
+{
+ "note": "Derived figures only. RESULTS: VPP coordination gain against coordination cost (messages 645-647).",
+ "build": "2026-11-02w",
+ "resourceCostR": 342.30618304829926,
+ "usdRate": 16.5,
+ "years": {
+  "2030": {
+   "capMW": 928,
+   "gainR": 309.4704403652668,
+   "wearR": 3.784531495147469,
+   "netGainR": 305.68590887011936,
+   "costR": 346.0907145434467,
+   "incrementalMWh": 21285.12259089001,
+   "runs": [
+    {
+     "programmeCostR": 299.96999999999997,
+     "enrolledMW": 880.9711708401546
+    },
+    {
+     "programmeCostR": 312.015,
+     "enrolledMW": 155.6530454830657
+    },
+    {
+     "programmeCostR": 342.30618304829926,
+     "enrolledMW": 0
+    }
+   ]
+  },
+  "2035": {
+   "capMW": 1288,
+   "gainR": 169.36044640347077,
+   "wearR": 4.736243063376841,
+   "netGainR": 164.62420334009394,
+   "costR": 347.0424261116761,
+   "incrementalMWh": 36971.40039775376,
+   "runs": [
+    {
+     "programmeCostR": 160.04999999999998,
+     "enrolledMW": 1288
+    },
+    {
+     "programmeCostR": 169.95000000000002,
+     "enrolledMW": 0
+    },
+    {
+     "programmeCostR": 342.30618304829926,
+     "enrolledMW": 0
+    }
+   ]
+  }
+ }
+}
