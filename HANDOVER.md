@@ -1855,3 +1855,52 @@ Checks: LP-key test (default unchanged; the option on changes only its own rows 
 by the loss only); the evening peak cut and morning return per GW enrolled; the identity each year; a one-year build test (2030 and
 2035) with enrolment by year and cost against the stock alone; suite before the PR.
 For the user: G1's participation cap and pool pumps; G2's deferral window; G3/G4 one rule in both; G6's cost basis once sourced.
+
+## c7 launch plan: ready to start when claude/c7-inputs merges (user, 2 Nov 2026, message 649 (a); for review)
+
+Starts on the merged main's commit, from a new branch (claude/c7-runs), once Nick has reviewed this plan and the advisor's review
+(629) is done. Nothing else heavy runs beside it. Disk: at least 5 GB free before each piece (message 646); each run's LP cache is
+deleted once its check is written (chain_c6e.sh's rule).
+
+Common settings, every c7 run: c6e's (env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=7200, NTCSA's 20 GWh standard), plus:
+- system strength: SS=inertia SS_FC=reservecoal (62.9 GW.s with the tripped units' inertia; grid-forming H 11 s; coal first in hours
+  forecast short);
+- cost of capital: COC=central (solar and onshore wind 6.0% on closed BW5 and BW6 projects);
+- behind-the-meter batteries: BTM_STOCK=8 (backup share glide, 25% owner reserve, the defaults);
+- VPP: VPP=1 (coordinated storage, 20% enrolment cap, the resource cost basis with wear on incremental cycling, the defaults);
+- geyser control: GY=1 (0.4 kW per geyser, 30% cap, 4 h hold, R2,000/kW-yr, the defaults);
+- planning margin 0 (FIXED.bldPlanMarginPct, the default; 638 (c), TODO 14mi).
+Each run is one pathway (pathway_perfail.js) then its engine check in three groups (pathcheck.js LNG=1 GRID=1, years a 2026-30,
+b 2031-35, c 2036-40, run together), as chain_c6e.sh's one() and check(), with SS_FC=reservecoal on the check.
+
+Pieces: each run is its own background job under 2 hours (run_in_background, timeout 7,000 s), resumable: a finished pathway
+(out/pathway_<name>.json) or check group is skipped, and an interrupted pathway replays its finished passes from its LP cache
+(lpcache_<name>) and continues. A pathway that needs more than one piece is relaunched until its output exists; a run with no output
+after two attempts is reported as not run, as chain_c6e.sh does. Two solves at a time at most (memory, 15 GB).
+
+Order and expected times (pathway / check; from c6e_ssr on build 2026-11-02n, 28 min and 43 min, and the c6e system strength
+sensitivities, 25-42 min and 7-15 min; the VPP, geyser and stock rows add about 10% to the LP, so the times below allow 1.5x):
+| # | Run | Change from the common settings | Pathway | Check |
+|---|---|---|---|---|
+| 1 | c7 (central) | none | 45-90 min | 45 min |
+| 2 | s7_allbids | COC=allbids (5.5% on all bids) | 40-60 min | 15-45 min |
+| 3 | s7_blendedhigh | COC=blendedhigh | 40-60 min | 15-45 min |
+| 4 | s7_gfm1891 | GFM_H=thermal (grid-forming H 1.891 s) | 40-60 min | 15-45 min |
+| 5 | s7_rocof05 | ROCOF=0.5 | 40-60 min | 15-45 min |
+| 6 | s7_rocof15 | ROCOF=1.5 | 40-60 min | 15-45 min |
+| 7 | s7_vpppart | VPP_COST_CASE=participant (R1,565/kW-yr, wear in the incentive) | 40-60 min | 15-45 min |
+| 8 | s7_gyrot | GY_MODE=rotation (LBNL/Wits, a quarter off for an hour each) | 40-60 min | 15-45 min |
+| 9 | s7_deep40 | Deep decarbonisation without gas at 40 Mt: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 GAS_CAP=0 OCGD=1, CO2CAP 40 Mt from 2035, calibrated on the engine as run_deepnogas_cal.sh (cap += target - engine 2035 CO2 until within 0.5 Mt) | 1-2 h a round, 2-4 rounds | 45 min |
+| 10 | s7_ff2040 | Fossil-free 2040: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 (14ma's fix in main from #153: confirm the 2040 CCGT line is gone and nothing else moves against the 14ma test) | 1-2 h | 45 min |
+| 11-16 | 618's MTSAO runs, after c7's central is reviewed | (i) the outlook's High demand without gas (DEMAND=index:<3.30% a year path>, 619), and with gas (GAS_FIRST unchanged); (ii) the Reference Case's inputs without gas: High demand, COAL_EAF_PATH=2027:66,2028:67,2029:68,2030:69 and 70 for each year 2031-2040 (years not listed keep coalEAFPct, so all are listed), AVDED_OFF_AFTER=2030, REIPPP_RETIRE 0.75 GW a year 2033-36 (wind 375, solar 325, CSP 50), and with gas; (ii) again with the REIPPPP plants kept (620) | 45-90 min each | 45 min each |
+Runs 2-8 go in pairs after the central's check (2 with 3, 4 with 5, 6 with 7, 8 alone); 9 and 10 after them, as a pair; 11-16 in
+pairs once the central has been reported. Total about 12-18 hours of wall time at two at a time, in 10-14 pieces.
+
+Reported per run, as c6e's: system cost PV 2026-40 (8%) with the system strength charge, CO2, highest unserved, open-cycle share,
+coal lifted, hours short of the floor, builds by year, and for the new options: enrolled VPP MW and geyser MW by year, with the VPP's
+coordination gain against its cost where it enrols (RESULTS 'VPP coordination gain against coordination cost'). After the central:
+the presets regenerated from it (validate_pathway_presets.js), the stored panels, the full suite, and the reviewer pack's fill
+(the pack branch, 649 (b)).
+Known limitations to carry into the pack (the advisor's final text): TODO 14mi (planning-reserve peak at 10:00), 14mj (geyser
+pre-heating), 14mk (presets do not reset the c7 keys; c7's scripts unaffected), 14mf (MTSAO option limits), the VPP's resource basis
+(no South African programme publishes costs), the regional LP and stress-target demand not seeing the BTM, VPP and geyser options.

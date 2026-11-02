@@ -2037,8 +2037,9 @@ weekly System Status report, 2026 Week 42 (12-18 October). The arithmetic is our
 - No South African programme publishes its costs (user, 2 Nov 2026, message 644): Plentify-Deye (the 2.7 GWh pool; participant terms
   undisclosed); Eskom's demand response pilot of 2023 (an energy payment per verified MWh, rate unpublished); Cape Town's Power
   Heroes, run through the Ontec Karebo joint venture (terms private); NERSA has no regulatory category for VPPs (Oxpeckers, published
-  in Business Day, 26 Jul 2026). So the participant cost stays Brattle's, escalated, and the VPP is reported as a break-even beside
-  utility lithium at the same duration (RESULTS 'VPP break-even on coordinated storage').
+  in Business Day, 26 Jul 2026). So the participant cost stays Brattle's, escalated, and the VPP is reported as its coordination
+  gain against its coordination cost, with the break-even programme cost (message 647: enrolment adds no new battery, so not against
+  utility lithium; RESULTS 'VPP coordination gain against coordination cost').
 
 ## Geyser control: inputs (message 635)
 
