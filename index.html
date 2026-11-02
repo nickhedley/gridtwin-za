@@ -6423,8 +6423,10 @@ const FIXED = {
   // body, Business Day 10 Dec 2023; Brattle 0.27-0.51 kW); the comeback after the shift is the model's own. gyMode (message 638 (a)):
   // 'hold' (central), all enrolled geysers held off in each control-window hour the rule picks; 'rotation' (the cautious
   // sensitivity), LBNL/Wits's CSwitch-2033 (Executive Summary, May 2024, Tables ES 2-3): a quarter of the enrolled geysers off for
-  // an hour each in rotation, so each window hour's reduction is a quarter of the enrolled MW (GEYSER_CTL.rotationShare). gyDeferH: each hour's reduction returned within
-  // this many hours, the same day (4, range 2-6: LBNL/Wits Tables ES 2-3, 17:00-21:00 at 99% comfort; Ausgrid 2016). gyLossPct:
+  // an hour each in rotation, so each window hour's reduction is a quarter of the enrolled MW (GEYSER_CTL.rotationShare).
+  // gyDeferH: under 'hold' each hour's reduction returns spread evenly over this many hours after it (message 641, a staggered
+  // controller; 'rotation' returns in the next hour, GEYSER_CTL.rotationOffH) (4, range 2-6: LBNL/Wits Tables ES 2-3, 17:00-21:00
+  // at 99% comfort; Ausgrid 2016). gyLossPct:
   // extra energy returned for the shift (0% central, LBNL/Wits Table ES 3: controlled switching slightly reduced annual energy;
   // drShiftLossPct's 6% a sensitivity). gyCostRkWyr: R2,000 per kW-yr of gross reduction (range R1,000-4,500; our derivation from
   // HotBot's R5,399-6,399 including installation and 5 years' service, Investec/Plentify FAQ, Jun-Jul 2023; Brattle; Cadmus for BPA
@@ -7546,7 +7548,8 @@ function dieselAvailMW(p){
 const DR_SHIFT_TOP_H = 6;
 // rotationShare: in LBNL/Wits's rotation (CSwitch-2033, Tables ES 2-3) a quarter of the enrolled geysers are off at a time, an hour
 // each, over 17:00-21:00 (about 7.5% of all geysers at 30% enrolled): -157 MW in winter, -24 W ADMD across 6.4 million geysers.
-const GEYSER_CTL = { y0: 2023, n0: 5.2e6, y1: 2033, n1: 6.4e6, windows: [[6, 9], [17, 21]], rotationShare: 1 / 4 };
+// rotationOffH: each geyser in the rotation is off for one hour, so its deferral is that hour (message 641).
+const GEYSER_CTL = { y0: 2023, n0: 5.2e6, y1: 2033, n1: 6.4e6, windows: [[6, 9], [17, 21]], rotationShare: 1 / 4, rotationOffH: 1 };
 // Electric geysers in year y (GEYSER_CTL), linear between its two points, held flat outside them.
 function geyserCount(y){
   const G = GEYSER_CTL, t = Math.max(0, Math.min(1, (y - G.y0) / (G.y1 - G.y0)));
@@ -7554,29 +7557,22 @@ function geyserCount(y){
 }
 // The hour's share of the geyser shape (G3): 1 inside a control window, 0 outside.
 function geyserShare(hourOfDay){ return GEYSER_CTL.windows.some(([a, b]) => hourOfDay >= a && hourOfDay < b) ? 1 : 0; }
-// Geyser control settings from the FIXED keys in S, for year y: the enrolment cap (MW of gross reduction), the deferral window (h),
-// the loss (share), the cost (R/kW-yr) and rot, the share of the enrolled MW off in a window hour (1 'hold', a quarter 'rotation').
+// Geyser control settings from the FIXED keys in S, for year y: the enrolment cap (MW of gross reduction), the deferral D (h: gyDeferH
+// for 'hold', GEYSER_CTL.rotationOffH for 'rotation'), the loss (share), the cost (R/kW-yr) and rot, the share of the enrolled MW off
+// in a window hour (1 'hold', a quarter 'rotation').
 // Read by the engine and the build LP alike.
 function geyserCtl(S, y){
   const cap = +S.gyEnrolCapPct, kw = +S.gyKwPerGeyser, H = +S.gyDeferH, loss = +S.gyLossPct, cost = +S.gyCostRkWyr;
   if (!(cap >= 0 && cap <= 100) || !(kw >= 0) || !(Number.isInteger(H) && H >= 1 && H <= 23) || !(loss >= 0) || !(cost >= 0))
     throw new Error('gyEnrolCapPct (0-100), gyKwPerGeyser, gyDeferH (a whole number of hours, 1-23), gyLossPct or gyCostRkWyr out of range');
   if (S.gyMode !== 'hold' && S.gyMode !== 'rotation') throw new Error("gyMode must be 'hold' or 'rotation': " + S.gyMode);
-  return { capMW: geyserCount(y) * cap / 100 * kw / 1000, H, loss: loss / 100, costRkWyr: cost, rot: S.gyMode === 'rotation' ? GEYSER_CTL.rotationShare : 1 };
+  const rotOn = S.gyMode === 'rotation';
+  return { capMW: geyserCount(y) * cap / 100 * kw / 1000, H: rotOn ? GEYSER_CTL.rotationOffH : H, loss: loss / 100, costRkWyr: cost,
+    rot: rotOn ? GEYSER_CTL.rotationShare : 1 };
 }
-// Water-fill amount into the hours idx of lvl (lowest first, to a common level), adding to add[]; returns what was placed. The
-// shape of the shiftable-load return in simulate (the 'water-fill' note there), for geyser control's return (G4).
-function waterFillInto(lvl, add, idx, amount){
-  let left = amount;
-  for (let pass = 0; pass < 48 && left > 1e-9 && idx.length; pass++){
-    const cur = i => lvl[i] + add[i], low = Math.min(...idx.map(cur));
-    const at = idx.filter(i => cur(i) <= low + 1e-6), nxt = Math.min(...idx.map(i => cur(i) > low + 1e-6 ? cur(i) : Infinity));
-    const put = nxt === Infinity ? left : Math.min(left, (nxt - low) * at.length);
-    for (const i of at) add[i] += put / at.length;
-    left -= put;
-  }
-  return amount - left;
-}
+// The staggered return (message 641): an hour's deferred heating comes back spread evenly over the D hours after it, x (1 + loss).
+// The one rule for the engine and the build LP; returns the share of the deferred MW returned in each of those hours.
+function geyserReturnShare(G){ return (1 + G.loss) / G.H; }
 
 const BTM_STOCK = {
   y0: 2026,                            // the base year: its metered demand already holds the 2026 stock as it then behaved (message 622)
@@ -8339,38 +8335,35 @@ function simulate(u, prof, outPath, _soc0){
   };
 
   // Geyser control as a build option (HANDOVER 'Geyser control (and pool pumps) as a VPP build option: design', G3-G4 and G7;
-  // messages 633-635). Off (gyBuildOn 0) none of this runs and load is as before. Each day: the enrolled MW (gyEnrolMW, from the
-  // build) x the hour's share of the geyser shape is taken off each control-window hour that is among the day's six highest
-  // net-load hours, in time order, and (1 + loss) times it is returned by water-filling into the lowest net-load hours from the
-  // next hour to gyDeferH hours later, the same day, none of them a reduction hour; a reduction with nowhere to return is not made
-  // (no unmet hot water). The build LP shifts under the same limits (window share, deferral band, same day, loss), choosing its
-  // hours; this is the engine's choice within them. Identity (G7): each day's energy rises by the loss only, asserted.
+  // messages 633-635 and 641). Off (gyBuildOn 0) none of this runs and load is as before. Each day: the enrolled MW (gyEnrolMW, from
+  // the build) x the hour's share of the geyser shape (a quarter of it in 'rotation') is taken off each control-window hour that is
+  // among the day's six highest net-load hours. The return is one fixed rule, the build LP's too (message 641, a staggered
+  // controller): each hour's deferred heating comes back spread evenly over the D hours after it (gyDeferH for 'hold', the
+  // rotation's one hour), x (1 + loss), across midnight into the next day's first hours as physics does (the year's last hours into
+  // its first). Identity (G7, rolling): the year's energy rises by the loss only, asserted.
   const _gyOn = (p.gyBuildOn | 0) > 0;
   let _gyD = null, _gyOut = null;
   if (_gyOn){
-    const G = geyserCtl(p, p.scenarioYear), mw = +p.gyEnrolMW;
+    const G = geyserCtl(p, p.scenarioYear), mw = +p.gyEnrolMW, back = geyserReturnShare(G);
     if (!(mw >= 0)) throw new Error('gyEnrolMW must be 0 or more: ' + p.gyEnrolMW);
     if (mw > G.capMW + 0.05) throw new Error('gyEnrolMW ' + mw + ' above the enrolment cap ' + G.capMW.toFixed(1) + ' MW');   // 0.1 MW: the LP bound's precision
     _gyD = new Float64Array(HOURS);
-    let red = 0, ret = 0, days = 0;
+    let red = 0, days = 0;
     if (mw > 0) for (let h0 = 0; h0 + 24 <= HOURS; h0 += 24){
-      const net = [], add = new Array(24).fill(0);
-      for (let k = 0; k < 24; k++) net.push(_netDR(h0 + k));
+      const net = []; for (let k = 0; k < 24; k++) net.push(_netDR(h0 + k));
       const top = new Set([...Array(24).keys()].sort((a, b) => net[b] - net[a]).slice(0, DR_SHIFT_TOP_H));
-      const R = [...Array(24).keys()].filter(k => geyserShare(k) > 0 && top.has(k));
-      let dRed = 0, dRet = 0;
-      for (const k of R){
-        const band = []; for (let j = k + 1; j <= Math.min(23, k + G.H); j++) if (!R.includes(j)) band.push(j);
-        if (!band.length) continue;
-        const x = mw * geyserShare(k) * G.rot;   // a quarter of it in 'rotation' (message 638 (a))
-        dRet += waterFillInto(net, add, band, x * (1 + G.loss)); add[k] -= x; dRed += x;
+      let dRed = 0;
+      for (const k of [...Array(24).keys()].filter(k => geyserShare(k) > 0 && top.has(k))){
+        const x = mw * geyserShare(k) * G.rot;
+        _gyD[h0 + k] -= x; dRed += x;
+        for (let i = 1; i <= G.H; i++) _gyD[(h0 + k + i) % HOURS] += x * back;
       }
-      let dNet = 0; for (let k = 0; k < 24; k++){ _gyD[h0 + k] = add[k]; dNet += add[k]; }
-      if (Math.abs(dNet - G.loss * dRed) > 1e-6 * Math.max(1, dRed)) throw new Error('geyser control: day ' + h0 / 24 + ' energy changes by ' + dNet + ' MWh, not the loss ' + G.loss * dRed);
-      red += dRed; ret += dRet; if (dRed > 0) days++;
+      red += dRed; if (dRed > 0) days++;
     }
+    let net = 0, ret = 0; for (let h = 0; h < HOURS; h++){ net += _gyD[h]; if (_gyD[h] > 0) ret += _gyD[h]; }
+    if (Math.abs(net - G.loss * red) > 1e-6 * Math.max(1, red)) throw new Error('geyser control: the year\'s energy changes by ' + net + ' MWh, not the loss ' + G.loss * red);
     _gyOut = { year: p.scenarioYear, geysers: geyserCount(p.scenarioYear), capMW: G.capMW, enrolledMW: mw, deferH: G.H, lossShare: G.loss,
-      reducedGWh: red / 1000, returnedGWh: ret / 1000, daysShifted: days, costR: mw * 1000 * G.costRkWyr, deltaMW: _gyD };
+      reducedGWh: red / 1000, returnedGWh: red * (1 + G.loss) / 1000, daysShifted: days, costR: mw * 1000 * G.costRkWyr, deltaMW: _gyD };
   }
   // Behind-the-meter batteries and the virtual power plant (HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum
   // version: design'; messages 621 (b) and 622-625). Off (btmStockGWh 0, vppBuildOn 0) none of this runs and load is as before.
@@ -12149,13 +12142,17 @@ function bldBuildLP(opts){
   // Geyser control as a build option (HANDOVER 'Geyser control (and pool pumps) as a VPP build option: design', G3 and G6; messages
   // 633-635). Off (gyBuildOn 0): nothing is written. On: gy_<y>, MW of gross peak reduction enrolled (linear build, at most
   // geyserCount(y) x gyEnrolCapPct x gyKwPerGeyser), at gyCostRkWyr per kW-yr; per hour gs_ (reduction) at most gy x the hour's
-  // share of the geyser shape, gr_ (return) in the gyDeferH hours after a control-window hour; per day the return is (1 + loss) x
-  // the reduction, lagging it by 1 to gyDeferH hours (gyup_, gylo_: a band on the cumulative sums), all the same day; credited in
-  // the planning reserve row at gy x the peak hour's share. The engine shifts under the same limits (simulate, G4).
+  // share of the geyser shape (a quarter in 'rotation'), the LP choosing how much to defer each hour within it. The return is fixed,
+  // not chosen (message 641, the engine's rule): each hour's gs_ comes back spread evenly over the D hours after it, x (1 + loss),
+  // written into the balance rows directly; past midnight it wraps into the same modelled day's first hours (a representative day
+  // stands for identical days, so tomorrow's early hours are today's). Credited in the planning reserve row at gy x the peak
+  // hour's share.
   const GY_ON = (S.gyBuildOn | 0) > 0, GY_Y = {};
   if (GY_ON) for (const y of Y) GY_Y[y] = geyserCtl(S, y);
   const GY_H = GY_ON ? GY_Y[Y[0]].H : 0, GY_RED = h => GY_ON && geyserShare(h) > 0;
-  const GY_RET = h => { for (let j = Math.max(0, h - GY_H); j < h; j++) if (GY_RED(j)) return true; return false; };
+  // The reductions returned in hour h: the window hours j with h - j (mod 24) from 1 to D, each at geyserReturnShare (message 641).
+  const GY_BACK = (y, h) => [...Array(24).keys()].filter(j => GY_RED(j) && (h - j + 24) % 24 >= 1 && (h - j + 24) % 24 <= GY_H)
+    .map(j => ({ j, c: geyserReturnShare(GY_Y[y]) }));
   const BTM_Y = {}; if (BTM_ON) for (const y of Y) BTM_Y[y] = btmStock(S, y);
   // The profile of representative or stress day r in year y, MW per MWh usable, on that day's own solar (as sp below) and the
   // existing rooftop fleet (EX.rooftop: new rooftop is a decision here, so it cannot set a fixed profile; the engine does the same).
@@ -12549,7 +12546,7 @@ function bldBuildLP(opts){
         // Enrolled batteries out of the passive profile (message 637): + profile x 0.75 x E on the left, E = vppp x 2.5 h.
         + (VPP_ON ? lpTerm(btmDay(y, r)[h] * BTM_Y[y].use * VPP_HN, 'vppp_' + y, 6) : '')
         // Geyser control (G3): load taken off and returned.
-        + (GY_RED(h) ? ' + gs_' + k : '') + (GY_RET(h) ? ' - gr_' + k : '')
+        + (GY_RED(h) ? ' + gs_' + k : '') + (GY_ON ? GY_BACK(y, h).map(q => ' - ' + q.c.toFixed(6) + ' gs_' + y + '_' + r.d + '_' + q.j).join('') : '')
         // The cycling stock's profile on the change from 2026, [C(y) - C0], in demand (P3, messages 622-624 and 630).
         + ' = ' + (BTM_ON ? dem - fixed + btmDay(y, r)[h] * BTM_Y[y].use * (BTM_Y[y].C - BTM_Y[y].C0) * 1000 : dem - fixed).toFixed(1));
       if (GY_RED(h)) L.push(' gysmax_' + k + ': gs_' + k + ' - ' + (geyserShare(h) * GY_Y[y].rot).toFixed(4) + ' gy_' + y + ' <= 0');   // G3: the shape's share (x a quarter in 'rotation')
@@ -12834,17 +12831,6 @@ function bldBuildLP(opts){
         // Within-day discharge still cannot exceed the stored energy.
         L.push(' dur_'+kk+': ' + dis.join(' + ') + ' - ' + capTerms.join(' - ')
           + ' <= ' + (ex*S2.hours));
-      }
-      // Geyser control (G2-G3): the day's return is (1 + loss) x its reduction, and lags it by 1 to gyDeferH hours: by the end of
-      // hour h no more returned than (1 + loss) x what was taken before h (gyup_), and at least (1 + loss) x what was taken by
-      // h - gyDeferH (gylo_). Written where each bound can bind.
-      if (GY_ON){
-        const vk = y + '_' + r.d, f = (1 + GY_Y[y].loss).toFixed(4), hs = [...Array(24).keys()];
-        const ret = hs.filter(GY_RET), red = hs.filter(GY_RED);
-        const cumR = h => ret.filter(j => j <= h).map(j => 'gr_' + vk + '_' + j), cumG = m => red.filter(j => j <= m).map(j => ' - ' + f + ' gs_' + vk + '_' + j);
-        for (const h of ret) L.push(' gyup_' + vk + '_' + h + ': ' + cumR(h).join(' + ') + cumG(h - 1).join('') + ' <= 0');
-        for (const j of red) if (j + GY_H <= 23) L.push(' gylo_' + vk + '_' + (j + GY_H) + ': ' + cumR(j + GY_H).join(' + ') + cumG(j).join('') + ' >= 0');
-        L.push(' gyday_' + vk + ': ' + cumR(23).join(' + ') + cumG(23).join('') + ' = 0');
       }
     }
     // Firm-capacity reserve margin at the annual peak. Wind and solar get no
@@ -21605,7 +21591,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02s';
+const BUILD_STAMP = '2026-11-02t';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -21704,7 +21690,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
   bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
-  btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, waterFillInto,
+  btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
   ssThermalH, ssGfmH, ssLossMW, ssRequirementGWs, ssTdpCondMVA });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
 const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,

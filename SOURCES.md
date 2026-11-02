@@ -2034,7 +2034,8 @@ build option: design', G1-G8), as given; each is one named constant or FIXED key
 - Rotation, the cautious sensitivity (message 638 (a); gyMode 'rotation', central 'hold'): LBNL/Wits Executive Summary (May 2024),
   Tables ES 2-3, CSwitch-2033: a quarter of the 30% enrolled geysers switched off for one hour each, in rotation over 17:00-21:00
   (about 7.5% of all geysers off at a time): -157 MW in winter, -24 W ADMD across 6.4 million geysers. In the model a window hour's
-  reduction is a quarter of the enrolled MW, returned within the deferral window.
+  reduction is a quarter of the enrolled MW, returned in the next hour (each geyser's one hour off; message 641). Under 'hold'
+  each hour's reduction returns spread evenly over the following gyDeferH hours (a staggered controller, message 641).
 - Deferral window: 4 hours, range 2-6 (LBNL/Wits Tables ES 2-3, 17:00-21:00 at 99% comfort; Ausgrid 2016).
 - Extra loss from shifting: 0% central (LBNL/Wits Table ES 3: controlled switching slightly reduced annual energy); 6% a sensitivity
   (the existing drShiftLossPct).
