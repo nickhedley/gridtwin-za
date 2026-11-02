@@ -799,6 +799,57 @@ ElectraNet: A$0.75-5.9m per unit). (c) A grid-forming battery's inertia each hou
 al. 2017) about 5%. (e) Limitations to state: fault level national, not by substation; no voltage control; the 1 Hz/s limit borrowed
 from Ireland and AEMO, as South Africa has none.
 Minimum version for the note: 573 (a); what it leaves out, and the full version after the note: 14lt (message 574).
+Progress (build 2026-11-02a, branch claude/system-strength-min, messages 603 (a), 604 (b), 606): the minimum version is built behind
+FIXED.ssMode, page default 'sync6' (today's floor; LP text and every engine output as main's except inertiaGVAs, which now reads the
+one H set); 'inertia' adds the floor to the engine (coal commitment lifted, D3) and the build LP (grid-forming batteries, condenser
+conversions and new condensers, slack at VoLL per MW.s), the fault-level adder (ssFault), pathway SS/ROCOF/SS_FLAT_GWS/GFM_H/SS_LIFT/FAULT
+recorded and applied by pathcheck.js, and harness/pathway/ss_engine_check.js (lambda by year, SS_COAL_LAMBDA). RESULTS 'System strength,
+minimum version: engine checks, lambda and the one-year build test'. Open, for the parent session and Nick: (1) the full suite and
+stored panels on this build; (2) review, then the c6e rebuild on 'inertia' (about 1-2 h) and the 0.5 Hz/s, 40 GW.s, GFM_H 1 and 11 s
+and fault-level sensitivities; (3) the engine's lift counts only what must spin before dispatch (ssLiftForecast 'mustspin', chosen as
+the conservative option: no short hours where coal can be lifted, but grid-forming batteries the LP builds do not reduce the coal lift);
+'prev' (the hour before's pumped storage, gas and grid-forming inertia) leaves 2.6% of c6e's 2035 hours short: decide, or have the
+engine reserve battery headroom for the grid-forming MW; (4) D1 as written divides coal output by lambda, which with lambda the
+committed-to-output ratio would credit less than output: implemented as output x lambda (conservative at the lower quartile), and the
+LP's own committed coal (cm_, bldCoalCommit 1 in c6) is not used: confirm; (5) c7: page default to 'inertia' when the presets are
+regenerated (gen_pathway_presets.py stops on an 'inertia' run until it carries ssGfmMW and ssCondMVA).
+Decided 1 Nov 2026 (message 610): (a) the page default stays 'sync6' (today's 6 GW floor); 'inertia' is a run setting for c7, and the
+page switches when c7 regenerates the presets. (b) D1 is coal output x the committed-to-output ratio (lower quartile); c6e is rebuilt
+on it. Before c7: the one-year 2035 test with the build LP's own coal commitment variable (cm_) in place of the ratio, both reported;
+c7 uses the commitment variable if it solves in reasonable time. (c) The engine's lift: 'prev' (grid-forming batteries' spare power,
+pumped storage and gas from the hour before) is c7's central ssLiftForecast, 'mustspin' the cautious sensitivity; coal lifted (TWh)
+and hours short reported under both for 2035 and 2040, on the one-year build and the c6e rebuild (pathcheck.js SS_FC).
+
+14mc. Coal daily swing, after the note (user, 2 Nov 2026, message 614; message 611, RESULTS 'Daily coal swing and the evening ramp').
+Over January-August 2026 the model's daily coal swing is about 10% below Eskom's (3,330 against 3,689 MW), and pumped storage carries
+about half the model's evening ramp against about a third in Eskom's data. Test a lower 2026-29 coal minimum and a shorter minimum down
+time against Eskom's daily swing and evening ramp shares, and change the model only if a test closes the gap without breaking the
+midday calibration.
+
+14md. Done (2 Nov 2026, message 616; RESULTS 'Coal first in hours forecast short'). (a) Held headroom stays held through shedding;
+in an hour forecast short coal is lifted first ('reservecoal', c7's central): unserved back to the rebuild's level. (b) The 2034 hour
+was a charge and a discharge together above the held headroom; capped (build 2026-11-02e). Open: the forecast misses a few hours
+(0.2 GWh/yr on the one-year build); a tighter forecast (gas fuel and pumped-storage floor limits) only if c7 shows it matters.
+
+14me. NTCSA's MTSAO 2027-2036 against the model's inputs, and two c7 sensitivities (user, 2 Nov 2026, message 617; extends 14lk).
+(a) Compare our inputs against its Reference Case, reading the report itself (Drive, added 31 Oct 2026), and report each difference
+with its effect before changing anything: demand path (high case 238.3 TWh / 35.8 GW in 2026 to 329.7 TWh / 49.1 GW in 2036, as
+quoted by EE Business Intelligence, 1 Nov 2026; check against the report); Eskom availability (66% FY2027 to 70% by 2031, downside 65%)
+against the model's coal availability path; Eskom shutdowns (about 16.2 GW by 2036, 8.75 GW in 2029-30) against the model's coal
+schedule; Cahora Bassa (1,150 MW) and Avon and Dedisa (1,005 MW) contracts ending in 2030; about 3 GW of existing renewables at
+contract end in 2033-36 (the model keeps REIPPPP plants running after their PPAs, message 542 (b)). (a) is done: RESULTS 'NTCSA's MTSAO 2027-2036 against the model's inputs' (PR #150).
+(b) Replaced (user, 2 Nov 2026, message 618): the 65% case is c7's own availability, dropped. After c7's central, on c7's settings,
+two rebuilt runs: (i) no new gas at the MTSAO's High demand (served growth calibrated as in 617 (a)); (ii) the MTSAO Reference Case's
+inputs without new gas: High demand, 70% coal availability, Avon and Dedisa removed after 2030, 3 GW of REIPPPP retired in 2033-36.
+Each also with gas allowed. Report each against c7 and against the same inputs with gas: cost, CO2, unserved energy and open-cycle
+share by year, and new builds by 2036. (ii) is also run with the REIPPPP plants kept (message 620), so that one assumption's effect shows on a rebuilt plan;
+the report states that (ii) retires them only to match the outlook (the central keeps them, SOURCES). Choices for the inputs: message
+619, SOURCES under the outlook's entry (PR #151). c7's central demand stays on UCT ESRG's IRP reference forecast unless the user says otherwise.
+Needs first: pathway options for a coal availability path by year, Avon and Dedisa removed (engine and build LP), and the existing
+REIPPPP fleet retired by year in the build LP and engine (DEMAND=index:<file> already takes the demand path). Open points, to be
+put to the user with the design: the High path's years after 2036 (the outlook stops there); 2027-35 by chart reading (about 1 TWh)
+or a smooth path between the stated end points; the availability path on the text's financial years (70% from 2031) or Figure 6's
+calendar years (70% from 2030); the REIPPPP retirements by year (the report gives 2033-36 as a block).
 
 14lp. Battery wear and longer lithium, from DNV's BESS Intelligence Report 2026 (user, 31 Oct 2026, message 548; SOURCES 'Long-duration
 storage: DNV'), after the note. (1) Wear: DNV reports capacity guarantees of 60-80% of nameplate at year 10 and augmentation as
@@ -878,6 +929,28 @@ MW of CCGT in 2040'): in bldBuildLP cut the freed-connection credit (rp_) for ga
 their build there at zero), as capCharge already gives them no cost. Test with the LP-key test: the LP text and key unchanged for every
 run without a fossil end year. Rerun Fossil-free 2040 as part of c7 and confirm only the 2040 CCGT line moves. The plants never run and
 appear in no published figure (the engine check and the preset carry no gas from 2040).
+
+14lx. For the note's release, on one branch, merged when the note goes out, filled from the c7 rebuild (user, 1 Nov 2026, messages 579 and
+580 (f)). Order: after system strength and behind-the-meter batteries; generator and page template this week on c6e data as a
+placeholder; regenerated from c7 on 10-11 Nov; a visible-text diff for the advisor before merge. (1) A preset 'No gas 2035': the no-gas
+pathway with diesel peakers (s_nogas_dsl re-run on c7) at 2035 (2040 only if the user says so), generated like the other pathway presets;
+caption in the plain style of message 580 (c), beginning "No gas" (South Africa's open-cycle plants run on diesel), e.g. "No gas;
+diesel peakers as backup. Adds [w] GW of wind, [s] GW of solar, [b] GW of [h]-hour batteries and [d] GW of diesel peakers; retires [c] GW
+of coal. Costs [x]% more than the least-cost pathway over 2026-40. Meets NTCSA's reliability standard." (2) Four build-plan pages, one
+per plan (Least-cost, No gas, Deep decarbonisation, Fossil-free): new build by year and technology in MW, 2026-40, with totals and
+remaining coal (the reviewer Doc's build-table layout); a short description (what the plan is; system cost and CO2 2026-40 against the
+least-cost pathway; cost per tonne avoided where relevant; caveats: hypothetical build rates and unproven iron-air where they apply,
+simplified system strength). Every figure generated from the run files by a script, with a check that the pages match the runs; the
+site's styling; the site-copy rules; no internal codes. (3) The four captions end "See the optimiser's build plan here", 'here' linking
+to the page, outside the word cap; validate_links and validate_public_text cover the new pages.
+
+14ly. Eskom's tariff path after 2027/28, after the note (user, 1 Nov 2026, messages 582, 583 and 584; 584 replaces 583 (a) and 582 (a)'s
+central). In the retail panel and everything that reads it (household bills, rooftop and wheeling paybacks). Central: +1.1% a year real
+from 2028/29 to 2034/35 (Eskom's 5.8% nominal against its own 4.7%), flat in real terms from 2035/36. Sensitivities: flat in real terms
+throughout; +2.7% a year real to 2034/35 (5.8% against the model's 3%), then flat. Each computed in the code from its inputs (5.8%,
+4.7%, 3%), not typed. This changes the central bills and paybacks from the year after MYPD6: state it on the page and in RESULTS. Basis:
+Eskom's impairment-test assumption, 2026 annual financial statements note 3.3.2, p.46, and notes 4.3-4.4, p.50 (SOURCES 'Eskom tariff
+path after 2027/28'). Show the range in the outputs that depend on it (bill paths, payback years) and record the results in RESULTS.
 
 14kl. Unsourced defaults found in the site-text review (user, 28 Oct 2026, messages 470 and 471 (j), (l); branch claude/site-text,
 build 2026-10-29a). Each is now labelled on the page as an assumption rather than given a basis it does not have; each needs a

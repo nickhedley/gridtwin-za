@@ -2307,3 +2307,89 @@ GreenCape's: the user's decision is that those paths are conservative.
   the model has neither (TODO 14lp (1)).
 - 8-hour tenders in California, Australia and the UK chose lithium (p. 31) (TODO 14lp (2)).
 
+
+## System strength: inertia constants and the largest credible loss (user, 1 Nov 2026, message 578; for the minimum version, TODO 14lo, 14lt)
+
+Inertia constants, H in seconds on the machine's MVA base (user, 1 Nov 2026, messages 578 (a), 581 (a) and 585 (a)). Source: ERCOT,
+"Inertia: Basic Concepts and Impacts on the ERCOT Grid", Version 2 (revised 2 Dec 2024), Table 1, read in full by the advisor (message
+585 (a)): nuclear 3.79-5.09 s; coal 2.43-5.2; combustion turbine 0.07-9.3; gas steam 1.18-4.68; combined cycle 1.2-9.3; hydro 2-3;
+reciprocating engine 0.2-2; wind, solar and battery 0.
+https://www.ercot.com/files/docs/2018/04/04/Inertia_Basic%20Concepts%20and%20Impacts%20on%20the%20ERCOT%20Grid_2024.docx
+Central values (the user's, all inside the 2024 ranges): nuclear 4.1, coal 3.7, combined cycle 5.0, open cycle 5.0, CSP steam 3.0, hydro
+and pumped storage 2.5. Low and high sensitivities: each range's ends. MVA = MW / 0.9 unless a unit's MVA is known. The model's open-cycle
+plant, existing and new, on diesel or gas, is combustion turbines (ocgtDieselMW, b_ocgt, b_ocgd), so it takes the combustion-turbine
+range; the model has no reciprocating engines (were they added, the reciprocating range with a central 1.0 s applies).
+South African reference point (the advisor's note): Komati, 1.3 s.
+
+Largest credible loss by year (user, message 578 (b); rule 366, conservative, our assumption, stated as such): 2,160 MW, three 720 MW
+units (NTCSA ASTR, section 3.4.2), while any coal station with three or more such units stands; after that, the largest single unit
+standing: a Koeberg unit, about 930 MW sent out, unless a larger new unit is built.
+
+## System strength, minimum version: the remaining inputs (user, 1 Nov 2026, messages 604 (b) and 606; TODO 14lo, 14lt)
+
+From the advisor's note (docs/advisor/system-strength-2026-10-31.md on claude/advisor-notes; figures as research helpers reported
+them, not read in the repository unless stated) and the user's decisions:
+- Requirement: 50 x the largest credible loss / (2 x RoCoF), RoCoF 1 Hz/s central (0.5 Hz/s and a flat 40 GW.s as sensitivities);
+  54 GW.s at 2,160 MW (Stellenbosch CRSES, Insights into inertia management, Jul 2025, gives the same 54 GW.s at 1 Hz/s). South Africa
+  sets no RoCoF limit (NTCSA ASTR 2026/27-2030/31 sets none): 1 Hz/s is borrowed from Ireland (EirGrid/SONI) and AEMO, stated.
+- TDP 2024 Rev2 synchronous condensers, committed: 5,850 MVAr in 2025-29 (Gromis, Aggeneis, Ferrum, Gamma, Koruson, Grassridge, Vuyani)
+  and 900 MVAr in 2030-34 (pp. 8, 51, 53-54); counted from 2029 and 2034, the end of each window (conservative). No cost given.
+- Condenser inertia: H = 1.3 s on the machine's MVA (Komati's converted 139 MVA machines; Tomlinson et al., CIGRE Science & Engineering
+  33, Eskom RT&D); 5.2 s with a flywheel, not modelled.
+- Condenser costs, 2021 rand (Tomlinson et al., CIGRE S&E 33): conversion of a retired coal unit R265m for the first (about 100 MVAr)
+  and R132m each further unit; new machines R411m (100 MVAr) and R700m (400 MVAr). Modelled: conversions at R132m per 139 MVA machine,
+  one per retired unit (the first unit's premium is not modelled: the LP is linear); new build at R700m per 400 MVAr; escalated to
+  January 2026 by CPI_APR21_TO_JAN26.
+- Condenser economic life 30 years: GHD Advisory, 'Economic life for synchronous condensers', report for ElectraNet, 28 June 2019, p.20
+  ("30 years is recommended as the appropriate economic asset life"). Fixed operating cost 1% of capital a year: ElectraNet, 'System
+  Strength Economic Evaluation Report', 18 February 2018, p.21 ("up to 1% of the total capital cost"). Both are Australian
+  transmission-company figures (message 606).
+- Grid-forming batteries: a build choice at 5% of battery project cost (Transgrid, system strength MCC report, Aug 2025, p.36),
+  counting toward inertia only (not fault level), limited each hour by unused power. Effective H central 1.9 s, half the thermal
+  fleet's H on the user's constants (the engine's existing basis: 0.5 x (0.70 coal + 0.12 nuclear + 0.10 CCGT + 0.08 hydro)); this
+  central is cautious. Sensitivities 1 s and 11 s; 11 s from ARENA, Hornsdale Power Reserve Upgrade, summary report (15 Dec 2023, p.16):
+  about 2,070 MW.s on 150 MW, effective H 11.02 s (as reported by the user; not read in the repository).
+- Fault level, a sensitivity only: AEMO ISP 2024 Appendix 7, p.21, system strength remediation up to A$137k per MW of new inverter
+  capacity (upper bound), and half of it, on new wind, solar and batteries. AUD/ZAR: South African Reserve Bank, Selected historical
+  rates, series 'Australia: Dollar per Rand', 0.0855 on 2026-10-30 (the latest value; read on the SARB page by the user, 1 Nov 2026,
+  https://www.resbank.co.za/en/home/what-we-do/statistics/key-statistics/selected-historical-rates). Held as SARB publishes it (A$ per
+  rand) in one constant; the code takes its inverse, about R11.70 per A$. A$137k/MW is then about R1,602/kW, half about R801/kW. SARB
+  gives four decimals, so the inverse carries about +/-0.07% from rounding.
+- Largest credible loss: as above ('System strength: inertia constants and the largest credible loss'). In UC_FLEET, Medupi (5 x 720 MW)
+  and Kusile (4 x 720 MW) are the stations with three or more 720 MW units; both stand to 2040 in every plan that keeps coal.
+
+## Eskom tariff path after 2027/28 (user, 1 Nov 2026, messages 582, 583 and 584; for TODO 14ly, after the note)
+
+Eskom, Annual financial statements 2026, note 3.3.2 (impairment assessment, key assumptions, price), printed page 46: after MYPD6's
+8.76% (2027) and 8.83% (2028), tariff increases of "an average of 5.8% from 2029 until 2050", nominal. Note 3.3.2 does not state its
+inflation rate; Eskom's own long-term price inflation assumption, 4.7%, is from notes 4.3 and 4.4, printed page 50. Eskom's projection
+assumes no new Eskom or IPP capacity and falling sales. Read in the primary source by the user (messages 583, 584; the PDF is in the
+user's Drive and is not committed).
+It is Eskom's impairment assumption, not an approved or proposed tariff path: headroom over carrying value is 2.3%, and the note says
+the recoverable amount "may be lower than the carrying amount if the long-term price path after 2028 is limited to inflationary
+increases". Nothing is approved beyond MYPD6 (to 2027/28).
+The model's cases (user, message 584 (a); replacing 582 (a)'s central and 583 (a)), each computed from its inputs, not typed:
+- Central: (1.058 / 1.047) - 1 = 1.1% a year real from 2028/29 to 2034/35 (Eskom's 5.8% nominal against its own 4.7%), then flat in
+  real terms from 2035/36.
+- Sensitivity, low: flat in real terms throughout after 2027/28.
+- Sensitivity, high: (1.058 / 1.03) - 1 = 2.7% a year real to 2034/35 (5.8% against the model's 3% inflation target), then flat.
+
+## Behind-the-meter batteries: stock and growth (user, 1 Nov 2026, message 592; TODO 14lq minimum version)
+
+- Deye: more than 160,000 residential battery systems in South Africa, 2.7 GWh, to be coordinated through Plentify's VPP platform
+  (announced 20 Jul 2026; energy-storage.news, "South Africa: Plentify aggregates 2.7GWh of Deye home battery systems into virtual power
+  plant"). The same article: over 90% of residential solar systems sold include a battery; 675,000 households had rooftop solar by 2025
+  (citing Stats SA; secondary for the Stats SA figure).
+- GreenCape, Energy Services 2025, pp. 24-25: business behind-the-meter batteries about 400 MWh a year at about R5,000/kWh installed.
+  https://greencape.co.za/wp-content/uploads/2025/04/Energy-Services-2025.pdf
+- The advisor's estimate (ours, labelled as such): about 600,000 homes with batteries (90% of 675,000) x about 10 kWh = about 6 GWh,
+  plus about 2 GWh in businesses = 8 GWh central; 3.2 GW at 2.5 hours. Growth 0.9 GWh a year = 0.4 business (GreenCape) + about 0.5
+  residential (about 50,000 new solar homes a year at 10 kWh, an assumption). Cases 4 and 14 GWh.
+- Coordinated share: Deye's 2.7 GWh is the fleet Plentify can reach, not enrolled capacity; it is the cap on the coordinated share, not
+  the share.
+- Backup and cycling (user, 2 Nov 2026, message 624, replacing 623's shares): home batteries are being reconfigured from backup-only to
+  evening discharge. Our assumptions, no source found yet (the advisor and the user are looking: installers, Plentify): the backup-only
+  share of the whole stock is 50% in 2026, falling linearly to 0% by 2030 (sensitivity: 50% throughout, load-shedding returns); the rest
+  cycles the energy above an owner reserve of 25% of capacity; enrolled VPP batteries come from the cycling stock and use the energy
+  above the same reserve. Design: HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum version' (claude/btm-vpp-min).
+TODO 14lu (full version, after the note) replaces the estimate with a sourced stock and growth path.
