@@ -905,6 +905,10 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mh. Geyser control (and pool pumps) as a VPP build option, before c7 (user, 2 Nov 2026, message 633): design in HANDOVER 'Geyser
+control (and pool pumps) as a VPP build option'; the advisor sources geyser count, diversified peak load, controller cost and
+participation. Limitation recorded: EV managed charging stays out until EV demand is in the model.
+
 14mg. Behind-the-meter batteries and VPPs, minimum version built (user, 2 Nov 2026, messages 621 (b), 622-629; RESULTS 'Behind-the-meter
 batteries and the VPP option, minimum version'). Open: (1) enrolled batteries under 622's rule are never chosen; the user to decide
 whether they keep the daily cycle and are called for events; (2) the regional LP and the stress-target demand do not see the options;

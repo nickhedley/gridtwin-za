@@ -1795,3 +1795,46 @@ for events, replacing 622's removal from the profile (630);
 P1's cases scale growth, P4 in btmCapexR, V1's 20% cap (50% high), V3 15 events of 3 hours (100 of 2 a sensitivity), V5 (625); V2
 33.5%, V4 Brattle's battery participant cost escalated to 2026, the planning credit at 0.75 of delivered power, one consecutive event a
 day in the engine and one forecast function (631). Build next, with the checks above.
+
+## Geyser control (and pool pumps) as a VPP build option: design (user, 2 Nov 2026, message 633)
+
+Design for the user's decisions before anything is built; c7 waits for it with 631-632. The advisor is sourcing the inputs marked
+[advisor]; none is filled from memory. Default off (LP key and page outputs unchanged) until c7 sets it.
+
+What exists: the VPP slider (FIXED vppGeyserPoolMW 4,000 x vppEnrolPct, default 0) moves a fixed MW block of geyser load each day out
+of the six highest net-load hours into the twelve lowest (water-filled, 6% more returned than taken: drShiftLossPct), in the engine
+only, with no cost, no cap from device counts and no row in the build LP.
+
+G1. Size. Controllable diversified load at the evening peak, MW = devices x participation x diversified kW per device at peak:
+  geysers: electric geyser count [advisor], diversified kW per geyser at the winter evening peak [advisor]; pool pumps if the data
+  allow (count, kW, run hours [advisor]), else left out and stated. The enrolled MW is a build-LP variable gy_<y> (linear build),
+  capped by devices x a participation cap [advisor] (the best programmes' share, as V1 for batteries), and in 2026 by pilots in hand
+  (Plentify, Cape Town's Smart Geyser pilot) [advisor].
+G2. What a controlled geyser does: its heating is shifted, not removed. Within a day the shifted energy is returned in other hours,
+  with a standing-loss uplift (drShiftLossPct 6%, recorded, unsourced today; [advisor] to source or replace). Thermal storage in the
+  tank limits the shift: at most H_max hours of a geyser's heating deferred [advisor; about 4-6 h typical for a 150-200 l tank on
+  a standard element, to be sourced], and no unmet hot water (all deferred heating returned the same day, before the morning peak
+  where it would collide).
+G3. Shifting rule in the build LP (representative and stress days): per hour, geyser load reduction gs_h <= enrolled MW x the hour's
+  share of the geyser profile [advisor: the geyser load profile, or the existing pool shape]; returned load gr_h >= 0 in the other
+  hours; per day sum gr = (1 + loss) x sum gs; the deferral window: each hour's reduction returned within H_max hours (a band of
+  rows), so the LP cannot move the morning peak's heating to the afternoon beyond the tank's reach. Linear in gy_<y>.
+G4. Shifting rule in the engine: the existing water-filling heuristic, driven by the enrolled MW from the build (in place of the
+  slider's pool x share), with the same H_max window and the same loss; the engine and the LP shift by the same rule so the build is
+  checked on its own terms.
+G5. Event or shifting limits: geyser control is a daily shift, not an event, so no event budget; the limit is the deferral window
+  (G2) and the cap on the share of an hour's load that can be moved (today 45% of the hour, kept as a guard).
+G6. Cost: controller capital (per device, R [advisor]) annuitised over its life [advisor] at the household rate (as rooftop), plus
+  running cost (platform, communications, per device a year [advisor]), divided by diversified kW at peak = R per kW-yr; participant
+  payments are transfers, not system cost. Planning credit in the reserve rows at the enrolled MW x the share of the peak hour moved
+  (credited as demand reduction at the peak).
+G7. Double count (as 622): today's geyser load, controlled or not, is inside the 2026 metered demand. Only the shift enters: the
+  enrolled MW's reduction and return are net of 2026's controlled share, which is small (pilots; Eskom's ripple control largely
+  lapsed [advisor to confirm]); stated as an identity: demand after control = metered demand - shifted + returned, energy up by the
+  loss only. The VPP slider's geyser component is off when the build option is on (as V5 for batteries).
+G8. Limitations recorded: EV managed charging is out of scope until EV demand is in the model; pool pumps only if sourced; one
+  national pool, not regional.
+Checks: LP-key test (default unchanged; the option on changes only its own rows and columns); the engine's energy balance (energy up
+by the loss only); the evening peak cut and morning return per GW enrolled; the identity each year; a one-year build test (2030 and
+2035) with enrolment by year and cost against the stock alone; suite before the PR.
+For the user: G1's participation cap and pool pumps; G2's deferral window; G3/G4 one rule in both; G6's cost basis once sourced.
