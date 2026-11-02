@@ -19804,3 +19804,36 @@ count in every script and by failure name (validate_findings 36/39, validate_res
 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Later
 commits change SOURCES, TODO and RESULTS only, and merge main's #150 and #151 (docs and harness/ext). LP-key test on 2026-11-02f:
 default and 'sync6' sha1 4e0b77a5f1f4, identical to main; 'inertia' 39f092d5e626. Visible text against main (39b3625): none changed.
+
+### Behind-the-meter batteries and the VPP option, minimum version: built default off; the stock added since 2026 takes about 135 MW off the evening peak per GWh; with 622's rule the optimiser enrols no VPP (user, 2 Nov 2026, messages 621 (b), 622-625, 627-629; HANDOVER design)
+
+Build (claude/btm-vpp-min, 2026-11-02i, main's #152 merged at 5042133, event budget 3e2780d, build 2026-11-02l): the design in HANDOVER
+'Behind-the-meter batteries and virtual power plants, minimum version'. FIXED keys, all off by default: btmStockGWh 0 (8 central),
+btmBackupPath 'glide', btmReservePct 25, btmHours 2.5, btmEff 0.9, btmCapexRkWh 5000, vppBuildOn 0, vppEnrolCapPct 20, vppEvents 15,
+vppEventHours 3, vppCostUsdKwYr 42.85 (at USD_RATE_R). Pathway: BTM_STOCK, BTM_BACKUP, VPP, VPP_CAP_PCT, VPP_EVENTS; pathcheck
+applies them from the run.
+Checks (2 Nov 2026, about 09:30-11:10 UTC):
+- Defaults: LP-key test (Least-cost path 2035, grid cost on) default and 'sync6' sha1 4e0b77a5f1f4, 'inertia' 39f092d5e626, identical
+  to main de004de; engine outputs on Today 2026 and Least-cost path 2035 identical to main's.
+- LP with the stock on: only balance-row right-hand sides change (1,180 of 2,280 rows; night hours untouched); with the VPP on, only
+  its own columns and rows (vppe_, vppd_, vppc_, vppdmax_, vppcmax_, vppsoc_, vppdur_, vppev_, vppevs_, vppev1_) and its terms in the
+  balance rows. HiGHS solves the default, stock and stock-plus-VPP LPs (Optimal, 57, 61 and 140 s).
+- Engine, stock on (Least-cost path 2035, only btmStockGWh changed): per GWh of cycling stock added since 2026, the evening (17:00-22:00)
+  mean falls about 130 MW and the annual peak about 135 MW, linear to 5 GWh (1, 3, 5 GWh: -135, -405, -675 MW); at 8 GWh central (12.1
+  GWh added by 2035) -1,431 MW at the peak, CO2 79.29 to 78.01 Mt, system cost +R3.80bn of which R4.73bn is the new battery capital in
+  btmCapexR. Hourly energy balance error at most 1.5e-11 MW; the identity B S + (C - E) + E = S holds every year.
+- Engine, VPP at its enrolment cap (3.22 GWh, 429 MW delivered): no hour forecast short on Least-cost path 2035; at coal EAF 50%, 21 h
+  forecast short, 13 event-hours used, unserved 66.90 GWh/yr against 66.65 with the stock alone, system cost +R0.52bn over the stock
+  alone (the enrolled batteries give up their daily evening cycle, message 622).
+One-year build test (message 628; c6e's settings, env_c6a.sh, GAS_FIRST=2035, HORIZON=2035, builds to 2034 fixed at c6e's with the
+VPP's enrolment free in every year, one pass, build 2026-11-02l, 11:02-11:07 UTC; scratchpad btm1y/run.sh):
+| | Objective, R bn | Against c6e's build | VPP enrolled, GW delivered by year 2026-35 | Event-hours used of 45 |
+|---|---|---|---|---|
+| c6e's build | 1,079.931 | - | - | - |
+| Stock on (8 GWh, glide) | 1,075.552 | -4.379 | - | - |
+| Stock and VPP option | 1,075.552 | -4.379 (0.000 against the stock alone) | 0 in every year | 0 |
+The stock's saving is the LP's; the household battery capital (btmCapexR) is outside the LP objective and is counted in the engine.
+Finding: under 622's rule (enrolled batteries leave the self-consumption profile) the optimiser never enrols: each enrolled GWh gives
+up a daily evening discharge, valued every day, for at most 45 event-hours a year; and this 2035 test builds no new utility batteries,
+so short-duration firm capacity has little value in it. Open for the user (message 628's second point): keep 622's rule or let enrolled
+batteries cycle daily and be called for events.
