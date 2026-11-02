@@ -19798,7 +19798,7 @@ compared by growth, not level (sent out against served); 2031's High-path point 
 
 Suite on build 2026-11-02f (claude/system-strength-min at 6300374: the system strength minimum version, 'reservecoal' as c7's
 central with the page default 'sync6', main's #149 merged; stored panels rewritten at 37a4457; ESK19679.csv present), 2 Nov 2026
-08:02-10:05 UTC in one piece, beside the c6e and MTSAO engine checks: node checks 1021/1030, audit 88/88, eng5 5/6, equal to main by
+08:12-10:03 UTC in one piece, beside the c6e and MTSAO engine checks: node checks 1021/1030, audit 88/88, eng5 5/6, equal to main by
 count in every script and by failure name (validate_findings 36/39, validate_response 86/87 with the same 35 cells, validate_consistency
 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved; validate_pathway_presets 65/65, validate_public_text
 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Later
