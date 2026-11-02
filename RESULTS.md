@@ -19841,3 +19841,28 @@ _resRoom (Infinity when nothing is held, so every other mode is unchanged). Chec
 both, none; LP-key default and 'sync6' 4e0b77a5f1f4, 'inertia' 42f0077f240b (unchanged: the LP does not read the engine); 'sync6'
 engine outputs byte-identical to main's (7ce96ead49ed). On main at 11 s the same paths left 2 hours short against 54 GW.s. lambda (SS_COAL_LAMBDA) is
 unchanged: its derivation ranks hours without grid-forming MW and does not read the requirement.
+
+### c6e rebuilt under the reviewed system strength rules (62.9 GW.s with the tripped units' inertia, grid-forming H 11 s, 'reservecoal'): R1.5bn (0.07%) more than c6e over 2026-40, no hour short in any year, 3.9 GW of grid-forming batteries and no conversions or condensers (user, 2 Nov 2026, messages 631 and the user's request after 641)
+
+Run: c6e's settings (env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=7200) plus SS=inertia SS_FC=reservecoal on claude/ss-review at 6c92935
+(build 2026-11-02n: requirement 50 x L / (2 x RoCoF) + the tripped units' inertia = 62.88 GW.s at 1 Hz/s, grid-forming H 11 s, coal in
+the LP by the ratio), 2 Nov 2026 12:10-12:38 UTC (one pass, adequate; harness/out/ss/pathway_c6e_ssr.json, not committed). Check:
+pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal, groups a-c (12:38 UTC on); c6e's own build checked in 'sync6' (pathcheck_c6e_ref, the
+same 'sync6' engine outputs), so the comparison shares one engine. Today's rebuild for comparison: RESULTS 'Coal first in hours
+forecast short' ('reservecoal' check of the 54 GW.s, 1.891 s rebuild).
+| | c6e, 'sync6' | Rebuild on 54 GW.s, 1.891 s ('reservecoal') | Reviewed rebuild, 62.9 GW.s, 11 s |
+|---|---|---|---|
+| System cost PV 2026-40 (8%) with the floor's annual charge, R bn | 2,283.9 | 2,289.7 (+5.8) | 2,285.4 (+1.5) |
+| CO2 2026-40, Mt | 1,739 | 1,737 | 1,734 |
+| Highest mean unserved, GWh/yr; highest open-cycle share | 5.46; 1.85% | 5.72; 1.92% | 5.34; 1.87% |
+| Hours short a year, highest 2026-40 | - | 0 | 0 |
+| Coal lifted, TWh a year, highest 2026-40 | - | 0.12 (2035) | 0.01 |
+| Grid-forming batteries, MW; conversions, MVA; new condensers | 0; 0; 0 | 8,877; 7,784; 0 | 3,883; 0; 0 |
+| Lithium MW (MWh); CCGT; open cycle on LNG; new diesel; pumped storage | 15,241 (94,265); 6,074; 1,126; 152; 0 | 16,578 (93,146); 5,421; 1,779; 0; 433 | 15,066 (94,648); 5,640; 1,560; 83; 0 |
+| Wind; solar, MW | 31,377; 33,830 | 31,842; 33,958 | 32,267; 33,854 |
+Synchronous-only inertia, lowest hour (grid-forming left out): 72.4 GW.s in 2026, 62.3 in 2030, 48.0 in 2031, 23.5-25.6 GW.s from 2033
+to 2040, against the 62.9 GW.s floor, which grid-forming headroom makes up (an 11 s battery credits about six times what 1.891 s did).
+Findings: with the tripped units' inertia in the requirement and the Hornsdale grid-forming constant, the floor costs about R1.5bn over
+c6e and is met by 3.9 GW of grid-forming batteries, without converting retired coal units; no hour is short in any year. Caveats: at
+11 s, synchronous inertia alone is below half the floor from 2033 (AEMO, Sep 2024, cautions against treating grid-forming inertia as a
+direct replacement); 1.891 s is the cautious sensitivity; one pathway pass; the 'mustspin' check of this rebuild follows.
