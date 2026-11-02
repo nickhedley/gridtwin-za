@@ -5293,6 +5293,20 @@ const US_CPI_2022_TO_JAN26 = US_CPI_JAN26 / 292.655;
 // Power, Technical Appendix (3 May 2023), 2022 dollars per participant a year, Table 3 (home batteries: $500 incentive, $140 other
 // costs, nothing one-off) over 7.5 kW of participant battery (Tables 1 and 4), so per kW of enrolled nameplate a year.
 const VPP_BATT_PARTICIPANT = { incentiveUsd: 500, otherUsd: 140, kw: 7.5 };
+// The VPP's cost basis (vppCostCase; user, 2 Nov 2026, message 645), US$ a kW of enrolled power a year, 2026 dollars. 'resource'
+// (central): Brattle's non-incentive costs only, $140 / 7.5 kW = $18.7 in 2022 dollars, about $20.7 (R342) in 2026, the system
+// perspective of the Technical Appendix's Table 4: the incentive is a transfer from the grid to the household, and the household
+// battery's capital is already counted (btmCapexRkWh), so the system pays only the programme's own cost plus the cells' wear on the
+// enrolled discharge (battCycleCostR per MWh, in the build LP and the engine). 'participant' (sensitivity, message 631 (c)): the
+// incentive as well, ($500 + $140) / 7.5 kW, about $94.8 (R1,564), the wear inside the incentive (the LP's lpBattDischargeCostR only).
+const VPP_COST_USD_KW_YR = {
+  resource: VPP_BATT_PARTICIPANT.otherUsd / VPP_BATT_PARTICIPANT.kw * US_CPI_2022_TO_JAN26,
+  participant: (VPP_BATT_PARTICIPANT.incentiveUsd + VPP_BATT_PARTICIPANT.otherUsd) / VPP_BATT_PARTICIPANT.kw * US_CPI_2022_TO_JAN26 };
+// The cost a run uses, US$/kW-yr: vppCostUsdKwYr when set (a break-even search), else its case's.
+function vppCostUsd(S){
+  if (!(S.vppCostCase in VPP_COST_USD_KW_YR)) throw new Error('vppCostCase must be resource or participant: ' + S.vppCostCase);
+  return S.vppCostUsdKwYr == null ? VPP_COST_USD_KW_YR[S.vppCostCase] : +S.vppCostUsdKwYr;
+}
 const COAL_START_SUPER = ['Medupi', 'Kusile'];   // UC_FLEET groups in the supercritical class
 // Hot below the first figure, warm to the second, cold beyond (table 1-1).
 const COAL_START_OFFLINE_H = { sub: [12, 40], super: [12, 72] };
@@ -6465,13 +6479,12 @@ const FIXED = {
   // vppBuildOn (message 637): enrolled home batteries as coordinated storage, power E / 2.5 h a build-LP variable (vppp_<y>, MW) and
   // dispatched by the engine with the lithium fleet (V1-V5); they leave the passive profile; with it on the slider VPP's battery
   // component (vppBattPerGeyserKW) is off and its geysers stay (V5). vppEnrolCapPct: enrolment at most this share of the cycling stock
-  // (V1: 20%, Brattle's participation rate; 50% the high case). vppCostUsdKwYr (message 631 (c), replacing V4's $42.85 net system
-  // cost of a mostly non-battery VPP): Brattle's battery participant cost, ($500 + $140) / 7.5 kW = $85.3/kW-yr in 2022 dollars,
-  // x US CPI-U to January 2026 = about $94.8, per kW of enrolled power (E / 2.5 h), about R1,564/kW-yr at USD_RATE_R
-  // (VPP_BATT_PARTICIPANT, US_CPI_2022_TO_JAN26).
+  // (V1: 20%, Brattle's participation rate; 50% the high case). vppCostCase (message 645, replacing 631 (c)'s participant cost as the
+  // central): 'resource', Brattle's non-incentive cost per kW of enrolled power (E / 2.5 h) plus wear on the enrolled discharge;
+  // 'participant' the sensitivity (VPP_COST_USD_KW_YR). vppCostUsdKwYr: null, or a cost that overrides the case's (break-even searches).
   // vppEnrolGWh: the enrolled energy the engine runs (set from the build LP's vppp_<y> x btmHours; 0 unless vppBuildOn).
   vppBuildOn:0, vppEnrolCapPct:20, vppEnrolGWh:0,
-  vppCostUsdKwYr:(VPP_BATT_PARTICIPANT.incentiveUsd + VPP_BATT_PARTICIPANT.otherUsd) / VPP_BATT_PARTICIPANT.kw * US_CPI_2022_TO_JAN26,
+  vppCostCase:'resource', vppCostUsdKwYr:null,
   // ── geyser control as a build option (HANDOVER 'Geyser control (and pool pumps) as a VPP build option: design', G1-G8; user,
   // 2 Nov 2026, messages 633-635; SOURCES 'Geyser control: inputs (message 635)'). Off by default (gyBuildOn 0): the build LP text
   // and every engine output are unchanged. gyBuildOn: enrolled MW of gross peak reduction as a build-LP variable (gy_<y>) and shifted
@@ -7695,15 +7708,17 @@ function btmStock(S, y){
   let vppCapGWh = 0;
   if (vppOn){
     const capPct = +S.vppEnrolCapPct;
-    if (!(capPct >= 0 && capPct <= 100) || !(+S.vppCostUsdKwYr >= 0)) throw new Error('vppEnrolCapPct (0-100) or vppCostUsdKwYr out of range');
+    if (!(capPct >= 0 && capPct <= 100) || !(vppCostUsd(S) >= 0)) throw new Error('vppEnrolCapPct (0-100) or the VPP cost out of range');
     vppCapGWh = C * capPct / 100;                                         // V1: a share of the cycling stock
     if (y <= K.y0) vppCapGWh = Math.min(vppCapGWh, K.vppMax2026GWh);      // V1: and in 2026 no more than 2.7 GWh
   }
   return { s0, S: St, B, C, C0, use, eff, hours: hrs,
     powerPerUsable: 1 / hrs / use,                                        // MW per MWh of usable energy (P1: 2.5 hours on capacity)
     vppOn, vppCapGWh,
-    // V4 (message 631 (c)): rands a year per MWh enrolled, the participant cost per kW of power (E / 2.5 h) at the pinned rate.
-    vppCostRperMWh: vppOn ? +S.vppCostUsdKwYr * USD_RATE_R * 1000 / hrs : 0 };
+    // V4 (messages 631 (c) and 645): rands a year per MWh enrolled, the case's cost per kW of power (E / 2.5 h) at the pinned rate;
+    // and the wear per MWh the enrolled batteries discharge, battCycleCostR under 'resource', none beyond the LP's own under 'participant'.
+    vppCostRperMWh: vppOn ? vppCostUsd(S) * USD_RATE_R * 1000 / hrs : 0,
+    vppWearRperMWh: vppOn && S.vppCostCase === 'resource' ? +S.battCycleCostR : 0 };
 }
 // The cycling stock's fixed daily profile (P3), per MWh of usable energy: 24 values, MW, charging positive and discharging
 // negative, added to demand before dispatch in the engine and in the build LP's balance rows alike. sol: the day's solar per unit;
@@ -10072,8 +10087,15 @@ function simulate(u, prof, outPath, _soc0){
   // cost per kW of enrolled nameplate, message 631 (c)) is a grid cost: in newCapexR only. Both null or 0 when off, so newCapexR is as before.
   const _btmCapR = _btmOut ? Math.max(0, _btmOut.addedSince2026GWh) * 1e6 * bldAnnuity(p.btmCapexRkWh, BLD_LIFE.batt, 'rooftop') : 0;
   if (_btmOut) _btmOut.capexR = _btmCapR;
+  // The enrolled batteries' wear under the resource cost basis (message 645): their share of the lithium tier's discharge, pro rata by
+  // usable energy (the tier dispatches as one store), x battCycleCostR (btmStock's vppWearRperMWh; 0 under 'participant').
+  if (_btmOut){
+    const _liT = battTiers.find(t => t.k === 'li'), _vShare = _vppSE > 0 && _liT && _liT.mwh > 0 ? _vppSE / _liT.mwh : 0;
+    _btmOut.vppDischargeMWh = tierDis.li * _vShare;
+    _btmOut.vppWearR = _btmOut.vppDischargeMWh * _btm.vppWearRperMWh;
+  }
   const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(coalFlexTier(u)>=2?Math.max(0,p.coalInstalledMW-u.coalDecomMW)*coalDeepShare(Math.max(0,p.coalInstalledMW-u.coalDecomMW)):0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000   // tiered regional charge, R/yr
-    + (_btmOut ? _btmCapR + _btmOut.vppCostR : 0)   // behind-the-meter batteries (P4) and the enrolled batteries' payment (V4), when on
+    + (_btmOut ? _btmCapR + _btmOut.vppCostR + _btmOut.vppWearR : 0)   // behind-the-meter batteries (P4), the enrolled batteries' cost (V4) and wear (645), when on
     + (_gyOut ? _gyOut.costR : 0);   // geyser control (G6, message 635: R/kW-yr of gross reduction), a grid cost, when on
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
   // report it against NERSA's "transmission network charges" component. It is a build
@@ -12443,8 +12465,11 @@ function bldBuildLP(opts){
       // built for slow seasonal cycling rather than daily wear. Charging them is
       // still costed through the energy they consume in the balance row.
       const WEAR = { batt: 1.0, vrfb: 0.25, ironair: 0.15, phes: 0.05, ps: 0.05, vpp: 1.0 };   // vpp: home lithium (message 637)
+      // The enrolled batteries under the resource cost basis (message 645): the cells' full marginal wear, battCycleCostR per MWh
+      // (btmStock's vppWearRperMWh), since no build annuity here pays for household cells; under 'participant' the incentive pays it.
       for (const S2 of STORE){
-        obj.push((S.lpBattDischargeCostR*WEAR[S2.t]*wObj(r)*df).toFixed(3)
+        const wr = S2.t === 'vpp' && BTM_Y[y].vppWearRperMWh > 0 ? BTM_Y[y].vppWearRperMWh : S.lpBattDischargeCostR*WEAR[S2.t];
+        obj.push((wr*wObj(r)*df).toFixed(3)
           + ' ' + S2.dis + '_' + k);
       }
     }
@@ -21733,7 +21758,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02u';
+const BUILD_STAMP = '2026-11-02v';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

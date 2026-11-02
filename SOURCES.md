@@ -2017,7 +2017,26 @@ weekly System Status report, 2026 Week 42 (12-18 October). The arithmetic is our
 - The model today: enrolled geysers bring batteries at 0.35 kW per geyser kW, 4 hours, with no enablement, programme or
   participant cost (the VPP slider's note says so from build 22e). Participant bill savings and payments are transfers, for the
   retail panels, not system cost.
-
+- The cost basis (user, 2 Nov 2026, message 645, replacing 631 (c)'s participant cost as the central; build 2026-11-02v,
+  FIXED.vppCostCase): system cost is a whole-economy view, and the household battery's capital is already counted (btmCapexRkWh, in
+  newCapexR and btmCapexR), so the central counts the resource cost only, as Brattle's system perspective does (Technical Appendix,
+  Table 4 and its system against societal perspectives; household devices excluded as already owned): the non-incentive cost, $140
+  per participant a year over 7.5 kW = $18.7/kW-yr in 2022 dollars, x US CPI-U January 2026 over the 2022 average (325.252 /
+  292.655) = $20.7, about R342/kW-yr of enrolled power (E / 2.5 h) at R16.50/US$; plus the cells' wear on the enrolled batteries'
+  discharge at the model's lithium degradation cost, battCycleCostR R165/MWh (FIXED; its derivation beside it in index.html:
+  replacement pack $130/kWh at R16.21/US$ over 8,000 cycles at 80% depth = R329/MWh, the cycling half of it marginal; range about
+  R100-R250), in the build LP and in the engine's cost (the enrolled share of the lithium tier's discharge, pro rata by usable
+  energy). The $500 incentive is a transfer from the grid to the household, so it is not a system cost. Willingness to join stays in
+  the enrolment cap (20% of the cycling stock, 50% high) and the 25% owner reserve. Sensitivity 'participant': $500 + $140 = about
+  $94.8, R1,565/kW-yr, with the wear inside the incentive (the LP's own lpBattDischargeCostR R20/MWh only). Geyser control keeps
+  R2,000/kW-yr: the controller and its service are resource costs. Known limitation: the resource basis assumes households join at
+  the cap without being paid more than the programme's own cost would justify; the incentive needed to reach 20% in South Africa is
+  not known (below).
+- No South African programme publishes its costs (user, 2 Nov 2026, message 644): Plentify-Deye (the 2.7 GWh pool; participant terms
+  undisclosed); Eskom's demand response pilot of 2023 (an energy payment per verified MWh, rate unpublished); Cape Town's Power
+  Heroes, run through the Ontec Karebo joint venture (terms private); NERSA has no regulatory category for VPPs (Oxpeckers, published
+  in Business Day, 26 Jul 2026). So the participant cost stays Brattle's, escalated, and the VPP is reported as a break-even beside
+  utility lithium at the same duration (RESULTS 'VPP break-even on coordinated storage').
 
 ## Geyser control: inputs (message 635)
 

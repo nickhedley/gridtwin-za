@@ -210,17 +210,22 @@ const pvCap=lp=>{ if (!Object.keys(PV_CAP_YR).length) return lp; let out=lp;
 // energy as a build variable (vppBuildOn; needs BTM_STOCK). VPP_CAP_PCT: enrolment cap, % of the cycling stock (20; 50 the high case).
 // Recorded in the output (btm) and, with VPP=1, each year's enrolled energy (vppp_<y> x btmHours) as sched[y].vppGWh; applied by
 // pathcheck.js. Message 637: enrolled batteries are coordinated storage, with no event budget (VPP_EVENTS withdrawn).
+// VPP_COST_CASE=resource|participant (message 645): the VPP's cost basis (vppCostCase; resource the central, participant the
+// sensitivity). VPP_COST_USD=<US$/kW-yr>: overrides the case's cost (vppCostUsdKwYr), for a break-even search.
 const BTM_ENV=(()=>{ const o={}, e=process.env;
   if (e.BTM_STOCK!==undefined){ if (!(+e.BTM_STOCK>=0) || e.BTM_STOCK==='') throw new Error('BTM_STOCK: '+e.BTM_STOCK); o.btmStockGWh=+e.BTM_STOCK; }
   if (e.BTM_BACKUP!==undefined){ if (!['glide','hold'].includes(e.BTM_BACKUP)) throw new Error('BTM_BACKUP must be glide or hold: '+e.BTM_BACKUP); o.btmBackupPath=e.BTM_BACKUP; }
   if (e.VPP!==undefined){ if (!['0','1'].includes(e.VPP)) throw new Error('VPP must be 0 or 1'); o.vppBuildOn=+e.VPP; }
   if (e.VPP_CAP_PCT!==undefined){ if (!(+e.VPP_CAP_PCT>=0 && +e.VPP_CAP_PCT<=100) || e.VPP_CAP_PCT==='') throw new Error('VPP_CAP_PCT must be 0-100: '+e.VPP_CAP_PCT); o.vppEnrolCapPct=+e.VPP_CAP_PCT; }
+  if (e.VPP_COST_CASE!==undefined){ if (!['resource','participant'].includes(e.VPP_COST_CASE)) throw new Error('VPP_COST_CASE must be resource or participant: '+e.VPP_COST_CASE); o.vppCostCase=e.VPP_COST_CASE; }
+  if (e.VPP_COST_USD!==undefined){ if (!(+e.VPP_COST_USD>=0) || e.VPP_COST_USD==='') throw new Error('VPP_COST_USD: '+e.VPP_COST_USD); o.vppCostUsdKwYr=+e.VPP_COST_USD; }
+  if ((o.vppCostCase!==undefined || o.vppCostUsdKwYr!==undefined) && o.vppBuildOn!==1) throw new Error('VPP_COST_CASE and VPP_COST_USD need VPP=1');
   if (e.VPP_EVENTS!==undefined) throw new Error('VPP_EVENTS is withdrawn (message 637: enrolled batteries are coordinated storage, no event budget)');
   if (o.vppBuildOn===1 && !(o.btmStockGWh>0)) throw new Error('VPP=1 needs BTM_STOCK above 0');
   if (o.vppEnrolCapPct!==undefined && o.vppBuildOn!==1) throw new Error('VPP_CAP_PCT needs VPP=1');
   if (o.btmBackupPath!==undefined && !(o.btmStockGWh>0)) throw new Error('BTM_BACKUP needs BTM_STOCK above 0');
   return o; })();
-const BTM_KEYS=['btmStockGWh','btmBackupPath','btmReservePct','btmHours','btmEff','btmCapexRkWh','vppBuildOn','vppEnrolCapPct','vppCostUsdKwYr'];
+const BTM_KEYS=['btmStockGWh','btmBackupPath','btmReservePct','btmHours','btmEff','btmCapexRkWh','vppBuildOn','vppEnrolCapPct','vppCostCase','vppCostUsdKwYr'];
 // Geyser control as a build option (HANDOVER 'Geyser control (and pool pumps) as a VPP build option: design'; messages 633-635). All
 // unset: off, the page defaults (FIXED), and the LP as before. GY=1: enrolled MW of gross peak reduction as a build variable (gyBuildOn).
 // GY_CAP_PCT: enrolment cap, % of electric geysers (30; 10-55 the range). GY_KW: gross reduction per enrolled geyser, kW (0.4; 0.3-0.9).

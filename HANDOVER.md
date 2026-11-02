@@ -1788,8 +1788,12 @@ The virtual power plant (a build option)
   which was also converted without escalation): Brattle's battery participant cost, $500 incentive plus $140 other costs per
   participant a year over 7.5 kW of participant battery (Real Reliability, Technical Appendix, 3 May 2023, Tables 1, 3, 4; 2022
   dollars) = $85.3/kW-yr, x US CPI-U January 2026 over the 2022 annual average (325.252 / 292.655, as the model escalates US costs) =
-  about $94.8/kW-yr, at R16.50/US$ about R1,564/kW-yr, per kW of enrolled power (E / 2.5 h). In index.html: VPP_BATT_PARTICIPANT,
-  US_CPI_2022_TO_JAN26, FIXED.vppCostUsdKwYr.
+  about $94.8/kW-yr, at R16.50/US$ about R1,564/kW-yr, per kW of enrolled power (E / 2.5 h). Replaced as the central by message
+  645 (build 2026-11-02v): the resource cost, $140 / 7.5 kW escalated = $20.7, about R342/kW-yr, plus battCycleCostR (R165/MWh) on
+  the enrolled discharge, the incentive being a transfer and the household battery already counted; the participant cost is the
+  sensitivity (FIXED.vppCostCase 'resource' | 'participant'; pathway VPP_COST_CASE; VPP_COST_USD overrides for break-even searches).
+  In index.html: VPP_BATT_PARTICIPANT, VPP_COST_USD_KW_YR, vppCostUsd(), US_CPI_2022_TO_JAN26. SOURCES 'Virtual power plants: costs
+  to source'.
 - V5. The existing VPP slider (a 4 GW geyser pool x enrolment, with 0.35 kW of 4-hour batteries per geyser kW, no cost) stays for
   geysers; with the build option on, its battery component is off, so the same batteries are not counted twice.
 
@@ -1799,7 +1803,8 @@ unchanged at the default; the full suite before the PR.
 Decided: the 2026 stock not added again (622); the modes, glide path and reserve (624); P1's cases scale growth, P4 in btmCapexR, V1's
 20% cap (50% high), V5 (625); V4 Brattle's battery participant cost escalated to 2026 and one forecast function (631); enrolled
 batteries as coordinated storage, out of the passive profile, no event cap, credited by the storage rule (637, replacing 630's daily
-cycling with events and 631's event-length credit).
+cycling with events and 631's event-length credit). V4's central the resource cost, the participant cost a sensitivity; in c7 the VPP
+and geyser options on in the central, Deep (no gas, 40 Mt) and Fossil-free runs (645).
 
 ## Geyser control (and pool pumps) as a VPP build option: design (user, 2 Nov 2026, message 633)
 
