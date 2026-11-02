@@ -2200,6 +2200,22 @@ share of new build, about 60% private; a corporate-PPA premium of +0.75 to +1.5 
 because corporate PPAs are contracted; so wind and solar at 5.5% + 0.6 x (0.75 to 1.5) = 5.95-6.40%, about 6.0-6.4% real pre-tax.
 Open: a South African source for the corporate-PPA premium, for example lender margins on wheeled projects against REIPPPP deals.
 
+### Blended rate: the decision (user, 1 Nov 2026, message 604 (a); case 'blended' from build 2026-11-01e, for c7)
+
+Per technology, rate = state-backed central + private share x the private-offtake gap (bldCoc; BLD_COC_PRIVATE_SHARE, BLD_COC_NAB_GAP).
+- Gap: National Australia Bank, WACC report for the NSW Electricity Infrastructure Roadmap (November 2020), section 2.5: investment-grade
+  retailer offtake against sovereign or near-sovereign offtake, 0.48 points for wind and 0.57 for solar PV. NAB's figures are
+  Australian and are nominal vanilla WACC; they are applied here as points on real pre-tax rates, a simplification, stated. NAB does
+  not cover storage: lithium takes the mean of the two, 0.525 points, our assumption, flagged. As reported by the user; not read in the
+  repository.
+- Shares: utility wind and solar 60% private (above: BNEF 48% in 2025, 73% expected in 2026; UCT Power Futures Lab 54% in H1 2026).
+  Lithium 15% private, our estimate from project lists, range 10-25%: BESIPPPP's awards (1,744 MW / 6,976 MWh) and Eskom's batteries
+  state-backed; SOLA's Naos-1 (660 MWh, wheeled to Sasol and Air Liquide) private.
+- Result, real pre-tax: wind 5.79%, solar 5.84%, lithium 6.88%. Offshore wind, vanadium, iron-air, pumped storage, gas, nuclear, coal,
+  network and rooftop unchanged.
+- Sensitivities: 'blendedhigh', the same shares with CEPA's 2025 merchant premiums as the gap (wind and solar +1.5, lithium +2.0:
+  6.40%, 6.40%, 7.10%); 'central' (all state-backed, today's runs); 'private' (all private, s_cocprivate).
+
 ## Revised Electricity Pricing Policy, draft of 28 Aug 2026: embedded generation and network charges (TODO 14lb; user, 30 Oct 2026, messages 520 and 522)
 
 Department of Electricity and Energy, draft Revised Electricity Pricing Policy, Government Gazette 55257, GN 7852, 28 August 2026,

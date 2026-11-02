@@ -19636,3 +19636,74 @@ the grid-forming H decides how much battery headroom the LP buys (3.1 GW at 11 s
 the fault-level adder, a cost on new inverter capacity, is the largest single item at full rate and shifts the build from lithium
 (14.9 against 16.6 GW) towards gas. Every case passes NTCSA's unserved test. Caveats: one pathway pass each; checked under 'prev' only,
 which leaves hours short as in the central; coal in the LP by the ratio, not the commitment variable c7 will use.
+
+### Blended cost of capital for c7: cases 'blended' and 'blendedhigh'; 'central' unchanged by the LP-key test (user, 1 Nov 2026, message 604 (a); build 2026-11-01e)
+
+bldCoc gains two cases (index.html; BLD_COC_PRIVATE_SHARE, BLD_COC_NAB_GAP, the lithium gap computed as the mean of wind and solar):
+rate = state-backed central + private share x gap, for utility wind, utility solar and lithium only. Rates read back from the page,
+real pre-tax: 'blended' wind 5.788%, solar 5.842%, lithium 6.879%; 'blendedhigh' (CEPA's premiums as the gap) 6.4%, 6.4%, 7.1%;
+offshore wind, vanadium, iron-air, pumped storage, gas, nuclear, coal, network and rooftop unchanged in both. The page default
+(FIXED.bldCocCase) stays 'central', so no preset or published figure changes until c7.
+LP-key test, 1 Nov 2026 about 17:20 UTC: bldBuildLP on the Least-cost path 2035 preset with grid cost on (validate_lp's call, growth
+0.02, eaf 0.64): 'central' on main (9035b59) and on this branch both sha1 4e0b77a5f1f4 (13,918,952 characters); 'blended' 479696b5560c
+and 'blendedhigh' 63167b3268d5 differ from 'central' in one line only, the objective, and there only in the coefficients of b_wind_y,
+b_pv_y, b_batt_y and eb_batt_y (five years each at that horizon); every row is identical.
+Suite on build 2026-11-01e (claude/coc-blended with main's #146 merged at 4c1a22c; stored panels rewritten at c18d394; ESK19679.csv
+present), 1 Nov 2026 18:03-20:02 UTC in two pieces, beside the system-strength suite: node checks 1021/1030, eng5 5/6, equal to main
+(5168504) by count in every script and by failure name (validate_findings 36/39, validate_response 86/87 with the same 35 cells,
+validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved; validate_pathway_presets 65/65,
+validate_public_text 32/32, validate_stored_panels 86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external
+8/8). audit 87/88: the new BLD_COC_PRIVATE_SHARE comment held two apostrophes on one line (Eskom's, SOLA's), so the audit's quoted-span
+scan read SOLA as a shouted word; the comment reworded, audit 88/88; the panels rewritten and the suite rerun (below).
+LP-key test after merging main (5168504), 1 Nov 2026 about 18:15 UTC: 'central' sha1 4e0b77a5f1f4 on main and on this branch, identical;
+'blended' differs in the objective line only, as before.
+Rerun on 598e830 (the comment fix; stored panels rewritten, 5437a03), 1 Nov 2026 20:30-22:28 UTC in two pieces, beside the c6e
+system-strength rebuild: node checks 1021/1030, audit 88/88, eng5 5/6, equal to main (b810c2d) by count in every script and by failure
+name (validate_findings 36/39, validate_response 86/87 with the same 35 cells, validate_consistency 82/83, validate_benchmarks 28/30,
+validate_outputs 49/51, eng5 storage vs unserved; validate_pathway_presets 65/65, validate_public_text 32/32, validate_stored_panels
+86/86, validate_links 48/48, validate_worker 38/38, validate_bids 7/7, validate_external 8/8). Visible text against main: none changed.
+
+### Reserved grid-forming headroom ('reserve', c7's central): no hour short of the floor once the look-ahead's discharge is capped too; unserved energy rises from 0.3 to 4.3-4.4 GWh a year on the one-year 2035 build, because the held headroom is withheld in hours that shed load while coal stood uncommitted (user, 2 Nov 2026, messages 612 and 613 (a))
+
+What changed (claude/system-strength-min, build 2026-11-02b): ssLiftForecast 'reserve' (8895326) credits grid-forming headroom
+toward the floor before dispatch, only as much as the hour needs, and caps battery charge, discharge and reserve at battPowerH =
+battPower less it; coal is lifted for what remains. First runs (2 Nov 2026 06:37-06:39 UTC, 8895326) left 324 of 105,120 hours
+short on the one-year build. Cause, from a copy of the page logging each short hour: in all 324 the batteries discharged above
+battPowerH (for example hour 3,702 of 2014: battPower 11,383 MW, 5,933 held, 7,519 discharged), through the look-ahead's own
+discharge (_laAhead, _laDischarge(min(residual, room))), capped by each tier's power but not by battPowerH. Fix: that call takes
+min(residual, room, battPowerH). With 'sync6' the engine's outputs are unchanged: sha1 of every output key of every 2035 run,
+ss_engine_check.js MODES=sync6 DIGEST, identical on the fixed page and on 8895326 (06:48-06:49 UTC).
+
+One-year 2035 test, as RESULTS 'the build LP's own coal commitment (cm_)': ss_engine_check.js YEARS=2035 SS_FC=reserve, EXTRA each
+build's grid-forming MW and conversions, c6e's 2035 state, twelve weather years, seed base 71830529 (06:48-06:49 UTC, fixed page):
+| Build | 'prev' | 'mustspin' | 'reserve' before the fix | 'reserve' |
+|---|---|---|---|---|
+| ratio (9,045 MW; 5,838 MVA): coal lifted TWh; hours short; unserved GWh/yr | 0.124; 1,121; 0.316 | 1.213; 0; 0.299 | 0.264; 324; 4.175 | 0.259; 0; 4.423 |
+| commit (8,985 MW; 5,838 MVA) | 0.124; 1,128; 0.316 | 1.213; 0; 0.299 | 0.265; 324; 4.086 | 0.261; 0; 4.335 |
+'sync6' on the same state: unserved 0.316 GWh/yr. Cause of the rise, from the same logging copy on the fixed page (ratio build): 46
+hours with unserved energy, 4.423 GWh/yr; 42 of them with headroom held, 4.124 GWh/yr, of which 4.107 GWh/yr the held MW could have
+met (discharge at battPowerH, the store not empty); in all 42 coal was available but not committed (coalAvailable above the
+commitment before the lift). The rule holds the headroom as operating reserve is held, through load shedding; crediting it before
+the coal lift (612) is what leaves coal uncommitted in those hours.
+
+c6e rebuild under 'reserve': the same rebuilt pathway (harness/out/ss/pathway_c6e_ss.json, as RESULTS 'c6e rebuilt with the inertia floor'),
+pathcheck.js LNG=1 GRID=1 SS_FC=reserve, groups a-c (06:49-06:57 UTC, fixed page; the runs before the fix 06:38-06:47 UTC):
+| | Rebuild, 'prev' | Rebuild, 'mustspin' | Rebuild, 'reserve' before the fix | Rebuild, 'reserve' |
+|---|---|---|---|---|
+| System cost PV 2026-40 (8%), R bn, with the condensers' and grid-forming premium's charge (c6e 2,283.9) | 2,288.9 (+5.0) | 2,292.4 (+8.5) | 2,289.8 (+5.9) | 2,289.9 (+6.0) |
+| CO2 2026-40, Mt (c6e 1,739) | 1,736 | 1,752 | 1,737 | 1,737 |
+| Highest mean unserved, GWh/yr (year); highest open-cycle share (c6e 5.46; 1.85%) | 5.72 (2032); 1.84% | 5.72 (2032); 1.82% | 7.12; 1.91% | 7.43 (2034); 1.92% |
+| 2035: coal TWh; coal lifted TWh; hours short a year; minimum GW.s; unserved GWh/yr | 80.37; 0.14; 99.5; 35.8; 1.38 | 81.45; 1.37; 0; 54.0; 1.28 | 80.52; 0.11; 26.6; 47.9; 3.96 | 80.52; 0.11; 0; 54.0; 4.04 |
+| 2040: the same | 57.51; 0.21; 122.9; 36.7; 0.58 | 60.71; 3.62; 0.1; 50.1; 0.56 | 57.44; 0.00; 26.2; 48.2; 3.88 | 57.45; 0.00; 0; 54.0; 3.89 |
+Under 'reserve' (fixed) every year 2026-40 has no hour short but 2034 (0.08 hours a year, 0.03 GW.s-h, minimum 53.65 GW.s; no hour
+with the lift capped); its cause is not yet established (TODO 14md). Headroom held: 969 hours a year in 2035, 2,391 in 2040. Mean
+unserved rises over 'prev' in every year from 2033 (2034 3.11 to 7.43, 2037 0.73 to 4.35, 2040 0.58 to 3.89 GWh/yr), each under
+the 20 GWh standard. Coal lifted is the floor-share energy (liftFloorMWh), as the table above it; the commitment lifted is about
+twice it.
+
+Findings: under 'reserve' the floor holds in every hour of the one-year build and in all but a fraction of an hour a year on the
+c6e rebuild, at R6.0bn (0.26%) over c6e against 'mustspin''s R8.5bn, with under a tenth of its coal lifted and no more CO2 than c6e;
+unserved energy rises about fourteenfold on the one-year build and to 3-7 GWh a year from 2033 on the rebuild, under the 20 GWh
+standard. Caveat: whether held headroom should yield to load in a shedding
+hour, or coal be lifted first in hours of forecast scarcity, is the user's decision (Rule 366: not changed; the central as
+specified).
