@@ -19836,3 +19836,12 @@ the bid, not as adjusted at close (BW5 adjusted at close for exchange and intere
 close, at a tariff that implies far less, with an unconfirmed base date.
 Proposal for the user's decision before c7 (632 (b)): solar and onshore wind central 6.0% (was 5.5%), on the closed BW5 and BW6
 projects; the blended case on top of it as now (private share x the NAB gap added); 5.5% kept as a sensitivity (all bids).
+
+Suite on build 2026-11-02j (claude/c7-prep at d68a8f8: the Fossil-free freed-connection credit fix, TODO 14ma, and the MTSAO input
+options, each default off; main's #152 merged at 5f6c038; stored panels rewritten; ESK19679.csv present), 2 Nov 2026 10:14-12:56 UTC
+in two pieces (the first stopped at the 2-hour limit in validate_worker, resumed), beside other suites and runs: node checks 1021/1030,
+audit 88/88, eng5 5/6, equal to main (de004de) by count in every script and by failure name (validate_findings 36/39, validate_response
+86/87 with the same 35 cells, validate_consistency 82/83, validate_benchmarks 28/30, validate_outputs 49/51, eng5 storage vs unserved).
+LP-key test against main (de004de): default and 'sync6' sha1 4e0b77a5f1f4 and 'inertia' 39f092d5e626, identical; engine outputs on
+Today 2026, Least-cost path 2035 and Fossil-free 2040 identical to main's. A 2028 fossil end year changes only the five rp_ccgt
+credits; each MTSAO option alone changes only its expected rows. Visible text against main: none changed. Later commits are RESULTS only.
