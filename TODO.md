@@ -929,7 +929,7 @@ participation. Limitation recorded: EV managed charging stays out until EV deman
 batteries and the VPP option, minimum version'). Open: (1) enrolled batteries under 622's rule are never chosen; the user to decide
 whether they keep the daily cycle and are called for events; (2) the regional LP and the stress-target demand do not see the options;
 (3) c7 launches only after the advisor's best-practice review of the system strength, cost of capital and BTM/VPP designs (message 629). (4) Message 645 (build 2026-11-02v): the VPP's central cost is the resource cost (R342/kW-yr of power plus R165/MWh
-wear), the participant cost (R1,565) the sensitivity with its break-even (644); c7 runs the VPP and geyser options on in the
+wear on incremental cycling, 647), the participant cost (R1,565) the sensitivity with its break-even (644); c7 runs the VPP and geyser options on in the
 central, Deep and Fossil-free runs. Known limitations line: the resource basis assumes 20% of the cycling stock joins without an
 incentive above the programme's cost; no South African programme publishes what it pays (SOURCES).
 

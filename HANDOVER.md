@@ -1790,7 +1790,8 @@ The virtual power plant (a build option)
   dollars) = $85.3/kW-yr, x US CPI-U January 2026 over the 2022 annual average (325.252 / 292.655, as the model escalates US costs) =
   about $94.8/kW-yr, at R16.50/US$ about R1,564/kW-yr, per kW of enrolled power (E / 2.5 h). Replaced as the central by message
   645 (build 2026-11-02v): the resource cost, $140 / 7.5 kW escalated = $20.7, about R342/kW-yr, plus battCycleCostR (R165/MWh) on
-  the enrolled discharge, the incentive being a transfer and the household battery already counted; the participant cost is the
+  the enrolled batteries' incremental cycling only, each day's discharge above their passive profile's (647, build 2026-11-02w), the
+  incentive being a transfer and the household battery already counted; the participant cost is the
   sensitivity (FIXED.vppCostCase 'resource' | 'participant'; pathway VPP_COST_CASE; VPP_COST_USD overrides for break-even searches).
   In index.html: VPP_BATT_PARTICIPANT, VPP_COST_USD_KW_YR, vppCostUsd(), US_CPI_2022_TO_JAN26. SOURCES 'Virtual power plants: costs
   to source'.

@@ -8483,7 +8483,7 @@ function simulate(u, prof, outPath, _soc0){
   // negative, their 2026-metered self-consumption put back into demand. The day's charge is capped against the existing rooftop
   // fleet (rooftopMW), as in the build LP, where new rooftop is a decision and could not enter a fixed profile.
   const _btm = (+p.btmStockGWh > 0 || (p.vppBuildOn | 0) > 0) ? btmStock(p, p.scenarioYear) : null;
-  let _btmD = null, _btmOut = null;
+  let _btmD = null, _btmOut = null, _btmPassDis = null;   // _btmPassDis: each day's passive discharge per MWh usable (message 647)
   if (_btm){
     const Eg = +p.vppEnrolGWh;   // the cap is checked to 0.1 MWh, the precision the build LP writes its bound to
     if (!(Eg >= 0)) throw new Error('vppEnrolGWh must be 0 or more: ' + p.vppEnrolGWh);
@@ -8497,12 +8497,13 @@ function simulate(u, prof, outPath, _soc0){
     if (Math.abs(_vppS * _btm.hours - Eg * 1000) > 1e-6 * Math.max(1, Eg * 1000)) throw new Error('btm identity: the lithium fleet carries ' + _vppS + ' MW of enrolled power, not E / ' + _btm.hours + ' h');
     const dU = _btm.use * (_btm.C - Eg - _btm.C0) * 1000;               // MWh of usable energy whose profile enters demand
     const usableAll = _btm.use * _btm.C * 1000;                          // the whole cycling stock's usable energy, MWh (P3's cap)
-    _btmD = new Float64Array(HOURS);
+    _btmD = new Float64Array(HOURS); _btmPassDis = new Float64Array(Math.floor(HOURS / 24));
     let pChg = 0, pDis = 0;
     for (let d0 = 0; d0 + 24 <= HOURS; d0 += 24){
       const day = btmPassiveDay(solar.slice(d0, d0 + 24), p.rooftopMW, p.rooftopDerate, usableAll, _btm.powerPerUsable, _btm.eff);
       if (day.dis > day.chg * _btm.eff + 1e-9) throw new Error('btm profile discharges more than it stored on day ' + d0 / 24);
       for (let k = 0; k < 24; k++) _btmD[d0 + k] = day.d[k] * dU;
+      _btmPassDis[d0 / 24] = day.dis;
       pChg += day.chg * dU; pDis += day.dis * dU;
     }
     let net = 0; for (let h = 0; h < HOURS; h++) net += _btmD[h];
@@ -10087,12 +10088,22 @@ function simulate(u, prof, outPath, _soc0){
   // cost per kW of enrolled nameplate, message 631 (c)) is a grid cost: in newCapexR only. Both null or 0 when off, so newCapexR is as before.
   const _btmCapR = _btmOut ? Math.max(0, _btmOut.addedSince2026GWh) * 1e6 * bldAnnuity(p.btmCapexRkWh, BLD_LIFE.batt, 'rooftop') : 0;
   if (_btmOut) _btmOut.capexR = _btmCapR;
-  // The enrolled batteries' wear under the resource cost basis (message 645): their share of the lithium tier's discharge, pro rata by
-  // usable energy (the tier dispatches as one store), x battCycleCostR (btmStock's vppWearRperMWh; 0 under 'participant').
+  // The enrolled batteries' wear under the resource cost basis (messages 645 and 647): battCycleCostR (btmStock's vppWearRperMWh; 0 under
+  // 'participant') on each day's incremental cycling only, the enrolled share of the lithium tier's discharge (pro rata by usable
+  // energy: the tier dispatches as one store) above what the same batteries would have discharged that day on the passive profile
+  // (_btmPassDis x their usable energy); passive cycling carries no wear, so enrolment is not charged for it. As the build LP (vpx_).
   if (_btmOut){
     const _liT = battTiers.find(t => t.k === 'li'), _vShare = _vppSE > 0 && _liT && _liT.mwh > 0 ? _vppSE / _liT.mwh : 0;
-    _btmOut.vppDischargeMWh = tierDis.li * _vShare;
-    _btmOut.vppWearR = _btmOut.vppDischargeMWh * _btm.vppWearRperMWh;
+    let _vDis = 0, _vPass = 0, _vInc = 0, _liSer = 0;
+    for (let d = 0; d < _btmPassDis.length; d++){
+      let dd = 0; for (let k = 0; k < 24; k++) dd += tierSeries.li[d * 24 + k];
+      _liSer += dd; dd *= _vShare;
+      const pp = _btmPassDis[d] * _vppSE;
+      _vDis += dd; _vPass += pp; _vInc += Math.max(0, dd - pp);
+    }
+    if (Math.abs(_liSer - tierDis.li) > 1e-6 * Math.max(1, tierDis.li)) throw new Error('btm wear: the lithium tier\'s hourly discharge (' + _liSer + ') does not add to its total (' + tierDis.li + ')');
+    _btmOut.vppDischargeMWh = _vDis; _btmOut.vppPassiveDischargeMWh = _vPass; _btmOut.vppIncrementalDischargeMWh = _vInc;
+    _btmOut.vppWearR = _vInc * _btm.vppWearRperMWh;
   }
   const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(coalFlexTier(u)>=2?Math.max(0,p.coalInstalledMW-u.coalDecomMW)*coalDeepShare(Math.max(0,p.coalInstalledMW-u.coalDecomMW)):0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000   // tiered regional charge, R/yr
     + (_btmOut ? _btmCapR + _btmOut.vppCostR + _btmOut.vppWearR : 0)   // behind-the-meter batteries (P4), the enrolled batteries' cost (V4) and wear (645), when on
@@ -12309,12 +12320,14 @@ function bldBuildLP(opts){
   const BTM_Y = {}; if (BTM_ON) for (const y of Y) BTM_Y[y] = btmStock(S, y);
   // The profile of representative or stress day r in year y, MW per MWh usable, on that day's own solar (as sp below) and the
   // existing rooftop fleet (EX.rooftop: new rooftop is a decision here, so it cannot set a fixed profile; the engine does the same).
-  const _btmDays = new Map();
+  // btmDayDis: the same day's passive discharge per MWh usable (MWh), against which the enrolled batteries' wear is counted (647).
+  const _btmDays = new Map(), _btmDis = new Map();
   const btmDay = (y, r) => { const key = y + '_' + r.d; if (_btmDays.has(key)) return _btmDays.get(key);
     const b = BTM_Y[y], sol = [];
     for (let h = 0; h < 24; h++) sol.push(r.solar ? r.solar[h] : PROFILES.solar[(r.dem !== undefined ? r.dem : r.d)*24 + h]);
-    const d = btmPassiveDay(sol, EX.rooftop, S.rooftopDerate, b.use * b.C * 1000, b.powerPerUsable, b.eff).d;
-    _btmDays.set(key, d); return d; };
+    const pd = btmPassiveDay(sol, EX.rooftop, S.rooftopDerate, b.use * b.C * 1000, b.powerPerUsable, b.eff);
+    _btmDays.set(key, pd.d); _btmDis.set(key, pd.dis); return pd.d; };
+  const btmDayDis = (y, r) => { btmDay(y, r); return _btmDis.get(y + '_' + r.d); };
   // A signed LP term, or nothing when the coefficient rounds to zero.
   const lpTerm = (c, v, dp) => { const t = Math.abs(c).toFixed(dp); return +t === 0 ? '' : (c < 0 ? ' - ' : ' + ') + t + ' ' + v; };
   // Open-cycle gas options (FIXED notes, 11 Oct 2026). b_ocgt / go_: new OCGT on LNG, OC_K times a CCGT MWh's gas and
@@ -12465,10 +12478,10 @@ function bldBuildLP(opts){
       // built for slow seasonal cycling rather than daily wear. Charging them is
       // still costed through the energy they consume in the balance row.
       const WEAR = { batt: 1.0, vrfb: 0.25, ironair: 0.15, phes: 0.05, ps: 0.05, vpp: 1.0 };   // vpp: home lithium (message 637)
-      // The enrolled batteries under the resource cost basis (message 645): the cells' full marginal wear, battCycleCostR per MWh
-      // (btmStock's vppWearRperMWh), since no build annuity here pays for household cells; under 'participant' the incentive pays it.
+      // The enrolled batteries under the resource cost basis (messages 645 and 647): no wear per MWh here; their wear is charged on
+      // each day's incremental cycling only (vpx_, below); under 'participant' the incentive pays it and they carry the LP's own figure.
       for (const S2 of STORE){
-        const wr = S2.t === 'vpp' && BTM_Y[y].vppWearRperMWh > 0 ? BTM_Y[y].vppWearRperMWh : S.lpBattDischargeCostR*WEAR[S2.t];
+        const wr = S2.t === 'vpp' && BTM_Y[y].vppWearRperMWh > 0 ? 0 : S.lpBattDischargeCostR*WEAR[S2.t];
         obj.push((wr*wObj(r)*df).toFixed(3)
           + ' ' + S2.dis + '_' + k);
       }
@@ -12550,6 +12563,12 @@ function bldBuildLP(opts){
   // The enrolled batteries' cost (V4, message 631 (c)): per MWh enrolled, its nameplate kW x the participant cost, each year enrolled.
   if (VPP_ON) for (const y of Y)
     obj.push((BTM_Y[y].vppCostRperMWh * VPP_HN / Math.pow(1+BLD_DISC, y-2026)).toFixed(3) + ' vppp_' + y);
+  // The enrolled batteries' wear under the resource cost basis (messages 645 and 647): vpx_<y>_<d>, MWh, each modelled day's discharge
+  // above what the same batteries would have discharged on the passive profile (row vpxr_, below), at battCycleCostR, weighted as the
+  // day's other energy terms; passive cycling carries no wear. The engine counts the same (btm.vppIncrementalDischargeMWh).
+  const VPP_WEAR = VPP_ON && BTM_Y[Y[0]].vppWearRperMWh > 0;
+  if (VPP_WEAR) for (const y of Y){ const df = 1/Math.pow(1+BLD_DISC, y-2026);
+    for (const r of rdY(y)) obj.push((BTM_Y[y].vppWearRperMWh * wObj(r) * df).toFixed(3) + ' vpx_' + y + '_' + r.d); }
   // System strength builds: their annual charge (ssAnnualRkW) in every year from the build year, as the other builds. Condensers from
   // 2026 + their build time (BLD_BUILD_Y.grid); grid-forming on any battery standing.
   const SS_COND_FROM = 2026 + BLD_BUILD_Y.grid;
@@ -13086,6 +13105,11 @@ function bldBuildLP(opts){
     const b = t === 'E' ? 'eb_batt_' + y : 'b_' + t + '_' + y, k = 'K_' + t + '_';
     L.push(' kdef_' + t + '_' + y + ': ' + k + y + (i > 0 ? ' - ' + k + Y[i - 1] : '') + ' - ' + b + ' = 0');
   });
+  // Incremental cycling (message 647): the day's enrolled discharge less the passive profile's discharge on the enrolled usable energy
+  // (vppp x 0.75 x 2.5 h), at most vpx_.
+  if (VPP_WEAR) for (const y of Y) for (const r of rdY(y)){ const dk = y + '_' + r.d;
+    L.push(' vpxr_' + dk + ': ' + [...Array(24).keys()].map(h => 'vpdis_' + dk + '_' + h).join(' + ')
+      + lpTerm(-btmDayDis(y, r) * BTM_Y[y].use * VPP_HN, 'vppp_' + y, 6) + ' - vpx_' + dk + ' <= 0'); }
   L.push('Bounds');
   // Utility solar's build-rate cap grows bldPvRateGrowthPct a year from its 2026 value, for an
   // industry that scales up (assumption, 4 Oct 2026). Every other cap is flat.
@@ -21758,7 +21782,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02v';
+const BUILD_STAMP = '2026-11-02w';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

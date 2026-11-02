@@ -2022,11 +2022,13 @@ weekly System Status report, 2026 Week 42 (12-18 October). The arithmetic is our
   newCapexR and btmCapexR), so the central counts the resource cost only, as Brattle's system perspective does (Technical Appendix,
   Table 4 and its system against societal perspectives; household devices excluded as already owned): the non-incentive cost, $140
   per participant a year over 7.5 kW = $18.7/kW-yr in 2022 dollars, x US CPI-U January 2026 over the 2022 average (325.252 /
-  292.655) = $20.7, about R342/kW-yr of enrolled power (E / 2.5 h) at R16.50/US$; plus the cells' wear on the enrolled batteries'
-  discharge at the model's lithium degradation cost, battCycleCostR R165/MWh (FIXED; its derivation beside it in index.html:
-  replacement pack $130/kWh at R16.21/US$ over 8,000 cycles at 80% depth = R329/MWh, the cycling half of it marginal; range about
-  R100-R250), in the build LP and in the engine's cost (the enrolled share of the lithium tier's discharge, pro rata by usable
-  energy). The $500 incentive is a transfer from the grid to the household, so it is not a system cost. Willingness to join stays in
+  292.655) = $20.7, about R342/kW-yr of enrolled power (E / 2.5 h) at R16.50/US$; plus the cells' wear at the model's lithium
+  degradation cost, battCycleCostR R165/MWh (FIXED; its derivation beside it in index.html: replacement pack $130/kWh at R16.21/US$
+  over 8,000 cycles at 80% depth = R329/MWh, the cycling half of it marginal; range about R100-R250), charged only on each day's
+  incremental cycling (message 647, build 2026-11-02w): the enrolled batteries' discharge above what the same batteries would have
+  discharged that day on the passive profile; passive cycling carries no wear, so enrolment is not charged for cycling the owner would
+  have done anyway. The same rule in the build LP (vpx_<y>_<d> and row vpxr_) and the engine's cost (the enrolled share of the
+  lithium tier's discharge, pro rata by usable energy, day by day against the passive profile). The $500 incentive is a transfer from the grid to the household, so it is not a system cost. Willingness to join stays in
   the enrolment cap (20% of the cycling stock, 50% high) and the 25% owner reserve. Sensitivity 'participant': $500 + $140 = about
   $94.8, R1,565/kW-yr, with the wear inside the incentive (the LP's own lpBattDischargeCostR R20/MWh only). Geyser control keeps
   R2,000/kW-yr: the controller and its service are resource costs. Known limitation: the resource basis assumes households join at
