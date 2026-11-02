@@ -1870,7 +1870,8 @@ Common settings, every c7 run: c6e's (env_c6a.sh, GAS_FIRST=2035, MAXP=6, TL=720
 - VPP: VPP=1 (coordinated storage, 20% enrolment cap, the resource cost basis with wear on incremental cycling, the defaults);
 - geyser control: GY=1 (0.4 kW per geyser, 30% cap, 4 h hold, R2,000/kW-yr, the defaults);
 - planning margin 0 (FIXED.bldPlanMarginPct, the default; 638 (c), TODO 14mi).
-Each run is one pathway (pathway_perfail.js) then its engine check in three groups (pathcheck.js LNG=1 GRID=1, years a 2026-30,
+Run names follow c6e's (s_<case>_c7, the central c7), so the reviewer pack's keys find them (packfill.js:
+RUN 's_x' is s_x_<BASE>). Each run is one pathway (pathway_perfail.js) then its engine check in three groups (pathcheck.js LNG=1 GRID=1, years a 2026-30,
 b 2031-35, c 2036-40, run together), as chain_c6e.sh's one() and check(), with SS_FC=reservecoal on the check.
 
 Pieces: each run is its own background job under 2 hours (run_in_background, timeout 7,000 s), resumable: a finished pathway
@@ -1883,15 +1884,15 @@ sensitivities, 25-42 min and 7-15 min; the VPP, geyser and stock rows add about 
 | # | Run | Change from the common settings | Pathway | Check |
 |---|---|---|---|---|
 | 1 | c7 (central) | none | 45-90 min | 45 min |
-| 2 | s7_allbids | COC=allbids (5.5% on all bids) | 40-60 min | 15-45 min |
-| 3 | s7_blendedhigh | COC=blendedhigh | 40-60 min | 15-45 min |
-| 4 | s7_gfm1891 | GFM_H=thermal (grid-forming H 1.891 s) | 40-60 min | 15-45 min |
-| 5 | s7_rocof05 | ROCOF=0.5 | 40-60 min | 15-45 min |
-| 6 | s7_rocof15 | ROCOF=1.5 | 40-60 min | 15-45 min |
-| 7 | s7_vpppart | VPP_COST_CASE=participant (R1,565/kW-yr, wear in the incentive) | 40-60 min | 15-45 min |
-| 8 | s7_gyrot | GY_MODE=rotation (LBNL/Wits, a quarter off for an hour each) | 40-60 min | 15-45 min |
-| 9 | s7_deep40 | Deep decarbonisation without gas at 40 Mt: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 GAS_CAP=0 OCGD=1, CO2CAP 40 Mt from 2035, calibrated on the engine as run_deepnogas_cal.sh (cap += target - engine 2035 CO2 until within 0.5 Mt) | 1-2 h a round, 2-4 rounds | 45 min |
-| 10 | s7_ff2040 | Fossil-free 2040: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 (14ma's fix in main from #153: confirm the 2040 CCGT line is gone and nothing else moves against the 14ma test) | 1-2 h | 45 min |
+| 2 | s_allbids_c7 | COC=allbids (5.5% on all bids) | 40-60 min | 15-45 min |
+| 3 | s_blendedhigh_c7 | COC=blendedhigh | 40-60 min | 15-45 min |
+| 4 | s_gfm1891_c7 | GFM_H=thermal (grid-forming H 1.891 s) | 40-60 min | 15-45 min |
+| 5 | s_rocof05_c7 | ROCOF=0.5 | 40-60 min | 15-45 min |
+| 6 | s_rocof15_c7 | ROCOF=1.5 | 40-60 min | 15-45 min |
+| 7 | s_vpppart_c7 | VPP_COST_CASE=participant (R1,565/kW-yr, wear in the incentive) | 40-60 min | 15-45 min |
+| 8 | s_gyrot_c7 | GY_MODE=rotation (LBNL/Wits, a quarter off for an hour each) | 40-60 min | 15-45 min |
+| 9 | s_deep40_c7 | Deep decarbonisation without gas at 40 Mt: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 GAS_CAP=0 OCGD=1, CO2CAP 40 Mt from 2035, calibrated on the engine as run_deepnogas_cal.sh (cap += target - engine 2035 CO2 until within 0.5 Mt) | 1-2 h a round, 2-4 rounds | 45 min |
+| 10 | s_ff2040_c7 | Fossil-free 2040: PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 (14ma's fix in main from #153: confirm the 2040 CCGT line is gone and nothing else moves against the 14ma test) | 1-2 h | 45 min |
 | 11-16 | 618's MTSAO runs, after c7's central is reviewed | (i) the outlook's High demand without gas (DEMAND=index:<3.30% a year path>, 619), and with gas (GAS_FIRST unchanged); (ii) the Reference Case's inputs without gas: High demand, COAL_EAF_PATH=2027:66,2028:67,2029:68,2030:69 and 70 for each year 2031-2040 (years not listed keep coalEAFPct, so all are listed), AVDED_OFF_AFTER=2030, REIPPP_RETIRE 0.75 GW a year 2033-36 (wind 375, solar 325, CSP 50), and with gas; (ii) again with the REIPPPP plants kept (620) | 45-90 min each | 45 min each |
 Runs 2-8 go in pairs after the central's check (2 with 3, 4 with 5, 6 with 7, 8 alone); 9 and 10 after them, as a pair; 11-16 in
 pairs once the central has been reported. Total about 12-18 hours of wall time at two at a time, in 10-14 pieces.
