@@ -109,6 +109,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  const BTM_VPP = !!(P.btm && (P.btm.vppBuildOn | 0) > 0);
  if (P.btm){ w.eval(`for (const k of ${JSON.stringify(Object.keys(P.btm))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02i or later'); Object.assign(state, ${JSON.stringify(P.btm)});`);
    console.log('behind-the-meter batteries and virtual power plant from the pathway:', JSON.stringify(P.btm)); }
+ // Geyser control (messages 633-635): the run's own settings (P.geyser), recorded by pathway_perfail.js; a run recorded before build
+ // 2026-11-02q has none and ran with it off. With it on, each year's enrolled MW is the run's sched[y].gyMW (below).
+ const GY_RUN = !!(P.geyser && (P.geyser.gyBuildOn | 0) > 0);
+ if (P.geyser){ w.eval(`for (const k of ${JSON.stringify(Object.keys(P.geyser))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02q or later'); Object.assign(state, ${JSON.stringify(P.geyser)});`);
+   console.log('geyser control from the pathway:', JSON.stringify(P.geyser)); }
  // Coal settings (PR C, build 2026-10-24a; messages 359, 363): the pathway's own; a run recorded before PR C has none and replays with
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
@@ -182,6 +187,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (SS_ON){ over.ssGfmMW=cum.gfm; over.ssCondMVA=cum.scc+cum.scn; }
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
+   if (GY_RUN){ if (!(P.sched[y].gyMW>=0)) throw new Error('the run has geyser control on but no sched['+y+'].gyMW'); over.gyEnrolMW=P.sched[y].gyMW; }
    if (BTM_VPP){ if (!(P.sched[y].vppGWh>=0)) throw new Error('the run has the virtual power plant on but no sched['+y+'].vppGWh'); over.vppEnrolGWh=P.sched[y].vppGWh; }
    // FOSSIL_END (message 531 (c)): after the run's last fossil year no coal (its coalMW is 0 from its dates), no gas and no diesel stand.
    if (P.fossilEnd && y > P.fossilEnd){ if (over.coalDecomMW < +w.eval('FIXED.coalInstalledMW')) throw new Error('fossilEnd: coal standing in '+y);
