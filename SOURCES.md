@@ -2531,7 +2531,11 @@ TODO 14lu (full version, after the note) replaces the estimate with a sourced st
   COAL_CARBON_FLOOR=1): the law's floor on a generator's liability, R0.035/kWh nominal after the renewable-premium deduction (s6(2) as
   substituted by the Taxation Laws Amendment Act 5 of 2026), in 2026 rands at the model's deflator (3% a year): R35.0, 34.0, 33.0,
   32.0 and 31.1 per MWh of coal output in 2026-2030; from 2031 the existing path, unchanged; coal only, gas and diesel unchanged.
-  Assumes Eskom's renewable-premium deduction takes its liability to the floor each year, not checked against Eskom's accounts. The
+  Assumes Eskom's renewable-premium deduction takes its liability to the floor each year, not checked against Eskom's accounts. And the
+  floor is charged per kWh of coal sent out, the engine's coal; if, like the environmental levy it replaced (FY2026: 3.84c per kWh sent
+  out, about 3.5c on total production including the stations' own use, our inference above), it falls on total production, c7
+  understates coal's carbon charge to 2030 by about 10% of the floor, about R0.5bn a year (user, 2 Nov 2026, message 658 (a); no model
+  change before c7). The
   charge it replaces, the rates in law less the tax-free allowances only (R46 to R61/t, R51 to R68/MWh at 1.108 t/MWh), is the
   sensitivity 'carbongross' (COAL_CARBON_FLOOR=0). After 2030: the 2030 rate and allowance share held flat in real terms (our
   assumption: no rate or allowance after 2030 is in law); Treasury's stated path (allowances to none by 2031, then to US$120/t by
