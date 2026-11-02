@@ -19865,4 +19865,9 @@ to 2040, against the 62.9 GW.s floor, which grid-forming headroom makes up (an 1
 Findings: with the tripped units' inertia in the requirement and the Hornsdale grid-forming constant, the floor costs about R1.5bn over
 c6e and is met by 3.9 GW of grid-forming batteries, without converting retired coal units; no hour is short in any year. Caveats: at
 11 s, synchronous inertia alone is below half the floor from 2033 (AEMO, Sep 2024, cautions against treating grid-forming inertia as a
-direct replacement); 1.891 s is the cautious sensitivity; one pathway pass; the 'mustspin' check of this rebuild follows.
+direct replacement); 1.891 s is the cautious sensitivity; one pathway pass.
+'mustspin' check of the same rebuild (pathcheck SS_FC=mustspin, groups a-c, 12:38-13:21 UTC; no battery headroom counted before
+dispatch, coal lifted for the whole gap): system cost with the floor's charge R2,296.5bn (+R12.6bn over c6e), CO2 1,785 Mt (+46),
+coal lifted 4.58 TWh a year in 2035 and 10.11 in 2040, hours short 0.1 a year in 2035 and 115.3 in 2040 (minimum 38.8 GW.s: no coal
+left to lift), highest unserved 5.33 GWh/yr, open-cycle 1.80%. The plan's floor rests on grid-forming headroom: counted only as what
+must spin, the 3.9 GW build meets 62.9 GW.s by lifting coal to 2039 and falls short in 2040.
