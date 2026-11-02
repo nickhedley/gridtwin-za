@@ -2172,6 +2172,21 @@ as real: its costs are in constant January 2024 rands). Capital charges and inte
 real pre-tax cost of capital (bldCoc). The central is the cost of capital for state-backed procurement (REIPPPP, BESIPPPP), the only
 South African bid evidence.
 
+Closed REIPPPP projects (user, 2 Nov 2026, messages 631 (g), 632 (b) and 634 (a)): from build 2026-11-02p the central for utility
+solar and onshore wind is 6.0% real, the same back-solve on the BW5 and BW6 projects that reached commercial or financial close (BW5
+closed solar 6.10%, BW6 closed 6.00%, MW-weighted 6.05%, against 5.65% on all BW6 bids); all bids' 5.5% becomes the 'allbids'
+sensitivity; the blended case adds the private-offtake gap on top as before. Tariffs (Fully Indexed Price at each window's base date)
+from search extracts of the DMRE media statements of 28 Oct 2021 and 8 Dec 2022, the DBSA and SAWEA BW5 preferred-bidder lists, NERSA's
+licence approvals as reported by SolarQuarter (7 Jul 2023), and EDF, Scatec, Juwi, Red Rocket and IPP Office close statements; no source
+page could be opened from the session, so each figure is to be checked against the DMRE, DBSA or NERSA documents before the pack cites
+it: BW5 closed wind Phezukomoya and San Kraal (140 MW each, R564.45/MWh), Coleskop (140, R601.17), Brandvalley (140, R496.90),
+Rietkloof (140, R502.70), Wolf (84, R617.70): 784 MW at R553.62 MW-weighted, all BW5 wind bids R495.22; BW5 closed solar Grootfontein
+PV1-3 (3 x 75 MW, R484.60), Graspan (75, R470.00), Grootspruit (75, R476.50): 375 MW at R480.06, all BW5 solar bids R428.79 (the
+cheapest, R374.79, did not close); BW6 closed solar Virginia (240 MW, R486.50) and Doornhoek (120 MW, R540.00): R504.33, all BW6 bids
+R490.48. Tariffs as bid, not as adjusted at close (BW5 adjusted at close for exchange and interest rates). Excluded: BW7's Middlepunt
+(240 MW, R458/MWh in press at its financial close, 14 Apr 2026), which would imply 3.4%: one project, and its price base (taken here as
+January 2024) is unconfirmed. Results: RESULTS 'Cost of capital on closed REIPPPP projects only'.
+
 Central rates and their basis (message 469 as amended):
 - Utility solar 5.5%: the rate at which BW6's compliant tracker bid capex (R15,715/kW, IPP Office REIPPPP historical data note,
   7 Nov 2025, January 2024 terms; R16,786 in 2026) with BW6's fixed O&M reproduces BW6's average tariff (R490.48/MWh, base 1 April
