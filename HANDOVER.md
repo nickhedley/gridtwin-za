@@ -1722,3 +1722,71 @@ lines from live code cost a day the week before. Both are in RULES.md now.
 
 **Share before reporting.** Three times files were described as delivered when only the copy had
 run. The fix is mechanical: end the turn with the file, never write "above" in prose.
+
+## Heat batteries and industrial heat pumps as a build option: design (user, 2 Nov 2026, messages 649 (c) and 650; for review, no code)
+
+Design only, like the geyser control design. Every value below carries its source as the advisor gave it (message 650), or is marked
+ours. Nothing is built until the user reviews this and the open questions at the end are answered.
+
+H1. Demand. Industry's gas use, 70 PJ a year (NBI-BCG, 'The role of gas in South Africa's path to net-zero', Just Transition and Climate
+   Pathways Study ch.3, 2020 baseline, Figure 4 p.25): steel 15, gas retail 13, glass 9, pulp and paper 4, heat/manufacturing and metal
+   4, food and beverages 4, ceramic 4, chemical 3, other 14 PJ. Latent industrial gas demand up to about 70 PJ a year more, mainly
+   replacing coal (p.26). Temperature bands, our mapping (no South African split is published): above 400 C about 32 PJ (steel, glass,
+   ceramic, metal); steam below 200 C about 11 PJ (pulp and paper, food, chemical); mixed about 27 PJ (gas retail, other). The model's
+   cases: 10, 50 and 100 PJ a year of heat demand served electrically, split across the bands in those shares (46%, 16% and 39%, ours),
+   each band a flat heat demand in every hour (1 PJ a year = 31.7 MW of heat, flat). 100 PJ exceeds today's 70 PJ of gas: the latent
+   coal-replacing demand (p.26). Served demand is an input in each case, not a build decision (H8 asks whether to add one).
+H2. Technology by band (ours, from the temperature limits below):
+   - above 400 C: a heat battery (electric heater, thermal store, heat-output equipment); commercial delivery to 750 C (Brattle for C2ES
+     and the Renewable Thermal Collaborative, 2023, pp.11-13); hotter heat (most of steel) is out of reach of today's products and is
+     stated as such, not modelled;
+   - steam below 200 C: an industrial heat pump for the part below about 150-165 C, the rest a heat battery; heat pumps run flat at
+     their COP (no store of their own);
+   - mixed: a heat battery.
+H3. Heat battery inputs:
+   - installed cost, whole system: USD 85-210/kWh of storage in 2025, 40-110 by 2030, 20-55 by 2035 (Brattle 2023, pp.11-13);
+   - components (Energy Innovation, Rissman and Gimon, Jul 2023, pp.7-8, 16): storage medium USD 5/kWh (1.5-10), heater USD 100/kW
+     in, heat-output equipment USD 300/kW out; efficiency 95%; losses under 1% a day (a vendor claim);
+   - EU check: efficiency 90%, losses about 1% a day (Fraunhofer ISI for Agora Industry, 2024, Table 9, p.36);
+   - heat-to-heat efficiency range 90-98% (Brattle 2023);
+   - life: not yet sourced (NREL 2025 benchmarking, Applied Energy 126873, to read); no number is used until it is.
+   Proposed central: the component costs, so the build sizes heater (MW in), store (MWh of heat) and output (MW out) separately,
+   95% efficiency, 1% a day losses (the EU figure, not the vendor's 'under 1%'); Brattle's installed range as the check on the
+   resulting cost per kWh and as the declining path to 2035 (the component costs carry no path; proposed: scale them by Brattle's
+   central ratio by year, ours). USD at the model's pinned R16.50.
+H4. Heat pump inputs: EUR 1,950/kW of heat for steam (EUR 1,550 base to 150 C, plus 200 for steam and 200 for a lift above 75 K), COP
+   2.25 from 60 C waste heat to 140 C steam (Danish Energy Agency, Jan 2026, pp.3-4); COP 1.9-2.2 for 60 C to 180 C (Fraunhofer ISI/
+   Agora Industry 2024, pp.25-26). Central COP 2.25, sensitivity 1.9. The model has no EUR rate: one pinned EUR/ZAR constant with its
+   source and date is needed (open question 2). Life: not yet sourced.
+H5. Build LP (one rule with the engine, H6): per year y and band b, variables hbi_<b>_<y> (heater MW in), hbe_<b>_<y> (store MWh of
+   heat), hbo_<b>_<y> (output MW of heat, at least the band's flat demand) and hp_<y> (heat pump MW of heat); per modelled hour, the
+   heater's draw hbc_<k> (MW, at most hbi) as load in the balance row; the store's state of charge chained through the day as the
+   storage machinery does, gaining 0.95 x hbc and losing the band's flat heat demand and 1% a day of its content (about 0.042% an
+   hour); the heat pump's draw, its heat over COP, flat in every hour. Costs: the components' annuities (life and cost of capital,
+   open questions 1 and 3) and fixed O&M if sourced. No planning-reserve credit (it is a load); the heater can add to the peak only if
+   the LP chooses it, and the engine checks it (H6). Off by default: the LP text and key unchanged (the LP-key test).
+H6. Engine, the same rule: each day the store must deliver the day's flat heat; the heater charges first from energy that would be
+   curtailed, then in the lowest net-load hours of the day within its MW and the store's room, with the same look-ahead the lithium
+   fleet uses so the store does not run empty; if it would, the heater draws at any price (a forced load, reported in hours and MWh).
+   Heat pumps draw flat. Identity asserted each year: heat delivered = 0.95 x heater energy - losses, and both models report it.
+H7. Outputs:
+   - delivered heat cost, R/GJ: the annualised heater, store, output and heat pump cost plus the electricity bought, over the GJ
+     delivered; electricity at the engine's marginal price (the system view) and at each supply route's price (H7 below);
+   - against: LNG at the model's gas price cases (bldGasFuelR, converted to R/GJ of fuel), Sasol's current piped gas price (a source is
+     needed, open question 4), and industry's affordability threshold of R75-135/GJ landed (NBI-BCG p.27, footnote 54);
+   - curtailment absorbed, TWh, against the same plan without the option;
+   - system cost and peak: the change in system cost PV 2026-40 and in the evening net peak, MW, per case;
+   - the defection test, a tariff view beside system cost: the delivered heat cost under four supply routes, (1) Eskom's tariff
+     (Megaflex time-of-use energy and network charges, charging off-peak), (2) wheeled from the best wind and solar sites (their cost
+     plus wheeling charges and losses), (3) a local direct connection (on-site or adjacent wind and solar, no network charge, its own
+     curtailment), (4) off-grid hybrid (solar, wind and the heat battery sized for the flat demand, with fuel backup); each against the
+     same fuel prices. Routes 2-4 need inputs the advisor sends (wheeling charges and losses; the hybrid's backup).
+H8. Checks before any long run: the suite before and after; the LP-key test (off: unchanged; on: only its own rows and columns); the
+   engine identity (H6); a one-year build test at 2035 on c7's central for each case (10, 50, 100 PJ), reporting builds, curtailment
+   absorbed, forced-load hours and the delivered heat cost against the threshold.
+Open questions for review: (1) the heat battery's and heat pump's lives (NREL 2025 to read; none used until sourced); (2) one EUR/ZAR
+constant and its source; (3) the cost of capital (industrial, private: proposed the page's 'private' case for storage); (4) Sasol's
+current gas price, source; (5) whether the LP should also choose how much heat to serve (an endogenous case against the fuel price)
+beside the fixed 10, 50 and 100 PJ; (6) our band mapping and the 400 C-plus share that today's heat batteries cannot reach (steel);
+(7) whether the heater may raise the evening peak, or must stay off in the peak window as a rule; (8) regional siting (the LP is
+national here, as the BTM and geyser options are).
