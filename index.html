@@ -16294,6 +16294,9 @@ function weatherYearNational(year){
     const T = WIND_CORR_TABLE.t, n = WIND_CORR_TABLE.n, c = new Float64Array(HOURS);
     for (let h = 0; h < HOURS; h++){ const r = T[hourMonth(h)], x = Math.max(0, Math.min(1, wind[h])) * (n - 1), i0 = Math.min(n - 2, Math.floor(x));
       c[h] = r[i0] + (r[i0 + 1] - r[i0]) * (x - i0); }
+    // Its modern-turbine twin from the map now, as the engine's windModOf would later: the LP's tail and extreme days read wind.mod
+    // directly (build 2026-11-03d; before it, a corrected run with modern wind on stopped at 'a representative day has no modern-turbine wind').
+    if (wind.mod) windModOf(c);
     return { wind: c, solar };
   }
   return { wind, solar };
