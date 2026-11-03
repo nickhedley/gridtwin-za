@@ -1949,3 +1949,48 @@ panels and the full suite.
 Known limitations to carry into the pack (the advisor's final text): TODO 14mi (planning-reserve peak at 10:00), 14mj (geyser
 pre-heating), 14mk (presets do not reset the c7 keys; c7's scripts unaffected), 14mf (MTSAO option limits), the VPP's resource basis
 (no South African programme publishes costs), the regional LP and stress-target demand not seeing the BTM, VPP and geyser options.
+
+## Curtailment and captured price by supply area: an area map panel, design for review (user, 3 Nov 2026, message 662; after the note, no build until reviewed)
+
+A free panel: for each of the ten GCCA supply areas (the regional engine's REGIONS, nodal/nodal_engine.js) and each of wind, solar
+and a 4-hour battery, what a new 100 MW plant would see, on c7's central build, from stored run outputs. Derived figures only; our own
+weather profiles (nodal/profiles_regional_multiyear.json, 2014-2025); no Eskom hourly series.
+
+A1. Runs. c7's central build (harness/pathway/... pathway_c7.json) at 2030, 2035 and 2040: the national build sited by region as the
+    regional engine already does (allocateWithHeadroom against GCCA headroom), with the Transmission Development Plan on time and
+    delayed. Delayed: the model's existing slip (bldHeadroomRelease(slipYears), the 'cost of delay' panel's setting: projects not in
+    Execution or Definition move later by slipYears, so less headroom is released by each year); proposed 2 years, the panel's value to
+    confirm. Each case on the regional engine (NodalEngine, a full year by the hour with corridor flows and losses) for each of the 12
+    weather years: 3 years x 2 grid cases x 12 weather years = 72 regional-engine years. No optimiser solves: the build is c7's.
+    Limitation to state: the regional engine's corridor limits (CORRIDORS) are today's; the delay acts on where new plants can connect,
+    not on corridor upgrades by year (adding TDP corridor upgrades by year is the fuller version).
+A2. Curtailment for a new 100 MW plant in area R (wind, solar): its hourly output (100 MW x the area's per-unit profile for that weather
+    year) times the area's curtailment indicator, the hours in which the area already curtails (the engine's curtailed renewable energy
+    in R above zero, from genLog), curtailed in full in those hours; reported as % of the plant's annual output. Stated on the panel:
+    the plant is a price taker added after the run (it does not change the run), and in an hour the area curtails at all its whole
+    output is counted curtailed, an upper bound for a small plant.
+A3. The area's hourly price. The regional engine dispatches by merit order with flows but returns no prices, so a price per area is
+    needed. Proposed, ours: in each hour, the national marginal price (the main engine's marginalP on the same build, year and weather)
+    for every area in the connected set whose corridors are not at their limit; an area cut off by a binding export corridor (it
+    curtails while its corridors are full) takes zero, the value of its spilt energy; an area behind a binding import corridor takes
+    the marginal cost of its own last unit dispatched (from genLog). A zonal approximation, not an optimal power flow: stated on the
+    panel. Alternative for review: a full shadow price from a regional LP per hour (the regional build LP's balance rows), more exact
+    and far slower (8,760 solves a weather year).
+A4. Captured price (wind, solar): the plant's output-weighted mean of the area's hourly price over the hours it is not curtailed,
+    R/MWh. Battery arbitrage revenue, R/kW-yr: the existing battery benchmark method (the page's battery revenue arbitrage, 4 hours,
+    the page's round trip and wear) on the area's hourly prices.
+A5. Statistics: for each area, technology, year and grid case, the median and the worst of the 12 weather years (worst = highest
+    curtailment, lowest captured price, lowest battery revenue).
+A6. Stored output: harness/ext/area_map.json (derived figures only, about 10 x 3 x 3 x 2 x 2 numbers per measure), written by a new
+    harness/ext/area_map.js from the 72 runs, with the build commit and the settings; the page reads that file, computes nothing.
+A7. Panel: a map of the ten areas (the existing supply-area geometry used by 'Where to build'), coloured by the selected measure,
+    one each for wind, solar and batteries; a year selector (2030, 2035, 2040) and an on time / delayed toggle; a hover showing the
+    median and worst; captions under the site-copy rules (default and basis in one or two sentences, at most about 40 words).
+A8. Checks before the PR: the panel's numbers equal area_map.json (a validate check); area_map.json recomputes from the stored runs; a
+    render check on a fresh page load (Playwright); the visible-text diff; the full suite before and after.
+A9. Run time: unmeasured. The regional engine's year is to be timed first on one case; at a guessed 1-3 minutes a year, 72 years take
+    1.5-4 hours in resumable pieces, plus 36 national engine years (the prices in A3: 3 x 2 x... the national price does not depend on
+    the grid case, so 3 years x 12 weather years = 36, about 10 minutes).
+Open questions: (1) the price method (A3 zonal approximation against per-hour LP shadow prices); (2) the slip years for 'delayed';
+(3) whether corridor upgrades by year come into the regional engine first (A1's limitation); (4) the battery's siting (sited in the
+area, charged and discharged on the area's prices, no corridor effect of its own).
