@@ -210,6 +210,10 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
    if (GY_RUN){ if (!(P.sched[y].gyMW>=0)) throw new Error('the run has geyser control on but no sched['+y+'].gyMW'); over.gyEnrolMW=P.sched[y].gyMW; }
    if (BTM_VPP){ if (!(P.sched[y].vppGWh>=0)) throw new Error('the run has the virtual power plant on but no sched['+y+'].vppGWh'); over.vppEnrolGWh=P.sched[y].vppGWh; }
+   // STORAGE LOOK-AHEAD (user, 3 Nov 2026, message 666 (e)): LA_H sets the short stores' window (FIXED.storageLookaheadH, 48 h) and
+   // LDES_LA_H the long stores' (ldesLookaheadH, 168 h when unset); both are perfect forecasts within the window. Measurement only.
+   if (process.env.LA_H!==undefined){ if (!(+process.env.LA_H>=0)) throw new Error('LA_H must be 0 or more hours'); over.storageLookaheadH=+process.env.LA_H; }
+   if (process.env.LDES_LA_H!==undefined){ if (!(+process.env.LDES_LA_H>=1)) throw new Error('LDES_LA_H must be 1 hour or more'); over.ldesLookaheadH=+process.env.LDES_LA_H; }
    // FOSSIL_END (message 531 (c)): after the run's last fossil year no coal (its coalMW is 0 from its dates), no gas and no diesel stand.
    if (P.fossilEnd && y > P.fossilEnd){ if (over.coalDecomMW < +w.eval('FIXED.coalInstalledMW')) throw new Error('fossilEnd: coal standing in '+y);
      Object.assign(over, {newCcgtMW:0, newOcgtMW:0, newOcgdMW:0, dieselDecomMW:+w.eval('FIXED.ocgtDieselMW')}); }
