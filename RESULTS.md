@@ -20449,3 +20449,80 @@ days against 26%: each extreme counts once and the year's other cold weeks are c
 high-demand share at 30 days; windy and cloudy shares approach the year's at 55-105 days. Rescaling solar down 16.5% dims every hour,
 so cloudy days rise to 11-18% against 3.0% in the twelve years. On the plan's fleet the extreme days move by year, onto the wind lull
 (days 194-196) by 2028-2031. Caveat: one reference year; the clustering features are ours (as version 1 and the review).
+
+### Pass-1 solve time by day count and the solver options (messages 674 (b), 675 (b), 678 (d)): interior point equals simplex and is 10% slower; the 'Solve error' on saved bases has two causes, neither in the model
+
+Method: c7's central pass-1 LP dumped at REP_DAYS 12 and 25 with the current formulation (harness/pathway/repdays/timing.sh; at 12 days
+the LP is c7's own, key c62ec3e615, objective equal to the run's to the rand), solved by native HiGHS 1.15.1 at its default tolerances
+on this container (4 processors, 15 GB) with one to three other solves beside it; options one a process (speed.py, speedq.sh), builds
+compared column by column (speedcmp.py). Build 2026-11-02y; 3 Nov 2026 09:03-11:56 UTC.
+
+| LP | Rows / columns / nonzeros | Option | Seconds | Peak memory | Against simplex |
+|---|---|---|---|---|---|
+| 12 days | 398,529 / 229,575 / 3.08 m | simplex | 519 (514 re-run) | 1.5 GB | - |
+| 25 days | 701,931 / 386,745 / 5.38 m | simplex | 2,322 | 2.0 GB | objective R1,610,030,793,625.48 (objective units), 2.6% below 12 days' |
+| 25 days | | interior point, crossover on | 2,559 | 2.2 GB | objective identical, no build column differs by 0.5 MW |
+| 25 days | | objective x 2^-10, simplex (tolerances not compensated: not admissible, 678 (d)) | 3,733 | 2.2 GB | objective 9e-16 relative, builds identical |
+| 25 days | | warm start from the 12-day basis | 'Solve error' in 9 s | | - |
+| 25 days | | stopped at 120 s, resumed from its own saved basis | 'Solve error' in 24 s | | - |
+
+Growth: 4.5 times the time for 1.76 times the rows (2.8 times against c7's 817 s with a solve beside it): rows to a power of 1.85-2.64.
+The 'Solve error' (HiGHS's log): a simplex solve stopped at its time limit returns a basis HiGHS marks invalid (stopped inside the
+presolved LP; 70,446 columns in a generic 'nonbasic' state), which highs_native.py saved and the resume loaded as valid; and any warm start
+skips presolve ('Solving LP with useful basis so presolve not used'), where dual simplex from a partial basis fails at once: 'Dual simplex
+ratio test failed due to excessive dual values: consider scaling down the LP objective coefficients' (costs span 1e-2 to 1e8; HiGHS
+advises user_objective_scale -7 and user_bound_scale -4). The 12-day LP restarts from its own optimal basis in 0 iterations, so the loader
+is sound. Fixed in the build (B1): only a valid basis is saved. The 360 'repeated variable' warnings are the intended cancellation at hour
+23 (rpq_ and rbq_ on the last real day), harmless. Pending, with tolerances tightened by the scale factors (678 (d)): HiGHS's scaling advice
+for simplex, interior point and the warm start, and parallel dual simplex; scale strategy 4 still running at 62 minutes.
+
+### Existing utility solar runs at 0.25-0.26 because about 55-70% of the fleet tracks the sun; the model runs it at the fixed-tilt 0.224 (message 678 (b); evidence for Nick, no level changed)
+
+Method: a read-only investigation (scratchpad solar/SOLAR.md): metered monthly capacity factors from profiles.json (2025, Eskom ESK19679)
+and PyPSA-RSA's public copy of the Eskom Data Portal hourly series (April 2018 to 8 October 2023; whether it may be cited is Nick's
+decision), against the model's weather years (weatherYearNational); PVGIS plant by plant at each REIPPPP plant's site and mounting; the
+denominator from ESK19679's hourly installed PV capacity. Eskom data, analysis ours. 3 Nov 2026.
+
+Finding: the metered fleet (bid windows 1-4, 2,287 MW AC) ran at 0.248-0.264 in every full year since 2019; the model's fixed-tilt series
+at 0.217-0.229 in the same years. Metered over modelled is about 1.0 from April to September and 1.2-1.35 from October to February, the
+tracker pattern (summer/winter 1.39-1.50 metered, 1.05-1.19 fixed-tilt model). The fleet is 53-58% single-axis tracking; plant by plant
+PVGIS gives 0.256 (0.224 all fixed tilt). The denominator is right (AC, the same plants; only +225 MW in December 2025). The model's
+existing 3,568.5 MW is about 70% tracking: on the twelve-year weather about 0.266 (0.253-0.277) against 0.224 used. New tracking 0.286 is
+consistent with BW4-type plants (0.28-0.29), possibly 5-15% low for higher DC/AC ratios, 0.7% high from a 2024-25 artefact. The
+index.html comment that the model and meter agreed in 2023 compared two model series (the old profiles.json), not the meter. Caveat: the
+tracker share's two sources differ by about 80 MW; no 2024 metered data; rooftop runs on the same profile, unmeasured.
+
+### Modelled wind: winter too windy, peaks too high, two hours early, calm spells too short (messages 681 (g), 682 (a), (b); evidence for Nick, no series changed)
+
+Method: read-only investigations (scratchpad wind/WIND.md, coinc/COINC.md): metered 2025 (profiles.json) and 2018-2023 (the PyPSA-RSA copy)
+against the modelled weather years on the same dates; demand from the same sources, scaled to a common mean. Eskom data, analysis ours.
+
+Findings:
+- Seasonal shape: over the five full metered years, modelled wind by month over metered: Jan 0.85, Feb 0.86, Mar 0.92, Apr 0.99, May 1.26,
+  Jun 1.27, Jul 1.27, Aug 1.17, Sep 1.07, Oct 1.00, Nov 0.88, Dec 0.89 (annual level calibrated, 1.0753 on 2022-23; the monthly shape not).
+  On a rough adequacy proxy (a 2040-like fleet, 10 GW / 60 GWh of storage, firm at the 95th percentile of net load; not the engine),
+  metered weather gives 48.4 GWh of unserved energy, the modelled years 30.8, the modelled years with the monthly shape corrected 44.6.
+- Daily spread: metered 0.125 against modelled 0.166 (2025), 76-80% in every year 2018-2025. Not geography (0.1653 weighted to the
+  metered fleet) and hardly the site count; the excess is the top end (hours above 70%: 2.6% against 8.0%; p99 0.75 against 0.91), most
+  likely the V90 power curve: the model's own V162 series at the metered mean closes 60-96% of the gap.
+- Clock: correlation with metered peaks with the model 2.7-3.1 hours later in every year: probably Renewables.ninja's UTC column read as
+  local time (to be confirmed on one file header).
+- Calm spells: shorter in the model (14-16 July 2025: metered 4.8% for 36 hours, modelled 12.2%); the longest run below 10% is longer
+  metered in 6 of 7 years.
+- Leap years drop 31 December, not 29 February as the comments say (2020's daily correlation 0.50 as stored, 0.80 aligned).
+- Which modelled years are records: wind 2014-2025 all records (one level factor); solar 2014-2023 PVGIS-SARAH3 records, 2024-2025 MERRA-2
+  timing at the 2023 PVGIS level; tracking a ratio map on these. Modelled 2025's solar level is 2023's by construction.
+- The engine pairs one demand series (2025's shape) with every weather year (pathcheck.js passes PROFILES.demand; TODO 14cb).
+Caveat: the proxy is not the engine; the effect on c7's unserved figures needs an engine run on a corrected series (Nick's decision).
+
+### Clustered days on the modelled 2025 reference (message 679 (a)): the extremes become 14 days and move; the shares table
+
+On build 2026-11-02y's series (extract.js, c7's day settings), modelled 2025 against twelve-year: fixed tilt 0.2228 / 0.2236, tracking
+0.2949 / 0.2859, new wind 0.4195 / 0.4250 (the reviewer's figures confirmed). Extremes (extremes.py, REF=2025, c7's central, Deep and
+Fossil-free fleets): 113-115, 160-162, 188, 214, 217-219, 257, 273, 359 (metered: 20, 161-163, 187, 188, 194-196, 218, 358; version 2 had
+missed 187). The wind lull moves from 15 July (metered) to late April (modelled); daily wind correlation between the two 2025 series 0.78.
+Shares (analyse.py REF=2025): design note version 2.1, 14.2. Early signal, not a result: c7's central pass-1 LP with clustered days at 19
+days (built before 679, on the metered series with 11 extremes, unlinked, pass 1 only) solved in 1,743 s and built, 2026-40, wind 41.9 GW
+(c7 33.0), utility solar 23.4 GW (33.2), lithium 9.4 GW / 43 GWh (13.1 / 81), no CCGT (5.3), open cycle 3.1 GW (1.9), diesel open cycle
+3.7 GW (0.2), new pumped storage 1.5 GW; objective 9.5% lower. And the engine's long-store trace on c7's Fossil-free 2040 build (pathcheck
+LEVELS_OUT, one draw): iron-air (500,000 MWh) at 455,000-500,000 MWh all year in 2016 and full all year in 2022.

@@ -912,6 +912,18 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mq. Decisions waiting on Nick from messages 678-682 (3 Nov 2026; design note version 2.1, section 14; RESULTS entries of 3 Nov afternoon).
+None is acted on. (a) Existing utility solar's level: about 70% of the model's 3,568.5 MW tracks, so about 0.266 on the twelve-year weather
+against the fixed-tilt 0.224 used (678 (b)); the single-year 2030 and 2040 tests (bldExistPvTrackShare 0.70 against 0) run with the
+acceptance tests; a change would be for existing utility solar alone. (b) Modelled wind: the monthly shape (winter 1.27 times metered,
+summer 0.85), the top end (the V90 power curve; the V162 scaled to the metered mean closes most of the spread gap), a probable two-hour
+UTC offset (to confirm on one Renewables.ninja file header), calm spells shorter than metered, and leap years dropping 31 December; each
+bears on the engine and, with 679 (a), on the build's days. (c) The reference series for clustered days: modelled 2025 (679 (a)) or
+metered, until (b) is settled. (d) Whether PyPSA-RSA's public copy of the Eskom Data Portal series may be cited. (e) Stale text: the
+'(2005-2020)' in rebuild_solar_pvgis.py and the multi-year file's meta (SARAH3 runs to 2023), its 'UNCHANGED' solar note, PROVENANCE's
+'Ten weather years', index.html ~1623 and merge_multisite_wind.py ('SARAH2'), fetch_multiyear_wind.py's leap-year comment, and the
+index.html comment (~15821) that model and meter agreed in 2023 (it compared two model series).
+
 14mp. After the note, from message 673 (k) (user, 3 Nov 2026; design note version 2, section 12): (a) clustering the representative
 days from all twelve weather years, not the 2025 reference year alone (removes the rescaling's uniform dimming of solar and the
 reference-year dependence); (b) rolling-horizon solves against the single 2026-2040 solve (review step 1 finding 9); (c) coal no-load

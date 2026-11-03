@@ -1,5 +1,22 @@
 # GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 10:45 UTC)
 
+## 3 Nov 2026, afternoon (messages 678-682): the build, findings, jobs (updated 12:00 UTC, 14:00 SAST)
+
+- Build approved (678) and done to B9 on claude/storage-link-build (from main b0f7999), every new setting off by default, c7's pass-1 key
+  unchanged after each item: B1 valid bases only; B2 clustered days; B3 linking; B4 single-year LP; B5 adequacy rules, linked windows,
+  reference year; B6 self-discharge (0); B7 level trace, PS_LA_H; B8 J1 fall-away, J2 draws; B9 LIFT, MGA, two stages, tracker share; and
+  a fix (linked rows only for operating years). B10 (BUILD_STAMP 2026-11-03a, stored panels, suite after, pull request) running.
+  Design note version 2.1 (claude/storage-link-design, 5f907f1) has the build table, the answers to 678-682 and the schedule.
+- PR #155 (claude/unserve-eskom-copies): three unused Eskom-derived copies off the site (680 (a)); the private-repository checklist is in
+  design note section 13. Nick switches the repository; the internal files on the site (TODO 14jy (a)) are still served.
+- Findings for Nick (RESULTS, 3 Nov afternoon; TODO 14mq): existing solar about 0.266 not 0.224 (trackers); modelled wind too windy in
+  winter, peaks too high, probably two hours early, calm spells too short; extremes 14 days on the modelled 2025 reference.
+- Folders: /home/user/gtza-build (the build), /home/user/gtza-base (clean main, the suite before), /home/user/gtza-design, /home/user/gtza-assets,
+  /home/user/gtza-c7run (run copy at a1b4734; timing LPs in harness/pathway/timing). All are git worktrees of this repository.
+- Jobs at this update (stop only by PID): suite before on clean main 24723 (run_suite.sh); stored panels then suite after on the build
+  30729/30732/30733; stage-2 step timing solve 30337; speed test scale4 21144, then the tolerance-compensated speed tests (queued, their
+  queue shell waits on 21144).
+
 ## 3 Nov 2026, later session (messages 673-677): what changed since the section below
 
 - 665 (c) finished: s_nogas_c7 split (RESULTS, the 665 (c) entry, amended). Its pass-3 LP reproduced key for key (passes 1-2 on simplex
