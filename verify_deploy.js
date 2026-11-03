@@ -42,8 +42,6 @@ const FILES = [
     why: 'the KPI font change' },
   { path: '/nodal/nodal_dispatch.js',            marker: "DATA_V = '7'",
     why: 'the cache-buster bump — if this still says 6, returning visitors get stale data' },
-  { path: '/nodal/corridor_electrical.json',     marker: 'series_compensation',
-    why: 'the DC power flow parameters, a NEW file' },
   { path: '/nodal/regional_renewable_capacity.json', marker: 'Doornhoek',
     why: 'the Doornhoek addition' },
   { path: '/nodal/regional_renewable_capacity.json', marker: 'fingerprint',
@@ -51,8 +49,6 @@ const FILES = [
        + 'since it changes on every edit' },
   { path: '/nodal/rooftop_mw_by_region.json',    marker: 'by-nc-nd',
     why: 'licence on a file that previously had no meta block at all' },
-  { path: '/nodal/supply_area_split_draft.json', marker: 'Hartebeesthoek',
-    why: 'the resolved queue' },
   { path: '/nodal/transmission_lines.geojson',   marker: 'sapp_planned',
     why: 'the SAPP planned interconnectors' },
   { path: '/gridtwin-3d.html',                   marker: 'Planned',
@@ -64,6 +60,11 @@ const FILES = [
 const SHOULD_NOT_EXIST = [
   { path: '/regional_renewable_capacity.json',
     why: 'belongs in nodal/ only — a root copy is stale and misleading' },
+  // Hidden from the site by .assetsignore (user, 3 Nov 2026: message 683 (g), PR #156; message 686 (e)); they were in FILES above.
+  { path: '/nodal/supply_area_split_draft.json',
+    why: 'not read by the page; hidden by .assetsignore (message 683 (g))' },
+  { path: '/nodal/corridor_electrical.json',
+    why: 'NTCSA-terms file the page no longer loads; hidden by .assetsignore (message 686 (e))' },
 ];
 
 (async () => {
