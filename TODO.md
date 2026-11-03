@@ -912,6 +912,20 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mr. From message 683 (3 Nov 2026; RESULTS entries of 3 Nov, 683; design note 14.8). Waiting on Nick unless marked.
+(a) Two plain errors in the modelled weather years, reported (683 (b) 1 and 6): leap years keep 29 February and drop 31 December
+(ser[:8760] in five fetch and build scripts), in wind and solar; Renewables.ninja wind runs two hours early (UTC rows read as SAST),
+every year, every ninja wind file. Fixes: the clock without a re-fetch; leap years by re-fetching 31 December (304 Renewables.ninja
+calls, 40 PVGIS requests) or the interim (30 December repeated). Both change every weather-year result: one branch, the suite, the
+stored panels, before the reruns. (b) The metered profile's tracking twin is 0.342 against 0.286 (the tracker gain applied twice): it
+reaches the page's six tracking presets as clicked and the matched days' choice (existing solar and rooftop at 0.213 on c7's days); a fix
+changes visible results. (c) The wind correction: none, the 5-constant correction in speed space (v_k 7.0, alpha 0.80, beta 0.317, A
+0.532, phi 11.53), or 12 output factors; and the new-wind level convention (1.0753 divided out or not). (d) Existing solar's level (0.224,
+the metered long-run mean 0.257, or 0.266). (e) Whether PyPSA-RSA's copy of the Eskom Data Portal series may be cited (the 2018-2023
+metered years behind (c) and the 2019-2023 solar means). (f) The demand pairing stated as a limitation in the note (per-year demand possible
+for 2019-2022 and 2025 only, kept local). (g) PR #156 (site deny list): which public documents stay on the site; a suite check that the
+served set equals what the page reads. Reruns wait for (a)-(d).
+
 14mq. Decisions waiting on Nick from messages 678-682 (3 Nov 2026; design note version 2.1, section 14; RESULTS entries of 3 Nov afternoon).
 None is acted on. (a) Existing utility solar's level: about 70% of the model's 3,568.5 MW tracks, so about 0.266 on the twelve-year weather
 against the fixed-tilt 0.224 used (678 (b)); the single-year 2030 and 2040 tests (bldExistPvTrackShare 0.70 against 0) run with the

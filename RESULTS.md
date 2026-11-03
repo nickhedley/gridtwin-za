@@ -20593,3 +20593,57 @@ metered; WEATHER=metered_trk12 rescales). Not reached: the twelve-year checks (p
 LP's new solar on its days (the matched days are chosen to 0.286). The LP's days carry it the other way: picked on the inflated twin, they
 are less sunny, so existing utility solar and rooftop run at 0.213 on them (entry above). A fix would rescale or rebuild the twin for a
 metered profile; it changes visible results and is Nick's decision.
+
+### Modelled wind: two plain errors (leap years drop 31 December; wind runs two hours early) and a 5-constant correction that holds out of sample (message 683 (b); measured, nothing changed)
+
+Method: a read-only investigation (scratchpad windcorr/WINDCORR.md, scripts and outputs beside it), checked here where marked. Metered:
+profiles.json (2025, ESK19679) and the Eskom Data Portal hourly series, April 2018 to 8 October 2023 (PyPSA-RSA's copy; not cited until
+Nick decides). Modelled: weatherYearNational, 2014-2025. One Renewables.ninja request (2020, one Eastern Cape site, local_time=true). Eskom
+data, analysis ours. 3 Nov 2026.
+
+1. Leap years, a plain error in wind and solar: 2016, 2020 and 2024 keep 29 February and lose 31 December. ser[:8760] keeps the first
+   8,760 hours of an 8,784-hour year (checked here): fetch_multiyear_wind.py:94 (its comments at 88-93 and docstring say 29 February is
+   dropped), rebuild_solar_pvgis.py:102, fetch_missing_solar_years.py:103, build_solar_tracking.py:58, build_wind_modern.py:61. Evidence:
+   from 1 March 2020 the stored Eastern Cape series matches the ninja response at the same row (r 0.950), not a day later (0.317); daily
+   r with metered 2020 from 1 March is 0.813 read as stored against 0.454 as the page reads it (solar 0.744 against 0.440). Fix: re-fetch
+   31 December (UTC) of each leap year and drop 29 February: 304 Renewables.ninja calls (294 wind, 10 solar 2024; about 6 hours at 50 an
+   hour) and 40 PVGIS requests (fixed and tracking, 2016 and 2020); the modern-wind file rebuilt through its stored maps. Interim: remove
+   29 February and repeat 30 December as 31 December, flagged in the meta (leaving 31 December missing breaks merge() and the page).
+2. Clock, a plain error in wind: Renewables.ninja rows are UTC; the scripts read the electricity column in row order as SAST, so modelled
+   wind is two hours early in every year 2014-2025. Checked here: the saved response's header reads 'time in UTC, local_time in
+   Africa/Johannesburg' and its first row is 00:00 UTC (02:00 SAST); fetch_multiyear_wind.py asks for local_time=true, which adds a column
+   and moves no row, and reads df['electricity']. Moved two hours later: hourly r with metered 0.685-0.759 -> 0.761-0.832 in every metered
+   year; validate_weather's 2025 hour-of-day r 0.59 -> 0.91. The remaining 0.7-1 h lag is MERRA-2's own timing, not fitted. Solar is on
+   SAST in every year (the 8 Sep 2026 shift). Fix: move every Renewables.ninja wind series two hours later (the regional multiyear and
+   2023 files, the modern-turbine file and its map with MAP_ONLY=1, the offshore file); no re-fetch; the 1.0753 factor is unchanged;
+   comments that say wind matches Eskom's clock to correct (fix_solar_timezone.py, two metas, validate_weather's note).
+3. Correction, fitted on the clock-fixed series: in speed space, five constants replacing the 1.0753 output factor: invert p / 1.0753 to
+   an effective speed on windpowerlib's V90/2000 curve, add beta + A cos(2 pi (m - phi) / 12) (m = 0 for January), compress speeds above
+   v_k by alpha, back through the curve. Constants on all metered months: v_k 7.0 m/s, alpha 0.80, beta 0.317 m/s (0.345 region by
+   region), A 0.532 m/s, phi 11.53 (offsets +0.83 m/s in December-January to -0.20 in June-July); leave-one-year-out ranges v_k 7.0, alpha
+   0.80, beta 0.306-0.337, A 0.506-0.548, phi 11.42-11.59.
+
+Out of sample (fit April 2018 to 2021; test 2022, 2023 to 8 October and 2025, pooled), modelled against metered:
+
+| | metered | stored | clock + 12 monthly output factors | recommended (5 constants) |
+|---|---|---|---|---|
+| annual mean | 0.357 | 0.368 | 0.346 | 0.346 |
+| monthly mean CF error, RMS | | 0.054 | 0.023 | 0.021 |
+| hourly SD | 0.172 | 0.215 | 0.193 | 0.170 |
+| daily SD | 0.134 | 0.172 | 0.147 | 0.132 |
+| hourly p99 | 0.772 | 0.914 | 0.830 | 0.746 |
+| hours above 70% | 3.6% | 9.3% | 5.0% | 2.5% |
+
+Leave one year out: monthly RMS 0.019 (stored 0.061, 12 factors 0.021); daily SD ratio 1.01 (1.30, 1.14). Level: fits on 2018-21 run about
+3% low on 2022-25 (the metered/modelled ratio varies 0.92-0.99 by year). Interaction (Staffell and Pfenninger's warning): one factor fixes
+neither the season nor the spread (daily SD 1.23x); in output space a top-end fix and monthly factors double count (June-July factors move
+0.76-0.78 -> 0.85-0.86 once the top end is fixed; refitted together they over-correct to daily SD 0.95x); in speed space they do not
+compete, and a cosine (2 constants) holds as well as 12 offsets. Calm spells, a check (out of sample, per year, metered / stored /
+recommended): hours below 5% 77 / 129 / 73; below 10% 415 / 641 / 506; longest run below 10% 31 / 18 / 20 h; worst 1-day mean 0.048 /
+0.074 / 0.064; worst 3-day 0.123 / 0.124 / 0.125. The long metered lulls (34 h in May 2023, 36 h on 14-16 July 2025) are not in the
+modelled weather; no transform of output creates them. Transfer: region by region it reproduces the national result (daily SD 0.1335
+against 0.1324), unvalidated regionally (Eskom meters wind nationally); new wind rebuilt through the stored regional maps moves to daily SD
+0.142 (page's single-year new wind 0.140; engine's now 0.174), hours above 70% 6.3% (7.5%; 13.4%), twelve-year mean 0.425 -> 0.419;
+whether the fleet's flatter top end applies to modern turbines is an assumption. Checked here: the tabulated transform (12 months x 2,001
+output values, from the helper's own code) gives twelve-year existing wind 0.3562 and new wind 0.4173 on the national map (pathcheck
+WX_FIX=corrected), as the helper's 0.356 and 0.419 (regional maps).
