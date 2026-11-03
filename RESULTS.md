@@ -20320,3 +20320,14 @@ Limitation, stated for every run: each run's unserved figures assume storage see
 next 48 hours (168 for long stores). On Fossil-free without vanadium a one-day window changes nothing that matters; no foresight at all
 adds 0.19 GWh in 2040, far inside the 20 GWh standard. The no-foresight run's cost and CO2 rise mostly through coal: without the
 look-ahead, coal is committed without the stores' shave (line 8752), so more coal runs before 2040. Caveat: one pathway measured.
+
+### Start years settled (message 672 (a), (b)): Kusile unit 1 kept at 2017, its commercial operation date; Komati kept at 1966; no code changed
+
+- Kusile unit 1: 2017 kept, the commercial operation date (30 Aug 2017, gem.wiki's text, citing Moneyweb). This replaces message
+  656 (c)'s use of GEM's table (2018) for this unit (Nick, 672 (a)).
+- Komati: 1966 kept (Nick, 672 (b)); neither source is strong. Global Energy Monitor's table (www.gem.wiki/Komati_Power_Station, read 3
+  Nov 2026 07:49 UTC) gives units 1-9 as 1961-1964, all retired 2022. Wikipedia (Komati Power Station; read as a search extract on 3
+  Nov 2026, en.wikipedia.org being blocked in this container) gives the first unit as 1961 and the last as 1966. The same search
+  extracts attribute "Unit 9, March 1966" to Eskom's heritage pages, which were not opened (no reads of eskom.co.za). It affects no
+  run: Komati retires in 2022 and coalFleetAgeFactor skips units retired before the year (index.html:7244).
+- COAL_UNIT_COD (index.html, build 2026-11-02y) is unchanged and agrees with both decisions.
