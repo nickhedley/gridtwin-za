@@ -20153,3 +20153,34 @@ condensers, so the IRP pair is short of the inertia floor 54-65 hours a year and
 (R374bn) compares a build that meets the floor with one that does not. (2) The compliance charge is higher where coal retires earlier
 (Fossil-free R63.0bn, single 8% R52.3bn, against c7's R49.9bn): the annuity over a shorter remaining life raises the yearly charge on
 what stands; cause to establish. (3) The pack's headline cost is the engine's PV without compliance or the system strength charge.
+
+### c7 phase 3, the new sensitivities: no coal retires early in any of them; coal fuel cost moves c7 by -R94bn (flat) to +R71bn (+5% a year); Treasury's carbon path +R332bn and -173 Mt; Fossil-free without vanadium R127bn cheaper with nothing built in its place; the 0.5 Hz/s floor is short 71 hours (user, 2-3 Nov 2026, messages 651-657; build 2026-11-02y)
+
+Runs: chain_c7.sh phase 3 on claude/c7-runs, 3 Nov 2026 04:2x-05:56 UTC, every run on its first optimiser pass, engine-checked as phase 2.
+| Run (change from c7) | Engine PV | + strength | + compliance | Total | vs c7 | CO2 | Highest unserved |
+|---|---|---|---|---|---|---|---|
+| c7 | 2,416.4 | 1.3 | 49.9 | 2,467.7 | - | 1,715 | 6.41 |
+| s_gfm1891_c7 (grid-forming H 1.891 s) | 2,417.0 | 13.0 | 49.9 | 2,480.0 | +12.3 | 1,718 | 6.64 |
+| s_rocof05_c7 (0.5 Hz/s) | 2,427.9 | 3.7 | 49.9 | 2,481.6 | +13.9 | 1,714 | 10.61; 71.3 h short of the floor |
+| s_rocof15_c7 (1.5 Hz/s) | 2,416.2 | 0.6 | 49.9 | 2,466.8 | -0.9 | 1,716 | 6.21 |
+| s_vpppart_c7 (VPP at the participant cost) | 2,417.2 | 1.3 | 49.9 | 2,468.4 | +0.7 | 1,715 | 6.32; no enrolment |
+| s_gyrot_c7 (geyser rotation) | 2,416.4 | 1.3 | 49.9 | 2,467.7 | 0.0 | 1,715 | no enrolment, as c7 |
+| s_coalfuel0_c7 (coal fuel flat) | 2,322.3 | 1.2 | 49.9 | 2,373.5 | -94.2 | 1,785 | 7.41 |
+| s_coalfuel5_c7 (+5% a year) | 2,487.7 | 1.3 | 49.9 | 2,539.0 | +71.3 | 1,654 | 5.04 |
+| s_comply_full_c7 (full compliance) | 2,416.4 | 1.3 | 163.4 | 2,581.1 | +113.4 | 1,715 | 6.41 |
+| s_carbongross_c7 (coal at the rate after allowances) | 2,433.2 | 1.3 | 49.9 | 2,484.4 | +16.7 | 1,706 | 6.01 |
+| s_carbontreasury_c7 (Treasury's path from 2026) | 2,748.6 | 1.5 | 49.9 | 2,800.1 | +332.4 | 1,542 | 2.74 |
+| s_ff2040_c7 | 3,357.8 | 2.6 | 63.0 | 3,423.4 | | 798 | 0.03 |
+| s_ff2040novrfb_c7 (no vanadium) | 3,230.7 | 2.6 | 63.0 | 3,296.3 | -127.1 on s_ff2040_c7 | 797 | 0.00 |
+Findings. (1) Coal standing is the same in every coal-cost sensitivity, Treasury's carbon path and +5% fuel included (32.4, 25.9 and
+17.9 GW in 2030, 2035 and 2040; early retirement allowed from 2029, rc_ chosen nowhere): the cost and CO2 changes are dispatch only. The
+senior contact's LP-only runs retire coal (30.3, 21.9, 7.6 GW); whether ours keeps coal for adequacy, for the inertia floor or on the
+retirement credit's size is to establish (a one-year LP's rc_ reduced costs). (2) Fossil-free without vanadium builds nothing in its
+place (wind, solar, lithium, iron-air and pumped storage identical) and its engine check meets the standard, R127.1bn cheaper: the build
+LP valued the 500 MW a year of vanadium (its objective R524bn higher without it) where the engine needs none; an LP-engine mismatch in
+the stress windows, to investigate. (3) The 0.5 Hz/s requirement is short of the floor 71.3 hours a year with 3.7bn of strength builds:
+the optimiser's slack (VoLL per MW.s) is cheaper than more grid-forming; reported, not hidden. (4) The VPP enrols nothing at the
+participant cost; geyser control enrols nothing in either mode. (5) The compliance charge's rise in Fossil-free (R63.0bn against
+R49.9bn, R14.46bn a year from 2031 against R11.09bn) is the capital's annuity over the stations' shorter life to the fossil end (2039,
+8 years) in place of their scheduled closures; single 8% (R52.3bn) annuitises at 8% in place of Eskom's 7.1%: both by design
+(complyStations), no change.
