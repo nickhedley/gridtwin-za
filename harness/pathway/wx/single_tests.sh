@@ -23,20 +23,23 @@ job(){ local n=$1 y=$2; shift 2; local envs="$*"
     echo "$(date -u +%FT%H:%MZ) $n LP rc $? $(python3 -c "import json;S=json.load(open('$O/${n}_sol.json'));print(S.get('Status'),S.get('ObjectiveValue'))" 2>/dev/null)" >> $P
   fi
   [ -s $O/${n}_sol.json ] || return 0
-  if [ ! -s $O/${n}_eng.json ]; then
-    python3 -I - $F $O/${n}_sol.json $y $O/${n}_fleet.json >> $P 2>&1 <<'PY'
-import json, re, sys
-F, S, y, out = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
-d = json.load(open(F)); cols = json.load(open(S))['Columns']
-rx = re.compile(r'^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_%d$' % y); n = 0; kept = []
-for k in list(d['build']):
-    if rx.match(k):
-        if k in cols: d['build'][k] = cols[k]['Primal']; n += 1
-        else: kept.append(k)
-d['singleYearFrom'] = {'lp': S, 'year': y, 'replaced': n, 'keptFromC7': kept}
-json.dump(d, open(out, 'w')); print('  fleet', out, 'year', y, 'builds replaced', n, 'kept', kept)
-PY
-    eval "env -i PATH=\"$PATH\" HOME=\"$HOME\" LNG=1 GRID=1 SS_FC=reservecoal YEARS=$y IN=$O/${n}_fleet.json OUTC=$O/${n}_eng.json $envs nice -n 5 node --max-old-space-size=4096 pathcheck.js" > $O/${n}_eng.log 2>&1
+  # The engine on the LP's fleet: pathway_perfail.js run through to its output (OUT, with sched, the schedule pathcheck.js reads),
+  # solved natively; its year-y builds must equal the dumped LP's solution. (Before 3 Nov 2026, 20:50 UTC, this step wrote the LP's
+  # values into 'build', which pathcheck.js does not read, so those engine runs were on c7's own fleet: kept as <name>_engc7.json.)
+  if [ ! -s $O/${n}_path.json ]; then
+    eval "env $C7 $envs SOLVER=native OPER_FROM=$y FIX_FROM=$F FIX_TO=$((y-1)) HORIZON=$y MAXP=1 DUMP=0 LPCACHE=$O/lpc_$n OUT=$O/${n}_path.json TL=3000 nice -n 5 node --max-old-space-size=4096 pathway/pathway_perfail.js" > $O/${n}_path.log 2>&1
+    echo "$(date -u +%FT%H:%MZ) $n pathway rc $?" >> $P
+    python3 -I - $O/${n}_sol.json $O/${n}_path.json $y >> $P 2>&1 <<'PY2' || { echo "  $n: the run's schedule differs from the LP solution" >> $P; return 0; }
+import json, sys
+S, Pp, y = json.load(open(sys.argv[1]))['Columns'], json.load(open(sys.argv[2])), sys.argv[3]
+sc = Pp['sched'][y]; bad = [(t, sc.get(t), round(S.get('b_%s_%s' % (t, y), {'Primal': 0})['Primal'])) for t in ('wind', 'pv', 'batt', 'ccgt', 'ocgt', 'gfm')
+       if abs((sc.get(t) or 0) - round(S.get('b_%s_%s' % (t, y), {'Primal': 0})['Primal'])) > 1]
+print('  schedule', y, {t: sc.get(t) for t in ('wind', 'pv', 'batt', 'battMWh', 'ccgt', 'ocgt', 'gfm', 'earlyRetMW', 'coalMW')}, 'differs' if bad else 'matches the LP', bad or '')
+sys.exit(1 if bad else 0)
+PY2
+  fi
+  if [ -s $O/${n}_path.json ] && [ ! -s $O/${n}_eng.json ]; then
+    eval "env -i PATH=\"$PATH\" HOME=\"$HOME\" LNG=1 GRID=1 SS_FC=reservecoal YEARS=$y IN=$O/${n}_path.json OUTC=$O/${n}_eng.json $envs nice -n 5 node --max-old-space-size=4096 pathcheck.js" > $O/${n}_eng.log 2>&1
     echo "$(date -u +%FT%H:%MZ) $n engine rc $?" >> $P
   fi; }
 for y in 2030 2035; do

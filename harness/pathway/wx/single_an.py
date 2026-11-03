@@ -28,11 +28,13 @@ for f in sorted(os.listdir(O)):
     b = {k[:-5]: round(v) for k, v in X.items() if re.match(r'^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_%d$' % y, k) and abs(v) > 0.5}
     r = dict(run=n, year=y, obj_bn=S['ObjectiveValue'] / 1e9 if S['ObjectiveValue'] > 1e6 else S['ObjectiveValue'], days=len(cal), wspread=spread,
              lp=dict(coal=E('gc'), ccgt=E('gg'), diesel=E('gd'), ocgt=E('go'), curt=E('crt'), shed=E('u')), build=b)
-    e = os.path.join(O, n + '_eng.json')
-    if os.path.exists(e):
+    for tag in ('eng', 'engc7'):   # eng: the LP's fleet; engc7: the same setting on c7's own fleet (the earlier runs)
+      e = os.path.join(O, n + '_' + tag + '.json')
+      if os.path.exists(e):
         R = {x['y']: x for x in json.load(open(e))}.get(y)
-        if R: r['eng'] = dict(runs=R['nRuns'], mean=R['mean'], p99=R['shedPct'].get('p99'), max=R['shedPct'].get('max'), target=R['target'],
-                              curt=R['curt'], coal=R['coal'], cost=R['cost'], gasTWh=R.get('gasTWh'), diesel=R.get('diesel'), weather=R.get('weather'))
+        if R: r[tag] = dict(runs=R['nRuns'], mean=R['mean'], p99=R['shedPct'].get('p99'), max=R['shedPct'].get('max'), target=R['target'],
+                              curt=R['curt'], coal=R['coal'], cost=R['cost'], gasTWh=R.get('gasTWh'), diesel=R.get('diesel'), vreUsed=R.get('vreUsedTWh'), weather=R.get('weather'),
+                               fleet={k: R.get(k) for k in ('newWindMW', 'newPvMW', 'newBattMW', 'newCcgtMW', 'ssGfmMW')})
     rows.append(r)
 for r in rows: print(json.dumps(r))
 json.dump(rows, open(os.path.join(O, 'an.json'), 'w'), indent=1)
