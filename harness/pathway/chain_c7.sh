@@ -109,6 +109,11 @@ case "${1:-1}" in
        "s_blendedhigh_c7|COC=blendedhigh" "s_ff2040_c7|SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039|6"
      [ "$(left)" -ge 1800 ] && extras
      [ "$(left)" -ge 1200 ] && deep ;;
+  # Phase 2 split in two jobs (3 Nov 2026): 2n the no-gas run alone, 2x the extras then Deep, so neither waits on the other.
+  # s_nogas_c7 resumed from its saved basis fails in native HiGHS ('Solve error', twice): the partial basis is removed and the run
+  # solved by interior point with crossover (HIGHS_SOLVER=ipm), which reaches the same optimum faster on this LP; recorded as its Method.
+  2n) rm -f lpcache_s_nogas_c7/*.partial.basis.json; one s_nogas_c7 "GAS_CAP=0 OCGD=0 HIGHS_SOLVER=ipm" ;;
+  2x) [ "$(left)" -ge 1800 ] && extras; [ "$(left)" -ge 1200 ] && deep ;;
   *) echo "phase $1 not yet in this script" >> $P ;;
 esac
 echo "$(date -u +%H:%M) piece end" >> $P
