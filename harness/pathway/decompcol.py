@@ -39,5 +39,7 @@ with open(lp) as f:
             if y == 0: continue
             for v, c in terms(lhs).items():
                 if cre.fullmatch(v): R[v]['fam'][fam(name.strip())] += c * y
-json.dump({v: {'c': d['c'], 'fam': dict(d['fam']), 'primal': cols.get(v, {}).get('Primal')} for v, d in R.items()}, open(out, 'w'))
+O = {v: {'c': d['c'], 'fam': dict(d['fam']), 'primal': cols.get(v, {}).get('Primal')} for v, d in R.items()}
+O['_meta'] = {'objective': S.get('ObjectiveValue'), 'status': S.get('Status'), 'lp': lp}
+json.dump(O, open(out, 'w'))
 print(len(R), 'columns')
