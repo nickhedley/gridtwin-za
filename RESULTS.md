@@ -20331,3 +20331,41 @@ look-ahead, coal is committed without the stores' shave (line 8752), so more coa
   extracts attribute "Unit 9, March 1966" to Eskom's heritage pages, which were not opened (no reads of eskom.co.za). It affects no
   run: Komati retires in 2022 and coalFleetAgeFactor skips units retired before the year (index.html:7244).
 - COAL_UNIT_COD (index.html, build 2026-11-02y) is unchanged and agrees with both decisions.
+
+### Build-cut test (message 667 (a), (c)): Fossil-free meets the standard with its new builds cut 15% (R220.5bn less) and fails at 20%; without new iron-air it fails at 10%; the central fails at 15% and saves only R11.2bn at 10%
+
+Method (667 (a), (c); 668 (b) dropped Deep and the single-group cuts): each run's recorded pathway file with every year's new wind,
+offshore wind, utility solar, lithium power and energy, vanadium, iron-air and new pumped storage (and their repurposed MW) scaled
+together by 1 minus the cut (harness/pathway/cuttest.py), engine-checked with no new LP solve exactly as the chain's checks
+(pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal, groups a/b/c, the fixed seeds SEED_BASE 71830529, twelve weather years), in 5% steps
+to the first failure (harness/pathway/cutrun.sh; summaries cutsumm.js; outputs harness/pathway/c7/cut). Held at the run's values (ours,
+rule 366: only the optimiser's own energy builds are cut): rooftop (an input), grid-forming MW, synchronous condensers, VPP and geyser
+enrolment, the coal schedule. The committed floors (wind 2,245.5 MW, solar 3,405 MW, lithium 760.5 MW by 2028) are cut with the rest,
+as asked ("all new"); they are under 4% of each technology's total. Pass: every year's mean unserved at or under the 20 GWh standard,
+open-cycle under 6% and no hour short of the inertia floor. Total on the pack's basis (engine PV + system strength + compliance, 8%,
+2026-40). Build 2026-11-02y, claude/c7-runs; 3 Nov 2026 07:12-08:40 UTC.
+
+| Run | Cut | Total R bn | Change on uncut | CO2 Mt | Highest yearly unserved GWh (year) | Worst draw GWh | Hours short | Open-cycle max | Curtailment TWh | Meets |
+|---|---|---|---|---|---|---|---|---|---|---|
+| s_ff2040novrfb_c7 | 0% | 3,296.3 | - | 797 | 0.00 | 0.0 | 0 | 0.06% | 1,199.1 | yes |
+| s_ff2040novrfb_c7 | -5% | 3,220.8 | -75.5 | 837 | 0.00 | 0.0 | 0 | 0.07% | 1,060.4 | yes |
+| s_ff2040novrfb_c7 | -10% | 3,147.3 | -149.0 | 880 | 0.00 | 0.0 | 0 | 0.09% | 925.7 | yes |
+| s_ff2040novrfb_c7 | -15% | 3,075.8 | -220.5 | 929 | 8.63 (2040) | 52.6 | 0 | 0.11% | 795.3 | yes |
+| s_ff2040novrfb_c7 | -20% | 3,006.7 | -289.6 | 983 | 26.41 (2040) | 166.8 | 0 | 0.13% | 670.1 | no |
+| s_ff2040nolds_c7 | 0% | 3,282.6 | - | 797 | 0.00 | 0.0 | 0 | 0.06% | 1,199.1 | yes |
+| s_ff2040nolds_c7 | -5% | 3,207.7 | -74.9 | 837 | 8.87 (2040) | 56.9 | 0 | 0.07% | 1,060.4 | yes |
+| s_ff2040nolds_c7 | -10% | 3,135.0 | -147.6 | 880 | 24.63 (2040) | 166.3 | 0 | 0.09% | 925.8 | no |
+| c7 | 0% | 2,467.7 | - | 1,715 | 6.41 (2032) | 179.9 | 0 | 1.76% | 175.5 | yes |
+| c7 | -5% | 2,461.2 | -6.5 | 1,766 | 7.29 (2032) | 209.1 | 0 | 2.40% | 151.1 | yes |
+| c7 | -10% | 2,456.5 | -11.2 | 1,817 | 10.62 (2032) | 246.3 | 0 | 3.28% | 128.4 | yes |
+| c7 | -15% | 2,453.9 | -13.8 | 1,870 | 20.41 (2034) | 368.7 | 0 | 4.43% | 108.1 | no |
+
+- Fossil-free's 2040 CO2 stays 0 at every step; its CO2 rises from coal in the years before 2040. No step is short of the inertia
+  floor.
+- Reading: Fossil-free's builds carry slack the engine does not need (15% of every new build, R220.5bn, while meeting the standard),
+  consistent with the chained days' inflation; without the 5,000 MW of iron-air the slack falls to 5%. The central's do not show
+  it: a 10% cut saves R11.2bn while CO2 rises 102 Mt and open-cycle doubles, because coal and gas fill the gap.
+- Caveat, stated plainly: proportional cuts can show inflation but cannot rule it out. A uniform cut is not the cheapest way to shed
+  the slack (some technologies may be overbuilt and others not), and a run that fails a uniform cut may still be inflated in one
+  technology. The engine check also carries the storage foresight limitation (RESULTS above: 48 and 168 hours, perfect within the
+  window).
