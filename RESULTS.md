@@ -20741,3 +20741,44 @@ Their figures are superseded below where ESK19679 covers the same ground, and ar
    hour before 29 February reproduced to the integer; Renewables.ninja at 75 s a call); fix_weather_clock_leap.py checked (the regional maps
    reproduce the modern-wind file exactly from the stored series). The multi-year file's fingerprint is stale (gtza-48046d7c4ac04853, 13 Aug
    2026, before the 6 and 8 Sep changes); the rebuild recomputes it.
+
+### Utility solar in 2026 (January-August, 0.199): 16% below 2023-2025 on the same capacity, from March; most likely NTCSA curtailment, not weather or the data (message 685 (a); evidence, no level changed)
+
+Method: ESK19679 (Eskom data, obtained on request; the analysis is ours, not Eskom's), 'PV' over 'PV Installed Capacity', hourly, by month,
+January-August 2023-2026; scratchpad esk/solar2026*.py. Web search (3 Nov 2026) for the 2026 winter's weather and for curtailment.
+
+- By month, 2026 against the 2023-2025 mean on 2026's own capacity: January +11% (0.339, new plants in the summer sun), February -6%,
+  March -15%, April -24%, May -30%, June -23%, July -23%, August -30%; January-August 601 GWh short of 3,748 (16%).
+- Denominator: four steps, +225 MW on 6 Dec 2025 (Grootfontein), +75 MW on 16 Jan and 23 Jan 2026, +120 MW on 9 May 2026 (2,285 ->
+  2,780 MW). Peak hours scale with them (January's highest hour 2,475 MW, 0.93 of capacity; May-August peaks 0.70-0.76 of capacity,
+  as in 2024-2025): no sign of plants counted before running. The May step adds no visible peak; without it May-August would still read
+  0.15-0.17. No zero or missing daylight hours in any month.
+- Not cloud, on the evidence: May-August has 42 days below 0.12 against 2-6 in each earlier year, but their shapes are ragged (median
+  correlation 0.73 with the month's clear-day shape, against 0.97 for the few dull days of 2024-2025), with no extra flat-topped days
+  (15 against 15-16); wind on those days is normal (0.259 against 0.268; daily correlation of PV and wind -0.08). The National
+  Agrometeorological Committee's advisory reports below-normal July 2026 rainfall in the Northern Cape; no source found describes a wet or
+  cloudy 2026 winter there (search snippets).
+- Curtailment: NTCSA and SAPVIA report solar curtailment instructions rising from about 100 a month to more than 1,000 a month in 2026,
+  claims surging in April and May 2026, which NTCSA attributes to daylight operating constraints while coal stays on for the morning and
+  evening peaks (Engineering News and SAPVIA, 30 Jul 2026; SolarQuarter, 19 Jun and 4 Sep 2026; NTCSA media statement, 24 Jul 2026; search
+  snippets). The timing (from March, deepest April-August) and the ragged dull days fit instructions that vary by plant and hour.
+- Partial-year effect: January-August runs below the full year (annual over January-August 1.065, 1.081, 1.074 in 2023-2025).
+- Levels: without 2026, 0.2558 (2023-2025, as applied); with 2026 annualised (0.199 x 1.0733 = 0.2141), 0.2454. January-August alone:
+  0.2383 (2023-2025), 0.2286 (2023-2026).
+- Verdict: low for a real, operational reason (most likely curtailment), plus the partial-year effect; not a data issue. The level is the
+  existing fleet's resource, and the engine dispatches and curtails on its own, so 2026's curtailment would be counted twice if it entered
+  the level; it is left out for that stated reason, Nick to decide. The 2023-2025 meters carry some curtailment too (fewer instructions), so
+  0.2558 may sit slightly below the resource. The engine curtailed about 0 TWh in its 2025 replay (eskom2025.js, metered weather), while
+  2026's meters show about 0.6 TWh lost in eight months: the engine's daylight curtailment is a validation target to examine.
+
+### The tracking twins of 2024 and 2025 cannot be rebuilt bit for bit from the stored files (message 685 (c))
+
+build_solar_tracking.py (7 Oct 2026) made each 2024 and 2025 twin as the year's fixed-tilt series times a tracking/fixed ratio by region,
+month and hour of day, and computed that ratio from its own cache of unrounded PVGIS output for 2014-2023 (pvgis_tracking_cache.json,
+gitignored, not in the repository or this container). The stored files hold the same series rounded to thousandths. Recomputed from the
+stored files (build 2026-11-03a, base b0f7999), the rule gives, over the 20 region-years: 762 of 86,177 daylight hours (0.9%) differing by
+more than 0.002 per unit; mean absolute difference 0.00016; annual means within 0.00025; the worst hour 0.075 (KwaZulu-Natal, March,
+06:00), where the 2014-2023 fixed-tilt output rounds to zero in the stored file but was a small positive value in the cache, so the ratio
+there was 0 in the build and 1 in the recomputation. fix_weather_clock_leap.py therefore keeps the stored 2024 twin's hours (29 February
+removed, the borrowed year's rescale applied, 31 December from its fixed-tilt day times the ratio from the stored files) and leaves 2025's
+twin unchanged. An exact rebuild would need the 2014-2023 PVGIS years fetched again (about 160 requests).
