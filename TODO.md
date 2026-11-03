@@ -520,6 +520,15 @@ retiring early, fold the charge into the central after the note. To check: the S
 age + 5.68 x FGD, 2017 $/kW-yr; eia.gov blocked from the container) and NERSA's MYPD6 reasons for decision (Generation capex).
 
 14jy. Private repository, public site, after the pack goes on Friday 30 Oct; no work before then (user, 27 Oct 2026, message 431).
+Decided 3 Nov 2026 (Nick, message 680): the repository goes private (Nick switches it in GitHub's settings, between runs) and three
+unused Eskom-derived copies stop being served: nodal/profiles.json, profiles_OLD_backup.json and profiles_rebuilt.json, in .assetsignore
+(branch claude/unserve-eskom-copies). profiles.json, nodal/coal_availability_trace.json and nodal/residential_profile.json stay in use
+and on the site, as decided (14bz). No git history is rewritten; that waits for legal advice ('history not purged' stands). The rest
+of (a), the internal files' .assetsignore: done on branch claude/site-allowlist (message 683 (g)), a deny list that leaves 45 of
+1,321 files on the site (index.html, its data and scripts, gridtwin-3d/, LICENSE, README.md), tested on a fresh page load in Chromium
+with no new failed request or error. Open for Nick: SOURCES.md, PROVENANCE.md, REVIEWER_PACK.md, NOTE_DRAFT.md and PRESET_TABLE.md
+are hidden (the page links none of them); files under NTCSA or Eskom terms that the page reads stay, or the page breaks; a new root
+file is served until a line covers it (a suite check comparing the served set with what the page reads would catch it).
 (a) Before Nick makes the repository private: list every file the live site serves now, and propose a .assetsignore that keeps
 internal files off the site (CLAUDE.md, HANDOVER.md, TODO.md, STATE.md, RULES.md, MANIFEST.md, CALENDAR.md, FIRST_SESSION.md,
 scratch and backup files, and anything under the NTCSA or Eskom terms) while keeping the page, its data and the public docs.

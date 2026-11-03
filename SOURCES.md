@@ -739,7 +739,9 @@ it is given: ESK files stay local; derived results and single calibration consta
 published, with Eskom credited and a note that the analysis is GridTwin ZA's, not Eskom's; no raw or per-unit hourly
 series; no scripted fetches from eskom.co.za beyond one-off checks (the gridtwin-data weekly fetch is disabled).
 The hourly series below are to be replaced in the public repository by open versions, after their effect on c4 is
-reported (history not purged). Each constant below is a summary figure (a mean, a ratio or a
+reported (history not purged; on 3 Nov 2026, message 680, Nick decided to make the repository private and to stop serving the
+unused copies nodal/profiles.json, profiles_OLD_backup.json and profiles_rebuilt.json on the site; history is still not purged,
+pending legal advice). Each constant below is a summary figure (a mean, a ratio or a
 calibrated parameter); its basis is in the comment beside it in the file named.
 
 Constants (kept):
