@@ -11,6 +11,8 @@ const ROOT='testroot', OUT=process.argv[2];
    w.fetch=async(u)=>{try{const cl=String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config)/,'');const t=fs.readFileSync(path.join(path.resolve(ROOT),cl),'utf8');return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}};}});
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
  const K12=require(path.resolve('pathway/roof12.js'))(w); console.log('roof12 K',K12); w.eval(`applyState(PRESETS['Today 2026']); bldSetHorizon(2040); state.bldPvTracking=1;`);
+ // WX_WINDCORR=1 (message 684 (d)): the modelled years through the wind correction (the corrected reference); recorded in the output.
+ if (process.env.WX_WINDCORR === '1') { w.eval('state.wxWindCorr=1;'); console.log('WX_WINDCORR: on'); }
  const r=w.eval(`(()=>{ const S={...FIXED,...state}; const k=windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr); const R=a=>Array.from(a,v=>+v.toFixed(5));
    const rd=bldRepDays(12).map(q=>({d:q.d,weight:q.weight,tail:!!q.tail,year:q.year}));
    const wy={}; for (const y of bldWeatherYears.meta.years){ const n=weatherYearNational(String(y)); wy[y]={wind:R(n.wind),windN:R(Array.from(windModOf(n.wind),v=>Math.min(1,k*v))),solar:R(n.solar),solarT:R(solarTrkOf(n.solar))}; }
