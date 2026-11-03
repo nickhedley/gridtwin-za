@@ -6057,9 +6057,14 @@ const FIXED = {
   // its own) and the other years on the run's day count; 0, off. bldAnnuityToYear: a build's annuity summed to this year even where the LP
   // ends sooner (the review's variant of a stage-2 step); 0, to the LP's own horizon, as now.
   bldStage2Year:0, bldAnnuityToYear:0,
-  // Existing utility solar's share on single-axis trackers (message 682 (d), test only; Nick decides any level): its per-unit output
-  // (1 - share) x fixed tilt + share x the tracking twin. 0, all fixed tilt, as now.
-  bldExistPvTrackShare:0,
+  // Existing utility solar's level (user decision, 3 Nov 2026, message 684 (f)): existPvMeteredCF is Eskom's metered utility PV, energy
+  // over hourly installed capacity (AC, the same plants), the mean of the full calendar years in ESK19679, 2023 0.2523, 2024 0.2633,
+  // 2025 0.2519 (Eskom data, obtained on request; the analysis is ours, not Eskom's). On a modelled weather year existing utility
+  // solar runs at (1 - X) x fixed tilt + X x the year's own tracking twin, with X (existPvTrackShareAt) the share that puts the twelve
+  // years' mean at this level: most of the fleet is on single-axis trackers. On the metered profile (profiles.json, that fleet
+  // itself) X is 0. Rooftop keeps fixed tilt. bldExistPvTrackShare: null, the derived share on modelled days and 0 on the metered
+  // profile's days; a number (EXIST_PV_TRK, a test) applies that share on every day.
+  existPvMeteredCF:0.2558, bldExistPvTrackShare:null,
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -7941,9 +7946,15 @@ function simulate(u, prof, outPath, _soc0){
     const a = new Float64Array(wind.length); for (let h = 0; h < a.length; h++) a[h] = (E * wind[h] + N * Math.min(1, k * T[h])) / (E + N); return a; })() : wind;
   // Solar tracking (TODO 14aw): utility solar's per-unit output blends existing MW on fixed tilt with new MW on the
   // tracking twin; rooftop keeps solar. Off: solarU is solar itself.
+  // Existing utility solar on a modelled year (message 684 (f)): (1 - X) x fixed tilt + X x the year's own twin, X from
+  // existPvTrackShareAt; on the metered profile (no own twin) X is 0.
   const _trkOn = ((p.bldPvTracking ?? 0) | 0) > 0 && (p.newPvMW || 0) > 0;
-  const solarU = _trkOn ? (() => { const T = prof.solarTrk || solarTrkOf(solar), E = p.pvUtilityMW || 0, N = p.newPvMW || 0;
-    const a = new Float64Array(solar.length); for (let h = 0; h < a.length; h++) a[h] = (E * solar[h] + N * T[h]) / (E + N); return a; })() : solar;
+  const _xs = solar.trkOwn ? (existPvTrackShareAt(p) ?? 0) : 0;
+  const solarU = ((_trkOn || _xs > 0) && (p.pvUtilityMW || 0) + (p.newPvMW || 0) > 0) ? (() => {
+    const T = _trkOn ? (prof.solarTrk || solarTrkOf(solar)) : null, X = _xs > 0 ? solar.trk : null, E = p.pvUtilityMW || 0, N = p.newPvMW || 0;
+    const a = new Float64Array(solar.length);
+    for (let h = 0; h < a.length; h++) a[h] = (E * (X ? (1 - _xs) * solar[h] + _xs * X[h] : solar[h]) + N * (T ? T[h] : solar[h])) / (E + N);
+    return a; })() : solar;
   // demandYear 2025 swaps in 2025's own demand series wherever the default series was passed
   // (single run or weather years). The default is the 2026 series. 3 Oct 2026.
   const demand = (p.demandYear === 2025 && prof.demand === PROFILES.demand && PROFILES.demand_2025)
@@ -12647,7 +12658,10 @@ function bldBuildLP(opts){
   // output after it is held at zero by the carbon cap (carbonCapMt 0 from the next year, set with it). 0: off, as before.
   const FOSSIL_END = +(S.bldFossilEndYear || 0), FOSSIL_T = ['ccgt', 'ocgt', 'ocgd'];
   const fossilCut = t => FOSSIL_END > 0 && FOSSIL_T.includes(t);
-  const _XTRK = Math.max(0, Math.min(1, +(S.bldExistPvTrackShare || 0)));   // existing utility solar on trackers (test only; 0 as now)
+  // Existing utility solar's tracker share (message 684 (f)): a number set (EXIST_PV_TRK, a test) applies on every day; null, the derived
+  // share on days that carry their own (modelled or rescaled) series and 0 on the metered profile's calendar days.
+  const _XSET = S.bldExistPvTrackShare ?? null, _XDER = existPvTrackShareAt(S) ?? 0;
+  const _xtrk = r => Math.max(0, Math.min(1, _XSET !== null ? +_XSET : (r.solar ? _XDER : 0)));
   const _AT = +(S.bldAnnuityToYear || 0), _YE = Y[Y.length - 1];
   const YA = _AT > _YE ? Y.concat(Array.from({ length: _AT - _YE }, (_, i) => _YE + 1 + i)) : Y;   // the years a build's annuity is summed over
   const capCharge = (t, y, yy, m) => {
@@ -13012,6 +13026,9 @@ function bldBuildLP(opts){
       // New utility solar's per-unit output: the tracking twin when bldPvTracking is on (TODO 14aw), else sp.
       const spN = !TRK_ON ? sp : r.solar ? (r.solarTrk ? r.solarTrk[h] : (() => { throw new Error('tracking on: a representative day has no tracking solar'); })())
                                        : solarTrkOf(PROFILES.solar)[i];
+      // The existing fleet's tracking series on the day (message 684 (f)): the day's own twin where it carries its series, else the metered
+      // profile's twin (only where a test share is set); unused at a share of 0.
+      const spX = _xtrk(r) > 0 ? (r.solar ? (r.solarTrk ? r.solarTrk[h] : sp) : solarTrkOf(PROFILES.solar)[i]) : sp;
       const wp = r.wind  ? r.wind[h]  : PROFILES.wind[i];
       // New wind's per-unit output: the modern-turbine twin when bldWindModern is on, else wp.
       const wpN = !WMOD_ON ? wp : Math.min(1, WMOD_K * (r.wind ? (r.windMod ? r.windMod[h] : (() => { throw new Error('modern wind on: a representative day has no modern-turbine wind'); })())
@@ -13022,7 +13039,7 @@ function bldBuildLP(opts){
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
-                  + exWind*wp*AV_CONG + exPv*((1 - _XTRK)*sp + _XTRK*spN)*AV_CONG + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
+                  + exWind*wp*AV_CONG + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AV_CONG + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
@@ -15963,6 +15980,36 @@ function simulateTwoPass(st, PROF, opts){
 // tracking/fixed ratio by month and hour (capacity-weighted over regions and the fetched years), which derives a
 // tracking twin for a profile that has none of its own (the default single-year PROFILES.solar).
 let bldSolarTrk = null, SOLAR_TRK_G = null, SOLAR_TRK_ERR = null;
+// SOLAR_TRK_K (user decision, 3 Nov 2026, message 684 (c)): the metered profile's twin is scaled to the twelve-year tracking mean. A profile
+// without its own twin is the metered one (profiles.json, Eskom's 2025 fleet), already 53-58% on single-axis trackers, so the map's
+// tracking gain applied to it counts the trackers twice (0.342 against 0.286 unscaled; RESULTS 'The metered profile's tracking twin').
+// From the map file at start-up (metered_scale, written by harness/solar_trk_k.js); solarTrkMeteredK recomputes it when the weather
+// years load and the page stops if the two disagree.
+let SOLAR_TRK_K = null;
+function setSolarTrkK(k, source){
+  if (!(Number.isFinite(k) && k > 0)) throw new Error('solar tracking metered scale from ' + source + ' is not a positive number');
+  if (SOLAR_TRK_K !== null){
+    const d = Math.abs(k - SOLAR_TRK_K) / SOLAR_TRK_K;
+    if (d > 1e-9){ SOLAR_TRK_ERR = 'solar tracking metered scale disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun harness/solar_trk_k.js --write';
+      SOLAR_TRK_K = null; throw new Error(SOLAR_TRK_ERR); }
+    return;
+  }
+  SOLAR_TRK_K = k;
+}
+// The scale k that puts the metered profile's twin, min(1, k x solar x SOLAR_TRK_G), at the twelve modelled years' mean tracking output
+// (each year's own PVGIS twin, as weatherYearNational builds it). Bisection on the clipped mean, to 1e-13.
+function solarTrkMeteredK(){
+  if (!SOLAR_TRK_G || !bldWeatherYears || !bldSolarTrk) return null;
+  let s = 0, n = 0;
+  for (const y of bldWeatherYears.meta.years){ const nat = weatherYearNational(String(y)); if (!nat || !nat.solar.trk) return null;
+    for (let h = 0; h < HOURS; h++) s += nat.solar.trk[h]; n += HOURS; }
+  const target = s / n, P = PROFILES.solar, raw = new Float64Array(HOURS);
+  for (let h = 0; h < HOURS; h++) raw[h] = P[h] * SOLAR_TRK_G[hourMonth(h)][h % 24];
+  const meanAt = k => { let m = 0; for (let h = 0; h < HOURS; h++) m += Math.min(1, k * raw[h]); return m / HOURS; };
+  let lo = 0, hi = 4; if (meanAt(hi) < target) throw new Error('solar tracking metered scale: no k reaches the twelve-year mean');
+  while (hi - lo > 1e-13){ const mid = (lo + hi) / 2; if (meanAt(mid) < target) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
 // The national map arrives at start-up from nodal/profiles_solar_tracking_map.json (build_solar_tracking.py, as for the
 // modern-wind map), so a preset with tracking solar runs before the weather years load (18 Oct 2026, build 2026-10-17i);
 // when the full files load, bldBuildSolarTrkRatio recomputes it and the page stops if the two disagree.
@@ -15995,6 +16042,8 @@ function bldBuildSolarTrkRatio(){
     }
   }
   setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1)), 'the series');
+  // The metered scale, checked against the map file's, where the measured profile is loaded (the worker skips it: the page checks).
+  if (typeof _profilesReal !== 'undefined' && _profilesReal){ const k = solarTrkMeteredK(); if (k !== null) setSolarTrkK(k, 'the series'); }
 }
 // Modern-TURBINE wind (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
 // current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
@@ -16066,12 +16115,28 @@ function windModOf(wind){
   for (let h = 0; h < wind.length; h++) t[h] = Math.min(1, wind[h] * WIND_MOD_MAP[Math.min(49, Math.floor(wind[h] * 50))]);
   wind.mod = t; return t;
 }
-// The tracking twin of a fixed-tilt solar profile: its own if built with one, else derived from SOLAR_TRK_G.
+// Existing utility solar's tracker share on the modelled years (message 684 (f)): X with (1 - X) F12 + X T12 = existPvMeteredCF,
+// F12 and T12 the twelve years' mean fixed-tilt and tracking output (weatherYearNational); clamped to 0-1. Null until the years load.
+let _existPvX = null;
+function existPvTrackShareAt(p){
+  const L = +((p && p.existPvMeteredCF) ?? FIXED.existPvMeteredCF);
+  if (!(L > 0) || !bldWeatherYears || !bldSolarTrk) return null;
+  if (_existPvX && _existPvX.L === L) return _existPvX.x;
+  let f = 0, t = 0, n = 0;
+  for (const y of bldWeatherYears.meta.years){ const nat = weatherYearNational(String(y)); if (!nat || !nat.solar.trk) return null;
+    for (let h = 0; h < HOURS; h++){ f += nat.solar[h]; t += nat.solar.trk[h]; } n += HOURS; }
+  f /= n; t /= n;
+  const x = Math.max(0, Math.min(1, (L - f) / (t - f)));
+  _existPvX = { L, x }; return x;
+}
+// The tracking twin of a fixed-tilt solar profile: its own if built with one, else derived from SOLAR_TRK_G and scaled by SOLAR_TRK_K
+// (the metered profile, message 684 (c)).
 function solarTrkOf(solar){
   if (solar.trk) return solar.trk;
   if (!SOLAR_TRK_G) throw new Error(SOLAR_TRK_ERR || 'solar tracking is on but nodal/profiles_solar_tracking_map.json is not loaded');
   const t = new Float64Array(solar.length);
-  for (let h = 0; h < solar.length; h++) t[h] = Math.min(1, solar[h] * SOLAR_TRK_G[hourMonth(h % HOURS)][h % 24]);
+  if (SOLAR_TRK_K === null) throw new Error(SOLAR_TRK_ERR || 'solar tracking is on but the metered scale (metered_scale in nodal/profiles_solar_tracking_map.json) is not loaded');
+  for (let h = 0; h < solar.length; h++) t[h] = Math.min(1, SOLAR_TRK_K * solar[h] * SOLAR_TRK_G[hourMonth(h % HOURS)][h % 24]);
   solar.trk = t; return t;
 }
 function weatherYearNational(year){
@@ -16152,7 +16217,7 @@ function weatherYearNational(year){
       const t = bldSolarTrk.solar_trk_pu[R] && bldSolarTrk.solar_trk_pu[R][year];
       if (t){ const f = (bldWxWeights.solar[R] || 0) / ts / st; for (let h = 0; h < HOURS; h++) trk[h] += t[h]*f; }
     }
-    solar.trk = trk;
+    solar.trk = trk; solar.trkOwn = true;   // its own twin: a modelled year (existing solar's share applies, message 684 (f))
   }
   // Modern-turbine twin on the same weights (bldWindModern), carried on the array like solar.trk.
   if (bldWindMod && bldWindMod.wind_modern_pu){
@@ -22129,7 +22194,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-03a';
+const BUILD_STAMP = '2026-11-03b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -22151,7 +22216,7 @@ const PANEL_CACHE = new Map();      // key -> { deps, mc, adequacy, capCurve }, 
 const PANEL_CACHE_MAX = 200;
 // The engine's loaded inputs, by identity. Each is replaced, never altered in place, when it loads, so an entry computed
 // with these same objects is still current; one computed before any of them changed is not used.
-const engineInputs = () => [PROFILES, OFFSHORE_PU, COAL_TRACE, TDP_PROJECTS, HEADROOM_LOOKUP, bldTxCurve, WIND_MOD_MAP, SOLAR_TRK_G];
+const engineInputs = () => [PROFILES, OFFSHORE_PU, COAL_TRACE, TDP_PROJECTS, HEADROOM_LOOKUP, bldTxCurve, WIND_MOD_MAP, SOLAR_TRK_G, SOLAR_TRK_K];
 const sameInputs = deps => { const b = engineInputs(); return !!deps && deps.length === b.length && deps.every((x, i) => x === b[i]); };
 function canonJSON(o){ return JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v) && !ArrayBuffer.isView(v))
   ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v); }
@@ -22228,7 +22293,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldCocBase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
-  bldBuildWindModMap, setSolarTrkMap, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
+  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, existPvTrackShareAt, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
   btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
   ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
   coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt, coalCarbonFloorR });
@@ -22236,7 +22301,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
 const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
   ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, CARBON_COAL_FLOOR_R_KWH, CARBON_COAL_FLOOR_TO, CARBON_CPI_PA, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
-  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, _MSTART_H, COAL_MINSTABLE_CURVE,
+  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, _existPvX, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
   BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK, BLD_COC_PRIVATE_PREM, BLD_COC_GROUP, BLD_COC_NAB_GAP, BLD_COC_PRIVATE_SHARE, BLD_COC_PVWIND_CLOSED, BLD_COC_PVWIND_TECH, BLD_BUILD_Y,
@@ -23065,7 +23130,7 @@ const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V |
   .then(d => { if (d){ setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; } }).catch(e => console.error('[GridTwin]', e.message));
 // Tracking-solar map (bldPvTracking, a preset key): needed by any dispatch with new tracking solar on the default profile.
 const P_STRK = fetch('nodal/profiles_solar_tracking_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
-  .then(d => { if (d) setSolarTrkMap(d.map, 'nodal/profiles_solar_tracking_map.json'); }).catch(e => console.error('[GridTwin]', e.message));
+  .then(d => { if (d){ setSolarTrkMap(d.map, 'nodal/profiles_solar_tracking_map.json'); setSolarTrkK(d.metered_scale, 'nodal/profiles_solar_tracking_map.json'); } }).catch(e => console.error('[GridTwin]', e.message));
 // Numbers in the prose, from the code (site text fixes, user 16 Oct 2026, message 138). Each <span data-num="key"> (or an
 // <option>) shows ABOUT_NUM[key](), so a constant is never typed a second time into the About text; an unknown key throws.
 const _numInt = v => Math.round(v).toLocaleString('en-US');

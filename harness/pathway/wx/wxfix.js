@@ -8,6 +8,7 @@
 // page's national modern-turbine map of the corrected series. A test variant, not a series.
 module.exports = function install(w, mode, tb){
   if (!['fixed', 'corrected'].includes(mode)) throw new Error('WX_FIX must be fixed or corrected');
+  if (w.eval('!!(bldWeatherYears && bldWeatherYears.meta && bldWeatherYears.meta.wind_clock)')) throw new Error('WX_FIX: the weather files already carry the clock and leap-year fixes (meta.wind_clock); applying them again would shift wind twice');
   if (mode === 'corrected' && !(tb && tb.table.length === 12 && tb.table.every(r => r.length === tb.grid.n))) throw new Error('WX_TABLE: 12 rows of grid.n values');
   w.eval(`(function(){ const MODE=${JSON.stringify(mode)}, TB=${tb?JSON.stringify({t:tb.table,n:tb.grid.n}):'null'}, LEAP=new Set(['2016','2020','2024']), cache={};
      const leap=a=>{ const o=new Float64Array(8760); let j=0; for (let i=0;i<8760;i++){ if (i>=59*24 && i<60*24) continue; o[j++]=a[i]; } for (let h=0;h<24;h++) o[8736+h]=o[8712+h]; return o; };
@@ -19,5 +20,5 @@ module.exports = function install(w, mode, tb){
      const corr=a=>{ const o=new Float64Array(a.length); for (let h=0;h<a.length;h++){ const r=TB.t[hourMonth(h)], x=Math.max(0,Math.min(1,a[h]))*(TB.n-1), i=Math.min(TB.n-2,Math.floor(x)), f=x-i; o[h]=r[i]+(r[i+1]-r[i])*f; } return o; };
      window.__wxFixNat=yy=>{ const y=String(yy); if (cache['n'+y]) return cache['n'+y]; const b=base(y);
        let wd=shift(y,'wind'); if (MODE==='fixed' && b.mod) wd.mod=shift(y,'mod'); if (MODE==='corrected') wd=corr(wd);
-       const s=b.solar; if (b.trk) s.trk=b.trk; return (cache['n'+y]={wind:wd,solar:s,...(b.trk?{solarTrk:b.trk}:{})}); }; })();`);
+       const s=b.solar; if (b.trk){ s.trk=b.trk; s.trkOwn=true; } return (cache['n'+y]={wind:wd,solar:s,...(b.trk?{solarTrk:b.trk}:{})}); }; })();`);
 };
