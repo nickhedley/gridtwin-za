@@ -34,7 +34,7 @@ const ROOT = 'testroot', OUT = process.argv[2], W26 = process.argv[3] || null;
       ratios.sort((a, b) => a - b);
       const pvMW = (p.pvUtilityMW || 0) + (p.newPvMW || 0);
       return { pvCurtJanAugTWh: sum(pvC, 0, 5832) / 1e6, pvCurtMarAugTWh: sum(pvC, 1416, 5832) / 1e6, allCurtJanAugTWh: sum(x.curtailMW, 0, 5832) / 1e6,
-        pvCurtByMonthGWh: byMonth, pvCurtMid11to14MW: mid / nm, coalMiddayOverDailyHigh_median: ratios[Math.floor(ratios.length / 2)],
+        pvCurtByMonthGWh: byMonth, pvCurtByHourMarAugMW: (() => { const s = new Float64Array(24), n = new Float64Array(24); for (let h = 1416; h < 5832; h++){ s[h % 24] += pvC[h]; n[h % 24]++; } return Array.from(s, (v, i) => Math.round(v / n[i])); })(), pvCurtMid11to14MW: mid / nm, coalMiddayOverDailyHigh_median: ratios[Math.floor(ratios.length / 2)],
         utilityPvMW: pvMW, pvCurtJanAugMWhPerMW: sum(pvC, 0, 5832) / pvMW, pvTWhJanAug: sum(x.stack.pv, 0, 5832) / 1e6, exportsMW: p.exportsMW ?? FIXED.exportsMW,
         annualAllCurtTWh: x.E.curtailed / 1e6, coalTWhJanAug: sum(x.stack.coal, 0, 5832) / 1e6,
         // March-August 11:00-13:59 means, MW, for the comparison with the meters
@@ -53,6 +53,12 @@ const ROOT = 'testroot', OUT = process.argv[2], W26 = process.argv[3] || null;
     out.A_dem = metric(simulate({ ...state, demandGrowthPct: dg }, PROFILES), T);
     out.A_ps = metric(simulate({ ...state, psPowerMW: 1362 }, PROFILES), T);
     out.A_both = metric(simulate({ ...state, demandGrowthPct: dg, psPowerMW: 1362 }, PROFILES), T);
+    // Message 690 on Today 2026: (a) no flat congestion curtailment; (b) the flat 1.3%, as A; (c) the same energy by technology in its
+    // recorded hours; (d) (a) with pumping from a surplus at 09:00-16:59 capped at 2026's metered midday mean (469 MW). And by hour of day.
+    out.c690_a = metric(simulate({ ...state, congestionCurtailOn: false }, PROFILES), T);
+    out.c690_c = metric(simulate({ ...state, congestionShape: 'tech' }, PROFILES), T);
+    out.c690_d = metric(simulate({ ...state, congestionCurtailOn: false, psDayPumpMaxMW: 469 }, PROFILES), T);
+    out.c690_d_dem = metric(simulate({ ...state, congestionCurtailOn: false, psDayPumpMaxMW: 469, demandGrowthPct: dg }, PROFILES), T);
     const W26 = ${wind26 ? JSON.stringify(wind26) : 'null'};
     if (W26){ const wnd = Float64Array.from(PROFILES.wind); for (let h = 0; h < W26.length; h++) wnd[h] = W26[h];
       out.B = metric(simulate({ ...state }, { ...PROFILES, wind: wnd }), { ...T, __prof: { ...PROFILES, wind: wnd } }); }
@@ -72,7 +78,8 @@ const ROOT = 'testroot', OUT = process.argv[2], W26 = process.argv[3] || null;
   fs.writeFileSync(OUT, JSON.stringify(res, null, 1));
   const f = (n, m) => console.log(n.padEnd(34), 'PV curtailed Jan-Aug %s TWh (Mar-Aug %s), all VRE %s; at 11-14h Mar-Aug %s MW; per MW %s MWh; coal midday/daily high %s; exports %s; months %s'
     .replace(/%s/g, () => '%s').split('%s').map((s, i, a) => s + (i < a.length - 1 ? [m.pvCurtJanAugTWh.toFixed(3), m.pvCurtMarAugTWh.toFixed(3), m.allCurtJanAugTWh.toFixed(3), m.pvCurtMid11to14MW.toFixed(0), m.pvCurtJanAugMWhPerMW.toFixed(1), m.coalMiddayOverDailyHigh_median.toFixed(3), m.exportsMW, m.pvCurtByMonthGWh.join('/')][i] : '')).join(''));
-  for (const k of ['A', 'A1', 'B', 'R', 'A_dem', 'A_ps', 'A_both']) if (res[k]) f(k, res[k]);
+  for (const k of ['A', 'A1', 'B', 'R', 'A_dem', 'A_ps', 'A_both', 'c690_a', 'c690_c', 'c690_d', 'c690_d_dem']) if (res[k]) f(k, res[k]);
+  for (const k of ['A', 'c690_a', 'c690_c', 'c690_d', 'c690_d_dem']) if (res[k]) console.log(k, 'PV curtailed by hour, Mar-Aug mean MW', res[k].pvCurtByHourMarAugMW.join(' '));
   for (const st of res.steps) f('R + ' + st.group, st.m);
   for (const k of ['A', 'A1', 'B', 'R', 'A_dem', 'A_ps', 'A_both']) if (res[k]) console.log(k, 'midday Mar-Aug 11-14h MW', JSON.stringify(res[k].midday));
   console.log('keys moved from R to Today 2026:', JSON.stringify(res.diffKeys).slice(0, 1500));
