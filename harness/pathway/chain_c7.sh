@@ -114,6 +114,16 @@ case "${1:-1}" in
   # solved by interior point with crossover (HIGHS_SOLVER=ipm), which reaches the same optimum faster on this LP; recorded as its Method.
   2n) rm -f lpcache_s_nogas_c7/*.partial.basis.json; one s_nogas_c7 "GAS_CAP=0 OCGD=0 HIGHS_SOLVER=ipm" ;;
   2x) [ "$(left)" -ge 1800 ] && extras; [ "$(left)" -ge 1200 ] && deep ;;
+  # Phase 3 (HANDOVER 'c7 launch plan'): the new c7 sensitivities. 3: those not on the age curve; 3age: the age curve's runs, after
+  # Medupi, Kusile and Komati's commissioning years are verified (message 656 (c)).
+  3) queue "s_gfm1891_c7|GFM_H=thermal" "s_rocof05_c7|ROCOF=0.5" "s_rocof15_c7|ROCOF=1.5" \
+       "s_vpppart_c7|VPP_COST_CASE=participant" "s_gyrot_c7|GY_MODE=rotation" \
+       "s_coalfuel0_c7|COAL_FUEL_ESC=0" "s_coalfuel5_c7|COAL_FUEL_ESC=5" "s_comply_full_c7|COMPLY=full" \
+       "s_carbongross_c7|COAL_CARBON_FLOOR=0" "s_carbontreasury_c7|COAL_CARBON_FLOOR=0 CARBON_PATH=treasury" \
+       "s_ff2040novrfb_c7|SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 VRFB_OFF=1|6" ;;
+  3age) queue "s_coalage_c7|COAL_AGE=1" "s_ageingcoal_c7|COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full" \
+       "s_contact_c7|COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury" \
+       "s_ff2040_contact_c7|SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury|6" ;;
   *) echo "phase $1 not yet in this script" >> $P ;;
 esac
 echo "$(date -u +%H:%M) piece end" >> $P
