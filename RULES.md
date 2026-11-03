@@ -173,6 +173,10 @@ sixth of itself. Comparisons between builds on the same year are fine; levels ne
 figure are not comparable. A synthetic-normal year and a realised bad year are
 not comparable.
 
+**Every adequacy table gives the worst 1% of draws and the worst draw beside the mean** (user, 3 Nov 2026, message 684 (g)).
+The mean shed decides the standard; the tail shows what a bad year does. pathcheck.js reports both (shedPct.p99, shedPct.max) from
+build 2026-11-03b. Say how many draws the tail rests on: at 10 draws a weather year, the worst 1% is the worst draw.
+
 ---
 
 ## Stored risk panels: regenerate them in every pull request that changes the page (user, 19 Oct 2026, message 255 (4))

@@ -20693,3 +20693,51 @@ corrected; vanadium is idle on every weather, which supports the record that the
 (RESULTS, message 665 (b)). (5) The 2025 replay: wind 8-10% above Ember stored, 4-6% corrected; coal within 0.3% on every weather; the
 shed gap to Eskom's 390 GWh stands. Caveats: modelled 2025 alone and its fixed variant are single weather years; 'fixed' is the leap-year
 interim, not the re-fetch; the correction's new wind uses the page's national map, not the regional rebuild.
+
+### Message 684 decisions applied, and measured (3 Nov 2026): ESK19679 alone for every published constant; existing solar 0.2558; the metered twin scaled; the wind correction refitted, with a calm-spell revision
+
+PyPSA-RSA's copy of the Eskom Data Portal series (684 (d)): not relied on or cited for any published constant or figure, including the
+2019-2021 solar means. Entries above that rest on it, in whole or part, for figures other than ESK19679's: 'Existing utility solar runs at
+0.25-0.26' (the 2019-2022 metered means), 'Modelled wind: winter too windy ...' and 'Modelled wind: two plain errors ...' (the 2018-2023
+metered years, the first correction constants and their tables), the 683 (d) entry (the 2019-2023 means), and the 682 (a) coincidence work.
+Their figures are superseded below where ESK19679 covers the same ground, and are not to be published. SOURCES records the decision.
+
+1. Existing utility solar, ESK19679 only (684 (f)). Eskom's 'PV' over 'PV Installed Capacity', hourly, AC, the same plants (Eskom data,
+   obtained on request; the analysis is ours, not Eskom's). ESK19679 runs 1 April 2022 to 31 August 2026:
+   2022 0.2428 (April-December only), 2023 0.2523 (a full metered year: no estimate is needed), 2024 0.2633 (readable, full), 2025 0.2519,
+   2026 0.1995 (January-August; May-August 0.143-0.164 against 0.18-0.21 in earlier years, while installed capacity rose 2,510 -> 2,780 MW:
+   not used, flagged). Level: the mean of the full calendar years 2023-2025, 0.2558 (FIXED.existPvMeteredCF). Our choice, rule 366:
+   partial years are left out, since April-December misses the high summer months; 2022 filled from 2023-2025's January-March would give
+   0.2532 and a mean with 2023 and 2025 of 0.2525. Applied (branch claude/weather-fixes, 2ef43d8): on a modelled weather year existing
+   utility solar runs at (1 - X) x fixed tilt + X x the year's own PVGIS twin, X 0.517 from the twelve-year means (0.2236 fixed, 0.2859
+   tracking); on the metered profile, that fleet itself, unchanged; rooftop unchanged. Effect, engine, Today 2026 on modelled 2022: existing
+   utility solar 6.47 -> 7.38 TWh, coal 153.58 -> 152.67 TWh. Effect, single-year LPs on c7 (the 0.257 runs above, within 0.001 of this
+   level): 2030 coal -0.95 TWh against 0.224; 2040 curtailment +0.8 TWh, coal about 0.
+2. The metered profile's tracking twin (684 (c)): scaled by k 0.7968 (SOLAR_TRK_K, computed by the page from the twelve years' mean
+   tracking output 0.2859 and the metered profile; harness/solar_trk_k.js writes it into the map file). The six tracking presets, clicked,
+   as on the page (before -> after; coal, gas, diesel and cost as the change): IRP's 2030 targets, grid delayed: utility solar 23.8 -> 21.0
+   TWh, curtailment 0.0 -> 0.0, coal +2.62 TWh, cost +R0.26bn. IRP's 2030 targets: 33.3 -> 30.6, 7.3 -> 4.0, coal +0.94, gas +0.26, cost
+   +R0.62bn. IRP path 2035: 48.0 -> 43.2, 20.5 -> 14.8, coal +2.39, gas +0.17, cost +R1.43bn. Least-cost path 2035: 66.7 -> 58.6, 13.8 ->
+   9.5, coal +6.28, cost +R4.13bn. Deep decarbonisation 2035: 70.0 -> 64.1, 88.0 -> 71.3, coal +1.83, cost +R1.70bn. Fossil-free 2040:
+   95.3 -> 89.9, 319.1 -> 270.0, cost +R0.09bn. Unserved 0 in all, before and after.
+3. The wind correction refitted on ESK19679 only (684 (d); scratchpad windcorr/esk/REFIT.md). Modelled series clock-fixed, 2024 on the
+   leap interim, 29 February 2024 removed on both sides, 31 December 2024 and the first two hours of 2025 left out. Constants on April 2022
+   to December 2025: v_k 7.0 m/s (leave-one-year-out range 6.5-7.0), alpha 0.80 (0.80), beta 0.340 m/s national, 0.369 region by region
+   (0.330-0.408), A 0.536 m/s (0.470-0.568), phi 11.54 (11.50-11.61); within 0.023 m/s of the earlier fit. Out of sample (fit April 2022 to
+   2023, test 2024-2025; metered / stored / earlier fit / refit): mean 0.362 / 0.380 / 0.364 / 0.373; monthly RMS - / 0.071 / 0.023 /
+   0.028; daily SD 0.131 / 0.177 / 0.135 / 0.140; p99 0.761 / 0.935 / 0.770 / 0.795; hours above 70% 3.4% / 10.4% / 4.0% / 5.4%. The
+   reverse split (test April 2022 to 2023): mean 0.367 / 0.380 / 0.358 / 0.355; daily SD 0.141 / 0.174 / 0.135 / 0.132. Leave one year
+   out (monthly RMS, daily SD ratio): stored 0.063, 1.29; earlier 0.021, 1.00; refit 0.023, 0.99. What is lost: 3.75 years instead of 6.5,
+   four folds instead of seven, each month seen three or four times instead of six or seven, no test across the 2018-2020 fleet change;
+   the fold ranges of beta and A about twice as wide; level about 3% uncertain year to year (2024, the model's windiest year, 0.396
+   against metered 0.368). Calm spells, revised: on 2024-2025, out of sample, the corrected series has too few very calm hours (hours below
+   5%: metered 76, stored 124, refit 18; worst 1-day mean 0.045 / 0.083 / 0.089); on 2022-2023 it is closer than the stored series. The
+   earlier finding that the correction brings calm spells closer to metered rested on 2018-2023 and does not hold on ESK19679. The cause is
+   the positive beta lifting the lowest winds; a version leaving the calm end alone is untested. Table (12 months x 2,001 output values)
+   from the refit, national beta. Limitation for the note: ESK19679 has calms of 31-36 hours below 10% of installed wind capacity (8-9 May
+   2023, 34 h; 14-16 July 2025, 36 h; 23-25 May 2026, 31 h; and 24 h on 22-23 May 2022); the modelled weather shows the 2023 and 2025
+   events shallower and broken up (longest runs 14-23 h), and no correction of output lengthens them.
+4. The clock and leap-year fixes (684 (a), (b)): fetch_leap_days.py running in pieces from 13:32 UTC (40 PVGIS years done, every stored
+   hour before 29 February reproduced to the integer; Renewables.ninja at 75 s a call); fix_weather_clock_leap.py checked (the regional maps
+   reproduce the modern-wind file exactly from the stored series). The multi-year file's fingerprint is stale (gtza-48046d7c4ac04853, 13 Aug
+   2026, before the 6 and 8 Sep changes); the rebuild recomputes it.

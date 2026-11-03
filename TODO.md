@@ -925,6 +925,15 @@ the metered long-run mean 0.257, or 0.266). (e) Whether PyPSA-RSA's copy of the 
 metered years behind (c) and the 2019-2023 solar means). (f) The demand pairing stated as a limitation in the note (per-year demand possible
 for 2019-2022 and 2025 only, kept local). (g) PR #156 (site deny list): which public documents stay on the site; a suite check that the
 served set equals what the page reads. Reruns wait for (a)-(d).
+Decided 3 Nov 2026 (message 684): (a) clock fixed, (b) leap years re-fetched (304 Renewables.ninja calls, 40 PVGIS requests; if not
+complete by 6 Nov, tell Nick and use the interim, flagged), (c) the tracking twin fixed, (f) existing solar at ESK19679's 2023-2025 mean,
+all on branch claude/weather-fixes with the suite and the stored panels; (d) the wind correction adopted in principle as a setting, refitted
+on ESK19679 only, off until Nick has the report (the calm end on 2024-25 is open), the uncorrected series kept as a sensitivity; (e)
+tests 1, 6 and 11 on corrected modelled 2025 (provisional) and metered 2025 (the check), the uncorrected modelled year dropped; (g)
+every adequacy table with the worst 1% and the worst draw (RULES, reporting conventions); (i) the extremes recomputed on the fixed and
+corrected data once (a), (b) and (d) land. (h) #156: the five documents stay hidden; a clean public sources page comes with the note
+(assumptions, results and sources rendered, internal references removed; 14jy (b)). PyPSA-RSA's copy: not relied on or cited for any
+published constant or figure (SOURCES).
 
 14mq. Decisions waiting on Nick from messages 678-682 (3 Nov 2026; design note version 2.1, section 14; RESULTS entries of 3 Nov afternoon).
 None is acted on. (a) Existing utility solar's level: about 70% of the model's 3,568.5 MW tracks, so about 0.266 on the twelve-year weather
