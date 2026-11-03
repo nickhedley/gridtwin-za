@@ -14,8 +14,8 @@
   full suite; diff_public_text against 7c4bdcc; the pull request (base claude/storage-link-build).
 - ESK19679.csv: /root/.claude/uploads/cd2ebea5-fdee-51da-b34b-eb3574ed8e65/4bd787be-ESK19679.csv (uploaded by Nick, 3 Nov; never commit;
   link it as ESK19679.csv into a worktree root only to run the suite; .gitignore covers ESK*.csv).
-- Build PR: suite after on the build done to the worker validator at 16:30 SAST; failures equal main's by name (structure's stale stamp
-  passes on the build). Open the PR when the worker check ends.
+- Build PR #157 (claude/storage-link-build -> main), opened 3 Nov ~16:20 SAST: node 1,018/1,029, audit 88/88, eng5 5/6 (main 1,015/1,027);
+  failures equal main's by name; worker 38/38 on a separate rerun after the suite job hit its 2-hour limit.
 
 ## 3 Nov 2026, message 683 (updated 12:45 UTC, 14:45 SAST)
 
