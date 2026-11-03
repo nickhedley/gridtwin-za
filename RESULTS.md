@@ -20807,10 +20807,18 @@ CSP output (all its plants in the Northern Cape) as a daily sunshine measure; sc
   daily pumping 14-16 GWh in 2026 against 15.5-20 in 2024-2025). Exports about 1 GW lower from mid-March 2026 (1,300 -> 730 MW at midday),
   matching Mozal's care and maintenance from 15 March (search snippets). Midday against 2025: demand with exports 2.75 GW lower (local
   -1.69, exports -1.06), coal 2.33 GW lower.
-- Statements: NTCSA's 24 July 2026 statement and SAPVIA's and Engineering News's 30 July pieces could not be read (their hosts are outside
-  this session's allowed network); search snippets only: instructions from about 100 to more than 1,000 a month; claims surging in April
-  and May (about R2bn outstanding mid-June, R1.5bn by 24 July, the backlog cleared by 31 August); causes given as daylight operating
-  constraints with coal kept on for the peaks, network constraints and low midday demand. No curtailed energy and no regional split found.
+- Statements, read in full on 3 Nov 2026 (message 687; Engineering News's 30 July piece refuses automated requests, HTTP 403, so it is
+  not quoted). NTCSA, media statement, 24 July 2026: the value of curtailment claims under verification and settlement fell from
+  about R2 billion (mid-June) to R1.5 billion; 'a sharp rise in the volume and complexity of curtailment related claims during April
+  and May 2026'; curtailment 'is driven either by network constraints that limit power transmission, or during periods where total
+  electricity supply exceeds demand, particularly during low demand periods such as midday'; coal units 'must operate at minimum
+  stable levels throughout the day to ensure availability for early morning and evening peaks'; 'flexible generation sources, such as
+  hydro and pumped storage, are adjusted first ... before renewable curtailment is utilised as a final balancing tool'; PPAs for 117
+  projects, 10,083 MW. No curtailed energy, no count of instructions, no region. SAPVIA, 30 July 2026: 'curtailment instructions to
+  IPPs rose from roughly 100 a month earlier this year to more than 1 000 a month'; about 300 claims approved under the new payment
+  mechanism; NTCSA's attribution as in its statement. No curtailed energy. Against the data: the statements say pumped storage is
+  adjusted first; ESK19679 shows less midday pumping on the cut days (330 MW against 650 MW on full days), which the data cannot
+  explain (reservoir levels and unit availability are not in the file).
 - Established: most of the 2026 shortfall is curtailment at midday on sunny, low-demand days, with coal held near flat and pumping not
   used more. Not established: system balance against Northern Cape network limits (the weekend, demand and coal evidence point to system
   balance); why pumping was not used more; the remaining 77 GWh. Settling it needs NTCSA's curtailed energy by month and instruction,
