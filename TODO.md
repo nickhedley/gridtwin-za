@@ -912,6 +912,16 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14ms. From message 686 (3 Nov 2026; design note 14.11). (a) Existing solar 0.256 decided (2026 left out: curtailment; earlier years carry
+some). (b) Test the calm-preserving wind correction (six constants) and the engine's unserved mean and tail with each series; prefer the
+option that does not flatter reliability; the setting stays off until Nick decides. (c) The 108 stand-in calls queued after the 304;
+patch after if late. (d) Before the reruns: the engine against 2026's curtailment (0.6 TWh of solar lost January-August; timing by
+month and hour; coal at its floor by day), the 2025 replay's near-zero explained, the largest lever (coal minimum levels, the
+synchronous floor, reserve, pumped storage's use, hour-by-hour commitment) tested by setting, with single-year 2030 and 2035 LPs; the
+NTCSA (24 Jul) and SAPVIA (30 Jul) statements against the plateau test; no engine rule changed without Nick. (e) Branch
+claude/site-tdp-corridor: the development-plan CSV download removed, nodal/corridor_electrical.json not loaded and hidden. (f) The seven
+unlisted failures: cause, first failing build, fix, correct or withdraw; CLAUDE.md updated only with what is measured.
+
 14mr. From message 683 (3 Nov 2026; RESULTS entries of 3 Nov, 683; design note 14.8). Waiting on Nick unless marked.
 (a) Two plain errors in the modelled weather years, reported (683 (b) 1 and 6): leap years keep 29 February and drop 31 December
 (ser[:8760] in five fetch and build scripts), in wind and solar; Renewables.ninja wind runs two hours early (UTC rows read as SAST),
