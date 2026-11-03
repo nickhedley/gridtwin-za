@@ -1,0 +1,1016 @@
+{
+ "days": [
+  113,
+  114,
+  115,
+  160,
+  161,
+  162,
+  188,
+  214,
+  217,
+  218,
+  219,
+  257,
+  273,
+  359
+ ],
+ "ref": "2025",
+ "computed_on": {
+  "build": "2026-11-02y",
+  "commit": "b0f7999 (main; series identical on claude/storage-link-build)",
+  "series": "extract.js on that build (c7 day settings, ROOF12)"
+ },
+ "source_runs": {
+  "pathway_c7.json": {
+   "final LP key": "c62ec3e615",
+   "passes": 1,
+   "objective": 1653677099021.8745
+  },
+  "pathway_s_deep40nogas_c7.json": {
+   "final LP key": "21c10407e8",
+   "passes": 1,
+   "objective": 1825274668356.9329
+  },
+  "pathway_s_ff2040_c7.json": {
+   "final LP key": "63bbdcbf72",
+   "passes": 1,
+   "objective": 18114532172299.97
+  }
+ },
+ "sources": [
+  "today",
+  "/home/user/gridtwin-za/harness/pathway/c7/pathway_c7.json",
+  "/home/user/gridtwin-za/harness/pathway/c7/pathway_s_deep40nogas_c7.json",
+  "/home/user/gridtwin-za/harness/pathway/c7/pathway_s_ff2040_c7.json"
+ ],
+ "by_source": {
+  "today": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    160,
+    161,
+    162
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    359
+   ]
+  },
+  "c7 2026": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    359
+   ]
+  },
+  "c7 2027": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2028": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2029": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2030": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2031": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2032": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2033": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2034": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2035": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2036": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2037": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2038": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2039": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "c7 2040": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_deep40nogas_c7 2026": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    214
+   ]
+  },
+  "s_deep40nogas_c7 2027": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    214
+   ]
+  },
+  "s_deep40nogas_c7 2028": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    214
+   ]
+  },
+  "s_deep40nogas_c7 2029": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    214
+   ]
+  },
+  "s_deep40nogas_c7 2030": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    214
+   ]
+  },
+  "s_deep40nogas_c7 2031": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    214
+   ]
+  },
+  "s_deep40nogas_c7 2032": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    214
+   ]
+  },
+  "s_deep40nogas_c7 2033": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_deep40nogas_c7 2034": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_deep40nogas_c7 2035": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_deep40nogas_c7 2036": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_deep40nogas_c7 2037": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_deep40nogas_c7 2038": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_deep40nogas_c7 2039": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_deep40nogas_c7 2040": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2026": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2027": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2028": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2029": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2030": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2031": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2032": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2033": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2034": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2035": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    257
+   ]
+  },
+  "s_ff2040_c7 2036": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    273
+   ]
+  },
+  "s_ff2040_c7 2037": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    273
+   ]
+  },
+  "s_ff2040_c7 2038": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    273
+   ]
+  },
+  "s_ff2040_c7 2039": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    273
+   ]
+  },
+  "s_ff2040_c7 2040": {
+   "peak demand": [
+    188
+   ],
+   "tightest hour": [
+    218
+   ],
+   "worst 3-day net load": [
+    217,
+    218,
+    219
+   ],
+   "worst 3-day wind lull": [
+    113,
+    114,
+    115
+   ],
+   "lowest net load": [
+    273
+   ]
+  }
+ },
+ "basis": "design note version 2, 3.1; message 678 (e); series from extract.js (c7's day settings, ROOF12)"
+}

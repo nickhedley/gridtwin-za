@@ -33,8 +33,13 @@ out = {'Status': h.modelStatusToString(h.getModelStatus()),
 with open(sys.argv[2], 'w') as f:
     json.dump(out, f)
 # A solve stopped at its time limit also saves its basis, so a later job can resume it (RESUME, 12 Oct 2026).
-if _bout and out['Status'] in ('Optimal', 'Time limit reached'):
-    _bs = h.getBasis()
+# Only a basis HiGHS marks valid (message 678 (e), 3 Nov 2026): a simplex solve stopped inside the presolved LP returns one marked
+# invalid, with columns in a generic 'nonbasic' state, and resuming from it fails ('Solve error'; design note version 2, 9.7). Not
+# saving it makes the next piece start cold.
+_bs = h.getBasis() if _bout and out['Status'] in ('Optimal', 'Time limit reached') else None
+if _bs is not None and not _bs.valid:
+    print('highs_native: basis not valid after', out['Status'], '- not saved; the next piece starts cold', file=sys.stderr)
+if _bs is not None and _bs.valid:
     with open(_bout, 'w') as f:
         json.dump({'cols': {n: int(x) for n, x in zip(lp.col_names_, _bs.col_status)},
                    'rows': {n: int(x) for n, x in zip(lp.row_names_, _bs.row_status)}}, f)

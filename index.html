@@ -6015,6 +6015,51 @@ const FIXED = {
   // The optimiser's calendar days (bldRepDays): 'matched' (message 125 (1)) re-chooses the evenly spaced days within their
   // blocks so new wind and new utility solar on the days match their twelve-year means; 'even' the earlier evenly spaced days.
   bldRepDaysRule:'matched',
+  // Representative days' weights (design note version 2, 3.1; user, 3 Nov 2026, messages 673 (b) and 678): 'equal', every calendar
+  // day at 365 / n on bldRepDaysRule's days (LP text unchanged); 'clustered', the reference year's renewable series rescaled to
+  // their twelve-year means (capped at 1), bldRepExtremeDays each at weight 1, the other days clustered (bldRepMethod) into medoids
+  // weighted by the days they stand for. 'clustered' needs bldStressTarget 1 (design note 3.3).
+  bldRepWeights:'equal',
+  // 'hierarchical' (Ward, medoid representation: Kotzur et al., Renewable Energy 2018, section 6; tsam's default) or 'kmedoids'.
+  bldRepMethod:'hierarchical',
+  // The reference series for 'clustered' days' wind and solar (user, 3 Nov 2026, message 679 (a)): a weather year of the twelve, read by
+  // weatherYearNational, so the build and the engine's check read the same modelled series; '2025' the default (demand's own year: its wind is
+  // MERRA-2 2025, its solar MERRA-2 2025 timing at the 2023 PVGIS level, the file's note), rescaled as the small residual step; 'metered', the
+  // Eskom-metered 2025 profiles (profiles.json), rescaled, a variant. Demand stays the reference year's in both.
+  bldRepRefYear:'2025',
+  // Extreme days, 0 = 1 Jan, for 'clustered': the union over today's fleet and c7's central, Deep and Fossil-free fleets in every year
+  // of the peak-demand day, the tightest net-load hour, the worst three-day net load and wind lull (all three days each) and the
+  // lowest net-load day, on bldRepRefYear's series. Computed by harness/pathway/repdays/extremes.py (REF=2025), 3 Nov 2026 (extremes.json;
+  // validate_lp checks the match; the metered variant's own list is extremes_metered.json, set with the pathway's REP_EXTREMES).
+  bldRepExtremeDays:[113, 114, 115, 160, 161, 162, 188, 214, 217, 218, 219, 257, 273, 359],
+  // Stored energy linked across the year's real days (design note version 2, 3.2; user, 3 Nov 2026, messages 673 (a), 678): 0 as now
+  // (each calendar day's block chained at its weight; LP text unchanged); 1, a level for every real day, each moved by its
+  // representative day's intra-day movement in calendar order, the year cyclic (Kotzur et al., Applied Energy 2018). Needs bldHourlySoc 1.
+  bldStorageLink:0,
+  // The single-year LP (design note version 2, 3.4; message 673 (d)): years before this one keep only their build and retirement
+  // decisions (fixed from a recorded run by the harness's FIX_FROM), with no operating day, row or cost. 2026: every year operates
+  // (LP text unchanged).
+  bldOperFrom:2026,
+  // Stress windows linked to the year (design note version 2, 3.3 and test 1 (e); message 673 (g)): 0, each window a closed loop
+  // (opens at its own closing level), as now; 1, a window opens at the linked chain's level on its calendar start day and closes at
+  // the chain's level the day after its last. Needs bldStorageLink 1.
+  bldWindowLink:0,
+  // Self-discharge, % of stored energy a day, read by the build LP (with bldStorageLink 1 only: Kotzur et al., Applied Energy 2018,
+  // Eq. 19, with Appendix B's conservative bounds) and the engine (hourly). 0 everywhere until Nick sends a sourced rate (message 678
+  // (e)); test 10's brackets are unsourced. batt covers lithium and the virtual power plant's batteries, ps existing and new pumped storage.
+  storeSelfDischargePctDay:{ batt:0, vrfb:0, ironair:0, ps:0 },
+  // Early retirement that falls away at scheduled closures (J1; design note version 2, 6; message 673 (j) 1): 0, rc_ cumulative and never
+  // falling, so a megawatt retired early stays out to the horizon and is taken again from another unit once its own date passes (LP text
+  // unchanged); 1, rc_ may fall each year by the coal MW whose scheduled closure falls in that year (oldest units first), so retiring a
+  // unit a year or two ahead of its date ends when the date comes.
+  bldRcFallAway:0,
+  // Two stages (design note version 2, 3.6; messages 677 (b), 679 (b)): bldStage2Year y runs year y on all 365 days (clustered, so each day
+  // its own) and the other years on the run's day count; 0, off. bldAnnuityToYear: a build's annuity summed to this year even where the LP
+  // ends sooner (the review's variant of a stage-2 step); 0, to the LP's own horizon, as now.
+  bldStage2Year:0, bldAnnuityToYear:0,
+  // Existing utility solar's share on single-axis trackers (message 682 (d), test only; Nick decides any level): its per-unit output
+  // (1 - share) x fixed tilt + share x the tracking twin. 0, all fixed tilt, as now.
+  bldExistPvTrackShare:0,
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -8199,6 +8244,7 @@ function simulate(u, prof, outPath, _soc0){
   // Hourly state of charge per tier, diagnostic only - the storage questions of 22 Sep 2026
   // could not be answered without it, because only throughput was visible.
   const tierSoc = {}; for (const t of battTiers) tierSoc[t.k] = new Float64Array(HOURS);
+  const _psSocH = new Float64Array(HOURS);   // pumped storage's level at each hour's end (socPs; design note version 2, test 4)
   const _hourGave = { li:0, vrfb:0, fe:0, ps:0 };   // MW each tier has already given this hour (look-ahead discharge, 14do)
   const tierDischarge = (mw, shortCap = Infinity) => {
     let got = 0, shortLeft = shortCap;   // _hourGave holds the power each tier has given this hour, across both passes and calls
@@ -8904,6 +8950,9 @@ function simulate(u, prof, outPath, _soc0){
   // Kept for the scalar path and for panels that still read one number.
   const _longestStoreH = Math.max(25, ...Object.values(_tierHorizonH));
   const anticipatedShortfall = shortfallOver(_longestStoreH);
+  // PS_LA_H (p.psLookaheadH; design note version 2, 3.5; message 673 (i); measurement only, off by default): pumped storage's charge
+  // target reads the shortfall forecast over this many hours in place of the longest store's horizon.
+  const _psAS = (+p.psLookaheadH > 0) ? shortfallOver(Math.max(1, Math.round(+p.psLookaheadH))) : anticipatedShortfall;
   // Shortfall left after coal and gas together, same horizon, with coal at the planned
   // commitment capped by the outage state held forward rather than the mean EAF. Gas charges
   // storage only up to this, and runs ahead of storage when it exceeds stored energy. Added
@@ -9096,7 +9145,14 @@ function simulate(u, prof, outPath, _soc0){
     for(let h=start;h<end;h++) expensiveThresholdByHour[h]=threshold;
   }
 
+  // Self-discharge (storeSelfDischargePctDay; design note version 2, 3.2; message 678 (e)): each hour every tier and pumped storage
+  // keep (1 - daily rate)^(1/24) of their level. Skipped at 0, the default, so no output moves.
+  const _sdD = p.storeSelfDischargePctDay || {}, _sdK = { li: 'batt', vrfb: 'vrfb', fe: 'ironair' };
+  const _sdH = k => Math.pow(1 - Math.max(0, +(_sdD[k] || 0)) / 100, 1 / 24);
+  const _sdOn = ['batt', 'vrfb', 'ironair', 'ps'].some(k => +(_sdD[k] || 0) > 0);
+  const _sdT = Object.fromEntries(battTiers.map(t => [t.k, _sdH(_sdK[t.k])])), _sdPs = _sdH('ps');
   for(let h=0;h<HOURS;h++){
+    if (_sdOn){ for (const t of battTiers) t.soc *= _sdT[t.k]; battSoc = battTiers.reduce((a, t) => a + t.soc, 0); psSoc *= _sdPs; }
     if(h===3264||h===7848) socAtWeekStart[h]={ps:psSoc,batt:battSoc};
     // Shadow assertion: tier SOC must track the scalar every hour.
     { const ts=battTiers.reduce((a,t)=>a+t.soc,0); const d=Math.abs(ts-battSoc);
@@ -9120,6 +9176,7 @@ function simulate(u, prof, outPath, _soc0){
     coalAvailOnlyFrac[h] = coalInstRem > 0 ? Math.max(coalAvailFrac[h], coalAvailableArr[h] / coalInstRem) : 0;
     if (_dslTankOn) _dslStock = Math.min(_dslTankCap, _dslStock + Math.max(0, p.dslRefillMW));
     for (const t of battTiers) if (tierSoc[t.k]) tierSoc[t.k][h] = t.soc;
+    _psSocH[h] = psSoc;
     // operating RESERVE: capacity that is committed but must not be dispatched,
     // so it can respond to a unit trip or a forecast error. Coal carries the
     // spinning share; the fast-start fleet (OCGT, storage) can cover the rest
@@ -9693,7 +9750,7 @@ function simulate(u, prof, outPath, _soc0){
         // stopping - 987 GWh idle while 116 TWh was curtailed.
         const battFleetHours = battPower > 0 ? battEnergy / battPower : (p.battHours ?? 4);
         const battDailyFloor= Math.min(battEnergy*0.60, battPower*battFleetHours*0.75);
-        const psTargetCeiling=Math.max(0, Math.min(psEnergyTot*0.85, _offPeak ? Math.max(anticipatedShortfall[h], psDailyFloor) : anticipatedShortfall[h])
+        const psTargetCeiling=Math.max(0, Math.min(psEnergyTot*0.85, _offPeak ? Math.max(_psAS[h], psDailyFloor) : _psAS[h])
           - (_laOn && !p._laNoPs ? _laPsRefill(h) : 0));   // look-ahead (B): less what the coming surplus will pump in
         const battTargetCeiling=Math.min(battEnergy*0.8, _offPeak ? Math.max(anticipatedShortfall[h], battDailyFloor) : anticipatedShortfall[h]);
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC;  // this charge is bought from coal
@@ -10652,7 +10709,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,socPs:_psSocH,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF, coalCommittedMW, ss:ssOut,
           ...(_btmOut ? { btm: _btmOut } : {}),
           ...(_gyOut ? { geyser: _gyOut } : {}),   // geyser control, when on (messages 633-635)   // behind-the-meter batteries and the enrolled store, when on (messages 621-625)
@@ -11962,7 +12019,134 @@ function bldRepDaysMatched(evenDays, fixedDays, step){
   }
   return best.pick;
 }
-function bldRepDays(n){
+// CLUSTERED representative days (bldRepWeights 'clustered'; design note version 2, 3.1; user, 3 Nov 2026, messages 673 (b), 678 (e)).
+// The reference year's existing wind, new wind, fixed-tilt solar and tracking solar each scaled to its twelve-year mean, values capped
+// at 1 (Kotzur et al., Renewable Energy 2018, section 2.4, Eq. 12; tsam's rescaling: at most 50 passes, to 1e-9); FIXED.bldRepExtremeDays
+// each its own day at weight 1 (tsam's 'append'); the other days clustered on 72 values a day (demand, new wind, tracking solar,
+// each normalised 0-1 over the year) into n less the extremes typical days, each a medoid (a real day) weighted by its cluster's size;
+// the twelve-year means then re-imposed on the weighted set, the extremes left as they are (tsam). Every day carries its own scaled
+// shapes; map365 gives each real day's representative. Deterministic: ties go to the lower day.
+const _twelveAllCache = {};
+function bldTwelveYearMeansAll(k, trk){
+  if (typeof bldWeatherYears === 'undefined' || !bldWeatherYears || !bldWeatherYears.meta) return null;
+  const mod = bldWindModernOn(), key = k + '|' + (trk ? 1 : 0) + '|' + (mod ? 1 : 0);
+  if (_twelveAllCache[key]) return _twelveAllCache[key];
+  let w = 0, wn = 0, s = 0, sn = 0, n = 0;
+  for (const y of bldWeatherYears.meta.years){
+    const nat = weatherYearNational(String(y)), WM = mod ? windModOf(nat.wind) : nat.wind, PT = trk ? solarTrkOf(nat.solar) : nat.solar;
+    for (let h = 0; h < nat.wind.length; h++){ w += nat.wind[h]; wn += Math.min(1, k * WM[h]); s += nat.solar[h]; sn += PT[h]; }
+    n += nat.wind.length;
+  }
+  return (_twelveAllCache[key] = { wind: w / n, windN: wn / n, solar: s / n, solarT: sn / n });
+}
+// The factor f with the weighted mean of min(1, f x v) equal to target (wt per element, or 1).
+function bldScaleTo(v, target, wt, what){
+  let f = 1, m = 0;
+  for (let it = 0; it < 50; it++){
+    let s = 0, W = 0; for (let i = 0; i < v.length; i++){ const w = wt ? wt[i] : 1; s += w * Math.min(1, f * v[i]); W += w; }
+    m = s / W; if (Math.abs(m - target) < 1e-9) return f;
+    if (!(m > 0)) throw new Error('bldRepDays clustered: ' + what + ' has no output to scale');
+    f *= target / m;
+  }
+  if (Math.abs(m - target) > 1e-6) throw new Error('bldRepDays clustered: ' + what + ' cannot reach its twelve-year mean under the cap of 1');
+  return f;
+}
+// Ward's agglomerative clustering on squared Euclidean distances (Lance-Williams), stopped at k clusters; returns the clusters.
+function bldWardClusters(X, ids, k){
+  const m = ids.length, D = new Float64Array(m * m), sz = new Int32Array(m).fill(1), act = new Uint8Array(m).fill(1), mem = ids.map(i => [i]);
+  for (let i = 0; i < m; i++) for (let j = i + 1; j < m; j++){ let s = 0; const a = X[ids[i]], b = X[ids[j]]; for (let q = 0; q < a.length; q++){ const e = a[q] - b[q]; s += e * e; } D[i * m + j] = D[j * m + i] = s; }
+  for (let left = m; left > k; left--){
+    let bi = -1, bj = -1, bd = Infinity;
+    for (let i = 0; i < m; i++) if (act[i]) for (let j = i + 1; j < m; j++) if (act[j] && D[i * m + j] < bd){ bd = D[i * m + j]; bi = i; bj = j; }
+    for (let q = 0; q < m; q++) if (act[q] && q !== bi && q !== bj){
+      const nq = sz[q], ni = sz[bi], nj = sz[bj];
+      D[bi * m + q] = D[q * m + bi] = ((nq + ni) * D[bi * m + q] + (nq + nj) * D[bj * m + q] - nq * bd) / (nq + ni + nj);
+    }
+    sz[bi] += sz[bj]; act[bj] = 0; mem[bi] = mem[bi].concat(mem[bj]);
+  }
+  return mem.filter((_, i) => act[i]);
+}
+// k-medoids, PAM (BUILD then SWAP on the total distance), for comparison with the hierarchical rule (design note test 6).
+function bldKMedoids(dist, ids, k){
+  const m = ids.length, d = (a, b) => dist[ids[a] * 365 + ids[b]];
+  const cost = med => { let c = 0; for (let i = 0; i < m; i++){ let b = Infinity; for (const j of med) b = Math.min(b, d(i, j)); c += b; } return c; };
+  let best = -1, bc = Infinity; for (let j = 0; j < m; j++){ let c = 0; for (let i = 0; i < m; i++) c += d(i, j); if (c < bc){ bc = c; best = j; } }
+  const med = [best];
+  while (med.length < k){ let bj = -1, bg = -1;
+    for (let j = 0; j < m; j++){ if (med.includes(j)) continue; let g = 0;
+      for (let i = 0; i < m; i++){ let dm = Infinity; for (const q of med) dm = Math.min(dm, d(i, q)); g += Math.max(0, dm - d(i, j)); }
+      if (g > bg){ bg = g; bj = j; } }
+    med.push(bj); }
+  let c0 = cost(med);
+  for (;;){ let bestSwap = null;
+    for (let a = 0; a < k; a++) for (let j = 0; j < m; j++){ if (med.includes(j)) continue; const t = med.slice(); t[a] = j; const c = cost(t); if (c < c0 - 1e-9 && (!bestSwap || c < bestSwap.c)) bestSwap = { c, t }; }
+    if (!bestSwap) break; c0 = bestSwap.c; med.splice(0, k, ...bestSwap.t); }
+  const cl = med.map(() => []);
+  for (let i = 0; i < m; i++){ let b = 0; for (let a = 1; a < k; a++) if (d(i, med[a]) < d(i, med[b])) b = a; cl[b].push(ids[i]); }
+  return cl;
+}
+function bldRepDaysClustered(n, method, S0){
+  const S = S0 || (typeof state !== 'undefined' ? { ...FIXED, ...state } : FIXED);
+  const E = (S.bldRepExtremeDays || []).slice().sort((a, b) => a - b);
+  if (!E.every((d, i) => Number.isInteger(d) && d >= 0 && d < 365 && (i === 0 || d > E[i - 1]))) throw new Error('bldRepExtremeDays: distinct days 0-364');
+  const k = n - E.length;
+  if (!(k >= 1 && n <= 365)) throw new Error('bldRepDays clustered: ' + n + ' days with ' + E.length + ' extremes leaves no typical day');
+  const mod = bldWindModernOn(), trk = bldPvTrackingOn(), kw = mod ? windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr) : 1;
+  const T = bldTwelveYearMeansAll(kw, trk);
+  if (!T) throw new Error("bldRepWeights 'clustered' needs the twelve weather years, which are not loaded");
+  // bldRepRefYear: one source for both, or 'wind:<source>,solar:<source>' to take each from its own (message 681 (g)).
+  const ref = String(S.bldRepRefYear ?? FIXED.bldRepRefYear), N = 365 * 24;
+  const src = what => { const m = ref.match(new RegExp(what + ':(metered|[0-9]{4})')); return m ? m[1] : ref; };
+  const seriesOf = (s, key) => { if (s === 'metered') return PROFILES[key];
+    if (!/^[0-9]{4}$/.test(s)) throw new Error("bldRepRefYear must be 'metered', a weather year, or 'wind:<source>,solar:<source>': " + ref);
+    const nat = weatherYearNational(s); if (!nat || !nat[key]) throw new Error('bldRepRefYear: weather year ' + s + ' is not loaded'); return nat[key]; };
+  const W0 = seriesOf(src('wind'), 'wind'), P0 = seriesOf(src('solar'), 'solar');
+  const Wm = mod ? windModOf(W0) : W0, Pt = trk ? solarTrkOf(P0) : P0;
+  // Per-unit series as the LP uses them, each scaled over the whole year to its twelve-year mean (step 1).
+  const base = { wind: Float64Array.from(W0.slice(0, N)), windN: Float64Array.from({ length: N }, (_, i) => Math.min(1, kw * Wm[i])),
+                 solar: Float64Array.from(P0.slice(0, N)), solarT: Float64Array.from(Pt.slice(0, N)) };
+  const yr = {};
+  for (const key of Object.keys(base)){ const f = bldScaleTo(base[key], T[key], null, key); yr[key] = base[key].map(v => Math.min(1, f * v)); }
+  // Features: 72 values a day, each series normalised 0-1 over the year.
+  const nz = a => { let lo = Infinity, hi = -Infinity; for (const v of a){ lo = Math.min(lo, v); hi = Math.max(hi, v); } return a.map(v => hi > lo ? (v - lo) / (hi - lo) : 0); };
+  const fd = nz(Float64Array.from(PROFILES.demand.slice(0, N))), fw = nz(yr.windN), fs = nz(yr.solarT);
+  const X = Array.from({ length: 365 }, (_, d) => { const x = new Float64Array(72); for (let h = 0; h < 24; h++){ x[h] = fd[d * 24 + h]; x[24 + h] = fw[d * 24 + h]; x[48 + h] = fs[d * 24 + h]; } return x; });
+  const dist = new Float64Array(365 * 365);
+  for (let i = 0; i < 365; i++) for (let j = i + 1; j < 365; j++){ let s = 0; for (let q = 0; q < 72; q++){ const e = X[i][q] - X[j][q]; s += e * e; } dist[i * 365 + j] = dist[j * 365 + i] = Math.sqrt(s); }
+  const ids = []; for (let d = 0; d < 365; d++) if (!E.includes(d)) ids.push(d);
+  let cl;
+  if (method === 'hierarchical') cl = bldWardClusters(X, ids, k);
+  else if (method === 'kmedoids') cl = bldKMedoids(dist, ids, k);
+  else throw new Error("bldRepMethod must be 'hierarchical' or 'kmedoids': " + method);
+  // Each cluster's medoid: the member with the least summed distance to the others (ties to the lower day).
+  const map = new Int32Array(365), wt = {};
+  for (const c of cl){ c.sort((a, b) => a - b); let best = c[0], bs = Infinity;
+    for (const a of c){ let s = 0; for (const b of c) s += dist[a * 365 + b]; if (s < bs - 1e-12){ bs = s; best = a; } }
+    for (const a of c) map[a] = best; wt[best] = c.length; }
+  for (const e of E){ map[e] = e; wt[e] = 1; }
+  const reps = Object.keys(wt).map(Number).sort((a, b) => a - b);
+  // Step 4: the twelve-year means re-imposed on the weighted set, extremes as they are.
+  const out = {};
+  for (const key of Object.keys(yr)){
+    const v = [], w = [];
+    for (const d of reps) if (!E.includes(d)) for (let h = 0; h < 24; h++){ v.push(yr[key][d * 24 + h]); w.push(wt[d]); }
+    let ext = 0; for (const e of E) for (let h = 0; h < 24; h++) ext += yr[key][e * 24 + h];
+    const tgt = (T[key] * 365 * 24 - ext) / (365 * 24 - E.length * 24);   // the typical days' weighted mean that makes the year's mean the target
+    const g = bldScaleTo(v, tgt, w, key + ' on the typical days');
+    out[key] = d => Array.from({ length: 24 }, (_, h) => E.includes(d) ? yr[key][d * 24 + h] : Math.min(1, g * yr[key][d * 24 + h]));
+  }
+  const days = reps.map((d, i) => {
+    const r = { d, weight: wt[d], prevD: i === 0 ? undefined : reps[i - 1], extreme: E.includes(d), wind: out.wind(d), solar: out.solar(d) };
+    if (mod) r.windMod = out.windN(d).map(v => v / kw);   // the LP takes min(1, kw x windMod)
+    if (trk) r.solarTrk = out.solarT(d);
+    return r;
+  });
+  days.map365 = map;
+  let md = 0; for (let i = 0; i < 365; i++) md += dist[i * 365 + map[i]];
+  days.clusterInfo = { method, ref, extremes: E.length, typical: k, meanDistance: md / 365, weights: reps.filter(d => !E.includes(d)).map(d => wt[d]) };
+  return days;
+}
+function bldRepDays(n, opt){
   const rows = [];
   for (let d = 0; d < 365; d++){
     let netPeak = 0, load = 0, netLoad = 0, wind = 0;
@@ -12001,6 +12185,10 @@ function bldRepDays(n){
   const netByDay = rows.map(r => r.netLoad);
   const windByDay = rows.map(r => -r.wind);          // maximise -wind = minimise wind
 
+  const o = opt || {};
+  let days;
+  if (o.clustered) days = bldRepDaysClustered(n, o.method || 'hierarchical', o.S);
+  else {
   const chosen = new Set();
   chosen.add([...rows].sort((a,b)=>b.netPeak-a.netPeak)[0].d);   // tightest hour
   chosen.add([...rows].sort((a,b)=>a.load-b.load)[0].d);          // slackest day
@@ -12021,10 +12209,16 @@ function bldRepDays(n){
   // storage level can carry forward. prevD is undefined for the first day, which
   // is where the opening state of charge is set.
   const ordered = [...chosen].slice(0, n).sort((a, b) => a - b);
-  const days = ordered.map((d, i) => ({
+  days = ordered.map((d, i) => ({
     d, weight: 365/n,
     prevD: i === 0 ? undefined : ordered[i-1],
   }));
+  // Linking with equal weights (bldStorageLink 1 with 'equal': design note version 2, test 1 (c), linking alone): each real day maps
+  // to one calendar day in contiguous blocks of 30 or 31 in calendar order, each calendar day weighted by its block's days.
+  if (o.link){ const m = days.length, map = new Int32Array(365), cnt = new Array(m).fill(0);
+    for (let i = 0; i < 365; i++){ const j = Math.floor(i * m / 365); map[i] = days[j].d; cnt[j]++; }
+    days.forEach((r, j) => { r.weight = cnt[j]; }); days.map365 = map; }
+  }
 
   // The tail from the other eleven years, added 1 Oct 2026. Every day above comes from the
   // Default profile year, so the worst winter the twelve-year set holds - 2022, in every
@@ -12305,11 +12499,26 @@ function bldNuclearAddedMW(S, y){
 }
 function bldBuildLP(opts){
   const Y = BLD_YEARS, T = BLD_TECHS;
-  const rd = bldRepDays(12);
+  // Representative days' weights and stored-energy linking (bldRepWeights, bldStorageLink; design note version 2). With both at their
+  // defaults bldRepDays is called as before and the LP text is unchanged.
+  const _rw = { ...FIXED, ...(opts.state || {}) }, RW_CL = _rw.bldRepWeights === 'clustered', LINK = (_rw.bldStorageLink | 0) === 1;
+  if (!RW_CL && _rw.bldRepWeights !== 'equal') throw new Error("bldRepWeights must be 'equal' or 'clustered': " + _rw.bldRepWeights);
+  if (![0, 1].includes(+_rw.bldStorageLink)) throw new Error('bldStorageLink must be 0 or 1: ' + _rw.bldStorageLink);
+  const ST2 = +(_rw.bldStage2Year || 0);
+  if (ST2 && !(RW_CL && Y.includes(ST2))) throw new Error("bldStage2Year needs bldRepWeights 'clustered' and a year in the horizon: " + ST2);
+  const rd = ST2 ? (() => {   // year ST2 on its 365 days, the others on the run's count; tail and loop windows from the second call only
+      const o = { clustered: true, method: _rw.bldRepMethod, link: LINK, S: _rw }, full = bldRepDays(365, o), part = bldRepDays(12, o);
+      const others = Y.filter(v => v !== ST2), out = [];
+      for (const r of full) if (!r.tail) out.push({ ...r, years: [ST2] });
+      for (const r of part) out.push(r.tail ? r : { ...r, years: others });
+      out.map365ByYear = Object.fromEntries(Y.map(v => [v, v === ST2 ? full.map365 : part.map365])); out.map365 = part.map365; return out; })()
+    : (RW_CL || LINK) ? bldRepDays(12, { clustered: RW_CL, method: _rw.bldRepMethod, link: LINK, S: _rw }) : bldRepDays(12);
   // A stress window applies from its fromYear on (ReEDS attaches stress periods to the solve
   // year that failed), so windows found late in the horizon do not bloat every earlier year.
   // bldWindowsPerYear: a window carrying its own list of years binds only in those (per-year stress windows).
-  const rdY = y => rd.filter(r => r.years ? r.years.includes(y) : !(r.fromYear > y));
+  const OPF = +(_rw.bldOperFrom ?? 2026);
+  if (!(Number.isInteger(OPF) && OPF >= 2026 && OPF <= Y[Y.length - 1])) throw new Error('bldOperFrom must be a year from 2026 to the horizon: ' + _rw.bldOperFrom);
+  const rdY = y => y < OPF ? [] : rd.filter(r => r.years ? r.years.includes(y) : !(r.fromYear > y));
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   // `state` is script-scoped, so read it via the accessor rather than assuming a
   // global - reading undefined fields here silently produces NaN coefficients and
@@ -12438,6 +12647,9 @@ function bldBuildLP(opts){
   // output after it is held at zero by the carbon cap (carbonCapMt 0 from the next year, set with it). 0: off, as before.
   const FOSSIL_END = +(S.bldFossilEndYear || 0), FOSSIL_T = ['ccgt', 'ocgt', 'ocgd'];
   const fossilCut = t => FOSSIL_END > 0 && FOSSIL_T.includes(t);
+  const _XTRK = Math.max(0, Math.min(1, +(S.bldExistPvTrackShare || 0)));   // existing utility solar on trackers (test only; 0 as now)
+  const _AT = +(S.bldAnnuityToYear || 0), _YE = Y[Y.length - 1];
+  const YA = _AT > _YE ? Y.concat(Array.from({ length: _AT - _YE }, (_, i) => _YE + 1 + i)) : Y;   // the years a build's annuity is summed over
   const capCharge = (t, y, yy, m) => {
     if (!fossilCut(t)) return bldNetAnnuityAt(t, y, m);
     if (yy > FOSSIL_END) return 0;
@@ -12453,10 +12665,10 @@ function bldBuildLP(opts){
     // is the PyPSA formulation. Vanadium and iron-air keep fixed durations: neither has a
     // published power/energy split, and inventing one would be worse than stating the limit.
     const _m = (t === 'batt') ? BATT_POWER_SHARE : 1;
-    for (const yy of Y) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END))
+    for (const yy of YA) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END))
       cost += (capCharge(t, y, yy, _m) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);   // GA: grid cost, per MW of power
     // Fault level (ssFault): the adder per kW of power, annuitised as the technology's capital.
-    if (FAULT_RKW > 0 && SS_FAULT_T.includes(t)) for (const yy of Y) if (yy >= y) cost += bldAnnuity(FAULT_RKW, BLD_LIFE[t], t) / Math.pow(1+BLD_DISC, yy-2026);
+    if (FAULT_RKW > 0 && SS_FAULT_T.includes(t)) for (const yy of YA) if (yy >= y) cost += bldAnnuity(FAULT_RKW, BLD_LIFE[t], t) / Math.pow(1+BLD_DISC, yy-2026);
     // x1000: bldNetAnnuity is R/kW/yr and b_ is in MW. Without this the whole
     // capex side is 1000x too cheap against the fuel terms, building is
     // effectively free, and the optimiser just overbuilds VRE and spills.
@@ -12464,31 +12676,49 @@ function bldBuildLP(opts){
   }
   for (const t of OC_T) for (const y of Y){
     let cost = 0;
-    for (const yy of Y) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END)) cost += (capCharge(t, y, yy) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);
+    for (const yy of YA) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END)) cost += (capCharge(t, y, yy) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_' + t + '_' + y);
   }
   // The energy half of lithium, per MWh of cells: the 4-hour constant's energy share spread over
   // its four hours, annuitised on the same life, with no capacity payment (that is per kilowatt).
   for (const y of Y){
     let ec = 0;
-    for (const yy of Y) if (yy >= y)
+    for (const yy of YA) if (yy >= y)
       ec += (bldAnnuity(bldCapex('batt', y), BLD_LIFE.batt, 'batt') + bldFom('batt', y))
             * (1 - BATT_POWER_SHARE) / 4 / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((ec * 1000).toFixed(3) + ' eb_batt_' + y);
   }
   // Stress-window weighting (bldStressTarget; off reproduces the LP text exactly). wObj: a day's weight in the objective.
   const ST_ON = ((S.bldStressTarget ?? FIXED.bldStressTarget) | 0) > 0;
+  // Clustered weights count each extreme once, so without the expected-shed row the tightest day could be shed at VoLL x 1 (design
+  // note version 2, 3.3; message 673 (e)): refused.
+  if (RW_CL && !ST_ON) throw new Error("bldRepWeights 'clustered' needs bldStressTarget 1: with each extreme day counted once, only the expected-shed row holds adequacy");
+  const WL = (S.bldWindowLink | 0) === 1;
+  if (WL && !LINK) throw new Error('bldWindowLink 1 needs bldStorageLink 1: a window opens and closes on the linked levels');
   const ST_N = ST_ON ? Math.max(1, (opts.draws || 1) * ((typeof bldWeatherYears !== 'undefined' && bldWeatherYears && bldWeatherYears.meta) ? bldWeatherYears.meta.years.length : 1)) : 1;
   const wObj = r => (ST_ON && r.tail) ? 1 / ST_N : r.weight;
   const AV_IMP = S.importsCF ?? FIXED.importsCF;   // imports' utilisation, as the engine's importsCF
   const ST_TERMS = {}, ST_DEM = {}, IMP_MWH = {};   // IMP_MWH: each year's fixed import energy, priced (PR B)
   // Hourly state of charge (bldHourlySoc). HS_T: stress days; HS_C: calendar days.
   const HS = (S.bldHourlySoc ?? FIXED.bldHourlySoc) | 0, HS_T = HS >= 1, HS_C = HS === 1;
+  // Linking (bldStorageLink 1) moves each real day's level by its representative day's intra-day movement c_, which exists only under
+  // bldHourlySoc 1 (design note version 2, 3.2; message 673 (f)). LVMIN: the representative days whose reserve rows read the lowest
+  // level over their real days (lvmin_), written with the links.
+  if (LINK && !HS_C) throw new Error('bldStorageLink 1 needs bldHourlySoc 1: the intra-day movement c_ exists only there');
+  // Self-discharge (storeSelfDischargePctDay): kept share of a level per hour and per day; a coefficient of exactly 1 is written as
+  // before, so the default (0) leaves the LP text unchanged. Applied only with linking: the block chain has no real-day order to decay over.
+  const _SDP = S.storeSelfDischargePctDay || {}, sdDay = t => Math.max(0, +(_SDP[t === 'vpp' ? 'batt' : (t === 'phes' || t === 'phel') ? 'ps' : t] || 0)) / 100;
+  const sdKeepD = t => 1 - sdDay(t), sdKeepH = t => Math.pow(1 - sdDay(t), 1 / 24), sdc = x => x === 1 ? '' : x.toFixed(9) + ' ';
+  if (STORE.some(S2 => sdDay(S2.t) > 0) && !LINK) throw new Error('storeSelfDischargePctDay above 0 needs bldStorageLink 1 in the build LP');
+  const LVMIN = new Set();
   // A stress window's last day (the day no other day names as predecessor, walking forward from d).
   const hsLast = (y, d) => { const nx = new Map(rdY(y).filter(q => q.prevD !== undefined).map(q => [q.prevD, q.d])); let x = d; while (nx.has(x)) x = nx.get(x); return x; };
   // Level of store t at the end of hour h of day r, and at the start of day r (stress days: hourly variables).
   const hsLevel = (t, y, r, h) => h < 23 ? 's_' + t + '_' + y + '_' + r.d + '_' + h : 'e_' + t + '_' + y + '_' + r.d;
-  const hsStart = (t, y, r) => 'e_' + t + '_' + y + '_' + (r.prevD !== undefined ? r.prevD : hsLast(y, r.d));
+  // With bldWindowLink a window's first day opens at the linked level on its calendar day (r.dem).
+  const hsStart = (t, y, r) => (WL && r.tail && r.prevD === undefined)
+    ? (Number.isInteger(r.dem) ? 'lv_' + t + '_' + y + '_' + r.dem : (() => { throw new Error('bldWindowLink: a stress day without its calendar day'); })())
+    : 'e_' + t + '_' + y + '_' + (r.prevD !== undefined ? r.prevD : hsLast(y, r.d));
   // Coal follows the engine (message 359 (h)): bldCoalMinFrac 'engine' is each year's capacity-weighted minimum stable level of the
   // units standing (coalFleetMinShare), or a number as before; bldCoalStartCost 1 charges each MW of commitment added at the standing
   // fleet's hot-start cost per MW (coalFleetHotStartRMW); bldCoalCommitHours null drops the rate rule (48, the old rule, a sensitivity).
@@ -12527,7 +12757,8 @@ function bldBuildLP(opts){
       obj.push((S.lpCurtailCostR*wObj(r)*df).toFixed(3) + ' crt_' + k);
       // Inertia slack (MW.s short in the hour): VoLL per MW.s, as one MWh shed, weighted as shedding is without the stress target
       // (a stress day as if it came round every day), so the floor is met wherever a build can meet it; reported, never hidden.
-      if (SSI) obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' ssl_' + k);
+      // With clustered weights at VoLL x 365 on every day (design note version 2, 3.3): the floor holds in every hour however often the day occurs.
+      if (SSI) obj.push((VOLL*((r.tail || RW_CL) ? 365 : r.weight)*df).toFixed(3) + ' ssl_' + k);
       // resolved (14 Aug 2026): lpBattDischargeCostR (20) deliberately stays below
       // the dispatch engine's battCycleCostR (165). They are different quantities.
       // The LP already pays for battery cells through its capex annuity (BLD_LIFE
@@ -12556,7 +12787,7 @@ function bldBuildLP(opts){
           + ' ' + S2.dis + '_' + k);
       }
     }
-    if (ST_ON) obj.push((VOLL*365*df).toFixed(3) + ' tsl_' + y);   // expected shed above the target
+    if (ST_ON && y >= OPF) obj.push((VOLL*365*df).toFixed(3) + ' tsl_' + y);   // expected shed above the target (none before bldOperFrom)
   }
   // Offshore wind is A build decision, 4 Oct 2026: b_off_<y>, MW, priced like the other
   // technologies, run on the engine's own offshore profile, and capped cumulatively at ESMAP's
@@ -12565,20 +12796,20 @@ function bldBuildLP(opts){
   const OFF_PATH = BLD_OFF_PATH;
   if (OFF_ON) for (const y of Y){
     let cost = 0;
-    for (const yy of Y) if (yy >= y) cost += (bldNetAnnuityAt('offshore', y) + GA.offshore) / Math.pow(1+BLD_DISC, yy-2026);
-    if (FAULT_RKW > 0) for (const yy of Y) if (yy >= y) cost += bldAnnuity(FAULT_RKW, BLD_LIFE.offshore, 'offshore') / Math.pow(1+BLD_DISC, yy-2026);
+    for (const yy of YA) if (yy >= y) cost += (bldNetAnnuityAt('offshore', y) + GA.offshore) / Math.pow(1+BLD_DISC, yy-2026);
+    if (FAULT_RKW > 0) for (const yy of YA) if (yy >= y) cost += bldAnnuity(FAULT_RKW, BLD_LIFE.offshore, 'offshore') / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_off_' + y);
   }
   if (PHES_ON) for (const y of Y){
     let cost = 0;
     const ann = bldAnnuity(PHES_KW(), 60, 'phes') + S.bldPhesFomRkW + GA.phes;
-    for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
+    for (const yy of YA) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_phes_' + y);
   }
   if (PHES2_ON) for (const y of Y){
     let cost = 0;
     const ann = bldAnnuity(bldPhesCapexKW(S.bldPhesCostBasis, PHES2_H), 60, 'phel') + S.bldPhesFomRkW + GA.phel;
-    for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
+    for (const yy of YA) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_phel_' + y);
   }
   // Early coal retirement is A decision, 4 Oct 2026. rc_<y> is coal retired ahead of Eskom's unit
@@ -12606,7 +12837,7 @@ function bldBuildLP(opts){
     let credit = 0;
     // Gas and diesel avoid no grid cost after bldFossilEndYear, where they stand idle and capCharge charges nothing (TODO 14ma,
     // messages 599 (c), 601 (b), 603 (b): Fossil-free 2040 took an illusory R0.26bn credit for 2,000 MW of CCGT built in 2040).
-    for (const yy of Y) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END)) credit += GA[t] / Math.pow(1+BLD_DISC, yy-2026);
+    for (const yy of YA) if (yy >= y && !(fossilCut(t) && yy > FOSSIL_END)) credit += GA[t] / Math.pow(1+BLD_DISC, yy-2026);
     obj.push('-' + (credit * 1000).toFixed(3) + ' rp_' + t + '_' + y);
   }
   // Cape wind allowance (FIXED.bldCapeWindMW): cw_<y> MW of that year's wind on the curtailment allowance, which avoids the
@@ -12617,7 +12848,7 @@ function bldBuildLP(opts){
     let credit = 0;
     // The integration charge it avoids is what new wind pays (bldGridIntVreShare of txRPerKWyr; 16 Oct 2026).
     const _cwK = +(S.bldGridIntVreShare ?? FIXED.bldGridIntVreShare), _cwTx = _cwK === 1 ? S.txRPerKWyr : _cwK * S.txRPerKWyr;
-    for (const yy of Y) if (yy >= y) credit += _cwTx / Math.pow(1+BLD_DISC, yy-2026);
+    for (const yy of YA) if (yy >= y) credit += _cwTx / Math.pow(1+BLD_DISC, yy-2026);
     obj.push('-' + (credit * 1000).toFixed(3) + ' cw_' + y);
   }
   // Life extension (TODO 14as): le_<id> MW kept from its end-of-life year to the IRP's date, paying the extension
@@ -12644,13 +12875,16 @@ function bldBuildLP(opts){
   const SS_COND_FROM = 2026 + BLD_BUILD_Y.grid;
   if (SSI) for (const y of Y){
     let cg = 0, cc = 0, cn = 0;
-    for (const yy of Y) if (yy >= y){ const d = Math.pow(1+BLD_DISC, yy-2026); cg += ssAnnualRkW('gfm', y) / d; cc += ssAnnualRkW('scc', y) / d; cn += ssAnnualRkW('scn', y) / d; }
+    for (const yy of YA) if (yy >= y){ const d = Math.pow(1+BLD_DISC, yy-2026); cg += ssAnnualRkW('gfm', y) / d; cc += ssAnnualRkW('scc', y) / d; cn += ssAnnualRkW('scn', y) / d; }
     obj.push((cg * 1000).toFixed(3) + ' b_gfm_' + y, (cc * 1000).toFixed(3) + ' b_scc_' + y, (cn * 1000).toFixed(3) + ' b_scn_' + y);
   }
   L.push('  ' + obj.join(' + ').replace(/\+ -/g, '- '));
   L.push('Subject To');
-  if (RC_ON) for (let i = 1; i < Y.length; i++)
-    L.push(' rcmono_' + Y[i] + ': rc_' + Y[i] + ' - rc_' + Y[i-1] + ' >= 0');
+  if (RC_ON) for (let i = 1; i < Y.length; i++){
+    // bldRcFallAway 1 (J1): the floor falls by the year's scheduled closures (bldCoalMW(y - 1) - bldCoalMW(y), MW, 0 if none).
+    const fall = (S.bldRcFallAway | 0) === 1 ? Math.max(0, bldCoalMW(Y[i-1]) - bldCoalMW(Y[i])) : 0;
+    L.push(' rcmono_' + Y[i] + ': rc_' + Y[i] + ' - rc_' + Y[i-1] + ' >= ' + (fall > 0 ? (-fall).toFixed(1) : '0'));
+  }
   // Within the fleet's early retirement (rc_ is already cumulative); no monotone row of its own, since the in-scope MW standing falls
   // as units reach their dates.
   for (const q of CMP) L.push(' rcain_' + q.y + ': rca_' + q.y + ' - rc_' + q.y + ' <= 0');
@@ -12788,7 +13022,7 @@ function bldBuildLP(opts){
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
-                  + exWind*wp*AV_CONG + exPv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
+                  + exWind*wp*AV_CONG + exPv*((1 - _XTRK)*sp + _XTRK*spN)*AV_CONG + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
@@ -12876,6 +13110,12 @@ function bldBuildLP(opts){
           // Stress day, hourly level: reserve held this hour is limited by the level at its start and at its end.
           L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + hsLevel('batt', y, r, h) + ' <= 0');
           L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + (h > 0 ? hsLevel('batt', y, r, h - 1) : hsStart('batt', y, r)) + ' <= 0');
+        } else if (LINK && !r.tail){
+          // Linked year (design note version 2, 3.2): the lowest level over the real days this day stands for (lvmin_, conservative),
+          // plus the movement to the hour's end and to its start.
+          const lm = 'lvmin_batt_' + y + '_' + r.d; LVMIN.add('batt_' + y + '_' + r.d);
+          L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + sdc(sdKeepD('batt')) + lm + ' - c_batt_' + k + ' <= 0');
+          L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + sdc(sdKeepD('batt')) + lm + (h > 0 ? ' - c_batt_' + y + '_' + r.d + '_' + (h - 1) : '') + ' <= 0');
         } else if (HS_C && !r.tail){
           // Calendar day: the hour's level on the first and on the last real day of the block (c_ is the cumulative
           // movement within the day; the first real day starts at the previous level, the last at e - c_23).
@@ -12906,6 +13146,11 @@ function bldBuildLP(opts){
           if (HS_T && r.tail){
             L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + hsLevel('ps', y, r, h) + ' <= 0');
             L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + (h > 0 ? hsLevel('ps', y, r, h - 1) : hsStart('ps', y, r)) + ' <= 0');
+          } else if (LINK && !r.tail){
+            // Linked year (message 673 (f)): as lithium's, on the lowest level over the real days this day stands for.
+            const lm = 'lvmin_ps_' + y + '_' + r.d; LVMIN.add('ps_' + y + '_' + r.d);
+            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + sdc(sdKeepD('ps')) + lm + ' - c_ps_' + k + ' <= 0');
+            L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + sdc(sdKeepD('ps')) + lm + (h > 0 ? ' - c_ps_' + y + '_' + r.d + '_' + (h - 1) : '') + ' <= 0');
           } else if (HS_C && !r.tail){
             const c = 'c_ps_' + k, c23 = 'c_ps_' + y + '_' + r.d + '_23';
             L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + c + (_ePsPrev ? ' - ' + _ePsPrev + ' <= 0' : ' <= ' + (EX.ps * STORE.find(q => q.t === 'ps').hours * 0.5).toFixed(1)));
@@ -13044,10 +13289,22 @@ function bldBuildLP(opts){
           // window must put back what it takes and opens with no energy it did not store. Replaces the daily
           // balance, the half-full opening and send_ for these days.
           if (Math.abs(r.weight - 1) > 1e-9) throw new Error('bldHourlySoc: a stress day with weight ' + r.weight);
+          // bldWindowLink: the window's last day closes at the linked level of the calendar day after it.
+          if (WL && !_chainPrev.has(r.d)) L.push(' wlc_'+kk+': e_'+kk+' - lv_'+S2.t+'_'+y+'_'+((r.dem + 1) % 365)+' = 0');
           for (let h = 0; h < 24; h++){
             const lev = hsLevel(S2.t, y, r, h), from = h > 0 ? hsLevel(S2.t, y, r, h - 1) : hsStart(S2.t, y, r);
-            L.push(' sh_'+kk+'_'+h+': '+lev+' - '+from+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
+            L.push(' sh_'+kk+'_'+h+': '+lev+' - '+sdc(sdKeepH(S2.t))+from+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
             if (h < 23) L.push(' shc_'+kk+'_'+h+': '+lev+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours).toFixed(1));
+          }
+        } else if (LINK && !r.tail){
+          // Linked year (bldStorageLink 1; design note version 2, 3.2): this day's intra-day movement c_ and its highest and lowest
+          // (cmx_ at least 0 and every c_, cmn_ at most 0 and every c_, so the day's opening level is bounded too: GenX's form,
+          // Mantegna et al. 2024, 2.3.2). The real days' levels, links and bounds are written once a year below.
+          for (let h = 0; h < 24; h++){
+            const c = 'c_'+kk+'_'+h;
+            L.push(' cr_'+kk+'_'+h+': '+c+(h > 0 ? ' - '+sdc(sdKeepH(S2.t))+'c_'+kk+'_'+(h-1) : '')+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
+            L.push(' cmxr_'+kk+'_'+h+': cmx_'+kk+' - '+c+' >= 0');
+            L.push(' cmnr_'+kk+'_'+h+': cmn_'+kk+' - '+c+' <= 0');
           }
         } else {
         // Opening level on the first day is half full, matching the regional LP.
@@ -13081,11 +13338,29 @@ function bldBuildLP(opts){
           }
         }
         }
-        L.push(' ecap_'+kk+': e_'+kk + ' - ' + capTerms.join(' - ')
+        if (!(LINK && !r.tail)) L.push(' ecap_'+kk+': e_'+kk + ' - ' + capTerms.join(' - ')
           + ' <= ' + (ex*S2.hours).toFixed(1));
         // Within-day discharge still cannot exceed the stored energy.
         L.push(' dur_'+kk+': ' + dis.join(' + ') + ' - ' + capTerms.join(' - ')
           + ' <= ' + (ex*S2.hours));
+      }
+    }
+    // Linked year (bldStorageLink 1; design note version 2, 3.2; Kotzur et al., Applied Energy 2018, Eq. 19 without self-discharge):
+    // lv_<t>_<y>_<i>, the level at the start of real day i (0-364), moves by its representative day's c_ to day i + 1, the last day
+    // closing on day 0 (cyclic); every hour of every real day lies within zero and capacity (lhi_, llo_ with cmx_ and cmn_); lvm_ holds
+    // the lowest level over each representative day's real days for its reserve rows. Stress days keep their own rows.
+    if (LINK && y >= OPF){   // years before bldOperFrom have no operating day, so no linked level
+      const MAP = (rd.map365ByYear && rd.map365ByYear[y]) || rd.map365;
+      if (!MAP || MAP.length !== 365) throw new Error('bldStorageLink: the representative days carry no mapping of the 365 real days');
+      for (const S2 of STORE){
+        const ex = S2.ex(EX), capTerms = (S2.t === 'batt') ? cumE(y).map(v => '1 ' + v) : cum(S2.t,y).map(v => S2.hours+' '+v);
+        for (let i = 0; i < 365; i++){
+          const kk = S2.t+'_'+y+'_'+MAP[i], lv = 'lv_'+S2.t+'_'+y+'_'+i, nx = 'lv_'+S2.t+'_'+y+'_'+((i + 1) % 365);
+          L.push(' lnk_'+S2.t+'_'+y+'_'+i+': '+nx+' - '+sdc(sdKeepD(S2.t))+lv+' - c_'+kk+'_23 = 0');
+          L.push(' lhi_'+S2.t+'_'+y+'_'+i+': '+lv+' + cmx_'+kk+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours).toFixed(1));
+          L.push(' llo_'+S2.t+'_'+y+'_'+i+': '+sdc(sdKeepD(S2.t))+lv+' + cmn_'+kk+' >= 0');   // decayed over the day: conservative (Kotzur, Appendix B)
+          if (LVMIN.has(S2.t+'_'+y+'_'+MAP[i])) L.push(' lvm_'+S2.t+'_'+y+'_'+i+': lvmin_'+kk+' - '+lv+' <= 0');
+        }
       }
     }
     // Firm-capacity reserve margin at the annual peak. Wind and solar get no
@@ -13160,6 +13435,7 @@ function bldBuildLP(opts){
 
   const ST_TGT = {};
   if (ST_ON) for (const y of Y){
+    if (y < OPF) continue;   // no operating day before bldOperFrom (design note version 2, 3.4)
     // opts.targetGWh (message 373): an absolute target, GWh a year (NTCSA's 20); otherwise targetFrac x the 0.002% standard.
     ST_TGT[y] = opts.targetGWh != null ? opts.targetGWh * 1e3 : (opts.targetFrac || 1) * BLD_STRESS_STANDARD * (ST_DEM[y] || 0);   // MWh of expected shed
     L.push(' tgt_' + y + ': ' + ST_TERMS[y].join(' + ') + ' - tsl_' + y + ' <= ' + ST_TGT[y].toFixed(3));
@@ -13235,7 +13511,8 @@ function bldBuildLP(opts){
   // technology per day, so it sits outside the hourly loop above. The binding
   // limit is the ecap_ constraint; this is just a ceiling.
   for (const y of Y) for (const r of rdY(y)) for (const S2 of STORE)
-    L.push(' 0 <= e_' + S2.t + '_' + y + '_' + r.d + ' <= 2000000');
+    if (!(LINK && !r.tail)) L.push(' 0 <= e_' + S2.t + '_' + y + '_' + r.d + ' <= 2000000');
+    else L.push(' -inf <= cmn_' + S2.t + '_' + y + '_' + r.d + ' <= 0');
   L.push('End');
   return { lp: L.join('\n'), rate: RATE, ...(ST_ON ? { stressTarget: { runs: ST_N, targetMWh: ST_TGT } } : {}) };
 }
@@ -21852,7 +22129,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02y';
+const BUILD_STAMP = '2026-11-03a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
