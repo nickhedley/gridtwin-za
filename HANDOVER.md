@@ -1,5 +1,22 @@
 # GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 10:45 UTC)
 
+## 3 Nov 2026, night (message 689: Nick offline until the morning of 4 Nov; updated 17:45 UTC, 19:45 SAST)
+
+Tonight's order (689): (1) leap-year fetch and the 108 extra calls, data rebuild, DATA_V, stored panels, suite, weather-fixes PR (open,
+do not merge); (2) site PR: done, #158 (open); (3) engine: three wind series, three calms, coal floor 2027/2028/2030, table in RESULTS;
+(4) curtailment against 2026: done (RESULTS 'The engine against 2026's curtailment'); single-year 2030/2035 LPs with the levers after the
+rebuild; (5) as time allows, acceptance tests 1, 2, 3, 6, 7 and 11 on corrected modelled 2025 and metered 2025, free-fleet and 365-day
+benchmarks first, the wind series labelled. Do not merge, choose the wind table, make the correction default, change engine rules or data
+levels beyond 684/686, start pathway reruns, or touch GitHub/Cloudflare settings. Status for Nick at the top of this file by 07:15 SAST.
+- Fetch: /home/user/gtza-fix, pieces of 110 min (fetch_leap_days.py; log leapfetch.log; relaunch at each completion with
+  RENEWABLES_NINJA_TOKEN=x python3 -u fetch_leap_days.py --minutes 110 >> leapfetch.log). Piece 3 running from 17:25 UTC; 140 of the 304
+  left at its start (about 22:15 SAST), then the 108 extras (about 00:40 SAST). HTTP 502s retried.
+- Then: bash /tmp/claude-0/-home-user-gridtwin-za/cd2ebea5-fdee-51da-b34b-eb3574ed8e65/scratchpad/run_rebuild.sh (rebuild, solar_trk_k,
+  PROVENANCE fingerprint, DATA_V 9, commit, then the engine queue: wind series, calms, coal floor; log harness/out/rebuild.log); then
+  stored panels --write and the suite in pieces (run_suite.sh quick, long) on /home/user/gtza-fix; then the PR (base main; #157 merged).
+  If the extras land after the rebuild, rerun fix_weather_clock_leap.py and commit the patch (flags removed).
+- Local-only Eskom files in scratch (never commit): lull/lulls_local.json, lull/wind2026_local.json; ESK19679 at the uploads path.
+
 ## 3 Nov 2026, message 684 (updated 14:30 UTC, 16:30 SAST)
 
 - Branch claude/weather-fixes (worktree /home/user/gtza-fix; stacked on claude/storage-link-build 7c4bdcc, with claude/weather-refs

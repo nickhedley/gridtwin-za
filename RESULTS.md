@@ -20867,7 +20867,7 @@ Today 2026 (scenario year 2026, the defaults: exports 745 MW, rooftop 8,135.7 MW
 2025 weather; case B with ESK19679's 2026 wind for January-August (local, not committed); the 2025 replay ('2025, as modelled'). Utility PV
 curtailed = its potential each hour as the engine blends it, less what it delivered; this includes the flat 1.3% congestion derate
 (congestionCurtailOn), which is the model's whole representation of network curtailment. Metered: ESK19679 (Eskom data, analysis ours),
-RESULTS '2026's solar shortfall is mostly curtailment'. 3 Nov 2026, about 21:00 SAST.
+RESULTS '2026's solar shortfall is mostly curtailment'. 3 Nov 2026, about 19:40 SAST.
 
 | Case | Utility PV curtailed, Jan-Aug, TWh | per MW of utility PV, MWh | PV curtailed at 11:00-14:00, Mar-Aug, MW | all spill (wind, solar, coal-forced), Jan-Aug, TWh |
 |---|---|---|---|---|
