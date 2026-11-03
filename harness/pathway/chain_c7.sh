@@ -57,18 +57,21 @@ irpcheck(){ local f=$1
 # Deep decarbonisation without gas at 40 Mt on c7's settings (phase 2): calibrated on the engine's 2035 CO2 as run_deep_cal.sh UNIFORM=1
 # (every year 2035-40 at one optimiser cap; cap += 40 - engine 2035 until within 0.5 Mt, at most 5 rounds), from c6e's final cap 36.382;
 # the final round is copied to s_deep40nogas_c7 for the reviewer pack. Log: $N/cal_deep40.txt.
-deep(){ local T=40 cap=${DEEP_CAP0:-36.382} L=$N/cal_deep40.txt
-  [ -s out/pathcheck_s_deep40nogas_c7_c.json ] && return 0
-  for r in 1 2 3 4 5; do local n=s_deep40nogas_r${r}_c7 o; o=out/pathcheck_s_deep40nogas_r${r}_c7_y2035.json
+# deep [base name] [extra env] [first cap]: Deep at 40 Mt, calibrated as above; base name s_deep40nogas (the pack's) by default; the
+# senior contact's costs as s_deep40nogas_contact (message 654 (a)), from c7 Deep's final cap.
+deep(){ local B=${1:-s_deep40nogas} X=${2:-} T=40 cap=${3:-${DEEP_CAP0:-36.382}} L=$N/cal_${1:-s_deep40nogas}.txt
+  [ "$B" = s_deep40nogas ] && L=$N/cal_deep40.txt
+  [ -s out/pathcheck_${B}_c7_c.json ] && return 0
+  for r in 1 2 3 4 5; do local n=${B}_r${r}_c7 o; o=out/pathcheck_${B}_r${r}_c7_y2035.json
     if [ -s $o ]; then local e; e=$(python3 -c "import json;print(round([x for x in json.load(open('$o')) if x['y']==2035][0]['co2'],3))")
       if python3 -c "import sys; sys.exit(0 if abs($e-$T)<=0.5 else 1)"; then
-        for x in pathway; do cp out/${x}_$n.json out/${x}_s_deep40nogas_c7.json; done; echo "final round $r" >> $L; check s_deep40nogas_c7; return 0; fi
+        cp out/pathway_$n.json out/pathway_${B}_c7.json; echo "final round $r" >> $L; check ${B}_c7; return 0; fi
       cap=$(python3 -c "print(round($cap+($T-$e),3))"); continue; fi
     local Y="2035:$cap,2036:$cap,2037:$cap,2038:$cap,2039:$cap,2040:$cap"
     if [ ! -s out/pathway_$n.json ]; then
       echo "$(date -u +%H:%M) start $n (target $T, cap $cap)" >> $P
       if [ "$(left)" -lt 1200 ]; then echo "$(date -u +%H:%M) $n left to the next piece" >> $P; return 0; fi
-      eval "env $C7 RESUME=1 JOB_DEADLINE=$DEADLINE SOLVER=native GAS_CAP=0 OCGD=1 PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 CO2CAP=22.809:2035 CO2CAP_YEARS=$Y LPCACHE=lpcache_$n MAXP=6 OUT=out/pathway_$n.json TL=7200 nice -n 10 node --max-old-space-size=8192 pathway/pathway_perfail.js" > out/$n.log 2>&1 &
+      eval "env $C7 $X RESUME=1 JOB_DEADLINE=$DEADLINE SOLVER=native GAS_CAP=0 OCGD=1 PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 CO2CAP=22.809:2035 CO2CAP_YEARS=$Y LPCACHE=lpcache_$n MAXP=6 OUT=out/pathway_$n.json TL=7200 nice -n 10 node --max-old-space-size=8192 pathway/pathway_perfail.js" > out/$n.log 2>&1 &
       local pid=$!; echo "$(date -u +%FT%H:%MZ) c7 pathway $n pid $pid" >> $PIDLOG; wait $pid
       echo "$(date -u +%H:%M) end $n$([ -s out/pathway_$n.json ] || echo ' NO OUTPUT (resumes next piece)')" >> $P
       [ -s out/pathway_$n.json ] || return 0
@@ -76,7 +79,7 @@ deep(){ local T=40 cap=${DEEP_CAP0:-36.382} L=$N/cal_deep40.txt
     env -i PATH="$PATH" HOME="$HOME" LNG=1 GRID=1 SS_FC=reservecoal YEARS=2035 IN=out/pathway_$n.json OUTC=$o nice -n 10 node --max-old-space-size=4096 pathcheck.js > out/pathcheck_${n}_y2035.log 2>&1
     local e; e=$(python3 -c "import json;print(round([x for x in json.load(open('$o')) if x['y']==2035][0]['co2'],3))"); echo "round $r cap $cap engine2035 $e target $T" >> $L
     if python3 -c "import sys; sys.exit(0 if abs($e-$T)<=0.5 else 1)"; then
-      cp out/pathway_$n.json out/pathway_s_deep40nogas_c7.json; echo "final round $r" >> $L; check s_deep40nogas_c7; return 0; fi
+      cp out/pathway_$n.json out/pathway_${B}_c7.json; echo "final round $r" >> $L; check ${B}_c7; return 0; fi
     cap=$(python3 -c "print(round($cap+($T-$e),3))")
   done; echo "not within 0.5 Mt after 5 rounds" >> $L; }
 # The non-solve items the pack reads (phase 2): the IRP 2025 pair from c7, c7_irpdem, s_be6_c7, s_irpgas_c7 and s_be7_c7; the gas floor
@@ -121,8 +124,10 @@ case "${1:-1}" in
        "s_coalfuel0_c7|COAL_FUEL_ESC=0" "s_coalfuel5_c7|COAL_FUEL_ESC=5" "s_comply_full_c7|COMPLY=full" \
        "s_carbongross_c7|COAL_CARBON_FLOOR=0" "s_carbontreasury_c7|COAL_CARBON_FLOOR=0 CARBON_PATH=treasury" \
        "s_ff2040novrfb_c7|SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 VRFB_OFF=1|6" ;;
-  3age) queue "s_coalage_c7|COAL_AGE=1" "s_ageingcoal_c7|COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full" \
-       "s_contact_c7|COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury" \
+  # The senior contact's stack first (message 663 (c)), then his Deep, then the other age-curve runs.
+  3age) CONTACT="COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury"
+     one s_contact_c7 "$CONTACT" & deep s_deep40nogas_contact "$CONTACT" 37.538 & wait
+     queue "s_coalage_c7|COAL_AGE=1" "s_ageingcoal_c7|COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full" \
        "s_ff2040_contact_c7|SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury|6" ;;
   # Phase 4 (messages 618-620; SOURCES, our choices for the runs on the outlook's inputs): the outlook's High demand, 3.30% a year from
   # the model's own 2026 level to 2040 (DEMAND=rate:3.30); (ii) adds coal availability 66% in 2027 to 70% from 2031, Avon and Dedisa
