@@ -20184,3 +20184,35 @@ participant cost; geyser control enrols nothing in either mode. (5) The complian
 R49.9bn, R14.46bn a year from 2031 against R11.09bn) is the capital's annuity over the stations' shorter life to the fossil end (2039,
 8 years) in place of their scheduled closures; single 8% (R52.3bn) annuitises at 8% in place of Eskom's 7.1%: both by design
 (complyStations), no change.
+
+### Why no coal retires early, and what makes Fossil-free's vanadium worth building: coal is kept for its energy on representative days (R2,674/kW-yr short of retiring in 2040, R1,195 on Treasury's path); vanadium's value is the stored energy carried between Fossil-free's chained 2040 days (user, 3 Nov 2026, message 663 (c), (d))
+
+Method: the build LP dumped (pathway_perfail.js DUMP_LP, DUMP_STOP=1, c7's settings, build 2026-11-02y) and solved by native HiGHS
+(highs_native.py) for the row duals; a column's reduced cost split into each constraint's contribution, coefficient x dual, grouped
+by row family (scratch decomp.py). Coal: one-year LPs at 2030, 2035 and 2040 with c7's builds fixed to the year before (HORIZON=Y,
+FIX_FROM=out/pathway_c7.json; Treasury's path on s_carbontreasury_c7's builds, COAL_CARBON_FLOOR=0 CARBON_PATH=treasury), 3 Nov
+06:2x UTC. Vanadium: s_ff2040_c7's LP (pass 1, the run's only pass), 06:31 UTC.
+Coal (rc_<y>, MW retired early by year y; its objective coefficient the year's avoided fixed cost):
+| | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| Central: retired in the one-year LP | 375 MW | 0 (reduced cost 0: at the margin) | 0 |
+| Central: extra avoided cost for the first MW, R/kW-yr | - (retires) | 0 | 2,674 |
+| Treasury's path: retired | 1,690 MW | 0 (at the margin) | 0 |
+| Treasury's path: extra avoided cost, R/kW-yr | - (retires) | 0 | 1,195 |
+(2040's reduced cost R910,413 per MW, PV at 8% to 2026, over 0.3405 and 1,000; Treasury's R406,884.) The 2030 and 2035 one-year LPs
+end at their year, so a retirement there carries no later cost: 2030's 375 MW (1,690 on Treasury's path) and 2035's zero margin show
+coal near the edge in those years, while the full pathway, where retirement is cumulative and irreversible, keeps it because coal is
+worth more by 2040. What keeps it (2040, central): the committed-coal capacity rows (cmax) on representative days, R1.62m per MW PV,
+whose value comes from coal generation (cgen) and a little from the minimum stable level (cmin, -R38k): coal's energy, cheaper than
+what replaces it. Not adequacy (no stress-day row binds on rc_), not the inertia floor (no system strength row in the split), not
+rppool: the freed-connection credit (+R124k) and the compliance saving (rcain, +R157k) both favour retirement. Treasury's path halves
+the gap (cmax R1.12m) but does not close it.
+Vanadium (b_vrfb_2026-2040, at its 500 MW a year bound every year): reduced cost -R1,049bn PV against a cost of R257bn; of its value
+(R1,305bn), R1,301bn sits in one row family, ecap (the stored energy each storage may hold), and in one row: 2040's day 162, whose
+dual (-R10.84m per MWh) is the same for vanadium, iron-air and pumped storage. That is the state of charge carried between chained
+representative days (soc rows, each day standing for 22.8 days) in 2040, the first year with no fossil plant: energy held across the
+chain is worth almost any price there. Not the planning reserve (ccvrfb 0), not stress days, not the duration credit (dur, R3.9m), and
+not a CO2 row. The engine check, chronological over 8,760 hours, needs none of it: without vanadium unserved is 0.00 GWh in every year
+2026-40 (every draw 0.0), no hour short of the inertia floor, open-cycle at most 0.06% (2026), curtailment unchanged (239.8 TWh in
+2040), R127bn cheaper; with vanadium 0.03 GWh in 2032 (worst draw 1.2). Finding: the build LP's chained representative days overvalue
+storage energy carried across the days in a fossil-free year; which Fossil-free figure the pack uses is the user's decision.
