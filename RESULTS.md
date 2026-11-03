@@ -20782,3 +20782,38 @@ more than 0.002 per unit; mean absolute difference 0.00016; annual means within 
 there was 0 in the build and 1 in the recomputation. fix_weather_clock_leap.py therefore keeps the stored 2024 twin's hours (29 February
 removed, the borrowed year's rescale applied, 31 December from its fixed-tilt day times the ratio from the stored files) and leaves 2025's
 twin unchanged. An exact rebuild would need the 2014-2023 PVGIS years fetched again (about 160 requests).
+
+### 2026's solar shortfall is mostly curtailment: about 0.55 TWh of 0.60 TWh January-August; the 685 (a) plateau test was wrong (message 686 (d), Eskom side; evidence, no rule changed)
+
+Method: ESK19679 (Eskom data, obtained on request; the analysis is ours, not Eskom's), derived monthly, hour-of-day and daily figures only;
+CSP output (all its plants in the Northern Cape) as a daily sunshine measure; scratchpad curtail/CURTAIL.md and scripts. 3 Nov 2026.
+
+- Size: of 635 GWh short in March-August 2026 (against the 2023-2025 level for each month and hour on 2026's capacity), about 523 GWh
+  (82%; range 450-600) falls on 81 days cut at midday while the Northern Cape was sunny; weather about 35 GWh net (-14 to +111); 77 GWh
+  on days without the midday cut, not separated (outages, the 9 May capacity step, curtailment of another shape, noise). Over
+  January-August (601 GWh net, January's surplus offsetting), curtailment about 0.55 TWh, about 90% (0.45-0.63 TWh).
+- Shape: on cut days national PV peaks at 09:00, falls and holds nearly level 11:00-14:00 below that peak. 685 (a)'s plateau test
+  looked for hours within 3% of the day's highest hour and so could not see it; it is withdrawn. Days with midday output below both
+  09:00 and 15:00: 68 in March-August 2026 against 0-4 in each earlier year; a plateau test that allows the flat midday to sit below the
+  day's peak: 54 against 0-2. The 'ragged' dull days of 685 (a) are these days.
+- Timing: 74.8% of the March-August shortfall falls at 10:00-15:00, which carries 61.9% of expected output (29.0% short at midday against
+  17.4% either side); weekends and holidays 31.1% short against 20.7% on weekdays (earlier years -1.5 to +4.6 points). CSP and PV daily
+  output correlated 0.72-0.82 in 2023-2025 and 0.14 in 2026; on sunny days 2026 PV ran 34% below earlier days with the same sunshine.
+- Coal: on cut days coal holds about flat 09:00-14:00 at about 17.8 GW (median daily range 320-500 MW) while demand falls 1.7 GW and PV
+  takes the dip; midday coal about 0.84 of the day's highest coal hour. Not a hard technical minimum: with PV at full output coal went
+  210 MW below its night minimum; on the worst days it stayed 450 MW above it, consistent with units kept on for the peaks. Available coal
+  could not be computed from the file's capacity columns (the attempt fails against coal's own output).
+- Other sinks: pumping did not rise or saturate on the cut days (midday 330 MW against 650 MW on full days; never above 75% of 2,770 MW;
+  daily pumping 14-16 GWh in 2026 against 15.5-20 in 2024-2025). Exports about 1 GW lower from mid-March 2026 (1,300 -> 730 MW at midday),
+  matching Mozal's care and maintenance from 15 March (search snippets). Midday against 2025: demand with exports 2.75 GW lower (local
+  -1.69, exports -1.06), coal 2.33 GW lower.
+- Statements: NTCSA's 24 July 2026 statement and SAPVIA's and Engineering News's 30 July pieces could not be read (their hosts are outside
+  this session's allowed network); search snippets only: instructions from about 100 to more than 1,000 a month; claims surging in April
+  and May (about R2bn outstanding mid-June, R1.5bn by 24 July, the backlog cleared by 31 August); causes given as daylight operating
+  constraints with coal kept on for the peaks, network constraints and low midday demand. No curtailed energy and no regional split found.
+- Established: most of the 2026 shortfall is curtailment at midday on sunny, low-demand days, with coal held near flat and pumping not
+  used more. Not established: system balance against Northern Cape network limits (the weekend, demand and coal evidence point to system
+  balance); why pumping was not used more; the remaining 77 GWh. Settling it needs NTCSA's curtailed energy by month and instruction,
+  plant-level output, irradiance, and unit status for coal and pumped storage. For the engine (686 (d)): a 2026 replay should curtail about
+  0.5 TWh in March-August (about 560 MW on average at 11:00-14:00), with exports about 1 GW lower from 15 March and midday coal near 0.84
+  of its daily high. The helper's top-20 day table includes one coal value a day; it stays in scratch, out of anything published.
