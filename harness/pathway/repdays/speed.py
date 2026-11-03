@@ -46,11 +46,16 @@ OPTS = {'simplex': {'solver': 'simplex'}, 'ipm': {'solver': 'ipm', 'run_crossove
         # HiGHS's own advice for this LP on reading it: 'setting the user_objective_scale option to -7' and 'user_bound_scale option to -4'
         'hscale': {'solver': 'simplex', 'user_objective_scale': -7, 'user_bound_scale': -4},
         'ipm_hscale': {'solver': 'ipm', 'run_crossover': 'on', 'user_objective_scale': -7, 'user_bound_scale': -4},
-        'warm_hscale': {'solver': 'simplex', 'user_objective_scale': -7, 'user_bound_scale': -4}}
+        'warm_hscale': {'solver': 'simplex', 'user_objective_scale': -7, 'user_bound_scale': -4},
+        # The same with the tolerances tightened by the scale factors (message 678 (d): no tolerance may widen in rand or MW terms): HiGHS's
+        # defaults are 1e-7; dual x 2^-7, primal x 2^-4.
+        'hscale_tol': {'solver': 'simplex', 'user_objective_scale': -7, 'user_bound_scale': -4, 'dual_feasibility_tolerance': 1e-7 / 128, 'primal_feasibility_tolerance': 1e-7 / 16},
+        'ipm_hscale_tol': {'solver': 'ipm', 'run_crossover': 'on', 'user_objective_scale': -7, 'user_bound_scale': -4, 'dual_feasibility_tolerance': 1e-7 / 128, 'primal_feasibility_tolerance': 1e-7 / 16},
+        'warm_hscale_tol': {'solver': 'simplex', 'user_objective_scale': -7, 'user_bound_scale': -4, 'dual_feasibility_tolerance': 1e-7 / 128, 'primal_feasibility_tolerance': 1e-7 / 16}}
 extra = {}
 if cfg not in OPTS: raise SystemExit('unknown config ' + cfg)
 h = new(OPTS[cfg])
-if cfg in ('warm', 'warmfix', 'warm_hscale'):
+if cfg in ('warm', 'warmfix', 'warm_hscale', 'warm_hscale_tol'):
     st, matched, ncol = load_basis(h, basis_in, fix=(cfg != 'warm')); extra.update(basis_set=str(st), basis_cols_matched=matched, cols=ncol)
 if cfg in ('cut', 'cutfix'):
     h.setOptionValue('time_limit', 120.0); t0 = time.time(); h.run(); t1 = time.time() - t0

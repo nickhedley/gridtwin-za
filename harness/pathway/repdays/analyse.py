@@ -2,9 +2,11 @@
 # rescaling to the twelve-year means (capped at 1), extremes on the plan's fleet by year. Reads series.json (extract.js) and
 # c7's pathway output. Prints tables; writes res.json.
 import json, sys, numpy as np
-D = json.load(open(sys.argv[1])); P = json.load(open(sys.argv[2]))
-dem = np.array(D['demand']).reshape(365, 24); w0 = np.array(D['wind']).reshape(365, 24); wn = np.array(D['windN']).reshape(365, 24)
-s0 = np.array(D['solar']).reshape(365, 24); st = np.array(D['solarT']).reshape(365, 24)
+import os
+D = json.load(open(sys.argv[1])); P = json.load(open(sys.argv[2])); REF = os.environ.get('REF', 'metered')   # 679 (a): a modelled weather year
+Sr = D if REF == 'metered' else D['wy'][REF]
+dem = np.array(D['demand']).reshape(365, 24); w0 = np.array(Sr['wind']).reshape(365, 24); wn = np.array(Sr['windN']).reshape(365, 24)
+s0 = np.array(Sr['solar']).reshape(365, 24); st = np.array(Sr['solarT']).reshape(365, 24)
 WY = {y: {k: np.array(v).reshape(365, 24) for k, v in d.items()} for y, d in D['wy'].items()}
 T12 = {'windN': D['T']['wind'], 'solarT': D['T']['solar'],
        'wind': float(np.mean([WY[y]['wind'].mean() for y in WY])), 'solar': float(np.mean([WY[y]['solar'].mean() for y in WY]))}
