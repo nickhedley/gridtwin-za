@@ -124,6 +124,17 @@ case "${1:-1}" in
   3age) queue "s_coalage_c7|COAL_AGE=1" "s_ageingcoal_c7|COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full" \
        "s_contact_c7|COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury" \
        "s_ff2040_contact_c7|SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 COAL_FUEL_ESC=5 COAL_AGE=1 COAL_FOM_ADD=500 COMPLY=full COAL_CARBON_FLOOR=0 CARBON_PATH=treasury|6" ;;
+  # Phase 4 (messages 618-620; SOURCES, our choices for the runs on the outlook's inputs): the outlook's High demand, 3.30% a year from
+  # the model's own 2026 level to 2040 (DEMAND=rate:3.30); (ii) adds coal availability 66% in 2027 to 70% from 2031, Avon and Dedisa
+  # out after 2030 and 0.75 GW a year of REIPPPP retired in 2033-36 (summed: 3 GW). 'No new gas' as the pack's no-gas line: GAS_CAP=0
+  # with diesel peakers allowed (OCGD=1).
+  4) M_EAF="2027:66,2028:67,2029:68,2030:69,2031:70,2032:70,2033:70,2034:70,2035:70,2036:70,2037:70,2038:70,2039:70,2040:70"
+     M_RE="2033:375/325/50,2034:375/325/50,2035:375/325/50,2036:375/325/50"
+     queue "s_mtsao_hi_nogas_c7|DEMAND=rate:3.30 GAS_CAP=0 OCGD=1" "s_mtsao_hi_c7|DEMAND=rate:3.30" \
+       "s_mtsao_ref_nogas_c7|DEMAND=rate:3.30 COAL_EAF_PATH=$M_EAF AVDED_OFF_AFTER=2030 REIPPP_RETIRE=$M_RE GAS_CAP=0 OCGD=1" \
+       "s_mtsao_ref_c7|DEMAND=rate:3.30 COAL_EAF_PATH=$M_EAF AVDED_OFF_AFTER=2030 REIPPP_RETIRE=$M_RE" \
+       "s_mtsao_refkeep_nogas_c7|DEMAND=rate:3.30 COAL_EAF_PATH=$M_EAF AVDED_OFF_AFTER=2030 GAS_CAP=0 OCGD=1" \
+       "s_mtsao_refkeep_c7|DEMAND=rate:3.30 COAL_EAF_PATH=$M_EAF AVDED_OFF_AFTER=2030" ;;
   *) echo "phase $1 not yet in this script" >> $P ;;
 esac
 echo "$(date -u +%H:%M) piece end" >> $P
