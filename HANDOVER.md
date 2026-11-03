@@ -1,4 +1,47 @@
-# GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 10:45 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 21:25 UTC)
+
+## Status for Nick, morning of 4 Nov (message 689; written 23:25 SAST 3 Nov, to be refreshed before 07:15 SAST)
+
+Finished
+- (1) The 304 calls fetched; weather files rebuilt on SAST with the leap years fixed (claude/weather-fixes d579f95, DATA_V 9, metered
+  tracking scale 0.7969); main merged in (bbe626c, only #155/#156's three files). A fix found on the way: the wind correction left the
+  corrected series without its modern-turbine twin, so a corrected-reference LP stopped (fd2578b; LP keys unchanged with it off).
+- (2) Site PR #158: open (done earlier).
+- (3) Engine on the fixed files: three wind series, three calms, coal floor 2027/2028/2030 (RESULTS, two entries of 3 Nov night).
+- (4) Curtailment against 2026 and message 690 in full (RESULTS 'Congestion curtailment ... part 1' and 'part 2'); 688 (a) (RESULTS
+  'The coal practice floor ending before 2027 or 2028').
+- (5) Acceptance, started: the metered 365-day benchmarks (central and Fossil-free) and the corrected Fossil-free 365-day solved; test 1's
+  variants and test 6's counts to 55 days on both references (harness/out/accept; accept_an.py). Written up below once 105 days and the
+  corrected central and free-fleet benchmarks are in.
+
+Running (stop only by PID; each relaunches at its completion notice)
+- Fetch piece 5 (the 108 extras; due about 00:35 SAST), then a waiter runs scratchpad run_patch.sh (fix rerun, flags removed,
+  BUILD_STAMP 2026-11-03d, commit), then run_patch_b.sh (stored panels --write, commit, quick suite), then run_suite.sh long, then
+  diff_public_text and the weather-fixes PR (open, not merged).
+- accept.sh pieces (harness/out/accept): next the corrected central and free-fleet 365-day benchmarks, then 105 days.
+
+Decisions needed, with recommendations
+1. Wind table and default (686 (b), 687 (c)): both corrections lower c7's unserved (2040 mean 1.23 to 0.74-0.77 GWh); five- and
+   six-constant equal within the noise. Recommend: the stored (fixed) series stays the central for the reruns; if a correction is used,
+   the six-constant, as a sensitivity.
+2. Congestion (690): recommend (a) none for the reruns, with (d) the 2026 pumping cap as a sensitivity (RESULTS part 2 has the basis).
+3. Calms in the LP's stress windows (687 (b)): recommend a sensitivity only (one window from July 2025's calm in the 2035 and 2040 LPs).
+4. Coal floor (688 (a)): no change proposed; the LP and the engine disagree on its size (recorded).
+5. For the note: the engine's cost pays REIPPPP's tariff on delivered energy and nothing on curtailed energy, so its cost rises when
+   curtailment falls; compare cases on the LP objective or on resource cost.
+6. Still open from earlier: the curtailment line draft (687 (e)); the six known-failure proposals after the reruns; #158 and the
+   weather-fixes PR (conflicts on BUILD_STAMP and stored_panels.json, whichever merges second regenerates them).
+
+Surprising, recorded, not investigated tonight
+- Test 1 variant (a) (now) on Fossil-free 2040: 4.4 TWh unserved, all on one matched day, 14 July (day 195, the start of July 2025's
+  36-hour calm), weighted as 30 days; variant (c) 1.5 TWh. The clustered variants (b), (d), (e) have none.
+- The LP's 2030 single-year fleets (a)-(c) have one engine draw of about 84 GWh.
+
+Slips (SAST)
+- The 108 extras: due 23:30 SAST in 14.11, now about 00:35 (a little over an hour; the rebuild was not held for them, as decided).
+- Otherwise ahead: the engine runs, the 690 single-year tests and the extremes on the fixed data (planned 4-5 Nov) are done; tests 1 and
+  6 started (planned from 4 Nov). The weather-fixes PR: night of 3 Nov or first thing 4 Nov, as planned.
+
 
 ## 3 Nov 2026, night (message 689: Nick offline until the morning of 4 Nov; updated 19:10 UTC, 21:10 SAST)
 
