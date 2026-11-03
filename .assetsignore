@@ -6,3 +6,8 @@ ebsa*
 shp*
 kml*
 .claude
+# Unused copies of Eskom-derived series, no longer served (user, 3 Nov 2026, message 680 (a)). Nothing in the page, the runs or the
+# suite reads them; they stay in the repository and its history until Nick decides.
+/nodal/profiles.json
+/profiles_OLD_backup.json
+/profiles_rebuilt.json
