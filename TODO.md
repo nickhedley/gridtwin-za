@@ -912,6 +912,14 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mp. After the note, from message 673 (k) (user, 3 Nov 2026; design note version 2, section 12): (a) clustering the representative
+days from all twelve weather years, not the 2025 reference year alone (removes the rescaling's uniform dimming of solar and the
+reference-year dependence); (b) rolling-horizon solves against the single 2026-2040 solve (review step 1 finding 9); (c) coal no-load
+fuel on the committed capacity cm_ in the build LP (review finding 6; the engine adds 10% fuel at half load, coalPartLoadK); (d)
+construction interest on all technologies or none, as a check (review finding 10); (e) the page's own optimiser on the fixed
+formulation (its default stays unchanged until Nick decides). Added from the note's checks: (f) the metered 2025 solar level against the
+modelled 2025 weather year (fixed tilt 0.251 against 0.223; tracking twin 0.342 against 0.286 over the twelve years), a data question.
+
 14mo. Chronological storage across representative days, now before the note (user decision, 3 Nov 2026, message 668: the fix goes ahead
 whatever the build-cut test shows; scope widened by 669 (day-count convergence) and 670 (the days' weights and mapping); design note
 for review on claude/storage-link-design, docs/storage-linking-design-2026-11-03.md; build only after Nick approves it; held until
@@ -921,6 +929,15 @@ early, and what makes Fossil-free's vanadium worth building'): link stored energ
 order (Kotzur et al., 'Time series aggregation for energy system design: modeling seasonal storage', Applied Energy, 2018), so the
 build optimiser stops overvaluing long-duration storage (in Fossil-free 2040, R1,301bn of vanadium's R1,305bn value came from the chained
 days' state of charge); then re-run Fossil-free.
+Message 673 (3 Nov 2026) answered 672 (c): linking, weights equal to days represented and the cyclic year approved in principle; the
+days replaced by medoid clustering with extremes appended at weight 1, the peak-demand day added, rescaling to the twelve-year means
+(replacing message 125 (1)'s matched days); the build still not approved: version 2 of the design note for review, then stop. Message
+674: the note published by 18 Nov 2026 (IEP comments due 19 Nov); proposed plan: design version 2 by 4 Nov, build 5-6 Nov, acceptance
+and convergence tests by 9 Nov, go or no-go on reruns 10 Nov, reruns 10-13 Nov, pack refill 14 Nov; accuracy first, no test or check
+relaxed for the date; slips flagged in SAST; the 2045 test first in line to move. Version 2: claude/storage-link-design. Tests before
+the note on the fixed optimiser (673 (j)): early retirement at scheduled closures (until then 'no coal retires early' stays out of the
+pack), the loop's outage draws (4-5, or the check's stopping rule; c7's pass-limited s_nogas_c7 rerun or labelled), s_prm10 with the
+tail of the draws, and the 2045 horizon (estimate first).
 
 14mn. Behind-the-meter batteries tied to rooftop solar, after the note (user, 3 Nov 2026, message 664). Today the stock grows 0.9 GWh
 a year whatever rooftop is built (BTM_STOCK's growth) and charges only from the existing rooftop fleet. (a) Growth from an attach rate:

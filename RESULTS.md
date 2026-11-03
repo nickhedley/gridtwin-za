@@ -20389,9 +20389,63 @@ objective was recorded; their LPs are the runs' own pass-1 LPs on the same setti
 | s_mtsao_hi_nogas_c7 | vanadium 250, pumped storage 1,500 | 0.1% or less | charging limits on representative days (78-93%) |
 | s_mtsao_ref_nogas_c7 | vanadium 146, pumped storage 1,500 | 0.1% or less | charging limits on representative days |
 | s_irpgas_c7 | pumped storage 27 | 0.1% | pumping and generating limits (75%), freed-connection pool (rpb, 21%) |
-| s_nogas_c7 | vanadium 1,500, iron-air 600, pumped storage 1,500 | not run: three passes, on interior point; stopped for the session change (HANDOVER) | - |
+| s_nogas_c7 | vanadium 1,500, iron-air 600, pumped storage 1,500 | 0.1% or less in ecap for all three; but iron-air 49-55% in the block-end rows (cla/cua/clb/cub), vanadium 4-12%, pumped storage 7-8%: iron-air flagged | charging limits on representative days (vanadium 84-95%, iron-air 43-51%, pumped storage 88-89%) |
 | c7, s_deep40nogas_c7 | none | - | lithium only (entry above) |
 
-Finding: the chained-day overvaluation is confined to Fossil-free 2040, the only build with no fossil plants in its last year; elsewhere
-long-duration storage earns its value soaking up each day's surplus. Caveat: s_nogas_c7 builds vanadium and iron-air and is not yet
-split.
+Finding: the chained level (ecap) carries long-duration storage's value only in Fossil-free 2040, the only build with no fossil plants in
+its last year; elsewhere it earns its value soaking up each day's surplus. But in s_nogas_c7, iron-air takes about half its value (49-55%
+in 2037-40) from the block-end rows, the hourly level bounds on each block's first and last real day, which also exist only because each
+representative day stands for a block of identical days; so the block structure supports half of s_nogas_c7's iron-air too (amended 3
+Nov 2026 with s_nogas_c7's split, below).
+
+s_nogas_c7's split (message 665 (c), finished 3 Nov 2026): its pass-3 LP rebuilt on build 2026-11-02y with the run's settings (GAS_CAP=0
+OCGD=0 and c7's common settings), passes 1-2 solved by native simplex as the run's were (the committed ldesq.sh ran all three passes on
+interior point; changed for this run only, to follow the run and the rule that national runs stay on simplex), LP keys 26d5e83650,
+903332bcac and 85ff536818 equal to the run's; pass 3 solved by native interior point with crossover, as the run's was; objective
+1,696,762,070,612.7183, equal to the run's to the last digit. Run copy /home/user/gtza-c7run (a git worktree at a1b4734); 3 Nov 2026
+08:52-10:34 UTC. Decomposition in harness/pathway/c7/decomp/s_nogas_c7_store_decomp.json.
+
+### Representative days on the runs' own demand (message 673 (b)): medoids fit each day better than the matched days or version 1's mapping, but at 18 days narrow the tails; on the plan's fleet the extreme days move by year
+
+Method: harness/pathway/repdays/extract.js loads the page as pathway_perfail.js does, with c7's day settings (PVTRK=1, bldWindModern
+on, bldWindCorr 'none', ROOF12 applied, K 0.8895) and checks bldRepDays(12) against c7's recorded days (reproduced: 20, 72, 95, 159,
+201, 269, 271, 355 and the extremes 162, 195, 218, 359; seed tail 2022 from day 169); analyse.py clusters the 2025 days on 72 values a
+day (demand, new wind, tracking solar, each normalised 0-1 over the year), Euclidean distance; k-medoids (PAM) and hierarchical (Ward,
+medoid representation); extremes appended at weight 1; tsam-style rescaling of the typical days to the twelve-year means, capped at 1.
+Outputs res_review5.json (the review's extremes 162, 188, 195, 218, 359) and res_union10.json (the proposed 10). Measurement only,
+nothing built. Build 2026-11-02y, claude/c7-runs; 3 Nov 2026 09:05-09:12 UTC.
+
+Levels, 2025 against the twelve weather years: new wind 0.4166 / 0.4250; tracking solar 0.3423 / 0.2859; existing wind 0.3545 /
+0.3696; fixed-tilt 0.2514 / 0.2236. Peak demand on c7's demand: day 188, 29,858 MW (187: 29,833 MW); the review's day 187 (30,322 MW)
+is on the page's default demand.
+
+| Set | Typical days' weights | Mean distance to representative | Calm | Windy | Cloudy | High demand | Daily wind spread |
+|---|---|---|---|---|---|---|---|
+| Real 2025 year | - | - | 1.1% | 26.3% | 4.1% | 7.1% | 0.13 |
+| Twelve years (wind, solar) | - | - | 1.2% | 29.5% | 3.0% | - | 0.17 |
+| c7's 12 days at 30.4 | 30.4 | - | 8.3% | 41.7% | 33.3% | 25.0% | 0.19 |
+| Version 1's mapping on c7's days | 9-98 | 1.26 | 0.3% | 44.9% | 35.6% | 6.6% | 0.10 |
+| 8 k-medoids + review's 5 extremes (13 days) | 31-74 | 0.90 | 0.3% | 9.9% | 0.0% | 0.8% | 0.11 |
+| 8 k-medoids + 10 extremes (18 days) | 29-65 | 0.88 | 0.5% | 18.6% (29.3%) | 0.0% (0.0%) | 1.4% | 0.11 (0.12) |
+| 8 hierarchical + 10 extremes (18 days) | 18-88 | 0.96 | 0.5% | 23.3% (12.6%) | 0.0% (14.0%) | 1.4% | 0.09 |
+| 20 k-medoids + 10 extremes (30 days) | 5-33 | 0.75 | 0.5% | 16.2% (20.8%) | 1.6% (11.8%) | 6.9% | 0.13 |
+| 20 hierarchical + 10 extremes (30 days) | 7-34 | 0.81 | 0.5% | 27.1% | 0.0% (17.0%) | 1.4% | 0.12 |
+| 45 hierarchical + 10 extremes (55 days) | 2-18 | 0.66 | 0.5% | 27.7% | 1.4% (17.5%) | 3.3% | 0.13 |
+| 95 hierarchical + 10 extremes (105 days) | 1-10 | 0.49 | 0.5% | 25.2% (27.7%) | 4.1% (11.0%) | 6.9% | 0.13 |
+
+Calm: day's mean new-wind capacity factor below 15%; windy above 50%; cloudy: day's mean tracking solar below 17%; high demand: day's
+mean demand above 24,500 MW (c7's demand before growth). Weighted by days represented; brackets after rescaling (compare with the
+twelve-year row).
+
+Extremes on the plan's fleet (net load: demand at the run's growth index less wind and solar on the run's fleet in the year, the LP's
+congestion and rooftop derates): central (c7) tightest-hour day 218 in 2026, 187 in 2027-2030, 195 from 2031; worst three-day net load
+162 in 2026, 195 after; wind lull 195 throughout; lowest net load 358; seed tail 2022 from day 169 to 2034, 2016 from day 130 from 2035.
+Deep (s_deep40nogas_c7) and Fossil-free (s_ff2040_c7): tightest hour 187 in 2026, 195 from 2028; lowest net load moves to day 20 (Deep
+2034-2038, Fossil-free from 2035); seed tails 2022/169, 2016/130 and (Deep 2028-2030) 2016/16.
+
+Finding: medoids fit each real day far better than version 1's mapping (0.88-0.96 against 1.26) with balanced weights, and rescaling
+matches the twelve-year energy without re-picking. At 18 days the weighted year has 1.4% high-demand days against 7.1% and 19% windy
+days against 26%: each extreme counts once and the year's other cold weeks are carried by average winter days. k-medoids restores the
+high-demand share at 30 days; windy and cloudy shares approach the year's at 55-105 days. Rescaling solar down 16.5% dims every hour,
+so cloudy days rise to 11-18% against 3.0% in the twelve years. On the plan's fleet the extreme days move by year, onto the wind lull
+(days 194-196) by 2028-2031. Caveat: one reference year; the clustering features are ours (as version 1 and the review).

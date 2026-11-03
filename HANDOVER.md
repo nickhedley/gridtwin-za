@@ -1,4 +1,30 @@
-# GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 08:35 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 10:45 UTC)
+
+## 3 Nov 2026, later session (messages 673-677): what changed since the section below
+
+- 665 (c) finished: s_nogas_c7 split (RESULTS, the 665 (c) entry, amended). Its pass-3 LP reproduced key for key (passes 1-2 on simplex
+  as the run, not the committed ldesq.sh's interior point); objective equal to the run's to the last digit. Iron-air takes about half its
+  value from the block-end rows: the finding no longer reads 'confined to Fossil-free'.
+- Message 673 answered 672 (c): linking, weights and the cyclic year approved in principle; days by medoid clustering with extremes at
+  weight 1, the peak-demand day, rescaling to the twelve-year means (replacing 125 (1)'s matched days). Build still not approved.
+- Messages 674, 675, 677: the note by 18 Nov 2026 (IEP comments 19 Nov); schedule, speed and mix questions. All answered in design note
+  version 2 on claude/storage-link-design (docs/storage-linking-design-2026-11-03.md). Stop for Nick's review; no build before his go-ahead.
+- New scripts (harness/pathway/repdays/): extract.js and analyse.py (days, clustering, extremes on the plan's fleet; RESULTS
+  'Representative days on the runs' own demand'), timing.sh (pass-1 solve time by day count), speed.py, speedq.sh, speedcmp.py (solver
+  options, 675 (b)).
+- Measured: c7's central pass-1 LP 519 s at 12 days, 2,322 s at 25 days (701,931 rows); interior point with crossover equal in objective
+  and builds, 10% slower. The 'Solve error' on saved bases explained (design note 9.7): a time-limited solve's basis is invalid (HiGHS marks
+  it so; highs_native.py saves it anyway), and a warm start skips presolve, where dual simplex fails on the LP's 1e8 cost range.
+- Run copy: /home/user/gtza-c7run, a git worktree of this repository at a1b4734 (ldesdump.sh hard-codes that path; a new container must
+  recreate it: git worktree add --detach /home/user/gtza-c7run <commit>, then npm install and the testroot link in its harness/, and
+  pip install highspy==1.15.1).
+- Jobs at this update: speed tests on the 25-day LP (speedq.sh; PIDs in harness/pathway/timing/speed25/progress.txt of the run copy).
+  Stop only by PID.
+
+What disagreed with the session-start instruction in the section below (reported 3 Nov): ldesq.sh ran s_nogas_c7's passes 1-2 on
+interior point where the run and the 8 Oct rule used simplex; ldesdump.sh needs /home/user/gtza-c7run, which nothing here created; the
+saved decompositions can seed the output folder, so a new container need not redo the seven finished runs; ldesdump.sh's TL=3000 against
+the run's 7200; the 'c7 launch plan' and 'Priorities to the note' sections below are out of date (c7 has run; the dates are now 674's).
 
 ## Session change, 3 Nov 2026 (message 666): where c7 stands, what is running, open decisions, next steps
 
