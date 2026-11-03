@@ -1790,3 +1790,29 @@ current gas price, source; (5) whether the LP should also choose how much heat t
 beside the fixed 10, 50 and 100 PJ; (6) our band mapping and the 400 C-plus share that today's heat batteries cannot reach (steel);
 (7) whether the heater may raise the evening peak, or must stay off in the peak window as a rule; (8) regional siting (the LP is
 national here, as the BTM and geyser options are).
+Answers to the open questions (user, 3 Nov 2026, message 660; design only, after the note). Figures read 3 Nov 2026 from search
+snippets only (ens.dk, osti.gov, ECB, NERSA, rondo.com and greenbuildingafrica.co.za not reachable from the session; Firecrawl credits
+out): each to be checked against its document before it enters the model.
+(1) Lives: heat battery 30 years if NREL's benchmark (Applied Energy 402, 126873, 'Benchmarking thermal energy storage cost for
+    industrial process heat') uses 30 for thermal storage, as a snippet says (unverified: one snippet may be another firebrick paper);
+    otherwise 25, ours, as the message sets; Rondo's stated 50 years ('unlimited cycles and 50-year life', rondo.com/technology; its 2022
+    launch said '40+') beside it as the vendor claim; 15 the cautious sensitivity. Heat pump: the Danish Energy Agency's Technology
+    Data for Industrial Process Heat (version 0006, Jan 2026, high-temperature heat pump chapter near p.36): lifetime not yet read (a
+    gap); none used until read.
+(2) EUR/ZAR: the USD rule, the 180-day trailing average to 26 Aug 2026 of ECB reference rates, one pinned constant with its source and
+    window. First estimate R19.06 per euro (the mean of the March-August 2026 monthly averages republished from the ECB by a third party;
+    one ECB daily rate confirmed: 18.9979 on 3 Aug 2026, Banca d'Italia); the constant waits for the ECB daily series.
+(3) Cost of capital: the page's 'private' storage rate (8.8% on build 2026-11-02y); 'planning' 8% the sensitivity.
+(4) Sasol: NERSA's maximum price for end users, R97.31/GJ excluding VAT, from 1 Jul 2026 (decision 27 Aug 2026, as reported by Green
+    Building Africa, 1 Sep 2026; traders R92.44/GJ). Energize calls it 'third quarter', against 'first quarter': to settle from
+    NERSA's decision, with what the price covers. The comparison uses it as the molecule's ceiling before transmission and
+    distribution, and says so; a delivered price adds those tariffs (not yet found).
+(5) Fixed cases only (10, 50 and 100 PJ) in the minimum version; the endogenous case after the one-year tests.
+(6) The 400 C-plus band split at 750 C: steel reheating, glass melting and ceramic kilns (28 PJ: steel 15, glass 9, ceramic 4) sit
+    above Brattle's commercial 750 C, so out, stated, not modelled; metal heat (4 PJ) stays in the band below 750 C. The 50 and 100 PJ
+    cases then rest on the latent coal-replacing demand (NBI-BCG p.26), mapped to steam below 200 C (coal boilers), ours, and said so.
+    Rondo's air above 1,000 C is a vendor claim: a sensitivity at most.
+(7) No peak rule: the LP pays for any peak it adds and the engine checks it; forced-load MWh in 17:00-21:00 reported separately; a
+    lockout in that window the sensitivity.
+(8) National, as the BTM and geyser options. Limitation: industrial heat sits mainly in Gauteng, Mpumalanga and KwaZulu-Natal, away
+    from the best wind and solar sites.
