@@ -100,11 +100,16 @@ def main():
                 ser = ser + day
             utc[region][y] = ser
     new_my = copy.deepcopy(MY)
+    tail13 = {}   # 31 December 2013, 22:00-23:00 UTC, from the 98 sites (message 686 (c)), where all were fetched
+    for region, cfg in sites.items():
+        days = [nc.get(f'wind|2013|{s["lat"]:.4f}|{s["lng"]:.4f}') for s in cfg['sites']]
+        if all(v is not None for v in days):
+            W = sum(s['w'] for s in cfg['sites']); tail13[region] = [round(sum(v[h] * s['w'] for v, s in zip(days, cfg['sites'])) / W * sc) for h in (22, 23)]
     for region in utc:
         for i, y in enumerate(years):
-            prev = utc[region][years[i - 1]][-2:] if i > 0 else utc[region][y][-2:]
+            prev = utc[region][years[i - 1]][-2:] if i > 0 else tail13.get(region, utc[region][y][-2:])
             new_my['wind_pu'][region][y] = sast(prev, utc[region][y], y)
-    flags.append('wind 2014: its first two SAST hours repeat its own last two (no 2013 in the file)')
+    if len(tail13) < len(utc): flags.append('wind 2014: its first two SAST hours repeat its own last two in ' + ', '.join(r for r in utc if r not in tail13) + ' (2013-12-31 not fetched yet)')
 
     # ---------- solar, PVGIS 2016 and 2020, fixed tilt ----------
     for region in new_my['solar_pu']:
@@ -174,14 +179,20 @@ def main():
 
     # ---------- the regional LP's 2023 wind and the offshore file ----------
     RG = at_base('nodal/profiles_regional.json'); new_rg = copy.deepcopy(RG)
-    for region in new_rg['wind_pu']: new_rg['wind_pu'][region] = wrap2(RG['wind_pu'][region])
-    flags.append('profiles_regional.json wind 2023: first two SAST hours repeat its own last two (no 2022 in the file)')
+    import fetch_real_regional_profiles as FR
+    miss_rg = []
+    for region in new_rg['wind_pu']:
+        lat, lon = FR.WIND_COORDS[region]; t = nc.get(f'wind1|2022|{lat:.4f}|{lon:.4f}')
+        u = RG['wind_pu'][region]
+        if t is None: new_rg['wind_pu'][region] = wrap2(u); miss_rg.append(region)
+        else: new_rg['wind_pu'][region] = [round(t[22], 5), round(t[23], 5)] + list(u[:-2])
+    if miss_rg: flags.append('profiles_regional.json wind 2023: first two SAST hours repeat its own last two in ' + ', '.join(miss_rg) + ' (2022-12-31 not fetched yet)')
     OF = at_base('nodal/profiles_offshore_regional.json'); new_of = copy.deepcopy(OF); oy = [str(y) for y in OF['meta']['years']]
     for region in new_of['wind_pu']:
         for i, y in enumerate(oy):
             u = OF['wind_pu'][region][y]; prev = OF['wind_pu'][region][oy[i - 1]][-2:] if i > 0 else u[-2:]
             new_of['wind_pu'][region][y] = list(prev) + list(u[:-2])
-    flags.append('offshore 2014: first two SAST hours repeat its own last two')
+    flags.append('offshore 2014: first two SAST hours repeat its own last two (its sites were not in the 686 (c) calls)')
 
     # ---------- report ----------
     def mean(d, key):

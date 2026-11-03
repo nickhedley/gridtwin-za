@@ -42,6 +42,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  w.eval(`window.__wxYears=()=>${WXL?JSON.stringify(WXL):'bldWeatherYears.meta.years'}; window.__wxTrk12=(()=>{ let c=null; return ()=>{ if (c) return c; let s=0,n=0; for (const y of bldWeatherYears.meta.years){ const t=solarTrkOf(weatherYearNational(String(y)).solar); for (let h=0;h<t.length;h++){ s+=t[h]; n++; } } const t=solarTrkOf(PROFILES.solar), m=t.reduce((a,v)=>a+v,0)/t.length, k=(s/n)/m, o=new Float64Array(t.length); for (let h=0;h<t.length;h++) o[h]=Math.min(1,k*t[h]); o.k=k; o.from=m; o.to=s/n; return (c=o); }; })(); window.__wxNat=yy=>yy==='metered'?{solar:PROFILES.solar,wind:PROFILES.wind}:yy==='metered_trk12'?{solar:PROFILES.solar,wind:PROFILES.wind,solarTrk:__wxTrk12()}:weatherYearNational(String(yy)); window.__wxSeed=yy=>(yy==='metered'||yy==='metered_trk12')?2025:+yy;`);
  // WX_WINDCORR=1 (message 684 (d)): the modelled years' wind through nodal/wind_corr_table.json (FIXED.wxWindCorr); recorded in weather.
  const WXC=process.env.WX_WINDCORR==='1'; if (WXC){ w.eval('state.wxWindCorr=1;'); if (!w.eval('!!WIND_CORR_TABLE')) throw new Error('WX_WINDCORR: nodal/wind_corr_table.json not loaded'); console.log('WX_WINDCORR: on'); }
+ // WX_WINDCORR_TABLE=<json> (message 686 (b); test only): an alternative table in nodal/wind_corr_table.json's format (e.g. the six-constant
+ // calm-preserving fit), loaded in its place; needs WX_WINDCORR=1. Recorded in weather.
+ const WXT=process.env.WX_WINDCORR_TABLE||null; if (WXT && process.env.WX_WINDCORR!=='1') throw new Error('WX_WINDCORR_TABLE needs WX_WINDCORR=1');
+ if (WXT){ const TT=JSON.parse(fs.readFileSync(WXT,'utf8')); if (!(TT.table&&TT.table.length===12&&TT.table.every(r=>r.length===TT.grid.n))) throw new Error('WX_WINDCORR_TABLE: 12 rows of grid.n values');
+   w.eval(`WIND_CORR_TABLE = ${JSON.stringify({t:TT.table,n:TT.grid.n})};`); console.log('WX_WINDCORR_TABLE:', WXT, JSON.stringify(TT.constants||{})); }
  if (WX) console.log('WEATHER:', WX);
  // WX_FIX (message 683 (b), (c); measurement only, unset as before): applied to every modelled year the check reads. 'fixed': the two plain
  // errors found on 3 Nov 2026, as an interim. Leap years (2016, 2020, 2024): the fetch scripts kept the first 8,760 hours (ser[:8760]),
@@ -309,7 +314,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
-     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected':''); r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
+     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):''); r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first

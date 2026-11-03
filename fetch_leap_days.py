@@ -28,6 +28,7 @@ import fetch_multiyear_wind as FW
 import fetch_missing_solar_years as FS
 from rebuild_solar_pvgis import COORDS as PVGIS_COORDS
 import build_solar_tracking as BT
+import fetch_real_regional_profiles as FR
 
 LEAP = [2016, 2020, 2024]
 NINJA_CACHE, PVGIS_CACHE = 'ninja_leapday_cache.json', 'pvgis_leap_cache.json'
@@ -37,9 +38,10 @@ GAP_S = 75
 def ninja_day(session, kind, lat, lon, year):
     """31 December (UTC) from Renewables.ninja ('wind'), or a whole UTC year of solar ('pvyear'), with the original scripts'
     parameters; checks the stamps."""
-    if kind == 'wind':
+    if kind in ('wind', 'wind1'):
+        H, TB = (FW.HUB_HEIGHT, FW.TURBINE) if kind == 'wind' else (FR.HUB_HEIGHT, FR.TURBINE)
         args = {'lat': lat, 'lon': lon, 'capacity': 1.0, 'format': 'csv', 'local_time': 'true',
-                'dataset': 'merra2', 'height': FW.HUB_HEIGHT, 'turbine': FW.TURBINE}
+                'dataset': 'merra2', 'height': H, 'turbine': TB}
         path = 'data/wind'
     else:
         args = {'lat': lat, 'lon': lon, 'capacity': 1.0, 'format': 'csv', 'local_time': 'true',
@@ -74,7 +76,7 @@ def pvgis_year(lat, lon, year, tracking):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--minutes', type=float, default=100)
-    ap.add_argument('--only', choices=['wind', 'pvyear', 'pvgis'])
+    ap.add_argument('--only', choices=['wind', 'pvyear', 'pvgis', 'wind1'])
     a = ap.parse_args()
     stop = time.time() + a.minutes * 60
     nc = json.load(open(NINJA_CACHE)) if os.path.exists(NINJA_CACHE) else {}
@@ -82,6 +84,11 @@ def main():
     sites = json.load(open(FW.SITES))['wind']
     jobs = [('wind', r, s['lat'], s['lng'], y) for y in LEAP for r, cfg in sites.items() for s in cfg['sites']]
     jobs += [('pvyear', r, lat, lon, 2024) for r, (lat, lon) in FS.SOLAR_COORDS.items()]
+    # After those, the two stand-ins' days (user, 3 Nov 2026, message 686 (c); 108 calls, never ahead of the 304 above): 31 December
+    # 2013 at the 98 sites (2014's first two SAST hours) and 31 December 2022 at fetch_real_regional_profiles.py's ten wind centroids
+    # (the first two SAST hours of nodal/profiles_regional.json's 2023 wind).
+    jobs += [('wind', r, s['lat'], s['lng'], 2013) for r, cfg in sites.items() for s in cfg['sites']]
+    jobs += [('wind1', r, lat, lon, 2022) for r, (lat, lon) in FR.WIND_COORDS.items()]
     pv = [('pvgis', r, lat, lon, y, t) for y in (2016, 2020) for r, (lat, lon) in PVGIS_COORDS.items() for t in (0, 1)]
     key = lambda j: f'{j[0]}|{j[4]}|{j[2]:.4f}|{j[3]:.4f}'
     todo = [j for j in jobs if key(j) not in nc and (not a.only or a.only == j[0])]
