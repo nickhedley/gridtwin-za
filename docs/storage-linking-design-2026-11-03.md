@@ -2,7 +2,7 @@
 
 TODO 14mo, brought before the note (Nick's decision, 3 Nov 2026, message 668). Version 2, 3 Nov 2026, answering message 673 (Nick's
 decision on version 1 and the independent review of 3 Nov), the schedule questions of message 674, the speed questions of 675 and
-the mix questions of 677. Message 673 replaces version 1's
+the mix questions of 677. Section 14 (version 2.1) answers 678-682 and amends 3.1, 3.6 and 6. Message 673 replaces version 1's
 sections 3.1, 3.3 and 6, and message 125 (1)'s matched days. Design only: nothing is built until Nick approves (673 (l)). Both new
 settings default off, so the page and every recorded run are unchanged until Nick decides. Every choice made here without Nick follows
 modelling practice and rule 366, and is marked "(ours, rule 366)" with its basis; section 11 lists them.
@@ -160,7 +160,7 @@ So yes: the days differ by year. As wind grows, the tightest hour and the worst 
 Peak-demand day: 188 on c7's demand (29,858 MW; 187 is 29,833 MW). On the page's default demand the review found 187 (30,322 MW). The
 two are the same cold spell; the rule takes the day from the run's own demand, so the pathway runs get 188.
 
-Proposal (ours, rule 366: the union is robust to the fleet the LP chooses, which is not known before the solve; ReEDS's practice of
+Corrected in 14.3: the list below missed day 187; the union is 11 days on the metered series and 14 on the modelled 2025 reference. Proposal (ours, rule 366: the union is robust to the fleet the LP chooses, which is not known before the solve; ReEDS's practice of
 adding stress periods found on the solved system is the loop's job, not the seed's): append in every year the union of the extremes
 found on today's fleet and on the three reference fleets in any year: 20, 161-163, 188, 194-196, 218 and 358 (10 days). A harness
 script recomputes the list from the recorded fleets and validate_lp checks it against the FIXED key (rule 3: recompute, never
@@ -781,3 +781,201 @@ repository root (wrangler.toml: directory "./"; .assetsignore excludes only .git
 above is on the live site when main deploys, including the three copies nothing reads (TODO 14jy (a) open). Not checked on the live
 site. Recorded decisions: TODO 14bz (profiles.json and the trace kept until after the note, then replaced with open series),
 residential_profile.json to be replaced after the note (19 Oct, D2).
+
+Decision of 3 Nov 2026 (Nick, message 680): the repository goes private and three unused copies stop being served: nodal/profiles.json,
+profiles_OLD_backup.json and profiles_rebuilt.json, added to .assetsignore (pull request #155, branch claude/unserve-eskom-copies; index.html
+untouched; nothing in the page, the runs or the suite reads them). profiles.json, the coal trace and residential_profile.json stay in use
+and on the site. Git history is not rewritten ('history not purged' stands, pending legal advice).
+
+Before the switch (680 (b)), found on 3 Nov:
+1. Cloudflare Workers Builds: the only deploy, through the GitHub App 'Cloudflare Workers and Pages'; it built main's b0f7999 on 2 Nov. Once
+   private, it reaches the repository only if that app's installation covers it: GitHub Settings, Applications, Installed GitHub Apps,
+   Cloudflare Workers and Pages, Configure, Repository access 'All repositories' or the repository selected. Cloudflare's documentation was
+   blocked here; its private-repository support was read only in its documentation source and a search summary (unverified).
+2. GitHub Pages: the repository also publishes there (has_pages true; a build on 2 Nov). On GitHub Free a private repository's Pages site
+   is unpublished; Pro keeps it. Things that name the github.io site: README.md:4, verify_deploy.js:17 and :19, validation/mip_solver.py,
+   config.js:20 (the Google Solar key restriction), and attribution strings in five nodal/ data files.
+3. The Claude GitHub App: Settings, Applications, Installed GitHub Apps, Claude, Configure, repository access including gridtwin-za
+   (claude.ai/connect-github installs it). A new session after the switch should clone, push and open a pull request; I will test a push.
+4. GitHub Actions: private repositories use the plan's allowance (Free 2,000 Linux minutes a month and 500 MB of artifacts; Pro 3,000 and
+   1 GB) on a 2-processor, 8 GB runner. stress-suite.yml runs about 1,100 minutes a month at the recent pace (about 55% of Free).
+   optimiser-long-run.yml would exceed Free (October: about 7,500 minutes) and its 8 GB heap equals a private runner's memory. The 'main
+   checks' ruleset needs Pro on a private repository.
+5. Links (site-copy rules; index.html changes go through the usual rules with a 'Visible text changed' section): index.html:1311 and :5183,
+   'LICENSE' links to the file on GitHub: replace with the relative link 'LICENSE' (gridtwinza.org/LICENSE already serves it; the visible
+   word is unchanged); index.html:21, an HTML comment naming the repository for commercial licensing (not visible): replace with the
+   site's address. REVIEWER_PACK.md:153 ('public at github.com/nickhedley/gridtwin-za'): 'available to reviewers on request'.
+   PROVENANCE.md:109: the site's address. Seven nodal/ data files carry 'Commercial licensing: https://github.com/nickhedley/gridtwin-za'.
+6. Public dependants: the reviewers given the pack on 30 Oct (they lose access unless added as collaborators; TODO 14jy (c)); the
+   advisor (collaborator access or the Claude app); pull requests #95 and #111 are open and only Nick's. No release, fork or star.
+And one finding that matters more than the switch: making the repository private hides nothing on gridtwinza.org. The site serves the
+whole checkout, and CLAUDE.md, HANDOVER.md, TODO.md, RESULTS.md, RULES.md, REVIEWER_PACK_RECORD.md, .github/ and harness/ all returned
+200 on 3 Nov. TODO 14jy (a), the .assetsignore for internal files, is still open and needs to be on main first.
+
+The safest moment for the switch (680 (c)): when no job of mine is pushing or running on GitHub, between the build's pull request merging
+and the reruns starting, and after #155 and the internal-files .assetsignore are on main; I will say when. Afterwards: the site's build
+stamp within 10 minutes of the next merge (Cloudflare's Retry if not), and a push from this session.
+
+
+## 14. Version 2.1: messages 678 to 682 (3 Nov 2026, afternoon)
+
+Message 678 approved the build with both settings off by default; 679, 681 and 682 amend sections 3.1, 3.6 and 6 after a further
+independent read; 680 is separate (the repository and the site, section 13). Where this section and the ones above differ, this one
+stands. Times SAST.
+
+### 14.1 Build status (678; branch claude/storage-link-build, from main b0f7999)
+
+| Item | Done | What |
+|---|---|---|
+| B1 | 13:03 | highs_native.py saves only a basis HiGHS marks valid; a deadline without one hands the solve to the next piece cold |
+| B2 | 13:09 | bldRepWeights 'clustered': rescaled reference year, extremes from repdays/extremes.py, hierarchical or k-medoids, map365 |
+| B3 | 13:15 | bldStorageLink: lv per real day, cyclic lnk, lhi/llo with cmx/cmn bounded at 0, lvmin for lithium's and pumped storage's reserve rows, the VPP linked; needs bldHourlySoc 1 |
+| B4 | 13:18 | bldOperFrom, the single-year LP; equivalence on 2030: objective identity to 2.6e-14, builds identical |
+| B5 | 13:27 | clustered refused without the stress target; inertia slack at VoLL x 365 on every day; bldWindowLink; the reference year (679 (a)) |
+| B6 | 13:34 | storeSelfDischargePctDay, all 0, in the LP (linked only) and the engine (hourly) |
+| B7 | 13:38 | the engine's pumped-storage level series; pathcheck LEVELS_OUT (the long-store trace); PS_LA_H, new engine code, measurement only (681 (d)); LA_H and LDES_LA_H were already in pathcheck, brought from claude/c7-runs |
+| B8 | 13:41 | bldRcFallAway (J1); DRAWS (J2) |
+| B9 | 13:50 | LIFT=yearly/all (tests 12, 16), MGA (test 13), bldStage2Year and bldAnnuityToYear with pathway/two_stage.sh (test 15), bldExistPvTrackShare (682 (d), test only) |
+| B10 | running | the fix in 14.4 (13:55); BUILD_STAMP 2026-11-03a; no visible text changed (diff_public_text: 0 added, 0 removed); stored panels regenerating; the full suite after, against main's run on the same container |
+
+With every new setting at its default, c7's pass-1 LP key is unchanged (c62ec3e615) after each item, and pathcheck's check of c7's 2040
+equals main's to every digit. No slip against 674's plan: the build was planned for 5-6 Nov.
+
+### 14.2 The reference series (679 (a), 681 (f), (g), 682 (a), (b))
+
+Confirmed on c7's settings: modelled 2025 fixed tilt 0.2228 against the twelve-year 0.2236, tracking 0.2949 against 0.2859, new wind 0.4195
+against 0.4250. Built as asked: bldRepRefYear '2025' is the default under clustered weights, 'metered' the variant (different in shape as
+well as level, 681 (f)), and 'wind:<source>,solar:<source>' takes each from its own source.
+
+Where I disagree, and why (said before the tests build on it):
+- The modelled years are too windy in winter. Their annual level was calibrated to the meter, their monthly shape was not: over the five
+  full metered years (2019-2022 and 2025), modelled June-August wind is 1.27 times metered and December-February 0.85 times (metered: Eskom
+  data, analysis ours; 2018-2023 from PyPSA-RSA's public copy of the Eskom Data Portal series, whose citation is Nick's decision). On a rough
+  adequacy proxy (not the engine), metered weather gives 48.4 GWh of unserved energy against 30.8 for the modelled weather of the same
+  years. Using modelled 2025 for the calendar days makes the build agree with the engine, but both then carry the same winter bias;
+  rescaling fixes only the year's level, not its months. Until Nick decides on a monthly-shape correction for both, the metered variant
+  should stand beside the modelled one in tests 1, 6 and 11 (682 (a)), and neither should be called the central reference.
+- Modelled 2025's match to the twelve-year means is partly by construction (682 (b)): its fixed-tilt solar is the 2023 PVGIS level by
+  construction (2024 and 2025 solar are MERRA-2 2025 timing rescaled to 2023's regional level), its tracking twin is a ratio map applied to
+  that, and only its wind level (-1.7% against the twelve-year mean) is 2025's own.
+
+Which modelled years are records (682 (b)):
+
+| Series | 2014-2023 | 2024 | 2025 |
+|---|---|---|---|
+| Wind | MERRA-2 record, every year its own dates | record | record |
+| Solar, fixed tilt | PVGIS-SARAH3 record | filled: MERRA-2 timing at the 2023 level | filled, the same |
+| Solar, tracking | the PVGIS record x the ratio map | filled | filled |
+
+All twelve wind years share one level factor (1.0753, Eskom 2022-23). The file's note that 2005-2020 is PVGIS's coverage is SARAH2's range;
+SARAH3 runs to 2023. The engine pairs one demand series (2025's shape) with every weather year, so demand and weather coincide only in 2025
+(TODO 14cb).
+
+Three data findings for Nick, none acted on (681 (g)):
+- Wind's daily spread: metered 0.125 against modelled 0.166 in 2025 (the reviewer's 0.132 against 0.165 is the modern-turbine twin on both
+  sides), in every metered year 2018-2025. Not geography (weighting regions by the metered fleet: 0.1653 against 0.1655) and hardly the site
+  count; it is the top end of output (modelled hours above 70%: 8.0% against 2.6%), most likely the V90 power curve: the model's own V162
+  series scaled to the metered mean closes 60-96% of the gap.
+- The modelled wind looks to be on UTC, about two hours early: correlation with metered peaks with the model moved 2.7-3.1 hours later in
+  every year. To be confirmed on one Renewables.ninja file header before any shift.
+- Modelled calm spells are shorter than metered (14-16 July 2025: metered 4.8% for 36 hours, modelled 12.2%), and leap years drop 31
+  December, not 29 February as the comments say.
+The effect on 2040 firm capacity and storage (681 (g)) is a single-year test with REP_REF='wind:metered,solar:2025' against '2025' (test
+14), run with the tests.
+
+Section 3.1's table on the modelled 2025 basis (14 extremes; the twelve-year shares for wind and solar; 2025's for demand):
+
+| Set | Typical weights | Mean distance | Calm | Windy | Cloudy | High demand | Daily wind spread |
+|---|---|---|---|---|---|---|---|
+| Modelled 2025 year | - | - | 1.4% | 26.9% | 2.5% | 7.1% | 0.165 |
+| Twelve years | - | - | 1.2% | 29.5% | 3.0% | - | 0.170 |
+| c7's 12 days at 30.4 | 30.4 | - | 8.3% | 33.3% | 16.7% | 25.0% | 0.148 |
+| 22 days: 8 hierarchical + 14 extremes | 25-81 | 0.88 | 0.8% | 17.8% | 0.0% | 10.7% | 0.156 |
+| 22 days: 8 k-medoids + 14 extremes | 17-62 | 0.82 | 0.6% | 18.1% | 0.0% | 1.4% | 0.176 |
+| 34 days: 20 hierarchical + 14 | 4-40 | 0.72 | 0.8% | 27.7% | 0.0% | 5.5% | 0.159 |
+| 34 days: 20 k-medoids + 14 | 9-34 | 0.68 | 0.8% | 31.0% | 0.0% | 1.4% | 0.159 |
+| 59 days: 45 hierarchical + 14 | 4-17 | 0.59 | 0.8% | 28.0% | 0.0% | 8.0% | 0.167 |
+| 109 days: 95 hierarchical + 14 | 1-11 | 0.43 | 1.4% | 28.5% | 2.7% | 4.4% | 0.171 |
+
+After rescaling, which is now a small residual step (wind about x1.01, solar about x0.97). The cloudy-day artefact of the metered basis
+(11-18%) is gone. High-demand days are over-represented at 22 hierarchical days and under-represented by k-medoids at 22 and 34; windy days
+reach the year's share from 34 days.
+
+### 14.3 Extremes (679 (e), 681 (a), 682 (c))
+
+Version 2's list missed day 187 (the central's tightest hour in 2027-2030): on the metered series the union is 11 days, not 10. On the
+modelled 2025 series it is 14: 113-115 (the three-day wind lull, late April, not 15 July), 160-162, 188, 214, 217-219, 257, 273 and 359.
+The two 2025 series disagree on when the year's calm spell fell (daily wind correlation 0.78). extremes.json records the reference
+series, the build and commit and each source run's final LP key (c7 c62ec3e615, Deep 21c10407e8, Fossil-free 63bbdcbf72); validate_lp
+checks FIXED against it. It is recomputed whenever the reference series changes and, from the fixed optimiser's own builds, before the
+reruns, with any movement reported (679 (e)).
+Effect of 14 extremes (682 (c)): typical days at each count are n - 14 (8 at 22 days, 20 at 34, 45 at 59). Each extreme adds a calendar day
+to every year: 23,300 rows on the pathway LP (section 4), so 14 against 4 is about +230,000 rows, about +60% at 12 days and +10% at 105.
+Trimming is tested in test 6: the list less the days the seed and loop windows already cover (the 7-day seed windows overlap none of the
+14 on the reference year's calendar), compared on cost, builds and passes. Nothing is trimmed without Nick.
+
+### 14.4 Two stages (679 (b)): k = 4, tested at 3 and 5
+
+- Follows AEMO's shape and not its detail (678 (c)): AEMO's second stage runs multi-year windows (seven years in the 2024 ISP) at five to
+  eight load blocks a day, with no look-ahead described; ours runs one year at a time at 365 days with k years of look-ahead.
+- Annuities within each step's window, matched to the years whose benefits it counts (Nick's rule); the review's version, every build
+  charged to 2040 (ANNUITY_TO=2040), runs as one variant on the prototype, reported against the one-stage LP's treatment and the benchmark.
+- No stage-1 floors: stage 1 gives the stress windows only.
+- Size by k (measured on the step built for 2030 at k = 2 and 22 days): year y at 365 days, linked, is 481,732 rows; each look-ahead
+  year at 22 days about 43,000; the fixed years before y about 25 each. So a step is about 568,000 rows at k = 2, 611,000 at k = 3, 654,000
+  at k = 4 and 697,000 at k = 5, shrinking near 2040 where the window is cut. At 34 days each look-ahead year is about 62,000 rows (k = 4:
+  about 730,000). The solve time of one step is being measured now (started 13:51, on the step before the fix below, whose 26,000
+  extra rows were trivially satisfied, so its time is slightly high); each step is sequential, 15 steps a pathway, and k changes the time
+  of each step roughly as its rows to the measured power of 1.85 to 2.64 (section 9.2): k = 5 against k = 3 about 1.25 to 1.4 times.
+- Found and fixed in the build (13:52-13:55): with linking and bldOperFrom, the years before y were given linked rows (about 6,600 a year)
+  on movement variables that do not exist there; satisfiable with zeros, so no result moved, but a single-year 2040 LP carried about
+  90,000 needless rows. Now 23-27 rows a year before y; the default key unchanged.
+
+### 14.5 Acceptance rules (679 (c), 681 (b), (c), (e))
+
+1. Cost settles first: test 11's recommendation is gated on cost convergence (test 6) and on the near-optimal ranges (test 13).
+2. A technology on a pace, energy or cumulative limit, or on a committed floor (MIN_BUILD, LI_MIN, GAS_MIN rows), in the compared year
+   counts as limit-bound, not settled. Storage is reported in MWh as well as MW.
+3. Test 2 adds: lvmin equals the minimum of lv over its mapped days in the solution, and the reserve rows' duals are read and are not all
+   zero (the rows bind somewhere) or else reported as vacuous.
+4. Test 9 is the reliability gate, on pathcheck's adaptive draws (10 to 40 a weather year) or J2's, not the loop's own verdict at 2 draws;
+   test 4's fixed-fleet check is not a gate. Long-store cycling the engine does not realise is a finding in every variant, not only a
+   proposal trigger. A first look on c7's Fossil-free 2040 build (before the fix, one draw): the engine holds the 5,000 MW of iron-air at
+   455,000-500,000 MWh all year in 2016 and full all year in 2022, so it barely cycles it.
+5. The 183-day fallback, if used, is reported as not chronological.
+6. New test 16, the free-fleet benchmark (679 (d), 681 (e)): a single-year 2040 LP with no fleet fixed from a recorded run (OPER_FROM=2040
+   LIFT=all), the central's demand and Fossil-free's rules, at 365 days against the chosen counts; labelled a method test, not a plan.
+   Lifted: the yearly pace bounds, lithium's energy bound, the cumulative rows (offshore path, pumped-storage path, iron-air total), the
+   turbine and gas caps and GAS_FIRST, with the committed floors off. Kept: the stress target and the seed windows.
+
+### 14.6 Solar level (678 (b), 682 (d)): evidence for Nick, no level changed
+
+Eskom's metered utility PV fleet (bid windows 1-4, 2,287 MW AC) ran at 0.248-0.264 in every full year since 2019, against 0.217-0.229 for
+the model's fixed-tilt series in the same years: 2025's 0.251 is an ordinary year. The gap is in October-February only (metered over
+modelled about 1.0 in April-September and 1.2-1.35 in summer), the pattern of single-axis trackers. The metered fleet is 53-58% on
+trackers (the Minister's 2019 reply, as in SOURCES; PyPSA-RSA's plant table); plant by plant from PVGIS 2014-2023 at each plant's site and
+mounting it gives 0.256, and all on fixed tilt 0.224. The denominator is right (Eskom's hourly installed capacity, AC, the same plants as
+the energy; the only 2025 step, +225 MW in December, Grootfontein). The model's existing 3,568.5 MW fleet is about 70% on trackers but runs
+on the fixed-tilt profile: on the twelve-year weather that share gives about 0.266 (0.253-0.277), against 0.224 used. New tracking at 0.286
+is consistent with stated yields and realised output for BW4-type plants (about 0.28-0.29), possibly 5-15% low for new plants with higher
+DC/AC ratios, and 0.7% high from a 2024-25 artefact. The index.html comment that the model and meter agreed in 2023 compared one model
+with another (the old profiles.json series); it is wrong. A level change would be for existing utility solar alone (rooftop runs on the
+same profile, unmeasured). The single-year 2030 and 2040 tests with bldExistPvTrackShare 0.70 against 0 (mix and coal burn) run with the
+acceptance tests (built, B9).
+
+### 14.7 Schedule update (674, 678 (c), 679 (f), 682)
+
+- Build: done 3 Nov except B10 (suite after, stored panels, pull request), running; two days ahead of 674's 5-6 Nov.
+- New code in the build list (679 (f), 681 (d)): the pathcheck look-ahead pass-through (LA_H, LDES_LA_H, existing code brought from
+  claude/c7-runs) and PS_LA_H (new engine code, measurement only), both in B7.
+- Tests 4-9 Nov now carry: tests 1-11 with the mix error, 14 (reference year: twelve years, and the metered and wind-only variants), 16
+  (free fleet), 12 (limits), 13 (near-optimal, central 2030 and 2040 first), the solar tracker-share tests, the extremes trimming, the
+  self-discharge brackets labelled unsourced. With the build two days early, 4-9 Nov holds them on this machine except tests 13 and 15.
+- Test 15 (two stages) is rank 3 on its own Code session from 7 Nov (678 (c)), or from 4 Nov now the build is early, if Nick agrees.
+  If it moves the mix materially, the option: stage 2 for the central, Deep and Fossil-free, with every sensitivity as a one-stage
+  difference from its own one-stage base. That keeps sensitivities comparable with each other but not with the three stage-2 runs: a
+  sensitivity's level would then not be the stage-2 level, only its difference would carry.
+- Test 13: the central in 2030 and 2040 first (40 solves and checks); Deep can follow if the reruns finish by 12 Nov on three sessions,
+  not on one machine.
+- Reruns 10-13 Nov on three sessions (678 (e)), each confirming the LP key first; GitHub Actions not used.
+- Slips: none (3 Nov, 13:55 SAST).
