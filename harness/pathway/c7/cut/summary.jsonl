@@ -1,0 +1,2 @@
+{"pre":"out/c7/cut/pathcheck_s_ff2040novrfb_c7_all5","pv":3220.8,"co2":836.6,"maxMean":0,"maxMeanYear":0,"worstDraw":0,"shortH":0,"ocMax":0.07,"curtTWh":1060.4,"co2By":{"2035":21.15,"2036":18.14,"2037":16.25,"2038":15.18,"2039":14.61,"2040":0},"pass":true}
+{"pre":"out/c7/cut/pathcheck_c7_all5","pv":2461.2,"co2":1766.1,"maxMean":7.29,"maxMeanYear":2032,"worstDraw":209.1,"shortH":0,"ocMax":2.4,"curtTWh":151.1,"co2By":{"2035":92.85,"2036":91.47,"2037":85.91,"2038":82.13,"2039":76.1,"2040":71.16},"pass":true}

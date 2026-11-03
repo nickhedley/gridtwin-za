@@ -912,7 +912,11 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
-14mo. Chronological storage across representative days, after the note (user, 3 Nov 2026, message 665 (e); RESULTS 'Why no coal retires
+14mo. Chronological storage across representative days, now before the note (user decision, 3 Nov 2026, message 668: the fix goes ahead
+whatever the build-cut test shows; scope widened by 669 (day-count convergence) and 670 (the days' weights and mapping); design note
+for review on claude/storage-link-design, docs/storage-linking-design-2026-11-03.md; build only after Nick approves it; held until
+the fix: the age-curve runs, the senior contact's stack, any pack refill; c7's outputs kept as the before-fix baseline, phase 4's six
+runs not for quoting). First recorded after the note (user, 3 Nov 2026, message 665 (e); RESULTS 'Why no coal retires
 early, and what makes Fossil-free's vanadium worth building'): link stored energy across the representative days in chronological
 order (Kotzur et al., 'Time series aggregation for energy system design: modeling seasonal storage', Applied Energy, 2018), so the
 build optimiser stops overvaluing long-duration storage (in Fossil-free 2040, R1,301bn of vanadium's R1,305bn value came from the chained

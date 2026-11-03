@@ -1,0 +1,172 @@
+2026-11-02T19:43Z chain_c7 piece, PID 10973, on 371f35b chain_c7.sh: a run is reported not run after four pi, BUILD_STAMP = '2026-11-02y
+19:43 start c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 ) MAXP=6 TL=7200; free 7 GB
+19:57 end c7 rc=0
+20:05 check c7 done; free 7 GB
+20:05 piece end
+2026-11-02T20:09Z chain_c7 piece, PID 11784, on 41fb8ea chain_c7.sh phase 2: every run the reviewer pack rea, BUILD_STAMP = '2026-11-02y
+20:09 start s_nogas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_CAP=0 OCGD=0) MAXP=6 TL=7200; free 7 GB
+20:09 start c7_irpdem (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 DEMAND=index:/home/user/gtza-c7run/harness/pathway/irp2025/index_irp2025fig2_c6.json) MAXP=6 TL=7200; free 7 GB
+20:21 end c7_irpdem rc=0
+20:30 check c7_irpdem done; free 7 GB
+2026-11-02T22:07Z chain_c7 piece, PID 13053, on b189351 chain_c7.sh: Fossil-free at 6 passes, as c6e's, BUILD_STAMP = '2026-11-02y
+22:07 check c7_irpdem done; free 7 GB
+22:07 start s_nogas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_CAP=0 OCGD=0) MAXP=3 TL=7200; free 7 GB
+23:42 end s_nogas_c7 rc=75 NO OUTPUT (resumes from its LP cache next piece)
+23:42 s_irpgas_c7 left to the next piece (under 20 minutes left)
+23:42 s_nogas_dsl_c7 left to the next piece (under 20 minutes left)
+23:42 s_be7_c7 left to the next piece (under 20 minutes left)
+23:42 s_be6_c7 left to the next piece (under 20 minutes left)
+23:42 s_gas2032_c7 left to the next piece (under 20 minutes left)
+23:42 s_cocplan_c7 left to the next piece (under 20 minutes left)
+23:42 s_cocprivate_c7 left to the next piece (under 20 minutes left)
+23:42 s_coalsustain_c7 left to the next piece (under 20 minutes left)
+23:42 s_cocunblended_c7 left to the next piece (under 20 minutes left)
+23:42 s_allbids_c7 left to the next piece (under 20 minutes left)
+23:42 s_ff2040_c7 left to the next piece (under 20 minutes left)
+23:42 s_blendedhigh_c7 left to the next piece (under 20 minutes left)
+00:02 check s_gasfloor_c7 done; free 7 GB
+2026-11-03T00:06Z chain_c7 piece, PID 14259, on 22795b0 chain_c7.sh: a two-slot queue for phase 2 (a long so, BUILD_STAMP = '2026-11-02y
+00:06 check c7_irpdem done; free 7 GB
+00:06 start s_nogas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_CAP=0 OCGD=0) MAXP=3 TL=7200; free 7 GB
+00:06 start s_nogas_dsl_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 7 GB
+00:15 end s_nogas_c7 rc=1 NO OUTPUT (resumes from its LP cache next piece)
+00:15 start s_irpgas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_FIRST=2032 GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1 GASFLOOR=1 GASFLOOR_VINT=2029-2030 TCAP_YR=2029:4000,2030:4000) MAXP=3 TL=7200; free 7 GB
+00:16 end s_nogas_dsl_c7 rc=0
+00:25 check s_nogas_dsl_c7 done; free 7 GB
+00:25 start s_be6_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 STOR_CUM=2026:144,2027:294,2028:909,2029:3524,2030:3724,2031:3924,2032:4124,2033:4324,2034:4524,2035:4724,2036:5224,2037:5724,2038:6224,2039:6724,2040:7224) MAXP=3 TL=7200; free 7 GB
+00:37 end s_be6_c7 rc=0
+00:45 check s_be6_c7 done; free 7 GB
+00:45 start s_be7_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350) MAXP=3 TL=7200; free 7 GB
+00:46 end s_irpgas_c7 rc=0
+00:58 end s_be7_c7 rc=0
+01:07 check s_be7_c7 done; free 7 GB
+01:07 start s_gas2032_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_FIRST=2032) MAXP=3 TL=7200; free 7 GB
+01:16 container restart lost the piece at about 01:10; s_irpgas_c7 check and s_gas2032_c7 to redo
+2026-11-03T01:16Z chain_c7 piece, PID 421, on 22795b0 chain_c7.sh: a two-slot queue for phase 2 (a long so, BUILD_STAMP = '2026-11-02y
+01:16 check c7_irpdem done; free 7 GB
+01:16 start s_nogas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_CAP=0 OCGD=0) MAXP=3 TL=7200; free 7 GB
+01:16 check s_nogas_dsl_c7 done; free 7 GB
+01:24 end s_nogas_c7 rc=1 NO OUTPUT (resumes from its LP cache next piece)
+01:24 check s_be6_c7 done; free 7 GB
+01:24 check s_be7_c7 done; free 7 GB
+01:24 start s_gas2032_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_FIRST=2032) MAXP=3 TL=7200; free 7 GB
+01:35 end s_gas2032_c7 rc=0
+01:37 check s_irpgas_c7 done; free 7 GB
+01:37 start s_cocplan_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COC=planning) MAXP=3 TL=7200; free 7 GB
+01:40 check s_gas2032_c7 done; free 7 GB
+01:40 start s_cocprivate_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COC=private) MAXP=3 TL=7200; free 7 GB
+01:48 end s_cocplan_c7 rc=0
+01:50 end s_cocprivate_c7 rc=0
+01:57 check s_cocplan_c7 done; free 7 GB
+01:57 start s_coalsustain_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COAL_FOM_ADD=500) MAXP=3 TL=7200; free 7 GB
+01:58 check s_cocprivate_c7 done; free 7 GB
+01:58 start s_cocunblended_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COC=central) MAXP=3 TL=7200; free 7 GB
+02:06 end s_coalsustain_c7 rc=0
+02:09 end s_cocunblended_c7 rc=0
+02:13 check s_coalsustain_c7 done; free 7 GB
+02:13 start s_allbids_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COC=allbids) MAXP=3 TL=7200; free 7 GB
+02:15 check s_cocunblended_c7 done; free 7 GB
+02:15 start s_blendedhigh_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COC=blendedhigh) MAXP=3 TL=7200; free 7 GB
+02:23 end s_allbids_c7 rc=0
+02:25 end s_blendedhigh_c7 rc=0
+02:29 check s_allbids_c7 done; free 7 GB
+02:29 start s_ff2040_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039) MAXP=6 TL=7200; free 7 GB
+02:32 check s_blendedhigh_c7 done; free 7 GB
+02:34 end s_ff2040_c7 rc=0
+02:39 check s_ff2040_c7 done; free 7 GB
+02:39 start s_deep40nogas_r1_c7 (target 40, cap 36.382)
+02:50 end s_deep40nogas_r1_c7
+02:51 start s_deep40nogas_r2_c7 (target 40, cap 37.813)
+02:51 s_deep40nogas_r2_c7 left to the next piece
+02:51 piece end
+2026-11-03T02:53Z chain_c7 piece, PID 2430, on 321170a chain_c7.sh: phases 2n (the no-gas run by interior p, BUILD_STAMP = '2026-11-02y
+02:53 start s_nogas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GAS_CAP=0 OCGD=0 HIGHS_SOLVER=ipm) MAXP=3 TL=7200; free 7 GB
+2026-11-03T02:53Z chain_c7 piece, PID 2453, on 321170a chain_c7.sh: phases 2n (the no-gas run by interior p, BUILD_STAMP = '2026-11-02y
+gap {'wind': 0, 'solar_pv': 0} totals {'wind': 36041, 'pv': 25513, 'rooftop': 8100, 'batt': 7224, 'battMWh': 34833, 'ccgt': 14898, 'ocgt': 2352, 'phes': 1332} nuclear 5200
+coal 2026/2030/2035/2040 [39692, 32433, 25916, 17890] cw 1580
+irpdem file /home/user/gtza-c7run/harness/out/c7/irp/pathway_irp2025_c7_irpdem.json demand 2030/2040 1.0247242611702387 1.3957809542772832 against c6 1.101384 1.458896
+03:29 IRP check irp2025_c7: 3/3 groups
+03:29 IRP check irp2025_c7_irpdem: 3/3 groups
+03:29 check s_gasfloor_c7 done; free 7 GB
+03:33 extras: irp 6/6, dmin2028 done, replay done, external done
+03:33 start s_deep40nogas_r2_c7 (target 40, cap 37.813)
+03:45 end s_deep40nogas_r2_c7
+03:46 start s_deep40nogas_r3_c7 (target 40, cap 36.786)
+03:56 end s_nogas_c7 rc=0
+03:58 end s_deep40nogas_r3_c7
+03:59 start s_deep40nogas_r4_c7 (target 40, cap 37.538)
+04:03 check s_nogas_c7 done; free 7 GB
+04:03 piece end
+04:10 end s_deep40nogas_r4_c7
+04:16 check s_deep40nogas_c7 done; free 7 GB
+04:16 piece end
+2026-11-03T04:20Z chain_c7 piece, PID 4212, on ce2366f chain_c7.sh: phase 3 (new c7 sensitivities) and 3age, BUILD_STAMP = '2026-11-02y
+04:20 start s_gfm1891_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GFM_H=thermal) MAXP=3 TL=7200; free 7 GB
+04:20 start s_rocof05_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 ROCOF=0.5) MAXP=3 TL=7200; free 7 GB
+04:33 end s_rocof05_c7 rc=0
+04:33 end s_gfm1891_c7 rc=0
+04:41 check s_gfm1891_c7 done; free 7 GB
+04:41 start s_rocof15_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 ROCOF=1.5) MAXP=3 TL=7200; free 7 GB
+04:41 check s_rocof05_c7 done; free 7 GB
+04:41 start s_vpppart_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 VPP_COST_CASE=participant) MAXP=3 TL=7200; free 7 GB
+04:48 end s_vpppart_c7 rc=0
+04:49 end s_rocof15_c7 rc=0
+04:56 check s_vpppart_c7 done; free 7 GB
+04:56 start s_gyrot_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 GY_MODE=rotation) MAXP=3 TL=7200; free 7 GB
+04:56 check s_rocof15_c7 done; free 7 GB
+04:56 start s_coalfuel0_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COAL_FUEL_ESC=0) MAXP=3 TL=7200; free 7 GB
+05:05 end s_gyrot_c7 rc=0
+05:08 end s_coalfuel0_c7 rc=0
+05:12 check s_gyrot_c7 done; free 7 GB
+05:12 start s_coalfuel5_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COAL_FUEL_ESC=5) MAXP=3 TL=7200; free 7 GB
+05:16 check s_coalfuel0_c7 done; free 7 GB
+05:16 start s_comply_full_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COMPLY=full) MAXP=3 TL=7200; free 7 GB
+05:22 end s_coalfuel5_c7 rc=0
+05:26 end s_comply_full_c7 rc=0
+05:28 check s_coalfuel5_c7 done; free 7 GB
+05:28 start s_carbongross_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COAL_CARBON_FLOOR=0) MAXP=3 TL=7200; free 7 GB
+05:32 check s_comply_full_c7 done; free 7 GB
+05:32 start s_carbontreasury_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 COAL_CARBON_FLOOR=0 CARBON_PATH=treasury) MAXP=3 TL=7200; free 7 GB
+05:40 end s_carbongross_c7 rc=0
+05:42 end s_carbontreasury_c7 rc=0
+05:46 check s_carbongross_c7 done; free 7 GB
+05:46 start s_ff2040novrfb_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 VRFB_OFF=1) MAXP=6 TL=7200; free 7 GB
+05:48 check s_carbontreasury_c7 done; free 7 GB
+05:51 end s_ff2040novrfb_c7 rc=0
+05:56 check s_ff2040novrfb_c7 done; free 7 GB
+05:56 piece end
+2026-11-03T05:58Z chain_c7 piece, PID 6426, on 32b88ec chain_c7.sh phase 4: the six MTSAO runs (High demand, BUILD_STAMP = '2026-11-02y
+05:58 start s_mtsao_hi_nogas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 DEMAND=rate:3.30 GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 7 GB
+05:58 start s_mtsao_hi_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 DEMAND=rate:3.30) MAXP=3 TL=7200; free 7 GB
+06:08 end s_mtsao_hi_nogas_c7 rc=0
+06:10 end s_mtsao_hi_c7 rc=0
+06:17 check s_mtsao_hi_nogas_c7 done; free 7 GB
+06:17 start s_mtsao_ref_nogas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 DEMAND=rate:3.30 COAL_EAF_PATH=2027:66,2028:67,2029:68,2030:69,2031:70,2032:70,2033:70,2034:70,2035:70,2036:70,2037:70,2038:70,2039:70,2040:70 AVDED_OFF_AFTER=2030 REIPPP_RETIRE=2033:375/325/50,2034:375/325/50,2035:375/325/50,2036:375/325/50 GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 7 GB
+06:18 check s_mtsao_hi_c7 done; free 7 GB
+06:18 start s_mtsao_ref_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 DEMAND=rate:3.30 COAL_EAF_PATH=2027:66,2028:67,2029:68,2030:69,2031:70,2032:70,2033:70,2034:70,2035:70,2036:70,2037:70,2038:70,2039:70,2040:70 AVDED_OFF_AFTER=2030 REIPPP_RETIRE=2033:375/325/50,2034:375/325/50,2035:375/325/50,2036:375/325/50) MAXP=3 TL=7200; free 7 GB
+06:27 end s_mtsao_ref_nogas_c7 rc=0
+06:33 end s_mtsao_ref_c7 rc=0
+06:44 check s_mtsao_ref_nogas_c7 done; free 6 GB
+06:44 start s_mtsao_refkeep_nogas_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 DEMAND=rate:3.30 COAL_EAF_PATH=2027:66,2028:67,2029:68,2030:69,2031:70,2032:70,2033:70,2034:70,2035:70,2036:70,2037:70,2038:70,2039:70,2040:70 AVDED_OFF_AFTER=2030 GAS_CAP=0 OCGD=1) MAXP=3 TL=7200; free 6 GB
+06:48 check s_mtsao_ref_c7 done; free 6 GB
+06:48 start s_mtsao_refkeep_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 DEMAND=rate:3.30 COAL_EAF_PATH=2027:66,2028:67,2029:68,2030:69,2031:70,2032:70,2033:70,2034:70,2035:70,2036:70,2037:70,2038:70,2039:70,2040:70 AVDED_OFF_AFTER=2030) MAXP=3 TL=7200; free 6 GB
+06:56 end s_mtsao_refkeep_nogas_c7 rc=0
+07:02 end s_mtsao_refkeep_c7 rc=0
+2026-11-03T07:09Z chain_c7 piece, PID 10413, on 85f94ea chain_c7.sh: Deep's calibration parameterised; 3age , BUILD_STAMP = '2026-11-02y
+07:09 start s_ff2040nolds_c7 (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 FOSSIL_END=2039 VRFB_OFF=1 IA_OFF=1) MAXP=6 TL=7200; free 7 GB
+07:12 check s_mtsao_refkeep_nogas_c7 done; free 7 GB
+07:12 cut start s_ff2040novrfb_c7_all5
+07:12 cut start c7_all5
+07:16 cut start s_deep40nogas_c7_all5
+07:21 end s_ff2040nolds_c7 rc=0
+07:25 check s_mtsao_refkeep_c7 done; free 9 GB
+07:28 cut s_deep40nogas_c7_all5 stopped (message 668 (b): 667 (a) on Deep dropped)
+07:33 cut start s_ff2040novrfb_c7_all5
+07:33 cut end s_ff2040novrfb_c7_all5 {"pre":"out/c7/cut/pathcheck_s_ff2040novrfb_c7_all5","pv":3220.8,"co2":836.6,"maxMean":0,"maxMeanYear":0,"worstDraw":0,"shortH":0,"ocMax":0.07,"curtTWh":1060.4,"co2By":{"2035":21.15,"2036":18.14,"2037
+07:33 cut start s_ff2040novrfb_c7_all10
+07:40 cut start c7_all5
+07:40 cut end c7_all5 {"pre":"out/c7/cut/pathcheck_c7_all5","pv":2461.2,"co2":1766.1,"maxMean":7.29,"maxMeanYear":2032,"worstDraw":209.1,"shortH":0,"ocMax":2.4,"curtTWh":151.1,"co2By":{"2035":92.85,"2036":91.47,"2037":85.9
+07:40 cut start c7_all10
+07:41 la start s_ff2040novrfb_c7_laday (LA_H=24 LDES_LA_H=24)
+07:41 check s_ff2040nolds_c7 done; free 9 GB
+07:41 piece end
