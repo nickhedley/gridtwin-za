@@ -20369,3 +20369,29 @@ open-cycle under 6% and no hour short of the inertia floor. Total on the pack's 
   the slack (some technologies may be overbuilt and others not), and a run that fails a uniform cut may still be inflated in one
   technology. The engine check also carries the storage foresight limitation (RESULTS above: 48 and 168 hours, perfect within the
   window).
+
+### Long-duration storage's value from the chained representative days (message 665 (c)): only Fossil-free's is above half (iron-air and pumped storage 100%); every other run's pumped storage and vanadium take 0.1% or less
+
+Method: each run's final-pass LP dumped with its own settings (pathway_perfail.js DUMP_LP, DUMP_STOP; harness/pathway/ldesdump.sh,
+ldesq.sh), solved with highs_native.py (simplex), and every storage build column split into sum(a x dual) by row family
+(decompcol.py; table decomptab.py; outputs harness/pathway/c7/decomp). Value is the sum over operating rows; build limits and floors
+(iatot, phescap, limin, lemin, stcum) are rents on the bound and are left out. "Chained" is the share in ecap, the level at the end of
+each block of chained representative days. Objectives checked against the runs where recorded: s_nogas_dsl, s_gfm1891,
+s_mtsao_hi_nogas, s_mtsao_ref_nogas and s_irpgas equal their runs' to the rand. s_ff2040novrfb and s_be6 were split before the
+objective was recorded; their LPs are the runs' own pass-1 LPs on the same settings. Build 2026-11-02y; 3 Nov 2026 07:43-08:39 UTC.
+
+| Run | Long-duration storage built (MW) | Chained share of its operating value | Where the rest sits |
+|---|---|---|---|
+| s_ff2040novrfb_c7 | iron-air 5,000, pumped storage 1,500 (2040) | 100% and 100%: above half, flagged | - (iron-air's operating value about R1.08bn per MW, all against its 5,000 MW cap) |
+| s_be6_c7 | pumped storage 1,320 | 0.1% or less | pumping and generating limits on representative days |
+| s_nogas_dsl_c7 | pumped storage 1,500 | 0.1% or less | pumping limit on representative days (79-81%) |
+| s_gfm1891_c7 | pumped storage 389 | 0.1% or less | pumping and generating limits on representative days |
+| s_mtsao_hi_nogas_c7 | vanadium 250, pumped storage 1,500 | 0.1% or less | charging limits on representative days (78-93%) |
+| s_mtsao_ref_nogas_c7 | vanadium 146, pumped storage 1,500 | 0.1% or less | charging limits on representative days |
+| s_irpgas_c7 | pumped storage 27 | 0.1% | pumping and generating limits (75%), freed-connection pool (rpb, 21%) |
+| s_nogas_c7 | vanadium 1,500, iron-air 600, pumped storage 1,500 | not run: three passes, on interior point; stopped for the session change (HANDOVER) | - |
+| c7, s_deep40nogas_c7 | none | - | lithium only (entry above) |
+
+Finding: the chained-day overvaluation is confined to Fossil-free 2040, the only build with no fossil plants in its last year; elsewhere
+long-duration storage earns its value soaking up each day's surplus. Caveat: s_nogas_c7 builds vanadium and iron-air and is not yet
+split.

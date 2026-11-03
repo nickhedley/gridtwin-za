@@ -54,7 +54,7 @@ Message 667 (the build-cut test): finished; RESULTS 'Build-cut test' and the for
 
 665 (c), chained-day share of long-duration storage's value (RESULTS '665 (c)'):
 - Done: s_ff2040novrfb_c7 (iron-air and pumped storage 100% chained: flagged), s_be6_c7, s_nogas_dsl_c7, s_gfm1891_c7,
-  s_mtsao_hi_nogas_c7 and s_mtsao_ref_nogas_c7 (0%), and s_irpgas_c7 (see the closing report).
+  s_mtsao_hi_nogas_c7, s_mtsao_ref_nogas_c7 and s_irpgas_c7 (0.1% or less).
 - Not done: s_nogas_c7 (three passes, on interior point; about 1.5-2 hours). The queue was stopped by PID before it for the handover.
   To run it, from harness/:
   `LDES_DIR=<scratch dir> bash pathway/ldesq.sh`
@@ -62,7 +62,7 @@ Message 667 (the build-cut test): finished; RESULTS 'Build-cut test' and the for
   or comment out the finished runs and run s_nogas_c7 alone.
 - The decompositions are saved in harness/pathway/c7/decomp. decomptab.py prints a run's table.
 
-Jobs running at handover: none, once s_irpgas_c7's split is recorded (closing report). PIDs are in the session log (scratchpad
+Jobs running at handover: none (3 Nov 2026, 08:45 UTC). PIDs are in the session log (scratchpad
 overnight576.txt, lost with the container). Stop jobs only by PID.
 
 Open decisions waiting on Nick:
