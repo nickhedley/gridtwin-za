@@ -9,7 +9,7 @@ Branch heads (all pushed):
 
 | Branch | Head | What it holds |
 |---|---|---|
-| claude/c7-runs | (filled at push) | chain_c7.sh, the test scripts, every c7 output in harness/pathway/c7 (the before-fix baseline), RESULTS, TODO, this HANDOVER |
+| claude/c7-runs | d706c5e or later | chain_c7.sh, the test scripts, every c7 output in harness/pathway/c7 (the before-fix baseline), RESULTS, TODO, this HANDOVER |
 | claude/c7-pack | 2bfd443 | the reviewer pack filled from c7; not to be merged (668 (a)); refilled only after the fix |
 | claude/storage-link-design | f428a4f | the design note for TODO 14mo (docs/storage-linking-design-2026-11-03.md), awaiting Nick's review |
 | claude/heat-battery-design | 86c48fe | heat battery design; figures verified after the note |
