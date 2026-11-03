@@ -4,13 +4,16 @@
 # all three of its days; the lowest net-load day. Net load: demand at the run's growth index (+ the 2027 block) less wind and solar on
 # the run's fleet that year (existing on the reference-year profiles, new on the modern-wind and tracking profiles, rooftop on solar),
 # the LP's congestion and rooftop derates. Today's fleet: bldRepDays' 4,000 MW solar and 3,600 MW wind.
-#   python3 -I extremes.py <series.json from extract.js> <out.json> <pathway json> [<pathway json> ...]
+#   [REF=<weather year>|metered] python3 -I extremes.py <series.json from extract.js> <out.json> <pathway json> [<pathway json> ...]
+# REF: the series the clustered days read (FIXED.bldRepRefYear, '2025' by default; message 679 (a)); 'metered' for profiles.json.
 # Writes the sorted union and, per source and year, which day met which criterion. validate_lp.js checks FIXED.bldRepExtremeDays
 # against <out.json> (harness/pathway/repdays/extremes.json).
 import json, sys, numpy as np
-D = json.load(open(sys.argv[1])); out = sys.argv[2]; runs = sys.argv[3:]
-dem = np.array(D['demand']).reshape(365, 24); w0 = np.array(D['wind']).reshape(365, 24); wn = np.array(D['windN']).reshape(365, 24)
-s0 = np.array(D['solar']).reshape(365, 24); st = np.array(D['solarT']).reshape(365, 24); F = D['fleet']; cong = 1 - F['congPct'] / 100
+import os
+D = json.load(open(sys.argv[1])); out = sys.argv[2]; runs = sys.argv[3:]; REF = os.environ.get('REF', '2025')
+Sr = D if REF == 'metered' else D['wy'][REF]
+dem = np.array(D['demand']).reshape(365, 24); w0 = np.array(Sr['wind']).reshape(365, 24); wn = np.array(Sr['windN']).reshape(365, 24)
+s0 = np.array(Sr['solar']).reshape(365, 24); st = np.array(Sr['solarT']).reshape(365, 24); F = D['fleet']; cong = 1 - F['congPct'] / 100
 def roll(v, n):
     s = np.array([v[i:i + n].sum() for i in range(365 - n + 1)]); return int(s.argmax())
 def crit(net, fw, d_y):
@@ -32,6 +35,11 @@ for path in runs:
         net = d_y - (fw * cong + (ep * s0 + cp * st) * cong + (F['rooftopMW'] + cr) * s0 * F['roofDerate'])
         rec['%s %d' % (name, y)] = crit(net, fw, d_y)
 union = sorted({d for c in rec.values() for days in c.values() for d in days})
-json.dump({'days': union, 'sources': ['today'] + runs, 'by_source': rec,
+src_keys = {}
+for path in runs:
+    P = json.load(open(path)); pl = P.get('passLog') or []
+    src_keys[path.split('/')[-1]] = {'final LP key': pl[-1]['key'] if pl else None, 'passes': len(pl), 'objective': P.get('objective')}
+json.dump({'days': union, 'ref': REF, 'computed_on': {'build': os.environ.get('BUILD', '?'), 'commit': os.environ.get('COMMIT', '?'),
+           'series': 'extract.js on that build (c7 day settings, ROOF12)'}, 'source_runs': src_keys, 'sources': ['today'] + runs, 'by_source': rec,
            'basis': "design note version 2, 3.1; message 678 (e); series from extract.js (c7's day settings, ROOF12)"}, open(out, 'w'), indent=1)
 print('extreme days (%d):' % len(union), union)

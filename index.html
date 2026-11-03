@@ -6022,10 +6022,16 @@ const FIXED = {
   bldRepWeights:'equal',
   // 'hierarchical' (Ward, medoid representation: Kotzur et al., Renewable Energy 2018, section 6; tsam's default) or 'kmedoids'.
   bldRepMethod:'hierarchical',
+  // The reference series for 'clustered' days' wind and solar (user, 3 Nov 2026, message 679 (a)): a weather year of the twelve, read by
+  // weatherYearNational, so the build and the engine's check read the same modelled series; '2025' the default (demand's own year: its wind is
+  // MERRA-2 2025, its solar MERRA-2 2025 timing at the 2023 PVGIS level, the file's note), rescaled as the small residual step; 'metered', the
+  // Eskom-metered 2025 profiles (profiles.json), rescaled, a variant. Demand stays the reference year's in both.
+  bldRepRefYear:'2025',
   // Extreme days, 0 = 1 Jan, for 'clustered': the union over today's fleet and c7's central, Deep and Fossil-free fleets in every year
   // of the peak-demand day, the tightest net-load hour, the worst three-day net load and wind lull (all three days each) and the
-  // lowest net-load day. Computed by harness/pathway/repdays/extremes.py, 3 Nov 2026 (extremes.json; validate_lp checks the match).
-  bldRepExtremeDays:[20, 161, 162, 163, 187, 188, 194, 195, 196, 218, 358],
+  // lowest net-load day, on bldRepRefYear's series. Computed by harness/pathway/repdays/extremes.py (REF=2025), 3 Nov 2026 (extremes.json;
+  // validate_lp checks the match; the metered variant's own list is extremes_metered.json, set with the pathway's REP_EXTREMES).
+  bldRepExtremeDays:[113, 114, 115, 160, 161, 162, 188, 214, 217, 218, 219, 257, 273, 359],
   // Stored energy linked across the year's real days (design note version 2, 3.2; user, 3 Nov 2026, messages 673 (a), 678): 0 as now
   // (each calendar day's block chained at its weight; LP text unchanged); 1, a level for every real day, each moved by its
   // representative day's intra-day movement in calendar order, the year cyclic (Kotzur et al., Applied Energy 2018). Needs bldHourlySoc 1.
@@ -6034,6 +6040,10 @@ const FIXED = {
   // decisions (fixed from a recorded run by the harness's FIX_FROM), with no operating day, row or cost. 2026: every year operates
   // (LP text unchanged).
   bldOperFrom:2026,
+  // Stress windows linked to the year (design note version 2, 3.3 and test 1 (e); message 673 (g)): 0, each window a closed loop
+  // (opens at its own closing level), as now; 1, a window opens at the linked chain's level on its calendar start day and closes at
+  // the chain's level the day after its last. Needs bldStorageLink 1.
+  bldWindowLink:0,
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -12056,10 +12066,17 @@ function bldRepDaysClustered(n, method, S0){
   const mod = bldWindModernOn(), trk = bldPvTrackingOn(), kw = mod ? windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr) : 1;
   const T = bldTwelveYearMeansAll(kw, trk);
   if (!T) throw new Error("bldRepWeights 'clustered' needs the twelve weather years, which are not loaded");
-  const N = 365 * 24, Wm = mod ? windModOf(PROFILES.wind) : PROFILES.wind, Pt = trk ? solarTrkOf(PROFILES.solar) : PROFILES.solar;
+  // bldRepRefYear: one source for both, or 'wind:<source>,solar:<source>' to take each from its own (message 681 (g)).
+  const ref = String(S.bldRepRefYear ?? FIXED.bldRepRefYear), N = 365 * 24;
+  const src = what => { const m = ref.match(new RegExp(what + ':(metered|[0-9]{4})')); return m ? m[1] : ref; };
+  const seriesOf = (s, key) => { if (s === 'metered') return PROFILES[key];
+    if (!/^[0-9]{4}$/.test(s)) throw new Error("bldRepRefYear must be 'metered', a weather year, or 'wind:<source>,solar:<source>': " + ref);
+    const nat = weatherYearNational(s); if (!nat || !nat[key]) throw new Error('bldRepRefYear: weather year ' + s + ' is not loaded'); return nat[key]; };
+  const W0 = seriesOf(src('wind'), 'wind'), P0 = seriesOf(src('solar'), 'solar');
+  const Wm = mod ? windModOf(W0) : W0, Pt = trk ? solarTrkOf(P0) : P0;
   // Per-unit series as the LP uses them, each scaled over the whole year to its twelve-year mean (step 1).
-  const base = { wind: Float64Array.from(PROFILES.wind.slice(0, N)), windN: Float64Array.from({ length: N }, (_, i) => Math.min(1, kw * Wm[i])),
-                 solar: Float64Array.from(PROFILES.solar.slice(0, N)), solarT: Float64Array.from(Pt.slice(0, N)) };
+  const base = { wind: Float64Array.from(W0.slice(0, N)), windN: Float64Array.from({ length: N }, (_, i) => Math.min(1, kw * Wm[i])),
+                 solar: Float64Array.from(P0.slice(0, N)), solarT: Float64Array.from(Pt.slice(0, N)) };
   const yr = {};
   for (const key of Object.keys(base)){ const f = bldScaleTo(base[key], T[key], null, key); yr[key] = base[key].map(v => Math.min(1, f * v)); }
   // Features: 72 values a day, each series normalised 0-1 over the year.
@@ -12098,7 +12115,7 @@ function bldRepDaysClustered(n, method, S0){
   });
   days.map365 = map;
   let md = 0; for (let i = 0; i < 365; i++) md += dist[i * 365 + map[i]];
-  days.clusterInfo = { method, extremes: E.length, typical: k, meanDistance: md / 365, weights: reps.filter(d => !E.includes(d)).map(d => wt[d]) };
+  days.clusterInfo = { method, ref, extremes: E.length, typical: k, meanDistance: md / 365, weights: reps.filter(d => !E.includes(d)).map(d => wt[d]) };
   return days;
 }
 function bldRepDays(n, opt){
@@ -12634,6 +12651,11 @@ function bldBuildLP(opts){
   }
   // Stress-window weighting (bldStressTarget; off reproduces the LP text exactly). wObj: a day's weight in the objective.
   const ST_ON = ((S.bldStressTarget ?? FIXED.bldStressTarget) | 0) > 0;
+  // Clustered weights count each extreme once, so without the expected-shed row the tightest day could be shed at VoLL x 1 (design
+  // note version 2, 3.3; message 673 (e)): refused.
+  if (RW_CL && !ST_ON) throw new Error("bldRepWeights 'clustered' needs bldStressTarget 1: with each extreme day counted once, only the expected-shed row holds adequacy");
+  const WL = (S.bldWindowLink | 0) === 1;
+  if (WL && !LINK) throw new Error('bldWindowLink 1 needs bldStorageLink 1: a window opens and closes on the linked levels');
   const ST_N = ST_ON ? Math.max(1, (opts.draws || 1) * ((typeof bldWeatherYears !== 'undefined' && bldWeatherYears && bldWeatherYears.meta) ? bldWeatherYears.meta.years.length : 1)) : 1;
   const wObj = r => (ST_ON && r.tail) ? 1 / ST_N : r.weight;
   const AV_IMP = S.importsCF ?? FIXED.importsCF;   // imports' utilisation, as the engine's importsCF
@@ -12649,7 +12671,10 @@ function bldBuildLP(opts){
   const hsLast = (y, d) => { const nx = new Map(rdY(y).filter(q => q.prevD !== undefined).map(q => [q.prevD, q.d])); let x = d; while (nx.has(x)) x = nx.get(x); return x; };
   // Level of store t at the end of hour h of day r, and at the start of day r (stress days: hourly variables).
   const hsLevel = (t, y, r, h) => h < 23 ? 's_' + t + '_' + y + '_' + r.d + '_' + h : 'e_' + t + '_' + y + '_' + r.d;
-  const hsStart = (t, y, r) => 'e_' + t + '_' + y + '_' + (r.prevD !== undefined ? r.prevD : hsLast(y, r.d));
+  // With bldWindowLink a window's first day opens at the linked level on its calendar day (r.dem).
+  const hsStart = (t, y, r) => (WL && r.tail && r.prevD === undefined)
+    ? (Number.isInteger(r.dem) ? 'lv_' + t + '_' + y + '_' + r.dem : (() => { throw new Error('bldWindowLink: a stress day without its calendar day'); })())
+    : 'e_' + t + '_' + y + '_' + (r.prevD !== undefined ? r.prevD : hsLast(y, r.d));
   // Coal follows the engine (message 359 (h)): bldCoalMinFrac 'engine' is each year's capacity-weighted minimum stable level of the
   // units standing (coalFleetMinShare), or a number as before; bldCoalStartCost 1 charges each MW of commitment added at the standing
   // fleet's hot-start cost per MW (coalFleetHotStartRMW); bldCoalCommitHours null drops the rate rule (48, the old rule, a sensitivity).
@@ -12688,7 +12713,8 @@ function bldBuildLP(opts){
       obj.push((S.lpCurtailCostR*wObj(r)*df).toFixed(3) + ' crt_' + k);
       // Inertia slack (MW.s short in the hour): VoLL per MW.s, as one MWh shed, weighted as shedding is without the stress target
       // (a stress day as if it came round every day), so the floor is met wherever a build can meet it; reported, never hidden.
-      if (SSI) obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' ssl_' + k);
+      // With clustered weights at VoLL x 365 on every day (design note version 2, 3.3): the floor holds in every hour however often the day occurs.
+      if (SSI) obj.push((VOLL*((r.tail || RW_CL) ? 365 : r.weight)*df).toFixed(3) + ' ssl_' + k);
       // resolved (14 Aug 2026): lpBattDischargeCostR (20) deliberately stays below
       // the dispatch engine's battCycleCostR (165). They are different quantities.
       // The LP already pays for battery cells through its capex annuity (BLD_LIFE
@@ -13216,6 +13242,8 @@ function bldBuildLP(opts){
           // window must put back what it takes and opens with no energy it did not store. Replaces the daily
           // balance, the half-full opening and send_ for these days.
           if (Math.abs(r.weight - 1) > 1e-9) throw new Error('bldHourlySoc: a stress day with weight ' + r.weight);
+          // bldWindowLink: the window's last day closes at the linked level of the calendar day after it.
+          if (WL && !_chainPrev.has(r.d)) L.push(' wlc_'+kk+': e_'+kk+' - lv_'+S2.t+'_'+y+'_'+((r.dem + 1) % 365)+' = 0');
           for (let h = 0; h < 24; h++){
             const lev = hsLevel(S2.t, y, r, h), from = h > 0 ? hsLevel(S2.t, y, r, h - 1) : hsStart(S2.t, y, r);
             L.push(' sh_'+kk+'_'+h+': '+lev+' - '+from+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');

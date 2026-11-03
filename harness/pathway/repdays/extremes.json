@@ -1,17 +1,43 @@
 {
  "days": [
-  20,
+  113,
+  114,
+  115,
+  160,
   161,
   162,
-  163,
-  187,
   188,
-  194,
-  195,
-  196,
+  214,
+  217,
   218,
-  358
+  219,
+  257,
+  273,
+  359
  ],
+ "ref": "2025",
+ "computed_on": {
+  "build": "2026-11-02y",
+  "commit": "b0f7999 (main; series identical on claude/storage-link-build)",
+  "series": "extract.js on that build (c7 day settings, ROOF12)"
+ },
+ "source_runs": {
+  "pathway_c7.json": {
+   "final LP key": "c62ec3e615",
+   "passes": 1,
+   "objective": 1653677099021.8745
+  },
+  "pathway_s_deep40nogas_c7.json": {
+   "final LP key": "21c10407e8",
+   "passes": 1,
+   "objective": 1825274668356.9329
+  },
+  "pathway_s_ff2040_c7.json": {
+   "final LP key": "63bbdcbf72",
+   "passes": 1,
+   "objective": 18114532172299.97
+  }
+ },
  "sources": [
   "today",
   "/home/user/gridtwin-za/harness/pathway/c7/pathway_c7.json",
@@ -27,17 +53,17 @@
     218
    ],
    "worst 3-day net load": [
+    160,
     161,
-    162,
-    163
+    162
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    359
    ]
   },
   "c7 2026": {
@@ -48,17 +74,17 @@
     218
    ],
    "worst 3-day net load": [
-    161,
-    162,
-    163
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    359
    ]
   },
   "c7 2027": {
@@ -66,20 +92,20 @@
     188
    ],
    "tightest hour": [
-    187
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2028": {
@@ -87,20 +113,20 @@
     188
    ],
    "tightest hour": [
-    187
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2029": {
@@ -108,20 +134,20 @@
     188
    ],
    "tightest hour": [
-    187
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2030": {
@@ -129,20 +155,20 @@
     188
    ],
    "tightest hour": [
-    187
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2031": {
@@ -150,20 +176,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2032": {
@@ -171,20 +197,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2033": {
@@ -192,20 +218,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2034": {
@@ -213,20 +239,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2035": {
@@ -234,20 +260,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2036": {
@@ -255,20 +281,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2037": {
@@ -276,20 +302,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2038": {
@@ -297,20 +323,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2039": {
@@ -318,20 +344,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "c7 2040": {
@@ -339,20 +365,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_deep40nogas_c7 2026": {
@@ -360,20 +386,20 @@
     188
    ],
    "tightest hour": [
-    187
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    214
    ]
   },
   "s_deep40nogas_c7 2027": {
@@ -381,20 +407,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    214
    ]
   },
   "s_deep40nogas_c7 2028": {
@@ -402,20 +428,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    214
    ]
   },
   "s_deep40nogas_c7 2029": {
@@ -423,20 +449,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    214
    ]
   },
   "s_deep40nogas_c7 2030": {
@@ -444,20 +470,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    214
    ]
   },
   "s_deep40nogas_c7 2031": {
@@ -465,20 +491,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    214
    ]
   },
   "s_deep40nogas_c7 2032": {
@@ -486,20 +512,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    214
    ]
   },
   "s_deep40nogas_c7 2033": {
@@ -507,20 +533,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_deep40nogas_c7 2034": {
@@ -528,20 +554,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    257
    ]
   },
   "s_deep40nogas_c7 2035": {
@@ -549,20 +575,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    257
    ]
   },
   "s_deep40nogas_c7 2036": {
@@ -570,20 +596,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    257
    ]
   },
   "s_deep40nogas_c7 2037": {
@@ -591,20 +617,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    257
    ]
   },
   "s_deep40nogas_c7 2038": {
@@ -612,20 +638,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    257
    ]
   },
   "s_deep40nogas_c7 2039": {
@@ -633,20 +659,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    257
    ]
   },
   "s_deep40nogas_c7 2040": {
@@ -654,20 +680,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2026": {
@@ -675,20 +701,20 @@
     188
    ],
    "tightest hour": [
-    187
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2027": {
@@ -696,20 +722,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2028": {
@@ -717,20 +743,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2029": {
@@ -738,20 +764,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2030": {
@@ -759,20 +785,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2031": {
@@ -780,20 +806,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2032": {
@@ -801,20 +827,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2033": {
@@ -822,20 +848,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2034": {
@@ -843,20 +869,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    358
+    257
    ]
   },
   "s_ff2040_c7 2035": {
@@ -864,20 +890,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    257
    ]
   },
   "s_ff2040_c7 2036": {
@@ -885,20 +911,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    273
    ]
   },
   "s_ff2040_c7 2037": {
@@ -906,20 +932,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    273
    ]
   },
   "s_ff2040_c7 2038": {
@@ -927,20 +953,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    273
    ]
   },
   "s_ff2040_c7 2039": {
@@ -948,20 +974,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    273
    ]
   },
   "s_ff2040_c7 2040": {
@@ -969,20 +995,20 @@
     188
    ],
    "tightest hour": [
-    195
+    218
    ],
    "worst 3-day net load": [
-    194,
-    195,
-    196
+    217,
+    218,
+    219
    ],
    "worst 3-day wind lull": [
-    194,
-    195,
-    196
+    113,
+    114,
+    115
    ],
    "lowest net load": [
-    20
+    273
    ]
   }
  },

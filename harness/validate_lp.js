@@ -413,6 +413,15 @@ function check(label, ok, detail) {
     }
   }
 
+  // Clustered days' extremes (design note version 2, 3.1; messages 678 (e), 679 (e), 681 (a)): FIXED.bldRepExtremeDays is the list
+  // harness/pathway/repdays/extremes.py computed and recorded, with its reference series, build and source runs, in extremes.json.
+  {
+    const fs2 = require('fs'), path2 = require('path'), X = JSON.parse(fs2.readFileSync(path2.join(__dirname, 'pathway/repdays/extremes.json'), 'utf8'));
+    const got = JSON.parse(w.eval('JSON.stringify({ days: FIXED.bldRepExtremeDays, ref: FIXED.bldRepRefYear })'));
+    check('bldRepExtremeDays equals extremes.json, the script\'s union', JSON.stringify(got.days) === JSON.stringify(X.days), JSON.stringify(got.days) + ' against ' + JSON.stringify(X.days));
+    check('extremes.json was computed on bldRepRefYear\'s series', String(X.ref) === String(got.ref), X.ref + ' against ' + got.ref);
+  }
+
   console.log(`\n${pass}/${pass + fail} checks passed`);
   process.exit(fail ? 1 : 0);
 })();
