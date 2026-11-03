@@ -2,7 +2,7 @@
 
 TODO 14mo, brought before the note (Nick's decision, 3 Nov 2026, message 668). Version 2, 3 Nov 2026, answering message 673 (Nick's
 decision on version 1 and the independent review of 3 Nov), the schedule questions of message 674, the speed questions of 675 and
-the mix questions of 677. Section 14 (version 2.1) answers 678-682 and amends 3.1, 3.6 and 6. Message 673 replaces version 1's
+the mix questions of 677. Section 14 (version 2.1) answers 678-682 and amends 3.1, 3.6 and 6; 14.8-14.9 (version 2.2) answer 683. Message 673 replaces version 1's
 sections 3.1, 3.3 and 6, and message 125 (1)'s matched days. Design only: nothing is built until Nick approves (673 (l)). Both new
 settings default off, so the page and every recorded run are unchanged until Nick decides. Every choice made here without Nick follows
 modelling practice and rule 366, and is marked "(ours, rule 366)" with its basis; section 11 lists them.
@@ -983,3 +983,86 @@ acceptance tests (built, B9).
   not on one machine.
 - Reruns 10-13 Nov on three sessions (678 (e)), each confirming the LP key first; GitHub Actions not used.
 - Slips: none (3 Nov, 13:55 SAST).
+
+### 14.8 Message 683 (3 Nov 2026, afternoon): references, wind, the engine on three weathers, solar, pairing, schedule
+
+No series and no level changed. Reruns wait for Nick's decisions on 683 (a)-(d). Evidence in RESULTS (entries of 3 Nov, 683).
+
+(a) References for tests 1, 6 and 11: metered 2025, modelled 2025 as it stands, modelled 2025 corrected. REP_REF takes 'metered' and a
+weather year (B5). The corrected reference needs one test setting in the build LP that applies the fixes and the correction of (b) to the
+modelled years (pathway/wx/wxfix.js already does it for the engine): build item B11, off by default, after Nick's choice in (b). On the
+metered reference the clustered days rescale every series to its twelve-year mean, which also removes the doubled tracking gain below.
+
+(b) Wind, measured and validated (RESULTS 'Modelled wind: two plain errors ...'):
+1. Clock: confirmed, an error. Renewables.ninja rows are UTC; the fetch reads them as SAST. Every ninja wind file is two hours early, every
+   year. Fix: move them two hours later; no re-fetch. Solar is on SAST.
+2. Leap years: confirmed, an error, reported first. ser[:8760] keeps 29 February and drops 31 December in 2016, 2020 and 2024, wind and
+   solar. Fix: re-fetch 31 December (304 Renewables.ninja calls, about 6 hours; 40 PVGIS requests), or the interim (30 December repeated).
+3. Monthly shape and top end, fitted on April 2018 to 2021 and tested on 2022, 2023 and 2025: a 5-constant correction in speed space holds
+   out of sample (monthly RMS error 0.054 -> 0.021, daily SD 1.28x -> 0.99x metered, hours above 70% 9.3% -> 2.5% against 3.6%). Twelve
+   output factors fix the season but not the spread (daily SD 1.10x) and double count with any top-end fix; in speed space the two do not
+   compete. Level: about 2% uncertain from year to year.
+4. Calm spells, a check: closer to metered (hours below 5% 129 -> 73 against 77); the long metered lulls (34-36 h) stay absent.
+5. Transfer: regions by the same constants (unvalidated: Eskom meters wind nationally); new wind through the stored regional maps (daily SD
+   0.174 -> 0.142, near the page's single-year 0.140); whether modern turbines share the fleet's flatter top end is an assumption.
+
+(c) The engine (pathcheck.js, adaptive draws, as the recorded checks; WEATHER and WX_FIX on branch claude/weather-refs, regression
+identical with both unset). c7's central, twelve modelled years, stored / fixed (the two errors) / corrected (plus the wind correction):
+   mean unserved 2030 1.55 / 1.40 / 1.09 GWh, 2035 1.08 / 1.17 / 1.04, 2040 0.76 / 1.30 / 0.87 (target 20; the 99th percentile in 2040
+   20.8 / 35.3 / 29.6); curtailment 2040 28.4 / 24.9 / 21.7 TWh; coal 2040 57.7 / 55.1 / 54.3 TWh. Metered 2025 as the page runs it:
+   2040 curtailment 35.0 and coal 47.6 TWh, of which the doubled tracking gain is 11.8 and 3.5 (metered_trk12: 23.2 and 51.1). Fossil-free
+   2040: no unserved on any weather; vanadium never discharges; iron-air 0.01 TWh at most. Against Eskom's 2025 (the page's 2025 run):
+   coal within 0.3% on every weather; wind 8-10% above Ember stored, 4-6% corrected; pumped storage 3.9-4.15 against 4.49 TWh; shed
+   1-8 GWh against 390. Findings that move: c7's worst-run tail, curtailment and coal (mostly the clock); the page's tracking presets
+   (the twin); not any verdict against the standard. RESULTS 'The engine on three weathers'.
+
+(d) Existing solar (RESULTS 683 (d) entry): metered means 0.258, 0.264, 0.264, 0.248 (2019-2022), about 0.251 (2023), 0.251 (2025); the
+long-run mean 0.257. Single-year LPs against the stated 0.224: 2030 coal -0.95 TWh (0.257) and -1.20 (0.266); 2040 coal about 0, curtailment
++0.8 and +1.0 TWh. On c7's twelve matched days existing solar and rooftop run at 0.213, not 0.224.
+
+Found on the way: the metered profile's tracking twin is 0.342, against 0.286 on the twelve modelled years (the tracker gain applied to a
+fleet already 53-58% on trackers). It reaches the page's six tracking presets as clicked (new solar +2.4 to +7.6 TWh, coal -0.8 to -5.6
+TWh, cost up to R3.6bn lower, curtailment up to +49 TWh), the engine on the metered profile, and the matched days' choice. Not the
+twelve-year checks or the risk panels. A fix changes visible results: Nick's decision.
+
+(e) Limitation, for the note: the engine pairs Eskom's calendar-2025 hourly demand, scaled to each model year, with every weather year;
+demand and weather coincide only in 2025, and there only with modelled 2025 weather. Pairing each year's own demand is possible for
+2019-2022 and 2025 (five of twelve; hourly national demand starts in April 2018, 2023 stops in October, 2024 is not held), with load
+shedding added back from Eskom's estimate, rooftop added back and each year scaled to 2025's level, and the series kept local under Eskom's
+terms. On the proxy of 682 (a) it changes little on average (same-year pairing +115 MW on the top-100 net load, nothing on the
+95th-percentile unserved), except winter 2022 (+1,349 MW); the seasonal level of modelled wind matters more.
+
+(f) PyPSA-RSA's copy: wanted for the out-of-sample tests in (b), the 2019-2023 solar means in (d) and the coincidence work in (e). The
+repository is AGPL-3.0-or-later; its data-licence table does not list the Eskom file, and no licence for it was found. AGPL covers
+PyPSA-RSA's own work; it cannot license Eskom's data. Under Eskom's terms nothing changes: the same use as ESK19679 (local; derived results
+and single constants published, Eskom credited, analysis ours). Not cited. Not legal advice.
+
+(g) PR #156: a deny list leaving 45 of 1,321 files on the site, tested on a fresh page load (no new failure).
+
+### 14.9 Schedule, ranking and slips (683 (h))
+
+Ranked by how far each can move the note's findings:
+1. The clock and leap-year fixes (errors). They reach every weather-year result: the engine checks, the risk panels, the build's seed
+   tail and stress windows, the extremes. They have to land before the reruns and before the extremes are recomputed. The clock needs no
+   fetch (about 3 hours with the suite and the stored panels); leap years take the interim the same day or the re-fetch over about 6 hours
+   in pieces (Renewables.ninja's hourly limit).
+2. The tracking twin (an error in kind). It reaches the page's tracking presets as clicked (visible) and the matched days. Clustered days
+   rescale it away in the reruns; the presets keep it until fixed.
+3. The wind correction (a judgement): the engine's adequacy, coal and curtailment (table above).
+4. Existing solar's level (a judgement): 2030 coal about 1 TWh; small in 2040.
+5. Tests 1, 6 and 11 on three references: about 7 more machine hours (a 365-day benchmark per reference and run, test 6's counts per
+   reference), on this machine 4-6 Nov.
+6. Demand pairing: a stated limitation; no run.
+
+Dates (SAST):
+- 3 Nov: 683 reported. The build pull request after the suite after (this evening).
+- 4 Nov: Nick's decisions on 683 (a)-(d) and the two fixes. Then the fixes on one branch with the suite and the stored panels, and B11
+  (the corrected reference in the build LP, off by default), about 2 hours.
+- 4-6 Nov: tests 1, 6 and 11 on the three references, with tests 2-5, 7-10, 12, 14 and 16; test 13 (central 2030 and 2040); test 15 on its
+  own session.
+- 7-9 Nov: the remaining tests; the extremes recomputed on the chosen reference, the fixed data and the fixed builds.
+- 10 Nov: the day count and the 2045 inputs; reruns 10-13 Nov on three sessions, each confirming the LP key first.
+- 14-18 Nov: the note.
+
+Slips: none at 3 Nov, 15:00 SAST. Two risks: if the two fixes wait past 6 Nov, the extremes and the reruns' inputs move with them (the
+reruns cannot use today's data once the errors are to be fixed); and the leap-year re-fetch depends on Renewables.ninja's hourly limit.
