@@ -20647,3 +20647,49 @@ against 0.1324), unvalidated regionally (Eskom meters wind nationally); new wind
 whether the fleet's flatter top end applies to modern turbines is an assumption. Checked here: the tabulated transform (12 months x 2,001
 output values, from the helper's own code) gives twelve-year existing wind 0.3562 and new wind 0.4173 on the national map (pathcheck
 WX_FIX=corrected), as the helper's 0.356 and 0.419 (regional maps).
+
+### The engine on three weathers (message 683 (c)): c7's central and Fossil-free meet the standard on every reference; the two error fixes and the wind correction cut c7's 2040 curtailment by 3.5-6.7 TWh and coal by 2.6-3.4 TWh; Fossil-free's vanadium never discharges
+
+Settings: build 2026-11-03a with pathcheck WEATHER and WX_FIX (claude/weather-refs, 8621aff); pathcheck.js as the recorded checks (LNG=1
+GRID=1 SS_FC=reservecoal, adaptive draws: 10-40 a weather year; K=40 where marked), on pathway_c7.json (2026, 2030, 2035, 2040) and
+pathway_s_ff2040_c7.json (2040). Weathers: metered 2025 (profiles.json, ESK19679, as the page runs it); metered with new tracking solar
+rescaled to its twelve-year level (metered_trk12; RESULTS 'The metered profile's tracking twin'); modelled 2025; the twelve modelled years;
+each modelled case also 'fixed' (leap years and the two-hour wind clock, as an interim: wxfix.js) and 'corrected' (fixed plus the
+5-constant wind correction, tabulated; RESULTS 'Modelled wind: two plain errors ...'). Demand: 2025's in every case. Scripts and outputs:
+harness/pathway/wx/ and harness/out/wx683 on that branch. 3 Nov 2026, 12:24-13:08 UTC. Eskom data, analysis ours.
+
+c7's central (mean unserved and the 99th percentile over the runs, GWh, target 20; curtailment and coal, TWh):
+
+| year | weather | runs | unserved | p99 | curtailment | coal |
+|---|---|---|---|---|---|---|
+| 2030 | metered (K=40) / metered_trk12 (K=40) | 40 / 40 | 0.70 / 0.82 | 12.2 / 12.4 | 2.3 / 1.0 | 119.2 / 121.6 |
+| 2030 | modelled 2025 (K=40) / fixed | 40 / 10 | 1.24 / 2.23 | 14.5 / 13.8 | 1.9 / 1.5 | 124.8 / 124.3 |
+| 2030 | twelve years / fixed / corrected | 120 each | 1.55 / 1.40 / 1.09 | 34.6 / 28.1 / 21.8 | 2.5 / 2.1 / 1.7 | 125.4 / 124.8 / 125.4 |
+| 2035 | metered (K=40) / metered_trk12 (K=40) | 40 / 40 | 1.05 / 1.28 | 15.9 / 37.6 | 16.3 / 10.4 | 66.5 / 71.2 |
+| 2035 | modelled 2025 (K=40) / fixed | 40 / 10 | 1.45 / 0.00 | 45.4 / 0.0 | 13.0 / 11.1 | 76.2 / 74.2 |
+| 2035 | twelve years / fixed / corrected | 120 each | 1.08 / 1.17 / 1.04 | 18.6 / 24.7 / 26.3 | 14.5 / 12.1 / 10.1 | 77.6 / 75.1 / 75.2 |
+| 2040 | metered (K=40) / metered_trk12 (K=40) | 40 / 40 | 0.81 / 1.38 | 25.9 / 46.6 | 35.0 / 23.2 | 47.6 / 51.1 |
+| 2040 | modelled 2025 (K=40) / fixed | 40 / 10 | 0.13 / 0.16 | 1.5 / 1.1 | 25.6 / 22.5 | 55.9 / 53.2 |
+| 2040 | twelve years / fixed / corrected | 120 each | 0.76 / 1.30 / 0.87 | 20.8 / 35.3 / 29.6 | 28.4 / 24.9 / 21.7 | 57.7 / 55.1 / 54.3 |
+
+Storage discharge, c7 2040, TWh (pumped storage / lithium): twelve years 8.21 / 23.38; fixed 8.10 / 22.54; corrected 7.87 / 23.35;
+metered 8.30 / 23.35; modelled 2025 8.44 / 24.18. 2026: no unserved on any weather; coal 147.5 (metered) to 150.3 TWh.
+
+Fossil-free 2040: no unserved in any run on any weather. Curtailment 291.5 TWh (metered), 242.4 (metered_trk12), 244.6 (modelled 2025),
+239.8 (twelve years), 240.6 (fixed), 236.7 (corrected). Storage discharge, TWh: pumped storage 8.5-10.6, lithium 13.8-20.7 (twelve years
+20.70, corrected 15.64), vanadium 0 on every weather (its level stays at 60,000 MWh, full, all year: LEVELS_OUT, 2016), iron-air 0.00-0.01.
+
+The page's '2025, as modelled' run against Eskom's 2025 (eskom2025.js; coal against Eskom's 170.4 TWh sent out, wind against Ember's
+11.35 TWh, pumped storage against Eskom's 4.49 TWh, shed against Eskom's 390 GWh of manual load reduction): coal 169.2 (metered), 170.4
+(modelled 2025), 170.1 (twelve years), 170.6 (twelve years corrected); wind 11.95, 12.24, 12.45, 12.01; pumped storage 3.89, 3.95, 4.05,
+4.15; shed 1.2, 6.7, 7.5, 4.5 GWh. Utility solar 5.65 TWh metered against 5.00 modelled (the existing-solar level).
+
+Recorded findings that would move: (1) c7's verdict against the standard holds on every weather; its tail does not: the 99th percentile in
+2040 runs 20.8 GWh stored, 29.6 corrected and 35.3 fixed, so 'worst run' figures recorded for c7 would rise. (2) c7's curtailment and coal:
+2040 curtailment 28.4 -> 21.7 TWh and coal 57.7 -> 54.3 TWh corrected (2035: 14.5 -> 10.1 and 77.6 -> 75.2); most of the move is the clock
+(wind two hours later lands in the evening). (3) Every single-run figure on the metered profile with new tracking solar (the page's tracking
+presets; RESULTS 'The metered profile's tracking twin'). (4) Fossil-free: unserved stays at zero; lithium's discharge falls a quarter
+corrected; vanadium is idle on every weather, which supports the record that the run meets the standard without vanadium and new iron-air
+(RESULTS, message 665 (b)). (5) The 2025 replay: wind 8-10% above Ember stored, 4-6% corrected; coal within 0.3% on every weather; the
+shed gap to Eskom's 390 GWh stands. Caveats: modelled 2025 alone and its fixed variant are single weather years; 'fixed' is the leap-year
+interim, not the re-fetch; the correction's new wind uses the page's national map, not the regional rebuild.
