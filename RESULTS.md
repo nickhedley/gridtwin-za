@@ -20116,3 +20116,40 @@ single sensitivities give the pathway split. Finding: c7's coal cost and finance
 rebuild with the same coal fleet and slightly lower CO2; coordinated home batteries displace about 2 GW (14 GWh) of utility lithium by
 2040. Caveats: the indicative split is per year on one draw; the compliance charge sits beside the engine's cost (costComply), not in
 it; the behind-the-meter stock's capital is a household cost now counted in system cost, absent from c6e.
+
+### c7 phase 2, the runs the reviewer pack reads: all engine-checked; every run but s_nogas meets the standard; the IRP 2025 builds are short of the inertia floor (no grid-forming batteries in the file); the pack filled, 63 figures (user, 2-3 Nov 2026, messages 652 and 656 (d); build 2026-11-02y)
+
+Runs: chain_c7.sh phase 2 on claude/c7-runs, 2 Nov 20:09 UTC to 3 Nov 04:16 UTC (one container restart, about 01:10 UTC; the lost
+work redone). Engine PV 2026-40 (8%), R bn; + the system strength charge; + emissions compliance (beside the engine's cost, costComply);
+CO2 2026-40, Mt; highest mean unserved, GWh/yr (year):
+| Run | Engine PV | + strength | + compliance | Total | CO2 | Highest unserved |
+|---|---|---|---|---|---|---|
+| c7 | 2,416.4 | 1.3 | 49.9 | 2,467.7 | 1,715 | 6.41 (2032) |
+| c7_irpdem (IRP 2025's demand) | 2,298.0 | 1.3 | 49.9 | 2,349.2 | 1,711 | 3.77 (2034) |
+| s_nogas_c7 (no gas, no new diesel) | 2,450.0 | 1.3 | 49.9 | 2,501.2 | 1,595 | 85.46 (2040), over the standard |
+| s_nogas_dsl_c7 (no gas, diesel peakers) | 2,422.1 | 1.3 | 49.9 | 2,473.4 | 1,617 | 6.40 (2038) |
+| s_irpgas_c7 | 2,606.0 | 1.3 | 34.1 | 2,641.4 | 1,687 | 0.39 (2031) |
+| s_gasfloor_c7 (51% minimum alone, c7's build) | 2,435.8 | 1.3 | 49.9 | 2,487.0 | 1,703 | 6.41 (2032) |
+| s_gas2032_c7 | 2,419.3 | 1.3 | 49.9 | 2,470.5 | 1,785 | 5.49 (2031) |
+| s_be6_c7 (IRP storage) | 2,436.6 | 1.3 | 49.9 | 2,487.8 | 1,713 | 3.41 (2032) |
+| s_be7_c7 (IRP nuclear) | 2,479.8 | 1.2 | 49.9 | 2,530.9 | 1,696 | 6.33 (2032) |
+| s_cocplan_c7 (single 8%) | 2,478.5 | 1.3 | 52.3 | 2,532.1 | 1,771 | 7.51 (2032) |
+| s_cocprivate_c7 | 2,465.9 | 1.4 | 49.9 | 2,517.2 | 1,742 | 6.43 (2032) |
+| s_coalsustain_c7 (R500/kW-yr) | 2,561.8 | 1.3 | 49.9 | 2,613.1 | 1,715 | 6.41 (2032) |
+| s_cocunblended_c7 (6.0%) | 2,406.2 | 1.3 | 49.9 | 2,457.4 | 1,699 | 5.88 (2032) |
+| s_allbids_c7 (5.5%) | 2,389.9 | 1.3 | 49.9 | 2,441.2 | 1,671 | 5.25 (2032) |
+| s_blendedhigh_c7 | 2,438.1 | 1.3 | 49.9 | 2,489.4 | 1,724 | 6.60 (2032) |
+| s_deep40nogas_c7 (round 4: cap 37.538, engine 2035 40.47 Mt) | 2,551.4 | 1.7 | 49.1 | 2,602.2 | 1,139 | 3.43 (2033) |
+| s_ff2040_c7 | 3,357.8 | 2.6 | 63.0 | 3,423.4 | 798 | 0.03 (2032) |
+| irp2025_c7 (IRP 2025's build, c7's demand) | 2,790.8 | 0.0 | 49.9 | 2,840.8 | 1,736 | 0.00; 53.6 h short of the inertia floor |
+| irp2025_c7_irpdem | 2,721.4 | 0.0 | 49.9 | 2,771.3 | 1,625 | 0.00; 64.5 h short |
+Settings each recorded as intended (cocCase, coalCost, comply, btm, geyser, coalFomAdd, fossilEnd). Every sensitivity met the standard on
+its first optimiser pass except s_nogas_c7 (pass limit 3; its third pass solved by interior point after native simplex's resume from a
+saved basis failed twice: 'Solve error'). Deep's calibration (cap += 40 - engine 2035): 36.382 (38.57), 37.813 (41.03), 36.786 (39.25),
+37.538 (40.47). Extras on the run commit: the 2025 replay 169.2 against 170.4 TWh; validate_external 8/8 (CSIR 2030 coal 52.3%,
+renewables 42.0%; EDMSA 2035 108.1 Mt); design minimums from 2028 (pathcheck_c7_dmin2028.json).
+Findings to settle before the pack goes out: (1) the IRP 2025 build files (build_irp_c6.py) carry no grid-forming batteries or
+condensers, so the IRP pair is short of the inertia floor 54-65 hours a year and pays no system strength charge; the pack's IRP gap
+(R374bn) compares a build that meets the floor with one that does not. (2) The compliance charge is higher where coal retires earlier
+(Fossil-free R63.0bn, single 8% R52.3bn, against c7's R49.9bn): the annuity over a shorter remaining life raises the yearly charge on
+what stands; cause to establish. (3) The pack's headline cost is the engine's PV without compliance or the system strength charge.
