@@ -20231,7 +20231,7 @@ storage energy carried across the days in a fossil-free year; which Fossil-free 
 
 Build 2026-11-02y, claude/c7-runs (85f94ea), chain_c7.sh phase 4 (c7's settings: SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8
 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1, env_c6a.sh, GAS_FIRST=2035, NTCSA 20 GWh standard,
-MAXP=3), each engine-checked (pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal, groups a/b/c); solves 3 Nov 2026 05:2x-07:02 UTC. High
+MAXP=3), each engine-checked (pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal, groups a/b/c); solves 3 Nov 2026 05:58-07:02 UTC. High
 demand is DEMAND=rate:3.30; the Reference Case adds COAL_EAF_PATH=2027:66,2028:67,2029:68,2030:69 then 70 to 2040,
 AVDED_OFF_AFTER=2030 and REIPPP_RETIRE=2033-2036:375/325/50 (wind/solar/CSP, MW a year); "kept" omits REIPPP_RETIRE; "no gas" is
 GAS_CAP=0 OCGD=1 (diesel peakers allowed, 663 (e)). Total on the pack's basis (engine PV + system strength + compliance, 8%, 2026-40).
@@ -20288,7 +20288,7 @@ block-end level caps belong to the formulation the fix replaces, so lithium's bu
 
 ### Plant start years checked on gem.wiki: Medupi matches; Kusile unit 1's row (2018) contradicts its own text (commercial operation 30 Aug 2017); Komati's 1966 has no support (message 671)
 
-Read directly from www.gem.wiki on 3 Nov 2026 08:0x UTC (Medupi_Power_Station, Kusile_Power_Station, Komati_Power_Station), against
+Read directly from www.gem.wiki on 3 Nov 2026 07:49 UTC (Medupi_Power_Station, Kusile_Power_Station, Komati_Power_Station), against
 COAL_UNIT_COD (index.html:7261-7270, build 2026-11-02y):
 - Medupi: units 1-6 start years 2021, 2019, 2019, 2017, 2017, 2015; the model's Medupi* [2021, 2019, 2019, 2017, 2017] and Medupi**
   [2015] match. Unit 4 returned to service in July 2025 after its 2021 explosion; the model keeps its original year (as recorded).
