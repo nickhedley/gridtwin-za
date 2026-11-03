@@ -924,9 +924,13 @@ Trimming is tested in test 6: the list less the days the seed and loop windows a
 - Size by k (measured on the step built for 2030 at k = 2 and 22 days): year y at 365 days, linked, is 481,732 rows; each look-ahead
   year at 22 days about 43,000; the fixed years before y about 25 each. So a step is about 568,000 rows at k = 2, 611,000 at k = 3, 654,000
   at k = 4 and 697,000 at k = 5, shrinking near 2040 where the window is cut. At 34 days each look-ahead year is about 62,000 rows (k = 4:
-  about 730,000). The solve time of one step is being measured now (started 13:51, on the step before the fix below, whose 26,000
-  extra rows were trivially satisfied, so its time is slightly high); each step is sequential, 15 steps a pathway, and k changes the time
-  of each step roughly as its rows to the measured power of 1.85 to 2.64 (section 9.2): k = 5 against k = 3 about 1.25 to 1.4 times.
+  about 730,000). Measured (14:08 SAST): the step for 2030 at k = 2 and 22 days solved in 1,128 s (19 minutes, native simplex, optimal,
+  two or three other jobs beside it; on the LP before the fix below, whose 26,000 extra rows were trivially satisfied, so slightly high).
+  A 365-day linked year solves faster than its size suggests (the 25-day pathway LP, 702,000 rows, took 39 minutes). Each step is
+  sequential, 15 steps a pathway, and k changes each step's time roughly as its rows to the power 1.85-2.64 (9.2): k = 4 about 1.3-1.5
+  times the measured step, k = 5 against k = 3 about 1.25-1.4 times. So a stage-2 pathway at k = 4 is about 15 x 25-30 minutes, 6-8 hours,
+  not the 10-18 hours estimated in 3.6: the prototype on the central and Fossil-free takes about a day on one session, and stage 2 for the
+  central, Deep and Fossil-free (678 (c)'s option) fits 10-13 Nov on one session beside the other two.
 - Found and fixed in the build (13:52-13:55): with linking and bldOperFrom, the years before y were given linked rows (about 6,600 a year)
   on movement variables that do not exist there; satisfiable with zeros, so no result moved, but a single-year 2040 LP carried about
   90,000 needless rows. Now 23-27 rows a year before y; the default key unchanged.
