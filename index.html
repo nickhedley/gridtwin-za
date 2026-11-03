@@ -6065,6 +6065,13 @@ const FIXED = {
   // itself) X is 0. Rooftop keeps fixed tilt. bldExistPvTrackShare: null, the derived share on modelled days and 0 on the metered
   // profile's days; a number (EXIST_PV_TRK, a test) applies that share on every day.
   existPvMeteredCF:0.2558, bldExistPvTrackShare:null,
+  // Modelled wind's correction (user decision, 3 Nov 2026, message 684 (d): adopted in principle as a setting, off until Nick has the
+  // report; the uncorrected series stays as a sensitivity). 1: each modelled year's national wind goes through nodal/wind_corr_table.json
+  // (five constants fitted on ESK19679 alone, April 2022 to December 2025: the existing fleet's output inverted to an effective speed on
+  // the V90/2000 curve, a monthly cosine offset, speeds above 7.0 m/s compressed by 0.80, back through the curve; RESULTS, 684), new
+  // wind on the national modern-turbine map of the corrected series. The metered profile is not touched. Set it before the weather
+  // years are first used. 0: off.
+  wxWindCorr:0,
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -12040,7 +12047,7 @@ function bldRepDaysMatched(evenDays, fixedDays, step){
 const _twelveAllCache = {};
 function bldTwelveYearMeansAll(k, trk){
   if (typeof bldWeatherYears === 'undefined' || !bldWeatherYears || !bldWeatherYears.meta) return null;
-  const mod = bldWindModernOn(), key = k + '|' + (trk ? 1 : 0) + '|' + (mod ? 1 : 0);
+  const mod = bldWindModernOn(), key = k + '|' + (trk ? 1 : 0) + '|' + (mod ? 1 : 0) + '|' + (wxWindCorrOn() ? 1 : 0);
   if (_twelveAllCache[key]) return _twelveAllCache[key];
   let w = 0, wn = 0, s = 0, sn = 0, n = 0;
   for (const y of bldWeatherYears.meta.years){
@@ -15653,6 +15660,13 @@ async function _loadWeatherYears(){
       const rw = await fetch('nodal/profiles_wind_modern.json?v=' + (window.DATA_V || '7'));
       if (rw.ok) { bldWindMod = await rw.json(); bldBuildWindModMap(); }
     } catch (e) { bldWindMod = null; }
+    // The wind correction's table (wxWindCorr). Optional: without it the setting raises an error.
+    try {
+      const rc2 = await fetch('nodal/wind_corr_table.json?v=' + (window.DATA_V || '7'));
+      if (rc2.ok){ const d2 = await rc2.json();
+        if (!(Array.isArray(d2.table) && d2.table.length === 12 && d2.table.every(r => r.length === d2.grid.n))) throw new Error('nodal/wind_corr_table.json: 12 rows of grid.n values');
+        WIND_CORR_TABLE = { t: d2.table, n: d2.grid.n }; }
+    } catch (e) { WIND_CORR_TABLE = null; console.error('[GridTwin]', e.message); }
     if (!bldWxWeights || !bldWxWeights.wind || !bldWxWeights.solar) {
       bldWxWeights = null;
       console.warn('[GridTwin] Weather years loaded but nodal/regional_renewable_capacity.json '
@@ -16049,6 +16063,9 @@ function bldBuildSolarTrkRatio(){
 // current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
 // profile with none of its own (the default single-year PROFILES.wind).
 let bldWindMod = null, WIND_MOD_MAP = null, WIND_MOD_ERR = null, WIND_MOD_REG = null;
+// The wind correction's table (wxWindCorr; message 684 (d)): corrected per-unit output by calendar month on a 0-1 grid of stored output.
+let WIND_CORR_TABLE = null;
+function wxWindCorrOn(){ return ((typeof state !== 'undefined' && state && state.wxWindCorr != null ? state.wxWindCorr : FIXED.wxWindCorr) | 0) > 0; }
 // One map, two routes: nodal/profiles_wind_modern_map.json at start-up (build_wind_modern.py writes it from the series)
 // and the series themselves when the weather years load. They must agree; a stale map file stops modern wind loudly.
 function setWindModMap(m, source){
@@ -16097,7 +16114,7 @@ function windNewCorr(c){
 const _twelveYearCache = {};
 function bldTwelveYearMeans(k, trk){
   if (typeof bldWeatherYears === 'undefined' || !bldWeatherYears || !bldWeatherYears.meta) return null;
-  const mod = bldWindModernOn(), key = k + '|' + (trk ? 1 : 0) + '|' + (mod ? 1 : 0);
+  const mod = bldWindModernOn(), key = k + '|' + (trk ? 1 : 0) + '|' + (mod ? 1 : 0) + '|' + (wxWindCorrOn() ? 1 : 0);
   if (_twelveYearCache[key]) return _twelveYearCache[key];
   let w = 0, s = 0, n = 0;
   for (const y of bldWeatherYears.meta.years){
@@ -16227,6 +16244,15 @@ function weatherYearNational(year){
       if (t){ const f = (bldWxWeights.wind[R] || 0) / tw / sm; for (let h = 0; h < HOURS; h++) mod[h] += t[h]*f; }
     }
     wind.mod = mod;
+  }
+  // The wind correction (wxWindCorr, message 684 (d)): the national series through the table; new wind then comes from the national
+  // modern-turbine map of the corrected series (the stored twin is of the uncorrected one).
+  if (wxWindCorrOn()){
+    if (!WIND_CORR_TABLE) throw new Error('wxWindCorr is on but nodal/wind_corr_table.json is not loaded');
+    const T = WIND_CORR_TABLE.t, n = WIND_CORR_TABLE.n, c = new Float64Array(HOURS);
+    for (let h = 0; h < HOURS; h++){ const r = T[hourMonth(h)], x = Math.max(0, Math.min(1, wind[h])) * (n - 1), i0 = Math.min(n - 2, Math.floor(x));
+      c[h] = r[i0] + (r[i0 + 1] - r[i0]) * (x - i0); }
+    return { wind: c, solar };
   }
   return { wind, solar };
 }
@@ -22293,7 +22319,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldCocBase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
-  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, existPvTrackShareAt, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
+  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, existPvTrackShareAt, wxWindCorrOn, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
   btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
   ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
   coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt, coalCarbonFloorR });
@@ -22301,7 +22327,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
 const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
   ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, CARBON_COAL_FLOOR_R_KWH, CARBON_COAL_FLOOR_TO, CARBON_CPI_PA, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
-  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, _existPvX, _MSTART_H, COAL_MINSTABLE_CURVE,
+  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, _existPvX, WIND_CORR_TABLE, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
   BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK, BLD_COC_PRIVATE_PREM, BLD_COC_GROUP, BLD_COC_NAB_GAP, BLD_COC_PRIVATE_SHARE, BLD_COC_PVWIND_CLOSED, BLD_COC_PVWIND_TECH, BLD_BUILD_Y,
