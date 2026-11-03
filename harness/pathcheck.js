@@ -40,7 +40,23 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  const WX=process.env.WEATHER||null, WXL=(WX==='metered'||WX==='metered_trk12')?[WX]:WX?WX.split(',').map(s=>s.trim()):null;
  if (WXL && WX!=='metered' && WX!=='metered_trk12'){ const have=JSON.parse(w.eval('JSON.stringify(bldWeatherYears.meta.years.map(String))')); for (const yy of WXL) if (!have.includes(yy)) throw new Error('WEATHER: no modelled year '+yy); }
  w.eval(`window.__wxYears=()=>${WXL?JSON.stringify(WXL):'bldWeatherYears.meta.years'}; window.__wxTrk12=(()=>{ let c=null; return ()=>{ if (c) return c; let s=0,n=0; for (const y of bldWeatherYears.meta.years){ const t=solarTrkOf(weatherYearNational(String(y)).solar); for (let h=0;h<t.length;h++){ s+=t[h]; n++; } } const t=solarTrkOf(PROFILES.solar), m=t.reduce((a,v)=>a+v,0)/t.length, k=(s/n)/m, o=new Float64Array(t.length); for (let h=0;h<t.length;h++) o[h]=Math.min(1,k*t[h]); o.k=k; o.from=m; o.to=s/n; return (c=o); }; })(); window.__wxNat=yy=>yy==='metered'?{solar:PROFILES.solar,wind:PROFILES.wind}:yy==='metered_trk12'?{solar:PROFILES.solar,wind:PROFILES.wind,solarTrk:__wxTrk12()}:weatherYearNational(String(yy)); window.__wxSeed=yy=>(yy==='metered'||yy==='metered_trk12')?2025:+yy;`);
- if (WX) console.log('WEATHER:', WX); if (WX==='metered_trk12') console.log('new tracking solar on metered: '+w.eval('(()=>{const t=__wxTrk12(); return t.from.toFixed(4)+" -> "+t.to.toFixed(4)+", x "+t.k.toFixed(4);})()'));
+ if (WX) console.log('WEATHER:', WX);
+ // WX_FIX (message 683 (b), (c); measurement only, unset as before): applied to every modelled year the check reads. 'fixed': the two plain
+ // errors found on 3 Nov 2026, as an interim. Leap years (2016, 2020, 2024): the fetch scripts kept the first 8,760 hours (ser[:8760]),
+ // so 29 February is in and 31 December out; here 29 February is removed and 30 December repeated as 31 December, for wind, the
+ // modern-turbine twin, solar and the tracking twin. Clock: Renewables.ninja wind rows are UTC and were read as SAST; wind and its twin
+ // move 2 hours later, the first two hours from the previous year's last two (2014 repeats its first hour). 'corrected': 'fixed' plus
+ // the wind correction tabulated in WX_TABLE (corrected per-unit output by calendar month on a 0-1 grid; 683 (b)), with new wind on
+ // the page's national modern-turbine map of the corrected series. A test variant, not a series; recorded in the output.
+ const WXF=process.env.WX_FIX||null; if (WXF && !['fixed','corrected'].includes(WXF)) throw new Error('WX_FIX must be fixed or corrected');
+ if (WXF==='corrected' && !process.env.WX_TABLE) throw new Error('WX_FIX=corrected needs WX_TABLE');
+ if (WXF){ const TB=WXF==='corrected'?JSON.parse(fs.readFileSync(process.env.WX_TABLE,'utf8')):null;
+   if (TB && !(TB.table.length===12 && TB.table.every(r=>r.length===TB.grid.n))) throw new Error('WX_TABLE: 12 rows of grid.n values');
+   require('./pathway/wx/wxfix.js')(w, WXF, TB);
+   w.eval(`window.__wxNat=(raw=>yy=>(yy==='metered'||yy==='metered_trk12')?raw(yy):__wxFixNat(yy))(window.__wxNat);`);
+   console.log('WX_FIX:', WXF, TB?JSON.stringify(TB.constants):'');
+   console.log('WX_FIX means (wind, new wind, solar, tracking), twelve years:', w.eval(`(()=>{ const m=a=>a.reduce((s,v)=>s+v,0)/a.length; let W=0,N=0,S=0,T=0; const ys=bldWeatherYears.meta.years.map(String); for (const y of ys){ const n=__wxNat(y); W+=m(n.wind); N+=m(windModOf(n.wind)); S+=m(n.solar); T+=m(solarTrkOf(n.solar)); } return [W,N,S,T].map(v=>(v/ys.length).toFixed(4)).join(', '); })()`)); }
+ if (WX==='metered_trk12') console.log('new tracking solar on metered: '+w.eval('(()=>{const t=__wxTrk12(); return t.from.toFixed(4)+" -> "+t.to.toFixed(4)+", x "+t.k.toFixed(4);})()'));
  // GRID (7 Oct 2026, TODO 14ar): the same grid-cost settings as the pathway run.
  w.eval(`if(!('bldGridCost' in FIXED)) throw new Error('bldGridCost missing');`+(process.env.GRID!==undefined?` state.bldGridCost=${+process.env.GRID};`:'')+(process.env.GRID_BEYOND!==undefined?` state.bldGridSpurBeyond=${+process.env.GRID_BEYOND};`:'')+(process.env.GRID_BATTHALF!==undefined?` state.bldGridBattHalf=${+process.env.GRID_BATTHALF};`:''));
  // The share of the integration charge new wind and solar paid in the optimiser (bldGridIntVreShare, 16 Oct 2026), so costGrid
@@ -291,7 +307,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
-     r.weather=WX||'modelled, twelve years'; r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
+     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:''); r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first

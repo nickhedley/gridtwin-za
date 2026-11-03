@@ -27,3 +27,15 @@ for spec in "c7 $C/pathway_c7.json 2026,2030,2035,2040" "ff $C/pathway_s_ff2040_
     env -i PATH="$PATH" HOME="$HOME" LNG=1 GRID=1 SS_FC=reservecoal YEARS=$3 IN=$2 OUTC=$O/$n.json WEATHER=metered_trk12 ${kk:+K=$kk} nice -n 5 node --max-old-space-size=4096 pathcheck.js > $O/$n.log 2>&1 &
     p=$!; echo "$(date -u +%FT%H:%MZ) $n pid $p" >> $O/progress.txt; wait $p; echo "$(date -u +%FT%H:%MZ) $n rc $?" >> $O/progress.txt
   done; done
+# The two plain errors fixed (WX_FIX=fixed: leap years, clock) and the wind correction on top (WX_FIX=corrected, WX_TABLE), on the twelve
+# modelled years and on modelled 2025 alone (message 683 (b), (c)).
+TB=${WX_TABLE:-/tmp/claude-0/-home-user-gridtwin-za/cd2ebea5-fdee-51da-b34b-eb3574ed8e65/scratchpad/windcorr/out/wind_corr_table.json}
+for spec in "c7 $C/pathway_c7.json 2026,2030,2035,2040" "ff $C/pathway_s_ff2040_c7.json 2040"; do set -- $spec
+  for fx in fixed corrected; do for wx in modelled 2025; do n=$1_${wx}_$fx; [ -s $O/$n.json ] && continue
+    env -i PATH="$PATH" HOME="$HOME" LNG=1 GRID=1 SS_FC=reservecoal YEARS=$3 IN=$2 OUTC=$O/$n.json WX_FIX=$fx WX_TABLE=$TB $([ $wx != modelled ] && echo WEATHER=$wx) nice -n 5 node --max-old-space-size=4096 pathcheck.js > $O/$n.log 2>&1 &
+    p=$!; echo "$(date -u +%FT%H:%MZ) $n pid $p" >> $O/progress.txt; wait $p; echo "$(date -u +%FT%H:%MZ) $n rc $?" >> $O/progress.txt
+  done; done; done
+# The page's 2025 run on the fixed and corrected modelled years against Eskom's 2025.
+for fx in fixed corrected; do [ -s $O/eskom2025_$fx.json ] && continue
+  WX_FIX=$fx WX_TABLE=$TB NODE_PATH=node_modules nice -n 5 node pathway/wx/eskom2025.js $O/eskom2025_$fx.json 10 > $O/eskom2025_$fx.log 2>&1
+  echo "$(date -u +%FT%H:%MZ) eskom2025_$fx rc $?" >> $O/progress.txt; done

@@ -9,7 +9,7 @@ for run, years in (('c7', ('2026', '2030', '2035', '2040')), ('ff', ('2040',))):
     for y in years:
         print('\n%s %s' % (run, y))
         print('%-16s %6s %8s %8s %8s %8s %8s %7s %7s %6s %6s %6s %6s' % ('weather', 'runs', 'shed', 'p95', 'p99', 'max', 'target', 'curt', 'coal', 'ps', 'li', 'vrfb', 'fe'))
-        for n in ('metered', 'metered_k40', 'metered_trk12', 'metered_trk12_k40', '2025', '2025_k40', 'modelled'):
+        for n in ('metered', 'metered_k40', 'metered_trk12', 'metered_trk12_k40', '2025', '2025_k40', '2025_fixed', '2025_corrected', 'modelled', 'modelled_fixed', 'modelled_corrected'):
             R = load('%s_%s' % (run, n))
             if not R: continue
             r = R.get(y)
