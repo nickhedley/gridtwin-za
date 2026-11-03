@@ -6786,6 +6786,12 @@ const FIXED = {
   // is wrong. 4% is the congestion framework's cap on new Cape wind, not a fleet rate. Was 4 until
   // 3 Oct 2026, briefly 0.24 (H1 2024). IRP's 2030 targets, grid delayed sets 10% for a corridor that is not built.
   congestionCurtailOn: true, congestionCurtailPct: 1.3,
+  // Test settings (user, 3 Nov 2026, message 690; both off, the default unchanged). congestionShape: null, the flat figure in every hour,
+  // as now; 'tech', the same energy for each technology taken only in the hours its curtailment is recorded (CONG_SHAPE_PV, CONG_SHAPE_WIND).
+  // psDayPumpMaxMW: null, pumped storage pumps from any surplus, as now; a number caps its pumping from a surplus at 09:00-16:59 at that
+  // many MW, in the engine and in the build LP (existing pumped storage): metered midday pumping was about 0.47 GW in March-August
+  // 2026 while solar was curtailed (ESK19679; RESULTS 'The engine against 2026's curtailment').
+  congestionShape: null, psDayPumpMaxMW: null,
   // National connection headroom, MW, sum of nodal/headroom_summary.json (GCCA 2025). Not read by
   // the engine; headroom enters through gridBuildChargeFor.
   congestHeadroomMW: 19940,
@@ -7964,6 +7970,13 @@ function simulate(u, prof, outPath, _soc0){
     const a = new Float64Array(solar.length);
     for (let h = 0; h < a.length; h++) a[h] = (E * (X ? (1 - _xs) * solar[h] + _xs * X[h] : solar[h]) + N * (T ? T[h] : solar[h])) / (E + N);
     return a; })() : solar;
+  // Congestion curtailment's shape (congestionShape 'tech', message 690 (c); a test): hourly shares for wind and solar that take the same
+  // energy as the flat figure, in their recorded hours. Null: the flat figure in every hour, as now.
+  const _cgTech = !!p.congestionCurtailOn && Math.max(0, p.congestionCurtailPct) > 0 && (p.congestionShape ?? FIXED.congestionShape) === 'tech';
+  const _cgW = _cgTech ? congShapeFactors(windU, CONG_SHAPE_WIND, p.congestionCurtailPct / 100).c : null;
+  const _cgP = _cgTech ? congShapeFactors(solarU, CONG_SHAPE_PV, p.congestionCurtailPct / 100).c : null;
+  // psDayPumpMaxMW (message 690 (d); a test): pumped storage's pumping from a surplus at 09:00-16:59 capped at that many MW.
+  const _psDayCap = (p.psDayPumpMaxMW ?? FIXED.psDayPumpMaxMW), _psCapAt = h => (_psDayCap != null && (h % 24) >= 9 && (h % 24) <= 16) ? Math.max(0, +_psDayCap) : Infinity;
   // demandYear 2025 swaps in 2025's own demand series wherever the default series was passed
   // (single run or weather years). The default is the 2026 series. 3 Oct 2026.
   const demand = (p.demandYear === 2025 && prof.demand === PROFILES.demand && PROFILES.demand_2025)
@@ -8677,7 +8690,8 @@ function simulate(u, prof, outPath, _soc0){
     // well counted every congested MWh twice (1.72 TWh reported for 0.92 lost). Fixed 3 Oct 2026.
     const _cgp = p.congestionCurtailOn ? Math.max(0, p.congestionCurtailPct) / 100 : 0;
     if (_cgp > 0){
-      windGen *= (1 - _cgp); pvGen *= (1 - _cgp);
+      if (_cgW){ windGen *= (1 - _cgW[h]); pvGen *= (1 - _cgP[h]); } else {
+      windGen *= (1 - _cgp); pvGen *= (1 - _cgp); }
 
     };
     // dispatch order is deliberate, not A shortcut (settled 14 Aug 2026).
@@ -9232,9 +9246,12 @@ function simulate(u, prof, outPath, _soc0){
     // signal and zeroes the marginal price wherever it is non-zero.
     const _cgp2 = p.congestionCurtailOn ? Math.max(0, p.congestionCurtailPct) / 100 : 0;
     if (_cgp2 > 0){
+      if (_cgW){ const _lost2 = windGen * _cgW[h] + pvGen * _cgP[h]; windGen *= (1 - _cgW[h]); pvGen *= (1 - _cgP[h]); congestMW[h] = _lost2; congestTot += _lost2; }
+      else {
       const _lost2 = (windGen + pvGen) * _cgp2;
       windGen *= (1 - _cgp2); pvGen *= (1 - _cgp2);
       congestMW[h] = _lost2; congestTot += _lost2;
+      }
     }
     const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF*nucShapeAt(p, h), hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
     // System strength ('inertia', decision D3): inertia from what spins before dispatch (committed coal, nuclear, hydro and CSP at
@@ -9397,7 +9414,7 @@ function simulate(u, prof, outPath, _soc0){
       // This is the real mechanism behind "inflexible coal causes additional curtailment".
       const coalFloor=Math.min(cAvail+_walkMW,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
-      const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
+      const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc,_psCapAt(h)); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
       let btChg=Math.min(surplus,battPowerH,battEnergy-battSoc,_resRoom()); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       // export before curtailing, but after storage. Stored energy can be sold
@@ -9479,7 +9496,7 @@ function simulate(u, prof, outPath, _soc0){
       residual-=coalGen;
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
-        const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
+        const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc,_psCapAt(h)); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
         let btChg=Math.min(forcedSurplus,battPowerH,battEnergy-battSoc,_resRoom()); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
@@ -12991,6 +13008,13 @@ function bldBuildLP(opts){
   };
   const AV_CONG = (S.congestionCurtailOn ?? FIXED.congestionCurtailOn)
     ? 1 - Math.max(0, S.congestionCurtailPct) / 100 : 1;
+  // Congestion curtailment's shape (congestionShape 'tech', message 690 (c); a test): by hour of day, k from the metered profile (the same
+  // energy share as the flat figure on it); off, AVW and AVP are AV_CONG and the LP is unchanged. psDayPumpMaxMW (690 (d); a test): existing
+  // pumped storage's charging at 09:00-16:59 at most that many MW.
+  const _CGT = (S.congestionShape ?? FIXED.congestionShape) === 'tech' && AV_CONG < 1;
+  const _CGKW = _CGT ? congShapeFactors(PROFILES.wind, CONG_SHAPE_WIND, 1 - AV_CONG).k : 0, _CGKP = _CGT ? congShapeFactors(PROFILES.solar, CONG_SHAPE_PV, 1 - AV_CONG).k : 0;
+  const AVW = h => _CGT ? 1 - Math.min(1, _CGKW * CONG_SHAPE_WIND[h]) : AV_CONG, AVP = h => _CGT ? 1 - Math.min(1, _CGKP * CONG_SHAPE_PV[h]) : AV_CONG;
+  const PS_DAY_CAP = S.psDayPumpMaxMW ?? FIXED.psDayPumpMaxMW;
   const RES_MW  = (S.reserveEnabled ?? 1) ? (S.reserveOperatingMW || 0) : 0;
   const RES_VRE = (S.reserveEnabled ?? 1) ? (S.reserveVrePct || 0) / 100 : 0;
   const RES_VRE_BASE = S.reserveVreBaseMW || 0;
@@ -13048,21 +13072,22 @@ function bldBuildLP(opts){
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
-                  + exWind*wp*AV_CONG + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AV_CONG + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
+                  + exWind*wp*AVW(h) + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AVP(h) + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
-        + ' + ' + cum('wind',y).map(v => (wpN*AV_CONG).toFixed(4)+' '+v).join(' + ')
-        + (CAPE_MW > 0 ? Y.filter(yy => yy <= y).map(yy => ' - ' + (CAPE_CURT*wpN*AV_CONG).toFixed(4) + ' cw_' + yy).join('') : '')
-        + ' + ' + cum('pv',y).map(v => (spN*AV_CONG).toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('wind',y).map(v => (wpN*AVW(h)).toFixed(4)+' '+v).join(' + ')
+        + (CAPE_MW > 0 ? Y.filter(yy => yy <= y).map(yy => ' - ' + (CAPE_CURT*wpN*AVW(h)).toFixed(4) + ' cw_' + yy).join('') : '')
+        + ' + ' + cum('pv',y).map(v => (spN*AVP(h)).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
-        + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
+        + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AVW(h)).toFixed(4)+' '+v).join(' + ') : '')
         // Enrolled batteries out of the passive profile (message 637): + profile x 0.75 x E on the left, E = vppp x 2.5 h.
         + (VPP_ON ? lpTerm(btmDay(y, r)[h] * BTM_Y[y].use * VPP_HN, 'vppp_' + y, 6) : '')
         // Geyser control (G3): load taken off and returned.
         + (GY_RED(h) ? ' + gs_' + k : '') + (GY_ON ? GY_BACK(y, h).map(q => ' - ' + q.c.toFixed(6) + ' gs_' + y + '_' + r.d + '_' + q.j).join('') : '')
         // The cycling stock's profile on the change from 2026, [C(y) - C0], in demand (P3, messages 622-624 and 630).
         + ' = ' + (BTM_ON ? dem - fixed + btmDay(y, r)[h] * BTM_Y[y].use * (BTM_Y[y].C - BTM_Y[y].C0) * 1000 : dem - fixed).toFixed(1));
+      if (PS_DAY_CAP != null && PS_ON && h >= 9 && h <= 16) L.push(' pdc_' + k + ': pchg_' + k + ' <= ' + Math.max(0, +PS_DAY_CAP).toFixed(1));
       if (GY_RED(h)) L.push(' gysmax_' + k + ': gs_' + k + ' - ' + (geyserShare(h) * GY_Y[y].rot).toFixed(4) + ' gy_' + y + ' <= 0');   // G3: the shape's share (x a quarter in 'rotation')
       const _rcf = r.coalFrac ? r.coalFrac[h] : (r.tail ? eafY * TAIL_COAL_FACTOR : eafY);
       // Rounding, 7 Oct 2026: coalCap is bldCoalMW(y) x _rcf, but the coefficient was written to 4 decimals and the
@@ -16133,6 +16158,21 @@ function windModOf(wind){
   const t = new Float64Array(wind.length);
   for (let h = 0; h < wind.length; h++) t[h] = Math.min(1, wind[h] * WIND_MOD_MAP[Math.min(49, Math.floor(wind[h] * 50))]);
   wind.mod = t; return t;
+}
+// Congestion curtailment's hour-of-day shapes (message 690 (c); congestionShape 'tech', a test). Relative weights, not rates. Solar: the share
+// of expected output short in March-August 2026 by hour of day (ESK19679, Eskom data, the analysis ours; RESULTS '2026's solar shortfall'),
+// 09:00-17:00. Wind: NERSA's 2025 monitoring report (issue 27, March 2026) puts 2025's curtailment at night, when demand was low; the
+// hours, 22:00-05:59 equally, are ours (unsourced detail).
+const CONG_SHAPE_PV = [0,0,0,0,0,0,0,0,0,12,20,28,32,33,32,30,21,9,0,0,0,0,0,0];
+const CONG_SHAPE_WIND = [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1];
+// The factor k and the hourly curtailed shares c[h] = min(1, k x shape[h mod 24]) that take share pct of the series' energy: bisection.
+function congShapeFactors(u, shape, pct){
+  let tot = 0; for (let h = 0; h < u.length; h++) tot += u[h];
+  const lostAt = k => { let s = 0; for (let h = 0; h < u.length; h++) s += Math.min(1, k * shape[h % 24]) * u[h]; return s; };
+  let lo = 0, hi = 1; while (lostAt(hi) < pct * tot && hi < 1e6) hi *= 2;
+  for (let i = 0; i < 80; i++){ const mid = (lo + hi) / 2; if (lostAt(mid) < pct * tot) lo = mid; else hi = mid; }
+  const k = (lo + hi) / 2, c = new Float64Array(u.length); for (let h = 0; h < u.length; h++) c[h] = Math.min(1, k * shape[h % 24]);
+  return { k, c };
 }
 // Existing utility solar's tracker share on the modelled years (message 684 (f)): X with (1 - X) F12 + X T12 = existPvMeteredCF,
 // F12 and T12 the twelve years' mean fixed-tilt and tracking output (weatherYearNational); clamped to 0-1. Null until the years load.
@@ -22321,7 +22361,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldCocBase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
-  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, existPvTrackShareAt, wxWindCorrOn, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
+  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, existPvTrackShareAt, wxWindCorrOn, congShapeFactors, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
   btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
   ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
   coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt, coalCarbonFloorR });
@@ -22329,7 +22369,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
 const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
   ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, CARBON_COAL_FLOOR_R_KWH, CARBON_COAL_FLOOR_TO, CARBON_CPI_PA, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
-  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, _existPvX, WIND_CORR_TABLE, _MSTART_H, COAL_MINSTABLE_CURVE,
+  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, _existPvX, WIND_CORR_TABLE, CONG_SHAPE_PV, CONG_SHAPE_WIND, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
   BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK, BLD_COC_PRIVATE_PREM, BLD_COC_GROUP, BLD_COC_NAB_GAP, BLD_COC_PRIVATE_SHARE, BLD_COC_PVWIND_CLOSED, BLD_COC_PVWIND_TECH, BLD_BUILD_Y,

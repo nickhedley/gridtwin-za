@@ -176,6 +176,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // Coal settings (PR C, build 2026-10-24a; messages 359, 363): the pathway's own; a run recorded before PR C has none and replays with
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
+ // Congestion and pumping tests (message 690; off by default): CONG_OFF=1 no flat congestion curtailment; CONG_SHAPE=tech the same energy
+ // in its recorded hours by technology; PS_DAY_CAP=<MW> pumped storage's pumping from a surplus at 09:00-16:59 capped. Recorded in weather.
+ const C690=[]; if (process.env.CONG_OFF==='1'){ w.eval('state.congestionCurtailOn=false;'); C690.push('congestion off'); }
+ if (process.env.CONG_SHAPE){ if (process.env.CONG_SHAPE!=='tech') throw new Error('CONG_SHAPE must be tech'); w.eval("state.congestionShape='tech';"); C690.push('congestion shaped'); }
+ if (process.env.PS_DAY_CAP){ const c=+process.env.PS_DAY_CAP; if (!(c>=0)) throw new Error('PS_DAY_CAP: MW'); w.eval(`state.psDayPumpMaxMW=${c};`); C690.push('daytime pumping <= '+c+' MW'); }
  // COAL_MSL_DESIGN_FROM=<year> (message 688 (a); a sensitivity, test only): the coal practice floor ends before this year instead of the
  // run's recorded coalMslDesignFromYear (2030), e.g. 2027 or 2028 for a market start in April 2027. Recorded in weather.
  const CMD=process.env.COAL_MSL_DESIGN_FROM?+process.env.COAL_MSL_DESIGN_FROM:null; if (CMD){ if (!(CMD>=2026&&CMD<=2040)) throw new Error('COAL_MSL_DESIGN_FROM: a year'); w.eval(`state.coalMslDesignFromYear=${CMD};`); console.log('COAL_MSL_DESIGN_FROM:', CMD); }
@@ -328,7 +333,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
-     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(CMD?', coal practice floor to '+(CMD-1):''); r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
+     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first
