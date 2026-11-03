@@ -20984,3 +20984,88 @@ Fossil-free 2040: no unserved in any draw with any of the three calms.
   from the modelled years' own worst periods, which the probability weighting covers; a metered calm written into every year has no
   weight, and in the LP it would size the fleet to a once-observed event in every year. A single stress window built from July 2025's
   calm in the 2035 and 2040 LPs would show what it costs to cover it. Nick decides.
+
+### Congestion curtailment in single-year 2030 and 2035 (message 690, part 2): the flat 1.3% adds 0.9 and 2.2 TWh of loss and costs R0.5bn and R0.8bn a year; a fifth to a third of it falls in hours the dispatch already curtails; recommended for the reruns: none, with the pumping cap as a sensitivity
+
+Settings: claude/weather-fixes d579f95-fd2578b (fixed weather files, BUILD_STAMP 2026-11-03b; the engine identical across those
+commits); harness/pathway/wx/single_tests.sh (f33a94f): c7's central settings (env_c6a.sh, GAS_FIRST=2035, chain_c7's C7 list),
+single-year LP OPER_FROM=y HORIZON=y FIX_FROM=pathway_c7.json FIX_TO=y-1, pass 1, 19 days, native HiGHS simplex; the engine (pathcheck.js
+LNG=1 GRID=1 SS_FC=reservecoal, twelve modelled years, 120 draws) on each LP's own fleet (pathway_perfail.js's schedule, checked equal to
+the LP solution) and, separately, on c7's own fleet. Cases: (a) CONG_OFF=1; (b) as now; (c) CONG_SHAPE=tech; (d) CONG_OFF=1
+PS_DAY_CAP=469. LP keys 2030: 8ab74cf3d6, db669bdbf3, 584dab5fc7, 04cf52f7b8; 2035: 9663fb9afa, caa438b7dc, 09c8255803, 79476b2d0a.
+Outputs harness/out/single (an.json by single_an.py). 3 Nov 2026, 20:15-21:05 UTC. 2026 against metered by hour and month: part 1 above.
+
+| | 2030 (a) none | (b) flat | (c) shaped | (d) none, pumping cap | 2035 (a) | (b) | (c) | (d) |
+|---|---|---|---|---|---|---|---|---|
+| LP objective against (a), R bn | 0 | +0.48 | +0.47 | +0.98 | 0 | +0.77 | +1.06 | +1.38 |
+| year-y builds: wind / solar, MW | 2,500 / 3,277 | 2,500 / 3,277 | 2,500 / 3,277 | 2,112 / 3,277 | 2,419 / 3,343 | 2,447 / 4,028 | 2,202 / 4,332 | 3,306 / 1,955 |
+| lithium MW / MWh | 1,992 / 4,694 | 1,925 / 4,412 | 1,912 / 4,377 | 2,615 / 5,428 | 512 / - | 520 / - | 528 / - | 1,240 / 8,548 |
+| coal retired early / grid-forming, MW | 483 / 1,248 | 347 / 1,214 | 361 / 1,204 | 0 / 1,288 | 0 / 270 | 0 / 42 | 0 / 0 | 0 / 400 |
+| LP coal, TWh | 118.6 | 119.5 | 119.5 | 119.9 | 61.8 | 62.4 | 63.2 | 61.7 |
+| LP curtailment, TWh | 0.00 | 0.00 | 0.00 | 0.15 | 16.8 | 16.8 | 17.5 | 17.3 |
+| engine, own fleet: unserved mean / worst 1% / worst draw, GWh | 1.30 / 7.1 / 84.0 | 1.30 / 7.2 / 84.4 | 1.34 / 7.1 / 84.3 | 0.99 / 23.7 / 31.2 | 0.91 / 10.5 / 23.3 | 0.95 / 10.5 / 24.5 | 1.05 / 10.7 / 27.8 | 0.60 / 4.7 / 13.5 |
+| engine, own fleet: curtailment / coal, TWh | 1.74 / 122.7 | 1.66 / 123.5 | 1.70 / 123.6 | 3.96 / 125.7 | 17.6 / 70.4 | 17.7 / 70.9 | 18.1 / 71.5 | 18.3 / 70.1 |
+| engine, c7's fleet: unserved mean / worst 1% / worst draw, GWh | 1.25 / 24.3 / 31.2 | 1.29 / 24.2 / 33.8 | 1.29 / 25.8 / 33.2 | 1.26 / 22.5 / 31.2 | 1.08 / 22.3 / 31.2 | 1.12 / 24.1 / 34.8 | 1.12 / 24.8 / 35.5 | 1.40 / 22.3 / 34.9 |
+| engine, c7's fleet: dispatch curtailment / coal, TWh | 2.32 / 123.2 | 2.15 / 124.0 | 2.20 / 124.0 | 5.25 / 125.4 | 13.2 / 73.2 | 12.5 / 74.6 | 12.6 / 74.8 | 17.1 / 75.7 |
+
+The engine's curtailment is the dispatch's; the flat and shaped figures' energy is taken before dispatch and is not in it. Engine cost is
+not compared here: it pays REIPPPP's tariff on every MWh delivered and nothing on energy curtailed (index.html, systemCostR), so it rises
+when curtailment falls; the LP objective is the resource-cost comparison. Standard error of the engine's mean unserved: 0.3-0.5 GWh.
+
+- Double counting (same fleet, c7's): the flat figure takes 0.91 TWh in 2030 and 2.19 TWh in 2035 (1.3% of the wind and solar
+  available); dispatch curtailment falls by 0.17 and 0.77 TWh when it is on, so 19% and 35% of its energy falls in hours the dispatch
+  curtails anyway, and the rest, 0.74 and 1.42 TWh, is added loss. The 1.3% was sized to 2025's curtailment, which NERSA describes as low
+  demand at night: system balance, which the dispatch is meant to produce. Wherever the dispatch produces it, the flat figure counts it again.
+- Should the flat figure stay fixed as the fleet grows: no basis for it. As a share of output it grows with the fleet (0.91 to 2.19 TWh
+  from 2030 to 2035) and overlaps the dispatch more (19% to 35%), while network congestion depends on where wind and solar are built
+  against the grid, which a fixed share does not follow.
+- System balance and network limits in 2026 (part 1): of the gap between the engine without the flat figure (9.8 MWh of solar curtailed
+  per MW, January-August) and metered (about 207), the pumping cap closes 47% (102 MWh/MW) and the pumping cap with 2026's midday demand
+  77% (160 MWh/MW). The remaining fifth or so (about 46 MWh/MW) is not produced by single-node dispatch: an upper bound on network limits,
+  since it also holds the curtailment order (the engine cuts wind and solar pro rata) and any remaining demand or pumping difference. The
+  pumping cap describes 2026's operation; whether its cause is system balance or the network is not established from the data.
+- Recommendation for the reruns: (a), no flat congestion curtailment. Basis: the 1.3% stands for system-balance curtailment the dispatch
+  should produce, so it double counts; it does not reproduce 2026's timing (79 MW at 13:00 against about 560 MW metered, Mar-Aug); it has
+  no basis for growing with the fleet; it costs R0.5-0.8bn a year in the LP. Against: (a) flatters reliability slightly (c7's fleet: mean
+  unserved 1.25 against 1.29 GWh in 2030, 1.08 against 1.12 in 2035, within one standard error) and leaves 2026's curtailment far below
+  metered. Report (d) as a sensitivity ('pumping as in 2026'): it closes most of 2026's per-MW gap, costs R1.0bn (2030) and R1.4bn (2035)
+  against (a), and moves 2035's build toward wind and lithium (3,306 MW wind and 1,240 MW / 8,548 MWh against 2,419 and 512 MW). Network
+  curtailment stays unmodelled until the zonal layer after the note (662). Nick decides.
+- Surprising, recorded: the LP's 2030 fleets (a)-(c), re-optimised in 2030 alone, have one engine draw of about 84 GWh unserved (worst 1%
+  7.1-7.2), against 31-34 on c7's fleet; (d)'s fleet does not. Not investigated tonight.
+
+### The coal practice floor ending before 2027 or 2028 (message 688 (a); a sensitivity, the central unchanged)
+
+Settings: as above (claude/weather-fixes, fixed weather files); engine (pathcheck.js COAL_MSL_DESIGN_FROM=2030, 2028 or 2027) on c7's
+fleet, 2027-2030, run_engine_queue.sh, outputs harness/out/wx686 c7_floor*; single-year LPs in 2027, 2028 and 2029 with the floor as now
+and ended before that year (COAL_MSL_DESIGN_FROM=y), each LP's fleet then in the engine (single_tests.sh, floor_now_y and floor_end_y;
+LP keys 2027 ca0d64cdb9 / c3e3e53862, 2028 23b7ffaa9e / 2fac8ff3f4, 2029 6b92212228 / dd92bd8922). 3 Nov 2026, 20:29-20:59 UTC.
+
+Engine on c7's fleet (the floor ending before 2028 matches 'before 2030' in 2027 and 'before 2027' from 2028):
+
+| | 2027 floor | ended | 2028 floor | ended | 2029 floor | ended | 2030 (no floor in any case) |
+|---|---|---|---|---|---|---|---|
+| coal, TWh | 147.3 | 143.4 | 148.0 | 142.9 | 140.9 | 133.7 | 124.0 |
+| curtailment, TWh | 3.26 | 0.05 | 4.31 | 0.14 | 6.80 | 0.58 | 2.15 |
+| wind and solar used, TWh | 33.3 | 36.5 | 35.0 | 39.2 | 45.1 | 51.3 | 67.1 |
+| diesel open cycle, TWh | 0.10 | 0.25 | 0.09 | 0.25 | 0.08 | 0.28 | 0.41 |
+| pumped storage / lithium throughput, TWh | 5.08 / 0.58 | 3.53 / 0.09 | 5.45 / 0.76 | 3.42 / 0.17 | 5.91 / 1.02 | 3.43 / 0.52 | 4.32 / 1.62 |
+| CO2, Mt | 163.9 | 160.2 | 164.7 | 159.9 | 156.8 | 149.9 | 138.8 |
+| unserved mean / worst 1% / worst draw, GWh | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 0.01 / 0.4 / 0.4 | 0.02 / 0.4 / 0.6 | 1.29 / 24.2 / 33.8 |
+| engine cost, R bn (see the note above on REIPPPP payments) | 232.0 | 233.8 | 240.3 | 242.0 | 236.4 | 237.3 | 242.4 |
+
+Single-year LPs: ending the floor lowers the objective by R2.02bn (2027), R1.41bn (2028) and R0.75bn (2029); the year's builds are the
+same except grid-forming (+33, +65 and +456 MW; the LP with the floor builds none in 2029); LP coal falls by only 0.5-0.7 TWh and the LP
+curtails nothing with or without the floor, while the engine on the same fleets curtails 3.3-5.7 TWh with it. 2030's single-year LP is
+unchanged by construction (the floor ends before 2030 in all cases, and earlier builds are fixed at c7's).
+
+- Effect: in the engine the floor holds coal 3.9-7.3 TWh a year higher and curtails 3.2-6.2 TWh of wind and solar; ending it frees that
+  energy, lowers CO2 by 3.7-6.9 Mt, and runs pumped storage and lithium less; unserved does not move.
+- What a market start does and does not change in the model: the only change tested is the year the practice floor ends (units held at
+  0.715 of capacity, 2026 practice, instead of their design minimums of 0.57 and 0.52). The engine already commits and dispatches on cost
+  (start costs weighed, the 24-hour minimum down time, reserve and the synchronous floor), so a market adds no efficiency it does not
+  already assume, and there is no bidding, price formation, market power or contract in it. Unchanged: design minimums, availability,
+  the synchronous floor, reserve, network limits, REIPPPP's terms, imports and exports, and every build already fixed. Whether a market
+  start would end the floor is not established: the data do not show why units run at it.
+- The LP and the engine disagree on the floor's size: the LP sees a cost (R0.75-2.0bn) but no curtailment and little coal; the engine sees
+  3-7 TWh of each. Recorded; not investigated tonight.
