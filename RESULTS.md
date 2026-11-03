@@ -20931,3 +20931,56 @@ demand 64/241/451/609/671/597/279/15. Metered 2026 shortfall by hour (mostly cur
   of PV loss to (a)'s 0.035 in January-August.
 - Not concluded yet: the treatment for the reruns, pending the single-year 2030 and 2035 results on the fixed data. Pumped storage's
   daytime cap is a test setting describing 2026's operation, not a decided rule.
+
+### The engine on the fixed weather files: three wind series and the three metered calms (message 689 (3); 686 (b), 687 (b), 688 (b))
+
+Settings: claude/weather-fixes d579f95 (BUILD_STAMP 2026-11-03b; weather files on SAST with the leap years fixed, the 304 calls
+fetched; 2014's and profiles_regional.json 2023's first two SAST hours still stand-ins, flagged, until the 108 extra calls land;
+offshore 2014's first two hours a stand-in); pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal, the twelve modelled years, 10 draws a weather
+year (120); c7's central (harness/pathway/c7/pathway_c7.json) in 2030, 2035, 2040 and c7's Fossil-free (pathway_s_ff2040_c7.json) in
+2040. Wind series: stored (the fixed files, uncorrected); five-constant (WX_WINDCORR=1, nodal/wind_corr_table.json, the ESK19679 refit:
+v_k 7.0 m/s, alpha 0.80, beta 0.340 (0.369 per region), A 0.536, phi 11.54); six-constant (WX_WINDCORR_TABLE, scratch table, not
+committed: the same with the offset fading in between 3.0 and v_c 4.0 m/s; beta 0.341 (0.373), A 0.538, phi 11.54). Same draws in
+every run, so differences are paired. Unserved in GWh a year: mean over draws (standard error 0.3-0.5 for c7), worst 1% of draws (p99),
+worst draw. Script harness/out/wx686 via run_engine_queue.sh; table by harness/pathway/wx/summarise686.py. 3 Nov 2026, 20:15-20:45 UTC.
+Eskom data (ESK19679) in the fit and the calms, the analysis ours.
+
+| c7 central | 2030 stored | five | six | 2035 stored | five | six | 2040 stored | five | six |
+|---|---|---|---|---|---|---|---|---|---|
+| unserved mean, GWh | 1.29 | 1.05 | 1.06 | 1.12 | 0.97 | 1.01 | 1.23 | 0.74 | 0.77 |
+| worst 1% of draws, GWh | 24.2 | 19.9 | 20.0 | 24.1 | 25.0 | 24.9 | 34.9 | 25.1 | 25.4 |
+| worst draw, GWh | 33.8 | 21.2 | 21.2 | 34.8 | 29.6 | 29.6 | 35.5 | 27.4 | 27.2 |
+| curtailment, TWh | 2.15 | 1.83 | 1.83 | 12.46 | 10.64 | 10.64 | 25.43 | 22.55 | 22.54 |
+| coal, TWh | 124.0 | 124.3 | 124.3 | 74.6 | 74.1 | 74.1 | 54.8 | 53.5 | 53.5 |
+| cost, R bn | 242.4 | 242.4 | 242.4 | 280.0 | 279.9 | 279.9 | 330.5 | 329.8 | 329.8 |
+
+Fossil-free 2040: no unserved in any draw on all three series; curtailment 241.6 (stored), 239.2 (five), 239.2 TWh (six); cost R605.4bn.
+
+- Both corrections lower c7's unserved against the stored series (2040: mean 1.23 to 0.74-0.77 GWh, worst draw 35.5 to 27.2-27.4).
+  The corrected series flatter reliability on this measure; the stored series is the conservative one.
+- The five- and six-constant tables give the same results within the noise (mean differences 0.01-0.04 GWh against standard errors of
+  0.3-0.35; identical worst draws in 2030 and 2035). The six-constant is the less flattering of the two by those small margins, which
+  under rule 366 favours it if a correction is adopted. Neither reproduces the long metered calms (the limitation stands).
+
+Lull stress test (reported apart: a stress case, not probability-weighted, not in any mean unserved figure elsewhere). Each of ESK19679's
+three long calms (per-unit metered fleet output, kept local) is written over the same calendar hours of every modelled year: May 2023
+(34 h), July 2025 (36 h), May 2026 (31 h). Stored (fixed) series otherwise.
+
+| c7 central | 2030 none | May 2023 | July 2025 | May 2026 | 2035 none | May 2023 | July 2025 | May 2026 | 2040 none | May 2023 | July 2025 | May 2026 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| unserved mean, GWh | 1.29 | 1.36 | 1.40 | 1.34 | 1.12 | 1.71 | 2.32 | 1.27 | 1.23 | 1.44 | 2.62 | 1.31 |
+| worst 1% of draws, GWh | 24.2 | 24.2 | 31.2 | 24.2 | 24.1 | 34.8 | 42.0 | 24.1 | 34.9 | 34.9 | 36.5 | 34.9 |
+| worst draw, GWh | 33.8 | 33.8 | 33.8 | 33.8 | 34.8 | 39.9 | 101.2 | 34.8 | 35.5 | 35.5 | 101.1 | 35.5 |
+
+Fossil-free 2040: no unserved in any draw with any of the three calms.
+
+- July 2025's 36-hour calm is the one that matters: in c7's 2035 and 2040 fleets it doubles the mean and its worst draw is about 101
+  GWh, five times the 20 GWh standard; May 2026's calm, at the end of a sunnier May, barely moves the result.
+- What the test assumes: today's metered fleet's per-unit output during the calm stands for the whole future fleet in those hours (no
+  gain from a wider spread of sites or offshore; today's fleet sits mostly in the Eastern, Northern and Western Cape); new wind takes the
+  national modern-turbine map of the metered values, so newer turbines make more of the same weak wind; the calm falls on the same dates
+  with each year's own demand and solar and is not re-paired with a cold or overcast spell; nothing else in the year changes.
+- Whether the build LP's stress windows should carry them: recommended as a sensitivity, not in the central. The central's windows come
+  from the modelled years' own worst periods, which the probability weighting covers; a metered calm written into every year has no
+  weight, and in the LP it would size the fleet to a once-observed event in every year. A single stress window built from July 2025's
+  calm in the 2035 and 2040 LPs would show what it costs to cover it. Nick decides.
