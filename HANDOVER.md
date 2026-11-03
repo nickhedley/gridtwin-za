@@ -37,6 +37,11 @@ Surprising, recorded, not investigated tonight
   36-hour calm), weighted as 30 days; variant (c) 1.5 TWh. The clustered variants (b), (d), (e) have none.
 - The LP's 2030 single-year fleets (a)-(c) have one engine draw of about 84 GWh.
 
+Stalls (SAST)
+- About 00:02 SAST 4 Nov: the container restarted and stopped three background jobs (fetch piece 5 at 54 of 79 extras, the patch
+  waiter, acceptance piece 2 a minute into the free-fleet 365-day solve). Nothing was lost: the cache read cleanly, the LP was fully
+  written. All three relaunched at 00:05 SAST (fetch piece 6, the waiter, accept.sh piece 2 from the free-fleet solve).
+
 Slips (SAST)
 - The 108 extras: due 23:30 SAST in 14.11, now about 00:35 (a little over an hour; the rebuild was not held for them, as decided).
 - Otherwise ahead: the engine runs, the 690 single-year tests and the extremes on the fixed data (planned 4-5 Nov) are done; tests 1 and
