@@ -1088,3 +1088,22 @@ Dates (SAST), replacing 14.9's:
 - 7-9 Nov: the remaining tests; 10 Nov the day count and the 2045 inputs; reruns 10-13 Nov on three sessions; the note 14-18 Nov.
 
 Slips: none at 3 Nov, 16:30 SAST.
+
+### 14.11 Message 686 (3 Nov 2026, evening): where its items fit
+
+- (a) Existing solar 0.256 (2023-2025), 2026 left out with its reason: done on claude/weather-fixes.
+- (b) The calm-preserving wind correction (six constants), out of sample on ESK19679: helper running; then the engine's unserved mean,
+  worst 1% and worst draw with the stored, five- and six-constant series on the fixed data: 4 Nov, after the rebuild. The setting stays
+  off; under rule 366 the option that does not flatter reliability is preferred.
+- (c) The 108 extra calls (2013-12-31, 98 sites; 2022-12-31, 10 centroids) queued after the 304; the rebuild runs with the flags if they
+  are late and is patched after (about 1.5 hours at 75 s a call, so about 23:30 SAST on 3 Nov).
+- (d) Curtailment against 2026, before the reruns: the Eskom side (timing by month and hour, coal at its floor by day, pumping, the July
+  statements) by a helper now; the engine side (2026's fleet on readable 2026 weather, the 2025 replay's near-zero explained, the largest
+  lever tested by setting, single-year 2030 and 2035 LPs) on 4-5 Nov. No engine rule changes without Nick.
+- (e) The development-plan CSV and the corridor file: branch claude/site-tdp-corridor (d33c5c2); stored panels and suite running; pull
+  request this evening.
+- (f) The seven unlisted failures: helper bisecting at low priority; report 4 Nov.
+- Dates otherwise as 14.10: the weather-fixes pull request on the night of 3 Nov or first thing 4 Nov; tests 1, 6 and 11 from 4 Nov; the
+  extremes on 5 Nov; reruns 10-13 Nov.
+- Slips: none at 3 Nov, 17:00 SAST. Risk: the machine runs the site suite, the weather rebuild and suite, three helpers and the fetch
+  tonight; the weather-fixes suite may finish after midnight.
