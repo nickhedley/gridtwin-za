@@ -20216,3 +20216,86 @@ not a CO2 row. The engine check, chronological over 8,760 hours, needs none of i
 2026-40 (every draw 0.0), no hour short of the inertia floor, open-cycle at most 0.06% (2026), curtailment unchanged (239.8 TWh in
 2040), R127bn cheaper; with vanadium 0.03 GWh in 2032 (worst draw 1.2). Finding: the build LP's chained representative days overvalue
 storage energy carried across the days in a fossil-free year; which Fossil-free figure the pack uses is the user's decision.
+
+### Decisions of 3 Nov 2026 (messages 668-671): TODO 14mo before the note; the age-curve runs, the senior contact's stack and any pack refill held until the fix; c7's outputs the before-fix baseline
+
+- TODO 14mo (chronological storage across representative days) moves before the note; the fix goes ahead whatever the build-cut test
+  (667) shows (668). Scope: the linking, and the representative days' weights and mapping it needs (670); weather years stay out
+  (669 (e)). Design note for review, nothing built: claude/storage-link-design, docs/storage-linking-design-2026-11-03.md (f428a4f).
+- Held until the fix (668 (a)): the age-curve runs (s_coalage_c7, s_ageingcoal_c7), the senior contact's stack (chain_c7.sh 3age) and
+  any pack refill; claude/c7-pack is not merged. Kept: every c7 output, committed as the before-fix baseline in harness/pathway/c7
+  (claude/c7-runs, 466e8d5). Phase 4's six runs are the pre-fix baseline, not for quoting (670 (g)).
+- Dropped (668 (b)): the build-cut test on Deep, and the single-group cuts (667 (b)).
+
+### c7 phase 4, the six MTSAO runs: every run meets the standard with no hour short; the pre-fix baseline, not for quoting (message 670 (g))
+
+Build 2026-11-02y, claude/c7-runs (85f94ea), chain_c7.sh phase 4 (c7's settings: SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8
+VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1, env_c6a.sh, GAS_FIRST=2035, NTCSA 20 GWh standard,
+MAXP=3), each engine-checked (pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal, groups a/b/c); solves 3 Nov 2026 05:2x-07:02 UTC. High
+demand is DEMAND=rate:3.30; the Reference Case adds COAL_EAF_PATH=2027:66,2028:67,2029:68,2030:69 then 70 to 2040,
+AVDED_OFF_AFTER=2030 and REIPPP_RETIRE=2033-2036:375/325/50 (wind/solar/CSP, MW a year); "kept" omits REIPPP_RETIRE; "no gas" is
+GAS_CAP=0 OCGD=1 (diesel peakers allowed, 663 (e)). Total on the pack's basis (engine PV + system strength + compliance, 8%, 2026-40).
+
+| Run | Total R bn | Change on c7 | CO2 Mt | Highest unserved GWh (year) | Open-cycle max | Hours short |
+|---|---|---|---|---|---|---|
+| c7 (central) | 2,467.7 | - | 1,715 | 6.41 (2032) | 1.76% | 0 |
+| s_mtsao_hi_nogas_c7 | 2,582.0 | +114.3 | 1,612 | 16.73 (2040) | 1.53% | 0 |
+| s_mtsao_hi_c7 | 2,574.5 | +106.8 | 1,688 | 6.92 (2032) | 1.48% | 0 |
+| s_mtsao_ref_nogas_c7 | 2,569.4 | +101.7 | 1,708 | 10.32 (2040) | 1.28% | 0 |
+| s_mtsao_ref_c7 | 2,562.5 | +94.8 | 1,802 | 5.64 (2032) | 1.65% | 0 |
+| s_mtsao_refkeep_nogas_c7 | 2,560.4 | +92.7 | 1,704 | 12.43 (2040) | 1.34% | 0 |
+| s_mtsao_refkeep_c7 | 2,552.9 | +85.2 | 1,798 | 6.26 (2032) | 1.59% | 0 |
+
+Long-duration storage built: s_mtsao_hi_nogas 250 MW vanadium and 1,500 MW pumped storage; s_mtsao_ref_nogas 146 MW vanadium and
+1,500 MW pumped storage. Caveat: built on the chained representative days under review (TODO 14mo); rerun after the fix.
+
+### IRP 2025 builds with grid-forming batteries sized to their own shortfall: no hour short of the inertia floor; R4.5bn and R5.8bn less than without (message 663 (b))
+
+Method: harness scratch irpgfm.py sized each year's grid-forming MW from the IRP build's own engine check (the hours short of the
+62.9 GW.s floor and their depth), margin 1.1, 1/0.9 MVA per MW, H 11 s (the c7 credit: gfmH x kM x min(gfmMW, battery headroom)),
+added to out/c7/irp's pathway files as sched[y].gfm, then engine-checked as the chain's checks (LNG=1 GRID=1 SS_FC=reservecoal,
+groups a/b/c; 3 Nov 2026 06:24-07:45 UTC); build 2026-11-02y. Outputs: harness/pathway/c7/irpgfm.
+
+| Build | Total R bn without / with | Hours short without / with | Grid-forming MW 2031 / 2035 / 2040 | CO2 2026-40 Mt without / with |
+|---|---|---|---|---|
+| irp2025_c7 | 2,840.8 / 2,836.3 | 53.6 / 0 | 430 / 924 / 1,456 | 1,736 / 1,719 |
+| irp2025_c7_irpdem | 2,771.3 / 2,765.5 | 64.5 / 0 | 379 / 928 / 1,456 | 1,625 / 1,601 |
+
+The batteries' system strength charge is R0.3bn; the engine's cost falls more because coal is no longer lifted for inertia (2040 coal
+51.9 to 46.9 TWh at the IRP's own demand). c7 builds 3,903 MW by 2040 for comparison. Unserved 0.00 GWh in every year in all four.
+The pack's IRP line is not refilled (668 (a)).
+
+### Fossil-free 2040 without vanadium and without new iron-air: the same build less 5,000 MW of iron-air, R13.7bn less, 0.00 GWh unserved in every year (message 665 (b))
+
+s_ff2040nolds_c7: s_ff2040_c7's settings (SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 FOSSIL_END=2039) with VRFB_OFF=1 IA_OFF=1, c7's
+common settings, MAXP=6 (one pass), solved 3 Nov 2026 07:09-07:21 UTC; engine check as the chain's (done 07:41 UTC); build 2026-11-02y.
+Against s_ff2040novrfb_c7 (vanadium off, iron-air capped at 5,000 MW and built to the cap): wind 56.5 GW, solar 100.5 GW, offshore
+5.0 GW, lithium 56.0 GW / 480 GWh and pumped storage 1.5 GW identical; iron-air 0 against 5,000 MW. Total R3,282.6bn against
+R3,296.3bn. Unserved 0.00 GWh in every year 2026-40 (worst draw 0.0), no hour short of the inertia floor, open-cycle at most 0.06%
+(2026). Caveat: as for vanadium, the build LP valued iron-air the engine does not need; the pack is not changed (665 (b)).
+
+### Central and Deep: lithium, the only storage they build, takes at most 0.1% of its value from the chained level (ecap) in any year (message 667 (d))
+
+Method: each run's pass-1 LP dumped (pathway_perfail.js DUMP_LP, DUMP_STOP=1, the run's own settings; c7 and s_deep40nogas_c7 round 4,
+cap 37.538 Mt 2035-40), solved with highs_native.py (simplex; objectives equal the runs' to the rand: R1,653,677,099,021.87 and
+R1,825,274,668,356.93), and every lithium build column (power b_batt_<y>, energy eb_batt_<y>) split into sum(a x dual) by row family
+(harness/pathway/decompcol.py, decomptab.py; outputs harness/pathway/c7/decomp). Stress days are day index 1000 and above.
+- Energy (eb_batt): ecap 0.0-0.1% in every year in both runs; the block-end hourly level caps (cua/cub/cla/clb) 6-27%; the
+  within-day discharge limit (dur) 40-94%; the 2026-2028 committed floor (lemin) 45% in 2026.
+- Power (b_batt): reserve headroom (rbp) and the power rows (zgp, bcmax) 97-100%; stress days 0-3%.
+Finding: the chained-state inflation found for vanadium does not show in lithium's value in the central or Deep. Caveat: the
+block-end level caps belong to the formulation the fix replaces, so lithium's build can still move; the variants test it (670 (b)).
+
+### Plant start years checked on gem.wiki: Medupi matches; Kusile unit 1's row (2018) contradicts its own text (commercial operation 30 Aug 2017); Komati's 1966 has no support (message 671)
+
+Read directly from www.gem.wiki on 3 Nov 2026 08:0x UTC (Medupi_Power_Station, Kusile_Power_Station, Komati_Power_Station), against
+COAL_UNIT_COD (index.html:7261-7270, build 2026-11-02y):
+- Medupi: units 1-6 start years 2021, 2019, 2019, 2017, 2017, 2015; the model's Medupi* [2021, 2019, 2019, 2017, 2017] and Medupi**
+  [2015] match. Unit 4 returned to service in July 2025 after its 2021 explosion; the model keeps its original year (as recorded).
+- Kusile: units 2-6 2020, 2021, 2022, 2024, 2025 match. Unit 1: the table's start year is 2018; the page's text gives synchronisation
+  in December 2016 and commercial operation from 30 Aug 2017 (cited to Moneyweb). The model has 2017.
+- Komati: nine units, 1961-1964 (units 1-5, 100 MW, 1961-1963; units 6-9, 125 MW, 1964), all retired 2022. The model's one 114 MW
+  row has 1966, which the page does not support; one of units 6-9 would be 1964.
+Effect: none on any run. Komati retires in 2022 and coalFleetAgeFactor skips units retired before the year (index.html:7244); the
+age curve runs are held (668 (a)). Decision for Nick: Kusile unit 1 at the table's 2018 (message 656 (c), "the GEM row") or the
+text's 2017; Komati to 1964. No code changed.
