@@ -20956,6 +20956,11 @@ Eskom data (ESK19679) in the fit and the calms, the analysis ours.
 
 Fossil-free 2040: no unserved in any draw on all three series; curtailment 241.6 (stored), 239.2 (five), 239.2 TWh (six); cost R605.4bn.
 
+The 108 extra days (8abedb3, BUILD_STAMP 2026-11-03d: 2014's and profiles_regional.json 2023's first two SAST hours fetched, flags
+removed) change none of these: c7's stored-series check rerun on them (harness/out/wx686/c7_stored_patched.json, 4 Nov 00:40 SAST)
+equals the run above to three decimals in every column, 2030, 2035 and 2040. c7's pass-1 LP key on the final data: 7fb5ff6a1e
+(main c62ec3e615; the weather files, the tracking scale and the existing solar level all enter it).
+
 - Both corrections lower c7's unserved against the stored series (2040: mean 1.23 to 0.74-0.77 GWh, worst draw 35.5 to 27.2-27.4).
   The corrected series flatter reliability on this measure; the stored series is the conservative one.
 - The five- and six-constant tables give the same results within the noise (mean differences 0.01-0.04 GWh against standard errors of
