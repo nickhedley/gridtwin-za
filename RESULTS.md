@@ -20859,3 +20859,45 @@ ESK19679.csv (none of the seven reads it); scratchpad failures/FAILURES.md with 
    016641e) and passes under 3.11 on every build tested: Python 3.12 changed sum() over floats, so two demand-gap constants differ in the
    16th digit; this container's python3 is 3.13; main with python3 at 3.11 reads 65/65. Proposal: math.fsum in the generator and
    regenerate (captions show one decimal: no visible change).
+
+### The engine against 2026's curtailment (message 686 (d), 687 (d), 689 (4)): it curtails about an eighth as much solar per MW; the 0.28 TWh at defaults is not 2026's curtailment
+
+Settings: claude/weather-fixes before the data rebuild (b7a5820: the metered twin scaled, existing solar 0.256), harness/pathway/wx/curtail2026.js;
+Today 2026 (scenario year 2026, the defaults: exports 745 MW, rooftop 8,135.7 MW, utility PV 3,568.5 MW, coal EAF 65%) on the page's metered
+2025 weather; case B with ESK19679's 2026 wind for January-August (local, not committed); the 2025 replay ('2025, as modelled'). Utility PV
+curtailed = its potential each hour as the engine blends it, less what it delivered; this includes the flat 1.3% congestion derate
+(congestionCurtailOn), which is the model's whole representation of network curtailment. Metered: ESK19679 (Eskom data, analysis ours),
+RESULTS '2026's solar shortfall is mostly curtailment'. 3 Nov 2026, about 21:00 SAST.
+
+| Case | Utility PV curtailed, Jan-Aug, TWh | per MW of utility PV, MWh | PV curtailed at 11:00-14:00, Mar-Aug, MW | all spill (wind, solar, coal-forced), Jan-Aug, TWh |
+|---|---|---|---|---|
+| Metered 2026 (Eskom-visible fleet, about 2,650 MW) | about 0.55 (0.45-0.63) | about 207 | about 560 | not known |
+| A: Today 2026 | 0.091 (0.047 of it the 1.3% derate) | 25.6 | 56 | 0.271 |
+| A1: exports at 1,705 MW | 0.065 | 18.3 | 32 | 0.115 |
+| B: 2026's metered wind | 0.071 | 19.9 | 39 | 0.098 |
+| R: the 2025 replay | 0.046 (all of it the derate) | 17.8 | 22 | 0.000 |
+| A, demand 4.3% lower (midday load at 2026's metered level) | 0.188 | 52.7 | 152 | 0.568 |
+| A, pumping power halved (1,362 MW; a proxy) | 0.196 | 54.8 | 182 | 1.150 |
+| A, both | 0.356 | 99.7 | 342 | 1.541 |
+
+Midday (11:00-14:00, March-August), engine A against the meters: grid demand with exports about 23.4 GW against 22.4 (+1.0); pumping 951 MW
+against 469 (+0.48); coal 17.5 GW against 17.8 (the engine's midday coal is 0.87 of its daily high, the meters' 0.84); nuclear 1,241 MW
+against 908; wind 1,553 against 996 (2025's weather; B removes it). The engine therefore has about 1.5 GW more midday sink (demand and
+pumping) and barely curtails solar; coal at its floor is not the difference. By month the engine's spill is in May and August.
+
+- The 0.28 TWh a year at defaults (validate_outputs, item 9 of CLAUDE.md's known failures) is all spill, mostly wind and coal-forced; the
+  engine's solar curtailment in January-August is 0.09 TWh with the derate, 0.04 TWh without: it does not reproduce 2026's about 0.55 TWh.
+  Not consistent.
+- The 2025 replay's near-zero: moving its settings to Today 2026's one group at a time, spill goes 0.000 (2025) -> 0.000 (exports 745)
+  -> 0.003 (demand year) -> 0.003 (solar and rooftop) -> 0.012 (wind) -> 0.183 (coal: EAF 57.7% -> 65%, more units held at their floor)
+  -> 0.271 (the rest: imports and hydro availability, nuclear 0.62 -> 0.66, the diesel tank). The replay's lower coal availability is the
+  main reason it curtails nothing.
+- Exports: the replay uses 1,705 MW (2025, pre-Mozal); Today 2026 holds 745 MW all year (the metered midday mean for March-August 2026
+  is 583 MW). January to mid-March 2026 carried about 1 GW more than the engine's 745 MW.
+- What would close the gap, by size on this test: the midday demand level (the engine's 2026 grid demand is about 1 GW above 2026's meters
+  at midday) and pumped storage's midday pumping (the engine pumps about twice the metered); each alone doubles the engine's solar
+  curtailment, both together quadruple it, still half the metered per MW. Not closed by these: the engine spreads curtailment across wind
+  and solar pro rata, while the instructions reported are to solar IPPs; network curtailment is one flat 1.3%. Coal minimum levels, the
+  synchronous floor and reserve: the engine's midday coal already sits near the metered, so none of them is the main gap. Pumped
+  storage's midday behaviour has no setting: a change would be an engine rule (Nick's decision). Not yet run: the levers in single-year
+  2030 and 2035 LPs (after the data rebuild, on consistent data).
