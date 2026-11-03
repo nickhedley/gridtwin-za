@@ -66,7 +66,7 @@
 //                        RUN.syncmingws_YYYY the lowest hour's inertia from synchronous sources only, GW.s; RUN.btmgwh_YYYY the
 //                        behind-the-meter battery stock, GWh; RUN.vppmw_YYYY / .vppmaxmw enrolled VPP power, MW, in a year / at most;
 //                        RUN.gymw_YYYY / .gymaxmw geyser control enrolled, MW (pathcheck rows' ss, btm and geyser, from build
-//                        2026-11-02w); vppcoord.gain_YYYY / .cost_YYYY / .be_YYYY / .cap_YYYY / .resource the VPP's coordination gain,
+//                        2026-11-02w); RUN.pvengbn the engine's cost alone, RUN.pvcomplybn the compliance charge (663 (a)); vppcoord.gain_YYYY / .cost_YYYY / .be_YYYY / .cap_YYYY / .resource the VPP's coordination gain,
 //                        coordination cost, break-even (net gain at the cap), R/kW-yr of enrolled power, and its cap, MW, and the
 //                        resource cost (harness/ext/vpp_coordination.json, ext/vpp_coordination.js; message 647)
 //   1 Nov (message 593): RUN.dpvpctr (the cost difference as a share of the plan in whole percent); page.txr (the grid integration charge).
@@ -263,8 +263,11 @@ function value(k){
     case 'pv': return nf(s.pv,1);
     // c7's system strength, behind-the-meter batteries, VPP and geyser control (message 649 (b)): from the engine check's rows (ss from
     // build 2026-11-02a, btm and geyser from 2026-11-02w); a run without them is reported missing, not zero (Rule 4).
-    case 'sspvbn': case 'pvssbn': { if (!s.rows.every(x=>x.ss&&x.ss.costBn!=null)){ missing.add(`${s.n} (system strength rows)`); return null; }
-      const c=s.rows.reduce((a,x)=>a+x.ss.costBn*Math.pow(1.08,-(x.y-2026)),0); return m==='sspvbn'?'R'+nf(c,1)+' billion':Rb(s.pv+c); }
+    case 'sspvbn': { if (!s.rows.every(x=>x.ss&&x.ss.costBn!=null)){ missing.add(`${s.n} (system strength rows)`); return null; } return 'R'+nf(s.pvSs,1)+' billion'; }
+    // The total basis (message 663 (a)): pv (pvbn, dpv...) is the engine's cost plus the system strength and compliance charges;
+    // pvengbn the engine's cost alone, pvcomplybn the compliance charge, both PV 2026-40 at 8%.
+    case 'pvengbn': return Rb(s.pvEng);
+    case 'pvcomplybn': return 'R'+nf(s.pvComply,1)+' billion';
     case 'gfmgw': case 'condgva': case 'syncmingws': { const x=s.rows.find(q=>q.y===y); if (!x||!x.ss){ missing.add(`${s.n} (system strength, ${y})`); return null; }
       return m.startsWith('gfm')?nf(x.ss.gfmMW/1e3,1):m.startsWith('cond')?nf(x.ss.condBuiltMVA/1e3,1):x.ss.syncMinGWs==null?null:nf(x.ss.syncMinGWs,1); }
     case 'ssshortyears': { if (!s.rows.every(x=>x.ss)){ missing.add(`${s.n} (system strength rows)`); return null; } const o=s.rows.filter(x=>x.ss.shortH>=0.5).map(x=>x.y); return o.length?spanH(o):'none'; }
