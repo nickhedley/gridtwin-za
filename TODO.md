@@ -912,6 +912,16 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mn. Behind-the-meter batteries tied to rooftop solar, after the note (user, 3 Nov 2026, message 664). Today the stock grows 0.9 GWh
+a year whatever rooftop is built (BTM_STOCK's growth) and charges only from the existing rooftop fleet. (a) Growth from an attach rate:
+battery kWh added = attach rate x rooftop MW added (the existing trajectory or the build LP's new rooftop). Central 0.75 kWh per kW,
+ours: it reproduces c7's 0.9 GWh a year on the +1,200 MW a year rooftop path; cases 0.4 and 1.2. In the build LP new rooftop carries its
+battery capital (R5,000/kWh, btmCapexRkWh) and passive profile per MW, so the LP sees them together. (b) Charging from all rooftop,
+existing and new. (c) Sources to record in SOURCES: CSIRO for AEMO, 2024 Solar PV and Battery Projections (batteries modelled as a
+subset of the rooftop market, a third to three-quarters of solar owners, size growing with PV size); Berkeley Lab (Aug 2026): 37% of US
+residential solar paired with storage in 2025, median 13.5 kWh. No South African attach rate is published; a SAPVIA figure is being
+sought. (d) Checks: the LP key unchanged with it off, the suite, and c7's central reproduced at the central attach rate.
+
 14mm. The coal carbon floor's base, after the note (user, 2 Nov 2026, messages 658 (a) and 659): charge the floor (s6(2), R0.035/kWh
 after the renewable-premium deduction) on the levy's base rather than per kWh of coal sent out: Eskom's FY2026 environmental levy came
 to 3.84c per kWh sent out (R6.35bn over 165,431 GWh), about 3.5c on total production including own use; about R0.5bn a year more to
