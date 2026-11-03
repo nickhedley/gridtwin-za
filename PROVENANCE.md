@@ -57,7 +57,7 @@ the data is correct as published. They are checksums of a specific compilation.
 | `tdp_projects.json` | `gtza-1fe160f81a4d6052` | 2026-08-13 |
 | `substations_compact.json` | `gtza-1716f8223103ed82` | 2026-08-13 |
 | `headroom_summary.json` | `gtza-93f0182456516e03` | 2026-08-13 |
-| `profiles_regional_multiyear.json` | `gtza-981634fe4ee2ef6d` | 2026-11-03 |
+| `profiles_regional_multiyear.json` | `gtza-feec5cd0fd99014e` | 2026-11-03 |
 
 A dataset independently assembled from the same public sources would not
 reproduce these digests, because it would not reproduce this compilation's exact
