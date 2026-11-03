@@ -20975,7 +20975,7 @@ three long calms (per-unit metered fleet output, kept local) is written over the
 Fossil-free 2040: no unserved in any draw with any of the three calms.
 
 - July 2025's 36-hour calm is the one that matters: in c7's 2035 and 2040 fleets it doubles the mean and its worst draw is about 101
-  GWh, five times the 20 GWh standard; May 2026's calm, at the end of a sunnier May, barely moves the result.
+  GWh, five times the 20 GWh standard; May 2026's calm barely moves the result.
 - What the test assumes: today's metered fleet's per-unit output during the calm stands for the whole future fleet in those hours (no
   gain from a wider spread of sites or offshore; today's fleet sits mostly in the Eastern, Northern and Western Cape); new wind takes the
   national modern-turbine map of the metered values, so newer turbines make more of the same weak wind; the calm falls on the same dates
