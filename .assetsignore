@@ -11,3 +11,97 @@ kml*
 /nodal/profiles.json
 /profiles_OLD_backup.json
 /profiles_rebuilt.json
+
+# Internal files, not served (user, 3 Nov 2026, message 683 (g); TODO 14jy (a)). The site serves only what index.html, its panels
+# and gridtwin-3d/ read, plus LICENSE and README.md (the page links both). A deny list with no '!' lines: each line removes files,
+# none adds any back. A file the page starts to read is served with no change here; a new internal file is served until a line
+# here covers it. Wrangler matches these lines without regard to case ('ESK*' would also hide nodal/eskom_tariff_components.json).
+
+# Folders the page never reads
+/harness/
+/docs/
+/validation/
+/scripts/
+/.github/
+.DS_Store
+__pycache__
+
+# Project documents at the root (README.md stays: the page links it)
+/CALENDAR.md
+/CLAUDE.md
+/FIRST_SESSION.md
+/HANDOVER.md
+/LOG.md
+/MANIFEST.md
+/NOTE_DRAFT.md
+/PRESET_TABLE.md
+/PROVENANCE.md
+/RESULTS.md
+/REVIEWER_PACK.md
+/REVIEWER_PACK_RECORD.md
+/RULES.md
+/SOURCES.md
+/STATE.md
+/TODO.md
+/post_headroom.md
+/review_retail_methodology.md
+/scope_*.md
+
+# Scripts, runs and configuration at the root (config.js stays: the page loads it)
+/*.py
+/validate_*
+/pathway*
+/pathcheck*
+/stress_*
+/bisect_lp.js
+/capacity_siting.js
+/eng5.js
+/gaplp.js
+/greedy.js
+/hybrid.js
+/jsdom_local2.js
+/ldes_bench_all.js
+/loc.js
+/lp_dump.js
+/nodal_engine.js
+/price_test.js
+/queue_project.js
+/storage_coopt.js
+/storage_lp.js
+/verify_deploy.js
+/wrangler.toml
+/.gitignore
+/.mcp.json
+*.log
+
+# Data copies, caches and icons at the root that no page reads (profiles.json and stored_panels.json stay)
+/profiles_*
+/pvgis_*
+/ninja_*
+/control_inventory.json
+/profile_sites.json
+/regional_renewable_capacity.json
+/response_matrix.json
+/sites_best.json
+/icon-192.png
+/icon-512.png
+/ESK*.csv
+/fleet_by_region_v2*
+
+# nodal/: files the page does not read
+/nodal/*.py
+/nodal/*backup*
+/nodal/pfl_cod_h1_2026.json
+/nodal/pfl_private_h1_2026.json
+/nodal/phes_sites_region.json
+/nodal/private_grid_candidates.json
+/nodal/private_pending_h2_2026.json
+/nodal/rooftop_ntcsa_2026.json
+/nodal/supply_area_split_draft.json
+
+# public_data/: the page reads only ember_za.json
+/public_data/*.csv
+/public_data/README.md
+/public_data/esrg_irp_demand_ref.json
+/public_data/gas_price_cases.json
+/public_data/irp2025_fig2_moderate.json
