@@ -1,5 +1,22 @@
 # GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 10:45 UTC)
 
+## 3 Nov 2026, message 684 (updated 14:30 UTC, 16:30 SAST)
+
+- Branch claude/weather-fixes (worktree /home/user/gtza-fix; stacked on claude/storage-link-build 7c4bdcc, with claude/weather-refs
+  merged): stage 1 2ef43d8 (SOLAR_TRK_K, existPvMeteredCF 0.2558, fetch_leap_days.py, fix_weather_clock_leap.py, harness/solar_trk_k.js),
+  stage 2 2b4ce92 (FIXED.wxWindCorr off, nodal/wind_corr_table.json from the ESK19679-only refit, WX_WINDCORR in the harness).
+  BUILD_STAMP 2026-11-03b.
+- Running: fetch_leap_days.py piece 1 (job b2syqmowg; log /home/user/gtza-fix/leapfetch.log; caches ninja_leapday_cache.json and
+  pvgis_leap_cache.json there, gitignored). Relaunch the next piece at each completion: from /home/user/gtza-fix,
+  RENEWABLES_NINJA_TOKEN=x python3 -u fetch_leap_days.py --minutes 110 >> leapfetch.log (the proxy injects the credential). PVGIS done.
+- When the fetch reports 0 left: python3 fix_weather_clock_leap.py (no --interim), then from harness/ NODE_PATH=node_modules node
+  solar_trk_k.js testroot --write; bump DATA_V to 9 in nodal/nodal_dispatch.js and its script tag (?v=30); stored panels --write; the
+  full suite; diff_public_text against 7c4bdcc; the pull request (base claude/storage-link-build).
+- ESK19679.csv: /root/.claude/uploads/cd2ebea5-fdee-51da-b34b-eb3574ed8e65/4bd787be-ESK19679.csv (uploaded by Nick, 3 Nov; never commit;
+  link it as ESK19679.csv into a worktree root only to run the suite; .gitignore covers ESK*.csv).
+- Build PR: suite after on the build done to the worker validator at 16:30 SAST; failures equal main's by name (structure's stale stamp
+  passes on the build). Open the PR when the worker check ends.
+
 ## 3 Nov 2026, message 683 (updated 12:45 UTC, 14:45 SAST)
 
 - Done: (g) PR #156 (claude/site-allowlist, worktree /home/user/gtza-site): .assetsignore deny list, 45 of 1,321 files served, browser
