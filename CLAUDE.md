@@ -67,6 +67,23 @@ cause and the build it first failed on in RESULTS 'Known failures on build 2026-
    the existing stores ahead of a forecast shortfall, so 30 GW of new batteries cut unserved 8.3% against the check's 10%; its
    redesign waits for after the note (TODO 14ew).
 
+Measured 3 Nov 2026 on main 34fd662 (build 2026-11-03a), ESK19679.csv absent: node 1,018/1,029, audit 88/88, eng5 5/6. Seven more
+failures, each with its cause and first failing build (message 686 (f); RESULTS 'The seven unlisted failures'; proposals there):
+5. validate_findings: 'a low build rate stays at the congestion floor' (from 24b, 1b0dad0, PR C): the ten-year scenario runs at
+   scenario year 2026, so coal is held at 2026's practice floor; 14.8% against 5% (1.4% at scenario year 2036).
+6. validate_findings: 'turn-up is a growing share of constraint cost' (from 27f, acb2451, c6c): R637 to R634/MWh; under IRP's 2030
+   targets 39% of the lost MWh fall in coal-forced spill hours; also priced at R0.55/kWh, which the panel no longer uses (TODO 14gk).
+7. validate_response: 'response matrix matches baseline' (from 24b, 1b0dad0): 35 cells, 33 of them PR C's coal rules (23 are
+   curtailment cells moved by spill at defaults); baseline last written on 22e; rewrite awaiting decision.
+8. validate_benchmarks: 'co2 reconciles with Ember monthly data' (from 22e, a51f79b, c6 PR A): 184.2 against 160.3 Mt (+14.9%);
+   emisCoal is Eskom's measured 1.108 t/MWh sent out, Ember applies a fixed 0.846 per MWh gross (TODO 14iw).
+9. validate_outputs: 'Curtailment is zero at defaults' (from 24b, 1b0dad0): 0.28 TWh/yr from the practice floor; consistent with
+   2026's metered solar losses (RESULTS 'Utility solar in 2026').
+10. validate_outputs: 'curtailFuelCost is non-zero in the coal-curtailment scenario' (from 24b, 1b0dad0): R17.9 bn against 15.9
+    +/-0.7; PR C's synchronous floor options +5.8, its commitment rules -4.7, later non-coal changes -0.4.
+11. validate_pathway_presets: 'the preset blocks are the generator's output': fails under Python 3.12 or later (from 29b, 016641e),
+    passes under 3.11; sum() rounding moves two demand-gap constants in the 16th digit.
+
 No longer a known failure (message 524 (b)): validate_external's 'EDMSA Scenario A CO2 2035 within 22 Mt', failing from 2026-10-01a
 to 2026-10-23a, passes from 2026-10-24b (PR C's coal rules; 117.0 against 124 Mt on 29b). Cause in RESULTS 'EDMSA Scenario A CO2
 2035'. From 30 Oct 2026 every validate_external check runs at the year it names (message 526 (b); RESULTS 'Every external

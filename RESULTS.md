@@ -20817,3 +20817,36 @@ CSP output (all its plants in the Northern Cape) as a daily sunshine measure; sc
   plant-level output, irradiance, and unit status for coal and pumped storage. For the engine (686 (d)): a 2026 replay should curtail about
   0.5 TWh in March-August (about 560 MW on average at 11:00-14:00), with exports about 1 GW lower from 15 March and midday coal near 0.84
   of its daily high. The helper's top-20 day table includes one coal value a day; it stays in scratch, out of anything published.
+
+### The seven unlisted failures on main: causes, first failing builds and proposals (message 686 (f); measured, nothing changed)
+
+Measured 3 Nov 2026 on main 34fd662 (build 2026-11-03a), each check's own validator run on earlier main commits (one at a time), without
+ESK19679.csv (none of the seven reads it); scratchpad failures/FAILURES.md with logs and probe scripts. No check relaxed.
+
+1. findings, 'a low build rate stays at the congestion floor': first fails on 2026-10-24b (1b0dad0, PR C; 23a reads 1.3%). The ten-year
+   build runs at scenario year 2026, so coal stays at 2026's 0.715 practice floor at midday: 14.8% wasted, 10.8 TWh of surplus spilled.
+   With design minimums at 2026: 1.55%; at scenario year 2036: 1.44% (10.8% with the floor kept). Proposal: run the scenario at 2026 plus
+   its years with the 5% limit kept (it also restores the withdrawn sibling: 3.8% over five years, 9.2% over ten), or withdraw it.
+2. findings, 'turn-up is a growing share of constraint cost': first fails on 2026-10-27f (acb2451, the 24-hour down time and the 0.715
+   floor; 27e passes, R647 to R655/MWh). Under IRP's 2030 targets 39% of the lost MWh fall in hours where coal at its minimum forces spill
+   and the price is at or below zero (7% before PR C); the rates go flat (R637 to R634/MWh). The check prices the curtailment payment at
+   R0.55/kWh; at the model's own R1,908/MWh window price turn-up is about 25% of constraint cost. Proposal: withdraw and log the values;
+   restate after c7 on window prices (TODO 14gk (2)).
+3. response, 'response matrix matches baseline': first fails on 2026-10-24b (40 cells; 23a 87/87). All 35 cells on main were among those
+   40; with the pre-PR C coal rules on a scratch copy of main, 33 revert; 23 are curtailment cells that move because there is spill at
+   defaults; each responsive-to-inert cell checked: no control stopped working. Proposal: rewrite the baseline with this attribution
+   (after c7's defaults if those land first).
+4. benchmarks, 'co2 reconciles with Ember monthly data': first fails on 2026-10-22e (a51f79b; 22d 176.8 Mt, +10.3%). The emission factor,
+   not coal volume: emisCoal moved from 1.04 (no source) to Eskom's measured 1.108 t/MWh sent out; Ember applies a fixed 0.846 t/MWh
+   gross. Main 184.2 against 160.3 Mt; with 1.04 it would be 178.4 (+11.3%). Proposal: a report-only line (TODO 14iw); a check against
+   Eskom's 184.0 Mt would be largely circular.
+5. outputs, 'curtailment is zero at defaults': first fails on 2026-10-24b (0.1 TWh, 0.3 from 27f): PR C's coal rules, 0.281 TWh in 400
+   hours, peak 3.7 GW; 0 with them switched back. Consistent with 2026's metered losses (about 0.55 TWh curtailed in January-August).
+   Proposal: replace the zero band with a recorded, dated value.
+6. outputs, 'curtailFuelCost is non-zero in the coal-curtailment scenario': first fails on 2026-10-24b (19.9; 17.9 from 27f): PR C's
+   synchronous floor options +R5.8bn, its commitment rules -R4.7bn; later non-coal changes -R0.4bn (R15.5bn on 23a to R15.1bn on main
+   with the coal settings switched back). Proposal: re-anchor 15.9 to 17.9 with this split, tolerance unchanged.
+7. pathway_presets, 'the preset blocks are the generator's output': not a build. It fails under Python 3.12 or later (from 2026-10-29b,
+   016641e) and passes under 3.11 on every build tested: Python 3.12 changed sum() over floats, so two demand-gap constants differ in the
+   16th digit; this container's python3 is 3.13; main with python3 at 3.11 reads 65/65. Proposal: math.fsum in the generator and
+   regenerate (captions show one decimal: no visible change).
