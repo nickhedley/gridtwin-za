@@ -1,4 +1,82 @@
-# GridTwin ZA - handover, current state (kept current; updated 28 Oct 2026, 22:00 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 08:35 UTC)
+
+## Session change, 3 Nov 2026 (message 666): where c7 stands, what is running, open decisions, next steps
+
+Start the new session from claude/c7-runs: its HANDOVER, RESULTS and TODO are current. main (b0f7999) has c7's inputs (#154), not
+the runs. RESULTS 'Decisions of 3 Nov 2026 (messages 668-671)' and the entries after it hold today's findings.
+
+Branch heads (all pushed):
+
+| Branch | Head | What it holds |
+|---|---|---|
+| claude/c7-runs | (filled at push) | chain_c7.sh, the test scripts, every c7 output in harness/pathway/c7 (the before-fix baseline), RESULTS, TODO, this HANDOVER |
+| claude/c7-pack | 2bfd443 | the reviewer pack filled from c7; not to be merged (668 (a)); refilled only after the fix |
+| claude/storage-link-design | f428a4f | the design note for TODO 14mo (docs/storage-linking-design-2026-11-03.md), awaiting Nick's review |
+| claude/heat-battery-design | 86c48fe | heat battery design; figures verified after the note |
+| claude/area-map-design | 23a2252 | area map design; awaiting Nick's four answers (message 662) |
+
+c7, runs done (outputs in harness/pathway/c7; RESULTS entries of 2-3 Nov):
+- Phase 1, the central (c7): R2,467.7bn on the pack's basis.
+- Phase 2, every run the pack reads, including Deep (round 4, cap 37.538 Mt) and Fossil-free (with and without vanadium).
+- Phase 3, the new sensitivities.
+- Phase 4, the six MTSAO runs: the pre-fix baseline, not for quoting (670 (g)).
+- 665 (b): s_ff2040nolds_c7 (no vanadium, no new iron-air).
+- 663 (b): both IRP 2025 builds with grid-forming sized to their shortfall (harness/pathway/c7/irpgfm): no hour short.
+
+c7, held until the fix (668 (a)), not to be started: the age-curve runs (s_coalage_c7, s_ageingcoal_c7), the senior contact's stack
+(chain_c7.sh 3age: s_contact_c7, s_deep40nogas_contact_c7, s_ff2040_contact_c7) and any pack refill. They will be run on the fixed
+optimiser.
+
+Plant start years (671, 672): checked on gem.wiki, 3 Nov, and settled by Nick. Medupi matches. Kusile unit 1 stays at 2017, its
+commercial operation date (this replaces 656 (c)'s use of GEM's table for that unit). Komati stays at 1966 (Wikipedia; GEM says
+1961-1964). No code changed, and none affects a run.
+
+TODO 14mo (668-670), the main line of work:
+- The build waits for message 673 (672 (c)). The design note is not approved; an independent review is under way, and Nick's
+  decision, with any changes to the design, comes in 673. Do not start the build before it.
+- Design note: branch claude/storage-link-design (f428a4f), docs/storage-linking-design-2026-11-03.md.
+- At the note's next edit, add Reichenberg and Hedenus, 'The error induced by using representative periods in capacity expansion
+  models: system cost, total capacity mix and regional capacity mix', Energy Systems 15(1), 2024 (doi 10.1007/s12667-022-00533-4)
+  to its sources (672 (e)). It has not been read; do not treat it as read until it is.
+- After 673: build on a new branch behind two settings (bldRepWeights, bldStorageLink), page default unchanged.
+- Then the acceptance tests and the convergence test on one-year 2040 LPs (design note section 6), reported before any pathway is
+  rerun.
+- Reruns wait for Nick's go-ahead (668 (g)).
+
+Message 667 (the build-cut test): finished; RESULTS 'Build-cut test' and the foresight entry.
+- (a), (c): Fossil-free (s_ff2040novrfb_c7) meets the standard to -15% and fails at -20%; without new iron-air (s_ff2040nolds_c7) it
+  fails at -10%; the central fails at -15%. Outputs in harness/pathway/c7/cut; scripts harness/pathway/cuttest.py, cutrun.sh,
+  cutsumm.js. Deep's cuts and 667 (b) were dropped (668 (b)).
+- (d): lithium in the central and Deep takes at most 0.1% of its value from the chained level (harness/pathway/c7/decomp).
+- (e): the engine's foresight is a perfect forecast within 48/168 hours. It is recorded as a stated limitation on every run's unserved
+  figures (670 (f)); outputs in harness/pathway/c7/la.
+- (f): folded into the design note; redone after the convergence test (670 (e)).
+
+665 (c), chained-day share of long-duration storage's value (RESULTS '665 (c)'):
+- Done: s_ff2040novrfb_c7 (iron-air and pumped storage 100% chained: flagged), s_be6_c7, s_nogas_dsl_c7, s_gfm1891_c7,
+  s_mtsao_hi_nogas_c7 and s_mtsao_ref_nogas_c7 (0%), and s_irpgas_c7 (see the closing report).
+- Not done: s_nogas_c7 (three passes, on interior point; about 1.5-2 hours). The queue was stopped by PID before it for the handover.
+  To run it, from harness/:
+  `LDES_DIR=<scratch dir> bash pathway/ldesq.sh`
+  ldesq.sh skips runs whose decomposition exists, so in a new container it redoes all of them. Either run it whole (about 3 hours),
+  or comment out the finished runs and run s_nogas_c7 alone.
+- The decompositions are saved in harness/pathway/c7/decomp. decomptab.py prints a run's table.
+
+Jobs running at handover: none, once s_irpgas_c7's split is recorded (closing report). PIDs are in the session log (scratchpad
+overnight576.txt, lost with the container). Stop jobs only by PID.
+
+Open decisions waiting on Nick:
+1. The design note: decision in 673, after an independent review.
+2. The area map's four questions (message 662).
+
+Sources not read: arxiv.org, link.springer.com, doi lookups, tsam.readthedocs.io and en.wikipedia.org are blocked in this container.
+The Energy Systems paper is Reichenberg and Hedenus (2024), above, and has not been read. gem.wiki works through the shell (curl), not
+the web reader. Firecrawl's daily credits refresh at 09:06 SAST.
+
+Next steps, in order:
+1. 665 (c): run s_nogas_c7's dump and split, and add it to RESULTS.
+2. After 673, and only as it directs: build, and run the acceptance tests (design note sections 6 and 9).
+3. On his go-ahead, rerun the c7 set on the fixed optimiser, then the held runs (age curve, contact's stack), then refill the pack.
 
 ## Priorities to the note (user, 31 Oct 2026, message 573): the note out before mid-November, reviewer comments the week after
 
