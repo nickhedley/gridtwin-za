@@ -47,6 +47,17 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  const WXT=process.env.WX_WINDCORR_TABLE||null; if (WXT && process.env.WX_WINDCORR!=='1') throw new Error('WX_WINDCORR_TABLE needs WX_WINDCORR=1');
  if (WXT){ const TT=JSON.parse(fs.readFileSync(WXT,'utf8')); if (!(TT.table&&TT.table.length===12&&TT.table.every(r=>r.length===TT.grid.n))) throw new Error('WX_WINDCORR_TABLE: 12 rows of grid.n values');
    w.eval(`WIND_CORR_TABLE = ${JSON.stringify({t:TT.table,n:TT.grid.n})};`); console.log('WX_WINDCORR_TABLE:', WXT, JSON.stringify(TT.constants||{})); }
+ // LULL=<local json> LULL_EVENT=<n> (message 687 (b), 688 (b); a stress test, not probability-weighted, reported apart): one of
+ // ESK19679's long metered calms (per unit of the existing fleet, kept out of the repository) written over every modelled year's wind
+ // at its own calendar hours; new wind in those hours from the national modern-turbine map of the metered values. Solar, demand and
+ // the other hours are the year's own. Recorded in weather.
+ const LUL=process.env.LULL||null, LEV=+(process.env.LULL_EVENT||0); let LNAME='';
+ if (LUL){ const ev=JSON.parse(fs.readFileSync(LUL,'utf8')).events[LEV]; if (!ev) throw new Error('LULL_EVENT: no event '+LEV); LNAME=ev.name;
+   w.eval(`window.__wxNat=(raw=>yy=>{ if (yy==='metered'||yy==='metered_trk12') return raw(yy); const n=raw(yy), E=${JSON.stringify(ev.pu)}, i0=${ev.i0};
+     const W=Float64Array.from(n.wind), M=n.wind.mod?Float64Array.from(n.wind.mod):null, EM=windModOf(Float64Array.from(E));
+     for (let k=0;k<E.length && i0+k<W.length;k++){ W[i0+k]=E[k]; if (M) M[i0+k]=EM[k]; } if (M) W.mod=M;
+     return {...n, wind:W}; })(window.__wxNat);`);
+   console.log('LULL:', LNAME, ev.hours+' h from model hour '+ev.i0); }
  if (WX) console.log('WEATHER:', WX);
  // WX_FIX (message 683 (b), (c); measurement only, unset as before): applied to every modelled year the check reads. 'fixed': the two plain
  // errors found on 3 Nov 2026, as an interim. Leap years (2016, 2020, 2024): the fetch scripts kept the first 8,760 hours (ser[:8760]),
@@ -165,6 +176,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // Coal settings (PR C, build 2026-10-24a; messages 359, 363): the pathway's own; a run recorded before PR C has none and replays with
  // COAL_PRE_C, the coal rules its optimiser and engine had.
  w.eval(`Object.assign(state, ${JSON.stringify(P.coal || null)} || COAL_PRE_C);`);
+ // COAL_MSL_DESIGN_FROM=<year> (message 688 (a); a sensitivity, test only): the coal practice floor ends before this year instead of the
+ // run's recorded coalMslDesignFromYear (2030), e.g. 2027 or 2028 for a market start in April 2027. Recorded in weather.
+ const CMD=process.env.COAL_MSL_DESIGN_FROM?+process.env.COAL_MSL_DESIGN_FROM:null; if (CMD){ if (!(CMD>=2026&&CMD<=2040)) throw new Error('COAL_MSL_DESIGN_FROM: a year'); w.eval(`state.coalMslDesignFromYear=${CMD};`); console.log('COAL_MSL_DESIGN_FROM:', CMD); }
  // System strength (build 2026-11-02a; FIXED.ssMode): the run's own mode and settings (P.ss, pathway_perfail.js SS, ROCOF, SS_FLAT_GWS,
  // GFM_H, SS_LIFT, SS_FC, FAULT); a run recorded before has none and is checked on 'sync6', the 6 GW floor it was built with. Under 'inertia'
  // each year's grid-forming MW and condenser MVA built to it reach the engine (ssGfmMW, ssCondMVA), and the row reports the floor.
@@ -314,7 +328,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
-     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):''); r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
+     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(CMD?', coal practice floor to '+(CMD-1):''); r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first
