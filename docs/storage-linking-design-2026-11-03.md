@@ -1066,3 +1066,25 @@ Dates (SAST):
 
 Slips: none at 3 Nov, 15:00 SAST. Two risks: if the two fixes wait past 6 Nov, the extremes and the reruns' inputs move with them (the
 reruns cannot use today's data once the errors are to be fixed); and the leap-year re-fetch depends on Renewables.ninja's hourly limit.
+
+### 14.10 Message 684 (3 Nov 2026, evening): decisions applied; the schedule
+
+Applied on branch claude/weather-fixes (stacked on the build): the metered profile's tracking twin at the twelve-year level (k 0.7968);
+existing utility solar at ESK19679's 2023-2025 mean, 0.2558 (X 0.517 of the fleet on its year's own tracking twin on modelled years; the
+metered profile unchanged); the wind correction as a setting, off (FIXED.wxWindCorr; table refitted on ESK19679 alone); the leap-year
+fetch (running) and the clock and leap-year rebuild (checked, waiting for the fetch). PyPSA-RSA's copy is not relied on for any published
+figure (SOURCES). Uncorrected modelled 2025 is dropped from tests 1, 6 and 11; corrected modelled 2025 (REP_REF=2025 with WX_WINDCORR=1)
+is the provisional reference, metered 2025 the check. No build item B11 is needed: the setting carries the correction into the build
+LP's days, seed tail and stress windows. Every adequacy table gives the worst 1% and the worst draw (RULES).
+
+Dates (SAST), replacing 14.9's:
+- 3 Nov, about 22:00: the leap-year fetch complete (304 Renewables.ninja calls at 75 s from 15:36). Then the rebuild, the metered scale
+  rewritten, DATA_V 9, the stored panels and the suite (about 2.5 hours in the background), and the pull request, by about 01:30 on 4 Nov
+  or first thing.
+- 4 Nov: Nick reads the wind refit (the calm end on 2024-2025 is open) and the six presets' changes. Tests 1, 6 and 11 on the two
+  references start on the fixed data, with tests 2-5, 7-10, 12, 14 and 16; test 13 (central 2030 and 2040); test 15 on its own session.
+- 5 Nov: the extremes recomputed on the fixed, corrected data (684 (i)); with tests running.
+- 6 Nov: the leap-year deadline (684 (b)); expected met on 3 Nov.
+- 7-9 Nov: the remaining tests; 10 Nov the day count and the 2045 inputs; reruns 10-13 Nov on three sessions; the note 14-18 Nov.
+
+Slips: none at 3 Nov, 16:30 SAST.
