@@ -13349,7 +13349,7 @@ function bldBuildLP(opts){
     // lv_<t>_<y>_<i>, the level at the start of real day i (0-364), moves by its representative day's c_ to day i + 1, the last day
     // closing on day 0 (cyclic); every hour of every real day lies within zero and capacity (lhi_, llo_ with cmx_ and cmn_); lvm_ holds
     // the lowest level over each representative day's real days for its reserve rows. Stress days keep their own rows.
-    if (LINK){
+    if (LINK && y >= OPF){   // years before bldOperFrom have no operating day, so no linked level
       const MAP = (rd.map365ByYear && rd.map365ByYear[y]) || rd.map365;
       if (!MAP || MAP.length !== 365) throw new Error('bldStorageLink: the representative days carry no mapping of the 365 real days');
       for (const S2 of STORE){
@@ -22129,7 +22129,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-02y';
+const BUILD_STAMP = '2026-11-03a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
