@@ -20526,3 +20526,70 @@ days (built before 679, on the metered series with 11 extremes, unlinked, pass 1
 (c7 33.0), utility solar 23.4 GW (33.2), lithium 9.4 GW / 43 GWh (13.1 / 81), no CCGT (5.3), open cycle 3.1 GW (1.9), diesel open cycle
 3.7 GW (0.2), new pumped storage 1.5 GW; objective 9.5% lower. And the engine's long-store trace on c7's Fossil-free 2040 build (pathcheck
 LEVELS_OUT, one draw): iron-air (500,000 MWh) at 455,000-500,000 MWh all year in 2016 and full all year in 2022.
+
+### Existing utility solar at the metered long-run mean (0.257) and at 0.266, single-year LPs on c7's central: in 2030 almost all the extra output displaces coal (1.0 to 1.2 TWh against 0.224); in 2040 most of it is curtailed. On c7's twelve days existing solar runs at 0.213, not 0.224 (message 683 (d); test only, no level changed)
+
+Settings: build 2026-11-03a (claude/storage-link-build, a141491); c7's central settings (chain_c7.sh, env_c6a.sh, GAS_FIRST=2035);
+single-year LP OPER_FROM=y, HORIZON=y, FIX_FROM=pathway_c7.json, FIX_TO=y-1 (every build to y-1 fixed at c7's); pass 1 (c7's final LP is
+its pass 1; no stress windows); 19 days (12 matched days at 30.39, seven seed-tail days); native HiGHS simplex; EXIST_PV_TRK
+(bldExistPvTrackShare) X: existing utility solar's per-unit output is (1 - X) x the profile + X x the tracking twin. On c7's twelve days
+(metered 2025 days) the profile averages 0.2134 and the twin 0.2861, so the level on the days is 0.2134 + 0.0727 X: X 0 gives 0.213 (as
+run), 0.140 gives 0.224 (the model's stated level), 0.600 gives 0.257 (the metered long-run mean: full metered years 2019, 2020, 2021,
+2022 and 2025 at 0.258, 0.264, 0.264, 0.248, 0.251; 2023 about 0.251, estimated; 2024 not read) and 0.724 gives 0.266 (the model fleet's
+~70% tracker share). LP keys, 2030: 857c7df3c9, 2f0222e5f4, 2d3ee1b32b, 4958cfd9c8; 2040: cf61f887ec, f13649362e, 3e618fe46a,
+b24f2fa370. Energy on the representative days, weights from coal's objective coefficients (one cost per MWh a year); extra solar from
+the balance rows. Scripts: scratchpad solar683/an.py and rhs.py; days from repdays/extract.js's series (build 2026-11-02y). 3 Nov 2026,
+12:37 UTC.
+
+Denominator of the metered means: ESK19679's hourly 'PV Installed Capacity' (2025) and the same column in the Eskom Data Portal series
+(2019-2023, PyPSA-RSA's copy; not cited until Nick decides): AC contracted MW at the point of connection, the same plants as the energy
+(REIPPPP bid windows 1-4, 2,287 MW; +225 MW in December 2025). Wheeled, municipal and rooftop solar out of both. Eskom data, analysis ours.
+
+| | 2030: 0.213 (as run) | 0.224 | 0.257 | 0.266 | 2040: 0.213 (as run) | 0.224 | 0.257 | 0.266 |
+|---|---|---|---|---|---|---|---|---|
+| extra existing solar against as run, TWh | 0 | 0.31 | 1.34 | 1.62 | 0 | 0.31 | 1.34 | 1.62 |
+| coal, TWh | 125.0 | 124.7 | 123.7 | 123.5 | 50.18 | 50.17 | 50.13 | 50.13 |
+| curtailment, TWh | 0.0 | 0.0 | 0.0 | 0.0 | 29.9 | 30.1 | 30.9 | 31.1 |
+| new utility solar in year y, MW | 3,277 | 3,277 | 3,277 | 3,277 | 2,850 | 2,836 | 2,789 | 2,777 |
+| new wind in year y, MW | 2,500 | 2,500 | 2,500 | 2,500 | 1,350 | 1,346 | 1,335 | 1,331 |
+| lithium in year y, MW / MWh | 1,941 / 3,378 | 1,943 / 3,371 | 1,923 / 3,274 | 1,959 / 3,274 | 1,205 / 9,487 | 1,197 / 9,417 | 1,173 / 9,188 | 1,167 / 9,127 |
+| grid-forming / coal retained in year y, MW | 1,349 / 375 | 1,359 / 379 | 1,274 / 401 | 1,264 / 437 | 23 / 0 | 23 / 0 | 27 / 0 | 27 / 0 |
+| objective against as run, R bn | 0 | -0.16 | -0.66 | -0.80 | 0 | -0.01 | -0.05 | -0.06 |
+
+Against the model's stated 0.224: at 0.257, 2030 coal -0.95 TWh and 2040 curtailment +0.8 TWh; at 0.266, -1.20 TWh and +1.0 TWh. Gas
+and diesel move by under 0.05 TWh. The LP's days: the matched-day rule (message 125 (1)) picks metered 2025 days on which new tracking
+solar averages its twelve-year 0.286; on the metered profile the engine's tracking twin is inflated (below, 'the metered profile's
+tracking twin'), so the rule picks less sunny days, and existing utility solar and rooftop, which run on the profile itself, average
+0.213 on them (0.2236 twelve-year, 0.251 metered 2025). Caveats: the builds to y - 1 are c7's, optimised as run, so only year y responds;
+a full pathway at another level would let earlier builds move (a rerun, Nick's decision). The coal figures are the LP's representative
+days; the engine does not carry the tracker share (bldExistPvTrackShare is the LP's only). 0.257 is the Eskom-visible fleet's level
+(53-58% tracking in 2025, about 35% in 2019) applied to the model's whole existing fleet; 0.266 rests on the model fleet's tracker share.
+Rooftop unchanged.
+
+### The metered profile's tracking twin runs at 0.342, 20% above the twelve-year 0.286: the page's tracking presets, clicked, carry 2.4 to 7.6 TWh more new utility solar, and less coal and cost (found 3 Nov 2026 under message 683 (c); report only, nothing changed)
+
+Settings: build 2026-11-03a (claude/weather-refs, a141491 plus measurement scripts); harness/pathway/wx/presets_trk.js. Each preset with
+bldPvTracking on, applied as a click applies it, simulate(state, PROFILES) against the same run with new tracking solar rescaled to the
+twelve-year tracking mean (prof.solarTrk = min(1, 0.8352 x solarTrkOf(PROFILES.solar)); metered timing kept). 3 Nov 2026, 12:34 UTC.
+
+Cause: the engine and the build LP derive new tracking solar from the profile they are given (solarTrkOf: the profile times the PVGIS
+tracking/fixed gain by month and hour). On the modelled years the profile is fixed tilt and each year carries its own PVGIS twin, so
+the twin is right (0.273-0.295 a year, 0.2859 over twelve). On profiles.json, Eskom's metered 2025 fleet, already 53-58% on trackers
+(RESULTS 'Existing utility solar runs at 0.25-0.26'), the gain is applied a second time: 0.2514 becomes 0.3423. SOLAR.md (scratch) noted
+it on 3 Nov; this measures its effect.
+
+| Preset (as clicked) | new utility solar, MW | utility solar, TWh: as clicked / twin at 0.286 | curtailment, TWh | coal, TWh | gas, TWh | system cost, R bn | unserved |
+|---|---|---|---|---|---|---|---|
+| IRP's 2030 targets, grid delayed | 6,188 | 23.8 / 21.0 | 0.0 / 0.0 | -2.62 | 0.00 | -0.27 | 0 / 0 |
+| IRP's 2030 targets | 10,313 | 33.3 / 30.9 | 7.3 / 3.8 | -0.76 | -0.23 | -0.56 | 0 / 0 |
+| IRP path 2035 | 17,513 | 48.0 / 43.3 | 20.5 / 14.9 | -2.55 | -0.09 | -1.39 | 0 / 0 |
+| Least-cost path 2035 | 22,746 | 66.7 / 59.1 | 13.8 / 8.7 | -5.59 | -0.01 | -3.62 | 0 / 0 |
+| Deep decarbonisation 2035 | 38,225 | 70.0 / 64.8 | 88.0 / 70.8 | -1.33 | 0.00 | -1.24 | 0 / 0 |
+| Fossil-free 2040 | 100,516 | 95.3 / 90.5 | 319.1 / 270.0 | 0.00 | 0.00 | -0.08 | 0 / 0 |
+
+Coal, gas and cost columns: as clicked less the twin at 0.286. What it reaches: the page's single runs of these six presets (their
+headline figures and the panels that read lastRes), and any pathcheck or engine run given the metered profile (pathcheck's new WEATHER=
+metered; WEATHER=metered_trk12 rescales). Not reached: the twelve-year checks (pathcheck on modelled years, the risk panels) and the build
+LP's new solar on its days (the matched days are chosen to 0.286). The LP's days carry it the other way: picked on the inflated twin, they
+are less sunny, so existing utility solar and rooftop run at 0.213 on them (entry above). A fix would rescale or rebuild the twin for a
+metered profile; it changes visible results and is Nick's decision.

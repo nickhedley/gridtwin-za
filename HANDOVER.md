@@ -1,5 +1,21 @@
 # GridTwin ZA - handover, current state (kept current; updated 3 Nov 2026, 10:45 UTC)
 
+## 3 Nov 2026, message 683 (updated 12:45 UTC, 14:45 SAST)
+
+- Done: (g) PR #156 (claude/site-allowlist, worktree /home/user/gtza-site): .assetsignore deny list, 45 of 1,321 files served, browser
+  test clean. (d) solar single-year LPs (RESULTS, 683 (d) entry; LPs in /home/user/gtza-build/harness/out/solar683). (c) engine on
+  metered 2025, modelled 2025 and the twelve modelled years, c7 2026/2030/2035/2040 and Fossil-free 2040 (branch claude/weather-refs,
+  worktree /home/user/gtza-wx, from a141491: pathcheck WEATHER=metered|metered_trk12|<years>, new outputs shedPct, shedByWeatherYear,
+  storeTWh, weather; regression identical with it unset; scripts harness/pathway/wx/: run_wx.sh, eskom2025.js, presets_trk.js,
+  summarise.py; outputs harness/out/wx683). The corrected-modelled reference waits for (b).
+- Found: the engine's new tracking solar on the metered profile is 0.342 against 0.286 (the tracker gain applied twice; RESULTS 'The
+  metered profile's tracking twin'); the page's six tracking presets carry it; the LP's matched days carry it the other way (existing
+  solar and rooftop at 0.213 on c7's days).
+- Running (stop only by PID): wind-corrections helper (683 (b), scratch windcorr/); run_wx.sh (shell 3847) with 40-draw and
+  metered_trk12 passes queued; the tolerance-compensated speed tests (queue shell 6050, hscale_tol first; 21144 finished); suite
+  before on clean main 24723; suite after on the build (run_suite.sh under job bnqex6ls9). Build B10 committed (7c4bdcc), not pushed,
+  pull request after the suite after.
+
 ## 3 Nov 2026, afternoon (messages 678-682): the build, findings, jobs (updated 12:00 UTC, 14:00 SAST)
 
 - Build approved (678) and done to B9 on claude/storage-link-build (from main b0f7999), every new setting off by default, c7's pass-1 key
