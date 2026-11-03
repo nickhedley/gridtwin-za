@@ -1,7 +1,7 @@
 #!/bin/bash
 # 665 (b), (c): dump each run's final-pass LP and solve it for the chained-day split of long-duration storage's value. Resumable.
 # Usage: ldesdump.sh name "<extra env>" <passes>
-SP=/tmp/claude-0/-home-user/7f3311fb-be50-5c31-9fe8-354006007a62/scratchpad/c647/ldes; mkdir -p $SP
+SP=${LDES_DIR:-$(cd "$(dirname "$0")" && pwd)/ldes}; mkdir -p $SP
 cd /home/user/gtza-c7run/harness; source pathway/env_c6a.sh; export GAS_FIRST=2035
 C7="SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1"
 n=$1; extra=$2; k=$3

@@ -7,7 +7,7 @@ M_RE="2033:375/325/50,2034:375/325/50,2035:375/325/50,2036:375/325/50"
 run(){ local n=$1 extra=$2 k=$3
   [ -s $L/${n}_store_decomp.json ] && return 0
   [ "$(df --output=avail -B1G /home/user | tail -1 | tr -d ' ')" -ge 5 ] || { echo "$(date -u +%H:%M) $n not run: under 5 GB free" >> $L/progress.txt; return 1; }
-  bash $SP/ldesdump.sh $n "$extra" $k
+  LDES_DIR=$L bash $SP/ldesdump.sh $n "$extra" $k
   if [ -s $L/${n}_sol.json ]; then python3 -I $SP/decompcol.py $L/${n}_pass$k.lp $L/${n}_sol.json '(e?b_batt|b_vrfb|b_ironair|b_phes|b_phel)_20[0-9]{2}' $L/${n}_store_decomp.json >> $L/$n.log 2>&1
     rm -f $L/${n}_pass$k.lp $L/${n}_sol.json; rm -rf $L/lpc_$n; echo "$(date -u +%H:%M) $n decomposed" >> $L/progress.txt; fi; }
 run s_ff2040novrfb_c7 "SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 VRFB_OFF=1" 1
