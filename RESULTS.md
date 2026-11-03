@@ -20841,7 +20841,8 @@ ESK19679.csv (none of the seven reads it); scratchpad failures/FAILURES.md with 
    gross. Main 184.2 against 160.3 Mt; with 1.04 it would be 178.4 (+11.3%). Proposal: a report-only line (TODO 14iw); a check against
    Eskom's 184.0 Mt would be largely circular.
 5. outputs, 'curtailment is zero at defaults': first fails on 2026-10-24b (0.1 TWh, 0.3 from 27f): PR C's coal rules, 0.281 TWh in 400
-   hours, peak 3.7 GW; 0 with them switched back. Consistent with 2026's metered losses (about 0.55 TWh curtailed in January-August).
+   hours, peak 3.7 GW; 0 with them switched back. Not yet compared with 2026's metered curtailment (about 0.55 TWh in January-August)
+   on the same months and fleet: to be tested before it is called consistent (message 687 (d)).
    Proposal: replace the zero band with a recorded, dated value.
 6. outputs, 'curtailFuelCost is non-zero in the coal-curtailment scenario': first fails on 2026-10-24b (19.9; 17.9 from 27f): PR C's
    synchronous floor options +R5.8bn, its commitment rules -R4.7bn; later non-coal changes -R0.4bn (R15.5bn on 23a to R15.1bn on main

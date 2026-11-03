@@ -77,8 +77,8 @@ failures, each with its cause and first failing build (message 686 (f); RESULTS 
    curtailment cells moved by spill at defaults); baseline last written on 22e; rewrite awaiting decision.
 8. validate_benchmarks: 'co2 reconciles with Ember monthly data' (from 22e, a51f79b, c6 PR A): 184.2 against 160.3 Mt (+14.9%);
    emisCoal is Eskom's measured 1.108 t/MWh sent out, Ember applies a fixed 0.846 per MWh gross (TODO 14iw).
-9. validate_outputs: 'Curtailment is zero at defaults' (from 24b, 1b0dad0): 0.28 TWh/yr from the practice floor; consistent with
-   2026's metered solar losses (RESULTS 'Utility solar in 2026').
+9. validate_outputs: 'Curtailment is zero at defaults' (from 24b, 1b0dad0): 0.28 TWh/yr from the practice floor; not yet compared
+   with 2026's metered curtailment on the same months and fleet (TODO 14ms (d)).
 10. validate_outputs: 'curtailFuelCost is non-zero in the coal-curtailment scenario' (from 24b, 1b0dad0): R17.9 bn against 15.9
     +/-0.7; PR C's synchronous floor options +5.8, its commitment rules -4.7, later non-coal changes -0.4.
 11. validate_pathway_presets: 'the preset blocks are the generator's output': fails under Python 3.12 or later (from 29b, 016641e),
