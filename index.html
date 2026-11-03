@@ -6059,7 +6059,9 @@ const FIXED = {
   bldStage2Year:0, bldAnnuityToYear:0,
   // Existing utility solar's level (user decision, 3 Nov 2026, message 684 (f)): existPvMeteredCF is Eskom's metered utility PV, energy
   // over hourly installed capacity (AC, the same plants), the mean of the full calendar years in ESK19679, 2023 0.2523, 2024 0.2633,
-  // 2025 0.2519 (Eskom data, obtained on request; the analysis is ours, not Eskom's). On a modelled weather year existing utility
+  // 2025 0.2519 (Eskom data, obtained on request; the analysis is ours, not Eskom's; Nick's decision, message 686 (a)). 2026 (January-
+  // August, 0.199) is left out: its shortfall is most likely NTCSA curtailment, and this is the fleet's resource, which the engine
+  // curtails on its own. The earlier years carry some curtailment too, so the level may sit slightly low. On a modelled weather year existing utility
   // solar runs at (1 - X) x fixed tilt + X x the year's own tracking twin, with X (existPvTrackShareAt) the share that puts the twelve
   // years' mean at this level: most of the fleet is on single-axis trackers. On the metered profile (profiles.json, that fleet
   // itself) X is 0. Rooftop keeps fixed tilt. bldExistPvTrackShare: null, the derived share on modelled days and 0 on the metered
