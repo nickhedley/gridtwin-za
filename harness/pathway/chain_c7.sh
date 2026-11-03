@@ -135,6 +135,8 @@ case "${1:-1}" in
        "s_mtsao_ref_c7|DEMAND=rate:3.30 COAL_EAF_PATH=$M_EAF AVDED_OFF_AFTER=2030 REIPPP_RETIRE=$M_RE" \
        "s_mtsao_refkeep_nogas_c7|DEMAND=rate:3.30 COAL_EAF_PATH=$M_EAF AVDED_OFF_AFTER=2030 GAS_CAP=0 OCGD=1" \
        "s_mtsao_refkeep_c7|DEMAND=rate:3.30 COAL_EAF_PATH=$M_EAF AVDED_OFF_AFTER=2030" ;;
+  # 665 (b): Fossil-free without vanadium and without new iron-air (IA_OFF, so no IA_TOTAL).
+  ffnolds) queue "s_ff2040nolds_c7|SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 FOSSIL_END=2039 VRFB_OFF=1 IA_OFF=1|6" ;;
   *) echo "phase $1 not yet in this script" >> $P ;;
 esac
 echo "$(date -u +%H:%M) piece end" >> $P
