@@ -1989,8 +1989,8 @@ A7. Panel: a map of the ten areas (the existing supply-area geometry used by 'Wh
 A8. Checks before the PR: the panel's numbers equal area_map.json (a validate check); area_map.json recomputes from the stored runs; a
     render check on a fresh page load (Playwright); the visible-text diff; the full suite before and after.
 A9. Run time: unmeasured. The regional engine's year is to be timed first on one case; at a guessed 1-3 minutes a year, 72 years take
-    1.5-4 hours in resumable pieces, plus 36 national engine years (the prices in A3: 3 x 2 x... the national price does not depend on
-    the grid case, so 3 years x 12 weather years = 36, about 10 minutes).
+    1.5-4 hours in resumable pieces. A3's national prices add 36 national engine years (3 years x 12 weather years; the national price
+    does not depend on the grid case), about 10 minutes.
 Open questions: (1) the price method (A3 zonal approximation against per-hour LP shadow prices); (2) the slip years for 'delayed';
 (3) whether corridor upgrades by year come into the regional engine first (A1's limitation); (4) the battery's siting (sited in the
 area, charged and discharged on the area's prices, no corridor effect of its own).
