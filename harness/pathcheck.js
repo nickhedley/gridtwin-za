@@ -213,6 +213,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // STORAGE LOOK-AHEAD (user, 3 Nov 2026, message 666 (e)): LA_H sets the short stores' window (FIXED.storageLookaheadH, 48 h) and
    // LDES_LA_H the long stores' (ldesLookaheadH, 168 h when unset); both are perfect forecasts within the window. Measurement only.
    if (process.env.LA_H!==undefined){ if (!(+process.env.LA_H>=0)) throw new Error('LA_H must be 0 or more hours'); over.storageLookaheadH=+process.env.LA_H; }
+   // Self-discharge as the run recorded it (storeSelfDischargePctDay; design note version 2, 3.2): the engine decays each store hourly.
+   if (P.selfDischarge) over.storeSelfDischargePctDay = P.selfDischarge;
+   // PS_LA_H (design note version 2, 3.5; message 673 (i); measurement only): pumped storage's charge target on a forecast this many hours
+   // ahead (the engine's psLookaheadH) in place of the longest store's horizon.
+   if (process.env.PS_LA_H!==undefined){ if (!(+process.env.PS_LA_H>=1)) throw new Error('PS_LA_H must be 1 hour or more'); over.psLookaheadH=+process.env.PS_LA_H; }
    if (process.env.LDES_LA_H!==undefined){ if (!(+process.env.LDES_LA_H>=1)) throw new Error('LDES_LA_H must be 1 hour or more'); over.ldesLookaheadH=+process.env.LDES_LA_H; }
    // FOSSIL_END (message 531 (c)): after the run's last fossil year no coal (its coalMW is 0 from its dates), no gas and no diesel stand.
    if (P.fossilEnd && y > P.fossilEnd){ if (over.coalDecomMW < +w.eval('FIXED.coalInstalledMW')) throw new Error('fossilEnd: coal standing in '+y);
@@ -238,6 +243,15 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
        let dem=0, chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
        o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW(applyYearFleetOptions({...FIXED,...st}))+Math.max(0,st.newOcgtMW||0),...(()=>{ const c=x.coalCommittedMW; if (!c) return {}; let s=0,m=Infinity; for(let i=0;i<c.length;i++){ s+=c[i]; if(c[i]<m) m=c[i]; } return {cmMean:s/c.length, cmMin:m}; })(),...(x.ss?{ssReq:x.ss.reqGWs,ssMin:x.ss.minGWs,ssSyncMin:x.ss.syncMinGWs,ssP5:x.ss.p5GWs,ssShortH:x.ss.shortH,ssShortGWsH:x.ss.shortGWsH,ssLiftH:x.ss.liftH,ssLiftMWh:x.ss.liftMWh,ssLiftFloorMWh:x.ss.liftFloorMWh,ssResH:x.ss.resH||0,ssResMWh:x.ss.resMWh||0, ssCoalFirstH:x.ss.coalFirstH||0,ssLiftCappedH:x.ss.liftCappedH}:{}),...(x.btm?{btmStock:x.btm.stockGWh,btmDemChg:x.btm.demandChangeGWh,vppMW:x.btm.vppMW||0,vppDis:x.btm.vppDischargeMWh||0,vppInc:x.btm.vppIncrementalDischargeMWh||0,vppCost:x.btm.vppCostR||0,vppWear:x.btm.vppWearR||0}:{}),...(x.geyser?{gyMW:x.geyser.enrolledMW,gyRed:x.geyser.reducedGWh,gyCost:x.geyser.costR}:{}),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; const rt=reipppRetiredMW(st.scenarioYear,{...FIXED,...st}); return ((st.windMW||FIXED.windMW)-(rt?rt.wind:0))*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)-avonDedisaOffMW({...FIXED,...st},st.scenarioYear)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6]); } }
       return JSON.stringify(o); })()`));
+   // LEVELS_OUT=<file> (design note version 2, test 4; message 673 (h); measurement only): each long store's level at the end of every day
+   // (iron-air fe, vanadium vrfb, pumped storage ps, MWh), by weather year, from the first draw's seed, one JSON line per checked year.
+   if (process.env.LEVELS_OUT){ const lev=JSON.parse(w.eval(`(function(){ const o={}; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
+       const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+yy*7919};
+       const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
+       const day=a=>a?Array.from({length:365},(_,d)=>Math.round(a[d*24+23])):null;
+       o[yy]={fe:day(x.socByTier&&x.socByTier.fe),vrfb:day(x.socByTier&&x.socByTier.vrfb),ps:day(x.socPs)}; }
+     return JSON.stringify(o); })()`));
+     fs.appendFileSync(process.env.LEVELS_OUT, JSON.stringify({year:y, levels:lev})+'\n'); }
    // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
    // AVERAGE COST PER MWH SERVED (user, 11 Oct 2026): the engine's avgCost (grid cost, rooftop capex and the shed

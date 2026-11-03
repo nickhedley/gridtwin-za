@@ -6044,6 +6044,10 @@ const FIXED = {
   // (opens at its own closing level), as now; 1, a window opens at the linked chain's level on its calendar start day and closes at
   // the chain's level the day after its last. Needs bldStorageLink 1.
   bldWindowLink:0,
+  // Self-discharge, % of stored energy a day, read by the build LP (with bldStorageLink 1 only: Kotzur et al., Applied Energy 2018,
+  // Eq. 19, with Appendix B's conservative bounds) and the engine (hourly). 0 everywhere until Nick sends a sourced rate (message 678
+  // (e)); test 10's brackets are unsourced. batt covers lithium and the virtual power plant's batteries, ps existing and new pumped storage.
+  storeSelfDischargePctDay:{ batt:0, vrfb:0, ironair:0, ps:0 },
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -8228,6 +8232,7 @@ function simulate(u, prof, outPath, _soc0){
   // Hourly state of charge per tier, diagnostic only - the storage questions of 22 Sep 2026
   // could not be answered without it, because only throughput was visible.
   const tierSoc = {}; for (const t of battTiers) tierSoc[t.k] = new Float64Array(HOURS);
+  const _psSocH = new Float64Array(HOURS);   // pumped storage's level at each hour's end (socPs; design note version 2, test 4)
   const _hourGave = { li:0, vrfb:0, fe:0, ps:0 };   // MW each tier has already given this hour (look-ahead discharge, 14do)
   const tierDischarge = (mw, shortCap = Infinity) => {
     let got = 0, shortLeft = shortCap;   // _hourGave holds the power each tier has given this hour, across both passes and calls
@@ -8933,6 +8938,9 @@ function simulate(u, prof, outPath, _soc0){
   // Kept for the scalar path and for panels that still read one number.
   const _longestStoreH = Math.max(25, ...Object.values(_tierHorizonH));
   const anticipatedShortfall = shortfallOver(_longestStoreH);
+  // PS_LA_H (p.psLookaheadH; design note version 2, 3.5; message 673 (i); measurement only, off by default): pumped storage's charge
+  // target reads the shortfall forecast over this many hours in place of the longest store's horizon.
+  const _psAS = (+p.psLookaheadH > 0) ? shortfallOver(Math.max(1, Math.round(+p.psLookaheadH))) : anticipatedShortfall;
   // Shortfall left after coal and gas together, same horizon, with coal at the planned
   // commitment capped by the outage state held forward rather than the mean EAF. Gas charges
   // storage only up to this, and runs ahead of storage when it exceeds stored energy. Added
@@ -9125,7 +9133,14 @@ function simulate(u, prof, outPath, _soc0){
     for(let h=start;h<end;h++) expensiveThresholdByHour[h]=threshold;
   }
 
+  // Self-discharge (storeSelfDischargePctDay; design note version 2, 3.2; message 678 (e)): each hour every tier and pumped storage
+  // keep (1 - daily rate)^(1/24) of their level. Skipped at 0, the default, so no output moves.
+  const _sdD = p.storeSelfDischargePctDay || {}, _sdK = { li: 'batt', vrfb: 'vrfb', fe: 'ironair' };
+  const _sdH = k => Math.pow(1 - Math.max(0, +(_sdD[k] || 0)) / 100, 1 / 24);
+  const _sdOn = ['batt', 'vrfb', 'ironair', 'ps'].some(k => +(_sdD[k] || 0) > 0);
+  const _sdT = Object.fromEntries(battTiers.map(t => [t.k, _sdH(_sdK[t.k])])), _sdPs = _sdH('ps');
   for(let h=0;h<HOURS;h++){
+    if (_sdOn){ for (const t of battTiers) t.soc *= _sdT[t.k]; battSoc = battTiers.reduce((a, t) => a + t.soc, 0); psSoc *= _sdPs; }
     if(h===3264||h===7848) socAtWeekStart[h]={ps:psSoc,batt:battSoc};
     // Shadow assertion: tier SOC must track the scalar every hour.
     { const ts=battTiers.reduce((a,t)=>a+t.soc,0); const d=Math.abs(ts-battSoc);
@@ -9149,6 +9164,7 @@ function simulate(u, prof, outPath, _soc0){
     coalAvailOnlyFrac[h] = coalInstRem > 0 ? Math.max(coalAvailFrac[h], coalAvailableArr[h] / coalInstRem) : 0;
     if (_dslTankOn) _dslStock = Math.min(_dslTankCap, _dslStock + Math.max(0, p.dslRefillMW));
     for (const t of battTiers) if (tierSoc[t.k]) tierSoc[t.k][h] = t.soc;
+    _psSocH[h] = psSoc;
     // operating RESERVE: capacity that is committed but must not be dispatched,
     // so it can respond to a unit trip or a forecast error. Coal carries the
     // spinning share; the fast-start fleet (OCGT, storage) can cover the rest
@@ -9722,7 +9738,7 @@ function simulate(u, prof, outPath, _soc0){
         // stopping - 987 GWh idle while 116 TWh was curtailed.
         const battFleetHours = battPower > 0 ? battEnergy / battPower : (p.battHours ?? 4);
         const battDailyFloor= Math.min(battEnergy*0.60, battPower*battFleetHours*0.75);
-        const psTargetCeiling=Math.max(0, Math.min(psEnergyTot*0.85, _offPeak ? Math.max(anticipatedShortfall[h], psDailyFloor) : anticipatedShortfall[h])
+        const psTargetCeiling=Math.max(0, Math.min(psEnergyTot*0.85, _offPeak ? Math.max(_psAS[h], psDailyFloor) : _psAS[h])
           - (_laOn && !p._laNoPs ? _laPsRefill(h) : 0));   // look-ahead (B): less what the coming surplus will pump in
         const battTargetCeiling=Math.min(battEnergy*0.8, _offPeak ? Math.max(anticipatedShortfall[h], battDailyFloor) : anticipatedShortfall[h]);
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC;  // this charge is bought from coal
@@ -10681,7 +10697,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,socPs:_psSocH,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF, coalCommittedMW, ss:ssOut,
           ...(_btmOut ? { btm: _btmOut } : {}),
           ...(_gyOut ? { geyser: _gyOut } : {}),   // geyser control, when on (messages 633-635)   // behind-the-meter batteries and the enrolled store, when on (messages 621-625)
@@ -12666,6 +12682,11 @@ function bldBuildLP(opts){
   // bldHourlySoc 1 (design note version 2, 3.2; message 673 (f)). LVMIN: the representative days whose reserve rows read the lowest
   // level over their real days (lvmin_), written with the links.
   if (LINK && !HS_C) throw new Error('bldStorageLink 1 needs bldHourlySoc 1: the intra-day movement c_ exists only there');
+  // Self-discharge (storeSelfDischargePctDay): kept share of a level per hour and per day; a coefficient of exactly 1 is written as
+  // before, so the default (0) leaves the LP text unchanged. Applied only with linking: the block chain has no real-day order to decay over.
+  const _SDP = S.storeSelfDischargePctDay || {}, sdDay = t => Math.max(0, +(_SDP[t === 'vpp' ? 'batt' : (t === 'phes' || t === 'phel') ? 'ps' : t] || 0)) / 100;
+  const sdKeepD = t => 1 - sdDay(t), sdKeepH = t => Math.pow(1 - sdDay(t), 1 / 24), sdc = x => x === 1 ? '' : x.toFixed(9) + ' ';
+  if (STORE.some(S2 => sdDay(S2.t) > 0) && !LINK) throw new Error('storeSelfDischargePctDay above 0 needs bldStorageLink 1 in the build LP');
   const LVMIN = new Set();
   // A stress window's last day (the day no other day names as predecessor, walking forward from d).
   const hsLast = (y, d) => { const nx = new Map(rdY(y).filter(q => q.prevD !== undefined).map(q => [q.prevD, q.d])); let x = d; while (nx.has(x)) x = nx.get(x); return x; };
@@ -13067,8 +13088,8 @@ function bldBuildLP(opts){
           // Linked year (design note version 2, 3.2): the lowest level over the real days this day stands for (lvmin_, conservative),
           // plus the movement to the hour's end and to its start.
           const lm = 'lvmin_batt_' + y + '_' + r.d; LVMIN.add('batt_' + y + '_' + r.d);
-          L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + lm + ' - c_batt_' + k + ' <= 0');
-          L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + lm + (h > 0 ? ' - c_batt_' + y + '_' + r.d + '_' + (h - 1) : '') + ' <= 0');
+          L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + sdc(sdKeepD('batt')) + lm + ' - c_batt_' + k + ' <= 0');
+          L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + sdc(sdKeepD('batt')) + lm + (h > 0 ? ' - c_batt_' + y + '_' + r.d + '_' + (h - 1) : '') + ' <= 0');
         } else if (HS_C && !r.tail){
           // Calendar day: the hour's level on the first and on the last real day of the block (c_ is the cumulative
           // movement within the day; the first real day starts at the previous level, the last at e - c_23).
@@ -13102,8 +13123,8 @@ function bldBuildLP(opts){
           } else if (LINK && !r.tail){
             // Linked year (message 673 (f)): as lithium's, on the lowest level over the real days this day stands for.
             const lm = 'lvmin_ps_' + y + '_' + r.d; LVMIN.add('ps_' + y + '_' + r.d);
-            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + lm + ' - c_ps_' + k + ' <= 0');
-            L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + lm + (h > 0 ? ' - c_ps_' + y + '_' + r.d + '_' + (h - 1) : '') + ' <= 0');
+            L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + sdc(sdKeepD('ps')) + lm + ' - c_ps_' + k + ' <= 0');
+            L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + sdc(sdKeepD('ps')) + lm + (h > 0 ? ' - c_ps_' + y + '_' + r.d + '_' + (h - 1) : '') + ' <= 0');
           } else if (HS_C && !r.tail){
             const c = 'c_ps_' + k, c23 = 'c_ps_' + y + '_' + r.d + '_23';
             L.push(' rpe_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + c + (_ePsPrev ? ' - ' + _ePsPrev + ' <= 0' : ' <= ' + (EX.ps * STORE.find(q => q.t === 'ps').hours * 0.5).toFixed(1)));
@@ -13246,7 +13267,7 @@ function bldBuildLP(opts){
           if (WL && !_chainPrev.has(r.d)) L.push(' wlc_'+kk+': e_'+kk+' - lv_'+S2.t+'_'+y+'_'+((r.dem + 1) % 365)+' = 0');
           for (let h = 0; h < 24; h++){
             const lev = hsLevel(S2.t, y, r, h), from = h > 0 ? hsLevel(S2.t, y, r, h - 1) : hsStart(S2.t, y, r);
-            L.push(' sh_'+kk+'_'+h+': '+lev+' - '+from+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
+            L.push(' sh_'+kk+'_'+h+': '+lev+' - '+sdc(sdKeepH(S2.t))+from+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
             if (h < 23) L.push(' shc_'+kk+'_'+h+': '+lev+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours).toFixed(1));
           }
         } else if (LINK && !r.tail){
@@ -13255,7 +13276,7 @@ function bldBuildLP(opts){
           // Mantegna et al. 2024, 2.3.2). The real days' levels, links and bounds are written once a year below.
           for (let h = 0; h < 24; h++){
             const c = 'c_'+kk+'_'+h;
-            L.push(' cr_'+kk+'_'+h+': '+c+(h > 0 ? ' - c_'+kk+'_'+(h-1) : '')+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
+            L.push(' cr_'+kk+'_'+h+': '+c+(h > 0 ? ' - '+sdc(sdKeepH(S2.t))+'c_'+kk+'_'+(h-1) : '')+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
             L.push(' cmxr_'+kk+'_'+h+': cmx_'+kk+' - '+c+' >= 0');
             L.push(' cmnr_'+kk+'_'+h+': cmn_'+kk+' - '+c+' <= 0');
           }
@@ -13309,9 +13330,9 @@ function bldBuildLP(opts){
         const ex = S2.ex(EX), capTerms = (S2.t === 'batt') ? cumE(y).map(v => '1 ' + v) : cum(S2.t,y).map(v => S2.hours+' '+v);
         for (let i = 0; i < 365; i++){
           const kk = S2.t+'_'+y+'_'+MAP[i], lv = 'lv_'+S2.t+'_'+y+'_'+i, nx = 'lv_'+S2.t+'_'+y+'_'+((i + 1) % 365);
-          L.push(' lnk_'+S2.t+'_'+y+'_'+i+': '+nx+' - '+lv+' - c_'+kk+'_23 = 0');
+          L.push(' lnk_'+S2.t+'_'+y+'_'+i+': '+nx+' - '+sdc(sdKeepD(S2.t))+lv+' - c_'+kk+'_23 = 0');
           L.push(' lhi_'+S2.t+'_'+y+'_'+i+': '+lv+' + cmx_'+kk+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours).toFixed(1));
-          L.push(' llo_'+S2.t+'_'+y+'_'+i+': '+lv+' + cmn_'+kk+' >= 0');
+          L.push(' llo_'+S2.t+'_'+y+'_'+i+': '+sdc(sdKeepD(S2.t))+lv+' + cmn_'+kk+' >= 0');   // decayed over the day: conservative (Kotzur, Appendix B)
           if (LVMIN.has(S2.t+'_'+y+'_'+MAP[i])) L.push(' lvm_'+S2.t+'_'+y+'_'+i+': lvmin_'+kk+' - '+lv+' <= 0');
         }
       }
