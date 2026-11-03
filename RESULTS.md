@@ -20901,3 +20901,33 @@ pumping) and barely curtails solar; coal at its floor is not the difference. By 
   synchronous floor and reserve: the engine's midday coal already sits near the metered, so none of them is the main gap. Pumped
   storage's midday behaviour has no setting: a change would be an engine rule (Nick's decision). Not yet run: the levers in single-year
   2030 and 2035 LPs (after the data rebuild, on consistent data).
+
+### Congestion curtailment's flat 1.3% against 2026 (message 690, part 1: Today 2026 on the metered profile; the single-year 2030 and 2035 tests follow)
+
+Settings: claude/weather-fixes 9fc4f42 (test settings congestionShape and psDayPumpMaxMW, both off by default; with both off the c7 2030 LP
+is byte-identical and pathcheck identical), curtail2026.js; Today 2026 on the page's metered 2025 weather; 3 Nov 2026, about 20:15 SAST.
+Utility PV curtailed includes the congestion derate where it applies. Metered: about 0.55 TWh January-August, about 207 MWh per MW, about
+560 MW at 11:00-14:00 in March-August (Eskom-visible fleet, about 2,650 MW; ESK19679, Eskom data, analysis ours).
+
+| Case (Today 2026) | PV curtailed Jan-Aug, TWh | per MW, MWh | Mar-Aug 11:00-14:00, MW | all spill Jan-Aug, TWh | PV curtailed by month Jan-Aug, GWh |
+|---|---|---|---|---|---|
+| (a) no flat congestion curtailment | 0.035 | 9.8 | 35 | 0.288 | 0/0/0/0/17/0/1.3/16.5 |
+| (b) the flat 1.3%, as now | 0.091 | 25.6 | 56 | 0.271 | 10.9/8.5/8.2/6.9/20.8/6.7/7.8/21.5 |
+| (c) the same energy by technology, in its hours | 0.094 | 26.2 | 68 | 0.247 | 10.3/8.3/8.4/7.3/21.8/7.4/8.6/21.5 |
+| (d) (a) with pumping from a surplus at 09:00-16:59 capped at 469 MW | 0.364 | 102.1 | 392 | 0.866 | 11.8/1.9/2.9/35.1/102.2/44.9/52.3/113.3 |
+| (d) with demand 4.3% lower (midday at 2026's metered level) | 0.573 | 160.5 | 577 | 1.253 | 25/8.9/11.5/57.7/156.3/76.5/86.3/150.4 |
+
+PV curtailed by hour of day, March-August mean, MW: (b) peaks 79 at 13:00; (d) 25/131/289/416/470/400/168/9 at 09:00-16:00; (d) with
+demand 64/241/451/609/671/597/279/15. Metered 2026 shortfall by hour (mostly curtailment) runs 09:00-17:00 with its centre at 12:00-14:00.
+
+- The dispatch rule that closes most of the gap is pumped storage's daytime pumping held at its metered level (the engine pumps about
+  twice the metered at midday). With it and no flat figure the engine's solar curtailment per MW rises from 9.8 to 102 MWh; with the midday
+  demand level also at 2026's metered, to 160 MWh, about 78% of the metered rate, with the midday MW and the April-August months near the
+  metered shortfall (March low). The rest, about a fifth, is not produced by the single-node dispatch: network limits, the order of
+  curtailment (the engine cuts wind and solar pro rata; it curtails about as much wind as solar in these cases) or the remaining demand and
+  pumping differences.
+- Double counting: the flat 1.3% stands in for 2025's curtailment, which NERSA describes as low demand at night (system balance, not
+  congestion). Wherever the dispatch produces system-balance curtailment itself, the flat figure on top counts it twice; (b) adds 0.056 TWh
+  of PV loss to (a)'s 0.035 in January-August.
+- Not concluded yet: the treatment for the reruns, pending the single-year 2030 and 2035 results on the fixed data. Pumped storage's
+  daytime cap is a test setting describing 2026's operation, not a decided rule.
