@@ -2251,14 +2251,18 @@ Closed REIPPPP projects (user, 2 Nov 2026, messages 631 (g), 632 (b) and 634 (a)
 solar and onshore wind is 6.0% real, the same back-solve on the BW5 and BW6 projects that reached commercial or financial close (BW5
 closed solar 6.10%, BW6 closed 6.00%, MW-weighted 6.05%, against 5.65% on all BW6 bids); all bids' 5.5% becomes the 'allbids'
 sensitivity; the blended case adds the private-offtake gap on top as before. Tariffs (Fully Indexed Price at each window's base date)
-from search extracts of the DMRE media statements of 28 Oct 2021 and 8 Dec 2022, the DBSA and SAWEA BW5 preferred-bidder lists, NERSA's
-licence approvals as reported by SolarQuarter (7 Jul 2023), and EDF, Scatec, Juwi, Red Rocket and IPP Office close statements; no source
-page could be opened from the session, so each figure is to be checked against the DMRE, DBSA or NERSA documents before the pack cites
-it: BW5 closed wind Phezukomoya and San Kraal (140 MW each, R564.45/MWh), Coleskop (140, R601.17), Brandvalley (140, R496.90),
+from DBSA's preferred-bidder lists, the BW5 list of 28 Oct 2021 and the BW6 list of December 2022 (PDFs, checked by the user, 2 Nov 2026,
+message 661: every closed project's tariff matches the list to one decimal), in place of the search extracts first used (DMRE media
+statements, SAWEA, SolarQuarter's report of NERSA's licence approvals, the developers' close statements); which projects reached close
+stays from the developers' and the IPP Office's statements: BW5 closed wind Phezukomoya and San Kraal (140 MW each, R564.45/MWh), Coleskop (140, R601.17), Brandvalley (140, R496.90),
 Rietkloof (140, R502.70), Wolf (84, R617.70): 784 MW at R553.62 MW-weighted, all BW5 wind bids R495.22; BW5 closed solar Grootfontein
 PV1-3 (3 x 75 MW, R484.60), Graspan (75, R470.00), Grootspruit (75, R476.50): 375 MW at R480.06, all BW5 solar bids R428.79 (the
 cheapest, R374.79, did not close); BW6 closed solar Virginia (240 MW, R486.50) and Doornhoek (120 MW, R540.00): R504.33, all BW6 bids
-R490.48. Tariffs as bid, not as adjusted at close (BW5 adjusted at close for exchange and interest rates). Excluded: BW7's Middlepunt
+R490.48. All-bid averages, MW-weighted from the same DBSA lists (message 661): BW5 wind R491.62 (1,608 MW) against R495.22 above, BW5
+solar R431.05 (975 MW) against R428.79, BW6 solar R490.92 (860 MW) against R490.48; the back-solve on them (RESULTS 'Cost of capital on
+closed REIPPPP projects only', 3 Nov 2026 addition): BW6 all bids 5.66% (5.65%), BW5 solar 4.75% (4.69%), BW5 wind 3.09% (3.17%); the
+rounded rates do not move ('allbids' 5.5%, closed 6.0%), so nothing is changed. Tariffs as bid, not as adjusted at close (BW5 adjusted
+at close for exchange and interest rates; whether and how much is still to read). Excluded: BW7's Middlepunt
 (240 MW, R458/MWh in press at its financial close, 14 Apr 2026), which would imply 3.4%: one project, and its price base (taken here as
 January 2024) is unconfirmed. Results: RESULTS 'Cost of capital on closed REIPPPP projects only'.
 

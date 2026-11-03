@@ -20087,3 +20087,12 @@ with main's reference logs (28af9d5's set): validate_findings 36/39, validate_re
 off-peak), validate_benchmarks 28/30, validate_outputs 49/51, eng5 'storage vs unserved'; the same names in each. Passing that
 failed on build x (the claude/coc-closed rename): validate_pathway_presets 65/65, validate_weather 68/68, validate_worker 38/38.
 Visible text against main: none changed (diff_public_text.js, 2,187 sentences before and after).
+
+### The 'allbids' back-solve on DBSA's preferred-bidder lists: BW6 5.66%, BW5 solar 4.75%, BW5 wind 3.09%; the rounded rates stand (user, 3 Nov 2026, message 661)
+
+The same back-solve as RESULTS 'Cost of capital on closed REIPPPP projects only' (the model's 2026 capex, fixed O&M, 25-year life and
+the bids' capacity factors on build 2026-11-02y, scratch backsolve.js), on the MW-weighted all-bid averages from DBSA's lists (BW5,
+28 Oct 2021; BW6, December 2022) in place of the search-extract figures: BW6 solar R490.92 (860 MW): 5.66% (was 5.65% on R490.48);
+BW5 solar R431.05 (975 MW): 4.75% (4.69% on R428.79); BW5 wind R491.62 (1,608 MW): 3.09% (3.17% on R495.22). The closed projects'
+tariffs match the lists to one decimal, so the closed back-solve (BW6 6.00%, BW5 solar 6.10%, 6.05% MW-weighted) is unchanged. Neither
+rounded rate moves ('allbids' 5.5%, the closed-project base 6.0%): no change. Still to read: whether BW5's tariffs were adjusted at close.
