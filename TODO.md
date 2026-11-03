@@ -912,6 +912,12 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mo. Chronological storage across representative days, after the note (user, 3 Nov 2026, message 665 (e); RESULTS 'Why no coal retires
+early, and what makes Fossil-free's vanadium worth building'): link stored energy across the representative days in chronological
+order (Kotzur et al., 'Time series aggregation for energy system design: modeling seasonal storage', Applied Energy, 2018), so the
+build optimiser stops overvaluing long-duration storage (in Fossil-free 2040, R1,301bn of vanadium's R1,305bn value came from the chained
+days' state of charge); then re-run Fossil-free.
+
 14mn. Behind-the-meter batteries tied to rooftop solar, after the note (user, 3 Nov 2026, message 664). Today the stock grows 0.9 GWh
 a year whatever rooftop is built (BTM_STOCK's growth) and charges only from the existing rooftop fleet. (a) Growth from an attach rate:
 battery kWh added = attach rate x rooftop MW added (the existing trajectory or the build LP's new rooftop). Central 0.75 kWh per kW,
