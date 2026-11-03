@@ -42,6 +42,13 @@ one(){ local name=$1 chg=$2 maxp=${3:-3} tl=${4:-7200}
   fi
   [ -s out/pathway_$name.json ] && check $name; return 0; }
 pair(){ one "$1" "$2" & one "$3" "$4" & wait; }
+# A two-slot queue (phase 2 on): each entry "name|change|maxp"; the next starts when a slot frees, so a long solve does not hold the
+# other slot idle; entries already done are skipped by one(); none starts with under 20 minutes left.
+queue(){ local e; for e in "$@"; do IFS='|' read -r qn qc qm <<< "$e"
+    while [ "$(jobs -rp | wc -l)" -ge 2 ]; do wait -n; done
+    [ "$(left)" -lt 1200 ] && { echo "$(date -u +%H:%M) queue: $qn and later left to the next piece" >> $P; break; }
+    one "$qn" "$qc" "${qm:-3}" &
+  done; wait; }
 irpcheck(){ local f=$1
   for g in "a 2026,2027,2028,2029,2030" "b 2031,2032,2033,2034,2035" "c 2036,2037,2038,2039,2040"; do set -- $g
     [ -s $N/irp/pathcheck_${f}_$1.json ] && continue
@@ -83,8 +90,8 @@ extras(){ mkdir -p $N/irp
     for f in $N/irp/pathway_irp2025_c7.json $N/irp/pathway_irp2025_c7_irpdem.json; do [ -s $f ] && python3 -c "import json,sys;f=sys.argv[1];P=json.load(open(f));[s.update({'vppGWh':s.get('vppGWh',0) if 'vppGWh' in s else 0,'gyMW':s.get('gyMW',0) if 'gyMW' in s else 0}) for s in P['sched'].values()];json.dump(P,open(f,'w'),indent=1)" $f; done
     irpcheck irp2025_c7 & irpcheck irp2025_c7_irpdem & wait; fi
   [ -s out/pathway_s_gasfloor_c7.json ] || python3 -c "import json;P=json.load(open('out/pathway_c7.json'));P['gasFloor']={'on':0,'engine':1,'pct':51,'mw':6000,'from':2030,'to':2040};P['note']='c7 build with the 51% gas minimum alone (gasFloor.engine=1), the optimiser not run';json.dump(P,open('out/pathway_s_gasfloor_c7.json','w'))"
-  check s_gasfloor_c7
-  if [ ! -s $N/pathcheck_c7_dmin2028.json ]; then
+  [ "$(left)" -ge 1500 ] && check s_gasfloor_c7
+  if [ ! -s $N/pathcheck_c7_dmin2028.json ] && [ "$(left)" -ge 1200 ]; then
     python3 -c "import json;P=json.load(open('out/pathway_c7.json'));P['coal']['coalMslDesignFromYear']=2028;P['note']='c7 build with coal design minimums from 2028';json.dump(P,open('$N/pathway_c7_dmin2028.json','w'))"
     env -i PATH="$PATH" HOME="$HOME" LNG=1 GRID=1 SS_FC=reservecoal YEARS=2027,2028,2029 IN=$N/pathway_c7_dmin2028.json OUTC=$N/pathcheck_c7_dmin2028.json nice -n 10 node --max-old-space-size=4096 pathcheck.js > $N/pathcheck_c7_dmin2028.log 2>&1; fi
   [ -s $N/replay2025_c7.txt ] || node pathway/c6e/replay2025_29b.js testroot > $N/replay2025_c7.txt 2>&1
@@ -93,15 +100,15 @@ extras(){ mkdir -p $N/irp
 case "${1:-1}" in
   1) one c7 "" 6 ;;
   2) # every run the reviewer pack reads, on c7's settings (HANDOVER 'c7 launch plan', phase 2), two at a time
-     pair c7_irpdem "DEMAND=index:$REPO/harness/pathway/irp2025/index_irp2025fig2_c6.json" s_nogas_c7 "GAS_CAP=0 OCGD=0"
-     pair s_nogas_dsl_c7 "GAS_CAP=0 OCGD=1" s_irpgas_c7 "GAS_FIRST=2032 GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1 GASFLOOR=1 GASFLOOR_VINT=2029-2030 TCAP_YR=2029:4000,2030:4000"
-     pair s_be6_c7 "STOR_CUM=2026:144,2027:294,2028:909,2029:3524,2030:3724,2031:3924,2032:4124,2033:4324,2034:4524,2035:4724,2036:5224,2037:5724,2038:6224,2039:6724,2040:7224" s_be7_c7 "NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350"
-     pair s_gas2032_c7 "GAS_FIRST=2032" s_cocplan_c7 "COC=planning"
-     pair s_cocprivate_c7 "COC=private" s_coalsustain_c7 "COAL_FOM_ADD=500"
-     pair s_cocunblended_c7 "COC=central" s_allbids_c7 "COC=allbids"
-     one s_blendedhigh_c7 "COC=blendedhigh" & one s_ff2040_c7 "SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039" 6 & wait   # Fossil-free at 6 passes, as c6e's
-     extras
-     deep ;;
+     queue "c7_irpdem|DEMAND=index:$REPO/harness/pathway/irp2025/index_irp2025fig2_c6.json" "s_nogas_c7|GAS_CAP=0 OCGD=0" \
+       "s_nogas_dsl_c7|GAS_CAP=0 OCGD=1" \
+       "s_irpgas_c7|GAS_FIRST=2032 GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1 GASFLOOR=1 GASFLOOR_VINT=2029-2030 TCAP_YR=2029:4000,2030:4000" \
+       "s_be6_c7|STOR_CUM=2026:144,2027:294,2028:909,2029:3524,2030:3724,2031:3924,2032:4124,2033:4324,2034:4524,2035:4724,2036:5224,2037:5724,2038:6224,2039:6724,2040:7224" \
+       "s_be7_c7|NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350" "s_gas2032_c7|GAS_FIRST=2032" "s_cocplan_c7|COC=planning" \
+       "s_cocprivate_c7|COC=private" "s_coalsustain_c7|COAL_FOM_ADD=500" "s_cocunblended_c7|COC=central" "s_allbids_c7|COC=allbids" \
+       "s_blendedhigh_c7|COC=blendedhigh" "s_ff2040_c7|SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039|6"
+     [ "$(left)" -ge 1800 ] && extras
+     [ "$(left)" -ge 1200 ] && deep ;;
   *) echo "phase $1 not yet in this script" >> $P ;;
 esac
 echo "$(date -u +%H:%M) piece end" >> $P
