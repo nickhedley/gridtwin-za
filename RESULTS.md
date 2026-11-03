@@ -20299,3 +20299,24 @@ COAL_UNIT_COD (index.html:7261-7270, build 2026-11-02y):
 Effect: none on any run. Komati retires in 2022 and coalFleetAgeFactor skips units retired before the year (index.html:7244); the
 age curve runs are held (668 (a)). Decision for Nick: Kusile unit 1 at the table's 2018 (message 656 (c), "the GEM row") or the
 text's 2017; Komati to 1964. No code changed.
+
+### The engine's storage foresight, a stated limitation on every run's unserved figures: Fossil-free's 0.00 GWh holds with a one-day window and rises to 0.19 GWh in 2040 with none (messages 667 (e), 670 (f))
+
+How far ahead the engine's storage dispatch sees (index.html, build 2026-11-02y): a perfect forecast of load, weather and outages
+within a window, not perfect foresight of the year and not none. Short stores (lithium, vanadium) plan 48 hours ahead
+(FIXED.storageLookaheadH, line 6391; rule at 8925-8940); long stores of 100 hours or more (iron-air) 168 hours
+(LDES_LOOKAHEAD_H = p.ldesLookaheadH ?? 168, line 8178; 8164-8177); pumped storage its daily rule; the same 48-hour look-ahead shaves
+coal commitment by what the stores can give (line 8752); coal commitment itself looks 24 hours ahead (coalCommitLookaheadH).
+Measured on s_ff2040novrfb_c7's build (harness/pathway/larun.sh; pathcheck.js LA_H and LDES_LA_H, measurement only, defaults
+unchanged; LNG=1 GRID=1 SS_FC=reservecoal, groups a/b/c, the fixed seeds, twelve weather years; 3 Nov 2026 07:41-08:04 UTC):
+
+| Foresight | Unserved, highest year (worst draw) | Total R bn (pack basis) | CO2 2026-40 Mt | Open-cycle max | Hours short |
+|---|---|---|---|---|---|
+| 48 h short, 168 h long (as run) | 0.00 every year (0.0) | 3,296.3 | 797 | 0.06% | 0 |
+| 24 h both (LA_H=24 LDES_LA_H=24) | 0.00 every year (0.0) | 3,296.7 | 799 | 0.06% | 0 |
+| none (LA_H=0 LDES_LA_H=1) | 0.19 in 2040, 0.00 in 2026-39 (2.3) | 3,497.3 | 1,386 | 0.12% | 0 |
+
+Limitation, stated for every run: each run's unserved figures assume storage sees load, weather and outages perfectly over the
+next 48 hours (168 for long stores). On Fossil-free without vanadium a one-day window changes nothing that matters; no foresight at all
+adds 0.19 GWh in 2040, far inside the 20 GWh standard. The no-foresight run's cost and CO2 rise mostly through coal: without the
+look-ahead, coal is committed without the stores' shave (line 8752), so more coal runs before 2040. Caveat: one pathway measured.
