@@ -1,0 +1,23 @@
+2026-11-04T14:14:53Z test15 central_ann piece, PID 6375, on 738a337 Merge remote-tracking branch 'origin/claud, BUILD_STAMP = '2026-11-04b, deadline 15:14Z, MIN_LEFT 1500s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 29G, memory free 12G
+2026-11-04T14:14:53Z two_stage.sh PID 6402
+2026-11-04T14:14Z two_stage K=4 N=25 FIRST=2026, shell PID 6402
+2026-11-04T14:15:08Z step node PID 6410
+2026-11-04T14:15:23Z solve started (highs_native.py 6531)
+2026-11-04T14:31:29Z solve (highs_native.py 6531) ended after about 952s
+2026-11-04T14:33Z step 2026 (horizon 2030) rc=0 done
+2026-11-04T14:33:45Z node 6410 ended, peak memory 2.5 GB
+2026-11-04T14:33:45Z step node PID 10291
+2026-11-04T14:34:15Z solve started (highs_native.py 10364)
+2026-11-04T14:51:05Z solve (highs_native.py 10364) ended after about 1008s
+2026-11-04T14:53:36Z solve started (highs_native.py 14291)
+2026-11-04T15:04Z step 2027 (horizon 2031) rc=0 NO OUTPUT
+2026-11-04T15:04:09Z solve (highs_native.py 14291) ended after about 621s
+2026-11-04T15:04:09Z node 10291 ended, peak memory 2.7 GB
+2026-11-04T15:04:09Z test15 central_ann piece ends: two_stage.sh rc=1, 1 of 15 steps done
+2026-11-04T15:04:23Z test15 central_ann piece, PID 16565, on 738a337 Merge remote-tracking branch 'origin/claud, BUILD_STAMP = '2026-11-04b, deadline 16:54Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 29G, memory free 12G
+2026-11-04T15:04:23Z two_stage.sh PID 16592
+2026-11-04T15:04Z two_stage K=4 N=25 FIRST=2026, shell PID 16592
+2026-11-04T15:04:38Z step node PID 16603
+2026-11-04T15:07:38Z solve started (highs_native.py 17222)
+2026-11-04T15:14:41Z solve (highs_native.py 17222) ended after about 417s
+2026-11-04T15:17:26Z solve started (highs_native.py 19167)

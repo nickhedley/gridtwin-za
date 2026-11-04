@@ -18,13 +18,20 @@ def steps(d):
             out[y] = json.load(open(f))
     return out
 
+def solver_of(line):
+    # A piece's first line names HIGHS_OPTS from 4 Nov 2026 13:29 UTC (message 698 (c)); pieces before ran HiGHS's default serial dual simplex.
+    m = re.search(r'HIGHS_OPTS (\{[^}]*\}|none)', line)
+    if not m or m.group(1) == 'none': return 'serial'
+    o = json.loads(m.group(1)); return ('parallel, %s threads' % o.get('threads', '?')) if o.get('simplex_strategy') == 2 else 'HIGHS_OPTS ' + m.group(1)
+
 def progress(d):
-    """Per step: solve wall times (s, to the 15-second poll), node attempts, peak memory (GB), outcome lines."""
-    f = os.path.join(d, 'progress.txt'); per = {}; cur = None; blk = {}
+    """Per step: solve wall times (s, to the 15-second poll), node attempts, peak memory (GB), outcome lines, solver by piece."""
+    f = os.path.join(d, 'progress.txt'); per = {}; cur = None; blk = {}; sol = 'serial'
     if not os.path.exists(f): return per
     for line in open(f):
+        if re.search(r'test15 \S+ piece, PID', line): sol = solver_of(line); continue
         m = re.search(r'step node PID (\d+)', line)
-        if m: cur = m.group(1); blk[cur] = {'solves': [], 'peak': None, 'step': None}; continue
+        if m: cur = m.group(1); blk[cur] = {'solves': [], 'peak': None, 'step': None, 'solver': sol}; continue
         m = re.search(r'solve \(highs_native.py \d+\) ended after about (\d+)s', line)
         if m and cur: blk[cur]['solves'].append(int(m.group(1))); continue
         m = re.search(r'node (\d+) ended, peak memory ([0-9.]+) GB', line)
@@ -33,8 +40,9 @@ def progress(d):
         if m and cur and blk[cur]['step'] is None: blk[cur]['step'] = (int(m.group(1)), int(m.group(3)), m.group(4))
     for b in blk.values():
         if not b['step']: continue
-        y = b['step'][0]; p = per.setdefault(y, {'solves': [], 'attempts': 0, 'peak': 0.0, 'rcs': []})
+        y = b['step'][0]; p = per.setdefault(y, {'solves': [], 'attempts': 0, 'peak': 0.0, 'rcs': [], 'solver': []})
         p['solves'] += b['solves']; p['attempts'] += 1; p['rcs'].append(b['step'][1]); p['peak'] = max(p['peak'], b['peak'] or 0)
+        if b['solves'] and b['solver'] not in p['solver']: p['solver'].append(b['solver'])
     return per
 
 def mix(sched_by_year):
@@ -81,18 +89,20 @@ def cum_table(runs):
 
 def step_table(label, S, P):
     print('\n%s: each step (year y on 365 days, the look-ahead years at 25 days)\n' % label)
-    print('| Step | Horizon | Passes | Verdict | Solve wall time, min (each pass) | Step wall time, min | Attempts | Peak memory, GB | Years over the standard, pass by pass (mean GWh / limit) | Objective, Rbn |')
-    print('|---|---|---:|---|---|---:|---:|---:|---|---:|')
+    print('| Step | Horizon | Passes | Verdict | Solver | Solve wall time, min (each solve, cut ones included) | Step wall time in its last piece, min | Attempts | Peak memory, GB | Years over the standard, pass by pass (mean GWh / limit) | Objective, Rbn |')
+    print('|---|---|---:|---|---|---|---:|---:|---:|---|---:|')
     for y in YEARS:
         if y not in S:
-            p = P.get(y); print('| %d | | | not run%s | | | %s | | | |' % (y, (' (rc ' + ','.join(map(str, p['rcs'])) + ')') if p else '', p['attempts'] if p else '')); continue
-        s = S[y]; log = s.get('log') or []; p = P.get(y, {'solves': [], 'attempts': '', 'peak': 0})
+            p = P.get(y)
+            if p: print('| %d | | | not finished | %s | %s | | %s | | | |' % (y, ', '.join(p['solver']), ', '.join('%.1f' % (t / 60) for t in p['solves']), p['attempts']))
+            continue
+        s = S[y]; log = s.get('log') or []; p = P.get(y, {'solves': [], 'attempts': '', 'peak': 0, 'solver': []})
         fails = []
         for e in log:
             f = ['%d: %.1f / %.0f' % (q['y'], q['mean'], q['limit']) for q in e['years'] if q['limit'] > 0 and q['mean'] > q['limit']]
             fails.append('pass %d: %s' % (e['pass'], '; '.join(f) if f else 'none'))
         hz = max(int(k) for k in s['sched'])
-        print('| %d | %d | %d | %s | %s | %.1f | %s | %s | %s | %.3f |' % (y, hz, len(log), s.get('verdict'), ', '.join('%.1f' % (t / 60) for t in p['solves']) or 'cache',
+        print('| %d | %d | %d | %s | %s | %s | %.1f | %s | %s | %s | %.3f |' % (y, hz, len(log), s.get('verdict'), ', then '.join(p['solver']), ', '.join('%.1f' % (t / 60) for t in p['solves']) or 'cache',
               (s.get('secs') or 0) / 60, p['attempts'], ('%.1f' % p['peak']) if p['peak'] else '', '<br>'.join(fails), (s.get('objective') or 0) / 1e9))
 
 def year_y_adequacy(label, S):

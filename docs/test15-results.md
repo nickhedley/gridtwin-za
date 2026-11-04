@@ -2,6 +2,9 @@
 
 Draft, filled in as the runs go. Times UTC.
 
+Status (user, 4 Nov 2026): the metered tracking twin on this basis has been found misshapen and is being fixed. These runs stand as a method
+and timing comparison with one stage, not as a mix for use.
+
 Settings (all entries below unless stated): branch claude/test15-two-stage-x2xqfl (the brief's claude/test15-two-stage; the session is tied
 to this name), made from origin/claude/weather-fixes f9e3e4c, with origin/claude/weather-fixes 75f7203 merged on 4 Nov 2026 (0621c45: FIX_FROM
 fixes the VPP and geyser enrolment too, the six-constant wind table, LOOP_YEAR_ONLY). Build 2026-11-04a; index.html unchanged. From harness/:
@@ -15,6 +18,13 @@ Each step: year y on 365 days, the look-ahead years to min(y+4, 2040) at 25 clus
 (FIX_FROM). Native HiGHS 1.15.1 (highspy), Node 22.23.4; a 4-core machine with 15 GB memory, at most two solves at a time. Nothing reads
 ESK19679. Step files, logs and progress.txt (each step's node PID, each solve's wall time to the 15-second poll, peak memory) are in
 harness/pathway/test15/<run>/.
+
+From 13:29 UTC on 4 Nov 2026 (message 698): origin/claude/wind-table merged (871feec; build 2026-11-04b, the enrolment round-off fix: an
+enrolment below zero by no more than 1e-6 MW reads as zero, a larger negative stops), with highs_native.py's HIGHS_OPTS (118bd45) and
+HIGHS_OPTS={"simplex_strategy": 2, "threads": 2} (parallel dual simplex on 2 threads a run); before, HiGHS's default serial dual simplex.
+The step 2026 LP dumps (DUMP_STOP=1) to the key recorded for ts2_central's step 2026 (1faa0496d2d6acf710e3cc110ba4f7ef07904b25) on the
+code before and after the merge (the LP files byte-identical), so the finished steps stand. Each piece's first line in progress.txt names
+its solver; the step tables below give each step's. No new step starts with under 4,800 s of the piece left (2,700 s before 12:38 UTC).
 
 ### Test 8 for comparison: the one-stage pathway on the same basis (main session; message 692 (f))
 
@@ -94,7 +104,200 @@ harness/pathway/test15/ts_central and ts_ff.
 
 ### The central, Fossil-free and the central with ANNUITY_TO=2040 (message 693 (6))
 
-Running; tables to follow from `python3 -I pathway/test15_summary.py out/ts2_central out/ts2_ff out/ts2_central_ann`.
+Running, central first, then Fossil-free, the annuity run last (user, 4 Nov 2026). The tables between the markers are regenerated after
+each finished step from `python3 -I pathway/test15_summary.py out/ts2_central out/ts2_ff out/ts2_central_ann` (one-stage brackets: the main
+session's section above).
+
+#### A stopped second solve resumed from the first solve's basis (found and fixed 4 Nov 2026, 5b98fd3)
+
+- The fault: with RESUME, every solve wrote its basis to /tmp/gtza_<node PID>.basis.json. A solve stopped at the piece's deadline whose basis
+  HiGHS marks invalid (simplex inside presolve) writes none, so the first pass's optimal basis, still in that file, was kept as the second
+  pass's resume basis (<key>.partial.basis.json), and the next piece logged 'start from basis' for it. Answers are still optima of the
+  right LP (HiGHS repairs it as an alien basis and solves to optimality), but the resume claim was wrong and the start was a warm start.
+- The fix (pathway_perfail.js, harness only): each solve's basis is written under its own LP key, any file of that name removed first; the
+  log says resume from this LP's own basis, warm start, or cold. LP keys unchanged (step 2026's dumps to 1faa0496d2 after it).
+- Affected: ts2_ff step 2028, pass 2 (kept at 13:28, resumed 13:30, optimal in 884 s; finished, adequate): very likely, not confirmable (the
+  file is removed on success); same objective, builds could differ only if the LP has more than one optimal build; a cold re-solve of that
+  LP would settle it (not run; the user's call). ts2_central step 2029, pass 2: the kept file was pass 1's (written 13:31:17, pass 2
+  stopped 14:13); moved aside, so pass 2 starts cold. ts2_central_ann step 2027, pass 2: pass 1's (written 14:50:55), resumed 15:07,
+  optimal in 417 s; its builds chose pass 3's stress windows. The first basis (ts_central step 2028, pass 2, confirmed; ts_ff step 2028,
+  pass 2, likely) is record only.
+
+#### Solver timing
+
+No clean comparison yet (the same LP both ways under the same load). Rough pairs, different LPs: Fossil-free step 2029 on parallel 48.8 min
+against the central's step 2029 pass 1 on serial 52.4 min, each beside one other solve; the annuity run's step 2026 on parallel 15.9 min
+beside one other solve, against the central's step 2026 on serial 8.5 min alone. A clean test: step 2026's LP (1faa0496d2) on parallel
+alone against its 8.5 min serial solve alone, when the machine is free.
+
+<!-- test15_summary start -->
+#### ts2_central (3 of 15 steps)
+
+Fixed builds carried unchanged into later steps: yes, every one
+
+ts2_central: new build by year, MW (lithium also MWh)
+
+| Year | wind | solar | lithium MW | lithium MWh | grid-forming |
+|---|---:|---:|---:|---:|---:|
+| 2026 | 287 | 156 | 360 | 1,440 | 0 |
+| 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 |
+| 2028 | 2,500 | 1,129 | 0 | 660 | 139 |
+| 2029 |  |  |  |  |  |
+| 2030 |  |  |  |  |  |
+| 2031 |  |  |  |  |  |
+| 2032 |  |  |  |  |  |
+| 2033 |  |  |  |  |  |
+| 2034 |  |  |  |  |  |
+| 2035 |  |  |  |  |  |
+| 2036 |  |  |  |  |  |
+| 2037 |  |  |  |  |  |
+| 2038 |  |  |  |  |  |
+| 2039 |  |  |  |  |  |
+| 2040 |  |  |  |  |  |
+| Total | 4,746 | 3,405 | 761 | 3,719 | 139 |
+
+ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
+
+| Year | Coal standing | Retired early | Compliance MW kept |
+|---|---:|---:|---:|
+| 2026 | 39,692 | 0 |  |
+| 2027 | 39,692 | 0 |  |
+| 2028 | 39,692 | 0 |  |
+
+ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
+
+| Step | Horizon | Passes | Verdict | Solver | Solve wall time, min (each solve, cut ones included) | Step wall time in its last piece, min | Attempts | Peak memory, GB | Years over the standard, pass by pass (mean GWh / limit) | Objective, Rbn |
+|---|---|---:|---|---|---|---:|---:|---:|---|---:|
+| 2026 | 2030 | 1 | adequate | serial | 8.5 | 11.0 | 1 | 2.4 | pass 1: none | 553.388 |
+| 2027 | 2031 | 1 | adequate | serial | 14.0 | 17.0 | 1 | 2.5 | pass 1: none | 551.848 |
+| 2028 | 2032 | 1 | adequate | serial | 20.5 | 23.9 | 1 | 2.7 | pass 1: none | 554.393 |
+| 2029 | | | not finished | serial | 41.9, 52.4, 38.8 | | 2 | | | |
+
+ts2_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
+
+| Year | Pass 1 mean / limit | Final pass mean / limit | Worst weather year (GWh) |
+|---|---|---|---|
+| 2026 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+
+#### ts2_ff (4 of 15 steps)
+
+Fixed builds carried unchanged into later steps: yes, every one
+
+ts2_ff: new build by year, MW (lithium also MWh)
+
+| Year | wind | solar | lithium MW | lithium MWh | grid-forming |
+|---|---:|---:|---:|---:|---:|
+| 2026 | 287 | 156 | 360 | 1,440 | 0 |
+| 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 |
+| 2028 | 1,605 | 1,129 | 0 | 660 | 0 |
+| 2029 | 4,300 | 2,265 | 616 | 0 | 475 |
+| 2030 |  |  |  |  |  |
+| 2031 |  |  |  |  |  |
+| 2032 |  |  |  |  |  |
+| 2033 |  |  |  |  |  |
+| 2034 |  |  |  |  |  |
+| 2035 |  |  |  |  |  |
+| 2036 |  |  |  |  |  |
+| 2037 |  |  |  |  |  |
+| 2038 |  |  |  |  |  |
+| 2039 |  |  |  |  |  |
+| 2040 |  |  |  |  |  |
+| Total | 8,151 | 5,670 | 1,377 | 3,719 | 475 |
+
+ts2_ff: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
+
+| Year | Coal standing | Retired early | Compliance MW kept |
+|---|---:|---:|---:|
+| 2026 | 39,692 | 0 |  |
+| 2027 | 39,692 | 0 |  |
+| 2028 | 39,692 | 0 |  |
+| 2029 | 32,419 | 4,608 |  |
+
+ts2_ff: each step (year y on 365 days, the look-ahead years at 25 days)
+
+| Step | Horizon | Passes | Verdict | Solver | Solve wall time, min (each solve, cut ones included) | Step wall time in its last piece, min | Attempts | Peak memory, GB | Years over the standard, pass by pass (mean GWh / limit) | Objective, Rbn |
+|---|---|---:|---|---|---|---:|---:|---:|---|---:|
+| 2026 | 2030 | 1 | adequate | serial | 9.1 | 11.9 | 1 | 2.3 | pass 1: none | 551.282 |
+| 2027 | 2031 | 1 | adequate | serial | 14.2 | 17.1 | 1 | 2.7 | pass 1: none | 547.440 |
+| 2028 | 2032 | 2 | adequate | serial, then parallel, 2 threads | 34.9, 27.1, 14.7 | 20.8 | 2 | 4.2 | pass 1: 2031: 21.7 / 20<br>pass 2: none | 551.013 |
+| 2029 | 2033 | 1 | adequate | parallel, 2 threads | 48.8 | 52.6 | 1 | 2.8 | pass 1: none | 559.786 |
+| 2030 | | | not finished |  |  | | 1 | | | |
+
+ts2_ff: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
+
+| Year | Pass 1 mean / limit | Final pass mean / limit | Worst weather year (GWh) |
+|---|---|---|---|
+| 2026 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2029 | 0.15 / 20 | 0.15 / 20 | 2020 (1.4) |
+
+#### ts2_central_ann (1 of 15 steps)
+
+Fixed builds carried unchanged into later steps: yes, every one
+
+ts2_central_ann: new build by year, MW (lithium also MWh)
+
+| Year | wind | solar | lithium MW | lithium MWh |
+|---|---:|---:|---:|---:|
+| 2026 | 287 | 156 | 360 | 1,440 |
+| 2027 |  |  |  |  |
+| 2028 |  |  |  |  |
+| 2029 |  |  |  |  |
+| 2030 |  |  |  |  |
+| 2031 |  |  |  |  |
+| 2032 |  |  |  |  |
+| 2033 |  |  |  |  |
+| 2034 |  |  |  |  |
+| 2035 |  |  |  |  |
+| 2036 |  |  |  |  |
+| 2037 |  |  |  |  |
+| 2038 |  |  |  |  |
+| 2039 |  |  |  |  |
+| 2040 |  |  |  |  |
+| Total | 287 | 156 | 360 | 1,440 |
+
+ts2_central_ann: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
+
+| Year | Coal standing | Retired early | Compliance MW kept |
+|---|---:|---:|---:|
+| 2026 | 39,692 | 0 |  |
+
+ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
+
+| Step | Horizon | Passes | Verdict | Solver | Solve wall time, min (each solve, cut ones included) | Step wall time in its last piece, min | Attempts | Peak memory, GB | Years over the standard, pass by pass (mean GWh / limit) | Objective, Rbn |
+|---|---|---:|---|---|---|---:|---:|---:|---|---:|
+| 2026 | 2030 | 1 | adequate | parallel, 2 threads | 15.9 | 18.4 | 1 | 2.5 | pass 1: none | 677.140 |
+| 2027 | | | not finished | parallel, 2 threads | 16.8, 10.3 | | 1 | | | |
+
+ts2_central_ann: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
+
+| Year | Pass 1 mean / limit | Final pass mean / limit | Worst weather year (GWh) |
+|---|---|---|---|
+| 2026 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+
+Cumulative new build, MW (lithium also MWh), built 2026 to the year
+
+| Technology | Year | ts2_central | ts2_ff | ts2_central_ann |
+|---|---|---:|---:|---:|
+| wind | 2030 |  |  |  |
+| wind | 2035 |  |  |  |
+| wind | 2040 |  |  |  |
+| solar | 2030 |  |  |  |
+| solar | 2035 |  |  |  |
+| solar | 2040 |  |  |  |
+| lithium MW | 2030 |  |  |  |
+| lithium MW | 2035 |  |  |  |
+| lithium MW | 2040 |  |  |  |
+| lithium MWh | 2030 |  |  |  |
+| lithium MWh | 2035 |  |  |  |
+| lithium MWh | 2040 |  |  |  |
+| grid-forming | 2030 |  |  |  |
+| grid-forming | 2035 |  |  |  |
+| grid-forming | 2040 |  |  |  |
+<!-- test15_summary end -->
 
 ### Against the one-stage pass 1 at 25 days (for the main session)
 
