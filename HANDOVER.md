@@ -7,6 +7,12 @@
   The page is right; with the case mapped pathcheck gives the page's R601.856bn. 46 pathway files are affected (c6e family, hypothetical
   presets); c7's are not. Fix proposed, not made (RESULTS 'The engine-check cost gap named').
 
+- (b) Recorded (RESULTS 'The six-constant wind correction's out-of-sample calm figures'); wind table not decided.
+- (d) Decided: congestion (a), none, for the reruns (CONG_OFF=1 in every rerun's settings); (d) 'pumping as in 2026' (CONG_OFF=1
+  PS_DAY_CAP=469) a named sensitivity. Limitations added to REVIEWER_PACK.md (network curtailment not modelled; 2026 per MW against metered).
+- (i) Standing: comparisons across curtailment levels use the LP objective or a resource-cost column, never the engine's cost; deemed
+  energy a stated limitation (REVIEWER_PACK.md).
+
 ## Status for Nick, morning of 4 Nov (message 689; written 03:35 SAST)
 
 Finished (all five items of 689)

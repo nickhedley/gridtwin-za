@@ -121,7 +121,12 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 
 ## Known limitations
 
-- The engine is single node (for now), meaning the model cannot produce local curtailment.
+- The engine is single node (for now), meaning the model cannot produce local curtailment: network curtailment is not modelled. The
+  reruns carry no stand-in for it (the flat 1.3% congestion figure is off; message 691 (d)); a zonal layer follows the note.
+- On 2026's fleet and metered 2025 weather, the engine curtails about 10 MWh of solar per MW of Eskom-visible solar in January-August,
+  against about 207 metered (ESK19679, Eskom data; the analysis is ours, not Eskom's). Holding daytime pumping at 2026's metered level
+  (the named sensitivity 'pumping as in 2026') raises it to 102, and with 2026's lower midday demand as well, to 160. The rest is not
+  produced by single-node dispatch.
 - The model relies on representative days and stress windows. Without new gas or new peakers, the plan the optimiser finds meets the standard in its own stress windows but falls short when tested hourly in <!--fill:s_nogas.shortyears-->2037-40<!--/fill-->; we are investigating why.
 - The engine is both the cost measure and the gauge of adequacy. Each year's unserved energy is a mean over 120 simulated years, with a sampling error of about 1-2 GWh near the Australian standard's limit.
 - The comparison with an optimised dispatch model (PyPSA) was measured on a mid-October build and is being repeated on the current one.
@@ -131,7 +136,8 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 - Synchronous floor as a national MW total (6 GW, plus grid-forming batteries at 0.30 of their power), not a minimum number of synchronous units by region, as in AEMO's system strength practice.
 - Reserve is limited by ramp rates.
 - Perfect foresight in dispatch: The model assumes the grid operator has perfect foresight over the next 48 hours for batteries and pumped storage, 24 hours for coal commitment, 12 hours for coal ramping, and a week for long-duration storage options.
-- Curtailed renewables are not paid, so curtailment looks free.
+- Curtailed renewables are not paid, so curtailment looks free: deemed energy is not in the engine's cost, which pays REIPPPP's tariff on
+  delivered energy only. Comparisons across curtailment levels use the build LP's objective or a resource-cost column (message 691 (i)).
 - Restarts after forced outages are not yet costed.
 - No emissions compliance cost on coal running past 2030.
 - Options the optimiser cannot choose: The build LP cannot yet choose coal flexibility, virtual power plants, demand response (interruptible or shifted load) or a general long-duration storage option.
