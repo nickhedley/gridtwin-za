@@ -21500,3 +21500,52 @@ table, adaptive draws, 2030-2040; worktree at claude/wind-table c576132; 4 Nov 1
     listed in harness/out/test8p/test12.json in the main session's container.
   - So wind's mix in 2029-2038 is limit-bound, not economic, under acceptance rule 2; solar's in 2030-2031. The lifted-limit and
     other-pace runs (test 12's second part, seven runs) are not run.
+
+### The metered tracking twin is misshapen: morning-heavy, a midday dip and 4.7% of hours clipped; test 8's solar costs and values in its LP (message 700 (c), (e); the metered reference provisional)
+
+Settings: claude/solar-700 045b7ab (claude/wind-table c576132 plus the harness for 699-700), a page probe (validate_weather's loader);
+test 8's pass-1 LP and solution (key 8e0651f38a). 4 Nov 2026, 13:40-13:55 UTC.
+
+(c) New tracking solar's hourly shape, capacity factor by hour of day (SAST) and shares of annual energy:
+
+| | Metered twin (now) | Modelled twin, twelve years | Modelled 2025's twin | Metered fleet (existing) | Fleet-to-tracker ratio | Level only |
+|---|---:|---:|---:|---:|---:|---:|
+| Mean | 0.286 | 0.286 | 0.295 | 0.251 | 0.286 | 0.286 |
+| Share 06:00-09:00 | 24.9% | 14.7% | 23.0% | 12.3% | 16.3% | 12.3% |
+| Share 10:00-15:00 | 39.2% | 48.5% | 46.2% | 57.2% | 50.9% | 57.2% |
+| Share 15:00-18:00 | 21.1% | 24.2% | 19.1% | 19.4% | 20.7% | 19.4% |
+| Hours at 99% or more | 4.7% | 0.03% | 0.19% | 0 | 0.6% | 1.2% |
+| 08:00 / 12:00 / 17:00 | 0.77 / 0.51 / 0.41 | 0.59 / 0.66 / 0.45 | 0.78 / 0.65 / 0.29 | 0.47 / 0.71 / 0.19 | 0.65 / 0.69 / 0.28 | 0.53 / 0.81 / 0.22 |
+
+- The twin (min(1, K x metered x G), K 0.7969, G the modelled years' tracking-over-fixed-tilt ratio by month and hour) applies a
+  fixed-to-tracker ratio to a fleet that is already about half trackers (existing share X 0.516 on the modelled years). G is largest at
+  dawn and dusk, where fixed tilt is near zero, so the metered fleet's early and late output is multiplied up and clipped at 1, and K then
+  pulls the whole series down to the twelve-year mean, lowering midday. Result: a peak at 08:00 and a dip at midday that no single-axis
+  tracker produces, and 4.7% of hours at full output.
+- Two simpler conversions keep a tracker's shape: the fleet-to-tracker ratio (modelled tracking over the modelled fleet mix, (1 - X)
+  fixed + X tracking) and a level-only scaling of the metered fleet. The first is closest to modelled 2025's own twin.
+- Best practice: model a new tracker from irradiance with a single-axis tracking model on the same weather, and keep a measured
+  profile for the fleet it measures; a measured fleet profile is converted only by the ratio between the fleet's own mix and the new
+  technology, never by a fixed-to-tracking ratio. Here that means new solar on the metered days from modelled 2025's twin (run (1) of
+  700 (b) tests it) or from the fleet-to-tracker ratio.
+- Separate, not concluded: the twelve-year modelled twin is evening-heavy against modelled 2025's (08:00 0.59 against 0.78, 17:00 0.45
+  against 0.29), and the modelled fixed tilt is too (07:00 0.07 against 17:00 0.17), where the metered fleet is close to symmetric. The
+  modelled years' solar timing may lag by part of an hour; to check.
+
+(e) Test 8's LP (harness/pathway/repdays/tvalue.py): rand per discounted MWh over the horizon, each build's whole objective cost
+(annuities to 2040, fixed O&M and the grid charge, GA, per MW) over its available output weighted as the LP weights it; energy value
+from the balance rows' duals; reduced cost from the solution.
+
+| | Built, MW | Run CF | Cost | Energy value | Other rows | Reduced cost | Limit |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Solar 2030 | 3,277 | 0.286 | 722 | 651 | 79 | -7.6 | yearly limit binds |
+| Solar 2035 | 551 | 0.286 | 639 | 604 | 34 | 0 | none |
+| Solar 2040 | 1,771 | 0.286 | 570 | 484 | 87 | 0 | none; all on reused coal connections |
+| Wind 2030 | 2,500 | 0.420 | 759 | 819 | 0 | -60 | yearly limit binds |
+| Wind 2035 | 3,500 | 0.420 | 684 | 781 | 0 | -97 | yearly limit binds |
+| Wind 2040 | 816 | 0.420 | 619 | 620 | 0 | 0 | none |
+
+- The LP values solar's energy at 75-80% of wind's in every year shown; solar is at the margin from 2035 (reduced cost 0) and built in
+  2040 only where it reuses a coal connection ('other rows': rpb_, the connection pool). Wind is limit-bound in 2029-2038 (test 12).
+- How much of solar's lower value comes from the twin's shape (c) rather than from midday saturation is what 700 (b)'s runs (1) and
+  (4) measure.
