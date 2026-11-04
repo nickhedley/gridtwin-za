@@ -21730,3 +21730,51 @@ Settings: claude/twin-fix e588e49 (harness/validate_shapes.js, in run_suite.sh's
 - Injected faults (scratchpad inject/inject.sh, a temporary root with one replacement): the twin on the old basis (-19 min, balance 1.24,
   4.7% clipped: fails); every modelled year's wind moved 2 hours (mean day 2-3 hours off, 2025's lag 165 minutes: three checks fail);
   every modelled year's solar moved 1 hour (85 minutes late, 2025's lag -60 minutes: fails).
+
+### Backcast: the engine against metered 2025 and January-August 2026, by month and hour of day (message 702 (a))
+
+Settings: claude/twin-fix db63be3 (the fixed twin; it does not reach these runs, which build no new tracking solar). 2025: the page's
+'2025, as modelled' replay on profiles.json (metered 2025). 2026: 'Today 2026' on a local January-August 2026 profile from ESK19679
+(domestic demand with load shedding added back and rooftop added back as the engine does; wind, solar and CSP per unit; September-December
+from 2025, not compared). Actual: ESK19679 (hour beginning, SAST; Eskom data, the analysis ours; hourly values local, only these aggregates
+here). Engine aggregates by scratchpad backcast/probe_backcast.js, comparison backcast/compare.py. 4 Nov 2026, 16:20-16:40 UTC.
+
+| Series | 2025 engine / actual, TWh | gap | hour-of-day r, peak engine / actual | 2026 Jan-Aug engine / actual | gap | Flag |
+|---|---|---|---|---|---|---|
+| Demand, domestic + exports + load shed | 214.79 / 209.94 | +2.3% | 0.99, 18 / 18 | 134.15 / 131.95 | +1.7% | - |
+| Coal (Thermal Generation) | 169.18 / 170.40 | -0.7% | 0.77, 20 / 18 | 102.52 / 106.20 | -3.5% | shape |
+| Wind | 11.96 / 11.33 | +5.5% | 1.00, 18 / 18 | 7.86 / 7.01 | +12.1% | fleet boundary |
+| Utility solar | 5.65 / 5.08 | +11.3% | 1.00, 11 / 11 | 4.12 / 3.15 | +31.0% | fleet boundary |
+| CSP | 1.52 / 1.41 | +7.7% | 1.00, 17 / 17 | 0.90 / 0.90 | 0.0% | fleet boundary (2025) |
+| Nuclear | 10.21 / 10.21 | 0.0% | flat | 7.24 / 6.68 | +8.3% | months |
+| Hydro | 1.79 / 1.80 | -0.4% | flat | 1.27 / 1.95 | -34.8% | months, 2026 level |
+| Gas and diesel (Eskom gas and OCGT, IPP OCGT) | 2.23 / 3.37 | -33.9% | 0.95, 18 / 18 | 0.17 / 0.80 | -79.5% | level |
+| Pumped storage, generation | 3.89 / 4.49 | -13.4% | 0.91, 18 / 18 | 2.66 / 2.71 | -1.8% | 2025 level, Aug-Dec |
+| Pumped storage, pumping | 5.12 / 6.00 | -14.7% | 0.94, 23 / 2 | 3.53 / 3.57 | -0.9% | 2025 level |
+| Imports | 6.57 / 6.57 | 0.0% | flat / 7 | 6.22 / 5.87 | +5.9% | months, hours |
+| Exports | 15.10 (firm, in demand) / 14.94 | +1.1% | flat | in demand / 5.69 | - | - |
+| Load shedding (MLR) | 0.001 / 0.390 | -99.7% | - | 0 / 0 | - | 2025 level |
+| Interruptible load (ILS) | 0.09 / 0.07 | +26% | 0.94 | 0.001 / 0.008 | - | small |
+| Curtailment | 0 | not in ESK19679 | - | - | - | see the pack's limitation |
+
+Flags and causes (gaps above about 5%, or a clear shape error):
+- Wind and utility solar: the model's fleets include plants Eskom does not meter (the replay carries 3,900 MW of wind and 2,600 MW of
+  utility solar against Eskom's metered 3,443-3,817 and 2,285-2,474 MW; Today 2026 carries 4,681 and 3,569 MW against 3,863-4,143 and
+  2,571-2,780). Per unit the engine reads the metered profiles themselves, so the gap is the fleet boundary (validate_benchmarks already
+  expects wind above the metered figure). Not a shape error: hour-of-day r 1.00, peaks equal.
+- Coal: within 1% (2025) and 3.5% (2026) on energy, but the diurnal shape differs: r 0.77, the engine's coal peaking at 20:00 against
+  Eskom's 18:00. A shape error; its cause is not established here (the engine's commitment rule and its pumped-storage timing are the
+  candidates, both in the pack's limitations).
+- Gas and diesel: 34% (2025) and 80% (2026) below Eskom's: Eskom runs its open-cycle turbines for reserve, unit trips and network
+  constraints that a single-node merit-order engine does not (the page's validation panel already reports this as an expected gap).
+- Pumped storage: 13-15% low in 2025 (August-December 24-44% low) and close in 2026; pumping peaks at 23:00 in the engine against 02:00
+  metered. Cause not established.
+- Nuclear and hydro: equal on the year in 2025 but flat in the engine against Koeberg's outages and hydro's seasons (stated limitations:
+  Koeberg flat at 0.66; hydro flat). 2026 hydro 35% low: not established.
+- Imports: equal on the year by construction (importsMW x its capacity factor), flat by month and hour against Cahora Bassa's variation.
+- Load shedding: the replay sheds 1 GWh against 390 GWh metered in January-May 2025 (known: RESULTS 'Fixed presets and the 2025 replay').
+- Demand: 2.3% high (2025) and 1.7% (2026) against domestic plus exports plus load shed; not established (own use, wheeling or the
+  demand file's basis are candidates).
+New against validate_benchmarks: it checks annual totals against Ember 2025 (coal, nuclear, wind, utility solar, hydro, imports, CO2,
+wind's capacity factor fleet-normalised) and plausibility ranges; the monthly and hour-of-day comparisons, pumped storage, gas and diesel,
+exports, load shedding and every 2026 figure are new here. The twin fix does not reach these two runs (no new tracking solar).
