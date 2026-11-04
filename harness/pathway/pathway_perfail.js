@@ -738,7 +738,7 @@ if (process.env.PV_TRK_CF){ const T = +process.env.PV_TRK_CF; if (!(T > 0.1 && T
   const m0 = meanAt(1); let lo = 0.2, hi = 5; for (let i = 0; i < 60; i++){ const mid = (lo + hi) / 2; if (meanAt(mid) < T) lo = mid; else hi = mid; }
   const f = (lo + hi) / 2, _wyn = weatherYearNational;
   weatherYearNational = function(y){ const r = _wyn(y); if (r && r.solar && r.solar.trk){ const t = r.solar.trk; for (let h = 0; h < t.length; h++) t[h] = Math.min(1, f * t[h]); } return r; };
-  SOLAR_TRK_K = SOLAR_TRK_K * f; if (typeof PROFILES !== 'undefined' && PROFILES.solar && PROFILES.solar.trk) delete PROFILES.solar.trk;
+  SOLAR_TRK_K = SOLAR_TRK_K * f; if (typeof SOLAR_TRK_MAPS !== 'undefined') SOLAR_TRK_MAPS[solarTrkBasis()].K = SOLAR_TRK_K; if (typeof PROFILES !== 'undefined' && PROFILES.solar && PROFILES.solar.trk) delete PROFILES.solar.trk;
   for (const k in _twelveYearCache) delete _twelveYearCache[k]; for (const k in _twelveAllCache) delete _twelveAllCache[k]; _existPvX = null;
   window.__pvTrk = { target: T, f: +f.toFixed(6), m0: +m0.toFixed(6), m1: +bldTwelveYearMeans(1, true).solar.toFixed(6), x: existPvTrackShareAt({ ...FIXED, ...state }) }; }`); PV_TRK_REC = JSON.parse(w.eval('JSON.stringify(window.__pvTrk)')); console.log('PV_TRK_CF:', JSON.stringify(PV_TRK_REC)); }
  // NUC_SHAPE (message 376 (b), s_koeberg_winter): Koeberg's monthly shape, a JSON array of 12 factors with hour-weighted mean 1
