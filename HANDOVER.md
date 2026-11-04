@@ -10,6 +10,23 @@
   (shell b0umyuvro's chain): the metered 2024 runs, central and Fossil-free in parallel, each with the metered 2025 cell rerun on the same
   commit (scratchpad ref2024/refs2024.sh; outputs in gtza-fix harness/out/ref2024, local only). Then test 8 at 55 days, alone.
 
+## Message 699 (4 Nov, 15:10 SAST)
+
+- (a) HIGHS_OPTS goes in the wind-table pull request: 118bd45 cherry-picked as f36b230 on claude/wind-table.
+- (b) Route, planned, not final: one stage at 25 days for all 38 pathways on parallel dual simplex, plus two stages for the central, Deep
+  and Fossil-free. Day count and headline method decided 9 Nov, after tests 13, 15 and 55 days. Rule for two-stage headlines: the
+  two-stage figure is the headline only if its gap from one stage lies outside 5% / 250 MW and the engine check is no worse; and if the
+  gap lies inside test 13's 1% range for that technology and year, one stage stays the headline and the gap is reported.
+- (c) c7 to test 8 by cause, for reviewers, each step's effect on reliability too: chain S1-S6 running (scratchpad decomp/decomp.sh,
+  output gtza-t8/harness/out/decomp): S1 weather fixes, S2 six-constant, S3 CONG_OFF, S4 25 equal days, S5 clustered (modelled 2025
+  reference), S6 metered reference; S7 linking = test 8. Pass 1 each, engine K=20 in 2030/2035/2040 on the new weather.
+- (d) Reliability: c7's and test 8's fleets on the same draws (K=20, 2030-2040, new weather, CONG_OFF=1; out/rel699); 2034-2036 on test 8's
+  fleet with more draws to a standard error near 1 GWh, next; the lull stress test on test 8's fleet (out/rel699/t8_lull*), running.
+- (e) Done: identical builds (same deterministic solver); alternative optima not measured (RESULTS).
+- (f) Done: test 12's binding limits on test 8's build (RESULTS).
+- (g) Nick updated the restart messages: test 13 keeps its 40 solves running and merges claude/wind-table at a piece end (item 7 of the
+  message below was out of date: the base passes, so its ranges are on the final LP); test 15 moves at its next piece end, not by stopping.
+
 ## Status, 4 Nov 14:45 SAST: test 8 at 25 days passes at pass 1; route proposed
 
 - Test 8 (25 days, 693's basis, parallel dual simplex, alone): one pass, adequate; solve 4,527 s, run 4,864 s (RESULTS 'Solve times on
