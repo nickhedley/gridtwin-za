@@ -15,6 +15,10 @@
   met in all three years; the loop's own two-draw check has 2040 at 21.6 GWh (a second pass in the full loop). Run (3) solved (solar
   30.5 GW in 2040 with new wind at the bids' 37.24%); its engine check running in job b0tnxth44. Runs (4)+(5) from 22:07 SAST, job
   bw02c2520 (shell PID 31815).
+- 00:00 SAST: the container restarted. Run (5) had finished (RESULTS 'Run (5)'); run (4) was still solving at 112 minutes and was lost.
+  Rule 366: run (4) rerun in resumable pieces (presolve off, RESUME=1; scratchpad sol700/r4p.sh, job b0akz27xb, shell PID 308) beside
+  the split's step 3 (decomp.sh "S3", job b12vd0rd3, shell PID 480), both from 00:02 SAST. Rerun r4p.sh at each notice until r4.json
+  exists.
 
 ## Messages 700-702 (4 Nov, to 17:40 SAST)
 
