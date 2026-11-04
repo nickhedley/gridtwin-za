@@ -273,7 +273,7 @@ ts2_ff: the adequacy test on each step's own year y at its final pass (mean unse
 | 2031 | 12.45 / 20 | 12.45 / 20 | 2025 (83.1) |
 | 2032 | 10.67 / 20 | 10.67 / 20 | 2021 (39.0) |
 
-#### ts2_central_ann (1 of 15 steps)
+#### ts2_central_ann (2 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -282,7 +282,7 @@ ts2_central_ann: new build by year, MW (lithium also MWh)
 | Year | wind | solar | lithium MW | lithium MWh |
 |---|---:|---:|---:|---:|
 | 2026 | 287 | 156 | 360 | 1,440 |
-| 2027 |  |  |  |  |
+| 2027 | 1,959 | 2,120 | 401 | 1,619 |
 | 2028 |  |  |  |  |
 | 2029 |  |  |  |  |
 | 2030 |  |  |  |  |
@@ -296,26 +296,29 @@ ts2_central_ann: new build by year, MW (lithium also MWh)
 | 2038 |  |  |  |  |
 | 2039 |  |  |  |  |
 | 2040 |  |  |  |  |
-| Total | 287 | 156 | 360 | 1,440 |
+| Total | 2,246 | 2,276 | 761 | 3,059 |
 
 ts2_central_ann: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
 | Year | Coal standing | Retired early | Compliance MW kept |
 |---|---:|---:|---:|
 | 2026 | 39,692 | 0 |  |
+| 2027 | 39,692 | 0 |  |
 
 ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
 
 | Step | Horizon | Passes | Verdict | Solver | Solve wall time, min (each solve, cut ones included) | Step wall time in its last piece, min | Attempts | Peak memory, GB | Years over the standard, pass by pass (mean GWh / limit) | Objective, Rbn |
 |---|---|---:|---|---|---|---:|---:|---:|---|---:|
 | 2026 | 2030 | 1 | adequate | parallel, 2 threads | 15.9 | 18.4 | 1 | 2.5 | pass 1: none | 677.140 |
-| 2027 | | | not finished | parallel, 2 threads | 16.8, 10.3, 7.0, 29.0, 29.2, 18.0 | | 2 | | | |
+| 2027 | 2031 | 5 | stall stop | parallel, 2 threads | 16.8, 10.3, 7.0, 29.0, 29.2, 18.0, 32.3 | 45.3 | 3 | 4.1 | pass 1: 2031: 47.9 / 20<br>pass 2: 2031: 31.1 / 20<br>pass 3: 2031: 28.2 / 20<br>pass 4: 2031: 26.6 / 20<br>pass 5: 2031: 27.2 / 20 | 743.104 |
+| 2028 | | | not finished |  |  | | 1 | | | |
 
 ts2_central_ann: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
 | Year | Pass 1 mean / limit | Final pass mean / limit | Worst weather year (GWh) |
 |---|---|---|---|
 | 2026 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 
 Cumulative new build, MW (lithium also MWh), built 2026 to the year
 
