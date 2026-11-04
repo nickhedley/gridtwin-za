@@ -135,8 +135,23 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // on its own commit. NUC_CAPEX_USD (nuclear's high capex case, USD 12,000) and NUC_LIFE (its 60-year sensitivity) recompute new
  // nuclear's capital charge in that case.
  if (P.cocCase==null) throw new Error('the run records no cocCase: it was built before build 2026-10-28a; check it on its own commit');
- if (process.env.COC!==undefined && process.env.COC!==P.cocCase) throw new Error('COC '+process.env.COC+' disagrees with the run\'s cocCase '+P.cocCase);
- w.eval(`bldApplyCocCase(${JSON.stringify(P.cocCase)}, ${process.env.NUC_CAPEX_USD?+process.env.NUC_CAPEX_USD:'undefined'}, ${process.env.NUC_LIFE?+process.env.NUC_LIFE:'undefined'});`);
+ // The case applied is the page's case whose rates equal the run's recorded cocRates for every technology (user, 4 Nov 2026, message
+ // 692 (a)): build 2026-11-02r renamed the cases (the old 'central', solar and wind at 5.5%, is today's 'allbids'), so a run recorded
+ // before it under 'central' is checked at the rates it was built on, not today's 'central' (6.0%). The recorded name is tried first;
+ // a run whose rates no case reproduces is refused. A run recorded without cocRates keeps its recorded name, as before. NUC_LIFE
+ // (nuclear's life sensitivity) changes nuclear's rate on purpose, so nuclear is left out of the comparison when it is set.
+ const NUC_ARGS=`${process.env.NUC_CAPEX_USD?+process.env.NUC_CAPEX_USD:'undefined'}, ${process.env.NUC_LIFE?+process.env.NUC_LIFE:'undefined'}`;
+ let COC_USED=P.cocCase;
+ if (P.cocRates){ const CASES=['central','private','high','low','planning','blended','blendedhigh','allbids'];
+   const off=c=>JSON.parse(w.eval(`(()=>{ bldApplyCocCase(${JSON.stringify(c)}, ${NUC_ARGS}); const R=${JSON.stringify(P.cocRates)}, bad=[];
+     for (const t of Object.keys(R)){ if (${process.env.NUC_LIFE?'true':'false'} && t==='nuclear') continue; if (!(t in BLD_COC_GROUP)){ bad.push(t+' not on the page'); continue; }
+       const v=+bldAnnuityRate(t).toFixed(4); if (Math.abs(v-R[t])>1e-9) bad.push(t+' '+v+' against '+R[t]); } return JSON.stringify(bad); })()`));
+   const first=off(P.cocCase); if (first.length){ COC_USED=null;
+     for (const c of CASES.filter(c=>c!==P.cocCase)) if (!off(c).length){ COC_USED=c; break; }
+     if (!COC_USED) throw new Error('no cost-of-capital case reproduces the run\'s recorded cocRates (as recorded, '+P.cocCase+': '+first.join('; ')+'); check it on its own commit');
+     console.log('cost of capital: the run recorded '+P.cocCase+' at rates today\'s '+P.cocCase+' does not give ('+first.join('; ')+'); applying '+COC_USED+', whose rates equal the recorded ones'); } }
+ if (process.env.COC!==undefined && process.env.COC!==P.cocCase && process.env.COC!==COC_USED) throw new Error('COC '+process.env.COC+' disagrees with the run\'s cocCase '+P.cocCase);
+ w.eval(`bldApplyCocCase(${JSON.stringify(COC_USED)}, ${NUC_ARGS});`);
  if (process.env.NUC_CAPEX_USD||process.env.NUC_LIFE) console.log('nuclear capital charge', w.eval('state.acapNuclear'), 'R/kW-yr');
  // NUC_ACAP (message 415 (a)): new nuclear's capital charge, R/kW-yr, for the IRP pair's high-cost nuclear check (no LP: the
  // build is the run file's own).
@@ -333,7 +348,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
-     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
+     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.cocCase=COC_USED; if (COC_USED!==P.cocCase) r.cocCaseRecorded=P.cocCase; r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first

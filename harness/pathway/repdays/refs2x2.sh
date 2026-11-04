@@ -22,7 +22,7 @@ if mkdir $X/.lock 2>/dev/null; then
 else until [ -e $X/.done ]; do sleep 20; done; fi
 ext(){ python3 -c "import json;print(','.join(map(str,json.load(open('$X/ext_$1.json'))['days'])))"; }
 [ $R = central ] && FX="FIX_FROM=$C/pathway_c7.json FIX_TO=2039" || FX="FIX_FROM=$C/pathway_s_ff2040_c7.json FIX_TO=2039 $FFX"
-for c in met_st y25_st met_c6 y25_c6; do n=${R}_$c
+for c in ${CELLS:-met_st y25_st met_c6 y25_c6}; do n=${R}_$c
   case $c in met_st) RF="REP_REF=metered";; y25_st) RF="REP_REF=2025";; met_c6) RF="REP_REF=metered WX_WINDCORR=1 WX_WINDCORR_TABLE=$T6";; y25_c6) RF="REP_REF=2025 WX_WINDCORR=1 WX_WINDCORR_TABLE=$T6";; esac
   RF="$RF REP_EXTREMES=$(ext $c)"
   if [ ! -s $O/${n}_path.json ]; then
