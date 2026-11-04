@@ -21202,3 +21202,30 @@ harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json; a probe of bldCoc by case; 4
 - Proposed fix (not made; message 691 (a): no stored file regenerated to clear the checks): pathcheck.js maps a recorded case to the
   page's case whose rates equal the recorded cocRates for every technology (the generator's 'legacy' rule, made general), and refuses a
   run whose recorded rates no case reproduces; then the five preset checks rerun. Nick decides.
+
+### The six-constant wind correction's out-of-sample calm figures beside metered, stored and five-constant (message 691 (b); wind table not decided)
+
+Settings: ESK19679 (Eskom data, obtained on request; the analysis ours), April 2022 to December 2025, national per-unit wind; modelled
+series clock-fixed with 2024's leap interim (29 February 2024, 31 December 2024 and 2025's first two hours left out on both sides);
+national weights. Fits and tests: scratchpad windcorr/esk/scripts (ek2.py, c_run.py), 3 Nov 2026 (CALM.md). Annualised over each test's
+years. Five-constant: v_k 7.0, alpha 0.80, beta 0.340, A 0.536, phi 11.54; six-constant: the same with v_c 4.0, beta 0.341, A 0.538.
+
+| Test (years held out) | | metered | stored | five-constant | six-constant |
+|---|---|---|---|---|---|
+| Leave one year out (four folds, means) | hours below 5% | 78 | 121 | 48 | 69 |
+| | longest run below 10%, h | 27.8 | 16.8 | 18.0 | 18.0 |
+| | worst 1-day mean | 0.048 | 0.078 | 0.075 | 0.076 |
+| Split A (fit 2022-23, test 2024-25) | hours below 5% | 76 | 124 | 18 | 42 |
+| | longest run below 10%, h | 26.5 | 18.5 | 16.5 | 16.5 |
+| | worst 1-day mean | 0.045 | 0.083 | 0.089 | 0.089 |
+| Split B (fit 2024-25, test 2022-23) | hours below 5% | 79 | 119 | 68 | 95 |
+| | longest run below 10%, h | 29.0 | 15.0 | 19.0 | 19.0 |
+| | worst 1-day mean | 0.052 | 0.073 | 0.064 | 0.069 |
+
+- Calm hours: the six-constant is closer to metered than the five-constant in every test (69 against 48, metered 78); stored has the
+  most (121), mostly short.
+- Long and deep lulls: no series reproduces them. Longest runs below 10% are 15-19 h on all three against 26.5-29 h metered, and the
+  worst day is 0.064-0.089 against 0.045-0.052; on these the corrections and stored are within a few hours and a few hundredths of each
+  other, in different directions by test.
+- For the rest of the record (level, monthly shape, spread, top end), the corrections hold out of sample in every test and stored does
+  not (RESULTS 'Message 684 decisions applied, and measured', item 3; CALM.md section 3).
