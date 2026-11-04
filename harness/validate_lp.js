@@ -422,6 +422,26 @@ function check(label, ok, detail) {
     check('extremes.json was computed on bldRepRefYear\'s series', String(X.ref) === String(got.ref), X.ref + ' against ' + got.ref);
   }
 
+  // Enrolment round-off (message 698 (a)): the virtual power plant's and the geyser control's enrolment (vppp_<y>, gy_<y>) is read from a
+  // solution through bldEnrolPrimal, which reads a value below 0 by no more than BLD_ENROL_TOL_MW as 0 (test 15's step 2028: vppp_2028
+  // -9e-11 MW stopped the engine) and stops on a larger negative. Called from here the way pathway_perfail.js calls it (dom.window), and
+  // through bldStateForYear, which the adequacy loop and the engine check read.
+  {
+    const call = (cols, n) => { try { return w.bldEnrolPrimal(cols, n); } catch (e) { return 'stopped'; } };
+    const unit = [call({ vppp_2028: { Primal: -9e-11 } }, 'vppp_2028'), call({ gy_2030: { Primal: 412.5 } }, 'gy_2030'),
+      call({ vppp_2031: { Primal: -1e-3 } }, 'vppp_2031'), call({}, 'gy_2032')];
+    const wired = JSON.parse(w.eval(`(() => { const st = { ...state, vppBuildOn: 1, gyBuildOn: 1 }, out = {};
+      try { const s = bldStateForYear({ Columns: { vppp_2030: { Primal: -9e-11 }, gy_2030: { Primal: -2e-12 } } }, 2030, { state: st });
+        out.small = [s.vppEnrolGWh, s.gyEnrolMW]; } catch (e) { out.small = 'stopped: ' + e.message; }
+      for (const n of ['vppp_2030', 'gy_2030']) try { bldStateForYear({ Columns: { [n]: { Primal: -0.01 } } }, 2030, { state: st }); out[n] = 'not stopped'; }
+        catch (e) { out[n] = /below 0 by more than round-off/.test(e.message) ? 'stopped' : 'stopped elsewhere: ' + e.message; }
+      return JSON.stringify(out); })()`));
+    check('enrolment round-off below 0 is read as 0 and a larger negative stops, in the page and through bldStateForYear',
+      JSON.stringify(unit) === JSON.stringify([0, 412.5, 'stopped', 0]) && JSON.stringify(wired.small) === '[0,0]'
+        && wired.vppp_2030 === 'stopped' && wired.gy_2030 === 'stopped',
+      JSON.stringify({ unit, wired }));
+  }
+
   console.log(`\n${pass}/${pass + fail} checks passed`);
   process.exit(fail ? 1 : 0);
 })();
