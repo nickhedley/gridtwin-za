@@ -21660,3 +21660,21 @@ at 16:00 from 0.377 to 0.282 and 0.553 to 0.488; in summer at 18:00 tracking fro
 the evening peak that the measured fleet does not deliver: for 17 GW of new trackers about 2.8 GW at 17:00 in winter. That lowers net
 load at the evening ramp in ten of the twelve modelled years, in the engine and in the LP's stress windows and twelve-year means, and so
 understates unserved. The engine's measure on test 8's fleet follows.
+
+### The twin fix on the page's presets (message 701 (c)): system cost moves by at most R0.45bn, unserved by at most 0.19 GWh
+
+Settings: claude/twin-fix db63be3 (FIXED.solarTrkMeteredBasis 'fleet'); each preset applied and run by the page's engine (simulate on
+the metered profile) on the fleet basis and on the earlier 'fixed' basis; scratchpad twin/probe_presets.js. 4 Nov 2026, 15:30 UTC.
+
+| Preset | Tracking | New utility solar, MW | System cost, R bn: fleet / fixed (change) | Unserved, GWh: fleet / fixed |
+|---|---|---:|---|---|
+| Today 2026 | no | 0 | 213.60 / 213.60 (0) | 0 / 0 |
+| IRP's 2030 targets, grid delayed | yes | 6,188 | 272.89 / 272.90 (-0.00) | 0 / 0 |
+| IRP's 2030 targets | yes | 10,313 | 276.98 / 276.72 (+0.26) | 0 / 0 |
+| IRP path 2035 | yes | 17,513 | 303.17 / 303.24 (-0.07) | 0 / 0 |
+| Least-cost path 2035 | yes | 22,746 | 254.23 / 254.68 (-0.45) | 0 / 0 |
+| 2025, as modelled | no | 0 | 222.47 / 222.47 (0) | 1.23 / 1.23 |
+| Deep decarbonisation 2035 | yes | 38,225 | 291.35 / 291.62 (-0.27) | 0.19 / 0.00 |
+| Fossil-free 2040 | yes | 100,516 | 601.89 / 601.85 (+0.05) | 0 / 0 |
+
+The presets' builds are fixed, so only their dispatch moves; the visible changes go in the twin-fix pull request's visible-text section.
