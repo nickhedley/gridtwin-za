@@ -21953,13 +21953,16 @@ Solar 2040: on the freed-coal pool / off it after 2028 / the committed builds of
 | S2 + six-constant | 1,630.3 | 38.2 (15.5 / 19.2 / 3.4) | 26.3 | 28.9 | 14.7 / 83.0 | 0.00 | 0.9 / 0.9 / 0.4 |
 | S3 + congestion off | 1,620.6 | 37.7 (15.5 / 18.8 / 3.4) | 25.9 | 28.5 | 14.5 / 83.0 | 0.00 | 1.0 / 0.9 / 0.5 |
 | S4 + 25 equal days | 1,591.2 | 31.2 (17.8 / 10.0 / 3.4) | 20.2 | 32.8 | 12.2 / 74.6 | 0.00 | 1.2 / 1.5 / 0.6 |
-| S5 + clustered, modelled 2025 | queued | | | | | | |
+| S5 + clustered, modelled 2025 (no linking) | 1,507.8 | 30.5 (22.4 / 4.7 / 3.4) | 19.2 | 40.4 | 14.5 / 75.5 | 2.05 | 3.4 / 30.8 / 59.8 |
 | S6 + metered reference | queued | | | | | | |
 | test 8 (+ linking) | 1,521.5 | 23.9 (20.5 / 0.0 / 3.4) | 17.4 | 39.9 | 8.7 / 43.3 | 0.22 | 1.3 / 15.9 / 6.7 |
 | run (6) (+ fixed twin) | 1,523.5 | 23.9 (20.3 / 0.2 / 3.4) | 17.2 | 42.0 | 10.9 / 61.2 | 0.00 | 0.9 / 13.7 / 7.6 |
 
 - Solar: the weather fixes raise it (+5.4 GW in 2040: +6.1 off the pool, -0.7 on it); the six-constant correction and congestion off move it by under
   1 GW each. 25 equal days (S4) cut it by 6.5 GW, 8.8 GW off the pool (S4 solved in 2,638 s, beside run (4), 4 Nov 22:23-23:16 UTC);
-  the rest of the fall to test 8's 23.9 GW (10.0 GW of off-pool solar) lies in steps 5-6 or linking.
-- Reliability: every step to S4 meets the standard with a wide margin (0.4-1.5 GWh); test 8 is at 15.9 in 2035. Where the margin
-  goes lies in steps 5-6 or linking.
+  clustered weights on modelled 2025 (S5) hold the total (30.5 GW) but move 5.3 GW from off the pool onto it, as S5 retires 2.05 GW
+  of coal early (all in 2029) and so frees more connections (S5 solved in 2,411 s, beside run (4), 4 Nov 23:09-23:57 UTC); the rest
+  of the fall to test 8's 23.9 GW lies in S6 or linking.
+- Reliability: every step to S4 meets the standard with a wide margin (0.4-1.5 GWh). S5 misses it far: 30.8 GWh in 2035 and 59.8 in
+  2040 (se 3.4 and 3.7), with lithium up and 2.05 GW of coal retired early; the loop's own check fails 2034-2040 (to 72.5). So the
+  margin goes at the clustered weights on modelled 2025 without linking; test 8 (metered, linked) is back inside it (15.9 / 6.7).
