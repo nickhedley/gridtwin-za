@@ -120,7 +120,8 @@ session's section above).
   file is removed on success); same objective, builds could differ only if the LP has more than one optimal build; not re-solved cold (user,
   4 Nov 2026: the affected steps are recorded, and the runs restart on the fixed tracking twin anyway). ts2_central step 2029, pass 2: the kept file was pass 1's (written 13:31:17, pass 2
   stopped 14:13); moved aside, so pass 2 starts cold. ts2_central_ann step 2027, pass 2: pass 1's (written 14:50:55), resumed 15:07,
-  optimal in 417 s; its builds chose pass 3's stress windows. The first basis (ts_central step 2028, pass 2, confirmed; ts_ff step 2028,
+  optimal in 417 s; its builds chose pass 3's stress windows. Its pass 5 (cut at 16:39, in a process started before the fix) kept pass 4's
+  basis (written 16:18:41) the same way; moved aside, so pass 5 starts cold. The first basis (ts_central step 2028, pass 2, confirmed; ts_ff step 2028,
   pass 2, likely) is record only.
 
 #### Solver timing
@@ -273,7 +274,7 @@ ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
 | Step | Horizon | Passes | Verdict | Solver | Solve wall time, min (each solve, cut ones included) | Step wall time in its last piece, min | Attempts | Peak memory, GB | Years over the standard, pass by pass (mean GWh / limit) | Objective, Rbn |
 |---|---|---:|---|---|---|---:|---:|---:|---|---:|
 | 2026 | 2030 | 1 | adequate | parallel, 2 threads | 15.9 | 18.4 | 1 | 2.5 | pass 1: none | 677.140 |
-| 2027 | | | not finished | parallel, 2 threads | 16.8, 10.3 | | 1 | | | |
+| 2027 | | | not finished | parallel, 2 threads | 16.8, 10.3, 7.0, 29.0, 29.2, 18.0 | | 2 | | | |
 
 ts2_central_ann: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 

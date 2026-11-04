@@ -50,3 +50,7 @@
 2026-11-04T15:56Z step 2031 (horizon 2035) rc=0 NO OUTPUT
 2026-11-04T15:56:55Z node 28775 ended, peak memory 0.0 GB
 2026-11-04T15:56:55Z test15 ff piece ends: two_stage.sh rc=1, 5 of 15 steps done
+2026-11-04T16:40:16Z test15 ff piece, PID 7350, on 2dce335 Test 15 results: Fossil-free step 2030 fin, BUILD_STAMP = '2026-11-04b, deadline 18:30Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 28G, memory free 12G
+2026-11-04T16:40:16Z two_stage.sh PID 7377
+2026-11-04T16:40Z two_stage K=4 N=25 FIRST=2026, shell PID 7377
+2026-11-04T16:40:31Z step node PID 7389

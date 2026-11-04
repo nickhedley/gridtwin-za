@@ -23,3 +23,9 @@
 2026-11-04T15:17:26Z solve started (highs_native.py 19167)
 2026-11-04T15:46:36Z solve (highs_native.py 19167) ended after about 1740s
 2026-11-04T15:49:21Z solve started (highs_native.py 27100)
+2026-11-04T16:18:45Z solve (highs_native.py 27100) ended after about 1754s
+2026-11-04T16:21:46Z solve started (highs_native.py 2723)
+2026-11-04T16:39:52Z solve (highs_native.py 2723) ended after about 1078s
+2026-11-04T16:39Z step 2027 (horizon 2031) rc=0 NO OUTPUT
+2026-11-04T16:40:07Z node 16603 ended, peak memory 4.1 GB
+2026-11-04T16:40:07Z test15 central_ann piece ends: two_stage.sh rc=1, 1 of 15 steps done

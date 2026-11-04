@@ -37,3 +37,4 @@
 2026-11-04T15:57:01Z two_stage.sh PID 28963
 2026-11-04T15:57Z two_stage K=4 N=25 FIRST=2026, shell PID 28963
 2026-11-04T15:57:16Z step node PID 28976
+2026-11-04T16:01:32Z solve started (highs_native.py 30081)
