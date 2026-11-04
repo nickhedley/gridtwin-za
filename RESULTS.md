@@ -21960,7 +21960,7 @@ Solar 2040: on the freed-coal pool / off it after 2028 / the committed builds of
 
 - Solar: the weather fixes raise it (+5.4 GW in 2040: +6.1 off the pool, -0.7 on it); the six-constant correction and congestion off move it by under
   1 GW each. 25 equal days (S4) cut it by 6.5 GW, 8.8 GW off the pool (S4 solved in 2,638 s, beside run (4), 4 Nov 22:23-23:16 UTC);
-  clustered weights on modelled 2025 (S5) hold the total (30.5 GW) but move 5.3 GW from off the pool onto it, as S5 retires 2.05 GW
+  clustered weights on modelled 2025 (S5) hold the total (30.5 GW): off the pool -5.3 GW, on it +4.6, as S5 retires 2.05 GW
   of coal early (all in 2029) and so frees more connections (S5 solved in 2,411 s, beside run (4), 4 Nov 23:09-23:57 UTC); the rest
   of the fall to test 8's 23.9 GW lies in S6 or linking.
 - Reliability: every step to S4 meets the standard with a wide margin (0.4-1.5 GWh). S5 misses it far: 30.8 GWh in 2035 and 59.8 in
