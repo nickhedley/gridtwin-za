@@ -21195,10 +21195,8 @@ harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json; a probe of bldCoc by case; 4
 - Reach: 46 of the 236 pathway files recorded 'central' at 5.5% (the c6e family, the IRP pairs and the hypothetical presets). Any
   pathcheck.js run on them from b0f7999 (2 Nov, 22:31 UTC) on carries wind and solar capital at 6.0%: the five 03d preset checks of 4 Nov
   among them. c7's runs recorded 'blended' and are not affected; nothing in tonight's engine, 690, 688 or acceptance results is.
-- The other leads, separate from the cost: rpCumMW (19,314 against the 31c file's 25,570) and gridOptBn (R58.42bn against 56.15) differ
-  from the 31c file at every commit from 72bb1fc on, with cost equal to the 31c file's there; rpCumMW already 19,314 at cf6050b (31 Oct,
-  21:15 UTC), gridOptBn moved between cf6050b (R64.49bn) and 72bb1fc, where the page change is 1dc9119 (the grid charge at R364). Both
-  enter costGrid, not cost. Not chased further.
+- The other leads, separate from the cost: rpCumMW and gridOptBn. Corrected on 4 Nov (entry 'rpCumMW counts only the years a check run
+  covers', below): the difference from the 31c file is the years each run checked, not a commit.
 - Proposed fix (not made; message 691 (a): no stored file regenerated to clear the checks): pathcheck.js maps a recorded case to the
   page's case whose rates equal the recorded cocRates for every technology (the generator's 'legacy' rule, made general), and refuses a
   run whose recorded rates no case reproduces; then the five preset checks rerun. Nick decides.
@@ -21270,3 +21268,24 @@ acceptance LPs of 3-4 Nov (harness/out/accept); closure2.py; 4 Nov 2026, 06:40-0
   free and harmless.
 - Test 2, the reserve rows' duals: non-zero on some rows in every run (25 days, central metered: resv 16 of 768, rbe 11, rbq 2, rpe 4,
   rpq 3; 365 days: resv 96 of 8,928, rbe 191, rbq 38, rpe 45, rpq 22), so the rows bind somewhere and are not vacuous.
+
+### rpCumMW counts only the years a check run covers (message 692 (b)): not an intended change; nothing in the pack or on the page reads it
+
+Settings: harness/pathcheck.js on claude/weather-fixes (the logic unchanged since before 31 Oct); Fossil-free 2040 hypothetical
+(harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json); 4 Nov 2026, 08:00-08:15 UTC.
+
+- What moved: nothing at cf6050b. pathcheck.js adds each year's repurposed MW (sched[y].rp) to rpCum inside the year loop after the
+  YEARS filter (pathcheck.js, the GRID block), while the builds (cum) are added before it. So rpCum counts only the years the run checks.
+  The pathway's repurposed MW: 19,314 in 2040 alone, 25,570 in 2036-2040, 39,345 in 2026-2040. The 31c file came from the group run
+  (YEARS=2036-2040: 25,570); every check of 2040 alone gives 19,314; the right figure for 2040 is 39,345 (repurposed connections built
+  earlier still stand). Group a (2026-2030) is right; groups b and c understate it.
+- Intended: no. A bug since the GRID block was written (TODO 14ar, before 31 Oct). Fix (proposed, one line, not made): add sched[y].rp to
+  rpCum before the YEARS filter, as cum is.
+- What it reaches: gridOptBn (the optimiser's grid charge on built MW less repurposed MW) and costGrid (cost less the engine's own
+  transmission charge plus gridOptBn); not cost. Understated rpCum overstates gridOptBn and costGrid for 2031-2040.
+- gridOptBn's own move between cf6050b (R64.49bn) and 72bb1fc (R58.42bn), both checking 2040 alone with rpCum 19,314: 1dc9119's grid
+  charge at R364, a cost correction (intended).
+- Readers: no page figure (index.html mentions costGrid in a comment only); no pack table (packfill.js, packtable.js, settables.js,
+  irptable.js use the engine's cost, summ's pv). Only summ.js's console summary prints the grid-basis PV ('grid R...bn'), and one RESULTS
+  figure quotes it: c6e's PV on the optimiser's grid-cost basis, 2,323.1 against 2,317.5 (entry of 31 Oct), summed from the a, b and c
+  check files and so carrying the understatement in 2031-2040.
