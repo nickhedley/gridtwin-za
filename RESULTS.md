@@ -21713,3 +21713,20 @@ published or reviewed figures it touched.
 Classes: clock and calendar (the first two and the open two): no check compared timing with a measured series at sub-hour resolution.
 Derived profiles (the twin): no check on a series the page builds rather than loads. Harness options (rename, rpCum, FIX_FROM, LIFT):
 tested by running, not by the suite. Load order and tolerance: silent catches and exact zero checks.
+
+### Physical shape checks (message 702 (b)): validate_shapes.js, 8 checks, each proved on an injected fault; 6/8 on claude/twin-fix, the two failures real
+
+Settings: claude/twin-fix e588e49 (harness/validate_shapes.js, in run_suite.sh's quick list); the metered fleet (profiles.json, Eskom's
+2025 fleet; Eskom data, the analysis ours) as the reference. 4 Nov 2026, 15:45-16:00 UTC.
+- Checks: the metered tracking twin, and every modelled year's fixed tilt and tracking twin (fixed tilt's peak hour 11-13 SAST; the
+  day's energy-weighted time within 15 minutes of the fleet's, 12.388 h; morning-evening balance within 15% of the fleet's on the
+  5-minute mean day; under 1% of hours at full output; monthly shape, r 0.9 against the fleet for the twin, 0.6 against the twelve-year
+  mean for a year); every modelled year's wind and modern-turbine wind (mean day within 1 hour of the fleet's, under 2% at full output);
+  the metered profile's modern-wind twin; modelled 2025 against metered 2025 (solar lag within 15 minutes at 5-minute resolution, wind
+  within 1 hour).
+- On claude/twin-fix: the twin, all wind and both 2025 lags pass; fixed tilt fails for 2014-2023 (24-27 minutes late, balance 0.78) and
+  the tracking twins fail for 2014-2023 (late) and 2024-2025 (32 minutes early, balance 1.29): the real faults of 701 (b), left failing
+  until Nick decides. On main (the old twin) the twin check fails too.
+- Injected faults (scratchpad inject/inject.sh, a temporary root with one replacement): the twin on the old basis (-19 min, balance 1.24,
+  4.7% clipped: fails); every modelled year's wind moved 2 hours (mean day 2-3 hours off, 2025's lag 165 minutes: three checks fail);
+  every modelled year's solar moved 1 hour (85 minutes late, 2025's lag -60 minutes: fails).
