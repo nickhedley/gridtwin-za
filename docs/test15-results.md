@@ -146,7 +146,7 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   is the user's call. The annuity run took the slot at 21:33 (PID 7929), next in line.
 
 <!-- test15_summary start -->
-#### ts2_central (10 of 15 steps)
+#### ts2_central (11 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -164,12 +164,12 @@ ts2_central: new build by year, MW (lithium also MWh)
 | 2033 | 3,500 | 1,437 | 798 | 2,956 | 0 | 72 | 22 |
 | 2034 | 3,500 | 1,653 | 425 | 7,755 | 0 | 1,000 | 0 |
 | 2035 | 3,500 | 551 | 305 | 4,287 | 611 | 0 | 0 |
-| 2036 |  |  |  |  |  |  |  |
+| 2036 | 3,500 | 425 | 126 | 3,127 | 638 | 0 | 158 |
 | 2037 |  |  |  |  |  |  |  |
 | 2038 |  |  |  |  |  |  |  |
 | 2039 |  |  |  |  |  |  |  |
 | 2040 |  |  |  |  |  |  |  |
-| Total | 27,246 | 20,644 | 8,890 | 39,635 | 611 | 1,397 | 3,319 |
+| Total | 30,746 | 21,069 | 9,016 | 42,762 | 1,249 | 1,397 | 3,477 |
 
 ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -185,6 +185,7 @@ ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept u
 | 2033 | 24,658 | 3,463 | 3,463 |
 | 2034 | 23,004 | 3,463 | 3,463 |
 | 2035 | 22,453 | 3,463 | 3,463 |
+| 2036 | 21,885 | 3,463 | 3,463 |
 
 ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -200,7 +201,8 @@ ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2033 | 2037 | 1 | adequate | parallel, 2 threads | 32.8 | 37.8 | 2 | 3.1 | pass 1: none | 699.526 |
 | 2034 | 2038 | 1 | adequate | parallel, 2 threads | 37.0 | 42.2 | 2 | 2.9 | pass 1: none | 751.008 |
 | 2035 | 2039 | 1 | adequate | parallel, 2 threads | 35.0 | 40.2 | 2 | 3.1 | pass 1: none | 807.526 |
-| 2036 | | | not finished |  |  | | 1 | | | |
+| 2036 | 2040 | 1 | adequate | parallel, 2 threads | 34.0 | 39.3 | 2 | 2.9 | pass 1: none | 868.454 |
+| 2037 | | | not finished |  |  | | 1 | | | |
 
 ts2_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -216,6 +218,7 @@ ts2_central: the adequacy test on each step's own year y at its final pass (mean
 | 2033 | 11.52 / 20 | 11.52 / 20 | 2016 (43.5) |
 | 2034 | 12.45 / 20 | 12.45 / 20 | 2018 (77.2) |
 | 2035 | 9.51 / 20 | 9.51 / 20 | 2018 (65.5) |
+| 2036 | 7.97 / 20 | 7.97 / 20 | 2020 (73.6) |
 
 #### ts2_ff (7 of 15 steps)
 

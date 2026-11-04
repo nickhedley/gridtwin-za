@@ -135,3 +135,16 @@
 2026-11-04T23:02Z two_stage K=4 N=25 FIRST=2026, shell PID 27650
 2026-11-04T23:02:41Z step node PID 27669
 2026-11-04T23:02:56Z solve started (highs_native.py 27753)
+2026-11-04T23:37:07Z solve (highs_native.py 27753) ended after about 2037s
+2026-11-04T23:41Z step 2036 (horizon 2040) rc=0 done
+2026-11-04T23:42:07Z node 27669 ended, peak memory 2.9 GB
+2026-11-04T23:42:07Z step node PID 3950
+2026-11-04T23:42:07Z under 4800s left: stopped at the step boundary (node 3950, just started)
+2026-11-04T23:42Z step 2037 (horizon 2040) rc=0 NO OUTPUT
+2026-11-04T23:42:22Z node 3950 ended, peak memory 0.0 GB
+2026-11-04T23:42:22Z test15 central piece ends: two_stage.sh rc=1, 11 of 15 steps done
+2026-11-04T23:42:31Z test15 central piece, PID 4128, on d830a14 Test 15 results: central step 2035 finishe, BUILD_STAMP = '2026-11-04b, deadline 01:32Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 27G, memory free 12G
+2026-11-04T23:42:31Z two_stage.sh PID 4155
+2026-11-04T23:42Z two_stage K=4 N=25 FIRST=2026, shell PID 4155
+2026-11-04T23:42:46Z step node PID 4176
+2026-11-04T23:43:01Z solve started (highs_native.py 4233)
