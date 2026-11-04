@@ -60,6 +60,23 @@ harness/out/mga2/base.json, run 11:02-12:24 UTC on 4 November. Pass 1 at 25 clus
   | 2030 | 8,468 | 6,976 | 1,707 | 3,719 | 0 | 32,213 | 0 |
   | 2040 | 39,918 | 23,927 | 8,716 | 43,325 | 1,650 (1,500, 150) | 17,670 | 6,533 |
 
+## Merge of claude/wind-table (message 698 (b))
+
+Merged at the first piece end (commit a3c41c5; build 2026-11-04b): the enrolment round-off fix, and the wind correction on by
+default with the six-constant table. Seven conflicts, all where wind-table holds the newer version of weather-fixes' lines (wind
+correction 1 not 0, DATA_V 10, the six-constant table, NEW_WIND_CF_12Y re-measured, the table load moved, the build stamp), taken
+from wind-table; index.html, pathcheck.js, nodal_dispatch.js and wind_corr_table.json then equal wind-table's. The settings are
+unchanged, the table path included. The base LP's key is unchanged: 8e0651f38a18d5c2014eb508e720f99c5c3e90e0 before and after the
+merge, the same as test 8's pass 1 (LP built with DUMP_STOP=1, not solved; the two LP files byte-identical).
+
 ## Ranges
 
-Pending.
+The first two MGA solves, side by side from 12:25 UTC, two threads each on the 4 cores, each with a 6,698 s (111.6 min) limit:
+
+| Run | Wall time | Result |
+|---|---|---|
+| wind_2040_min_0.01 | 6,698 s, stopped at the limit (12:25-14:17) | not solved; no valid basis to resume from |
+| wind_2040_max_0.01 | 6,698 s, stopped at the limit (12:25-14:18) | not solved; no valid basis to resume from |
+
+The base solved in 75 min alone; the MGA LPs did not solve in 112 min with a second solve beside them. Under message 693 (1) the
+40 solves stop here until Nick chooses how to go on.
