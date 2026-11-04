@@ -21146,3 +21146,30 @@ the representative days, GWh. Outputs harness/out/accept (an.json). 3 Nov 2026, 
   linking, (d); on cost alone 18 days would do; on the mix, 105 days (18-26 minutes for a single-year 2040 LP; a full pathway pass at
   105 days is not yet measured), or 55 days if time forces it, with the central's lithium energy named as not settled. The reference is
   the larger choice and is Nick's (684 (e)).
+
+### Preset engine checks on the fixed weather files: unserved matches the page; cost does not, and that gap is older than the weather fixes (4 Nov 2026, found by validate_pathway_presets)
+
+Settings: claude/weather-fixes a54dc15 (BUILD_STAMP 2026-11-03d); pathcheck.js LNG=1 GRID=1 on each preset's build file for its year
+(harness/pathway/c6e/pathcheck_irp2025_c6e_03d_y2030.json, pathcheck_c6e_03d_y2035.json, pathcheck_irp2025_c6e_03d_y2035.json;
+harness/pathway/opt/pathcheck_s_hypo_deep2035nogas_t40n_r3_c6e_03d_y2035.json, pathcheck_s_hypo_ff2040_c6e_03d_y2040.json), as the 31c
+checks were run (chain_c6e.sh's check(), 120 runs a year); validate_pathway_presets.js against them. 4 Nov 2026, 00:33-01:06 UTC.
+
+| Preset | 31c check cost, R bn | 03d check cost | page (validator) | unserved 31c / 03d / page, GWh |
+|---|---|---|---|---|
+| IRP's 2030 targets (2030) | 277.58 | 278.62 | 277.31 | 0 / 0 / 0 |
+| Least-cost path 2035 | 257.77 | 258.78 | 255.53 | 1.40 / 1.05 / 1.05 |
+| IRP path 2035 | 305.33 | 306.86 | 304.02 | 0 / 0 / 0 |
+| Deep decarbonisation 2035 | 295.36 | 297.79 | 292.07 | 0.60 / 0.06 / 0.06 |
+| Fossil-free 2040 | 601.84 | 612.07 | 601.86 | 0 / 0 / 0 |
+
+- With the 03d checks the page equals the engine check on unserved for every preset (validate_pathway_presets 60/65, from 59/65 on
+  the 31c checks); the five cost checks fail, the page 0.47-1.92% below.
+- The cost gap is not from the weather fixes: on main b0f7999 (gtza-base, no weather change) Fossil-free 2040's engine check gives
+  R612.05bn, gridOptBn R58.42bn and rpCumMW 19,314 MW, against the 31c file's R601.84bn, 56.15 and 25,570 and the page's R601.86bn. The
+  engine check's cost moved after the 31c checks were made (31 Oct, 17:15 UTC), on main; the suite did not see it because it compares
+  the page with stored files. Candidate: 28af9d5 (#153, 2 Nov, the Fossil-free freed-connection credit fix, 14ma), the only later
+  pathcheck change touching repurposing; not yet bisected. Which side is right is not established.
+- What the weather fixes do to the presets' engine checks (03d against 31c): cost +0.37% (IRP 2030), +0.39% (Least-cost 2035), +0.50%
+  (IRP 2035), +0.82% (Deep 2035), +1.70% (Fossil-free 2040, of which +1.69% is the older gap above); unserved down in Least-cost (1.40 to
+  1.05 GWh) and Deep (0.60 to 0.06); coal -1.3 to -4.7 TWh and curtailment -0.4 to -3.6 TWh in 2030-2035 (existing solar's metered level
+  and the tracking twin; the 684 entry has the presets' page values).
