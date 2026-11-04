@@ -32,15 +32,19 @@ const COST_TOL_PCT = 0.01, UNS_TOL_PCT_TARGET = 1;
 const SEED_BASE = 71830529;   // pathcheck.js's default, with which both engine checks ran
 // From build 2026-10-31l the engine checks are those run on build 31c (both cost corrections, messages 552 (a), 560, 565 (a)): the
 // corrections lower each preset's system cost by 1.0-1.3% (unserved and CO2 unchanged), so the 31a checks no longer describe the page.
+// From build 2026-11-03d the engine checks are those run on 03d, each for its preset's year (pathcheck.js LNG=1 GRID=1, as before):
+// the weather files on SAST with the leap years fixed, the metered tracking twin scaled and existing utility solar at Eskom's metered
+// mean (message 684) move the presets' cost by up to 1.1% and Least-cost's and Deep's unserved, so the 31c checks no longer describe
+// the page (RESULTS 'Preset engine checks on the fixed weather files').
 const RUNS = [
-  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_a.json' },
-  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_31c_b.json' },
-  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_31c_b.json' },
+  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_03d_y2030.json' },
+  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_03d_y2035.json' },
+  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_03d_y2035.json' },
   // The hypothetical presets from 1 Nov 2026 (user, messages 537 (f) and 555): optimised builds at relaxed build rates (harness/pathway/opt/),
   // checked against their engine checks on 31c (the 1 Nov corrections; message 596)
   // Deep from build 2026-11-01d: the no-gas run calibrated to 40 Mt from 2035 (message 599 (a)); its 31c check was made on gtza-c31l.
-  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035nogas_t40n_r3_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035nogas_t40n_r3_c6e_31c_b.json' },
-  { name: 'Fossil-free 2040', year: 2040, build: 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_31c_c.json' },
+  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035nogas_t40n_r3_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035nogas_t40n_r3_c6e_03d_y2035.json' },
+  { name: 'Fossil-free 2040', year: 2040, build: 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_03d_y2040.json' },
 ];
 
 let npass = 0, nfail = 0; const fails = [];

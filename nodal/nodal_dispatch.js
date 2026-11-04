@@ -22,7 +22,7 @@ async function loadNodalData() {
   // Cache-buster on the DATA files, not just the scripts. Without it a browser happily serves a
   // stale profiles_regional.json or fleet CSV after the file has been replaced, so a data update
   // silently does nothing and looks like the deploy failed. Bump DATA_V whenever any of these change.
-  const DATA_V = '8';   // 8: fleet_units.csv replaces fleet_by_region_v2.csv, and both CSVs carry '#' source lines (16 Oct 2026)
+  const DATA_V = '9';   // 9: the weather files on SAST with leap years fixed, and the metered tracking scale (3 Nov 2026, message 684); 8: fleet_units.csv replaces fleet_by_region_v2.csv (16 Oct 2026)
   // Exposed so index.html versions its own data fetches from the SAME value -
   // two independent version strings would drift and defeat the purpose.
   try { window.DATA_V = DATA_V; } catch(e){}

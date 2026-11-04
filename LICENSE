@@ -105,6 +105,7 @@ Data sources incorporated in this repository carry their own licences:
 - nodal/supply_area_split_draft.json: CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
 - nodal/tdp_projects.json: NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 - nodal/transmission_lines.geojson: TDP-derived content (Eskom, now NTCSA, Transmission Development Plan): NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent. SAPP planning data stays under SAPP's own terms.
+- nodal/wind_corr_table.json: Calibration constants fitted to Eskom Holdings SOC Ltd, hourly dataset ESK19679 (obtained on request): terms under review; not CC BY. Published as derived calibration constants with Eskom credited; no Eskom hourly series is in this file.
 --- End of the generated list ---
 
 Users are responsible for complying with the terms of each upstream data source.

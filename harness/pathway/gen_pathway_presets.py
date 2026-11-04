@@ -154,7 +154,9 @@ def demand_gap(cfg, Y=2035):
     P = json.load(open(cfg['build']))
     blkOf = lambda R: max(((int(y), mw) for y, mw in (R['demand'].get('block') or {}).items() if int(y) <= Y), default=(0, 0))[1] * 8.76 / 1000
     if 'gap_run' in cfg:
-        R = json.load(open(cfg['gap_run'])); base = sum(json.load(open('profiles.json'))['demand']) / 1e6
+        # math.fsum (message 687 (a)): correctly rounded on every Python; sum() over floats changed in 3.12 (compensated), which moved
+        # this base in its last digits between interpreters (RESULTS 'The seven unlisted failures', 7).
+        R = json.load(open(cfg['gap_run'])); base = math.fsum(json.load(open('profiles.json'))['demand']) / 1e6
         exp = page_defaults()['exportsMW'] * 8.76 / 1000
         tot = lambda Q: base * Q['demand']['index'][str(Y)] + blkOf(Q) + exp
         return 100 * (tot(R) / tot(P) - 1)
