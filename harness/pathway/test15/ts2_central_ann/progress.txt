@@ -29,3 +29,7 @@
 2026-11-04T16:39Z step 2027 (horizon 2031) rc=0 NO OUTPUT
 2026-11-04T16:40:07Z node 16603 ended, peak memory 4.1 GB
 2026-11-04T16:40:07Z test15 central_ann piece ends: two_stage.sh rc=1, 1 of 15 steps done
+2026-11-04T21:33:41Z test15 central_ann piece, PID 7929, on 9ae2788 Test 15 results: central step 2032 finishe, BUILD_STAMP = '2026-11-04b, deadline 23:23Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 28G, memory free 14G
+2026-11-04T21:33:41Z two_stage.sh PID 7956
+2026-11-04T21:33Z two_stage K=4 N=25 FIRST=2026, shell PID 7956
+2026-11-04T21:33:56Z step node PID 7964

@@ -96,3 +96,4 @@
 2026-11-04T20:59Z two_stage K=4 N=25 FIRST=2026, shell PID 32636
 2026-11-04T20:59:59Z step node PID 32650
 2026-11-04T21:00:14Z solve started (highs_native.py 32709)
+2026-11-04T21:33:10Z solve (highs_native.py 32709) ended after about 1967s
