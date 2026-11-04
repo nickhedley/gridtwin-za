@@ -1206,7 +1206,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
         <p style="margin-top:8px"><strong>Risk and variability:</strong> the risk panel dispatches 60 synthetic years, each drawing both an outage path and a real weather year. Coal availability is drawn unit by unit around the EAF slider, with station-level trips that take several units out together, calibrated to Eskom&rsquo;s measured 2023&ndash;2025 availability; weather is drawn from twelve real years (2014&ndash;2025: Renewables.ninja/MERRA-2 wind at up to twelve sites per region, PVGIS-SARAH3 solar) and cycled so each year is used equally. The two are sampled independently, since unplanned outages track plant condition rather than the weather. Separately, <strong>Show wind &amp; solar extremes</strong> re-solves the scenario against the same 12 real weather years. A single weather year can over- or under-state both adequacy risk and curtailment.</p>
 
-        <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear programme solved in-browser with HiGHS. It minimises discounted system cost. Costs are in constant 2026 rands. Years are weighted at <span data-num="discRate"></span>% real (Meridian Economics&rsquo; review of the IRP 2023 uses 8.2% real). Each technology&rsquo;s capital is charged at its own real pre-tax cost of capital for state-backed procurement, set from South African bids (REIPPPP, BESIPPPP) with the gaps between technologies from the UK&rsquo;s 2025 hurdle-rate study: solar and wind <span data-num="cocPv"></span>%, lithium and pumped storage <span data-num="cocBatt"></span>%, gas <span data-num="cocCcgt"></span>%, nuclear <span data-num="cocNuclear"></span>%, transmission <span data-num="cocTx"></span>%, with interest during construction where a cost is quoted before financing. IRP 2025 uses one rate, 11.3%, without stating the basis (Gazette p.34, with all costs &lsquo;in January 2024 rand terms&rsquo;), which we treat as real. Results are tested with one rate for all, private finance for wind, solar and lithium, and higher and lower costs of capital. The optimiser runs from 2026 to a horizon of 2030, 2035 or 2040 (the Horizon control), using representative days rather than all 8,760 hours, so it sizes the build; <strong>Run the full model</strong> checks the resulting mix by unit and region. Reliability is checked year by year: where the hourly engine sheds more than the standard allows, the failing days are added to the optimisation as a stress window for the model year in which they failed, as NREL&rsquo;s ReEDS model checks resource adequacy for each solve year (<a href="https://github.com/NREL/ReEDS-2.0" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">ReEDS documentation</a>; Mai et al. 2024, <a href="https://doi.org/10.2139/ssrn.4841668" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">doi:10.2139/ssrn.4841668</a>). In national mode storage keeps an hourly state of charge: each representative day stands for a block of identical real days, its hourly level must stay between empty and full on the first and the last day of the block (which covers every day between them), and the level carries over from one representative day to the next. In regional mode it also decides where, subject to per-region GCCA headroom, real corridor limits, and a per-region annual build cap of 45% of the national rate.</p>
+        <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear programme solved in-browser with HiGHS. It minimises discounted system cost. Costs are in constant 2026 rands. Years are weighted at <span data-num="discRate"></span>% real (Meridian Economics&rsquo; review of the IRP 2023 uses 8.2% real). Each technology&rsquo;s capital is charged at its own real pre-tax cost of capital for state-backed procurement, set from South African bids (REIPPPP, BESIPPPP) with the gaps between technologies from the UK&rsquo;s 2025 hurdle-rate study: solar and wind <span data-num="cocPv"></span>%, lithium and pumped storage <span data-num="cocBatt"></span>%, gas <span data-num="cocCcgt"></span>%, nuclear <span data-num="cocNuclear"></span>%, transmission <span data-num="cocTx"></span>%, with interest during construction where a cost is quoted before financing. IRP 2025 uses one rate, 11.3%, without stating the basis (Gazette p.34, with all costs &lsquo;in January 2024 rand terms&rsquo;), which we treat as real. Results are tested with one rate for all, private finance for wind, solar and lithium, and higher and lower costs of capital. The optimiser runs from 2026 to a horizon of 2030, 2035 or 2040 (the Horizon control), using representative days rather than all 8,760 hours, so it sizes the build; <strong>Run the full model</strong> checks the resulting mix by unit and region. The optimiser here plans on equally weighted representative days. Our pathway results use clustered days, with stored energy tracked across all 365; this page moves to that method once those results are published. Reliability is checked year by year: where the hourly engine sheds more than the standard allows, the failing days are added to the optimisation as a stress window for the model year in which they failed, as NREL&rsquo;s ReEDS model checks resource adequacy for each solve year (<a href="https://github.com/NREL/ReEDS-2.0" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">ReEDS documentation</a>; Mai et al. 2024, <a href="https://doi.org/10.2139/ssrn.4841668" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">doi:10.2139/ssrn.4841668</a>). In national mode storage keeps an hourly state of charge: each representative day stands for a block of identical real days, its hourly level must stay between empty and full on the first and the last day of the block (which covers every day between them), and the level carries over from one representative day to the next. In regional mode it also decides where, subject to per-region GCCA headroom, real corridor limits, and a per-region annual build cap of 45% of the national rate.</p>
 
         <p style="margin-top:8px"><strong>What it is not:</strong> the instant model has no network constraints (the MIP does, across 10 regions) and no operating-reserve co-optimisation. Costs exclude existing-fleet capex, the existing network and retail; new wind, solar and offshore carry a charge for the network they need. It answers bulk adequacy, not distribution reliability, where most outages start. Everything runs in your browser, except the rooftop tool's address and roof lookups, which go to Google. The TDP is a published plan, not an investment commitment.</p>
       </div>
@@ -1354,7 +1354,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
 <script src="nodal/nodal_engine.js?v=26"></script>
-      <script src="nodal/nodal_dispatch.js?v=30"></script>
+      <script src="nodal/nodal_dispatch.js?v=31"></script>
       <script>
 
 
@@ -6065,13 +6065,14 @@ const FIXED = {
   // itself) X is 0. Rooftop keeps fixed tilt. bldExistPvTrackShare: null, the derived share on modelled days and 0 on the metered
   // profile's days; a number (EXIST_PV_TRK, a test) applies that share on every day.
   existPvMeteredCF:0.2558, bldExistPvTrackShare:null,
-  // Modelled wind's correction (user decision, 3 Nov 2026, message 684 (d): adopted in principle as a setting, off until Nick has the
-  // report; the uncorrected series stays as a sensitivity). 1: each modelled year's national wind goes through nodal/wind_corr_table.json
-  // (five constants fitted on ESK19679 alone, April 2022 to December 2025: the existing fleet's output inverted to an effective speed on
-  // the V90/2000 curve, a monthly cosine offset, speeds above 7.0 m/s compressed by 0.80, back through the curve; RESULTS, 684), new
-  // wind on the national modern-turbine map of the corrected series. The metered profile is not touched. Set it before the weather
-  // years are first used. 0: off.
-  wxWindCorr:0,
+  // Modelled wind's correction (user decisions: 3 Nov 2026, message 684 (d), a setting; 4 Nov 2026, messages 693 (a) and 696 (a), on by
+  // default with the six-constant table, for the twelve-year means, the tail, the stress windows and the engine; the uncorrected series
+  // stays as a sensitivity, 0). 1: each modelled year's national wind goes through nodal/wind_corr_table.json (six constants fitted on
+  // ESK19679 alone, April 2022 to December 2025: the existing fleet's output inverted to an effective speed on the V90/2000 curve, a
+  // monthly cosine offset faded in between 3.0 and 4.0 m/s so the calmest hours stay as stored, speeds above 7.0 m/s compressed by 0.80,
+  // back through the curve; RESULTS, 684 (d), 686 (b), 691 (b)), new wind on the national modern-turbine map of the corrected series.
+  // The metered profile is not touched. Set it before the weather years are first used.
+  wxWindCorr:1,
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -11432,7 +11433,9 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // Tracking solar re-measured 4 Nov 2026 (build 2026-11-03d): 0.28590 to 0.28595 (0.2859546), after the leap-year fix put 31 December
 // back in 2016, 2020 and 2024 (message 684 (b)). Wind (0.4250020) and fixed tilt (0.2236305) moved within validate_weather's 5e-5 and
 // are kept.
-const NEW_WIND_CF_12Y = 0.42499, NEW_PVTRK_CF_12Y = 0.28595;
+// Wind re-measured 4 Nov 2026 (build 2026-11-04b): 0.42499 to 0.42006 (0.4200610), the six-constant wind correction on by default
+// (messages 693 (a), 696 (a)). It follows the default: a run with the correction off (WX_WINDCORR=0) keeps this value.
+const NEW_WIND_CF_12Y = 0.42006, NEW_PVTRK_CF_12Y = 0.28595;
 // The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
 BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
 BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };
@@ -15678,23 +15681,25 @@ async function _loadWeatherYears(){
       }
     } catch (e) { /* handled below */ }
     try { await buildTxCurve(); } catch (e) { bldTxCurve = null; }
-    // Tracking solar for new utility solar (TODO 14aw). Optional: without it the tracking option raises an error.
-    try {
-      const rt = await fetch('nodal/profiles_solar_tracking.json?v=' + (window.DATA_V || '7'));
-      if (rt.ok) { bldSolarTrk = await rt.json(); bldBuildSolarTrkRatio(); }
-    } catch (e) { bldSolarTrk = null; }
-    // Modern-turbine wind for new wind (bldWindModern). Without it, new wind with the switch on raises an error.
-    try {
-      const rw = await fetch('nodal/profiles_wind_modern.json?v=' + (window.DATA_V || '7'));
-      if (rw.ok) { bldWindMod = await rw.json(); bldBuildWindModMap(); }
-    } catch (e) { bldWindMod = null; }
-    // The wind correction's table (wxWindCorr). Optional: without it the setting raises an error.
+    // The wind correction's table (wxWindCorr). Optional: without it the setting raises an error. Loaded before the tracking and
+    // modern-turbine twins (message 696 (a)): their set-up reads the national series, which with the correction on needs the table;
+    // loaded after them, the set-up threw, its catch dropped the tracking file, and new tracking solar fell back to the map (0.228).
     try {
       const rc2 = await fetch('nodal/wind_corr_table.json?v=' + (window.DATA_V || '7'));
       if (rc2.ok){ const d2 = await rc2.json();
         if (!(Array.isArray(d2.table) && d2.table.length === 12 && d2.table.every(r => r.length === d2.grid.n))) throw new Error('nodal/wind_corr_table.json: 12 rows of grid.n values');
         WIND_CORR_TABLE = { t: d2.table, n: d2.grid.n }; }
     } catch (e) { WIND_CORR_TABLE = null; console.error('[GridTwin]', e.message); }
+    // Tracking solar for new utility solar (TODO 14aw). Optional: without it the tracking option raises an error.
+    try {
+      const rt = await fetch('nodal/profiles_solar_tracking.json?v=' + (window.DATA_V || '7'));
+      if (rt.ok) { bldSolarTrk = await rt.json(); bldBuildSolarTrkRatio(); }
+    } catch (e) { bldSolarTrk = null; console.error('[GridTwin] tracking solar not loaded:', e.message); }
+    // Modern-turbine wind for new wind (bldWindModern). Without it, new wind with the switch on raises an error.
+    try {
+      const rw = await fetch('nodal/profiles_wind_modern.json?v=' + (window.DATA_V || '7'));
+      if (rw.ok) { bldWindMod = await rw.json(); bldBuildWindModMap(); }
+    } catch (e) { bldWindMod = null; console.error('[GridTwin] modern-turbine wind not loaded:', e.message); }
     if (!bldWxWeights || !bldWxWeights.wind || !bldWxWeights.solar) {
       bldWxWeights = null;
       console.warn('[GridTwin] Weather years loaded but nodal/regional_renewable_capacity.json '
@@ -22244,7 +22249,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-04a';
+const BUILD_STAMP = '2026-11-04b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
