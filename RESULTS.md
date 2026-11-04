@@ -21815,13 +21815,14 @@ New builds, cumulative from 2026, GW; coal standing; objective; the engine's uns
   the coal retired (rppool rows; wind is excluded). In all three runs every year's solar from 2029 equals that year's reused
   connections, apart from (1)'s 0.9, 1.8 and 0.4 GW in 2037, 2038 and 2040; the rest of 2040's solar is the committed minimum builds of
   2026-2028 (3.4 GW). Solar on a new connection, which pays the grid charge, is not built. c7 built 13.3 GW of solar off the pool after
-  2028 (33.2 GW in all: pool 16.5, minimum builds 3.4); S1 and S2 of the split build 19.3 and 19.2 GW off it. The fall from c7's 33.2 to
+  2028 (33.2 GW in all: pool 16.5, minimum builds 3.4); S1 and S2 of the split build 19.4 and 19.2 GW off it. The fall from c7's 33.2 to
   test 8's 23.9 GW is the loss of off-pool solar; where in the chain it goes is the split's steps 3-6.
 - Solar's reference moves solar (+4.1 GW in 2040 on modelled 2025's twin, of it 3.1 GW off the pool); wind's reference barely does
   (+0.4 GW). On modelled 2025's twin the LP values solar's energy at 82-92% of wind's; on the metered twin at 72-81%. The fixed twin is
   run (6).
 - Each mixed reference retires more coal early (1.17 and 0.57 GW against 0.22), builds more lithium, costs less, and misses the
-  standard (20 GWh): (1) in 2035 and 2040, (2) in 2040, both beyond twice the standard error. Test 8, metered both ways, meets it.
+  standard (20 GWh) on the mean: (2) in 2040 by more than twice the standard error; (1) in 2035 and 2040 and (2) in 2035 by less
+  (marginal). Test 8, metered both ways, meets it in all three years.
 - Not concluded: why a mixed reference retires more coal. Its days come from two different years, so the days' wind and solar no
   longer co-occur as metered; the extremes differ too.
 - For the reference recommendation: neither mixed reference is better on reliability; both are worse. The solar side of the
