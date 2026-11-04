@@ -19,6 +19,10 @@
   Rule 366: run (4) rerun in resumable pieces (presolve off, RESUME=1; scratchpad sol700/r4p.sh, job b0akz27xb, shell PID 308) beside
   the split's step 3 (decomp.sh "S3", job b12vd0rd3, shell PID 480), both from 00:02 SAST. Rerun r4p.sh at each notice until r4.json
   exists.
+- 00:21 SAST: a second restart, about 6 minutes after a reply (the 27 Oct pattern: restarts follow idle gaps; disk 19 GB free and memory
+  free, so not resources). Lost: run (4)'s first piece (cold, no basis yet), step 3's engine check (S3 solved: 715 s, against S2's 4,245 s
+  on the same-size LP; congestion off), step 4's solve. Relaunched 00:23 SAST: run (4) in 55-minute pieces (PIECE_S=3300; shell PID 245),
+  decomp.sh "S3 S4"; a 4-minute heartbeat keeps the session from idling.
 
 ## Messages 700-702 (4 Nov, to 17:40 SAST)
 
