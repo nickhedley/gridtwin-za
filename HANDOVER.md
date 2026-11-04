@@ -1,5 +1,18 @@
 # GridTwin ZA - handover, current state (kept current; updated 4 Nov 2026, 01:35 UTC)
 
+## Messages 691 and 692 (4 Nov; updated 11:20 SAST)
+
+- Done: 691 (a) named and 692 (a) fixed on #159 (pathcheck applies the case whose rates equal the recorded cocRates; the five preset
+  checks rerun; validate_pathway_presets 65/65); 692 (b) rpCumMW (a bug: it counts only the years a check covers; nothing on the page or in
+  the pack reads costGrid); 691 (b) calm figures; 691 (c) and 692 (c) the 2 x 2 with early retirement and the CONG_OFF check, and the
+  recommendation (metered 2025 reference, six-constant table); 691 (d) and 692 (d) limitations; 691 (e) the calm window (builds barely
+  move; the engine's calm tail does not); 691 (g) explanations, tests 2, 7 (VPP enrolment fix) and 16 (gas bound fix); 692 (e) the
+  schedule (design note 14.12); #159 merged with main, stamp 2026-11-04a, band re-pinned, panels regenerated; 'no coal retires early'
+  held in REVIEWER_PACK.
+- Running: #159's worker check (the long-suite job stopped at its 2-hour limit; the rest of the suite done); test 8 at 25 days (the first
+  try stopped at its piece deadline with no valid basis under a load of 6-8; rerunning on a quieter machine).
+- Next: test 8 at 55 days (alone); test 16 at 365 days; 692 (f) once claude/test15-two-stage exists and test 8 at 25 days is done.
+
 ## Message 691 (4 Nov, from 08:15 SAST)
 
 - (a) Named, 08:20 SAST: the engine-check cost gap is #154's cost-of-capital rename (build 2026-11-02r). pathcheck.js applies a
