@@ -21678,3 +21678,28 @@ the metered profile) on the fleet basis and on the earlier 'fixed' basis; scratc
 | Fossil-free 2040 | yes | 100,516 | 601.89 / 601.85 (+0.05) | 0 / 0 |
 
 The presets' builds are fixed, so only their dispatch moves; the visible changes go in the twin-fix pull request's visible-text section.
+
+### Fault log since 3 Nov 2026 (message 702 (c)): how long each was there, what it reached, why the suite missed it, the check that now catches its class
+
+Dates from the git history (claude/twin-fix db63be3 and its ancestors). 'Reached' lists what read the faulty value; 'figures' the
+published or reviewed figures it touched.
+
+| Fault | There from - to | Reached | Why the suite missed it | Check that now catches the class | Figures touched |
+|---|---|---|---|---|---|
+| Wind clock: Renewables.ninja rows are UTC, read as SAST (2 h early) | 6 Sep (multi-year wind, a00d95b) - 4 Nov (#159, d90ba63) | every modelled year's wind: engine draws, the LP's twelve-year means, tail and stress windows; risk panels | the clock checks look at whole hours on profiles_regional.json only; the diurnal-shape check on wind is a loose drift test | none yet: 702 (b)'s lag against metered | all c5-c7 runs, the presets' risk panels, the pack's figures |
+| Leap years: 29 Feb kept, 31 Dec dropped (2016, 2020, 2024) | 6 Sep - 4 Nov (#159) | those years' calendar after February, one day out | no calendar check | none yet: 702 (b) (capacity factor by month against the year's own calendar) | as above, small |
+| Metered tracking twin, level: the fixed-to-tracker gain counted the fleet's trackers twice (0.342 against 0.286) | 7 Oct (tracking option, 1de0a66; on in the presets from 17 Oct, 308c4ae, and in every pathway run with PVTRK=1) - 4 Nov (#159, K 0.7969) | new tracking solar on the metered profile's days: the page's presets and every build LP's calendar days (c5-c7 drew their days from the metered profile) | the LCOE-anchor check compares the modelled years' means only; the metered twin had no check of its own | validate_weather: the twin's mean equals the twelve-year mean (684 (c), and 701's shape check) | c5-c7 builds (solar), the presets |
+| Metered tracking twin, shape: 08:00 peak, midday dip, 4.7% of hours clipped | 7 Oct - claude/twin-fix (not yet merged) | as above; test 8's 23.9 GW of solar is the question it raises (700 (a)) | no shape check | validate_weather: the twin keeps a tracker's shape (fails on the old basis) | as above |
+| Cost-of-capital rename: 'central' became 'allbids', pathcheck applied the recorded name to the renamed case | 2 Nov (#154, b0f7999) - 4 Nov (070f976) | engine checks of runs recorded on the old names: the five presets' checks, 46 pathway files; c7 ('blended') not | validate_pathway_presets read stored checks; nothing re-ran pathcheck after #154 | pathcheck refuses a run whose recorded rates no case reproduces | the presets' engine-check costs (0.5-1.9%); none published |
+| rpCumMW counted only the checked years | 31 Oct (cf6050b) - 4 Nov (75f7203) | pathcheck's costGrid | no check on costGrid's parts | none (TODO: a check against the full-schedule sum) | one RESULTS figure (c6e grid-basis PV 2,323.1 against 2,317.5), correction pending |
+| FIX_FROM left VPP and geyser enrolment free | 2 Nov (vppp_, gy_ in #154) - 4 Nov (ed2a607) | single-year and two-stage LPs (the 2 x 2's LPs, test 15's steps) | FIX_FROM fixes build families by a list; new families were not added | test 7 (FIX_FROM reproduces the pathway), an acceptance test, not in the suite | the 2 x 2's objectives (builds unchanged: 2025 cells rerun equal) |
+| LIFT=all lifted gas and diesel after FOSSIL_END | 3 Nov (#157) - 4 Nov (fc10577) | test 16 only | a test option, untested | test 16 itself | none |
+| The wind table loaded after the tracking file; its catch dropped the file | 4 Nov, claude/wind-table only (3a7afc6) - fixed in the same branch before review | would have reached every tracking-solar result with the correction on | silent catch | validate_weather: the twins load with the correction on from page start (injected fault fails) | none (never merged) |
+| Enrolment round-off: -9e-11 MW stopped the engine | 2 Nov (#154) - claude/wind-table (c576132) | any run with VPP or GY on whose solver returns a hair below 0 (test 15 stopped) | the zero check had no tolerance; first reached with a new solver and LP | validate_lp: round-off read as 0, a larger negative stops (injected fault fails) | none |
+| The corrected wind series lacked its modern-turbine twin | 3 Nov (wind correction setting) - 3 Nov (fd2578b) | corrected-reference LPs (stopped with an error) | the setting was off by default and no check ran it on | none specific; the setting is now the default, so every check runs it | none |
+| Open: PVGIS solar years about 25 minutes late | 8 Sep (the +2 h shift, 9812f99; PVGIS's instantaneous stamps read as hourly means) - open | ten of twelve modelled years' solar: engine, LP twelve-year means, stress windows | whole-hour clock checks | 702 (b)'s lag check (to fail until Nick decides) | all runs; size in 701 (b)'s entry |
+| Open: 2024-2025 tracking twins 30-50 minutes early | from their fetch (Sep 2026) - open | new tracking solar in 2024-2025 and the metered twin's map (all years' tracking enters it) | none | 702 (b) | to size |
+
+Classes: clock and calendar (the first two and the open two): no check compared timing with a measured series at sub-hour resolution.
+Derived profiles (the twin): no check on a series the page builds rather than loads. Harness options (rename, rpCum, FIX_FROM, LIFT):
+tested by running, not by the suite. Load order and tolerance: silent catches and exact zero checks.
