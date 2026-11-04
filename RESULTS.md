@@ -21791,7 +21791,8 @@ COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1, env_c6a.sh, GAS_FIRST=20
 WX_WINDCORR=1 CONG_OFF=1, MAXP=1, parallel dual simplex (HIGHS_OPTS {"simplex_strategy":2,"threads":2}). (1) REP_REF=wind:metered,solar:2025,
 its own extremes (12 days, 20,161-163,187,188,194-196,214,218,358), LP key 795db303b4; (2) REP_REF=wind:2025,solar:metered, its own extremes
 (15 days, 14,113-115,161-163,187,188,217-219,273,359,364), key 1a65bbad82. Engine: pathcheck.js K=20 (the draws of 699 (d)'s table),
-2030/2035/2040, CONG_OFF=1 WX_WINDCORR=1. Scripts: scratchpad sol700/sol700.sh, sol700/mix.py; tvalue.py. 4 Nov 2026, 14:27-18:36 UTC.
+2030/2035/2040, CONG_OFF=1 WX_WINDCORR=1; test 8's column from the same draws (out/rel699/t8_k20). Scripts: scratchpad sol700/sol700.sh,
+sol700/mix.py; tvalue.py. 4 Nov 2026, 14:27-18:36 UTC.
 Solve times: (1) 6,600 s with nothing heavy beside it for all but 11 minutes; (2) about 6,800 s at load 5-7 (test 8: 4,527 s alone).
 
 New builds, cumulative from 2026, GW; coal standing; objective; the engine's unserved energy (mean, worst 1%, worst draw, GWh):
@@ -21806,9 +21807,9 @@ New builds, cumulative from 2026, GW; coal standing; objective; the engine's uns
 | Coal standing 2030 / 2035 / 2040 | 32.2 / 25.7 / 17.7 | 31.3 / 24.8 / 16.7 | 31.9 / 25.3 / 17.3 |
 | Coal retired early (from 2029) | 0.22 | 1.17 | 0.57 |
 | OCGT / diesel 2040 | 3.95 / 2.58 | 2.27 / 2.80 | 4.17 / 0.33 |
-| Engine 2030 | 1.1 / 21 / 22 | 2.2 / 46 / 85 | 2.1 / 26 / 93 |
+| Engine 2030 | 1.3 / 22 / 40 | 2.2 / 46 / 85 | 2.1 / 26 / 93 |
 | Engine 2035 | 15.9 / 147 / 168 | 24.0 / 174 / 286 (se 2.6) | 20.7 / 168 / 183 (se 2.2) |
-| Engine 2040 | 7.1 / 85 / 116 | 24.6 / 169 / 204 (se 2.3) | 29.2 / 177 / 253 (se 2.7) |
+| Engine 2040 | 6.7 / 69 / 116 | 24.6 / 169 / 204 (se 2.3) | 29.2 / 177 / 253 (se 2.7) |
 | Solar's energy value / wind's, 2030 / 2035 / 2040 | 0.79 / 0.77 / 0.78 | 0.82 / 0.83 / 0.92 | 0.79 / 0.72 / 0.81 |
 
 - Solar's level is set by the freed-coal pool. The LP lets new solar reuse a retired coal unit's connection, cumulatively no more than
