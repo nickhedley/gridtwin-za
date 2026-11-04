@@ -13,6 +13,39 @@
   try stopped at its piece deadline with no valid basis under a load of 6-8; rerunning on a quieter machine).
 - Next: test 8 at 55 days (alone); test 16 at 365 days; 692 (f) once claude/test15-two-stage exists and test 8 at 25 days is done.
 
+## Restart messages for the two sessions (messages 693 (c), 694, 695; written 4 Nov, 11:45 SAST). Paste each as one message.
+
+Restart, test 13 (branch claude/test13-mga):
+  Message 693 changes the basis. 1. Let your two interior-point runs finish: their solve times decide the solver for the 40 solves. If
+  either finishes inside a 2-hour piece, use interior point (HIGHS_SOLVER=ipm, crossover on) for everything below; if both run out,
+  record their times, stop, and report before going further. 2. Then stop any other run by its PID only. 3. `git fetch origin
+  claude/weather-fixes && git merge origin/claude/weather-fixes` (it brings harness/pathway/wx/wind_corr_table_calm6.json, the six-
+  constant table; WX_WINDCORR_TABLE in pathway_perfail.js; the FIX_FROM fix for the VPP and geyser enrolment; pathcheck's cost-of-capital
+  and rpCum fixes). 4. Settings: c7's as before (env_c6a.sh, GAS_FIRST=2035 SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1
+  GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 SOLVER=native), with REP_REF=2025 and the old REP_EXTREMES
+  replaced by: REP_REF=metered REP_EXTREMES=20,161,162,163,187,188,194,195,196,214,218,358 WX_WINDCORR=1
+  WX_WINDCORR_TABLE=pathway/wx/wind_corr_table_calm6.json CONG_OFF=1; and REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1 MAXP=1. 5. The
+  base first, in a fresh folder (out/mga2); its objective is MGA_FSTAR; then the 40 solves, 1% first for 2040 and 2030, then 2%. Record
+  each solve's wall time. 6. Nothing here reads ESK19679: the metered reference is profiles.json, the extremes are given, the table is
+  committed. Report in docs/test13-results.md as before, with the basis named.
+
+Restart, test 15 (branch claude/test15-two-stage-x2xqfl):
+  Message 693 changes the basis. 1. Stop every run now, by its PID only (the outputs on REP_REF=2025 are kept for the record but not
+  continued). 2. `git fetch origin claude/weather-fixes && git merge origin/claude/weather-fixes` (the FIX_FROM fix matters here:
+  two_stage.sh fixes each step's earlier builds through FIX_FROM, which left the VPP and geyser enrolment free until today; also the
+  six-constant table and LOOP_YEAR_ONLY). 3. In test15.sh, replace REP_REF=2025 and its REP_EXTREMES with: REP_REF=metered
+  REP_EXTREMES=20,161,162,163,187,188,194,195,196,214,218,358 WX_WINDCORR=1 WX_WINDCORR_TABLE=pathway/wx/wind_corr_table_calm6.json
+  CONG_OFF=1; new OUTDIRs (out/ts2_central, out/ts2_ff, out/ts2_central_ann). 4. The second solve you saw: env_c6.sh exports MAXP=6,
+  which two_stage.sh's MAXP=${MAXP:-1} passes on, and the loop then tests every year in the step's window, so a failing look-ahead year
+  (2031, 2032) adds windows and the step solves again. Design note 3.6 specified the loop on year y only. 5. Which to use: rolling-horizon
+  practice commits only the first year and re-solves the rest, which supports testing year y only; but with pace caps a look-ahead year's
+  shortfall cannot always be repaired in its own step, so testing the look-ahead years is the conservative option (it builds earlier).
+  Measure first, cheaply: the central's steps 2026 and 2027 once; copy out/ts2_central to out/ts2_central_y after step 2027; step 2028
+  in each, MAXP=6 unset LOOP_YEAR_ONLY in one and LOOP_YEAR_ONLY=1 in the other (FIRST=2028). Compare year 2028's builds, the number of
+  solves and the time. If every 2028 build is within 5% or 250 MW, use LOOP_YEAR_ONLY=1 for the runs; otherwise keep every year tested
+  (rule 366). Report the comparison in docs/test15-results.md. 6. Then the central, Fossil-free and the central with ANNUITY_TO=2040 as
+  before, pieces under 2 hours, PIDs recorded. Nothing reads ESK19679.
+
 ## Message 691 (4 Nov, from 08:15 SAST)
 
 - (a) Named, 08:20 SAST: the engine-check cost gap is #154's cost-of-capital rename (build 2026-11-02r). pathcheck.js applies a
