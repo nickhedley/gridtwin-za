@@ -21900,3 +21900,32 @@ windCorr bw6 from the run (logged). Solve 5,120 s beside run (6). 4 Nov 2026, 18
   meet it. The loop's own check passes at pass 1 (2040 19.3).
 - Which wind capacity factor is right for new wind is the question for the solar headline: the six-constant correction's 42.0% on new
   wind (the modelled twelve years, corrected) against the bids' 37.24% (BW6's typical bid; WIND_CORR=bw6). Not decided here.
+
+### Run (5) of message 700 (b), fixed twin: new wind at the bids' 37.24% and new tracking solar at the bids' 30.13%: utility solar 29.6 GW in 2040; 0.71 GW of coal retired early from 2030; misses the engine standard in 2040 (27.9 GWh) and narrowly in 2035
+
+Settings: as run (3) above plus PV_TRK_CF=0.3013 (new tracking solar scaled hour by hour, clipped at 1, so its twelve-year mean is BW6
+tracker bids' typical 30.13%; factor 1.053827 on the fixed twin's 28.60%); LP key ef9e48e158. The engine check takes windCorr bw6 and
+pvTrkCf from the run (logged). Solve 5,185 s beside run (4). 4 Nov 2026, 20:08-21:44 UTC. Run (4) (solar at the bids' figure alone) did
+not finish: still solving at 112 minutes when the container restarted (22:00 UTC); rerun in resumable pieces from 22:05 UTC.
+
+| | Run (6) (wind 42.0%, solar 28.6%) | Run (3) (wind 37.24%) | Run (5) (wind 37.24%, solar 30.13%) |
+|---|---:|---:|---:|
+| Objective, R bn | 1,523.5 | 1,572.3 | 1,543.8 |
+| Utility solar 2030 / 2035 / 2040 | 6.7 / 17.2 / 23.9 | 7.9 / 19.4 / 30.5 | 9.4 / 20.2 / 29.6 |
+| of which off the freed-coal pool after 2028, 2035 / 2040 | 0.0 / 0.2 | 2.2 / 6.8 | 2.3 / 5.2 |
+| Wind 2030 / 2035 / 2040 | 9.3 / 26.8 / 42.0 | 7.2 / 24.7 / 41.3 | 5.7 / 23.2 / 40.7 |
+| Lithium 2040, GW / GWh | 10.9 / 61.2 | 13.4 / 81.4 | 12.4 / 76.2 |
+| Coal retired early (from 2029) | 0.00 | 0.00 | 0.71 |
+| OCGT / diesel 2040 | 4.20 / 0.93 | 4.03 / 0.66 | 2.15 / 2.96 |
+| Engine 2030 (mean / worst 1% / worst draw, GWh) | 0.9 / 17 / 19 | 1.7 / 27 / 59 | 4.3 / 51 / 272 (se 1.3) |
+| Engine 2035 | 13.7 / 136 / 169 (se 1.7) | 19.0 / 197 / 221 (se 2.3) | 23.8 / 184 / 217 (se 2.6) |
+| Engine 2040 | 7.6 / 88 / 124 (se 1.0) | 7.0 / 95 / 128 (se 1.2) | 27.9 / 175 / 298 (se 2.8) |
+| The loop's own check (2 draws), years over 20 GWh | 2040 (21.6) | none | 2032-2034, 2038-2040 (to 32.4) |
+| Solar's energy value / wind's, 2030 / 2035 / 2040 | 0.78 / 0.79 / 0.92 | 0.74 / 0.72 / 0.81 | 0.73 / 0.69 / 0.74 |
+
+- Solar's own capacity factor moves solar little once wind is at the bids' figure (29.6 against run (3)'s 30.5 GW in 2040; more is
+  built by 2030, less off the pool later). Wind's capacity factor is the lever (run (3)).
+- Run (5) retires 0.71 GW of coal early (2030) and misses the standard on the mean in 2040 by more than twice the standard error and in
+  2035 by less (marginal); the loop's own check fails six years, so the full loop would add passes. As with runs (1) and (2): each pass-1
+  build that retires coal early has missed the standard; those that retire none have met it. An observation across five runs, not a
+  tested cause.
