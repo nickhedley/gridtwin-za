@@ -38,3 +38,15 @@
 2026-11-04T15:57Z two_stage K=4 N=25 FIRST=2026, shell PID 28963
 2026-11-04T15:57:16Z step node PID 28976
 2026-11-04T16:01:32Z solve started (highs_native.py 30081)
+2026-11-04T16:42:15Z solve (highs_native.py 30081) ended after about 2440s
+2026-11-04T16:45Z step 2029 (horizon 2033) rc=0 done
+2026-11-04T16:45:46Z node 28976 ended, peak memory 3.2 GB
+2026-11-04T16:45:46Z step node PID 8633
+2026-11-04T16:45:46Z under 4800s left: stopped at the step boundary (node 8633, just started)
+2026-11-04T16:45Z step 2030 (horizon 2034) rc=0 NO OUTPUT
+2026-11-04T16:46:01Z node 8633 ended, peak memory 0.0 GB
+2026-11-04T16:46:01Z test15 central piece ends: two_stage.sh rc=1, 4 of 15 steps done
+2026-11-04T16:46:07Z test15 central piece, PID 8779, on e41df43 Test 15 results: the annuity run's step 20, BUILD_STAMP = '2026-11-04b, deadline 18:36Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 28G, memory free 12G
+2026-11-04T16:46:07Z two_stage.sh PID 8806
+2026-11-04T16:46Z two_stage K=4 N=25 FIRST=2026, shell PID 8806
+2026-11-04T16:46:22Z step node PID 8817
