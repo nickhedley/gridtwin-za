@@ -21477,3 +21477,26 @@ table, adaptive draws, 2030-2040; worktree at claude/wind-table c576132; 4 Nov 1
 (1.6), 248.0; 2035 15.9 (1.8), 168.3; 2036 18.5 (1.8), 156.3; 2037 8.1 (1.5), 105.2; 2038 8.8 (1.3), 153.8; 2039 8.2 (1.7), 112.5; 2040 7.1
 (1.5), 116.2 (120-360 draws a year). 2036 is within one standard error of the limit. The loop's 2-draw figures differ year by year (2036
 12.6, 2040 18.8), as their sampling allows.
+
+### Test 8 and test 13 on the same LP give identical builds; test 12's binding limits on test 8's build (message 699 (e), (f))
+
+- Test 8 (main session) and test 13's base on 693's basis (its session, harness/out/mga2/base.json at 0f09450) solved LP 8e0651f38a
+  separately: objectives equal to the last digit (R1,521,521,735,393.8196) and every build in every year equal (wind, solar, rooftop,
+  lithium MW and MWh, vanadium, iron-air, CCGT, open-cycle gas and diesel, pumped storage, offshore, Cape wind, grid-forming,
+  condensers, VPP and geyser enrolment, early retirement, repurposed connections). Both used parallel dual simplex with the same options
+  (simplex_strategy 2, threads 2), which is deterministic, so they reached the same vertex: this says nothing about alternative optima.
+  Measuring those needs a solve held at the optimum's cost while moving one technology (test 13's machinery at a slack near 0) or a
+  different solve path; not run.
+- Test 12, first part, on test 8's solution (harness/pathway/repdays/test12.py: the LP's build bounds and limit rows, binding with a
+  non-zero shadow price; shadow prices in R million of present value per MW or MWh, negative where relaxing the limit lowers cost):
+  - Wind's yearly build limit binds in 10 of 15 years, 2029-2038 (2,500 MW in 2029-2030, 3,500 from 2031), shadow -0.20 to -1.53, largest
+    in 2031-2033 (c7: 7 of 15 years).
+  - Solar's yearly limit binds in 2030 (3,277 MW) and 2031 (3,506 MW), -0.11 each.
+  - Pumped storage: its yearly limit in 2038 (1,500 MW, -0.08) and the cumulative cap in 2039-2040 (-0.24, -0.19). Iron-air's 150 MW in
+    2040 (-0.04). The gas cap (CCGT plus open-cycle gas, 1,200 MW a year) in 2039-2040 (-0.003, -0.010).
+  - VPP enrolment at its cap in 2030-2037 and 2040 (-0.003 to -0.13).
+  - The committed floors in 2026-2028 (wind, solar, lithium MW and MWh; positive shadow prices: the floors cost money).
+  - Connection reuse (rpb_, rppool) and the early-retirement rows (rcmono, rcain) bind in most years; they are not build limits and are
+    listed in harness/out/test8p/test12.json in the main session's container.
+  - So wind's mix in 2029-2038 is limit-bound, not economic, under acceptance rule 2; solar's in 2030-2031. The lifted-limit and
+    other-pace runs (test 12's second part, seven runs) are not run.
