@@ -5,3 +5,4 @@ claim/
 *.pid
 *.progress
 mem.txt
+piece*.txt
