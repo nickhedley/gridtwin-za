@@ -97,7 +97,11 @@ harness/out/mga2/warm, d18 and nopre. No GitHub Actions.
 - Wind 2040 minimum from that basis, primal simplex (HIGHS_OPTS '{"simplex_strategy":4}', HIGHS_BASIS_IN set), from 16:47 UTC:
   piece 1, 16:47-18:40 UTC beside the 18-day MGA and then presolve off: stopped at its 6,692 s (111.5 min) limit, not solved; a
   valid basis kept (HiGHS takes no presolve when given a basis). Piece 2 resumed from it at 18:41 UTC (my call: the slot was free
-  and presolve off runs on regardless; both stop by the morning of 5 November).
+  and presolve off runs on regardless; both stop by the morning of 5 November). Piece 2, 18:41-20:33 UTC: not solved, basis kept.
+  Piece 3 from 20:34 UTC with HiGHS's log on (out/mga2/warm/highs_p3.log, off the repository): the reloaded basis starts slightly
+  primal infeasible (19,342 rows, sum 13,311; most likely the bound perturbation of primal simplex), feasible again within minutes;
+  at 4,106 s into piece 3 it is primal feasible with wind standing in 2040 at 26,892 MW (the base: 39,918 MW) and falling by about
+  12 MW a minute, with 31,316 dual infeasibilities left.
 - The run's log says "start from basis none (cold)": that line reports only pathway's own resume basis. The solver process was
   checked to hold HIGHS_BASIS_IN pointing at the saved base basis.
 
@@ -133,7 +137,10 @@ Wind 2040 minimum at 25 days, cold, parallel dual simplex on 2 threads with pres
 '{"simplex_strategy":2,"threads":2,"presolve":"off"}'), from 17:58 UTC beside the warm start; to be carried across pieces if a valid
 basis survives the limit:
 piece 1, 17:58-19:50 UTC beside the warm start: stopped at its 6,694 s (111.6 min) limit, not solved; a valid basis kept. Piece 2
-resumed from it at 19:51 UTC.
+resumed from it at 19:51 UTC; 19:51-21:43 UTC, not solved, basis kept. Piece 3 from 21:43 UTC with HiGHS's log on
+(out/mga2/nopre/highs_p3.log): dual feasible, 152,434 primal infeasibilities at its start, dual objective -5,260 (a lower bound on
+wind standing with the perturbed costs): far from the optimum after 224 minutes. HiGHS's log names simplex_strategy 2 as SIP, the
+task-parallel dual simplex, with concurrency 8 on 2 threads.
 
 ### Summary
 
