@@ -503,7 +503,10 @@ setTimeout(()=>{
       // Re-pinned 1 Nov 2026 on build 2026-11-01d for Deep only (user, message 599 (a)): Deep is now the no-gas build calibrated to 40 Mt
       // from 2035, with less wind and solar standing in 2035 (41.8 GW of wind with offshore and 38.2 GW of solar, against 43 and 52), so
       // it spills less (was 124.9; RESULTS 'Deep decarbonisation 2035 becomes the no-gas build'). Fossil-free is unchanged.
-      const PIN = { 'Deep decarbonisation 2035': 88.0, 'Fossil-free 2040': 319.1 };
+      // Re-pinned 4 Nov 2026 on build 2026-11-04a (user, message 691 (h)): the metered profile's tracking twin no longer counts the trackers
+      // twice (SOLAR_TRK_K, message 684 (c)), so the presets' new tracking solar runs at the twelve-year 0.286, not 0.342, and they spill
+      // less: Deep 88.0 to 71.3, Fossil-free 319.1 to 270.1 (RESULTS 'Message 684 decisions applied, and measured', item 2). Band unchanged.
+      const PIN = { 'Deep decarbonisation 2035': 71.3, 'Fossil-free 2040': 270.1 };
       const bad = [];
       for (const [name, pinned] of Object.entries(PIN)){
         const got = curt[name];
