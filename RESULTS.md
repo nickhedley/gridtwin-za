@@ -21657,9 +21657,19 @@ What a 25-minute lag does (the ten PVGIS years moved 25 minutes earlier, mean ov
 capacity factor at 17:00 SAST in winter (June-August) falls from 0.149 to 0.087 for fixed tilt and from 0.398 to 0.233 for tracking;
 at 16:00 from 0.377 to 0.282 and 0.553 to 0.488; in summer at 18:00 tracking from 0.424 to 0.297. The share of the day's energy after
 17:00 falls from 2.9% to 1.7% (fixed, winter) and 7.3% to 4.3% (tracking, winter). So the stored PVGIS years give solar into the start of
-the evening peak that the measured fleet does not deliver: for 17 GW of new trackers about 2.8 GW at 17:00 in winter. That lowers net
-load at the evening ramp in ten of the twelve modelled years, in the engine and in the LP's stress windows and twelve-year means, and so
-understates unserved. The engine's measure on test 8's fleet follows.
+the evening peak that the measured fleet does not deliver: for 17 GW of new trackers about 2.8 GW at 17:00 in winter, and moves the same energy
+earlier into the morning ramp. The engine measured it (below): on balance the lag raises unserved, so the stored years are conservative.
+
+The engine on test 8's fleet with the PVGIS years' solar (fixed tilt and tracking twin, 2014-2023) moved 25 minutes earlier
+(pathcheck.js SOLAR_SHIFT_MIN=25, a measurement; claude/solar-700 a87471b; otherwise as 'c7's fleet and test 8's on the same draws', K=20,
+the same seeds; 4 Nov 15:20-16:00 UTC). Unserved, GWh: mean (standard error) / worst 1% / worst, stored against moved:
+2030 1.27 (0.27) / 21.5 / 40.2 against 1.10 (0.25) / 22.3 / 36.1; 2034 18.22 (2.14) / 161.0 / 248.0 against 16.12 (2.04) / 146.2 / 248.0;
+2035 15.94 (1.75) / 146.8 / 168.3 against 14.16 (1.66) / 131.3 / 159.0; 2036 18.50 (1.78) / 128.6 / 156.3 against 16.69 (1.73) / 123.5 /
+143.2; 2040 6.67 (0.93) / 69.0 / 116.2 against 4.81 (0.84) / 65.9 / 104.0. Moving the solar to its measured timing lowers the mean by
+1.8-2.1 GWh (10-11%) in 2034-2036 and 1.9 GWh (28%) in 2040, on the same draws: the morning gain outweighs the evening loss on this fleet
+(where in the day the shortfalls fall is not yet checked). So the lag makes the modelled years less reliable, not more; it is
+conservative for adequacy, and the evening ramp's solar is overstated. A proposal for Nick, no change made: re-time the PVGIS years
+(their instantaneous values to hour means), which changes the LP key and every engine result.
 
 ### The twin fix on the page's presets (message 701 (c)): system cost moves by at most R0.45bn, unserved by at most 0.19 GWh
 
