@@ -10,6 +10,19 @@
   (shell b0umyuvro's chain): the metered 2024 runs, central and Fossil-free in parallel, each with the metered 2025 cell rerun on the same
   commit (scratchpad ref2024/refs2024.sh; outputs in gtza-fix harness/out/ref2024, local only). Then test 8 at 55 days, alone.
 
+## Status, 4 Nov 14:45 SAST: test 8 at 25 days passes at pass 1; route proposed
+
+- Test 8 (25 days, 693's basis, parallel dual simplex, alone): one pass, adequate; solve 4,527 s, run 4,864 s (RESULTS 'Solve times on
+  the 25-day pathway LP'). Test 13's base is the same LP and passes; its 40 solves started (0f09450). Summary pushed to test 15's
+  docs/test15-results.md (5ec7c64).
+- Running (from 14:36 SAST, worktree gtza-t8 at c576132): the metered 2024 cells with the metered 2025 comparison, central and
+  Fossil-free (job bnwzb7yb5); the engine's gate on test 8's build, 2030-2040 (job b1zuwt56n). Then the wind-table pull request's suite and
+  checks; then test 8 at 55 days overnight, parallel dual simplex with presolve off so each piece keeps a valid basis.
+- Route proposed for 10-13 Nov (Nick decides): every pathway one stage at 25 days on parallel dual simplex (about 81 minutes a pass; c7's
+  38 pathways about 51-61 hours, 17-20 a session on three); test 13's ranges on the base now running stand for the note if 25 days, 2040
+  and the metered 2025 reference hold; two stages for the central, Deep and Fossil-free as the headline levels only if test 15's full
+  central shows builds outside 5% / 250 MW of one stage with an engine check no worse; sensitivities always against the one-stage central.
+
 ## Message 698 (4 Nov, 14:15 SAST): restart messages onto claude/wind-table. Paste each as one message.
 
 The wind-table head (c576132 or later) changes no LP text for c7's settings: c7's 25-day pass-1 LP on 693's basis has key 8e0651f38a on
