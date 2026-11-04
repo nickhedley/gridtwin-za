@@ -98,6 +98,8 @@ __pycache__
 /nodal/private_pending_h2_2026.json
 /nodal/rooftop_ntcsa_2026.json
 /nodal/supply_area_split_draft.json
+# Under NTCSA's website terms and no longer read by the page (user, 3 Nov 2026, message 686 (e)).
+/nodal/corridor_electrical.json
 
 # public_data/: the page reads only ember_za.json
 /public_data/*.csv
