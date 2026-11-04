@@ -21251,3 +21251,22 @@ Settings: claude/weather-fixes; the single-year LPs and engine checks of 'Conges
    retirement causes it. (d) retires none and has no such draw. A single-year LP at pass 1 has no later pass to test the year in the
    engine, so it can retire coal the adequacy loop would keep; the reruns run the loop. Single-year results (690, 688 (a), the acceptance
    tests) are read with that caveat on their tails.
+
+### Acceptance tests 16 and 2 completed (message 691 (g)): the free fleet without idle gas; lvmin and the reserve rows
+
+Settings: claude/weather-fixes (uncommitted fix to pathway_perfail.js's liftLimits, committed with this entry's branch push); the
+acceptance LPs of 3-4 Nov (harness/out/accept); closure2.py; 4 Nov 2026, 06:40-07:00 UTC.
+
+- Test 16, the free fleet (corrected modelled 2025, five-constant; a method test, not a plan). Cause of the idle gas: LIFT=all lifted
+  every zero build bound to 1,000,000 MW, including gas and diesel after FOSSIL_END, whose annuities are truncated there, so they cost
+  nothing. Fix: liftLimits keeps b_ccgt, b_ocgt and b_ocgd at 0 after FOSSIL_END. Rerun at 25 days: R215.18bn (unchanged), gas and
+  diesel 0, every other 2040 build unchanged: wind 88,270 MW, utility solar 22,264, lithium 5,112 MW / 5,112 MWh, iron-air 8,566, new
+  pumped storage 17,428, grid-forming 990, rooftop 1,200. So the idle gas counted toward no row. The 365-day benchmark (R215.24bn, the
+  same 2040 builds to the MW) is unaffected for the same reason; its rerun with the fix is queued for a free slot.
+- Test 2, lvmin (rule 3 of 14.5). lvm_ rows hold lvmin at or below the level of every real day mapped to its representative day. On five
+  linked solutions (central metered and corrected, Fossil-free metered at 25 days; central metered at 105 and 365): no lvmin above its
+  mapped days' minimum; equal to it in 39 of 50, 42 of 50, 44 of 50, 141 of 210 and 730 of 730 groups; below it in the rest, and every
+  one of those (69 of 69 at 105 days, 8 of 8 at 25) has no binding battery or pumped-storage reserve row on its day, so its value there is
+  free and harmless.
+- Test 2, the reserve rows' duals: non-zero on some rows in every run (25 days, central metered: resv 16 of 768, rbe 11, rbq 2, rpe 4,
+  rpq 3; 365 days: resv 96 of 8,928, rbe 191, rbq 38, rpe 45, rpq 22), so the rows bind somewhere and are not vacuous.
