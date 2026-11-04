@@ -21593,3 +21593,28 @@ CONG_OFF=1, adaptive draws, on the six-constant and on the stored weather (WX_WI
   loop, which in a full pathway would add stress windows for failing years (at the cost of passes).
 - Both metered references carry the metered tracking twin's shape (the entry above). The reference stays provisional (700 (a)) until
   700 (b)'s runs report.
+
+### c7's fleet and test 8's on the same draws, 2030-2040 (message 699 (d)): both inside the standard; test 8's margin is far thinner
+
+Settings: pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 (six-constant), K=20 (20 draws a weather year, 240 a year,
+the same seeds for both fleets), YEARS=2030-2040; c7 (harness/pathway/c7/pathway_c7.json) and test 8 (harness/out/test8p/c7_d25.json);
+worktree at claude/wind-table c576132; 4 Nov 13:23-14:25 UTC. Unserved, GWh a year: mean (standard error) / worst 1% of draws / worst.
+
+| Year | c7's fleet | test 8's fleet |
+|---|---|---|
+| 2030 | 1.18 (0.28) / 20.8 / 45.0 | 1.27 (0.27) / 21.5 / 40.2 |
+| 2031 | 4.59 (1.49) / 105.4 / 230.5 | 8.58 (1.70) / 115.3 / 250.4 |
+| 2032 | 3.73 (0.84) / 74.5 / 105.1 | 11.57 (1.41) / 109.0 / 136.9 |
+| 2033 | 2.78 (0.77) / 53.4 / 129.2 | 11.81 (1.55) / 134.9 / 172.4 |
+| 2034 | 4.17 (0.95) / 63.9 / 118.5 | 18.22 (2.14) / 161.0 / 248.0 |
+| 2035 | 1.53 (0.37) / 37.4 / 49.4 | 15.94 (1.75) / 146.8 / 168.3 |
+| 2036 | 0.91 (0.22) / 22.3 / 32.2 | 18.50 (1.78) / 128.6 / 156.3 |
+| 2037 | 1.15 (0.40) / 41.5 / 59.1 | 10.73 (1.48) / 118.0 / 148.2 |
+| 2038 | 0.85 (0.36) / 9.1 / 63.8 | 8.83 (1.30) / 112.0 / 153.8 |
+| 2039 | 0.98 (0.35) / 26.1 / 73.6 | 9.26 (1.47) / 112.5 / 222.1 |
+| 2040 | 0.50 (0.14) / 7.3 / 25.6 | 6.67 (0.93) / 69.0 / 116.2 |
+
+- Both fleets meet the standard's 20 GWh mean in every year; c7's by a wide margin (it was built with extreme days counted about 30
+  times each), test 8's close to it in 2034-2036 (2034 18.2 and 2036 18.5, each within about one standard error). Its worst 1% of draws
+  is two to ten times c7's from 2032.
+- 2034-2036 on test 8's fleet with 75 draws a weather year (900 a year) follow, for a standard error near 1 GWh.
