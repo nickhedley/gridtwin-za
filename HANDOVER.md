@@ -11,6 +11,10 @@
   coal. Running: (6) (test 8's basis on the fixed twin) and (3) (new wind at the bids' 37.24%), from 20:35 SAST, jobs bg78yzvzs and
   b0tnxth44 (shell PIDs 29683, 29692; sol701 shells in gtza-twin out/sol701/progress.txt). Next: (4)+(5), split steps 3-6, metered 2024
   on the fixed twin (scratchpad ref2024/refs2024f.sh), 55 days.
+- 22:06 SAST: run (6) done (RESULTS 'Run (6) of message 701 (a)'): solar 23.9 GW in 2040 on the fixed twin, as test 8; engine standard
+  met in all three years; the loop's own two-draw check has 2040 at 21.6 GWh (a second pass in the full loop). Run (3) solved (solar
+  30.5 GW in 2040 with new wind at the bids' 37.24%); its engine check running in job b0tnxth44. Runs (4)+(5) from 22:07 SAST, job
+  bw02c2520 (shell PID 31815).
 
 ## Messages 700-702 (4 Nov, to 17:40 SAST)
 
