@@ -21926,6 +21926,6 @@ not finish: still solving at 112 minutes when the container restarted (22:00 UTC
 - Solar's own capacity factor moves solar little once wind is at the bids' figure (29.6 against run (3)'s 30.5 GW in 2040; more is
   built by 2030, less off the pool later). Wind's capacity factor is the lever (run (3)).
 - Run (5) retires 0.71 GW of coal early (2030) and misses the standard on the mean in 2040 by more than twice the standard error and in
-  2035 by less (marginal); the loop's own check fails six years, so the full loop would add passes. As with runs (1) and (2): each pass-1
-  build that retires coal early has missed the standard; those that retire none have met it. An observation across five runs, not a
-  tested cause.
+  2035 by less (marginal); the loop's own check fails six years, so the full loop would add passes. The three pass-1 builds that retire
+  0.5 GW or more of coal early (runs (1), (2), (5)) have each missed the standard; test 8 (0.22 GW) and runs (6) and (3) (none) met it.
+  An observation across six runs, not a tested cause.
