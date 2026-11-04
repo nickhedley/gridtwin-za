@@ -10,6 +10,22 @@
   (shell b0umyuvro's chain): the metered 2024 runs, central and Fossil-free in parallel, each with the metered 2025 cell rerun on the same
   commit (scratchpad ref2024/refs2024.sh; outputs in gtza-fix harness/out/ref2024, local only). Then test 8 at 55 days, alone.
 
+## Message 697 (4 Nov, 13:25 SAST)
+
+- (a) Test 8's interior-point run stopped by PID at about 5,400 s, unfinished (13:11 SAST). Test 8 now runs in the pathway script with
+  the loop (MAXP=6), on parallel dual simplex (HIGHS_OPTS simplex_strategy 2, threads 2), one pass per piece (JOB_PASSES=1), alone:
+  worktree /home/user/gtza-t8 (main d90ba63 plus 118bd45's highs_native.py, uncommitted), scratchpad test8p.sh, output
+  gtza-t8/harness/out/test8p. Relaunch at each piece's end until the run writes c7_d25.json. Then the metered 2024 runs (scratchpad
+  ref2024/refs2024.sh, central and Fossil-free in parallel), then the wind-table pull request's suite, then test 8 at 55 days.
+- (b) Test 13's base fails the standard at pass 1 (2031-2040); the loop is the design's repair (design note 3.3: 'more passes than c7's
+  one'); test 8 reports each pass. Answer in the report.
+- (d) #159 merged (main d90ba63). Wind-table branch claude/wind-table (worktree /home/user/gtza-wt) from main: table, default on,
+  NEW_WIND_CF_12Y 0.42006, a load-order fix (with the correction on from page start the tracking file was dropped; harness runs
+  unaffected), DATA_V 10, stamp 2026-11-04b, one site-copy line. Suite, panels, presets' engine checks and visible text to follow.
+- (e) Test 15's stop: the solver returned vppp_2028 at -9e-11 MW; index.html's 'vppEnrolGWh must be 0 or more' has no tolerance below
+  zero (the cap check above has 1e-4 GWh); gyEnrolMW the same. It can reach the reruns (VPP=1, GY=1 in every run). Proposed fix in the
+  wind-table pull request, on Nick's yes.
+
 ## Message 696 (4 Nov, 13:05 SAST)
 
 - (a) Wind-table pull request: the table and its default only (FIXED.wxWindCorr 1, the six-constant table in nodal/wind_corr_table.json);
