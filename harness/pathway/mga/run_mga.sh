@@ -14,7 +14,7 @@ export GAS_FIRST=2035 SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1
 export REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1 MAXP=1 DUMP=0 LPCACHE=$O/lpc RESUME=1
 J=${J:-1}; EST=$(( ${EST_MIN:-75} * 60 )); END=$(( $(date +%s) + ${PIECE_MIN:-112} * 60 )); export JOB_DEADLINE=$END
 rm -rf $O/claim/*   # one piece at a time: claims left by a stopped piece are stale
-echo "$(date -u +%FT%H:%MZ) piece, shell PID $$, J=$J EST_MIN=$((EST/60)) deadline $(date -u -d @$END +%H:%MZ), on $(git log --oneline -1 | cut -c1-50)" >> $P
+echo "$(date -u +%FT%H:%MZ) piece, shell PID $$, J=$J EST_MIN=$((EST/60)) solver ${HIGHS_SOLVER:-simplex} opts ${HIGHS_OPTS:-none} basis-in ${HIGHS_BASIS_IN:-none} deadline $(date -u -d @$END +%H:%MZ), on $(git log --oneline -1 | cut -c1-50)" >> $P
 ( while sleep 60; do echo "$(date -u +%H:%MZ) $(free -m | awk '/Mem:/{print "used "$3" avail "$7" MB"}') | $(ps -o pid=,rss=,etime=,comm= -C node,python3 | awk '{printf "%s %s %dMB %s; ", $1, $4, $2/1024, $3}')" >> $O/mem.txt; done ) &
 MEMPID=$!; echo "$(date -u +%H:%MZ) memory sampler PID $MEMPID" >> $P
 run1(){ local name=$1; shift; local out=$O/$name.json t0=$(date +%s)
