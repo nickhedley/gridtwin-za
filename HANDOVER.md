@@ -1,4 +1,14 @@
-# GridTwin ZA - handover, current state (kept current; updated 4 Nov 2026, 01:35 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 4 Nov 2026, 10:15 UTC)
+
+## Status, 4 Nov 12:15 SAST
+
+- #159 is ready for Nick's merge decision (692 (a)). Suite (ESK19679 absent): node 1,020/1,029, audit 88/88, eng5 5/6, against main's
+  1,018/1,029; known failures 6 (turn-up) and 11 (preset generator) now pass; no new failure; the other nine and eng5's check 6 as on
+  main. The PR description lists them by name. validate_pathway_presets 65/65 is the cost-of-capital rerun (suite_04a's
+  pathway_presets.log, 60/65, is the run before the fix).
+- Running: test 8 at 25 days on 693's basis, interior point (shell PID 9326, from 11:41 SAST, alone on the machine). Queued behind it
+  (shell b0umyuvro's chain): the metered 2024 runs, central and Fossil-free in parallel, each with the metered 2025 cell rerun on the same
+  commit (scratchpad ref2024/refs2024.sh; outputs in gtza-fix harness/out/ref2024, local only). Then test 8 at 55 days, alone.
 
 ## Messages 691 and 692 (4 Nov; updated 11:20 SAST)
 
