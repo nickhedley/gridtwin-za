@@ -47,3 +47,6 @@ fleet_by_region_v2*.csv
 harness/pathcheck_ret.gen.js
 ninja_leapday_cache.json
 pvgis_leap_cache.json
+# Test 15 live run folders (harness/pathway/test15.sh): LP caches, logs and partial outputs while the runs go; the finished step
+# files are copied to harness/pathway/test15/ and committed from there.
+harness/out/ts_*/
