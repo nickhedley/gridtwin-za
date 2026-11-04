@@ -1,0 +1,24 @@
+2026-11-04T07:44Z piece, shell PID 641, J=1 EST_MIN=75 deadline 09:36Z, on f9e3e4c Stored risk panels regenerated on build 20
+07:44Z memory sampler PID 659
+2026-11-04T07:44Z base start
+2026-11-04T08:49:19 ipm test start, shell PID 2861
+08:49Z ipm test python PID 2864
+2026-11-04T09:21Z base rc=75 pid 666 97 min not done
+2026-11-04T09:22:32 ipm crossover-off test start, shell PID 3991
+09:22Z ipm crossover-off python PID 3994
+2026-11-04T09:32:37 ipm crossover-off end rc=0 605 s
+2026-11-04T09:33:45 hedge nopresolve start opts {"presolve":"off"} limit 6600 s, shell PID 4185
+09:33Z hedge nopresolve python PID 4188
+2026-11-04T09:33:45 hedge pami2 start opts {"simplex_strategy":2,"threads":2} limit 6600 s, shell PID 4195
+09:33Z hedge pami2 python PID 4198
+2026-11-04T10:37:56 hedge pami2 end rc=0 3851 s: Optimal 1511417623845.253; basis kept
+2026-11-04T10:39:29 base solution from hedge pami2 placed in lpc/71091a4183...json
+2026-11-04T10:39:41 ipm test end rc=0 6622 s
+2026-11-04T10:39Z piece, shell PID 5082, J=1 EST_MIN=80 solver simplex opts {"simplex_strategy":2,"threads":2} basis-in none deadline 12:34Z, on 118bd45 highs_native.py: HIGHS_OPTS, further HiGHS
+10:39Z memory sampler PID 5095
+2026-11-04T10:39Z base start
+2026-11-04T10:45Z base rc=0 pid 5106 6 min done
+2026-11-04T10:45Z wind_2040_min_0.01 start (slot 1)
+2026-11-04T10:46:30 lptest warmprimal start lp wind_2040_min_0.01.lp opts {"simplex_strategy":4} basis-in /tmp/claude-0/-home-user-gridtwin-za/a8437756-7a13-5784-b26a-109d8c53ca84/scratchpad/pami2.basis.json limit 6600 s, shell PID 5640
+10:46Z lptest warmprimal python PID 5644
+2026-11-04T11:01:00 message 693: stopped by PID: piece 2 runner 5082, worker 5503, sampler 5095, wind_2040_min_0.01 node 5509 / python 5603 / logger 5510 (message 691 basis); hedge nopresolve 4185/4188; lptest warmprimal 5640/5644
