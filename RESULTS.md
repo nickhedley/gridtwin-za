@@ -21782,3 +21782,50 @@ Flags and causes (gaps above about 5%, or a clear shape error):
 New against validate_benchmarks: it checks annual totals against Ember 2025 (coal, nuclear, wind, utility solar, hydro, imports, CO2,
 wind's capacity factor fleet-normalised) and plausibility ranges; the monthly and hour-of-day comparisons, pumped storage, gas and diesel,
 exports, load shedding and every 2026 figure are new here. The twin fix does not reach these two runs (no new tracking solar).
+
+### Runs (1) and (2) of message 700 (b), old twin: utility solar 28.0 GW in 2040 on modelled 2025's solar, 24.3 on metered solar (test 8: 23.9); both retire more coal early, cost R14-20bn less, and miss the engine standard in 2035 or 2040. From 2029 utility solar is built almost only on connections freed by coal
+
+Settings: claude/solar-700 a87471b (worktree gtza-t8; claude/wind-table c576132 plus the harness for 699-701), old metered twin (basis
+'fixed', K 0.7969); test 8's basis: c7's settings (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3
+COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1, env_c6a.sh, GAS_FIRST=2035), REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1
+WX_WINDCORR=1 CONG_OFF=1, MAXP=1, parallel dual simplex (HIGHS_OPTS {"simplex_strategy":2,"threads":2}). (1) REP_REF=wind:metered,solar:2025,
+its own extremes (12 days, 20,161-163,187,188,194-196,214,218,358), LP key 795db303b4; (2) REP_REF=wind:2025,solar:metered, its own extremes
+(15 days, 14,113-115,161-163,187,188,217-219,273,359,364), key 1a65bbad82. Engine: pathcheck.js K=20 (the draws of 699 (d)'s table),
+2030/2035/2040, CONG_OFF=1 WX_WINDCORR=1. Scripts: scratchpad sol700/sol700.sh, sol700/mix.py; tvalue.py. 4 Nov 2026, 14:27-18:36 UTC.
+Solve times: (1) 6,600 s with nothing heavy beside it for all but 11 minutes; (2) about 6,800 s at load 5-7 (test 8: 4,527 s alone).
+
+New builds, cumulative from 2026, GW; coal standing; objective; the engine's unserved energy (mean, worst 1%, worst draw, GWh):
+
+| | Test 8 (metered both) | (1) wind metered, solar modelled 2025 | (2) wind modelled 2025, solar metered |
+|---|---:|---:|---:|
+| Objective, R bn | 1,521.5 | 1,501.1 | 1,507.4 |
+| Utility solar 2030 / 2035 / 2040 | 7.0 / 17.4 / 23.9 | 8.0 / 18.4 / 28.0 | 7.3 / 17.8 / 24.3 |
+| of which off the freed-coal pool, 2040 | 3.4 | 6.5 | 3.4 |
+| Wind 2030 / 2035 / 2040 | 8.5 / 26.0 / 39.9 | 9.1 / 26.6 / 39.5 | 9.3 / 26.8 / 42.1 |
+| Lithium 2040, GW / GWh | 8.7 / 43.3 | 12.8 / 70.8 | 11.8 / 55.1 |
+| Coal standing 2030 / 2035 / 2040 | 32.2 / 25.7 / 17.7 | 31.3 / 24.8 / 16.7 | 31.9 / 25.3 / 17.3 |
+| Coal retired early (from 2029) | 0.22 | 1.17 | 0.57 |
+| OCGT / diesel 2040 | 3.95 / 2.58 | 2.27 / 2.80 | 4.17 / 0.33 |
+| Engine 2030 | 1.1 / 21 / 22 | 2.2 / 46 / 85 | 2.1 / 26 / 93 |
+| Engine 2035 | 15.9 / 147 / 168 | 24.0 / 174 / 286 (se 2.6) | 20.7 / 168 / 183 (se 2.2) |
+| Engine 2040 | 7.1 / 85 / 116 | 24.6 / 169 / 204 (se 2.3) | 29.2 / 177 / 253 (se 2.7) |
+| Solar's energy value / wind's, 2030 / 2035 / 2040 | 0.79 / 0.77 / 0.78 | 0.82 / 0.83 / 0.92 | 0.79 / 0.72 / 0.81 |
+
+- Solar's level is set by the freed-coal pool. The LP lets new solar reuse a retired coal unit's connection, cumulatively no more than
+  the coal retired (rppool rows; wind is excluded). In all three runs every year's solar from 2029 equals that year's reused
+  connections, apart from (1)'s 0.9, 1.8 and 0.4 GW in 2037, 2038 and 2040; the rest of 2040's solar is the committed minimum builds of
+  2026-2028 (3.4 GW). Solar on a new connection, which pays the grid charge, is not built. c7 built 13.3 GW of solar off the pool after
+  2028 (33.2 GW in all: pool 16.5, minimum builds 3.4); S1 and S2 of the split build 19.3 and 19.2 GW off it. The fall from c7's 33.2 to
+  test 8's 23.9 GW is the loss of off-pool solar; where in the chain it goes is the split's steps 3-6.
+- Solar's reference moves solar (+4.1 GW in 2040 on modelled 2025's twin, of it 3.1 GW off the pool); wind's reference barely does
+  (+0.4 GW). On modelled 2025's twin the LP values solar's energy at 82-92% of wind's; on the metered twin at 72-81%. The fixed twin is
+  run (6).
+- Each mixed reference retires more coal early (1.17 and 0.57 GW against 0.22), builds more lithium, costs less, and misses the
+  standard (20 GWh): (1) in 2035 and 2040, (2) in 2040, both beyond twice the standard error. Test 8, metered both ways, meets it.
+- Not concluded: why a mixed reference retires more coal. Its days come from two different years, so the days' wind and solar no
+  longer co-occur as metered; the extremes differ too.
+- For the reference recommendation: neither mixed reference is better on reliability; both are worse. The solar side of the
+  metered reference is the misshapen twin, now fixed; run (6) is the comparison that counts. Tests 8, 13 and 15 stand as method and
+  timing only.
+- Timing for the route: these two LPs took 1.5 times test 8's solve on a quiet machine. The 10-13 Nov estimate of about 81 minutes a pass
+  needs a margin; run (6)'s time is the next measure on the fixed twin.
