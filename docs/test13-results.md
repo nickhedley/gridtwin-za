@@ -132,7 +132,8 @@ REP_DAYS=18: the 12 extremes kept, the typical days cut from 13 to 6; every othe
 Wind 2040 minimum at 25 days, cold, parallel dual simplex on 2 threads with presolve off (HIGHS_OPTS
 '{"simplex_strategy":2,"threads":2,"presolve":"off"}'), from 17:58 UTC beside the warm start; to be carried across pieces if a valid
 basis survives the limit:
-running (limit 6,694 s, to 19:50 UTC).
+piece 1, 17:58-19:50 UTC beside the warm start: stopped at its 6,694 s (111.6 min) limit, not solved; a valid basis kept. Piece 2
+resumed from it at 19:51 UTC.
 
 ### Summary
 
