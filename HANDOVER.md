@@ -1,5 +1,12 @@
 # GridTwin ZA - handover, current state (kept current; updated 4 Nov 2026, 01:35 UTC)
 
+## Message 691 (4 Nov, from 08:15 SAST)
+
+- (a) Named, 08:20 SAST: the engine-check cost gap is #154's cost-of-capital rename (build 2026-11-02r). pathcheck.js applies a
+  pre-rename run's 'central' as today's 'central' (solar and wind 6.0%); the page maps it to 'allbids' (5.5%, the run's recorded rates).
+  The page is right; with the case mapped pathcheck gives the page's R601.856bn. 46 pathway files are affected (c6e family, hypothetical
+  presets); c7's are not. Fix proposed, not made (RESULTS 'The engine-check cost gap named').
+
 ## Status for Nick, morning of 4 Nov (message 689; written 03:35 SAST)
 
 Finished (all five items of 689)

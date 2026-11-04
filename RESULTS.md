@@ -21176,3 +21176,29 @@ checks were run (chain_c6e.sh's check(), 120 runs a year); validate_pathway_pres
   (IRP 2035), +0.82% (Deep 2035), +1.70% (Fossil-free 2040, of which +1.69% is the older gap above); unserved down in Least-cost (1.40 to
   1.05 GWh) and Deep (0.60 to 0.06); coal -1.3 to -4.7 TWh and curtailment -0.4 to -3.6 TWh in 2030-2035 (existing solar's metered level
   and the tracking twin; the 684 entry has the presets' page values).
+
+### The engine-check cost gap named (message 691 (a)): pathcheck.js applies a pre-rename run's 'central' cost-of-capital case under its new meaning; the page applies the rates the run was built on. The page is right
+
+Settings: claude/weather-fixes a54dc15 (index.html as b0f7999's for this purpose); pathcheck.js LNG=1 GRID=1 YEARS=2040 on
+harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json; a probe of bldCoc by case; 4 Nov 2026, 06:00-06:20 UTC (08:00-08:20 SAST).
+
+- Which part of #154: build 2026-11-02r's renaming of the cost-of-capital cases (messages 634 and 636): the old 'central' (solar and wind
+  at 5.5%) became 'allbids', and the new 'central' puts solar and wind on the closed-project base (6.0%). Every other rate is unchanged.
+- The run recorded cocCase 'central' with cocRates pv 0.055 and wind 0.055 (and batteries, iron-air, vanadium, pumped storage 0.068, gas
+  0.08, nuclear 0.085: equal to today's 'allbids' in every technology). pathcheck.js applies the recorded name (bldApplyCocCase('central'),
+  line 139), so it charges wind and solar at 6.0%; the page, the preset generator (gen_pathway_presets.py, 'legacy') and the validator
+  map a pre-rename 'central' at 5.5% to 'allbids'.
+- Measured: the same check with the run's case set to 'allbids' gives R601.856bn, the page's figure to the rand (pathcheck as recorded:
+  R612.066bn). Unserved, coal, curtailment and every energy figure are identical between the two; only cost moves (+R10.21bn, 1.7%).
+- Which side is right: the page. The run was optimised on the 5.5% rates it recorded; checking it at 6.0% charges it for capital it
+  was not built on.
+- Reach: 46 of the 236 pathway files recorded 'central' at 5.5% (the c6e family, the IRP pairs and the hypothetical presets). Any
+  pathcheck.js run on them from b0f7999 (2 Nov, 22:31 UTC) on carries wind and solar capital at 6.0%: the five 03d preset checks of 4 Nov
+  among them. c7's runs recorded 'blended' and are not affected; nothing in tonight's engine, 690, 688 or acceptance results is.
+- The other leads, separate from the cost: rpCumMW (19,314 against the 31c file's 25,570) and gridOptBn (R58.42bn against 56.15) differ
+  from the 31c file at every commit from 72bb1fc on, with cost equal to the 31c file's there; rpCumMW already 19,314 at cf6050b (31 Oct,
+  21:15 UTC), gridOptBn moved between cf6050b (R64.49bn) and 72bb1fc, where the page change is 1dc9119 (the grid charge at R364). Both
+  enter costGrid, not cost. Not chased further.
+- Proposed fix (not made; message 691 (a): no stored file regenerated to clear the checks): pathcheck.js maps a recorded case to the
+  page's case whose rates equal the recorded cocRates for every technology (the generator's 'legacy' rule, made general), and refuses a
+  run whose recorded rates no case reproduces; then the five preset checks rerun. Nick decides.
