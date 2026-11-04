@@ -21650,8 +21650,12 @@ What the timestamps mean:
   this session's network). The model reads every value as the mean of the hour beginning at its label (centre HH:30), so an
   instantaneous value from early in the hour is placed late; about 25 minutes measured.
 - 2024-2025 are Renewables.ninja MERRA-2 (fetch_missing_solar_years.py), hourly means: their fixed tilt measures on time.
-- 2024-2025's tracking twins run 30-50 minutes early against the same fleet while their fixed tilt does not: the twins were built
-  differently from their fixed series (to trace in build_solar_tracking.py); not concluded.
+- 2024-2025's tracking twins run 30-50 minutes early against the same fleet while their fixed tilt does not. Cause (traced 4 Nov,
+  16:30 UTC; nodal/profiles_solar_tracking.json meta.borrowed_years and build_solar_tracking.py): 2024 and 2025 are outside SARAH3's
+  coverage, so each twin is that year's own fixed-tilt series (MERRA-2, on time) times the PVGIS tracking-over-fixed ratio by region,
+  month and hour averaged over 2014-2023 (the PVGIS years, about 25 minutes late). The ratio's large dawn and dusk values are applied a
+  quarter-hour or more out of step, which lifts the morning: the same kind of fault as the metered twin's. Re-timing the PVGIS years
+  would remove both: the PVGIS years' lag directly, and the 2024-2025 twins' through the ratio (and the twin maps rebuilt from them).
 
 What a 25-minute lag does (the ten PVGIS years moved 25 minutes earlier, mean over 2014-2023; scratchpad solarlag/s2_evening.py):
 capacity factor at 17:00 SAST in winter (June-August) falls from 0.149 to 0.087 for fixed tilt and from 0.398 to 0.233 for tracking;
