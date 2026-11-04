@@ -11,9 +11,14 @@
 import json, sys, numpy as np
 import os
 D = json.load(open(sys.argv[1])); out = sys.argv[2]; runs = sys.argv[3:]; REF = os.environ.get('REF', '2025')
-Sr = D if REF == 'metered' else D['wy'][REF]
-dem = np.array(D['demand']).reshape(365, 24); w0 = np.array(Sr['wind']).reshape(365, 24); wn = np.array(Sr['windN']).reshape(365, 24)
-s0 = np.array(Sr['solar']).reshape(365, 24); st = np.array(Sr['solarT']).reshape(365, 24); F = D['fleet']; cong = 1 - F['congPct'] / 100
+# REF='wind:<source>,solar:<source>' (FIXED.bldRepRefYear's mixed form, message 681 (g); message 700 (b)): wind from one, solar from the other.
+src = lambda r: D if r == 'metered' else D['wy'][r]
+if REF.startswith('wind:'):
+    _p = dict(x.split(':') for x in REF.split(',')); Sw, Ss = src(_p['wind']), src(_p['solar'])
+else:
+    Sw = Ss = src(REF)
+dem = np.array(D['demand']).reshape(365, 24); w0 = np.array(Sw['wind']).reshape(365, 24); wn = np.array(Sw['windN']).reshape(365, 24)
+s0 = np.array(Ss['solar']).reshape(365, 24); st = np.array(Ss['solarT']).reshape(365, 24); F = D['fleet']; cong = 1 - F['congPct'] / 100
 def roll(v, n):
     s = np.array([v[i:i + n].sum() for i in range(365 - n + 1)]); return int(s.argmax())
 def crit(net, fw, d_y):
