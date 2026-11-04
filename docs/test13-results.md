@@ -95,7 +95,9 @@ harness/out/mga2/warm, d18 and nopre. No GitHub Actions.
   4,672 s wall, 4,638.8 s by HiGHS's clock, parallel dual simplex on 2 threads; objective 1,521,521,735,393.8196, identical to
   out/mga2/base.json. The basis (26 MB) is kept in the scratchpad, off the repository.
 - Wind 2040 minimum from that basis, primal simplex (HIGHS_OPTS '{"simplex_strategy":4}', HIGHS_BASIS_IN set), from 16:47 UTC:
-  running (limit 6,692 s, to 18:39 UTC).
+  piece 1, 16:47-18:40 UTC beside the 18-day MGA and then presolve off: stopped at its 6,692 s (111.5 min) limit, not solved; a
+  valid basis kept (HiGHS takes no presolve when given a basis). Piece 2 resumed from it at 18:41 UTC (my call: the slot was free
+  and presolve off runs on regardless; both stop by the morning of 5 November).
 - The run's log says "start from basis none (cold)": that line reports only pathway's own resume basis. The solver process was
   checked to hold HIGHS_BASIS_IN pointing at the saved base basis.
 
