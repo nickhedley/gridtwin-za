@@ -21899,4 +21899,4 @@ windCorr bw6 from the run (logged). Solve 5,120 s beside run (6). 4 Nov 2026, 18
 - Reliability: 2035's mean is 19.0 GWh against the 20 GWh standard, inside it by less than one standard error (marginal); 2030 and 2040
   meet it. The loop's own check passes at pass 1 (2040 19.3).
 - Which wind capacity factor is right for new wind is the question for the solar headline: the six-constant correction's 42.0% on new
-  wind (the modelled twelve years, corrected) against the bids' 37.24% (BW6's typical bid, Nick's source). Not decided here.
+  wind (the modelled twelve years, corrected) against the bids' 37.24% (BW6's typical bid; WIND_CORR=bw6). Not decided here.
