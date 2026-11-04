@@ -21617,4 +21617,6 @@ worktree at claude/wind-table c576132; 4 Nov 13:23-14:25 UTC. Unserved, GWh a ye
 - Both fleets meet the standard's 20 GWh mean in every year; c7's by a wide margin (it was built with extreme days counted about 30
   times each), test 8's close to it in 2034-2036 (2034 18.2 and 2036 18.5, each within about one standard error). Its worst 1% of draws
   is two to ten times c7's from 2032.
-- 2034-2036 on test 8's fleet with 75 draws a weather year (900 a year) follow, for a standard error near 1 GWh.
+- 2034-2036 on test 8's fleet with 75 draws a weather year (K=75, 900 a year; same settings; 14:26-15:06 UTC): 2034 16.75 (standard
+  error 1.17; 95% interval to 19.05), worst 1% 161.3, worst 330.9; 2035 14.77 (0.96; to 16.65), 160.4, 236.5; 2036 17.65 (0.99; to 19.59),
+  152.6, 225.9. 2036 stands: its 95% interval lies below 20 GWh, by 0.4. So do 2034 and 2035.
