@@ -133,6 +133,10 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 - No inertia or system-strength requirement is in the build. The optimiser never pays for synchronous condensers or grid-forming batteries, which flatters renewable-heavy results. The engine enforces a 6 GW synchronous minimum and the build optimiser does not.
 - Freed coal connections carry no grid cost.
 - Coal is committed by a cost-weighing rule (4-hour blocks, cheapest first, kept on when restarting costs more), not a unit-commitment optimisation (PLEXOS and peers solve a mixed-integer commitment over a rolling horizon).
+- The build LP commits coal as one continuous quantity per hour (no whole units, no minimum down time), so it meets the 2026 practice
+  floor (units at 0.715 of capacity to 2029) by committing less coal all day: in 2027-2029 it sees the floor as starts and part-load
+  (R0.75-2.0bn a year) and curtails nothing, while the engine, which commits whole units, curtails 3-7 TWh a year at the floor. The LP
+  understates the floor's curtailment, and what ending it would free, against the engine (message 692 (d)).
 - Synchronous floor as a national MW total (6 GW, plus grid-forming batteries at 0.30 of their power), not a minimum number of synchronous units by region, as in AEMO's system strength practice.
 - Reserve is limited by ramp rates.
 - Perfect foresight in dispatch: The model assumes the grid operator has perfect foresight over the next 48 hours for batteries and pumped storage, 24 hours for coal commitment, 12 hours for coal ramping, and a week for long-duration storage options.
