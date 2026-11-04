@@ -141,30 +141,30 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   (03a1f3ee3d), pass 2 cold again with a 5,404 s limit.
 
 <!-- test15_summary start -->
-#### ts2_central (6 of 15 steps)
+#### ts2_central (7 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
 ts2_central: new build by year, MW (lithium also MWh)
 
-| Year | wind | solar | lithium MW | lithium MWh | grid-forming |
-|---|---:|---:|---:|---:|---:|
-| 2026 | 287 | 156 | 360 | 1,440 | 0 |
-| 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 |
-| 2028 | 2,500 | 1,129 | 0 | 660 | 139 |
-| 2029 | 2,500 | 3,063 | 395 | 0 | 332 |
-| 2030 | 2,500 | 3,277 | 2,219 | 892 | 1,292 |
-| 2031 | 3,500 | 3,506 | 2,466 | 10,105 | 625 |
-| 2032 |  |  |  |  |  |
-| 2033 |  |  |  |  |  |
-| 2034 |  |  |  |  |  |
-| 2035 |  |  |  |  |  |
-| 2036 |  |  |  |  |  |
-| 2037 |  |  |  |  |  |
-| 2038 |  |  |  |  |  |
-| 2039 |  |  |  |  |  |
-| 2040 |  |  |  |  |  |
-| Total | 13,246 | 13,251 | 5,841 | 14,716 | 2,388 |
+| Year | wind | solar | lithium MW | lithium MWh | OCGT diesel | grid-forming |
+|---|---:|---:|---:|---:|---:|---:|
+| 2026 | 287 | 156 | 360 | 1,440 | 0 | 0 |
+| 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 | 0 |
+| 2028 | 2,500 | 1,129 | 0 | 660 | 0 | 139 |
+| 2029 | 2,500 | 3,063 | 395 | 0 | 0 | 332 |
+| 2030 | 2,500 | 3,277 | 2,219 | 892 | 0 | 1,292 |
+| 2031 | 3,500 | 3,506 | 2,466 | 10,105 | 0 | 625 |
+| 2032 | 3,500 | 3,752 | 1,521 | 9,921 | 325 | 909 |
+| 2033 |  |  |  |  |  |  |
+| 2034 |  |  |  |  |  |  |
+| 2035 |  |  |  |  |  |  |
+| 2036 |  |  |  |  |  |  |
+| 2037 |  |  |  |  |  |  |
+| 2038 |  |  |  |  |  |  |
+| 2039 |  |  |  |  |  |  |
+| 2040 |  |  |  |  |  |  |
+| Total | 16,746 | 17,003 | 7,362 | 24,637 | 325 | 3,297 |
 
 ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -176,6 +176,7 @@ ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept u
 | 2029 | 33,564 | 3,463 |  |
 | 2030 | 28,970 | 3,463 |  |
 | 2031 | 27,413 | 3,463 | 3,463 |
+| 2032 | 25,760 | 3,463 | 3,463 |
 
 ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -187,7 +188,8 @@ ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2029 | 2033 | 2 | adequate | serial, then parallel, 2 threads | 41.9, 52.4, 38.8, 40.7 | 48.4 | 3 | 3.4 | pass 1: 2032: 21.3 / 20<br>pass 2: none | 567.399 |
 | 2030 | 2034 | 2 | adequate | parallel, 2 threads | 35.5, 38.1 | 81.7 | 2 | 4.4 | pass 1: 2032: 21.5 / 20<br>pass 2: none | 590.059 |
 | 2031 | 2035 | 2 | adequate | parallel, 2 threads | 35.0, 36.6 | 80.5 | 2 | 3.7 | pass 1: 2032: 21.5 / 20<br>pass 2: none | 618.858 |
-| 2032 | | | not finished |  |  | | 1 | | | |
+| 2032 | 2036 | 2 | adequate | parallel, 2 threads | 39.4, 39.6 | 88.1 | 2 | 3.4 | pass 1: 2032: 20.8 / 20<br>pass 2: none | 654.249 |
+| 2033 | | | not finished |  |  | | 1 | | | |
 
 ts2_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -199,6 +201,7 @@ ts2_central: the adequacy test on each step's own year y at its final pass (mean
 | 2029 | 0.44 / 20 | 0.43 / 20 | 2018 (3.3) |
 | 2030 | 1.81 / 20 | 1.81 / 20 | 2022 (16.6) |
 | 2031 | 18.89 / 20 | 18.89 / 20 | 2022 (123.8) |
+| 2032 | 20.79 / 20 | 12.87 / 20 | 2021 (103.1) |
 
 #### ts2_ff (7 of 15 steps)
 
@@ -322,6 +325,9 @@ Cumulative new build, MW (lithium also MWh), built 2026 to the year
 | lithium MWh | 2030 | 4,611 | 6,039 |  |
 | lithium MWh | 2035 |  |  |  |
 | lithium MWh | 2040 |  |  |  |
+| OCGT diesel | 2030 | 0 | 0 |  |
+| OCGT diesel | 2035 |  |  |  |
+| OCGT diesel | 2040 |  |  |  |
 | grid-forming | 2030 | 1,763 | 2,246 |  |
 | grid-forming | 2035 |  |  |  |
 | grid-forming | 2040 |  |  |  |
