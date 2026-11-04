@@ -618,8 +618,11 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
  const LIFT = process.env.LIFT || null; if (LIFT && !['yearly', 'all'].includes(LIFT)) throw new Error('LIFT must be yearly or all');
  function liftLimits(lp){ if (!LIFT) return lp; const ALL = LIFT === 'all';
    const T = 'wind|pv|batt|vrfb|ironair|ccgt|ocgt|ocgd|off|phes|phel';
+   // After FOSSIL_END no gas or diesel may be built (their annuities are truncated there, so a lifted bound let the free fleet record
+   // 1,000,000 MW of each at zero cost; message 691 (g), test 16): those bounds stay at 0.
+   const fossilAfter = v => { const f = v.match(/^b_(ccgt|ocgt|ocgd)_(\d{4})$/); return FOSSIL_END !== null && !!f && +f[2] > FOSSIL_END; };
    let out = lp.replace(new RegExp('^ (-?[0-9.]+) <= (b_(?:' + T + ')_\\d{4}) <= ([0-9.]+)$', 'gm'), (m, lo, v, up) =>
-       (+up > 0 || ALL) ? ' ' + (ALL ? '0' : lo) + ' <= ' + v + ' <= 1000000' : m)
+       fossilAfter(v) ? ' 0 <= ' + v + ' <= 0' : (+up > 0 || ALL) ? ' ' + (ALL ? '0' : lo) + ' <= ' + v + ' <= 1000000' : m)
      .replace(/^ (-?[0-9.]+) <= (eb_batt_\d{4}) <= ([0-9.]+)$/gm, (m, lo, v) => ' ' + (ALL ? '0' : lo) + ' <= ' + v + ' <= 10000000');
    const drop = ALL ? /^ (gascap_|tcap_|phesrate_|offcap_|phescap_|iatot|mbmin_|limin_|lemin_|gasmin|gmin_)[A-Za-z0-9_]*:.*$\n?/gm : /^ (gascap_|tcap_|phesrate_)[A-Za-z0-9_]*:.*$\n?/gm;
    return out.replace(drop, ''); }
