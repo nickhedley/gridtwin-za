@@ -21229,3 +21229,25 @@ years. Five-constant: v_k 7.0, alpha 0.80, beta 0.340, A 0.536, phi 11.54; six-c
   other, in different directions by test.
 - For the rest of the record (level, monthly shape, spread, top end), the corrections hold out of sample in every test and stored does
   not (RESULTS 'Message 684 decisions applied, and measured', item 3; CALM.md section 3).
+
+### Two discrepancies explained before the reruns (message 691 (g)): the coal floor in the LP and the engine; the 84 GWh draw on the LP's 2030 fleets
+
+Settings: claude/weather-fixes; the single-year LPs and engine checks of 'Congestion curtailment in single-year 2030 and 2035' and
+'The coal practice floor ending before 2027 or 2028' (harness/out/single); 4 Nov 2026, 06:30-06:45 UTC.
+
+1. The coal floor: the LP sees a cost, the engine sees curtailment. The LP's coal is one continuous committed quantity per hour (cm),
+   with cgen (output at most cm), cmin (output at least 0.715 cm with the floor, 0.54 without), cmax (cm within available coal) and a
+   linear start-up row (su at least the rise in cm, charged in the objective); no minimum down time, no whole units. With the floor it
+   commits less coal through the whole day and runs it harder: 2027, 19,721 MW committed at 10:00-14:00 against 22,472 without (2029:
+   18,269 against 20,421), with 115 GW of starts a year against none (2029: 223 against 40), and midday coal output about the same (14.8
+   against 14.1 GW; 2029, 13.4 against 12.4). So the floor costs it starts and part-load (R0.75-2.0bn a year) and curtails nothing. The
+   engine commits whole units with the 24-hour minimum down time, the evening-peak forecast and reserve, so more units stay on through the
+   midday trough, each at 0.715 or more, and coal output sits above residual demand: 3-7 TWh of curtailment a year. The engine's is the
+   figure calibrated to 2026 (the floor's 0.715 is set so its replay's lowest midday coal share matches Eskom's measured median); the LP
+   understates the floor's curtailment and so undervalues what ending it would free.
+2. The 84 GWh draw: the single-year 2030 LPs (a)-(c) retire 347-483 MW of coal early (rc_2030) and add lithium (1,925-1,992 MW, 4.4-4.7
+   GWh, against c7's 1,110 MW and 1.1 GWh); their worst draw is in weather year 2016 (mean 10.1 GWh there against 4.1-4.4 on c7's fleet).
+   With (b)'s 347 MW of coal put back (sched earlyRetMW 0, coalMW 32,433) the worst draw is 31.2 GWh and 2016's mean 3.9: the early
+   retirement causes it. (d) retires none and has no such draw. A single-year LP at pass 1 has no later pass to test the year in the
+   engine, so it can retire coal the adequacy loop would keep; the reruns run the loop. Single-year results (690, 688 (a), the acceptance
+   tests) are read with that caveat on their tails.
