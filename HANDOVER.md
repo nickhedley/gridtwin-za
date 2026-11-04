@@ -13,6 +13,29 @@
   try stopped at its piece deadline with no valid basis under a load of 6-8; rerunning on a quieter machine).
 - Next: test 8 at 55 days (alone); test 16 at 365 days; 692 (f) once claude/test15-two-stage exists and test 8 at 25 days is done.
 
+## Message 693 (4 Nov): decided basis, the input freeze and the order to main (written 11:50 SAST)
+
+- Decided (693 (a)): the six-constant correction everywhere; metered 2025 reference; CONG_OFF=1 for the reruns; final after 693 (b),
+  the metered 2024 check (running after test 8).
+- Input freeze (693 (e)): everything still due to change c7's pass-1 LP key before the reruns, with a date (SAST):
+  1. #159 merged (fixed weather files, tracking twin, existing solar level, NEW_PVTRK_CF_12Y): ready 4 Nov after its worker check (about
+     12:15); key on its data 7fb5ff6a1e.
+  2. The wind table and its default (six-constant into nodal/wind_corr_table.json, FIXED.wxWindCorr on), with the reference and the
+     method defaults the reruns use (FIXED.bldRepRefYear 'metered', bldRepExtremeDays the metered six-constant days, bldRepWeights
+     'clustered', bldStorageLink 1): one pull request, 5 Nov, about 12:00, after 693 (b).
+  3. The day count (test 11, after tests 8, 13 and 15): 9 Nov.
+  4. The horizon (2040 or 2045, J4): Nick's decision, by 9 Nov; 2045 changes every key.
+  5. The rerun settings themselves (CONG_OFF=1, the solver, pieces): in the rerun scripts, 9 Nov; CONG_OFF changes the key, the solver
+     does not.
+  Nothing else is planned to change the key; anything new goes to after the note unless Nick decides otherwise.
+- Test 13 as the note's ranges (693 (d)): valid if its base LP is the reruns' central LP, key for key. Invalidated by: a day count other
+  than 25; any change in the freeze list after its base is dumped (2 and 4 above in particular); the reruns' central needing a second pass
+  (its final LP would carry loop windows the base does not); a solver change that moves the base's objective (it does not, to 1e-14).
+  If its base is dumped after item 2 lands and the central passes at pass 1, 14.12's extra rerun comes off 11-13 Nov.
+- Order to main (693 (g)): #159 when its worker check is in (4 Nov, about 12:15 SAST); then the wind-table pull request (5 Nov, about
+  12:00, with suite, stored panels, the presets' engine checks rerun on the corrected wind and visible text); both before the private
+  switch and the reruns.
+
 ## Restart messages for the two sessions (messages 693 (c), 694, 695; written 4 Nov, 11:45 SAST). Paste each as one message.
 
 Restart, test 13 (branch claude/test13-mga):

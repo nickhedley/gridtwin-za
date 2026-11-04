@@ -21387,3 +21387,16 @@ the stress windows, and the engine. Best practice is clear on both, so rule 366'
   on calm hours (69 against 78 hours below 5% a year; five-constant 48). Stated with it: on c7's fixed fleet the correction lowers the
   engine's unserved (2040 mean 1.23 to 0.77 GWh), no table reproduces the long metered calms, and the lull stress test stays as the check
   reported apart.
+
+### Decision recorded (message 693 (a), 4 Nov 2026): the six-constant correction, the metered 2025 reference, CONG_OFF=1 for the reruns; the correction's effect both ways
+
+Nick's decision: the six-constant wind correction (harness/pathway/wx/wind_corr_table_calm6.json; its own pull request moves it into
+nodal/wind_corr_table.json with the default) for the twelve-year means, the tail, the stress windows and the engine; metered 2025 as the
+reference (REP_REF=metered, its extremes 20, 161-163, 187, 188, 194-196, 214, 218, 358); CONG_OFF=1 for the reruns. Final after the
+metered 2024 check (693 (b)). The correction's effect, both ways, as measured on the fixed weather files:
+- On c7's own fleet (built on the stored series), the engine's unserved falls: 2040 mean 1.23 to 0.77 GWh (worst draw 35.5 to 27.2),
+  2035 1.12 to 1.01, 2030 1.29 to 1.06 (RESULTS 'The engine on the fixed weather files').
+- On builds made with the correction (the 2 x 2, metered reference, single-year 2040 at 365 days), the same builds checked on the
+  corrected weather show more unserved than on the stored: the central 4.33 to 5.13 GWh (worst 78.9 to 106.8), Fossil-free 8.33 to 9.44
+  (57.9 to 69.7). So the correction is not one-directional for reliability: it flatters a fleet built without it and is harder on a
+  fleet built with it. Each figure carries its run's caveat (single-year LPs have no adequacy loop).
