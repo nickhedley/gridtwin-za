@@ -21388,6 +21388,14 @@ the stress windows, and the engine. Best practice is clear on both, so rule 366'
   engine's unserved (2040 mean 1.23 to 0.77 GWh), no table reproduces the long metered calms, and the lull stress test stays as the check
   reported apart.
 
+Added 4 Nov 2026 (message 698 (d)): the six-constant cells ran with NEW_WIND_CF_12Y at 0.42499, the uncorrected twelve-year mean; with the
+correction on it is 0.42006 (validate_weather, build 2026-11-04b on claude/wind-table). It did not enter their LPs: c7 and the reruns price
+new wind at BW6's bid capex (bldWindCase 'bw6' since c6b), and the constant feeds only the wind LCOE anchor shown on the page and the
+tariff-derived 'central' wind case, which no run uses. Checked on the LP text: c7's 25-day pass-1 LP on 693's basis has the same key,
+8e0651f38a, on main d90ba63 with the table loaded by the harness and on claude/wind-table (c576132) with the constant at 0.42006. So the
+recommendation cannot move on this account and no check cell is needed. (The 4 Nov 13:25 SAST report said these runs priced wind about 1%
+above its tariff; that was wrong.)
+
 ### Decision recorded (message 693 (a), 4 Nov 2026): the six-constant correction, the metered 2025 reference, CONG_OFF=1 for the reruns; the correction's effect both ways
 
 Nick's decision: the six-constant wind correction (harness/pathway/wx/wind_corr_table_calm6.json; its own pull request moves it into
@@ -21400,3 +21408,46 @@ metered 2024 check (693 (b)). The correction's effect, both ways, as measured on
   corrected weather show more unserved than on the stored: the central 4.33 to 5.13 GWh (worst 78.9 to 106.8), Fossil-free 8.33 to 9.44
   (57.9 to 69.7). So the correction is not one-directional for reliability: it flatters a fleet built without it and is harder on a
   fleet built with it. Each figure carries its run's caveat (single-year LPs have no adequacy loop).
+
+### The wind-table pull request's checks (messages 697 (e), 698 (a), (e)): test 15's stop was enrolment round-off, now read as 0; with the correction on from page start the page dropped the tracking file, now fixed; each fix proved by a check that fails on an injected fault
+
+Settings: claude/wind-table c576132 (BUILD_STAMP 2026-11-04b; from main d90ba63), ESK19679.csv absent; injected faults run against a
+temporary root that links the worktree with one replacement in index.html (scratchpad inject/inject.sh). 4 Nov 2026, 11:20-12:05 UTC.
+
+- Test 15's stop at step 2028 (its session, 4 Nov 09:40 UTC; both its runs on REP_REF=2025): the solver returned vppp_2028 at -9e-11 MW,
+  inside its feasibility tolerance, and the engine's 'vppEnrolGWh must be 0 or more' stopped the run; the cap check above it has a 1e-4
+  GWh tolerance, the zero check none, and gyEnrolMW the same. Every rerun has VPP=1 and GY=1, and the loop and pathcheck read these values
+  from each solution, so it could stop any rerun. Fix: bldEnrolPrimal reads a value below 0 by no more than 1e-6 MW as 0 and stops on a
+  larger negative, in bldBuildToState, bldStateForYear and pathway_perfail.js's schedule. No LP text changes. validate_lp's new check
+  passes (60/60); with one read site reverted it fails (59/60: vppEnrolGWh -2.25e-13 read through, -0.01 MW not stopped).
+- Load order: with FIXED.wxWindCorr 1 from page start, the tracking twin's set-up (bldBuildSolarTrkRatio, through solarTrkMeteredK) read
+  the national series before nodal/wind_corr_table.json had loaded, threw, and its catch set bldSolarTrk to null without a message; new
+  tracking solar then fell back to the map, twelve-year 0.2279 against 0.2860. The table now loads first and both catches log. Harness
+  runs that set WX_WINDCORR=1 were not affected, since the page has loaded its weather years before the setting: probed on main d90ba63
+  with c7's settings, tracking 0.28595 with the correction on (pathway_perfail.js loading, 4 Nov 11:17 UTC).
+- New wind's twelve-year mean with the six-constant correction: 0.4200610 (0.42500 off); NEW_WIND_CF_12Y 0.42499 to 0.42006. It moves the
+  wind LCOE anchor on the page, not the LP (the 2 x 2 entry above, 698 (d)): c7's pass-1 LP key is 8e0651f38a on both heads.
+- validate_weather, two new checks (68): the twelve-year constants against the means with the correction forced on; the tracking and
+  modern-turbine twins loaded with the correction on from page start. Injected faults, each failing: NEW_WIND_CF_12Y 0.42499 (65/68),
+  NEW_PVTRK_CF_12Y 0.28695 (65/68), the old load order (64/68: trkFile false, tracking 0.2279).
+- Other load steps whose catch fails silently (index.html at c576132; not changed here). Model inputs: the weather years as a whole
+  (_loadWeatherYears, bldWeatherYears false), the locational transmission curve (buildTxCurve, bldTxCurve null), the regional profiles
+  for the full model (profiles_regional.json), the P90 regional multi-year file (line 2213), offshore profiles
+  (profiles_offshore_regional.json), the coal availability traces (coal_availability_trace.json; the Markov draw stands), the regional
+  headroom lookup and the TDP projects (twice, one setting bldTdp false). Display only: sa_solar_grid.json, provincial_mix.json,
+  ember_za.json, eskom_tariff_components.json, nersa_registrations.json, reea_projects.json, project_register.json and the map layers
+  (transmission lines, substations, headroom summary, substation bands, REDZ). TODO 14mu: a check for each model input, after the note.
+
+### Solve times on the 25-day pathway LP on 693's basis (messages 695, 696, 697): interior point did not finish; parallel dual simplex
+timed alone
+
+Settings: c7's settings (c6a, GAS_FIRST=2035, c7's own), REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1 REP_REF=metered
+REP_EXTREMES=20,161,162,163,187,188,194,195,196,214,218,358 WX_WINDCORR=1 with the six-constant table, CONG_OFF=1; pass-1 LP key
+8e0651f38a (703,433 rows class; the same key on claude/wind-table). Native HiGHS 1.15.1.
+
+- Interior point (crossover on), alone on the container (load 1.0): stopped by PID at about 5,400 s, unfinished (4 Nov 09:41-11:11
+  UTC). Test 13 reports the same on its old-basis base: the 110-minute limit with crossover, status Unknown without.
+- Serial dual simplex: 94 and 96.5 minutes without finishing or a valid basis (test 8 under load; test 13 alone, 5,791 s).
+- Parallel dual simplex (simplex_strategy 2, threads 2): test 13's old-basis base solved in 3,851 s, outside the run (ba310d4). Test 8 on
+  693's basis, in the pathway script with the loop on (MAXP=6, one pass per piece), started 11:13 UTC: its times are added below as each
+  pass finishes.

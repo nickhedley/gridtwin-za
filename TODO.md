@@ -912,6 +912,15 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mu. From messages 691-698 (4 Nov 2026; HANDOVER sections of 4 Nov; RESULTS entries of 4 Nov). Done: #159 merged (d90ba63); 692 (a)
+cost-of-capital fix; 693 (a) decision recorded; 698 (a) enrolment round-off fix and (e) the two weather checks, on claude/wind-table.
+Open: (a) the wind-table pull request (suite, stored panels, the presets' engine checks, visible text), 5 Nov about 12:00 SAST; (b) test 8
+at 25 days on parallel dual simplex with the loop (passes, each pass's time, the engine by year, the final mix), then the metered 2024
+runs and the metered 2025 comparison on claude/wind-table, then test 8 at 55 days; (c) the route for 10-13 Nov on test 8's and test 13's
+times; (d) restart messages for tests 13 and 15 onto claude/wind-table; (e) after the note: a check for each model input whose load step
+fails silently (RESULTS 'The wind-table pull request's checks', the list); (f) the rpCumMW figure in RESULTS (c6e group checks at two
+commits); (g) the site line on the optimiser's method goes in with the new presets, without a date.
+
 14mt. From the night of 3-4 Nov (messages 687-690; RESULTS entries of 3-4 Nov; HANDOVER status of 4 Nov). Done: 689 items 1-5; PR #159
 open; 690 and 688 (a) reported. Open: (a) the engine-check cost gap (presets' checks 0.5-1.9% above the page), bisected to b0f7999
 (#154, c7's inputs): which part, and which side is right, before any rerun's costs are read; (b) Nick: re-pin the preset curtailment band (71.3, 270.1 TWh) or not; (c)
