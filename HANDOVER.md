@@ -23,7 +23,8 @@ Decisions needed, with recommendations
    settles from 18. The reference matters more than the count: corr5 and metered give very different 2040 builds.
 5. #159: re-pin the preset curtailment band to 71.3 and 270.1 TWh (cause: the twin fix), or not.
 6. The engine-check cost gap: the presets' engine checks now cost 0.5-1.9% more than the page; it is on main already (Fossil-free 2040
-   R612.05bn on b0f7999 against the page's R601.86bn); candidate 28af9d5 (#153); bisect next, before any rerun's costs are read.
+   R612.05bn on b0f7999 against the page's R601.86bn). Bisected: it comes with b0f7999 (#154, c7's inputs); #153 gives the 31c figure.
+   Which part of #154, and which side is right, is next, before any rerun's costs are read.
 7. For the note: the engine's cost pays REIPPPP's tariff on delivered energy and nothing on curtailed energy, so comparisons across
    curtailment levels should use the LP objective or resource cost.
 8. Still open: the curtailment line draft (687 (e)); the six known-failure proposals after the reruns.

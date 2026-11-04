@@ -21167,8 +21167,11 @@ checks were run (chain_c6e.sh's check(), 120 runs a year); validate_pathway_pres
 - The cost gap is not from the weather fixes: on main b0f7999 (gtza-base, no weather change) Fossil-free 2040's engine check gives
   R612.05bn, gridOptBn R58.42bn and rpCumMW 19,314 MW, against the 31c file's R601.84bn, 56.15 and 25,570 and the page's R601.86bn. The
   engine check's cost moved after the 31c checks were made (31 Oct, 17:15 UTC), on main; the suite did not see it because it compares
-  the page with stored files. Candidate: 28af9d5 (#153, 2 Nov, the Fossil-free freed-connection credit fix, 14ma), the only later
-  pathcheck change touching repurposing; not yet bisected. Which side is right is not established.
+  the page with stored files. Bisected (4 Nov, 03:40 SAST; scratch worktree at each commit touching pathcheck.js, Fossil-free 2040,
+  LNG=1 GRID=1): 72bb1fc, de004de, 28af9d5's parent and 28af9d5 (#153) all give R601.843bn, the 31c figure; b0f7999 (#154, 2 Nov, c7's
+  inputs: cost of capital, behind-the-meter, virtual power plant and geysers, coal costs, carbon floor) gives R612.053bn. So #154 changed
+  what pathcheck.js charges for these pathway files (recorded before c7's settings existed) and not what the page charges; which of its
+  parts does it, and which side is right, is not established. (cf6050b, 31 Oct 21:15, gives R607.42bn: an earlier state.)
 - What the weather fixes do to the presets' engine checks (03d against 31c): cost +0.37% (IRP 2030), +0.39% (Least-cost 2035), +0.50%
   (IRP 2035), +0.82% (Deep 2035), +1.70% (Fossil-free 2040, of which +1.69% is the older gap above); unserved down in Least-cost (1.40 to
   1.05 GWh) and Deep (0.60 to 0.06); coal -1.3 to -4.7 TWh and curtailment -0.4 to -3.6 TWh in 2030-2035 (existing solar's metered level
