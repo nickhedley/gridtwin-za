@@ -254,6 +254,31 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
           a.error || `wind ${a.w} against ${a.cw}, tracking solar ${a.t} against ${a.ct}, fixed-tilt solar (rooftop) ${a.x} against ${a.cx}, modern wind ${a.mod}`);
   }
 
+  // THE SAME CONSTANTS WITH THE WIND CORRECTION ON (message 698 (e)): NEW_WIND_CF_12Y and NEW_PVTRK_CF_12Y against the twelve-year means
+  // computed with the correction forced on (state.wxWindCorr 1, the caches cleared), whatever the default; the default must be on, the
+  // constants following it (build 2026-11-04b). The uncorrected means are noted for the sensitivity (WX_WINDCORR=0), not checked.
+  {
+    const a = probe(`const clr = () => { for (const k in _twelveYearCache) delete _twelveYearCache[k]; for (const k in _twelveAllCache) delete _twelveAllCache[k]; };
+      const keep = state.wxWindCorr; const at = v => { state.wxWindCorr = v; clr(); const m = bldTwelveYearMeans(1, true); return [m.wind, m.solar]; };
+      let on, off; try { on = at(1); off = at(0); } finally { state.wxWindCorr = keep; clr(); }
+      return { on, off, cw: NEW_WIND_CF_12Y, ct: NEW_PVTRK_CF_12Y, def: FIXED.wxWindCorr };`);
+    check('new wind\'s and tracking solar\'s twelve-year constants equal the means with the wind correction on',
+          !a.error && a.def === 1 && Math.abs(a.on[0] - a.cw) < 5e-5 && Math.abs(a.on[1] - a.ct) < 5e-5,
+          a.error || `default ${a.def}; with the correction on: wind ${a.on[0]} against ${a.cw}, tracking solar ${a.on[1]} against ${a.ct}`);
+    if (!a.error) notes.push(`twelve-year new wind with the correction off (WX_WINDCORR=0): ${a.off[0].toFixed(5)}; tracking solar ${a.off[1].toFixed(5)}`);
+  }
+
+  // THE TRACKING AND MODERN-TURBINE TWINS WITH THE CORRECTION ON FROM PAGE START (message 698 (e)): with the correction on by default, the
+  // page's load must still keep the tracking file and the modern-turbine file (before build 2026-11-04b their set-up ran before the table
+  // loaded, threw, and the tracking file's catch dropped it, so new tracking solar fell back to the map: 0.228 against 0.286).
+  {
+    const a = probe(`const y = String(bldWeatherYears.meta.years[0]), nat = weatherYearNational(y);
+      return { def: FIXED.wxWindCorr, on: wxWindCorrOn(), table: !!WIND_CORR_TABLE, trkFile: !!bldSolarTrk, modFile: !!bldWindMod,
+        own: !!(nat && nat.solar.trk && nat.solar.trkOwn), mod: !!(nat && nat.wind.mod) };`);
+    check('the tracking and modern-turbine twins load with the wind correction on from page start',
+          !a.error && a.def === 1 && a.on && a.table && a.trkFile && a.modFile && a.own && a.mod, a.error || JSON.stringify(a));
+  }
+
   // THE DERIVED LCOE ANCHORS EQUAL THEIR FORMULAS (user, 16-17 Oct 2026, messages 159 (3) and 194 (1)). Each is recomputed here,
   // with this harness's own annuity, from the build costs, fixed O&M and lives the page holds and the reference capacity factor
   // or cycles it is anchored on, rounded to its slider's step, and compared with what the page set: wind, tracking solar and
