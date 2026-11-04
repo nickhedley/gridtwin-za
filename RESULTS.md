@@ -21289,3 +21289,28 @@ Settings: harness/pathcheck.js on claude/weather-fixes (the logic unchanged sinc
   irptable.js use the engine's cost, summ's pv). Only summ.js's console summary prints the grid-basis PV ('grid R...bn'), and one RESULTS
   figure quotes it: c6e's PV on the optimiser's grid-cost basis, 2,323.1 against 2,317.5 (entry of 31 Oct), summed from the a, b and c
   check files and so carrying the understatement in 2031-2040.
+
+### July 2025's calm as one stress window in the 2035 and 2040 LPs (message 691 (e); a sensitivity, not the central): builds barely move; the engine's calm tail does not
+
+Settings: claude/weather-fixes 2b7f85f + the LULL_WIN_COAL option (pathway_perfail.js LULL_WIN, local data only: ESK19679's per-unit
+metered wind for the July 2025 calm, never committed; Eskom data, the analysis ours); c7's central settings, single-year LPs
+OPER_FROM=y HORIZON=y FIX_FROM=pathway_c7.json FIX_TO=y-1, pass 1, c7's 12 matched days, native HiGHS; the window: a synthetic weather
+year, modelled 2025 with the calm written over its own hours (new wind from the national modern-turbine map of the metered values),
+seven days from day 192, binding year y only; coal at the year's expected availability (0.65) or at the seed tail's worst-week derate
+(0.65 x 0.76). Engine: pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal, 120 draws, plain and with the calm written over every modelled year
+(LULL, as 3 Nov). Outputs harness/out/lullwin. 4 Nov 2026, 06:40-07:45 UTC.
+
+| | 2035 no window | calm, coal expected | calm, coal derated | 2040 no window | calm, coal expected | calm, coal derated |
+|---|---|---|---|---|---|---|
+| objective against no window, R bn | 0 | +0.04 | +0.16 | 0 | +0.03 | +0.07 |
+| year-y builds | wind 2,447, solar 4,028, lithium 520, CCGT 1,200, grid-forming 42 | the same | wind 2,588, solar 3,903, lithium 527, grid-forming 106 | solar 5,001, lithium 2,552 MW / 11,788 MWh, CCGT 1,200 | the same | the same |
+| LP unserved in the window, GWh | - | 0 | 56 | - | 0 | 20 |
+| engine, plain: mean / worst 1% / worst draw, GWh | 0.95 / 10.5 / 24.5 | as no window | 0.94 / 10.4 / 23.8 | 0.91 / 33.2 / 33.3 | as no window | as no window |
+| engine, calm in every year: mean / worst 1% / worst draw | 1.86 / 24.5 / 84.9 | as no window | 1.85 / 24.0 / 84.9 | 2.03 / 33.3 / 90.0 | as no window | as no window |
+
+- At expected coal availability the LP covers the calm with what stands (coal, lithium, pumped storage, gas and diesel) and builds
+  nothing more. With coal derated it leaves 20-56 GWh unserved in the window at the stress target's price rather than build for it, and
+  shifts a little toward wind in 2035. The engine's calm tail (worst draw 85-90 GWh) comes from the calm meeting a bad coal-outage draw,
+  which neither window represents; it is unchanged.
+- So a calm window in the central would add cost (R0.03-0.16bn a year) without closing the tail. Kept as a sensitivity (691 (e)); the
+  lull stress test on the final central, Deep and Fossil-free fleets follows the reruns, reported apart.
