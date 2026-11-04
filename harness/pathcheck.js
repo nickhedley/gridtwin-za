@@ -64,6 +64,17 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
   SOLAR_TRK_K = SOLAR_TRK_K * f; if (typeof PROFILES !== 'undefined' && PROFILES.solar && PROFILES.solar.trk) delete PROFILES.solar.trk;
   for (const k in _twelveYearCache) delete _twelveYearCache[k]; for (const k in _twelveAllCache) delete _twelveAllCache[k]; _existPvX = null;
   window.__pvTrk = { target: T, f: +f.toFixed(6), m0: +m0.toFixed(6), m1: +bldTwelveYearMeans(1, true).solar.toFixed(6), x: existPvTrackShareAt({ ...FIXED, ...state }) }; }`); console.log('PV_TRK_CF:', w.eval('JSON.stringify(window.__pvTrk)')); }
+ // SOLAR_SHIFT_MIN=<minutes> (message 701 (b); a measurement, not a change): the PVGIS years' solar (2014-2023, or SOLAR_SHIFT_YEARS=a-b),
+ // fixed tilt and its tracking twin, moved earlier by that many minutes (each hourly value at its interval's centre, linear
+ // interpolation), for the lag found against the metered fleet. Recorded in weather.
+ const SSHIFT=process.env.SOLAR_SHIFT_MIN?+process.env.SOLAR_SHIFT_MIN:0, SSY=(process.env.SOLAR_SHIFT_YEARS||'2014-2023').split('-').map(Number);
+ if (SSHIFT){ w.eval(`{ const S = ${SSHIFT} / 60, Y0 = ${SSY[0]}, Y1 = ${SSY[1]}, _wy = weatherYearNational;
+   const mv = a => { const n = a.length, o = new Float64Array(n); for (let h = 0; h < n; h++){ const t = h + S, i = Math.floor(t), f = t - i;
+     o[h] = i + 1 < n ? a[i] * (1 - f) + a[i + 1] * f : a[n - 1]; } return o; };
+   weatherYearNational = function(y){ const r = _wy(y); if (r && +y >= Y0 && +y <= Y1){ const trk = r.solar.trk, own = r.solar.trkOwn, s2 = mv(r.solar);
+       if (trk){ s2.trk = mv(trk); s2.trkOwn = own; } r.solar = s2; } return r; };
+   for (const k in _twelveYearCache) delete _twelveYearCache[k]; for (const k in _twelveAllCache) delete _twelveAllCache[k]; _existPvX = null; }`);
+   console.log('SOLAR_SHIFT_MIN:', SSHIFT, 'earlier, years', SSY.join('-')); }
  // LULL=<local json> LULL_EVENT=<n> (message 687 (b), 688 (b); a stress test, not probability-weighted, reported apart): one of
  // ESK19679's long metered calms (per unit of the existing fleet, kept out of the repository) written over every modelled year's wind
  // at its own calendar hours; new wind in those hours from the national modern-turbine map of the metered values. Solar, demand and
@@ -365,7 +376,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
-     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(PVT?', new tracking solar at '+PVT:'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.cocCase=COC_USED; if (COC_USED!==P.cocCase) r.cocCaseRecorded=P.cocCase; r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
+     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(PVT?', new tracking solar at '+PVT:'')+(SSHIFT?', PVGIS solar '+SSHIFT+' min earlier':'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.cocCase=COC_USED; if (COC_USED!==P.cocCase) r.cocCaseRecorded=P.cocCase; r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first
