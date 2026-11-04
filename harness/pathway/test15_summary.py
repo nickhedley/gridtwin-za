@@ -38,7 +38,11 @@ def progress(d):
     return per
 
 def mix(sched_by_year):
-    return {y: {k: (sched_by_year.get(y) or {}).get(k, 0) or 0 for k, _ in TECH} for y in YEARS}
+    # A year with no step (or no sched entry) is None throughout: shown blank, left out of sums.
+    return {y: {k: (sched_by_year[y].get(k, 0) or 0) if sched_by_year.get(y) else None for k, _ in TECH} for y in YEARS}
+
+def tot(M, k, Y=2040):
+    return sum(M[y][k] or 0 for y in YEARS if y <= Y)
 
 def two_stage_mix(S):
     return mix({y: S[y]['sched'][str(y)] for y in S})
@@ -54,17 +58,17 @@ def fmt(v):
 
 def mix_table(M, label, ref=None):
     used = [(k, n) for k, n in TECH if any(M[y][k] for y in YEARS) or (ref and any(ref[y][k] for y in YEARS))]
+    if not used: print('\n%s: no step yet' % label); return
     print('\n%s: new build by year, MW (lithium also MWh)%s\n' % (label, '; in brackets, the one-stage figure where it differs by 1 MW or more' if ref else ''))
     print('| Year | ' + ' | '.join(n for _, n in used) + ' |'); print('|---|' + '---:|' * len(used))
     for y in YEARS:
         cells = []
         for k, _ in used:
             a = M[y][k]; c = fmt(a)
-            if ref is not None and abs(a - ref[y][k]) >= 1: c += ' (' + fmt(ref[y][k]) + ')'
+            if ref is not None and a is not None and ref[y][k] is not None and abs(a - ref[y][k]) >= 1: c += ' (' + fmt(ref[y][k]) + ')'
             cells.append(c)
         print('| %d | ' % y + ' | '.join(cells) + ' |')
-    tot = [sum(M[y][k] for y in YEARS) for k, _ in used]
-    print('| Total | ' + ' | '.join(fmt(t) + ((' (' + fmt(sum(ref[y][k] for y in YEARS)) + ')') if ref else '') for t, (k, _) in zip(tot, used)) + ' |')
+    print('| Total | ' + ' | '.join(fmt(tot(M, k)) + ((' (' + fmt(tot(ref, k)) + ')') if ref else '') for k, _ in used) + ' |')
 
 def cum_table(runs):
     """Cumulative new MW standing by 2030, 2035 and 2040, one column per run."""
@@ -73,7 +77,7 @@ def cum_table(runs):
     for k, n in TECH:
         if not any(any(M[y][k] for y in YEARS) for _, M in runs): continue
         for Y in (2030, 2035, 2040):
-            print('| %s | %d | ' % (n, Y) + ' | '.join(fmt(sum(M[y][k] for y in YEARS if y <= Y)) for _, M in runs) + ' |')
+            print('| %s | %d | ' % (n, Y) + ' | '.join(fmt(tot(M, k, Y)) if M[Y][k] is not None else '' for _, M in runs) + ' |')
 
 def step_table(label, S, P):
     print('\n%s: each step (year y on 365 days, the look-ahead years at 25 days)\n' % label)
