@@ -50,3 +50,6 @@
 2026-11-04T16:46:07Z two_stage.sh PID 8806
 2026-11-04T16:46Z two_stage K=4 N=25 FIRST=2026, shell PID 8806
 2026-11-04T16:46:22Z step node PID 8817
+2026-11-04T16:46:37Z solve started (highs_native.py 9007)
+2026-11-04T17:22:20Z solve (highs_native.py 9007) ended after about 2133s
+2026-11-04T17:26:21Z solve started (highs_native.py 17773)
