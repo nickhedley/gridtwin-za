@@ -117,8 +117,8 @@ session's section above).
 - The fix (pathway_perfail.js, harness only): each solve's basis is written under its own LP key, any file of that name removed first; the
   log says resume from this LP's own basis, warm start, or cold. LP keys unchanged (step 2026's dumps to 1faa0496d2 after it).
 - Affected: ts2_ff step 2028, pass 2 (kept at 13:28, resumed 13:30, optimal in 884 s; finished, adequate): very likely, not confirmable (the
-  file is removed on success); same objective, builds could differ only if the LP has more than one optimal build; a cold re-solve of that
-  LP would settle it (not run; the user's call). ts2_central step 2029, pass 2: the kept file was pass 1's (written 13:31:17, pass 2
+  file is removed on success); same objective, builds could differ only if the LP has more than one optimal build; not re-solved cold (user,
+  4 Nov 2026: the affected steps are recorded, and the runs restart on the fixed tracking twin anyway). ts2_central step 2029, pass 2: the kept file was pass 1's (written 13:31:17, pass 2
   stopped 14:13); moved aside, so pass 2 starts cold. ts2_central_ann step 2027, pass 2: pass 1's (written 14:50:55), resumed 15:07,
   optimal in 417 s; its builds chose pass 3's stress windows. The first basis (ts_central step 2028, pass 2, confirmed; ts_ff step 2028,
   pass 2, likely) is record only.
@@ -127,8 +127,8 @@ session's section above).
 
 No clean comparison yet (the same LP both ways under the same load). Rough pairs, different LPs: Fossil-free step 2029 on parallel 48.8 min
 against the central's step 2029 pass 1 on serial 52.4 min, each beside one other solve; the annuity run's step 2026 on parallel 15.9 min
-beside one other solve, against the central's step 2026 on serial 8.5 min alone. A clean test: step 2026's LP (1faa0496d2) on parallel
-alone against its 8.5 min serial solve alone, when the machine is free.
+beside one other solve, against the central's step 2026 on serial 8.5 min alone. The clean test (user, 4 Nov 2026): step 2026's LP
+(1faa0496d2) solved both ways, each alone on the machine, when the runs leave it idle.
 
 <!-- test15_summary start -->
 #### ts2_central (3 of 15 steps)
