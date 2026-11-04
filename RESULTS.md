@@ -21367,7 +21367,7 @@ All five central cells also build new pumped storage 1,500 MW and no gas.
 - The reference is the larger effect. On modelled 2025 the central retires 4.8-5.3 GW of coal early and its engine mean is 23-43 GWh
   (worst draw 259-410), against 0.46-0.48 GW and 4.3-5.3 GWh (worst 79-107) on metered 2025; Fossil-free on modelled 2025 builds less
   and its engine mean is 15-83 GWh against 8-19. The modelled 2025 year pairs metered demand with modelled weather (hourly r 0.68 with
-  metered wind): its days understate the coincidence of high demand and low wind that the twelve modelled years and the engine carry.
+  metered wind); why its days lead the LP to retire so much more is not established here.
 - The wind means are the smaller effect in the central (on metered 2025: solar +224 MW, lithium +59 MW, coal retired -21 MW, objective
   +R0.46bn; engine unserved within 0.2 GWh) and a larger one in Fossil-free (on metered 2025: wind and solar in place of most of the
   iron-air, +R5.5bn; engine mean 8.3 against 10.6 GWh on stored weather, 9.4 against 19.3 on six-constant).
