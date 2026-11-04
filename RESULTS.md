@@ -21314,3 +21314,21 @@ seven days from day 192, binding year y only; coal at the year's expected availa
   which neither window represents; it is unchanged.
 - So a calm window in the central would add cost (R0.03-0.16bn a year) without closing the tail. Kept as a sensitivity (691 (e)); the
   lull stress test on the final central, Deep and Fossil-free fleets follows the reruns, reported apart.
+
+### Test 7 on the fixed data (message 691 (g)): failed on the VPP enrolment, which FIX_FROM left free; passes with it fixed
+
+Settings: claude/weather-fixes (fix in 2b7f85f's successor); c7's central settings; the full 12-day pass-1 LP from test 8's settings-off
+run (harness/out/test8/c7_off.json on /home/user/gtza-refs, LP key 7fb5ff6a1e) as the fixed builds; C: the full LP with builds to y-1
+fixed; B: the single-year LP (OPER_FROM=y) with the same; native HiGHS simplex; equiv.py. 4 Nov 2026, 07:20-08:06 UTC.
+
+- First run: not equivalent, relative objective difference 1.6e-4 (2030) and 1.1e-3 (2040), B cheaper by R0.20bn and R0.91bn. The only
+  non-hourly columns that differed were the virtual power plant's enrolment of the years before y (vppp_2029 749 MW in C, 0 in B, and so
+  on): FIX_FROM fixed b_, eb_batt, rc and cc_ columns but not vppp_ (or gy_), added after B4's test, so the single-year LP set the
+  earlier years' enrolment to 0 and dropped its cost. Year-y builds were identical.
+- Fix: FIX_FROM also fixes vppp_<y> and gy_<y>, from the recorded build or, for runs recorded before, from the schedule (vppGWh x 1000
+  / btmHours, gyMW); outputs record them in build.
+- Rerun: objective identity 6.8e-14 (2030) and 1.8e-14 (2040); every year-level column identical; the differing columns are hourly
+  dispatch and storage movement, alternative optima at the same cost. Passes.
+- Reach: every single-year LP before the fix (690, 688 (a), the acceptance tests, the 2 x 2, the calm window) carries the earlier
+  years' VPP enrolment at 0 in its objective, the same in every case of a comparison, so differences between cases stand; their absolute
+  objectives are low by the enrolment's cost (R0.2-0.9bn).
