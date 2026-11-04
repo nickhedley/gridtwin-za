@@ -13,6 +13,36 @@
 - (i) Standing: comparisons across curtailment levels use the LP objective or a resource-cost column, never the engine's cost; deemed
   energy a stated limitation (REVIEWER_PACK.md).
 
+- (f) Briefs for two separate sessions (691 (f)); open both now. Each is a new Claude Code session on nickhedley/gridtwin-za. Paste the
+  brief as the first message.
+
+  Brief A, test 15 (two stages). Read CLAUDE.md, RULES.md and this section first. Make branch claude/test15-two-stage from
+  origin/claude/weather-fixes (it carries harness/pathway/two_stage.sh, STAGE2_YEAR and ANNUITY_TO). Do not change index.html. Setup:
+  `ln -s .. harness/testroot`, `cd harness && npm install jsdom highs eslint`, `pip install highspy`. From harness/, export c7's
+  settings: `source pathway/env_c6a.sh; export GAS_FIRST=2035 SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1
+  COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 SOLVER=native CONG_OFF=1 REP_REF=2025
+  REP_EXTREMES=113,114,115,141,161,162,163,187,188,214,217,218,219,257,273,359` (modelled 2025, stored wind, its extremes on the fixed
+  data; provisional until Nick chooses the reference, 691 (c)). Central: `K=4 N=25 FIRST=2026
+  WIN_FROM=pathway/c7/pathway_c7_lp2040.json OUTDIR=out/ts_central bash pathway/two_stage.sh`. Fossil-free: add `PACE=grid
+  LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039` and WIN_FROM=pathway/c7/pathway_s_ff2040_c7_lp2040.json, OUTDIR=out/ts_ff.
+  Then the review's variant on the central: ANNUITY_TO=2040, OUTDIR=out/ts_central_ann. Run each with the Bash tool's
+  run_in_background (never nohup or &), in pieces under 2 hours: two_stage.sh is resumable by step (25-30 minutes a step), so relaunch
+  it at each completion notice; record PIDs, stop by PID only. Report, as a RESULTS-style entry in docs/test15-results.md on the
+  branch (push; no pull request): the mix by technology and year (2026-2040) against the one-stage pass-1 at 25 days (claude/weather-fixes,
+  harness/out/test8/c7_d25.json on the main session's machine, which the main session will add to that file), each step's solve time,
+  any step that failed the adequacy test, and the ANNUITY_TO=2040 variant against the default. Expected: about 6-8 hours a pathway.
+
+  Brief B, test 13 (near-optimal ranges, the central, 2030 and 2040). Same reading, branch claude/test13-mga from
+  origin/claude/weather-fixes, setup and c7 settings as Brief A (with SOLVER=native, CONG_OFF=1, REP_REF=2025 and the same
+  REP_EXTREMES). Base: `REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1 WIN_FROM=pathway/c7/pathway_c7_lp2040.json MAXP=1
+  DUMP=0 OUT=out/mga/base.json LPCACHE=out/mga/lpc node --max-old-space-size=9000 pathway/pathway_perfail.js`; its pass-1 objective is
+  MGA_FSTAR. Then for year in 2040, 2030; slack in 0.01, 0.02; group in wind, solar, lithium, ldes, coal; direction min, max: the same
+  command with `MGA=<group>:<year>:<direction>:<slack> MGA_FSTAR=<base objective>` and OUT=out/mga/<group>_<year>_<dir>_<slack>.json
+  (40 solves, about 40-70 minutes each at 25 days; 1% first for both years, then 2%). Pieces under 2 hours, as Brief A
+  (RESUME=1 with JOB_DEADLINE where a solve may run past a piece). Report in docs/test13-results.md on the branch: for each group,
+  year and slack, the minimum and maximum MW standing (lithium also MWh) against the base, which limits bind at each end, and solve
+  times. Test 11's recommendation waits for both briefs and for test 8.
+
 ## Status for Nick, morning of 4 Nov (message 689; written 03:35 SAST)
 
 Finished (all five items of 689)
