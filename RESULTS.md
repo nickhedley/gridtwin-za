@@ -21469,4 +21469,11 @@ retired early: 220 MW from 2029 (c7 none). Cumulative new build, MW (lithium MW 
 | Iron-air; pumped storage | 0; 0 | 0; 0 | 150; 1,500 | 0; 0 |
 
 Test 13's old-basis base (REP_REF=2025, stored wind, the flat congestion figure on) failed the standard at pass 1 in 2031-2040; on 693's
-basis the same central passes. The engine's reliability gate on test 8's build (pathcheck, adaptive draws, 2030-2040) follows.
+basis the same central passes.
+
+The engine's reliability gate on test 8's build (pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1, the six-constant
+table, adaptive draws, 2030-2040; worktree at claude/wind-table c576132; 4 Nov 12:35-13:04 UTC): every year's mean below 20 GWh. Mean
+(standard error), worst draw, GWh: 2030 1.1 (0.3), 21.5; 2031 8.6 (1.7), 250.4; 2032 12.7 (2.0), 136.9; 2033 11.8 (1.6), 172.4; 2034 16.1
+(1.6), 248.0; 2035 15.9 (1.8), 168.3; 2036 18.5 (1.8), 156.3; 2037 8.1 (1.5), 105.2; 2038 8.8 (1.3), 153.8; 2039 8.2 (1.7), 112.5; 2040 7.1
+(1.5), 116.2 (120-360 draws a year). 2036 is within one standard error of the limit. The loop's 2-draw figures differ year by year (2036
+12.6, 2040 18.8), as their sampling allows.
