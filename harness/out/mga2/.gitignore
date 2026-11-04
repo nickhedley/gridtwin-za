@@ -7,3 +7,4 @@ claim/
 mem.txt
 piece*.txt
 progress.txt
+*.timeout

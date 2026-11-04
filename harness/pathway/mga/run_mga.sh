@@ -18,13 +18,17 @@ H=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd); cd "$H" || exit 1
 O=out/mga2; P=$O/progress.txt; C=$O/claim; mkdir -p $C
 source pathway/mga/env_693.sh
 export MAXP=1 DUMP=0
-EST=$(( ${EST_MIN:-80} * 60 )); END=$(( $(date +%s) + ${PIECE_MIN:-117} * 60 )); export JOB_DEADLINE=$END
+EST=$(( ${EST_MIN:-80} * 60 )); T0=$(date +%s); END=$(( T0 + ${PIECE_MIN:-117} * 60 ))
+# DL_MIN (default PIECE_MIN): the solve deadline, minutes from the start; a solve gets the time to it less 15 minutes. Set past the piece's
+# end it gives a long solve more time: an optimal solution is cached as soon as it is found, so if the piece ends during the engine check
+# the next runner replays it and redoes only the check.
+export JOB_DEADLINE=$(( T0 + ${DL_MIN:-${PIECE_MIN:-117}} * 60 ))
 alive(){ [ -n "$1" ] && kill -0 "$1" 2>/dev/null; }
 # Clear claims whose runner has gone (a claim without a PID file is cleared once it is over 2 minutes old).
 for d in $C/*/ $C/.sampler/; do [ -d "$d" ] || continue; q=$(cat $d/pid 2>/dev/null)
   if [ -n "$q" ]; then alive $q || rm -rf "$d"; elif [ -n "$(find "$d" -maxdepth 0 -mmin +2)" ]; then rm -rf "$d"; fi; done
 claim(){ mkdir $C/$1 2>/dev/null || return 1; echo $$ > $C/$1/pid; }
-echo "$(date -u +%FT%H:%MZ) runner, shell PID $$, EST_MIN=$((EST/60)) solver ${HIGHS_SOLVER:-simplex} opts ${HIGHS_OPTS:-none} deadline $(date -u -d @$END +%H:%MZ), on $(git log --oneline -1 | cut -c1-50)" >> $P
+echo "$(date -u +%FT%H:%MZ) runner, shell PID $$, EST_MIN=$((EST/60)) solver ${HIGHS_SOLVER:-simplex} opts ${HIGHS_OPTS:-none} piece end $(date -u -d @$END +%H:%MZ) solve deadline $(date -u -d @$JOB_DEADLINE +%H:%MZ), on $(git log --oneline -1 | cut -c1-50)" >> $P
 MEMPID=""
 if claim .sampler; then
   ( while sleep 60; do echo "$(date -u +%H:%MZ) $(free -m | awk '/Mem:/{print "used "$3" avail "$7" MB"}') | $(ps -o pid=,rss=,etime=,comm= -C node,python3 | awk '{printf "%s %s %dMB %s; ", $1, $4, $2/1024, $3}')" >> $O/mem.txt; done ) &
@@ -33,6 +37,8 @@ stop(){ [ -n "$MEMPID" ] && { kill $MEMPID; rm -rf $C/.sampler; }; exit $1; }
 run1(){ local name=$1; shift; local out=$O/$name.json t0=$(date +%s)
   env "$@" OUT=$out bash -c "echo \$\$ > $O/$name.pid; exec nice -n 5 node --max-old-space-size=9000 pathway/pathway_perfail.js" 2>&1 | while IFS= read -r l; do printf "%s %s\n" "$(date -u +%T)" "$l"; done >> $O/$name.log
   local rc=${PIPESTATUS[0]}; echo "$(date -u +%FT%H:%MZ) $name rc=$rc pid $(cat $O/$name.pid) $(( ($(date +%s) - t0) / 60 )) min $([ -s $out ] && echo done || echo 'not done')" >> $P
+  # A solve stopped at its deadline (no valid basis with parallel dual simplex) is marked <run>.timeout and not retried by a runner.
+  [ $rc = 75 ] && grep -q "no valid basis" $O/$name.log && date -u +%FT%H:%MZ >> $O/$name.timeout
   rm -rf $C/$name; }
 # The base (DUMP_LP keeps its LP, for reading which limits bind; it changes nothing in the LP).
 if [ ! -s $O/base.json ]; then
@@ -59,7 +65,7 @@ fi
 FSTAR=$(python3 -I -c "import json,sys;B=json.load(open(sys.argv[1]));assert B['status']=='Optimal' and len(B['passLog'])==1 and B['mga'] is None;print(repr(B['objective']))" $REF) || { echo "$REF unreadable" >> $P; stop 1; }
 Q=(); for s in 0.01 0.02; do for y in 2040 2030; do for g in wind solar lithium ldes coal; do for d in min max; do Q+=("${g}_${y}_${d}_${s}"); done; done; done; done
 while :; do pick=""
-  for n in "${Q[@]}"; do [ -s $O/$n.json ] && continue; claim $n && { pick=$n; break; }; done
+  for n in "${Q[@]}"; do [ -s $O/$n.json ] || [ -e $O/$n.timeout ] && continue; claim $n && { pick=$n; break; }; done
   [ -z "$pick" ] && break
   if [ $(( END - $(date +%s) )) -lt $EST ]; then rm -rf $C/$pick; break; fi
   IFS=_ read g y d s <<< "$pick"; echo "$(date -u +%FT%H:%MZ) $pick start (runner $$)" >> $P
