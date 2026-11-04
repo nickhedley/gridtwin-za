@@ -21332,3 +21332,58 @@ fixed; B: the single-year LP (OPER_FROM=y) with the same; native HiGHS simplex; 
 - Reach: every single-year LP before the fix (690, 688 (a), the acceptance tests, the 2 x 2, the calm window) carries the earlier
   years' VPP enrolment at 0 in its objective, the same in every case of a comparison, so differences between cases stand; their absolute
   objectives are low by the enrolment's cost (R0.2-0.9bn).
+
+### The references unconfounded (message 691 (c), 692 (c)): wind means stored or six-constant x reference metered 2025 or modelled 2025, single-year 2040 at 365 days; recommended: the metered reference with the six-constant correction
+
+Settings: /home/user/gtza-refs (claude/weather-fixes 34fae3b: the fixed weather files; WX_WINDCORR_TABLE in pathway_perfail.js and
+extract.js); harness/pathway/repdays/refs2x2.sh; single-year 2040 LPs at 365 days, clustered and linked (REP_WEIGHTS=clustered
+REP_DAYS=365 STORAGE_LINK=1, OPER_FROM=2040 HORIZON=2040, pass 1, no adequacy loop), the central fixed from c7 (FIX_TO=2039) and
+Fossil-free from s_ff2040_c7 (its settings); each cell with its own extremes (extract.js, extremes.py on the fixed data): metered
+stored 12 days, modelled 2025 stored 16, metered six-constant 12 (as stored), modelled 2025 six-constant 15; the flat congestion figure on
+in every cell (the acceptance tests' basis), plus the recommended cell with CONG_OFF=1 (the reruns' basis); the engine (pathcheck.js
+YEARS=2040, 120 draws) on each build on the stored and on the six-constant weather (CONG_OFF=1 for the CONG_OFF cell). The six-constant
+table: scratchpad wind_corr_table_calm6.json (not committed; v_k 7.0, alpha 0.80, v_c 4.0, beta 0.341, A 0.538, phi 11.54). Outputs
+/home/user/gtza-refs/harness/out/refs2x2 (an.json). 4 Nov 2026, 06:23-09:10 UTC. Caveat on every engine figure: a single-year LP has no
+adequacy loop, so its 2040 build is not tested and repaired as a looped run's is; the early coal retirement it chooses is not a finding.
+
+| Central 2040 | objective, R bn | coal retired early, MW | year's builds (wind / solar / lithium MW / MWh) | engine on stored: mean / worst 1% / worst draw, GWh | engine on six-constant |
+|---|---|---|---|---|---|
+| metered, stored | 768.26 | 480 | 3,500 / 506 / 47 / - | 4.49 / 63.0 / 80.7 | 5.27 / 66.2 / 106.6 |
+| modelled 2025, stored | 766.04 | 5,337 | 3,190 / 5,497 / 3,000 / 12,000 | 32.79 / 236.2 / 302.4 | 43.18 / 255.8 / 410.4 |
+| metered, six-constant | 768.72 | 459 | 3,500 / 730 / 106 / - | 4.33 / 62.0 / 78.9 | 5.13 / 63.6 / 106.8 |
+| modelled 2025, six-constant | 766.49 | 4,760 | 3,500 / 5,031 / 3,000 / 12,000 | 23.09 / 186.0 / 259.0 | 30.46 / 203.3 / 354.0 |
+| metered, six-constant, CONG_OFF=1 | 768.14 | 532 | 3,500 / 379 / 114 / - | 4.17 / 59.3 / 77.0 | 4.85 / 60.5 / 102.7 |
+
+All five central cells also build new pumped storage 1,500 MW and no gas.
+
+| Fossil-free 2040 | objective, R bn | coal retired early | year's builds (wind / solar / iron-air MW) | engine on stored | engine on six-constant |
+|---|---|---|---|---|---|
+| metered, stored | 2,142.98 | 0 (no coal from 2040) | 0 / 0 / 2,706 | 10.55 / 58.4 / 58.4 | 19.33 / 109.1 / 109.1 |
+| modelled 2025, stored | 2,138.75 | 0 | 0 / 0 / 0 | 42.39 / 236.9 / 236.9 | 83.47 / 404.6 / 404.6 |
+| metered, six-constant | 2,148.50 | 0 | 3,113 / 10,314 / 1,091 | 8.33 / 57.9 / 57.9 | 9.44 / 69.7 / 69.7 |
+| modelled 2025, six-constant | 2,146.67 | 0 | 3,500 / 9,320 / 0 | 15.32 / 106.5 / 106.5 | 19.60 / 132.4 / 132.4 |
+| metered, six-constant, CONG_OFF=1 | 2,147.39 | 0 | 1,809 / 10,314 / 981 | 8.45 / 59.1 / 59.1 | 10.30 / 78.0 / 78.0 |
+
+- The reference is the larger effect. On modelled 2025 the central retires 4.8-5.3 GW of coal early and its engine mean is 23-43 GWh
+  (worst draw 259-410), against 0.46-0.48 GW and 4.3-5.3 GWh (worst 79-107) on metered 2025; Fossil-free on modelled 2025 builds less
+  and its engine mean is 15-83 GWh against 8-19. The modelled 2025 year pairs metered demand with modelled weather (hourly r 0.68 with
+  metered wind): its days understate the coincidence of high demand and low wind that the twelve modelled years and the engine carry.
+- The wind means are the smaller effect in the central (on metered 2025: solar +224 MW, lithium +59 MW, coal retired -21 MW, objective
+  +R0.46bn; engine unserved within 0.2 GWh) and a larger one in Fossil-free (on metered 2025: wind and solar in place of most of the
+  iron-air, +R5.5bn; engine mean 8.3 against 10.6 GWh on stored weather, 9.4 against 19.3 on six-constant).
+- CONG_OFF=1 on the recommended cell: the central's objective -R0.58bn, solar 379 MW against 730, coal retired 532 against 459, engine
+  mean within 0.2 GWh; Fossil-free's -R1.1bn, wind 1,809 against 3,113, iron-air 981 against 1,091, engine mean 8.45 against 8.33 (stored)
+  and 10.3 against 9.4 (six-constant). The recommendation holds on the reruns' basis.
+- Early retirement: every central cell retires coal early (459-5,337 MW) at pass 1 without the loop. The pack does not restate 'no coal
+  retires early' until the looped reruns report (REVIEWER_PACK, the coal-sustain line held).
+
+Recommendation (Nick decides). Reference: metered 2025. Wind table: the six-constant correction, for the twelve-year means, the tail and
+the stress windows, and the engine. Best practice is clear on both, so rule 366's conservative default does not decide them:
+- Representative days are taken from a year in which demand, wind and solar are measured together, so that their coincidence is real;
+  only metered 2025 is such a year here, and the modelled year's days are the ones that fail in the engine above.
+- Reanalysis wind is bias-corrected to measured output before it is used (Staffell and Pfenninger 2016, the method behind
+  Renewables.ninja's national corrections; ours is that speed-space method fitted to ESK19679). Out of sample the correction holds level,
+  monthly shape, spread and the top end where the stored series does not, and the six-constant table is the closer of the two to metered
+  on calm hours (69 against 78 hours below 5% a year; five-constant 48). Stated with it: on c7's fixed fleet the correction lowers the
+  engine's unserved (2040 mean 1.23 to 0.77 GWh), no table reproduces the long metered calms, and the lull stress test stays as the check
+  reported apart.
