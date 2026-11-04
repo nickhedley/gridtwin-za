@@ -132,7 +132,7 @@ beside one other solve, against the central's step 2026 on serial 8.5 min alone.
 (1faa0496d2) solved both ways, each alone on the machine, when the runs leave it idle.
 
 <!-- test15_summary start -->
-#### ts2_central (5 of 15 steps)
+#### ts2_central (6 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -145,7 +145,7 @@ ts2_central: new build by year, MW (lithium also MWh)
 | 2028 | 2,500 | 1,129 | 0 | 660 | 139 |
 | 2029 | 2,500 | 3,063 | 395 | 0 | 332 |
 | 2030 | 2,500 | 3,277 | 2,219 | 892 | 1,292 |
-| 2031 |  |  |  |  |  |
+| 2031 | 3,500 | 3,506 | 2,466 | 10,105 | 625 |
 | 2032 |  |  |  |  |  |
 | 2033 |  |  |  |  |  |
 | 2034 |  |  |  |  |  |
@@ -155,7 +155,7 @@ ts2_central: new build by year, MW (lithium also MWh)
 | 2038 |  |  |  |  |  |
 | 2039 |  |  |  |  |  |
 | 2040 |  |  |  |  |  |
-| Total | 9,746 | 9,745 | 3,375 | 4,611 | 1,763 |
+| Total | 13,246 | 13,251 | 5,841 | 14,716 | 2,388 |
 
 ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -166,6 +166,7 @@ ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept u
 | 2028 | 39,692 | 0 |  |
 | 2029 | 33,564 | 3,463 |  |
 | 2030 | 28,970 | 3,463 |  |
+| 2031 | 27,413 | 3,463 | 3,463 |
 
 ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -176,7 +177,8 @@ ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2028 | 2032 | 1 | adequate | serial | 20.5 | 23.9 | 1 | 2.7 | pass 1: none | 554.393 |
 | 2029 | 2033 | 2 | adequate | serial, then parallel, 2 threads | 41.9, 52.4, 38.8, 40.7 | 48.4 | 3 | 3.4 | pass 1: 2032: 21.3 / 20<br>pass 2: none | 567.399 |
 | 2030 | 2034 | 2 | adequate | parallel, 2 threads | 35.5, 38.1 | 81.7 | 2 | 4.4 | pass 1: 2032: 21.5 / 20<br>pass 2: none | 590.059 |
-| 2031 | | | not finished |  |  | | 1 | | | |
+| 2031 | 2035 | 2 | adequate | parallel, 2 threads | 35.0, 36.6 | 80.5 | 2 | 3.7 | pass 1: 2032: 21.5 / 20<br>pass 2: none | 618.858 |
+| 2032 | | | not finished |  |  | | 1 | | | |
 
 ts2_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -187,6 +189,7 @@ ts2_central: the adequacy test on each step's own year y at its final pass (mean
 | 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2029 | 0.44 / 20 | 0.43 / 20 | 2018 (3.3) |
 | 2030 | 1.81 / 20 | 1.81 / 20 | 2022 (16.6) |
+| 2031 | 18.89 / 20 | 18.89 / 20 | 2022 (123.8) |
 
 #### ts2_ff (7 of 15 steps)
 
