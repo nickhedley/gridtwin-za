@@ -13,6 +13,10 @@ const ROOT='testroot', OUT=process.argv[2];
  const K12=require(path.resolve('pathway/roof12.js'))(w); console.log('roof12 K',K12); w.eval(`applyState(PRESETS['Today 2026']); bldSetHorizon(2040); state.bldPvTracking=1;`);
  // WX_WINDCORR=1 (message 684 (d)): the modelled years through the wind correction (the corrected reference); recorded in the output.
  if (process.env.WX_WINDCORR === '1') { w.eval('state.wxWindCorr=1;'); console.log('WX_WINDCORR: on'); }
+ // WX_WINDCORR_TABLE=<json> (message 691 (c); test only): an alternative table in place of nodal/wind_corr_table.json; needs WX_WINDCORR=1.
+ if (process.env.WX_WINDCORR_TABLE) { if (process.env.WX_WINDCORR !== '1') throw new Error('WX_WINDCORR_TABLE needs WX_WINDCORR=1');
+   await w.eval('loadWeatherYears()'); const TT = JSON.parse(fs.readFileSync(process.env.WX_WINDCORR_TABLE, 'utf8'));
+   w.eval('WIND_CORR_TABLE = ' + JSON.stringify({ t: TT.table, n: TT.grid.n }) + '; for (const k in _twelveYearCache) delete _twelveYearCache[k]; for (const k in _twelveAllCache) delete _twelveAllCache[k];'); console.log('WX_WINDCORR_TABLE:', process.env.WX_WINDCORR_TABLE); }
  const r=w.eval(`(()=>{ const S={...FIXED,...state}; const k=windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr); const R=a=>Array.from(a,v=>+v.toFixed(5));
    const rd=bldRepDays(12).map(q=>({d:q.d,weight:q.weight,tail:!!q.tail,year:q.year}));
    const wy={}; for (const y of bldWeatherYears.meta.years){ const n=weatherYearNational(String(y)); wy[y]={wind:R(n.wind),windN:R(Array.from(windModOf(n.wind),v=>Math.min(1,k*v))),solar:R(n.solar),solarT:R(solarTrkOf(n.solar))}; }
