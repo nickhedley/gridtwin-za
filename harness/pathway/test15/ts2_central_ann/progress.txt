@@ -53,3 +53,7 @@
 2026-11-04T23:02:04Z solve started (highs_native.py 27508)
 2026-11-04T23:26:27Z solve (highs_native.py 27508) ended after about 1453s
 2026-11-04T23:28:57Z solve started (highs_native.py 1180)
+2026-11-04T23:46:59Z test15 central_ann piece, PID 373, on 6c0bd3b Test 15 results: central step 2036 finishe, BUILD_STAMP = '2026-11-04b, deadline 01:36Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 27G, memory free 14G
+2026-11-04T23:46:59Z two_stage.sh PID 394
+2026-11-04T23:46Z two_stage K=4 N=25 FIRST=2026, shell PID 394
+2026-11-04T23:47:14Z step node PID 403

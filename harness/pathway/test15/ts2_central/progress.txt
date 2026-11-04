@@ -148,3 +148,8 @@
 2026-11-04T23:42Z two_stage K=4 N=25 FIRST=2026, shell PID 4155
 2026-11-04T23:42:46Z step node PID 4176
 2026-11-04T23:43:01Z solve started (highs_native.py 4233)
+2026-11-04T23:46:39Z test15 central piece, PID 291, on 6c0bd3b Test 15 results: central step 2036 finishe, BUILD_STAMP = '2026-11-04b, deadline 01:36Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 27G, memory free 15G
+2026-11-04T23:46:40Z two_stage.sh PID 324
+2026-11-04T23:46Z two_stage K=4 N=25 FIRST=2026, shell PID 324
+2026-11-04T23:46:55Z step node PID 342
+2026-11-04T23:47:25Z solve started (highs_native.py 430)

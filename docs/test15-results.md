@@ -144,6 +144,11 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   this step needs at least three passes of 41 to 51 min each, more than one 110-min piece holds; each solve alone fits in a piece. Passes 1
   and 2 are in the LP cache (03a1f3ee3d, ab2a195959), so a further relaunch would start at pass 3, cold, with about 90 min. That relaunch
   is the user's call. The annuity run took the slot at 21:33 (PID 7929), next in line.
+- Container restart, about 23:45 (outside any piece): every process stopped; the files, the LP caches and the output folders were kept.
+  ts2_central step 2037 had solved for 3 min (pass 1); relaunched at 23:46 (PID 291), its pass 1 cold again. ts2_central_ann step 2028
+  (to 2032) had solved passes 1 to 3 (14.8, 21.6, 24.2 min; 2032 at 37.76, 29.51, 23.97 against 20 GWh) and pass 4 for 16 of its 26 min
+  (limit 1,563 s), so the piece's deadline would very likely have cut it about 10 min later; the step had run 85 min. Counted as its one
+  relaunch: relaunched at 23:46 (PID 373), passes 1 to 3 from the LP cache, pass 4 cold.
 
 <!-- test15_summary start -->
 #### ts2_central (11 of 15 steps)
