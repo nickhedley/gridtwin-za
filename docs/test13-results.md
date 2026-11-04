@@ -67,7 +67,9 @@ default with the six-constant table. Seven conflicts, all where wind-table holds
 correction 1 not 0, DATA_V 10, the six-constant table, NEW_WIND_CF_12Y re-measured, the table load moved, the build stamp), taken
 from wind-table; index.html, pathcheck.js, nodal_dispatch.js and wind_corr_table.json then equal wind-table's. The settings are
 unchanged, the table path included. The base LP's key is unchanged: 8e0651f38a18d5c2014eb508e720f99c5c3e90e0 before and after the
-merge, the same as test 8's pass 1 (LP built with DUMP_STOP=1, not solved; the two LP files byte-identical).
+merge, the same as test 8's pass 1 (LP built with DUMP_STOP=1, not solved; the two LP files byte-identical). The base rerun on
+build 2026-11-04b (out/mga2/base_04b.json, the cached solution replayed, engine check redone) gives the same build, the same
+unserved energy in every year and the verdict adequate; only the run time differs.
 
 ## Ranges
 

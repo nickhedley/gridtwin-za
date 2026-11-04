@@ -1,0 +1,18 @@
+2026-11-04T11:02Z runner, shell PID 6457, EST_MIN=80 solver simplex opts {"simplex_strategy":2,"threads":2} deadline 12:59Z, on f81c616 Test 13 on message 693's basis: run_mga.sh
+11:02Z memory sampler PID 6470 (runner 6457)
+2026-11-04T11:02Z base start (runner 6457)
+2026-11-04T11:11Z amendment to step 5 (base engine check first): all 40 MGA runs held (claims under runner 6457) until the base's engine check is read
+2026-11-04T12:24Z base rc=0 pid 6482 81 min done
+2026-11-04T12:24Z runner 6457 end, 40 of 40 MGA runs left
+2026-11-04T12:25Z runner, shell PID 8680, EST_MIN=100 solver simplex opts {"simplex_strategy":2,"threads":2} piece end 14:23Z solve deadline 14:32Z, on 26e294e run_mga.sh: DL_MIN, a solve deadline past 
+12:25Z memory sampler PID 8821 (runner 8680)
+2026-11-04T12:25Z wind_2040_min_0.01 start (runner 8680)
+2026-11-04T12:25Z runner, shell PID 8886, EST_MIN=100 solver simplex opts {"simplex_strategy":2,"threads":2} piece end 14:23Z solve deadline 14:32Z, on 26e294e run_mga.sh: DL_MIN, a solve deadline past 
+2026-11-04T12:25Z wind_2040_max_0.01 start (runner 8886)
+2026-11-04T13:25Z message 698 (b): trial merge of origin/claude/wind-table (c576132) in a scratch worktree, conflicts taken from wind-table (-X theirs; merged files equal wind-table's): base LP key 8e0651f38a18 before and after (DUMP_STOP=1, no solve)
+2026-11-04T14:17Z wind_2040_min_0.01 rc=75 pid 8830 112 min not done
+2026-11-04T14:17Z runner 8680 end, 40 of 40 MGA runs left
+2026-11-04T14:18Z wind_2040_max_0.01 rc=75 pid 8918 112 min not done
+2026-11-04T14:18Z runner 8886 end, 40 of 40 MGA runs left
+2026-11-04T14:19Z base engine check on build 2026-11-04b (wind-table merged), from the cache, shell PID 11411
+2026-11-04T14:24Z base_04b end rc=0
