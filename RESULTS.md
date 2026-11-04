@@ -21549,3 +21549,47 @@ from the balance rows' duals; reduced cost from the solution.
   2040 only where it reuses a coal connection ('other rows': rpb_, the connection pool). Wind is limit-bound in 2029-2038 (test 12).
 - How much of solar's lower value comes from the twin's shape (c) rather than from midday saturation is what 700 (b)'s runs (1) and
   (4) measure.
+
+### The lull stress test on test 8's fleet (message 699 (d); a stress case, reported apart, not probability-weighted)
+
+Settings: pathcheck.js LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 (six-constant), LULL=<local lulls json> LULL_EVENT=0-2,
+2030/2035/2040, adaptive draws; test 8's build (harness/out/test8p/c7_d25.json in the main session's container); worktree at
+claude/wind-table c576132; 4 Nov 13:23-14:00 UTC, beside other jobs. Each of ESK19679's three long calms in place of the national wind for
+its calendar hours in every modelled year (RESULTS 'The engine on the fixed weather files', the method; per-unit metered values local).
+Eskom data, the analysis ours. Unserved, GWh a year: mean, worst 1% of draws, worst draw.
+
+| Calm | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| May 2023 (58 h) | 1.2 / 21.5 / 28.8 | 19.4 / 146.8 / 178.7 | 9.9 / 149.5 / 194.5 |
+| July 2025 | 1.3 / 21.2 / 36.2 | 24.9 / 168.3 / 269.1 | 32.6 / 140.1 / 236.0 |
+| May 2026 | 1.2 / 21.5 / 22.0 | 17.4 / 152.8 / 241.8 | 11.4 / 109.5 / 116.2 |
+
+Without a calm (the gate above): 2030 1.1, 2035 15.9, 2040 7.1. July 2025's calm, applied in every modelled year, takes 2035 and 2040 above
+the standard's 20 GWh; the other two keep 2040 below it and 2035 near it.
+
+### Metered 2024 as the reference against metered 2025 (message 693 (b), 700 (f)): equal cost, very different builds; the 2024-built fleets fail the engine far more
+
+Settings: single-year 2040 at 365 days (OPER_FROM=2040 HORIZON=2040 MAXP=1; no adequacy loop), clustered and linked, the six-constant
+table, CONG_OFF=1; central fixed from c7 to 2039, Fossil-free from s_ff2040_c7 (c7's Fossil-free settings); REP_REF=metered with
+PROFILES_LOCAL (metered 2024 from ESK19679: contracted demand less exports plus load shed, 29 February dropped, scaled to 2026's
+domestic; wind and solar per unit; local, never committed) and its own six-constant extremes (0, 40, 42-44, 175-177, 201-203, 346), or
+metered 2025 (profiles.json) with its extremes, both cells on the same commit (claude/wind-table c576132; the 2025 cells' LP keys
+differ from the 2 x 2's by the enrolment fix, ed2a607, and give the same builds and engine results). Engine: pathcheck.js YEARS=2040,
+CONG_OFF=1, adaptive draws, on the six-constant and on the stored weather (WX_WINDCORR=0). Eskom data (ESK19679), the analysis ours.
+4 Nov 2026, 12:35-14:00 UTC.
+
+| 2040 | Objective, R bn | Coal retired early, MW | Year's builds, MW | Engine, six-constant: mean / worst 1% / worst | Engine, stored |
+|---|---:|---:|---|---|---|
+| Central, metered 2025 | 768.99 | 532 | wind 3,500, solar 379, lithium 114 | 4.85 / 60.5 / 102.7 | 4.17 / 59.3 / 77.0 |
+| Central, metered 2024 | 768.96 | 3,346 | wind 3,500, solar 1,875, lithium 1,145 | 18.01 / 126.4 / 133.6 | 14.63 / 137.6 / 206.2 |
+| Fossil-free, metered 2025 | 2,147.39 | 0 | wind 1,809, solar 10,314, iron-air 981 | 10.30 / 78.0 / 78.0 | 8.45 / 59.1 / 59.1 |
+| Fossil-free, metered 2024 | 2,140.68 | 0 | iron-air 1,518 | 30.35 / 156.2 / 156.2 | 17.80 / 105.4 / 105.4 |
+
+- The objective barely moves (central -R0.03bn, Fossil-free -R6.7bn), but the build does: on 2024's days the central retires six times
+  the coal early and adds more solar and lithium, and Fossil-free adds no wind or solar in 2040. Both 2024-built fleets show three to four
+  times the engine's unserved of the 2025-built ones, on either weather.
+- 2025 contains July's 36-hour calm and 2024 has none of the listed long calms; the 2025-built fleets carry more firm capacity, and the
+  twelve-year engine check rewards that. So the build rests substantially on one reference year's events. Single-year LPs: no adequacy
+  loop, which in a full pathway would add stress windows for failing years (at the cost of passes).
+- Both metered references carry the metered tracking twin's shape (the entry above). The reference stays provisional (700 (a)) until
+  700 (b)'s runs report.
