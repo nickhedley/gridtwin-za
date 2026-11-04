@@ -10,6 +10,22 @@
   (shell b0umyuvro's chain): the metered 2024 runs, central and Fossil-free in parallel, each with the metered 2025 cell rerun on the same
   commit (scratchpad ref2024/refs2024.sh; outputs in gtza-fix harness/out/ref2024, local only). Then test 8 at 55 days, alone.
 
+## Message 696 (4 Nov, 13:05 SAST)
+
+- (a) Wind-table pull request: the table and its default only (FIXED.wxWindCorr 1, the six-constant table in nodal/wind_corr_table.json);
+  the method settings stay in the rerun scripts, each output recording them. Plus one line of site copy: the page's own optimiser keeps
+  the earlier method until after the note. Item 2 of the input freeze above is narrowed to this.
+- (b) #159's head stays where it is until Nick decides; the advisor merges on his yes. The rpCumMW correction goes on claude/c7-runs
+  (RESULTS), so #159 is not touched for it.
+- (c) No rerun route chosen until test 8's interior-point time and test 13's are in. Test 13's base (ba310d4, old basis: REP_REF=2025,
+  stored wind, congestion figure on) solved by parallel dual simplex (HIGHS_OPTS simplex_strategy 2, threads 2) in 3,851 s, outside
+  the run; serial simplex had not finished in 5,791 s. The same is being timed on test 8's LP (8e0651f38a), alone, after its
+  interior-point piece (scratchpad pds/pds_test8.sh); the metered 2024 runs follow it. Against linking only some pathways: it mixes
+  methods across compared pathways (Nick). Two stages to be ranked by accuracy, with what it does to comparing sensitivities.
+- (d) Nick pasted the restart messages with two changes: test 13 may use whichever solver is fastest, parallel dual simplex included;
+  test 15 keeps every year tested and reports 2028 both ways without switching.
+- (e) Report the timings as soon as they are in, with a recommended route for 10-13 Nov.
+
 ## Messages 691 and 692 (4 Nov; updated 11:20 SAST)
 
 - Done: 691 (a) named and 692 (a) fixed on #159 (pathcheck applies the case whose rates equal the recorded cocRates; the five preset
