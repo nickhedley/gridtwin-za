@@ -9,6 +9,11 @@ h.setOptionValue('output_flag', False)
 h.setOptionValue('solver', os.environ.get('HIGHS_SOLVER', 'simplex'))   # simplex by default: interior point took over 38 min on a pass-2 LP that simplex solves in 2; HIGHS_SOLVER=ipm for LPs where simplex stalls (7 Oct 2026, grid-cost runs)
 h.setOptionValue('run_crossover', os.environ.get('HIGHS_CROSSOVER', 'on'))   # 'off' with ipm: an interior answer, no vertex (timing test, 9 Oct 2026)
 h.setOptionValue('time_limit', float(sys.argv[3]) if len(sys.argv) > 3 else 900.0)
+# HIGHS_OPTS (test 13, 4 Nov 2026): further HiGHS options as a JSON object, e.g. {"presolve": "off"}, recorded in the output as Options.
+# Unset: none, as before.
+_opts = json.loads(os.environ.get('HIGHS_OPTS', '{}'))
+for _k, _v in _opts.items():
+    if h.setOptionValue(_k, _v) != highspy.HighsStatus.kOk: raise SystemExit('HIGHS_OPTS: option not accepted: ' + _k)
 h.readModel(sys.argv[1])
 # WARM START (11 Oct 2026): HIGHS_BASIS_IN, a basis saved by name from an earlier pass (variables and rows not in it
 # start nonbasic at their lower bound and basic respectively; HiGHS repairs it as an alien basis). HIGHS_BASIS_OUT
@@ -29,7 +34,7 @@ cv, cd, rv, rd = list(sol.col_value), list(sol.col_dual), list(sol.row_value), l
 cols = {n: {'Name': n, 'Primal': cv[i], 'Dual': cd[i]} for i, n in enumerate(lp.col_names_)}
 rows = [{'Name': n, 'Primal': rv[i], 'Dual': rd[i]} for i, n in enumerate(lp.row_names_)]
 out = {'Status': h.modelStatusToString(h.getModelStatus()),
-       'ObjectiveValue': h.getInfo().objective_function_value, 'Columns': cols, 'Rows': rows}
+       'ObjectiveValue': h.getInfo().objective_function_value, 'Columns': cols, 'Rows': rows, **({'Options': _opts} if _opts else {})}
 with open(sys.argv[2], 'w') as f:
     json.dump(out, f)
 # A solve stopped at its time limit also saves its basis, so a later job can resume it (RESUME, 12 Oct 2026).
