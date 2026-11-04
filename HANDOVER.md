@@ -10,6 +10,34 @@
   (shell b0umyuvro's chain): the metered 2024 runs, central and Fossil-free in parallel, each with the metered 2025 cell rerun on the same
   commit (scratchpad ref2024/refs2024.sh; outputs in gtza-fix harness/out/ref2024, local only). Then test 8 at 55 days, alone.
 
+## Message 698 (4 Nov, 14:15 SAST): restart messages onto claude/wind-table. Paste each as one message.
+
+The wind-table head (c576132 or later) changes no LP text for c7's settings: c7's 25-day pass-1 LP on 693's basis has key 8e0651f38a on
+main d90ba63 (the harness loading the six-constant table) and on claude/wind-table (the table loaded by the page). What the move brings is
+the enrolment round-off fix (bldEnrolPrimal: vppp_ and gy_ below 0 by no more than 1e-6 MW read as 0, a larger negative stops), the
+six-constant table in nodal/ with the correction on by default, and two new checks. So finished work on 693's basis stands.
+
+Restart, test 15 (branch claude/test15-two-stage-x2xqfl), now:
+  Message 698 (b). 1. Stop the running pieces by their PIDs only (session_pids.txt). 2. `git fetch origin claude/wind-table && git merge
+  origin/claude/wind-table`. 3. Settings unchanged: c7's as in test15.sh, REP_REF=metered,
+  REP_EXTREMES=20,161,162,163,187,188,194,195,196,214,218,358, WX_WINDCORR=1, WX_WINDCORR_TABLE=pathway/wx/wind_corr_table_calm6.json
+  (the same table as nodal/wind_corr_table.json now; keep it so the keys match the finished steps), CONG_OFF=1, K=4, every year tested.
+  4. Before resuming, dump step 2026's LP again (DUMP_STOP=1) and confirm its key equals the one recorded for ts2_central's step 2026. If
+  equal, resume the ts2 runs where they stopped (finished steps stand); if not, stop and report the two keys. 5. Step 2028 should now run
+  past the enrolment check; report it both ways (every year tested; LOOP_YEAR_ONLY=1 on the copy) without switching. 6. Nothing reads
+  ESK19679. Report each step's time, solves and year y's build, as before.
+
+Restart, test 13 (branch claude/test13-mga), when its current base has finished:
+  Message 698 (b). 1. Let the base finish; record its solve time, solver, objective and key, and the engine result by year (the loop's
+  adequacy rows at pass 1). 2. Stop any other run by its PID only. 3. `git fetch origin claude/wind-table && git merge
+  origin/claude/wind-table`. 4. Settings unchanged: c7's, REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1 REP_REF=metered
+  REP_EXTREMES=20,161,162,163,187,188,194,195,196,214,218,358 WX_WINDCORR=1 WX_WINDCORR_TABLE=pathway/wx/wind_corr_table_calm6.json
+  CONG_OFF=1. 5. Confirm the base's key: c7's pass-1 LP on these settings is 8e0651f38a on both heads (test 8's pass 1 is the same LP).
+  If yours equals it, the base and its solution stand; if not, report both keys before going on. 6. Solver: the fastest, parallel dual
+  simplex (HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}) unless a test shows better. 7. The central does not meet the standard at
+  pass 1 (your old base: 2031-2040 short), so ranges around the pass-1 base are the method test, not the note's ranges: those are built
+  on the central's final LP after its loop (test 8's, if 25 days is chosen). Report the 40 solves' times as they go.
+
 ## Message 697 (4 Nov, 13:25 SAST)
 
 - (a) Test 8's interior-point run stopped by PID at about 5,400 s, unfinished (13:11 SAST). Test 8 now runs in the pathway script with
