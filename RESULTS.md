@@ -21831,3 +21831,42 @@ New builds, cumulative from 2026, GW; coal standing; objective; the engine's uns
   timing only.
 - Timing for the route: these two LPs took 1.5 times test 8's solve on a quiet machine. The 10-13 Nov estimate of about 81 minutes a pass
   needs a margin; run (6)'s time is the next measure on the fixed twin.
+
+### Run (6) of message 701 (a), test 8 on the fixed twin: utility solar 23.9 GW in 2040, unchanged; the engine standard met in 2030, 2035 and 2040; the loop's own two-draw check puts 2040 at 21.6 GWh, over its 20
+
+Settings: claude/twin-fix e588e49 (worktree gtza-twin), the fixed metered tracking twin (FIXED.solarTrkMeteredBasis 'fleet', X 0.516,
+K 1.0285); otherwise test 8's basis as in the entry above (c7's settings, env_c6a.sh, GAS_FIRST=2035, REP_WEIGHTS=clustered REP_DAYS=25
+STORAGE_LINK=1 WX_WINDCORR=1 CONG_OFF=1, MAXP=1, HIGHS_OPTS {"simplex_strategy":2,"threads":2}), REP_REF=metered with its extremes
+(20,161-163,187,188,194-196,214,218,358; the same days on the fixed twin), LP key b26168635c. Engine: pathcheck.js K=20 (the draws of
+699 (d)'s table), 2030/2035/2040, CONG_OFF=1 WX_WINDCORR=1. Value: tvalue.py on the pass-1 LP and its cached solution. Script: scratchpad
+sol700/sol701.sh r6; outputs gtza-twin harness/out/sol701 (local). 4 Nov 2026, 18:35-20:06 UTC. Solve 4,818 s beside run (3) (load about 4;
+test 8: 4,527 s alone).
+
+| | Test 8 (old twin) | Run (6) (fixed twin) |
+|---|---:|---:|
+| Objective, R bn | 1,521.5 | 1,523.5 |
+| Utility solar 2030 / 2035 / 2040 | 7.0 / 17.4 / 23.9 | 6.7 / 17.2 / 23.9 |
+| of which off the freed-coal pool after 2028, 2040 | 0.0 | 0.2 |
+| Wind 2030 / 2035 / 2040 | 8.5 / 26.0 / 39.9 | 9.3 / 26.8 / 42.0 |
+| Lithium 2040, GW / GWh | 8.7 / 43.3 | 10.9 / 61.2 |
+| Coal standing 2030 / 2035 / 2040 | 32.2 / 25.7 / 17.7 | 32.4 / 25.9 / 17.9 |
+| Coal retired early (from 2029) | 0.22 | 0.00 |
+| OCGT / diesel 2040 | 3.95 / 2.58 | 4.20 / 0.93 |
+| Engine 2030 (mean / worst 1% / worst draw, GWh) | 1.3 / 22 / 40 | 0.9 / 17 / 19 |
+| Engine 2035 | 15.9 / 147 / 168 | 13.7 / 136 / 169 (se 1.7) |
+| Engine 2040 | 6.7 / 69 / 116 | 7.6 / 88 / 124 (se 1.0) |
+| The loop's own check (2 draws), 2040 mean, GWh | 18.8 | 21.6 |
+| Solar's energy value / wind's, 2030 / 2035 / 2040 | 0.79 / 0.77 / 0.78 | 0.78 / 0.79 / 0.92 |
+
+- The twin fix leaves utility solar where it was: 23.9 GW in 2040, all but 0.2 GW of it after 2028 on connections freed by coal.
+- What moves: wind +2.1 GW in 2040, lithium +2.2 GW / +17.9 GWh, no early coal retirement, diesel -1.65 GW; objective +R2.0bn.
+- The engine check meets the standard (20 GWh) in all three years. The loop's own check after pass 1 (2 draws a weather year) puts 2040 at
+  21.6 GWh, so in the full loop run (6) would take a second pass; test 8 passed it at 18.8. The two checks differ for test 8 too (18.8
+  against 6.7); the 2040 figure in the loop's check carries one 2015 draw of 270 GWh (test 8: 250). Not resolved.
+- Solar's value: in 2030 and 2035 the LP values solar's energy at 78-79% of wind's, as on the old twin. In 2040 0.2 GW is built off the
+  pool at the margin (cost R570/MWh, value R570.5; wind R619, at the margin too), and the ratio is 0.92.
+- For the reference recommendation: metered 2025 for both wind and solar, on the fixed twin, gives test 8's solar and meets the standard;
+  both mixed references (runs (1) and (2), old twin) were worse on reliability. Recommendation: metered 2025 for both, on the fixed twin,
+  still provisional (701 (g)) until metered 2024 on the fixed twin is in.
+- Timing for the route: 4,818 s beside another solve, 6% over test 8 alone. A second pass where the loop's check fails adds a pass's time;
+  that is the margin to plan for (10-13 Nov).
