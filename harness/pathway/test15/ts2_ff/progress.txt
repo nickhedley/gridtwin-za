@@ -68,3 +68,15 @@
 2026-11-04T17:36Z two_stage K=4 N=25 FIRST=2026, shell PID 20007
 2026-11-04T17:36:40Z step node PID 20020
 2026-11-04T17:36:55Z solve started (highs_native.py 20215)
+2026-11-04T18:16:53Z solve (highs_native.py 20215) ended after about 2389s
+2026-11-04T18:21Z step 2032 (horizon 2036) rc=0 done
+2026-11-04T18:21:24Z node 20020 ended, peak memory 3.0 GB
+2026-11-04T18:21:24Z step node PID 30141
+2026-11-04T18:21:24Z under 4800s left: stopped at the step boundary (node 30141, just started)
+2026-11-04T18:21Z step 2033 (horizon 2037) rc=0 NO OUTPUT
+2026-11-04T18:21:39Z node 30141 ended, peak memory 0.0 GB
+2026-11-04T18:21:39Z test15 ff piece ends: two_stage.sh rc=1, 7 of 15 steps done
+2026-11-04T18:21:45Z test15 ff piece, PID 30282, on 6361fd8 Test 15 results: the central's step 2030 f, BUILD_STAMP = '2026-11-04b, deadline 20:11Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 28G, memory free 12G
+2026-11-04T18:21:45Z two_stage.sh PID 30309
+2026-11-04T18:21Z two_stage K=4 N=25 FIRST=2026, shell PID 30309
+2026-11-04T18:22:00Z step node PID 30323
