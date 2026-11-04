@@ -1,5 +1,12 @@
 # GridTwin ZA - handover, current state (kept current; updated 4 Nov 2026, 15:40 UTC)
 
+## Overnight 4-5 Nov (message 703's order; Nick offline until the morning)
+
+- 18:20 SAST: runs (1) and (2) of 700 (b) hit the 115-minute solver limit unfinished (load 5-7 beside them: the suite, the shift test,
+  the split's first steps); two hours lost. From now (rule 366: the choice that finishes): one pair of solves at a time, nothing heavy
+  beside it, each pair its own job: (1)+(2), (6)+(3), (4)+(5), the split's steps 3-6, metered 2024 on the fixed twin, then 55 days.
+- Wind-table pull request opened, not merged: #160 (suite 1,023/1,032, audit 88/88, eng5 5/6; no new failure).
+
 ## Messages 700-702 (4 Nov, to 17:40 SAST)
 
 - 700/701: the metered tracking twin was misshapen (fixed-to-tracker gain on a half-tracker fleet: 08:00 peak, midday dip, 4.7% of hours
