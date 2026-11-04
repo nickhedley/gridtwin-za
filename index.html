@@ -6073,6 +6073,10 @@ const FIXED = {
   // back through the curve; RESULTS, 684 (d), 686 (b), 691 (b)), new wind on the national modern-turbine map of the corrected series.
   // The metered profile is not touched. Set it before the weather years are first used.
   wxWindCorr:1,
+  // New tracking solar on the metered profile's days (user decision, 4 Nov 2026, message 701 (a)): 'fleet', the metered fleet times the
+  // modelled years' tracking over their fleet mix, scaled to the twelve-year tracking mean; 'fixed' the earlier fixed-tilt-to-tracker
+  // conversion, kept to reproduce runs before build 2026-11-05a. Set it before the profiles are first used (solarTrkBasis).
+  solarTrkMeteredBasis:'fleet',
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -16042,44 +16046,69 @@ let bldSolarTrk = null, SOLAR_TRK_G = null, SOLAR_TRK_ERR = null;
 // From the map file at start-up (metered_scale, written by harness/solar_trk_k.js); solarTrkMeteredK recomputes it when the weather
 // years load and the page stops if the two disagree.
 let SOLAR_TRK_K = null;
-function setSolarTrkK(k, source){
-  if (!(Number.isFinite(k) && k > 0)) throw new Error('solar tracking metered scale from ' + source + ' is not a positive number');
-  if (SOLAR_TRK_K !== null){
-    const d = Math.abs(k - SOLAR_TRK_K) / SOLAR_TRK_K;
-    if (d > 1e-9){ SOLAR_TRK_ERR = 'solar tracking metered scale disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun harness/solar_trk_k.js --write';
-      SOLAR_TRK_K = null; throw new Error(SOLAR_TRK_ERR); }
+// The metered twin's basis (user decision, 4 Nov 2026, message 701 (a): the fixed-to-tracking conversion is a fault, fixed here).
+// 'fleet', the default: the metered fleet x (modelled tracking / the modelled fleet mix, (1 - X) fixed tilt + X tracking, X existing
+// solar's tracker share on the modelled years, existPvTrackShareAt at the defaults), by month and hour, scaled to the twelve-year
+// tracking mean. 'fixed': the earlier conversion (modelled tracking / fixed tilt), which applied a fixed-to-tracker gain to a fleet
+// already about half on trackers and gave a twin peaking at 08:00 with a midday dip and 4.7% of hours clipped (RESULTS 'The metered
+// tracking twin is misshapen'); kept to reproduce runs before build 2026-11-05a. SOLAR_TRK_MAPS holds both bases' map and scale;
+// SOLAR_TRK_G and SOLAR_TRK_K are the active pair (applySolarTrkBasis), which solarTrkOf and the worker read.
+let SOLAR_TRK_MAPS = { fixed: { G: null, K: null }, fleet: { G: null, K: null } };
+function solarTrkBasis(){
+  const b = (typeof state !== 'undefined' && state && state.solarTrkMeteredBasis != null) ? state.solarTrkMeteredBasis : FIXED.solarTrkMeteredBasis;
+  if (b !== 'fleet' && b !== 'fixed') throw new Error('solarTrkMeteredBasis must be fleet or fixed: ' + b);
+  return b;
+}
+// Points SOLAR_TRK_G and SOLAR_TRK_K at the chosen basis and drops a metered twin already derived on the other one.
+function applySolarTrkBasis(){
+  const M = SOLAR_TRK_MAPS[solarTrkBasis()];
+  if (SOLAR_TRK_G !== M.G || SOLAR_TRK_K !== M.K){
+    SOLAR_TRK_G = M.G; SOLAR_TRK_K = M.K;
+    if (typeof PROFILES !== 'undefined' && PROFILES && PROFILES.solar && PROFILES.solar.trk && !PROFILES.solar.trkOwn) delete PROFILES.solar.trk;
+  }
+}
+function setSolarTrkK(k, source, basis = 'fixed'){
+  if (!(Number.isFinite(k) && k > 0)) throw new Error('solar tracking metered scale (' + basis + ') from ' + source + ' is not a positive number');
+  const M = SOLAR_TRK_MAPS[basis];
+  if (M.K !== null){
+    const d = Math.abs(k - M.K) / M.K;
+    if (d > 1e-9){ SOLAR_TRK_ERR = 'solar tracking metered scale (' + basis + ') disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun harness/solar_trk_k.js --write';
+      M.K = null; applySolarTrkBasis(); throw new Error(SOLAR_TRK_ERR); }
     return;
   }
-  SOLAR_TRK_K = k;
+  M.K = k; applySolarTrkBasis();
 }
-// The scale k that puts the metered profile's twin, min(1, k x solar x SOLAR_TRK_G), at the twelve modelled years' mean tracking output
-// (each year's own PVGIS twin, as weatherYearNational builds it). Bisection on the clipped mean, to 1e-13.
-function solarTrkMeteredK(){
-  if (!SOLAR_TRK_G || !bldWeatherYears || !bldSolarTrk) return null;
+// The scale k that puts the metered profile's twin, min(1, k x solar x the basis's map), at the twelve modelled years' mean tracking
+// output (each year's own twin, as weatherYearNational builds it). Bisection on the clipped mean, to 1e-13.
+function solarTrkMeteredK(basis = solarTrkBasis()){
+  const G = SOLAR_TRK_MAPS[basis].G;
+  if (!G || !bldWeatherYears || !bldSolarTrk) return null;
   let s = 0, n = 0;
   for (const y of bldWeatherYears.meta.years){ const nat = weatherYearNational(String(y)); if (!nat || !nat.solar.trk) return null;
     for (let h = 0; h < HOURS; h++) s += nat.solar.trk[h]; n += HOURS; }
   const target = s / n, P = PROFILES.solar, raw = new Float64Array(HOURS);
-  for (let h = 0; h < HOURS; h++) raw[h] = P[h] * SOLAR_TRK_G[hourMonth(h)][h % 24];
+  for (let h = 0; h < HOURS; h++) raw[h] = P[h] * G[hourMonth(h)][h % 24];
   const meanAt = k => { let m = 0; for (let h = 0; h < HOURS; h++) m += Math.min(1, k * raw[h]); return m / HOURS; };
   let lo = 0, hi = 4; if (meanAt(hi) < target) throw new Error('solar tracking metered scale: no k reaches the twelve-year mean');
   while (hi - lo > 1e-13){ const mid = (lo + hi) / 2; if (meanAt(mid) < target) lo = mid; else hi = mid; }
   return (lo + hi) / 2;
 }
-// The national map arrives at start-up from nodal/profiles_solar_tracking_map.json (build_solar_tracking.py, as for the
-// modern-wind map), so a preset with tracking solar runs before the weather years load (18 Oct 2026, build 2026-10-17i);
-// when the full files load, bldBuildSolarTrkRatio recomputes it and the page stops if the two disagree.
-function setSolarTrkMap(G, source){
-  if (!Array.isArray(G) || G.length !== 12 || G.some(r => !r || r.length !== 24)) throw new Error('solar tracking map from ' + source + ' is not 12 months x 24 hours');
-  if (SOLAR_TRK_G){
+// The national maps arrive at start-up from nodal/profiles_solar_tracking_map.json ('map', the fixed basis, by build_solar_tracking.py;
+// 'map_fleet' with its scale, by harness/solar_trk_k.js), so a preset with tracking solar runs before the weather years load (18 Oct
+// 2026, build 2026-10-17i); when the full files load, bldBuildSolarTrkRatio recomputes both and the page stops if either disagrees.
+function setSolarTrkMap(G, source, basis = 'fixed'){
+  if (!Array.isArray(G) || G.length !== 12 || G.some(r => !r || r.length !== 24)) throw new Error('solar tracking map (' + basis + ') from ' + source + ' is not 12 months x 24 hours');
+  const M = SOLAR_TRK_MAPS[basis];
+  if (M.G){
     let d = 0;
-    for (let m = 0; m < 12; m++) for (let hh = 0; hh < 24; hh++) d = Math.max(d, Math.abs(G[m][hh] - SOLAR_TRK_G[m][hh]) / Math.max(1e-9, Math.abs(SOLAR_TRK_G[m][hh])));
-    if (d > 1e-9){ SOLAR_TRK_G = null;
-      SOLAR_TRK_ERR = 'solar tracking map disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun build_solar_tracking.py with MAP_ONLY=1';
+    for (let m = 0; m < 12; m++) for (let hh = 0; hh < 24; hh++) d = Math.max(d, Math.abs(G[m][hh] - M.G[m][hh]) / Math.max(1e-9, Math.abs(M.G[m][hh])));
+    if (d > 1e-9){ M.G = null; applySolarTrkBasis();
+      SOLAR_TRK_ERR = 'solar tracking map (' + basis + ') disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun '
+        + (basis === 'fixed' ? 'build_solar_tracking.py with MAP_ONLY=1' : 'harness/solar_trk_k.js --write');
       throw new Error(SOLAR_TRK_ERR); }
     return;
   }
-  SOLAR_TRK_G = G.map(r => Array.from(r));
+  M.G = G.map(r => Array.from(r)); applySolarTrkBasis();
 }
 const _MSTART_H = [0,31,59,90,120,151,181,212,243,273,304,334].map(d => d * 24);
 function hourMonth(h){ let m = 11; while (m > 0 && h < _MSTART_H[m]) m--; return m; }
@@ -16097,9 +16126,12 @@ function bldBuildSolarTrkRatio(){
       const m = hourMonth(h); num[m][h % 24] += w * T[y][h] / st; den[m][h % 24] += w * F[y][h] / sc;
     }
   }
-  setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1)), 'the series');
-  // The metered scale, checked against the map file's, where the measured profile is loaded (the worker skips it: the page checks).
-  if (typeof _profilesReal !== 'undefined' && _profilesReal){ const k = solarTrkMeteredK(); if (k !== null) setSolarTrkK(k, 'the series'); }
+  setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1)), 'the series', 'fixed');
+  // The fleet basis (message 701 (a)): tracking over the fleet's own mix, X at the defaults.
+  const X = existPvTrackShareAt(FIXED);
+  if (X !== null) setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => { const f = (1 - X) * den[m][hh] + X * v; return f > 1e-9 ? v / f : 1; })), 'the series', 'fleet');
+  // The metered scales, checked against the map file's, where the measured profile is loaded (the worker skips it: the page checks).
+  if (typeof _profilesReal !== 'undefined' && _profilesReal) for (const b of ['fixed', 'fleet']){ const k = solarTrkMeteredK(b); if (k !== null) setSolarTrkK(k, 'the series', b); }
 }
 // Modern-TURBINE wind (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
 // current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
@@ -22357,7 +22389,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldCocBase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
-  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, existPvTrackShareAt, wxWindCorrOn, congShapeFactors, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
+  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, solarTrkBasis, applySolarTrkBasis, existPvTrackShareAt, wxWindCorrOn, congShapeFactors, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
   btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
   ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
   coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt, coalCarbonFloorR });
@@ -22365,7 +22397,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
 const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
   ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, CARBON_COAL_FLOOR_R_KWH, CARBON_COAL_FLOOR_TO, CARBON_CPI_PA, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
-  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, _existPvX, WIND_CORR_TABLE, CONG_SHAPE_PV, CONG_SHAPE_WIND, _MSTART_H, COAL_MINSTABLE_CURVE,
+  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, SOLAR_TRK_MAPS, _existPvX, WIND_CORR_TABLE, CONG_SHAPE_PV, CONG_SHAPE_WIND, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
   BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK, BLD_COC_PRIVATE_PREM, BLD_COC_GROUP, BLD_COC_NAB_GAP, BLD_COC_PRIVATE_SHARE, BLD_COC_PVWIND_CLOSED, BLD_COC_PVWIND_TECH, BLD_BUILD_Y,
@@ -23194,7 +23226,8 @@ const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V |
   .then(d => { if (d){ setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; } }).catch(e => console.error('[GridTwin]', e.message));
 // Tracking-solar map (bldPvTracking, a preset key): needed by any dispatch with new tracking solar on the default profile.
 const P_STRK = fetch('nodal/profiles_solar_tracking_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
-  .then(d => { if (d){ setSolarTrkMap(d.map, 'nodal/profiles_solar_tracking_map.json'); setSolarTrkK(d.metered_scale, 'nodal/profiles_solar_tracking_map.json'); } }).catch(e => console.error('[GridTwin]', e.message));
+  .then(d => { if (d){ const f = 'nodal/profiles_solar_tracking_map.json'; setSolarTrkMap(d.map, f, 'fixed'); setSolarTrkK(d.metered_scale, f, 'fixed');
+    if (d.map_fleet) setSolarTrkMap(d.map_fleet, f, 'fleet'); if (d.metered_scale_fleet != null) setSolarTrkK(d.metered_scale_fleet, f, 'fleet'); } }).catch(e => console.error('[GridTwin]', e.message));
 // Numbers in the prose, from the code (site text fixes, user 16 Oct 2026, message 138). Each <span data-num="key"> (or an
 // <option>) shows ABOUT_NUM[key](), so a constant is never typed a second time into the About text; an unknown key throws.
 const _numInt = v => Math.round(v).toLocaleString('en-US');

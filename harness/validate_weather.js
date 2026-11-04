@@ -279,6 +279,20 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
           !a.error && a.def === 1 && a.on && a.table && a.trkFile && a.modFile && a.own && a.mod, a.error || JSON.stringify(a));
   }
 
+  // THE METERED TRACKING TWIN KEEPS A TRACKER'S SHAPE (message 701 (a)): new tracking solar on the metered profile's days, on the default
+  // basis ('fleet'), at the twelve-year tracking mean, with under 1% of hours clipped at full output and its energy-weighted hour of day
+  // within 10 minutes of the metered fleet's (a single-axis tracker is symmetric about solar noon as the fleet is). The earlier 'fixed'
+  // basis clips 4.7% of hours and runs 19 minutes early (RESULTS 'The metered tracking twin is misshapen').
+  {
+    const a = probe(`const P = PROFILES.solar, t = solarTrkOf(P); let s = 0, c = 0, cm = 0, cp = 0, sp = 0, tw = 0, n = 0;
+      for (let h = 0; h < t.length; h++){ s += t[h]; if (t[h] >= 0.99) c++; cm += (h % 24 + 0.5) * t[h]; cp += (h % 24 + 0.5) * P[h]; sp += P[h]; }
+      for (const y of bldWeatherYears.meta.years){ const tr = weatherYearNational(String(y)).solar.trk; for (let h = 0; h < tr.length; h++) tw += tr[h]; n += tr.length; }
+      return { basis: solarTrkBasis(), mean: s / t.length, twelve: tw / n, clipped: c / t.length, shiftMin: (cm / s - cp / sp) * 60 };`);
+    check('the metered tracking twin keeps a tracker\'s shape: twelve-year mean, under 1% of hours clipped, within 10 minutes of the fleet\'s timing',
+          !a.error && a.basis === 'fleet' && Math.abs(a.mean - a.twelve) < 1e-6 && a.clipped < 0.01 && Math.abs(a.shiftMin) < 10,
+          a.error || `basis ${a.basis}, mean ${a.mean} against ${a.twelve}, clipped ${(100 * a.clipped).toFixed(2)}% of hours, energy-weighted hour ${a.shiftMin.toFixed(1)} min from the fleet's`);
+  }
+
   // THE DERIVED LCOE ANCHORS EQUAL THEIR FORMULAS (user, 16-17 Oct 2026, messages 159 (3) and 194 (1)). Each is recomputed here,
   // with this harness's own annuity, from the build costs, fixed O&M and lives the page holds and the reference capacity factor
   // or cycles it is anchored on, rounded to its slider's step, and compared with what the page set: wind, tracking solar and
