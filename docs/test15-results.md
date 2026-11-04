@@ -63,8 +63,10 @@ harness/pathway/test15/ts_central and ts_ff.
 - The stop: pass 2's solution held the 2028 VPP enrolment (vppp_2028) at -9.07e-11 MW, within the solver's feasibility tolerance (1e-7), and
   the engine's adequacy test rejects any enrolment below zero (index.html 8627, `vppEnrolGWh must be 0 or more: -2.27e-13`; Fossil-free
   -2.01e-13). Its cap check beside it allows 1e-4 GWh; the zero check allows none. Every relaunch would stop at the same place (the solve is
-  cached). Not changed here (no index.html changes in this test); the user's decision. Since the merge, FIX_FROM also fixes the enrolment, so
-  a tiny negative fixed in one step would reach every later step's test.
+  cached). Since the merge, FIX_FROM also fixes the enrolment, so a tiny negative fixed in one step would reach every later step's test.
+  Decision (user, 4 Nov 2026): the fix goes on claude/wind-table (a value negative within the solver's tolerance reads as zero; a larger
+  negative still stops, with a check), and this test moves to that branch's head when it lands; no local patch. A run that stops on the check
+  before then is left stopped.
 
 ### The central, Fossil-free and the central with ANNUITY_TO=2040 (message 693 (6))
 
