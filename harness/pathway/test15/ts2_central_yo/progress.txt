@@ -1,0 +1,15 @@
+2026-11-04T11:31:08Z copied step_2026.json and step_2027.json from out/ts2_central (message 693 (5)); fixed.json rebuilt by two_stage.sh
+2026-11-04T11:31:08Z test15 central_yo piece, PID 3779, on e679f3d Test 15 on message 693's basis: REP_REF=me, BUILD_STAMP = '2026-11-04a, deadline 13:21Z, MIN_LEFT 2700s, disk free 29G, memory free 14G
+2026-11-04T11:31:08Z two_stage.sh PID 3810
+2026-11-04T11:31Z two_stage K=4 N=25 FIRST=2026, shell PID 3810
+2026-11-04T11:31:23Z step node PID 3820
+2026-11-04T11:31:53Z solve started (highs_native.py 3974)
+2026-11-04T11:52:28Z solve (highs_native.py 3974) ended after about 1234s
+2026-11-04T11:53Z step 2028 (horizon 2032) rc=0 done
+2026-11-04T11:53:13Z node 3820 ended, peak memory 2.7 GB
+2026-11-04T11:53:13Z step node PID 8395
+2026-11-04T11:53:13Z step 2028 done, the last this run takes: stopped at the step boundary (node 8395, just started)
+2026-11-04T11:53Z step 2029 (horizon 2033) rc=0 NO OUTPUT
+2026-11-04T11:53:28Z node 8395 ended, peak memory 0.0 GB
+2026-11-04T11:53:28Z test15 central_yo piece ends: two_stage.sh rc=1, 3 of 15 steps done
+2026-11-04T11:53:28Z test15 central_yo: step 2028 has output, the last this run takes

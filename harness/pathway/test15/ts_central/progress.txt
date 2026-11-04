@@ -1,0 +1,30 @@
+2026-11-04T07:46:59Z test15 central piece, PID 844, on f9e3e4c Stored risk panels regenerated on build 20, BUILD_STAMP = '2026-11-04a, deadline 09:36Z, MIN_LEFT 2700s, disk free 30G, memory free 15G
+2026-11-04T07:46:59Z two_stage.sh PID 865
+2026-11-04T07:46Z two_stage K=4 N=25 FIRST=2026, shell PID 865
+2026-11-04T07:47:14Z step node PID 874
+2026-11-04T07:47:44Z solve started (highs_native.py 990)
+2026-11-04T07:57:16Z solve (highs_native.py 990) ended after about 571s
+2026-11-04T07:59Z step 2026 (horizon 2030) rc=0 done
+2026-11-04T07:59:31Z node 874 ended, peak memory 2.6 GB
+2026-11-04T07:59:31Z step node PID 3226
+2026-11-04T08:00:16Z solve started (highs_native.py 3412)
+2026-11-04T08:14:50Z solve (highs_native.py 3412) ended after about 870s
+2026-11-04T08:17Z step 2027 (horizon 2031) rc=0 done
+2026-11-04T08:17:35Z node 3226 ended, peak memory 2.7 GB
+2026-11-04T08:17:35Z step node PID 6932
+2026-11-04T08:18:05Z solve started (highs_native.py 7034)
+2026-11-04T08:54:28Z solve (highs_native.py 7034) ended after about 2182s
+2026-11-04T08:57:29Z solve started (highs_native.py 14950)
+2026-11-04T09:22Z step 2028 (horizon 2032) rc=0 NO OUTPUT
+2026-11-04T09:22:34Z solve (highs_native.py 14950) ended after about 1494s
+2026-11-04T09:22:34Z node 6932 ended, peak memory 3.3 GB
+2026-11-04T09:22:34Z test15 central piece ends: two_stage.sh rc=1, 2 of 15 steps done
+2026-11-04T09:23:02Z test15 central piece, PID 20187, on 9f07237 test15_summary.py: years with no step yet , BUILD_STAMP = '2026-11-04a, deadline 11:13Z, MIN_LEFT 2700s, disk free 30G, memory free 12G
+2026-11-04T09:23:02Z two_stage.sh PID 20212
+2026-11-04T09:23Z two_stage K=4 N=25 FIRST=2026, shell PID 20212
+2026-11-04T09:23:17Z step node PID 20223
+2026-11-04T09:26:32Z solve started (highs_native.py 20861)
+2026-11-04T09:39:20Z solve (highs_native.py 20861) ended after about 765s
+2026-11-04T09:40Z step 2028 (horizon 2032) rc=0 NO OUTPUT
+2026-11-04T09:40:20Z node 20223 ended, peak memory 3.0 GB
+2026-11-04T09:40:20Z test15 central piece ends: two_stage.sh rc=1, 2 of 15 steps done

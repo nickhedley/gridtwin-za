@@ -1,0 +1,32 @@
+2026-11-04T07:52:47Z test15 ff piece, PID 1697, on f9e3e4c Stored risk panels regenerated on build 20, BUILD_STAMP = '2026-11-04a, deadline 09:42Z, MIN_LEFT 2700s, disk free 30G, memory free 13G
+2026-11-04T07:52:47Z two_stage.sh PID 1718
+2026-11-04T07:52Z two_stage K=4 N=25 FIRST=2026, shell PID 1718
+2026-11-04T07:53:02Z step node PID 1727
+2026-11-04T07:53:33Z solve started (highs_native.py 1915)
+2026-11-04T08:04:50Z solve (highs_native.py 1915) ended after about 674s
+2026-11-04T08:06Z step 2026 (horizon 2030) rc=0 done
+2026-11-04T08:07:05Z node 1727 ended, peak memory 2.6 GB
+2026-11-04T08:07:05Z step node PID 4859
+2026-11-04T08:07:36Z solve started (highs_native.py 4959)
+2026-11-04T08:20:38Z solve (highs_native.py 4959) ended after about 776s
+2026-11-04T08:23:39Z solve started (highs_native.py 8112)
+2026-11-04T08:45:14Z solve (highs_native.py 8112) ended after about 1284s
+2026-11-04T08:48Z step 2027 (horizon 2031) rc=0 done
+2026-11-04T08:48:14Z node 4859 ended, peak memory 3.1 GB
+2026-11-04T08:48:14Z step node PID 13119
+2026-11-04T08:48:44Z solve started (highs_native.py 13220)
+2026-11-04T09:09:33Z solve (highs_native.py 13220) ended after about 1243s
+2026-11-04T09:12:49Z solve started (highs_native.py 18043)
+2026-11-04T09:28:22Z solve (highs_native.py 18043) ended after about 919s
+2026-11-04T09:28Z step 2028 (horizon 2032) rc=0 NO OUTPUT
+2026-11-04T09:28:37Z node 13119 ended, peak memory 3.7 GB
+2026-11-04T09:28:37Z test15 ff piece ends: two_stage.sh rc=1, 2 of 15 steps done
+2026-11-04T09:28:46Z test15 ff piece, PID 21374, on 9f07237 test15_summary.py: years with no step yet , BUILD_STAMP = '2026-11-04a, deadline 11:18Z, MIN_LEFT 2700s, disk free 30G, memory free 12G
+2026-11-04T09:28:46Z two_stage.sh PID 21401
+2026-11-04T09:28Z two_stage K=4 N=25 FIRST=2026, shell PID 21401
+2026-11-04T09:29:01Z step node PID 21410
+2026-11-04T09:32:31Z solve started (highs_native.py 22117)
+2026-11-04T09:56:06Z solve (highs_native.py 22117) ended after about 1408s
+2026-11-04T09:56Z step 2028 (horizon 2032) rc=0 NO OUTPUT
+2026-11-04T09:57:06Z node 21410 ended, peak memory 3.2 GB
+2026-11-04T09:57:06Z test15 ff piece ends: two_stage.sh rc=1, 2 of 15 steps done
