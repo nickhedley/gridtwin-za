@@ -1,4 +1,32 @@
-# GridTwin ZA - handover, current state (kept current; updated 4 Nov 2026, 10:15 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 4 Nov 2026, 15:40 UTC)
+
+## Messages 700-702 (4 Nov, to 17:40 SAST)
+
+- 700/701: the metered tracking twin was misshapen (fixed-to-tracker gain on a half-tracker fleet: 08:00 peak, midday dip, 4.7% of hours
+  clipped). Fixed on claude/twin-fix (5392a90, db63be3): FIXED.solarTrkMeteredBasis 'fleet' (default) or 'fixed'; the fleet map and scale in
+  nodal/profiles_solar_tracking_map.json by harness/solar_trk_k.js; validate_weather's twin-shape check (fails on 'fixed'). Its own pull
+  request after the wind-table one, with suite, panels, presets and visible text: 6 Nov, about 12:00 SAST.
+- Runs: 700 (b) (1) and (2) on the old twin (gtza-t8, out/sol700, finishing); (6) = test 8's basis on the fixed twin and (3)-(5) on the
+  fixed twin queued (scratchpad sol700/sol701.sh, gtza-twin out/sol701). The 699 (c) split's steps 3-6 follow. Test 8 at 55 days after.
+- 701 (b): the PVGIS years (2014-2023) run about 25 minutes late against the metered fleet; 2024-2025's fixed tilt is on time; their
+  tracking twins run 30-50 minutes early (RESULTS). No change without Nick. Engine effect on test 8's fleet running (SOLAR_SHIFT_MIN=25).
+- 701 (d): tests 8, 13 and 15 stand as method and timing only; their mixes are not for use. Restart messages when the twin fix is decided.
+- 701 (e): no alternative-optima solves. 701 (f): wind's limit in the pack's limitations with its sources (the Masterplan pace to 2030,
+  the 2,500/2,000 split ours and the Masterplan not yet in SOURCES; IRP 2025 Table 1's 3,500 MW from 2031, applied earlier than IRP).
+- 701 (g): metered 2025 stays provisional; metered 2024's single-year cells rerun on the fixed twin as a sensitivity (after (3)-(5));
+  the thin margin and July 2025's calm go in the pack on the final fleets.
+- 702 after 701: (a) backcast of 2025 and January-August 2026; (b) physical shape checks with injected faults; (c) the fault log in
+  RESULTS. (d) Nick's independent review of the data path: its findings come through Nick; not waited for.
+
+Input freeze (701 (d); replaces 693 (e)'s list), each item that can still change the reruns' LP key, with a date (SAST):
+  1. The wind-table pull request (5 Nov, 12:00): changes no c7 LP key (8e0651f38a on both heads).
+  2. The twin fix (claude/twin-fix): changes the key (new solar on the metered days). Pull request 6 Nov, about 12:00.
+  3. The PVGIS timing (about 25 minutes late) and the 2024-2025 tracking twins (early): Nick's decision; a fix changes the key (the
+     modelled years feed the twelve-year means, the stress windows and the engine). Decision 6 Nov; a fix 7 Nov.
+  4. The reference (metered 2025, provisional): after runs (1), (2), (6) and metered 2024 on the fixed twin, 6 Nov.
+  5. Day count and headline method: 9 Nov (tests 13, 15, 55 days). 6. Horizon: 9 Nov. 7. The rerun settings: 9 Nov.
+  8. Any finding from Nick's data-path review: unknown.
+  Test 13's rerun for the note stays on 11-13 Nov (items 2-3 change the key).
 
 ## Status, 4 Nov 12:15 SAST
 
