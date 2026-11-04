@@ -21870,3 +21870,33 @@ test 8: 4,527 s alone).
   still provisional (701 (g)) until metered 2024 on the fixed twin is in.
 - Timing for the route: 4,818 s beside another solve, 6% over test 8 alone. A second pass where the loop's check fails adds a pass's time;
   that is the margin to plan for (10-13 Nov).
+
+### Run (3) of message 700 (b), fixed twin: new wind at the BW6 bids' 37.24% raises utility solar to 30.5 GW in 2040 (run (6): 23.9), 6.8 GW of it on new connections after 2028; cost +R48.7bn; 2035 meets the engine standard narrowly
+
+Settings: as run (6) above (claude/twin-fix e588e49, fixed twin, test 8's basis, metered reference with its extremes) plus WIND_CORR=bw6
+(new wind at the BW6 bids' typical 37.24% over the twelve years, against 42.0% in run (6)); LP key ef99427600. The engine check takes
+windCorr bw6 from the run (logged). Solve 5,120 s beside run (6). 4 Nov 2026, 18:37-20:14 UTC.
+
+| | Run (6) (wind 42.0%) | Run (3) (wind 37.24%) |
+|---|---:|---:|
+| Objective, R bn | 1,523.5 | 1,572.3 |
+| Utility solar 2030 / 2035 / 2040 | 6.7 / 17.2 / 23.9 | 7.9 / 19.4 / 30.5 |
+| of which off the freed-coal pool after 2028, 2035 / 2040 | 0.0 / 0.2 | 2.2 / 6.8 |
+| Wind 2030 / 2035 / 2040 | 9.3 / 26.8 / 42.0 | 7.2 / 24.7 / 41.3 |
+| Lithium 2040, GW / GWh | 10.9 / 61.2 | 13.4 / 81.4 |
+| Coal retired early (from 2029) | 0.00 | 0.00 |
+| OCGT / diesel 2040 | 4.20 / 0.93 | 4.03 / 0.66 |
+| Engine 2030 (mean / worst 1% / worst draw, GWh) | 0.9 / 17 / 19 | 1.7 / 27 / 59 |
+| Engine 2035 | 13.7 / 136 / 169 (se 1.7) | 19.0 / 197 / 221 (se 2.3) |
+| Engine 2040 | 7.6 / 88 / 124 (se 1.0) | 7.0 / 95 / 128 (se 1.2) |
+| The loop's own check (2 draws), 2040 mean, GWh | 21.6 | 19.3 |
+| Wind cost / energy value, R per MWh, 2030 / 2035 / 2040 | 759 / 818, 684 / 771, 619 / 620 | 856 / 912, 771 / 886, 699 / 699 |
+| Solar's energy value / wind's, 2030 / 2035 / 2040 | 0.78 / 0.79 / 0.92 | 0.74 / 0.72 / 0.81 |
+
+- Wind's capacity factor is the lever on solar that the reference was not: at the bids' 37.24% solar is built off the pool from 2035 at
+  the margin (reduced cost 0; cost R639/MWh 2035, R570 2040), 6.8 GW of it by 2040; wind is still at its yearly limit in 2030 and 2035
+  and at the margin in 2040.
+- Reliability: 2035's mean is 19.0 GWh against the 20 GWh standard, inside it by less than one standard error (marginal); 2030 and 2040
+  meet it. The loop's own check passes at pass 1 (2040 19.3).
+- Which wind capacity factor is right for new wind is the question for the solar headline: the six-constant correction's 42.0% on new
+  wind (the modelled twelve years, corrected) against the bids' 37.24% (BW6's typical bid, Nick's source). Not decided here.
