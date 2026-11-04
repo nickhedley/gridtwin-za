@@ -21929,3 +21929,36 @@ not finish: still solving at 112 minutes when the container restarted (22:00 UTC
   2035 by less (marginal); the loop's own check fails six years, so the full loop would add passes. The three pass-1 builds that retire
   0.5 GW or more of coal early (runs (1), (2), (5)) have each missed the standard; test 8 (0.22 GW) and runs (6) and (3) (none) met it.
   An observation across six runs, not a tested cause.
+
+### c7 to test 8 by cause (message 699 (c), with 700 (d)'s solar line): steps 1-3 done; the weather fixes, the six-constant correction and congestion off leave solar at 38 GW in 2040 and the standard met; steps 4-6 running
+
+Settings: one path through the changes, each step adding one to the step before (the shares depend on the order). Full 2026-2040
+pathway, pass 1 (MAXP=1), c7's settings (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3
+COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1, env_c6a.sh, GAS_FIRST=2035), parallel dual simplex (threads 2). Worktree
+gtza-t8 (claude/wind-table c576132, then claude/solar-700 a87471b; the harness only between them), old metered twin. Steps: S1 weather
+fixes (#159's data, the correction off: WX_WINDCORR=0); S2 + the six-constant correction; S3 + CONG_OFF=1; S4 + 25 equal days; S5 +
+clustered weights, modelled 2025 reference with its extremes (113-115,160-163,187,188,214,217-219,273,359), STORAGE_LINK=0; S6 + the
+metered reference with its extremes (20,161-163,187,188,194-196,214,218,358); test 8 = S6 + linking; run (6) = test 8 + the fixed
+twin (claude/twin-fix e588e49). Each build checked by the engine in 2030, 2035, 2040 on the new weather (six-constant), CONG_OFF=1,
+K=20, the draws of 699 (d)'s table (c7's row from there). Scripts: scratchpad decomp/decomp.sh, decomp/split.py. Solve times: S1
+4,039 s and S2 4,245 s (side by side, load 5-6, 4 Nov 13:26-14:54 UTC); S3 715 s (beside run (4), 4 Nov 22:03-22:35 UTC, its engine
+check rerun after a container restart). S3's LP is the same size as S2's (75 MB); congestion off makes it about six times faster.
+
+Solar 2040: on the freed-coal pool / off it after 2028 / the committed builds of 2026-2028. Engine: mean unserved, GWh.
+
+| Step | Objective, R bn | Solar 2040 (pool / off-pool after 2028 / 2026-28) | Solar 2035 | Wind 2040 | Lithium 2040 GW / GWh | Coal retired early | Engine 2030 / 2035 / 2040 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| c7 (engine on the new weather, 699 (d)) | 1,653.7 | 33.2 (16.5 / 13.3 / 3.4) | 22.5 | 33.0 | 13.1 / 81.0 | 0.00 | 1.2 / 1.5 / 0.5 |
+| S1 weather fixes | 1,646.7 | 38.6 (15.8 / 19.4 / 3.4) | 25.5 | 27.8 | 15.2 / 88.3 | 0.00 | 1.0 / 1.2 / 0.7 |
+| S2 + six-constant | 1,630.3 | 38.2 (15.5 / 19.2 / 3.4) | 26.3 | 28.9 | 14.7 / 83.0 | 0.00 | 0.9 / 0.9 / 0.4 |
+| S3 + congestion off | 1,620.6 | 37.7 (15.5 / 18.8 / 3.4) | 25.9 | 28.5 | 14.5 / 83.0 | 0.00 | 1.0 / 0.9 / 0.5 |
+| S4 + 25 equal days | running | | | | | | |
+| S5 + clustered, modelled 2025 | queued | | | | | | |
+| S6 + metered reference | queued | | | | | | |
+| test 8 (+ linking) | 1,521.5 | 23.9 (20.5 / 0.0 / 3.4) | 17.4 | 39.9 | 8.7 / 43.3 | 0.22 | 1.3 / 15.9 / 6.7 |
+| run (6) (+ fixed twin) | 1,523.5 | 23.9 (20.3 / 0.2 / 3.4) | 17.2 | 42.0 | 10.9 / 61.2 | 0.00 | 0.9 / 13.7 / 7.6 |
+
+- Solar: the weather fixes raise it (+5.4 GW in 2040, all off the pool); the six-constant correction and congestion off move it by under
+  1 GW each. The fall to test 8's 23.9 GW (19 GW of off-pool solar gone) lies in steps 4-6 or linking.
+- Reliability: every step to S3 meets the standard with a wide margin (0.4-1.2 GWh); test 8 is at 15.9 in 2035. Where the margin
+  goes also lies in steps 4-6 or linking.
