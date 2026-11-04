@@ -6,6 +6,11 @@
   the split's first steps); two hours lost. From now (rule 366: the choice that finishes): one pair of solves at a time, nothing heavy
   beside it, each pair its own job: (1)+(2), (6)+(3), (4)+(5), the split's steps 3-6, metered 2024 on the fixed twin, then 55 days.
 - Wind-table pull request opened, not merged: #160 (suite 1,023/1,032, audit 88/88, eng5 5/6; no new failure).
+- 20:36 SAST: runs (1) and (2) done (RESULTS 'Runs (1) and (2) of message 700 (b)'): solar 28.0 and 24.3 GW in 2040 against test 8's
+  23.9; both mixed references miss the engine standard in 2035 or 2040; from 2029 solar is built almost only on connections freed by
+  coal. Running: (6) (test 8's basis on the fixed twin) and (3) (new wind at the bids' 37.24%), from 20:35 SAST, jobs bg78yzvzs and
+  b0tnxth44 (shell PIDs 29683, 29692; sol701 shells in gtza-twin out/sol701/progress.txt). Next: (4)+(5), split steps 3-6, metered 2024
+  on the fixed twin (scratchpad ref2024/refs2024f.sh), 55 days.
 
 ## Messages 700-702 (4 Nov, to 17:40 SAST)
 
