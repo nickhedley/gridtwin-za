@@ -20,7 +20,7 @@
   origin/claude/weather-fixes (it carries harness/pathway/two_stage.sh, STAGE2_YEAR and ANNUITY_TO). Do not change index.html. Setup:
   `ln -s .. harness/testroot`, `cd harness && npm install jsdom highs eslint`, `pip install highspy`. From harness/, export c7's
   settings: `source pathway/env_c6a.sh; export GAS_FIRST=2035 SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1
-  COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 SOLVER=native CONG_OFF=1 REP_REF=2025
+  COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 SOLVER=native REP_REF=2025
   REP_EXTREMES=113,114,115,141,161,162,163,187,188,214,217,218,219,257,273,359` (modelled 2025, stored wind, its extremes on the fixed
   data; provisional until Nick chooses the reference, 691 (c)). Central: `K=4 N=25 FIRST=2026
   WIN_FROM=pathway/c7/pathway_c7_lp2040.json OUTDIR=out/ts_central bash pathway/two_stage.sh`. Fossil-free: add `PACE=grid
@@ -33,8 +33,8 @@
   any step that failed the adequacy test, and the ANNUITY_TO=2040 variant against the default. Expected: about 6-8 hours a pathway.
 
   Brief B, test 13 (near-optimal ranges, the central, 2030 and 2040). Same reading, branch claude/test13-mga from
-  origin/claude/weather-fixes, setup and c7 settings as Brief A (with SOLVER=native, CONG_OFF=1, REP_REF=2025 and the same
-  REP_EXTREMES). Base: `REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1 WIN_FROM=pathway/c7/pathway_c7_lp2040.json MAXP=1
+  origin/claude/weather-fixes, setup and c7 settings as Brief A (with SOLVER=native, REP_REF=2025 and the same REP_EXTREMES; the flat
+  congestion figure stays on in both briefs, as in test 8 and the acceptance tests, so all method tests share one basis). Base: `REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1 WIN_FROM=pathway/c7/pathway_c7_lp2040.json MAXP=1
   DUMP=0 OUT=out/mga/base.json LPCACHE=out/mga/lpc node --max-old-space-size=9000 pathway/pathway_perfail.js`; its pass-1 objective is
   MGA_FSTAR. Then for year in 2040, 2030; slack in 0.01, 0.02; group in wind, solar, lithium, ldes, coal; direction min, max: the same
   command with `MGA=<group>:<year>:<direction>:<slack> MGA_FSTAR=<base objective>` and OUT=out/mga/<group>_<year>_<dir>_<slack>.json
