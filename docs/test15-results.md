@@ -181,7 +181,7 @@ ts2_central: the adequacy test on each step's own year y at its final pass (mean
 | 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 
-#### ts2_ff (4 of 15 steps)
+#### ts2_ff (5 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -193,7 +193,7 @@ ts2_ff: new build by year, MW (lithium also MWh)
 | 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 |
 | 2028 | 1,605 | 1,129 | 0 | 660 | 0 |
 | 2029 | 4,300 | 2,265 | 616 | 0 | 475 |
-| 2030 |  |  |  |  |  |
+| 2030 | 4,300 | 4,759 | 2,358 | 2,320 | 1,771 |
 | 2031 |  |  |  |  |  |
 | 2032 |  |  |  |  |  |
 | 2033 |  |  |  |  |  |
@@ -204,7 +204,7 @@ ts2_ff: new build by year, MW (lithium also MWh)
 | 2038 |  |  |  |  |  |
 | 2039 |  |  |  |  |  |
 | 2040 |  |  |  |  |  |
-| Total | 8,151 | 5,670 | 1,377 | 3,719 | 475 |
+| Total | 12,451 | 10,429 | 3,735 | 6,039 | 2,246 |
 
 ts2_ff: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -214,6 +214,7 @@ ts2_ff: coal standing (MW), coal retired ahead of its dates (MW) and kept under 
 | 2027 | 39,692 | 0 |  |
 | 2028 | 39,692 | 0 |  |
 | 2029 | 32,419 | 4,608 |  |
+| 2030 | 27,825 | 4,608 |  |
 
 ts2_ff: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -223,7 +224,8 @@ ts2_ff: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2027 | 2031 | 1 | adequate | serial | 14.2 | 17.1 | 1 | 2.7 | pass 1: none | 547.440 |
 | 2028 | 2032 | 2 | adequate | serial, then parallel, 2 threads | 34.9, 27.1, 14.7 | 20.8 | 2 | 4.2 | pass 1: 2031: 21.7 / 20<br>pass 2: none | 551.013 |
 | 2029 | 2033 | 1 | adequate | parallel, 2 threads | 48.8 | 52.6 | 1 | 2.8 | pass 1: none | 559.786 |
-| 2030 | | | not finished |  |  | | 1 | | | |
+| 2030 | 2034 | 1 | adequate | parallel, 2 threads | 67.9 | 72.0 | 2 | 2.6 | pass 1: none | 585.201 |
+| 2031 | | | not finished |  |  | | 1 | | | |
 
 ts2_ff: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -233,6 +235,7 @@ ts2_ff: the adequacy test on each step's own year y at its final pass (mean unse
 | 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2029 | 0.15 / 20 | 0.15 / 20 | 2020 (1.4) |
+| 2030 | 4.14 / 20 | 4.14 / 20 | 2024 (36.8) |
 
 #### ts2_central_ann (1 of 15 steps)
 
@@ -282,19 +285,19 @@ Cumulative new build, MW (lithium also MWh), built 2026 to the year
 
 | Technology | Year | ts2_central | ts2_ff | ts2_central_ann |
 |---|---|---:|---:|---:|
-| wind | 2030 |  |  |  |
+| wind | 2030 |  | 12,451 |  |
 | wind | 2035 |  |  |  |
 | wind | 2040 |  |  |  |
-| solar | 2030 |  |  |  |
+| solar | 2030 |  | 10,429 |  |
 | solar | 2035 |  |  |  |
 | solar | 2040 |  |  |  |
-| lithium MW | 2030 |  |  |  |
+| lithium MW | 2030 |  | 3,735 |  |
 | lithium MW | 2035 |  |  |  |
 | lithium MW | 2040 |  |  |  |
-| lithium MWh | 2030 |  |  |  |
+| lithium MWh | 2030 |  | 6,039 |  |
 | lithium MWh | 2035 |  |  |  |
 | lithium MWh | 2040 |  |  |  |
-| grid-forming | 2030 |  |  |  |
+| grid-forming | 2030 |  | 2,246 |  |
 | grid-forming | 2035 |  |  |  |
 | grid-forming | 2040 |  |  |  |
 <!-- test15_summary end -->

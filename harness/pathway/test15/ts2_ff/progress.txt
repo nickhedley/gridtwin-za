@@ -42,3 +42,11 @@
 2026-11-04T14:44Z two_stage K=4 N=25 FIRST=2026, shell PID 12393
 2026-11-04T14:44:32Z step node PID 12404
 2026-11-04T14:44:48Z solve started (highs_native.py 12524)
+2026-11-04T15:52:55Z solve (highs_native.py 12524) ended after about 4073s
+2026-11-04T15:56Z step 2030 (horizon 2034) rc=0 done
+2026-11-04T15:56:40Z node 12404 ended, peak memory 2.6 GB
+2026-11-04T15:56:40Z step node PID 28775
+2026-11-04T15:56:40Z under 4800s left: stopped at the step boundary (node 28775, just started)
+2026-11-04T15:56Z step 2031 (horizon 2035) rc=0 NO OUTPUT
+2026-11-04T15:56:55Z node 28775 ended, peak memory 0.0 GB
+2026-11-04T15:56:55Z test15 ff piece ends: two_stage.sh rc=1, 5 of 15 steps done
