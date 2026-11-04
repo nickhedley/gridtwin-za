@@ -6,3 +6,4 @@ claim/
 *.progress
 mem.txt
 piece*.txt
+progress.txt
