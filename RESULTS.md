@@ -21958,7 +21958,7 @@ Solar 2040: on the freed-coal pool / off it after 2028 / the committed builds of
 | test 8 (+ linking) | 1,521.5 | 23.9 (20.5 / 0.0 / 3.4) | 17.4 | 39.9 | 8.7 / 43.3 | 0.22 | 1.3 / 15.9 / 6.7 |
 | run (6) (+ fixed twin) | 1,523.5 | 23.9 (20.3 / 0.2 / 3.4) | 17.2 | 42.0 | 10.9 / 61.2 | 0.00 | 0.9 / 13.7 / 7.6 |
 
-- Solar: the weather fixes raise it (+5.4 GW in 2040, all off the pool); the six-constant correction and congestion off move it by under
+- Solar: the weather fixes raise it (+5.4 GW in 2040: +6.1 off the pool, -0.7 on it); the six-constant correction and congestion off move it by under
   1 GW each. The fall to test 8's 23.9 GW (19 GW of off-pool solar gone) lies in steps 4-6 or linking.
 - Reliability: every step to S3 meets the standard with a wide margin (0.4-1.2 GWh); test 8 is at 15.9 in 2035. Where the margin
   goes also lies in steps 4-6 or linking.
