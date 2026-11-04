@@ -82,3 +82,56 @@ The first two MGA solves, side by side from 12:25 UTC, two threads each on the 4
 
 The base solved in 75 min alone; the MGA LPs did not solve in 112 min with a second solve beside them. Under message 693 (1) the
 40 solves stop here until Nick chooses how to go on.
+
+## Method tests (the method-test message, 4 November)
+
+Three ways to bring one MGA solve, wind 2040 minimum at 1%, inside a piece. Two at a time, two threads each, on the 4 cores; each
+with a limit of about 6,690 s (111.5 min) inside a 127-minute job. Runner: harness/pathway/mga/run_one.sh; outputs in
+harness/out/mga2/warm, d18 and nopre. No GitHub Actions.
+
+### 1. Warm start (out/mga2/warm)
+
+- Base re-solved to save its optimal basis (scratchpad lptest, 15:29-16:47 UTC, beside the 18-day base and then the 18-day MGA):
+  4,672 s wall, 4,638.8 s by HiGHS's clock, parallel dual simplex on 2 threads; objective 1,521,521,735,393.8196, identical to
+  out/mga2/base.json. The basis (26 MB) is kept in the scratchpad, off the repository.
+- Wind 2040 minimum from that basis, primal simplex (HIGHS_OPTS '{"simplex_strategy":4}', HIGHS_BASIS_IN set), from 16:47 UTC:
+  running (limit 6,692 s, to 18:39 UTC).
+- The run's log says "start from basis none (cold)": that line reports only pathway's own resume basis. The solver process was
+  checked to hold HIGHS_BASIS_IN pointing at the saved base basis.
+
+### 2. 18 days (out/mga2/d18)
+
+REP_DAYS=18: the 12 extremes kept, the typical days cut from 13 to 6; every other setting as the base.
+
+- 18-day base (out/mga2/d18/base.json, LP key 0625d938ec, 94 MB LP), 15:29-16:05 UTC beside the base re-solve: solve 1,780 s by
+  HiGHS's clock (30 min), 36 min for the whole run with the engine check.
+- Objective 1,501,917,683,865.20 against the 25-day base's 1,521,521,735,393.82: 1.29% lower (R19.6bn).
+- Engine check: adequate. Mean unserved energy, GWh, against the 20 GWh a year standard (2026-2029 zero):
+
+  | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | 1.3 | 5.3 | 13.3 | 13.7 | 19.0 | 13.1 | 8.2 | 8.2 | 11.7 | 18.1 | 16.6 |
+
+- New-build MW standing against the 25-day base (out/mga2/d18/summary.json):
+
+  | Year | Days | Wind | Solar | Lithium MW | Lithium MWh | LDES | Coal | Gas |
+  |---|---|---|---|---|---|---|---|---|
+  | 2030 | 25 | 8,468 | 6,976 | 1,707 | 3,719 | 0 | 32,213 | 0 |
+  | 2030 | 18 | 9,746 | 9,217 | 1,698 | 3,719 | 0 | 31,931 | 0 |
+  | 2040 | 25 | 39,918 | 23,927 | 8,716 | 43,325 | 1,650 | 17,670 | 6,533 |
+  | 2040 | 18 | 40,489 | 24,209 | 8,203 | 42,759 | 1,650 | 17,388 | 6,688 |
+
+- Wind 2040 minimum on the 18-day base (MGA_FSTAR 1,501,917,683,865.2021), cold, parallel dual simplex on 2 threads, 16:05-17:57
+  UTC beside the warm start: stopped at its 6,694 s (111.6 min) limit, not solved, no valid basis to resume from. So 18 days
+  halves the base's solve but does not bring the MGA solve inside a piece.
+
+### 3. Presolve off (out/mga2/nopre)
+
+Wind 2040 minimum at 25 days, cold, parallel dual simplex on 2 threads with presolve off (HIGHS_OPTS
+'{"simplex_strategy":2,"threads":2,"presolve":"off"}'), from 17:58 UTC beside the warm start; to be carried across pieces if a valid
+basis survives the limit:
+running (limit 6,694 s, to 19:50 UTC).
+
+### Summary
+
+To follow when the warm start and presolve off finish.
