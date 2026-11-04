@@ -21449,5 +21449,24 @@ REP_EXTREMES=20,161,162,163,187,188,194,195,196,214,218,358 WX_WINDCORR=1 with t
   UTC). Test 13 reports the same on its old-basis base: the 110-minute limit with crossover, status Unknown without.
 - Serial dual simplex: 94 and 96.5 minutes without finishing or a valid basis (test 8 under load; test 13 alone, 5,791 s).
 - Parallel dual simplex (simplex_strategy 2, threads 2): test 13's old-basis base solved in 3,851 s, outside the run (ba310d4). Test 8 on
-  693's basis, in the pathway script with the loop on (MAXP=6, one pass per piece), started 11:13 UTC: its times are added below as each
-  pass finishes.
+  693's basis, in the pathway script with the loop on (MAXP=6, one pass per piece; main d90ba63 with 118bd45's highs_native.py), alone:
+  pass 1 solved in 4,527 s (LP written 11:13:14 UTC, optimal 12:28:41); the whole run 4,864 s. Test 13's base on 693's basis is the same
+  LP: objective equal (R1,521,521,735,393.82), 75 minutes (0f09450).
+
+Test 8 at 25 days on 693's basis (harness/out/test8p/c7_d25.json in the main session's container): one pass, adequate at pass 1. The
+loop's engine at pass 1 (2 draws a weather year), mean GWh against the standard's 20: 2026-2029 0; 2030 2.3; 2031 5.0; 2032 3.2; 2033 7.8;
+2034 17.0; 2035 16.7; 2036 12.6; 2037 10.7; 2038 8.4; 2039 11.6; 2040 18.8 (worst weather year's draw 250.0 GWh, 2015). The LP's expected
+shed sits at the target in 2033-2036, 2039 and 2040. Objective R1,521.52bn (c7, 12 equal days on its own basis: R1,653.68bn). Coal
+retired early: 220 MW from 2029 (c7 none). Cumulative new build, MW (lithium MW / MWh):
+
+| | 2030 | 2035 | 2040 | c7 2040 |
+|---|---:|---:|---:|---:|
+| Wind | 8,468 | 25,968 | 39,918 | 33,045 |
+| Solar | 6,976 | 17,400 | 23,927 | 33,187 |
+| Lithium | 1,708 / 3,719 | 8,228 / 27,059 | 8,717 / 43,326 | 13,059 / 81,037 |
+| Open-cycle gas / diesel | 0 / 0 | 0 / 506 | 3,950 / 2,582 | 1,914 / 232 |
+| CCGT | 0 | 0 | 0 | 5,286 |
+| Iron-air; pumped storage | 0; 0 | 0; 0 | 150; 1,500 | 0; 0 |
+
+Test 13's old-basis base (REP_REF=2025, stored wind, the flat congestion figure on) failed the standard at pass 1 in 2031-2040; on 693's
+basis the same central passes. The engine's reliability gate on test 8's build (pathcheck, adaptive draws, 2030-2040) follows.
