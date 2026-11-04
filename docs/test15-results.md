@@ -16,6 +16,30 @@ Each step: year y on 365 days, the look-ahead years to min(y+4, 2040) at 25 clus
 ESK19679. Step files, logs and progress.txt (each step's node PID, each solve's wall time to the 15-second poll, peak memory) are in
 harness/pathway/test15/<run>/.
 
+### Test 8 for comparison: the one-stage pathway on the same basis (main session; message 692 (f))
+
+Settings: as above but one stage, the whole 2026-2040 pathway at 25 clustered days (REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1, the
+same reference, extremes, wind table and CONG_OFF=1), MAXP=6; main d90ba63 with test 13's HIGHS_OPTS (118bd45), parallel dual simplex
+(simplex_strategy 2, threads 2), alone on a 4-core machine. Pass-1 LP key 8e0651f38a, the same LP as test 13's base on this basis. Output
+in the main session's container (harness/out/test8p/c7_d25.json), not committed.
+
+- Passes: 1, adequate at pass 1. Solve 4,527 s (LP written 11:13:14 UTC, solved 12:28:41); the whole run 4,864 s. Objective R1,521.522bn.
+- The loop's engine at pass 1 (2 draws a weather year), mean GWh against 20: 2026-2029 0; 2030 2.3; 2031 5.0; 2032 3.2; 2033 7.8; 2034
+  17.0; 2035 16.7; 2036 12.6; 2037 10.7; 2038 8.4; 2039 11.6; 2040 18.8.
+- Year 2028's own build, against step 2028 above: wind 1,222 MW (two stages 2,500), solar 1,129, rooftop 1,200, lithium 0 MW / 660 MWh.
+- Cumulative new build, MW (lithium MW / MWh):
+
+| | 2030 | 2035 | 2040 |
+|---|---:|---:|---:|
+| Wind | 8,468 | 25,968 | 39,918 |
+| Solar | 6,976 | 17,400 | 23,927 |
+| Lithium | 1,708 / 3,719 | 8,228 / 27,059 | 8,717 / 43,326 |
+| Open-cycle gas / diesel | 0 / 0 | 0 / 506 | 3,950 / 2,582 |
+| CCGT | 0 | 0 | 0 |
+| Iron-air; pumped storage | 0; 0 | 0; 0 | 150; 1,500 |
+
+- Coal retired early: 220 MW from 2029. The engine's reliability gate on this build (pathcheck, adaptive draws, 2030-2040) is running.
+
 ### Step 2028 with the loop testing year 2028 only, against every year in the window (message 693 (5))
 
 The central's step 2028 run twice from the same state, at the same time on the same machine: once as the pathway runs it (every year
