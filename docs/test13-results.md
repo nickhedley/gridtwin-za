@@ -41,7 +41,24 @@ energy across the weather years above the 20 GWh a year standard in 2031 and 203
 
 ## Base (message 693)
 
-Pending.
+harness/out/mga2/base.json, run 11:02-12:24 UTC on 4 November. Pass 1 at 25 clustered linked days (LP key 8e0651f38a; 116 MB LP).
+
+- Objective (MGA_FSTAR): 1,521,521,735,393.82. Solve 4,484 s (75 min) by HiGHS's clock, parallel dual simplex on 2 threads, alone
+  on the machine; 81 min for the whole run with the engine check.
+- Engine check (the amendment to step 5: the base's check first, the 40 solves only if it passes): adequate. Mean unserved energy
+  across the weather years, GWh, against the 20 GWh a year standard:
+
+  | 2026-2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+  |---|---|---|---|---|---|---|---|---|---|---|---|
+  | 0 | 2.3 | 5.0 | 3.2 | 7.8 | 17.0 | 16.7 | 12.7 | 10.7 | 8.4 | 11.6 | 18.8 |
+
+  So the adequacy loop was not needed and the ranges are measured on this LP (no WIN_FROM). 2040 is within 1.2 GWh of the standard.
+- New-build MW standing (from 2026; existing plants excluded) and coal standing:
+
+  | Year | Wind (all onshore) | Solar | Lithium MW | Lithium MWh | LDES (pumped storage, iron-air) | Coal | Gas |
+  |---|---|---|---|---|---|---|---|
+  | 2030 | 8,468 | 6,976 | 1,707 | 3,719 | 0 | 32,213 | 0 |
+  | 2040 | 39,918 | 23,927 | 8,716 | 43,325 | 1,650 (1,500, 150) | 17,670 | 6,533 |
 
 ## Ranges
 
