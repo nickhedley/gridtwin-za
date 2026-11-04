@@ -912,6 +912,15 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mt. From the night of 3-4 Nov (messages 687-690; RESULTS entries of 3-4 Nov; HANDOVER status of 4 Nov). Done: 689 items 1-5; PR #159
+open; 690 and 688 (a) reported. Open: (a) bisect the engine-check cost gap (presets' checks 0.5-1.9% above the page; on main b0f7999;
+candidate 28af9d5, #153) before any rerun's costs are read; (b) Nick: re-pin the preset curtailment band (71.3, 270.1 TWh) or not; (c)
+Nick: wind table and default, congestion treatment, calms in the stress windows, day count and reference (recommendations in HANDOVER);
+(d) the free-fleet benchmark: bound gas and diesel builds at 0 under FOSSIL_END with LIFT=all, then rerun test 16; (e) test 2's lvmin
+and reserve-row duals; test 7 on the fixed data; test 13 (gates test 11); (f) the LP and the engine disagree on the coal floor's size;
+(g) the 690 LP 2030 fleets' 84 GWh draw; (h) the engine's cost pays REIPPPP on delivered energy only: a note caveat or a resource-cost
+column; (i) CLAUDE.md's known failures after #159 merges (6 and 11 pass; six new with causes).
+
 14ms. From message 686 (3 Nov 2026; design note 14.11). (a) Existing solar 0.256 decided (2026 left out: curtailment; earlier years carry
 some). (b) Test the calm-preserving wind correction (six constants) and the engine's unserved mean and tail with each series; prefer the
 option that does not flatter reliability; the setting stays off until Nick decides. (c) The 108 stand-in calls queued after the 304;
