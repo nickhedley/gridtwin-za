@@ -21074,3 +21074,75 @@ unchanged by construction (the floor ends before 2030 in all cases, and earlier 
   start would end the floor is not established: the data do not show why units run at it.
 - The LP and the engine disagree on the floor's size: the LP sees a cost (R0.75-2.0bn) but no curtailment and little coal; the engine sees
   3-7 TWh of each. Recorded; not investigated tonight.
+
+### Acceptance tests on the fixed data (message 689 (5); design note v2, section 6): with clustered days and linking, cost is within 0.22% of the 365-day benchmark from 18 days on both references; the mix settles only at about 105 days; the current method misweights a calm day; the references give different 2040 builds
+
+Settings: claude/weather-fixes (fixed weather files; LPs dumped before 22:37 UTC on d579f95-a7a0d33, later ones on 8abedb3-92dfc1c, the
+108 extra days, which move no engine result); harness/pathway/repdays/accept.sh, analysed by accept_an.py; single-year 2040 LPs
+(OPER_FROM=2040 HORIZON=2040), pass 1, native HiGHS simplex. Runs: the central (c7's settings, FIX_FROM=pathway_c7.json FIX_TO=2039) and
+Fossil-free (FIX_FROM=pathway_s_ff2040_c7.json FIX_TO=2039, SOLVER=native PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039).
+References, each labelled with its wind series: corr5, corrected modelled 2025 (REP_REF=2025, WX_WINDCORR=1, the five-constant table,
+provisional) with extremes recomputed on it (15 days: 113-115, 160-163, 187, 188, 214, 217-219, 273, 359); met, metered 2025
+(REP_REF=metered; the modelled years in tails and means uncorrected) with its extremes (12 days: 20, 161-163, 187, 188, 194-196, 214,
+218, 358); extremes.py on the fixed data, harness/out/extremes684. Variants (test 1): (a) now (12 matched days, block chain; the
+reference does not enter it); (b) clustered, block chain, 25 days; (c) linking, equal weights, 25; (d) clustered and linked; (e) (d)
+with the stress windows linked. Test 6: (d) at 18, 25, 30, 55, 105 days. Benchmark: (d) at 365 days. Objective against the benchmark;
+'not within' lists each technology off its benchmark by more than 5% or 250 MW (the design note's 'settles' margin), MW. Unserved: on
+the representative days, GWh. Outputs harness/out/accept (an.json). 3 Nov 2026, 20:16 UTC to 4 Nov, 00:28 UTC.
+
+| Central, corr5 | objective | not within (MW against the benchmark) | unserved | solve, min |
+|---|---|---|---|---|
+| 365-day benchmark | R766.48bn | wind 3,500, solar 5,033, lithium 3,000 MW / 12,000 MWh, pumped storage 1,500, coal retired 4,762 | 2.2 | 25 |
+| (a) now | +1.79% | wind -2,770, solar +1,413, CCGT +1,200, pumped storage -1,500, lithium MWh -1,554, coal retired -4,762 | 0.0 | 0 |
+| (b) 25 | +0.07% | solar +663, lithium MWh -3,833, coal retired +663 | 13.1 | 0 |
+| (c) 25 | +1.42% | wind -2,565, solar -1,928, lithium -1,237 MW, OCGT +1,200, pumped storage -1,500, coal retired -4,762 | 0.0 | 0 |
+| (d) 18 / 25 / 30 / 55 / 105 | -0.13 / -0.03 / -0.13 / -0.03 / +0.09% | 18: solar +970, coal retired +970; 25: solar +663, lithium MWh -3,833, coal retired +663; 30: lithium -919 MW, -9,252 MWh; 55: lithium MWh -1,721; 105: none | 12.4 / 13.1 / 12.1 / 2.2 / 2.6 | 1 / 1 / 1 / 5 / 26 |
+| (e) 25 | -0.03% | as (d) at 25 | 13.2 | 0 |
+
+| Central, met | objective | not within | unserved | solve, min |
+|---|---|---|---|---|
+| 365-day benchmark | R768.26bn | wind 3,500, solar 506, lithium 47 MW, pumped storage 1,500, coal retired 480 | 0.6 | 25 |
+| (a) now | +1.96% | wind -3,500, solar +4,495, lithium +2,505 MW / +11,788 MWh, CCGT +1,200, pumped storage -1,500, coal retired -480 | 0.0 | 0 |
+| (b) 25 | +0.11% | pumped storage -913, coal retired -480 | 1.4 | 0 |
+| (c) 25 | +1.07% | wind -3,092, solar +2,948, lithium +1,136 MW / +9,555 MWh, OCGT +1,200, pumped storage -1,500, coal retired -480 | 0.0 | 0 |
+| (d) 18 / 25 / 30 / 55 / 105 | -0.22 / -0.01 / +0.01 / +0.12 / +0.05% | 18: pumped storage -729, solar -506, coal retired -480; 25: pumped storage -798, coal retired -407; 30: solar +297; 55: pumped storage -400, solar -506, coal retired -301; 105: solar +252 | 1.1 / 1.2 / 0.7 / 0.8 / 0.7 | 0 / 0 / 1 / 3 / 18 |
+| (e) 25 | -0.01% | pumped storage -833, coal retired -440 | 1.3 | 1 |
+
+| Fossil-free | corr5: objective | not within | met: objective | not within |
+|---|---|---|---|---|
+| 365-day benchmark | R2,146.65bn (6 min) | wind 3,500, solar 9,270 | R2,142.98bn (4 min) | iron-air 2,706 |
+| (a) now | +2,214%: 4,396 GWh unserved | every capacity at its limit | +2,215%: 4,396 GWh unserved | every capacity at its limit |
+| (b) 25 | -0.01% | none | +0.08% (11.9 GWh) | wind +3,157, iron-air -902 |
+| (c) 25 | +758%: 1,512 GWh unserved | every capacity at its limit | +756%: 1,512 GWh | every capacity at its limit |
+| (d) 18 / 25 / 30 / 55 / 105 | -0.01 / -0.01 / 0.00 / 0.00 / 0.00% | none at any count | -0.01 / +0.01 / -0.03 / -0.03 / -0.03% | 30: iron-air -446; 55: -424; 105: -366 |
+| (e) 25 | -0.17% | solar -7,170 | -0.01% | none |
+
+- Test 1: clustered weights carry the gain. (b), (d) and (e) are within 0.2% of the benchmark on cost in every run; (a) and (c),
+  which weight days equally, are 1.1-2.0% off for the central with the mix far off (wind 2,600-3,500 MW short, CCGT or OCGT 1,200 MW
+  added), and for Fossil-free they fail outright: all their unserved falls on one day, 14 July (day 195, the start of July 2025's
+  36-hour calm in the metered calendar, which (a) takes whatever the reference), weighted as about 30 days in (a) and 15 in (c), which
+  no fossil-free fleet covers. Linking ((d) against (b)) moves cost by under 0.1% here; it settles Fossil-free's mix on the metered
+  reference (wind and iron-air off by 3,157 and 902 MW without it).
+- Test 3 (no long-duration storage; the central, linked (d) against unlinked (b) at 25 days): corr5 -0.09% in cost, the same builds
+  (solar 5,696, lithium 3,000 MW / 8,167 MWh, pumped storage 1,500); met -0.12%, pumped storage 702 against 587 MW, coal retired 73
+  against 0.
+- Test 6: cost is within 0.22% of the benchmark at every count from 18 days, both runs, both references. The mix does not settle
+  until about 105 days: the central's lithium energy, solar and coal retired move by 600-9,300 MW or MWh up to 55 days; at 105 days
+  everything is within the margin except the central met's solar (+252 MW, just over 250) and Fossil-free met's iron-air (-366 MW, 14%).
+  Unserved on the representative days stays at 12-13 GWh up to 30 days on corr5 and falls to 2.2-2.6 GWh at 55 and 105, as at 365.
+- Test 2 (closure): closure.py on seven linked solutions (central corr5 and met, Fossil-free corr5 and met at 25 days; central met and
+  Fossil-free met at 105; central met at 365): every store's net over the linked year is zero and no hourly level is below zero. Not yet
+  checked: lvmin against the minimum of lv over its mapped days, and the reserve rows' duals.
+- Test 7: the LP-key and equivalence tests ran at the build (B4: single-year 2030 against the full LP fixed to 2029, objective identical
+  to 2.6e-14, builds identical); not rerun on the fixed data tonight.
+- Test 16 (the free fleet, a method test, not a plan; corr5): 365 days R215.24bn in 72 minutes, 25 days -0.03% in 1 minute, with
+  identical builds to the MW at both counts. Not readable as it stands: CCGT, OCGT and diesel open cycle sit at their 1,000,000 MW bound
+  at zero cost (FOSSIL_END truncates their annuities after 2039 and LIFT=all lifts their caps; the design note's J4 estimate flagged
+  this), so they must be bounded at 0 before the free fleet's other builds can be read.
+- The references: the central's 2040 benchmark builds differ widely between them (corr5: solar 5,033, lithium 3,000 MW / 12,000 MWh,
+  coal retired 4,762 MW, coal 32.1 TWh; met: solar 506, lithium 47 MW, coal retired 480 MW, coal 41.9 TWh), as do Fossil-free's (corr5:
+  wind 3,500 and solar 9,270 MW; met: iron-air 2,706 MW). The choice of reference moves 2040's build more than the day count does.
+- Test 11 (recommendation), provisional and gated (rule 1 of 14.5: test 13's near-optimal ranges are not run): clustered weights with
+  linking, (d); on cost alone 18 days would do; on the mix, 105 days (18-26 minutes for a single-year 2040 LP; a full pathway pass at
+  105 days is not yet measured), or 55 days if time forces it, with the central's lithium energy named as not settled. The reference is
+  the larger choice and is Nick's (684 (e)).
