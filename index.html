@@ -2868,7 +2868,6 @@ let redzData = null;
   window.toggleTdp = toggleTdp;
   window.setMapTdpYear = setMapTdpYear;
   window.renderGrid = renderGrid;          // used by the map click handler and tests
-  window.exportTdpProjects = exportTdpProjects;
 
   fetch('nodal/tdp_projects.json?v=' + (window.DATA_V || '7'))
     .then(r => r.ok ? r.json() : null)
@@ -4892,7 +4891,6 @@ function printPrefeas() {
         <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:transparent;border:2.5px solid #FF3B30;vertical-align:middle"></span> new substation that does not exist yet.
         Bolder items are further along: <strong>Execution</strong> is under construction,
         then Definition, then Concept and Pre-Concept, which are indicative and may move.</span>
-      <button onclick="exportTdpProjects()" style="padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);cursor:pointer;font-size:10px;border-radius:2px;white-space:nowrap">Download network project list</button>
       <label style="display:flex;align-items:center;gap:6px;margin-left:auto;white-space:nowrap">built by <strong id="tdpYearOut">2034</strong>
         <input type="range" min="2025" max="2035" step="1" value="2034" oninput="setMapTdpYear(this.value)" style="width:130px">
       </label>
@@ -16624,27 +16622,8 @@ function exportBuildSchedule(){
   downloadRows(rows, 'gridtwin_build_schedule.csv');
 }
 
-// The full TDP project list, so a developer can filter it in a spreadsheet
-// rather than clicking round a map.
-let exportTdp = null;   // TDP data for the exporter's own use - the map's tdpData
-                        // lives inside an iife and is not visible from here.
-async function exportTdpProjects(){
-  if (!exportTdp){
-    try {
-      const r = await fetch('nodal/tdp_projects.json?v=' + (window.DATA_V || '7'));
-      exportTdp = r.ok ? await r.json() : null;
-    } catch (e) { exportTdp = null; }
-  }
-  const tdpData = exportTdp;
-  if (!tdpData || !tdpData.projects) return;
-  const rows = [['name','kind','province','year','phase','new site','kV','km','site 1','site 2']];
-  for (const p of tdpData.projects.slice().sort((a,b) => a.year - b.year)){
-    rows.push([p.name, p.kind, p.prov, p.year, p.phase, p.newsite ? 'yes' : '',
-               p.kv || '', p.km || '',
-               p.pts[0] ? p.pts[0].n : '', p.pts[1] ? p.pts[1].n : '']);
-  }
-  downloadRows(rows, 'gridtwin_tdp_projects.csv');
-}
+// The development-plan list's CSV download was removed (user, 3 Nov 2026, message 686 (e)): the list is NTCSA's Transmission
+// Development Plan data, under NTCSA's website terms (publication needs NTCSA's consent); the map still shows the projects.
 
 
 /* ==================== CARBON budget =======================================
@@ -20716,14 +20695,11 @@ const NAMES={hybrid:'Hybrid (RMIPPPP)',nuclear:'Nuclear',hydro:'Hydro',imports:'
 // structural audit the same day caught it as orphaned, which is exactly the
 // runNodalYear trap: code that reads as live and is not.
 //
-// It is kept rather than deleted because it is correct, cheap and the data file
-// it needs (nodal/corridor_electrical.json) ships with the site. To use it, call
-// dcFlows({region: netInjectionMW}) and render the returned corridor flows and
-// utilisation — the natural home is the network schematic panel, alongside the
-// transport-model flows, so the two can be compared.
+// It is kept rather than deleted because it is correct and cheap. Its data file, nodal/corridor_electrical.json, is no longer
+// loaded or served (user, 3 Nov 2026, message 686 (e)): nothing on screen used it, and it is under NTCSA's website terms. To use
+// dcFlows, serve the file again (.assetsignore), load it into dcNet with buildPTDF, call dcFlows({region: netInjectionMW}) and
+// render the corridor flows beside the transport-model flows in the network schematic panel.
 let dcNet = null;
-fetch('nodal/corridor_electrical.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(d=>{ dcNet = buildPTDF(d); })
-  .catch(()=>{ dcNet = null; });
 
 function buildPTDF(d){
   const R = ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape',
@@ -22268,7 +22244,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-03d';
+const BUILD_STAMP = '2026-11-04a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
