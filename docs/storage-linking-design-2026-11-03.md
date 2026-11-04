@@ -1107,3 +1107,25 @@ Slips: none at 3 Nov, 16:30 SAST.
   extremes on 5 Nov; reruns 10-13 Nov.
 - Slips: none at 3 Nov, 17:00 SAST. Risk: the machine runs the site suite, the weather rebuild and suite, three helpers and the fetch
   tonight; the weather-fixes suite may finish after midnight.
+
+### 14.12 Messages 691 and 692 (4 Nov 2026): the schedule to 13 Nov
+
+Machine time, by session (SAST):
+- This session (main): today, the 2 x 2 references (691 (c), by 16:00), test 8 at 25 days (running) and 55 days (alone, after the 2 x 2:
+  about 3-19 hours on the design's estimates, in pieces under 2 hours), test 16's 365-day rerun, test 7 rerun with the enrolment fix,
+  #159's suite. 5-9 Nov: the extremes on the chosen basis, test 14 if wanted, the reruns' set-up.
+- Session A (test 15, two stages, opened 4 Nov): the central, Fossil-free and the central with ANNUITY_TO=2040 at 25 days, K=4: about
+  6-8 hours a pathway, so about 1-1.5 days. A method run on a provisional basis (modelled 2025, stored wind, flat congestion figure on).
+- Session B (test 13, near-optimal, opened 4 Nov): the central 2030 and 2040, 5 groups x 2 directions x 2 slacks = 40 solves at 25 days,
+  about 40-70 minutes each: 27-47 hours (1% first: 13-23). Also a method run on the provisional basis (692 (e)).
+- Added (692 (e)): test 13 for the note, rerun on the chosen wind table and reference with CONG_OFF=1 (the reruns' basis), on the
+  reruns' central (its final LP, WIN_FROM if it adds windows): the same 40 solves, 27-47 hours, split over two sessions (about 14-24
+  hours each). It can start only when the reruns' central has its final LP: planned 11 Nov, ending 12-13 Nov.
+- Reruns 10-13 Nov on three sessions, each confirming the LP key first, with CONG_OFF=1 (691 (d)); the lull stress test on the final
+  central, Deep and Fossil-free fleets after them (691 (e)), about 1 hour.
+
+Decisions this schedule waits on: the wind table and the reference (691 (c), reported 4 Nov by 16:00); the day count (test 11, after tests
+8, 13 and 15: 9-10 Nov).
+
+Slips (SAST): none against 10 Nov at 4 Nov, 10:00. Risks: test 13 for the note is now on the critical path; if the reruns' central
+finishes after 11 Nov, the ranges finish on 14 Nov, inside the note's window; test 8 at 55 days may not fit beside the 2 x 2 today.
