@@ -142,6 +142,11 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 - Perfect foresight in dispatch: The model assumes the grid operator has perfect foresight over the next 48 hours for batteries and pumped storage, 24 hours for coal commitment, 12 hours for coal ramping, and a week for long-duration storage options.
 - Curtailed renewables are not paid, so curtailment looks free: deemed energy is not in the engine's cost, which pays REIPPPP's tariff on
   delivered energy only. Comparisons across curtailment levels use the build LP's objective or a resource-cost column (message 691 (i)).
+- Wind's build rate is limited, and the limit binds: on the central's current build (test 8) new wind sits on its yearly limit in 10
+  of 15 years, 2029-2038, so wind's share in those years is the limit's, not the economics'. The limit is 2,500 MW a year to 2030 (the
+  'deliverable' pace: the Renewable Energy Masterplan's ambition of roughly 5 GW a year of wind and solar together; the split between
+  wind and solar is ours) and 3,500 MW a year from 2031 (IRP 2025's highest yearly wind addition, Table 1, which IRP 2025 reaches only
+  from 2039; applying it from 2031 is ours; decision of 13 Oct 2026). Solar's yearly limit binds in 2030-2031 only (message 701 (f)).
 - Restarts after forced outages are not yet costed.
 - No emissions compliance cost on coal running past 2030.
 - Options the optimiser cannot choose: The build LP cannot yet choose coal flexibility, virtual power plants, demand response (interruptible or shifted load) or a general long-duration storage option.

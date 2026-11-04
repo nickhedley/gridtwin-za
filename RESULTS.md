@@ -21620,3 +21620,43 @@ worktree at claude/wind-table c576132; 4 Nov 13:23-14:25 UTC. Unserved, GWh a ye
 - 2034-2036 on test 8's fleet with 75 draws a weather year (K=75, 900 a year; same settings; 14:26-15:06 UTC): 2034 16.75 (standard
   error 1.17; 95% interval to 19.05), worst 1% 161.3, worst 330.9; 2035 14.77 (0.96; to 16.65), 160.4, 236.5; 2036 17.65 (0.99; to 19.59),
   152.6, 225.9. 2036 stands: its 95% interval lies below 20 GWh, by 0.4. So do 2034 and 2035.
+
+### Modelled solar timing against the metered fleet (message 701 (b)): the PVGIS years run about 25 minutes late; 2024-2025's fixed tilt is on time; 2024-2025's tracking twins run 30-50 minutes early. No change without Nick
+
+Settings: modelled national solar as weatherYearNational builds it (capacity-weighted, nodal/profiles_regional_multiyear.json and
+nodal/profiles_solar_tracking.json at main d90ba63, the files on SAST) against Eskom's metered fleet (ESK19679, PV over PV installed
+capacity, hour beginning, SAST; 29 February 2024 dropped as the model drops it), 2023-2025, by season. Each hourly value placed at its
+interval's centre on both sides, interpolated to 5 minutes; lag = the shift of the model that maximises the correlation (negative: the
+model must move earlier, it runs late); centroid = the day's energy-weighted time, model minus metered. Script scratchpad
+solarlag/s1_lag.py (local data). Eskom data, the analysis ours. 4 Nov 2026, 15:05 UTC.
+
+| Year (source) | Series | DJF lag / centroid, min | MAM | JJA | SON |
+|---|---|---|---|---|---|
+| 2023 (PVGIS-SARAH3) | fixed tilt | -30 / +27 | -25 / +24 | -25 / +23 | -25 / +26 |
+| 2023 | tracking twin | -20 / +26 | -20 / +24 | -25 / +24 | -25 / +28 |
+| 2024 (MERRA-2, Renewables.ninja) | fixed tilt | 0 / -3 | 0 / -3 | +5 / -5 | -10 / +10 |
+| 2024 | tracking twin | +50 / -42 | +45 / -37 | +35 / -30 | +25 / -17 |
+| 2025 (MERRA-2) | fixed tilt | 0 / -3 | +5 / -5 | +5 / -5 | -15 / +11 |
+| 2025 | tracking twin | +50 / -42 | +50 / -39 | +35 / -30 | +25 / -15 |
+
+Correlation at the best lag 0.93-0.99 (the fleet is a mix of fixed and tracking plants, so the shapes differ; the timing measures do
+not depend on that, a tracker being symmetric about solar noon as fixed tilt is).
+
+What the timestamps mean:
+- 2014-2023 are PVGIS-SARAH3 (meta.solar_source). PVGIS returns time in UTC (fix_solar_timezone.py shifted the files +2 h to SAST);
+  SARAH-based PVGIS values are instantaneous at the timestamp's minute, not hourly means, and ERA5-based ones are hourly means at :30
+  (pvlib's get_pvgis_hourly documentation, as summarised by search; PVGIS's TMY documentation: SARAH values at HH:MM, ERA5 at HH:30, with
+  the offset given in the file's header). The minute for SARAH3 over South Africa was not confirmed (the JRC and pvlib pages are outside
+  this session's network). The model reads every value as the mean of the hour beginning at its label (centre HH:30), so an
+  instantaneous value from early in the hour is placed late; about 25 minutes measured.
+- 2024-2025 are Renewables.ninja MERRA-2 (fetch_missing_solar_years.py), hourly means: their fixed tilt measures on time.
+- 2024-2025's tracking twins run 30-50 minutes early against the same fleet while their fixed tilt does not: the twins were built
+  differently from their fixed series (to trace in build_solar_tracking.py); not concluded.
+
+What a 25-minute lag does (the ten PVGIS years moved 25 minutes earlier, mean over 2014-2023; scratchpad solarlag/s2_evening.py):
+capacity factor at 17:00 SAST in winter (June-August) falls from 0.149 to 0.087 for fixed tilt and from 0.398 to 0.233 for tracking;
+at 16:00 from 0.377 to 0.282 and 0.553 to 0.488; in summer at 18:00 tracking from 0.424 to 0.297. The share of the day's energy after
+17:00 falls from 2.9% to 1.7% (fixed, winter) and 7.3% to 4.3% (tracking, winter). So the stored PVGIS years give solar into the start of
+the evening peak that the measured fleet does not deliver: for 17 GW of new trackers about 2.8 GW at 17:00 in winter. That lowers net
+load at the evening ramp in ten of the twelve modelled years, in the engine and in the LP's stress windows and twelve-year means, and so
+understates unserved. The engine's measure on test 8's fleet follows.
