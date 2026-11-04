@@ -83,3 +83,12 @@
 2026-11-04T18:22:15Z solve started (highs_native.py 30532)
 2026-11-04T19:03:43Z solve (highs_native.py 30532) ended after about 2480s
 2026-11-04T19:08:44Z solve started (highs_native.py 8149)
+2026-11-04T19:57Z step 2033 (horizon 2037) rc=0 NO OUTPUT
+2026-11-04T19:57:14Z solve (highs_native.py 8149) ended after about 2909s
+2026-11-04T19:57:14Z node 30323 ended, peak memory 3.3 GB
+2026-11-04T19:57:14Z test15 ff piece ends: two_stage.sh rc=1, 7 of 15 steps done
+2026-11-04T19:57:53Z test15 ff piece, PID 19210, on ceef80e Test 15 results: central step 2031 finishe, BUILD_STAMP = '2026-11-04b, deadline 21:47Z, MIN_LEFT 4800s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}, disk free 28G, memory free 12G
+2026-11-04T19:57:53Z two_stage.sh PID 19237
+2026-11-04T19:57Z two_stage K=4 N=25 FIRST=2026, shell PID 19237
+2026-11-04T19:58:08Z step node PID 19251
+2026-11-04T20:02:54Z solve started (highs_native.py 20191)

@@ -131,6 +131,15 @@ against the central's step 2029 pass 1 on serial 52.4 min, each beside one other
 beside one other solve, against the central's step 2026 on serial 8.5 min alone. The clean test (user, 4 Nov 2026): step 2026's LP
 (1faa0496d2) solved both ways, each alone on the machine, when the runs leave it idle.
 
+#### Steps cut by a piece and relaunched
+
+Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; if a piece cuts it, it is relaunched once and recorded.
+
+- ts2_ff step 2033 (to 2037), piece 6 (PID 30282): pass 1 solved cold on parallel in 41.3 min; 2037 at 36.39 against 20 GWh; three
+  windows added (2015 day 149 twice, 2016 day 121). Pass 2 started cold at 19:08:44 and was stopped at the job deadline at 19:57:14 after
+  48.5 min, with no valid basis kept, so the step had run 95 min. Relaunched once at 19:57 (piece 7, PID 19210): pass 1 from the LP cache
+  (03a1f3ee3d), pass 2 cold again with a 5,404 s limit.
+
 <!-- test15_summary start -->
 #### ts2_central (6 of 15 steps)
 
@@ -239,7 +248,7 @@ ts2_ff: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2030 | 2034 | 1 | adequate | parallel, 2 threads | 67.9 | 72.0 | 2 | 2.6 | pass 1: none | 585.201 |
 | 2031 | 2035 | 1 | adequate | parallel, 2 threads | 51.1 | 55.3 | 2 | 3.0 | pass 1: none | 623.073 |
 | 2032 | 2036 | 1 | adequate | parallel, 2 threads | 39.8 | 44.7 | 2 | 3.0 | pass 1: none | 669.855 |
-| 2033 | | | not finished |  |  | | 1 | | | |
+| 2033 | | | not finished | parallel, 2 threads | 41.3, 48.5 | | 2 | | | |
 
 ts2_ff: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 

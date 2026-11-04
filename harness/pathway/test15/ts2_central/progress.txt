@@ -80,3 +80,4 @@
 2026-11-04T19:30:14Z two_stage.sh PID 12878
 2026-11-04T19:30Z two_stage K=4 N=25 FIRST=2026, shell PID 12878
 2026-11-04T19:30:29Z step node PID 12891
+2026-11-04T19:30:59Z solve started (highs_native.py 13000)
