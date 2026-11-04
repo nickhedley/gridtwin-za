@@ -1,0 +1,9 @@
+# Test 13 local files (LP dump, solve cache, claims, PIDs, memory samples): kept off the repository
+*.lp
+lpc/
+claim/
+*.pid
+*.progress
+mem.txt
+piece*.txt
+progress.txt

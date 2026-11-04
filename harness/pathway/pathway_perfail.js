@@ -327,7 +327,8 @@ const fix=lp=>{ const oc=/^ 0 <= b_ocgt_\d{4} <= /m.test(lp); return lp.replace(
      // starts this solve cold. A solve longer than one piece then never finishes here: the chain's attempt count reports it not run.
      if (RESUME && last.Status==='Time limit reached'){ try{ fs.unlinkSync(cfp); }catch(e){}
        console.log('stopped at the job deadline; no valid basis, the next piece starts cold', key.slice(0,10)); process.exit(75); }
-     if (last.Status==='Optimal'){ w.__jobSolves=(w.__jobSolves||0)+1; fs.mkdirSync(cdir,{recursive:true}); last.Method=(process.env.HIGHS_SOLVER||'simplex')+((process.env.HIGHS_SOLVER==='ipm')?', crossover '+(process.env.HIGHS_CROSSOVER||'on'):''); fs.writeFileSync(tmp+'.json',JSON.stringify(last)); fs.renameSync(tmp+'.json',cf); try{ fs.unlinkSync(tmp+'.lp'); }catch(e){}
+     // Method (test 13, message 693 (5)): also HIGHS_OPTS when set, and HiGHS's own solve seconds (RunTimeSecs from highs_native.py).
+     if (last.Status==='Optimal'){ w.__jobSolves=(w.__jobSolves||0)+1; fs.mkdirSync(cdir,{recursive:true}); last.Method=(process.env.HIGHS_SOLVER||'simplex')+((process.env.HIGHS_SOLVER==='ipm')?', crossover '+(process.env.HIGHS_CROSSOVER||'on'):'')+(process.env.HIGHS_OPTS?', HIGHS_OPTS '+process.env.HIGHS_OPTS:'')+(last.RunTimeSecs!==undefined?', '+Math.round(last.RunTimeSecs)+' s':''); fs.writeFileSync(tmp+'.json',JSON.stringify(last)); fs.renameSync(tmp+'.json',cf); try{ fs.unlinkSync(tmp+'.lp'); }catch(e){}
        if (WARM && fs.existsSync(tmp+'.basis.json')){ fs.renameSync(tmp+'.basis.json',cfb); w.__prevBasis=cfb; }
        if (RESUME){ try{ fs.unlinkSync(cfp); }catch(e){} } }
      else { fs.renameSync(tmp+'.lp', tmp+'.fail.lp'); console.log('kept the failed LP for diagnosis:', tmp+'.fail.lp'); } } }   // 7 Oct 2026: a failed solve keeps its LP (IIS)

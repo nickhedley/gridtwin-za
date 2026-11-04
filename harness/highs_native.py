@@ -33,8 +33,9 @@ lp, sol = h.getLp(), h.getSolution()
 cv, cd, rv, rd = list(sol.col_value), list(sol.col_dual), list(sol.row_value), list(sol.row_dual)
 cols = {n: {'Name': n, 'Primal': cv[i], 'Dual': cd[i]} for i, n in enumerate(lp.col_names_)}
 rows = [{'Name': n, 'Primal': rv[i], 'Dual': rd[i]} for i, n in enumerate(lp.row_names_)]
+# RunTimeSecs (test 13, message 693 (5)): HiGHS's own wall time for the solve, seconds.
 out = {'Status': h.modelStatusToString(h.getModelStatus()),
-       'ObjectiveValue': h.getInfo().objective_function_value, 'Columns': cols, 'Rows': rows, **({'Options': _opts} if _opts else {})}
+       'ObjectiveValue': h.getInfo().objective_function_value, 'Columns': cols, 'Rows': rows, **({'Options': _opts} if _opts else {}), 'RunTimeSecs': h.getRunTime()}
 with open(sys.argv[2], 'w') as f:
     json.dump(out, f)
 # A solve stopped at its time limit also saves its basis, so a later job can resume it (RESUME, 12 Oct 2026).
