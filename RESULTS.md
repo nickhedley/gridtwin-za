@@ -21117,13 +21117,13 @@ the representative days, GWh. Outputs harness/out/accept (an.json). 3 Nov 2026, 
 | (d) 18 / 25 / 30 / 55 / 105 | -0.01 / -0.01 / 0.00 / 0.00 / 0.00% | none at any count | -0.01 / +0.01 / -0.03 / -0.03 / -0.03% | 30: iron-air -446; 55: -424; 105: -366 |
 | (e) 25 | -0.17% | solar -7,170 | -0.01% | none |
 
-- Test 1: clustered weights carry the gain. (b), (d) and (e) are within 0.2% of the benchmark on cost in every run; (a) and (c),
+- Test 1: clustered weights carry the gain. (b), (d) and (e) are within 0.25% of the benchmark on cost in every run; (a) and (c),
   which weight days equally, are 1.1-2.0% off for the central with the mix far off (wind 2,600-3,500 MW short, CCGT or OCGT 1,200 MW
   added), and for Fossil-free they fail outright: all their unserved falls on one day, 14 July (day 195, the start of July 2025's
   36-hour calm in the metered calendar, which (a) takes whatever the reference), weighted as about 30 days in (a) and 15 in (c), which
-  no fossil-free fleet covers. Linking ((d) against (b)) moves cost by under 0.1% here; it settles Fossil-free's mix on the metered
+  no fossil-free fleet covers. Linking ((d) against (b)) moves cost by about 0.1% here; it settles Fossil-free's mix on the metered
   reference (wind and iron-air off by 3,157 and 902 MW without it).
-- Test 3 (no long-duration storage; the central, linked (d) against unlinked (b) at 25 days): corr5 -0.09% in cost, the same builds
+- Test 3 (no long-duration storage; the central, linked (d) against unlinked (b) at 25 days): corr5 -0.11% in cost, the same builds
   (solar 5,696, lithium 3,000 MW / 8,167 MWh, pumped storage 1,500); met -0.12%, pumped storage 702 against 587 MW, coal retired 73
   against 0.
 - Test 6: cost is within 0.22% of the benchmark at every count from 18 days, both runs, both references. The mix does not settle
