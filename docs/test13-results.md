@@ -101,7 +101,9 @@ harness/out/mga2/warm, d18 and nopre. No GitHub Actions.
   Piece 3 from 20:34 UTC with HiGHS's log on (out/mga2/warm/highs_p3.log, off the repository): the reloaded basis starts slightly
   primal infeasible (19,342 rows, sum 13,311; most likely the bound perturbation of primal simplex), feasible again within minutes;
   at 4,106 s into piece 3 it is primal feasible with wind standing in 2040 at 26,892 MW (the base: 39,918 MW) and falling by about
-  12 MW a minute, with 31,316 dual infeasibilities left.
+  12 MW a minute, with 31,316 dual infeasibilities left. Piece 3 ended at 22:26 UTC, not solved, at 26,380 MW (falling about 10 MW
+  a minute at the end), basis kept. Piece 4 started at 22:26 UTC; the container restarted at 22:28 UTC and it restarted from the
+  same basis at 22:29 UTC.
 - The run's log says "start from basis none (cold)": that line reports only pathway's own resume basis. The solver process was
   checked to hold HIGHS_BASIS_IN pointing at the saved base basis.
 
@@ -139,7 +141,9 @@ basis survives the limit:
 piece 1, 17:58-19:50 UTC beside the warm start: stopped at its 6,694 s (111.6 min) limit, not solved; a valid basis kept. Piece 2
 resumed from it at 19:51 UTC; 19:51-21:43 UTC, not solved, basis kept. Piece 3 from 21:43 UTC with HiGHS's log on
 (out/mga2/nopre/highs_p3.log): dual feasible, 152,434 primal infeasibilities at its start, dual objective -5,260 (a lower bound on
-wind standing with the perturbed costs): far from the optimum after 224 minutes. HiGHS's log names simplex_strategy 2 as SIP, the
+wind standing with the perturbed costs): far from the optimum after 224 minutes. At 2,673 s into piece 3 the dual objective was
+-3,859, rising about 30 a minute, with 155,245 primal infeasibilities. The container restarted at 22:28 UTC and piece 3 was lost;
+it restarted from the 21:43 basis at 22:29 UTC. HiGHS's log names simplex_strategy 2 as SIP, the
 task-parallel dual simplex, with concurrency 8 on 2 threads.
 
 ### Summary
