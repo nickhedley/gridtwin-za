@@ -12,9 +12,12 @@
 # No WIN_FROM. MAXP is env_c6.sh's 6, which two_stage.sh passes on: the adequacy loop tests every year in the step's window, and a failing
 # year adds its windows and the step solves again (message 693 (4), (5): kept, the conservative option under rule 366).
 # Nothing here reads ESK19679 (message 693 (6)).
+# Solver: parallel dual simplex on 2 threads (HIGHS_OPTS, highs_native.py; message 698 (c)), from the pieces launched after 13:45 UTC on
+# 4 Nov 2026; the steps before ran HiGHS's default serial dual simplex. Each piece's first line in progress.txt records HIGHS_OPTS. The
+# solver does not change the LP or its cache key.
 # Pieces as chain_c7.sh's: each solve gets the time left less 15 minutes (pathway_perfail.js RESUME=1 JOB_DEADLINE, PIECE_S seconds from
-# the start, default 6,600) and keeps a valid basis if it stops there; no new step starts with under MIN_LEFT seconds (default 2,700) left:
-# that step's node is stopped by its PID within seconds of starting and two_stage.sh exits, writing 'NO OUTPUT' for it after this script's
+# the start, default 6,600) and keeps a valid basis if it stops there; no new step starts with under MIN_LEFT seconds left (default
+# 4,800; 2,700 before 12:38 UTC on 4 Nov 2026, when a step cut at the deadline kept no valid basis and lost 42 minutes): that step's node is stopped by its PID within seconds of starting and two_stage.sh exits, writing 'NO OUTPUT' for it after this script's
 # 'stopped at the step boundary' line. Scheduling only: every LP and answer is two_stage.sh's. Writes to <OUTDIR>/progress.txt each step's
 # node PID, each solve's wall time (the highs_native.py process, to the 15-second poll) and the step's peak memory (node and solver).
 # Relaunch at each completion until progress.txt says 'test15 <run>: all 15 steps have output'.
@@ -25,6 +28,7 @@ export GAS_FIRST=2035 SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1
   COAL_CARBON_FLOOR=1 SOLVER=native \
   REP_REF=metered REP_EXTREMES=20,161,162,163,187,188,194,195,196,214,218,358 WX_WINDCORR=1 WX_WINDCORR_TABLE=pathway/wx/wind_corr_table_calm6.json CONG_OFF=1
 export K=4 N=25 FIRST=2026
+export HIGHS_OPTS=${HIGHS_OPTS-'{"simplex_strategy": 2, "threads": 2}'}
 case $R in
   central)     export OUTDIR=out/ts2_central ;;
   ff)          export PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039 OUTDIR=out/ts2_ff ;;
@@ -43,20 +47,20 @@ rss(){ local v; v=$(ps -o rss= -p $1 2>/dev/null | tr -d ' '); echo ${v:-0}; }
 if [ "$(ndone)" -ge 15 ]; then echo "$(ts) test15 $R: all 15 steps have output" >> $P; exit 0; fi
 if [ -n "$LAST" ] && [ -s $O/step_$LAST.json ]; then echo "$(ts) test15 $R: step $LAST has output, the last this run takes" >> $P; exit 0; fi
 export RESUME=1 JOB_DEADLINE=$(( $(date +%s) + ${PIECE_S:-6600} ))
-echo "$(ts) test15 $R piece, PID $$, on $(git log --oneline -1 | cut -c1-50), $(grep -o "BUILD_STAMP = .[0-9a-z-]*" ../index.html), deadline $(date -u -d @$JOB_DEADLINE +%H:%MZ), MIN_LEFT ${MIN_LEFT:-2700}s, disk free $(df -BG / | awk 'NR==2{print $4}'), memory free $(free -g | awk '/Mem/{print $7}')G" >> $P
+echo "$(ts) test15 $R piece, PID $$, on $(git log --oneline -1 | cut -c1-50), $(grep -o "BUILD_STAMP = .[0-9a-z-]*" ../index.html), deadline $(date -u -d @$JOB_DEADLINE +%H:%MZ), MIN_LEFT ${MIN_LEFT:-4800}s, HIGHS_OPTS ${HIGHS_OPTS:-none}, disk free $(df -BG / | awk 'NR==2{print $4}'), memory free $(free -g | awk '/Mem/{print $7}')G" >> $P
 bash pathway/two_stage.sh & T=$!
 echo "$(ts) two_stage.sh PID $T" >> $P
 nd=$(steps); stop=0; node=""; peak=0; py=""; pyt=0
 while kill -0 $T 2>/dev/null; do
   sleep 15
   n=$(steps)
-  if [ $n -gt $nd ]; then nd=$n; left=$(( JOB_DEADLINE - $(date +%s) )); [ $left -lt ${MIN_LEFT:-2700} ] && stop=1; [ -n "$LAST" ] && [ -s $O/step_$LAST.json ] && stop=2; fi
+  if [ $n -gt $nd ]; then nd=$n; left=$(( JOB_DEADLINE - $(date +%s) )); [ $left -lt ${MIN_LEFT:-4800} ] && stop=1; [ -n "$LAST" ] && [ -s $O/step_$LAST.json ] && stop=2; fi
   c=$(ps -o pid= --ppid $T 2>/dev/null | tr -d ' ' | head -1)
   if [ -n "$py" ] && ! kill -0 $py 2>/dev/null; then echo "$(ts) solve (highs_native.py $py) ended after about ${pyt}s" >> $P; py=""; pyt=0; fi
   if [ -n "$node" ] && [ "$c" != "$node" ]; then echo "$(ts) node $node ended, peak memory $(awk -v k=$peak 'BEGIN{printf "%.1f", k/1048576}') GB" >> $P; node=""; peak=0; fi
   if [ -n "$c" ] && [ "$(cat /proc/$c/comm 2>/dev/null)" = node ]; then
     if [ "$c" != "$node" ]; then node=$c; echo "$(ts) step node PID $c" >> $P; fi
-    if [ $stop != 0 ]; then echo "$(ts) $([ $stop = 2 ] && echo "step $LAST done, the last this run takes" || echo "under ${MIN_LEFT:-2700}s left"): stopped at the step boundary (node $c, just started)" >> $P
+    if [ $stop != 0 ]; then echo "$(ts) $([ $stop = 2 ] && echo "step $LAST done, the last this run takes" || echo "under ${MIN_LEFT:-4800}s left"): stopped at the step boundary (node $c, just started)" >> $P
       for g in $(ps -o pid= --ppid $c); do kill $g 2>/dev/null; done; kill $c 2>/dev/null; continue; fi
     g=$(ps -o pid= --ppid $c | tr -d ' ' | head -1)
     r=$(rss $c); [ -n "$g" ] && r=$(( r + $(rss $g) ))
