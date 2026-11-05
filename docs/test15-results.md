@@ -151,6 +151,10 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   relaunch: relaunched at 23:46 (PID 373), passes 1 to 3 from the LP cache, pass 4 cold. The two solves the restart stopped left no end
   line, so the tables' solve times leave them out; test15_summary.py counts the stopped piece's finished solves and attempt with the step
   the next piece resumed (fixed 5 Nov 2026).
+- ts2_central_ann step 2029 (to 2033), piece of 00:58 (PID 16549): passes 1 to 3 solved cold on parallel (16.8, 28.6, 31.8 min);
+  pass 1: 2032 at 20.23 and 2033 at 44.88, pass 2: 2033 at 26.04, pass 3: 2033 at 23.3 against 20 GWh. Pass 4 started at 02:23:38 with
+  the 600 s floor and was stopped at the job deadline at 02:33:55 with no valid basis; the step had run 95 min. Relaunched once at
+  02:34 (PID 916): passes 1 to 3 from the LP cache, pass 4 cold with about 90 min.
 
 <!-- test15_summary start -->
 #### ts2_central (15 of 15 steps)
@@ -340,7 +344,7 @@ ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2026 | 2030 | 1 | adequate | parallel, 2 threads | 15.9 | 18.4 | 1 | 2.5 | pass 1: none | 677.140 |
 | 2027 | 2031 | 5 | stall stop | parallel, 2 threads | 16.8, 10.3, 7.0, 29.0, 29.2, 18.0, 32.3 | 45.3 | 3 | 4.1 | pass 1: 2031: 47.9 / 20<br>pass 2: 2031: 31.1 / 20<br>pass 3: 2031: 28.2 / 20<br>pass 4: 2031: 26.6 / 20<br>pass 5: 2031: 27.2 / 20 | 743.104 |
 | 2028 | 2032 | 5 | adequate | parallel, 2 threads | 14.8, 21.6, 24.2, 27.2, 31.4 | 70.4 | 3 | 4.1 | pass 1: 2032: 37.8 / 20<br>pass 2: 2032: 29.5 / 20<br>pass 3: 2032: 24.0 / 20<br>pass 4: 2032: 20.0 / 20<br>pass 5: none | 776.178 |
-| 2029 | | | not finished |  |  | | 1 | | | |
+| 2029 | | | not finished | parallel, 2 threads | 16.8, 28.6, 31.8, 10.1 | | 2 | | | |
 
 ts2_central_ann: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
