@@ -912,6 +912,17 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14na. From message 710 (5 Nov 2026; the cost review on 57f70df, RESULTS 'The independent cost review'). Done on claude/twin-retime
+559175c: (c) engine grid charge on the LP's basis, (e) vintage pricing and the unserved price escalated, (f) CPI link, SOURCES 364,
+ATB editions, discount rate in summ.js and packfill.js, (d) withdrawn. Open: (a) run (6) at lpCurtailCostR 0 (running); then FIXED to
+0, R150 as a sensitivity, and the pack's line that comparisons across curtailment use the LP's objective revised; (b) run (6) with
+coal's part-load factor in the LP (running), recommend; (g) re-read new wind's capacity factor, the reference and the two-stage
+comparison with (a) in; (h) Nick: the siting panel keeps the regional tiers while the engine is flat; validate_invariants' check
+'the siting panel prices a megawatt as the engine does' to be restated or the panel moved to flat; (i) Nick: Avon and Dedisa's
+fomDiesel on top of their contract (R0.36bn a year to 2030; evidence indirect, SOURCES); (j) after the note: the three ATB fixed
+O&M figures are dollars of 2020-2022 at R16.50 with no US CPI, about 20-26% low against January 2026; offshore's $85 matches no
+edition's base year; (k) the regional LP's costs and the other items the review did not check.
+
 14mw. From messages 704-709 (5 Nov 2026; RESULTS entries of 5 Nov). Done on claude/twin-retime (build 2026-11-05b, then 937ff2e): the
 PVGIS re-timing (csi_day), rooftop on one shape, CSP and offshore in the LP on the engine's series, the forecast's diesel key, pathcheck
 re-applying recorded settings, the double division and tail ranking, profiles.json's note, validate_series.js (707 (c)) with the existing

@@ -22429,3 +22429,54 @@ by 2030, 3.3 GW used) and is full from 2034 (21.8 GW freed by 2040, 21.8 GW used
 which allowed technology sits on it changes nothing in the objective: a tie-break. While it has room (2030-2033), the credit does
 lower solar's grid cost against wind's, an effect of the wind exclusion, not of solar. The early-retirement observation (HANDOVER)
 is re-read there: a freed connection is worth the full grid charge to the LP once the pool is full.
+
+### The independent cost review on main 57f70df (build 2026-11-04b), its own measurements (message 710; attached from Nick's paste, 5 Nov 2026)
+
+Measured by a separate session on main at 57f70df, in the page loaded in jsdom or from the central run's own files (harness/pathway/c6e);
+nothing changed or pushed; validate_worker 38/38. Line numbers are main's. Its ranked findings, as pasted:
+
+1. The LP charges curtailment at R150 per MWh and the engine charges nothing (confirmed; shapes the central build; unsourced).
+   index.html:6177 (lpCurtailCostR, "the long-standing model value"), priced on every curtailed MWh of every representative day
+   (12801). The engine's cost line has no curtailment term (curtailFuelCost at 10588 is coal fuel saved, a subtraction; REIPPPP
+   deemed-energy compensation lives only in the retail tariff build). On c6e's own curtailment: R11.9bn present value, 0.5% of the
+   R2,283.9bn engine PV. On the hypothetical presets a large share of what the LP minimises: Deep decarbonisation 2035 71 TWh
+   curtailed, R10.7bn a year (3.7% of the year's R292bn); Fossil-free 2040 270 TWh, R40.5bn a year (6.7% of R602bn).
+2. The grid charge exists on three bases, up to R27bn apart on the central run (confirmed). LP (bldGridAnn, 11675): flat R364/kW-yr
+   (TDP 2024's R225bn over 46.9 GW at 7.1% over 40 years) on wind, solar, offshore, gas and pumped storage; zero on batteries and
+   rooftop; less the repurposed-connection credit (12879); on c6e the credit is R26.6bn PV on 21.8 GW of pool by 2040. Engine
+   (txChargeFor, 15914): wind and solar only, tiered regionally (TX_SHALLOW 0.25 into existing headroom, the distance multiplier into
+   TDP headroom, 1.5 times it beyond); the comment at 15942 said the curve was retired on 22 Sep 2026 and the model flat; it was not.
+   c6e, PV at 8%: flat charge on new wind and solar R87.0bn; the engine's tiered R66.7bn (yearly ratio 0.68 in 2030, 0.79 in 2035,
+   0.81 in 2040); the LP's net after the pool about R60bn. The headline engine PV is on the tiered basis; costGrid on the LP's.
+   Fossil-free's page cost omits offshore's grid charge (newCapexR passes 0 offshore MW; the decomposition includes it), R2.6bn a
+   year on 5 GW. Per MWh wind pays about R99, tracking solar R145 (fixed tilt on the page default R228); the credit is identical per
+   MW, so the allocation between them is a tie-break; batteries pay no grid cost unless bldGridBattHalf is set.
+3. Coal's part-load penalty is in the engine and not in the LP (confirmed). Engine: coal fuel and carbon times partLoadF each hour
+   (10002, 10004); LP: coalFuelAt flat (12785). Mean factor 1.032 on Today 2026, 1.054 on Least-cost path 2035, 1.066 on Deep
+   decarbonisation 2035. c6e's coal fuel at the flat price R582bn PV; the engine charges about R25-30bn more (about 1.2% of PV).
+4. New-build capital per vintage in the LP, at one midpoint vintage in the engine (confirmed, modest; 10251 against 12713): engine
+   above the LP by 1.7% in 2030, 2.5% in 2033, 1.6% in 2035, 0.2% in 2040; R7.7bn PV on R583bn of wind, solar, rooftop and lithium.
+5. Two valuations the LP never sees: firm export revenue, R1,330/MWh on 6.59 TWh, R8.75bn a year (10314, 10557), about R81bn PV;
+   shed energy at R87,000/MWh x 365 on stress days in the LP (12592, 12794) against R9,530/MWh in 2020 prices, unescalated, in the
+   engine (6187; about R12,300 in 2026 rands); R10bn apart on a plan shedding 130 GWh.
+6. The April 2021 to January 2022 CPI link about 2.3% too high (plausible, reconstructed): 11396's 1.059 against about 1.035.
+7. Rand base years mixed (each small): capex January 2026; costCoal FY2026 unescalated; fomCoal MYPD6; REIPPPP_WINDOWS and otherIppR
+   MYPD6 nominal; costDiesel at Brent $67; IRENA and ATB 2024 dollars at R16.50 with no US CPI; three dollar rates (16.50 at 5286,
+   16.8 at 11330, 17.39 in the diesel record).
+8. Sources behind constants: SOURCES gives txRPerKWyr 402 (line 58) against 364; BLD_FOM rooftop 495, offshore 1,403, CCGT 462
+   'NREL ATB, edition not recorded'; BLD_COST.pv R12,000 unsourced (runs with tracking off only); lithium's fixed O&M consistent.
+9. Possible small double count: Avon and Dedisa's 1,005 MW pay fomDiesel R360/kW-yr (10478) while otherIppR charges their R2,174m
+   a year contract to 2030 (5557); R0.36bn a year to 2030 if the contract covers fixed O&M.
+10. The present-value discount a literal 1.08 in summ.js:6 and packfill.js:102 against BLD_DISC (rule 6).
+Counted twice: nothing confirmed beyond 9. Consistent and checked: the carbon path and floor; gas fuel by year and the LNG terminal
+charge; lithium's power and energy split; IDC only on non-bid capex; coal fuel and fixed O&M escalations; the coal retirement credit;
+pumped storage repriced by pathcheck; no fixed O&M on REIPPPP plants in contract years; rooftop in system cost and out of grid cost;
+cost-of-capital cases; the January 2024 to January 2026 CPI. Not checked: the regional LP's costs; the retail price panel; the gas
+price case files; the dollar sources for vanadium, iron-air, offshore and CCGT capex; MYPD6's tables; the VPP and geyser cost terms;
+c7's blended case beyond the code; the pathcheck reuse-pool fix.
+
+What was done on each (message 710; claude/twin-retime 559175c, build 2026-11-05d): 2 and 4 in the engine (gridChargeR on the LP's
+basis, offshore included; vintage pricing from pathcheck's schedule): on c6e (one draw, the new rooftop basis) grid +R12.5bn and
+vintage -R8.5bn of PV, +R4.0bn together. 5: the unserved price escalated (x1.291). 6: confirmed against P0141 (1.036) and corrected.
+8: SOURCES corrected to 364; ATB editions identified (rooftop ATB 2023, CCGT ATB 2022; offshore unmatched). 9: the evidence points to
+a double count (SOURCES 'Avon and Dedisa'), not changed. 10: the run's own rate. 1 and 3: tested on run (6) (710 (a), (b)), running.
