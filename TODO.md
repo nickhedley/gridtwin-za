@@ -929,7 +929,7 @@ PVGIS re-timing (csi_day), rooftop on one shape, CSP and offshore in the LP on t
 re-applying recorded settings, the double division and tail ranking, profiles.json's note, validate_series.js (707 (c)) with the existing
 solar fault it found, the capacity files from Q1 2026/27 (705). Open: (a) 707 (d), each change sized on run (6): engine-only runs
 (running), then one LP pass with all of them once memory frees (after the 55-day piece stops); flag by 7 Nov any change that misses 8 Nov;
-(b) the pull request: full suite, stored panels, visible text, CLAUDE.md's suite list with validate_series.js; (c) 704 (c)'s three loops
+(b) the pull request: done 5 Nov, nickhedley/gridtwin-za#161 (build 2026-11-05k, full suite, stored panels, visible text, CLAUDE.md); (c) 704 (c)'s three loops
 and test 14's cells after the pull request; (d) new wind's capacity factor, Nick's decision 7 Nov (changes the key); (e) 709 after the
 pull request's checks.
 

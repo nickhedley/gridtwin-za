@@ -2,6 +2,8 @@
 
 ## 5 Nov evening (messages 714-720): where things stand
 
+- Pull request nickhedley/gridtwin-za#161 opened 23:07 UTC (claude/twin-retime, build 2026-11-05k): full suite node 1,057/1,066, audit
+  88/88, eng5 5/6, known failures only (CLAUDE.md on the branch lists them with causes); visible text in the description. Nick reviews.
 - Second restart: the container restarted at about 22:25 UTC, 40 minutes into the base and w3724 loops' first pass (no basis yet: a
   piece keeps its basis only at its deadline) and during the suite's worker check. Both loops relaunched cold at 22:28 UTC; the suite's
   long part relaunched (presets rerun with the 05k IRP 2030 check; worker). About 45 minutes lost on each loop.
