@@ -191,3 +191,13 @@ None fits well inside a piece. Only the warm start solved, and only because each
 from; a primal simplex basis came back nearly feasible each time, while a dual simplex basis (presolve off) came back dual infeasible
 once and lost a piece's progress. The 18-day base solves in 30 minutes, but its MGA solve does not. Primal simplex runs on one thread,
 so the warm start left a core idle; four warm solves at a time were not tried (the samples put a run at about 3 to 4 GB, on 15 GB).
+
+## Method chosen (user, 5 November)
+
+Warm-start primal simplex, resumed across pieces. When the final key exists (after the metered tracking-twin fix) the main session
+sends a restart message; then the base re-solved saving its basis, and the 10 solves for 2040 at 1%, four at a time on one thread
+each: wind and solar minimum and maximum first, then lithium, long-duration storage and coal; memory watched. 2030 and 2% only if time
+allows. Nothing runs until then. A short entry for RESULTS was sent to the main session on 5 November.
+
+harness/pathway/mga/run_mga.sh has a warm mode for this (MGA_WARM=1, MGA_OUT for a fresh folder, MGA_OPTS, START_DELAY, MIN_AVAIL_MB;
+its header has the launch). Checked for syntax and its new parts dry-tested; not yet run on a solve.
