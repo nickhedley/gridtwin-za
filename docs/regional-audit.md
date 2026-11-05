@@ -18,7 +18,8 @@ except where marked "read".
 3. The network as drawn barely binds: lifting every corridor limit moves coal by 0.04 TWh, cost by 0.03%, unserved and
    renewable curtailment by nothing, in both the heuristic engine and the MIP, even though four Karoo and Cape corridors
    sit at their limit for 2,100 to 3,350 hours a year. The limits are N-0 sums of single-circuit loadability, about 1.4
-   times the N-1 secure values PyPSA-RSA, PyPSA-Eur and ReEDS would set; losses are a tenth of the measured network's.
+   times the N-1 secure values PyPSA-RSA, PyPSA-Eur and ReEDS would set; its corridor losses, 0.02% of demand, are about a
+   hundredth of the network's published 2.3%, which counts every transmission loss and is not a like-for-like measure.
 4. Of this week's ten faults, three reach the regional path: the wind clock (fixed there by PR 159), the PVGIS stamp
    (not fixed: twin-retime re-times the twelve-year file and leaves nodal/profiles_regional.json 27 minutes late) and the
    wind correction (never applied there). The rooftop add-back, CSP, offshore and the diesel key have regional
@@ -237,7 +238,7 @@ upper bound on the engine's inefficiency; the engine holds a 6 GW synchronous fl
 match used imports 0.88 and the pre-14 Oct battery split, so part of the move from 4.2% is the inputs, not the engine.
 This checks the 10-region engine only, as before; the single-node engine's check is in validation/single_node/.
 
-## (f) Plan
+## (f) Plan (superseded for now by message 717: L1 and R2 to R7 wait until after the note)
 
 Ranked fixes (size: S under half a day, M a day or two, L a week; "moves" says what changes):
 
