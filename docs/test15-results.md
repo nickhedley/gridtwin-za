@@ -104,7 +104,7 @@ harness/pathway/test15/ts_central and ts_ff.
 
 ### The central, Fossil-free and the central with ANNUITY_TO=2040 (message 693 (6))
 
-Running, central first, then Fossil-free, the annuity run last (user, 4 Nov 2026). Fossil-free stopped at step 2033 (21:33, below). The tables between the markers are regenerated after
+Running, central first, then Fossil-free, the annuity run last (user, 4 Nov 2026). Fossil-free stopped at step 2033 (21:33, below). The central finished all 15 steps at 01:43 on 5 Nov: 14.7 h from its first piece (11:02 on 4 Nov) over 14 pieces, one of them ended by a container restart; 21 solves (cut ones included), 11.3 h of solve wall time. The tables between the markers are regenerated after
 each finished step from `python3 -I pathway/test15_summary.py out/ts2_central out/ts2_ff out/ts2_central_ann` (one-stage brackets: the main
 session's section above).
 
