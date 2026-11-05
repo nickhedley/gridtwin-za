@@ -21926,9 +21926,9 @@ not finish: still solving at 112 minutes when the container restarted (22:00 UTC
 - Solar's own capacity factor moves solar little once wind is at the bids' figure (29.6 against run (3)'s 30.5 GW in 2040; more is
   built by 2030, less off the pool later). Wind's capacity factor is the lever (run (3)).
 - Run (5) retires 0.71 GW of coal early (2030) and misses the standard on the mean in 2040 by more than twice the standard error and in
-  2035 by less (marginal); the loop's own check fails six years, so the full loop would add passes. The three pass-1 builds that retire
-  0.5 GW or more of coal early (runs (1), (2), (5)) have each missed the standard; test 8 (0.22 GW) and runs (6) and (3) (none) met it.
-  An observation across six runs, not a tested cause.
+  2035 by less (marginal); the loop's own check fails six years, so the full loop would add passes. The pass-1 builds that retire
+  0.5 GW or more of coal early (runs (1), (2), (5), (4) below, split step S5) have each missed the standard or sit on it; test 8
+  (0.22 GW) and runs (6) and (3) (none) met it. An observation across eight builds, not a tested cause.
 
 ### c7 to test 8 by cause (message 699 (c), with 700 (d)'s solar line): steps 1-3 done; the weather fixes, the six-constant correction and congestion off leave solar at 38 GW in 2040 and the standard met; steps 4-6 running
 
@@ -21966,3 +21966,43 @@ Solar 2040: on the freed-coal pool / off it after 2028 / the committed builds of
 - Reliability: every step to S4 meets the standard with a wide margin (0.4-1.5 GWh). S5 misses it far: 30.8 GWh in 2035 and 59.8 in
   2040 (se 3.4 and 3.7), with lithium up and 2.05 GW of coal retired early; the loop's own check fails 2034-2040 (to 72.5). So the
   margin goes at the clustered weights on modelled 2025 without linking; test 8 (metered, linked) is back inside it (15.9 / 6.7).
+
+### Run (4) of message 700 (b), fixed twin: new tracking solar at the bids' 30.13% alone: utility solar 25.0 GW in 2040 (run (6): 23.9), all of the gain on freed coal connections; 1.3 GW of coal retired early; the engine on the standard in 2035 and 2040
+
+Settings: as run (6) (claude/twin-fix e588e49, fixed twin, test 8's basis, metered reference with its extremes) plus PV_TRK_CF=0.3013
+(factor 1.053827 on the fixed twin's 28.60%); wind at the model's 42.0%; LP key f313dc14b6. The engine check takes pvTrkCf from the run
+(logged). Solve: the first attempt (presolve on, beside run (5)) was still running at 112 minutes when the container restarted (22:00
+UTC); a second, cold, was lost to a second restart (22:21 UTC); then three resumable pieces with presolve off (RESUME=1, valid basis kept
+at each deadline): 2,367 s + 2,378 s + about 1,880 s, beside split steps 4-6, 4 Nov 22:23 to 5 Nov 00:27 UTC. Not a clean timing.
+
+| | Run (6) (solar 28.6%) | Run (4) (solar 30.13%) |
+|---|---:|---:|
+| Objective, R bn | 1,523.5 | 1,497.4 |
+| Utility solar 2030 / 2035 / 2040 | 6.7 / 17.2 / 23.9 | 8.6 / 18.5 / 25.0 |
+| of which off the freed-coal pool after 2028, 2040 | 0.2 | 0.0 |
+| Wind 2030 / 2035 / 2040 | 9.3 / 26.8 / 42.0 | 8.4 / 25.9 / 41.0 |
+| Lithium 2040, GW / GWh | 10.9 / 61.2 | 10.9 / 57.9 |
+| Coal retired early (from 2029) | 0.00 | 1.30 (2030) |
+| OCGT / diesel 2040 | 4.20 / 0.93 | 1.99 / 4.01 |
+| Engine 2030 (mean / worst 1% / worst draw, GWh) | 0.9 / 17 / 19 | 3.2 / 67 / 144 (se 0.9) |
+| Engine 2035 | 13.7 / 136 / 169 (se 1.7) | 20.3 / 159 / 263 (se 2.4) |
+| Engine 2040 | 7.6 / 88 / 124 (se 1.0) | 19.4 / 144 / 163 (se 1.9) |
+| The loop's own check (2 draws), years over 20 GWh | 2040 (21.6) | 2040 (25.6) |
+| Solar's energy value / wind's, 2030 / 2035 / 2040 | 0.78 / 0.79 / 0.92 | 0.74 / 0.74 / 0.87 |
+
+- Solar's own capacity factor at the bids' figure adds 1.1 GW in 2040, all on connections freed by coal (1.3 GW more coal retired early);
+  none off the pool. Wind's capacity factor is the lever (run (3): +6.6 GW).
+- Reliability: 2035 and 2040 sit on the standard (20.3 and 19.4 GWh, each within one standard error); 2030 at 3.2. The build is
+  R26bn cheaper, with less OCGT and more diesel.
+
+Summary of the five runs and test 8 (2040; engine means 2030 / 2035 / 2040, GWh):
+
+| Run | Wind CF / solar CF / reference | Solar, GW | Off the pool after 2028 | Coal retired early | Objective, R bn | Engine |
+|---|---|---:|---:|---:|---:|---|
+| Test 8 (old twin) | 42.0 / 28.6 / metered | 23.9 | 0.0 | 0.22 | 1,521.5 | 1.3 / 15.9 / 6.7 |
+| (1) (old twin) | 42.0 / modelled 2025 / mixed | 28.0 | 3.1 | 1.17 | 1,501.1 | 2.2 / 24.0 / 24.6 |
+| (2) (old twin) | modelled 2025 / 28.6 / mixed | 24.3 | 0.0 | 0.57 | 1,507.4 | 2.1 / 20.7 / 29.2 |
+| (6) | 42.0 / 28.6 / metered | 23.9 | 0.2 | 0.00 | 1,523.5 | 0.9 / 13.7 / 7.6 |
+| (3) | 37.24 / 28.6 / metered | 30.5 | 6.8 | 0.00 | 1,572.3 | 1.7 / 19.0 / 7.0 |
+| (4) | 42.0 / 30.13 / metered | 25.0 | 0.0 | 1.30 | 1,497.4 | 3.2 / 20.3 / 19.4 |
+| (5) | 37.24 / 30.13 / metered | 29.6 | 5.2 | 0.71 | 1,543.8 | 4.3 / 23.8 / 27.9 |
