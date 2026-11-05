@@ -136,7 +136,7 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
   none of the integration charge (R364/kW-yr) that wind, solar, offshore, gas and pumped storage pay. A battery still needs a
   connection and may need reinforcement; half the integration charge is a sensitivity (message 710 (c)).
 - Gas and diesel turbines' starts, cycling wear and part-load heat rate are charged in neither the build optimiser nor the engine. On
-  the final build in 2040 the starts left out cost about R0.5-1.6bn a year (0.15-0.5% of system cost; every start hot to every start
+  the final build in 2040 the starts left out cost about R0.5-1.5bn a year (0.15-0.5% of system cost; every start hot to every start
   cold), at NREL/Intertek APTECH's lower-bound start costs for large frame turbines (NREL/SR-5500-55433, 2012, as read by our advisor;
   message 716 (d)). The final build has no combined-cycle gas.
 - Coal is committed by a cost-weighing rule (4-hour blocks, cheapest first, kept on when restarting costs more), not a unit-commitment optimisation (PLEXOS and peers solve a mixed-integer commitment over a rolling horizon).

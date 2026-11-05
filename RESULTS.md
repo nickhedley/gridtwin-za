@@ -22806,8 +22806,11 @@ Open-cycle gas and diesel open cycle at the large frame rates (the IRP's GE 9F.0
   thresholds (table 1-1) as a stand-in. A layer not yet run in the year counts as 72 h or more, which adds to the cold share in a year's
   first starts.
 - Start fuel is excluded from these costs; the engine's gas fuel per MWh already carries no start fuel.
-- Report only: no change to the LP or the engine. The pack's Known limitations carry the range. The fin pass (10a98e2) is the final
-  build; the same script on its engine check follows when it has run.
+- Report only: no change to the LP or the engine. The pack's Known limitations carry the range.
+- On the final build, the fin pass (10a98e2; its 2040 engine check by claude/twin-retime dea3623, K=20, unserved 11.21 GWh as its own
+  check): open-cycle gas 4,420 MW, 3.05 TWh, 7.9%, 494,114 MW started (50% offline below 12 h, 20% 12-40 h, 9% 40-72 h, 21% 72 h or
+  more); diesel open cycle 4,582 MW, 124,377 MW started. Every start hot R0.47bn, by time offline R1.09bn, every start cold R1.52bn,
+  every start at the highest rate R1.86bn, aero-derivative rates by time offline R0.36bn; 0.15-0.47% of the engine's R320.8bn.
 
 ### The metered reference's extreme days on the current build (message 720 (b)): the list every run has used since 3 Nov no longer matches; recomputed, it adds days 159, 359 and 360 and drops 188 and 214
 
