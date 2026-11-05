@@ -12204,7 +12204,7 @@ function bldRepDays(n, opt){
       const i = d*24 + h;
       load += PROFILES.demand[i];
       wind += PROFILES.wind[i];
-      const net = PROFILES.demand[i] - 4000*PROFILES.solar[i] - 3600*PROFILES.wind[i];
+      const net = PROFILES.demand[i] - FIXED.pvUtilityMW*PROFILES.solar[i] - FIXED.windMW*PROFILES.wind[i];   // today's fleet, not a typed 4,000 and 3,600 MW (message 707 (e))
       netLoad += net;                                   // daily total, for rolling windows
       netPeak = Math.max(netPeak, net);                 // worst single hour
     }
@@ -12293,7 +12293,7 @@ function bldRepDays(n, opt){
         let v = 0;
         for (let h = 0; h < 24; h++){
           const i = d*24 + h;
-          v += PROFILES.demand[i] - 4000*nat.solar[i] - 3600*nat.wind[i];
+          v += PROFILES.demand[i] - FIXED.pvUtilityMW*nat.solar[i] - FIXED.windMW*nat.wind[i];   // today's fleet (message 707 (e))
         }
         net.push(v);
       }
@@ -16330,7 +16330,8 @@ function weatherYearNational(year){
     if (s){ const f = (bldWxWeights.solar[R] || 0) / ts / sc;
       for (let h = 0; h < HOURS; h++) solar[h] += s[h]*f; }
   }
-  for (let h = 0; h < HOURS; h++){ wind[h] /= tw; solar[h] /= tw; }
+  // (Removed 5 Nov 2026, message 707 (e): a second division here, the wind by its weight total again and the solar by the wind's; a no-op
+  // while every region carries every year (the totals are 1), wrong the day one is missing.)
   // Tracking twin on the same weights (TODO 14aw), carried on the array so every caller passing nat.solar has it.
   if (bldSolarTrk && bldSolarTrk.solar_trk_pu){
     const trk = new Float64Array(HOURS), st = bldSolarTrk.scale || 1;
