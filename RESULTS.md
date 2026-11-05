@@ -22062,3 +22062,34 @@ check only (repurposed MW added every year to y, before the YEARS filter). Scrip
 - The 30 Oct gas-minimum entry's grid-basis figures carry the same overstatement (same build, so the same gridOptBn): 2,332.1 and
   2,306.4, the +25.6 gap unchanged. No other RESULTS figure uses costGrid; no page figure or pack table reads it (entry 'rpCumMW
   counts only the years a check run covers').
+
+### The PVGIS years from the stamped minute to hour means (message 704 (a)): the lag against the metered fleet goes from 25-30 minutes late to within 5 minutes; the 2024-2025 tracking twins from 25-50 minutes early to 5-15 (spring 20 late); their energy -4.8%
+
+Settings: claude/twin-retime 379d08a (from main 57f70df, with claude/twin-fix's commits), retime_pvgis.py --method linear, BUILD_STAMP
+2026-11-05a. The stamped minute, from raw PVGIS v5_3 seriescalc responses (PVGIS-SARAH3, the ten regional points, 2014-2023, fetched
+5 Nov 2026, 06:45 UTC; kept locally in the scratchpad's pvgis_raw/minutes.json): :02 UTC at Free State, Northern Cape, Western Cape,
+Hydra Central, Eastern Cape and KwaZulu-Natal, :03 at North West, Limpopo, Gauteng and Mpumalanga, the same in every year. The
+response's meta says 'hourly averages'; the site-dependent minute (the satellite's scan) and the measured lag say instantaneous.
+Conversion: the readings joined by straight lines in time and averaged over each hour; energy kept. Check: scratchpad
+solarlag/s1_lag.py (ESK19679's PV over PV installed capacity, hour beginning, SAST, 5-minute resolution; best-fit shift and the
+day's energy centroid, model minus metered). Eskom data, the analysis ours.
+
+Best-fit shift, minutes (negative: the model runs late), DJF / MAM / JJA / SON; centroid, model minus metered, minutes:
+
+| Series | Before | After | Centroid before | Centroid after |
+|---|---|---|---|---|
+| 2023 fixed tilt (PVGIS) | -30 / -25 / -25 / -25 | -5 / 0 / +5 / 0 | +27 / +24 / +23 / +26 | -1 / -3 / -5 / -2 |
+| 2023 tracking (PVGIS) | -20 / -20 / -25 / -25 | +5 / +5 / +5 / 0 | +26 / +24 / +24 / +28 | -2 / -4 / -4 / 0 |
+| 2024 tracking twin | +50 / +45 / +35 / +25 | +15 / +10 / +5 / -20 | -42 / -37 / -30 / -17 | -7 / -6 / -5 / +23 |
+| 2025 tracking twin | +50 / +50 / +35 / +25 | +10 / +10 / +5 / -20 | -42 / -39 / -30 / -15 | -7 / -7 / -6 / +25 |
+| 2024 / 2025 fixed tilt (MERRA-2, untouched) | 0 / 0 / +5 / -10, 0 / +5 / +5 / -15 | the same | -3 / -3 / -5 / +10, -3 / -5 / -5 / +11 | the same |
+
+- The remaining lag: within 5 minutes for the PVGIS years in every season; the 2024-2025 twins 5-15 minutes early in summer to winter
+  and 20 minutes late in spring, where the MERRA-2 fixed tilt they are built on is itself 10-15 minutes late (SON).
+- Energy: 2014-2023 unchanged (fixed and tracking); the 2024-2025 tracking twins -4.8% (national 0.2955 to 0.2815 and 0.2949 to
+  0.2809): the PVGIS tracking/fixed ratio, out of step with the on-time MERRA-2 fixed tilt, had lifted them. Twelve-year tracking mean
+  0.28595 to 0.28362 (NEW_PVTRK_CF_12Y re-measured); the metered twin's scales 1.0285 to 1.0310 (fleet) and 0.7969 to 0.8096 (fixed).
+- Checks: validate_shapes 8/8 (6/8 on claude/twin-fix: the two failures were this lag); validate_weather 71/71 with ESK19679 present.
+- Tested and not used: a clear-sky-index conversion (each reading over the sun's height, interpolated, multiplied back): the same lags,
+  slightly lower correlation, +0.5-0.9% on the tracking series' energy.
+- Not yet measured: the engine and LP effects; the stored risk panels, the suite and the presets follow in the pull request.
