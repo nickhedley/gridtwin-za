@@ -916,7 +916,7 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 559175c: (c) engine grid charge on the LP's basis, (e) vintage pricing and the unserved price escalated, (f) CPI link, SOURCES 364,
 ATB editions, discount rate in summ.js and packfill.js, (d) withdrawn. Done 5 Nov: (a) run (6) at lpCurtailCostR 0, FIXED 0 from build
 2026-11-05f, R150 a sensitivity, the pack's curtailment line revised; (b) run (6) with coal's part-load factor, recommended for the central
-(Nick to decide). Open: (g) re-read new wind's capacity factor, the reference and the two-stage
+(Nick, 713 (a): in the central, run (6)'s table, build 2026-11-05h). Open: (c) 713 (c): the next LP pass with both, sized and reported (running); (g) re-read new wind's capacity factor, the reference and the two-stage
 comparison with (a) in; (h) Nick: the siting panel keeps the regional tiers while the engine is flat; validate_invariants' check
 'the siting panel prices a megawatt as the engine does' to be restated or the panel moved to flat; (i) Nick: Avon and Dedisa's
 fomDiesel on top of their contract (R0.36bn a year to 2030; evidence indirect, SOURCES); (j) after the note: the three ATB fixed
@@ -937,7 +937,7 @@ weather year reads twelveYearDemand(); at most 20.0 MW apart (K 1.0037, rooftop 
 checked. Make both read one series. Also: with new solar on fixed tilt (bldPvTracking 0), a clustered day of the metered reference gives
 new solar the metered fleet's shape, which carries trackers; the central has tracking on, so it does not arise there.
 
-14my. The loop's verdict on its own draws (704 (d); RESULTS 'The loop's verdict and its draws'): 2 a year, a year at or above half the
+14my. Done 5 Nov (message 713 (b)): the rule {start 2, steps [10, 20], frac [0.25, 0.5]} in the central's settings (env_c6.sh). Was: the loop's verdict on its own draws (704 (d); RESULTS 'The loop's verdict and its draws'): 2 a year, a year at or above half the
 standard topped up to 10 and then 20, the verdict on the topped-up mean; the LP's stress-target draws (ST_N) unchanged so the key does not
 move. Build behind a setting, test on run (6) from its cached pass 1 (passes, time), and decide before the 10-13 Nov route.
 

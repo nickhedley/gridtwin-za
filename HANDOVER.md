@@ -8,9 +8,9 @@ curtailment price 0 in the central (710 (a), tested on run (6)). Records on clau
   shell 28914, node 28921, solver 29003; the same with new wind at the bids' 37.24% (WIND_CORR=bw6), shell 29446, node 29453, solver
   29504. Script scratchpad c710/solve_all.sh <name> '<env>', resumable (presolve off, RESUME), log c710/progress.txt. Each then runs its
   engine check (K=20, 2030/2035/2040). At the curtailment price 0 a pass took two pieces (about 2 h 10 min).
-- Waiting on Nick: (b) coal's part-load factor in the central (recommend yes, run (6)'s table, RESULTS 'Coal's part-load penalty');
-  the verdict rule (recommend VERDICT_TOPUP {start 2, steps [10, 20], frac [0.25, 0.5]}, RESULTS 'The verdict's draws on every year');
-  the siting panel (tiered while the engine is flat; recommend keep tiered and restate its check); Avon and Dedisa's fomDiesel to 2030
+- Decided (713): coal's part-load factor in the central on run (6)'s table (FIXED.bldCoalPartLoad, build 2026-11-05h, 10a98e2); the
+  verdict rule VERDICT_TOPUP {start 2, steps [10, 20], frac [0.25, 0.5]} in env_c6.sh; both in the final key; the next LP pass with both
+  running (c710/solve_fin.sh 'fin', worktree /home/user/gtza-fin). Waiting on Nick: the siting panel (tiered while the engine is flat; recommend keep tiered and restate its check); Avon and Dedisa's fomDiesel to 2030
   (recommend drop); new wind's capacity factor (7 Nov).
 - Then: apply the calls; stored panels (validate_stored_panels.js --write), the long checks (pathway_presets, links, stored_panels,
   worker), visible text (diff_public_text.js --base 57f70df), the PR (draft in scratchpad pr_twin_retime_draft.md); the final key after
