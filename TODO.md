@@ -912,6 +912,17 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mv. From messages 699-703 (4-5 Nov 2026; HANDOVER 'For Nick, 5 Nov morning'; RESULTS entries of 4-5 Nov). Done: the lag test
+(701 (b)); the twin fix on claude/twin-fix with validate_shapes.js (702 (b)); runs (1)-(6) of 700 (b) on the old and fixed twins; the
+c7-to-test-8 split with the solar line (699 (c), 700 (d)); metered 2024 on the fixed twin (701 (g)); the backcast and fault log (702);
+wind-table pull request #160 opened, not merged. Open: (a) Nick: the twin fix pull request (6 Nov about 12:00), PVGIS re-timing, new
+wind's capacity factor (42.0% against the bids' 37.24%; a new freeze item, by 9 Nov), the reference, wind's limit source, restart
+messages for tests 13 and 15 (drafts in HANDOVER); (b) the 55-day run on the fixed twin (resumable pieces) and its engine check;
+(c) test 12's second part (seven runs) in the 10-13 Nov reruns; (d) the rpCumMW figure (14mu (f)), still open; (e) the pack: the thin
+margin and July 2025's calm on the final fleets (701 (g)); (f) why the loop's two-draw check and the K=20 check differ for 2040 (test 8:
+18.8 against 6.7; run (6): 21.6 against 7.6); (g) every route solve in resumable pieces with a heartbeat against idle restarts (two on
+the night of 4-5 Nov).
+
 14mu. From messages 691-698 (4 Nov 2026; HANDOVER sections of 4 Nov; RESULTS entries of 4 Nov). Done: #159 merged (d90ba63); 692 (a)
 cost-of-capital fix; 693 (a) decision recorded; 698 (a) enrolment round-off fix and (e) the two weather checks, on claude/wind-table.
 Open: (a) the wind-table pull request (suite, stored panels, the presets' engine checks, visible text), 5 Nov about 12:00 SAST; (b) test 8
