@@ -184,3 +184,8 @@
 2026-11-05T01:19:45Z node 15641 ended, peak memory 2.8 GB
 2026-11-05T01:19:45Z step node PID 21413
 2026-11-05T01:20:15Z solve started (highs_native.py 21505)
+2026-11-05T01:38:51Z solve (highs_native.py 21505) ended after about 1113s
+2026-11-05T01:42Z step 2040 (horizon 2040) rc=0 done
+2026-11-05T01:43:06Z node 21413 ended, peak memory 2.4 GB
+2026-11-05T01:43:06Z test15 central piece ends: two_stage.sh rc=0, 15 of 15 steps done
+2026-11-05T01:43:06Z test15 central: all 15 steps have output
