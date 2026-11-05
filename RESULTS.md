@@ -22615,3 +22615,146 @@ the loop's 2-draw verdict failed a year, 'pass limit reached'); engine check as 
 The capacity factor moves 2040 solar by 6.9 GW and the LP's cost by R49.1bn on the final basis, against 6.6 GW and R48.7bn in run (3)
 (R150, old code): removing the curtailment price and the 707 changes leave the size of the 7 Nov decision where it was. At 37.24% less
 wind is built before 2035, coal runs more (CO2 +10 to +12 Mt in 2030-2035) and the engine's cost is R8-10bn a year higher from 2035.
+
+### New gas on the final passes by technology (message 714 (a), (c)): no combined cycle; open-cycle gas runs at 8.3% in 2040; neither the LP nor the engine charges gas start-ups, cycling wear or part-load heat rate
+
+Settings: the every-change pass (17f42a5, scratchpad c710/all.json) and the 37.24% pass (all_w3724.json), their engine checks rerun by
+claude/twin-retime 5abefa2 (pathcheck's gas record, r.gasDetail; harness only: unserved identical to the digit with the checks at 17f42a5),
+K=20, 2030/2035/2040, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1, 5 Nov 2026 14:53-15:14 UTC; MW started from ee57fc0 (the
+every-change pass, 2040, K=20). Open-cycle gas is the engine's gas output above the combined-cycle MW, as the engine books it. Diesel open
+cycle is the existing fleet (3,400 MW, Avon and Dedisa included) plus new. Starts: hours a technology goes from idle to running (fleet
+level; each unit starts at least that often). MW started: the sum of each hour's rise in output (the MW of units started if units run at
+full output). The fin pass (10a98e2) gets the same record when its engine check has run.
+
+| Pass, year | Combined cycle, MW | Open-cycle gas: MW, TWh, CF, hours, starts | Diesel open cycle: MW, TWh, CF, hours, starts |
+|---|---:|---|---|
+| every change 2030 | 0 | 0 | 3,400, 0.43, 1.4%, 3,591, 679 |
+| every change 2035 | 0 | 0 | 3,400, 0.59, 2.0%, 297, 66 |
+| every change 2040 | 0 | 4,342, 3.15, 8.3%, 1,017, 186 | 4,669, 0.57, 1.4%, 218, 50 |
+| 37.24% 2030 | 0 | 0 | 3,400, 0.50, 1.7%, 3,826, 681 |
+| 37.24% 2035 | 0 | 0 | 3,400, 0.65, 2.2%, 319, 74 |
+| 37.24% 2040 | 0 | 3,118, 2.29, 8.4%, 929, 168 | 4,925, 0.64, 1.5%, 227, 55 |
+
+- 2030's 3,600-3,800 diesel hours are Avon and Dedisa's contracted day and evening must-run (avonDedisaMustRun, to 2030).
+- Costing (714 (c)). The LP prices each MWh linearly: combined cycle (gg_) at gas + variable O&M + carbon; open-cycle gas (go_) at 1.53
+  times the gas and carbon plus its own variable O&M; diesel (gd_) at diesel + variable O&M + carbon. No start-up cost, minimum load or
+  part-load heat rate for gas; the LP's start-up variables (su_) and commitment are coal's alone. The engine charges the same per-MWh
+  costs; its start-up cost (startUpCostR) and part-load penalty are coal's alone.
+- The gap on the final build, 2040, every-change pass: 507 GW of open-cycle gas started a year (117 starts of the 4,342 MW fleet) and 135
+  GW of diesel open cycle. Each R1,000 per MW started costs R0.51bn and R0.14bn a year, R0.64bn together, 0.2% of the engine's R320.5bn.
+  A sourced cost per start is not in hand: NREL's cycling-cost study (Kumar et al. 2012, NREL/SR-5500-55433) could not be read
+  (www.nrel.gov and webarchive.library.unt.edu are not reachable from the session).
+- The final combined cycle is 0 MW, under the 1 GW at which a fix would be considered (message 714 (c)): nothing changed.
+
+### The combined-cycle against open-cycle crossover on the final LP inputs (message 714 (b)): 15.5% capacity factor in 2030-2040; 32.8% at the IRP's open-cycle capex
+
+Settings: harness/pathway/gas_xover.js through pathway_perfail.js GAS_XOVER (claude/twin-retime 6734281) on each final pass's own settings
+(scratchpad c710/xover.sh: solve_all.sh's, env_c6a.sh, GAS_FIRST=2035, c7's settings, 25 clustered days on the metered reference with its
+extremes, linking, CONG_OFF=1, WX_WINDCORR=1). Checked against each pass's dumped LP (LP_CHECK): all 45 build coefficients (b_ccgt_,
+b_ocgt_, b_ocgd_) and 23,040 hourly ratios (go_/gg_, gd_/gg_) agree, on the every-change, 37.24% and fin passes, whose gas inputs are
+identical. The IRP case: OCGT_COST=irp (bldOcgtCostCase irp); no LP of it to check against yet. Crossover: the capacity factor at which
+two technologies cost the same per kW a year, (fixed a - fixed b) / (8.76 x (variable b - variable a)).
+
+| 2030-2040, January 2026 rands | Combined cycle | Open-cycle gas (LNG) | Open-cycle diesel |
+|---|---:|---:|---:|
+| capex, R/kW | 34,965 | 25,778 (x 0.737) | 25,778 |
+| interest during construction (build years) | x 1.125 (3) | x 1.081 (2) | x 1.081 (2) |
+| capital annuity (8%, 30 years), R/kW-yr | 3,493 | 2,475 | 2,475 |
+| fixed O&M with the LNG terminal (R530.5), R/kW-yr | 993 | 983 | 452.8 + none |
+| grid charge (bldGridAnn), R/kW-yr | 383 | 383 | 383 |
+| fixed, R/kW-yr | 4,868 | 3,841 | 3,310 |
+| variable, R/MWh (gas R1,298; carbon R61.3/t) | 1,355 | 2,111 | 6,218 |
+
+- Crossover, combined cycle against open-cycle gas: 15.5% (15.6% in 2026, carbon R46/t). Against diesel open cycle 3.7%; open-cycle gas
+  against diesel 1.5%. The fixed gap is R1,027/kW-yr; the variable gap R756/MWh (gas R694, variable O&M R51, carbon R11). Without carbon
+  15.7%; with no interest during construction on either, 12.5% (the build times add 3 points). The terminal and grid charges are equal on
+  both and cancel.
+- At the IRP's open-cycle capex (R13,865/kW, 0.397 of combined cycle): 32.8%. At other ratios: 0.80, 12.3%; 0.90, 7.3%; 1.00, 2.2%. The
+  final passes' 8.3% is the crossover at a ratio of 0.879.
+- No final pass builds combined cycle; their open-cycle gas runs at 8.3% and 8.4% in 2040, below 15.5%, where open cycle is cheaper. No
+  combined cycle runs below the crossover. c7's 5,286 MW of combined cycle beside 1,914 MW of open-cycle gas at a fleet capacity factor of
+  8.2% (message 714): with all its gas output on combined cycle it would run at most 11.2%, below the crossover on these inputs (c7's own
+  LP inputs not rechecked).
+
+### New gas by step from c7 to the final passes (message 714 (e)): combined cycle leaves at 25 equal days (-3.2 GW) and the clustered weights on modelled 2025 (-3.8 GW); open-cycle gas takes its place
+
+Settings: the build schedules of the 699 (c) split runs and the passes since (scratchpad decomp/gas_split.py; no new runs), new MW built
+to 2030 / 2035 / 2040, GW. One path through the changes; the shares depend on the order.
+
+| Step | Combined cycle | Open-cycle gas | Open-cycle diesel | All three, 2040 |
+|---|---:|---:|---:|---:|
+| c7 | 0.00 / 0.55 / 5.29 | 0.00 / 0.65 / 1.91 | 0.00 / 0.00 / 0.23 | 7.43 |
+| S1 weather fixes | 0.00 / 1.20 / 7.20 | 0.00 / 0.00 / 0.00 | 0.00 / 0.00 / 0.00 | 7.20 |
+| S2 + six-constant | 0.00 / 1.20 / 7.10 | 0.00 / 0.00 / 0.10 | 0.00 / 0.17 / 0.17 | 7.37 |
+| S3 + congestion off | 0.00 / 1.20 / 7.01 | 0.00 / 0.00 / 0.19 | 0.00 / 0.16 / 0.16 | 7.36 |
+| S4 + 25 equal days | 0.00 / 0.32 / 3.78 | 0.00 / 0.88 / 3.42 | 0.00 / 0.53 / 0.53 | 7.73 |
+| S5 + clustered, modelled 2025 | 0.00 / 0.00 / 0.00 | 0.00 / 0.00 / 2.73 | 0.00 / 0.13 / 0.99 | 3.72 |
+| S6 + metered reference | 0.00 / 0.00 / 0.00 | 0.00 / 0.00 / 2.63 | 0.00 / 0.61 / 3.81 | 6.44 |
+| test 8 (+ linking) | 0.00 / 0.00 / 0.00 | 0.00 / 0.00 / 3.95 | 0.00 / 0.51 / 2.58 | 6.53 |
+| run (6) (+ fixed twin) | 0.00 / 0.00 / 0.00 | 0.00 / 0.00 / 4.20 | 0.00 / 0.00 / 0.93 | 5.12 |
+| every-change pass (17f42a5) | 0.00 / 0.00 / 0.00 | 0.00 / 0.00 / 4.34 | 0.00 / 0.00 / 1.27 | 5.61 |
+| 37.24% pass | 0.00 / 0.00 / 0.00 | 0.00 / 0.00 / 3.12 | 0.00 / 0.00 / 1.52 | 4.64 |
+
+- 2040 combined cycle by step, GW: weather fixes +1.91; six-constant -0.10; congestion off -0.09; 25 equal days -3.23; clustered weights
+  on modelled 2025 -3.78; metered reference, linking and the fixed twin 0. From c7's 5.29 GW to none.
+- 2040 open-cycle gas: weather fixes -1.91; +0.10; +0.09; 25 equal days +3.23; clustered weights -0.69; metered reference -0.10; linking
+  +1.32; fixed twin +0.25 (run (6), 4.20); every change +0.14 (4.34).
+- The runs do not record each step's combined-cycle capacity factor (the gas record is new), in the LP or the engine, so whether c7's LP
+  saw its combined cycle above the crossover cannot be read from them.
+
+### The 0.74 open-cycle capex ratio's sources against current turbine prices (message 714 (d)): the source holds as quoted; current prices point to a higher ratio, which favours combined cycle more, but no current open-cycle figure was found
+
+- The ratio: EIA AEO2023, Cost and Performance Characteristics of New Generating Technologies: combustion turbine, industrial frame, 237
+  MW, 2-year lead time, USD 867/kW; combined cycle, multi-shaft, 1,083 MW, 3 years, USD 1,176/kW; 2022 dollars (EIA_AEO2023_CT_KW,
+  EIA_AEO2023_CC_KW). Confirmed only from a reproduction of EIA's table in a Public Utility Commission of Texas filing (OCR of a scan),
+  found by web search; www.eia.gov is not reachable from the session. A frame unit against a multi-shaft plant 4.6 times its size.
+- Current prices (web search summaries of secondary reports, not checked against primary filings): Wood Mackenzie puts gas turbine
+  prices up 195% since 2019, to about USD 600/kW by end-2027, with turbines 20-30% of a combined-cycle project's cost and a higher share
+  of a simple-cycle one; GE Vernova's 2026 gas order pricing per kW is reported about 50% above 2025's; BloombergNEF is reported at USD
+  2,157/kW for combined cycle in 2025, from under 1,500 in 2023. No current simple-cycle figure was found.
+- Reading, a judgement: a rise led by turbine prices lifts open-cycle capex proportionally more, so the ratio today is likely above 0.74,
+  which lowers the crossover (12.3% at 0.80) and favours combined cycle more than the model does. The IRP's 0.397 favours open cycle far
+  more. Not sized: no current pair of figures on one basis.
+
+### The siting panel's tiers against the engine's flat rate (message 715 (a)): the panel's capacity-weighted mean tier is 15-46% below the engine's flat rate on the six presets with new wind and solar
+
+Settings: build 2026-11-05h (claude/twin-retime 10a98e2 and eb1c93a), the page state with each preset. The panel's mean tier:
+txChargeFor(new wind, new solar, new offshore) per kW, the national build split by the developers' register shares (REEA_SHARE, in
+nodal/capacity_siting.js) and each region filled through the panel's tiers (txTierCharge: a quarter of txRPerKWyr R364 within existing
+GCCA headroom, the region's distance multiplier x R364 within the TDP's headroom by the scenario year at tdpConfidencePct 100, 1.5 times
+that beyond). The engine's flat rate: gridChargeR's charge per MW (bldGridAnn, connection annuity plus integration; bldGridCost is on in
+every preset) on the same MW, before the freed-coal credit. Scratchpad siting/probe.js.
+
+| Preset | Year | Panel mean tier, R/kW-yr | Engine flat rate, R/kW-yr | Gap |
+|---|---:|---:|---:|---:|
+| IRP's 2030 targets, grid delayed | 2030 | 223.7 | 411.8 | -45.7% |
+| IRP's 2030 targets | 2030 | 249.1 | 411.8 | -39.5% |
+| IRP path 2035 | 2035 | 284.2 | 401.1 | -29.2% |
+| Least-cost path 2035 | 2035 | 286.0 | 405.0 | -29.4% |
+| Deep decarbonisation 2035 | 2035 | 304.0 | 403.0 | -24.6% |
+| Fossil-free 2040 | 2040 | 351.3 | 412.3 | -14.8% |
+
+- validate_invariants' siting check, restated with its cause (eb1c93a): the panel prices a megawatt on the tiers (KwaZulu-Natal at the
+  shallow rate, the Northern Cape beyond the plan), and Fossil-free 2040's gap equals the recorded -14.79% within 0.01 points. Clean
+  176/176. Injected faults, each failing it: txChargeFor falling back to the flat rate (-11.72%); the engine's integration charge x 1.05
+  (-18.39%).
+- Over 10% on every preset: reported to the user before the PR with a proposed line for the panel. The panel's current sentence ('The
+  scenario's system cost charges new wind and solar by where developers have applied, not by this choice') has been wrong since 710 (c).
+
+### Avon and Dedisa's fixed O&M (message 715 (b)): none in the years otherIppR charges their contract, a judgement on indirect evidence; R361.8m a year less in 2026-2030; the LP unchanged; Avon's contract runs past the charge's end
+
+- The judgement: otherIppR charges the DoE peakers' fixed R2,174m a year (MYPD 6) through 2030, and their fuel is in the engine's diesel.
+  A fixed annual contract charge is taken to cover the plants' fixed O&M, as REIPPPP's tariff is (message 552 (a)). Indirect: neither
+  the MYPD 6 line nor the IRP says what the charge covers.
+- The change (claude/twin-retime 7dfeb99, build 2026-11-05i): avonDedisaContractShare(y), 1 to dedisaEndYear (2030) and 0 after, sets
+  both otherIppR's peaker charge (unchanged: y < 2031 before) and the MW exempt from fomDiesel in simulate (Avon 670 + Dedisa 335 MW,
+  unless avonDedisaRemoveAfter has taken them out). From 2031 they pay fomDiesel (R360/kW-yr) as the rest of the fleet.
+- Rand effect (old build against new, simulate): fixed O&M and system cost -R361.8m a year at the page default, Today 2026 and the IRP 2030
+  presets, and at scenario years 2029 and 2030; average cost -R1.84/MWh (-R1.63 on IRP's 2030 targets); nothing in 2031 or 2032, nothing
+  with the pair out of the fleet. The build LP's text is unchanged (hashes at the page state, with the peaker and gas options on, and with
+  c6-like settings; scratchpad siting/lphash.js), so the LP key does not move; pathway checks change only in 2030.
+- The dates do not agree. Dedisa's contract ends in 2030 and Avon's on 20 July 2031 (the model's own avonEndYear 2031 and avonEndDoy 200,
+  which avonDedisaMustRunMW already uses), while the charge stops after 2030. Proposed, awaiting the user's word: in 2031 the share is
+  Avon's MW share times the contract's share of the year, 670 / 1,005 x 200 / 365 = 0.365: R794.1m of contract charge and 367 MW exempt
+  from fomDiesel (-R132.2m), +R661.9m in 2031. That splits the R2,174m by MW, a judgement (the MYPD 6 line gives the total only).
+  Dedisa's end date within 2030 is not in the model, which charges the whole year.
