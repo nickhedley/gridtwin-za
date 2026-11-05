@@ -5559,7 +5559,7 @@ function reipppRate(year){
 // Storage (BESIPPPP) is left out: new batteries are costed as new build.
 // Avon and Dedisa's contract in otherIppR: the share of the pair's MW whose contract is charged in year y, 1 to dedisaEndYear and 0 after
 // (user, 5 Nov 2026, message 715 (b)). One rule for the capital charge here and for the pair's exemption from fomDiesel in simulate.
-// Avon's own contract runs to 20 July 2031 (avonEndYear, avonEndDoy), past this end: RESULTS 'Avon and Dedisa's fixed O&M'.
+// Avon alone is contracted to 20 July 2031 (avonEndYear, avonEndDoy), past this end; see the RESULTS entry on Avon and Dedisa fixed O&M.
 function avonDedisaContractShare(year){
   return (year ?? 2026) <= FIXED.dedisaEndYear ? 1 : 0;
 }
@@ -10562,8 +10562,8 @@ function simulate(u, prof, outPath, _soc0){
   const _rRet = reipppRetiredMW(p.scenarioYear ?? 2026, p);
   const _ippLive = (p.reipppFomInPpa ?? FIXED.reipppFomInPpa) ? reipppLiveMW(p.scenarioYear ?? 2026, p, _rRet) : { wind:0, pv:0, csp:0 };
   // No fixed O&M on Avon and Dedisa in the years otherIppR charges their contract (user, 5 Nov 2026, message 715 (b); a judgement on
-  // indirect evidence, RESULTS 'Avon and Dedisa's fixed O&M'): the contract's charge is taken to cover it, as for REIPPPP below. From the
-  // following year they pay fomDiesel as the rest of the fleet. Out of the fleet (avonDedisaRemoveAfter), there is nothing to exempt.
+  // indirect evidence, see the RESULTS entry on Avon and Dedisa fixed O&M): the contract charge is taken to cover it, as for REIPPPP below.
+  // From the following year they pay fomDiesel as the rest of the fleet. Out of the fleet (avonDedisaRemoveAfter), nothing to exempt.
   const _adY = p.scenarioYear ?? 2026;
   const _adPpaMW = avonDedisaOffMW(p, _adY) > 0 ? 0
     : ((p.avonMW ?? FIXED.avonMW) + (p.dedisaMW ?? FIXED.dedisaMW)) * avonDedisaContractShare(_adY);
