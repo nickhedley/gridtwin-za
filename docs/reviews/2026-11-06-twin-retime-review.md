@@ -63,7 +63,7 @@ ESK19679.csv absent, so the Eskom anchor checks were skipped and the metered 202
   (meta.annual_mean_before_after); their energy-weighted hour moves from 12.80-12.83 to 12.34-12.37 against the metered fleet's 12.39 and
   the 2024-2025 years' 12.39; the 2024-2025 twins from 11.86 to 12.42; the fleet-basis metered twin at 12.40 with 0.09 percent of hours
   clipped (4.7 on main). validate_shapes 8/8, validate_weather 68/69 (the Eskom anchor), validate_series 23/23, validate_lp 60/60,
-  validate_structure 27/27 on the branch. The fleet map and scales are written by harness/solar_trk_k.js and checked at load. Same
+  validate_structure 27/27, validate_pathway_presets 63/65 (below) on the branch. The fleet map and scales are written by harness/solar_trk_k.js and checked at load. Same
   treatment in LP and engine on calendar and clustered days (finding 3 is the residual).
 - Rooftop: build_demand_2026.py builds roof_pu as weatherYearNational builds 2025's fixed tilt (mean 0.22278; demand 202.795 to 201.204 TWh,
   the 2025 backcast 205.839 to 204.561); the engine, the LP (calendar, clustered and tail days), twelveYearDemand, roof12.js and the
@@ -103,6 +103,14 @@ ESK19679.csv absent, so the Eskom anchor checks were skipped and the metered 202
   reference files were made under modified inputs; recorded, with the roof12 check failing until the presets are regenerated.
 - Worker: ENGINE_FNS carries gridChargeR, bldGridIntegRkW, bldGridAnn, bldGridCapexKW, bldGrid132Ratio, offshoreSeriesFor and
   avonDedisaContractShare; ENGINE_DATA carries OFFSHORE_BY_YEAR, SOLAR_TRK_MAPS, BLD_GRID and GRID_RP_T. validate_worker was not run here.
+
+## The preset validator on the branch: 63 of 65, one failure more than the record
+
+validate_pathway_presets on dea3623: the roof12 known failure as recorded, and "IRP's 2030 targets: 2030 system cost within 0.01% of the
+engine check: page R280.173bn, check R280.535bn (-0.129%)". The record (fdaafaa, build 05g) says 64 of 65. The gap is R0.362bn, which is
+the Avon and Dedisa fixed O&M exemption of 7dfeb99 (build 05i, R361.8m a year in 2026-2030): the 2030 preset's reference check was made on
+05g, before it, and was not rerun. The 2035 and 2040 presets are untouched (no exemption after 2031). Rerun the IRP 2030 check on the
+final build, with the others when the presets are regenerated.
 
 ## Before the pull request
 
