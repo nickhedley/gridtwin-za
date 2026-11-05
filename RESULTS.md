@@ -18499,7 +18499,8 @@ The minimum alone (TODO 14kv (a)): pathway_s_gasfloor_c6e.json is pathway_c6e.js
 51% capacity factor on up to 6,000 MW of CCGT, 2030-40); the same build, the optimiser not run, so the difference is the minimum alone.
 Engine check as the set (pathcheck.js, LNG=1 GRID=1, groups a, b and c, 120 runs a year). Comparator: c6e's own build checked on 29b
 (pathcheck_c6e_29b_*), identical in every year to the recorded check on 28a (pathcheck_c6e_*).
-- Engine PV 2026-40 at 8% real: R2,340.3bn against R2,314.7bn, +R25.6bn (with grid: R2,348.8bn against R2,323.1bn, +R25.6bn).
+- Engine PV 2026-40 at 8% real: R2,340.3bn against R2,314.7bn, +R25.6bn (with grid: R2,348.8bn against R2,323.1bn, +R25.6bn; both
+  levels corrected 5 Nov to R2,332.1bn and R2,306.4bn, the gap unchanged: entry 'c6e's grid-basis PV with every repurposed MW counted').
 - CO2 2026-40: 1,724.0 against 1,738.6 Mt, -14.6 Mt; the forced gas displaces coal (2040 coal 50.5 against 59.1 TWh).
 - Gas 2026-40: 86.1 against 15.2 TWh, +70.9 TWh.
 - No effect before 2035: 2026-29 have no minimum and 2030-34 no CCGT standing. New CCGT: 551 MW in 2035, 6,074 MW by 2040.
@@ -18689,7 +18690,8 @@ decarbonisation 2035 optimiser run was solving beside both checks.
 The charge per kW falls by 9.45% (364/402), as derived. System cost falls by less than pathcheck's engTxBn (-1.37 against -2.01 in
 2040; PV -4.9 against -7.0) because the two charge different MW: the engine (index.html, the transmission adder in the cost build-up)
 exempts new solar on retired-coal connection points (repurposing) and charges offshore separately, while engTxBn applies txChargeFor to
-all new wind, solar and offshore standing. On the optimiser's grid-cost basis (costGrid) the PV is 2,323.1 against 2,317.5, -5.7. Caveat: the build is c6e's as optimised at
+all new wind, solar and offshore standing. On the optimiser's grid-cost basis (costGrid) the PV is 2,323.1 against 2,317.5, -5.7 (corrected 5 Nov: 2,306.4 against 2,302.3, -4.1;
+entry 'c6e's grid-basis PV with every repurposed MW counted'). Caveat: the build is c6e's as optimised at
 R402; a re-optimised build at R364 may hold more new wind and solar. Not rerun (message 546 (c): report before rerunning anything).
 The REIPPPP contract-year change (14ln (a)) is not in this build; it waits for REIPPPP MW by bid window and technology.
 
@@ -21705,7 +21707,7 @@ published or reviewed figures it touched.
 | Metered tracking twin, level: the fixed-to-tracker gain counted the fleet's trackers twice (0.342 against 0.286) | 7 Oct (tracking option, 1de0a66; on in the presets from 17 Oct, 308c4ae, and in every pathway run with PVTRK=1) - 4 Nov (#159, K 0.7969) | new tracking solar on the metered profile's days: the page's presets and every build LP's calendar days (c5-c7 drew their days from the metered profile) | the LCOE-anchor check compares the modelled years' means only; the metered twin had no check of its own | validate_weather: the twin's mean equals the twelve-year mean (684 (c), and 701's shape check) | c5-c7 builds (solar), the presets |
 | Metered tracking twin, shape: 08:00 peak, midday dip, 4.7% of hours clipped | 7 Oct - claude/twin-fix (not yet merged) | as above; test 8's 23.9 GW of solar is the question it raises (700 (a)) | no shape check | validate_weather: the twin keeps a tracker's shape (fails on the old basis) | as above |
 | Cost-of-capital rename: 'central' became 'allbids', pathcheck applied the recorded name to the renamed case | 2 Nov (#154, b0f7999) - 4 Nov (070f976) | engine checks of runs recorded on the old names: the five presets' checks, 46 pathway files; c7 ('blended') not | validate_pathway_presets read stored checks; nothing re-ran pathcheck after #154 | pathcheck refuses a run whose recorded rates no case reproduces | the presets' engine-check costs (0.5-1.9%); none published |
-| rpCumMW counted only the checked years | 31 Oct (cf6050b) - 4 Nov (75f7203) | pathcheck's costGrid | no check on costGrid's parts | none (TODO: a check against the full-schedule sum) | one RESULTS figure (c6e grid-basis PV 2,323.1 against 2,317.5), correction pending |
+| rpCumMW counted only the checked years | 31 Oct (cf6050b) - 4 Nov (75f7203) | pathcheck's costGrid | no check on costGrid's parts | none (TODO: a check against the full-schedule sum) | two RESULTS figures, corrected 5 Nov (c6e grid-basis PV 2,323.1 against 2,317.5; the gas-minimum entry's two grid-basis levels) |
 | FIX_FROM left VPP and geyser enrolment free | 2 Nov (vppp_, gy_ in #154) - 4 Nov (ed2a607) | single-year and two-stage LPs (the 2 x 2's LPs, test 15's steps) | FIX_FROM fixes build families by a list; new families were not added | test 7 (FIX_FROM reproduces the pathway), an acceptance test, not in the suite | the 2 x 2's objectives (builds unchanged: 2025 cells rerun equal) |
 | LIFT=all lifted gas and diesel after FOSSIL_END | 3 Nov (#157) - 4 Nov (fc10577) | test 16 only | a test option, untested | test 16 itself | none |
 | The wind table loaded after the tracking file; its catch dropped the file | 4 Nov, claude/wind-table only (3a7afc6) - fixed in the same branch before review | would have reached every tracking-solar result with the correction on | silent catch | validate_weather: the twins load with the correction on from page start (injected fault fails) | none (never merged) |
@@ -22040,3 +22042,23 @@ harness/out/ref2024f (local). Eskom data (ESK19679), the analysis ours. 5 Nov 20
   stress windows for the failing years.
 - For the reference recommendation: metered 2024 on the fixed twin gives the less reliable build in both pathways, as before. Metered
   2025 stays the recommendation, provisional (701 (g)); the build rests on one reference year's events, which the note states.
+
+### c6e's grid-basis PV with every repurposed MW counted (task 693 (h), the rpCumMW correction): 2,306.4 against 2,302.3 (-4.1), not 2,323.1 against 2,317.5 (-5.7); the engine's own PV unchanged
+
+Settings: c6e's build (harness/pathway/c6e/pathway_c6e.json), pathcheck.js LNG=1 GRID=1, groups a (2026-2030), b (2031-2035), c
+(2036-2040), adaptive draws (10 a weather year, 120 runs a year, as stored), at 1dc9119^ (754f6b1, R402) and at 1dc9119 (#141: the grid
+charge at R364 and no REIPPPP fixed O&M in contract years), each with 75f7203's one-line rpCum fix applied to pathcheck.js for this
+check only (repurposed MW added every year to y, before the YEARS filter). Scripts: scratchpad t28/run.sh, t28/pv.py (summ.js's PV:
+8% real from 2026). 5 Nov 2026, 01:32-01:59 UTC, beside the 55-day run.
+
+- At 1dc9119^ the rerun equals the stored 31a check in every year (cost, mean unserved, CO2: differences 0), so only costGrid moves:
+  rpCumMW now runs 4,789 (2030), 8,295 (2031), 13,775 (2035), 14,343 (2036), 21,801 (2040), where the group runs restarted it at each
+  group (3,506 in 2031, 568 in 2036, 8,026 in 2040). c6e's grid-basis PV: 2,306.4, not 2,323.1 (-16.7); engine PV 2,314.7 unchanged.
+- The 31b state (the grid charge alone, R364; commit 60906de no longer in the repository, rebased into 1dc9119): its stored cost and
+  engTxBn with gridOptBn from the corrected rerun at 1dc9119 (pathcheck's own formula, costGrid = cost - engTxBn + gridOptBn, which
+  reproduces every stored costGrid exactly; gridOptBn depends only on the build and the grid charge, and engTxBn is identical in the
+  two): 2,302.3, not 2,317.5. So the grid charge at R364 lowers c6e's grid-basis PV by 4.1, not 5.7.
+- At 1dc9119 itself (both changes): engine PV 2,283.9 (as recorded), grid basis 2,276.4.
+- The 30 Oct gas-minimum entry's grid-basis figures carry the same overstatement (same build, so the same gridOptBn): 2,332.1 and
+  2,306.4, the +25.6 gap unchanged. No other RESULTS figure uses costGrid; no page figure or pack table reads it (entry 'rpCumMW
+  counts only the years a check run covers').
