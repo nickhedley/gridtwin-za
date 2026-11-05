@@ -22000,8 +22000,8 @@ Summary of the five runs and test 8 (2040; engine means 2030 / 2035 / 2040, GWh)
 | Run | Wind CF / solar CF / reference | Solar, GW | Off the pool after 2028 | Coal retired early | Objective, R bn | Engine |
 |---|---|---:|---:|---:|---:|---|
 | Test 8 (old twin) | 42.0 / 28.6 / metered | 23.9 | 0.0 | 0.22 | 1,521.5 | 1.3 / 15.9 / 6.7 |
-| (1) (old twin) | 42.0 / modelled 2025 / mixed | 28.0 | 3.1 | 1.17 | 1,501.1 | 2.2 / 24.0 / 24.6 |
-| (2) (old twin) | modelled 2025 / 28.6 / mixed | 24.3 | 0.0 | 0.57 | 1,507.4 | 2.1 / 20.7 / 29.2 |
+| (1) (old twin) | 42.0 / 28.6 / wind metered, solar modelled 2025 | 28.0 | 3.1 | 1.17 | 1,501.1 | 2.2 / 24.0 / 24.6 |
+| (2) (old twin) | 42.0 / 28.6 / wind modelled 2025, solar metered | 24.3 | 0.0 | 0.57 | 1,507.4 | 2.1 / 20.7 / 29.2 |
 | (6) | 42.0 / 28.6 / metered | 23.9 | 0.2 | 0.00 | 1,523.5 | 0.9 / 13.7 / 7.6 |
 | (3) | 37.24 / 28.6 / metered | 30.5 | 6.8 | 0.00 | 1,572.3 | 1.7 / 19.0 / 7.0 |
 | (4) | 42.0 / 30.13 / metered | 25.0 | 0.0 | 1.30 | 1,497.4 | 3.2 / 20.3 / 19.4 |
