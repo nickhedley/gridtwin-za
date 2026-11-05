@@ -6,9 +6,9 @@ Final for this basis (5 Nov 2026). Times UTC.
 
 - Where the runs stopped: the central finished all 15 steps; Fossil-free stopped at step 2033 (7 of 15) and the annuity variant at step
   2029 (3 of 15), each cut twice by the piece deadline. Decision (user, 5 Nov 2026): both left stopped; no relaunch on this basis.
-- Why they stopped: a step that needs several passes of 30 to 50 min outlasts one 110-min piece, and a parallel solve cut at the deadline
-  keeps no valid basis, so the next piece starts that pass again cold. How long steps can resume is being worked out in the main session
-  (message 704 (f)).
+- Why they stopped: a step that needs several passes of 30 to 50 min outlasts one 110-min piece, and a solve cut at the deadline with
+  presolve on keeps no valid basis (serial and parallel alike; tested 5 Nov, 'Message 724' below), so the next piece starts that pass again
+  cold.
 - Time, the central: 14.7 h from its first piece to its last step, 11.3 h of it solving (21 solves, cut ones included), on a machine shared
   with a second run; the one-stage pathway on the same basis took 1.35 h (4,864 s) alone.
 - Mix, the central by 2040, two stages against one stage: wind 41,483 against 39,918 MW; solar 26,618 against 23,927; lithium 11,464 MW /
@@ -20,6 +20,81 @@ Final for this basis (5 Nov 2026). Times UTC.
 - Next (user, 5 Nov 2026): the runs restart on the fixed tracking twin when the main session's restart message comes; it sets the solver on
   the final LP key, probably after a clean timing on a larger step. Planned: the central, Fossil-free and Deep; the annuity variant only if
   time allows. pathway/test15.sh has no Deep run yet; its settings come with the restart message.
+
+
+## Message 724 (5-6 Nov 2026): the two-stage central on claude/twin-retime; why two runs stopped; what Deep needs
+
+Times UTC. In progress; updated as it runs.
+
+### (a) The two-stage central on claude/twin-retime, build 2026-11-05j
+
+- Code: worktree /home/user/gtza-retime, claude/twin-retime dea3623 (build 2026-11-05j), index.html unchanged; one harness change, this
+  branch's basis-file fix (5b98fd3: each solve's basis under its own LP key), applied uncommitted there and recorded here
+  (harness/pathway/test15/retime/harness.patch). Script: harness/pathway/test15_retime.sh central; output in the worktree,
+  harness/out/tsr_central (copied here when steps finish).
+- Settings, read by the script, not retyped, snapshot once to tsr_central/settings.env: run (6)'s as claude/c7-runs be17d91 records them
+  for the pass with every change (harness/pathway/final/README.md; the fin pass is that pass plus coal's part-load and the verdict rule,
+  message 713): c7's settings (checked against chain_c7.sh's C7 line), env_c6a.sh, GAS_FIRST=2035, WX_WINDCORR=1 CONG_OFF=1
+  REP_REF=metered and the old extreme-day list (20,161,162,163,187,188,194,195,196,214,218,358); the verdict rule (VERDICT_TOPUP,
+  env_c6.sh on the branch); coal's part-load (FIXED.bldCoalPartLoad) and the curtailment price 0 (FIXED.lpCurtailCostR) are the build's
+  defaults; the row's 'parallel dual simplex, presolve off' as HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}.
+- Choices (724 (d), the one closest to accuracy): the row's MAXP=1 not taken: each step loops to the standard with env_c6.sh's MAXP=6, as
+  test 15 ran (message 693 (4), (5)). The fin pass ran on build 05h; this runs on 05j as asked, so a comparison includes 05i and 05j's Avon
+  and Dedisa changes.
+- Started 5 Nov 20:01. PIDs per piece in progress.txt.
+
+### (b) Why Fossil-free stopped at step 2033 and the annuity variant at step 2029
+
+1. A solve cut at a piece's deadline with presolve on keeps no valid basis, on either solver, so the next piece starts that pass cold.
+   Test (harness/pathway/test15/retime/basis_at_limit.py, step 2026's LP 1faa0496d2, 120 s limit, each case alone in turn):
+
+   | Solver | Presolve on | Presolve off |
+   |---|---|---|
+   | Serial | no valid basis (71,127 iterations) | valid basis (258,835) |
+   | Parallel, 2 threads | no valid basis (71,846) | valid basis (128,926) |
+
+   The step logs agree: ts2_ff step 2033 and ts2_central_ann step 2029 each ended 'stopped at the job deadline; no valid basis, the next
+   piece starts cold'. With presolve off a cut solve keeps its basis and the next piece resumes it (704 (f); run (4) and the 55-day LP in
+   the main session). Earlier wording here put this on the parallel solver; it is presolve.
+2. Why those steps needed so many long passes: the loop tests every year in the step's window (message 693 (5)), and in both steps only the
+   farthest look-ahead year failed; the step's own year passed at pass 1. That year started further over the standard than in any central
+   step, and each pass's three 14-day windows caught less of the shortfall, while each pass's LP grew:
+
+   | Step | Failing year, mean GWh against 20, by pass | Shed in the windows added, GWh, by pass | Solve, min, by pass |
+   |---|---|---|---|
+   | ts2_ff 2033 | 2037: 36.39, 33.43 | 363, 185, 86; 58, 56, 45 | 41.3, 50.8, then cut |
+   | ts2_central_ann 2029 | 2033: 44.88 (and 2032: 20.23), 26.04, 23.30, 22.92, 22.09 | 170-50 (six); 77-43; 98-18; 82-11; 8, 8, 7 | 16.8, 28.6, 31.8, 32.9, 37.9, then cut |
+   | ts2_central 2029 (for scale) | 2032: 21.28, then none | 152, 88, 45 | |
+
+   With the loop testing year y only (LOOP_YEAR_ONLY=1), both steps would have ended at pass 1; that is a method choice (693 (5) kept
+   every year tested), reported, not applied.
+3. Fix test beside (a): the annuity run's step 2029 relaunched with presolve off (HIGHS_OPTS as (a), WARM=1, LAST=2029) on its own basis
+   and code, passes 1 to 5 from the LP cache, pass 6 cold. Started 20:11; result below when it lands.
+
+### What Deep needs beyond its fixed cap
+
+Deep's settings read from chain_c7.sh's deep() line (GAS_CAP=0 OCGD=1 PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000
+CO2CAP=22.809:2035, the cap on 2035-2040), with (a)'s settings, at the chain's first cap (36.382 Mt; structure only), step LPs dumped
+without solving (harness/pathway/test15/retime/deep_steps.sh; reports deep_lp_before.txt, deep_lp_patched.txt):
+
+1. Steps 2026 to 2030 stop: 'CO2_ELASTIC: no co2cap_<y> rows (needs CO2CAP or FOSSIL_END)'. No year in their windows is under the cap.
+2. The iron-air total counts only the step's free years: step 2031's row is b_ironair_2031 + ... + 2035 <= 5000 and step 2036's 2036 to
+   2040, so iron-air fixed by earlier steps is outside it and each step could add 5,000 MW again. Fossil-free (IA_TOTAL=5000) has the same
+   row; its two-stage steps to 2032 built no iron-air, so nothing so far is affected.
+3. A patch for both (harness only, pathway_perfail.js; harness/pathway/test15/retime/deep_fixes.patch), not applied to any run: the
+   total also counts the fixed years' iron-air columns; a window with no year under the cap logs it and prices nothing (still an error
+   without CO2CAP or FOSSIL_END). Tested on the same dumps: step 2026 builds its LP; step 2036's row runs 2026 to 2040; HiGHS reads both.
+   It changes Fossil-free's and Deep's LP keys (the row's text), not the central's.
+4. Also needed: a Deep mode in the run script, the cap fixed from the one-stage Deep's final trial (message 708), and the engine's 2035 CO2
+   against 40 Mt reported, with a flag past about 2 Mt. Noted: from step 2036 the row for 2035 (before the step) is empty with its slack,
+   harmless.
+
+### (c) Comparison with the fin pass
+
+When the central has all 15 steps and the fin pass is on claude/c7-runs: step 2040's output carries every year's build exactly as each
+step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's
+20-draw settings, 2030, 2035, 2040). Objective: both builds fixed in the same one-stage LP on 05j (FIX_FROM, all years), so the gap is
+the builds' alone. Then the rule of message 699 (b).
 
 Status (user, 4 Nov 2026): the metered tracking twin on this basis has been found misshapen and is being fixed. These runs stand as a method
 and timing comparison with one stage, not as a mix for use.

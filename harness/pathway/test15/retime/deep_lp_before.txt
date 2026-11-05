@@ -1,0 +1,15 @@
+Deep settings from chain_c7.sh: GAS_CAP=0 OCGD=1 PACE=grid LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 CO2_ELASTIC=50000 CO2CAP=22.809:2035 CO2CAP_YEARS=2035:36.382,2036:36.382,2037:36.382,2038:36.382,2039:36.382,2040:36.382
+step 2026 (to 2030): rc=1  Error: CO2_ELASTIC: no co2cap_<y> rows (needs CO2CAP or FOSSIL_END)
+step 2031 (to 2035): rc=0 dumped LP pass 1 82feb2d70e 
+  iatot:  iatot: b_ironair_2031 + b_ironair_2032 + b_ironair_2033 + b_ironair_2034 + b_ironair_2035 <= 5000
+  co2cap_2035 3072 emission terms, slack True, rhs 36382000
+  HiGHS reads it: True
+step 2036 (to 2040): rc=0 dumped LP pass 1 6f6987ef38 
+  iatot:  iatot: b_ironair_2036 + b_ironair_2037 + b_ironair_2038 + b_ironair_2039 + b_ironair_2040 <= 5000
+  co2cap_2035 0 emission terms, slack True, rhs 36382000
+  co2cap_2036 35712 emission terms, slack True, rhs 36382000
+  co2cap_2037 3072 emission terms, slack True, rhs 36382000
+  co2cap_2038 3072 emission terms, slack True, rhs 36382000
+  co2cap_2039 3072 emission terms, slack True, rhs 36382000
+  co2cap_2040 3072 emission terms, slack True, rhs 36382000
+  HiGHS reads it: True

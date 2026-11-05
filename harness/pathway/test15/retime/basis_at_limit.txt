@@ -1,0 +1,4 @@
+{"case": "serial, presolve on", "status": "Time limit reached", "seconds": 120.1, "basis_valid": false, "iterations": 71127}
+{"case": "parallel 2 threads, presolve on", "status": "Time limit reached", "seconds": 120.1, "basis_valid": false, "iterations": 71846}
+{"case": "serial, presolve off", "status": "Time limit reached", "seconds": 120.2, "basis_valid": true, "iterations": 258835}
+{"case": "parallel 2 threads, presolve off", "status": "Time limit reached", "seconds": 120.2, "basis_valid": true, "iterations": 128926}

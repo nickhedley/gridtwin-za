@@ -1,0 +1,21 @@
+--- a/harness/pathway/pathway_perfail.js
++++ b/harness/pathway/pathway_perfail.js
+@@ -470,11 +470,16 @@
+    el.value=c; if (el.value!==c) throw new Error('PACE: the page has no option '+c); bldPaceChanged(); }`);
+  const PACE_RATES=PACE?JSON.parse(w.eval('JSON.stringify(bldRates())')):null; if (PACE) console.log('PACE '+PACE+' '+JSON.stringify(PACE_RATES));
+  const hypo=lp=>{ let out=lp;
++   // Two stages (message 724 (b)): a step fixes the earlier years' iron-air (FIX_FROM: ' b_ironair_<y> = <MW>'), so the total counts those
++   // columns too; before, it counted only the step's free years and each step could add IA_TOTAL again.
+    if (IA_TOTAL!==null){ const ys=[...out.matchAll(/^ 0 <= b_ironair_(\d{4}) <= [0-9.]+$/gm)].map(m=>m[1]); if (!ys.length) throw new Error('IA_TOTAL: no b_ironair bounds');
+-     out=out.replace(/^ 0 <= b_ironair_(\d{4}) <= [0-9.]+$/gm,(m,y)=>` 0 <= b_ironair_${y} <= ${IA_TOTAL}`).replace(/^Bounds$/m,` iatot: ${ys.map(y=>'b_ironair_'+y).join(' + ')} <= ${IA_TOTAL}\nBounds`); }
++     const yf=[...out.matchAll(/^ b_ironair_(\d{4}) = [-0-9.eE+]+$/gm)].map(m=>m[1]), all=[...yf, ...ys].sort();
++     out=out.replace(/^ 0 <= b_ironair_(\d{4}) <= [0-9.]+$/gm,(m,y)=>` 0 <= b_ironair_${y} <= ${IA_TOTAL}`).replace(/^Bounds$/m,` iatot: ${all.map(y=>'b_ironair_'+y).join(' + ')} <= ${IA_TOTAL}\nBounds`); }
+    if (CO2_ELASTIC!==null){ const disc=+w.eval('BLD_DISC'), ys=[];
+      out=out.replace(/^ (co2cap_(\d{4})): (.*) <= ([0-9.]+)$/gm,(m,nm,y,lhs,rhs)=>{ ys.push(+y); return ` ${nm}: ${lhs} - co2sl_${y} <= ${rhs}`; });
+-     if (!ys.length) throw new Error('CO2_ELASTIC: no co2cap_<y> rows (needs CO2CAP or FOSSIL_END)');
++     // Two stages (message 724 (b)): a step whose window holds no year under the cap (Deep's 2026-2030 steps) has no co2cap_<y> row and
++     // nothing to price; without CO2CAP or FOSSIL_END it is still an error.
++     if (!ys.length){ if (!CO2CAP && FOSSIL_END===null) throw new Error('CO2_ELASTIC: no co2cap_<y> rows (needs CO2CAP or FOSSIL_END)'); console.log('CO2_ELASTIC: no year under the cap in this LP; nothing priced'); return out; }
+      let n=0; out=out.replace(/^( obj:\n  [^\n]*)$/m,m=>{ n++; return m+ys.map(y=>' + '+(CO2_ELASTIC/Math.pow(1+disc,y-2026)).toFixed(3)+' co2sl_'+y).join(''); });
+      if (n!==1) throw new Error('CO2_ELASTIC: objective line not found'); }
+    return out; };
