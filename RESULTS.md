@@ -22093,3 +22093,62 @@ Best-fit shift, minutes (negative: the model runs late), DJF / MAM / JJA / SON; 
 - Tested and not used: a clear-sky-index conversion (each reading over the sun's height, interpolated, multiplied back): the same lags,
   slightly lower correlation, +0.5-0.9% on the tracking series' energy.
 - Not yet measured: the engine and LP effects; the stored risk panels, the suite and the presets follow in the pull request.
+
+### New wind's capacity factor, the evidence (messages 704 (b), 705, 706): REIPPPP wind and Eskom's metered wind agree within 1% on the same 12 months and plants, about 33%; the 36% is calendar 2025; the model's 42.0% is a modelled modern-turbine uplift of 6.1 points on a 35.9% fleet; paired with its own source's capex, 37.24% costs R822/MWh against 42.0%'s R728
+
+Sources: IPP Office, IPPPP Quarterly Report Q1 2025/26 (as at 30 June 2025) and Q1 2026/27 (as at 30 June 2026), pp.18-19 (Nick's
+copies); ESK19679 (Eskom metered wind and wind installed capacity, hourly; Eskom data, the analysis ours; only totals here); the model at
+claude/twin-retime 379d08a (nodal/profiles_wind_modern.json meta, validate_weather's notes, a page probe for costs); a research helper's
+summary of public sources (search extracts only; ipp-projects.co.za and dmpr.gov.za were not reachable). 5 Nov 2026.
+
+July 2025 to June 2026 (12 months), and the comparators:
+
+| Measure | Energy, GWh | Capacity, MW | Capacity factor |
+|---|---:|---|---|
+| IPP Office REIPPPP wind (cumulative 85,480 less 74,481) | 10,999 | 3,613 to 4,042 | 31.1% on the end, 34.8% on the start, 32.8% on their mean, 33.0% time-weighted |
+| Eskom metered wind, the same months | 11,386 | 3,723 to 4,143 (mean 3,906) | 33.3% |
+| Eskom metered wind, calendar 2025 (the 36%) | 11,333 | | 35.5% |
+| Eskom metered, H1 2025 / H2 2025 / H1 2026 | 5,292 / 6,041 / 5,346 | means 3,544 / 3,739 / 4,077 | 34.4% / 36.6% / 30.2% |
+| Eskom metered, July 2024 to June 2025 | 11,211 | mean 3,493 | 36.6% |
+| The model, existing fleet, twelve modelled years (corrected) | | | 35.9% |
+| The model, new wind (V162-5.6 at 120 m), twelve years (corrected) | | | 42.0% |
+
+Time-weighted: Eskom's series runs 110 MW above REIPPPP in June 2025 and 101 MW in June 2026, and steps up 420 MW from December 2025
+to March 2026 against REIPPPP's 429; REIPPPP's mean taken as Eskom's less 105 MW, 3,801 MW.
+
+- Same months, same plants: the extra 101-110 MW in Eskom's series is most likely Eskom's own Sere (100 MW, Western Cape; the model's
+  eskom_online). At the fleet's 33% it is about 290 GWh; Eskom's metered less that is about 11,100 GWh against the IPP Office's 10,999
+  (-0.9%). The rest (meter point, energy before commercial operation, rounding) is not established. Both figures are net of
+  curtailment (realised energy; ESK19679 carries no curtailment), so curtailment does not explain the gap between them.
+- Part-year projects: 429 MW came online between July 2025 and March 2026; they explain 31.1% (on the end capacity) against 33.0%
+  (time-weighted), not a gap to 36% or 42%.
+- The 36% is calendar 2025 (35.5%), and the twelve months to June 2025 ran 36.6%. The twelve months to June 2026 ran 33.3% because
+  H1 2026 ran 30.2% against H1 2025's 34.4%. Why is not established: the weather (no modelled 2026 year to compare), the 420 MW
+  commissioned from December (counted from first output, possibly still ramping), or curtailment (new Eastern and Western Cape farms
+  accept up to 10% congestion curtailment under NERSA's rules of April 2025: search extract). The model's twelve-year mean for the
+  existing fleet, 35.9%, sits with calendar 2025.
+- The 42.0%: the existing fleet's modelled resource with a modern turbine (Vestas V162-5.6 at 120 m against the fleet's V90-2.0 at
+  80 m, Renewables.ninja MERRA-2 power curves fitted on 2019 at the 98 profile sites, +5.4 to +6.9 points by region), then the six-
+  constant correction fitted on the metered fleet. National: 35.9% to 42.0%, +6.1 points, modelled, not measured. No measured output
+  by bid window was found for BW4, BW5 or private farms. BW1-BW3 delivered about 92% of P50 to 2021/22 (about 35% against 38%;
+  search extracts of IPP Office overviews); BW5's Cape farms report expected P50s of 46-49%, recent private farms on weaker sites
+  34-39% (search extracts; specific power 230-310 W/m2 in every round, hub heights 80 to 120-124 m).
+- P50 against realised, all technologies (Q1 2026/27, p.19): 17,783 GWh realised in 12 months against operational projects' P50 of
+  24,408 GWh a year (73%); the P50 includes projects online for part of the year; not separable by technology from the report.
+
+New wind's cost at four capacity factors, R/MWh before the grid charge (page probe on 379d08a: capex as the model's 'bw6' case,
+R28,462/kW, BW6 bids' R26,647/kW in January 2026 rands; fixed O&M R392/kW-yr; 25 years; no construction interest; c7's blended wind
+cost of capital 6.29%, and 8% as the published comparison's basis):
+
+| Capacity factor | 6.29%, bid capex | 8%, bid capex | 8%, high capex (R30,063/kW) |
+|---|---:|---:|---:|
+| 42.0% (the model) | 728 | 831 | 872 |
+| 40% | 765 | 873 | 916 |
+| 38% | 805 | 919 | 964 |
+| 37.24% (BW6 bids' typical, the same note as the capex) | 822 | 937 | 983 |
+
+Published estimates beside them (RESULTS 'c6b's two cost changes', search results): Meridian 2020 about R840-860; IRENA 2024 Africa
+onshore about R860 (12% cost of capital); BNEF 2025 global onshore about R660, all per MWh in 2026 rands.
+- The pair: BW6 bids' capex and their 37.24% come from the same IPP Office note (7 Nov 2025); taken together they cost R822 (6.29%) or
+  R937 (8%). The model takes the bids' capex with its own 42.0%: R728 or R831. At 8%, 42.0% sits with Meridian and IRENA; 37.24% above
+  every published figure. Not decided here (704 (b): decision 7 Nov).
