@@ -20571,7 +20571,7 @@ const SLIDERS=[
    // called it in 252 hours of 2025, peaking at 1,021 MW (Eskom data, analysis ours).
    note:'Contracted industrial load Eskom can drop in a shortage, for a fee. Defaults to '+FIXED.drInterruptMW.toLocaleString('en-US')+' MW, rounding Eskom\u2019s certified 1,014 MW (NREL). Used before any shedding and reported apart from unserved energy.'},
   {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString('en-US')+'/MWh',ctrlStyle:SUB_CTRL,
-   note:`What a customer is paid to cut use. The default sits below diesel (R${(FIXED.costDiesel+FIXED.vomDiesel).toLocaleString('en-US')}/MWh) and the R${FIXED.costUnservedR.toLocaleString('en-US')}/MWh at which system cost charges unserved energy, so it is called after OCGT plants and before shedding.`},
+   note:`What a customer is paid to cut use. The default sits below diesel (R${(FIXED.costDiesel+FIXED.vomDiesel).toLocaleString('en-US')}/MWh) and the R${Math.round(FIXED.costUnservedR).toLocaleString('en-US')}/MWh at which system cost charges unserved energy, so it is called after OCGT plants and before shedding.`},
   // Label corrected 17 Sep 2026. It read "% of daily load", which is not what the control
   // does: the dispatch takes this share of each of the six highest net-load hours, so the
   // share of annual energy actually moved is about a quarter of the slider value. Measured
@@ -22433,7 +22433,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-05j';
+const BUILD_STAMP = '2026-11-05k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
