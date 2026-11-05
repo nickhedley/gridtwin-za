@@ -196,10 +196,11 @@ for name, c in n.storage_units.carrier.items():
 flows = []
 lk = n.links_t.p0
 muU = n.links_t.mu_upper if hasattr(n.links_t, 'mu_upper') else None; muL = n.links_t.mu_lower if hasattr(n.links_t, 'mu_lower') else None
-def mu_of(name):
-    u = np.abs(muU[name].values) if (muU is not None and name in muU) else np.zeros(H); l = np.abs(muL[name].values) if (muL is not None and name in muL) else np.zeros(H); return u + l
+def mu_of(name, lower=True):
+    u = np.abs(muU[name].values) if (muU is not None and name in muU) else np.zeros(H); l = np.abs(muL[name].values) if (muL is not None and name in muL and lower) else np.zeros(H); return u + l
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
-    if LOSSES: f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values; mu = mu_of(f'c{i}_ab') + mu_of(f'c{i}_ba')
+    # a one-way link's lower bound (zero flow) carries a dual whenever the other direction flows; only its upper bound is the corridor's capacity
+    if LOSSES: f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values; mu = mu_of(f'c{i}_ab', False) + mu_of(f'c{i}_ba', False)
     else: f = lk[f'c{i}'].values; mu = mu_of(f'c{i}')
     # the shadow price of the corridor's capacity: R per MWh in the hours it binds; its sum over the year is the value of one more MW for a year
     flows.append({'a': a, 'b': b, 'capMW': cap_ab, 'todayMW': lim, 'tdpMW': add, 'km': km, 'GWh': float(np.abs(f).sum()) / 1e3, 'hoursAtLimit': int((np.abs(f) >= 0.98 * cap_ab).sum()) if cap_ab < 1e5 else 0, 'maxMW': float(np.abs(f).max()),
