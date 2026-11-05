@@ -53,8 +53,8 @@ Decisions for Nick, with recommendations:
 3. PVGIS re-timing (701 (b)): the ten PVGIS years run about 25 minutes late and the 2024-2025 tracking twins early. Re-timing makes the
    engine 10-28% more reliable on test 8's fleet (the lag is conservative) but changes the key. Recommend: re-time (decision 6 Nov, fix
    7 Nov), because the note's evening-peak figures depend on it.
-4. The reference: metered 2025 for both, on the fixed twin, provisional; recommend confirming it on 6 Nov once metered 2024 on the fixed
-   twin is read.
+4. The reference: metered 2025 for both, on the fixed twin, provisional. Metered 2024 on the fixed twin is in and agrees (its builds
+   far less reliable). Recommend: confirm it now, by 6 Nov at the latest, and state in the note that the build rests on one year's events.
 5. Route timing (10-13 Nov), slip flag: no slip yet, but the margin is thinner. On the fixed twin a pass took 80-86 minutes beside a
    second solve (runs (6), (3), (5)), one took over 112 minutes and finished only in resumable pieces (run (4), about 110 minutes
    of solving with presolve off), and the loop's own check would send run (6) to a second pass (and runs (4) and (5) to more). If
