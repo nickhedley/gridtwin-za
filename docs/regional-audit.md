@@ -296,3 +296,89 @@ lifted), sc/mip_year.js (buildDayLP from index.html over 365 or 52 days in Node 
 and sc/regional_lp_probe.js (the page in jsdom: the national engine's presets; the regional LP built, parsed and solved),
 sc/week_price.js (the engine's winter week priced on PyPSA's basis), sc/pypsa_week.py (the matched PyPSA network), and
 the research helper's note. Each writes a JSON beside it with every setting used.
+
+## Message 717 (a): every figure that came through the regional path (5 Nov 2026)
+
+Scope: figures produced by the regional build LP (Where to build, "Regional"), the TDP delay comparison, the day MIP (Run the full
+model and the curtailment audit) or the nodal dispatch engine. Searched by script: RESULTS.md (84 of 521 sections match the
+regional-path words; every matched line read), REVIEWER_PACK.md and REVIEWER_PACK_RECORD.md, README.md, STATE.md, NOTE_DRAFT.md,
+PRESET_TABLE.md, validation/, harness/validate_findings.js and validate_solve.js, stored_panels.json, and the rendered page text
+(harness/render_text.js, 47 regional-path sentences with a number read). "Pack" means REVIEWER_PACK.md.
+
+| figure | produced by | recorded in | pack | page |
+|---|---|---|---|---|
+| Winter week R2,321.7m, 4.2% above the matched PyPSA MIP (4.9% above the LP); diesel 5.5 GWh, storage 74.9 GWh, curtailment 16.9 GWh (13 Oct 2026, bc21fc2) | nodal engine | RESULTS 'Validation re-run against PyPSA'; validation/mip_solver.py docstring; REVIEWER_PACK_RECORD section 7 | no (the record only) | no |
+| validation_README: LP R2,210.7m (13 Oct) and the earlier unreproduced 0.42% | nodal engine | validation/; the record says not to quote the 0.42% | no | no |
+| Fleet slim check: the engine CLI identical before and after; the page loads 51 units, 49,134 MW (16 Oct) | nodal engine | RESULTS 'Fleet table out of the public repository' | no | no |
+| stress_suite.js nodal sections (unserved, pumped-storage discharge, monotonicity; 290/290) on every push | nodal engine | GitHub stress-suite workflow logs; RESULTS 14 Oct (c5b launch) | no | no |
+| "~5 s nodal" re-solve | runNodalYear, which nothing calls | README.md (the page links README) | no | README only |
+| Today 2026 figures of this audit (5 Nov) | nodal engine, day MIP, regional LP | docs/regional-audit.md | no | no |
+| Heuristic against the in-browser MIP: -0.5%, -0.8%, +5.7%, +4.8% by scenario; 8-hour blocks cut the mean gap from 10.4% to 4.0%; start-ups 7,902 against the MIP's 9,281 (8-hour 5,618); the MIP implies about 3,200 starts (no build stamp; before 1 Oct 2026) | day MIP | README.md 'calibration'; index.html comments near the block-commitment constant (calibrate_heuristic.js is not in the repository) | no | README only |
+| Instant engine against the MIP on Today 2026: R786 against R765 shadow price, 2.7% (23 Sep 2026) | day MIP | RESULTS 'A harness for the nodal MIP'; STATE.md item 4 | no | no |
+| The nodal MIP's reserve, 9.6% of mean load (23 Sep 2026); validate_solve asserts 9 to 11% | day MIP | RESULTS 'The nodal model held no reserve'; STATE.md item 5 | no | no |
+| "PyPSA MIP reference of 15,207 MW" | a MIP of unknown provenance | an index.html comment (line 5210) | no | no |
+| validate_solve's regional test build on Deep (tracking off): wind 10.78 to 6.03 GW, solar 7.62 to 7.80 GW with the capex change (16 Oct); today wind 2.71 GW, solar 10.0 GW | regional LP | RESULTS 'Build 2026-10-16h'; the harness log | no | no |
+| Regional optimiser on the modern-turbine profile; its wind about 7% below the national basis with modern wind off (7 Oct) | regional LP | RESULTS 7 Oct (two entries) | no | no |
+| LP sizes 23, 48 and 200 MB; 360 and 940 s; interior point 26 min on Deep 2040 (2 and 8 Oct) | regional LP | RESULTS 'The same fix for the regional model...' and 8 Oct; HANDOVER | no | no |
+| "builds exactly to national headroom" with the two headroom totals (17 Aug) | regional LP | a code comment in bldBuildRegionalLP and HANDOVER | no (NTCSA figures: not for publication) | no |
+| Delay comparison: no recorded figure; after a run the page prints the slip's cost and "52% of the 221 mapped projects" | delay comparison | the page, after a run only | no | after a run |
+| Page text without figures: the full-model caption, "52 representative days with a 2% optimality gap", the full-model card, the map's corridor flows and curtailment labels, the locational battery benchmark, the curtailment forecast's network audit, Where to build's regional table | day MIP, regional LP | the page, after a run only | no | after a run |
+
+Adjacent, from regional data rather than the four computations: the Provincial electricity mix panel's demand shares
+(demand_2025_regional.csv, on the page, tagged "source being confirmed"); the pre-feasibility wind capacity factors and the
+wheeling coverage (profiles_regional.json, on the page after input); the capture panel's regional ordering; the GETs panel's
+corridor lengths; the site panel's P50 and P90 (the twelve-year file). validate_findings runs none of the four: its check 5
+('solar alone cannot pass the daylight fraction') reads Northern Cape's twelve-year solar and the curtailment pin's band
+reads the twelve-year set. stored_panels.json holds the national Monte Carlo, adequacy and capture panels only; nodal_engine.js,
+nodal_dispatch.js and every regional data file are in its fingerprint, so a change to any of them invalidates the stored
+panels. REVIEWER_PACK.md carries no regional-path figure; the record quotes the 4.2% and warns off the 0.42%. The pack's
+'single node' limitation line (record, section 'Known limitations') is the only place the pack speaks of the network.
+
+## Message 717 (b): site guard, proposal (not built; tested in a scratch copy of main 57f70df)
+
+The smallest change, seven lines of index.html (the stamp bumped as rule 5 requires):
+
+```
+-              <option value="0">National &ndash; how much, and when</option>
+-              <option value="1" selected>Regional &ndash; also where, within grid limits</option>
++              <option value="0" selected>National &ndash; how much, and when</option>
++              <option value="1" disabled>Regional &ndash; also where, within grid limits (switched off)</option>
+-            <div ...>Regional uses each province&rsquo;s own wind and solar profile, its GCCA connection headroom, and real corridor limits between regions.</div>
++            <div ...>Defaults to National. The Regional choice is switched off: it plans against gross demand without the existing nuclear, hydro, import, wind, solar and rooftop fleet, so its builds are not comparable with the rest of the page.</div>
+-            <strong id="mipCaveat">The full model runs on 2025 regional demand and its own regional weather data, and does not dispatch gas; its results are not comparable with the presets.</strong>
++            <strong id="mipCaveat">The full model runs on its own regional demand, weather and fleet data, with fixed imports and no gas, so its figures do not compare with the rest of the page.</strong>
+-              <button id="delayRunBtn" onclick="runDelayAnalysis()"
++              <button id="delayRunBtn" disabled onclick="runDelayAnalysis()"
+-              <span id="delayStatus" ...></span>
++              <span id="delayStatus" ...>Switched off: the comparison runs on the regional model above, whose builds are not comparable with the rest of the page.</span>
+-const BUILD_STAMP = '2026-11-04b';
++const BUILD_STAMP = '<the day's stamp>';
+```
+
+No script changes: the option is disabled and the default moved, so the page cannot select the regional LP; the button is
+disabled, so the delay comparison cannot run; bldBuildRegionalLP, runDelayAnalysis and the day MIP stay as they are, so the
+harness keeps testing them. The banner and the full-model card read the mipCaveat text, so the new sentence reaches both.
+
+Checks it touches, run on the scratch copy:
+
+| check | result | cause |
+|---|---|---|
+| validate_lp 'Where To Build defaults to the regional LP' | fails (59/60): bldRegional = 0 | the guard moves the default by design. Restate the check to 'Where to build defaults to the national LP and the regional option is disabled' (message 717 (b)); keep 'bldBuildRegionalLP is reachable' and the regional LP's constraint-family checks, which still pass |
+| validate_lp, the other 59 | pass | |
+| validate_public_text | 32/32: slider notes over 40 words 0 of 76, preset captions 0 of 8 | the three new sentences are 36, 25 and 20 words; no identifier, no Data Portal ID |
+| audit.py | 88/88; tutorial phrases none; prose 4,248 words against the 4,250 ceiling | two words of headroom: any further sentence must cut one elsewhere |
+| validate_structure | 27/27 with the stamp bumped | the select and the button are not in control_inventory.json |
+| validate_solve | pending (it builds the regional LP directly; expected unchanged) | |
+| validate_stored_panels | will fail until regenerated | any change to index.html changes the fingerprint: run --write, then the check, in the pull request |
+| validate_findings, validate_response, validate_links, validate_worker | not touched | none names the two controls; the grid-delay finding uses the preset, not the panel |
+
+Visible text changed (harness/diff_public_text.js --base 57f70df; 2,193 sentences before, 2,195 after):
+
+- Added or changed (5): the mipCaveat sentence above; "Regional – also where, within grid limits (switched off)"; "Defaults to
+  National."; "The Regional choice is switched off: it plans against gross demand without the existing nuclear, hydro, import,
+  wind, solar and rooftop fleet, so its builds are not comparable with the rest of the page."; "Switched off: the comparison
+  runs on the regional model above, whose builds are not comparable with the rest of the page."
+- Removed (3): the old mipCaveat sentence; "Regional – also where, within grid limits"; "Regional uses each province's own wind
+  and solar profile, its GCCA connection headroom, and real corridor limits between regions."
+
+Not relaxed: no check widened; one restated with its cause. Build after the combined PR merges, on Nick's word.
