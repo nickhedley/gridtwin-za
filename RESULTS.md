@@ -21930,7 +21930,7 @@ not finish: still solving at 112 minutes when the container restarted (22:00 UTC
   0.5 GW or more of coal early (runs (1), (2), (5), (4) below, split step S5) have each missed the standard or sit on it; test 8
   (0.22 GW) and runs (6) and (3) (none) met it. An observation across eight builds, not a tested cause.
 
-### c7 to test 8 by cause (message 699 (c), with 700 (d)'s solar line): steps 1-3 done; the weather fixes, the six-constant correction and congestion off leave solar at 38 GW in 2040 and the standard met; steps 4-6 running
+### c7 to test 8 by cause (message 699 (c), with 700 (d)'s solar line): from c7's 33.2 GW of solar in 2040, the weather fixes add 5.4 GW, 25 equal days take 6.5 and the metered reference 6.6; the clustered weights on modelled 2025 lose the reliability margin and the metered reference restores it; linking and the twin fix move solar by nothing
 
 Settings: one path through the changes, each step adding one to the step before (the shares depend on the order). Full 2026-2040
 pathway, pass 1 (MAXP=1), c7's settings (SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3
@@ -21954,18 +21954,23 @@ Solar 2040: on the freed-coal pool / off it after 2028 / the committed builds of
 | S3 + congestion off | 1,620.6 | 37.7 (15.5 / 18.8 / 3.4) | 25.9 | 28.5 | 14.5 / 83.0 | 0.00 | 1.0 / 0.9 / 0.5 |
 | S4 + 25 equal days | 1,591.2 | 31.2 (17.8 / 10.0 / 3.4) | 20.2 | 32.8 | 12.2 / 74.6 | 0.00 | 1.2 / 1.5 / 0.6 |
 | S5 + clustered, modelled 2025 (no linking) | 1,507.8 | 30.5 (22.4 / 4.7 / 3.4) | 19.2 | 40.4 | 14.5 / 75.5 | 2.05 | 3.4 / 30.8 / 59.8 |
-| S6 + metered reference | queued | | | | | | |
+| S6 + metered reference (no linking) | 1,522.2 | 23.9 (20.5 / 0.0 / 3.4) | 17.4 | 42.2 | 8.6 / 45.0 | 0.17 | 1.4 / 17.1 / 8.5 |
 | test 8 (+ linking) | 1,521.5 | 23.9 (20.5 / 0.0 / 3.4) | 17.4 | 39.9 | 8.7 / 43.3 | 0.22 | 1.3 / 15.9 / 6.7 |
 | run (6) (+ fixed twin) | 1,523.5 | 23.9 (20.3 / 0.2 / 3.4) | 17.2 | 42.0 | 10.9 / 61.2 | 0.00 | 0.9 / 13.7 / 7.6 |
 
 - Solar: the weather fixes raise it (+5.4 GW in 2040: +6.1 off the pool, -0.7 on it); the six-constant correction and congestion off move it by under
   1 GW each. 25 equal days (S4) cut it by 6.5 GW, 8.8 GW off the pool (S4 solved in 2,638 s, beside run (4), 4 Nov 22:23-23:16 UTC);
   clustered weights on modelled 2025 (S5) hold the total (30.5 GW): off the pool -5.3 GW, on it +4.6, as S5 retires 2.05 GW
-  of coal early (all in 2029) and so frees more connections (S5 solved in 2,411 s, beside run (4), 4 Nov 23:09-23:57 UTC); the rest
-  of the fall to test 8's 23.9 GW lies in S6 or linking.
+  of coal early (all in 2029) and so frees more connections (S5 solved in 2,411 s, beside run (4), 4 Nov 23:09-23:57 UTC). The
+  metered reference (S6) takes it to 23.9 GW, test 8's level: no solar off the pool after 2028 (S6 solved in 2,438 s, beside run (4)
+  and the 2024 cells, 4 Nov 23:51 to 5 Nov 00:45 UTC). Linking (test 8) and the fixed twin (run (6)) move 2040 solar by nothing.
+- Solar 2040 by step, GW: weather fixes +5.4; six-constant -0.4; congestion off -0.5; 25 equal days -6.5; clustered weights on
+  modelled 2025 -0.7; metered reference -6.6; linking 0.0; fixed twin 0.0. One path; the shares depend on the order.
 - Reliability: every step to S4 meets the standard with a wide margin (0.4-1.5 GWh). S5 misses it far: 30.8 GWh in 2035 and 59.8 in
-  2040 (se 3.4 and 3.7), with lithium up and 2.05 GW of coal retired early; the loop's own check fails 2034-2040 (to 72.5). So the
-  margin goes at the clustered weights on modelled 2025 without linking; test 8 (metered, linked) is back inside it (15.9 / 6.7).
+  2040 (se 3.4 and 3.7), with lithium up and 2.05 GW of coal retired early; the loop's own check fails 2034-2040 (to 72.5). The
+  metered reference (S6) brings it back inside (1.4 / 17.1 / 8.5; 2035 within two standard errors, marginal; 0.17 GW retired early);
+  linking (test 8) then takes 2035 to 15.9 and 2040 to 6.7, wind 42.2 to 39.9 GW. So the margin goes at the clustered weights on
+  modelled 2025 and comes back with the metered reference, not with linking.
 
 ### Run (4) of message 700 (b), fixed twin: new tracking solar at the bids' 30.13% alone: utility solar 25.0 GW in 2040 (run (6): 23.9), all of the gain on freed coal connections; 1.3 GW of coal retired early; the engine on the standard in 2035 and 2040
 
