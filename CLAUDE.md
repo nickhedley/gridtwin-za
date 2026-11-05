@@ -72,6 +72,25 @@ cause and the build it first failed on in RESULTS 'Known failures on build 2026-
    the existing stores ahead of a forecast shortfall, so 30 GW of new batteries cut unserved 8.3% against the check's 10%; its
    redesign waits for after the note (TODO 14ew).
 
+Measured 5 Nov 2026 on claude/twin-retime f0deb20 (build 2026-11-05k), ESK19679.csv present, loops running beside it: node 1,057/1,066,
+audit 88/88, eng5 5/6. Beyond 1-4, six more failures, each with its cause and first failing build (5 and 7-10: RESULTS 'The seven
+unlisted failures', message 686 (f)):
+5. validate_findings: 'a low build rate stays at the congestion floor' (from 24b, 1b0dad0, PR C): the ten-year scenario runs at
+   scenario year 2026, so coal is held at 2026's practice floor; 15.3% against 5%.
+7. validate_response: 'response matrix matches baseline' (from 24b, 1b0dad0): 39 cells changed (35 on 3 Nov; the matrix has 86 checks
+   since the TDP's delivery left the engine's cost, message 710 (c)); baseline last written on 22e; rewrite awaiting decision.
+8. validate_benchmarks: 'co2 reconciles with Ember monthly data' (from 22e, a51f79b, c6 PR A): 184.0 against 160.3 Mt (+14.8%);
+   emisCoal is Eskom's measured 1.108 t/MWh sent out, Ember applies a fixed 0.846 per MWh gross (TODO 14iw).
+9. validate_outputs: 'Curtailment is zero at defaults' (from 24b, 1b0dad0): 0.3 TWh/yr from the practice floor; not yet compared
+   with 2026's metered curtailment on the same months and fleet (TODO 14ms (d)).
+10. validate_outputs: 'curtailFuelCost is non-zero in the coal-curtailment scenario' (from 24b, 1b0dad0): R17.9 bn; PR C's synchronous
+    floor options and commitment rules (RESULTS).
+11. validate_pathway_presets: 'the page scales the rooftop add-back as the runs record it (roof12)' (from 2026-11-05b, fff0993, message
+    707 (a) 1): rooftop on one fixed-tilt shape moved the page's factor to 1.0037; the runs behind the presets recorded 0.8895 on the old
+    basis. Clears when the presets are regenerated from runs on the current basis, after the final key.
+No longer failing on 05k: validate_findings' 'turn-up is a growing share of constraint cost' (54% to 57%, R636 to R723/MWh), and
+validate_pathway_presets' 'the preset blocks are the generator's output' (constants regenerated under Python 3.11, 9c2c78d, build 05g).
+
 No longer a known failure (message 524 (b)): validate_external's 'EDMSA Scenario A CO2 2035 within 22 Mt', failing from 2026-10-01a
 to 2026-10-23a, passes from 2026-10-24b (PR C's coal rules; 117.0 against 124 Mt on 29b). Cause in RESULTS 'EDMSA Scenario A CO2
 2035'. From 30 Oct 2026 every validate_external check runs at the year it names (message 526 (b); RESULTS 'Every external
