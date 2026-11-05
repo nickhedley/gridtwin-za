@@ -1,4 +1,21 @@
-# GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 07:25 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 13:15 SAST)
+
+## 5 Nov afternoon (messages 707-711): where things stand
+
+Branch claude/twin-retime (PR not yet opened; main 57f70df unchanged): build 2026-11-05f (17f42a5), every 707 and 710 change in; the
+curtailment price 0 in the central (710 (a), tested on run (6)). Records on claude/c7-runs (RESULTS entries of 5 Nov; TODO 14mw, 14na).
+- Running (stop by PID only): the 707 (d) pass with every change, run (6)'s settings on worktree /home/user/gtza-all (17f42a5), job
+  shell 28914, node 28921, solver 29003; the same with new wind at the bids' 37.24% (WIND_CORR=bw6), shell 29446, node 29453, solver
+  29504. Script scratchpad c710/solve_all.sh <name> '<env>', resumable (presolve off, RESUME), log c710/progress.txt. Each then runs its
+  engine check (K=20, 2030/2035/2040). At the curtailment price 0 a pass took two pieces (about 2 h 10 min).
+- Waiting on Nick: (b) coal's part-load factor in the central (recommend yes, run (6)'s table, RESULTS 'Coal's part-load penalty');
+  the verdict rule (recommend VERDICT_TOPUP {start 2, steps [10, 20], frac [0.25, 0.5]}, RESULTS 'The verdict's draws on every year');
+  the siting panel (tiered while the engine is flat; recommend keep tiered and restate its check); Avon and Dedisa's fomDiesel to 2030
+  (recommend drop); new wind's capacity factor (7 Nov).
+- Then: apply the calls; stored panels (validate_stored_panels.js --write), the long checks (pathway_presets, links, stored_panels,
+  worker), visible text (diff_public_text.js --base 57f70df), the PR (draft in scratchpad pr_twin_retime_draft.md); the final key after
+  the 7 Nov decision. The quick suite on 05e: every check passes but known failures 1-5 and 7-10 (commit ce24dac lists them by name).
+- Stopped today: the 55-day run after five pieces (basis kept, a0362c06f3); r6_d2 at the 2-hour limit inside pass 2.
 
 ## Message 704 (5 Nov, 08:30 SAST): plans for (f), (g), (h)
 

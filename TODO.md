@@ -914,9 +914,9 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 
 14na. From message 710 (5 Nov 2026; the cost review on 57f70df, RESULTS 'The independent cost review'). Done on claude/twin-retime
 559175c: (c) engine grid charge on the LP's basis, (e) vintage pricing and the unserved price escalated, (f) CPI link, SOURCES 364,
-ATB editions, discount rate in summ.js and packfill.js, (d) withdrawn. Open: (a) run (6) at lpCurtailCostR 0 (running); then FIXED to
-0, R150 as a sensitivity, and the pack's line that comparisons across curtailment use the LP's objective revised; (b) run (6) with
-coal's part-load factor in the LP (running), recommend; (g) re-read new wind's capacity factor, the reference and the two-stage
+ATB editions, discount rate in summ.js and packfill.js, (d) withdrawn. Done 5 Nov: (a) run (6) at lpCurtailCostR 0, FIXED 0 from build
+2026-11-05f, R150 a sensitivity, the pack's curtailment line revised; (b) run (6) with coal's part-load factor, recommended for the central
+(Nick to decide). Open: (g) re-read new wind's capacity factor, the reference and the two-stage
 comparison with (a) in; (h) Nick: the siting panel keeps the regional tiers while the engine is flat; validate_invariants' check
 'the siting panel prices a megawatt as the engine does' to be restated or the panel moved to flat; (i) Nick: Avon and Dedisa's
 fomDiesel on top of their contract (R0.36bn a year to 2030; evidence indirect, SOURCES); (j) after the note: the three ATB fixed
