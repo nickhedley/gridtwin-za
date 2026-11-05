@@ -2137,6 +2137,11 @@ a unit's capability or a fleet's practice; they are not interchangeable.
   The coal in start fuel is priced at the model's R47.94/GJ (below). These replace the earlier estimate of about R1,500 per MW
   (wear alone, at June 2026 CPI). With start fuel, R2,103-3,872 (large subcritical) and R2,120-4,191 (supercritical) per MW per start, against UC_FLEET's R99-160 per MW: about 13-39 times higher. Whether PyPSA-RSA's start costs
   include wear or only fuel is not documented (question for Meridian, TODO 14hu).
+  - Gas rows (message 716 (d)), as read by the user's advisor from the same report, pending a read of it here: lower-bound start costs
+    per MW of capacity, 2011 US dollars, medians, excluding fuel [hot, warm, cold]: large frame combustion turbine $32, $126, $103;
+    aero-derivative $19, $24, $32; combined cycle $35, $55, $79. Their hot, warm and cold by time offline are not in that reading. Used
+    only to size what the model leaves out (harness/pathway/gas_starts.js; RESULTS 'Gas start costs the model leaves out'): neither the
+    build LP nor the engine charges gas starts. The report's current home is docs.nlr.gov (NREL renamed), not tried from the session.
 - The model's coal cost per GJ, R47.94 (message 361 (b)): costCoal R553/MWh sent out (Eskom FY2026 integrated report: coal and
   other generation primary energy cost R91.5 bn, p.56, over coal sent out 165,431 GWh, p.7) over 11.53 GJ/MWh, the heat rate implied
   by the model's coal CO2 of 1.108 t/MWh sent out (Eskom's CO2, p.35, less its open-cycle output at the diesel factor) at 96.1 kg
