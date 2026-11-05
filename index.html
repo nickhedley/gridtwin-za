@@ -11439,7 +11439,10 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // are kept.
 // Wind re-measured 4 Nov 2026 (build 2026-11-04b): 0.42499 to 0.42006 (0.4200610), the six-constant wind correction on by default
 // (messages 693 (a), 696 (a)). It follows the default: a run with the correction off (WX_WINDCORR=0) keeps this value.
-const NEW_WIND_CF_12Y = 0.42006, NEW_PVTRK_CF_12Y = 0.28595;
+// Tracking solar re-measured 5 Nov 2026 (build 2026-11-05a): 0.28595 to 0.28362 (0.2836159), the PVGIS years converted from the
+// stamped minute to hour means (retime_pvgis.py, message 704 (a)): 2014-2023 keep their energy; the 2024-2025 twins, built from the
+// PVGIS tracking/fixed ratio, fall 4.8% now that the ratio is in step with their fixed tilt.
+const NEW_WIND_CF_12Y = 0.42006, NEW_PVTRK_CF_12Y = 0.28362;
 // The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
 BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
 BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };
@@ -22290,7 +22293,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-04b';
+const BUILD_STAMP = '2026-11-05a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
