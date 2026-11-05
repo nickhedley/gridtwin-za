@@ -99,7 +99,7 @@ const sg=(v,d)=>(v>=0?'+':'−')+nf(Math.abs(v),d);
 const Rb=v=>'R'+nf(Math.abs(v),0)+' billion';
 const spanH=ys=>span(ys).replace(/(\d{4})\u2013(\d{4})/g,(m,a,b)=>a.slice(0,2)===b.slice(0,2)?`${a}-${b.slice(2)}`:`${a}-${b}`);
 const span=ys=>{ const a=[]; for (const y of ys){ const l=a[a.length-1]; if (l&&y===l[1]+1) l[1]=y; else a.push([y,y]); } return a.map(([p,q])=>p===q?`${p}`:`${p}–${q}`).join(', '); };
-const taxPV=s=>{ let t=0; for (const r of s.rows) t+=r.co2*(r.carbonTaxRPerT||0)*Math.pow(1.08,-(r.y-2026))/1000; return t; };
+const taxPV=s=>{ let t=0; for (const r of s.rows) t+=r.co2*(r.carbonTaxRPerT||0)*Math.pow(1+s.disc,-(r.y-2026))/1000; return t; };   // the run's own rate (summ.js, message 710 (f))
 let PL=null; const partload=()=>{ if (PL) return PL; const f=`${O}/pathcheck_${C}_a.json`; if (!fs.existsSync(f)) return null;
   try { PL=JSON.parse(cp.execFileSync('node',[path.join(__dirname,'..','partload_check.js'),f],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim().split('\n').pop()); } catch(e){ console.error('partload_check.js failed (run from harness/ with testroot): '+e.message.split('\n')[0]); PL=null; }
   return PL; };

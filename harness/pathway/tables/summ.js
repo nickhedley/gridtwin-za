@@ -3,12 +3,15 @@
 const fs=require('fs');
 function summ(O, n){ const P=JSON.parse(fs.readFileSync(`${O}/pathway_${n}.json`)); let rows=[];
   for (const g of ['a','b','c']){ const f=`${O}/pathcheck_${n}_${g}.json`; if (!fs.existsSync(f)) return null; rows.push(...Object.values(JSON.parse(fs.readFileSync(f)))); }
-  rows.sort((a,b)=>a.y-b.y); const d=y=>Math.pow(1.08,-(y-2026));
+  // Discounted at the run's own recorded rate (P.disc; message 710 (f): the literal 1.08 summed every DISC sensitivity at 8%), 8% for runs
+  // that recorded none (all before 9 Oct 2026 ran at 8%).
+  const DR=(P.disc!=null?+P.disc:0.08); if (!(DR>0&&DR<0.3)) throw new Error(n+': discount rate '+P.disc);
+  rows.sort((a,b)=>a.y-b.y); const d=y=>Math.pow(1+DR,-(y-2026));
   const pv=rows.reduce((s,r)=>s+r.cost*d(r.y),0), pvG=rows.reduce((s,r)=>s+r.costGrid*d(r.y),0);
   const cum={}, c={}; for (const y of Object.keys(P.sched).sort()){ for (const k of ['wind','pv','rooftop','batt','battMWh','ccgt','ocgt','ocgd','ironair','vrfb','phes','off']) c[k]=(c[k]||0)+(P.sched[y][k]||0); cum[y]={...c, coalMW:P.sched[y].coalMW}; }
   const at=y=>{ const b=cum[y]; return {wind:b.wind,pv:b.pv,roof:b.rooftop,li:b.batt,liH:b.batt?b.battMWh/b.batt:0,ccgt:b.ccgt,ocgtGas:b.ocgt,ocgtDsl:b.ocgd,ironair:b.ironair,vrfb:b.vrfb,phes:b.phes,off:b.off,coal:b.coalMW}; };
   const over=rows.filter(r=>r.mean>r.target+1e-9).map(r=>r.y);
-  return { n, verdict:P.verdict, std:P.standard||null, pv, pvG, co2:Object.fromEntries(rows.map(r=>[r.y,r.co2])), co2Cum:rows.reduce((s,r)=>s+r.co2,0),
+  return { n, verdict:P.verdict, std:P.standard||null, disc:DR, pv, pvG, co2:Object.fromEntries(rows.map(r=>[r.y,r.co2])), co2Cum:rows.reduce((s,r)=>s+r.co2,0),
     maxMean:Math.max(...rows.map(r=>r.mean)), worstRun:Math.max(...rows.map(r=>r.worst)), target:rows.map(r=>r.target), over,
     ocgtCF:Object.fromEntries(rows.map(r=>[r.y,r.ocgtCF])), ocgtOver:rows.filter(r=>r.ocgtCF>=0.06).map(r=>r.y),
     build:{2030:at(2030),2035:at(2035),2040:at(2040)}, rows, sched:P.sched, nuclearAdd:P.nuclearAdd||null, fossilEnd:P.fossilEnd??null, fleet2026:P.fleet2026||null };
