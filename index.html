@@ -13059,6 +13059,11 @@ function bldBuildLP(opts){
     if (SSI && !['ratio', 'commit'].includes(SS_BASIS)) throw new Error("ssCoalBasis must be 'ratio' or 'commit': " + SS_BASIS);
     if (SSI && SS_BASIS === 'commit' && !COMMIT_ON) throw new Error("ssCoalBasis 'commit' needs bldCoalCommit (the LP's committed coal cm_)");
     const SS_COMMIT = SSI && SS_BASIS === 'commit';
+    // Existing CSP on the engine's own series (message 707 (a) 2; the data-path review, finding 4): the profile's CSP (Eskom's shape, as
+    // simulate reads it, cspMW x csp), at the representative day's calendar hour, in place of a flat 0.38 that counted 0.48 TWh a year
+    // and 228 MW at 04:00 the engine does not have.
+    if (!(PROFILES.csp && PROFILES.csp.length >= 8760)) throw new Error('bldBuildLP: PROFILES.csp missing; the LP reads the engine\'s CSP series');
+    const CSP_PU = i => PROFILES.csp[i % PROFILES.csp.length];
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
@@ -13085,7 +13090,7 @@ function bldBuildLP(opts){
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
-                  + exWind*wp*AVW(h) + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AVP(h) + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
+                  + exWind*wp*AVW(h) + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AVP(h) + EX.rooftop*sp*AV_ROOF + exCsp*CSP_PU(i);
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
