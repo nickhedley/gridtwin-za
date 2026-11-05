@@ -22563,3 +22563,33 @@ settings otherwise; pass 1, two pieces (08:38-10:43 UTC); engine check as run (6
 The engine's factor on the new build (1.0439, 1.0497, 1.0433) equals the one fed in to within 0.001: one round calibrates it. The LP
 objective rises R25.2bn, the coal cost the engine already charges. The table is run (6)'s: a pathway with more part-load running (the
 review measured 1.066 on Deep decarbonisation 2035) would need its own.
+
+### Each change sized on run (6), and the one LP pass with every change (message 707 (d)): 2035 sits on the standard (20.08 GWh, se 2.2)
+
+Engine only, on run (6)'s build (no new solve; pathcheck K=10, 2035 / 2040, pathcheck's default seed base, LNG=1 GRID=1
+SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1; mean unserved GWh, cost R bn): before (e588e49) 12.21 / 8.09, 271.66 / 318.27; re-timing
+(f3af8b0) 12.51 / 7.31, 271.17 / 317.26; + the diesel key (9474e57) 12.51 / 6.93, 271.17 / 317.24; + pathcheck's recorded settings,
+CSP and offshore in the LP, the double division and tail ranking (872d11c; the engine unchanged, run (6) builds no offshore) 12.51 /
+6.93; + rooftop on one shape (4752bc0, run (6)'s build on the new demand, its recorded K swapped for 1.0037) 14.62 / 8.40, 271.39 /
+317.58. Solar, wind and lithium are run (6)'s in each (the same build).
+
+The one LP pass with every change: claude/twin-retime 17f42a5 (build 2026-11-05f: every 707 change and 710's, the curtailment price 0,
+the engine's grid charge on the LP's basis, vintage pricing), run (6)'s settings, pass 1, two pieces (10:46-13:15 UTC, beside a second
+solve), the loop's 2-draw verdict adequate; engine check as run (6)'s (K=20, 13:20-13:29 UTC). Engine cost is on the new grid basis,
+so it compares with run (6)'s costGrid.
+
+| 2030 / 2035 / 2040 | run (6) | every change |
+|---|---|---|
+| utility solar, GW | 6.7 / 17.2 / 23.9 | 6.7 / 17.7 / 24.8 |
+| wind, GW | 9.3 / 26.8 / 42.0 | 9.7 / 27.2 / 40.7 |
+| lithium, GW; GWh | 1.5 / 8.5 / 10.9; 3.7 / 32.8 / 61.2 | 1.5 / 8.8 / 11.0; 3.7 / 38.2 / 60.9 |
+| open-cycle gas and diesel 2040, MW; coal retired early | 4,198 + 927; 0 | 4,342 + 1,269; 531 MW from 2029 |
+| unserved, GWh (se), limit 20 | 0.95 (0.19) / 13.69 (1.70) / 7.58 (1.04) | 1.98 (0.62) / 20.08 (2.23) / 12.21 (1.68) |
+| curtailment, TWh | 2.01 / 11.07 / 26.10 | 1.64 / 10.19 / 23.99 |
+| engine cost (run (6): costGrid), R bn | 242.62 / 269.24 / 316.11 | 243.18 / 270.78 / 320.51 |
+| CO2, Mt | 134.2 / 84.0 / 52.9 | 131.8 / 80.0 / 52.7 |
+| LP objective, R bn | 1,523.5 | 1,524.7 |
+
+2035 sits on the standard; the loop's 2-draw verdict passed it (message 711's rule would top it up to 20 draws and send it to a second
+pass). No change misses 8 Nov: every one is in this pass. Not in it: coal's part-load factor (710 (b), Nick's call) and new wind's
+capacity factor (7 Nov).
