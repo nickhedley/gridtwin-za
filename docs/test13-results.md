@@ -180,7 +180,7 @@ Wind 2040 minimum at 1%, two solves at a time on the 4 cores (times by HiGHS's c
 | Cold, parallel dual simplex (Ranges, above) | over 6,698 s | not solved, no basis kept | no |
 | 1. Warm start: primal simplex from the base's optimal basis | 29,117 s (8.1 h) over five pieces, plus 4,672 s for the base re-solve that made the basis | Optimal, 24,605 MW | no |
 | 2. 18 days, cold, parallel dual simplex | over 6,694 s | not solved, no basis kept | no (its base: 1,780 s, yes) |
-| 3. Presolve off, parallel dual simplex | over 26,780 s (7.4 h) over four pieces; piece 5 running to 04:07 UTC | not solved; one resume lost its progress | no |
+| 3. Presolve off, parallel dual simplex | about 26,780 s (7.4 h) over four pieces, plus 45 min lost to the restart; piece 5 running to 04:07 UTC | not solved; one resume lost its progress | no |
 
 None fits well inside a piece. Only the warm start solved, and only because each piece kept a valid basis that the next one resumed
 from; a primal simplex basis came back nearly feasible each time, while a dual simplex basis (presolve off) came back dual infeasible
