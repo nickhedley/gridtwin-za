@@ -5557,9 +5557,15 @@ function reipppRate(year){
 // line in the retail stack.
 //
 // Storage (BESIPPPP) is left out: new batteries are costed as new build.
+// Avon and Dedisa's contract in otherIppR: the share of the pair's MW whose contract is charged in year y, 1 to dedisaEndYear and 0 after
+// (user, 5 Nov 2026, message 715 (b)). One rule for the capital charge here and for the pair's exemption from fomDiesel in simulate.
+// Avon's own contract runs to 20 July 2031 (avonEndYear, avonEndDoy), past this end: RESULTS 'Avon and Dedisa's fixed O&M'.
+function avonDedisaContractShare(year){
+  return (year ?? 2026) <= FIXED.dedisaEndYear ? 1 : 0;
+}
 function otherIppR(year){
   const y = year ?? 2026;
-  const peakers = y < 2031 ? 2174 : 0;
+  const peakers = 2174 * avonDedisaContractShare(y);
   const rmi = y <= 2026 ? 1294 : y === 2027 ? 3325 : (y < 2045 ? 3791 : 0);
   const shortTerm = y <= 2026 ? 7981 : y === 2027 ? 9296 : y === 2028 ? 9787 : 0;
   return (peakers + rmi + shortTerm) * 1e6;
@@ -10555,10 +10561,16 @@ function simulate(u, prof, outPath, _soc0){
   // the expired windows first: what stays out of contract, and pays fixed O&M, is the expired MW not retired.
   const _rRet = reipppRetiredMW(p.scenarioYear ?? 2026, p);
   const _ippLive = (p.reipppFomInPpa ?? FIXED.reipppFomInPpa) ? reipppLiveMW(p.scenarioYear ?? 2026, p, _rRet) : { wind:0, pv:0, csp:0 };
+  // No fixed O&M on Avon and Dedisa in the years otherIppR charges their contract (user, 5 Nov 2026, message 715 (b); a judgement on
+  // indirect evidence, RESULTS 'Avon and Dedisa's fixed O&M'): the contract's charge is taken to cover it, as for REIPPPP below. From the
+  // following year they pay fomDiesel as the rest of the fleet. Out of the fleet (avonDedisaRemoveAfter), there is nothing to exempt.
+  const _adY = p.scenarioYear ?? 2026;
+  const _adPpaMW = avonDedisaOffMW(p, _adY) > 0 ? 0
+    : ((p.avonMW ?? FIXED.avonMW) + (p.dedisaMW ?? FIXED.dedisaMW)) * avonDedisaContractShare(_adY);
   const fixedOMR =
       _coalOnMW               * (p.fomCoal    ?? FIXED.fomCoal)    * 1000
     + (p.nuclearMW||0)        * (p.fomNuclear ?? FIXED.fomNuclear) * 1000
-    + _dieselOnMW             * (p.fomDiesel  ?? FIXED.fomDiesel)  * 1000
+    + Math.max(0, _dieselOnMW - _adPpaMW) * (p.fomDiesel ?? FIXED.fomDiesel) * 1000
     + (p.ccgtMW||0)           * (p.fomCcgt    ?? FIXED.fomCcgt)    * 1000
     + (p.hydroMW||0)          * (p.fomHydro   ?? FIXED.fomHydro)   * 1000
     + (p.psPowerMW||0)        * (p.fomPs      ?? FIXED.fomPs)      * 1000
@@ -22418,7 +22430,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-05h';
+const BUILD_STAMP = '2026-11-05i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -22512,7 +22524,7 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 const ENGINE_FNS = () => ({ simulate, offshoreSeriesFor, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
   astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate, reipppLiveMW,
   reipppExpiredMW, reipppRetiredMW, coalEafAt, avonDedisaOffMW, applyYearFleetOptions,
-  otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth, nucShapeAt,
+  otherIppR, avonDedisaContractShare, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth, nucShapeAt,
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
