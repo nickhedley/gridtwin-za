@@ -42,6 +42,7 @@ Times UTC. In progress; updated as it runs.
   test 15 ran (message 693 (4), (5)). The fin pass ran on build 05h; this runs on 05j as asked, so a comparison includes 05i and 05j's Avon
   and Dedisa changes.
 - Started 5 Nov 20:01. PIDs per piece in progress.txt. Its tables are the first between the markers below (tsr_central).
+- Step 2028: adequate at pass 1; solve 52.4 min, step 66.2 min; wind 2,500 MW, solar 1,129, lithium 0 MW / 660 MWh, grid-forming 15.
 - Steps 2026 and 2027: adequate at pass 1, the committed floors (wind 287 and 1,959 MW, solar 156 and 2,120, lithium 360 MW / 1,440 MWh
   and 401 / 1,619); solves 33.2 and 40.2 min with presolve off, steps 41.2 and 50.1 min (the loop's checks with the verdict rule's
   top-ups about 8 to 10 min a step). Test 15's central took 8.5 and 14.0 min to solve the same steps with presolve on, on the old key, so
@@ -72,8 +73,15 @@ Times UTC. In progress; updated as it runs.
 
    With the loop testing year y only (LOOP_YEAR_ONLY=1), both steps would have ended at pass 1; that is a method choice (693 (5) kept
    every year tested), reported, not applied.
-3. Fix test beside (a): the annuity run's step 2029 relaunched with presolve off (HIGHS_OPTS as (a), WARM=1, LAST=2029) on its own basis
-   and code, passes 1 to 5 from the LP cache, pass 6 cold. Started 20:11; result below when it lands.
+3. Fix test beside (a), on each run's own basis and code (build 2026-11-04b), HIGHS_OPTS as (a) (presolve off), WARM=1, pieces of 6,600 s:
+   - ts2_central_ann step 2029: passes 1 to 5 from the LP cache; pass 6 started cold at 20:29 with 4,618 s, was stopped at the piece's
+     deadline at 21:47 after 77 min and this time kept its basis ('stopped at the job deadline; basis kept for resume b0591c7b8b'). The
+     next piece (21:47, PID 22210) replayed passes 1 to 5 and logged 'resume from this LP's own basis': optimal at 22:39 after 33 more
+     minutes. The step finished at 22:43: verdict 'pass limit reached' (MAXP=6), 2033 at 21.63 GWh against 20 after 22.09 at pass 5;
+     its own year 2029 at 0.04 GWh at pass 1 and at pass 6; year 2029's builds nothing new (wind, solar and lithium 0), coal 37,027 MW.
+     The fix gets the step through; the loop on the look-ahead year still ends over the standard. Pass 6 took about 110 min of solving
+     with presolve off (two pieces); pass 5, one window smaller, 38 min with presolve on.
+   - ts2_ff step 2033: started 22:43 (PID 548), passes 1 and 2 from the cache, pass 3 cold with presolve off; result below when it lands.
 
 ### What Deep needs beyond its fixed cap
 
@@ -280,30 +288,30 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   2026): left stopped; no relaunch on this basis.
 
 <!-- test15_summary start -->
-#### tsr_central (2 of 15 steps)
+#### tsr_central (3 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
 tsr_central: new build by year, MW (lithium also MWh)
 
-| Year | wind | solar | lithium MW | lithium MWh |
-|---|---:|---:|---:|---:|
-| 2026 | 287 | 156 | 360 | 1,440 |
-| 2027 | 1,959 | 2,120 | 401 | 1,619 |
-| 2028 |  |  |  |  |
-| 2029 |  |  |  |  |
-| 2030 |  |  |  |  |
-| 2031 |  |  |  |  |
-| 2032 |  |  |  |  |
-| 2033 |  |  |  |  |
-| 2034 |  |  |  |  |
-| 2035 |  |  |  |  |
-| 2036 |  |  |  |  |
-| 2037 |  |  |  |  |
-| 2038 |  |  |  |  |
-| 2039 |  |  |  |  |
-| 2040 |  |  |  |  |
-| Total | 2,246 | 2,276 | 761 | 3,059 |
+| Year | wind | solar | lithium MW | lithium MWh | grid-forming |
+|---|---:|---:|---:|---:|---:|
+| 2026 | 287 | 156 | 360 | 1,440 | 0 |
+| 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 |
+| 2028 | 2,500 | 1,129 | 0 | 660 | 15 |
+| 2029 |  |  |  |  |  |
+| 2030 |  |  |  |  |  |
+| 2031 |  |  |  |  |  |
+| 2032 |  |  |  |  |  |
+| 2033 |  |  |  |  |  |
+| 2034 |  |  |  |  |  |
+| 2035 |  |  |  |  |  |
+| 2036 |  |  |  |  |  |
+| 2037 |  |  |  |  |  |
+| 2038 |  |  |  |  |  |
+| 2039 |  |  |  |  |  |
+| 2040 |  |  |  |  |  |
+| Total | 4,746 | 3,405 | 761 | 3,719 | 15 |
 
 tsr_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -311,6 +319,7 @@ tsr_central: coal standing (MW), coal retired ahead of its dates (MW) and kept u
 |---|---:|---:|---:|
 | 2026 | 39,692 | 0 |  |
 | 2027 | 39,692 | 0 |  |
+| 2028 | 39,692 | 0 |  |
 
 tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -318,7 +327,7 @@ tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 |---|---|---:|---|---|---|---:|---:|---:|---|---:|
 | 2026 | 2030 | 1 | adequate | parallel, 2 threads, presolve off | 33.1 | 41.2 | 1 | 2.4 | pass 1: none | 569.529 |
 | 2027 | 2031 | 1 | adequate | parallel, 2 threads, presolve off | 40.2 | 50.1 | 1 | 2.5 | pass 1: none | 567.520 |
-| 2028 | | | not finished |  |  | | 1 | | | |
+| 2028 | 2032 | 1 | adequate | parallel, 2 threads, presolve off | 52.4 | 66.2 | 2 | 2.5 | pass 1: none | 569.646 |
 
 tsr_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -326,6 +335,7 @@ tsr_central: the adequacy test on each step's own year y at its final pass (mean
 |---|---|---|---|
 | 2026 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 
 #### ts2_central (15 of 15 steps)
 
@@ -474,7 +484,7 @@ ts2_ff: the adequacy test on each step's own year y at its final pass (mean unse
 | 2031 | 12.45 / 20 | 12.45 / 20 | 2025 (83.1) |
 | 2032 | 10.67 / 20 | 10.67 / 20 | 2021 (39.0) |
 
-#### ts2_central_ann (3 of 15 steps)
+#### ts2_central_ann (4 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -485,7 +495,7 @@ ts2_central_ann: new build by year, MW (lithium also MWh)
 | 2026 | 287 | 156 | 360 | 1,440 |
 | 2027 | 1,959 | 2,120 | 401 | 1,619 |
 | 2028 | 0 | 1,129 | 0 | 660 |
-| 2029 |  |  |  |  |
+| 2029 | 0 | 0 | 0 | 0 |
 | 2030 |  |  |  |  |
 | 2031 |  |  |  |  |
 | 2032 |  |  |  |  |
@@ -506,6 +516,7 @@ ts2_central_ann: coal standing (MW), coal retired ahead of its dates (MW) and ke
 | 2026 | 39,692 | 0 |  |
 | 2027 | 39,692 | 0 |  |
 | 2028 | 39,692 | 0 |  |
+| 2029 | 37,027 | 0 |  |
 
 ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -514,7 +525,8 @@ ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2026 | 2030 | 1 | adequate | parallel, 2 threads | 15.9 | 18.4 | 1 | 2.5 | pass 1: none | 677.140 |
 | 2027 | 2031 | 5 | stall stop | parallel, 2 threads | 16.8, 10.3, 7.0, 29.0, 29.2, 18.0, 32.3 | 45.3 | 3 | 4.1 | pass 1: 2031: 47.9 / 20<br>pass 2: 2031: 31.1 / 20<br>pass 3: 2031: 28.2 / 20<br>pass 4: 2031: 26.6 / 20<br>pass 5: 2031: 27.2 / 20 | 743.104 |
 | 2028 | 2032 | 5 | adequate | parallel, 2 threads | 14.8, 21.6, 24.2, 27.2, 31.4 | 70.4 | 3 | 4.1 | pass 1: 2032: 37.8 / 20<br>pass 2: 2032: 29.5 / 20<br>pass 3: 2032: 24.0 / 20<br>pass 4: 2032: 20.0 / 20<br>pass 5: none | 776.178 |
-| 2029 | | | not finished | parallel, 2 threads | 16.8, 28.6, 31.8, 10.1, 32.9, 37.9, 11.5 | | 3 | | | |
+| 2029 | 2033 | 6 | pass limit reached | parallel, 2 threads, then parallel, 2 threads, presolve off | 16.8, 28.6, 31.8, 10.1, 32.9, 37.9, 11.5, 77.4, 32.7 | 55.3 | 5 | 4.9 | pass 1: 2032: 20.2 / 20; 2033: 44.9 / 20<br>pass 2: 2033: 26.0 / 20<br>pass 3: 2033: 23.3 / 20<br>pass 4: 2033: 22.9 / 20<br>pass 5: 2033: 22.1 / 20<br>pass 6: 2033: 21.6 / 20 | 802.217 |
+| 2030 | | | not finished |  |  | | 1 | | | |
 
 ts2_central_ann: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -523,6 +535,7 @@ ts2_central_ann: the adequacy test on each step's own year y at its final pass (
 | 2026 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2029 | 0.04 / 20 | 0.04 / 20 | 2018 (0.8) |
 
 Cumulative new build, MW (lithium also MWh), built 2026 to the year
 

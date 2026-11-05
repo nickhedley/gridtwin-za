@@ -101,3 +101,21 @@
 2026-11-05T20:11Z two_stage K=4 N=25 FIRST=2026, shell PID 1943
 2026-11-05T20:11:59Z step node PID 1953
 2026-11-05T20:29:48Z solve started (highs_native.py 5937)
+2026-11-05T21:47Z step 2029 (horizon 2033) rc=0 NO OUTPUT
+2026-11-05T21:47:25Z solve (highs_native.py 5937) ended after about 4643s
+2026-11-05T21:47:25Z node 1953 ended, peak memory 4.1 GB
+2026-11-05T21:47:25Z test15 central_ann piece ends: two_stage.sh rc=1, 3 of 15 steps done
+2026-11-05T21:47:36Z test15 central_ann piece, PID 22210, on 79ab5c1 Test 15 results: message 724 (a): steps 20, BUILD_STAMP = '2026-11-04b, deadline 23:37Z, MIN_LEFT 1500s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 26G, memory free 12G
+2026-11-05T21:47:36Z two_stage.sh PID 22237
+2026-11-05T21:47Z two_stage K=4 N=25 FIRST=2026, shell PID 22237
+2026-11-05T21:47:51Z step node PID 22247
+2026-11-05T22:06:25Z solve started (highs_native.py 25566)
+2026-11-05T22:39:19Z solve (highs_native.py 25566) ended after about 1961s
+2026-11-05T22:43Z step 2029 (horizon 2033) rc=0 done
+2026-11-05T22:43:20Z node 22247 ended, peak memory 4.4 GB
+2026-11-05T22:43:20Z step node PID 400
+2026-11-05T22:43:20Z step 2029 done, the last this run takes: stopped at the step boundary (node 400, just started)
+2026-11-05T22:43Z step 2030 (horizon 2034) rc=0 NO OUTPUT
+2026-11-05T22:43:35Z node 400 ended, peak memory 0.0 GB
+2026-11-05T22:43:35Z test15 central_ann piece ends: two_stage.sh rc=1, 4 of 15 steps done
+2026-11-05T22:43:35Z test15 central_ann: step 2029 has output, the last this run takes

@@ -98,3 +98,7 @@
 2026-11-04T21:33:21Z solve (highs_native.py 32364) ended after about 2079s
 2026-11-04T21:33:21Z node 19251 ended, peak memory 4.4 GB
 2026-11-04T21:33:21Z test15 ff piece ends: two_stage.sh rc=1, 7 of 15 steps done
+2026-11-05T22:43:45Z test15 ff piece, PID 548, on 79ab5c1 Test 15 results: message 724 (a): steps 20, BUILD_STAMP = '2026-11-04b, deadline 00:33Z, MIN_LEFT 1500s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 26G, memory free 12G
+2026-11-05T22:43:45Z two_stage.sh PID 569
+2026-11-05T22:43Z two_stage K=4 N=25 FIRST=2026, shell PID 569
+2026-11-05T22:44:00Z step node PID 589

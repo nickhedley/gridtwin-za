@@ -21,3 +21,9 @@
 2026-11-05T21:33:16Z two_stage.sh PID 18925
 2026-11-05T21:33Z two_stage K=4 N=25 FIRST=2026, shell PID 18925
 2026-11-05T21:33:31Z step node PID 18934
+2026-11-05T21:33:46Z solve started (highs_native.py 19064)
+2026-11-05T22:26:18Z solve (highs_native.py 19064) ended after about 3141s
+2026-11-05T22:39Z step 2028 (horizon 2032) rc=0 done
+2026-11-05T22:39:50Z node 18934 ended, peak memory 2.5 GB
+2026-11-05T22:39:50Z step node PID 32205
+2026-11-05T22:40:20Z solve started (highs_native.py 32337)
