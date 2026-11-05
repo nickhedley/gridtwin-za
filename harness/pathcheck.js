@@ -50,6 +50,33 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  const WXT=process.env.WX_WINDCORR_TABLE||null; if (WXT && process.env.WX_WINDCORR!=='1') throw new Error('WX_WINDCORR_TABLE needs WX_WINDCORR=1');
  if (WXT){ const TT=JSON.parse(fs.readFileSync(WXT,'utf8')); if (!(TT.table&&TT.table.length===12&&TT.table.every(r=>r.length===TT.grid.n))) throw new Error('WX_WINDCORR_TABLE: 12 rows of grid.n values');
    w.eval(`WIND_CORR_TABLE = ${JSON.stringify({t:TT.table,n:TT.grid.n})};`); console.log('WX_WINDCORR_TABLE:', WXT, JSON.stringify(TT.constants||{})); }
+// THE RUN'S RECORDED SETTINGS (message 707 (a) 5; the data-path review, finding 6): every setting the run recorded that changes the
+// engine's result is applied here, before anything reads the weather means, so the check runs on the run's own basis. An environment
+// value that disagrees with the recorded one stops the check, unless CHECK_ON names the setting (a deliberate cross-check, e.g. a build
+// checked on the stored weather: CHECK_ON=wxWindCorr), which is logged and recorded in every row (recordedSettings). A run that did not
+// record a setting is checked on the environment or the page default, as before, and says so.
+const CHECK_ON=(process.env.CHECK_ON||'').split(',').map(x=>x.trim()).filter(Boolean), RECSET={};
+const _congRec=(()=>{ try { return P.congestion!=null ? (typeof P.congestion==='string' ? JSON.parse(P.congestion) : P.congestion) : null; } catch(e){ throw new Error('congestion: unreadable recorded value '+P.congestion); } })();
+const _trkShRec=(()=>{ try { return P.existPvTrackShare!=null ? (typeof P.existPvTrackShare==='string' ? JSON.parse(P.existPvTrackShare) : P.existPvTrackShare) : null; } catch(e){ throw new Error('existPvTrackShare: unreadable recorded value'); } })();
+const recSet=(key, rec, envVal, apply)=>{
+  if (rec===undefined||rec===null){ RECSET[key]='not recorded'; return; }
+  if (envVal!==undefined && String(envVal)!==String(rec)){
+    if (!CHECK_ON.includes(key)) throw new Error(key+': the environment gives '+envVal+', the run recorded '+rec+'; set CHECK_ON='+key+' to check on the environment\'s value');
+    RECSET[key]={recorded:rec, checkedOn:envVal}; console.log('CHECK_ON '+key+': checked on '+envVal+', the run recorded '+rec); return; }
+  w.eval(apply(rec)); RECSET[key]=rec; };
+recSet('wxWindCorr', P.wxWindCorr, process.env.WX_WINDCORR!==undefined?+process.env.WX_WINDCORR:undefined, v=>`state.wxWindCorr=${+v};`);
+recSet('solarTrkBasis', P.solarTrkBasis, process.env.SOLAR_TRK_BASIS, v=>`state.solarTrkMeteredBasis=${JSON.stringify(v)}; if (typeof applySolarTrkBasis==='function') applySolarTrkBasis();`);
+recSet('existPvMeteredCF', P.existPvMeteredCF, undefined, v=>`state.existPvMeteredCF=${+v};`);
+if (_trkShRec && _trkShRec[0]!=null) recSet('existPvTrackShare', _trkShRec[0], undefined, v=>`state.bldExistPvTrackShare=${+v};`); else RECSET.existPvTrackShare='not recorded (page default)';
+recSet('coalMslDesignFromYear', P.coalMslDesignFromYear, process.env.COAL_MSL_DESIGN_FROM!==undefined?+process.env.COAL_MSL_DESIGN_FROM:undefined, v=>`state.coalMslDesignFromYear=${+v};`);
+recSet('adequacyBasis', P.adequacyBasis, process.env.ADEQ_BASIS, v=>`state.bldAdequacyBasis=${JSON.stringify(v)};`);
+if (_congRec){
+  recSet('congestionOn', _congRec[0], process.env.CONG_OFF==='1'?false:undefined, v=>`state.congestionCurtailOn=${!!v};`);
+  recSet('congestionPct', _congRec[1], undefined, v=>`state.congestionCurtailPct=${+v};`);
+  recSet('congestionShape', _congRec[2], process.env.CONG_SHAPE, v=>`state.congestionShape=${JSON.stringify(v)};`);
+  recSet('psDayPumpMaxMW', _congRec[3], undefined, v=>`state.psDayPumpMaxMW=${v==null?'null':+v};`);
+} else RECSET.congestion='not recorded';
+console.log('recorded settings:', JSON.stringify(RECSET));
 // PV_TRK_CF=<target> (message 700 (b); a test, not a page setting): new tracking solar scaled hour by hour, clipped at 1, so its
 // twelve-year mean equals the target (0.3013: BW6 tracker bids' typical capacity factor, BW6_PV_TRK_BID_CF), the modelled years' twins
 // (weatherYearNational) and the metered twin (SOLAR_TRK_K) alike; existing utility solar's tracker share is re-derived, so its level stays
@@ -386,6 +413,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
+     r.recordedSettings=RECSET;
      r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(PVT?', new tracking solar at '+PVT:'')+(SSHIFT?', PVGIS solar '+SSHIFT+' min earlier':'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.cocCase=COC_USED; if (COC_USED!==P.cocCase) r.cocCaseRecorded=P.cocCase; r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
