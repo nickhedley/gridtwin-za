@@ -1,0 +1,23 @@
+2026-11-05T20:01:01Z settings snapshot written: /home/user/gtza-retime/harness/out/tsr_central/settings.env
+2026-11-05T20:01:01Z retime central piece, PID 612, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 21:51Z, MIN_LEFT 1500s, MAXP 6, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 26G, memory free 15G
+2026-11-05T20:01:01Z two_stage.sh PID 682
+2026-11-05T20:01Z two_stage K=4 N=25 FIRST=2026, shell PID 682
+2026-11-05T20:01:16Z step node PID 689
+2026-11-05T20:01:31Z solve started (highs_native.py 752)
+2026-11-05T20:34:56Z solve (highs_native.py 752) ended after about 1989s
+2026-11-05T20:42Z step 2026 (horizon 2030) rc=0 done
+2026-11-05T20:42:42Z node 689 ended, peak memory 2.4 GB
+2026-11-05T20:42:42Z step node PID 8331
+2026-11-05T20:43:13Z solve started (highs_native.py 8454)
+2026-11-05T21:23:25Z solve (highs_native.py 8454) ended after about 2411s
+2026-11-05T21:32Z step 2027 (horizon 2031) rc=0 done
+2026-11-05T21:32:57Z node 8331 ended, peak memory 2.5 GB
+2026-11-05T21:32:57Z step node PID 18722
+2026-11-05T21:32:57Z under 1500s left: stopped at the step boundary (node 18722, just started)
+2026-11-05T21:32Z step 2028 (horizon 2032) rc=0 NO OUTPUT
+2026-11-05T21:33:12Z node 18722 ended, peak memory 0.0 GB
+2026-11-05T21:33:12Z retime central piece ends: two_stage.sh rc=1, 2 of 15 steps done
+2026-11-05T21:33:16Z retime central piece, PID 18893, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 23:23Z, MIN_LEFT 1500s, MAXP 6, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 26G, memory free 11G
+2026-11-05T21:33:16Z two_stage.sh PID 18925
+2026-11-05T21:33Z two_stage K=4 N=25 FIRST=2026, shell PID 18925
+2026-11-05T21:33:31Z step node PID 18934
