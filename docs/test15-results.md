@@ -126,10 +126,24 @@ session's section above).
 
 #### Solver timing
 
-No clean comparison yet (the same LP both ways under the same load). Rough pairs, different LPs: Fossil-free step 2029 on parallel 48.8 min
-against the central's step 2029 pass 1 on serial 52.4 min, each beside one other solve; the annuity run's step 2026 on parallel 15.9 min
-beside one other solve, against the central's step 2026 on serial 8.5 min alone. The clean test (user, 4 Nov 2026): step 2026's LP
-(1faa0496d2) solved both ways, each alone on the machine, when the runs leave it idle.
+Clean test (user, 4 Nov 2026), run 5 Nov 2026 04:11 to 04:31 UTC with no run going: step 2026's LP dumped afresh with the central's
+settings (key 1faa0496d2, the LP the central's step 2026 solved on 4 Nov; 417,625 columns), then solved by highs_native.py serial (HiGHS's
+default dual simplex, no HIGHS_OPTS) and on parallel dual simplex (HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}), one after the other,
+nothing else solving (4 cores, 15 GB).
+
+| Solver | Wall time, s | Objective, R |
+|---|---:|---:|
+| Serial | 438.8 | 553,387,718,044.61 |
+| Parallel, 2 threads | 708.8 | 553,387,718,044.61 |
+
+- Parallel dual simplex is no faster on this LP: 1.62 times the serial time (270 s more).
+- Same answer: objectives within 2.2e-16 of each other, and all 125 build variables within 2e-11 MW. 6,933 dispatch columns differ by more
+  than 1 (largest 4,045, a pumped-storage level in 2028): different optima of the same cost, the builds unchanged. The central's own
+  solve of this LP on 4 Nov (serial, about 508 s to the 15-second poll) has the same objective to the digit and the same 2026 builds.
+- Caveat: one LP, the smallest in the runs (2026 to 2030, no stress windows), one solve each; the larger look-ahead LPs (35 to 50 min)
+  are not measured. Rough pairs from the runs, different LPs, each beside one other solve: Fossil-free step 2029 on parallel 48.8 min
+  against the central's step 2029 pass 1 on serial 52.4 min; the annuity run's step 2026 on parallel 15.9 min against the central's step
+  2026 on serial 8.5 min.
 
 #### Steps cut by a piece and relaunched
 
