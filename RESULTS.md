@@ -22725,14 +22725,14 @@ GCCA headroom, the region's distance multiplier x R364 within the TDP's headroom
 that beyond). The engine's flat rate: gridChargeR's charge per MW (bldGridAnn, connection annuity plus integration; bldGridCost is on in
 every preset) on the same MW, before the freed-coal credit. Scratchpad siting/probe.js.
 
-| Preset | Year | Panel mean tier, R/kW-yr | Engine flat rate, R/kW-yr | Gap |
-|---|---:|---:|---:|---:|
-| IRP's 2030 targets, grid delayed | 2030 | 223.7 | 411.8 | -45.7% |
-| IRP's 2030 targets | 2030 | 249.1 | 411.8 | -39.5% |
-| IRP path 2035 | 2035 | 284.2 | 401.1 | -29.2% |
-| Least-cost path 2035 | 2035 | 286.0 | 405.0 | -29.4% |
-| Deep decarbonisation 2035 | 2035 | 304.0 | 403.0 | -24.6% |
-| Fossil-free 2040 | 2040 | 351.3 | 412.3 | -14.8% |
+| Preset | Year | Panel mean tier, R/kW-yr | Engine flat rate, R/kW-yr | Gap | Engine net of the freed-coal credit, R/kW-yr (MW credited) | Gap to net |
+|---|---:|---:|---:|---:|---:|---:|
+| IRP's 2030 targets, grid delayed | 2030 | 223.7 | 411.8 | -45.7% | 151.4 (6,188 solar, 1,071 gas) | +47.8% |
+| IRP's 2030 targets | 2030 | 249.1 | 411.8 | -39.5% | 228.5 (7,259 solar) | +9.1% |
+| IRP path 2035 | 2035 | 284.2 | 401.1 | -29.2% | 241.9 (13,776 solar) | +17.5% |
+| Least-cost path 2035 | 2035 | 286.0 | 405.0 | -29.4% | 269.5 (13,776 solar) | +6.1% |
+| Deep decarbonisation 2035 | 2035 | 304.0 | 403.0 | -24.6% | 326.3 (13,776 solar) | -6.8% |
+| Fossil-free 2040 | 2040 | 351.3 | 412.3 | -14.8% | 312.2 (38,192 solar, 1,500 pumped storage) | +12.5% |
 
 - validate_invariants' siting check, restated with its cause (eb1c93a): the panel prices a megawatt on the tiers (KwaZulu-Natal at the
   shallow rate, the Northern Cape beyond the plan), and Fossil-free 2040's gap equals the recorded -14.79% within 0.01 points. Clean
@@ -22740,6 +22740,21 @@ every preset) on the same MW, before the freed-coal credit. Scratchpad siting/pr
   (-18.39%).
 - Over 10% on every preset: reported to the user before the PR with a proposed line for the panel. The panel's current sentence ('The
   scenario's system cost charges new wind and solar by where developers have applied, not by this choice') has been wrong since 710 (c).
+- Net of the freed-coal credit (message 716 (b)): the credit gridChargeR takes on each preset (Repurpose on in all six; the freed coal
+  MW to new build highest charge first, solar's charge just above wind's, so solar takes it), attributed to the wind, solar and offshore
+  it falls on, over their MW; gas and pumped storage credited are left out of the rate. gridChargeR equals this reconstruction on all
+  six (scratchpad siting/probe_net.js). Net, the panel's tiers sit above the engine on five presets (+6% to +48%) and below on one
+  (-7%): the credit is as large as the tiers' discount and depends on coal retired, so the sign flips with the preset. The restated
+  check keeps the gross rate (the rate per MW, the panel's own basis, which has no credit); the net figure gives no reason to change it.
+- The panel's line (user, message 716 (a), build 2026-11-05j, 04a9cf7): 'Tiers: a reduced charge within existing headroom, the region's
+  rate within the transmission plan, half as much again beyond. System cost uses one national rate per technology, less connections
+  freed by retired coal, as the optimiser does, regardless of siting.' Checked against gridChargeR: the three tiers match txTierCharge
+  (0.25, the region's multiplier, 1.5 times it); one national rate per technology holds on the page and its presets (bldGridAnn or the
+  integration charge; batteries and rooftop at none); the credit applies while 'Repurpose retired coal connections' is on (the default,
+  and on in every preset), none when it is off; nothing sited on the panel reaches gridChargeR. Pathway runs differ in two ways the page
+  does not show: wind on the Cape allowance (1,580 MW in the final passes) pays no integration charge, a regional exception; and wind
+  is barred from freed connections (RP_EXCL=wind), so the credit is the LP's own choice, all solar and pumped storage. The result
+  note's spaced hyphen is an en dash.
 
 ### Avon and Dedisa's fixed O&M (message 715 (b)): none in the years otherIppR charges their contract, a judgement on indirect evidence; R361.8m a year less in 2026-2030; the LP unchanged; Avon's contract runs past the charge's end
 
@@ -22754,7 +22769,42 @@ every preset) on the same MW, before the freed-coal credit. Scratchpad siting/pr
   with the pair out of the fleet. The build LP's text is unchanged (hashes at the page state, with the peaker and gas options on, and with
   c6-like settings; scratchpad siting/lphash.js), so the LP key does not move; pathway checks change only in 2030.
 - The dates do not agree. Dedisa's contract ends in 2030 and Avon's on 20 July 2031 (the model's own avonEndYear 2031 and avonEndDoy 200,
-  which avonDedisaMustRunMW already uses), while the charge stops after 2030. Proposed, awaiting the user's word: in 2031 the share is
+  which avonDedisaMustRunMW already uses), while the charge stops after 2030. Proposed, and applied on the user's word (message 716 (c), build 2026-11-05j, 04a9cf7): in 2031 the share is
   Avon's MW share times the contract's share of the year, 670 / 1,005 x 200 / 365 = 0.365: R794.1m of contract charge and 367 MW exempt
   from fomDiesel (-R132.2m), +R661.9m in 2031. That splits the R2,174m by MW, a judgement (the MYPD 6 line gives the total only).
   Dedisa's end date within 2030 is not in the model, which charges the whole year.
+  Measured, 05i against 05j: +R662.0m in 2031 (fixed O&M -R132.2m), no change in any other year; the build LP's text unchanged at the
+  page state, with the peaker and gas options on and with c6-like settings (the same three hashes as before 05i), so the LP key does
+  not move.
+
+### Gas start costs the model leaves out (message 716 (d)): R0.49-1.58bn a year in 2040 on the every-change pass (every start hot to every start cold), R1.12bn with the offline bands at coal's thresholds; report only
+
+Settings: the every-change pass (17f42a5, scratchpad c710/all.json), its engine check at 2040 by claude/twin-retime dea3623 (pathcheck's
+gas record with MW started by time offline: output in 10 MW layers, a layer started when output rises through it, offline since output
+last covered it), K=20, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1; unserved 12.21 GWh as before. Priced by
+harness/pathway/gas_starts.js: NREL/Intertek APTECH (Kumar et al., NREL/SR-5500-55433, 2012), lower-bound start costs per MW of
+capacity, 2011 US dollars, medians, excluding fuel, as read by the user's advisor (message 716 (d); not yet checked against the report
+here): large frame combustion turbine hot $32, warm $126, cold $103; aero-derivative $19, $24, $32; combined cycle $35, $55, $79. To
+January 2026 rands at the page's US CPI-U 325.252 / 224.939 and R16.50/USD (x23.858): large frame R763, R3,006, R2,457 per MW started.
+Open-cycle gas and diesel open cycle at the large frame rates (the IRP's GE 9F.05; the existing Siemens frame peakers).
+
+| 2040, every-change pass | Open-cycle gas (4,342 MW) | Diesel open cycle (4,669 MW) |
+|---|---:|---:|
+| MW started a year | 507,070 | 135,225 |
+| of it offline below 12 h / 12-40 h / 40-72 h / 72 h or more | 51% / 20% / 9% / 20% | 37% / 17% / 6% / 40% |
+
+| R bn a year, 2040 | Both |
+|---|---:|
+| every start hot | 0.49 |
+| by time offline, hot below 12 h, warm 12-40 h, cold beyond (coal's thresholds, a stand-in) | 1.12 |
+| every start cold | 1.58 |
+| every start at the highest rate (warm, $126) | 1.93 |
+| aero-derivative rates by time offline | 0.37 |
+
+- 0.15-0.49% of the engine's R320.5bn (0.35% by the bands). The advisor's estimate, R0.5-1.6bn, is the hot-to-cold range.
+- Hot, warm and cold by time offline for gas turbines are not in the advisor's reading; the bands use the large subcritical coal unit's
+  thresholds (table 1-1) as a stand-in. A layer not yet run in the year counts as 72 h or more, which adds to the cold share in a year's
+  first starts.
+- Start fuel is excluded from these costs; the engine's gas fuel per MWh already carries no start fuel.
+- Report only: no change to the LP or the engine. The pack's Known limitations carry the range. The fin pass (10a98e2) is the final
+  build; the same script on its engine check follows when it has run.
