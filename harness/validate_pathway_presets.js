@@ -36,15 +36,18 @@ const SEED_BASE = 71830529;   // pathcheck.js's default, with which both engine 
 // the weather files on SAST with the leap years fixed, the metered tracking twin scaled and existing utility solar at Eskom's metered
 // mean (message 684) move the presets' cost by up to 1.1% and Least-cost's and Deep's unserved, so the 31c checks no longer describe
 // the page (RESULTS 'Preset engine checks on the fixed weather files').
+// From build 2026-11-04b the engine checks are those run on 04b, each for its preset's year (pathcheck.js LNG=1 GRID=1): the six-constant
+// wind correction is on by default (messages 693 (a), 696 (a)), so the page and the engine read the corrected modelled years and the 03d
+// checks (stored wind) no longer describe the page.
 const RUNS = [
-  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_03d_y2030.json' },
-  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_03d_y2035.json' },
-  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_03d_y2035.json' },
+  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_04b_y2030.json' },
+  { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_04b_y2035.json' },
+  { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_04b_y2035.json' },
   // The hypothetical presets from 1 Nov 2026 (user, messages 537 (f) and 555): optimised builds at relaxed build rates (harness/pathway/opt/),
   // checked against their engine checks on 31c (the 1 Nov corrections; message 596)
   // Deep from build 2026-11-01d: the no-gas run calibrated to 40 Mt from 2035 (message 599 (a)); its 31c check was made on gtza-c31l.
-  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035nogas_t40n_r3_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035nogas_t40n_r3_c6e_03d_y2035.json' },
-  { name: 'Fossil-free 2040', year: 2040, build: 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_03d_y2040.json' },
+  { name: 'Deep decarbonisation 2035', build: 'harness/pathway/opt/pathway_s_hypo_deep2035nogas_t40n_r3_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_deep2035nogas_t40n_r3_c6e_04b_y2035.json' },
+  { name: 'Fossil-free 2040', year: 2040, build: 'harness/pathway/opt/pathway_s_hypo_ff2040_c6e.json', check: 'harness/pathway/opt/pathcheck_s_hypo_ff2040_c6e_04b_y2040.json' },
 ];
 
 let npass = 0, nfail = 0; const fails = [];

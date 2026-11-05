@@ -1354,7 +1354,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
 <script src="nodal/nodal_engine.js?v=26"></script>
-      <script src="nodal/nodal_dispatch.js?v=30"></script>
+      <script src="nodal/nodal_dispatch.js?v=31"></script>
       <script>
 
 
@@ -6065,13 +6065,14 @@ const FIXED = {
   // itself) X is 0. Rooftop keeps fixed tilt. bldExistPvTrackShare: null, the derived share on modelled days and 0 on the metered
   // profile's days; a number (EXIST_PV_TRK, a test) applies that share on every day.
   existPvMeteredCF:0.2558, bldExistPvTrackShare:null,
-  // Modelled wind's correction (user decision, 3 Nov 2026, message 684 (d): adopted in principle as a setting, off until Nick has the
-  // report; the uncorrected series stays as a sensitivity). 1: each modelled year's national wind goes through nodal/wind_corr_table.json
-  // (five constants fitted on ESK19679 alone, April 2022 to December 2025: the existing fleet's output inverted to an effective speed on
-  // the V90/2000 curve, a monthly cosine offset, speeds above 7.0 m/s compressed by 0.80, back through the curve; RESULTS, 684), new
-  // wind on the national modern-turbine map of the corrected series. The metered profile is not touched. Set it before the weather
-  // years are first used. 0: off.
-  wxWindCorr:0,
+  // Modelled wind's correction (user decisions: 3 Nov 2026, message 684 (d), a setting; 4 Nov 2026, messages 693 (a) and 696 (a), on by
+  // default with the six-constant table, for the twelve-year means, the tail, the stress windows and the engine; the uncorrected series
+  // stays as a sensitivity, 0). 1: each modelled year's national wind goes through nodal/wind_corr_table.json (six constants fitted on
+  // ESK19679 alone, April 2022 to December 2025: the existing fleet's output inverted to an effective speed on the V90/2000 curve, a
+  // monthly cosine offset faded in between 3.0 and 4.0 m/s so the calmest hours stay as stored, speeds above 7.0 m/s compressed by 0.80,
+  // back through the curve; RESULTS, 684 (d), 686 (b), 691 (b)), new wind on the national modern-turbine map of the corrected series.
+  // The metered profile is not touched. Set it before the weather years are first used.
+  wxWindCorr:1,
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -11432,7 +11433,9 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // Tracking solar re-measured 4 Nov 2026 (build 2026-11-03d): 0.28590 to 0.28595 (0.2859546), after the leap-year fix put 31 December
 // back in 2016, 2020 and 2024 (message 684 (b)). Wind (0.4250020) and fixed tilt (0.2236305) moved within validate_weather's 5e-5 and
 // are kept.
-const NEW_WIND_CF_12Y = 0.42499, NEW_PVTRK_CF_12Y = 0.28595;
+// Wind re-measured 4 Nov 2026 (build 2026-11-04b): 0.42499 to 0.42006 (0.4200610), the six-constant wind correction on by default
+// (messages 693 (a), 696 (a)). It follows the default: a run with the correction off (WX_WINDCORR=0) keeps this value.
+const NEW_WIND_CF_12Y = 0.42006, NEW_PVTRK_CF_12Y = 0.28595;
 // The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
 BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
 BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };
@@ -13614,6 +13617,15 @@ function bldSolveLP(lp){
 // The build a solve implies, as slider overrides - the same mapping bldApplyToSliders uses,
 // including the coal the optimiser assumed, so the adequacy test is apples to apples.
 // The ASTR reserve's post-2030 growth term is measured from the run's own 2030 wind and solar fleet (user, message 86).
+// An enrolment the build LP chose (vppp_<y> or gy_<y>, MW), read from a solution (message 698 (a)): the solver returns a variable at its
+// lower bound 0 to within its feasibility tolerance (test 15's step 2028 gave vppp_2028 = -9e-11 MW, which the engine's 'must be 0 or
+// more' stopped on), so a value below 0 by no more than BLD_ENROL_TOL_MW is read as 0; a larger negative is not round-off and stops.
+const BLD_ENROL_TOL_MW = 1e-6;
+function bldEnrolPrimal(cols, name){
+  const v = +(((cols || {})[name] || {}).Primal || 0);
+  if (!(v >= -BLD_ENROL_TOL_MW)) throw new Error(name + ' is ' + v + ' MW: below 0 by more than round-off (' + BLD_ENROL_TOL_MW + ' MW)');
+  return v < 0 ? 0 : v;
+}
 function bldAstrVreRef(cols, y, st){
   if (y <= ASTR_RESERVE.y1) return {};
   let w = 0, pv = 0;
@@ -13653,8 +13665,8 @@ function bldBuildToState(res){
   if ((_ps.bldPeakerRet | 0) > 0) o.dieselDecomMW = bldPeakerDecomMW(endY, _ps, res && res.Columns);
   if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
   // The enrolled battery energy in the final year (vppp_<y> x btmHours, V1), only when the option is on (messages 621-625).
-  if ((_ps.gyBuildOn | 0) > 0) o.gyEnrolMW = (((res && res.Columns && res.Columns['gy_' + endY]) || {}).Primal || 0);   // messages 633-635
-  if ((_ps.vppBuildOn | 0) > 0) o.vppEnrolGWh = (((res && res.Columns && res.Columns['vppp_' + endY]) || {}).Primal || 0) * _ps.btmHours / 1000;
+  if ((_ps.gyBuildOn | 0) > 0) o.gyEnrolMW = bldEnrolPrimal(res && res.Columns, 'gy_' + endY);   // messages 633-635; round-off, 698 (a)
+  if ((_ps.vppBuildOn | 0) > 0) o.vppEnrolGWh = bldEnrolPrimal(res && res.Columns, 'vppp_' + endY) * _ps.btmHours / 1000;
   if ('gfm' in tot || 'scc' in tot || 'scn' in tot){ o.ssGfmMW = Math.round(tot.gfm || 0); o.ssCondMVA = Math.round((tot.scc || 0) + (tot.scn || 0)); }   // 'inertia' builds
   Object.assign(o, bldAstrVreRef(res && res.Columns, endY, _ps));
   return o;
@@ -13737,9 +13749,9 @@ function bldStateForYear(res, y, opts){
     ...bldAstrVreRef(res.Columns, y, opts.state),
     windCapeMW: Math.round(Object.entries(res.Columns || {}).reduce((a, [c, v]) => { const m = c.match(/^cw_([0-9]+)$/); return a + (m && +m[1] <= y ? (v.Primal || 0) : 0); }, 0)),
     // The enrolled battery energy the build chose for this year (vppp_<y> x btmHours; V1), only when the option is on (messages 621-625).
-    ...(((opts.state.vppBuildOn ?? FIXED.vppBuildOn) | 0) > 0 ? { vppEnrolGWh: (((res.Columns || {})['vppp_' + y] || {}).Primal || 0) * (opts.state.btmHours ?? FIXED.btmHours) / 1000 } : {}),
-    // The geyser control MW the build chose for this year (gy_<y>), only when the option is on (messages 633-635).
-    ...(((opts.state.gyBuildOn ?? FIXED.gyBuildOn) | 0) > 0 ? { gyEnrolMW: (((res.Columns || {})['gy_' + y] || {}).Primal || 0) } : {}),
+    ...(((opts.state.vppBuildOn ?? FIXED.vppBuildOn) | 0) > 0 ? { vppEnrolGWh: bldEnrolPrimal(res.Columns, 'vppp_' + y) * (opts.state.btmHours ?? FIXED.btmHours) / 1000 } : {}),
+    // The geyser control MW the build chose for this year (gy_<y>), only when the option is on (messages 633-635); round-off, 698 (a).
+    ...(((opts.state.gyBuildOn ?? FIXED.gyBuildOn) | 0) > 0 ? { gyEnrolMW: bldEnrolPrimal(res.Columns, 'gy_' + y) } : {}),
     // System strength builds to y ('inertia' mode only; a 'sync6' LP has none): grid-forming MW and condenser MVA, for the engine's floor.
     ...(('gfm' in tot || 'scc' in tot || 'scn' in tot) ? { ssGfmMW: Math.round(tot.gfm || 0), ssCondMVA: Math.round((tot.scc || 0) + (tot.scn || 0)) } : {}),
     ...(opts.gasFuelR ? { costCcgt: bldGasFuelR(opts, y, { ...FIXED, ...opts.state }) } : {}),
@@ -15678,23 +15690,25 @@ async function _loadWeatherYears(){
       }
     } catch (e) { /* handled below */ }
     try { await buildTxCurve(); } catch (e) { bldTxCurve = null; }
-    // Tracking solar for new utility solar (TODO 14aw). Optional: without it the tracking option raises an error.
-    try {
-      const rt = await fetch('nodal/profiles_solar_tracking.json?v=' + (window.DATA_V || '7'));
-      if (rt.ok) { bldSolarTrk = await rt.json(); bldBuildSolarTrkRatio(); }
-    } catch (e) { bldSolarTrk = null; }
-    // Modern-turbine wind for new wind (bldWindModern). Without it, new wind with the switch on raises an error.
-    try {
-      const rw = await fetch('nodal/profiles_wind_modern.json?v=' + (window.DATA_V || '7'));
-      if (rw.ok) { bldWindMod = await rw.json(); bldBuildWindModMap(); }
-    } catch (e) { bldWindMod = null; }
-    // The wind correction's table (wxWindCorr). Optional: without it the setting raises an error.
+    // The wind correction's table (wxWindCorr). Optional: without it the setting raises an error. Loaded before the tracking and
+    // modern-turbine twins (message 696 (a)): their set-up reads the national series, which with the correction on needs the table;
+    // loaded after them, the set-up threw, its catch dropped the tracking file, and new tracking solar fell back to the map (0.228).
     try {
       const rc2 = await fetch('nodal/wind_corr_table.json?v=' + (window.DATA_V || '7'));
       if (rc2.ok){ const d2 = await rc2.json();
         if (!(Array.isArray(d2.table) && d2.table.length === 12 && d2.table.every(r => r.length === d2.grid.n))) throw new Error('nodal/wind_corr_table.json: 12 rows of grid.n values');
         WIND_CORR_TABLE = { t: d2.table, n: d2.grid.n }; }
     } catch (e) { WIND_CORR_TABLE = null; console.error('[GridTwin]', e.message); }
+    // Tracking solar for new utility solar (TODO 14aw). Optional: without it the tracking option raises an error.
+    try {
+      const rt = await fetch('nodal/profiles_solar_tracking.json?v=' + (window.DATA_V || '7'));
+      if (rt.ok) { bldSolarTrk = await rt.json(); bldBuildSolarTrkRatio(); }
+    } catch (e) { bldSolarTrk = null; console.error('[GridTwin] tracking solar not loaded:', e.message); }
+    // Modern-turbine wind for new wind (bldWindModern). Without it, new wind with the switch on raises an error.
+    try {
+      const rw = await fetch('nodal/profiles_wind_modern.json?v=' + (window.DATA_V || '7'));
+      if (rw.ok) { bldWindMod = await rw.json(); bldBuildWindModMap(); }
+    } catch (e) { bldWindMod = null; console.error('[GridTwin] modern-turbine wind not loaded:', e.message); }
     if (!bldWxWeights || !bldWxWeights.wind || !bldWxWeights.solar) {
       bldWxWeights = null;
       console.warn('[GridTwin] Weather years loaded but nodal/regional_renewable_capacity.json '
@@ -22244,7 +22258,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-04a';
+const BUILD_STAMP = '2026-11-04b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
