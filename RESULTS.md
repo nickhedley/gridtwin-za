@@ -22593,3 +22593,25 @@ so it compares with run (6)'s costGrid.
 2035 sits on the standard; the loop's 2-draw verdict passed it (message 711's rule would top it up to 20 draws and send it to a second
 pass). No change misses 8 Nov: every one is in this pass. Not in it: coal's part-load factor (710 (b), Nick's call) and new wind's
 capacity factor (7 Nov).
+
+### New wind's capacity factor on the final basis (message 710 (g)): at the bids' 37.24% solar is 6.9 GW higher in 2040 and the LP's cost R49bn higher, as run (3) at R150
+
+The pass with every change (17f42a5, build 2026-11-05f, curtailment price 0; 'Each change sized on run (6)') against the same with new
+wind at the BW6 bids' 37.24% (WIND_CORR=bw6); run (6)'s settings otherwise; pass 1, two pieces (10:59-13:42 UTC beside a second solve;
+the loop's 2-draw verdict failed a year, 'pass limit reached'); engine check as run (6)'s (13:47-13:56 UTC).
+
+| 2030 / 2035 / 2040 | 42.0% (the model's) | 37.24% (the bids') |
+|---|---|---|
+| utility solar, GW | 6.7 / 17.7 / 24.8 | 7.2 / 20.3 / 31.7 |
+| wind, GW | 9.7 / 27.2 / 40.7 | 7.2 / 24.7 / 40.3 |
+| lithium, GW; GWh | 1.5 / 8.8 / 11.0; 3.7 / 38.2 / 60.9 | 1.8 / 8.8 / 14.4; 3.7 / 44.8 / 87.2 |
+| open-cycle gas and diesel 2040, MW; coal retired early | 4,342 + 1,269; 531 | 3,118 + 1,525; 0 |
+| unserved, GWh (se), limit 20 | 1.98 / 20.08 (2.23) / 12.21 | 1.91 / 17.68 (2.26) / 10.50 (1.47) |
+| curtailment, TWh | 1.64 / 10.19 / 23.99 | 0.99 / 7.86 / 20.69 |
+| engine cost, R bn | 243.18 / 270.78 / 320.51 | 242.96 / 279.00 / 330.91 |
+| CO2, Mt | 131.8 / 80.0 / 52.7 | 142.3 / 92.1 / 52.3 |
+| LP objective, R bn | 1,524.7 | 1,573.7 |
+
+The capacity factor moves 2040 solar by 6.9 GW and the LP's cost by R49.1bn on the final basis, against 6.6 GW and R48.7bn in run (3)
+(R150, old code): removing the curtailment price and the 707 changes leave the size of the 7 Nov decision where it was. At 37.24% less
+wind is built before 2035, coal runs more (CO2 +10 to +12 Mt in 2030-2035) and the engine's cost is R8-10bn a year higher from 2035.
