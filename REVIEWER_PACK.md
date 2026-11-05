@@ -143,11 +143,16 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 - Curtailed renewables are not paid, so curtailment looks free: deemed energy is not in the engine's cost, which pays REIPPPP's tariff on
   delivered energy only. Comparisons across curtailment levels use the build LP's objective or a resource-cost column (message 691 (i)).
 - Wind's build rate is limited, and the limit binds: on the central's current build (test 8) new wind sits on its yearly limit in 10
-  of 15 years, 2029-2038, so wind's share in those years is the limit's, not the economics'. The limit is 2,500 MW a year to 2030 (the
-  'deliverable' pace: the Renewable Energy Masterplan's ambition of roughly 5 GW a year of wind and solar together; the split between
-  wind and solar is ours) and 3,500 MW a year from 2031 (IRP 2025's highest yearly wind addition, Table 1, which IRP 2025 reaches only
-  from 2039; applying it from 2031 is ours; decision of 13 Oct 2026). Solar's yearly limit binds in 2030-2031 only (message 701 (f)).
+  of 15 years, 2029-2038, so wind's share in those years is the limit's, not the economics'. The limit is 2,500 MW a year to 2030 and
+  3,500 MW a year from 2031. Source: IRP 2025, Table 1, whose highest yearly wind addition is 3,500 MW, reached only from 2039; applying
+  it from 2031 is ours. The pace to 2030, 2,500 MW of wind and 2,000 MW of solar a year, is our split (decision of 13 Oct 2026). Solar's
+  yearly limit binds in 2030-2031 only (message 701 (f)).
 - Restarts after forced outages are not yet costed.
+- Open-cycle gas and diesel run far less in the engine than at Eskom: 2.2 against 3.4 TWh in the 2025 replay (34% below) and 0.2 against
+  0.8 TWh in January-August 2026 (80% below). Eskom also runs its turbines for reserve, unit trips and network constraints, which a
+  single-node merit-order engine does not represent (RESULTS 'Backcast').
+- Load shedding: the 2025 replay sheds 1 GWh and interrupts 90 GWh of load against Eskom's 390 GWh of load shedding and 70 GWh of
+  interruptible load in 2025; the engine does not reproduce 2025's hour-by-hour coal breakdowns (RESULTS 'Backcast').
 - No emissions compliance cost on coal running past 2030.
 - Options the optimiser cannot choose: The build LP cannot yet choose coal flexibility, virtual power plants, demand response (interruptible or shifted load) or a general long-duration storage option.
 - Degradation is not yet modelled. Meridian's estimates are 0.3% a year for wind and 0.5% for solar PV.
