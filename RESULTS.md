@@ -22827,3 +22827,31 @@ loops/ext_*.json.
   move on the same build.
 - The 7 Nov loops (720 (b)) each use the list recomputed on this build for its own reference, the baseline included, so the reference
   comparison is on one method. The final key's extremes are recomputed on the chosen reference as planned (8-9 Nov).
+
+### The fin pass (message 713 (c)): coal's part-load factor and the verdict rule together, against the every-change pass: adequate at pass 1; 2035 just inside the standard; LP objective +R25.1bn, engine costs within R0.3bn a year
+
+Settings: claude/twin-retime 10a98e2 (build 2026-11-05h: the every-change pass plus FIXED.bldCoalPartLoad, and VERDICT_TOPUP {start 2, steps
+[10, 20], frac [0.25, 0.5]} in env_c6.sh), run (6)'s settings and the every-change pass's extreme days (scratchpad c710/solve_fin.sh fin),
+pass 1 (MAXP=1); three pieces (14:45-16:20 UTC; resumed 19:32-21:07 UTC after an idle stop and a restart, 3 h 12 min lost; 21:08-21:14 UTC
+to optimal), then the loop's verdict (35 minutes) and the engine check (K=20, 2030/2035/2040, 21:43-21:54 UTC). Committed to
+claude/c7-runs harness/pathway/final (pathway_fin_05h.json, engine_fin_05h.json).
+
+| every change -> fin | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| wind, GW | 9.75 -> 9.75 | 27.25 -> 27.25 | 40.72 -> 41.53 |
+| utility solar, GW | 6.68 -> 7.18 | 17.71 -> 18.23 | 24.83 -> 24.75 |
+| lithium, GW; GWh | 1.48 -> 1.59; 3.72 -> 3.72 | 8.81 -> 8.96; 38.24 -> 39.97 | 11.00 -> 11.07; 60.92 -> 63.17 |
+| open-cycle gas + diesel open cycle, GW | 0 | 0 | 4.34 + 1.27 -> 4.42 + 1.18 |
+| engine unserved, GWh (se), limit 20 | 1.98 -> 2.04 (0.63) | 20.08 -> 19.58 (2.19) | 12.21 -> 11.21 (1.58) |
+| engine cost, R bn | 243.18 -> 242.98 | 270.78 -> 270.97 | 320.51 -> 320.81 |
+| CO2, Mt | 131.8 -> 130.9 | 80.0 -> 78.8 | 52.7 -> 51.0 |
+| coal, TWh | 117.4 -> 116.6 | 70.5 -> 69.4 | 45.3 -> 43.8 |
+| curtailment, TWh | 1.64 -> 1.93 | 10.19 -> 10.36 | 23.99 -> 25.18 |
+
+- LP objective R1,524.7bn -> R1,549.8bn (+R25.1bn), about the part-load factor's own +R25.2bn on run (6) (RESULTS 'Coal's part-load
+  penalty in the LP on run (6)'): the LP now prices coal's fuel and carbon as the engine does, so less coal and a little more solar and
+  storage; the engine, which already charged part-load, moves by R0.3bn a year or less.
+- The verdict rule's draws, by year (draws: mean GWh): 2026-2031 and 2036 at 2 draws (0 to 4.7); 2032, 2033, 2037, 2039 topped up to
+  10; 2034 (16.96 at 20), 2035 (13.95), 2038 (9.23), 2040 (11.93) to 20. Adequate at pass 1; no year at or above the limit.
+- 2035 moves from just above the standard (20.08) to just inside (19.58), within one standard error of it either way.
+

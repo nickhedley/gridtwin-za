@@ -10,4 +10,7 @@ here is an hourly Eskom-derived series.
 | engine_every_change_05f.json | its engine check | pathcheck.js at 17f42a5 | K=20, YEARS=2030,2035,2040, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 |
 | engine_every_change_05f_gas.json | the same check with the gas record by technology (r.gasDetail) | pathcheck.js at claude/twin-retime 5abefa2 (harness only; unserved identical to the digit) | as above |
 
-The fin pass (coal's part-load factor and the verdict rule, build 2026-11-05h) and the 7 Nov loops follow here when they finish.
+| pathway_fin_05h.json | the fin pass: the every-change pass plus coal's part-load factor in the LP (FIXED.bldCoalPartLoad) and the verdict rule (VERDICT_TOPUP {start 2, steps [10, 20], frac [0.25, 0.5]}); adequate at pass 1 (messages 713, 720) | claude/twin-retime 10a98e2, build 2026-11-05h | as the every-change pass (the same extremes), env_c6.sh's VERDICT_TOPUP |
+| engine_fin_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 |
+
+The 7 Nov loops follow here when they finish.
