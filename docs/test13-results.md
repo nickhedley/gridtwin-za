@@ -104,7 +104,27 @@ harness/out/mga2/warm, d18 and nopre. No GitHub Actions.
   12 MW a minute, with 31,316 dual infeasibilities left. Piece 3 ended at 22:26 UTC, not solved, at 26,380 MW (falling about 10 MW
   a minute at the end), basis kept. Piece 4 started at 22:26 UTC; the container restarted at 22:28 UTC and it restarted from the
   same basis at 22:29 UTC. Piece 4, 22:29-00:21 UTC: not solved, 24,812 MW at its end (falling about 14 MW a minute), dual
-  infeasibilities down to 7,285 (sum 0.013); basis kept. Piece 5 from 00:22 UTC.
+  infeasibilities down to 7,285 (sum 0.013); basis kept. Piece 5, 00:22-01:02 UTC: Optimal after 2,346 s.
+- Result: solved. HiGHS time across the pieces 29,117 s (8.1 h: 6,692, 6,692, 6,696, 6,691 and 2,346 s, plus about 2 min lost to the
+  restart), 16:47 UTC on 4 November to 01:02 UTC on 5 November, always beside a second solve. Primal simplex runs on one thread.
+  With the base re-solve that made the basis (4,672 s), 9.4 h. It does not fit inside a piece.
+- Wind 2040 minimum at 1% (out/mga2/warm/wind_2040_min_0.01.json, out/mga2/warm/summary.json; LP key 8a0389e6d5, MGA_FSTAR
+  1,521,521,735,393.8196): wind standing in 2040 24,605 MW against the base's 39,918 MW (-15,313 MW). The cost row binds at +1.000%.
+  No new wind is built from 2036 on. New-build MW standing in 2040:
+
+  | Run | Wind | Solar | Lithium MW | Lithium MWh | LDES | Coal | Gas |
+  |---|---|---|---|---|---|---|---|
+  | Base | 39,918 | 23,927 | 8,716 | 43,325 | 1,650 (pumped storage 1,500, iron-air 150) | 17,670 | 6,533 |
+  | Wind 2040 minimum, 1% | 24,605 | 43,139 | 13,605 | 85,794 | 1,500 (pumped storage) | 17,890 | 5,017 |
+
+  Engine check: adequate. Mean unserved energy, GWh (2026-2029 zero):
+
+  | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | 2.5 | 5.4 | 3.9 | 7.8 | 17.8 | 16.7 | 9.7 | 10.4 | 12.2 | 14.1 | 19.4 |
+
+  On a provisional basis (the metered tracking twin is being fixed, which will change this LP's key): a method result, not a range for
+  the note.
 - The run's log says "start from basis none (cold)": that line reports only pathway's own resume basis. The solver process was
   checked to hold HIGHS_BASIS_IN pointing at the saved base basis.
 
