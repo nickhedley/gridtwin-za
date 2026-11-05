@@ -912,6 +912,28 @@ own RoCoF limit once NTCSA sets one, in place of the 1 Hz/s borrowed from Irelan
 (d)), if it does not make the note. The reviewer pack's Known limitations carry a line on what the minimum version simplifies
 (574 (b)).
 
+14mw. From messages 704-709 (5 Nov 2026; RESULTS entries of 5 Nov). Done on claude/twin-retime (build 2026-11-05b, then 937ff2e): the
+PVGIS re-timing (csi_day), rooftop on one shape, CSP and offshore in the LP on the engine's series, the forecast's diesel key, pathcheck
+re-applying recorded settings, the double division and tail ranking, profiles.json's note, validate_series.js (707 (c)) with the existing
+solar fault it found, the capacity files from Q1 2026/27 (705). Open: (a) 707 (d), each change sized on run (6): engine-only runs
+(running), then one LP pass with all of them once memory frees (after the 55-day piece stops); flag by 7 Nov any change that misses 8 Nov;
+(b) the pull request: full suite, stored panels, visible text, CLAUDE.md's suite list with validate_series.js; (c) 704 (c)'s three loops
+and test 14's cells after the pull request; (d) new wind's capacity factor, Nick's decision 7 Nov (changes the key); (e) 709 after the
+pull request's checks.
+
+14mx. After the note: on the page (rooftop add-back not applied) the LP's tail and stress days read PROFILES.demand while the engine on a
+weather year reads twelveYearDemand(); at most 20.0 MW apart (K 1.0037, rooftop on one shape), measured by validate_series.js and not
+checked. Make both read one series. Also: with new solar on fixed tilt (bldPvTracking 0), a clustered day of the metered reference gives
+new solar the metered fleet's shape, which carries trackers; the central has tracking on, so it does not arise there.
+
+14my. The loop's verdict on its own draws (704 (d); RESULTS 'The loop's verdict and its draws'): 2 a year, a year at or above half the
+standard topped up to 10 and then 20, the verdict on the topped-up mean; the LP's stress-target draws (ST_N) unchanged so the key does not
+move. Build behind a setting, test on run (6) from its cached pass 1 (passes, time), and decide before the 10-13 Nov route.
+
+14mz. After the note (707 (e)): the bias correction's 1.0753 is applied and then clipped at 1, so Hydra Central's 2025 wind sits at full
+output for 165 hours; fit the scale under the cap (as bldScaleTo does) or record the clipped energy. Rooftop weighted by its own regional
+capacity and tilts rather than the utility fleet's weights (707 (a) 1).
+
 14mv. From messages 699-703 (4-5 Nov 2026; HANDOVER 'For Nick, 5 Nov morning'; RESULTS entries of 4-5 Nov). Done: the lag test
 (701 (b)); the twin fix on claude/twin-fix with validate_shapes.js (702 (b)); runs (1)-(6) of 700 (b) on the old and fixed twins; the
 c7-to-test-8 split with the solar line (699 (c), 700 (d)); metered 2024 on the fixed twin (701 (g)); the backcast and fault log (702);

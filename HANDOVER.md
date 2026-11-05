@@ -109,9 +109,10 @@ Decisions for Nick, with recommendations:
    solar from 23.9 to 30.5 GW and cost by R49bn; it changes the LP key, so it joins the freeze list. Recommend: 42.0% stays central for
    now, run (3) reported as the sensitivity; before 9 Nov, check what the recent bid windows' farms deliver against their bid capacity
    factors (public output by bid window, for example the IPP Office's reports) and decide on that.
-3. PVGIS re-timing (701 (b)): the ten PVGIS years run about 25 minutes late and the 2024-2025 tracking twins early. Re-timing makes the
-   engine 10-28% more reliable on test 8's fleet (the lag is conservative) but changes the key. Recommend: re-time (decision 6 Nov, fix
-   7 Nov), because the note's evening-peak figures depend on it.
+3. PVGIS re-timing (701 (b)): the ten PVGIS years run about 25 minutes late and the 2024-2025 tracking twins early. Re-timing changes
+   the key. Corrected 5 Nov (704 (i)): the re-timing as built (csi_day) does not make the engine 10-28% more reliable (that came from the
+   flat 25-minute shift test); on test 8's fleet 2035 moves +3.6% (inside one standard error) and 2040 -16%, and the shortfall moves into
+   the evening (18:00-23:00 from 45-47% to 63-66% of it). Decided by Nick (704 (a)): re-time; done on claude/twin-retime.
 4. The reference: not confirmed (704 (c)). Metered 2024 on the fixed twin shows sensitivity to the year, not agreement. The full-loop
    comparison of three references and test 14 follow (704 (c)).
 5. Route timing (10-13 Nov), slip flag: no slip yet, but the margin is thinner. On the fixed twin a pass took 80-86 minutes beside a

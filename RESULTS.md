@@ -22316,3 +22316,105 @@ The twin's seasonal shape, fleet basis, after re-timing (page probe; monthly mea
 - July's evening: the twin gives 0.07 at 17:00 against 0.15-0.16 in the engine's modelled years, because the metered fleet's July day is
   narrower (0.05 at 17:00, 0.03 at 07:00) than PVGIS's modelled trackers. The LP's metered days and the engine's years still differ at
   the day's edges in winter. Not fixed; flagged for 707 (c)'s LP-against-engine check and the reference decision.
+
+### The LP and the engine read the same hourly series (message 707 (c)): harness/validate_series.js, 23 checks; one fault found and fixed, existing solar's trackers counted twice on the metered reference's clustered days
+
+Build 2026-11-05b, claude/twin-retime 0ef7431, 5 Nov 2026 07:40-07:50 UTC. The check: bldBuildLP and simulate each record the hourly
+series they read (opts.__seriesProbe, u.__seriesProbe; off unless the check sets them, so the LP text and every run are unchanged). Two
+2035 LP builds on the central's series settings (bldRepWeights clustered, bldRepRefYear metered, the twelve extremes 20, 161-163, 187,
+188, 194-196, 214, 218, 358, 25 days, bldPvTracking 1, bldWindModern 1, wxWindCorr 1, bldOffshoreOn 1, bldStressTarget 1, horizon 2040,
+the rooftop add-back on the twelve-year mean as every pathway run, a loop stress window 2019 day 180 for 3 days and the seed tail); and the
+same on equal weights (calendar days). Each day's demand, exports, rooftop, existing and new wind, existing and new utility solar, CSP and
+offshore against the engine's on the profile that day's weather runs on (the metered profile for calendar and clustered days,
+wxEngineProfile of the weather year for tail and stress days), same day and hour.
+
+| series | clustered build: hours, largest difference | calendar build |
+|---|---|---|
+| demand, exports, CSP, offshore | 840 each, 0 | 840 each, 0 |
+| rooftop | 525, 1.1e-16 (one constant per clustered day) | 840, 0 |
+| existing wind; new wind | 839, 1.1e-16; 833, 2.2e-16 | 840, 0; 840, 1.1e-16 |
+| existing utility solar | before the fix: 25 clustered days differ, up to 0.129 per unit; after: 507, 0 | 840, 5.6e-17 |
+| new solar | 484, 5.6e-17 | 840, 1.1e-16 |
+
+Injected faults, each on the LP side only, each caught: rooftop on the utility fleet's shape (25 days, up to 0.240), offshore on one
+year's series (35 days, up to 0.579), existing solar blended with its twin on the metered reference (25 days, up to 0.129). The scan of
+65 keys read with a zero fallback finds none that exists nowhere; two reads that are not settings are listed with reasons (_laGasRefill,
+a hand-set measurement switch; Dual, a HiGHS column field); a planted p.dieselMWx is caught.
+
+The fault: on clustered days of the metered reference the LP took the existing fleet as (1 - x) x the metered series + x x its tracking
+twin, x 0.529 (the fleet's tracker share, derived on the modelled years), though the metered fleet already carries its trackers (about
+55%); the engine's own rule is x 0 on the metered profile. The level was right (0.2558 on both); the shape tracked twice. On the central's
+2035 clustered days, weighted, per unit then MW on the 3,569 MW fleet:
+
+| hour | 06:00 | 07:00 | 08:00 | 11:00 | 12:00 | 17:00 | 18:00 |
+|---|---|---|---|---|---|---|---|
+| blended (before) | 0.058 | 0.248 | 0.509 | 0.689 | 0.678 | 0.225 | 0.053 |
+| metered fleet's own (after) | 0.044 | 0.205 | 0.464 | 0.743 | 0.739 | 0.184 | 0.040 |
+| change, MW | -50 | -152 | -158 | +192 | +216 | -148 | -47 |
+
+Fixed: the existing fleet on such a day reads the metered series itself, rescaled to its twelve-year level (bldExistPvTwelveYearMean,
+the engine's blend on the modelled years); every other day keeps the blend, its LP text unchanged. It changes the central's LP key.
+A set share (bldExistPvTrackShare, a test) keeps the blend on every day. Page context (rooftop add-back not applied): the LP's tail and
+stress days' demand differs from the engine's twelveYearDemand by at most 20.0 MW (K 1.0037); measured, not checked (TODO 14mx).
+Also found by the check: harness/pathway/roof12.js broken by its own comment in fff0993 (every ROOF12 run would have stopped); repaired
+in 0ef7431 before any run used it.
+
+### Shortfall hours before and after re-timing (message 704 (i)): the evening's share of unserved energy rises from 45-47% to 63-66% on test 8's fleet; daytime falls from 13-18% to 4-7%
+
+pathcheck HOD_OUT on test 8's build (c7_d25.json) and run (6)'s (r6.json), K=10 a weather year, 2035 and 2040, pathcheck's default seed
+base (draws independent of the loop's), LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1. Before: claude/twin-fix e588e49. After:
+f3af8b0 (csi_day re-timing), whose index.html equals e588e49's (git diff empty); the data files differ only by the re-timing. 5 Nov 2026
+06:56-07:43 UTC. Hours are SAST, each the hour starting then; shares of the year's unserved energy.
+
+| build, year | when | mean GWh a run (se) | worst | 00-04 | 05-07 | 08-17 | 18-23 | top hours | cost Rbn |
+|---|---|---|---|---|---|---|---|---|---|
+| test 8, 2035 | before | 14.72 (2.27) | 152.8 | 5.5% | 33.6% | 13.4% | 47.5% | 07, 06, 20, 19 | 272.77 |
+| | after | 15.25 (2.36) | 159.2 | 5.3% | 22.4% | 6.5% | 65.8% | 19, 20, 06, 21 | 272.27 |
+| test 8, 2040 | before | 7.14 (1.45) | 116.2 | 8.3% | 29.0% | 17.8% | 44.9% | 06, 09, 07, 18 | 319.50 |
+| | after | 5.98 (1.39) | 106.0 | 11.0% | 21.9% | 4.2% | 63.0% | 18, 06, 20, 22 | 318.30 |
+| run (6), 2035 | before | 12.21 (2.14) | 144.2 | 6.3% | 35.4% | 12.1% | 46.1% | 07, 06, 20, 19 | 271.66 |
+| | after | 12.51 (2.23) | 145.3 | 7.4% | 23.5% | 5.9% | 63.2% | 19, 20, 06, 21 | 271.17 |
+| run (6), 2040 | before | 8.09 (1.61) | 124.4 | 12.5% | 33.0% | 15.0% | 39.4% | 06, 07, 09, 18 | 318.27 |
+| | after | 7.31 (1.58) | 113.9 | 16.5% | 28.2% | 3.5% | 51.7% | 06, 18, 22, 05 | 317.26 |
+
+Months: April to June carry most of it either way. Re-timing moves solar earlier, so the morning ramp (07:00) and the 09:00 hole fill and
+the shortfall that remains is the evening's. Mean unserved: 2035 +3.6% (test 8) and +2.5% (run (6)), inside one standard error; 2040
+-16% and -10%. This corrects the overnight summary's 10-28% more reliable (HANDOVER, decision 3), which came from the flat 25-minute
+shift test (SOLAR_SHIFT_MIN), not from the re-timing as built.
+
+### The loop's verdict and its draws (message 704 (d)): at 2 draws run (6)'s 2040 reads 21.6 GWh and fails; at 10 and 20 draws, 9.1 and 9.8, well inside
+
+Run (6)'s pass-1 build (r6.json, claude/twin-fix e588e49), pathcheck with the loop's own seeds (SEED_BASE=20260816: 20260816 + k x 104729
++ year x 7919, so K=2 is the loop's own verdict), the years the 2-draw check put near or over the limit, LNG=1 GRID=1 SS_FC=reservecoal
+CONG_OFF=1 WX_WINDCORR=1; 5 Nov 2026 06:59-07:27 UTC, one core beside two solves.
+
+| year | K=2 mean (se), worst | K=10 | K=20 |
+|---|---|---|---|
+| 2034 | 13.68 (5.77), 92.7 | 14.04 (3.91), 312.8 | 14.36 (2.32), 312.8 |
+| 2035 | 12.68 (4.11), 72.7 | 12.95 (2.32), 166.3 | 15.30 (1.80), 183.9 |
+| 2039 | 11.81 (4.58), 86.8 | 7.27 (1.35), 86.8 | 9.40 (1.55), 199.7 |
+| 2040 | 21.56 (11.38), 270.3 | 9.06 (2.52), 270.3 | 9.79 (1.86), 270.3 |
+
+At 2 draws 2040's mean rests on one draw of 2015 weather (270.3 GWh, 1 of 24 runs); its standard error is half the standard. Time on
+one core: K=2 2 min, K=10 9 min, K=20 17 min for the four years (about 4.3 minutes a year at 20 draws). A second pass on the 25-day LP
+costs 80-110 minutes. The loop as it stands (DRAWS=2, run r6_d2 from run (6)'s cached pass 1): 2040 fails at 21.56, three 14-day windows
+added for 2040 (2015 day 149, 2021 day 162, 2014 day 176), pass 2 solving from 06:4x UTC; result pending. A loop at DRAWS=10 everywhere
+(r6_d10) was stopped by hand at 07:50 UTC: DRAWS also sets the LP's stress-target runs (ST_N), so it changes the LP key and solves pass 1
+from scratch; that is not the design proposed.
+
+Proposal: keep the LP's stress-target draws as they are (the key unchanged) and give the verdict its own draws: every year at 2; a year
+whose mean is at or above half the standard (10 GWh) is topped up to 10 draws, and one still at or above it to 20; the verdict reads the
+topped-up mean, and a year fails only on it. On run (6) this tops up 2034, 2035, 2039 and 2040 (their 2-draw means 11.8-21.6), costs about
+17 minutes of engine time on one core, and passes the build at pass 1 (largest 20-draw mean 15.3 in 2035) where the 2-draw rule sends it to
+a second pass. Not yet built or run as a loop; TODO 14my.
+
+### Capacity files from the IPP Office's Q1 2026/27 report (message 705): every regional value unchanged
+
+claude/twin-retime 937ff2e, build_capacity.py from Q1 2026/27 (as at 30 June 2026), p.18 and pp.3, 27-29, 34. wind_mw, solar_mw and
+every by_source table compared key by key with the Q4 2025/26 file: equal, so the weather weights and the LP key do not move. The report's
+North West solar (395 MW) includes Doornhoek (BW6, 120 MW, COD 22 May 2026), which the file carried as a post-cutoff addition; it is
+kept out of the BW1-BW4 supply-area split and put back in North West. Identity: procured 8,064 = online 7,475 + under-delivery 25 + in
+construction 564 (Virginia 240 and a BW7 solar project 240 in the Free State, BW5 wind 84 in the Eastern Cape); the provincial table sums
+to 7,476 (1 MW published rounding, as before). Procured rose 239 MW for the 240 MW BW7 project: the operating fleet's procured capacity
+was revised down 1 MW (under-delivery 26 to 25). Pipeline: BW7 preferred bidders 3,700 MW (17), two BESIPPPP BW2 projects (153 MW) in
+construction. validate_capacity 36/36.
