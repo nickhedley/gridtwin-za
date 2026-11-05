@@ -104,7 +104,7 @@ harness/pathway/test15/ts_central and ts_ff.
 
 ### The central, Fossil-free and the central with ANNUITY_TO=2040 (message 693 (6))
 
-Running, central first, then Fossil-free, the annuity run last (user, 4 Nov 2026). Fossil-free stopped at step 2033 (21:33, below). The central finished all 15 steps at 01:43 on 5 Nov: 14.7 h from its first piece (11:02 on 4 Nov) over 14 pieces, one of them ended by a container restart; 21 solves (cut ones included), 11.3 h of solve wall time. The tables between the markers are regenerated after
+Run central first, then Fossil-free, the annuity run last (user, 4 Nov 2026). Fossil-free stopped at step 2033 (21:33, below); the annuity run stopped at step 2029 (04:09 on 5 Nov, below); no run is going. The central finished all 15 steps at 01:43 on 5 Nov: 14.7 h from its first piece (11:02 on 4 Nov) over 14 pieces, one of them ended by a container restart; 21 solves (cut ones included), 11.3 h of solve wall time. The tables between the markers are regenerated after
 each finished step from `python3 -I pathway/test15_summary.py out/ts2_central out/ts2_ff out/ts2_central_ann` (one-stage brackets: the main
 session's section above).
 
@@ -154,7 +154,14 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
 - ts2_central_ann step 2029 (to 2033), piece of 00:58 (PID 16549): passes 1 to 3 solved cold on parallel (16.8, 28.6, 31.8 min);
   pass 1: 2032 at 20.23 and 2033 at 44.88, pass 2: 2033 at 26.04, pass 3: 2033 at 23.3 against 20 GWh. Pass 4 started at 02:23:38 with
   the 600 s floor and was stopped at the job deadline at 02:33:55 with no valid basis; the step had run 95 min. Relaunched once at
-  02:34 (PID 916): passes 1 to 3 from the LP cache, pass 4 cold with about 90 min.
+  02:34 (PID 916): passes 1 to 3 from the LP cache (47f42f03fe, 9c0fca1de6, 21d8d7fab2), pass 4 cold with a 5,256 s limit. Pass 4 solved
+  in 32.9 min (optimal 03:14:54); 2033 at 22.92 against 20 GWh. Pass 5 started cold with a 3,120 s limit and solved in 37.9 min
+  (optimal 03:55:34); 2033 at 22.09. Pass 6, the last under MAXP=6, started cold at 03:58:17 with 677 s and was stopped at the job
+  deadline at 04:09:49 with no valid basis (b0591c7b8b). The one relaunch used, the annuity run is left stopped at 3 of 15 steps (04:09).
+  Why: this step needs six passes of 17 to 38 min each, more than one 110-min piece holds; each solve alone fits in a piece. Passes 1 to 5
+  are in the LP cache (passes 4 and 5: d03f368753, c63c34b260), so a further relaunch would replay them in about 12 min and run pass 6
+  cold with about 95 min; at 22.92 then 22.09 GWh, pass 6 would very likely still leave 2033 over the standard. That relaunch is the
+  user's call.
 
 <!-- test15_summary start -->
 #### ts2_central (15 of 15 steps)
@@ -344,7 +351,7 @@ ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2026 | 2030 | 1 | adequate | parallel, 2 threads | 15.9 | 18.4 | 1 | 2.5 | pass 1: none | 677.140 |
 | 2027 | 2031 | 5 | stall stop | parallel, 2 threads | 16.8, 10.3, 7.0, 29.0, 29.2, 18.0, 32.3 | 45.3 | 3 | 4.1 | pass 1: 2031: 47.9 / 20<br>pass 2: 2031: 31.1 / 20<br>pass 3: 2031: 28.2 / 20<br>pass 4: 2031: 26.6 / 20<br>pass 5: 2031: 27.2 / 20 | 743.104 |
 | 2028 | 2032 | 5 | adequate | parallel, 2 threads | 14.8, 21.6, 24.2, 27.2, 31.4 | 70.4 | 3 | 4.1 | pass 1: 2032: 37.8 / 20<br>pass 2: 2032: 29.5 / 20<br>pass 3: 2032: 24.0 / 20<br>pass 4: 2032: 20.0 / 20<br>pass 5: none | 776.178 |
-| 2029 | | | not finished | parallel, 2 threads | 16.8, 28.6, 31.8, 10.1 | | 2 | | | |
+| 2029 | | | not finished | parallel, 2 threads | 16.8, 28.6, 31.8, 10.1, 32.9, 37.9, 11.5 | | 3 | | | |
 
 ts2_central_ann: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 

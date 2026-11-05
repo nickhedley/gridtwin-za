@@ -87,3 +87,12 @@
 2026-11-05T02:34:21Z two_stage.sh PID 943
 2026-11-05T02:34Z two_stage K=4 N=25 FIRST=2026, shell PID 943
 2026-11-05T02:34:36Z step node PID 953
+2026-11-05T02:41:51Z solve started (highs_native.py 1831)
+2026-11-05T03:14:56Z solve (highs_native.py 1831) ended after about 1976s
+2026-11-05T03:17:27Z solve started (highs_native.py 6159)
+2026-11-05T03:55:32Z solve (highs_native.py 6159) ended after about 2276s
+2026-11-05T03:58:17Z solve started (highs_native.py 11142)
+2026-11-05T04:09Z step 2029 (horizon 2033) rc=0 NO OUTPUT
+2026-11-05T04:09:49Z solve (highs_native.py 11142) ended after about 690s
+2026-11-05T04:09:49Z node 953 ended, peak memory 4.9 GB
+2026-11-05T04:09:49Z test15 central_ann piece ends: two_stage.sh rc=1, 3 of 15 steps done
