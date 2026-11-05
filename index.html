@@ -8260,8 +8260,10 @@ function simulate(u, prof, outPath, _soc0){
   let _fcDef = null, _fcSur = null;
   const _buildForecast = () => {
     _fcDef = new Float64Array(HOURS); _fcSur = new Float64Array(HOURS);
-    const firm = (typeof coalAvail === 'number' ? coalAvail : 0) + (p.ccgtMW || 0) + (p.newCcgtMW || 0) + (p.newOcgtMW || 0) + (p.newOcgdMW || 0)
-               + Math.max(0, (p.dieselMW || 0) - (p.dieselDecomMW || 0));
+    // Diesel through dieselAvailMW (message 707 (a) 4; the data-path review, finding 5): this read the absent key p.dieselMW, so the
+    // forecast's firm capacity left out the 3,400 MW diesel fleet; dieselAvailMW includes new diesel peakers, counted here before.
+    const firm = (typeof coalAvail === 'number' ? coalAvail : 0) + (p.ccgtMW || 0) + (p.newCcgtMW || 0) + (p.newOcgtMW || 0)
+               + dieselAvailMW(p);
     for (let k = 0; k < HOURS; k++){
       _fcDef[k] = Math.max(0, netLoadPre[k] - firm);
       _fcSur[k] = Math.max(0, -netLoadPre[k]);

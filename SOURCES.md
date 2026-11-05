@@ -13,7 +13,7 @@ superseded queue entries. Never add the delta. See rules.md.
 
 | source | cadence | edition loaded | feeds |
 |---|---|---|---|
-| IPP Office, *An Overview - ipppp* | quarterly | Q4 2025/26, as at 31 Mar 2026, p.18 | `by_source.reipppp`, both identities |
+| IPP Office, *An Overview - ipppp* | quarterly | Q1 2026/27, as at 30 Jun 2026, p.18 (replaces Q4 2025/26; the same figures plus Doornhoek, already in the file) | `by_source.reipppp`, both identities |
 | Power Futures Lab, UCT GSB, IPP monitor | half-yearly | H1 2026 | `by_source.private`, `pfl_cod_h1_2026.json` |
 | Ember, South Africa electricity | monthly-ish | 2025 full year + 12m to May 2026 | `validate_benchmarks.js` |
 | PyPSA-RSA fleet (Meridian Economics), `fleet_by_region_v2.csv`, public subset `nodal/fleet_units.csv` from build 2026-10-16c (section 'Fleet table: public slim file, private full original'; licence and our use: section 'PyPSA-RSA: licence and what we take', to confirm with Meridian) | static | 51 BASE plants | per-unit UC parameters, GPS, heat rates. Capacity-weighted coal CO2 1.008 t/MWh against our 1.04. THERMAL ONLY - not the wind/solar plant list. DECOMMISSIONING DATES UNSOURCED (checked 12 Oct 2026): one year per half-station, no commissioning dates, no source column; in the repository unchanged since 1 Oct 2026 apart from Camden, Grootvlei and Hendrina moved to 2030 in UC_FLEET on 4 Oct. PyPSA-RSA's public repository (github.com/MeridianEconomics/pypsa-rsa, commit 89872c1, 8 Apr 2026) has a documentation plant table with other dates (Tutuka 2040/2042, Kriel 2024/2028, Arnot 2027/2030) and a Coal_Flexibilisation workbook (scenarios/.../phased_decommissioning.xlsx) with the same station capacities as our file, whose ESKOM_2035 scenario matches our Tutuka (2030 to 2031) and Arnot's first date (2027) but not Kriel (2026 to 2031); neither states a source. Our dates are therefore a PyPSA-RSA schedule of unknown basis (identified 13 Oct 2026: the decommissioning dates of the 'conventional' sheet of Meridian's ME IRP 2024 workbook, scenarios/ME IRP 2024/sub_scenarios/fixed_technologies.xlsx, BASE rows, commit 89872c1: Meridian's scenario assumption, not an Eskom plan; c4's standing coal is bldCoalMW, every UC_FLEET unit with a date after the year, scaled to 39,692 MW in 2026, so c4 retires Tutuka* in 2030 and Tutuka** in 2031 as that workbook does), not IRP 2025's 50-year life (IRP plan p.24: Tutuka's 50-year life falls in 2031-2042, user) |
@@ -311,8 +311,8 @@ comparing against any study built on an ERA5 composite.
 ## Original source notes, carried across verbatim
 
 **IPP Office** — https://www.ipp-projects.co.za/Publications/
-Quarterly *"An Overview – ipppp"* reports. The current data is from **Q4 2025/26, as at
-31 March 2026**; page 18 carries capacity online and in construction by province and
+Quarterly *"An Overview – ipppp"* reports. The current data is from **Q1 2026/27, as at
+30 June 2026** (checked 5 Nov 2026, message 705: equal to the file by technology; replaces Q4 2025/26, as at 31 March 2026); page 18 carries capacity online and in construction by province and
 technology, which is the table the rebuild is built on. Covers REIPPPP and RMIPPPP
 **only** — no private or wheeled capacity. The quarterly gives no project names; the
 annual overview does.
