@@ -22,14 +22,16 @@ def solver_of(line):
     # A piece's first line names HIGHS_OPTS from 4 Nov 2026 13:29 UTC (message 698 (c)); pieces before ran HiGHS's default serial dual simplex.
     m = re.search(r'HIGHS_OPTS (\{[^}]*\}|none)', line)
     if not m or m.group(1) == 'none': return 'serial'
-    o = json.loads(m.group(1)); return ('parallel, %s threads' % o.get('threads', '?')) if o.get('simplex_strategy') == 2 else 'HIGHS_OPTS ' + m.group(1)
+    o = json.loads(m.group(1)); p = ', presolve off' if o.get('presolve') == 'off' else ''
+    if o.get('simplex_strategy') == 2: return 'parallel, %s threads%s' % (o.get('threads', '?'), p)
+    return ('serial' + p) if set(o) <= {'presolve'} else 'HIGHS_OPTS ' + m.group(1)
 
 def progress(d):
     """Per step: solve wall times (s, to the 15-second poll), node attempts, peak memory (GB), outcome lines, solver by piece."""
     f = os.path.join(d, 'progress.txt'); per = {}; cur = None; blk = {}; sol = 'serial'
     if not os.path.exists(f): return per
     for line in open(f):
-        if re.search(r'test15 \S+ piece, PID', line): sol = solver_of(line); continue
+        if re.search(r'(test15|retime) \S+ piece, PID', line): sol = solver_of(line); continue
         m = re.search(r'step node PID (\d+)', line)
         if m: cur = m.group(1); blk[cur] = {'solves': [], 'peak': None, 'step': None, 'solver': sol}; continue
         m = re.search(r'solve \(highs_native.py \d+\) ended after about (\d+)s', line)

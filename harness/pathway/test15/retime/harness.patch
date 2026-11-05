@@ -1,0 +1,30 @@
+diff --git a/harness/pathway/pathway_perfail.js b/harness/pathway/pathway_perfail.js
+index 06738af..5950012 100644
+--- a/harness/pathway/pathway_perfail.js
++++ b/harness/pathway/pathway_perfail.js
+@@ -318,17 +318,21 @@ const fix=lp=>{ const oc=/^ 0 <= b_ocgt_\d{4} <= /m.test(lp); return lp.replace(
+    else { if (RESUME && process.env.JOB_PASSES && (w.__jobSolves||0) >= +process.env.JOB_PASSES){ console.log('solves for this job done; next pass', key.slice(0,10), 'left to the next job'); process.exit(75); }
+      fs.writeFileSync(tmp+'.lp',LPT);
+      const bIn = RESUME && fs.existsSync(cfp) ? cfp : (WARM && w.__prevBasis ? w.__prevBasis : null);
+-     const benv=(WARM||RESUME)?{...process.env, HIGHS_BASIS_OUT:tmp+'.basis.json', ...(bIn?{HIGHS_BASIS_IN:bIn}:{})}:process.env;
+-     if (WARM||RESUME) console.log('start from basis', bIn||'none (cold)', 'time limit', TLX+'s');
++     // This solve's basis is written under its own LP key, and any file of that name is removed first (user, 4 Nov 2026, test 15): a
++     // solve whose basis HiGHS marks invalid writes none, so an earlier pass's basis left in /tmp can no longer be kept as this LP's
++     // resume basis (<key>.partial.basis.json). Before this, a stopped second pass kept the first pass's basis under its own key.
++     const bOut=tmp+'_'+key+'.basis.json'; try{ fs.unlinkSync(bOut); }catch(e){}
++     const benv=(WARM||RESUME)?{...process.env, HIGHS_BASIS_OUT:bOut, ...(bIn?{HIGHS_BASIS_IN:bIn}:{})}:process.env;
++     if (WARM||RESUME) console.log(bIn===cfp ? 'resume from this LP\'s own basis '+cfp : bIn ? 'warm start from the previous pass\'s basis '+bIn : 'start cold', 'time limit', TLX+'s');
+      await require('util').promisify(cp.execFile)('python3',['highs_native.py',tmp+'.lp',tmp+'.json',String(TLX)],{maxBuffer:1<<26, env:benv}); last=JSON.parse(fs.readFileSync(tmp+'.json','utf8'));
+-     if (RESUME && last.Status==='Time limit reached' && fs.existsSync(tmp+'.basis.json')){ fs.mkdirSync(cdir,{recursive:true}); fs.renameSync(tmp+'.basis.json',cfp);
++     if (RESUME && last.Status==='Time limit reached' && fs.existsSync(bOut)){ fs.mkdirSync(cdir,{recursive:true}); fs.renameSync(bOut,cfp);
+        console.log('stopped at the job deadline; basis kept for resume', key.slice(0,10)); process.exit(75); }
+      // No valid basis at the deadline (message 678 (e)): highs_native.py keeps only a basis HiGHS marks valid, so the next piece
+      // starts this solve cold. A solve longer than one piece then never finishes here: the chain's attempt count reports it not run.
+      if (RESUME && last.Status==='Time limit reached'){ try{ fs.unlinkSync(cfp); }catch(e){}
+        console.log('stopped at the job deadline; no valid basis, the next piece starts cold', key.slice(0,10)); process.exit(75); }
+      if (last.Status==='Optimal'){ w.__jobSolves=(w.__jobSolves||0)+1; fs.mkdirSync(cdir,{recursive:true}); last.Method=(process.env.HIGHS_SOLVER||'simplex')+((process.env.HIGHS_SOLVER==='ipm')?', crossover '+(process.env.HIGHS_CROSSOVER||'on'):''); fs.writeFileSync(tmp+'.json',JSON.stringify(last)); fs.renameSync(tmp+'.json',cf); try{ fs.unlinkSync(tmp+'.lp'); }catch(e){}
+-       if (WARM && fs.existsSync(tmp+'.basis.json')){ fs.renameSync(tmp+'.basis.json',cfb); w.__prevBasis=cfb; }
++       if (WARM && fs.existsSync(bOut)){ fs.renameSync(bOut,cfb); w.__prevBasis=cfb; }
+        if (RESUME){ try{ fs.unlinkSync(cfp); }catch(e){} } }
+      else { fs.renameSync(tmp+'.lp', tmp+'.fail.lp'); console.log('kept the failed LP for diagnosis:', tmp+'.fail.lp'); } } }   // 7 Oct 2026: a failed solve keeps its LP (IIS)
+    else { const highs=await newHighs(); last=highs.solve(hypo(liMinRows(gasCumRows(gasMinRows(gasFloorVint(pvCap(tcapYr(gasCommit(gasLift(fixBuild(fix(vppYr(lp)))))))))))),{time_limit:+(process.env.TL||900)}); }
