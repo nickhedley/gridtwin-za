@@ -581,10 +581,16 @@ const SCENARIOS = {
                + `${G.unmetTWh.toFixed(1)} TWh`);
   }
 
-  // ── THE SITING PANEL PRICES A MEGAWATT AS THE ENGINE DOES ──────────────────
-  // Added 22 Sep 2026. The panel used to run its own corridor arithmetic while the engine used
-  // the tiered regional charge, so the same megawatt had two prices. Both now call txTierCharge:
-  // a region with headroom pays the shallow rate, one without pays the beyond-the-plan rate.
+  // ── THE SITING PANEL ON THE REGIONAL TIERS, THE ENGINE ON THE FLAT RATE, AT THE RECORDED GAP ──
+  // Added 22 Sep 2026, when the panel and the engine both priced on the regional tiers (txTierCharge). Restated 5 Nov 2026 with its
+  // cause (user, message 715 (a)): from message 710 (c) the engine charges the build optimiser's flat rate per MW (gridChargeR), and the
+  // panel keeps the regional tiers by the user's decision. Two things must hold. The panel prices a megawatt on the tiers: a region with
+  // headroom pays the shallow rate, one without the beyond-the-plan rate. And the panel's capacity-weighted mean tier on Fossil-free
+  // 2040's new wind, solar and offshore (txChargeFor: the national build on the developers' register shares, REEA_SHARE, each region
+  // filled through its tiers) sits against the engine's flat rate on the same MW at the gap recorded in RESULTS ('The siting panel's
+  // tiers against the engine's flat rate', SITING_GAP_PCT). It fails if the panel leaves the tiers, if its data do not load (txChargeFor
+  // then falls back to the flat rate and the gap closes), or if either side moves without the gap being re-recorded.
+  const SITING_GAP_PCT = -14.7896;   // build 2026-11-05h, Fossil-free 2040: R351.35 against R412.33/kW-yr
   {
     const p1 = w.document.createElement('script');
     p1.textContent = `window.__site = null;
@@ -593,28 +599,36 @@ const SCENARIOS = {
         .then(([a, b]) => { try {
             window.__site = { room: a, none: b,
               base: ({ ...FIXED, ...state }).txRPerKWyr,
-              multNC: (typeof txRegionMult === 'function') ? txRegionMult('Northern Cape') : null };
+              multNC: (typeof txRegionMult === 'function') ? txRegionMult('Northern Cape') : null,
+              gap: (() => { const u = { ...state, ...PRESETS['Fossil-free 2040'] }, P = { ...FIXED, ...u };
+                const wi = +(u.newWindMW || 0), pv = +(u.newPvMW || 0), of = +(u.newOffshoreMW || 0), mw = wi + pv + of;
+                gridChargeR(u, P); const per = gridChargeR.last.per;
+                const tier = txChargeFor(wi, pv, of, P), flat = (wi * per.wind + pv * per.pv + of * per.offshore) * 1000;
+                return { tierRkW: tier / mw / 1000, flatRkW: flat / mw / 1000, pct: 100 * (tier / flat - 1),
+                         data: typeof REEA_SHARE !== 'undefined' && !!HEADROOM_LOOKUP && !!bldTxCurve }; })() };
           } catch (e) { window.__site = { err: String(e) }; } },
               e => { window.__site = { err: String(e) }; });`;
     w.document.body.appendChild(p1);
     for (let waited = 0; !w.__site && waited < 5000; waited += 100)
       await new Promise(r => setTimeout(r, 100));
     const S = w.__site;
-    if (!S || S.err) check('the siting panel prices a megawatt as the engine does', false,
+    if (!S || S.err) check('the siting panel prices on the regional tiers and the engine on the flat rate, at the recorded gap', false,
                            S ? S.err : 'no result within 5 s');
     else if (S.multNC == null || S.room.annualChargeR === undefined)
-      check('the siting panel prices a megawatt as the engine does', false,
-            'the panel does not return an annual charge - it is still on its own arithmetic');
+      check('the siting panel prices on the regional tiers and the engine on the flat rate, at the recorded gap', false,
+            'the panel does not return an annual charge - it is on its own arithmetic');
     else {
       const shallow = 0.25 * S.base * 1000 * 1000;                 // 1,000 MW at the shallow rate
       const beyond = 1.5 * S.multNC * S.base * 1000 * 1000;        // 1,000 MW beyond the plan
-      // Until 5 Nov 2026 the engine charged the same tiers; from message 710 (c) it charges the build LP's flat basis (gridChargeR), and
-      // whether the panel follows is Nick's decision (TODO 14na (h)). The assertion is unchanged.
-      check('the siting panel prices a megawatt on the regional tiers (txTierCharge)',
+      const G = S.gap;
+      check('the siting panel prices on the regional tiers and the engine on the flat rate, at the recorded gap',
             Math.abs(S.room.annualChargeR - shallow) < 0.02 * shallow
-            && Math.abs(S.none.annualChargeR - beyond) < 0.02 * beyond,
+            && Math.abs(S.none.annualChargeR - beyond) < 0.02 * beyond
+            && G.data && Math.abs(G.pct - SITING_GAP_PCT) < 0.01,
             `KwaZulu-Natal R${(S.room.annualChargeR / 1e6).toFixed(0)}m against R${(shallow / 1e6).toFixed(0)}m `
-            + `expected; Northern Cape R${(S.none.annualChargeR / 1e6).toFixed(0)}m against R${(beyond / 1e6).toFixed(0)}m`);
+            + `expected; Northern Cape R${(S.none.annualChargeR / 1e6).toFixed(0)}m against R${(beyond / 1e6).toFixed(0)}m; `
+            + `Fossil-free 2040: the panel's mean tier R${G.tierRkW.toFixed(2)} against the engine's flat R${G.flatRkW.toFixed(2)}/kW-yr, `
+            + `${G.pct.toFixed(2)}% against ${SITING_GAP_PCT.toFixed(2)}% recorded; siting data ${G.data ? 'loaded' : 'MISSING'}`);
     }
   }
 
