@@ -22011,3 +22011,31 @@ Summary of the five runs and test 8 (2040; engine means 2030 / 2035 / 2040, GWh)
 | (3) | 37.24 / 28.6 / metered | 30.5 | 6.8 | 0.00 | 1,572.3 | 1.7 / 19.0 / 7.0 |
 | (4) | 42.0 / 30.13 / metered | 25.0 | 0.0 | 1.30 | 1,497.4 | 3.2 / 20.3 / 19.4 |
 | (5) | 37.24 / 30.13 / metered | 29.6 | 5.2 | 0.71 | 1,543.8 | 4.3 / 23.8 / 27.9 |
+
+### Metered 2024 against metered 2025 on the fixed twin (message 701 (g), a sensitivity): the 2024-built fleets fail the engine far more, as on the old twin; on the fixed twin every cell's unserved roughly doubles, and Fossil-free on metered 2025 sits on the standard
+
+Settings: as 'Metered 2024 as the reference against metered 2025' above (single-year 2040 at 365 days, OPER_FROM=2040 HORIZON=2040
+MAXP=1, no adequacy loop; clustered and linked; the six-constant table; CONG_OFF=1; central fixed from c7 to 2039, Fossil-free from
+s_ff2040_c7; metered 2024 by PROFILES_LOCAL, local only), on claude/twin-fix e588e49 (the fixed twin; with PROFILES_LOCAL the 2024 twin
+takes the 2025 fleet scale from the map file). Extremes: 2024's recomputed on the fixed twin (REF=metered, extremes.py on extract.js's
+series): the same 12 days as before (0, 40, 42-44, 175-177, 201-203, 346); 2025's the same as before. All four cells solved fresh
+(LP keys f074ef9b0d, 400ddeadf5, 220289ba27, 3709eb1fa4). Engine: pathcheck.js YEARS=2040, CONG_OFF=1, adaptive draws, on the
+six-constant (c6) and the stored weather (WX_WINDCORR=0). Scripts: scratchpad ref2024/refs2024f.sh, ref2024/sum2024f.py; outputs gtza-twin
+harness/out/ref2024f (local). Eskom data (ESK19679), the analysis ours. 5 Nov 2026, 00:21-01:26 UTC, beside the 55-day run.
+
+| 2040 | Objective, R bn | Coal retired early, MW | Year's builds, MW | Engine, six-constant: mean / worst 1% / worst | Engine, stored | Old twin, six-constant mean |
+|---|---:|---:|---|---|---|---:|
+| Central, metered 2025 | 768.21 | 1,506 | wind 3,500, solar 719, lithium 1,299 | 6.32 / 96.7 / 109.9 | 4.25 / 49.9 / 113.0 | 4.85 |
+| Central, metered 2024 | 768.35 | 5,129 | wind 3,500, solar 3,789, lithium 3,000 | 38.69 / 241.6 / 380.9 | 29.44 / 227.9 / 286.3 | 18.01 |
+| Fossil-free, metered 2025 | 2,145.35 | 0 | wind 3,500, solar 5,967 | 20.37 / 136.2 / 136.2 | 15.23 / 100.1 / 100.1 | 10.30 |
+| Fossil-free, metered 2024 | 2,138.30 | 0 | none | 66.39 / 321.2 / 321.2 | 35.30 / 209.9 / 209.9 | 30.35 |
+
+- As on the old twin, the objective barely moves between the references (central +R0.14bn, Fossil-free -R7.1bn) while the build does: on
+  2024's days the central retires 3.4 times the coal early and builds 5.3 times the solar, and the 2024-built fleets show three to six
+  times the engine's unserved of the 2025-built ones.
+- On the fixed twin every cell retires more coal early or builds less firm capacity than on the old twin (central metered 2025: 1,506
+  MW against 532; Fossil-free metered 2025: no iron-air against 981 MW), and the engine's unserved roughly doubles. Fossil-free on
+  metered 2025 sits on the standard (20.37 GWh). These single-year cells have no adequacy loop; in a full pathway the loop would add
+  stress windows for the failing years.
+- For the reference recommendation: metered 2024 on the fixed twin gives the less reliable build in both pathways, as before. Metered
+  2025 stays the recommendation, provisional (701 (g)); the build rests on one reference year's events, which the note states.
