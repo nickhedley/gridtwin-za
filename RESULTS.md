@@ -22808,3 +22808,22 @@ Open-cycle gas and diesel open cycle at the large frame rates (the IRP's GE 9F.0
 - Start fuel is excluded from these costs; the engine's gas fuel per MWh already carries no start fuel.
 - Report only: no change to the LP or the engine. The pack's Known limitations carry the range. The fin pass (10a98e2) is the final
   build; the same script on its engine check follows when it has run.
+
+### The metered reference's extreme days on the current build (message 720 (b)): the list every run has used since 3 Nov no longer matches; recomputed, it adds days 159, 359 and 360 and drops 188 and 214
+
+Settings: pathway/repdays/extract.js on claude/twin-retime 10a98e2 (build 2026-11-05h, the fin pass's worktree), WX_WINDCORR=1 (the six-
+constant table, the default), then extremes.py with the sources of the recorded lists (today's fleet; c7, Deep without gas, Fossil-free:
+harness/pathway/c7/pathway_c7.json, pathway_s_deep40nogas_c7.json, pathway_s_ff2040_c7.json), 5 Nov 2026, 19:40-20:00 UTC. Scratchpad
+loops/ext_*.json.
+
+| Reference | In use (computed on) | Recomputed on 10a98e2 |
+|---|---|---|
+| metered 2025 | 20, 161-163, 187, 188, 194-196, 214, 218, 358 (34fae3b, 3 Nov; extremes_metered.json on b0f7999 has 11 of them, not 214) | 20, 159, 161-163, 187, 194-196, 218, 358-360 |
+| wind metered, solar modelled 2025 | 20, 161-163, 187, 188, 194-196, 214, 218, 358 (700 (b), old twin, before the re-timing) | 20, 159, 161-163, 187, 194-196, 214, 218, 358, 359 |
+| metered 2024 | 0, 40, 42-44, 175-177, 201-203, 346 (e588e49) | the same |
+
+- The every-change pass, the 37.24% pass and the fin pass all used the 3 Nov metered list; their comparisons with each other are on one
+  list and stand. The cause of the change (this week's rooftop shape, the twin fix, or both) is not traced; metered 2024's days do not
+  move on the same build.
+- The 7 Nov loops (720 (b)) each use the list recomputed on this build for its own reference, the baseline included, so the reference
+  comparison is on one method. The final key's extremes are recomputed on the chosen reference as planned (8-9 Nov).

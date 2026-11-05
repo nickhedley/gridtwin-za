@@ -1,4 +1,19 @@
-# GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 13:15 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 22:15 SAST)
+
+## 5 Nov evening (messages 714-720): where things stand
+
+- Restart: the worker restarted at 19:32 UTC. The fin pass's first piece had stopped at its deadline at 16:20 UTC with its basis kept and
+  was not resumed before the restart: 3 h 12 min lost. Resumed at 19:34 UTC (scratchpad c710/solve_fin.sh fin, worktree gtza-fin 10a98e2).
+- Next (720): when the fin pass's LP is done, full loops on the fin basis, two at a time (scratchpad loops/solve_loop.sh <case>, one
+  piece per job under 2 hours, rerun to resume; log loops/progress.txt): base (metered 2025, 42.0%), w3724, mix (wind metered, solar
+  modelled 2025), m24 (metered 2024, local file). Each on extreme days recomputed on this build (RESULTS 'The metered reference's extreme
+  days on the current build'). The 7 Nov table by 7 Nov 09:00 SAST once each meets the standard on the 20-draw check; say by 6 Nov
+  18:00 SAST if a loop cannot finish. Then 714 (d) (scratchpad c710/solve_irp.sh irp), by 8 Nov.
+- Commit to claude/c7-runs harness/pathway/final/: done for the every-change pass; the fin pass and each loop when they finish (720 (e)).
+- Build 2026-11-05j on claude/twin-retime (04a9cf7, dea3623): the siting panel's line (716 (a)), Avon's 2031 months (716 (c)), gas
+  start costs sized by script (716 (d), report only). Quick suite on 05j: known failures only, audit 88/88.
+- Message 717 (regional figures, site guard, PyPSA network test) belongs to the 10-region audit session; Nick sends it there. Not here.
+
 
 ## 5 Nov afternoon (messages 707-711): where things stand
 
