@@ -347,6 +347,16 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
        o[yy]={fe:day(x.socByTier&&x.socByTier.fe),vrfb:day(x.socByTier&&x.socByTier.vrfb),ps:day(x.socPs)}; }
      return JSON.stringify(o); })()`));
      fs.appendFileSync(process.env.LEVELS_OUT, JSON.stringify({year:y, levels:lev})+'\n'); }
+   // HOD_OUT=<file> (message 704 (i); measurement only): unserved energy by hour of day (SAST) and by month, summed over the runs, from
+   // the check's own draws (K draws a weather year, 10 if K is unset; the same seeds), one JSON line per checked year. Unset: no change.
+   if (process.env.HOD_OUT){ const KH=+(process.env.K||10); const hod=JSON.parse(w.eval(`(function(){ const H=new Array(24).fill(0), M=new Array(12).fill(0);
+       const ms=[0,744,1416,2160,2880,3624,4344,5088,5832,6552,7296,8016,8760]; let n=0, tot=0;
+       for (const yy of __wxYears()){ const nat=__wxNat(yy);
+         for(let k=0;k<${KH};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+__wxSeed(yy)*7919};
+           const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,...(nat.solarTrk?{solarTrk:nat.solarTrk}:{}),csp:PROFILES.csp,real:true});
+           const u=x.stack.unserved; let m=0; for(let i=0;i<u.length;i++){ while(i>=ms[m+1]) m++; const v=u[i]||0; if(v>0){ H[i%24]+=v; M[m]+=v; tot+=v; } } n++; } }
+       return JSON.stringify({runs:n, totalGWh:tot/1e3, byHourGWh:H.map(v=>+(v/1e3).toFixed(4)), byMonthGWh:M.map(v=>+(v/1e3).toFixed(4))}); })()`));
+     fs.appendFileSync(process.env.HOD_OUT, JSON.stringify({year:y, ...hod})+'\n'); }
    // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
    // AVERAGE COST PER MWH SERVED (user, 11 Oct 2026): the engine's avgCost (grid cost, rooftop capex and the shed
