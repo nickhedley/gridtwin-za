@@ -132,6 +132,9 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 - The comparison with an optimised dispatch model (PyPSA) was measured on a mid-October build and is being repeated on the current one.
 - No inertia or system-strength requirement is in the build. The optimiser never pays for synchronous condensers or grid-forming batteries, which flatters renewable-heavy results. The engine enforces a 6 GW synchronous minimum and the build optimiser does not.
 - Freed coal connections carry no grid cost.
+- Batteries, vanadium and iron-air pay no grid charge in the build or the engine: no connection bay where their capex includes it and
+  none of the integration charge (R364/kW-yr) that wind, solar, offshore, gas and pumped storage pay. A battery still needs a
+  connection and may need reinforcement; half the integration charge is a sensitivity (message 710 (c)).
 - Coal is committed by a cost-weighing rule (4-hour blocks, cheapest first, kept on when restarting costs more), not a unit-commitment optimisation (PLEXOS and peers solve a mixed-integer commitment over a rolling horizon).
 - The build LP commits coal as one continuous quantity per hour (no whole units, no minimum down time), so it meets the 2026 practice
   floor (units at 0.715 of capacity to 2029) by committing less coal all day: in 2027-2029 it sees the floor as starts and part-load
