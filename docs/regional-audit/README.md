@@ -20,3 +20,12 @@ the engine dumps the scripts read (derived from profiles.json, an Eskom-derived 
    the limit, the siting shares and the scaling notes). Named net_<year>_wy<weather year>_<case>_<siting>_l<losses>_c<coalmin>.json.
 
 Python environment: pypsa 1.4.0, linopy 0.10.1, highspy 1.15.1, pandas 3.1.1 (a venv; `pip install pypsa highspy pandas linopy`).
+
+Messages 718 and 722 (5 and 6 Nov 2026). pypsa_net.py gained: the factor cases (n0, f085, n1, n1c, each with tdp), TX_EXT (extendable
+corridors, R per MW-km, DISC), SITE_FREE, DEMAND_SPLIT=bld, KOEBERG_OUT, TDP_FILE (tdp_lines_full.json from tdp_full.py and
+tdp_substation_map.json), MIX, MIX_CAP, MIX_INTEG, DAYS (timing), SOLVER (timing), offshore wind by ESMAP site, flow and iron-air stores,
+new pumped storage, diesel retirement; every result JSON carries a timing block. Queues: queue_final.sh, queue2.sh, queue3.sh,
+queue4.sh, queue5.sh (the last two run two solvers at a time; five at once were killed by the container's 16 GB). Tables:
+summ718.py <prefix>, summ722.py, net_tables.py <prefix>; splice718.py and splice722.py assemble the sections of docs/regional-audit.md.
+Results: results/718/ (prefixes net_today_, net_final_, net_ff_, net_deep_; timing_*). The public record for 718 (a):
+research_718a_public_record.md. Engine dumps are not committed (hourly series derived from profiles.json).
