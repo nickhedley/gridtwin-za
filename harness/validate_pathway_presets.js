@@ -45,7 +45,9 @@ const SEED_BASE = 71830529;   // pathcheck.js's default, with which both engine 
 // rooftop change, which the roof12 check below reports). The grid charge on the LP's basis, the rooftop shape, re-timing and the
 // unserved price in 2026 rands (messages 707, 710) move the presets' cost by about 1-2%, so the 04b checks no longer describe the page.
 const RUNS = [
-  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_05g_y2030.json' },
+  // IRP's 2030 targets: its check rerun on build 2026-11-05k (message 715 (b): Avon and Dedisa pay no fixed O&M in their contract years,
+  // -R361.8m in 2030; the 05g check was R280.535bn, the 05k R280.173bn); the other presets' years are not touched by that change.
+  { name: "IRP's 2030 targets", year: 2030, build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_05k_y2030.json' },
   { name: 'Least-cost path 2035', build: 'harness/pathway/c6e/pathway_c6e.json', check: 'harness/pathway/c6e/pathcheck_c6e_05g_y2035.json' },
   { name: 'IRP path 2035', build: 'harness/pathway/c6e/pathway_irp2025_c6e.json', check: 'harness/pathway/c6e/pathcheck_irp2025_c6e_05g_y2035.json' },
   // The hypothetical presets from 1 Nov 2026 (user, messages 537 (f) and 555): optimised builds at relaxed build rates (harness/pathway/opt/),
