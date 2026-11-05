@@ -6185,7 +6185,11 @@ const FIXED = {
   // LP's capex annuity already pays for the cells at the ~1 cycle/day its
   // daily energy constraint permits - full wear here would double-count.
   // Resolved with solver evidence; see the note where it is used.
-  lpCurtailCostR:150, lpBattDischargeCostR:20,
+  // 0 from 5 Nov 2026 (user, message 710 (a), after the test on run (6)): R150 was unsourced and in the LP only (the engine prices no
+  // curtailment), so the two halves did not agree; R150 is a sensitivity (harness CURT_COST=150). On run (6) at 0: wind +2.4 GW and
+  // solar +0.45 GW in 2040, lithium energy -9%, curtailment 26.1 to 32.8 TWh, engine cost +R0.6bn, CO2 -3.7 Mt, the standard held
+  // (RESULTS 'The curtailment price at 0 on run (6)'). Nothing else in the LP was found tuned around it.
+  lpCurtailCostR:0, lpBattDischargeCostR:20,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
@@ -22411,7 +22415,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-05e';
+const BUILD_STAMP = '2026-11-05f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
