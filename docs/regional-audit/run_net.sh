@@ -4,7 +4,7 @@
 S=/tmp/claude-0/-home-user-gridtwin-za/ff25664d-5d95-5cb3-a5ba-9894dfa04a8f/scratchpad; ROOT=$1; PFX=$2; shift 2
 echo "runner pid $$ start $(date -u +%FT%H:%MZ)" >> $S/run_net_progress.txt
 for job in "$@"; do set -- $job; y=$1; wy=$2; case=$3; site=$4; L=$5; C=$6
-  out=$S/net_${y}_wy${wy}_${case}_${site}_l${L}_c${C}.json
+  out=$S/net${PFX#engine}_${y}_wy${wy}_${case}_${site}_l${L}_c${C}${SUFFIX}.json
   if [ -s $out ]; then echo "skip $out" >> $S/run_net_progress.txt; continue; fi
   echo "$(date -u +%H:%M) start $y wy$wy $case $site l$L c$C" >> $S/run_net_progress.txt
   $S/pyenv/bin/python $S/sc/pypsa_net.py $S/${PFX}_${y}_wy${wy}.json $ROOT $case $site $out $L $C > ${out%.json}.log 2>&1

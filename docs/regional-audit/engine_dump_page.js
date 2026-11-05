@@ -13,7 +13,17 @@
     const xs = solar.trkOwn ? (existPvTrackShareAt(p) ?? 0) : 0;
     const off = (typeof offshoreSeriesFor === 'function') ? offshoreSeriesFor(nat) : (typeof OFFSHORE_PU !== 'undefined' ? OFFSHORE_PU : null);
     const sum = a => a ? Array.from(a).reduce((q, v) => q + v, 0) : null;
-    return JSON.stringify({ build: BUILD_STAMP, weatherYear: yy, seed: st.outageSeed, state: over,
+    const KEEP = ['scenarioYear','newWindMW','newPvMW','newRooftopMW','newBattMW','newBattHours','newVrfbMW','newIronAirMW','newCcgtMW','newOcgtMW','newOcgdMW','newOffshoreMW','newNuclearMW','newPsMW','newPsHours','coalDecomMW','demandGrowthPct','demandBlockMW','windCapeMW','carbonTaxRPerT','dieselDecomMW','demandYear']; const stOut = {}; for (const k of KEEP) if (st[k] !== undefined) stOut[k] = st[k];
+    // the build LP's own costs for the scenario year (R per kW-year, net of the capacity payment as bldBuildLP prices them), for the free-mix test
+    const costs = (() => { try { const y = +(st.scenarioYear || 2026), S = { ...FIXED, ...st }, out = { year: y, disc: BLD_DISC, battPowerShare: (typeof BATT_POWER_SHARE !== 'undefined' ? BATT_POWER_SHARE : null), txRPerKWyr: S.txRPerKWyr ?? FIXED.txRPerKWyr, gridIntVreShare: S.bldGridIntVreShare ?? FIXED.bldGridIntVreShare, gridCost: S.bldGridCost ?? FIXED.bldGridCost, tech: {} };
+      for (const t of ['wind','pv','pvtrk','batt','ocgt','ocgd','ccgt','rooftop']){ try { const m = t === 'batt' ? (typeof BATT_POWER_SHARE !== 'undefined' ? BATT_POWER_SHARE : 1) : 1;
+        out.tech[t] = { netAnnuity: bldNetAnnuityAt(t, y, m), gross: (bldAnnuity(bldCapex(t, y), BLD_LIFE[t], t) + bldFom(t, y)) * m, capex: bldCapex(t, y), fom: bldFom(t, y), life: BLD_LIFE[t], capPay: capPayRate(t) * (BLD_DERATE[t] ?? 0),
+          gridAnn: (typeof bldGridAnn === 'function' ? bldGridAnn(t === 'pvtrk' ? 'pv' : t, S) : null), gridConn: (typeof bldGridCapexKW === 'function' ? bldAnnuity(bldGridCapexKW(t === 'pvtrk' ? 'pv' : t, S), BLD_GRID.lifeY, 'grid') : null) }; } catch (e) { out.tech[t] = { error: String(e.message).slice(0, 120) }; } }
+      try { out.battEnergyRkWhyr = (bldAnnuity(bldCapex('batt', y), BLD_LIFE.batt, 'batt') + bldFom('batt', y)) * (1 - BATT_POWER_SHARE) / 4; } catch (e) { out.battEnergyRkWhyr = null; }
+      try { out.pace = Object.fromEntries(Object.entries(BLD_PACE).map(([k, v]) => [k, v])); } catch (e) {}
+      try { out.mcCoal = S.costCoal + S.vomCoal, out.mcCcgt = S.costCcgt + S.vomCcgt; } catch (e) {}
+      return out; } catch (e) { return { error: String(e.message).slice(0, 160) }; } })();
+    return JSON.stringify({ build: BUILD_STAMP, weatherYear: yy, seed: st.outageSeed, state: { ...stOut, ...over }, costs,
       p: { windMW: p.windMW, pvUtilityMW: p.pvUtilityMW, rooftopMW: p.rooftopMW, cspMW: p.cspMW, nuclearMW: p.nuclearMW, hydroMW: p.hydroMW, hybridMW: p.hybridMW, importsMW: p.importsMW, importsCF: p.importsCF, importsEndYear: p.importsEndYear,
            coalInstalledMW: p.coalInstalledMW, coalEAFPct: p.coalEAFPct, ocgtDieselMW: p.ocgtDieselMW, psPowerMW: p.psPowerMW, psEnergyMWh: p.psEnergyMWh, psEff: p.psEff, battPowerMW: p.battPowerMW, battHours: p.battHours, battEff: p.battEff,
            nuclearCF: p.nuclearCF, hydroCF: p.hydroCF, rooftopDerate: p.rooftopDerate, costCoal: p.costCoal, vomCoal: p.vomCoal, costCcgt: p.costCcgt, vomCcgt: p.vomCcgt, costDiesel: p.costDiesel, vomDiesel: p.vomDiesel, costNuclear: p.costNuclear, costHydro: p.costHydro, costImports: p.costImports,

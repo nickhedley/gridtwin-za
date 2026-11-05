@@ -13,7 +13,21 @@ import numpy as np, pandas as pd, pypsa
 DUMP, ROOT, CASE, SITING, OUT = sys.argv[1:6]
 LOSSES = int(sys.argv[6]) if len(sys.argv) > 6 else 0
 COALMIN = int(sys.argv[7]) if len(sys.argv) > 7 else 0
+FACTOR = {'nolimit': None, 'n0': 1.0, 'f085': 0.85, 'n1': 0.7, 'n1tdp': 0.7, 'f085tdp': 0.85, 'n0tdp': 1.0, 'n1c': 1.0, 'n1ctdp': 1.0}[CASE]   # the N-1 factor on today's limits (and on TDP lines)
+N1C = CASE.startswith('n1c')   # N-1 by dropping one circuit per corridor, (n-1)/n from the circuit counts (single circuit: 0.7, as PyPSA-RSA)
+COUNTS = json.load(open(os.environ.get('CIRCUITS', S_COUNTS))) if N1C else {}
+TDP_ON = CASE.endswith('tdp')
+TX_EXT = float(os.environ.get('TX_EXT', '0'))        # (d) corridors extendable at this R per MW-km (0: fixed)
+DISC = float(os.environ.get('DISC', '0.055')); TX_LIFE = 40; CRF = DISC / (1 - (1 + DISC) ** -TX_LIFE) if DISC > 0 else 1 / TX_LIFE
+SITE_FREE = int(os.environ.get('SITE_FREE', '0'))     # (e) new wind and solar shares chosen by the LP, capped by each area's approved MW
+DEMAND_SPLIT = os.environ.get('DEMAND_SPLIT', 'file') # (g) 'file': the regional demand file's hourly shares; 'bld': BLD_LOAD_SHARE
+KOEBERG_OUT = os.environ.get('KOEBERG_OUT', '')       # (a) 'd1:d2,d3:d4' day-of-year windows with one 930 MW unit out; the engine's annual energy kept
+TDP_FILE = os.environ.get('TDP_FILE', '')              # (c) a JSON list of extra inter-area lines [{a,b,mw,year,name}] (the full TDP mapping)
+MIX = int(os.environ.get('MIX', '0'))                  # (f) new wind, solar, lithium (power and energy) and open-cycle gas extendable by area at the build's own costs
+MIX_CAP = os.environ.get('MIX_CAP', '')                # (f) national caps 'wind:MW,pv:MW,batt:MW' (cumulative build-rate limits), optional
+MIX_INTEG = int(os.environ.get('MIX_INTEG', '1'))      # (f) 1 keeps the integration charge on new wind and solar; 0 removes it (corridors priced explicitly)
 H = 8760
+S_COUNTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'corridor_circuit_counts.json')
 REG = ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape','Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State']
 D = json.load(open(DUMP)); p = D['p']; s = D['state']; hh = D['hourly']; st = hh['stack']; pu = hh['pu']; WY = str(D['weatherYear']); Y = int(s['scenarioYear'])
 A = lambda a: np.array(a, dtype=float)
@@ -31,6 +45,9 @@ wpu = {r: A(mm['wind_pu'][r][WY]) / SC for r in REG}; spu = {r: A(mm['solar_pu']
 wmap = jload('nodal/profiles_wind_modern_map.json')['regional_map']; tmap = A(jload('nodal/profiles_solar_tracking_map.json')['map'])
 demrows = [r for r in csv.DictReader(l for l in open(os.path.join(ROOT, 'nodal/demand_2025_regional.csv')) if not l.startswith('#'))]
 dreg = {r: A([float(x[r + '_corrected']) for x in demrows]) for r in REG}; dtot = sum(dreg.values()); share = {r: dreg[r] / dtot for r in REG}
+if DEMAND_SPLIT == 'bld':
+    BLS = json.loads(re.sub(r"'", '"', re.search(r"const BLD_LOAD_SHARE = (\{.*?\});", open(os.path.join(ROOT, 'index.html')).read(), re.S).group(1)))
+    share = {r: np.full(H, BLS[r]) for r in REG}; notes.append('demand split by BLD_LOAD_SHARE (static shares), not the regional demand file')
 subs = {x['n']: x.get('area') for x in jload('nodal/substations_compact.json')['subs']}
 uc = json.loads(re.search(r"const UC_FLEET = (\[.*?\]);", open(os.path.join(ROOT, 'index.html')).read()).group(1))
 # month and hour of day for the tracking map
@@ -51,9 +68,11 @@ def reea_shares():
         if a not in out['wind']: continue
         if q['tech'] == 'Wind': out['wind'][a] += q['mw']
         elif q['tech'] == 'Solar PV': out['solar'][a] += q['mw']
+    global REEA_MW; REEA_MW = {t: dict(out[t]) for t in out}
     for t in out:
         T = sum(out[t].values()); out[t] = {r: v / T for r, v in out[t].items()}
     return out
+REEA_MW = None
 def fleet_shares():
     out = {}
     for t, key in (('wind', 'wind_mw'), ('solar', 'solar_mw')):
@@ -115,12 +134,27 @@ battEx = {'Western Cape': 20.0, 'Kwazulu Natal': 48.0}; battExH = p['battHours']
 newBatt = s['newBattMW']; newBattH = s['newBattHours']
 batt_site = {'North West': 692 / 1744, 'Free State': 616 / 1744, 'Northern Cape': 436 / 1744} if SITING != 'reea_batt' else site['solar']
 
+# ---------------------------------------------------------------- (f) the build's own costs, R per MW-year (the dump's costs block, R per kW-year x 1000)
+CC = {}
+if MIX:
+    if REEA_MW is None: reea_shares()
+    c = D['costs']; T = c['tech']; integ = (c['txRPerKWyr'] or 0) * (c['gridIntVreShare'] if c['gridIntVreShare'] is not None else 1)
+    pvkey = 'pvtrk' if (solarTrk is not None and 'pvtrk' in T and 'error' not in T['pvtrk']) else 'pv'
+    CC['wind'] = 1000 * (T['wind']['netAnnuity'] + (T['wind']['gridConn'] or 0) + (integ if MIX_INTEG else 0))
+    CC['pv'] = 1000 * (T[pvkey]['netAnnuity'] + (T[pvkey]['gridConn'] or 0) + (integ if MIX_INTEG else 0))
+    CC['batt'] = 1000 * (T['batt']['netAnnuity'] + (T['batt']['gridConn'] or 0))
+    CC['battE'] = 1000 * c['battEnergyRkWhyr']
+    CC['ocgt'] = 1000 * (T['ocgt']['netAnnuity'] + (T['ocgt']['gridConn'] or 0))
+    notes.append(f"mix costs, R per MW-year: wind {CC['wind']:,.0f} ({pvkey} {CC['pv']:,.0f}), lithium power {CC['batt']:,.0f} and energy {CC['battE']:,.0f} per MWh, open cycle {CC['ocgt']:,.0f}; integration charge {'kept' if MIX_INTEG else 'removed'} ({integ:.0f} R/kW-yr)")
 # ---------------------------------------------------------------- the network
 n = pypsa.Network(); n.set_snapshots(range(H))
 for r in REG: n.add('Bus', r, carrier='AC')
 # corridors
 tdp = []
-if CASE == 'n1tdp':
+if TDP_ON and TDP_FILE:
+    for q in json.load(open(TDP_FILE)):
+        if (q.get('year') or 9999) <= Y: tdp.append((q['a'], q['b'], q['mw'], q['name'], q.get('year')))
+elif TDP_ON:
     KVMW = {400: 900, 765: 3000, 275: 600}
     for q in jload('nodal/tdp_projects.json')['projects']:
         if q.get('kind') != 'line' or (q.get('year') or 9999) > Y: continue
@@ -129,27 +163,43 @@ if CASE == 'n1tdp':
 corr = []
 for a, b, lim, km in CORR:
     add = sum(mw for x, y2, mw, nm, yr in tdp if {x, y2} == {a, b})
-    if CASE == 'nolimit': cap_ab = 1e6
-    elif CASE == 'n0': cap_ab = lim                 # today's corridors as the model draws them (N-0)
-    else: cap_ab = 0.7 * (lim + add)
+    if FACTOR is None: cap_ab = 1e6
+    elif N1C:
+        nc = COUNTS.get(a + '|' + b, COUNTS.get(b + '|' + a, 1)); fac = (nc - 1) / nc if nc > 1 else 0.7
+        cap_ab = fac * lim + 0.7 * add   # TDP additions as single new circuits at 0.7
+    else: cap_ab = FACTOR * (lim + add)
     corr.append((a, b, cap_ab, km, lim, add))
-extra = [(x, y2, mw, nm) for x, y2, mw, nm, yr in tdp if not any({x, y2} == {a, b} for a, b, *_ in CORR)]
-for x, y2, mw, nm in extra: corr.append((x, y2, 0.7 * mw, 300.0, 0.0, mw)); notes.append(f'TDP line {nm} joins {x} and {y2}, a pair with no corridor today: added at 0.7 x {mw} MW, 300 km')
+extra = {}
+for x, y2, mw, nm, yr in tdp:
+    if not any({x, y2} == {a, b} for a, b, *_ in CORR): extra[(x, y2)] = extra.get((x, y2), 0) + mw
+for (x, y2), mw in extra.items(): corr.append((x, y2, (0.7 if N1C else (FACTOR or 1.0)) * mw, 300.0, 0.0, mw)); notes.append(f'TDP lines join {x} and {y2}, a pair with no corridor today: added at {FACTOR or 1.0} x {mw} MW, 300 km')
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
+    ext = dict(p_nom_extendable=True, p_nom_min=cap_ab, capital_cost=TX_EXT * km * CRF) if (TX_EXT > 0 and FACTOR is not None) else {}
     if LOSSES:
         eff = 1 - 0.06 * km / 1000
-        n.add('Link', f'c{i}_ab', bus0=a, bus1=b, p_nom=cap_ab, efficiency=eff, marginal_cost=0.01, carrier='corridor')
-        n.add('Link', f'c{i}_ba', bus0=b, bus1=a, p_nom=cap_ab, efficiency=eff, marginal_cost=0.01, carrier='corridor')
+        n.add('Link', f'c{i}_ab', bus0=a, bus1=b, p_nom=cap_ab, efficiency=eff, marginal_cost=0.01, carrier='corridor', **ext)
+        n.add('Link', f'c{i}_ba', bus0=b, bus1=a, p_nom=cap_ab, efficiency=eff, marginal_cost=0.01, carrier='corridor', **ext)
     else:
-        n.add('Link', f'c{i}', bus0=a, bus1=b, p_nom=cap_ab, p_min_pu=-1, efficiency=1.0, marginal_cost=0.01, carrier='corridor')
+        n.add('Link', f'c{i}', bus0=a, bus1=b, p_nom=cap_ab, p_min_pu=-1, efficiency=1.0, marginal_cost=0.01, carrier='corridor', **ext)
+if TX_EXT > 0: notes.append(f'corridors extendable at R{TX_EXT:,.0f} per MW-km, {TX_LIFE} years at {DISC:.3f} (CRF {CRF:.4f})')
 # loads: gross national load split by the regional demand file's hourly shares; rooftop as a must-run generator per area
 for r in REG:
     n.add('Load', f'{r} load', bus=r, p_set=grossLoad * share[r])
     n.add('Generator', f'{r} rooftop', bus=r, p_nom=max(1e-6, roof_cap_r[r]), p_max_pu=roofpu * p['rooftopDerate'], p_min_pu=roofpu * p['rooftopDerate'], marginal_cost=0, carrier='rooftop')
     if cap_wex[r] > 0: n.add('Generator', f'{r} wind ex', bus=r, p_nom=cap_wex[r], p_max_pu=ser_wex[r], marginal_cost=0, carrier='wind')
-    if cap_wnew[r] > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=cap_wnew[r], p_max_pu=ser_wnew[r], marginal_cost=0, carrier='wind')
+    if MIX and N_w > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['wind'].get(r, 0.0)) if REEA_MW else 1e5, p_max_pu=ser_wnew[r], marginal_cost=0, capital_cost=CC['wind'], carrier='wind')
+    elif SITE_FREE and N_w > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['wind'].get(r, 0.0)) if REEA_MW else N_w, p_max_pu=ser_wnew[r], marginal_cost=0, capital_cost=0, carrier='wind')
+    elif cap_wnew[r] > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=cap_wnew[r], p_max_pu=ser_wnew[r], marginal_cost=0, carrier='wind')
     if cap_pex[r] > 0: n.add('Generator', f'{r} pv ex', bus=r, p_nom=cap_pex[r], p_max_pu=ser_pex[r], marginal_cost=0, carrier='pv')
-    if cap_pnew[r] > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=cap_pnew[r], p_max_pu=ser_pnew[r], marginal_cost=0, carrier='pv')
+    if MIX and N_p > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else 1e5, p_max_pu=ser_pnew[r], marginal_cost=0, capital_cost=CC['pv'], carrier='pv')
+    elif SITE_FREE and N_p > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else N_p, p_max_pu=ser_pnew[r], marginal_cost=0, capital_cost=0, carrier='pv')
+    if MIX:   # lithium as a store with its own charge and discharge links, so power and energy are priced apart as the build LP prices them
+        n.add('Bus', f'{r} li bus', carrier='li')
+        n.add('Store', f'{r} li store', bus=f'{r} li bus', e_nom=0.0, e_nom_extendable=True, e_cyclic=True, capital_cost=CC['battE'], carrier='li')
+        n.add('Link', f'{r} li charge', bus0=r, bus1=f'{r} li bus', p_nom=0.0, p_nom_extendable=True, efficiency=p['battEff'], capital_cost=CC['batt'], carrier='li')
+        n.add('Link', f'{r} li discharge', bus0=f'{r} li bus', bus1=r, p_nom=0.0, p_nom_extendable=True, efficiency=1.0, capital_cost=0, carrier='li')
+        n.add('Generator', f'{r} ocgt new', bus=r, p_nom=0.0, p_nom_extendable=True, marginal_cost=mc_ocgt, capital_cost=CC['ocgt'], carrier='ocgt')
+    elif cap_pnew[r] > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=cap_pnew[r], p_max_pu=ser_pnew[r], marginal_cost=0, carrier='pv')
     if coal_r[r] > 0:
         kw = dict(p_max_pu=coal_pu)
         if COALMIN == 1 and coalCommitted is not None: kw['p_min_pu'] = np.minimum(coal_pu, 0.57 * coalCommitted / coalRem)
@@ -161,22 +211,49 @@ for r in REG:
 # must-run plant as the engine dispatched it
 def mustrun(name, bus, series, carrier):
     pn = max(1.0, float(np.max(series))); n.add('Generator', name, bus=bus, p_nom=pn, p_max_pu=series / pn, p_min_pu=series / pn, marginal_cost=0, carrier=carrier)
-mustrun('Koeberg', 'Western Cape', A(st['nuclear']), 'nuclear')
+nuc = A(st['nuclear'])
+if KOEBERG_OUT:
+    avail = np.full(H, 2.0)
+    for win in KOEBERG_OUT.split(','):
+        d1, d2 = [int(x) for x in win.split(':')]; avail[(d1 - 1) * 24:d2 * 24] -= 1.0
+    cal = 930.0 * avail; nuc = cal * (nuc.sum() / cal.sum()); notes.append(f'Koeberg on a calendar with one unit out on days {KOEBERG_OUT}, both units scaled to the engine\'s annual energy (mean {nuc.mean():.0f} MW, max {nuc.max():.0f})')
+mustrun('Koeberg', 'Western Cape', nuc, 'nuclear')
 mustrun('hydro', 'Hydra Central', A(st['hydro']), 'hydro')
 if st.get('hybrid'): mustrun('hybrid', 'Northern Cape', A(st['hybrid']), 'hybrid')
 if st.get('imports') and np.sum(st['imports']) > 0: mustrun('imports', 'Gauteng', A(st['imports']), 'imports')
 n.add('Generator', 'CSP', bus='Northern Cape', p_nom=p['cspMW'], p_max_pu=A(pu['csp']), p_min_pu=A(pu['csp']), marginal_cost=0, carrier='csp')
 if ccgtMW > 0: n.add('Generator', 'CCGT', bus=gas_bus, p_nom=ccgtMW, marginal_cost=mc_ccgt, carrier='ccgt')
-if ocgtMW > 0: n.add('Generator', 'OCGT', bus=gas_bus, p_nom=ocgtMW, marginal_cost=mc_ocgt, carrier='ocgt')
+if ocgtMW > 0 and not MIX: n.add('Generator', 'OCGT', bus=gas_bus, p_nom=ocgtMW, marginal_cost=mc_ocgt, carrier='ocgt')
 for r, f in ps_site.items():
     n.add('StorageUnit', f'{r} pumped storage', bus=r, p_nom=p['psPowerMW'] * f, max_hours=p['psEnergyMWh'] / p['psPowerMW'], efficiency_store=p['psEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='ps')
 for r, mw in battEx.items():
     n.add('StorageUnit', f'{r} battery ex', bus=r, p_nom=mw, max_hours=battExH, efficiency_store=p['battEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='batt')
 for r, f in batt_site.items():
-    if newBatt > 0: n.add('StorageUnit', f'{r} battery new', bus=r, p_nom=newBatt * f, max_hours=newBattH, efficiency_store=p['battEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='batt')
+    if newBatt > 0 and not MIX: n.add('StorageUnit', f'{r} battery new', bus=r, p_nom=newBatt * f, max_hours=newBattH, efficiency_store=p['battEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='batt')
 
 t0 = time.time()
-status, cond = n.optimize(solver_name='highs', solver_options={'presolve': 'on', 'parallel': 'on'}, assign_all_duals=True)
+if SITE_FREE or MIX:
+    if REEA_MW is None: reea_shares()
+    m = n.optimize.create_model()
+    pn = m.variables['Generator-p_nom']
+    if SITE_FREE:
+        for t, N in (('wind new', N_w), ('pv new', N_p)):
+            names = [g for g in n.generators.index if g.endswith(t) and n.generators.p_nom_extendable[g]]
+            if names and N > 0: m.add_constraints(pn.loc[names].sum() == N, name=f'national {t}')
+    if MIX:
+        ln = m.variables['Link-p_nom']
+        for r in REG: m.add_constraints(ln.loc[f'{r} li discharge'] - ln.loc[f'{r} li charge'] == 0, name=f'li power {r}')
+        if MIX_CAP:
+            caps = dict(kv.split(':') for kv in MIX_CAP.split(','))
+            for t, suffix in (('wind', 'wind new'), ('pv', 'pv new'), ('ocgt', 'ocgt new')):
+                if t in caps:
+                    names = [g for g in n.generators.index if g.endswith(suffix)]
+                    if names: m.add_constraints(pn.loc[names].sum() <= float(caps[t]), name=f'cap {t}')
+            if 'batt' in caps: m.add_constraints(ln.loc[[f'{r} li charge' for r in REG]].sum() <= float(caps['batt']), name='cap batt')
+            notes.append('national caps: ' + MIX_CAP)
+    status, cond = n.optimize.solve_model(solver_name='highs', solver_options={'presolve': 'on', 'parallel': 'on'}, assign_all_duals=True)
+else:
+    status, cond = n.optimize(solver_name='highs', solver_options={'presolve': 'on', 'parallel': 'on'}, assign_all_duals=True)
 secs = time.time() - t0
 # ---------------------------------------------------------------- results
 g = n.generators_t.p; gc = n.generators.carrier
@@ -206,11 +283,41 @@ for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
     flows.append({'a': a, 'b': b, 'capMW': cap_ab, 'todayMW': lim, 'tdpMW': add, 'km': km, 'GWh': float(np.abs(f).sum()) / 1e3, 'hoursAtLimit': int((np.abs(f) >= 0.98 * cap_ab).sum()) if cap_ab < 1e5 else 0, 'maxMW': float(np.abs(f).max()),
                   'bindingHours': int((mu > 1.0).sum()), 'shadowRperMWyr': float(mu.sum()), 'shadowMeanRperMWh': float(mu[mu > 1.0].mean()) if (mu > 1.0).any() else 0.0})
 fuel = float(sum((g[name] * n.generators.marginal_cost[name]).sum() for name in n.generators.index if gc[name] in ('coal', 'ccgt', 'ocgt', 'diesel')))
+byArea = {r: {} for r in REG}
+for name, c in gc.items():
+    r = n.generators.bus[name]; byArea[r][c] = byArea[r].get(c, 0.0) + float(g[name].sum()) / 1e6
+netIn = {r: 0.0 for r in REG}; inflow_max = {r: 0.0 for r in REG}
+for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
+    f = (lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values) if LOSSES else lk[f'c{i}'].values
+    netIn[b] += float(f.sum()) / 1e6; netIn[a] -= float(f.sum()) / 1e6
+mix = {}
+if MIX:
+    mix['windMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} wind new', 0.0)) for r in REG}
+    mix['pvMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} pv new', 0.0)) for r in REG}
+    mix['ocgtMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} ocgt new', 0.0)) for r in REG}
+    mix['battMW'] = {r: float(n.links.p_nom_opt.get(f'{r} li charge', 0.0)) for r in REG}
+    mix['battMWh'] = {r: float(n.stores.e_nom_opt.get(f'{r} li store', 0.0)) for r in REG}
+    mix['totals'] = {k: sum(v.values()) for k, v in mix.items() if isinstance(v, dict)}
+    mix['liDischargeTWh'] = float(sum(n.links_t.p0[f'{r} li discharge'].clip(lower=0).sum() for r in REG)) / 1e6
+    mix['capexRbn'] = float(sum(n.generators.p_nom_opt[g] * n.generators.capital_cost[g] for g in n.generators.index if n.generators.p_nom_extendable[g]) + sum(n.links.p_nom_opt[l] * n.links.capital_cost[l] for l in n.links.index if n.links.p_nom_extendable[l]) + sum(n.stores.e_nom_opt[s2] * n.stores.capital_cost[s2] for s2 in n.stores.index)) / 1e9
+    mix['run'] = {'windMW': N_w, 'pvMW': N_p, 'battMW': newBatt, 'battMWh': newBatt * newBattH, 'ocgtMW': ocgtMW}
+    mix['costs'] = {k: v for k, v in CC.items()}
+siteOut = {}
+if SITE_FREE:
+    for t in ('wind new', 'pv new'):
+        tot = sum(float(n.generators.p_nom_opt[gn]) for gn in n.generators.index if gn.endswith(t)); siteOut[t] = {gn.replace(' ' + t, ''): float(n.generators.p_nom_opt[gn]) / tot for gn in n.generators.index if gn.endswith(t) and tot > 0}
+expansion = []
+if TX_EXT > 0:
+    for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
+        names = [f'c{i}_ab', f'c{i}_ba'] if LOSSES else [f'c{i}']
+        addMW = float(sum(n.links.p_nom_opt[nm] - n.links.p_nom[nm] for nm in names)) / (2 if LOSSES else 1)
+        if addMW > 1: expansion.append({'a': a, 'b': b, 'addMW': addMW, 'km': km, 'MWkm': addMW * km, 'capexRbn': addMW * km * TX_EXT / 1e9, 'annualRbn': addMW * km * TX_EXT * CRF / 1e9})
 res = {'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
        'objectiveRbn': float(n.objective) / 1e9, 'fuelAndCarbonRbn': fuel / 1e9,
        'E_TWh': {c: v / 1e6 for c, v in E.items()}, 'storageDischargeTWh': {c: v / 1e6 for c, v in dis.items()}, 'storageChargeTWh': {c: v / 1e6 for c, v in chg.items()},
        'availTWh': {c: v / 1e6 for c, v in avail.items()}, 'curtailedTWh': {c: v / 1e6 for c, v in curt.items()}, 'curtailedTotalTWh': sum(curt.values()) / 1e6, 'curtailedByRegionTWh': {r: v / 1e6 for r, v in curt_r.items()},
-       'unservedGWh': E.get('unserved', 0.0) / 1e3, 'corridors': flows, 'siting_shares': site, 'notes': notes,
+       'unservedGWh': E.get('unserved', 0.0) / 1e3, 'corridors': flows, 'siting_shares': site, 'notes': notes, 'byAreaTWh': byArea, 'netImportTWh': netIn, 'sitingChosen': siteOut, 'expansion': expansion, 'mix': mix, 'mixInteg': MIX_INTEG,
+       'expansionTotal': {'MW': sum(x['addMW'] for x in expansion), 'MWkm': sum(x['MWkm'] for x in expansion), 'capexRbn': sum(x['capexRbn'] for x in expansion), 'annualRbn': sum(x['annualRbn'] for x in expansion)}, 'txExt': TX_EXT, 'crf': CRF, 'siteFree': SITE_FREE, 'demandSplit': DEMAND_SPLIT, 'koebergOut': KOEBERG_OUT, 'tdpFile': os.path.basename(TDP_FILE) if TDP_FILE else '',
        'engine': {'E_TWh': {c: v / 1e6 for c, v in D['E'].items()}, 'shedGWh': D['shedMWh'] / 1e3, 'gridLoadTWh': float(gridLoad.sum()) / 1e6, 'grossLoadTWh': float(grossLoad.sum()) / 1e6, 'psDischargeTWh': D['E'].get('ps', 0) / 1e6, 'battDischargeTWh': D['E'].get('batt', 0) / 1e6}}
 json.dump(res, open(OUT, 'w'), indent=1)
 eng = res['engine']['E_TWh']
