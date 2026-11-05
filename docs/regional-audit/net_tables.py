@@ -1,8 +1,12 @@
 """Markdown tables for docs/regional-audit.md section 717 (c), built from the net_*.json results."""
-import json, glob
+import json, glob, os, re, sys
 S='/tmp/claude-0/-home-user-gridtwin-za/ff25664d-5d95-5cb3-a5ba-9894dfa04a8f/scratchpad/'
+PFX=sys.argv[1] if len(sys.argv)>1 else ''   # '' for the c7 stand-in files (net_<y>_...), 'final' for the every-change pass (net_final_<y>_...)
+PAT=re.compile(r'^net_'+(PFX+'_' if PFX else '')+r'(\d{4})_wy(\d{4})_([a-z0-9]+)_([a-z_]+)_l(\d)_c(\d)\.json$')
 R={}
 for f in sorted(glob.glob(S+'net_*.json')):
+    m=PAT.match(os.path.basename(f))
+    if not m: continue
     d=json.load(open(f)); R[(d['year'], d['weatherYear'], d['case'], d['siting'], d['losses'], d['coalmin'])]=d
 def g(d,c): return d['E_TWh'].get(c,0.0)
 def row(d): return dict(coal=g(d,'coal'), gas=g(d,'ccgt')+g(d,'ocgt'), diesel=g(d,'diesel'), wind=g(d,'wind'), pv=g(d,'pv'), curt=d['curtailedTotalTWh'], curtW=d['curtailedTWh'].get('wind',0), curtP=d['curtailedTWh'].get('pv',0), uns=d['unservedGWh'], sto=sum(d['storageDischargeTWh'].values()), cost=d['fuelAndCarbonRbn'])
@@ -19,13 +23,13 @@ for y in (2035,2040):
 out.append('')
 out.append('| year, weather year | case | curtailed, TWh | of it wind | solar | unserved, GWh | coal, TWh | gas | diesel | storage discharge | fuel and carbon, R bn | corridors with a shadow price over 4,000 hours (value of one more MW, R m a year) |')
 out.append('|---|---|---|---|---|---|---|---|---|---|---|---|')
-label={'n0':"today's limits as drawn (N-0)",'n1':'N-1 (0.7 x today)','n1tdp':'N-1 with TDP lines by year'}
+label={'n0':"today's limits as drawn (N-0)",'f085':'0.85 x today','n1':'N-1 (0.7 x today)','n1c':'N-1, one circuit dropped','n1tdp':'N-1 with TDP lines by year','n1ctdp':'one circuit dropped, with TDP lines by year'}
 for y in (2035,2040):
     for wy in ('2025','2015'):
         b=R.get((y,wy,'nolimit','reea',0,0))
         if not b: continue
         rb=row(b)
-        for case,site,L,C in (('n0','reea',0,0),('n1','reea',0,0),('n1tdp','reea',0,0),('n1','reea',1,0),('n1','fleet',0,0),('n1','reea',0,1)):
+        for case,site,L,C in (('n0','reea',0,0),('f085','reea',0,0),('n1','reea',0,0),('n1c','reea',0,0),('n1tdp','reea',0,0),('n1ctdp','reea',0,0),('n1','reea',1,0),('n1','fleet',0,0),('n1','reea',0,1)):
             d=R.get((y,wy,case,site,L,C))
             if not d: continue
             base=R.get((y,wy,'nolimit','reea',0,C))
@@ -41,4 +45,4 @@ for y in (2035,2040):
     d=R.get((y,'2025','n1','reea',0,0)); t=R.get((y,'2025','n1tdp','reea',0,0))
     if d: out.append(f"Curtailment by area, {y}, weather year 2025, N-1: " + ', '.join(f"{k} {v:.1f}" for k,v in sorted(d['curtailedByRegionTWh'].items(), key=lambda x:-x[1]) if v>0.05) + ' TWh' + (('; with TDP lines: ' + ', '.join(f"{k} {v:.1f}" for k,v in sorted(t['curtailedByRegionTWh'].items(), key=lambda x:-x[1]) if v>0.05) + ' TWh') if t else '') + '.')
 print('\n'.join(out))
-open(S+'net_tables.md','w').write('\n'.join(out))
+open(S+'net_tables'+('_'+PFX if PFX else '')+'.md','w').write('\n'.join(out))
