@@ -22152,3 +22152,33 @@ onshore about R860 (12% cost of capital); BNEF 2025 global onshore about R660, a
 - The pair: BW6 bids' capex and their 37.24% come from the same IPP Office note (7 Nov 2025); taken together they cost R822 (6.29%) or
   R937 (8%). The model takes the bids' capex with its own 42.0%: R728 or R831. At 8%, 42.0% sits with Meridian and IRENA; 37.24% above
   every published figure. Not decided here (704 (b): decision 7 Nov).
+
+### Near-optimal ranges (MGA), method: no method tried brings one solve inside a 2-hour piece; warm-started primal simplex, resumed across pieces, solves wind 2040 minimum at 1% in 8.1 h and is the method chosen (user, 4-5 Nov 2026, messages 693 and 698 (b) and the method-test messages; builds 2026-11-04a and 04b, the same LP; branch claude/test13-mga)
+
+Entry written by the test 13 session and added here by the main session (5 Nov 2026, 09:10 SAST); the full record is
+docs/test13-results.md on claude/test13-mga.
+
+Method result on a provisional basis, not a range for the note: the metered tracking-twin fix will change this LP's key, and the
+ranges for the note run after it.
+
+- Settings: c7's central (`source pathway/env_c6a.sh`; GAS_FIRST=2035 SS=inertia SS_FC=reservecoal COC=blended BTM_STOCK=8 VPP=1 GY=1
+  COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1 SOLVER=native) with REP_REF=metered
+  REP_EXTREMES=20,161,162,163,187,188,194,195,196,214,218,358 WX_WINDCORR=1 WX_WINDCORR_TABLE=pathway/wx/wind_corr_table_calm6.json
+  CONG_OFF=1 REP_WEIGHTS=clustered REP_DAYS=25 STORAGE_LINK=1 MAXP=1; pass 1, LP key 8e0651f38a (test 8's pass 1). No Eskom data read.
+  HiGHS 1.15.1 (highspy) on 4 cores and 15 GB, two solves at a time; times by HiGHS's clock.
+- Base: objective R1,521.52bn (MGA_FSTAR 1,521,521,735,393.82), 4,484 s alone on parallel dual simplex (HiGHS's SIP, simplex_strategy
+  2) on 2 threads; engine check adequate (2040: 18.8 GWh against 20).
+- MGA (Neumann and Brown 2021, Eq. 15): cost at most 1.01 x MGA_FSTAR; minimise new-build wind (onshore and offshore) MW standing in 2040.
+  - Cold, parallel dual simplex: not solved in 6,698 s; no basis kept.
+  - 18 days (the 12 extremes kept, typical days 13 to 6): base solves in 1,780 s, objective 1.29% lower, adequate; its MGA solve
+    not solved in 6,694 s, no basis kept.
+  - Presolve off, parallel dual simplex: not solved in five pieces (about 33,480 s); one resumed basis came back dual infeasible and
+    lost a piece's progress.
+  - Warm start, primal simplex from the base's optimal basis (base re-solve saving it: 4,672 s), resumed from the kept basis at each
+    piece end: Optimal in 29,117 s over five pieces.
+- The warm-start answer: wind standing in 2040 24,605 MW against the base's 39,918 MW, the cost row binding at +1.000%; solar 43,139 MW
+  (base 23,927), lithium 13,605 MW and 85,794 MWh (8,716 and 43,325), gas 5,017 MW (6,533); engine check adequate (2040: 19.4 GWh).
+- Method chosen (user, 5 Nov 2026): after the fix, the base re-solved saving its basis, then the 10 solves for 2040 at 1% by warm-started
+  primal simplex resumed across pieces, four at a time on one thread each (wind and solar minimum and maximum first, then lithium,
+  long-duration storage and coal), memory watched; 2030 and 2% if time allows.
+- Record: docs/test13-results.md and harness/out/mga2 on claude/test13-mga.
