@@ -176,7 +176,7 @@ for r, f in batt_site.items():
     if newBatt > 0: n.add('StorageUnit', f'{r} battery new', bus=r, p_nom=newBatt * f, max_hours=newBattH, efficiency_store=p['battEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='batt')
 
 t0 = time.time()
-status, cond = n.optimize(solver_name='highs', solver_options={'presolve': 'on', 'parallel': 'on'})
+status, cond = n.optimize(solver_name='highs', solver_options={'presolve': 'on', 'parallel': 'on'}, assign_all_duals=True)
 secs = time.time() - t0
 # ---------------------------------------------------------------- results
 g = n.generators_t.p; gc = n.generators.carrier
@@ -195,10 +195,15 @@ for name, c in n.storage_units.carrier.items():
     dis[c] = dis.get(c, 0.0) + float(sto[name].clip(lower=0).sum()); chg[c] = chg.get(c, 0.0) + float((-sto[name].clip(upper=0)).sum())
 flows = []
 lk = n.links_t.p0
+muU = n.links_t.mu_upper if hasattr(n.links_t, 'mu_upper') else None; muL = n.links_t.mu_lower if hasattr(n.links_t, 'mu_lower') else None
+def mu_of(name):
+    u = np.abs(muU[name].values) if (muU is not None and name in muU) else np.zeros(H); l = np.abs(muL[name].values) if (muL is not None and name in muL) else np.zeros(H); return u + l
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
-    if LOSSES: f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values
-    else: f = lk[f'c{i}'].values
-    flows.append({'a': a, 'b': b, 'capMW': cap_ab, 'todayMW': lim, 'tdpMW': add, 'km': km, 'GWh': float(np.abs(f).sum()) / 1e3, 'hoursAtLimit': int((np.abs(f) >= 0.98 * cap_ab).sum()) if cap_ab < 1e5 else 0, 'maxMW': float(np.abs(f).max())})
+    if LOSSES: f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values; mu = mu_of(f'c{i}_ab') + mu_of(f'c{i}_ba')
+    else: f = lk[f'c{i}'].values; mu = mu_of(f'c{i}')
+    # the shadow price of the corridor's capacity: R per MWh in the hours it binds; its sum over the year is the value of one more MW for a year
+    flows.append({'a': a, 'b': b, 'capMW': cap_ab, 'todayMW': lim, 'tdpMW': add, 'km': km, 'GWh': float(np.abs(f).sum()) / 1e3, 'hoursAtLimit': int((np.abs(f) >= 0.98 * cap_ab).sum()) if cap_ab < 1e5 else 0, 'maxMW': float(np.abs(f).max()),
+                  'bindingHours': int((mu > 1.0).sum()), 'shadowRperMWyr': float(mu.sum()), 'shadowMeanRperMWh': float(mu[mu > 1.0].mean()) if (mu > 1.0).any() else 0.0})
 fuel = float(sum((g[name] * n.generators.marginal_cost[name]).sum() for name in n.generators.index if gc[name] in ('coal', 'ccgt', 'ocgt', 'diesel')))
 res = {'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
        'objectiveRbn': float(n.objective) / 1e9, 'fuelAndCarbonRbn': fuel / 1e9,
@@ -217,5 +222,5 @@ print(f"{'ps dis':12s} {eng.get('ps', 0):9.3f} {res['storageDischargeTWh'].get('
 print(f"{'batt dis':12s} {eng.get('batt', 0):9.3f} {res['storageDischargeTWh'].get('batt', 0):9.3f}")
 print(f"{'curtailed':12s} {eng.get('curtailed', 0):9.3f} {res['curtailedTotalTWh']:9.3f}   (wind {res['curtailedTWh'].get('wind', 0):.3f}, pv {res['curtailedTWh'].get('pv', 0):.3f})")
 print(f"{'unserved GWh':12s} {res['engine']['shedGWh']:9.3f} {res['unservedGWh']:9.3f}")
-print('binding corridors:', sorted([(f['a'] + '-' + f['b'], f['hoursAtLimit'], round(f['GWh'])) for f in flows if f['hoursAtLimit'] > 0], key=lambda x: -x[1])[:8])
+print('binding corridors (hours with a shadow price, R per MW-year, GWh):', sorted([(f['a'] + '-' + f['b'], f['bindingHours'], round(f['shadowRperMWyr']), round(f['GWh'])) for f in flows if f['bindingHours'] > 0], key=lambda x: -x[2])[:8])
 for x in notes: print(' note:', x)
