@@ -66,7 +66,7 @@ What finished (each in RESULTS, with settings):
   has 2040 at 21.6 GWh, so the full loop would take a second pass.
 - Run (3), new wind at the bids' 37.24%: solar 30.5 GW in 2040 (+6.6), cost +R48.7bn; 2035 meets the standard narrowly.
 - Run (5), wind and tracking solar at the bids' figures: solar 29.6 GW; 0.71 GW of coal retired early; misses the standard in 2040.
-- Run (4), tracking solar at the bids' 30.13% alone: solar 25.0 GW in 2040 (+1.1, all on freed coal connections); 1.3 GW of coal
+- Run (4), tracking solar at the bids' 30.13% alone: solar 25.0 GW in 2040 (+1.1; 'all on freed coal connections' withdrawn, 710 (d)); 1.3 GW of coal
   retired early; the engine on the standard in 2035 and 2040 (20.3, 19.4). Lost twice to restarts; finished in resumable pieces.
 - The split, c7 to test 8 (solar 2040, GW): weather fixes +5.4, six-constant -0.4, congestion off -0.5, 25 equal days -6.5,
   clustered weights on modelled 2025 -0.7, metered reference -6.6, linking 0.0, fixed twin 0.0 (33.2 to 23.9). Reliability: wide
@@ -83,11 +83,16 @@ What each result does to utility solar:
   reliable.
 - New wind's capacity factor is the lever: at the bids' 37.24% solar rises to 30.5 GW, about 7 GW of it on new connections; solar's own
   capacity factor at the bids' figure adds little once wind is there (29.6 GW).
-- From 2029, at the model's 42.0% wind, solar is built almost only on connections freed by retiring coal.
+- Withdrawn 5 Nov (710 (d)): 'from 2029 solar is built almost only on connections freed by retiring coal'. The credit is the same per MW
+  for every technology allowed there (wind is barred), so which one takes a full pool is a tie-break, not a finding about solar.
 - The split: c7's 33.2 GW became 23.9 through the day count (25 equal days, -6.5) and the metered reference (-6.6), against +5.4
   from the weather fixes. Metered 2024 as the reference builds 3.1 GW more solar in 2040's year than metered 2025.
 - Observation, not a tested cause: every pass-1 build that retires 0.5 GW or more of coal early has missed the standard or sat on it
-  (runs (1), (2), (4), (5), split step 5); those retiring less met it.
+  (runs (1), (2), (4), (5), split step 5); those retiring less met it. Re-read with 710 (d): retiring coal early also frees a
+  connection, worth the full grid charge (R364/kW-yr and any connection annuity) to the LP when the pool is full (from 2034 in run
+  (6); in 2030-2033 it had spare room, so worth nothing then), a value the engine did not price until 710 (c). A plausible driver of
+  the early retirement, to test by switching the credit off for early-retired MW on one of these builds; the adequacy result is the
+  2-draw verdict's (704 (d)), so the observation may also be noise.
 
 What it does to the metered reference recommendation: it holds. Metered 2025 for wind and solar, on the fixed twin, gives test 8's solar
 and meets the standard; neither mixed reference does better. Metered 2024 on the fixed twin shows the build's sensitivity to the
@@ -160,7 +165,7 @@ Input freeze (701 (d)), changes from the night:
 - Wind-table pull request opened, not merged: #160 (suite 1,023/1,032, audit 88/88, eng5 5/6; no new failure).
 - 20:36 SAST: runs (1) and (2) done (RESULTS 'Runs (1) and (2) of message 700 (b)'): solar 28.0 and 24.3 GW in 2040 against test 8's
   23.9; both mixed references miss the engine standard in 2035 or 2040; from 2029 solar is built almost only on connections freed by
-  coal. Running: (6) (test 8's basis on the fixed twin) and (3) (new wind at the bids' 37.24%), from 20:35 SAST, jobs bg78yzvzs and
+  coal (withdrawn 5 Nov, 710 (d): a tie-break). Running: (6) (test 8's basis on the fixed twin) and (3) (new wind at the bids' 37.24%), from 20:35 SAST, jobs bg78yzvzs and
   b0tnxth44 (shell PIDs 29683, 29692; sol701 shells in gtza-twin out/sol701/progress.txt). Next: (4)+(5), split steps 3-6, metered 2024
   on the fixed twin (scratchpad ref2024/refs2024f.sh), 55 days.
 - 22:06 SAST: run (6) done (RESULTS 'Run (6) of message 701 (a)'): solar 23.9 GW in 2040 on the fixed twin, as test 8; engine standard

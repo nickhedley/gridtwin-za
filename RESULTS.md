@@ -21860,7 +21860,7 @@ test 8: 4,527 s alone).
 | The loop's own check (2 draws), 2040 mean, GWh | 18.8 | 21.6 |
 | Solar's energy value / wind's, 2030 / 2035 / 2040 | 0.79 / 0.77 / 0.78 | 0.78 / 0.79 / 0.92 |
 
-- The twin fix leaves utility solar where it was: 23.9 GW in 2040, all but 0.2 GW of it after 2028 on connections freed by coal.
+- The twin fix leaves utility solar where it was: 23.9 GW in 2040, all but 0.2 GW of it after 2028 on connections freed by coal. [Withdrawn 5 Nov 2026, message 710 (d): the connection credit is the same per MW for every technology allowed on a freed connection (wind is barred in these runs), so which one sits there is a solver tie-break once the pool is full (from 2034 in run (6)); see RESULTS 'Withdrawn: solar on freed coal connections'.]
 - What moves: wind +2.1 GW in 2040, lithium +2.2 GW / +17.9 GWh, no early coal retirement, diesel -1.65 GW; objective +R2.0bn.
 - The engine check meets the standard (20 GWh) in all three years. The loop's own check after pass 1 (2 draws a weather year) puts 2040 at
   21.6 GWh, so in the full loop run (6) would take a second pass; test 8 passed it at 18.8. The two checks differ for test 8 too (18.8
@@ -21974,7 +21974,7 @@ Solar 2040: on the freed-coal pool / off it after 2028 / the committed builds of
   linking (test 8) then takes 2035 to 15.9 and 2040 to 6.7, wind 42.2 to 39.9 GW. So the margin goes at the clustered weights on
   modelled 2025 and comes back with the metered reference, not with linking.
 
-### Run (4) of message 700 (b), fixed twin: new tracking solar at the bids' 30.13% alone: utility solar 25.0 GW in 2040 (run (6): 23.9), all of the gain on freed coal connections; 1.3 GW of coal retired early; the engine on the standard in 2035 and 2040
+### Run (4) of message 700 (b), fixed twin: new tracking solar at the bids' 30.13% alone: utility solar 25.0 GW in 2040 (run (6): 23.9), all of the gain on freed coal connections (withdrawn 5 Nov 2026, 710 (d): a tie-break); 1.3 GW of coal retired early; the engine on the standard in 2035 and 2040
 
 Settings: as run (6) (claude/twin-fix e588e49, fixed twin, test 8's basis, metered reference with its extremes) plus PV_TRK_CF=0.3013
 (factor 1.053827 on the fixed twin's 28.60%); wind at the model's 42.0%; LP key f313dc14b6. The engine check takes pvTrkCf from the run
@@ -21998,7 +21998,7 @@ at each deadline): 2,367 s + 2,378 s + about 1,880 s, beside split steps 4-6, 4 
 | Solar's energy value / wind's, 2030 / 2035 / 2040 | 0.78 / 0.79 / 0.92 | 0.74 / 0.74 / 0.87 |
 
 - Solar's own capacity factor at the bids' figure adds 1.1 GW in 2040, all on connections freed by coal (1.3 GW more coal retired early);
-  none off the pool. Wind's capacity factor is the lever (run (3): +6.6 GW).
+  none off the pool. [Withdrawn 5 Nov 2026, message 710 (d): the connection credit is the same per MW for every technology allowed on a freed connection (wind is barred in these runs), so which one sits there is a solver tie-break once the pool is full (from 2034 in run (6)); see RESULTS 'Withdrawn: solar on freed coal connections'.] Wind's capacity factor is the lever (run (3): +6.6 GW).
 - Reliability: 2035 and 2040 sit on the standard (20.3 and 19.4 GWh, each within one standard error); 2030 at 3.2. The build is
   R26bn cheaper, with less OCGT and more diesel.
 
@@ -22418,3 +22418,14 @@ construction 564 (Virginia 240 and a BW7 solar project 240 in the Free State, BW
 to 7,476 (1 MW published rounding, as before). Procured rose 239 MW for the 240 MW BW7 project: the operating fleet's procured capacity
 was revised down 1 MW (under-delivery 26 to 25). Pipeline: BW7 preferred bidders 3,700 MW (17), two BESIPPPP BW2 projects (153 MW) in
 construction. validate_capacity 36/36.
+
+### Withdrawn: solar on freed coal connections (message 710 (d); the cost review on 57f70df, finding 2)
+
+The statements that utility solar is built almost only on connections freed by retiring coal (runs (1), (2), (4) and (6), and the
+overnight summary) are withdrawn. The LP's credit for a freed connection is the full grid cost per MW avoided, the same for every
+technology allowed on one (in these runs solar, storage, gas and pumped storage; wind is barred, bldRpExclude, message 74). Run (6):
+every new solar MW from 2030 to 2039 sits on the pool (2040: 1,771 of 1,938 MW); the pool has spare room in 2030-2033 (7.3 GW freed
+by 2030, 3.3 GW used) and is full from 2034 (21.8 GW freed by 2040, 21.8 GW used, 1.5 GW of it pumped storage in 2038). Once full,
+which allowed technology sits on it changes nothing in the objective: a tie-break. While it has room (2030-2033), the credit does
+lower solar's grid cost against wind's, an effect of the wind exclusion, not of solar. The early-retirement observation (HANDOVER)
+is re-read there: a freed connection is worth the full grid charge to the LP once the pool is full.
