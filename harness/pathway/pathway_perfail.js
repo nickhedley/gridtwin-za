@@ -810,9 +810,16 @@ if (process.env.PV_TRK_CF){ const T = +process.env.PV_TRK_CF; if (!(T > 0.1 && T
  console.log('imports', w.eval('state.importsMW ?? FIXED.importsMW'), 'MW x', w.eval('(state.importsCF ?? FIXED.importsCF).toFixed(4)'));
  const t0=Date.now();
  const _dump=setInterval(()=>{ try{ fs.writeFileSync((process.env.OUT||'x')+'.progress', JSON.stringify(w.eval('JSON.stringify(bldStressLog.map(l=>({pass:l.pass,margin:l.margin,added:l.added,nAdded:Array.isArray(l.added)?l.added.length:l.added,fails:l.years.filter(q=>q.mean>q.limit).map(q=>[q.y,+q.mean.toFixed(2),+q.limit.toFixed(2)])})))'))); }catch(e){} }, 20000);
+ if (process.env.GAS_XOVER) w.eval('window.__gasXoverFn='+require('./gas_xover.js').PAGE_FN+';');
  await w.eval(`(async()=>{ const tg=1+(state.demandGrowthPct||0)/100;
    const opts={growth:${process.env.GROWTH_PA ? +process.env.GROWTH_PA : 'Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1'}, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, marginStepMW:1000, draws:${+(process.env.DRAWS||2)}, stressDays:14, targetFrac:${STD_FRAC}${STD_GWH!=null?', targetGWh:'+STD_GWH:''}, windowLeadYears:${+(process.env.LEAD||0)}, testEvery:1, windowsPerPass:${+(process.env.WPP||3)}, maxPasses:${+(process.env.MAXP||14)}, stallFrac:${STALL}, stallFrom:${STALL_FROM}${DEM_INDEX ? ', demandIndex:'+JSON.stringify(DEM_INDEX) : ''}${DEM_BLOCK ? ', demandBlock:'+JSON.stringify(DEM_BLOCK) : ''}${GAS_FUEL ? ', gasFuelR:'+JSON.stringify(GAS_FUEL) : ''}};
+   if (window.__gasXoverFn){ window.__gxOut=JSON.stringify(window.__gasXoverFn(opts)); return; }
    window.__out=await bldStressLoop(opts, m=>{}); })()`);
+ // GAS_XOVER=<out.json> (message 714 (b)): the gas crossover on this run's own LP inputs, instead of solving (pathway/gas_xover.js);
+ // LP_CHECK=<file.lp> checks it against an LP these settings dumped. Writes the table and exits.
+ if (process.env.GAS_XOVER){ const X=require('./gas_xover.js'), tab=JSON.parse(w.__gxOut);
+   if (process.env.LP_CHECK) tab.lpCheck={file:process.env.LP_CHECK, ...X.lpCheck(tab, process.env.LP_CHECK)};
+   fs.writeFileSync(process.env.GAS_XOVER, JSON.stringify(tab, null, 1)); console.log('gas crossover written', process.env.GAS_XOVER, tab.lpCheck?JSON.stringify(tab.lpCheck):'(no LP check)'); process.exit(0); }
  const out=w.__out, cols=out.res.Columns;
  const Y=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)')), T=JSON.parse(w.eval('JSON.stringify(BLD_TECHS)'));
  const sched={}; for(const y of Y){ sched[y]={}; for(const t of T) sched[y][t]=Math.round((cols['b_'+t+'_'+y]||{Primal:0}).Primal);
