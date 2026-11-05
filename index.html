@@ -6484,10 +6484,13 @@ const FIXED = {
   // 5-12% range typically quoted for subcritical coal between MSL and full load.
   // The floor on x stops the curve blowing up as output approaches zero.
   coalPartLoadK:0.10,
-  // Coal's part-load penalty in the build LP (message 710 (b); a test, null by default): a factor by model year on coal's fuel and carbon
-  // price per MWh, standing in for the engine's hourly part-load heat rate above at that year's mean (the engine's own measured mean on a
-  // run, harness/pathcheck.js coalPartLoad). Null: 1 in every year, the LP text as before.
-  bldCoalPartLoad:null,
+  // Coal's part-load penalty in the build LP (user, 5 Nov 2026, message 713 (a), after the test of 710 (b)): a factor by model year on
+  // coal's fuel and carbon price per MWh (not the 2030 carbon floor, as the engine), standing in for the engine's hourly part-load heat
+  // rate above at that year's mean: the engine's own fuel-weighted mean on run (6)'s build (harness/pathcheck.js coalPartLoad, K=2, all
+  // fifteen years, 5 Nov 2026; RESULTS 'Coal's part-load penalty in the LP on run (6)'). The engine's factor on the build it produces
+  // equals the table to within 0.001. One table for every pathway: a pathway with more part-load running (1.066 on Deep decarbonisation
+  // 2035, the cost review) is understated by 1-2%. Its basis is the curve above, whose constant has no citation (TODO 14na). Null: 1.
+  bldCoalPartLoad:{ 2026: 1.0337, 2027: 1.0357, 2028: 1.0373, 2029: 1.0363, 2030: 1.0431, 2031: 1.0411, 2032: 1.0444, 2033: 1.0465, 2034: 1.0475, 2035: 1.0494, 2036: 1.0507, 2037: 1.0508, 2038: 1.0503, 2039: 1.046, 2040: 1.0435 },
   // ── demand response ──────────────────────────────────────────────────────
   // Two mechanisms, because they are genuinely different products:
   //
@@ -22415,7 +22418,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-05g';
+const BUILD_STAMP = '2026-11-05h';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
