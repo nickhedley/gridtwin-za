@@ -22480,3 +22480,34 @@ basis, offshore included; vintage pricing from pathcheck's schedule): on c6e (on
 vintage -R8.5bn of PV, +R4.0bn together. 5: the unserved price escalated (x1.291). 6: confirmed against P0141 (1.036) and corrected.
 8: SOURCES corrected to 364; ATB editions identified (rooftop ATB 2023, CCGT ATB 2022; offshore unmatched). 9: the evidence points to
 a double count (SOURCES 'Avon and Dedisa'), not changed. 10: the run's own rate. 1 and 3: tested on run (6) (710 (a), (b)), running.
+
+### The verdict's draws on every year of run (6) (message 711): no year left at 2 draws would have passed wrongly; one read a third of its 20-draw value
+
+Run (6)'s pass-1 build (r6.json, claude/twin-fix e588e49), pathcheck with the loop's own seeds (SEED_BASE=20260816), LNG=1 GRID=1
+SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1; 2 draws on all fifteen years (5 Nov 2026 07:58-08:07 UTC) and 20 draws on the eleven not
+already run at 20 (08:07-08:58 UTC; 2034, 2035, 2039 and 2040 from 'The loop's verdict and its draws'). Limit: NTCSA's 20 GWh a year.
+
+| year | 2 draws (se) | 20 draws (se) | worst run at 20 | topped up at 10 GWh |
+|---|---|---|---|---|
+| 2026-2028 | 0.00 | 0.00 | 0.0 | no |
+| 2029 | 0.01 (0.01) | 0.02 (0.01) | 1.3 | no |
+| 2030 | 1.64 (1.41) | 1.01 (0.23) | 34.1 | no |
+| 2031 | 4.37 (1.49) | 5.44 (0.80) | 121.1 | no |
+| 2032 | 2.33 (1.00) | 7.96 (1.25) | 170.5 | no |
+| 2033 | 6.03 (2.72) | 8.17 (1.04) | 117.6 | no |
+| 2034 | 13.68 (5.77) | 14.36 (2.32) | 312.8 | yes |
+| 2035 | 12.68 (4.11) | 15.30 (1.80) | 183.9 | yes |
+| 2036 | 9.64 (3.77) | 11.65 (1.44) | 145.6 | no |
+| 2037 | 10.00 (4.92) | 8.16 (1.27) | 127.2 | yes |
+| 2038 | 9.28 (4.20) | 7.73 (1.35) | 183.0 | no |
+| 2039 | 11.81 (4.58) | 9.40 (1.55) | 199.7 | yes |
+| 2040 | 21.56 (11.38) | 9.79 (1.86) | 270.3 | yes |
+
+Every year below 10 GWh at 2 draws is inside the limit at 20 (largest 2036, 11.65): no wrong pass on this build. The rule passes the
+build at pass 1; the 2-draw rule fails 2040 and solves a second pass (r6_d2 stopped at the 2-hour job limit inside it). But the 2-draw
+value ranges from 0.29 to 2.20 times the 20-draw value over the ten years with real shortfall (2031-2040): 2032 read 2.33 against
+7.96. A year at the limit reads below 10 if underestimated by half or more (1 of these 10); below 5 only at a quarter or less (0 of
+10). Options, each in harness/pathway/pathway_perfail.js VERDICT_TOPUP: (A) {start 2, steps [10, 20], frac 0.5}, as proposed; (B) {start
+2, steps [10, 20], frac [0.25, 0.5]}: top up at 5 GWh to 10 draws and at 10 GWh to 20; (C) {start 5, steps [20], frac 0.5}. Engine time
+on run (6), one core, about 0.018 minutes a run: (A) about 17 minutes a pass, (B) about 25-30, (C) about 30; a second pass costs 80-110
+minutes of solving. Recommended: (B). The final gate (pathcheck at adaptive draws) stays on every rerun regardless.
