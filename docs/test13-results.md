@@ -165,7 +165,10 @@ resumed from it at 19:51 UTC; 19:51-21:43 UTC, not solved, basis kept. Piece 3 f
 wind standing with the perturbed costs): far from the optimum after 224 minutes. At 2,673 s into piece 3 the dual objective was
 -3,859, rising about 30 a minute, with 155,245 primal infeasibilities. The container restarted at 22:28 UTC and piece 3 was lost;
 it restarted from the 21:43 basis at 22:29 UTC. Piece 3, 22:29-00:21 UTC: not solved, dual objective 8,888 at its end (rising about
-100 a minute), 160,621 primal infeasibilities; basis kept. Piece 4 from 00:22 UTC. HiGHS's log names simplex_strategy 2 as SIP, the
+100 a minute), 160,621 primal infeasibilities; basis kept. Piece 4, 00:22-02:14 UTC: not solved. The kept basis came back dual
+infeasible (61,704 dual infeasibilities: most likely the cost perturbation of dual simplex), so dual phase 1 ran first and phase 2
+began at a dual objective of about -11.8 million, against 8,888 at the end of piece 3; it ended at -3.43 million with 169,474 primal
+infeasibilities. The resume lost the previous piece's progress. Piece 5, the last, from 02:15 UTC. HiGHS's log names simplex_strategy 2 as SIP, the
 task-parallel dual simplex, with concurrency 8 on 2 threads.
 
 ### Summary
