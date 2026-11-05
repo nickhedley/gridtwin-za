@@ -22511,3 +22511,29 @@ value ranges from 0.29 to 2.20 times the 20-draw value over the ten years with r
 2, steps [10, 20], frac [0.25, 0.5]}: top up at 5 GWh to 10 draws and at 10 GWh to 20; (C) {start 5, steps [20], frac 0.5}. Engine time
 on run (6), one core, about 0.018 minutes a run: (A) about 17 minutes a pass, (B) about 25-30, (C) about 30; a second pass costs 80-110
 minutes of solving. Recommended: (B). The final gate (pathcheck at adaptive draws) stays on every rerun regardless.
+
+### The curtailment price at 0 on run (6) (message 710 (a)): wind +2.4 GW, solar +0.45 GW and lithium energy -9% in 2040; curtailment +6.7 TWh; engine cost +R0.6bn; the standard holds
+
+Run (6)'s settings (test 8's basis on the fixed twin, claude/twin-fix e588e49 plus patch710: the CURT_COST setting, LP text unchanged at
+the default, checked by hash) with lpCurtailCostR 0; pass 1 (MAXP=1); parallel dual simplex on 2 threads, presolve off, in two pieces
+(5 Nov 2026 08:18-10:36 UTC, about 2 h 10 min of solving beside a second solve; solved Optimal without a tie-break value); engine check
+as run (6)'s: K=20, 2030/2035/2040, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 (10:36-10:45 UTC).
+
+| 2030 / 2035 / 2040 | run (6), R150 | R0 |
+|---|---|---|
+| utility solar, GW | 6.7 / 17.2 / 23.9 | 6.7 / 17.4 / 24.3 |
+| wind, GW | 9.3 / 26.8 / 42.0 | 9.7 / 27.2 / 44.3 |
+| lithium, GW; GWh in 2040 | 1.5 / 8.5 / 10.9; 61.2 | 1.5 / 8.6 / 10.7; 55.7 |
+| iron-air 2040; open-cycle gas 2040, MW | 300; 4,198 + 927 diesel | 150; 4,432 + 944 diesel |
+| coal retired early, MW | 0 | 244 from 2029 |
+| curtailment, TWh | 2.01 / 11.07 / 26.10 | 2.15 / 11.48 / 32.75 |
+| engine cost, R bn | 242.79 / 271.67 / 318.26 | 242.79 / 271.67 / 318.88 |
+| unserved, GWh (se), limit 20 | 0.95 (0.19) / 13.69 (1.70) / 7.58 (1.04) | 1.59 (0.47) / 13.45 (1.67) / 9.10 (1.24) |
+| CO2, Mt | 134.2 / 84.0 / 52.9 | 132.5 / 81.9 / 49.2 |
+| LP objective, R bn; the loop's 2-draw verdict | 1,523.5; 2040 fails | 1,521.6; all years pass |
+
+Without the price the LP builds more wind, not solar (the comment's '40 GW of solar' does not arise: build limits and the freed-connection
+pool bind first), and less lithium energy. Nothing else in the LP was tuned around R150: it has been in the code since the first upload;
+lpBattDischargeCostR (R20) was set on its own reasoning (14 Aug 2026; its solver test ran with R150 on: identical builds at the default
+build rates); the Cape allowance is NERSA's 4%; the curtailment bound (200 GW) does not bind. Central from build 2026-11-05f: 0; R150 a
+sensitivity.
