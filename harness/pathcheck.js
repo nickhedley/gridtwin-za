@@ -55,6 +55,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
 // value that disagrees with the recorded one stops the check, unless CHECK_ON names the setting (a deliberate cross-check, e.g. a build
 // checked on the stored weather: CHECK_ON=wxWindCorr), which is logged and recorded in every row (recordedSettings). A run that did not
 // record a setting is checked on the environment or the page default, as before, and says so.
+if (process.env.PAGE_BASIS!==undefined && !['0','1'].includes(process.env.PAGE_BASIS)) throw new Error('PAGE_BASIS must be 0 or 1');
+const PAGE_BASIS=process.env.PAGE_BASIS==='1';
 const CHECK_ON=(process.env.CHECK_ON||'').split(',').map(x=>x.trim()).filter(Boolean), RECSET={};
 const _congRec=(()=>{ try { return P.congestion!=null ? (typeof P.congestion==='string' ? JSON.parse(P.congestion) : P.congestion) : null; } catch(e){ throw new Error('congestion: unreadable recorded value '+P.congestion); } })();
 const _trkShRec=(()=>{ try { return P.existPvTrackShare!=null ? (typeof P.existPvTrackShare==='string' ? JSON.parse(P.existPvTrackShare) : P.existPvTrackShare) : null; } catch(e){ throw new Error('existPvTrackShare: unreadable recorded value'); } })();
@@ -332,8 +334,12 @@ console.log('recorded settings:', JSON.stringify(RECSET));
    // The engine's grid charge on the LP's basis (message 710 (c)): with the optimiser's grid cost on, the run's own use of connections
    // freed by retired coal (rp, by technology) and its wind on the Cape allowance; and its new build by vintage (710 (e)), each year's MW
    // as the schedule built them, so the engine prices each at its own year's capex.
-   if (GRID_ON){ over.gridRpMW={...rpCum}; over.gridCapeMW=cwCum; }
-   { const V={}; for (const yy of Y) if (yy<=y) for (const [k,t] of [['wind','wind'],['pv','pv'],['rooftop','rooftop'],['batt','batt'],['vrfb','vrfb'],['ironair','ironair'],['ccgt','ccgt'],['ocgt','ocgt'],['ocgd','ocgd'],['off','offshore']]){
+   // PAGE_BASIS=1 (message 710 (e)): price as the page prices a preset, a single state: new build at the midpoint vintage and the freed
+   // connections by the page's rule (gridChargeR without the run's pool use). The preset engine checks run so, so that the page and its
+   // check are on one basis (harness/validate_pathway_presets.js); a pathway's own engine check prices by vintage on its own pool use.
+   if (!PAGE_BASIS){
+     if (GRID_ON){ over.gridRpMW={...rpCum}; over.gridCapeMW=cwCum; }
+     const V={}; for (const yy of Y) if (yy<=y) for (const [k,t] of [['wind','wind'],['pv','pv'],['rooftop','rooftop'],['batt','batt'],['vrfb','vrfb'],['ironair','ironair'],['ccgt','ccgt'],['ocgt','ocgt'],['ocgd','ocgd'],['off','offshore']]){
        const m=+P.sched[yy][k]||0; if (m>0) (V[t]=V[t]||{})[yy]=m; }
      over.bldVintageMW=V; }
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
@@ -420,7 +426,7 @@ console.log('recorded settings:', JSON.stringify(RECSET));
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
-     r.recordedSettings=RECSET;
+     r.recordedSettings=RECSET; r.pricingBasis=PAGE_BASIS?"page (midpoint vintage, the page's pool rule)":"run (vintage, the run's pool use)";
      r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(PVT?', new tracking solar at '+PVT:'')+(SSHIFT?', PVGIS solar '+SSHIFT+' min earlier':'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.cocCase=COC_USED; if (COC_USED!==P.cocCase) r.cocCaseRecorded=P.cocCase; r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
@@ -491,7 +497,7 @@ console.log('recorded settings:', JSON.stringify(RECSET));
      // From message 710 (c) the engine charges this itself (gridChargeR, on the run's own pool use): engTx is the engine's own grid charge,
      // and it must equal the optimiser's basis here; a difference above R1m a year stops the check. costGrid then equals cost.
      const engTx=+w.eval(`gridChargeR({...state,...${JSON.stringify(over)}},{...FIXED,...state,...${JSON.stringify(over)}})`);
-     if (Math.abs(engTx-g)>1e6) throw new Error('grid charge: the engine '+(engTx/1e9).toFixed(4)+' bn against the optimiser basis '+(g/1e9).toFixed(4)+' bn in '+y);
+     if (!PAGE_BASIS && Math.abs(engTx-g)>1e6) throw new Error('grid charge: the engine '+(engTx/1e9).toFixed(4)+' bn against the optimiser basis '+(g/1e9).toFixed(4)+' bn in '+y);
      r.gridOptBn=g/1e9; r.engTxBn=engTx/1e9; r.costGrid=r.cost-r.engTxBn+r.gridOptBn; r.rpCumMW=Object.values(rpCum).reduce((a,b)=>a+b,0);
    }
    // Life-extension capex (TODO 14as): the engine charges fixed O&M on what is online; each extended plant's
