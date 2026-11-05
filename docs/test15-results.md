@@ -1,6 +1,25 @@
 # Test 15, two stages: results (message 691 (f); basis from message 693)
 
-Draft, filled in as the runs go. Times UTC.
+Final for this basis (5 Nov 2026). Times UTC.
+
+## Summary
+
+- Where the runs stopped: the central finished all 15 steps; Fossil-free stopped at step 2033 (7 of 15) and the annuity variant at step
+  2029 (3 of 15), each cut twice by the piece deadline. Decision (user, 5 Nov 2026): both left stopped; no relaunch on this basis.
+- Why they stopped: a step that needs several passes of 30 to 50 min outlasts one 110-min piece, and a parallel solve cut at the deadline
+  keeps no valid basis, so the next piece starts that pass again cold. How long steps can resume is being worked out in the main session
+  (message 704 (f)).
+- Time, the central: 14.7 h from its first piece to its last step, 11.3 h of it solving (21 solves, cut ones included), on a machine shared
+  with a second run; the one-stage pathway on the same basis took 1.35 h (4,864 s) alone.
+- Mix, the central by 2040, two stages against one stage: wind 41,483 against 39,918 MW; solar 26,618 against 23,927; lithium 11,464 MW /
+  64,950 MWh against 8,717 / 43,326; OCGT gas 5,272 against 3,950; OCGT diesel 1,658 against 2,582; CCGT 553 against 0; iron-air 300
+  against 150; pumped storage 1,500 both. Coal retired early 3,463 MW from 2029 against 220 MW.
+- Solver: on step 2026's LP alone on the machine, parallel dual simplex took 708.8 s against serial's 438.8 s, with the same answer
+  (Solver timing, below).
+- Caveat: the metered tracking twin on this basis is misshapen (status below), so these figures compare method and time, not mixes for use.
+- Next (user, 5 Nov 2026): the runs restart on the fixed tracking twin when the main session's restart message comes; it sets the solver on
+  the final LP key, probably after a clean timing on a larger step. Planned: the central, Fossil-free and Deep; the annuity variant only if
+  time allows. pathway/test15.sh has no Deep run yet; its settings come with the restart message.
 
 Status (user, 4 Nov 2026): the metered tracking twin on this basis has been found misshapen and is being fixed. These runs stand as a method
 and timing comparison with one stage, not as a mix for use.
@@ -104,9 +123,11 @@ harness/pathway/test15/ts_central and ts_ff.
 
 ### The central, Fossil-free and the central with ANNUITY_TO=2040 (message 693 (6))
 
-Run central first, then Fossil-free, the annuity run last (user, 4 Nov 2026). Fossil-free stopped at step 2033 (21:33, below); the annuity run stopped at step 2029 (04:09 on 5 Nov, below); no run is going. The central finished all 15 steps at 01:43 on 5 Nov: 14.7 h from its first piece (11:02 on 4 Nov) over 14 pieces, one of them ended by a container restart; 21 solves (cut ones included), 11.3 h of solve wall time. The tables between the markers are regenerated after
-each finished step from `python3 -I pathway/test15_summary.py out/ts2_central out/ts2_ff out/ts2_central_ann` (one-stage brackets: the main
-session's section above).
+Run central first, then Fossil-free, the annuity run last (user, 4 Nov 2026). The central finished all 15 steps at 01:43 on 5 Nov: 14.7 h
+from its first piece (11:02 on 4 Nov) over 14 pieces, one of them ended by a container restart; 21 solves (cut ones included), 11.3 h of
+solve wall time. Fossil-free stopped at step 2033 (21:33 on 4 Nov) and the annuity run at step 2029 (04:09 on 5 Nov), both left stopped
+(user, 5 Nov 2026; below). The tables between the markers were regenerated after each finished step from `python3 -I
+pathway/test15_summary.py out/ts2_central out/ts2_ff out/ts2_central_ann` (one-stage brackets: the main session's section above).
 
 #### A stopped second solve resumed from the first solve's basis (found and fixed 4 Nov 2026, 5b98fd3)
 
@@ -118,11 +139,11 @@ session's section above).
   log says resume from this LP's own basis, warm start, or cold. LP keys unchanged (step 2026's dumps to 1faa0496d2 after it).
 - Affected: ts2_ff step 2028, pass 2 (kept at 13:28, resumed 13:30, optimal in 884 s; finished, adequate): very likely, not confirmable (the
   file is removed on success); same objective, builds could differ only if the LP has more than one optimal build; not re-solved cold (user,
-  4 Nov 2026: the affected steps are recorded, and the runs restart on the fixed tracking twin anyway). ts2_central step 2029, pass 2: the kept file was pass 1's (written 13:31:17, pass 2
-  stopped 14:13); moved aside, so pass 2 starts cold. ts2_central_ann step 2027, pass 2: pass 1's (written 14:50:55), resumed 15:07,
-  optimal in 417 s; its builds chose pass 3's stress windows. Its pass 5 (cut at 16:39, in a process started before the fix) kept pass 4's
-  basis (written 16:18:41) the same way; moved aside, so pass 5 starts cold. The first basis (ts_central step 2028, pass 2, confirmed; ts_ff step 2028,
-  pass 2, likely) is record only.
+  4 Nov 2026: the affected steps are recorded, and the runs restart on the fixed tracking twin anyway). ts2_central step 2029, pass 2: the
+  kept file was pass 1's (written 13:31:17, pass 2 stopped 14:13); moved aside, so pass 2 starts cold. ts2_central_ann step 2027, pass 2:
+  pass 1's (written 14:50:55), resumed 15:07, optimal in 417 s; its builds chose pass 3's stress windows. Its pass 5 (cut at 16:39, in a
+  process started before the fix) kept pass 4's basis (written 16:18:41) the same way; moved aside, so pass 5 starts cold. The first basis
+  (ts_central step 2028, pass 2, confirmed; ts_ff step 2028, pass 2, likely) is record only.
 
 #### Solver timing
 
@@ -140,10 +161,12 @@ nothing else solving (4 cores, 15 GB).
 - Same answer: objectives within 2.2e-16 of each other, and all 125 build variables within 2e-11 MW. 6,933 dispatch columns differ by more
   than 1 (largest 4,045, a pumped-storage level in 2028): different optima of the same cost, the builds unchanged. The central's own
   solve of this LP on 4 Nov (serial, about 508 s to the 15-second poll) has the same objective to the digit and the same 2026 builds.
-- Caveat: one LP, the smallest in the runs (2026 to 2030, its first pass, before the adequacy loop adds any 14-day stress windows), one solve each; the larger look-ahead LPs (35 to 50 min)
-  are not measured. Rough pairs from the runs, different LPs, each beside one other solve: Fossil-free step 2029 on parallel 48.8 min
-  against the central's step 2029 pass 1 on serial 52.4 min; the annuity run's step 2026 on parallel 15.9 min against the central's step
-  2026 on serial 8.5 min.
+- Caveat: one LP, the smallest in the runs (2026 to 2030, its first pass, before the adequacy loop adds any 14-day stress windows), one
+  solve each; the larger look-ahead LPs (35 to 50 min) are not measured. Rough pairs from the runs, different LPs, each beside one other
+  solve: Fossil-free step 2029 on parallel 48.8 min against the central's step 2029 pass 1 on serial 52.4 min; the annuity run's step 2026
+  on parallel 15.9 min against the central's step 2026 on serial 8.5 min.
+- The solver for the restart is set in the main session's restart message, probably after a clean timing on a larger step (user, 5 Nov
+  2026).
 
 #### Steps cut by a piece and relaunched
 
@@ -156,8 +179,8 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   three windows added (2022 day 133 twice, 2021 day 161). Pass 3 started cold at 20:58:40 with the 2,066 s left and was stopped at the
   job deadline at 21:33:21, again with no valid basis. The one relaunch used, Fossil-free is left stopped at 7 of 15 steps (21:33). Why:
   this step needs at least three passes of 41 to 51 min each, more than one 110-min piece holds; each solve alone fits in a piece. Passes 1
-  and 2 are in the LP cache (03a1f3ee3d, ab2a195959), so a further relaunch would start at pass 3, cold, with about 90 min. That relaunch
-  is the user's call. The annuity run took the slot at 21:33 (PID 7929), next in line.
+  and 2 are in the LP cache (03a1f3ee3d, ab2a195959), so a further relaunch would start at pass 3, cold, with about 90 min. Decision
+  (user, 5 Nov 2026): left stopped; no relaunch on this basis. The annuity run took the slot at 21:33 (PID 7929), next in line.
 - Container restart, about 23:45 (outside any piece): every process stopped; the files, the LP caches and the output folders were kept.
   ts2_central step 2037 had solved for 3 min (pass 1); relaunched at 23:46 (PID 291), its pass 1 cold again. ts2_central_ann step 2028
   (to 2032) had solved passes 1 to 3 (14.8, 21.6, 24.2 min; 2032 at 37.76, 29.51, 23.97 against 20 GWh) and pass 4 for 16 of its 26 min
@@ -174,8 +197,8 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   deadline at 04:09:49 with no valid basis (b0591c7b8b). The one relaunch used, the annuity run is left stopped at 3 of 15 steps (04:09).
   Why: this step needs six passes of 17 to 38 min each, more than one 110-min piece holds; each solve alone fits in a piece. Passes 1 to 5
   are in the LP cache (passes 4 and 5: d03f368753, c63c34b260), so a further relaunch would replay them in about 12 min and run pass 6
-  cold with about 95 min; at 22.92 then 22.09 GWh, pass 6 would very likely still leave 2033 over the standard. That relaunch is the
-  user's call.
+  cold with about 95 min; at 22.92 then 22.09 GWh, pass 6 would very likely still leave 2033 over the standard. Decision (user, 5 Nov
+  2026): left stopped; no relaunch on this basis.
 
 <!-- test15_summary start -->
 #### ts2_central (15 of 15 steps)
