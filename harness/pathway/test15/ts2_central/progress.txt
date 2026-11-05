@@ -179,3 +179,8 @@
 2026-11-05T00:54Z two_stage K=4 N=25 FIRST=2026, shell PID 15617
 2026-11-05T00:55:09Z step node PID 15641
 2026-11-05T00:55:24Z solve started (highs_native.py 15703)
+2026-11-05T01:15:45Z solve (highs_native.py 15703) ended after about 1217s
+2026-11-05T01:19Z step 2039 (horizon 2040) rc=0 done
+2026-11-05T01:19:45Z node 15641 ended, peak memory 2.8 GB
+2026-11-05T01:19:45Z step node PID 21413
+2026-11-05T01:20:15Z solve started (highs_native.py 21505)

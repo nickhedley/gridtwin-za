@@ -153,30 +153,30 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   the next piece resumed (fixed 5 Nov 2026).
 
 <!-- test15_summary start -->
-#### ts2_central (13 of 15 steps)
+#### ts2_central (14 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
 ts2_central: new build by year, MW (lithium also MWh)
 
-| Year | wind | solar | lithium MW | lithium MWh | pumped new | OCGT gas | OCGT diesel | grid-forming |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| 2026 | 287 | 156 | 360 | 1,440 | 0 | 0 | 0 | 0 |
-| 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 | 0 | 0 | 0 |
-| 2028 | 2,500 | 1,129 | 0 | 660 | 0 | 0 | 0 | 139 |
-| 2029 | 2,500 | 3,063 | 395 | 0 | 0 | 0 | 0 | 332 |
-| 2030 | 2,500 | 3,277 | 2,219 | 892 | 0 | 0 | 0 | 1,292 |
-| 2031 | 3,500 | 3,506 | 2,466 | 10,105 | 0 | 0 | 0 | 625 |
-| 2032 | 3,500 | 3,752 | 1,521 | 9,921 | 0 | 0 | 325 | 909 |
-| 2033 | 3,500 | 1,437 | 798 | 2,956 | 0 | 0 | 72 | 22 |
-| 2034 | 3,500 | 1,653 | 425 | 7,755 | 0 | 0 | 1,000 | 0 |
-| 2035 | 3,500 | 551 | 305 | 4,287 | 0 | 611 | 0 | 0 |
-| 2036 | 3,500 | 425 | 126 | 3,127 | 0 | 638 | 0 | 158 |
-| 2037 | 3,500 | 280 | 336 | 1,049 | 0 | 1,200 | 0 | 0 |
-| 2038 | 2,461 | 1,743 | 0 | 827 | 1,500 | 976 | 0 | 0 |
-| 2039 |  |  |  |  |  |  |  |  |
-| 2040 |  |  |  |  |  |  |  |  |
-| Total | 36,707 | 23,092 | 9,352 | 44,638 | 1,500 | 3,425 | 1,397 | 3,477 |
+| Year | wind | solar | lithium MW | lithium MWh | iron-air | pumped new | OCGT gas | OCGT diesel | grid-forming |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 2026 | 287 | 156 | 360 | 1,440 | 0 | 0 | 0 | 0 | 0 |
+| 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 | 0 | 0 | 0 | 0 |
+| 2028 | 2,500 | 1,129 | 0 | 660 | 0 | 0 | 0 | 0 | 139 |
+| 2029 | 2,500 | 3,063 | 395 | 0 | 0 | 0 | 0 | 0 | 332 |
+| 2030 | 2,500 | 3,277 | 2,219 | 892 | 0 | 0 | 0 | 0 | 1,292 |
+| 2031 | 3,500 | 3,506 | 2,466 | 10,105 | 0 | 0 | 0 | 0 | 625 |
+| 2032 | 3,500 | 3,752 | 1,521 | 9,921 | 0 | 0 | 0 | 325 | 909 |
+| 2033 | 3,500 | 1,437 | 798 | 2,956 | 0 | 0 | 0 | 72 | 22 |
+| 2034 | 3,500 | 1,653 | 425 | 7,755 | 0 | 0 | 0 | 1,000 | 0 |
+| 2035 | 3,500 | 551 | 305 | 4,287 | 0 | 0 | 611 | 0 | 0 |
+| 2036 | 3,500 | 425 | 126 | 3,127 | 0 | 0 | 638 | 0 | 158 |
+| 2037 | 3,500 | 280 | 336 | 1,049 | 0 | 0 | 1,200 | 0 | 0 |
+| 2038 | 2,461 | 1,743 | 0 | 827 | 0 | 1,500 | 976 | 0 | 0 |
+| 2039 | 2,583 | 2,308 | 767 | 9,530 | 150 | 0 | 1,200 | 261 | 0 |
+| 2040 |  |  |  |  |  |  |  |  |  |
+| Total | 39,290 | 25,400 | 10,119 | 54,168 | 150 | 1,500 | 4,625 | 1,658 | 3,477 |
 
 ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -195,6 +195,7 @@ ts2_central: coal standing (MW), coal retired ahead of its dates (MW) and kept u
 | 2036 | 21,885 | 3,463 | 3,463 |
 | 2037 | 20,195 | 3,463 | 3,463 |
 | 2038 | 18,506 | 3,463 | 3,463 |
+| 2039 | 16,198 | 3,463 | 3,463 |
 
 ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -213,7 +214,7 @@ ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2036 | 2040 | 1 | adequate | parallel, 2 threads | 34.0 | 39.3 | 2 | 2.9 | pass 1: none | 868.454 |
 | 2037 | 2040 | 1 | adequate | parallel, 2 threads | 27.9 | 32.6 | 3 | 2.8 | pass 1: none | 844.648 |
 | 2038 | 2040 | 1 | adequate | parallel, 2 threads | 29.2 | 34.0 | 2 | 2.7 | pass 1: none | 823.097 |
-| 2039 | | | not finished |  |  | | 1 | | | |
+| 2039 | 2040 | 1 | adequate | parallel, 2 threads | 20.3 | 24.6 | 2 | 2.8 | pass 1: none | 804.287 |
 
 ts2_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -232,6 +233,7 @@ ts2_central: the adequacy test on each step's own year y at its final pass (mean
 | 2036 | 7.97 / 20 | 7.97 / 20 | 2020 (73.6) |
 | 2037 | 7.98 / 20 | 7.98 / 20 | 2015 (56.9) |
 | 2038 | 7.52 / 20 | 7.52 / 20 | 2019 (77.3) |
+| 2039 | 12.78 / 20 | 12.78 / 20 | 2015 (102.2) |
 
 #### ts2_ff (7 of 15 steps)
 
@@ -361,6 +363,9 @@ Cumulative new build, MW (lithium also MWh), built 2026 to the year
 | lithium MWh | 2030 | 4,611 | 6,039 |  |
 | lithium MWh | 2035 | 39,635 |  |  |
 | lithium MWh | 2040 |  |  |  |
+| iron-air | 2030 | 0 | 0 |  |
+| iron-air | 2035 | 0 |  |  |
+| iron-air | 2040 |  |  |  |
 | pumped new | 2030 | 0 | 0 |  |
 | pumped new | 2035 | 0 |  |  |
 | pumped new | 2040 |  |  |  |
