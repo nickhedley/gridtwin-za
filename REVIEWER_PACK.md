@@ -145,8 +145,8 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
 - Wind's build rate is limited, and the limit binds: on the central's current build (test 8) new wind sits on its yearly limit in 10
   of 15 years, 2029-2038, so wind's share in those years is the limit's, not the economics'. The limit is 2,500 MW a year to 2030 and
   3,500 MW a year from 2031. Source: IRP 2025, Table 1, whose highest yearly wind addition is 3,500 MW, reached only from 2039; applying
-  it from 2031 is ours. The pace to 2030, 2,500 MW of wind and 2,000 MW of solar a year, is our split (decision of 13 Oct 2026). Solar's
-  yearly limit binds in 2030-2031 only (message 701 (f)).
+  it from 2031 is ours. The 2,500 MW a year to 2030 is our split of a combined wind and solar pace (2,500 MW wind, 2,000 MW solar), not
+  a published figure (decision of 13 Oct 2026). Solar's yearly limit binds in 2030-2031 only (message 701 (f)).
 - Restarts after forced outages are not yet costed.
 - Open-cycle gas and diesel run far less in the engine than at Eskom: 2.2 against 3.4 TWh in the 2025 replay (34% below) and 0.2 against
   0.8 TWh in January-August 2026 (80% below). Eskom also runs its turbines for reserve, unit trips and network constraints, which a
