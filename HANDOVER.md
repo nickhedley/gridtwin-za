@@ -15,6 +15,11 @@ inside the presolved LP returns no valid basis; design note 2, 9.7). Two ways, t
   Recommendation: relaunch Fossil-free's step 2033 from pass 3 with presolve off, RESUME=1, pieces of about 75 minutes (no relaunch
   limit while each piece advances), WARM=1 from then on so later passes start from the previous basis. Restart messages for test 15's
   central, Fossil-free and Deep once the final key exists; the comparison on the fixed twin.
+  Deep (message 708): test 15 has no Deep mode, and a two-stage search for Deep's CO2 cap would cost about 15 hours a round. So the
+  one-stage Deep runs first on the final key; test 15's Deep then takes the cap of its final trial as a fixed cap, with no repeat
+  search, and Deep's other settings as in the chain (no new gas, open-cycle diesel allowed, Fossil-free's build limits, the cap on
+  2035-2040). Report the engine's 2035 CO2 against 40 Mt; if it is more than about 2 Mt off, flag it and state what one correction
+  round would cost. This order goes in test 15's restart message.
 
 (g) Test 13, revised schedule (method from its session, RESULTS 'Near-optimal ranges (MGA), method'): after the final key, the base
 re-solved saving its basis (about 1.3 h), then wind and solar 2040 minimum and maximum at 1% by warm-started primal simplex, one
@@ -25,7 +30,8 @@ solve, about 4 h for six), labelled as single-year. About 14 h on one session.
 Dates (SAST), revised: 5 Nov re-timing on claude/twin-retime; 6 Nov the suite, panels and visible text, the pull request; (c)'s three
 full loops on the re-timed basis and test 14's cells (two solves at a time); (d)'s rule settled. 7 Nov decisions: the pull request,
 new wind's capacity factor with its capex, the reference. 8-9 Nov the final key: extremes on the chosen reference, the central's loop,
-restart messages for tests 13 and 15; test 13 (about 14 h) and test 15's three pathways start. 10-13 Nov the reruns. 14-18 Nov the note.
+restart messages for tests 13 and 15; test 13 (about 14 h) and test 15's central and Fossil-free start; the one-stage Deep first on the
+final key, then test 15's Deep on its final cap (message 708). 10-13 Nov the reruns. 14-18 Nov the note.
 
 (h) The 38 pathways ranked by what the note needs (design note 14.9's table), with times. Measured this week on the fixed twin: a
 25-day pass 80-86 minutes beside a second solve (two at a time per 4-core session), the loop's check about 10 minutes a pass at 2 draws,
