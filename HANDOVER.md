@@ -1,5 +1,56 @@
 # GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 07:25 SAST)
 
+## Message 704 (5 Nov, 08:30 SAST): plans for (f), (g), (h)
+
+(f) Two stages, how Fossil-free's cut steps can resume. Test 15's Fossil-free stopped at step 2033: passes 1 and 2 are in the LP cache
+(03a1f3ee3d, ab2a195959); pass 3 was cut twice at a piece's deadline with no valid basis, because presolve was on (a simplex stopped
+inside the presolved LP returns no valid basis; design note 2, 9.7). Two ways, tested this week:
+  - Presolve off with RESUME=1 JOB_DEADLINE: a piece stopped at its deadline keeps a valid basis and the next piece resumes it. Run (4)
+    (25-day pathway LP) finished in three pieces (2,367 + 2,378 + about 1,880 s) after two lost cold starts; the 55-day LP resumed
+    across five pieces. Cost: presolve off solves slower than presolve on when the latter finishes.
+  - Warm start from the previous pass's basis (WARM=1 saves each pass's basis): pass k adds stress windows, so pass k-1's optimum is
+    infeasible but dual feasible, and dual simplex is the natural restart. Test 13 found primal simplex from a warm start the only
+    method that finished its MGA solve (the objective changes, the old point stays feasible); the stress-window case is the other way
+    round. For step 2033's pass 3 no basis of pass 2 was saved, so it starts cold either way.
+  Recommendation: relaunch Fossil-free's step 2033 from pass 3 with presolve off, RESUME=1, pieces of about 75 minutes (no relaunch
+  limit while each piece advances), WARM=1 from then on so later passes start from the previous basis. Restart messages for test 15's
+  central, Fossil-free and Deep once the final key exists; the comparison on the fixed twin.
+
+(g) Test 13, revised schedule (method from its session, RESULTS 'Near-optimal ranges (MGA), method'): after the final key, the base
+re-solved saving its basis (about 1.3 h), then wind and solar 2040 minimum and maximum at 1% by warm-started primal simplex, one
+thread each, four at a time, resumed across pieces (wind minimum took 8.1 h on the provisional key: about 9-10 h for the four); then
+lithium, long-duration storage and coal from single-year ranges at 365 days (2040, fixed to the central's 2039 build; 15-35 minutes a
+solve, about 4 h for six), labelled as single-year. About 14 h on one session.
+
+Dates (SAST), revised: 5 Nov re-timing on claude/twin-retime; 6 Nov the suite, panels and visible text, the pull request; (c)'s three
+full loops on the re-timed basis and test 14's cells (two solves at a time); (d)'s rule settled. 7 Nov decisions: the pull request,
+new wind's capacity factor with its capex, the reference. 8-9 Nov the final key: extremes on the chosen reference, the central's loop,
+restart messages for tests 13 and 15; test 13 (about 14 h) and test 15's three pathways start. 10-13 Nov the reruns. 14-18 Nov the note.
+
+(h) The 38 pathways ranked by what the note needs (design note 14.9's table), with times. Measured this week on the fixed twin: a
+25-day pass 80-86 minutes beside a second solve (two at a time per 4-core session), the loop's check about 10 minutes a pass at 2 draws,
+the final engine check about 15 minutes. Assumed: Fossil-free and Deep 1.5 times as long; 2 slots a session. Per pathway at 1.5 passes
+about 2.3 h (Fossil-free and Deep 3.5), at 2 passes about 3.4 h (5.0).
+
+| Rank | Pathways | Slot-hours, 1.5 passes / 2 passes |
+|---|---|---|
+| 1, the pack's runs | c7, c7_irpdem, s_irpgas, s_nogas_dsl, s_nogas, s_gas2032, s_cocplan, s_cocprivate, s_coalsustain, Deep, Fossil-free (and s_gasfloor, an engine run on c7's build) | 30 / 44 |
+| 5, 8, 9 | J1 and J2 ride in the rerun set; s_prm10 (J3, new) | 2.3 / 3.4 |
+| 10, the pack's tables | Fossil-free without vanadium, without long-duration storage; s_cocunblended, s_allbids, s_blendedhigh; Deep r1-r4 (role to confirm) | 21 / 31 |
+| 11 | s_coalfuel0, s_coalfuel5, s_comply_full, s_carbongross, s_carbontreasury | 12 / 17 |
+| 12 | s_rocof05, s_rocof15, s_gfm1891, s_vpppart, s_gyrot, s_be6, s_be7, the six MTSAO runs | 30 / 44 |
+| All 38 | | about 95 / 140 |
+| Beside them | test 13 (about 14 h, one session), test 15's three pathways (about 66 slot-hours), test 12 (7 runs, 16-24), test 14 (about 12) | about 135-145 |
+
+Wall time for everything, 10-13 Nov (96 h a session): at 1.5 passes about 39 h on three sessions and 29 h on four; at 2 passes about
+48 h and 36 h. The cut: none on either at 1.5 or 2 passes. Pessimistic (3 passes of 110 minutes, a quarter lost to restarts) about
+83 h on three sessions and 62 h on four: still inside, with rank 12 ending on 13 Nov on three. This corrects the 07:25 summary's
+80-110 hours, which assumed one solve at a time per session. J2 at 10 draws adds about 25 minutes to each pass's check (to measure:
+the run (6) test running). Guard against idle restarts, in every session: a 4-minute heartbeat (Monitor) so the session is never
+idle; every solve in resumable pieces (presolve off, RESUME=1, JOB_DEADLINE, pieces of 55-75 minutes); relaunch at each notice; PIDs
+in each progress file. Two restarts on the night of 4-5 Nov came about 6 minutes and 1 h 45 min after replies; none in the 8 hours
+with the heartbeat.
+
 ## For Nick, 5 Nov morning: what the night did (message 703; written 03:35 SAST, refreshed 07:25 SAST)
 
 What finished (each in RESULTS, with settings):
