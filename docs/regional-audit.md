@@ -164,8 +164,9 @@ year; PyPSA-ZA (CSIR 2017) used an N-1 factor of 1/0.7 and no losses; PyPSA-Eur 
 computes interface limits by DC power flow, N-0 for model zones with an N-1 variant, losses 1% per 100 miles (6.2% per
 1,000 km), expansion allowed from eight years out; ENTSO-E's NTC is total transfer capability less a reliability margin.
 Published South African transmission losses are 2.3% (2022/23, a parliamentary reply read from a search extract) against
-this engine's 0.02%. So the corridor limits here are about 1.4 times the N-1 secure values the published zonal models use, losses are a tenth of
-the measured network's, and nothing grows with the TDP except in the regional LP's uncoupled variable. The draft IRP 2024
+this engine's 0.02% (inter-regional corridor losses only, so not like for like: about a hundredth, corrected 5 Nov 2026,
+message 717). So the corridor limits here are about 1.4 times the N-1 secure values the published zonal models use, the
+engine's losses are far below any published figure, and nothing grows with the TDP except in the regional LP's uncoupled variable. The draft IRP 2024
 and NTCSA's adequacy outlook run multi-nodal PLEXOS models; NTCSA's connection-capacity figures are not quoted here.
 
 ## (e) Validation
