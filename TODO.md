@@ -918,7 +918,8 @@ c7-to-test-8 split with the solar line (699 (c), 700 (d)); metered 2024 on the f
 wind-table pull request #160 opened, not merged. Open: (a) Nick: the twin fix pull request (6 Nov about 12:00), PVGIS re-timing, new
 wind's capacity factor (42.0% against the bids' 37.24%; a new freeze item, by 9 Nov), the reference, wind's limit source, restart
 messages for tests 13 and 15 (drafts in HANDOVER); (b) the 55-day run on the fixed twin (resumable pieces) and its engine check;
-(c) test 12's second part (seven runs) in the 10-13 Nov reruns; (d) the rpCumMW figure (14mu (f)), still open; (e) the pack: the thin
+(c) test 12's second part (seven runs) in the 10-13 Nov reruns; (d) done 5 Nov: the rpCumMW figure (14mu (f); RESULTS 'c6e's
+grid-basis PV with every repurposed MW counted'); (e) the pack: the thin
 margin and July 2025's calm on the final fleets (701 (g)); (f) why the loop's two-draw check and the K=20 check differ for 2040 (test 8:
 18.8 against 6.7; run (6): 21.6 against 7.6); (g) every route solve in resumable pieces with a heartbeat against idle restarts (two on
 the night of 4-5 Nov).

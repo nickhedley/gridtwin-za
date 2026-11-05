@@ -39,7 +39,8 @@ Still provisional (701 (g)) until you confirm it.
 Still running (each job under 2 hours, relaunched at each notice; PIDs in the progress files): 55 days on the fixed twin
 (scratchpad test8n_twin.sh, worktree gtza-twin, output out/d55; first piece from 02:36 SAST, shell PID 4313, two threads; rerun the
 script, THREADS=4 once alone, until d55.json exists, then its engine check). Everything else of message 703 has finished; test 12's
-second part (seven runs) was not started: it cannot finish overnight and the design note puts it in the 10-13 Nov reruns.
+second part (seven runs) was not started: it cannot finish overnight and the design note puts it in the 10-13 Nov reruns. Also
+done: the rpCumMW correction (task 693 (h)): c6e's grid-basis PV 2,306.4 against 2,302.3 (-4.1), not 2,323.1 against 2,317.5.
 
 Decisions for Nick, with recommendations:
 1. The twin fix pull request, 6 Nov about 12:00 SAST. Recommend: go. It corrects the data (the 08:00 peak and midday dip), leaves
