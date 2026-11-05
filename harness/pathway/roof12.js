@@ -5,8 +5,10 @@
 // the twelve-year mean, hour by hour on 2025's shape: demand less rooftopMW x derate x S x (1 - K), K = FIXED_PV_CF_12Y over S's mean.
 // A proxy; the exact fix, adding back each run's own solar, is after the note. Returns K. Used by pathway_perfail.js (ROOF12=1, recorded
 // in the output as roofAddback12) and pathcheck.js (applied when the run recorded it).
+// From 5 Nov 2026 (message 707 (a) 1) S is rooftop's own series, PROFILES.roof (the demand year's fixed tilt), where the profile carries
+// it: K is then about 1.004, against 0.889 on the metered utility fleet; a run recorded before is checked on its own K and stops here.
 module.exports = function roof12(w){
-  return +w.eval(`(function(){ const S = PROFILES.solar, n = S.length; let m = 0; for (let h = 0; h < n; h++) m += S[h]; m /= n;
+  return +w.eval(`(function(){ const S = PROFILES.roof || PROFILES.solar, n = S.length;   // rooftop's own shape (message 707 (a) 1) let m = 0; for (let h = 0; h < n; h++) m += S[h]; m /= n;
     const K = FIXED_PV_CF_12Y / m, R = FIXED.rooftopMW * FIXED.rooftopDerate * (1 - K), D = PROFILES.demand, out = new Array(D.length);
     for (let h = 0; h < D.length; h++) out[h] = D[h] - R * S[h % n];
     PROFILES.demand = out; PROFILES.roof12Applied = true; return K; })()`);   // the marker stops the page's twelveYearDemand scaling again (build 2026-10-30a)

@@ -5234,7 +5234,10 @@ function buildProfiles(real){
       for(let h=0;h<HOURS;h++){const hour=h%24; const eve=(hour>=10&&hour<=22)?Math.exp(-Math.pow(hour-17,2)/18):0; csp[h]=Math.min(1,0.6*eve);}
     }
     const demand_2025 = (real.demand_2025 && real.demand_2025.length===HOURS) ? Float64Array.from(real.demand_2025) : null;
-    return {demand,solar,wind,csp,real:true,demand_2025};
+    // Rooftop's own shape (message 707 (a) 1): the demand year's fixed-tilt national series (build_demand_2026.py roof_pu), the series
+    // the demand file adds rooftop back on; the engine removes rooftop on it, so the two cancel on the measured base.
+    const roof = (real.roof_pu && real.roof_pu.length===HOURS) ? Float64Array.from(real.roof_pu) : null;
+    return {demand,solar,wind,csp,real:true,demand_2025,...(roof?{roof}:{})};
   }
   const rand = mulberry32(20260714);
   const demand=new Float64Array(HOURS), solar=new Float64Array(HOURS), wind=new Float64Array(HOURS), csp=new Float64Array(HOURS);
@@ -7957,6 +7960,12 @@ function simulate(u, prof, outPath, _soc0){
   const SS_ON = p.ssMode === 'inertia';
   if (SS_ON) p.syncFloorMW = 0;
   const {solar,wind,csp}=prof;
+  // ROOFTOP'S SHAPE (message 707 (a) 1; the data-path review, finding 2). Rooftop PV is fixed on roofs, so its output is a fixed-tilt
+  // shape, and the series it is added back on (the demand file) and removed on (here) must be the same for the same weather. A profile
+  // that carries its own rooftop series (the metered profile: the demand year's fixed tilt, profiles.json roof_pu) removes on it; a
+  // modelled weather year removes on its own fixed-tilt solar, which is the same construction. Before, the metered profile removed on
+  // the metered utility fleet (about half trackers), and the twelve modelled years on fixed tilt against an add-back on that shape.
+  const roofS = (prof.roof && prof.roof.length >= HOURS) ? prof.roof : solar;
   // New wind on the modern-TURBINE profile (bldWindModern): onshore wind's per-unit output blends existing MW on the
   // current profile with new MW on the modern twin. Off, or with no new wind: windU is wind itself.
   const _wModOn = ((p.bldWindModern ?? FIXED.bldWindModern) | 0) > 0 && (p.newWindMW || 0) > 0;
@@ -8644,7 +8653,7 @@ function simulate(u, prof, outPath, _soc0){
     _btmD = new Float64Array(HOURS); _btmPassDis = new Float64Array(Math.floor(HOURS / 24));
     let pChg = 0, pDis = 0;
     for (let d0 = 0; d0 + 24 <= HOURS; d0 += 24){
-      const day = btmPassiveDay(solar.slice(d0, d0 + 24), p.rooftopMW, p.rooftopDerate, usableAll, _btm.powerPerUsable, _btm.eff);
+      const day = btmPassiveDay(roofS.slice(d0, d0 + 24), p.rooftopMW, p.rooftopDerate, usableAll, _btm.powerPerUsable, _btm.eff);   // rooftop's own shape (707 (a) 1)
       if (day.dis > day.chg * _btm.eff + 1e-9) throw new Error('btm profile discharges more than it stored on day ' + d0 / 24);
       for (let k = 0; k < 24; k++) _btmD[d0 + k] = day.d[k] * dU;
       _btmPassDis[d0 / 24] = day.dis;
@@ -8661,7 +8670,7 @@ function simulate(u, prof, outPath, _soc0){
   const netLoadPre=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
     const rawDemand=demandDR[h]*growth + demBlock;
-    const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
+    const rooftopGen=Math.min(rooftopCap*roofS[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h)+(_btmD ? _btmD[h] : 0)+(_gyD ? _gyD[h] : 0);   // firm exports are a load on the SA system; the stock's profile (P3); geyser control (G4)
     // Offshore on its own shape where the profile loaded, onshore's where it did not.
     let windGen=windCap*windU[h] - capeCurtMW*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
@@ -9233,7 +9242,7 @@ function simulate(u, prof, outPath, _soc0){
     // never asked to sit below its own minimum stable level.
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
     const rawDemand=demandDR[h]*growth + demBlock;   // same shaped series the UC saw
-    const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
+    const rooftopGen=Math.min(rooftopCap*roofS[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h)+(_btmD ? _btmD[h] : 0)+(_gyD ? _gyD[h] : 0);   // firm exports are a load on the SA system; the stock's profile (P3); geyser control (G4)
     // Firm export volume, booked 15 Sep 2026. expAt(h) had been added to the load line
     // since 8 Sep and recorded nowhere: 6.62 TWh a year served by the fleet, carrying fuel
@@ -11493,12 +11502,12 @@ const FIXED_PV_CF_12Y = 0.22361, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
 // panel), so its preset figures match the run checks: demand less rooftopMW x derate x S x (1 - K), hour by hour on 2025's shape,
 // K = FIXED_PV_CF_12Y over S's mean. Single-year runs on 2025's profiles keep the measured series. When roof12.js has already scaled
 // PROFILES.demand in place (PROFILES.roof12Applied), it is used as it stands; FIXED.bldRoof12 0 restores the unscaled series.
-function roofTwelveYearK(){ const S = PROFILES.solar; let m = 0; for (let h = 0; h < S.length; h++) m += S[h]; return FIXED_PV_CF_12Y / (m / S.length); }
+function roofTwelveYearK(){ const S = PROFILES.roof || PROFILES.solar; let m = 0; for (let h = 0; h < S.length; h++) m += S[h]; return FIXED_PV_CF_12Y / (m / S.length); }
 var _roof12Cache = null;
 function twelveYearDemand(){
   if (!FIXED.bldRoof12 || PROFILES.roof12Applied) return PROFILES.demand;
   if (_roof12Cache && _roof12Cache.src === PROFILES.demand) return _roof12Cache.out;
-  const S = PROFILES.solar, n = S.length, R = FIXED.rooftopMW * FIXED.rooftopDerate * (1 - roofTwelveYearK()), D = PROFILES.demand, out = new Array(D.length);
+  const S = PROFILES.roof || PROFILES.solar, n = S.length, R = FIXED.rooftopMW * FIXED.rooftopDerate * (1 - roofTwelveYearK()), D = PROFILES.demand, out = new Array(D.length);   // rooftop's own shape (message 707 (a) 1)
   for (let h = 0; h < D.length; h++) out[h] = D[h] - R * S[h % n];
   _roof12Cache = { src: D, out }; return out;
 }
@@ -12086,7 +12095,7 @@ function bldTwelveYearMeansAll(k, trk){
     for (let h = 0; h < nat.wind.length; h++){ w += nat.wind[h]; wn += Math.min(1, k * WM[h]); s += nat.solar[h]; sn += PT[h]; }
     n += nat.wind.length;
   }
-  return (_twelveAllCache[key] = { wind: w / n, windN: wn / n, solar: s / n, solarT: sn / n });
+  return (_twelveAllCache[key] = { wind: w / n, windN: wn / n, solar: s / n, solarT: sn / n, roof: s / n });   // roof: the twelve-year fixed tilt, as solar
 }
 // The factor f with the weighted mean of min(1, f x v) equal to target (wt per element, or 1).
 function bldScaleTo(v, target, wt, what){
@@ -12152,8 +12161,10 @@ function bldRepDaysClustered(n, method, S0){
   const W0 = seriesOf(src('wind'), 'wind'), P0 = seriesOf(src('solar'), 'solar'), OFF0 = offshoreSeriesFor({ wind: W0 });
   const Wm = mod ? windModOf(W0) : W0, Pt = trk ? solarTrkOf(P0) : P0;
   // Per-unit series as the LP uses them, each scaled over the whole year to its twelve-year mean (step 1).
+  // Rooftop's series for the reference (message 707 (a) 1): the metered reference's own (PROFILES.roof), a weather year's fixed tilt.
+  const R0 = (src('solar') === 'metered' && PROFILES.roof) ? PROFILES.roof : P0;
   const base = { wind: Float64Array.from(W0.slice(0, N)), windN: Float64Array.from({ length: N }, (_, i) => Math.min(1, kw * Wm[i])),
-                 solar: Float64Array.from(P0.slice(0, N)), solarT: Float64Array.from(Pt.slice(0, N)) };
+                 solar: Float64Array.from(P0.slice(0, N)), solarT: Float64Array.from(Pt.slice(0, N)), roof: Float64Array.from(R0.slice(0, N)) };
   const yr = {};
   for (const key of Object.keys(base)){ const f = bldScaleTo(base[key], T[key], null, key); yr[key] = base[key].map(v => Math.min(1, f * v)); }
   // Features: 72 values a day, each series normalised 0-1 over the year.
@@ -12186,7 +12197,8 @@ function bldRepDaysClustered(n, method, S0){
   }
   const days = reps.map((d, i) => {
     const r = { d, weight: wt[d], prevD: i === 0 ? undefined : reps[i - 1], extreme: E.includes(d), wind: out.wind(d), solar: out.solar(d) };
-    if (OFF0) r.off = Array.from({ length: 24 }, (_, h) => OFF0[d * 24 + h]);   // offshore of the reference wind's year, unscaled (message 707 (a) 3)
+    if (OFF0) r.off = Array.from({ length: 24 }, (_, h) => OFF0[d * 24 + h]);
+    r.roof = out.roof(d);   // rooftop's own series (message 707 (a) 1)   // offshore of the reference wind's year, unscaled (message 707 (a) 3)
     if (mod) r.windMod = out.windN(d).map(v => v / kw);   // the LP takes min(1, kw x windMod)
     if (trk) r.solarTrk = out.solarT(d);
     return r;
@@ -12655,7 +12667,7 @@ function bldBuildLP(opts){
   const _btmDays = new Map(), _btmDis = new Map();
   const btmDay = (y, r) => { const key = y + '_' + r.d; if (_btmDays.has(key)) return _btmDays.get(key);
     const b = BTM_Y[y], sol = [];
-    for (let h = 0; h < 24; h++) sol.push(r.solar ? r.solar[h] : PROFILES.solar[(r.dem !== undefined ? r.dem : r.d)*24 + h]);
+    for (let h = 0; h < 24; h++) sol.push(r.roof ? r.roof[h] : r.solar ? r.solar[h] : (PROFILES.roof || PROFILES.solar)[(r.dem !== undefined ? r.dem : r.d)*24 + h]);   // rooftop's own shape (707 (a) 1)
     const pd = btmPassiveDay(sol, EX.rooftop, S.rooftopDerate, b.use * b.C * 1000, b.powerPerUsable, b.eff);
     _btmDays.set(key, pd.d); _btmDis.set(key, pd.dis); return pd.d; };
   const btmDayDis = (y, r) => { btmDay(y, r); return _btmDis.get(y + '_' + r.d); };
@@ -13079,6 +13091,9 @@ function bldBuildLP(opts){
       // A tail day from another weather year carries its own shapes; a calendar day reads the
       // default profile. Same index arithmetic for demand either way.
       const sp = r.solar ? r.solar[h] : PROFILES.solar[i];
+      // Rooftop's shape (message 707 (a) 1): the day's own rooftop series where it carries one (clustered days), the day's fixed tilt on
+      // a tail or stress day, the demand year's rooftop series (PROFILES.roof) on a calendar day; as the engine removes it.
+      const spR = r.roof ? r.roof[h] : r.solar ? r.solar[h] : (PROFILES.roof ? PROFILES.roof[i] : PROFILES.solar[i]);
       // New utility solar's per-unit output: the tracking twin when bldPvTracking is on (TODO 14aw), else sp.
       const spN = !TRK_ON ? sp : r.solar ? (r.solarTrk ? r.solarTrk[h] : (() => { throw new Error('tracking on: a representative day has no tracking solar'); })())
                                        : solarTrkOf(PROFILES.solar)[i];
@@ -13095,14 +13110,14 @@ function bldBuildLP(opts){
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
-                  + exWind*wp*AVW(h) + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AVP(h) + EX.rooftop*sp*AV_ROOF + exCsp*CSP_PU(i);
+                  + exWind*wp*AVW(h) + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AVP(h) + EX.rooftop*spR*AV_ROOF + exCsp*CSP_PU(i);
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
         + ' + ' + cum('wind',y).map(v => (wpN*AVW(h)).toFixed(4)+' '+v).join(' + ')
         + (CAPE_MW > 0 ? Y.filter(yy => yy <= y).map(yy => ' - ' + (CAPE_CURT*wpN*AVW(h)).toFixed(4) + ' cw_' + yy).join('') : '')
         + ' + ' + cum('pv',y).map(v => (spN*AVP(h)).toFixed(4)+' '+v).join(' + ')
-        + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('rooftop',y).map(v => (spR*AV_ROOF).toFixed(4)+' '+v).join(' + ')
         + (OFF_ON ? ' + ' + cumOff(y).map(v => ((r.off ? r.off[h] : OFF_REF[i % 8760])*AVW(h)).toFixed(4)+' '+v).join(' + ') : '')
         // Enrolled batteries out of the passive profile (message 637): + profile x 0.75 x E on the left, E = vppp x 2.5 h.
         + (VPP_ON ? lpTerm(btmDay(y, r)[h] * BTM_Y[y].use * VPP_HN, 'vppp_' + y, 6) : '')

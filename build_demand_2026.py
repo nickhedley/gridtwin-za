@@ -64,6 +64,24 @@ p = json.load(open('profiles.json'))
 p.pop('demand_2025_gross', None)          # superseded: the CSV is the source now
 S = p['solar_pu']; W = p['wind_pu']
 
+# ROOFTOP'S SHAPE (message 707 (a) 1; the data-path review, finding 2). Rooftop PV is fixed on roofs, so it is added back on a fixed-tilt
+# shape: the demand year's (2025) national fixed-tilt series, built exactly as the page's weatherYearNational builds a year's solar
+# (nodal/profiles_regional_multiyear.json 2025, Renewables.ninja MERRA-2 hour means, at the capacity file's solar weights). It is
+# written to profiles.json as roof_pu, and the engine removes rooftop on the same series, so the two cancel on the measured base; a
+# modelled weather year removes on its own fixed tilt, the same construction. Before, the add-back used S, the metered utility fleet
+# (about half trackers). Best practice would also weight rooftop by its own regional capacity (Gauteng-heavy) and its own tilts and
+# orientations; not done here (TODO after the note).
+_reg = json.load(open('nodal/profiles_regional_multiyear.json')); _capS = json.load(open('nodal/regional_renewable_capacity.json'))['solar_mw']
+_tot = sum(_capS.values()); _wts = {r: v / _tot for r, v in _capS.items()}; _sc = _reg.get('scale', 1) or 1
+_ts = sum(w for r, w in _wts.items() if _reg['solar_pu'].get(r, {}).get('2025'))
+ROOF = [0.0] * 8760
+for _r, _w in _wts.items():
+    _a = _reg['solar_pu'].get(_r, {}).get('2025')
+    if not _a: continue
+    for h in range(8760): ROOF[h] += _a[h] * (_w / _ts / _sc)
+ROOF = [round(v, 6) for v in ROOF]
+p['roof_pu'] = ROOF
+
 # Wheeled output Jan-Aug 2026, hour by hour, from COD. 2025 per-unit shapes stand in for 2026.
 MISSING_COD = '2026-04'                    # ARM Platinum: H1 2026, month unpublished
 cod = json.load(open('nodal/pfl_cod_h1_2026.json'))['projects']
@@ -100,7 +118,7 @@ RATIO = ((dom(lambda t: t.year == 2026 and t.month <= 8) + wheeled_ja + sum(pre2
 dom26 = [RATIO * (d + pre25[h]) if h < 5832 else RATIO_LATE * d + wheel_full[h] + pre26[h] for h, d in enumerate(y25)]
 # gross = domestic + rooftop, where the engine removes min(ROOF*S*DERATE, gross*0.9)
 gross = []
-for d, s in zip(dom26, S):
+for d, s in zip(dom26, ROOF):
     r = ROOF_MW * s * DERATE
     g = d + r
     if r > 0.9 * g: g = d / 0.1           # the cap binds: engine removes 0.9 x gross
@@ -115,7 +133,7 @@ m = re.search(r"'2025, as modelled':\{[^}]*?rooftopMW:([0-9.]+)", html)
 if not m: sys.exit('2025, as modelled rooftopMW not found in index.html')
 ROOF_25 = float(m.group(1))
 gross25 = []
-for d, s in zip(y25, S):
+for d, s in zip(y25, ROOF):
     r = ROOF_25 * s * DERATE
     g = d + r
     if r > 0.9 * g: g = d / 0.1
@@ -128,7 +146,8 @@ p['meta']['demand_source'] = (
     f'2026 vs Jan-Aug 2025 ratio of that domestic demand; September-December by {RATIO_LATE:.4f}, August 2026 vs '
     f'August 2025, plus the H1 2026 wheeled fleet ({sum(wheel_full)/1e6:.2f} TWh), because those months of 2025 were '
     f'already after the 2025 demand step. Rooftop added back at rooftopMW '
-    f'{ROOF_MW:g} x derate {DERATE:g}, the engine formula, so the engine removes exactly this. '
+    f'{ROOF_MW:g} x derate {DERATE:g} on roof_pu (2025 fixed tilt, national, mean {sum(ROOF)/8760:.4f}), the engine formula and series, '
+    f'so the engine removes exactly this (message 707 (a) 1). '
     f'Wheeled private output added back to the 2026 side of the ratio ({wheeled_ja/1e6:.2f} TWh '
     f'Jan-Aug 2026, {len(wheel)} plants from COD; ratio {RATIO_CONTRACTED:.4f} before, {RATIO:.4f} after), '
     f'because contracted demand omits load served by wheeled plant and the engine supplies it. '
