@@ -2,6 +2,10 @@
 
 ## 5 Nov evening (messages 714-720): where things stand
 
+- Second restart: the container restarted at about 22:25 UTC, 40 minutes into the base and w3724 loops' first pass (no basis yet: a
+  piece keeps its basis only at its deadline) and during the suite's worker check. Both loops relaunched cold at 22:28 UTC; the suite's
+  long part relaunched (presets rerun with the 05k IRP 2030 check; worker). About 45 minutes lost on each loop.
+- Fin pass done (21:54 UTC): adequate at pass 1; RESULTS 'The fin pass (message 713 (c))'; committed to harness/pathway/final.
 - Restart: the worker restarted at 19:32 UTC. The fin pass's first piece had stopped at its deadline at 16:20 UTC with its basis kept and
   was not resumed before the restart: 3 h 12 min lost. Resumed at 19:34 UTC (scratchpad c710/solve_fin.sh fin, worktree gtza-fin 10a98e2).
 - Next (720): when the fin pass's LP is done, full loops on the fin basis, two at a time (scratchpad loops/solve_loop.sh <case>, one
