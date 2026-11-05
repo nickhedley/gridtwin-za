@@ -1,4 +1,94 @@
-# GridTwin ZA - handover, current state (kept current; updated 4 Nov 2026, 15:40 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 03:35 SAST)
+
+## For Nick, 5 Nov morning: what the night did (message 703; written 03:35 SAST, refreshed before 06:30)
+
+What finished (each in RESULTS, with settings):
+- Runs (1) and (2) of 700 (b), old twin, mixed references: solar 28.0 and 24.3 GW in 2040 (test 8: 23.9); both miss the engine
+  standard in 2035 or 2040.
+- Run (6), test 8 on the fixed twin: solar 23.9 GW in 2040, unchanged; standard met in 2030, 2035, 2040; the loop's own two-draw check
+  has 2040 at 21.6 GWh, so the full loop would take a second pass.
+- Run (3), new wind at the bids' 37.24%: solar 30.5 GW in 2040 (+6.6), cost +R48.7bn; 2035 meets the standard narrowly.
+- Run (5), wind and tracking solar at the bids' figures: solar 29.6 GW; 0.71 GW of coal retired early; misses the standard in 2040.
+- Run (4), tracking solar at the bids' 30.13% alone: solar 25.0 GW in 2040 (+1.1, all on freed coal connections); 1.3 GW of coal
+  retired early; the engine on the standard in 2035 and 2040 (20.3, 19.4). Lost twice to restarts; finished in resumable pieces.
+- The split, c7 to test 8 (solar 2040, GW): weather fixes +5.4, six-constant -0.4, congestion off -0.5, 25 equal days -6.5,
+  clustered weights on modelled 2025 -0.7, metered reference -6.6, linking 0.0, fixed twin 0.0 (33.2 to 23.9). Reliability: wide
+  margin to step 4; lost at the clustered weights on modelled 2025 (30.8 / 59.8 GWh in 2035 / 2040); restored by the metered
+  reference (17.1 / 8.5), not by linking.
+- Metered 2024 on the fixed twin (single-year 2040 cells, central and Fossil-free): the 2024-built fleets show three to six
+  times the engine's unserved of the 2025-built ones (central 38.7 against 6.3 GWh; Fossil-free 66.4 against 20.4), as on the old twin.
+  On the fixed twin unserved doubles in three of the four cells, and Fossil-free on metered 2025 sits on the standard (no iron-air).
+- 55 days on the fixed twin (against run (6) at 25 days): running in resumable pieces; not finished (see below).
+
+What each result does to utility solar:
+- The twin fix: nothing (23.9 GW in 2040 either way).
+- The reference: solar's own reference moves solar (+4.1 GW on modelled 2025's solar), wind's does not; both mixed references are less
+  reliable.
+- New wind's capacity factor is the lever: at the bids' 37.24% solar rises to 30.5 GW, about 7 GW of it on new connections; solar's own
+  capacity factor at the bids' figure adds little once wind is there (29.6 GW).
+- From 2029, at the model's 42.0% wind, solar is built almost only on connections freed by retiring coal.
+- The split: c7's 33.2 GW became 23.9 through the day count (25 equal days, -6.5) and the metered reference (-6.6), against +5.4
+  from the weather fixes. Metered 2024 as the reference builds 3.1 GW more solar in 2040's year than metered 2025.
+- Observation, not a tested cause: every pass-1 build that retires 0.5 GW or more of coal early has missed the standard or sat on it
+  (runs (1), (2), (4), (5), split step 5); those retiring less met it.
+
+What it does to the metered reference recommendation: it holds. Metered 2025 for wind and solar, on the fixed twin, gives test 8's solar
+and meets the standard; neither mixed reference does better. Metered 2024 on the fixed twin agrees: its builds are far less reliable.
+Still provisional (701 (g)) until you confirm it.
+
+Still running (each job under 2 hours, relaunched at each notice; PIDs in the progress files): 55 days on the fixed twin
+(scratchpad test8n_twin.sh, worktree gtza-twin, output out/d55; first piece from 02:36 SAST, shell PID 4313, two threads; rerun the
+script, THREADS=4 once alone, until d55.json exists, then its engine check). Everything else of message 703 has finished; test 12's
+second part (seven runs) was not started: it cannot finish overnight and the design note puts it in the 10-13 Nov reruns.
+
+Decisions for Nick, with recommendations:
+1. The twin fix pull request, 6 Nov about 12:00 SAST. Recommend: go. It corrects the data (the 08:00 peak and midday dip), leaves
+   solar unchanged, keeps the standard, costs R2bn more over the horizon, and moves the presets by at most R0.45bn.
+2. New wind's capacity factor (new): 42.0% (the twelve modelled years, six-constant corrected) against the bids' 37.24%. It moves 2040
+   solar from 23.9 to 30.5 GW and cost by R49bn; it changes the LP key, so it joins the freeze list. Recommend: 42.0% stays central for
+   now, run (3) reported as the sensitivity; before 9 Nov, check what the recent bid windows' farms deliver against their bid capacity
+   factors (public output by bid window, for example the IPP Office's reports) and decide on that.
+3. PVGIS re-timing (701 (b)): the ten PVGIS years run about 25 minutes late and the 2024-2025 tracking twins early. Re-timing makes the
+   engine 10-28% more reliable on test 8's fleet (the lag is conservative) but changes the key. Recommend: re-time (decision 6 Nov, fix
+   7 Nov), because the note's evening-peak figures depend on it.
+4. The reference: metered 2025 for both, on the fixed twin, provisional; recommend confirming it on 6 Nov once metered 2024 on the fixed
+   twin is read.
+5. Route timing (10-13 Nov), slip flag: no slip yet, but the margin is thinner. On the fixed twin a pass took 80-86 minutes beside a
+   second solve (runs (6), (3), (5)), one took over 112 minutes and finished only in resumable pieces (run (4), about 110 minutes
+   of solving with presolve off), and the loop's own check would send run (6) to a second pass (and runs (4) and (5) to more). If
+   the 38 pathways average 1.5-2 passes, the 51-61 hours estimated at one pass become about 80-110 hours: inside 10-13 Nov only with
+   three sessions running continuously, every solve in resumable pieces, and a heartbeat against idle restarts (two tonight cost
+   over 2 hours of solving). Recommend: decide by 9 Nov everything that changes the key (the twin fix, PVGIS re-timing, new wind's capacity
+   factor), run every route solve in resumable pieces, and add a fourth session if one is available.
+6. Wind's limit source: the Masterplan pace to 2030 is not yet in SOURCES. Recommend: send the Masterplan document or page, or approve
+   citing IRP 2025 Table 1 alone with the 2,500/2,000 split stated as ours.
+7. Tests 13 and 15 (701 (d)): recommend no restart now; both finish on the present key as method and timing, and test 13's note run
+   stays on 11-13 Nov on the final key. Draft messages, to paste if you agree, in 'Restart messages, conditional on the twin fix' below.
+
+## Restart messages, conditional on the twin fix (701 (d); drafts, paste only if Nick agrees). Paste each as one message.
+
+The twin fix (claude/twin-fix, FIXED.solarTrkMeteredBasis 'fleet') changes the central's 25-day pass-1 LP key: 8e0651f38a (test 8, the
+present key) to b26168635c (run (6), e588e49). Solar is unchanged (23.9 GW in 2040); wind +2.1 GW, lithium +2.2 GW.
+
+Test 13 (branch claude/test13-mga):
+  Message 70x. 1. Do not merge claude/twin-fix; it is not on main yet. 2. Finish the 40 solves on the present key (8e0651f38a); they
+  stand as method and timing only (701 (d)): report each solve's time and the ranges as a method result. 3. The note's ranges are rerun
+  on the final key on 11-13 Nov, after the central's loop; nothing else changes now. 4. Stop any run by its PID only.
+
+Test 15 (branch claude/test15-two-stage-x2xqfl):
+  Message 70x. 1. Do not merge claude/twin-fix. 2. Continue the ts2 runs on the present key to their end, at each piece end as now; they
+  stand as method and timing only (701 (d)). 3. Report each step's time, solves and year y's build, as before. 4. Whether two stages go
+  into the note is decided on 9 Nov on these results; any rerun on the final key comes in the 10-13 Nov route. 5. Stop any run by its
+  PID only.
+
+Input freeze (701 (d)), changes from the night:
+  2. The twin fix: measured. It changes the central's 25-day key (8e0651f38a to b26168635c) and leaves solar unchanged; pull request 6 Nov,
+     about 12:00.
+  4. The reference: runs (1), (2), (6) and metered 2024 on the fixed twin done; metered 2025 for both holds (provisional until Nick
+     confirms, 6 Nov).
+  9. New: new wind's capacity factor (the model's 42.0% against the bids' 37.24%): changes the key and moves 2040 solar by 6.6 GW.
+     Decision by 9 Nov.
+
 
 ## Overnight 4-5 Nov (message 703's order; Nick offline until the morning)
 
