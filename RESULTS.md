@@ -22182,3 +22182,102 @@ ranges for the note run after it.
   primal simplex resumed across pieces, four at a time on one thread each (wind and solar minimum and maximum first, then lithium,
   long-duration storage and coal), memory watched; 2030 and 2% if time allows.
 - Record: docs/test13-results.md and harness/out/mga2 on claude/test13-mga.
+
+### The independent data-path review on f36b230 (build 2026-11-04b), its own measurements (message 702 (d); attached per message 707 (e), Nick's paste of 5 Nov 2026)
+
+The review's report, as the reviewing session wrote it (read-only; the page loaded in jsdom as pathcheck.js loads it, or the data files
+read; ESK19679.csv absent, so profiles.json's metered 2025 series stood in for Eskom's file). Its line numbers are on f36b230.
+Message 707 sets what follows from it; measurements after the fixes go in their own entries.
+
+Ranked findings
+1. New tracking solar runs on two clocks, and the LP's winter solar is 20 to 25 percent below the engine's. Confirmed, reaches the central.
+  - Where: the twins for 2024 and 2025 are built as fixed tilt times the PVGIS tracking ratio (nodal/profiles_solar_tracking.json,
+    meta.borrowed_years); the metered profile's twin is built the same way in solarTrkOf (index.html:16209); the ratio map comes from the
+    PVGIS years in bldBuildSolarTrkRatio (index.html:16089); the build LP reads the metered twin on every calendar representative day
+    (index.html:13066).
+  - Measured, centroid of the mean daily curve (bin centres, SAST): fixed tilt 2014 to 2023 at 12.80 to 12.83 h, 2024 and 2025 at 12.39,
+    the metered 2025 series at 12.39. The 2014 to 2023 PVGIS years sit about 25 minutes late against the hour-beginning convention of the
+    metered and the 2024 to 2025 series. That matches PVGIS SARAH values being instantaneous at the satellite scan time rather than hourly
+    means (PVGIS 5 manual, pvlib notes). This is the solar lag you are already testing, so I only size it here.
+  - The consequence is new: the ratio map is built on the late clock and applied to series on the early clock. Twins 2014 to 2023 have
+    centroid 12.8 h; the 2024 and 2025 twins 11.86; the metered twin 12.06. The map carries ratios of 14.0 at 06:00 and 19.2 at 19:00 in
+    January. In July the 2025 twin gives 0.286 per unit over 06:00 to 08:59 against 0.151 for the PVGIS twins, and 0.305 over 15:00 to
+    17:59 against 0.512. The 2025 Western Cape twin is clipped at 1.0 for 352 hours, Northern Cape 299, against 0 in 2023.
+  - The LP side is worse: the metered twin (every calendar day of a c6 or c7 build, PVTRK=1) reads 0.098 at 17:00 in July against the
+    engine's twelve-year 0.357, and by month Jan 0.435, Jun 0.165, Dec 0.445 against the engine's 0.344, 0.205, 0.356. Its summer to
+    winter ratio is 2.7 against 1.74 for the PVGIS twins, because the metered fleet already holds 52 percent trackers and the monthly
+    ratio applies the trackers' seasonal gain a second time. The 3 Nov scale factor fixed the level (annual means 0.2860 and 0.2861) but
+    not the shape.
+  - Effect in rand not sized; it needs an LP rerun. The LP undervalues new solar in winter and overvalues it in summer on every calendar
+    day, and the engine check sees a different series in 2 of 12 years.
+2. Rooftop is added back on the metered utility shape and removed on fixed tilt. Confirmed sensitivity, reaches the central's engine checks.
+  - Where: build_demand_2026.py:102 to 108 adds ROOF_MW x S x DERATE on profiles.json solar_pu (the metered 2025 utility fleet, 52 percent
+    trackers); twelveYearDemand (index.html:11490) and roof12.js rescale the level by K 0.8895 on the same shape; the engine removes
+    rooftopCap x solar[h] x 0.78 on the weather year's fixed-tilt series (index.html:8659, 9231).
+  - Measured, hour-of-day mean of the difference over twelve years, with 6,346 MW of derated rooftop: grid load overstated by 823 MW at
+    07:00, 915 at 08:00, 546 at 09:00, understated by 683 at 12:00 and 710 at 13:00; in July understated by 1,072 at 12:00, 1,145 at 13:00
+    and 597 at 17:00; in January overstated by 1,559 at 07:00 and 1,588 at 08:00. Root mean square 707 MW, largest hour 5.2 GW.
+  - Engine on twelve years, same seeds, with the add-back put on a fixed-tilt shape at the same energy: Least-cost path 2035 unserved 1.61
+    to 1.09 GWh a year (2021: 13.2 to 8.5); Today 2026 curtailment 0.777 to 0.505 TWh, battery discharge 34 to 29 GWh; cost moves 0.1
+    percent. The right rooftop shape is a decision (rooftop is fixed, so the metered half-tracking shape is the wrong one), but a third of
+    the published unserved and curtailment figures on modelled years rides on it.
+3. Offshore wind never has a calm. Confirmed; small effect on today's presets.
+  - Where: index.html:23111 to 23135 averages all twelve years per region, weights by ESMAP capacity, scales by 1.117 to ESMAP's 0.516
+    capacity factor and clips; the LP (index.html:13087) and the engine (index.html:8669) use that one series on every day of every
+    weather year.
+  - Measured: the engine's series has standard deviation 0.107 against 0.23 to 0.24 for any real year; hours below 10 percent of rating 0
+    against 1.3 to 2.9 percent; longest run below 20 percent 0 hours against 27 to 42 hours in every year; hours at full output 0 against
+    1 to 3 percent.
+  - Effect on the page's 240 draws with each year's own series instead: Fossil-free 2040 (5 GW) unserved 0 either way, battery discharge
+    up 0.33 TWh; Deep decarbonisation 2035 (1 GW) mean unserved 0.086 to 0.065 GWh a year. Small today, because neither preset has
+    offshore at the margin. The 29 Oct top-up tool chose offshore on this engine, and any plan with offshore at the margin is flattered.
+    The 1.117 uplift is a hand-set target over the file's own 0.462.
+4. CSP is a flat 0.38 in the build LP and a shaped 2021 series in the engine. Confirmed, small.
+  - index.html:13079 (exCsp*0.38) against the engine's cspMW x csp_pu (profiles.json, Eskom 2021, mean 0.289, 0.013 at 04:00, 0.615 at
+    17:00). The LP counts 0.48 TWh a year of supply the engine does not, and 228 MW at 04:00 against 7 MW. The rule that two models read
+    the same constants is broken here.
+5. The shortfall forecast reads a key that does not exist. Confirmed latent, no measured effect.
+  - index.html:8260 reads p.dieselMW || 0; the fleet key is ocgtDieselMW (dieselAvailMW, index.html:7728). The forecast's firm capacity
+    therefore omits 3,400 MW of diesel. Supplying the key changed no output to the digit on Today 2026, Least-cost path 2035 and IRP path
+    2035 (twelve years, one draw each). validate_structure checks ?? fallbacks against constants, not || 0 on an absent key.
+6. The check does not re-apply every setting the run recorded. Plausible risk, harness only.
+  - pathcheck.js re-applies about 40 recorded keys (sched, cocCase, gas, demand, pvTracking, windCorr and others) but not wxWindCorr,
+    congestion, coalMslDesignFromYear, existPvMeteredCF or adequacyBasis; those come from the environment (lines 31 to 47, 199 to 204).
+    chain_c7.sh:26 runs checks with env -i and only LNG, GRID, SS_FC and YEARS. A run made with WX_WINDCORR=0, and every c6e-era run, is
+    now checked on the corrected weather. No result moves while the page default equals the run's setting.
+7. Smaller items.
+  - index.html:16286 divides the national wind by the weight total a second time and the solar by the wind total. Harmless while every
+    region carries every year (it does: 10 regions, 12 years, 8,760 hours each, measured), wrong the day one is missing.
+  - index.html:12287 and 12198 rank tail days with 4,000 MW of solar and 3,600 MW of wind; the fleet is 3,568.5 and 4,681. Changes only
+    which week is spliced.
+  - The 1.0753 wind factor is applied then clipped at 1 (5,941 region-hours): Hydra Central 2025 sits at full output 165 hours, against 0
+    hours above 0.95 in the metered national series.
+  - profiles.json meta.solar_source_updated still says the solar is a 2023 MERRA-2 composite; it is the metered 2025 fleet and the page
+    treats it so.
+  - Wind after the clock fix: modelled 2025 against metered 2025 correlates best at lag minus one hour (0.790 against 0.784 at zero), daily
+    trough at 08:00 against 10:00. Reanalysis bias, not handling. The six-constant correction brings 2025's monthly means close to the
+    metered ones (May to July 0.46 to 0.50 down to 0.39 to 0.40, metered 0.35 to 0.41), fitted in sample.
+
+Checked and consistent, and what was not checked
+- Consistent: exports are added once, same formula in engine and LP, and the demand file's subtraction of International Exports agrees
+  with Eskom's glossary as the BER data guide reproduces it (RSA Contracted Demand is demand supplied by all resources Eskom contracts
+  with); rooftop level after K; congestion on wind, utility PV and offshore in both models; Cape curtailment; offshore leap days (day
+  alignment holds in 2016, 2020 and 2024); every modelled file 10 regions by 12 years by 8,760 hours; demand scaling (Jan to Aug 0.970,
+  Sep to Dec 1.01 to 1.02 by design) and weekday pattern (Sunday 21.9 GW, Saturday 22.4, weekdays 23.3 to 23.6); hydro, imports, nuclear
+  shape and pumped storage (2,724 MW, 60 GWh) read alike in both models; the coal trace is shape only, mean 1.0, for 2023 to 2025.
+- Not checked: anything needing ESK19679 (the exports column's 745 MW mean against Eskom's international sales, the anchors); the nodal
+  and regional LP path on profiles_regional.json; the web worker; the UI; rand base years, annuities and who pays what beyond a skim
+  (every cost is stated in January 2026 rands with CPI constants and a pinned R16.50 per dollar of August 2026; no fault seen, not
+  audited line by line); the pathway LP objective; the full suite. validate_structure (27/27) and validate_weather (67/68, the one
+  failure the missing Eskom file) ran green on that branch while findings 1 to 5 stand.
+
+What the suite can and cannot see
+- Stored-value checks, which cannot see a data fault present when the pin was made: validate_findings pins, validate_outputs avgCost,
+  validate_response baseline, validate_pathway_presets blocks, validate_stored_panels (fresh against stored on the same code),
+  validate_weather's twelve-year constants and map checks (both sides derived from the same files).
+- Level-only checks with wide bands (validate_benchmarks, validate_external, validate_consistency sums, validate_weather capacity-factor
+  ranges): blind to timing and shape.
+- The one clock check (validate_weather.js:523) accepts a peak hour of 11 to 13 on the single 2023 regional file only, and its own note
+  names "every region sharing a peak hour" as the flattening signature while 10 of 10 regions share hour 12 and it passes.
+- No check compares an LP series against the engine's for the same day, so findings 1 and 4 are invisible by construction; no check tests
+  a derived twin's shape or clipped-hour count; no check tests || 0 on an absent key.
