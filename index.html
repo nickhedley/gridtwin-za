@@ -11439,10 +11439,10 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // are kept.
 // Wind re-measured 4 Nov 2026 (build 2026-11-04b): 0.42499 to 0.42006 (0.4200610), the six-constant wind correction on by default
 // (messages 693 (a), 696 (a)). It follows the default: a run with the correction off (WX_WINDCORR=0) keeps this value.
-// Tracking solar re-measured 5 Nov 2026 (build 2026-11-05a): 0.28595 to 0.28362 (0.2836159), the PVGIS years converted from the
-// stamped minute to hour means (retime_pvgis.py, message 704 (a)): 2014-2023 keep their energy; the 2024-2025 twins, built from the
-// PVGIS tracking/fixed ratio, fall 4.8% now that the ratio is in step with their fixed tilt.
-const NEW_WIND_CF_12Y = 0.42006, NEW_PVTRK_CF_12Y = 0.28362;
+// Tracking solar re-measured 5 Nov 2026 (build 2026-11-05a): 0.28595 to 0.28445 (0.2844466), the PVGIS years converted from the
+// stamped minute to hour means by the sun's height (retime_pvgis.py csi_day, message 704 (a)): 2014-2023 keep each day's energy;
+// the 2024-2025 twins, built from the PVGIS tracking/fixed ratio, change with the ratio now in step with their fixed tilt.
+const NEW_WIND_CF_12Y = 0.42006, NEW_PVTRK_CF_12Y = 0.28445;
 // The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
 BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
 BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };

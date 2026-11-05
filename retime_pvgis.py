@@ -13,17 +13,20 @@ THE STAMPED MINUTE (raw seriescalc responses, PVGIS v5_3, PVGIS-SARAH3, 5 Nov 20
 Limpopo, Gauteng and Mpumalanga. The response's own meta says 'hourly averages'; the minute that varies by site, and the
 measured lag, say the values are the satellite's instantaneous reading at that minute.
 
-THE CONVERSION (method 'linear', the default): each stored value v_i (SAST hour i) is the reading at i:mm; the readings are
-joined by straight lines in time, minute by minute, and averaged over the hour [i:00, i+1:00). Annual energy is unchanged.
-Method 'csi' (tested, not used): each reading divided by the sun's height g = max(0, sin(elevation)) at that minute and point,
-this clear-sky index interpolated (a reading with the sun under 3 degrees takes its neighbour's), multiplied back by g minute by
-minute; it adds 0.5-0.9% to the tracking series' energy and fits the metered fleet no better (CHECK). Solar position: NOAA's
-approximation, UTC; leap years are stored with 29 February dropped, so a stored hour's date is taken on a 365-day calendar.
+THE CONVERSION (method 'csi_day', the default; message 704 (a), 707 (b)): each stored value v_i (SAST hour i) is the reading at
+i:mm. It is divided by the sun's height g = max(0, sin(elevation)) at that minute and point; this clear-sky index is interpolated
+linearly in time between readings (a reading with the sun under 3 degrees takes its neighbour's index), multiplied back by g minute
+by minute and averaged over the hour [i:00, i+1:00); each day is then scaled so its energy equals the readings' (the linear
+interpolation's) total. The shape follows the sun at dawn and dusk; the energy is the readings'. Method 'linear' (the readings joined
+by straight lines) spreads output across sunrise and sunset (July, national tracking, 2014-2023: 0.21 at 07:00 and 0.22 at 17:00,
+against 0.16 and 0.16 by csi_day; the metered fleet 0.03 and 0.05); 'csi' without the day scaling adds 0.5-0.9% to tracking energy.
+Solar position: NOAA's approximation, UTC; leap years are stored with 29 February dropped, so a stored hour's date is taken on a
+365-day calendar.
 
-CHECK (5 Nov 2026, ESK19679's metered fleet, 5-minute resolution, the lag script of RESULTS 'Modelled solar timing'): the best-
-fit shift of 2023 (PVGIS) fixed tilt moves from -30/-25/-25/-25 minutes (DJF/MAM/JJA/SON) to -5/0/+5/0, its tracking from
--20/-20/-25/-25 to +5/+5/+5/0; the 2024-2025 tracking twins from +50/+45-50/+35/+25 to +10-15/+10/+5/-20 (spring: the MERRA-2
-fixed tilt they are built on runs -10 to -15 there itself). Both methods give the same lags; 'linear' correlates slightly better.
+CHECK (5 Nov 2026, ESK19679's metered fleet, 5-minute resolution, the lag script of RESULTS 'Modelled solar timing'), csi_day: the
+best-fit shift of 2023 (PVGIS) fixed tilt moves from -30/-25/-25/-25 minutes (DJF/MAM/JJA/SON) to -5/0/+5/0, its tracking from
+-20/-20/-25/-25 to +5/+5/+5/0; the 2024-2025 tracking twins from +50/+45-50/+35/+25 to +10-15/+10/+5/-20/-25 (spring: the MERRA-2
+fixed tilt they are built on runs -10 to -15 there itself). All three methods give the same lags.
 
 WHAT IT CHANGES
 nodal/profiles_regional_multiyear.json solar_pu for 2014-2023 (2024-2025 are Renewables.ninja MERRA-2 hour means, measured on
@@ -84,11 +87,17 @@ def retime(v, lat, lon, minute, method='csi'):
         cn = np.where(np.isnan(cn), nxt, cn); cn = np.where(np.isnan(cn), prv, cn); cn = np.where(np.isnan(cn), 0.0, cn)
         ci = np.interp(t_sast, s_sast, cn, left=cn[0], right=cn[-1])
         x = ci * sun_sin(lat, lon, t_sast - 120.0)
-    return x.reshape(n, 60).mean(axis=1)
+    out = x.reshape(n, 60).mean(axis=1)
+    if method == 'csi_day':   # the clear-sky shape, each day's energy kept at the linear (readings') total
+        lin = np.interp(t_sast, s_sast, v, left=v[0], right=v[-1]).reshape(n, 60).mean(axis=1)
+        d_out, d_lin = out.reshape(-1, 24).sum(axis=1), lin.reshape(-1, 24).sum(axis=1)
+        f = np.where(d_out > 1e-9, d_lin / np.where(d_out > 1e-9, d_out, 1), 1.0)
+        out = (out.reshape(-1, 24) * f[:, None]).reshape(-1)
+    return out
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument('--method', default='linear', choices=['linear', 'csi'])
+    ap = argparse.ArgumentParser(); ap.add_argument('--method', default='csi_day', choices=['csi_day', 'linear', 'csi'])
     ap.add_argument('--root', default='.'); a = ap.parse_args()
     R = a.root; SRC = os.path.join(R, 'nodal/profiles_regional_multiyear.json'); TRK = os.path.join(R, 'nodal/profiles_solar_tracking.json')
     d, t = json.load(open(SRC)), json.load(open(TRK))
