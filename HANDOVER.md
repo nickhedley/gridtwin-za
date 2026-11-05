@@ -1,6 +1,6 @@
-# GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 05:50 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 07:25 SAST)
 
-## For Nick, 5 Nov morning: what the night did (message 703; written 03:35 SAST, refreshed 05:50 SAST)
+## For Nick, 5 Nov morning: what the night did (message 703; written 03:35 SAST, refreshed 07:25 SAST)
 
 What finished (each in RESULTS, with settings):
 - Runs (1) and (2) of 700 (b), old twin, mixed references: solar 28.0 and 24.3 GW in 2040 (test 8: 23.9); both miss the engine
@@ -38,9 +38,9 @@ Still provisional (701 (g)) until you confirm it.
 
 Still running (each job under 2 hours, relaunched at each notice; PIDs in the progress files): 55 days on the fixed twin
 (scratchpad test8n_twin.sh, worktree gtza-twin, output out/d55, LP key a0362c06f3; piece 1 02:36-04:11 SAST on two threads, basis
-kept; piece 2 04:12-05:47 SAST on four threads, basis kept; piece 3 from 05:48 SAST, job be5l2zpjz, shell PID 9910; about 3 hours 10
-minutes of solving before piece 3; rerun the script with THREADS=4 PIECE_S=6600 at each notice until d55.json exists, then its
-engine check). Everything else of message 703 has finished; test 12's
+kept; pieces 2 and 3 04:12-07:23 SAST on four threads, basis kept each time; piece 4 from 07:24 SAST, job bi8qmgh55, shell PID 12040;
+about 4 hours 45 minutes of solving so far, unfinished (one 25-day pass: about 80 minutes), which bears on the 9 Nov day-count
+decision; rerun the script with THREADS=4 PIECE_S=6600 at each notice until d55.json exists, then its engine check). Everything else of message 703 has finished; test 12's
 second part (seven runs) was not started: it cannot finish overnight and the design note puts it in the 10-13 Nov reruns. Also
 done: the rpCumMW correction (task 693 (h)): c6e's grid-basis PV 2,306.4 against 2,302.3 (-4.1), not 2,323.1 against 2,317.5.
 
