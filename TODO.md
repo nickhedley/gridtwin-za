@@ -1493,3 +1493,7 @@ reachable); the gap is about R0.64bn a year per R1,000 per MW started in 2040; (
 is wrong since 710 (c); a proposed line in the 5 Nov report), before the PR; (e) Nick: Avon's 2031 contract months (proposed share
 0.365 in 2031, +R661.9m that year); (f) current open-cycle and combined-cycle capex on one basis, to test the 0.74 ratio (eia.gov not
 reachable).
+
+14nc. After the note (user, 5 Nov 2026, message 723; a to-do only, no work now): for the industrial electrification note's first chapter,
+map South Africa's gas network and the industrial sites along it or fed by it. Details in the project doc
+claude/gas-network-map-idea-2026-11-05.md (not in this repository on 5 Nov; a project document).
