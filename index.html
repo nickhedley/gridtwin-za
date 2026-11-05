@@ -5557,11 +5557,14 @@ function reipppRate(year){
 // line in the retail stack.
 //
 // Storage (BESIPPPP) is left out: new batteries are costed as new build.
-// Avon and Dedisa's contract in otherIppR: the share of the pair's MW whose contract is charged in year y, 1 to dedisaEndYear and 0 after
-// (user, 5 Nov 2026, message 715 (b)). One rule for the capital charge here and for the pair's exemption from fomDiesel in simulate.
-// Avon alone is contracted to 20 July 2031 (avonEndYear, avonEndDoy), past this end; see the RESULTS entry on Avon and Dedisa fixed O&M.
+// Avon and Dedisa's contract in otherIppR: the share of the pair's MW whose contract is charged in year y (user, 5 Nov 2026, messages
+// 715 (b) and 716 (c)). One rule for the capital charge here and for the pair's exemption from fomDiesel in simulate. 1 to dedisaEndYear;
+// in avonEndYear, Avon alone, contracted to 20 July (avonEndDoy days of the year): its MW share times avonEndDoy / 365, 0.365, the rule
+// avonDedisaMustRunMW uses; 0 after. Splitting the charge by MW is a judgement (the MYPD 6 line gives the total only).
 function avonDedisaContractShare(year){
-  return (year ?? 2026) <= FIXED.dedisaEndYear ? 1 : 0;
+  const y = year ?? 2026, F = FIXED;
+  if (y <= F.dedisaEndYear) return 1;
+  return y === F.avonEndYear ? F.avonMW / (F.avonMW + F.dedisaMW) * F.avonEndDoy / 365 : 0;
 }
 function otherIppR(year){
   const y = year ?? 2026;
@@ -22430,7 +22433,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-05i';
+const BUILD_STAMP = '2026-11-05j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -23919,7 +23922,7 @@ async function evaluateAgainstRemaining(region,tech,mw){
     annualChargeR: Math.round(tier.annualR),
     gridBuildChargeRPerMWh: Math.round(chargePerMwh * 10) / 10,
     getChargeRPerMWh: 0,
-    note: tierNote + ' - R' + (chargePerMwh).toFixed(1) + '/MWh across the whole build, R'
+    note: tierNote + ' &ndash; R' + (chargePerMwh).toFixed(1) + '/MWh across the whole build, R'
         + (tier.annualR / 1e6).toFixed(0) + 'm a year.' };
 }
 
@@ -23937,11 +23940,11 @@ function renderResult(r){
         +' MW goes beyond the transmission plan</span> on '+r.bindingCorridor+'.<br>';
   }
   html+=r.note+'<br>';
-  // Not 'charged as the engine charges it' (audit G6-M8, message 264): the engine spreads the national build over the DFFE
-  // register's province shares (REEA_SHARE) whatever is sited here; charging the sited region waits for after the note.
-  html+='Tiers: shallow connection within existing headroom, the plan&rsquo;s own rate within what it builds, and half as '
-      + 'much again beyond it. The scenario&rsquo;s system cost charges new wind and solar by where developers have '
-      + 'applied, not by this choice.';
+  // The engine charges the build optimiser national rate per technology, less connections freed by retired coal (gridChargeR, from
+  // message 710 (c)), whatever is sited here; the panel keeps the regional tiers (user, 5 Nov 2026, messages 715 (a) and 716 (a)).
+  html+='Tiers: a reduced charge within existing headroom, the region&rsquo;s rate within the transmission plan, half as much '
+      + 'again beyond. System cost uses one national rate per technology, less connections freed by retired coal, as the '
+      + 'optimiser does, regardless of siting.';
   out.innerHTML=html;
 }
 
