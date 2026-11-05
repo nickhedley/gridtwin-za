@@ -22012,7 +22012,7 @@ Summary of the five runs and test 8 (2040; engine means 2030 / 2035 / 2040, GWh)
 | (4) | 42.0 / 30.13 / metered | 25.0 | 0.0 | 1.30 | 1,497.4 | 3.2 / 20.3 / 19.4 |
 | (5) | 37.24 / 30.13 / metered | 29.6 | 5.2 | 0.71 | 1,543.8 | 4.3 / 23.8 / 27.9 |
 
-### Metered 2024 against metered 2025 on the fixed twin (message 701 (g), a sensitivity): the 2024-built fleets fail the engine far more, as on the old twin; on the fixed twin every cell's unserved roughly doubles, and Fossil-free on metered 2025 sits on the standard
+### Metered 2024 against metered 2025 on the fixed twin (message 701 (g), a sensitivity): the 2024-built fleets fail the engine far more, as on the old twin; on the fixed twin unserved doubles in three of the four cells (central metered 2025 +30%), and Fossil-free on metered 2025 sits on the standard
 
 Settings: as 'Metered 2024 as the reference against metered 2025' above (single-year 2040 at 365 days, OPER_FROM=2040 HORIZON=2040
 MAXP=1, no adequacy loop; clustered and linked; the six-constant table; CONG_OFF=1; central fixed from c7 to 2039, Fossil-free from
@@ -22034,7 +22034,8 @@ harness/out/ref2024f (local). Eskom data (ESK19679), the analysis ours. 5 Nov 20
   2024's days the central retires 3.4 times the coal early and builds 5.3 times the solar, and the 2024-built fleets show three to six
   times the engine's unserved of the 2025-built ones.
 - On the fixed twin every cell retires more coal early or builds less firm capacity than on the old twin (central metered 2025: 1,506
-  MW against 532; Fossil-free metered 2025: no iron-air against 981 MW), and the engine's unserved roughly doubles. Fossil-free on
+  MW against 532; Fossil-free metered 2025: no iron-air against 981 MW); the engine's unserved doubles in three cells and rises 30% in
+  the central on metered 2025 (4.85 to 6.32 GWh). Fossil-free on
   metered 2025 sits on the standard (20.37 GWh). These single-year cells have no adequacy loop; in a full pathway the loop would add
   stress windows for the failing years.
 - For the reference recommendation: metered 2024 on the fixed twin gives the less reliable build in both pathways, as before. Metered
