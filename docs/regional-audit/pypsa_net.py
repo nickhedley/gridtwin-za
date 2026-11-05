@@ -29,6 +29,7 @@ TDP_FILE = os.environ.get('TDP_FILE', '')              # (c) a JSON list of extr
 MIX = int(os.environ.get('MIX', '0'))                  # (f) new wind, solar, lithium (power and energy) and open-cycle gas extendable by area at the build's own costs
 MIX_CAP = os.environ.get('MIX_CAP', '')                # (f) national caps 'wind:MW,pv:MW,batt:MW' (cumulative build-rate limits), optional
 MIX_INTEG = int(os.environ.get('MIX_INTEG', '1'))      # (f) 1 keeps the integration charge on new wind and solar; 0 removes it (corridors priced explicitly)
+SOLVER = os.environ.get('SOLVER', 'simplex')             # 'simplex' (HiGHS dual simplex, the default for every case) or 'ipm' (interior point, crossover off: a timing test only)
 DAYS = int(os.environ.get('DAYS', '0'))               # (722 b) timing only: solve on this many evenly spaced calendar days, each hour weighted 8760/(24 x DAYS); energies then are the sample's
 H = 8760
 REG = ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape','Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State']
@@ -259,6 +260,8 @@ if DAYS > 0:
     n.set_snapshots(snaps); n.snapshot_weightings = pd.Series(8760.0 / len(snaps), index=n.snapshots)
     notes.append(f'timing run: {DAYS} evenly spaced calendar days ({len(snaps)} hours), each weighted {8760.0 / len(snaps):.3f}; stores cyclic over the sample; energies are the sample\'s, unweighted')
 
+SOLVER_OPTS = {'presolve': 'on', 'parallel': 'on'} if SOLVER == 'simplex' else {'presolve': 'on', 'parallel': 'on', 'solver': 'ipm', 'run_crossover': 'off'}
+if SOLVER != 'simplex': notes.append(f'solver {SOLVER} (crossover off): a timing test; duals approximate')
 t0 = time.time()
 if SITE_FREE or MIX:
     if REEA_MW is None: reea_shares()
@@ -279,22 +282,23 @@ if SITE_FREE or MIX:
                     if names: m.add_constraints(pn.loc[names].sum() <= float(caps[t]), name=f'cap {t}')
             if 'batt' in caps: m.add_constraints(ln.loc[[f'{r} li charge' for r in REG]].sum() <= float(caps['batt']), name='cap batt')
             notes.append('national caps: ' + MIX_CAP)
-    status, cond = n.optimize.solve_model(solver_name='highs', solver_options={'presolve': 'on', 'parallel': 'on'}, assign_all_duals=True)
+    status, cond = n.optimize.solve_model(solver_name='highs', solver_options=SOLVER_OPTS, assign_all_duals=True)
 else:
-    status, cond = n.optimize(solver_name='highs', solver_options={'presolve': 'on', 'parallel': 'on'}, assign_all_duals=True)
+    status, cond = n.optimize(solver_name='highs', solver_options=SOLVER_OPTS, assign_all_duals=True)
 secs = time.time() - t0
 # ---------------------------------------------------------------- results
 g = n.generators_t.p; gc = n.generators.carrier
+PN = {name: float(n.generators.p_nom_opt[name] if n.generators.p_nom_extendable[name] else n.generators.p_nom[name]) for name in n.generators.index}   # the LP's chosen capacity where extendable (free siting, free mix); before 5 Nov 2026 22:50 UTC p_nom (zero) was used, so those cases' curtailment was wrong
 E = {}
 for name, c in gc.items(): E[c] = E.get(c, 0.0) + float(g[name].sum())
 avail = {}; curt = {}
 for name, c in gc.items():
     if c in ('wind', 'pv', 'offshore'):
-        av = float((n.generators_t.p_max_pu[name] * n.generators.p_nom[name]).sum()); avail[c] = avail.get(c, 0.0) + av; curt[c] = curt.get(c, 0.0) + av - float(g[name].sum())
+        av = float((n.generators_t.p_max_pu[name] * PN[name]).sum()); avail[c] = avail.get(c, 0.0) + av; curt[c] = curt.get(c, 0.0) + av - float(g[name].sum())
 curt_r = {}
 for name, c in gc.items():
     if c in ('wind', 'pv', 'offshore'):
-        r = n.generators.bus[name]; curt_r[r] = curt_r.get(r, 0.0) + float((n.generators_t.p_max_pu[name] * n.generators.p_nom[name]).sum()) - float(g[name].sum())
+        r = n.generators.bus[name]; curt_r[r] = curt_r.get(r, 0.0) + float((n.generators_t.p_max_pu[name] * PN[name]).sum()) - float(g[name].sum())
 sto = n.storage_units_t.p; dis = {}; chg = {}
 for name, c in n.storage_units.carrier.items():
     dis[c] = dis.get(c, 0.0) + float(sto[name].clip(lower=0).sum()); chg[c] = chg.get(c, 0.0) + float((-sto[name].clip(upper=0)).sum())
