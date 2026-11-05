@@ -148,7 +148,9 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   ts2_central step 2037 had solved for 3 min (pass 1); relaunched at 23:46 (PID 291), its pass 1 cold again. ts2_central_ann step 2028
   (to 2032) had solved passes 1 to 3 (14.8, 21.6, 24.2 min; 2032 at 37.76, 29.51, 23.97 against 20 GWh) and pass 4 for 16 of its 26 min
   (limit 1,563 s), so the piece's deadline would very likely have cut it about 10 min later; the step had run 85 min. Counted as its one
-  relaunch: relaunched at 23:46 (PID 373), passes 1 to 3 from the LP cache, pass 4 cold.
+  relaunch: relaunched at 23:46 (PID 373), passes 1 to 3 from the LP cache, pass 4 cold. The two solves the restart stopped left no end
+  line, so the tables' solve times leave them out; test15_summary.py counts the stopped piece's finished solves and attempt with the step
+  the next piece resumed (fixed 5 Nov 2026).
 
 <!-- test15_summary start -->
 #### ts2_central (13 of 15 steps)
@@ -209,7 +211,7 @@ ts2_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2034 | 2038 | 1 | adequate | parallel, 2 threads | 37.0 | 42.2 | 2 | 2.9 | pass 1: none | 751.008 |
 | 2035 | 2039 | 1 | adequate | parallel, 2 threads | 35.0 | 40.2 | 2 | 3.1 | pass 1: none | 807.526 |
 | 2036 | 2040 | 1 | adequate | parallel, 2 threads | 34.0 | 39.3 | 2 | 2.9 | pass 1: none | 868.454 |
-| 2037 | 2040 | 1 | adequate | parallel, 2 threads | 27.9 | 32.6 | 2 | 2.8 | pass 1: none | 844.648 |
+| 2037 | 2040 | 1 | adequate | parallel, 2 threads | 27.9 | 32.6 | 3 | 2.8 | pass 1: none | 844.648 |
 | 2038 | 2040 | 1 | adequate | parallel, 2 threads | 29.2 | 34.0 | 2 | 2.7 | pass 1: none | 823.097 |
 | 2039 | | | not finished |  |  | | 1 | | | |
 
@@ -293,7 +295,7 @@ ts2_ff: the adequacy test on each step's own year y at its final pass (mean unse
 | 2031 | 12.45 / 20 | 12.45 / 20 | 2025 (83.1) |
 | 2032 | 10.67 / 20 | 10.67 / 20 | 2021 (39.0) |
 
-#### ts2_central_ann (2 of 15 steps)
+#### ts2_central_ann (3 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -303,7 +305,7 @@ ts2_central_ann: new build by year, MW (lithium also MWh)
 |---|---:|---:|---:|---:|
 | 2026 | 287 | 156 | 360 | 1,440 |
 | 2027 | 1,959 | 2,120 | 401 | 1,619 |
-| 2028 |  |  |  |  |
+| 2028 | 0 | 1,129 | 0 | 660 |
 | 2029 |  |  |  |  |
 | 2030 |  |  |  |  |
 | 2031 |  |  |  |  |
@@ -316,7 +318,7 @@ ts2_central_ann: new build by year, MW (lithium also MWh)
 | 2038 |  |  |  |  |
 | 2039 |  |  |  |  |
 | 2040 |  |  |  |  |
-| Total | 2,246 | 2,276 | 761 | 3,059 |
+| Total | 2,246 | 3,405 | 761 | 3,719 |
 
 ts2_central_ann: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -324,6 +326,7 @@ ts2_central_ann: coal standing (MW), coal retired ahead of its dates (MW) and ke
 |---|---:|---:|---:|
 | 2026 | 39,692 | 0 |  |
 | 2027 | 39,692 | 0 |  |
+| 2028 | 39,692 | 0 |  |
 
 ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -331,7 +334,8 @@ ts2_central_ann: each step (year y on 365 days, the look-ahead years at 25 days)
 |---|---|---:|---|---|---|---:|---:|---:|---|---:|
 | 2026 | 2030 | 1 | adequate | parallel, 2 threads | 15.9 | 18.4 | 1 | 2.5 | pass 1: none | 677.140 |
 | 2027 | 2031 | 5 | stall stop | parallel, 2 threads | 16.8, 10.3, 7.0, 29.0, 29.2, 18.0, 32.3 | 45.3 | 3 | 4.1 | pass 1: 2031: 47.9 / 20<br>pass 2: 2031: 31.1 / 20<br>pass 3: 2031: 28.2 / 20<br>pass 4: 2031: 26.6 / 20<br>pass 5: 2031: 27.2 / 20 | 743.104 |
-| 2028 | | | not finished |  |  | | 1 | | | |
+| 2028 | 2032 | 5 | adequate | parallel, 2 threads | 14.8, 21.6, 24.2, 27.2, 31.4 | 70.4 | 3 | 4.1 | pass 1: 2032: 37.8 / 20<br>pass 2: 2032: 29.5 / 20<br>pass 3: 2032: 24.0 / 20<br>pass 4: 2032: 20.0 / 20<br>pass 5: none | 776.178 |
+| 2029 | | | not finished |  |  | | 1 | | | |
 
 ts2_central_ann: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -339,6 +343,7 @@ ts2_central_ann: the adequacy test on each step's own year y at its final pass (
 |---|---|---|---|
 | 2026 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
+| 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 
 Cumulative new build, MW (lithium also MWh), built 2026 to the year
 

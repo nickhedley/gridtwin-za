@@ -38,8 +38,15 @@ def progress(d):
         if m and m.group(1) in blk: blk[m.group(1)]['peak'] = float(m.group(2)); continue
         m = re.search(r'step (\d{4}) \(horizon (\d{4})\) rc=(\d+) (done|NO OUTPUT)', line)
         if m and cur and blk[cur]['step'] is None: blk[cur]['step'] = (int(m.group(1)), int(m.group(3)), m.group(4))
+    # A block with no step line was stopped from outside (a container restart): the next piece resumes the
+    # same step, so it is counted with the next block that names one. A trailing one is still running.
+    held = []
+    for b in list(blk.values()):
+        if not b['step']: held.append(b); continue
+        for h in held: h['step'] = b['step']
+        held = []
     for b in blk.values():
-        if not b['step']: continue
+        if not b['step'] or b in held: continue
         y = b['step'][0]; p = per.setdefault(y, {'solves': [], 'attempts': 0, 'peak': 0.0, 'rcs': [], 'solver': []})
         p['solves'] += b['solves']; p['attempts'] += 1; p['rcs'].append(b['step'][1]); p['peak'] = max(p['peak'], b['peak'] or 0)
         if b['solves'] and b['solver'] not in p['solver']: p['solver'].append(b['solver'])
