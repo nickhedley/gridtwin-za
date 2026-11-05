@@ -536,17 +536,17 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
    if (e.CURT_COST !== undefined){ const c = +e.CURT_COST; if (!(c >= 0 && c < 5000)) throw new Error('CURT_COST: R/MWh'); set.push('state.lpCurtailCostR=' + c + ';'); }
    if (e.COAL_PL !== undefined){ const m = JSON.parse(e.COAL_PL); if (!Object.values(m).every(v => v >= 1 && v < 1.5)) throw new Error('COAL_PL: factors 1 to 1.5'); set.push('state.bldCoalPartLoad=' + JSON.stringify(m) + ';'); }
    // VERDICT_TOPUP=<json {start, steps, frac}> (messages 704 (d), 711): the loop's verdict on its own draws. Each tested year starts at
-   // start draws a weather year; while its mean is at or above frac of the limit (NTCSA_ADEQUACY_GWH, the loop's own under STD=ntcsa) it is topped up to the next of steps; the
+   // start draws a weather year; while its mean is at or above frac (one number, or one per step) of the limit (NTCSA_ADEQUACY_GWH, the loop's own under STD=ntcsa) it is topped up to the next of steps; the
    // verdict reads the last mean. The LP's stress-target draws stay at DRAWS, so the LP key does not move. The loop's seeds are nested
    // (draw k: 20260816 + k x 104729 + year x 7919), so a top-up keeps the draws already made. Recorded as verdictTopup; unset, as before.
    if (e.VERDICT_TOPUP !== undefined){ const v = JSON.parse(e.VERDICT_TOPUP);
-     if (!(Number.isInteger(v.start) && v.start >= 1 && Array.isArray(v.steps) && v.steps.every((k, i) => Number.isInteger(k) && k > (i ? v.steps[i - 1] : v.start)) && v.frac >= 0 && v.frac <= 1))
-       throw new Error('VERDICT_TOPUP: {start: n, steps: [n2 > n, ...], frac: 0-1}');
+     if (!(Number.isInteger(v.start) && v.start >= 1 && Array.isArray(v.steps) && v.steps.every((k, i) => Number.isInteger(k) && k > (i ? v.steps[i - 1] : v.start)) && [].concat(v.frac).every(f => f >= 0 && f <= 1) && (!Array.isArray(v.frac) || v.frac.length === v.steps.length)))
+       throw new Error('VERDICT_TOPUP: {start: n, steps: [n2 > n, ...], frac: 0-1, or one per step}');
      if (process.env.STD !== 'ntcsa') throw new Error('VERDICT_TOPUP reads the NTCSA limit (NTCSA_ADEQUACY_GWH): it needs STD=ntcsa');
      set.push(`{ const _at = bldAdequacyTest, V = ${JSON.stringify(v)}; window.__verdictLog = [];
        bldAdequacyTest = (st, draws) => { const lim = NTCSA_ADEQUACY_GWH, mean = t => t.rows.length ? t.rows.reduce((a, b) => a + b.gwh, 0) / t.rows.length : 0;
          let K = V.start, t = _at(st, K); const log = [[K, +mean(t).toFixed(3)]];
-         for (const k of V.steps){ if (mean(t) < V.frac * lim) break; K = k; t = _at(st, K); log.push([K, +mean(t).toFixed(3)]); }
+         for (let i = 0; i < V.steps.length; i++){ const f = Array.isArray(V.frac) ? V.frac[i] : V.frac; if (mean(t) < f * lim) break; K = V.steps[i]; t = _at(st, K); log.push([K, +mean(t).toFixed(3)]); }
          window.__verdictLog.push({ y: st.scenarioYear, log }); return t; }; }`); }
    // DRAWS=<n> (J2; design note version 2, 6; message 673 (j) 2): the adequacy loop's outage draws a weather year (2 as every run so far).
    if (e.DRAWS !== undefined && !(Number.isInteger(+e.DRAWS) && +e.DRAWS >= 1)) throw new Error('DRAWS must be a whole number of draws');
