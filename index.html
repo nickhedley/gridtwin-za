@@ -8014,8 +8014,7 @@ function simulate(u, prof, outPath, _soc0){
   // flatters offshore - it understates energy about 40% and, worse, hands offshore onshore's
   // variability, which is the thing the profile exists to measure. Loud rather than silent:
   // anything reading this fallback should not be quoted.
-  const _offPu = (typeof OFFSHORE_PU !== 'undefined' && OFFSHORE_PU
-                  && OFFSHORE_PU.length === 8760) ? OFFSHORE_PU : null;
+  const _offPu = offshoreSeriesFor(prof);   // each weather year's own (message 707 (a) 3)
   if (offshoreCap > 0 && !_offPu && !simulate._offWarned) {
     simulate._offWarned = true;
     console.warn('[GridTwin] offshore built but nodal/profiles_offshore_regional.json did not '
@@ -12150,7 +12149,7 @@ function bldRepDaysClustered(n, method, S0){
   const seriesOf = (s, key) => { if (s === 'metered') return PROFILES[key];
     if (!/^[0-9]{4}$/.test(s)) throw new Error("bldRepRefYear must be 'metered', a weather year, or 'wind:<source>,solar:<source>': " + ref);
     const nat = weatherYearNational(s); if (!nat || !nat[key]) throw new Error('bldRepRefYear: weather year ' + s + ' is not loaded'); return nat[key]; };
-  const W0 = seriesOf(src('wind'), 'wind'), P0 = seriesOf(src('solar'), 'solar');
+  const W0 = seriesOf(src('wind'), 'wind'), P0 = seriesOf(src('solar'), 'solar'), OFF0 = offshoreSeriesFor({ wind: W0 });
   const Wm = mod ? windModOf(W0) : W0, Pt = trk ? solarTrkOf(P0) : P0;
   // Per-unit series as the LP uses them, each scaled over the whole year to its twelve-year mean (step 1).
   const base = { wind: Float64Array.from(W0.slice(0, N)), windN: Float64Array.from({ length: N }, (_, i) => Math.min(1, kw * Wm[i])),
@@ -12187,6 +12186,7 @@ function bldRepDaysClustered(n, method, S0){
   }
   const days = reps.map((d, i) => {
     const r = { d, weight: wt[d], prevD: i === 0 ? undefined : reps[i - 1], extreme: E.includes(d), wind: out.wind(d), solar: out.solar(d) };
+    if (OFF0) r.off = Array.from({ length: 24 }, (_, h) => OFF0[d * 24 + h]);   // offshore of the reference wind's year, unscaled (message 707 (a) 3)
     if (mod) r.windMod = out.windN(d).map(v => v / kw);   // the LP takes min(1, kw x windMod)
     if (trk) r.solarTrk = out.solarT(d);
     return r;
@@ -12322,6 +12322,7 @@ function bldRepDays(n, opt){
           solar: Array.from({length:24}, (_, h) => nat.solar[cal*24 + h]),
           ...(nat.solar.trk ? { solarTrk: Array.from({length:24}, (_, h) => nat.solar.trk[cal*24 + h]) } : {}),
           ...(nat.wind.mod ? { windMod: Array.from({length:24}, (_, h) => nat.wind.mod[cal*24 + h]) } : {}),
+          ...(offshoreSeriesFor(nat) ? { off: Array.from({length:24}, (_, h) => offshoreSeriesFor(nat)[cal*24 + h]) } : {}),
           wind:  Array.from({length:24}, (_, h) => nat.wind[cal*24 + h]),
         });
       }
@@ -12335,6 +12336,7 @@ function bldRepDays(n, opt){
           solar: Array.from({length:24}, (_, h) => best.nat.solar[cal*24 + h]),
           ...(best.nat.solar.trk ? { solarTrk: Array.from({length:24}, (_, h) => best.nat.solar.trk[cal*24 + h]) } : {}),
           ...(best.nat.wind.mod ? { windMod: Array.from({length:24}, (_, h) => best.nat.wind.mod[cal*24 + h]) } : {}),
+          ...(offshoreSeriesFor(best.nat) ? { off: Array.from({length:24}, (_, h) => offshoreSeriesFor(best.nat)[cal*24 + h]) } : {}),
           wind:  Array.from({length:24}, (_, h) => best.nat.wind[cal*24 + h]),
         });
       }
@@ -13064,6 +13066,9 @@ function bldBuildLP(opts){
     // and 228 MW at 04:00 the engine does not have.
     if (!(PROFILES.csp && PROFILES.csp.length >= 8760)) throw new Error('bldBuildLP: PROFILES.csp missing; the LP reads the engine\'s CSP series');
     const CSP_PU = i => PROFILES.csp[i % PROFILES.csp.length];
+    // Offshore on the day's own weather year (message 707 (a) 3): a day carrying its series (r.off: tail, stress and clustered days) reads
+    // it; a calendar day reads the metered profile's year.
+    const OFF_REF = OFF_ON ? offshoreSeriesFor({ wind: PROFILES.wind }) : null;
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
@@ -13098,7 +13103,7 @@ function bldBuildLP(opts){
         + (CAPE_MW > 0 ? Y.filter(yy => yy <= y).map(yy => ' - ' + (CAPE_CURT*wpN*AVW(h)).toFixed(4) + ' cw_' + yy).join('') : '')
         + ' + ' + cum('pv',y).map(v => (spN*AVP(h)).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
-        + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AVW(h)).toFixed(4)+' '+v).join(' + ') : '')
+        + (OFF_ON ? ' + ' + cumOff(y).map(v => ((r.off ? r.off[h] : OFF_REF[i % 8760])*AVW(h)).toFixed(4)+' '+v).join(' + ') : '')
         // Enrolled batteries out of the passive profile (message 637): + profile x 0.75 x E on the left, E = vppp x 2.5 h.
         + (VPP_ON ? lpTerm(btmDay(y, r)[h] * BTM_Y[y].use * VPP_HN, 'vppp_' + y, 6) : '')
         // Geyser control (G3): load taken off and returned.
@@ -16354,8 +16359,11 @@ function weatherYearNational(year){
     // Its modern-turbine twin from the map now, as the engine's windModOf would later: the LP's tail and extreme days read wind.mod
     // directly (build 2026-11-03d; before it, a corrected run with modern wind on stopped at 'a representative day has no modern-turbine wind').
     if (wind.mod) windModOf(c);
+    if (typeof OFFSHORE_BY_YEAR !== 'undefined' && OFFSHORE_BY_YEAR && OFFSHORE_BY_YEAR[String(year)]) c.off = OFFSHORE_BY_YEAR[String(year)];
     return { wind: c, solar };
   }
+  // The year's own offshore series, carried on the array like wind.mod (message 707 (a) 3).
+  if (typeof OFFSHORE_BY_YEAR !== 'undefined' && OFFSHORE_BY_YEAR && OFFSHORE_BY_YEAR[String(year)]) wind.off = OFFSHORE_BY_YEAR[String(year)];
   return { wind, solar };
 }
 
@@ -22322,7 +22330,7 @@ const PANEL_CACHE = new Map();      // key -> { deps, mc, adequacy, capCurve }, 
 const PANEL_CACHE_MAX = 200;
 // The engine's loaded inputs, by identity. Each is replaced, never altered in place, when it loads, so an entry computed
 // with these same objects is still current; one computed before any of them changed is not used.
-const engineInputs = () => [PROFILES, OFFSHORE_PU, COAL_TRACE, TDP_PROJECTS, HEADROOM_LOOKUP, bldTxCurve, WIND_MOD_MAP, SOLAR_TRK_G, SOLAR_TRK_K];
+const engineInputs = () => [PROFILES, OFFSHORE_PU, OFFSHORE_BY_YEAR, COAL_TRACE, TDP_PROJECTS, HEADROOM_LOOKUP, bldTxCurve, WIND_MOD_MAP, SOLAR_TRK_G, SOLAR_TRK_K];
 const sameInputs = deps => { const b = engineInputs(); return !!deps && deps.length === b.length && deps.every((x, i) => x === b[i]); };
 function canonJSON(o){ return JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v) && !ArrayBuffer.isView(v))
   ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v); }
@@ -22391,7 +22399,7 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 // computes on the main thread as before. Heat stress and the external comparison still compute on the page when shown.
 // The names are simulate()'s closure, with the panel draws', found by static analysis (eslint-scope) on 19 Oct 2026; a name
 // missing here fails in the worker, the page falls back, and validate_worker.js fails.
-const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
+const ENGINE_FNS = () => ({ simulate, offshoreSeriesFor, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
   astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate, reipppLiveMW,
   reipppExpiredMW, reipppRetiredMW, coalEafAt, avonDedisaOffMW, applyYearFleetOptions,
   otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth, nucShapeAt,
@@ -22404,7 +22412,7 @@ const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coa
   ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
   coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt, coalCarbonFloorR });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
-const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
+const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, OFFSHORE_BY_YEAR, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
   ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, CARBON_COAL_FLOOR_R_KWH, CARBON_COAL_FLOOR_TO, CARBON_CPI_PA, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
   WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, SOLAR_TRK_MAPS, _existPvX, WIND_CORR_TABLE, CONG_SHAPE_PV, CONG_SHAPE_WIND, _MSTART_H, COAL_MINSTABLE_CURVE,
@@ -23141,6 +23149,19 @@ const P_HEAD = fetch('nodal/region_headroom_lookup.json',{cache:'no-cache'}).the
   .catch(()=>{});
 
 var OFFSHORE_PU = null;
+// Each weather year's own offshore series (message 707 (a) 3; the data-path review, finding 3): OFFSHORE_BY_YEAR[y], the seven regions
+// at ESMAP's capacity weights, every year on the one scale below, clipped at 1. OFFSHORE_PU stays the twelve-year average (the shape
+// every run read before), for nothing that runs a weather year.
+var OFFSHORE_BY_YEAR = null;
+// The offshore series for a profile: the year's own where the wind carries it (weatherYearNational attaches it as wind.off), the
+// metered profile's year where the profile is the page's own (PROFILES.offshoreYear, 2025 unless a test sets another), else the
+// twelve-year average, as before.
+function offshoreSeriesFor(prof){
+  if (prof && prof.wind && prof.wind.off && prof.wind.off.length === 8760) return prof.wind.off;
+  if (typeof OFFSHORE_BY_YEAR !== 'undefined' && OFFSHORE_BY_YEAR && typeof PROFILES !== 'undefined' && PROFILES && prof && prof.wind === PROFILES.wind){
+    const y = String(PROFILES.offshoreYear || 2025); if (OFFSHORE_BY_YEAR[y]) return OFFSHORE_BY_YEAR[y]; }
+  return (typeof OFFSHORE_PU !== 'undefined' && OFFSHORE_PU && OFFSHORE_PU.length === 8760) ? OFFSHORE_PU : null;
+}
 var OFFSHORE_ESMAP = {
   'Boegoebaai West Coast':   { mw: 39674, cf: 0.524 },
   'Saldanha Bay West Coast': { mw: 25831, cf: 0.494 },
@@ -23155,23 +23176,30 @@ const P_OFF = fetch('nodal/profiles_offshore_regional.json',{cache:'no-cache'}).
     if (!d || !d.wind_pu) return;
     const sc = d.scale || 1;
     let totMW = 0, cfTarget = 0;
-    const acc = new Float64Array(8760);
+    const acc = new Float64Array(8760), byY = {};
     for (const reg of Object.keys(d.wind_pu)) {
       const meta = OFFSHORE_ESMAP[reg];
       if (!meta) continue;
       const yrs = d.wind_pu[reg], keys = Object.keys(yrs);
       if (!keys.length) continue;
-      for (const y of keys) { const v = yrs[y];
-        for (let h = 0; h < 8760; h++) acc[h] += (v[h] || 0) / sc / keys.length * meta.mw; }
+      for (const y of keys) { const v = yrs[y], b = byY[y] || (byY[y] = new Float64Array(8760));
+        for (let h = 0; h < 8760; h++) { const x = (v[h] || 0) / sc * meta.mw; acc[h] += x / keys.length; b[h] += x; } }
       totMW += meta.mw; cfTarget += meta.cf * meta.mw;
     }
     if (totMW <= 0) return;
     for (let h = 0; h < 8760; h++) acc[h] /= totMW;
+    for (const y of Object.keys(byY)) for (let h = 0; h < 8760; h++) byY[y][h] /= totMW;
     cfTarget /= totMW;
     let cfRaw = 0; for (let h = 0; h < 8760; h++) cfRaw += acc[h] / 8760;
+    // The level (message 707 (a) 3, its basis): ESMAP's site capacity factors by region (World Bank Group 2026, A Strategic Framework
+    // for Offshore Wind Development in South Africa; OFFSHORE_ESMAP above), capacity-weighted, 0.516, against this file's twelve-year
+    // mean at the same weights, 0.462 (Renewables.ninja MERRA-2, Vestas V164 8.0 MW at 150 m): one factor, 1.117, on every year, so each
+    // year keeps its own hours and calms and the twelve years' level is ESMAP's. A level adjustment, not a measured one; why ESMAP is
+    // higher is not established here (the file's own note: a 15 MW-class machine would give a higher capacity factor).
     const k = cfRaw > 0 ? cfTarget / cfRaw : 1;
     for (let h = 0; h < 8760; h++) acc[h] = Math.min(1, acc[h] * k);
-    OFFSHORE_PU = acc;
+    for (const y of Object.keys(byY)) for (let h = 0; h < 8760; h++) byY[y][h] = Math.min(1, byY[y][h] * k);
+    OFFSHORE_PU = acc; OFFSHORE_BY_YEAR = byY;
     console.log('[GridTwin] Offshore profile: ' + Object.keys(d.wind_pu).length
       + ' regions, CF ' + cfRaw.toFixed(3) + ' scaled x' + k.toFixed(3)
       + ' to ESMAP ' + cfTarget.toFixed(3));
