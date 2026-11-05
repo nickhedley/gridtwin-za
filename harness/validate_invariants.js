@@ -608,7 +608,9 @@ const SCENARIOS = {
     else {
       const shallow = 0.25 * S.base * 1000 * 1000;                 // 1,000 MW at the shallow rate
       const beyond = 1.5 * S.multNC * S.base * 1000 * 1000;        // 1,000 MW beyond the plan
-      check('the siting panel prices a megawatt as the engine does',
+      // Until 5 Nov 2026 the engine charged the same tiers; from message 710 (c) it charges the build LP's flat basis (gridChargeR), and
+      // whether the panel follows is Nick's decision (TODO 14na (h)). The assertion is unchanged.
+      check('the siting panel prices a megawatt on the regional tiers (txTierCharge)',
             Math.abs(S.room.annualChargeR - shallow) < 0.02 * shallow
             && Math.abs(S.none.annualChargeR - beyond) < 0.02 * beyond,
             `KwaZulu-Natal R${(S.room.annualChargeR / 1e6).toFixed(0)}m against R${(shallow / 1e6).toFixed(0)}m `
@@ -616,26 +618,41 @@ const SCENARIOS = {
     }
   }
 
-  // ── TRANSMISSION IS CHARGED ONCE, AND THE PLAN'S DELIVERY MATTERS ──────────
-  // Added 22 Sep 2026 with the tiered regional charge. Two things must hold: capacity beyond
-  // headroom is no longer charged twice (the reinforcement line is gone, so the engine returns
-  // no gridReinforceR), and how much of the TDP arrives changes the bill, because it moves MW
-  // between the TDP tier and the beyond-the-plan tier.
+  // ── TRANSMISSION IS CHARGED ONCE, ON THE BUILD OPTIMISER'S BASIS ──────────
+  // Added 22 Sep 2026 with the tiered regional charge (charged once; the TDP's delivery moved the bill). Restated 5 Nov 2026 for the
+  // user's decision (message 710 (c)): the engine charges the build LP's basis. Three things must hold on Fossil-free 2040: no separate
+  // reinforcement charge; the engine's grid charge equals the LP's basis recomputed here (each technology's charge per MW, bldGridAnn
+  // with the optimiser's grid cost on, as on this preset, else the integration charge; less the freed coal MW on the LP's rule); and
+  // the TDP's delivery no longer changes it.
   {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__tx = (function(){ try {
-      const at = c => simulate({ ...state, ...PRESETS['Fossil-free 2040'], tdpConfidencePct: c }, PROFILES);
-      const full = at(100), none = at(0);
-      return { full: full.txCapexR / 1e9, none: none.txCapexR / 1e9,
+      const u0 = { ...state, ...PRESETS['Fossil-free 2040'] };
+      const at = c => simulate({ ...u0, tdpConfidencePct: c }, PROFILES);
+      const full = at(100), none = at(0), P = { ...FIXED, ...u0 };
+      // The build LP's charge per MW a year, written out here: bldGridAnn when its grid cost is on, else the integration charge alone.
+      const on = (P.bldGridCost | 0) > 0, tx = P.txRPerKWyr, vk = +(P.bldGridIntVreShare ?? 1);
+      const integ = t => ['batt', 'vrfb', 'ironair'].includes(t) ? (P.bldGridBattHalf ? 0.5 : 0) * tx : (t === 'wind' || t === 'pv') ? vk * tx : tx;
+      const rate = t => on ? bldGridAnn(t, P) : integ(t);
+      const g = k => +(u0[k] || 0);
+      const mw = { wind: g('newWindMW'), pv: g('newPvMW'), offshore: g('newOffshoreMW'), ccgt: g('newCcgtMW'), ocgt: g('newOcgtMW'), ocgd: g('newOcgdMW'),
+                   phes: g('newPsMW'), batt: g('newBattMW'), vrfb: g('newVrfbMW'), ironair: g('newIronAirMW') };
+      let gross = 0; for (const t of Object.keys(mw)) gross += mw[t] * rate(t);
+      // The LP's freed-connection rule: BLD_TECHS less rooftop, and pumped storage; not bldRpExclude; a charge above 0; highest charge first.
+      const ex = new Set(P.bldRpExclude || []); let left = u0.repurpose ? Math.max(0, P.coalDecomMW || 0) : 0, credit = 0;
+      for (const t of ['wind', 'pv', 'batt', 'vrfb', 'ironair', 'ccgt', 'phes'].filter(t => !ex.has(t) && rate(t) > 0).sort((a, b) => rate(b) - rate(a))){
+        const used = Math.min(left, mw[t]); credit += used * rate(t); left -= used; }
+      return { full: full.txCapexR / 1e9, none: none.txCapexR / 1e9, expect: (gross - credit) * 1000 / 1e9, on, off: mw.offshore,
                reinforce: full.gridReinforceR === undefined };
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const T = w.__tx;
-    if (!T || T.err) check('transmission is charged once and responds to the TDP', false, T ? T.err : 'no result');
-    else check('transmission is charged once and responds to the TDP',
-               T.reinforce && T.none > T.full * 1.2,
-               `R${T.full.toFixed(1)}bn a year with the TDP delivered against R${T.none.toFixed(1)}bn `
-               + `without it; separate reinforcement charge ${T.reinforce ? 'removed' : 'STILL PRESENT'}`);
+    if (!T || T.err) check('transmission is charged once, on the build optimiser\'s basis', false, T ? T.err : 'no result');
+    else check('transmission is charged once, on the build optimiser\'s basis',
+               T.reinforce && Math.abs(T.full - T.expect) < 1e-6 && T.full === T.none,
+               `R${T.full.toFixed(3)}bn a year against R${T.expect.toFixed(3)}bn recomputed (optimiser grid cost ${T.on ? 'on' : 'off'}; offshore `
+               + `${T.off} MW in it); with the TDP delivered and not: R${T.full.toFixed(3)}bn and R${T.none.toFixed(3)}bn; separate reinforcement `
+               + `charge ${T.reinforce ? 'removed' : 'STILL PRESENT'}`);
   }
 
   // ── THE RESERVE REQUIREMENT GROWS WITH VARIABLE GENERATION ─────────────────

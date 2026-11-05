@@ -145,7 +145,7 @@ function compare(res) {
 }
 
 // The '|| 0' scan: keys read with a zero fallback off a settings object, against every key that exists.
-function scanZeroFallbacks(src, known) {
+function scanZeroFallbacks(src, known, setSrc) {
   const re = /\b(?:p|S|u|q|st|state|FIXED|S0|_rw)\.([A-Za-z_$][\w$]*)\s*(?:\|\||\?\?)\s*0(?![.\d])/g;
   const keys = new Map(); let m;
   while ((m = re.exec(src))) { const k = m[1]; if (!keys.has(k)) keys.set(k, src.slice(0, m.index).split('\n').length); }
@@ -154,7 +154,7 @@ function scanZeroFallbacks(src, known) {
     if (known.has(k)) continue;
     // Set anywhere in the code: an assignment to .k, a property k: in an object literal, a 'k' or "k" string (a slider id or a key list).
     const set = new RegExp('\\.' + k + '\\s*(?:=(?!=)|\\+=|-=)|[{,\\s]' + k + '\\s*:|[\'"`]' + k + '[\'"`]');
-    if (!set.test(src)) missing.push(k + ' (first read on line ' + line + ')');
+    if (!set.test(src) && !(setSrc && set.test(setSrc))) missing.push(k + ' (first read on line ' + line + ')');
   }
   return { n: keys.size, missing };
 }
@@ -204,11 +204,13 @@ function scanZeroFallbacks(src, known) {
   const NOT_SETTINGS = { _laGasRefill: 'a measurement switch passed by hand to simulate (its comment: measurement only); off unless set',
                          Dual: "a HiGHS solution column's field (p is a column there, not a setting)" };
   for (const [k, why] of Object.entries(NOT_SETTINGS)){ known.add(k); console.log(`  note  ${k}: ${why}`); }
-  const scan = scanZeroFallbacks(src, known);
+  // Keys the harness sets on a run's state (pathcheck.js passes gridRpMW, gridCapeMW, bldVintageMW) exist too.
+  const hsrc = ['pathcheck.js', 'pathway/pathway_perfail.js'].map(f => { try { return fs.readFileSync(path.join(__dirname, f), 'utf8'); } catch (e) { return ''; } }).join('\n');
+  const scan = scanZeroFallbacks(src, known, hsrc);
   check(`every key read with a zero fallback exists (${scan.n} keys)`, scan.missing.length === 0,
     scan.missing.length ? 'exists nowhere: ' + scan.missing.join(', ') : '');
   // The scan must find a key that exists nowhere.
-  const planted = scanZeroFallbacks(src + '\nconst __z = p.dieselMWx || 0;\n', known);
+  const planted = scanZeroFallbacks(src + '\nconst __z = p.dieselMWx || 0;\n', known, hsrc);
   check('injected fault caught: a zero fallback on a key that exists nowhere', planted.missing.some(s => s.startsWith('dieselMWx ')));
 
   // Page context, measured not checked: without roof12, the LP's tail and stress days read PROFILES.demand and the engine on a weather year

@@ -13172,7 +13172,7 @@ function bldBuildLP(opts){
     // Existing CSP on the engine's own series (message 707 (a) 2; the data-path review, finding 4): the profile's CSP (Eskom's shape, as
     // simulate reads it, cspMW x csp), at the representative day's calendar hour, in place of a flat 0.38 that counted 0.48 TWh a year
     // and 228 MW at 04:00 the engine does not have.
-    if (!(PROFILES.csp && PROFILES.csp.length >= 8760)) throw new Error('bldBuildLP: PROFILES.csp missing; the LP reads the engine\'s CSP series');
+    if (!(PROFILES.csp && PROFILES.csp.length >= 8760)) throw new Error('bldBuildLP: the CSP profile (csp_pu in profiles.json) is missing; the LP reads the engine\'s CSP series');
     const CSP_PU = i => PROFILES.csp[i % PROFILES.csp.length];
     // Offshore on the day's own weather year (message 707 (a) 3): a day carrying its series (r.off: tail, stress and clustered days) reads
     // it; a calendar day reads the metered profile's year.
@@ -16073,26 +16073,10 @@ function txChargeFor(windMW, pvMW, offMW, p){
   charge('solar', pvMW || 0);
   return cost;
 }
-// Nothing calls this. Corrected 5 Nov 2026 (message 710 (c); the cost review on 57f70df): the comment here said the curve was
-// retired on 22 Sep and the national model was flat; it was not. txChargeFor above charged a tiered regional rate in the engine
-// (a quarter of txRPerKWyr into existing headroom, the distance multiplier into TDP headroom, 1.5 times it beyond) until 5 Nov 2026,
-// when the engine moved to gridChargeR, the build LP's flat basis. txChargeFor and txTierCharge remain for the siting panel.
-function txRateFor(newMW, baseRate){
-  // Flat from 22 Sep 2026. The curve filled cheapest headroom first whatever the technology,
-  // so new wind was priced as if it could connect in Gauteng at a quarter of the average. The
-  // TDP average already reflects where the TDP expects generation to be sited. The national
-  // sliders have no location; the curve below is kept for a located build and is not used here.
-  return baseRate;
-  if (!bldTxCurve || !(newMW > 0)) return baseRate;
-  let left = newMW, cost = 0;
-  for (const r of bldTxCurve.rows){
-    if (left <= 0) break;
-    const take = Math.min(left, r.headroomMW);
-    cost += take * baseRate * r.mult; left -= take;
-  }
-  if (left > 0) cost += left * baseRate * bldTxCurve.rows[bldTxCurve.rows.length - 1].mult;
-  return cost / newMW;
-}
+// txRateFor removed 5 Nov 2026 (message 710 (c); the cost review on 57f70df): nothing called it, and its comment said the curve was
+// retired on 22 Sep and the national model flat; it was not. txChargeFor above charged a tiered regional rate in the engine (a quarter
+// of txRPerKWyr into existing headroom, the distance multiplier into TDP headroom, 1.5 times it beyond) until 5 Nov 2026, when the
+// engine moved to gridChargeR, the build LP's flat basis. txChargeFor and txTierCharge remain for the siting panel.
 
 // ── two-pass price-taker dispatch ───────────────────────────────────────────
 // Runs simulate() twice. Pass one produces the hourly marginal price with the gate
@@ -22427,7 +22411,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-05d';
+const BUILD_STAMP = '2026-11-05e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
