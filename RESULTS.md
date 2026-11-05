@@ -22537,3 +22537,29 @@ pool bind first), and less lithium energy. Nothing else in the LP was tuned arou
 lpBattDischargeCostR (R20) was set on its own reasoning (14 Aug 2026; its solver test ran with R150 on: identical builds at the default
 build rates); the Cape allowance is NERSA's 4%; the curtailment bound (200 GW) does not bind. Central from build 2026-11-05f: 0; R150 a
 sensitivity.
+
+### Coal's part-load penalty in the LP on run (6) (message 710 (b)): 374 MW of coal retired early, coal output -1 to -3 TWh, CO2 -1 to -3 Mt; reliability thinner in 2035; engine cost within R0.6bn
+
+The factor: the engine's own part-load heat rate (coal fuel and carbon per MWh x (1 + coalPartLoadK x (1/x - 1)), x coal output over
+available coal, floored at 0.35; coalPartLoadK 0.10, whose note gives as its basis 'the 5-12% range typically quoted for subcritical
+coal between MSL and full load', no citation recorded), measured as the engine's fuel-weighted mean by year on run (6)'s build
+(pathcheck coalPartLoad, K=2, all fifteen years, e588e49 plus patch710, 5 Nov 2026 08:14-08:21 UTC): 1.0337 (2026), 1.0357, 1.0373,
+1.0363, 1.0431 (2030), 1.0411, 1.0444, 1.0465, 1.0475, 1.0494 (2035), 1.0507, 1.0508, 1.0503, 1.0460, 1.0435 (2040). Applied in the LP to
+coal's fuel and carbon price per MWh (not the 2030 carbon floor, as the engine; FIXED.bldCoalPartLoad, harness COAL_PL). Run (6)'s
+settings otherwise; pass 1, two pieces (08:38-10:43 UTC); engine check as run (6)'s (10:48-10:58 UTC).
+
+| 2030 / 2035 / 2040 | run (6) | with the factor |
+|---|---|---|
+| utility solar, GW | 6.7 / 17.2 / 23.9 | 7.3 / 17.6 / 24.1 |
+| wind, GW | 9.3 / 26.8 / 42.0 | 9.7 / 27.2 / 42.4 |
+| lithium, GWh | 3.7 / 32.8 / 61.2 | 3.7 / 34.9 / 61.1 |
+| coal retired early, MW | 0 | 374 from 2029 |
+| unserved, GWh (se), limit 20 | 0.95 / 13.69 / 7.58 | 1.61 (0.45) / 17.92 (2.03) / 10.99 (1.49) |
+| curtailment, TWh | 2.01 / 11.07 / 26.10 | 2.57 / 11.38 / 27.41 |
+| engine cost, R bn | 242.79 / 271.67 / 318.26 | 242.66 / 271.92 / 318.87 |
+| CO2, Mt; coal, TWh | 134.2 / 84.0 / 52.9; 119.6 / 74.1 / 45.7 | 131.4 / 81.4 / 51.8; 116.9 / 71.8 / 44.6 |
+| LP objective, R bn | 1,523.5 | 1,548.7 |
+
+The engine's factor on the new build (1.0439, 1.0497, 1.0433) equals the one fed in to within 0.001: one round calibrates it. The LP
+objective rises R25.2bn, the coal cost the engine already charges. The table is run (6)'s: a pathway with more part-load running (the
+review measured 1.066 on Deep decarbonisation 2035) would need its own.
