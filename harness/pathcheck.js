@@ -372,6 +372,11 @@ console.log('recorded settings:', JSON.stringify(RECSET));
    if (cum.phes + cum.phel > 0){ const PS=P.phes||{}, H=+(PS.hours??(process.env.PH||w.eval('FIXED.bldPhesHours'))), H2=+(PS.hours2??(process.env.PH2||0)), B=PS.basis??(process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis'));
      const ann=h=>+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${h}),60,'phes')+FIXED.bldPhesFomRkW`), P1=cum.phes, P2=cum.phel;
      over.newPsMW=P1+P2; over.newPsHours=(H*P1+H2*P2)/(P1+P2); over.newPsMaxMW=1e7; over.acapPs=(ann(H)*P1+(P2>0?ann(H2)*P2:0))/(P1+P2); }
+   // The vintage map against what stands this year (after FOSSIL_END and the rest): a technology the run stands down to 0 MW (gas and
+   // diesel after its last fossil year) leaves the map, as the LP charges no capital on it then; any other mismatch stops the check.
+   if (over.bldVintageMW){ const KEY={wind:'newWindMW',pv:'newPvMW',rooftop:'newRooftopMW',batt:'newBattMW',vrfb:'newVrfbMW',ironair:'newIronAirMW',ccgt:'newCcgtMW',ocgt:'newOcgtMW',ocgd:'newOcgdMW',offshore:'newOffshoreMW'};
+     for (const t of Object.keys(over.bldVintageMW)){ const sum=Object.values(over.bldVintageMW[t]).reduce((a,b)=>a+b,0), mw=+over[KEY[t]]||0;
+       if (mw===0) delete over.bldVintageMW[t]; else if (Math.abs(sum-mw)>0.5) throw new Error('vintage map: '+t+' '+sum+' MW built against '+mw+' MW standing in '+y); } }
    const batch=(k0,k1)=>JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of __wxYears()){ const nat=__wxNat(yy);
       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+__wxSeed(yy)*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,...(nat.solarTrk?{solarTrk:nat.solarTrk}:{}),csp:PROFILES.csp,real:true});
