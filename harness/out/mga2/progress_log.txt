@@ -16,3 +16,32 @@
 2026-11-04T14:18Z runner 8886 end, 40 of 40 MGA runs left
 2026-11-04T14:19Z base engine check on build 2026-11-04b (wind-table merged), from the cache, shell PID 11411
 2026-11-04T14:24Z base_04b end rc=0
+2026-11-04T15:29:26 lptest base693 start lp base_pass1.lp opts {"simplex_strategy":2,"threads":2} basis-in none limit 6900 s, shell PID 272
+15:29Z lptest base693 python PID 276
+2026-11-04T15:29Z test out/mga2/d18/base start, shell PID 280, REP_DAYS=18 DUMP_LP=out/mga2/d18/base opts {"simplex_strategy":2,"threads":2} basis-in none solve deadline 17:36Z, on 0ff7607 run_one.sh: one pathway run on m
+2026-11-04T16:05Z test out/mga2/d18/base rc=0 pid 300 35 min done
+2026-11-04T16:05Z test out/mga2/d18/wind_2040_min_0.01 start, shell PID 816, REP_DAYS=18 MGA=wind:2040:min:0.01 MGA_FSTAR=1501917683865.2021 opts {"simplex_strategy":2,"threads":2} basis-in none solve deadline 18:12Z, on 0ff7607 run_one.sh: one pathway run on m
+2026-11-04T16:47:18 lptest base693 end rc=0 4672 s: Optimal 1521521735393.8196
+2026-11-04T16:47Z test out/mga2/warm/wind_2040_min_0.01 start, shell PID 1413, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":4} basis-in /tmp/claude-0/-home-user-gridtwin-za/a8437756-7a13-5784-b26a-109d8c53ca84/scratchpad/base693.basis.json solve deadline 18:54Z, on 85b4724 Test 13 method test: the 18-day 
+2026-11-04T17:57Z test out/mga2/d18/wind_2040_min_0.01 rc=75 pid 830 112 min not done
+2026-11-04T17:58Z test out/mga2/nopre/wind_2040_min_0.01 start, shell PID 2207, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":2,"threads":2,"presolve":"off"} basis-in none solve deadline 20:05Z, on 85b4724 Test 13 method test: the 18-day 
+2026-11-04T18:40Z test out/mga2/warm/wind_2040_min_0.01 rc=75 pid 1426 112 min not done
+2026-11-04T18:40Z test out/mga2/warm/wind_2040_min_0.01 start, shell PID 2819, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":4} basis-in /tmp/claude-0/-home-user-gridtwin-za/a8437756-7a13-5784-b26a-109d8c53ca84/scratchpad/base693.basis.json solve deadline 20:47Z, on 65755a1 Test 13 method tests: 18-day res
+2026-11-04T19:50Z test out/mga2/nopre/wind_2040_min_0.01 rc=75 pid 2226 112 min not done
+2026-11-04T19:50Z test out/mga2/nopre/wind_2040_min_0.01 start, shell PID 3563, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":2,"threads":2,"presolve":"off"} basis-in none solve deadline 21:57Z, on 268df60 Test 13 method tests: warm start
+2026-11-04T20:33Z test out/mga2/warm/wind_2040_min_0.01 rc=75 pid 2834 112 min not done
+2026-11-04T20:33Z test out/mga2/warm/wind_2040_min_0.01 start, shell PID 4116, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":4,"output_flag":true,"log_to_console":false,"log_file":"out/mga2/warm/highs_p3.log"} basis-in /tmp/claude-0/-home-user-gridtwin-za/a8437756-7a13-5784-b26a-109d8c53ca84/scratchpad/base693.basis.json solve deadline 22:40Z, on 5203731 Test 13 method tests: presolve o
+2026-11-04T21:43Z test out/mga2/nopre/wind_2040_min_0.01 rc=75 pid 3581 112 min not done
+2026-11-04T21:43Z test out/mga2/nopre/wind_2040_min_0.01 start, shell PID 4866, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":2,"threads":2,"presolve":"off","output_flag":true,"log_to_console":false,"log_file":"out/mga2/nopre/highs_p3.log"} basis-in none solve deadline 23:50Z, on 5203731 Test 13 method tests: presolve o
+2026-11-04T22:26Z test out/mga2/warm/wind_2040_min_0.01 rc=75 pid 4135 112 min not done
+2026-11-04T22:26Z test out/mga2/warm/wind_2040_min_0.01 start, shell PID 5438, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":4,"output_flag":true,"log_to_console":false,"log_file":"out/mga2/warm/highs_p4.log"} basis-in /tmp/claude-0/-home-user-gridtwin-za/a8437756-7a13-5784-b26a-109d8c53ca84/scratchpad/base693.basis.json solve deadline 00:33Z, on e48ab26 Test 13 method tests: warm start
+2026-11-04T22:29Z test out/mga2/nopre/wind_2040_min_0.01 start, shell PID 246, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":2,"threads":2,"presolve":"off","output_flag":true,"log_to_console":false,"log_file":"out/mga2/nopre/highs_p3r.log"} basis-in none solve deadline 00:36Z, on e48ab26 Test 13 method tests: warm start
+2026-11-04T22:29Z test out/mga2/warm/wind_2040_min_0.01 start, shell PID 239, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":4,"output_flag":true,"log_to_console":false,"log_file":"out/mga2/warm/highs_p4r.log"} basis-in /tmp/claude-0/-home-user-gridtwin-za/a8437756-7a13-5784-b26a-109d8c53ca84/scratchpad/base693.basis.json solve deadline 00:36Z, on e48ab26 Test 13 method tests: warm start
+2026-11-05T00:21Z test out/mga2/nopre/wind_2040_min_0.01 rc=75 pid 273 112 min not done
+2026-11-05T00:21Z test out/mga2/warm/wind_2040_min_0.01 rc=75 pid 275 112 min not done
+2026-11-05T00:22Z test out/mga2/warm/wind_2040_min_0.01 start, shell PID 1480, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":4,"output_flag":true,"log_to_console":false,"log_file":"out/mga2/warm/highs_p5.log"} basis-in /tmp/claude-0/-home-user-gridtwin-za/a8437756-7a13-5784-b26a-109d8c53ca84/scratchpad/base693.basis.json solve deadline 02:29Z, on 3ad505c Test 13 method tests: warm start
+2026-11-05T00:22Z test out/mga2/nopre/wind_2040_min_0.01 start, shell PID 1503, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":2,"threads":2,"presolve":"off","output_flag":true,"log_to_console":false,"log_file":"out/mga2/nopre/highs_p4.log"} basis-in none solve deadline 02:29Z, on 3ad505c Test 13 method tests: warm start
+2026-11-05T01:06Z test out/mga2/warm/wind_2040_min_0.01 rc=0 pid 1493 43 min done
+2026-11-05T02:14Z test out/mga2/nopre/wind_2040_min_0.01 rc=75 pid 1516 112 min not done
+2026-11-05T02:15Z test out/mga2/nopre/wind_2040_min_0.01 start, shell PID 2883, MGA=wind:2040:min:0.01 MGA_FSTAR=1521521735393.8196 opts {"simplex_strategy":2,"threads":2,"presolve":"off","output_flag":true,"log_to_console":false,"log_file":"out/mga2/nopre/highs_p5.log"} basis-in none solve deadline 04:22Z, on bca4fab Test 13 method tests: the warm s
+2026-11-05T04:07Z test out/mga2/nopre/wind_2040_min_0.01 rc=75 pid 2896 112 min not done

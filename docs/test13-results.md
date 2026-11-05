@@ -168,19 +168,24 @@ it restarted from the 21:43 basis at 22:29 UTC. Piece 3, 22:29-00:21 UTC: not so
 100 a minute), 160,621 primal infeasibilities; basis kept. Piece 4, 00:22-02:14 UTC: not solved. The kept basis came back dual
 infeasible (61,704 dual infeasibilities: most likely the cost perturbation of dual simplex), so dual phase 1 ran first and phase 2
 began at a dual objective of about -11.8 million, against 8,888 at the end of piece 3; it ended at -3.43 million with 169,474 primal
-infeasibilities. The resume lost the previous piece's progress. Piece 5, the last, from 02:15 UTC. HiGHS's log names simplex_strategy 2 as SIP, the
+infeasibilities. The resume lost the previous piece's progress. Piece 5, the last, 02:15-04:07 UTC: not solved; dual objective
+-3.67 million at its start and -21,829 at its end, 150,800 primal infeasibilities.
+- Result: not solved. HiGHS time across the five pieces about 33,480 s (9.3 h: 6,694, 6,691, 6,692, 6,699 and 6,701 s, the first two
+  at their limits, unlogged), plus 45 min lost to the restart; 17:58 UTC on 4 November to 04:07 UTC on 5 November, beside the warm
+  start until 01:02 UTC and alone after. Stopped there (no new piece after 03:00 UTC); its basis is kept locally, off the repository. HiGHS's log names simplex_strategy 2 as SIP, the
 task-parallel dual simplex, with concurrency 8 on 2 threads.
 
 ### Summary
 
-Wind 2040 minimum at 1%, two solves at a time on the 4 cores (times by HiGHS's clock):
+Wind 2040 minimum at 1%, two solves at a time on the 4 cores (times by HiGHS's clock). All three tests are finished; the 40 solves
+were not started.
 
 | Test | Time | Result | Fits well inside a piece |
 |---|---|---|---|
 | Cold, parallel dual simplex (Ranges, above) | over 6,698 s | not solved, no basis kept | no |
 | 1. Warm start: primal simplex from the base's optimal basis | 29,117 s (8.1 h) over five pieces, plus 4,672 s for the base re-solve that made the basis | Optimal, 24,605 MW | no |
 | 2. 18 days, cold, parallel dual simplex | over 6,694 s | not solved, no basis kept | no (its base: 1,780 s, yes) |
-| 3. Presolve off, parallel dual simplex | about 26,780 s (7.4 h) over four pieces, plus 45 min lost to the restart; piece 5 running to 04:07 UTC | not solved; one resume lost its progress | no |
+| 3. Presolve off, parallel dual simplex | about 33,480 s (9.3 h) over five pieces, plus 45 min lost to the restart; stopped | not solved; one resume lost its progress | no |
 
 None fits well inside a piece. Only the warm start solved, and only because each piece kept a valid basis that the next one resumed
 from; a primal simplex basis came back nearly feasible each time, while a dual simplex basis (presolve off) came back dual infeasible
