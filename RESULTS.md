@@ -22660,7 +22660,7 @@ two technologies cost the same per kW a year, (fixed a - fixed b) / (8.76 x (var
 | capex, R/kW | 34,965 | 25,778 (x 0.737) | 25,778 |
 | interest during construction (build years) | x 1.125 (3) | x 1.081 (2) | x 1.081 (2) |
 | capital annuity (8%, 30 years), R/kW-yr | 3,493 | 2,475 | 2,475 |
-| fixed O&M with the LNG terminal (R530.5), R/kW-yr | 993 | 983 | 452.8 + none |
+| fixed O&M, with the LNG terminal (R530.5) on gas, R/kW-yr | 993 | 983 | 453 |
 | grid charge (bldGridAnn), R/kW-yr | 383 | 383 | 383 |
 | fixed, R/kW-yr | 4,868 | 3,841 | 3,310 |
 | variable, R/MWh (gas R1,298; carbon R61.3/t) | 1,355 | 2,111 | 6,218 |

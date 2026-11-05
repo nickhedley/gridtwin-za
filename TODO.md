@@ -918,8 +918,9 @@ ATB editions, discount rate in summ.js and packfill.js, (d) withdrawn. Done 5 No
 2026-11-05f, R150 a sensitivity, the pack's curtailment line revised; (b) run (6) with coal's part-load factor, recommended for the central
 (Nick, 713 (a): in the central, run (6)'s table, build 2026-11-05h). Open: (c) 713 (c): the next LP pass with both, sized and reported (running); (g) re-read new wind's capacity factor, the reference and the two-stage
 comparison with (a) in; (h) Nick: the siting panel keeps the regional tiers while the engine is flat; validate_invariants' check
-'the siting panel prices a megawatt as the engine does' to be restated or the panel moved to flat; (i) Nick: Avon and Dedisa's
-fomDiesel on top of their contract (R0.36bn a year to 2030; evidence indirect, SOURCES); (j) after the note: the three ATB fixed
+'the siting panel prices a megawatt as the engine does' to be restated or the panel moved to flat (done 5 Nov, message 715 (a): tiers
+kept, check restated with the gap, eb1c93a; see 14nb); (i) Nick: Avon and Dedisa's fomDiesel on top of their contract (done 5 Nov,
+message 715 (b), build 2026-11-05i: none in the contract years; see 14nb); (j) after the note: the three ATB fixed
 O&M figures are dollars of 2020-2022 at R16.50 with no US CPI, about 20-26% low against January 2026; offshore's $85 matches no
 edition's base year; (k) the regional LP's costs and the other items the review did not check.
 
@@ -1482,3 +1483,13 @@ Message 374 (25 Oct, after the note): (a) restarts after forced outages are not 
 common-mode, cold for long repairs) and in the optimiser; planned-outage returns too. (b) Koeberg refuelling outages as whole-unit
 outages (one to two months every 16-18 months, sourced), placed as Eskom schedules them, annual factor kept; a winter-outage case
 on the 2025-2026 pattern (the flat 0.66 is optimistic for winter against it).
+
+14nb. From messages 714 and 715 (5 Nov 2026; RESULTS entries of 5 Nov). Done: the gas record by technology in pathcheck (5abefa2,
+ee57fc0) on the every-change and 37.24% passes; the crossover script (pathway/gas_xover.js, 6734281), 15.5% on the final inputs; the gas
+split by step; the 0.74 ratio's sources; the siting check restated (715 (a)); Avon and Dedisa's fomDiesel (715 (b)). Open: (a) 714 (d):
+one LP pass at bldOcgtCostCase irp on the every-change basis when the machine is free, before 9 Nov (after the fin pass); (b) the fin
+pass's gas record; (c) a sourced cost per gas start (NREL/SR-5500-55433 or another; www.nrel.gov and webarchive.library.unt.edu not
+reachable); the gap is about R0.64bn a year per R1,000 per MW started in 2040; (d) Nick: the siting panel's line (the current sentence
+is wrong since 710 (c); a proposed line in the 5 Nov report), before the PR; (e) Nick: Avon's 2031 contract months (proposed share
+0.365 in 2031, +R661.9m that year); (f) current open-cycle and combined-cycle capex on one basis, to test the 0.74 ratio (eia.gov not
+reachable).
