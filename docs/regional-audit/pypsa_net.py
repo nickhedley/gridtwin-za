@@ -9,12 +9,15 @@ usage: pypsa_net.py <engine dump json> <worktree root> <case> <siting> <out json
 """
 import sys, os, json, re, csv, time
 import numpy as np, pandas as pd, pypsa
+import resource
+T_START = time.time()
 
 DUMP, ROOT, CASE, SITING, OUT = sys.argv[1:6]
 LOSSES = int(sys.argv[6]) if len(sys.argv) > 6 else 0
 COALMIN = int(sys.argv[7]) if len(sys.argv) > 7 else 0
 FACTOR = {'nolimit': None, 'n0': 1.0, 'f085': 0.85, 'n1': 0.7, 'n1tdp': 0.7, 'f085tdp': 0.85, 'n0tdp': 1.0, 'n1c': 1.0, 'n1ctdp': 1.0}[CASE]   # the N-1 factor on today's limits (and on TDP lines)
 N1C = CASE.startswith('n1c')   # N-1 by dropping one circuit per corridor, (n-1)/n from the circuit counts (single circuit: 0.7, as PyPSA-RSA)
+S_COUNTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'corridor_circuit_counts.json')   # counts only, from nodal/corridor_electrical.json (no rating)
 COUNTS = json.load(open(os.environ.get('CIRCUITS', S_COUNTS))) if N1C else {}
 TDP_ON = CASE.endswith('tdp')
 TX_EXT = float(os.environ.get('TX_EXT', '0'))        # (d) corridors extendable at this R per MW-km (0: fixed)
@@ -26,8 +29,8 @@ TDP_FILE = os.environ.get('TDP_FILE', '')              # (c) a JSON list of extr
 MIX = int(os.environ.get('MIX', '0'))                  # (f) new wind, solar, lithium (power and energy) and open-cycle gas extendable by area at the build's own costs
 MIX_CAP = os.environ.get('MIX_CAP', '')                # (f) national caps 'wind:MW,pv:MW,batt:MW' (cumulative build-rate limits), optional
 MIX_INTEG = int(os.environ.get('MIX_INTEG', '1'))      # (f) 1 keeps the integration charge on new wind and solar; 0 removes it (corridors priced explicitly)
+DAYS = int(os.environ.get('DAYS', '0'))               # (722 b) timing only: solve on this many evenly spaced calendar days, each hour weighted 8760/(24 x DAYS); energies then are the sample's
 H = 8760
-S_COUNTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'corridor_circuit_counts.json')
 REG = ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape','Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State']
 D = json.load(open(DUMP)); p = D['p']; s = D['state']; hh = D['hourly']; st = hh['stack']; pu = hh['pu']; WY = str(D['weatherYear']); Y = int(s['scenarioYear'])
 A = lambda a: np.array(a, dtype=float)
@@ -110,21 +113,31 @@ ser_wnew = scaled('new wind', cap_wnew, wmod_r, nat_avail['wind_new'].sum()) if 
 ser_pex = scaled('existing solar', cap_pex, spu, nat_avail['pv_ex'].sum())
 ser_pnew = scaled('new solar', cap_pnew, trk_r, nat_avail['pv_new'].sum()) if N_p > 0 else {r: spu[r] for r in REG}
 roofT = sum(roof_r.values()); roof_cap_r = {r: roofCap * roof_r[r] / roofT for r in REG}
+# offshore wind (Fossil-free and Deep builds): the seven ESMAP sites in equal shares, as the engine's national series is their mean scaled to ESMAP's 0.516
+OFF_SITE = {'Boegoebaai West Coast': 'Northern Cape', 'Saldanha Bay West Coast': 'Western Cape', 'Cape Point West': 'Western Cape', 'Cape Point South': 'Western Cape', 'Coega West': 'Eastern Cape', 'Coega East': 'Eastern Cape', 'Durban Richards Bay': 'Kwazulu Natal'}
+offCap = float(s.get('newOffshoreMW') or 0); ser_off = {}; ocap = {}
+if offCap > 0 and pu.get('off'):
+    om = jload('nodal/profiles_offshore_regional.json'); OSC = om['scale']
+    opu = {q: A(om['wind_pu'][q][WY]) / OSC for q in OFF_SITE}; ocap = {q: offCap / len(OFF_SITE) for q in OFF_SITE}
+    tot = sum(ocap[q] * opu[q].sum() for q in OFF_SITE); target = offCap * A(pu['off']).sum(); fo = target / tot if tot > 0 else 1.0
+    ser_off = {q: np.minimum(1.0, fo * opu[q]) for q in OFF_SITE}
+    got = sum(ocap[q] * ser_off[q].sum() for q in OFF_SITE)
+    notes.append(f'offshore wind {offCap:,.0f} MW at the seven ESMAP sites in equal shares (Northern Cape 1, Western Cape 3, Eastern Cape 2, KwaZulu-Natal 1; an assumption), site series scaled by {fo:.4f} to the engine\'s availability; clipping at 1 loses {(target - got) / 1e6:.4f} TWh of {target / 1e6:.3f}')
 
 # ---------------------------------------------------------------- coal by region, as the engine's standing fleet
 coalRem = p['coalInstalledMW'] - s['coalDecomMW']
 standing = [u for u in uc if (9999 if u['decom'] == 'beyond 2050' else int(u['decom'])) > Y]
-rawT = sum(u['cap'] for u in standing); coal_r = {r: coalRem * sum(u['cap'] for u in standing if u['region'] == r) / rawT for r in REG}
+rawT = sum(u['cap'] for u in standing); coal_r = {r: (coalRem * sum(u['cap'] for u in standing if u['region'] == r) / rawT if rawT > 0 else 0.0) for r in REG}
 coalAvail = A(hh['coalAvailable']); coal_pu = np.minimum(1.0, coalAvail / coalRem) if coalRem > 0 else np.zeros(H)
 coalCommitted = A(hh['coalCommitted']) if hh.get('coalCommitted') else None
-notes.append(f'coal: {coalRem:.0f} MW standing in {Y} from {len(standing)} UC_FLEET groups ({rawT:.0f} MW by date, scaled {coalRem / rawT:.3f}); hourly availability from the engine (mean {coalAvail.mean():.0f} MW)')
+notes.append(f'coal: {coalRem:.0f} MW standing in {Y} from {len(standing)} UC_FLEET groups ({rawT:.0f} MW by date, scaled {(coalRem / rawT if rawT > 0 else 0):.3f}); hourly availability from the engine (mean {coalAvail.mean():.0f} MW)')
 carbon = p['carbonTaxRPerT']
 mc_coal = p['costCoal'] + p['vomCoal'] + carbon * p['emisCoal']
 mc_ccgt = p['costCcgt'] + p['vomCcgt'] + carbon * p['emisCcgt']
 OCK = 10624 / 3600 * 0.52   # the engine's _ocK: heatRateOcgtKJ / 3600 x effCcgtHHV (FIXED at build 2026-11-03a)
 mc_ocgt = (p['costCcgt'] + carbon * p['emisCcgt']) * OCK + 80.19 * 1.068   # vomOcgt: FIXED 80.19 x CPI_JAN24_TO_JAN26
 mc_dsl = p['costDiesel'] + p['vomDiesel'] + carbon * p['emisDiesel']
-ccgtMW = (D['caps']['ccgtCap'] - s['newOcgtMW']); ocgtMW = s['newOcgtMW']; dslMW = D['dieselCap'] + s['newOcgdMW']
+ccgtMW = (D['caps']['ccgtCap'] - s['newOcgtMW']); ocgtMW = s['newOcgtMW']; dslMW = D['dieselCap']   # the engine's dieselAvailMW: the fleet less dieselDecomMW plus newOcgdMW, both already inside dieselCap (before 5 Nov 2026 21:00 UTC newOcgdMW was added a second time)
 dsl_site = {'Western Cape': 2072 / 3077, 'Kwazulu Natal': 670 / 3077, 'Eastern Cape': 335 / 3077}   # Ankerlig and Gourikwa, Avon, Dedisa (fleet_units.csv)
 gas_bus = 'Kwazulu Natal'   # new gas at the Richards Bay LNG site (assumption, stated)
 
@@ -216,7 +229,7 @@ if KOEBERG_OUT:
     avail = np.full(H, 2.0)
     for win in KOEBERG_OUT.split(','):
         d1, d2 = [int(x) for x in win.split(':')]; avail[(d1 - 1) * 24:d2 * 24] -= 1.0
-    cal = 930.0 * avail; nuc = cal * (nuc.sum() / cal.sum()); notes.append(f'Koeberg on a calendar with one unit out on days {KOEBERG_OUT}, both units scaled to the engine\'s annual energy (mean {nuc.mean():.0f} MW, max {nuc.max():.0f})')
+    cal = 930.0 * np.maximum(0.0, avail); notes.append(f'Koeberg on a calendar at 930 MW a unit, a unit out on days {KOEBERG_OUT}: {cal.sum() / 1e6:.2f} TWh against the engine\'s flat {nuc.sum() / 1e6:.2f} TWh'); nuc = cal
 mustrun('Koeberg', 'Western Cape', nuc, 'nuclear')
 mustrun('hydro', 'Hydra Central', A(st['hydro']), 'hydro')
 if st.get('hybrid'): mustrun('hybrid', 'Northern Cape', A(st['hybrid']), 'hybrid')
@@ -224,12 +237,27 @@ if st.get('imports') and np.sum(st['imports']) > 0: mustrun('imports', 'Gauteng'
 n.add('Generator', 'CSP', bus='Northern Cape', p_nom=p['cspMW'], p_max_pu=A(pu['csp']), p_min_pu=A(pu['csp']), marginal_cost=0, carrier='csp')
 if ccgtMW > 0: n.add('Generator', 'CCGT', bus=gas_bus, p_nom=ccgtMW, marginal_cost=mc_ccgt, carrier='ccgt')
 if ocgtMW > 0 and not MIX: n.add('Generator', 'OCGT', bus=gas_bus, p_nom=ocgtMW, marginal_cost=mc_ocgt, carrier='ocgt')
+for q, r in OFF_SITE.items():
+    if ser_off: n.add('Generator', f'{r} offshore {q}', bus=r, p_nom=ocap[q], p_max_pu=ser_off[q], marginal_cost=0, carrier='offshore')
 for r, f in ps_site.items():
     n.add('StorageUnit', f'{r} pumped storage', bus=r, p_nom=p['psPowerMW'] * f, max_hours=p['psEnergyMWh'] / p['psPowerMW'], efficiency_store=p['psEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='ps')
 for r, mw in battEx.items():
     n.add('StorageUnit', f'{r} battery ex', bus=r, p_nom=mw, max_hours=battExH, efficiency_store=p['battEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='batt')
 for r, f in batt_site.items():
     if newBatt > 0 and not MIX: n.add('StorageUnit', f'{r} battery new', bus=r, p_nom=newBatt * f, max_hours=newBattH, efficiency_store=p['battEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='batt')
+# long-duration stores and new pumped storage (Fossil-free and Deep builds); hours and efficiencies are FIXED at build 2026-11-03a
+for nm, mw, hrs, eff, car in (('vrfb', float(s.get('newVrfbMW') or 0), 8, 0.75, 'vrfb'), ('iron-air', float(s.get('newIronAirMW') or 0), 100, 0.45, 'fe')):
+    if mw > 0:
+        for r, fr in batt_site.items(): n.add('StorageUnit', f'{r} {nm}', bus=r, p_nom=mw * fr, max_hours=hrs, efficiency_store=eff, efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier=car)
+        notes.append(f'{nm} {mw:,.0f} MW at {hrs} h, round trip {eff}, sited by the BESIPPPP shares (an assumption)')
+newPs = float(s.get('newPsMW') or 0)
+if newPs > 0:
+    n.add('StorageUnit', 'Limpopo pumped storage new', bus='Limpopo', p_nom=newPs, max_hours=float(s.get('newPsHours') or 14), efficiency_store=0.78, efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='ps')
+    notes.append(f'new pumped storage {newPs:,.0f} MW at {s.get("newPsHours") or 14} h, round trip 0.78, placed in Limpopo (the Tubatse site; an assumption)')
+if DAYS > 0:
+    dsel = np.linspace(0, 364, DAYS).round().astype(int); snaps = np.concatenate([np.arange(d * 24, d * 24 + 24) for d in dsel])
+    n.set_snapshots(snaps); n.snapshot_weightings = pd.Series(8760.0 / len(snaps), index=n.snapshots)
+    notes.append(f'timing run: {DAYS} evenly spaced calendar days ({len(snaps)} hours), each weighted {8760.0 / len(snaps):.3f}; stores cyclic over the sample; energies are the sample\'s, unweighted')
 
 t0 = time.time()
 if SITE_FREE or MIX:
@@ -261,11 +289,11 @@ E = {}
 for name, c in gc.items(): E[c] = E.get(c, 0.0) + float(g[name].sum())
 avail = {}; curt = {}
 for name, c in gc.items():
-    if c in ('wind', 'pv'):
+    if c in ('wind', 'pv', 'offshore'):
         av = float((n.generators_t.p_max_pu[name] * n.generators.p_nom[name]).sum()); avail[c] = avail.get(c, 0.0) + av; curt[c] = curt.get(c, 0.0) + av - float(g[name].sum())
 curt_r = {}
 for name, c in gc.items():
-    if c in ('wind', 'pv'):
+    if c in ('wind', 'pv', 'offshore'):
         r = n.generators.bus[name]; curt_r[r] = curt_r.get(r, 0.0) + float((n.generators_t.p_max_pu[name] * n.generators.p_nom[name]).sum()) - float(g[name].sum())
 sto = n.storage_units_t.p; dis = {}; chg = {}
 for name, c in n.storage_units.carrier.items():
@@ -274,7 +302,7 @@ flows = []
 lk = n.links_t.p0
 muU = n.links_t.mu_upper if hasattr(n.links_t, 'mu_upper') else None; muL = n.links_t.mu_lower if hasattr(n.links_t, 'mu_lower') else None
 def mu_of(name, lower=True):
-    u = np.abs(muU[name].values) if (muU is not None and name in muU) else np.zeros(H); l = np.abs(muL[name].values) if (muL is not None and name in muL and lower) else np.zeros(H); return u + l
+    u = np.abs(muU[name].values) if (muU is not None and name in muU) else np.zeros(len(n.snapshots)); l = np.abs(muL[name].values) if (muL is not None and name in muL and lower) else np.zeros(len(n.snapshots)); return u + l
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
     # a one-way link's lower bound (zero flow) carries a dual whenever the other direction flows; only its upper bound is the corridor's capacity
     if LOSSES: f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values; mu = mu_of(f'c{i}_ab', False) + mu_of(f'c{i}_ba', False)
@@ -319,11 +347,14 @@ res = {'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherY
        'unservedGWh': E.get('unserved', 0.0) / 1e3, 'corridors': flows, 'siting_shares': site, 'notes': notes, 'byAreaTWh': byArea, 'netImportTWh': netIn, 'sitingChosen': siteOut, 'expansion': expansion, 'mix': mix, 'mixInteg': MIX_INTEG,
        'expansionTotal': {'MW': sum(x['addMW'] for x in expansion), 'MWkm': sum(x['MWkm'] for x in expansion), 'capexRbn': sum(x['capexRbn'] for x in expansion), 'annualRbn': sum(x['annualRbn'] for x in expansion)}, 'txExt': TX_EXT, 'crf': CRF, 'siteFree': SITE_FREE, 'demandSplit': DEMAND_SPLIT, 'koebergOut': KOEBERG_OUT, 'tdpFile': os.path.basename(TDP_FILE) if TDP_FILE else '',
        'engine': {'E_TWh': {c: v / 1e6 for c, v in D['E'].items()}, 'shedGWh': D['shedMWh'] / 1e3, 'gridLoadTWh': float(gridLoad.sum()) / 1e6, 'grossLoadTWh': float(grossLoad.sum()) / 1e6, 'psDischargeTWh': D['E'].get('ps', 0) / 1e6, 'battDischargeTWh': D['E'].get('batt', 0) / 1e6}}
+try: nv, nc = int(n.model.nvars), int(n.model.ncons)
+except Exception: nv, nc = None, None
+res['timing'] = {'buildSec': t0 - T_START, 'solveSec': secs, 'totalSec': time.time() - T_START, 'peakRssGB': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6, 'hours': int(len(n.snapshots)), 'days': DAYS or 365, 'nvars': nv, 'ncons': nc}
 json.dump(res, open(OUT, 'w'), indent=1)
 eng = res['engine']['E_TWh']
 print(f"{CASE} {SITING} losses={LOSSES} coalmin={COALMIN} {Y} wy{WY}: {status}/{cond} in {secs:.0f}s, objective R{res['objectiveRbn']:.2f}bn, fuel+carbon R{res['fuelAndCarbonRbn']:.2f}bn")
 print(f"{'TWh':12s} {'engine':>9s} {'pypsa':>9s}")
-for c in ('coal', 'ccgt', 'ocgt', 'diesel', 'wind', 'pv', 'rooftop', 'csp', 'nuclear', 'hydro', 'hybrid', 'imports'):
+for c in ('coal', 'ccgt', 'ocgt', 'diesel', 'wind', 'offshore', 'pv', 'rooftop', 'csp', 'nuclear', 'hydro', 'hybrid', 'imports'):
     e = eng.get(c, 0) + (eng.get('ccgt', 0) * 0 if c != 'ccgt' else 0)
     print(f"{c:12s} {e:9.3f} {res['E_TWh'].get(c, 0):9.3f}")
 print(f"{'ps dis':12s} {eng.get('ps', 0):9.3f} {res['storageDischargeTWh'].get('ps', 0):9.3f}")
