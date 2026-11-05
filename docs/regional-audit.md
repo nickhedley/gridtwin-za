@@ -500,3 +500,378 @@ approved permits, not a plan; the Hydra Central share (23% of wind) rests on the
 
 Rerun on the final key: give me the pathway JSON (and its pathcheck rows) and the build it ran on; the chain is
 pathcheck_dump.patch at that build, then run_net.sh, about an hour for the thirty cases.
+
+## Message 718: the corridor table and the question the note depends on (6 Nov 2026; nothing here is to be quoted)
+
+Builds. "Every-change pass": harness/pathway/final/pathway_every_change_05f.json on claude/c7-runs, its 2035 and 2040 states
+from its engine rows, run at build 2026-11-05f (claude/twin-retime 17f42a5) through the patched pathcheck (2035: wind 27,246,
+solar 17,711, lithium 8,811 MW at 4.3 h, coal 14,307 MW retired; 2040: wind 40,722, solar 24,831, lithium 11,004 MW at 5.5 h,
+open-cycle gas 4,342 MW, diesel open cycle 1,269 MW, coal 22,333 MW retired); the free-mix test uses that build's own costs
+(bldNetAnnuityAt, bldGridAnn, the lithium power and energy split) at the run's cost of capital (cocCase blended, discount
+0.08). "Today's fleet": the page's Today 2026 and '2025, as modelled' presets at main 57f70df (build 2026-11-04b). Weather
+years 2025 and 2015, outage seed k = 0. Method as in 717 (c), with: corridor cases 1.0 (as drawn), 0.85, 0.7 and "one circuit
+dropped" ((n - 1)/n from the circuit counts of nodal/corridor_electrical.json, single circuit 0.7, PyPSA-RSA's rule; counts
+only, no rating used); the TDP's inter-area lines by year from the full mapping of (c), as single new circuits at 0.7 in the
+one-circuit-dropped case; corridors extendable at a cost per MW-km annuitised over 40 years at 0.08 (CRF 0.0839); new wind and
+solar siting chosen by the LP, each area capped at its approved REEA MW, the national total fixed; the free mix with lithium
+as a store priced on power (the 0.278 share) and energy, open-cycle gas and corridors extendable by area, the engine's
+commitment floor (0.57 of its committed coal) on, the connection charge kept and the integration charge (R364/kW-yr) removed
+when corridors are priced; the demand split by BLD_LOAD_SHARE as the alternative to the regional file's hourly shares. Every
+case's JSON is in docs/regional-audit/results/718/ with the scripts (pypsa_net.py, run_net.sh, the queues, summ718.py).
+
+Two faults found and fixed while running (both before any result was written up; the affected cases rerun): the
+one-circuit-dropped cases had all crashed on a path defined after its use, which the runner's exit-code logging hid; and new
+diesel open-cycle capacity was counted twice in the 2040 cases. A third, in reporting only: the free-siting and free-mix
+cases' curtailment was computed against a zero nameplate; fixed, those cases rerun. The machine's memory killed about fifty
+solves when five ran at once; the queues now run two at a time.
+
+Verdict in one line: on today's corridors the central build's wind and solar cannot leave the Cape and the Karoo at any
+factor from 1.0 to 0.7, the one-circuit rule sits between 0.85 and 0.7, the TDP's inter-area lines remove most of the 2035
+effect and about 60% of 2040's, and the LP removes the rest for R4 to 6bn a year of corridors, a quarter to a third of what
+the integration charge already collects.
+
+### 718 (a): today's fleet through the corridor table, against what happened
+
+What ran. The page's '2025, as modelled' and 'Today 2026' presets at build 2026-11-04b, weather year 2025, seed k = 0, dumped
+and run through the ten-area LP at no limits, as drawn, 0.85, 0.7 and one circuit dropped. Western Cape supply is Koeberg as
+the engine ran it (flat, two units at the engine's nuclear capacity factor) in the first set of rows and on a calendar in the
+second: one 930 MW unit out on the days the public record gives, 2025 days 1 to 302 (unit 1's long-term operation outage
+from January to its reconnection on 29 October 2025) and 60 to 68 (unit 2's trip of about 1 March 2025); 2026 days 116 to
+320 (unit 2's outage from 26 April 2026, still out on 23 October with return expected in November), 239 to 243 (unit 1's
+trip of 27 August 2026, both units off, taken as a unit for five days) and 289 to 295 (the protection trip of about 22
+October 2026). The calendar is nameplate, so its annual energy differs from the engine's flat series (2025: 9.35 TWh against
+the engine's 10.21; 2026: 11.45 against 10.87, the engine's own capacity factor carrying more outage than the calendar);
+the engine's seed-drawn outages are not a calendar. Diesel 3,400 MW at the fleet's sites, Western Cape 67%.
+
+| state | corridors | curtailed TWh (engine) | unserved GWh (engine) | coal TWh (engine) | diesel TWh (engine) | Western Cape: net import TWh, diesel TWh, unserved GWh | corridors with the most hours carrying a shadow price |
+|---|---|---|---|---|---|---|---|
+| 2025, as modelled | 0.85 | 0.00 (0.01) | 8.7 (5.4) | 170.7 (170.1) | 1.266 (2.435) | 6.49, 1.226, 8.1 | Eastern Cape to Kwazulu Natal 8 h; Free State to Kwazulu Natal 8 h; Kwazulu Natal to Mpumalanga 8 h |
+| 2025, as modelled Koeberg calendar 1:302,60:68 | 0.85 | 0.00 (0.01) | 13.8 (5.4) | 171.0 (170.1) | 1.782 (2.435) | 6.85, 1.715, 13.1 | Free State to Kwazulu Natal 31 h; Kwazulu Natal to Mpumalanga 31 h; Eastern Cape to Kwazulu Natal 27 h |
+| 2025, as modelled | as drawn (1.0) | 0.00 (0.01) | 8.7 (5.4) | 170.7 (170.1) | 1.263 (2.435) | 6.48, 1.224, 8.4 | none |
+| 2025, as modelled Koeberg calendar 1:302,60:68 | as drawn (1.0) | 0.00 (0.01) | 13.8 (5.4) | 171.0 (170.1) | 1.775 (2.435) | 6.85, 1.708, 13.5 | none |
+| 2025, as modelled | 0.7 | 0.00 (0.01) | 8.7 (5.4) | 170.4 (170.1) | 1.527 (2.435) | 6.24, 1.484, 7.5 | Kwazulu Natal to Mpumalanga 2348 h; Free State to Kwazulu Natal 2345 h; Eastern Cape to Hydra Central 1333 h |
+| 2025, as modelled Koeberg calendar 1:302,60:68 | 0.7 | 0.00 (0.01) | 13.8 (5.4) | 170.6 (170.1) | 2.119 (2.435) | 6.55, 2.040, 12.6 | Kwazulu Natal to Mpumalanga 2090 h; Free State to Kwazulu Natal 2045 h; Eastern Cape to Hydra Central 1115 h |
+| 2025, as modelled | drop one circuit | 0.00 (0.01) | 8.7 (5.4) | 170.7 (170.1) | 1.265 (2.435) | 6.51, 1.226, 7.5 | Eastern Cape to Kwazulu Natal 7 h; Free State to Kwazulu Natal 7 h; Kwazulu Natal to Mpumalanga 7 h |
+| 2025, as modelled Koeberg calendar 1:302,60:68 | drop one circuit | 0.00 (0.01) | 13.8 (5.4) | 171.0 (170.1) | 1.783 (2.435) | 6.87, 1.717, 12.6 | Free State to Kwazulu Natal 30 h; Kwazulu Natal to Mpumalanga 30 h; Eastern Cape to Kwazulu Natal 24 h |
+| 2025, as modelled | no limits | 0.00 (0.01) | 8.7 (5.4) | 170.7 (170.1) | 1.263 (2.435) | 6.39, 1.224, 8.7 | none |
+| 2025, as modelled Koeberg calendar 1:302,60:68 | no limits | 0.00 (0.01) | 13.8 (5.4) | 171.0 (170.1) | 1.775 (2.435) | 6.76, 1.708, 13.8 | none |
+| Today 2026 | 0.85 | 0.00 (0.47) | 0.0 (0.0) | 149.0 (150.9) | 0.001 (0.175) | 4.68, 0.001, 0.0 | none |
+| Today 2026 Koeberg calendar 116:320,239:243,289:295 | 0.85 | 0.00 (0.47) | 0.0 (0.0) | 148.4 (150.9) | 0.001 (0.175) | 4.10, 0.001, 0.0 | none |
+| Today 2026 | as drawn (1.0) | 0.00 (0.47) | 0.0 (0.0) | 149.0 (150.9) | 0.001 (0.175) | 4.68, 0.001, 0.0 | none |
+| Today 2026 Koeberg calendar 116:320,239:243,289:295 | as drawn (1.0) | 0.00 (0.47) | 0.0 (0.0) | 148.4 (150.9) | 0.001 (0.175) | 4.10, 0.001, 0.0 | none |
+| Today 2026 | 0.7 | 0.00 (0.47) | 0.0 (0.0) | 149.0 (150.9) | 0.001 (0.175) | 4.68, 0.001, 0.0 | Free State to Kwazulu Natal 490 h; Kwazulu Natal to Mpumalanga 489 h; Eastern Cape to Hydra Central 475 h |
+| Today 2026 Koeberg calendar 116:320,239:243,289:295 | 0.7 | 0.00 (0.47) | 0.0 (0.0) | 148.4 (150.9) | 0.001 (0.175) | 4.10, 0.001, 0.0 | Kwazulu Natal to Mpumalanga 492 h; Free State to Kwazulu Natal 474 h; Eastern Cape to Hydra Central 461 h |
+| Today 2026 | drop one circuit | 0.00 (0.47) | 0.0 (0.0) | 149.0 (150.9) | 0.001 (0.175) | 4.68, 0.001, 0.0 | none |
+| Today 2026 Koeberg calendar 116:320,239:243,289:295 | drop one circuit | 0.00 (0.47) | 0.0 (0.0) | 148.4 (150.9) | 0.001 (0.175) | 4.10, 0.001, 0.0 | Hydra Central to Western Cape 18 h; North West to Western Cape 18 h; Northern Cape to Western Cape 18 h |
+| Today 2026 | no limits | 0.00 (0.47) | 0.0 (0.0) | 149.0 (150.9) | 0.001 (0.175) | 4.68, 0.001, 0.0 | none |
+| Today 2026 Koeberg calendar 116:320,239:243,289:295 | no limits | 0.00 (0.47) | 0.0 (0.0) | 148.4 (150.9) | 0.001 (0.175) | 4.09, 0.001, 0.0 | none |
+
+Reading. 2025 as modelled (coal 170 TWh, diesel 2.4 TWh, 5.4 GWh unserved in the engine): the LP curtails nothing at any
+factor and serves the same load; at 0.7 the Mpumalanga and Free State exits to KwaZulu-Natal carry a shadow price in about
+2,350 hours and Western Cape diesel rises by 0.26 TWh (1.5 TWh at 0.7 against 1.2 with no limits), the only network effect
+of size; the Cape imports 6.2 to 6.5 TWh net in every case. The LP's 8.7 GWh unserved appears at every factor, no limits
+included, so it is not a network effect: the engine met those hours with demand response (109 GWh over 168 hours, up to
+1,000 MW), which the LP does not carry, and the solver places the shortfall at one bus by indifference. The LP burns 1.2
+TWh less diesel than the engine (perfect foresight, no operating reserve). With Koeberg on its 2025 calendar the unserved
+energy is 13.8 GWh at every factor including no limits (so again not a network effect), Western Cape diesel 1.7 TWh with
+no limits and 2.0 at 0.7, and the binding hours fall slightly (the Cape imports more and the KwaZulu-Natal exits bind
+less). Today 2026 (coal 151 TWh, diesel 0.18 TWh, nothing unserved, 0.47 TWh curtailed in the engine): the LP curtails
+nothing, runs no diesel and serves everything at every factor, calendar or not; at 0.7 the same corridors carry a shadow
+price in about 490 hours; with the 2026 calendar the Cape's three inlets (Hydra Central, North West and Northern Cape to
+Western Cape) bind for 18 hours in the one-circuit case. Nothing in the 2026 table is tight, and the 2025 calendar at 0.7
+adds diesel, not unserved energy: no case is too tight.
+
+Against the public record (docs/regional-audit/research_718a_public_record.md, every figure with its source; from search
+snippets, no Eskom page opened). Calendar 2025 had six load-shedding bouts between 31 January and 15 May 2025, the worst
+Stage 6 on 23 February after four Camden units tripped; CSIR counts 749 GWh shed in the first half of 2025 against 4,126
+GWh in the first half of 2024; none since 16 May 2025, 525 days by 23 October 2026. Eskom's open-cycle turbines burned
+2,609 GWh of diesel from April 2024 to March 2025 (R15.6bn) and 1,078 GWh from April 2025 to March 2026 (R6.4bn); 147 GWh
+from April to mid-September 2026. The energy availability factor was 60.6% in FY2025 and about 65% in FY2026; winter
+unplanned outages fell from 14.6 GW in early June 2025 to 8 GW by late August 2026. No transmission-corridor constraint on
+the Cape was reported in 2025 or 2026; the Western Cape events were a 132 kV fault that cut both Koeberg units to 100 MW
+on about 20 January 2026 and the May 2026 storm. Curtailment of wind and solar is reported as rising from 2025 to 2026
+(NTCSA's claims bottleneck of about R2bn in June 2026, 1,000 solar curtailment instructions a month) with no published GWh.
+
+So: the model's 2025 state, with the seed's outages and weather year 2025, sits between the two calendar years it
+straddles. Its 2.4 TWh of diesel is a little under FY2025's 2.6 TWh and well above FY2026's 1.1; its 5 GWh of unserved
+energy (the LP's 9 to 14) is two orders below the 749 GWh CSIR counted for the first half of 2025, because the engine's
+availability input sits above what the fleet delivered in early 2025, when the six bouts followed boiler-tube failures and
+Camden's trips, not a network limit. The 2026 state's 0.18 TWh of diesel and no unserved energy agree in direction with
+FY2026's 1.1 TWh and the load-shedding-free run since May 2025, the model lower on diesel. Neither year's public record
+contains a corridor constraint, and the model's table at any factor from 1.0 to 0.7 produces none on today's fleet: 0.7
+moves 0.26 to 0.3 TWh of diesel into the Cape in the 2025 state and nothing in 2026. The test does not separate 0.85 from
+0.7 on today's fleet; it says today's fleet does not stress the corridors as drawn, which is consistent with the record.
+Caveats: the regional wind and solar series for the 2025 state are scaled by 0.81 and 0.85 to the engine's availability
+(the capacity file's MW per area exceeds the page's 2025 fleet); the 2025 state is the page's preset, not calendar 2025;
+one outage draw.
+
+### 718 (b): the 0.7 factor, and what the three models apply it to (read 5 Nov 2026 from the repositories)
+
+- PyPSA-RSA (MeridianEconomics/pypsa-rsa, master): scripts/build_topology.py gives each circuit a St Clair loadability,
+  St_Clair = min(thermal, SIL x 53.736 x length^-0.65), sums circuits per region pair, and makes the N-1 limit by dropping
+  the circuit with the highest St Clair limit per corridor; a corridor with a single circuit is derated by the config's
+  n1_approx_single_lines, 0.7. scripts/base_network.py sets each corridor's capacity from the St_Clair_limit_n1 column
+  alone (p_nom), never from the thermal or SIL columns, and does not apply the config's s_max_pu 0.7 ("n-1 approximation"
+  in the config, unused in the code); losses 6% per 1,000 km through two one-way links. So PyPSA-RSA puts no 0.7 on a
+  multi-circuit corridor's St Clair sum: it removes one circuit.
+- PyPSA-Eur (config/config.default.yaml): lines: s_max_pu 0.7 on s_nom, which is the thermal rating of the line type per
+  voltage (Al/St 240/40 4-bundle 380 kV and so on); the docs call it a correction for N-1 security and reactive flows. It
+  is applied to thermal ratings, not to a loadability curve, and PyPSA-Earth copies it.
+- ReEDS 2.0 (docs/source/model_documentation.md): existing AC interface capacities come from a nodal DC power flow;
+  between model zones they are calculated under N-0; between planning regions N-1 is approximated by dropping the
+  interregional line that contributes the most capacity; new interzonal AC capacity's contribution to planning-subregion
+  limits is derated by 15%; losses 1% per 100 miles AC; a hurdle of $0.01/MWh against degeneracy.
+
+Verdict: 0.7 on this model's corridor limits double-counts for long corridors. The limits are already St Clair sums (the
+curve carries its stability and voltage margin, which is why it falls with length), and none of the three models puts a
+0.7 on a St Clair sum: PyPSA-Eur's 0.7 sits on thermal ratings, PyPSA-RSA and ReEDS drop one circuit. The like-for-like
+N-1 for this table is "drop one circuit per corridor", (n - 1)/n with n the corridor's circuit count (single circuit 0.7),
+run here as case n1c from the circuit counts of the local corridor file; the counts only are used, no rating. Until Nick
+settles it every case is reported at 1.0, 0.85, 0.7 and n1c.
+
+The factor on the every-change pass, every case, differences from the no-limits case of the same year and weather year
+(TWh, GWh, R bn; the "with TDP" rows use the 20 inter-area lines of the file's own mapping, the "(TDP: tdp_lines_full.json)"
+rows the full mapping of (c), 22 lines):
+
+| year, weather year | corridors | curtailed TWh | unserved GWh | coal TWh | gas TWh | fuel and carbon R bn | corridors binding over 4,000 h |
+|---|---|---|---|---|---|---|---|
+| 2035, 2015 | 0.85 | +53.4 | +26.7 | +53.1 | +0.0 | +39.7 | North West to Western Cape (7697 h, R20.7m); North West to Northern Cape (7697 h, R20.6m); Eastern Cape to Kwazulu Natal (6808 h, R19.2m); Free State to Kwazulu Natal (6900 h, R19.0m); Free State to Mpumalanga (6853 h, R18.6m); Free State to North West (6853 h, R18.6m); Free State to Gauteng (6853 h, R18.6m) |
+| 2035, 2015 | as drawn (1.0) | +45.8 | +0.0 | +45.7 | +0.0 | +32.4 | North West to Western Cape (7062 h, R5.6m); North West to Northern Cape (7033 h, R5.6m); Eastern Cape to Kwazulu Natal (6436 h, R5.0m); Free State to Kwazulu Natal (6259 h, R4.6m); Free State to Mpumalanga (6255 h, R4.6m); Free State to North West (6255 h, R4.6m); Free State to Gauteng (6255 h, R4.6m) |
+| 2035, 2015 | 0.7 | +61.7 | +561.1 | +59.1 | +0.0 | +55.8 | Free State to Kwazulu Natal (8157 h, R135.4m); Eastern Cape to Kwazulu Natal (7392 h, R133.8m); North West to Northern Cape (8239 h, R112.4m); North West to Western Cape (8230 h, R112.2m); Free State to Mpumalanga (7478 h, R100.9m); Free State to North West (7478 h, R100.9m); Free State to Gauteng (7478 h, R100.9m); Kwazulu Natal to Mpumalanga (4071 h, R34.5m) |
+| 2035, 2015 | drop one circuit | +58.6 | +197.1 | +57.4 | +0.0 | +47.3 | North West to Northern Cape (8071 h, R56.9m); North West to Western Cape (7931 h, R56.3m); Eastern Cape to Kwazulu Natal (6611 h, R46.8m); Free State to Northern Cape (4418 h, R32.3m); Free State to Hydra Central (4204 h, R31.5m); Free State to Kwazulu Natal (5427 h, R25.3m); Free State to Mpumalanga (5338 h, R24.6m); Free State to North West (5338 h, R24.6m); Free State to Gauteng (5338 h, R24.6m |
+| 2035, 2015 | drop one circuit with TDP | +30.6 | +0.0 | +30.2 | +0.0 | +21.1 | North West to Northern Cape (5479 h, R3.8m); North West to Western Cape (5479 h, R3.8m); Eastern Cape to Kwazulu Natal (5479 h, R3.8m); Free State to Hydra Central (5433 h, R3.7m); Free State to Northern Cape (5433 h, R3.7m); Eastern Cape to Free State (5433 h, R3.7m) |
+| 2035, 2015 | drop one circuit with TDP (TDP: tdp_lines_full.json) | +13.8 | +0.0 | +13.3 | +0.0 | +9.3 | none |
+| 2035, 2015 | 0.7 with TDP | +31.4 | +0.0 | +31.1 | +0.0 | +21.7 | Eastern Cape to Kwazulu Natal (5592 h, R3.8m); North West to Northern Cape (5586 h, R3.8m); North West to Western Cape (5586 h, R3.8m); Free State to Hydra Central (5508 h, R3.7m); Free State to Northern Cape (5508 h, R3.7m); Eastern Cape to Free State (5508 h, R3.7m) |
+| 2035, 2015 | 0.7 with TDP (TDP: tdp_lines_full.json) | +14.3 | +0.0 | +13.8 | +0.0 | +9.7 | none |
+| 2035, 2025 | 0.85 | +59.6 | +163.6 | +58.9 | +0.0 | +44.0 | North West to Western Cape (7908 h, R38.3m); North West to Northern Cape (7920 h, R37.7m); Free State to Kwazulu Natal (7341 h, R33.0m); Free State to Mpumalanga (7323 h, R32.7m); Free State to North West (7323 h, R32.7m); Free State to Gauteng (7323 h, R32.7m); Eastern Cape to Kwazulu Natal (7129 h, R32.3m) |
+| 2035, 2025 | 0.85 with TDP | +25.6 | +0.0 | +25.1 | +0.0 | +17.5 | Eastern Cape to Kwazulu Natal (4996 h, R3.3m); North West to Northern Cape (4996 h, R3.3m); North West to Western Cape (4996 h, R3.3m); Free State to Hydra Central (4813 h, R3.2m); Free State to Northern Cape (4813 h, R3.2m); Eastern Cape to Free State (4813 h, R3.2m) |
+| 2035, 2025 | 0.85 with TDP (TDP: tdp_lines_full.json) | +8.3 | +0.0 | +7.7 | +0.0 | +5.4 | none |
+| 2035, 2025 | as drawn (1.0) | +51.6 | +1.5 | +51.3 | +0.0 | +37.0 | North West to Northern Cape (7464 h, R6.8m); North West to Western Cape (7460 h, R6.8m); Eastern Cape to Kwazulu Natal (6848 h, R5.9m); Free State to Mpumalanga (6862 h, R5.9m); Free State to North West (6862 h, R5.9m); Free State to Gauteng (6862 h, R5.9m); Free State to Kwazulu Natal (6862 h, R5.9m) |
+| 2035, 2025 | 1.0 with TDP | +17.5 | +0.0 | +16.9 | +0.0 | +11.8 | none |
+| 2035, 2025 | 1.0 with TDP (TDP: tdp_lines_full.json) | +2.9 | +0.0 | +2.5 | +0.0 | +1.8 | none |
+| 2035, 2025 | 0.7 | +68.0 | +704.8 | +66.0 | +0.0 | +54.2 | Free State to Kwazulu Natal (8209 h, R69.6m); Eastern Cape to Kwazulu Natal (7474 h, R68.4m); North West to Northern Cape (8330 h, R63.6m); North West to Western Cape (8327 h, R63.5m); Free State to Mpumalanga (7732 h, R52.1m); Free State to North West (7732 h, R52.1m); Free State to Gauteng (7732 h, R52.1m); Kwazulu Natal to Mpumalanga (4324 h, R17.5m) |
+| 2035, 2025 | drop one circuit | +64.8 | +474.2 | +63.6 | +0.0 | +48.6 | North West to Western Cape (8036 h, R55.0m); North West to Northern Cape (8130 h, R55.0m); Eastern Cape to Kwazulu Natal (6809 h, R38.2m); Free State to Northern Cape (4680 h, R32.1m); Free State to Hydra Central (4505 h, R30.1m); Free State to Kwazulu Natal (5486 h, R23.0m); Free State to Mpumalanga (5474 h, R23.0m); Free State to North West (5474 h, R23.0m); Free State to Gauteng (5474 h, R23.0m |
+| 2035, 2025 | drop one circuit with TDP | +35.1 | +0.0 | +34.6 | +0.0 | +24.2 | Eastern Cape to Kwazulu Natal (6009 h, R4.2m); North West to Northern Cape (6014 h, R4.2m); North West to Western Cape (6011 h, R4.2m); Free State to Northern Cape (5992 h, R4.1m); Free State to Hydra Central (5989 h, R4.1m); Eastern Cape to Free State (5986 h, R4.1m) |
+| 2035, 2025 | drop one circuit with TDP (TDP: tdp_lines_full.json) | +16.2 | +0.0 | +15.6 | +0.0 | +10.9 | none |
+| 2035, 2025 | 0.7 with TDP | +36.0 | +0.0 | +35.5 | +0.0 | +25.0 | Eastern Cape to Kwazulu Natal (6122 h, R4.4m); North West to Northern Cape (6124 h, R4.3m); North West to Western Cape (6123 h, R4.3m); Free State to Northern Cape (6068 h, R4.1m); Free State to Hydra Central (6067 h, R4.1m); Eastern Cape to Free State (6063 h, R4.1m) |
+| 2035, 2025 | 0.7 with TDP (TDP: tdp_lines_full.json) | +16.8 | +0.0 | +16.2 | +0.0 | +11.3 | North West to Western Cape (4053 h, R2.6m); North West to Northern Cape (4048 h, R2.6m) |
+| 2040, 2015 | as drawn (1.0) | +84.1 | +1279.4 | +53.3 | +25.5 | +107.9 | North West to Western Cape (8564 h, R171.8m); North West to Northern Cape (8559 h, R171.3m); Free State to North West (8387 h, R161.9m); Free State to Mpumalanga (8387 h, R161.9m); Free State to Gauteng (8387 h, R161.9m); Free State to Kwazulu Natal (8387 h, R161.9m); Eastern Cape to Kwazulu Natal (8116 h, R161.2m) |
+| 2040, 2015 | 0.7 | +102.1 | +7968.3 | +53.6 | +32.0 | +147.3 | North West to Northern Cape (8751 h, R502.0m); North West to Western Cape (8750 h, R501.8m); Free State to Kwazulu Natal (8645 h, R491.0m); Free State to Mpumalanga (8645 h, R490.9m); Free State to North West (8645 h, R490.9m); Free State to Gauteng (8645 h, R490.9m); Eastern Cape to Kwazulu Natal (8214 h, R473.8m) |
+| 2040, 2015 | drop one circuit | +98.1 | +5660.7 | +53.6 | +31.1 | +141.5 | North West to Northern Cape (8743 h, R353.7m); North West to Western Cape (8722 h, R352.4m); Eastern Cape to Kwazulu Natal (8063 h, R319.0m); Free State to Kwazulu Natal (7742 h, R230.2m); Free State to Mpumalanga (7742 h, R230.2m); Free State to North West (7742 h, R230.2m); Free State to Gauteng (7742 h, R230.2m) |
+| 2040, 2015 | drop one circuit with TDP | +62.8 | +0.0 | +49.9 | +11.3 | +60.2 | North West to Northern Cape (7222 h, R14.2m); Free State to Northern Cape (7219 h, R14.1m); North West to Western Cape (7200 h, R14.1m); Eastern Cape to Kwazulu Natal (7196 h, R14.1m); Free State to Hydra Central (7194 h, R14.0m); Eastern Cape to Free State (7192 h, R14.0m) |
+| 2040, 2015 | drop one circuit with TDP (TDP: tdp_lines_full.json) | +37.4 | +0.0 | +35.1 | +1.0 | +26.6 | North West to Western Cape (5670 h, R5.2m); Free State to Hydra Central (5659 h, R5.2m); North West to Northern Cape (5660 h, R5.2m); Free State to Northern Cape (5651 h, R5.2m); Eastern Cape to Kwazulu Natal (4226 h, R3.8m); Eastern Cape to Free State (4250 h, R3.8m) |
+| 2040, 2015 | 0.7 with TDP | +63.9 | +0.0 | +50.2 | +12.1 | +62.5 | Eastern Cape to Kwazulu Natal (7285 h, R14.9m); North West to Northern Cape (7298 h, R14.9m); North West to Western Cape (7293 h, R14.9m); Free State to Northern Cape (7210 h, R14.6m); Free State to Hydra Central (7204 h, R14.6m); Eastern Cape to Free State (7195 h, R14.6m) |
+| 2040, 2015 | 0.7 with TDP (TDP: tdp_lines_full.json) | +38.3 | +0.0 | +35.9 | +1.2 | +27.5 | North West to Western Cape (5753 h, R5.4m); North West to Northern Cape (5738 h, R5.3m); Free State to Hydra Central (5729 h, R5.3m); Free State to Northern Cape (5714 h, R5.2m); Eastern Cape to Kwazulu Natal (4226 h, R3.9m); Eastern Cape to Free State (4250 h, R3.8m) |
+| 2040, 2025 | 0.85 | +100.8 | +5191.3 | +63.0 | +27.4 | +121.9 | North West to Northern Cape (8682 h, R257.0m); North West to Western Cape (8683 h, R256.9m); Free State to Mpumalanga (8650 h, R256.2m); Free State to North West (8650 h, R256.2m); Free State to Gauteng (8650 h, R256.2m); Free State to Kwazulu Natal (8650 h, R256.2m); Eastern Cape to Kwazulu Natal (8174 h, R248.1m) |
+| 2040, 2025 | 0.85 with TDP | +57.1 | -0.0 | +49.5 | +6.0 | +47.5 | Eastern Cape to Kwazulu Natal (6924 h, R8.9m); North West to Northern Cape (6925 h, R8.9m); North West to Western Cape (6924 h, R8.9m); Free State to Northern Cape (6915 h, R8.8m); Free State to Hydra Central (6914 h, R8.8m); Eastern Cape to Free State (6914 h, R8.8m) |
+| 2040, 2025 | 0.85 with TDP (TDP: tdp_lines_full.json) | +28.1 | -0.0 | +26.5 | +0.1 | +18.8 | North West to Western Cape (5019 h, R3.5m); North West to Northern Cape (5014 h, R3.5m); Free State to Hydra Central (4992 h, R3.5m); Free State to Northern Cape (4987 h, R3.5m) |
+| 2040, 2025 | as drawn (1.0) | +91.9 | +2632.1 | +62.9 | +22.0 | +107.2 | North West to Northern Cape (8541 h, R198.0m); North West to Western Cape (8544 h, R197.9m); Free State to Mpumalanga (8460 h, R196.8m); Free State to North West (8460 h, R196.8m); Free State to Gauteng (8460 h, R196.8m); Free State to Kwazulu Natal (8460 h, R196.8m); Eastern Cape to Kwazulu Natal (8162 h, R191.8m) |
+| 2040, 2025 | 1.0 with TDP | +44.3 | -0.0 | +40.6 | +2.1 | +32.8 | North West to Northern Cape (6208 h, R6.3m); North West to Western Cape (6208 h, R6.3m); Eastern Cape to Kwazulu Natal (6208 h, R6.3m); Free State to Hydra Central (6186 h, R6.3m); Free State to Northern Cape (6186 h, R6.3m); Eastern Cape to Free State (6186 h, R6.3m) |
+| 2040, 2025 | 1.0 with TDP (TDP: tdp_lines_full.json) | +16.0 | -0.0 | +14.7 | +0.0 | +10.3 | none |
+| 2040, 2025 | 0.7 | +110.0 | +8388.7 | +63.0 | +32.0 | +139.1 | North West to Northern Cape (8759 h, R308.6m); North West to Western Cape (8759 h, R308.5m); Free State to Kwazulu Natal (8759 h, R308.0m); Free State to Mpumalanga (8759 h, R308.0m); Free State to North West (8759 h, R308.0m); Free State to Gauteng (8759 h, R308.0m); Eastern Cape to Kwazulu Natal (8178 h, R294.3m) |
+| 2040, 2025 | drop one circuit | +105.8 | +6906.2 | +63.0 | +30.0 | +131.2 | North West to Northern Cape (8701 h, R291.3m); North West to Western Cape (8659 h, R290.0m); Eastern Cape to Kwazulu Natal (7932 h, R265.6m); Free State to Mpumalanga (7124 h, R136.8m); Free State to North West (7124 h, R136.8m); Free State to Gauteng (7124 h, R136.8m); Free State to Kwazulu Natal (7124 h, R136.8m) |
+| 2040, 2025 | drop one circuit with TDP | +70.2 | +148.2 | +56.8 | +11.1 | +67.5 | North West to Northern Cape (7535 h, R32.6m); North West to Western Cape (7522 h, R32.5m); Free State to Northern Cape (7533 h, R32.5m); Eastern Cape to Kwazulu Natal (7508 h, R32.2m); Free State to Hydra Central (7511 h, R32.2m); Eastern Cape to Free State (7502 h, R32.1m) |
+| 2040, 2025 | drop one circuit with TDP (TDP: tdp_lines_full.json) | +42.8 | -0.0 | +39.5 | +1.6 | +31.1 | North West to Western Cape (6252 h, R6.2m); North West to Northern Cape (6240 h, R6.2m); Free State to Hydra Central (6221 h, R6.1m); Free State to Northern Cape (6224 h, R6.1m); Eastern Cape to Kwazulu Natal (4766 h, R4.8m); Eastern Cape to Free State (4805 h, R4.8m) |
+| 2040, 2025 | 0.7 with TDP | +71.4 | +201.0 | +57.3 | +11.7 | +69.4 | North West to Northern Cape (7583 h, R48.5m); North West to Western Cape (7579 h, R48.4m); Eastern Cape to Kwazulu Natal (7566 h, R48.2m); Free State to Northern Cape (7572 h, R48.1m); Free State to Hydra Central (7561 h, R47.9m); Eastern Cape to Free State (7544 h, R47.8m) |
+| 2040, 2025 | 0.7 with TDP (TDP: tdp_lines_full.json) | +43.8 | -0.0 | +40.3 | +1.9 | +32.2 | North West to Western Cape (6338 h, R6.4m); North West to Northern Cape (6329 h, R6.3m); Free State to Hydra Central (6307 h, R6.2m); Free State to Northern Cape (6306 h, R6.2m); Eastern Cape to Kwazulu Natal (4742 h, R4.9m); Eastern Cape to Free State (4817 h, R4.8m) |
+
+What the table says about the factor. The one-circuit rule sits between 0.85 and 0.7 in every year and weather year, closer
+to 0.7 (2035, weather year 2025: curtailment +51.6 as drawn, +59.6 at 0.85, +64.8 one circuit dropped, +68.0 at 0.7; 2040:
++91.9, +100.8, +105.8, +110.0), because the corridors that bind are the two- and three-circuit Karoo and Free State ones
+where (n - 1)/n is 0.5 to 0.67. Unserved energy separates the rules more than curtailment does (2040, weather year 2025:
+2.6 TWh as drawn, 5.2 at 0.85, 6.9 one circuit dropped, 8.4 at 0.7). With the TDP lines the four rules converge (2035:
++16.2 to +16.8 TWh on the full mapping), so the choice of rule matters on today's corridors and not on the plan's. Until
+Nick settles it, every case stays reported at all four.
+
+### 718 (c): the TDP in full
+
+### 718 (c): the TDP in full
+
+The accounting (sc/tdp_full.py on nodal/tdp_projects.json at build 2026-11-05f, 221 projects, 82 of them lines):
+
+| class | lines | at 400 kV / 765 kV / kV not given | km stated (lines with a length) | phase |
+|---|---|---|---|---|
+| joining two supply areas | 22 | 12 / 7 / 3 | 4,765 km (15 of 22) | execution 5, definition 7, concept 4, planned 6 |
+| inside one supply area | 60 | 41 / 7 / 12 | 6,486 km (39 of 60) | execution 10, definition 15, concept 6, pre-concept 6, planned 23 |
+| an endpoint still unmapped | 0 | | | |
+
+Before the mapping, 17 lines had an endpoint absent from nodal/substations_compact.json. Nine substations were placed in a
+supply area from public documents (the TDP 2025 project sheets and Eskom's grid-connection capacity assessment maps as
+reported): Umtu (Northern Cape), Isundu, Mbewu and Iphiva (KwaZulu-Natal), Quattro (Gauteng), Hlaziya, Zanokhanyo and Coega
+(Eastern Cape), Bokkom (Western Cape); the map is docs/regional-audit/tdp_substation_map.json. Every line now has both ends in
+an area. Lines inside one area by area: Northern Cape 12, Western Cape 12, Eastern Cape 10, KwaZulu-Natal 8, Limpopo 5,
+Gauteng 4, Mpumalanga 3, North West 3, Free State 2, Hydra Central 1; they are the within-area limits the ten-area model does
+not carry, so the full-TDP case uses only the 22 inter-area lines and still omits the relief the 60 give within areas.
+
+Inter-area capacity added, at 900 MW a 400 kV circuit and 3,000 MW a 765 kV circuit (capacity_siting.js), by year of the
+TDP's date: 2025 3,900 MW; 2027 3,600; 2028 5,700; 2029 7,800; 2030 900; 2032 7,800; 2033 4,800; 34,500 MW in all by 2033.
+By pair: Free State to Mpumalanga 3,900; Hydra Central to Western Cape 3,900; North West to Northern Cape 3,900; Eastern
+Cape to KwaZulu-Natal 3,900; Limpopo to North West 3,000; Free State to Hydra Central 3,000; Eastern Cape to Hydra Central
+3,000; Northern Cape to Western Cape 2,700; Gauteng to Mpumalanga 1,800; and 900 each for Free State to Gauteng, Free State
+to KwaZulu-Natal, Gauteng to North West, Limpopo to Mpumalanga, Hydra Central to Northern Cape and Free State to Northern
+Cape. In the LP each addition is a single new circuit at 0.7 in the drop-one-circuit case (one circuit of a new line is lost
+at N-1 unless the line is double-circuit, which the TDP sheet does not say), and at the case's factor otherwise.
+
+Against the public statements. The lines with a stated length sum to 11,251 km by 2034 (420 km by 2025, 1,833 by 2027,
+4,495 by 2029, 10,165 by 2032); 28 of the 82 lines carry no length in the file. NTCSA's TDP 2024 (the plan for 2025 to
+2034) is reported as about 14,500 km of new lines and 56 GW of new generation to connect over the ten years (Engineering
+News, 30 October 2024, "NTCSA revises latest TDP considering uptick in expected generation capacity"), at about R440bn over
+ten years (Daily Maverick, 18 June 2026, "SA's transmission build opens a R440bn test for private capital and local
+industry"); at its launch NTCSA put 30 GW of utility-scale renewables connected by the end of 2029, with 11 GW and 1,250 km
+of lines by financial year 2027 on a R112bn five-year budget (NTCSA launch statement of 7 October 2024 as reported by Green
+Building Africa and ESI Africa). So the file's stated lengths cover about three quarters of the plan's kilometres and the
+28 unstated lines plausibly hold the rest; the accounting cannot confirm the total, and the file's 1,833 km dated by 2027 sit above
+the 1,250 km NTCSA named for financial year 2027, which is the build-pace question, not a mapping one. The
+generation-connection figures (56 GW over the plan, 30 GW by 2029, the remaining 26 GW after) are connection capacity, not
+inter-area transfer, and are not comparable with the 34,500 MW above, which is transfer capacity between the model's areas on
+the circuit assumptions. No NTCSA grid-capacity figure is used anywhere in this work.
+
+What the full mapping does in the LP (the "(TDP: tdp_lines_full.json)" rows above). 2035, weather year 2025, one circuit
+dropped: curtailment +16.2 TWh above no limits (19.3 TWh in all) against +35.1 with the file's own 20 lines and +64.8 with
+today's corridors; no unserved energy; coal +15.6 TWh. 2040: +42.8 (55.9 in all) against +70.2 and +105.8; no unserved
+energy; coal +39.5, gas +1.6. Weather year 2015 the same within 3 TWh. So the plan's inter-area lines, at their dates,
+remove three quarters of the 2035 network effect and 60% of 2040's on this build.
+
+Why 2040 still curtails 43 TWh above no limits, by area and corridor. The 2040 build's new wind sits 36% in the Western
+Cape, 23% in Hydra Central and 21% in the Northern Cape, and its new solar 25% in the Northern Cape and 13% in Hydra
+Central (the approved-records shares), so with no limits the three areas export 146 TWh net (Northern Cape 52.6, Hydra
+Central 49.1, Western Cape 44.6). Their exits with the full TDP at one circuit dropped are North West to Northern Cape 3,062
+MW (663 today plus 3,900), Free State to Northern Cape 2,256 (2,439 plus 900), Free State to Hydra Central 4,402 (2,763 plus
+3,000), Eastern Cape to Hydra Central 2,943 (1,124 plus 3,000) and North West to Western Cape 163 (233 today, no TDP line):
+about 12.8 GW, which at full use all year is 112 TWh against the 146 needed, and the diurnal shape of solar and the Cape's
+wind leaves less. The LP therefore curtails Hydra Central 26.6 TWh, the Northern Cape 13.1, the Eastern Cape 9.7 and the
+Western Cape 6.5, and the three exits bind in 6,200 hours each at R6.2m per MW-year (North West to Western Cape, Free
+State to Northern Cape, Free State to Hydra Central, North West to Northern Cape), the Eastern Cape's two exits (to
+KwaZulu-Natal 3,299 MW, to the Free State 318) in 4,800 hours. The Free State hub's eastward exits (to Mpumalanga 4,904
+MW, Gauteng 1,931, KwaZulu-Natal 929) bind only 991 hours: the plan relieves the hub; it does not add enough on the
+Karoo's own exits for a fleet sited by the approved records. In 2035 the same five corridors bind in 3,900 hours at R2.5m,
+and the Karoo curtails 19 TWh (Hydra Central 10.2, Eastern Cape 4.6, Northern Cape 3.7).
+
+What this does not say. The 60 within-area TDP lines are absent, so the model cannot tell whether the Karoo's own
+collection network or the corridor exits are the real limit; the exits here are the model's St Clair sums plus the TDP
+lines at 900 and 3,000 MW a circuit, and North West to Western Cape (233 MW) is one of the two estimated corridors.
+
+### 718 (d): corridors chosen by the LP
+
+| year, weather year | base | cost R per MW-km | built MW | MW-km (thousand) | capex R bn | R bn a year | curtailed left TWh (no-limits, base without expansion) | unserved GWh | by corridor (MW) |
+|---|---|---|---|---|---|---|---|---|---|
+| 2035, 2015 | 0.7 | 10,000 | 27,224 | 5,432 | 54.3 | 4.56 | 3.6 (2.8, 64.5) | 0.0 | North West to Northern Cape 9,178; Eastern Cape to Kwazulu Natal 6,264; Northern Cape to Western Cape 5,639; Eastern Cape to Hydra Central 3,410; Free State to Northern Cape 1,769; Free State to Gauteng 963 |
+| 2035, 2015 | drop one circuit | 10,000 | 25,874 | 5,158 | 51.6 | 4.33 | 3.6 (2.8, 61.4) | 0.0 | North West to Northern Cape 11,169; Northern Cape to Western Cape 6,306; Eastern Cape to Kwazulu Natal 4,790; Eastern Cape to Hydra Central 1,864; Free State to Northern Cape 1,131; Hydra Central to Northern Cape 613 |
+| 2035, 2025 | 0.7 | 10,000 | 28,072 | 5,564 | 55.6 | 4.67 | 3.8 (3.1, 71.0) | 0.0 | North West to Northern Cape 9,191; Eastern Cape to Kwazulu Natal 6,432; Northern Cape to Western Cape 6,004; Eastern Cape to Hydra Central 3,365; Free State to Northern Cape 1,914; Free State to Gauteng 1,165 |
+| 2035, 2025 | drop one circuit | 10,000 | 26,485 | 5,286 | 52.9 | 4.43 | 3.8 (3.1, 67.9) | 0.0 | North West to Northern Cape 11,122; Northern Cape to Western Cape 6,498; Eastern Cape to Kwazulu Natal 5,194; Eastern Cape to Hydra Central 2,086; Free State to Northern Cape 1,088; Hydra Central to Northern Cape 497 |
+| 2040, 2015 | drop one circuit | 10,000 | 34,661 | 6,969 | 69.7 | 5.84 | 12.6 (11.5, 109.5) | 0.0 | North West to Northern Cape 11,584; Eastern Cape to Kwazulu Natal 8,176; Northern Cape to Western Cape 7,238; Eastern Cape to Hydra Central 4,902; Free State to Northern Cape 2,143; Free State to Gauteng 618 |
+| 2040, 2025 | 0.7 | 10,000 | 38,431 | 7,454 | 74.5 | 6.25 | 14.1 (13.1, 123.1) | 2.1 | North West to Northern Cape 9,587; Eastern Cape to Kwazulu Natal 8,621; Northern Cape to Western Cape 7,580; Eastern Cape to Hydra Central 5,389; Free State to Northern Cape 4,281; Free State to Gauteng 2,973 |
+| 2040, 2025 | drop one circuit | 10,000 | 35,678 | 7,143 | 71.4 | 5.99 | 14.1 (13.1, 119.0) | 2.1 | North West to Northern Cape 11,726; Eastern Cape to Kwazulu Natal 8,264; Northern Cape to Western Cape 7,691; Eastern Cape to Hydra Central 4,976; Free State to Northern Cape 2,339; Free State to Gauteng 682 |
+
+Reading. Given the 2035 build and today's corridors at 0.7 or one circuit dropped, the LP adds 26 to 28 GW of corridor (5.2
+to 5.6 million MW-km) at R10,000 per MW-km, R52 to 56bn of capex and R4.3 to 4.7bn a year, and curtailment falls from 61 to
+71 TWh to 3.6 to 3.8, within 0.7 TWh of the no-limits case; in 2040, 35 to 38 GW, R70 to 75bn, R5.8 to 6.3bn a year, with
+curtailment at 12.6 to 14.1 against 11.5 to 13.1 with no limits. The corridors chosen: North West to Northern Cape 9 to 12
+GW, Eastern Cape to KwaZulu-Natal 5 to 9, Northern Cape to Western Cape 6 to 8, Eastern Cape to Hydra Central 2 to 5, Free
+State to Northern Cape 1 to 4, Free State to Gauteng 0.6 to 3. The LP builds nearly to the no-limits optimum because the
+corridor annuity (R839 per MW-km a year; R0.3 to 0.6m per MW-year on these corridors) is far below the shadow values of the
+fixed cases (R20 to 300m per MW-year). At the TDP-derived R21,700 per MW-km: pending (the cases are in the queue).
+
+Against the integration charge and the TDP. The build LP's integration charge (txRPerKWyr R364 per kW-year on new wind and
+solar, the whole VRE share) collects R16.4bn a year on the 2035 build's 44,957 MW and R23.9bn on 2040's 65,553 MW, three to
+four times the corridor annuity the ten-area LP chooses at R10,000 per MW-km (R4.3 to 4.7bn and R5.8 to 6.3bn). The TDP's
+R440bn over ten years is R44bn a year of capex, or R36.9bn a year annuitised at 0.08 over 40 years, eight times the LP's
+corridor annuity: the TDP also buys the 60 within-area lines, 133,000 MVA of transformation and the generation
+connections, none of which the ten-area LP prices, and it serves all three builds and the coal provinces' outflows (Free
+State to Mpumalanga 3,900 MW, Limpopo to North West 3,000), which this build does not use. By corridor, the LP wants about
+three times the TDP's North West to Northern Cape capacity and 1.5 to 2 times its Eastern Cape to KwaZulu-Natal and
+Northern Cape to Western Cape capacity, and nothing on the hub's eastward lines. So the charge is not low against what the
+corridors cost in this test; what the test cannot say is what the within-area network costs, which is where the TDP's
+money mostly goes.
+
+### 718 (e): siting chosen by the LP
+
+| year, weather year | corridors | wind shares chosen | solar shares chosen | curtailed TWh (fixed REEA siting) | unserved GWh |
+|---|---|---|---|---|---|
+| 2035, 2025 | as drawn (1.0) | Northern Cape 36%, Hydra Central 23%, Eastern Cape 21%, Mpumalanga 10%, Western Cape 5%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 100% | -115.5 (54.7) | 0.9 |
+| 2035, 2025 | 0.7 | Northern Cape 32%, Eastern Cape 23%, Hydra Central 16%, Western Cape 15%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 54%, Mpumalanga 23%, Gauteng 18%, Kwazulu Natal 5% | -100.5 (71.0) | 137.1 |
+| 2035, 2025 | 0.7 with TDP | Northern Cape 38%, Hydra Central 25%, Eastern Cape 23%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 100% | -124.8 (39.1) | 0.0 |
+| 2040, 2025 | drop one circuit | Hydra Central 29%, Western Cape 28%, Northern Cape 19%, Eastern Cape 15%, Mpumalanga 7%, Kwazulu Natal 2%, North West 1% | North West 83%, Limpopo 17% | -125.7 (119.0) | 1217.1 |
+
+Reading: pending, the free-siting cases are being rerun after the accounting fix.
+
+### 718 (f): the mix chosen by the LP
+
+| year, weather year | case | wind GW (run) | solar GW (run) | lithium GW, GWh (run) | open cycle GW (run) | corridors built MW | curtailed TWh | unserved GWh | new-build cost R bn a year | fuel and carbon R bn | objective R bn |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+
+Reading: pending, the free-mix cases are in the queue (report by 7 Nov 18:00 SAST).
+
+### 718 (g): the demand split
+
+(no rows yet)
+
+Reading: pending, the demand-split cases are in the queue.
+
+### 717 (c) rerun on the every-change pass (build 2026-11-05f)
+
+Tie-out with no limits, against the engine (TWh; the LP free, with the commitment floor, and with the engine's coal fixed):
+
+| year, weather year | coal, engine | LP free | LP, engine commitment floor | LP, engine coal fixed | curtailed, engine | free | floor | fixed | storage discharge, engine | free | floor | fixed |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2035, 2025 | 71.5 | 62.9 | 74.2 | 71.5 | 9.8 | 3.1 | 12.7 | 14.0 | 18.5 | 10.3 | 17.4 | 16.7 |
+| 2035, 2015 | 76.0 | 68.5 | 78.6 | 76.0 | 9.0 | 2.8 | 11.4 | 13.0 | 18.0 | 10.5 | 16.8 | 16.5 |
+| 2040, 2025 | 45.5 | 36.9 | 46.9 | 45.5 | 22.1 | 13.1 | 22.1 | 23.6 | 24.9 | 23.4 | 26.5 | 26.6 |
+| 2040, 2015 | 49.0 | 41.7 | 51.1 | 49.0 | 20.2 | 11.5 | 20.0 | 21.1 | 24.5 | 23.8 | 26.0 | 26.0 |
+
+The gap before reading the cases: as on the stand-in, the free LP shuts coal in daylight and curtails 7 to 9 TWh less than the
+engine; the commitment floor returns coal to within 3 TWh of the engine's and curtailment to within 3; fixing the engine's
+coal returns coal exactly and leaves curtailment 1 to 4 TWh above the engine's, which is not a difference in supply: with
+coal fixed and no cost on curtailment or on cycling, the LP is indifferent between charging a store and curtailing, so the
+"fixed" column's curtailment and storage columns are degenerate and only their sum is comparable (2035: engine 9.8 plus
+18.5 against the LP's 14.0 plus 16.7). Availability, must-run plant and demand match by construction.
+
+Differences from the no-limits case on the same year and weather year (every row of the stand-in table rerun, plus the 0.85
+and one-circuit cases):
+
+| year, weather year | case | curtailed, TWh | of it wind | solar | unserved, GWh | coal, TWh | gas | diesel | storage discharge | fuel and carbon, R bn | corridors with a shadow price over 4,000 hours (value of one more MW, R m a year) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2035, 2025 | today's limits as drawn (N-0) | +51.6 | +45.2 | +6.5 | +1.5 | +51.3 | +0.0 | +0.19 | -0.5 | +37.0 | North West to Northern Cape (7464 h, R6.8m); North West to Western Cape (7460 h, R6.8m); Eastern Cape to Kwazulu Natal (6848 h, R5.9m); Free State to Mpumalanga (6862 h, R5.9m); Free State to North West (6862 h, R5.9m); Free State to Gauteng (6862 h, R5.9m) |
+| 2035, 2025 | 0.85 x today | +59.6 | +50.3 | +9.3 | +163.6 | +58.9 | +0.0 | +0.46 | -0.0 | +44.0 | North West to Western Cape (7908 h, R38.3m); North West to Northern Cape (7920 h, R37.7m); Free State to Kwazulu Natal (7341 h, R33.0m); Free State to Mpumalanga (7323 h, R32.7m); Free State to North West (7323 h, R32.7m); Free State to Gauteng (7323 h, R32.7m) |
+| 2035, 2025 | N-1 (0.7 x today) | +68.0 | +55.4 | +12.6 | +704.8 | +66.0 | +0.0 | +1.30 | +0.6 | +54.2 | Free State to Kwazulu Natal (8209 h, R69.6m); Eastern Cape to Kwazulu Natal (7474 h, R68.4m); North West to Northern Cape (8330 h, R63.6m); North West to Western Cape (8327 h, R63.5m); Free State to Mpumalanga (7732 h, R52.1m); Free State to North West (7732 h, R52.1m) |
+| 2035, 2025 | N-1, one circuit dropped | +64.8 | +53.3 | +11.6 | +474.2 | +63.6 | +0.0 | +0.66 | -0.0 | +48.6 | North West to Western Cape (8036 h, R55.0m); North West to Northern Cape (8130 h, R55.0m); Eastern Cape to Kwazulu Natal (6809 h, R38.2m); Free State to Northern Cape (4680 h, R32.1m); Free State to Hydra Central (4505 h, R30.1m); Free State to Kwazulu Natal (5486 h, R23.0m) |
+| 2035, 2025 | N-1 with TDP lines by year | +36.0 | +33.0 | +3.0 | +0.0 | +35.5 | +0.0 | +0.04 | -2.6 | +25.0 | Eastern Cape to Kwazulu Natal (6122 h, R4.4m); North West to Northern Cape (6124 h, R4.3m); North West to Western Cape (6123 h, R4.3m); Free State to Northern Cape (6068 h, R4.1m); Free State to Hydra Central (6067 h, R4.1m); Eastern Cape to Free State (6063 h, R4.1m) |
+| 2035, 2025 | one circuit dropped, with TDP lines by year | +35.1 | +32.4 | +2.7 | +0.0 | +34.6 | +0.0 | +0.01 | -3.1 | +24.2 | Eastern Cape to Kwazulu Natal (6009 h, R4.2m); North West to Northern Cape (6014 h, R4.2m); North West to Western Cape (6011 h, R4.2m); Free State to Northern Cape (5992 h, R4.1m); Free State to Hydra Central (5989 h, R4.1m); Eastern Cape to Free State (5986 h, R4.1m) |
+| 2035, 2025 | N-1 (0.7 x today), losses 6%/1,000 km | +67.9 | +57.6 | +10.3 | +816.2 | +67.1 | +0.0 | +1.72 | -0.1 | +57.6 | Eastern Cape to Kwazulu Natal (7632 h, R78.5m); Free State to Kwazulu Natal (8709 h, R74.6m); North West to Northern Cape (8754 h, R74.1m); North West to Western Cape (8323 h, R69.7m); Free State to Gauteng (8741 h, R56.2m); Free State to North West (8718 h, R56.1m) |
+| 2035, 2025 | N-1 (0.7 x today), fleet siting | +74.6 | +60.6 | +13.9 | +1263.5 | +71.0 | +0.0 | +2.41 | +0.5 | +64.6 | Eastern Cape to Kwazulu Natal (8342 h, R126.8m); North West to Western Cape (8248 h, R104.4m); North West to Northern Cape (8247 h, R104.3m); Free State to Kwazulu Natal (7962 h, R81.7m); Free State to Mpumalanga (6027 h, R55.1m); Free State to North West (6027 h, R55.1m) |
+| 2035, 2025 | N-1 (0.7 x today), engine commitment floor | +58.3 | +49.8 | +8.6 | +704.8 | +54.7 | +0.0 | +1.30 | -6.5 | +46.3 | Free State to Kwazulu Natal (8209 h, R69.6m); Eastern Cape to Kwazulu Natal (7474 h, R68.4m); North West to Northern Cape (8330 h, R63.6m); North West to Western Cape (8327 h, R63.5m); Free State to Mpumalanga (7732 h, R52.1m); Free State to North West (7732 h, R52.1m) |
+| 2035, 2015 | today's limits as drawn (N-0) | +45.8 | +40.2 | +5.6 | +0.0 | +45.7 | +0.0 | +0.07 | -0.0 | +32.4 | North West to Western Cape (7062 h, R5.6m); North West to Northern Cape (7033 h, R5.6m); Eastern Cape to Kwazulu Natal (6436 h, R5.0m); Free State to Kwazulu Natal (6259 h, R4.6m); Free State to Mpumalanga (6255 h, R4.6m); Free State to North West (6255 h, R4.6m) |
+| 2035, 2015 | 0.85 x today | +53.4 | +45.3 | +8.1 | +26.7 | +53.1 | +0.0 | +0.42 | +0.8 | +39.7 | North West to Western Cape (7697 h, R20.7m); North West to Northern Cape (7697 h, R20.6m); Eastern Cape to Kwazulu Natal (6808 h, R19.2m); Free State to Kwazulu Natal (6900 h, R19.0m); Free State to Mpumalanga (6853 h, R18.6m); Free State to North West (6853 h, R18.6m) |
+| 2035, 2015 | N-1 (0.7 x today) | +61.7 | +50.4 | +11.3 | +561.1 | +59.1 | +0.0 | +2.33 | +1.3 | +55.8 | Free State to Kwazulu Natal (8157 h, R135.4m); Eastern Cape to Kwazulu Natal (7392 h, R133.8m); North West to Northern Cape (8239 h, R112.4m); North West to Western Cape (8230 h, R112.2m); Free State to Mpumalanga (7478 h, R100.9m); Free State to North West (7478 h, R100.9m) |
+| 2035, 2015 | N-1, one circuit dropped | +58.6 | +48.3 | +10.3 | +197.1 | +57.4 | +0.0 | +1.16 | +0.9 | +47.3 | North West to Northern Cape (8071 h, R56.9m); North West to Western Cape (7931 h, R56.3m); Eastern Cape to Kwazulu Natal (6611 h, R46.8m); Free State to Northern Cape (4418 h, R32.3m); Free State to Hydra Central (4204 h, R31.5m); Free State to Kwazulu Natal (5427 h, R25.3m) |
+| 2035, 2015 | N-1 with TDP lines by year | +31.4 | +28.8 | +2.6 | +0.0 | +31.1 | +0.0 | -0.00 | -2.3 | +21.7 | Eastern Cape to Kwazulu Natal (5592 h, R3.8m); North West to Northern Cape (5586 h, R3.8m); North West to Western Cape (5586 h, R3.8m); Free State to Hydra Central (5508 h, R3.7m); Free State to Northern Cape (5508 h, R3.7m); Eastern Cape to Free State (5508 h, R3.7m) |
+| 2035, 2015 | one circuit dropped, with TDP lines by year | +30.6 | +28.3 | +2.3 | +0.0 | +30.2 | +0.0 | -0.00 | -2.7 | +21.1 | North West to Northern Cape (5479 h, R3.8m); North West to Western Cape (5479 h, R3.8m); Eastern Cape to Kwazulu Natal (5479 h, R3.8m); Free State to Hydra Central (5433 h, R3.7m); Free State to Northern Cape (5433 h, R3.7m); Eastern Cape to Free State (5433 h, R3.7m) |
+| 2040, 2025 | today's limits as drawn (N-0) | +91.9 | +77.9 | +14.0 | +2632.1 | +62.9 | +22.0 | +2.70 | -6.5 | +107.2 | North West to Northern Cape (8541 h, R198.0m); North West to Western Cape (8544 h, R197.9m); Free State to Mpumalanga (8460 h, R196.8m); Free State to North West (8460 h, R196.8m); Free State to Gauteng (8460 h, R196.8m); Free State to Kwazulu Natal (8460 h, R196.8m) |
+| 2040, 2025 | 0.85 x today | +100.8 | +83.0 | +17.8 | +5191.3 | +63.0 | +27.4 | +3.21 | -7.9 | +121.9 | North West to Northern Cape (8682 h, R257.0m); North West to Western Cape (8683 h, R256.9m); Free State to Mpumalanga (8650 h, R256.2m); Free State to North West (8650 h, R256.2m); Free State to Gauteng (8650 h, R256.2m); Free State to Kwazulu Natal (8650 h, R256.2m) |
+| 2040, 2025 | N-1 (0.7 x today) | +110.0 | +88.2 | +21.7 | +8388.7 | +63.0 | +32.0 | +4.43 | -8.9 | +139.1 | North West to Northern Cape (8759 h, R308.6m); North West to Western Cape (8759 h, R308.5m); Free State to Kwazulu Natal (8759 h, R308.0m); Free State to Mpumalanga (8759 h, R308.0m); Free State to North West (8759 h, R308.0m); Free State to Gauteng (8759 h, R308.0m) |
+| 2040, 2025 | N-1, one circuit dropped | +105.8 | +85.3 | +20.5 | +6906.2 | +63.0 | +30.0 | +3.83 | -8.6 | +131.2 | North West to Northern Cape (8701 h, R291.3m); North West to Western Cape (8659 h, R290.0m); Eastern Cape to Kwazulu Natal (7932 h, R265.6m); Free State to Mpumalanga (7124 h, R136.8m); Free State to North West (7124 h, R136.8m); Free State to Gauteng (7124 h, R136.8m) |
+| 2040, 2025 | N-1 with TDP lines by year | +71.4 | +62.9 | +8.5 | +201.0 | +57.3 | +11.7 | +0.75 | -5.3 | +69.4 | North West to Northern Cape (7583 h, R48.5m); North West to Western Cape (7579 h, R48.4m); Eastern Cape to Kwazulu Natal (7566 h, R48.2m); Free State to Northern Cape (7572 h, R48.1m); Free State to Hydra Central (7561 h, R47.9m); Eastern Cape to Free State (7544 h, R47.8m) |
+| 2040, 2025 | one circuit dropped, with TDP lines by year | +70.2 | +62.2 | +8.0 | +148.2 | +56.8 | +11.1 | +0.69 | -5.5 | +67.5 | North West to Northern Cape (7535 h, R32.6m); North West to Western Cape (7522 h, R32.5m); Free State to Northern Cape (7533 h, R32.5m); Eastern Cape to Kwazulu Natal (7508 h, R32.2m); Free State to Hydra Central (7511 h, R32.2m); Eastern Cape to Free State (7502 h, R32.1m) |
+| 2040, 2025 | N-1 (0.7 x today), engine commitment floor | +101.0 | +82.3 | +18.6 | +8388.7 | +53.0 | +32.0 | +4.43 | -12.1 | +132.1 | North West to Northern Cape (8759 h, R308.6m); North West to Western Cape (8759 h, R308.5m); Free State to Kwazulu Natal (8759 h, R308.0m); Free State to Mpumalanga (8759 h, R308.0m); Free State to North West (8759 h, R308.0m); Free State to Gauteng (8759 h, R308.0m) |
+| 2040, 2015 | today's limits as drawn (N-0) | +84.1 | +71.3 | +12.8 | +1279.4 | +53.3 | +25.5 | +2.69 | -5.0 | +107.9 | North West to Western Cape (8564 h, R171.8m); North West to Northern Cape (8559 h, R171.3m); Free State to North West (8387 h, R161.9m); Free State to Mpumalanga (8387 h, R161.9m); Free State to Gauteng (8387 h, R161.9m); Free State to Kwazulu Natal (8387 h, R161.9m) |
+| 2040, 2015 | N-1 (0.7 x today) | +102.1 | +81.4 | +20.7 | +7968.3 | +53.6 | +32.0 | +6.81 | -7.4 | +147.3 | North West to Northern Cape (8751 h, R502.0m); North West to Western Cape (8750 h, R501.8m); Free State to Kwazulu Natal (8645 h, R491.0m); Free State to Mpumalanga (8645 h, R490.9m); Free State to North West (8645 h, R490.9m); Free State to Gauteng (8645 h, R490.9m) |
+| 2040, 2015 | N-1, one circuit dropped | +98.1 | +78.7 | +19.4 | +5660.7 | +53.6 | +31.1 | +6.19 | -6.5 | +141.5 | North West to Northern Cape (8743 h, R353.7m); North West to Western Cape (8722 h, R352.4m); Eastern Cape to Kwazulu Natal (8063 h, R319.0m); Free State to Kwazulu Natal (7742 h, R230.2m); Free State to Mpumalanga (7742 h, R230.2m); Free State to North West (7742 h, R230.2m) |
+| 2040, 2015 | N-1 with TDP lines by year | +63.9 | +56.6 | +7.3 | +0.0 | +50.2 | +12.1 | +0.31 | -4.6 | +62.5 | Eastern Cape to Kwazulu Natal (7285 h, R14.9m); North West to Northern Cape (7298 h, R14.9m); North West to Western Cape (7293 h, R14.9m); Free State to Northern Cape (7210 h, R14.6m); Free State to Hydra Central (7204 h, R14.6m); Eastern Cape to Free State (7195 h, R14.6m) |
+| 2040, 2015 | one circuit dropped, with TDP lines by year | +62.8 | +55.9 | +6.9 | +0.0 | +49.9 | +11.3 | +0.22 | -4.6 | +60.2 | North West to Northern Cape (7222 h, R14.2m); Free State to Northern Cape (7219 h, R14.1m); North West to Western Cape (7200 h, R14.1m); Eastern Cape to Kwazulu Natal (7196 h, R14.1m); Free State to Hydra Central (7194 h, R14.0m); Eastern Cape to Free State (7192 h, R14.0m) |
+
+Siting shares of new wind and solar by supply area (approved REEA records through their nearest substation): wind Western Cape 36%, Hydra Central 23%, Northern Cape 21%, Eastern Cape 12%, Mpumalanga 5%, Kwazulu Natal 1%, North West 1%; solar Northern Cape 25%, North West 18%, Free State 15%, Hydra Central 13%, Limpopo 11%, Western Cape 11%, Mpumalanga 3%, Gauteng 2%, Eastern Cape 1%, Kwazulu Natal 1%.
+Curtailment by area, 2035, weather year 2025, N-1: Hydra Central 28.4, Northern Cape 18.8, Western Cape 12.2, Eastern Cape 11.4, Free State 0.3 TWh; with TDP lines: Eastern Cape 14.2, Hydra Central 13.8, Northern Cape 10.2, Western Cape 0.8 TWh.
+Curtailment by area, 2040, weather year 2025, N-1: Hydra Central 44.4, Northern Cape 33.7, Western Cape 26.0, Eastern Cape 17.8, Free State 1.2 TWh; with TDP lines: Hydra Central 30.8, Northern Cape 25.1, Eastern Cape 22.2, Western Cape 6.4 TWh.
+
+Reading, against the stand-in. The every-change pass moves every number a little and no conclusion: as drawn the 2035
+effect is +52 TWh of curtailment (stand-in +45), at 0.7 +68 (+65), at one circuit dropped +65; with the file's 20 TDP
+lines +36 (+31); 2040 at 0.7 +110 (+98) with 8.4 TWh unserved (stand-in 0.1), and with the TDP lines +71. The 2040 unserved
+energy is new: the pass's 2040 state carries less lithium and more open-cycle gas than the stand-in, and the gas sits in
+KwaZulu-Natal behind the binding exits. The same corridors bind (the Free State hub's exits, North West to the Northern
+and Western Cape, Eastern Cape to KwaZulu-Natal) at R50 to 70m per MW-year in 2035 and R140 to 310m in 2040. Losses and
+fleet siting move the energies as before (losses under 1 TWh; fleet siting +7 TWh). The commitment floor cuts the 0.7
+difference from +68 to +58 TWh in 2035 and from +110 to +101 in 2040. Caveats as in 717 (c).
+
+Scripts and outputs: docs/regional-audit/ (pypsa_net.py, run_net.sh, queue_final.sh to queue5.sh, summ718.py, summ722.py,
+net_tables.py, tdp_full.py, the TDP mapping files, corridor_circuit_counts.json); every case's JSON in
+docs/regional-audit/results/718/; the engine dumps stay in the scratchpad (hourly series derived from profiles.json).
