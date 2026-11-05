@@ -22281,3 +22281,38 @@ What the suite can and cannot see
   names "every region sharing a peak hour" as the flattening signature while 10 of 10 regions share hour 12 and it passes.
 - No check compares an LP series against the engine's for the same day, so findings 1 and 4 are invisible by construction; no check tests
   a derived twin's shape or clipped-hour count; no check tests || 0 on an absent key.
+
+### The re-timing's method changed to the sun's height (csi_day), and the twin's seasonal shape after it (messages 704 (a), 707 (b)): the double seasonal gain is gone (2.7 to 1.70); what remains is metered 2025's own seasonality; July's 17:00 is 0.07 in the twin against 0.15 in the engine's years
+
+Method (claude/twin-retime f3af8b0, replacing 379d08a's linear conversion; the entry 'The PVGIS years from the stamped minute to hour
+means' above stands for the lags, which are the same to 5 minutes for all three methods): each reading divided by the sun's height at
+its minute and point, that clear-sky index interpolated between readings and multiplied back minute by minute, each day scaled to the
+readings' energy. Linear interpolation spread output across sunrise and sunset; July national tracking, 2014-2023 mean:
+
+| Hour, July | Stored (late) | Linear | csi_day (used) | Metered fleet 2025 |
+|---|---:|---:|---:|---:|
+| 07:00 | 0.03 | 0.21 | 0.16 | 0.03 |
+| 17:00 | 0.41 | 0.22 | 0.16 | 0.05 |
+| January 19:00 | 0.16 | 0.09 | 0.05 | - |
+
+Twelve-year tracking mean 0.28445 (NEW_PVTRK_CF_12Y; 0.28595 before, 0.28362 by linear); the fleet twin's scale 1.0297, the fixed
+basis's 0.8001. validate_weather 71/71, validate_shapes 8/8.
+
+The twin's seasonal shape, fleet basis, after re-timing (page probe; monthly means, per unit):
+
+| Series | Jan | Jun | Jul | Dec | DJF / JJA | July 17:00 |
+|---|---:|---:|---:|---:|---:|---:|
+| Metered twin (the LP's metered days) | 0.383 | 0.203 | 0.202 | 0.397 | 1.70 | 0.07 |
+| PVGIS twins, 2014-2023 | 0.339 | 0.205 | 0.223 | 0.351 | 1.48 | 0.16 |
+| 2024-2025 twins | 0.354 | 0.199 | 0.211 | 0.368 | 1.61 | 0.08 |
+| The engine's twelve years | 0.342 | 0.204 | 0.221 | 0.354 | 1.50 | 0.15 |
+| Metered fleet 2025 (about half trackers) | 0.317 | 0.200 | 0.197 | 0.323 | 1.46 | 0.05 |
+| The review, old 'fixed' basis: metered twin / engine | 0.435 / 0.344 | 0.165 / 0.205 | | 0.445 / 0.356 | 2.7 / 1.74 | 0.098 / 0.357 |
+
+- The double seasonal gain is gone: 2.7 on the old basis, 1.70 on the fleet basis (1.71 before re-timing). No further fix made.
+- What remains is not a second tracker gain. A PVGIS fleet at the metered fleet's tracking share (0.516) runs 1.28 summer to winter;
+  the metered 2025 fleet runs 1.46. The twin's 1.70 is that measured seasonality times the remaining tracker gain (1.48 / 1.28 = 1.16):
+  1.46 x 1.16 = 1.69. New solar on the metered days carries 2025's own seasonality; it goes with the reference (704 (c)).
+- July's evening: the twin gives 0.07 at 17:00 against 0.15-0.16 in the engine's modelled years, because the metered fleet's July day is
+  narrower (0.05 at 17:00, 0.03 at 07:00) than PVGIS's modelled trackers. The LP's metered days and the engine's years still differ at
+  the day's edges in winter. Not fixed; flagged for 707 (c)'s LP-against-engine check and the reference decision.
