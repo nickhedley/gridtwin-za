@@ -8596,6 +8596,10 @@ function simulate(u, prof, outPath, _soc0){
     const f = (_dMax > _dMin) ? (demandDR[h] - _dMin) / (_dMax - _dMin) : 0.5;
     return _expBase * (1 + (_expPk - 1) * (2 * f - 1));
   };
+  // The series probe (message 707 (c); harness/validate_series.js): with u.__seriesProbe an object, the run records the hourly series it
+  // reads (demand before and after demand response, exports, rooftop, onshore and offshore wind, utility solar, CSP) and stops here.
+  if (u.__seriesProbe){ Object.assign(u.__seriesProbe, { demand, demandDR, exp: Float64Array.from({ length: HOURS }, (_, h) => expAt(h)), roof: roofS,
+    windU, solarU, off: _offPu, csp, growth, demBlock }); return null; }
 
   // Geyser control as a build option (HANDOVER 'Geyser control (and pool pumps) as a VPP build option: design', G3-G4 and G7;
   // messages 633-635 and 641). Off (gyBuildOn 0) none of this runs and load is as before. Each day: the enrolled MW (gyEnrolMW, from
@@ -11503,6 +11507,9 @@ const FIXED_PV_CF_12Y = 0.22361, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
 // K = FIXED_PV_CF_12Y over S's mean. Single-year runs on 2025's profiles keep the measured series. When roof12.js has already scaled
 // PROFILES.demand in place (PROFILES.roof12Applied), it is used as it stands; FIXED.bldRoof12 0 restores the unscaled series.
 function roofTwelveYearK(){ const S = PROFILES.roof || PROFILES.solar; let m = 0; for (let h = 0; h < S.length; h++) m += S[h]; return FIXED_PV_CF_12Y / (m / S.length); }
+// The engine's profile for a modelled weather year, one copy (message 707 (c)): the adequacy test, the weather panel and the risk panels'
+// factory each built it inline; harness/validate_series.js reads the same.
+function wxEngineProfile(nat){ return { demand: twelveYearDemand(), solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true }; }
 var _roof12Cache = null;
 function twelveYearDemand(){
   if (!FIXED.bldRoof12 || PROFILES.roof12Applied) return PROFILES.demand;
@@ -12097,6 +12104,20 @@ function bldTwelveYearMeansAll(k, trk){
   }
   return (_twelveAllCache[key] = { wind: w / n, windN: wn / n, solar: s / n, solarT: sn / n, roof: s / n });   // roof: the twelve-year fixed tilt, as solar
 }
+// The existing utility fleet's twelve-year mean as the engine runs it on the modelled years: (1 - x) x each year's fixed tilt + x x its own
+// twin (simulate, message 684 (f)), x the existing fleet's tracker share (message 707 (c)).
+function bldExistPvTwelveYearMean(x){
+  const key = 'exPv|' + x;
+  if (_twelveAllCache[key] !== undefined) return _twelveAllCache[key];
+  let s = 0, n = 0;
+  for (const y of bldWeatherYears.meta.years){
+    const nat = weatherYearNational(String(y)), T = nat.solar.trk;
+    if (!T) throw new Error('bldRepDays clustered: weather year ' + y + " has no tracking twin for the existing fleet's level");
+    for (let h = 0; h < nat.solar.length; h++) s += (1 - x) * nat.solar[h] + x * T[h];
+    n += nat.solar.length;
+  }
+  return (_twelveAllCache[key] = s / n);
+}
 // The factor f with the weighted mean of min(1, f x v) equal to target (wt per element, or 1).
 function bldScaleTo(v, target, wt, what){
   let f = 1, m = 0;
@@ -12165,8 +12186,15 @@ function bldRepDaysClustered(n, method, S0){
   const R0 = (src('solar') === 'metered' && PROFILES.roof) ? PROFILES.roof : P0;
   const base = { wind: Float64Array.from(W0.slice(0, N)), windN: Float64Array.from({ length: N }, (_, i) => Math.min(1, kw * Wm[i])),
                  solar: Float64Array.from(P0.slice(0, N)), solarT: Float64Array.from(Pt.slice(0, N)), roof: Float64Array.from(R0.slice(0, N)) };
+  // Existing utility solar on a metered reference (message 707 (c); found by harness/validate_series.js): the metered fleet carries its own
+  // trackers (about 55%), so the existing fleet reads the metered series itself, rescaled to that fleet's twelve-year level (the engine's
+  // blend on the modelled years). The blend of fixed tilt and twin (684 (f)) is for a modelled year's fixed tilt; on the metered series it
+  // applied the trackers a second time, as the engine's own rule (x 0 on the metered profile) does not. A set share (a test) keeps the blend.
+  const XS = (src('solar') === 'metered' && (S.bldExistPvTrackShare ?? null) === null) ? (existPvTrackShareAt(S) ?? 0) : 0;
+  const TT = XS > 0 ? { ...T, solarEx: bldExistPvTwelveYearMean(XS) } : T;
+  if (XS > 0) base.solarEx = Float64Array.from(P0.slice(0, N));
   const yr = {};
-  for (const key of Object.keys(base)){ const f = bldScaleTo(base[key], T[key], null, key); yr[key] = base[key].map(v => Math.min(1, f * v)); }
+  for (const key of Object.keys(base)){ const f = bldScaleTo(base[key], TT[key], null, key); yr[key] = base[key].map(v => Math.min(1, f * v)); }
   // Features: 72 values a day, each series normalised 0-1 over the year.
   const nz = a => { let lo = Infinity, hi = -Infinity; for (const v of a){ lo = Math.min(lo, v); hi = Math.max(hi, v); } return a.map(v => hi > lo ? (v - lo) / (hi - lo) : 0); };
   const fd = nz(Float64Array.from(PROFILES.demand.slice(0, N))), fw = nz(yr.windN), fs = nz(yr.solarT);
@@ -12191,7 +12219,7 @@ function bldRepDaysClustered(n, method, S0){
     const v = [], w = [];
     for (const d of reps) if (!E.includes(d)) for (let h = 0; h < 24; h++){ v.push(yr[key][d * 24 + h]); w.push(wt[d]); }
     let ext = 0; for (const e of E) for (let h = 0; h < 24; h++) ext += yr[key][e * 24 + h];
-    const tgt = (T[key] * 365 * 24 - ext) / (365 * 24 - E.length * 24);   // the typical days' weighted mean that makes the year's mean the target
+    const tgt = (TT[key] * 365 * 24 - ext) / (365 * 24 - E.length * 24);   // the typical days' weighted mean that makes the year's mean the target
     const g = bldScaleTo(v, tgt, w, key + ' on the typical days');
     out[key] = d => Array.from({ length: 24 }, (_, h) => E.includes(d) ? yr[key][d * 24 + h] : Math.min(1, g * yr[key][d * 24 + h]));
   }
@@ -12201,6 +12229,7 @@ function bldRepDaysClustered(n, method, S0){
     r.roof = out.roof(d);   // rooftop's own series (message 707 (a) 1)   // offshore of the reference wind's year, unscaled (message 707 (a) 3)
     if (mod) r.windMod = out.windN(d).map(v => v / kw);   // the LP takes min(1, kw x windMod)
     if (trk) r.solarTrk = out.solarT(d);
+    if (XS > 0) r.solarEx = out.solarEx(d);   // the existing fleet's own series (707 (c))
     return r;
   });
   days.map365 = map;
@@ -13056,6 +13085,9 @@ function bldBuildLP(opts){
     if (CUMV) return up.map(v => ' + ' + c.toFixed(5) + ' ' + v).join('') + base.map(v => ' - ' + c.toFixed(5) + ' ' + v).join('');
     const bs = new Set(base); return up.filter(v => !bs.has(v)).map(v => ' + ' + c.toFixed(5) + ' ' + v).join('');
   }).join('');
+  // The series probe (message 707 (c); harness/validate_series.js): with opts.__seriesProbe = { years: [...], rows: [] }, every hour of the
+  // named years records the per-unit series this LP reads, so the check can set them beside the engine's for the same day and hour.
+  const SPROBE = opts.__seriesProbe || null;
   for (const y of Y){
     const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
     // The year's coal availability (coalEafByYear, message 618/619), else opts.eaf; the year's existing wind, utility solar and CSP,
@@ -13100,17 +13132,23 @@ function bldBuildLP(opts){
       // The existing fleet's tracking series on the day (message 684 (f)): the day's own twin where it carries its series, else the metered
       // profile's twin (only where a test share is set); unused at a share of 0.
       const spX = _xtrk(r) > 0 ? (r.solar ? (r.solarTrk ? r.solarTrk[h] : sp) : solarTrkOf(PROFILES.solar)[i]) : sp;
+      // Existing utility solar (message 707 (c)): a clustered day on the metered reference carries the metered fleet's own series (r.solarEx),
+      // which already holds its trackers; every other day, the blend of fixed tilt and the day's twin (684 (f)).
+      const spE = r.solarEx ? r.solarEx[h] : (1 - _xtrk(r))*sp + _xtrk(r)*spX;
       const wp = r.wind  ? r.wind[h]  : PROFILES.wind[i];
       // New wind's per-unit output: the modern-turbine twin when bldWindModern is on, else wp.
       const wpN = !WMOD_ON ? wp : Math.min(1, WMOD_K * (r.wind ? (r.windMod ? r.windMod[h] : (() => { throw new Error('modern wind on: a representative day has no modern-turbine wind'); })())
                                       : windModOf(PROFILES.wind)[i]));
+      const offPu = OFF_ON ? (r.off ? r.off[h] : OFF_REF[i % 8760]) : 0;   // offshore's per-unit output on the day (707 (a) 3)
       // Availability from the engine'S own keys, 2 Oct 2026. This line hardcoded nuclear 0.9,
       // hydro 0.5 and imports 0.9 while the engine reads nuclearCF (0.66, Koeberg's record),
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
-                  + exWind*wp*AVW(h) + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AVP(h) + EX.rooftop*spR*AV_ROOF + exCsp*CSP_PU(i);
+                  + exWind*wp*AVW(h) + exPv*spE*AVP(h) + EX.rooftop*spR*AV_ROOF + exCsp*CSP_PU(i);
+      if (SPROBE && SPROBE.years.includes(y)) SPROBE.rows.push({ y, d: r.d, h, i, kind: r.stress ? 'stress' : r.tail ? 'tail' : r.solar ? 'clustered' : 'calendar',
+        year: r.year ?? null, dem0: PROFILES.demand[i], exp: expAtLP(i), sp, spE, spR, spN, spX, x: _xtrk(r), wp, wpN, csp: CSP_PU(i), off: OFF_ON ? offPu : null });
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
@@ -13118,7 +13156,7 @@ function bldBuildLP(opts){
         + (CAPE_MW > 0 ? Y.filter(yy => yy <= y).map(yy => ' - ' + (CAPE_CURT*wpN*AVW(h)).toFixed(4) + ' cw_' + yy).join('') : '')
         + ' + ' + cum('pv',y).map(v => (spN*AVP(h)).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => (spR*AV_ROOF).toFixed(4)+' '+v).join(' + ')
-        + (OFF_ON ? ' + ' + cumOff(y).map(v => ((r.off ? r.off[h] : OFF_REF[i % 8760])*AVW(h)).toFixed(4)+' '+v).join(' + ') : '')
+        + (OFF_ON ? ' + ' + cumOff(y).map(v => (offPu*AVW(h)).toFixed(4)+' '+v).join(' + ') : '')
         // Enrolled batteries out of the passive profile (message 637): + profile x 0.75 x E on the left, E = vppp x 2.5 h.
         + (VPP_ON ? lpTerm(btmDay(y, r)[h] * BTM_Y[y].use * VPP_HN, 'vppp_' + y, 6) : '')
         // Geyser control (G3): load taken off and returned.
@@ -13729,7 +13767,7 @@ function bldAdequacyTest(st, draws){
     const nat = weatherYearNational(String(y));
     if (!nat) continue;
     const stk = K > 1 ? { ...st, outageSeed: 20260816 + k * 104729 + y * 7919 } : st;
-    const r = simulate(stk, { demand: twelveYearDemand(), solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+    const r = simulate(stk, wxEngineProfile(nat));
     const gwh = (r.E.unserved || 0) / 1000;
     // The standard's demand: customer demand without storage charging by default (bldAdequacyBasis, 12 Oct 2026).
     const _cust = (st.bldAdequacyBasis ?? FIXED.bldAdequacyBasis) !== 'withCharging';
@@ -16415,8 +16453,7 @@ async function runWeatherSpread(){
   for (const y of d.meta.years){
     const nat = weatherYearNational(String(y));
     if (!nat) continue;
-    const prof = { demand: twelveYearDemand(), solar: nat.solar, wind: nat.wind,
-                   csp: PROFILES.csp, real: true };
+    const prof = wxEngineProfile(nat);
     const res = simulate(state, prof);
     const gen = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel']
       .reduce((a,k) => a + (res.E[k]||0), 0);
@@ -22324,7 +22361,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-05a';
+const BUILD_STAMP = '2026-11-05b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -22423,7 +22460,7 @@ const ENGINE_FNS = () => ({ simulate, offshoreSeriesFor, coalUcOpts, coalUnitMsl
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldCocBase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
-  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, solarTrkBasis, applySolarTrkBasis, existPvTrackShareAt, wxWindCorrOn, congShapeFactors, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
+  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, solarTrkBasis, applySolarTrkBasis, existPvTrackShareAt, wxWindCorrOn, congShapeFactors, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand, wxEngineProfile,
   btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
   ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
   coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt, coalCarbonFloorR });
@@ -22579,8 +22616,7 @@ async function weatherProfileFactory(){
       if (y == null) return PROFILES;
       if (!cache.has(y)){
         const nat = weatherYearNational(String(y));
-        cache.set(y, nat ? { demand: twelveYearDemand(), solar: nat.solar,
-                             wind: nat.wind, csp: PROFILES.csp, real: true } : PROFILES);
+        cache.set(y, nat ? wxEngineProfile(nat) : PROFILES);
       }
       return cache.get(y);
     },
