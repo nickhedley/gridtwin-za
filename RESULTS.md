@@ -23344,3 +23344,31 @@ real to 2026. Scratchpad deemed/base_2026_2040.json, pv752/mix_2026_2040.json; 6
   +R2.75bn). The LP objective has mixed -R4.7bn (-R3.7bn on equal adequacy, 'The 7 Nov table').
 - Adequacy differs as well: mixed's 20-draw unserved is higher in every year from 2033, by 7-9 GWh a year in 2037-2040, all under the
   20 GWh standard; its present value is not adjusted for it. CO2 2026-40: 1,573.6 Mt baseline, 1,564.5 mixed (-9.0).
+
+### Open-cycle capex on the IRP's basis (message 714 (d)): one LP pass on the every-change basis; objective -R7.6bn, open-cycle gas +0.37 GW in 2035 and +0.58 GW in 2040 with 0.55 GW more open-cycle diesel; 2040 engine cost -R5.1bn and unserved 12.2 to 4.5 GWh
+
+Settings: the every-change basis (claude/twin-retime 17f42a5, gtza-all; run (6)'s settings as harness/pathway/final/README.md), one
+pass, with bldOcgtCostCase 'irp' (OCGT_COST=irp: the IRP's open-cycle capex at 0.397 of combined cycle, against the central's 0.74);
+scratchpad c710/solve_irp12.sh, four pieces of under 2 hours from a kept basis, solved Optimal at 17:17 UTC on 6 Nov. Engine check from
+gtza-rt (06b, with the gas record by technology), K=20, 2030/2035/2040, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1.
+Against harness/pathway/final/pathway_every_change_05f.json and engine_every_change_05f_gas.json. Files:
+final/pathway_every_change_ocgtirp_05f.json, final/engine_every_change_ocgtirp_05f_gas.json.
+
+| | Every-change pass (0.74) | IRP open-cycle capex (0.397) | Change |
+|---|---|---|---|
+| LP objective, R bn | 1,524.7 | 1,517.1 | -7.6 |
+| Open-cycle gas, GW: 2035 / 2040 | 0 / 4.34 | 0.37 / 4.92 | +0.37 / +0.58 |
+| Open-cycle diesel, GW: 2035 / 2040 | 0 / 1.27 | 0.07 / 1.82 | +0.07 / +0.55 |
+| Combined cycle, GW | 0 | 0 | 0 |
+| Utility solar, GW: 2030 / 2035 / 2040 | 6.68 / 17.71 / 24.83 | 6.91 / 18.48 / 25.00 | +0.23 / +0.77 / +0.17 |
+| Lithium, GW: 2030 / 2035 / 2040 | 1.48 / 8.81 / 11.00 | 1.97 / 8.94 / 10.79 | +0.49 / +0.13 / -0.21 |
+| Iron-air, GW, 2040 | 0.15 | 0 | -0.15 |
+| Engine cost, R bn: 2030 / 2035 / 2040 | 243.2 / 270.8 / 320.5 | 242.2 / 271.1 / 315.4 | -1.0 / +0.3 / -5.1 |
+| Unserved, GWh (20 draws; se): 2035 / 2040 | 20.1 (2.2) / 12.2 (1.7) | 17.0 (2.2) / 4.5 (0.9) | -3.1 / -7.7 |
+| CO2, Mt: 2030 / 2035 / 2040 | 131.8 / 80.0 / 52.7 | 131.0 / 78.4 / 51.9 | -0.8 / -1.6 / -0.8 |
+| Gas burnt, TWh, 2040 | 3.15 | 3.83 | +0.68 |
+| Open-cycle capacity factor, 2040 | 4.7% | 4.9% | +0.2 points |
+
+- Wind is unchanged to 2035 (27.25 GW) and +0.07 GW in 2040. Cheaper open-cycle capex buys more peaking plants earlier; combined cycle
+  stays at zero in both. The 0.397 ratio is the IRP's; the central's 0.74 is EIA AEO2023's (RESULTS 'The 0.74 open-cycle capex ratio's
+  sources'), and current turbine prices point above 0.74, the other way.
