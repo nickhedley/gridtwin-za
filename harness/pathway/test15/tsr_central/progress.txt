@@ -94,3 +94,26 @@
 2026-11-06T06:54Z step 2032 (horizon 2036) rc=0 done
 2026-11-06T06:54:12Z node 4983 ended, peak memory 1.5 GB
 2026-11-06T06:54:12Z step node PID 8561
+2026-11-06T06:54:27Z solve started (highs_native.py 8812)
+2026-11-06T07:31Z step 2033 (horizon 2037) rc=0 NO OUTPUT
+2026-11-06T07:32:03Z solve (highs_native.py 8812) ended after about 2241s
+2026-11-06T07:32:03Z node 8561 ended, peak memory 2.9 GB
+2026-11-06T07:32:03Z retime central piece ends: two_stage.sh rc=1, 7 of 15 steps done
+2026-11-06T07:32:13Z retime central piece, PID 13040, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 09:12Z, MIN_LEFT 1500s, MAXP 6, WARM 1, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 25G, memory free 15G
+2026-11-06T07:32:13Z two_stage.sh PID 13068
+2026-11-06T07:32Z two_stage K=4 N=25 FIRST=2026, shell PID 13068
+2026-11-06T07:32:28Z step node PID 13103
+2026-11-06T07:32:43Z solve started (highs_native.py 13180)
+2026-11-06T08:05:18Z solve (highs_native.py 13180) ended after about 1950s
+2026-11-06T08:33:21Z solve started (highs_native.py 18922)
+2026-11-06T08:42:52Z solve (highs_native.py 18922) ended after about 564s
+2026-11-06T09:09Z step 2033 (horizon 2037) rc=0 done
+2026-11-06T09:09:40Z node 13103 ended, peak memory 3.9 GB
+2026-11-06T09:09:40Z step node PID 21899
+2026-11-06T09:09:40Z under 1500s left: stopped at the step boundary (node 21899, just started)
+2026-11-06T09:09Z step 2034 (horizon 2038) rc=0 NO OUTPUT
+2026-11-06T09:09:55Z node 21899 ended, peak memory 0.0 GB
+2026-11-06T09:09:55Z retime central piece ends: two_stage.sh rc=1, 8 of 15 steps done
+2026-11-06T09:10:09Z retime central piece, PID 21972, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 10:50Z, MIN_LEFT 1500s, MAXP 6, WARM 1, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 25G, memory free 15G
+2026-11-06T09:10:09Z two_stage.sh PID 21998
+2026-11-06T09:10Z two_stage K=4 N=25 FIRST=2026, shell PID 21998
