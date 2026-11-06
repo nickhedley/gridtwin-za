@@ -22933,3 +22933,23 @@ K=20, 2030/2035/2040 (04:47-04:55 UTC). Committed to claude/c7-runs harness/path
   mixed 20.90). On the common measure, the mixed reference does not yet meet the standard (message 720 (c)); put to the user.
 - 2040 reads 17.82 on the engine check (the loop's verdict 18.41 at 20 draws): adequate, with less margin than the baseline loop's 8.61.
 
+### The 7 Nov loops: metered 2024, pass 1 against the baseline loop: solar +10 GW and wind -4.5 GW in 2040; 2035 and 2040 at 51 and 44 GWh on the engine check, far above the standard; second pass running (message 720 (b))
+
+Settings: scratchpad loops/solve_loop.sh m24 (the baseline loop's settings with PROFILES_LOCAL, metered 2024 from ESK19679, local only,
+and its extreme days on this build: 0, 40, 42-44, 175-177, 201-203, 346); pass 1 in three pieces (01:09-04:38 UTC 6 Nov); replayed as a
+one-pass run (P1=1) and checked by the engine (K=20, 05:20-05:27 UTC). Eskom data (ESK19679); the analysis is ours.
+
+| baseline loop -> metered 2024, pass 1 | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| wind, GW | 9.75 -> 8.96 | 27.25 -> 26.45 | 43.78 -> 39.31 |
+| utility solar, GW | 6.68 -> 9.00 | 17.75 -> 19.41 | 24.28 -> 34.28 |
+| lithium, GW; GWh | 1.58 -> 2.13; 3.72 -> 3.72 | 9.29 -> 9.09; 39.21 -> 41.41 | 11.17 -> 14.05; 61.93 -> 82.40 |
+| open-cycle gas + diesel open cycle, GW | 0 | 0 | 4.28 + 1.31 -> 3.45 + 0 |
+| engine unserved, GWh (se), limit 20 | 2.00 -> 3.70 (0.70) | 19.48 -> 50.98 (4.29) | 8.61 -> 44.04 (3.34) |
+| engine cost, R bn | 243.17 -> 241.35 | 270.67 -> 270.99 | 320.11 -> 319.04 |
+| CO2, Mt | 131.8 -> 129.6 | 79.7 -> 78.4 | 47.8 -> 43.4 |
+
+- LP objective R1,540.9bn -> R1,532.5bn. The loop's verdict fails 2034 (25.8 GWh at 20 draws) and 2036-2039 (20.9 to 26.3), so a second
+  pass (running from 05:56 UTC). As on 4 Nov (RESULTS 'Metered 2024 as the reference against metered 2025'), a build on 2024's days
+  falls far short on the twelve weather years.
+
