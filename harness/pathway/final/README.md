@@ -21,6 +21,8 @@ here is an hourly Eskom-derived series.
 
 | pathway_loop_w3724_05h.json | the 7 Nov loop with new wind at BW6 bids' 37.24% (WIND_CORR=bw6), the baseline's days; adequate after pass 2 by the loop's verdict | 10a98e2 + the verdict cache (harness) | as the baseline loop, WIND_CORR=bw6 |
 | engine_loop_w3724_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, as above |
+| pathway_loop_m24_05h.json | the 7 Nov loop on the metered 2024 reference (REP_REF=metered with PROFILES_LOCAL, the local-only 2024 profile, never committed; its extreme days 0, 40, 42-44, 175-177, 201-203, 346); adequate after pass 2 by the loop's verdict | 10a98e2 + the verdict cache (harness) | as the baseline loop, PROFILES_LOCAL |
+| engine_loop_m24_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, as above |
 
 The common 100-draw check (message 726 (a): the same seeds for every case, SEED_BASE 71830529; 2034-2036, and 2040 where the 20-draw
 check reads over 15 GWh), on each loop's final build:
@@ -30,6 +32,7 @@ check reads over 15 GWh), on each loop's final build:
 | engine_loop_base_05h_k100.json | baseline (final at pass 1) | K=100, YEARS=2034,2035,2036, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 |
 | engine_loop_mix_05h_k100.json | mixed reference (final at pass 1) | K=100, YEARS=2034,2035,2036,2040, as above |
 | engine_loop_w3724_05h_k100.json | 37.24% wind (final after pass 2) | K=100, YEARS=2034,2035,2036, as above |
+| engine_loop_m24_05h_k100.json | metered 2024 (final after pass 2; fails the gate in 2035 and 2040) | K=100, YEARS=2034,2035,2036,2040, as above |
 
 Comparison runs (on worktrees that differ from the fin basis by one stated change each, on no branch):
 

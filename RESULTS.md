@@ -23134,7 +23134,7 @@ reported with its standard error and worst run; a pathway over it takes another 
 (three years) on today's loaded machine, a quarter more where 2040 is gated; about 25 machine-hours, about 6.5 hours of wall time four
 at a time on a free machine or about 13 hours two at a time beside the solves; each failing pathway adds a pass of 3-5 hours.
 
-### The 7 Nov table (messages 720 (c), 726, 733, 745, 746, 752 (b), (c), (e)): every case final except metered 2024; on equal adequacy, new wind at 37.24% costs about R54bn more (PV 2026-40) than at 42.0% and 40% about R23bn more, the mixed reference about R3.7bn less; the same-area cap cuts new solar 3.0 / 2.1 / 3.7 GW in 2030 / 2035 / 2040 and adds 0.5 / 0.6 / 1.5 GW of wind, for R21.7bn; the mixed reference and 40% are at the standard (margins within one standard error); metered 2024 unfinished
+### The 7 Nov table (messages 720 (c), 726, 733, 745, 746, 752 (b), (c), (e)): every case final, metered 2024 failing the 100-draw gate in 2035 and 2040; on equal adequacy, new wind at 37.24% costs about R54bn more (PV 2026-40) than at 42.0% and 40% about R23bn more, the mixed reference about R3.7bn less; the same-area cap cuts new solar 3.0 / 2.1 / 3.7 GW in 2030 / 2035 / 2040 and adds 0.5 / 0.6 / 1.5 GW of wind, for R21.7bn; the mixed reference and 40% are at the standard (margins within one standard error); metered 2024 unfinished
 
 Flag first (721 (b)): on the extreme-day list alone (the fin pass against the baseline loop, same build otherwise) 2040 wind moves +2.25 GW,
 more than 1 GW; every case here uses the recomputed list.
@@ -23154,7 +23154,8 @@ build; loops to their own verdict (VERDICT_TOPUP); engine checks at 20 draws (20
 | 37.24%, pass 1 (not final; for 746) | pass limit reached | 1592.1 (+51.3) | - | 20.9 / 18.0 / 21.3 | -1.3 (2036; se 1.3) |
 | New wind at 40% (comparison, 726 (e)) | adequate | 1562.9 (+22.0) | +22.9 | 15.4 / 19.6 / 16.9 | at the standard: +0.4 (2035; se 1.1) |
 | Same-area cap on freed connections (733) | adequate | 1562.6 (+21.7) | +21.6 | 16.7 / 14.8 / 15.3 | +3.3 (2034; se 1.0) |
-| Metered 2024, pass 1 (unfinished) | pass limit reached | 1532.5 (-8.3) | - | not run | - |
+| Metered 2024 (final, pass 2) | adequate by the loop's verdict; fails the gate | 1540.8 (-0.0) | - | 17.8 / 29.7 / 15.2 (41.7) | fails: -9.7 (2035; se 1.4); 2040 -21.7 (se 1.5) |
+| Metered 2024, pass 1 (not final) | pass limit reached | 1532.5 (-8.3) | - | not run | - |
 
 | Case | Year | New build, GW | Engine cost, R bn (vs baseline) | Unserved, GWh (20 draws; se) | CO2, Mt |
 |---|---|---|---|---|---|
@@ -23176,14 +23177,17 @@ build; loops to their own verdict (VERDICT_TOPUP); engine checks at 20 draws (20
 | Same-area cap on freed connections (733) | 2030 | wind 10.3, solar 3.7, rooftop 5.8, lithium 1.2 | 244.4 (+1.2) | 1.09 (0.28) | 135.9 |
 | Same-area cap on freed connections (733) | 2035 | wind 27.8, solar 15.7, rooftop 11.8, lithium 8.6 | 274.1 (+3.5) | 15.42 (1.81) | 82.4 |
 | Same-area cap on freed connections (733) | 2040 | wind 45.3, solar 20.6, rooftop 17.8, lithium 10.2, iron-air 0.1, pumped 1.5, OCGT 4.1, OC diesel 1.6 | 326.8 (+6.7) | 7.41 (0.92) | 50.0 |
-| Metered 2024, pass 1 (unfinished) | 2030 | wind 9.0, solar 9.0, rooftop 5.8, lithium 2.1 | 241.4 (-1.8) | 3.70 (0.70) | 129.6 |
-| Metered 2024, pass 1 (unfinished) | 2035 | wind 26.4, solar 19.4, rooftop 11.8, lithium 9.1 | 271.0 (+0.3) | 50.98 (4.29) | 78.4 |
-| Metered 2024, pass 1 (unfinished) | 2040 | wind 39.3, solar 34.3, rooftop 17.8, lithium 14.1, iron-air 0.3, pumped 1.5, OCGT 3.5 | 319.0 (-1.1) | 44.04 (3.34) | 43.4 |
+| Metered 2024 (final, pass 2) | 2030 | wind 9.4, solar 8.7, rooftop 5.8, lithium 2.2 | 241.6 (-1.6) | 3.22 (0.64) | 128.6 |
+| Metered 2024 (final, pass 2) | 2035 | wind 26.9, solar 21.9, rooftop 11.8, lithium 9.4 | 271.7 (+1.1) | 29.37 (3.17) | 73.2 |
+| Metered 2024 (final, pass 2) | 2040 | wind 38.7, solar 34.8, rooftop 17.8, lithium 14.5, iron-air 0.1, pumped 1.5, OCGT 3.5 | 319.7 (-0.4) | 40.94 (3.26) | 43.6 |
+| Metered 2024, pass 1 (not final) | 2030 | wind 9.0, solar 9.0, rooftop 5.8, lithium 2.1 | 241.4 (-1.8) | 3.70 (0.70) | 129.6 |
+| Metered 2024, pass 1 (not final) | 2035 | wind 26.4, solar 19.4, rooftop 11.8, lithium 9.1 | 271.0 (+0.3) | 50.98 (4.29) | 78.4 |
+| Metered 2024, pass 1 (not final) | 2040 | wind 39.3, solar 34.3, rooftop 17.8, lithium 14.1, iron-air 0.3, pumped 1.5, OCGT 3.5 | 319.0 (-1.1) | 44.04 (3.34) | 43.4 |
 
 - Margins to the standard (20 GWh a year, the 100-draw mean, smallest over the gated years, with its standard error). A margin within
   one standard error is stated as at the standard, not as a pass by that margin (message 752 (e)): the mixed reference (+0.9, se 1.06,
   2035) and 40% (+0.4, se 1.13, 2035) are at the standard. Baseline +2.2 (2035, se 1.05); 37.24% +10.8 (2036, se 0.71; its pass 2
-  overshot); same-area cap +3.3 (2034, se 0.99). Metered 2024: no gate yet.
+  overshot); same-area cap +3.3 (2034, se 0.99). Metered 2024 fails: 2035 29.7 GWh (se 1.41), 2040 41.7 (se 1.50).
 - On equal adequacy (the column; messages 746 and 752 (c)): each case's LP objective moved to the baseline's 2034-2036 mean (15.7 GWh) at
   37.24%'s slope between its two passes, R0.561bn per GWh (R7.50bn over 13.37 GWh). Mixed reference: 2034-2036 mean 17.4 GWh, so its
   -R4.7bn is about -R3.7bn on equal adequacy (-R3.8bn from the rounded figures; -R4.653bn + 1.661 GWh x R0.561bn). Same-area cap: 15.6 GWh, +R21.6bn. A slope from one case applied to the others: an
@@ -23201,9 +23205,11 @@ build; loops to their own verdict (VERDICT_TOPUP); engine checks at 20 draws (20
   little iron-air (corrected 6 Nov 2026, message 752 (b): a summary gave 3.0 to 3.7 GW, leaving out 2035); CO2 +4.2 / +2.7 / +2.2 Mt in
   2030 / 2035 / 2040. The pool used matches the cap (657 MW in 2035, 1,288 in 2040). This differs from the regional audit's first cut
   (message 729: the cap matters to the pathway's cost, not to the LP's choice between wind and solar).
-- Metered 2024 (745 (a)): unfinished. Pass 1 fails its verdict and reads 51.0 / 44.0 GWh in 2035 / 2040 at 20 draws; pass 2 has solved
-  for about 7 hours since 07:03 UTC without finishing, at the lowest priority since 12:31 UTC (message 745 (b)); it will not finish by
-  7 Nov 09:00 SAST. It continues unless it blocks other work.
+- Metered 2024 (745 (a)): final at pass 2 (16:25 UTC on 6 Nov; the loop's verdict adequate), LP objective R1540.8bn (-0.0 against the
+  baseline). The common 100-draw gate fails it: 2034 17.8 (se 1.2), 2035 29.7 (se 1.4), 2036 15.2 (se 1.1), 2040 41.7 (se 1.5) GWh,
+  over the standard by 9.7 GWh in 2035 and 21.7 in 2040, about seven and fourteen standard errors. The loop's own verdict and the gate
+  disagree, as for 37.24%'s pass 1 (the loop's verdict draws, 704 (d)). No equal-adequacy figure: it lies outside the range the slope
+  was measured on. Its pathway reads the local-only metered 2024 profile (never committed); the run files hold no hourly series.
 
 ### The 40% wind case: capex and cost per kWh (message 726 (e))
 
