@@ -45,6 +45,9 @@ Times UTC. In progress; updated as it runs.
 - Step 2030: adequate at pass 2 (pass 1: 2034 at 20.20 GWh against 20; pass 2: 3.25). Solves: pass 1 about 48 min over two pieces (cut
   with its basis kept, 074bb0e202, resumed for 3 min), pass 2 64.1 min cold. Wind 2,500 MW, solar 3,277, lithium 2,013 MW / 384 MWh,
   grid-forming 1,142; coal 29,256 MW standing, 3,177 retired early.
+- Step 2031: adequate at pass 2 (pass 1: 2034 at 20.22 GWh against 20; pass 2: 3.28). Pass 1 73.1 min cold; pass 2 6.0 min warm from
+  pass 1's basis. Wind 3,500 MW, solar 3,506, lithium 2,582 MW / 11,404 MWh, grid-forming 497; coal 27,699 MW standing, 3,177 retired
+  early.
 - From piece 6 (02:19 on 6 Nov, PID 12605): WARM=1, so a step's later passes start from the previous pass's basis (recorded in each piece
   line). It changes no LP and no LP key; the optimum's cost is the same, and the builds differ only where the LP has more than one optimal
   build. Chosen for time: Fossil-free's fix test solved a warm pass in 14 min against 99 min cold (above).
@@ -346,7 +349,7 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   2026): left stopped; no relaunch on this basis.
 
 <!-- test15_summary start -->
-#### tsr_central (5 of 15 steps)
+#### tsr_central (6 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -359,7 +362,7 @@ tsr_central: new build by year, MW (lithium also MWh)
 | 2028 | 2,500 | 1,129 | 0 | 660 | 15 |
 | 2029 | 2,500 | 3,063 | 438 | 0 | 330 |
 | 2030 | 2,500 | 3,277 | 2,013 | 384 | 1,142 |
-| 2031 |  |  |  |  |  |
+| 2031 | 3,500 | 3,506 | 2,582 | 11,404 | 497 |
 | 2032 |  |  |  |  |  |
 | 2033 |  |  |  |  |  |
 | 2034 |  |  |  |  |  |
@@ -369,7 +372,7 @@ tsr_central: new build by year, MW (lithium also MWh)
 | 2038 |  |  |  |  |  |
 | 2039 |  |  |  |  |  |
 | 2040 |  |  |  |  |  |
-| Total | 9,746 | 9,745 | 3,212 | 4,103 | 1,487 |
+| Total | 13,246 | 13,251 | 5,794 | 15,507 | 1,984 |
 
 tsr_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -380,6 +383,7 @@ tsr_central: coal standing (MW), coal retired ahead of its dates (MW) and kept u
 | 2028 | 39,692 | 0 |  |
 | 2029 | 33,850 | 3,177 |  |
 | 2030 | 29,256 | 3,177 |  |
+| 2031 | 27,699 | 3,177 | 3,177 |
 
 tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -390,7 +394,8 @@ tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2028 | 2032 | 1 | adequate | parallel, 2 threads, presolve off | 52.4 | 66.2 | 2 | 2.5 | pass 1: none | 569.646 |
 | 2029 | 2033 | 1 | adequate | parallel, 2 threads, presolve off | 28.4, 32.8 | 49.3 | 2 | 2.8 | pass 1: none | 580.417 |
 | 2030 | 2034 | 2 | adequate | parallel, 2 threads, presolve off | 45.3, 3.0, 64.0 | 89.2 | 3 | 3.1 | pass 1: 2034: 20.2 / 20<br>pass 2: none | 604.101 |
-| 2031 | | | not finished |  |  | | 1 | | | |
+| 2031 | 2035 | 2 | adequate | parallel, 2 threads, presolve off | 73.1, 6.0 | 107.7 | 2 | 5.0 | pass 1: 2034: 20.2 / 20<br>pass 2: none | 631.188 |
+| 2032 | | | not finished |  |  | | 1 | | | |
 
 tsr_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -401,6 +406,7 @@ tsr_central: the adequacy test on each step's own year y at its final pass (mean
 | 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2029 | 0.07 / 20 | 0.07 / 20 | 2019 (0.6) |
 | 2030 | 1.68 / 20 | 1.68 / 20 | 2022 (21.0) |
+| 2031 | 15.58 / 20 | 15.50 / 20 | 2022 (268.1) |
 
 #### ts2_central (15 of 15 steps)
 

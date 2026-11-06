@@ -1,1 +1,1 @@
-"[]"
+"[{\"pass\":1,\"margin\":0,\"added\":[{\"year\":2015,\"seed\":37788536,\"start\":149,\"n\":14,\"forModelYear\":2034,\"fromYear\":2034,\"rebound\":false,\"shedGWh\":323.74},{\"year\":2016,\"seed\":37796455,\"start\":122,\"n\":14,\"forModelYear\":2034,\"fromYear\":2034,\"rebound\":false,\"shedGWh\":229.42},{\"year\":2020,\"seed\":36571383,\"start\":101,\"n\":14,\"forModelYear\":2034,\"fromYear\":2034,\"rebound\":false,\"shedGWh\":153.84}],\"nAdded\":3,\"fails\":[[2034,20.22,20]]}]"
