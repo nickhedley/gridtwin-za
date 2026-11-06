@@ -1,0 +1,50 @@
+### 743 (b): 2030 and 2032 with only the TDP's lines due by then, with and without added lithium (build 2026-11-05f, the every-change pass; weather 2025; fixed build, hourly; the rebuilt table, N-1 once; lithium at the four exits in equal shares at 4 hours, the build's own lithium costs)
+
+2030
+
+| case | TDP MW in service | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | lithium, gross R bn a year | saves in fuel and carbon | saves in unserved energy at the value of lost load | net cost R bn a year | annual cost R bn | corridors at limit (hours; shadow value) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| no limits | 0 | 0.0 | 115.3 | 0.14 | 2.0 | 81.42 | 0.00 | - | - | - | 81.59 |  |
+| today's corridors (N-1 once) | 0 | 5.8 | 121.3 | 0.14 | 2.0 | 85.61 | 0.00 | - | - | - | 85.79 | North West to Northern Cape 7,593 h, R2.7m per MW-year; Free State to Northern Cape 6,623 h, R2.7m per MW-year; Hydra Central to Northern Cape 4,361 h, R2.0m per MW-year |
+| today's corridors, lithium 2 GW at 4 h added | 0 | 4.7 | 120.3 | 0.04 | 0.0 | 84.36 | 3.25 | 1.25 | 0.18 | 1.82 | 87.61 | North West to Northern Cape 7,944 h, R2.7m per MW-year; Free State to Northern Cape 7,069 h, R2.7m per MW-year; Hydra Central to Northern Cape 4,858 h, R2.1m per MW-year |
+| today's corridors, lithium 10 GW at 4 h added | 0 | 2.3 | 118.3 | 0.00 | 0.0 | 82.64 | 16.25 | 2.97 | 0.18 | 13.09 | 98.89 | North West to Northern Cape 8,413 h, R2.2m per MW-year; Free State to Northern Cape 7,963 h, R2.2m per MW-year; Hydra Central to Northern Cape 6,498 h, R1.9m per MW-year |
+| the TDP's lines due by 2030 (N-1 once) | 21,000 | 0.7 | 116.0 | 0.14 | 2.0 | 81.95 | 0.00 | - | - | - | 82.13 | North West to Northern Cape 7,139 h, R0.4m per MW-year; Free State to Northern Cape 5,233 h, R0.4m per MW-year; Free State to Kwazulu Natal 4,940 h, R0.0m per MW-year |
+| the TDP's lines due by 2030, lithium 2 GW at 4 h added | 21,000 | 0.4 | 115.8 | 0.04 | 0.0 | 81.21 | 3.25 | 0.74 | 0.18 | 2.34 | 84.46 | North West to Northern Cape 7,294 h, R0.4m per MW-year; Free State to Northern Cape 5,328 h, R0.4m per MW-year; Free State to Kwazulu Natal 4,989 h, R0.0m per MW-year |
+| the TDP's lines due by 2030, lithium 10 GW at 4 h added | 21,000 | 0.1 | 115.5 | 0.00 | 0.0 | 80.71 | 16.25 | 1.24 | 0.18 | 14.82 | 96.95 | North West to Northern Cape 7,460 h, R0.2m per MW-year; Free State to Northern Cape 5,570 h, R0.2m per MW-year; Free State to Kwazulu Natal 5,042 h, R0.0m per MW-year |
+
+2032
+
+| case | TDP MW in service | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | lithium, gross R bn a year | saves in fuel and carbon | saves in unserved energy at the value of lost load | net cost R bn a year | annual cost R bn | corridors at limit (hours; shadow value) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| no limits | 0 | 0.3 | 93.8 | 0.22 | 9.1 | 66.93 | 0.00 | - | - | - | 67.72 |  |
+| today's corridors (N-1 once) | 0 | 23.3 | 117.0 | 0.28 | 9.1 | 83.48 | 0.00 | - | - | - | 84.27 | North West to Northern Cape 8,536 h, R4.9m per MW-year; Free State to Northern Cape 8,087 h, R4.9m per MW-year; Eastern Cape to Kwazulu Natal 5,016 h, R1.9m per MW-year |
+| today's corridors, lithium 2 GW at 4 h added | 0 | 21.9 | 115.8 | 0.20 | 1.1 | 82.16 | 3.06 | 1.32 | 0.70 | 1.04 | 85.31 | North West to Northern Cape 8,623 h, R4.9m per MW-year; Free State to Northern Cape 8,340 h, R4.9m per MW-year; Hydra Central to Northern Cape 5,500 h, R2.6m per MW-year |
+| today's corridors, lithium 10 GW at 4 h added | 0 | 18.6 | 112.8 | 0.11 | 0.0 | 79.54 | 15.29 | 3.94 | 0.79 | 10.55 | 94.83 | North West to Northern Cape 8,739 h, R5.2m per MW-year; Free State to Northern Cape 8,713 h, R5.2m per MW-year; Hydra Central to Northern Cape 7,222 h, R3.2m per MW-year |
+| the TDP's lines due by 2032 (N-1 once) | 28,800 | 8.7 | 102.4 | 0.22 | 9.1 | 72.92 | 0.00 | - | - | - | 73.71 | North West to Northern Cape 8,346 h, R2.2m per MW-year; Free State to Northern Cape 7,305 h, R2.2m per MW-year; Eastern Cape to Kwazulu Natal 6,751 h, R1.2m per MW-year |
+| the TDP's lines due by 2032, lithium 2 GW at 4 h added | 28,800 | 7.5 | 101.4 | 0.14 | 1.1 | 71.76 | 3.06 | 1.17 | 0.70 | 1.19 | 74.91 | North West to Northern Cape 8,483 h, R2.1m per MW-year; Free State to Northern Cape 7,553 h, R2.1m per MW-year; Eastern Cape to Kwazulu Natal 6,863 h, R1.1m per MW-year |
+| the TDP's lines due by 2032, lithium 10 GW at 4 h added | 28,800 | 4.9 | 99.0 | 0.07 | 0.0 | 69.65 | 15.29 | 3.27 | 0.79 | 11.22 | 84.94 | North West to Northern Cape 8,626 h, R1.9m per MW-year; Free State to Northern Cape 8,111 h, R1.9m per MW-year; Eastern Cape to Kwazulu Natal 7,193 h, R0.7m per MW-year |
+
+### 743 (c): the TDP's inter-area lines delivered at 800 and 293 km a year, ordered by the TDP's dates and by the priority ranking, against the plan by its dates (the same fixed builds; the sets from delivery.py, tdp_del_*.json)
+
+| year | set | inter-area lines in service (MW) | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | annual cost R bn | corridors at limit (hours; shadow value) |
+|---|---|---|---|---|---|---|---|---|---|
+| 2030 | the plan by its dates | 14 (21,000) | 0.7 | 116.0 | 0.14 | 2.0 | 81.95 | 82.13 | North West to Northern Cape 7,139 h, R0.4m per MW-year; Free State to Northern Cape 5,233 h, R0.4m per MW-year; Free State to Kwazulu Natal 4,940 h, R0.0m per MW-year |
+| 2030 | 800 km a year, by dates | 14 (21,000) | 0.7 | 116.0 | 0.14 | 2.0 | 81.95 | 82.13 | North West to Northern Cape 7,139 h, R0.4m per MW-year; Free State to Northern Cape 5,233 h, R0.4m per MW-year; Free State to Kwazulu Natal 4,940 h, R0.0m per MW-year |
+| 2030 | 800 km a year, by priority | 13 (20,100) | 0.7 | 116.0 | 0.14 | 2.0 | 81.95 | 82.13 | North West to Northern Cape 7,139 h, R0.4m per MW-year; Free State to Northern Cape 5,233 h, R0.4m per MW-year; Free State to Kwazulu Natal 4,938 h, R0.0m per MW-year |
+| 2030 | 293 km a year, by dates | 9 (12,300) | 4.3 | 119.8 | 0.14 | 2.0 | 84.60 | 84.77 | North West to Northern Cape 7,421 h, R1.8m per MW-year; Free State to Northern Cape 6,274 h, R1.8m per MW-year; Free State to Kwazulu Natal 4,949 h, R0.0m per MW-year |
+| 2030 | 293 km a year, by priority | 9 (12,300) | 3.0 | 118.5 | 0.14 | 2.0 | 83.64 | 83.82 | North West to Northern Cape 7,247 h, R1.1m per MW-year; Free State to Northern Cape 5,256 h, R1.1m per MW-year; Free State to Kwazulu Natal 4,957 h, R0.0m per MW-year |
+| 2032 | the plan by its dates | 18 (28,800) | 8.7 | 102.4 | 0.22 | 9.1 | 72.92 | 73.71 | North West to Northern Cape 8,346 h, R2.2m per MW-year; Free State to Northern Cape 7,305 h, R2.2m per MW-year; Eastern Cape to Kwazulu Natal 6,751 h, R1.2m per MW-year |
+| 2032 | 800 km a year, by dates | 18 (28,800) | 8.7 | 102.4 | 0.22 | 9.1 | 72.92 | 73.71 | North West to Northern Cape 8,346 h, R2.2m per MW-year; Free State to Northern Cape 7,305 h, R2.2m per MW-year; Eastern Cape to Kwazulu Natal 6,751 h, R1.2m per MW-year |
+| 2032 | 800 km a year, by priority | 18 (28,800) | 8.7 | 102.4 | 0.22 | 9.1 | 72.92 | 73.71 | North West to Northern Cape 8,346 h, R2.2m per MW-year; Free State to Northern Cape 7,305 h, R2.2m per MW-year; Eastern Cape to Kwazulu Natal 6,751 h, R1.2m per MW-year |
+| 2032 | 293 km a year, by dates | 13 (15,900) | 20.1 | 113.9 | 0.23 | 9.1 | 81.02 | 81.81 | North West to Northern Cape 8,411 h, R3.7m per MW-year; Free State to Northern Cape 7,911 h, R3.7m per MW-year; Free State to Kwazulu Natal 6,193 h, R0.0m per MW-year |
+| 2032 | 293 km a year, by priority | 12 (17,100) | 9.4 | 103.0 | 0.22 | 9.1 | 73.38 | 74.17 | North West to Northern Cape 8,355 h, R2.6m per MW-year; Free State to Northern Cape 7,241 h, R2.6m per MW-year; Free State to Kwazulu Natal 6,661 h, R0.0m per MW-year |
+| 2035 | the plan by its dates | 20 (30,600) | 30.8 | 90.0 | 0.19 | 0.0 | 64.11 | 64.11 | North West to Northern Cape 8,735 h, R3.8m per MW-year; Free State to Northern Cape 8,502 h, R3.8m per MW-year; Eastern Cape to Kwazulu Natal 7,960 h, R3.0m per MW-year |
+| 2035 | 800 km a year, by dates | 20 (30,600) | 30.8 | 90.0 | 0.19 | 0.0 | 64.11 | 64.11 | North West to Northern Cape 8,735 h, R3.8m per MW-year; Free State to Northern Cape 8,502 h, R3.8m per MW-year; Eastern Cape to Kwazulu Natal 7,960 h, R3.0m per MW-year |
+| 2035 | 800 km a year, by priority | pending | | | | | | | |
+| 2035 | 293 km a year, by dates | pending | | | | | | | |
+| 2035 | 293 km a year, by priority | pending | | | | | | | |
+| 2040 | the plan by its dates | 20 (30,600) | 73.5 | 88.2 | 9.32 | 22.1 | 83.09 | 85.01 | North West to Northern Cape 8,760 h, R13.7m per MW-year; Free State to Northern Cape 8,752 h, R13.7m per MW-year; Eastern Cape to Kwazulu Natal 8,438 h, R9.8m per MW-year |
+| 2040 | 800 km a year, by dates | pending | | | | | | | |
+| 2040 | 800 km a year, by priority | pending | | | | | | | |
+| 2040 | 293 km a year, by dates | pending | | | | | | | |
+| 2040 | 293 km a year, by priority | pending | | | | | | | |
