@@ -23442,3 +23442,35 @@ verdict and the relaunch replayed from the cache: adequate. Engine check at 20 d
   wind are unchanged to within 0.03 GW. The common 100-draw gate (SEED_BASE 71830529): 13.4 (se 0.8) / 17.6 (1.0) / 15.2
   (0.9) GWh in 2034 / 2035 / 2036 against the baseline's 13.9 / 17.8 / 15.5; margin +2.4 (2035, se 1.0), adequacy as the baseline's.
 - 726 (f): the pathways already bar wind from the reuse pool; the page default and the presets change with the next page pull request.
+
+### The 7 Nov morning table (message 759 (c)): baseline, mixed reference, finding 3's two passes and the 8 Nov key candidate with the battery proposals
+
+Every row on the fin basis (10a98e2) with c7's central settings, 25 clustered days, linking, CONG_OFF=1, WX_WINDCORR=1; the baseline
+and mixed rows are the 7 Nov loops' final builds, the others one pass each (RESULTS 'Finding 3's passes' and 'The 8 Nov key candidate
+with the battery proposals 1-3'). New build cumulative from 2026, GW; curtailment from the engine check, TWh; unserved at 20 draws and,
+where run, 100 draws on the common seeds (SEED_BASE 71830529). Scratchpad f3/table759.py. 6-7 Nov 2026, to 23:31 UTC.
+
+| Case | Verdict (pass 1) | LP objective, R bn (vs baseline) | Year | Wind, GW | Solar, GW | Lithium, GW | Curtailment, TWh | Unserved, GWh: 20 draws (se) | 100 draws (se) |
+|---|---|---|---|---|---|---|---|---|---|
+| Baseline (metered 2025, central days) | adequate | 1540.9 (+0.0) | 2030 | 9.75 | 6.68 | 1.58 | 1.64 | 2.00 (0.63) | 1.32 (0.18) |
+|  |  |  | 2035 | 27.25 | 17.75 | 9.29 | 10.05 | 19.48 (2.20) | 17.81 (1.05) |
+|  |  |  | 2040 | 43.78 | 24.28 | 11.17 | 29.41 | 8.61 (1.33) | 7.12 (0.51) |
+| Mixed reference (wind metered, solar 2025) | adequate | 1536.2 (-4.7) | 2030 | 9.75 | 7.42 | 1.51 | 2.06 | 1.67 (0.45) | - |
+|  |  |  | 2035 | 27.25 | 18.74 | 8.82 | 11.34 | 20.90 (2.22) | 19.09 (1.06) |
+|  |  |  | 2040 | 41.10 | 29.83 | 10.78 | 33.57 | 17.82 (1.97) | 15.09 (0.76) |
+| f3d: solar factors on the central days | adequate | 1538.2 (-2.6) | 2030 | 9.75 | 6.68 | 1.61 | 1.61 | 1.80 (0.47) | 1.50 (0.22) |
+|  |  |  | 2035 | 27.25 | 18.27 | 9.84 | 10.29 | 19.64 (2.19) | 17.95 (1.05) |
+|  |  |  | 2040 | 43.70 | 25.56 | 12.99 | 30.34 | 10.47 (1.53) | 8.67 (0.59) |
+| f3h: month-by-hour factors, days re-picked | pass limit reached | 1546.4 (+5.5) | 2030 | 9.75 | 7.42 | 1.99 | 2.02 | 2.10 (0.53) | 1.75 (0.23) |
+|  |  |  | 2035 | 27.25 | 18.89 | 9.13 | 11.05 | 23.86 (2.56) | 22.58 (1.16) |
+|  |  |  | 2040 | 41.48 | 31.41 | 12.22 | 34.55 | 12.78 (1.67) | 13.44 (0.76) |
+| (a) k8: baseline + battery proposals 1-3 | adequate | 1541.5 (+0.7) | 2030 | 9.75 | 6.68 | 2.10 | 1.67 | 2.07 (0.60) | - |
+|  |  |  | 2035 | 27.25 | 17.78 | 9.54 | 10.03 | 19.28 (2.19) | 17.58 (1.04) |
+|  |  |  | 2040 | 43.75 | 24.31 | 11.27 | 29.36 | 8.43 (1.31) | - |
+
+100-draw gate, GWh (se), 2034 / 2035 / 2036; 2040:
+  Baseline (metered 2025, central days): 13.9 (0.9) / 17.8 (1.0) / 15.5 (0.9) / 7.1 (0.5)
+  Mixed reference (wind metered, solar 2025): 15.4 (0.9) / 19.1 (1.1) / 17.6 (1.0) / 15.1 (0.8)
+  f3d: solar factors on the central days: 14.4 (0.9) / 17.9 (1.0) / 17.5 (1.0) / 8.7 (0.6)
+  f3h: month-by-hour factors, days re-picked: 21.5 (1.2) / 22.6 (1.2) / 21.7 (1.2) / 13.4 (0.8)
+  (a) k8: baseline + battery proposals 1-3: 13.4 (0.8) / 17.6 (1.0) / 15.2 (0.9) / -
