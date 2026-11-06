@@ -1364,7 +1364,8 @@ Cases, each from the control: area caps lifted (every area's new wind and solar 
 | 2035, 2015 | wind forced to the run's MW | pending | | | | | | | |
 | 2040, 2025 | control (per-area series, approved caps) | 29.1 (40.7) | 31.9 (24.8) | 13.2, 87 (11.0, 61) | 1.08 (4.34) | 49.1 | 10.5 | 181.7 | 16.1 |
     wind by area GW: Hydra Central 11.2, Northern Cape 10.3, Eastern Cape 6.2, Kwazulu Natal 0.6, North West 0.3, Free State 0.2, Mpumalanga 0.2, Gauteng 0.1; solar: Northern Cape 31.9
-| 2040, 2025 | area caps lifted | pending | | | | | | | |
+| 2040, 2025 | area caps lifted | 39.8 (40.7) | 19.2 (24.8) | 10.3, 45 (11.0, 61) | 0.00 (4.34) | 47.8 | 13.7 | 171.6 | 26.2 |
+    wind by area GW: Northern Cape 29.8, Kwazulu Natal 7.2, Eastern Cape 1.7, North West 1.1; solar: Northern Cape 19.2
 | 2040, 2025 | one bus on the national series, no caps | pending | | | | | | | |
 | 2040, 2025 | wind forced to the run's MW | pending | | | | | | | |
 | 2040, 2015 | control (per-area series, approved caps) | 31.5 (40.7) | 33.5 (24.8) | 11.1, 68 (11.0, 61) | 1.75 (4.34) | 52.1 | 14.4 | 193.1 | 12.2 |
@@ -1373,7 +1374,7 @@ Cases, each from the control: area caps lifted (every area's new wind and solar 
 | 2040, 2015 | one bus on the national series, no caps | pending | | | | | | | |
 | 2040, 2015 | wind forced to the run's MW | pending | | | | | | | |
 
-Reading, 2035 on weather 2025 (the 2040 cases and the weather-2015 set are filled in as they land). The control's gap to the run is R11.6bn a year with 5.0 GW less wind. (1) Area caps: lifted, the LP takes 2.5 GW more wind (24.7 GW, 20.5 of it in the Northern Cape, whose approved 10.3 GW was the binding cap) and 4 GW less solar, and is R1.7bn a year cheaper, so the caps cost the LP R1.7bn and hold 2.5 GW of wind out of its mix; they are not a reason for the gap, they narrow it. (2) Regional resource: on one bus with the engine's national series the LP takes 25.1 GW of wind and 12.6 of solar and costs R155.9bn, R5.3bn a year more than with its own regional siting, so the regional series (the three best areas at 0.43 to 0.46 against the national 0.415) are worth R5.3bn a year to the LP and are 45% of the gap; the gap left on one bus is R6.3bn. (3) Wind forced to the run's 27.2 GW: the LP drops solar to 9.6 GW and lithium to 5.9 GW / 20 GWh, curtails 9.3 TWh (the run 9.8) and costs R152.4bn, R1.8bn a year above its own choice, R360,000 per MW-year on the 5.0 GW it did not want, which is the LP's margin between the run's wind and its own solar and lithium at those costs; the gap left to the run is then R9.8bn, the cost of the run's other choices (4 GW more solar, 3 GW more lithium) at the LP's valuation. So in 2035 the regional resource explains about R5bn of the R11.6bn, the caps work the other way by R1.7bn, the run's extra wind costs the LP R1.8bn to accept, and R6 to 10bn is left for the adequacy standard, the day weighting and the coupling across years, which this LP cannot see. 2040 and weather 2015: pending.
+Reading, 2035 on weather 2025 (the 2040 cases and the weather-2015 set are filled in as they land). The control's gap to the run is R11.6bn a year with 5.0 GW less wind. (1) Area caps: lifted, the LP takes 2.5 GW more wind (24.7 GW, 20.5 of it in the Northern Cape, whose approved 10.3 GW was the binding cap) and 4 GW less solar, and is R1.7bn a year cheaper, so the caps cost the LP R1.7bn and hold 2.5 GW of wind out of its mix; they are not a reason for the gap, they narrow it. (2) Regional resource: on one bus with the engine's national series the LP takes 25.1 GW of wind and 12.6 of solar and costs R155.9bn, R5.3bn a year more than with its own regional siting, so the regional series (the three best areas at 0.43 to 0.46 against the national 0.415) are worth R5.3bn a year to the LP and are 45% of the gap; the gap left on one bus is R6.3bn. (3) Wind forced to the run's 27.2 GW: the LP drops solar to 9.6 GW and lithium to 5.9 GW / 20 GWh, curtails 9.3 TWh (the run 9.8) and costs R152.4bn, R1.8bn a year above its own choice, R360,000 per MW-year on the 5.0 GW it did not want, which is the LP's margin between the run's wind and its own solar and lithium at those costs; the gap left to the run is then R9.8bn, the cost of the run's other choices (4 GW more solar, 3 GW more lithium) at the LP's valuation. So in 2035 the regional resource explains about R5bn of the R11.6bn, the caps work the other way by R1.7bn, the run's extra wind costs the LP R1.8bn to accept, and R6 to 10bn is left for the adequacy standard, the day weighting and the coupling across years, which this LP cannot see. 2040 on weather 2025, first result: with the area caps lifted the LP builds 39.8 GW of wind, the run's 40.7 within a gigawatt (Northern Cape and Hydra Central beyond their approved records), 19.2 GW of solar against the control's 31.9 and 10.3 GW / 45 GWh of lithium against 13.2 / 87, and is R10.1bn a year cheaper than its own capped control (R171.6bn; the gap to the run R26.2bn). So of 2040's 29.1 against 40.7 GW, 10.7 GW is the area caps: the LP wants the run's wind, in the best areas, and the approved records stop it. The one-bus and wind-forced cases for 2040, and the weather-2015 set, are filled in as they land.
 
 ### 727 (b): new wind's supply curve by area (build 2026-11-05f)
 
@@ -1607,7 +1608,26 @@ Gamma to Grassridge. Two 765 kV lines of about 360 km each, from Gamma (Northern
 
 ### (d) The control and the 727 (a) split on the run's accounting
 
-Pending: queue15 (the run's-accounting cases) runs after queue14.
+First rows (the rest fill in as queue15 lands): on the run's accounting applied to both sides, the 2035 control takes the pool on 14.3 GW of its solar and the Cape allowance on its wind, costs R144.5bn against the run's mix at R156.4bn priced the same way, and the gap is R11.9bn, against R11.6bn on the test's accounting. The repricing moves both sides by the same credits and the LP's mix by 0.6 GW of solar, so the gap does not halve: the review's R5.8bn is the run credited and the control not, which is not a like-for-like comparison. Corridors at 0.071 do not enter the no-limits control. The full table (docs/regional-audit/tables738d.md):
+
+| year | case | accounting | wind GW (run) | solar GW (run) | of it credited | lithium GW, GWh | open cycle GW | cost R bn | the run's mix R bn | gap R bn |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 2035 | control | the test's | 22.2 (27.2) | 13.7 (17.7) | 0.0 | 7.0, 25 | 0.00 | 150.6 | 162.2 | 11.6 |
+| 2035 | control | the run's | 22.1 (27.2) | 14.3 (17.7) | 14.3 | 7.0, 24 | 0.00 | 144.5 | 156.4 | 11.9 |
+| 2035 | area caps lifted | the test's | 24.7 (27.2) | 9.7 (17.7) | 0.0 | 5.0, 16 | 0.00 | 148.9 | 162.2 | 13.3 |
+| 2035 | area caps lifted | the run's | pending | | | | | | | |
+| 2035 | one bus on the national series | the test's | 25.1 (27.2) | 12.6 (17.7) | 0.0 | 6.7, 26 | 0.00 | 155.9 | 162.2 | 6.3 |
+| 2035 | one bus on the national series | the run's | pending | | | | | | | |
+| 2035 | wind forced to the run's MW | the test's | 27.2 (27.2) | 9.6 (17.7) | 0.0 | 5.9, 20 | 0.00 | 152.4 | 162.2 | 9.8 |
+| 2035 | wind forced to the run's MW | the run's | pending | | | | | | | |
+| 2040 | control | the test's | 29.1 (40.7) | 31.9 (24.8) | 0.0 | 13.2, 87 | 1.08 | 181.7 | 197.8 | 16.1 |
+| 2040 | control | the run's | pending | | | | | | | |
+| 2040 | area caps lifted | the test's | 39.8 (40.7) | 19.2 (24.8) | 0.0 | 10.3, 45 | 0.00 | 171.6 | 197.8 | 26.2 |
+| 2040 | area caps lifted | the run's | pending | | | | | | | |
+| 2040 | one bus on the national series | the test's | pending | | | | | | | |
+| 2040 | one bus on the national series | the run's | pending | | | | | | | |
+| 2040 | wind forced to the run's MW | the test's | pending | | | | | | | |
+| 2040 | wind forced to the run's MW | the run's | pending | | | | | | | |
 
 ### (e) The tie-out: diesel and gas, the hourly correlation, the counts-file path, the floor
 
