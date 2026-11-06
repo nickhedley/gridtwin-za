@@ -30,6 +30,10 @@ MIX = int(os.environ.get('MIX', '0'))                  # (f) new wind, solar, li
 MIX_CAP = os.environ.get('MIX_CAP', '')                # (f) national caps 'wind:MW,pv:MW,batt:MW' (cumulative build-rate limits), optional
 MIX_NAT = int(os.environ.get('MIX_NAT', '0'))          # (727 a) 1: every area's new wind and solar on the engine's national series (with no limits, one bus)
 MIX_NOCAP = int(os.environ.get('MIX_NOCAP', '0'))      # (727 a) 1: the per-area approved-capacity caps on new wind and solar lifted
+BATT_ADD = os.environ.get('BATT_ADD', '')               # (731) lithium added to the fixed build, 'area:MW,area:MW', at BATT_ADD_H hours, costed at the build's own lithium costs
+BATT_ADD_H = float(os.environ.get('BATT_ADD_H', '4'))
+TX_BUDGET = float(os.environ.get('TX_BUDGET', '0'))     # (731) with TX_EXT: a cap on the corridor additions' annual cost, R a year (the same value as a lithium step)
+PV_CREDIT_MW = float(os.environ.get('PV_CREDIT_MW', '0'))   # (732) the freed-coal connection credit in the free mix: new solar up to this MW nationally pays no integration charge (the pathway rule: solar may, wind may not)
 MIX_MIN = os.environ.get('MIX_MIN', '')                 # (6 Nov 2026) national floors on the free mix, e.g. batt:56017,battE:480000: the build's own storage held, its siting free
 MIX_INTEG = int(os.environ.get('MIX_INTEG', '1'))      # (f) 1 keeps the integration charge on new wind and solar; 0 removes it (corridors priced explicitly)
 SOLVER = os.environ.get('SOLVER', 'simplex')             # 'simplex' (HiGHS dual simplex, the default for every case) or 'ipm' (interior point, crossover off: a timing test only)
@@ -159,8 +163,8 @@ batt_site = {'North West': 692 / 1744, 'Free State': 616 / 1744, 'Northern Cape'
 
 # ---------------------------------------------------------------- (f) the build's own costs, R per MW-year (the dump's costs block, R per kW-year x 1000)
 CC = {}
-if MIX:
-    if REEA_MW is None: reea_shares()
+if MIX or BATT_ADD:
+    if MIX and REEA_MW is None: reea_shares()
     c = D['costs']; T = c['tech']; integ = (c['txRPerKWyr'] or 0) * (c['gridIntVreShare'] if c['gridIntVreShare'] is not None else 1)
     pvkey = 'pvtrk' if (solarTrk is not None and 'pvtrk' in T and 'error' not in T['pvtrk']) else 'pv'
     CC['wind'] = 1000 * (T['wind']['netAnnuity'] + (T['wind']['gridConn'] or 0) + (integ if MIX_INTEG else 0))
@@ -218,6 +222,7 @@ for r in REG:
     elif cap_wnew[r] > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=cap_wnew[r], p_max_pu=ser_wnew[r], marginal_cost=0, carrier='wind')
     if cap_pex[r] > 0: n.add('Generator', f'{r} pv ex', bus=r, p_nom=cap_pex[r], p_max_pu=ser_pex[r], marginal_cost=0, carrier='pv')
     if MIX and N_p > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=1e5 if MIX_NOCAP else (max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else 1e5), p_max_pu=ser_pnew[r], marginal_cost=0, capital_cost=CC['pv'], carrier='pv')
+    if MIX and N_p > 0 and PV_CREDIT_MW > 0: n.add('Generator', f'{r} pv new credit', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=1e5 if MIX_NOCAP else (max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else 1e5), p_max_pu=ser_pnew[r], marginal_cost=0, capital_cost=CC['pv'] - integ * 1000, carrier='pv')
     elif SITE_FREE and N_p > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else N_p, p_max_pu=ser_pnew[r], marginal_cost=0, capital_cost=0, carrier='pv')
     if MIX:   # lithium as a store with its own charge and discharge links, so power and energy are priced apart as the build LP prices them
         n.add('Bus', f'{r} li bus', carrier='li')
@@ -263,6 +268,12 @@ for nm, mw, hrs, eff, car in (('vrfb', float(s.get('newVrfbMW') or 0), 8, 0.75, 
     if mw > 0:
         for r, fr in batt_site.items(): n.add('StorageUnit', f'{r} {nm}', bus=r, p_nom=mw * fr, max_hours=hrs, efficiency_store=eff, efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier=car)
         notes.append(f'{nm} {mw:,.0f} MW at {hrs} h, round trip {eff}, sited by the BESIPPPP shares (an assumption)')
+battAdded = None
+if BATT_ADD:
+    add = {k: float(v) for k, v in (kv.split(':') for kv in BATT_ADD.split(','))}
+    for r, mw in add.items(): n.add('StorageUnit', f'{r} battery added', bus=r, p_nom=mw, max_hours=BATT_ADD_H, efficiency_store=p['battEff'], efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='batt')
+    battAdded = {'byAreaMW': add, 'MW': sum(add.values()), 'hours': BATT_ADD_H, 'MWh': sum(add.values()) * BATT_ADD_H, 'annualRbn': (sum(add.values()) * CC['batt'] + sum(add.values()) * BATT_ADD_H * CC['battE']) / 1e9}
+    notes.append(f"lithium added to the build: {battAdded['MW']:,.0f} MW at {BATT_ADD_H:g} h ({', '.join(f'{k} {v:,.0f}' for k, v in add.items())}), R{battAdded['annualRbn']:.2f}bn a year at the build's lithium costs")
 newPs = float(s.get('newPsMW') or 0)
 if newPs > 0:
     n.add('StorageUnit', 'Limpopo pumped storage new', bus='Limpopo', p_nom=newPs, max_hours=float(s.get('newPsHours') or 14), efficiency_store=0.78, efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='ps')
@@ -298,6 +309,10 @@ if SITE_FREE or MIX or TX_ON:
     if TX_ON:
         lnk = m.variables['Link-p_nom']
         for i in range(len(corr)): m.add_constraints(lnk.loc[f'c{i}_ab'] - lnk.loc[f'c{i}_ba'] == 0, name=f'corridor pair {i}')
+        if TX_BUDGET > 0:
+            expr = sum(lnk.loc[f'c{i}_ab'] * (km * TX_EXT * CRF) for i, (a, b, cap_ab, km, lim, add) in enumerate(corr))
+            m.add_constraints(expr <= TX_BUDGET + sum(cap_ab * km * TX_EXT * CRF for a, b, cap_ab, km, lim, add in corr), name='corridor budget')
+            notes.append(f'corridor additions capped at R{TX_BUDGET / 1e9:.3f}bn a year')
     if SITE_FREE:
         for t, N in (('wind new', N_w), ('pv new', N_p)):
             names = [g for g in n.generators.index if g.endswith(t) and n.generators.p_nom_extendable[g]]
@@ -313,6 +328,12 @@ if SITE_FREE or MIX or TX_ON:
                     if names: m.add_constraints(pn.loc[names].sum() <= float(caps[t]), name=f'cap {t}')
             if 'batt' in caps: m.add_constraints(ln.loc[[f'{r} li charge' for r in REG]].sum() <= float(caps['batt']), name='cap batt')
             notes.append('national caps: ' + MIX_CAP)
+        if PV_CREDIT_MW > 0:
+            cr = [g for g in n.generators.index if g.endswith('pv new credit')]
+            m.add_constraints(pn.loc[cr].sum() <= PV_CREDIT_MW, name='credit pool')
+            for r in REG:
+                if f'{r} pv new credit' in cr and not MIX_NOCAP: m.add_constraints(pn.loc[f'{r} pv new'] + pn.loc[f'{r} pv new credit'] <= float(max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else 1e5), name=f'solar cap with credit {r}')
+            notes.append(f'freed-coal connection credit: new solar up to {PV_CREDIT_MW:,.0f} MW nationally without the integration charge (R{integ:,.0f} per kW-year)')
         if MIX_MIN:
             mins = dict(kv.split(':') for kv in MIX_MIN.split(','))
             for t, suffix in (('wind', 'wind new'), ('pv', 'pv new'), ('ocgt', 'ocgt new')):
@@ -365,6 +386,10 @@ mix = {}
 if MIX:
     mix['windMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} wind new', 0.0)) for r in REG}
     mix['pvMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} pv new', 0.0)) for r in REG}
+    if PV_CREDIT_MW > 0:
+        mix['pvCreditMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} pv new credit', 0.0)) for r in REG}
+        mix['pvMW'] = {r: mix['pvMW'][r] + mix['pvCreditMW'][r] for r in REG}
+        mix['creditRbn'] = sum(mix['pvCreditMW'].values()) * integ * 1000 / 1e9   # the integration charge the credited solar does not pay, to take off the new-build cost recomputed from pvMW x costs['pv']
     mix['ocgtMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} ocgt new', 0.0)) for r in REG}
     mix['battMW'] = {r: float(n.links.p_nom_opt.get(f'{r} li charge', 0.0)) for r in REG}
     mix['battMWh'] = {r: float(n.stores.e_nom_opt.get(f'{r} li store', 0.0)) for r in REG}
@@ -382,7 +407,7 @@ if TX_EXT > 0:
     for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
         addMW = float(n.links.p_nom_opt[f'c{i}_ab'] - n.links.p_nom[f'c{i}_ab'])   # the pair is tied, so one direction's addition is the corridor's
         if addMW > 1: expansion.append({'a': a, 'b': b, 'addMW': addMW, 'km': km, 'MWkm': addMW * km, 'capexRbn': addMW * km * TX_EXT / 1e9, 'annualRbn': addMW * km * TX_EXT * CRF / 1e9})
-res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
+res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'battAdded': battAdded, 'txBudgetRbn': TX_BUDGET / 1e9 if TX_BUDGET > 0 else None, 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
        'objectiveRbn': float(n.objective) / 1e9, 'fuelAndCarbonRbn': fuel / 1e9,
        'E_TWh': {c: v / 1e6 for c, v in E.items()}, 'storageDischargeTWh': {c: v / 1e6 for c, v in dis.items()}, 'storageChargeTWh': {c: v / 1e6 for c, v in chg.items()},
        'availTWh': {c: v / 1e6 for c, v in avail.items()}, 'curtailedTWh': {c: v / 1e6 for c, v in curt.items()}, 'curtailedTotalTWh': sum(curt.values()) / 1e6, 'curtailedByRegionTWh': {r: v / 1e6 for r, v in curt_r.items()},

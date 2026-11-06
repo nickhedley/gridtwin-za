@@ -15,12 +15,12 @@ Build 2026-11-05f, 2035: coal retired 14,307 MW of 39,692 (the fleet list's reti
 | North West | 0 | 191; 3,161, 3,496, 0, 0 | 0; 0, 0, 0, 0 | Free State, Gauteng, Limpopo, Mpumalanga, Northern Cape, Western Cape |
 | Free State | 0 | 104; 2,646, 3,112, 0, 0 | 0; 0, 284, 0, 0 | Eastern Cape, Gauteng, Hydra Central, Kwazulu Natal, Mpumalanga, North West, Northern Cape |
 
-| siting | rule | eligible new MW | usable in the same area, MW (R bn a year) | usable in the same or a neighbouring area, MW (R bn a year) | the run takes, MW (R bn a year) |
-|---|---|---|---|---|---|
-| approved-record shares | pathway (wind barred) | 26,522 | 658 (R0.24bn) | 14,307 (R5.21bn) | 14,306 (R5.21bn) |
-| approved-record shares | the page's (wind allowed) | 53,768 | 2,119 (R0.77bn) | 14,307 (R5.21bn) | 14,306 (R5.21bn) |
-| the LP's choice (control) | pathway (wind barred) | 20,773 | 141 (R0.05bn) | 6,541 (R2.38bn) | 14,306 (R5.21bn) |
-| the LP's choice (control) | the page's (wind allowed) | 42,947 | 141 (R0.05bn) | 7,190 (R2.62bn) | 14,306 (R5.21bn) |
+| siting | rule | eligible new MW (solar, gas, pumped storage; wind where allowed; no lithium) | usable in the same area, MW (R bn a year) | removed by a same-area cap, R bn a year | usable in the same or a neighbouring area, MW (R bn a year) | removed by a neighbour cap, R bn a year | the run takes, MW (R bn a year) |
+|---|---|---|---|---|---|---|---|
+| approved-record shares | pathway (wind barred) | 17,711 | 658 (R0.24bn) | R4.97bn | 8,856 (R3.22bn) | R1.98bn | 14,306 (R5.21bn) |
+| approved-record shares | the page's (wind allowed) | 44,957 | 2,119 (R0.77bn) | R4.44bn | 11,007 (R4.01bn) | R1.20bn | 14,306 (R5.21bn) |
+| the LP's choice (control) | pathway (wind barred) | 13,732 | 0 (R0.00bn) | R5.21bn | -0 (R-0.00bn) | R5.21bn | 14,306 (R5.21bn) |
+| the LP's choice (control) | the page's (wind allowed) | 35,907 | 0 (R0.00bn) | R5.21bn | 649 (R0.24bn) | R4.97bn | 14,306 (R5.21bn) |
 === 2040 ===
 New-solar capacity factor by area (the regional tracking series as scaled; national 0.286): Northern Cape 0.304, Western Cape 0.294, Hydra Central 0.287, North West 0.284, Free State 0.277, Eastern Cape 0.272, Mpumalanga 0.271, Gauteng 0.270, Limpopo 0.261, Kwazulu Natal 0.242; new wind: Hydra Central 0.458, Northern Cape 0.444, Eastern Cape 0.431, Western Cape 0.389, Kwazulu Natal 0.378, Free State 0.359, North West 0.344, Mpumalanga 0.292, Gauteng 0.258, Limpopo 0.256
 Build 2026-11-05f, 2040: coal retired 22,333 MW of 39,692 (the fleet list's retired units 19,777 MW, scaled); the run's pool 22,333 MW (pv 20,833, phes 1,500) = R8.13bn a year at R364 per kW-year; new wind 40,722, solar 24,831, lithium 11,004, gas 5,611, pumped storage 1,500 MW.
@@ -38,9 +38,9 @@ Build 2026-11-05f, 2040: coal retired 22,333 MW of 39,692 (the fleet list's reti
 | North West | 0 | 285; 4,432, 4,366, 0, 0 | 350; 0, 0, 0, 0 | Free State, Gauteng, Limpopo, Mpumalanga, Northern Cape, Western Cape |
 | Free State | 0 | 155; 3,710, 3,887, 0, 0 | 190; 0, 1,446, 0, 0 | Eastern Cape, Gauteng, Hydra Central, Kwazulu Natal, Mpumalanga, North West, Northern Cape |
 
-| siting | rule | eligible new MW | usable in the same area, MW (R bn a year) | usable in the same or a neighbouring area, MW (R bn a year) | the run takes, MW (R bn a year) |
-|---|---|---|---|---|---|
-| approved-record shares | pathway (wind barred) | 42,946 | 1,290 (R0.47bn) | 22,333 (R8.13bn) | 22,333 (R8.13bn) |
-| approved-record shares | the page's (wind allowed) | 83,668 | 3,536 (R1.29bn) | 22,333 (R8.13bn) | 22,333 (R8.13bn) |
-| the LP's choice (control) | pathway (wind barred) | 47,722 | 2,190 (R0.80bn) | 14,523 (R5.29bn) | 22,333 (R8.13bn) |
-| the LP's choice (control) | the page's (wind allowed) | 76,855 | 2,373 (R0.86bn) | 15,971 (R5.81bn) | 22,333 (R8.13bn) |
+| siting | rule | eligible new MW (solar, gas, pumped storage; wind where allowed; no lithium) | usable in the same area, MW (R bn a year) | removed by a same-area cap, R bn a year | usable in the same or a neighbouring area, MW (R bn a year) | removed by a neighbour cap, R bn a year | the run takes, MW (R bn a year) |
+|---|---|---|---|---|---|---|---|
+| approved-record shares | pathway (wind barred) | 31,942 | 1,290 (R0.47bn) | R7.66bn | 19,528 (R7.11bn) | R1.02bn | 22,333 (R8.13bn) |
+| approved-record shares | the page's (wind allowed) | 72,664 | 3,536 (R1.29bn) | R6.84bn | 22,333 (R8.13bn) | R0.00bn | 22,333 (R8.13bn) |
+| the LP's choice (control) | pathway (wind barred) | 34,472 | 0 (R0.00bn) | R8.13bn | 1,500 (R0.55bn) | R7.58bn | 22,333 (R8.13bn) |
+| the LP's choice (control) | the page's (wind allowed) | 63,606 | 259 (R0.09bn) | R8.04bn | 2,948 (R1.07bn) | R7.06bn | 22,333 (R8.13bn) |

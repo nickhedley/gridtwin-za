@@ -53,9 +53,9 @@ for r in sorted(REG, key=lambda r: -freed[r]):
     f = lambda new: f"{new[r]['wind']:,.0f}; {new[r]['pv']:,.0f}, {new[r]['batt']:,.0f}, {new[r]['gas']:,.0f}, {new[r]['phes']:,.0f}"
     print(f"| {r} | {freed[r]:,.0f} | {f(A_s)} | {f(A_l)} | {', '.join(sorted(adj[r] - {r}))} |")
 print()
-print('| siting | rule | eligible new MW | usable in the same area, MW (R bn a year) | usable in the same or a neighbouring area, MW (R bn a year) | the run takes, MW (R bn a year) |')
-print('|---|---|---|---|---|---|')
+print('| siting | rule | eligible new MW (solar, gas, pumped storage; wind where allowed; no lithium) | usable in the same area, MW (R bn a year) | removed by a same-area cap, R bn a year | usable in the same or a neighbouring area, MW (R bn a year) | removed by a neighbour cap, R bn a year | the run takes, MW (R bn a year) |')
+print('|---|---|---|---|---|---|---|---|')
 for lab, new in (('approved-record shares', A_s), ("the LP's choice (control)", A_l)):
-    for rule, techs in (('pathway (wind barred)', ('pv', 'batt', 'gas', 'phes')), ("the page's (wind allowed)", ('wind', 'pv', 'batt', 'gas', 'phes'))):
+    for rule, techs in (('pathway (wind barred)', ('pv', 'gas', 'phes')), ("the page's (wind allowed)", ('wind', 'pv', 'gas', 'phes'))):   # lithium pays no grid charge in the build LP and cannot use the credit (user, message 732)
         same, elig = usable(new, techs, False); nb, _ = usable(new, techs, True)
-        print(f"| {lab} | {rule} | {sum(elig.values()):,.0f} | {same:,.0f} (R{same * RATE / 1e6:.2f}bn) | {nb:,.0f} (R{nb * RATE / 1e6:.2f}bn) | {pool:,.0f} (R{pool * RATE / 1e6:.2f}bn) |")
+        print(f"| {lab} | {rule} | {sum(elig.values()):,.0f} | {same:,.0f} (R{same * RATE / 1e6:.2f}bn) | R{(pool - min(same, pool)) * RATE / 1e6:.2f}bn | {nb:,.0f} (R{nb * RATE / 1e6:.2f}bn) | R{(pool - min(nb, pool)) * RATE / 1e6:.2f}bn | {pool:,.0f} (R{pool * RATE / 1e6:.2f}bn) |")
