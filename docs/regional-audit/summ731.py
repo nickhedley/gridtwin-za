@@ -13,10 +13,10 @@ def row(d, addition, annuity, extra=''):
     E = d['E_TWh']; gas = tw(E.get('ccgt', 0)) + tw(E.get('ocgt', 0)) + tw(E.get('diesel', 0))
     cost = d['fuelAndCarbonRbn'] + d['unservedGWh'] * 1e3 * VOLL / 1e9 + annuity
     return f"| {addition} | {tw(d['curtailedTotalTWh']):.1f} | {tw(E.get('coal', 0)):.1f} | {gas:.2f} | {d['unservedGWh']:.1f} | {d['fuelAndCarbonRbn']:.2f} | {annuity:.2f} | {cost:.2f} |{extra}"
-print('### 731: battery against corridor (build 2026-11-05f, the every-change pass; fixed build, hourly, no commitment floor, losses off; lithium at the four exits in equal shares at the build\'s own lithium costs; corridor additions capped at the same annual cost)')
+print('### 731: battery against corridor (build 2026-11-05f, the every-change pass; the rebuilt corridor table, N-1 once, corridors at the run\'s 0.071; fixed build, hourly, no commitment floor, losses off; lithium at the four exits in equal shares at the build\'s own lithium costs; corridor additions capped at the same annual cost)')
 for y in (2035, 2040):
     for wy in (2025, 2015):
-        for net, lab, sfx in (('n1c', "today's corridors (one circuit dropped)", ''), ('n1ctdp', "the TDP's lines (one circuit dropped, full TDP)", '_tdpfull')):
+        for net, lab, sfx in (('nm1', "today's corridors (the rebuilt table, N-1 once)", '_v2'), ('nm1tdp', "the TDP's lines (the rebuilt table, N-1 once; tdp_lines_v2.json)", '_v2tdp'), ('n1c', "today's corridors (the old table, one circuit dropped; superseded)", ''), ('n1ctdp', "the TDP's lines (the old table, one circuit dropped, full TDP; superseded)", '_tdpfull')):
             base = load(S + f'net_final_{y}_wy{wy}_{net}_reea_l0_c0{sfx}.json')
             if base is None: continue
             rows = [row(base, 'none', 0.0)]

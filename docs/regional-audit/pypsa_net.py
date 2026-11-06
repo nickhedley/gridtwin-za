@@ -35,6 +35,10 @@ MIX_NOCAP = int(os.environ.get('MIX_NOCAP', '0'))      # (727 a) 1: the per-area
 BATT_ADD = os.environ.get('BATT_ADD', '')               # (731) lithium added to the fixed build, 'area:MW,area:MW', at BATT_ADD_H hours, costed at the build's own lithium costs
 BATT_ADD_H = float(os.environ.get('BATT_ADD_H', '4'))
 TX_BUDGET = float(os.environ.get('TX_BUDGET', '0'))     # (731) with TX_EXT: a cap on the corridor additions' annual cost, R a year (the same value as a lithium step)
+TX_KM_BUDGET = float(os.environ.get('TX_KM_BUDGET', '0'))   # (739 c) with TX_EXT: a cap on the corridor additions in km of line, each corridor's MW converted to circuits at the St Clair rating of TX_KM_KV at its length
+TX_KM_KV = int(os.environ.get('TX_KM_KV', '765'))
+ST_THERMAL = {765: 3000.0, 400: 1400.0}; ST_SIL = {765: 2280.0, 400: 602.0}
+def circuit_rating(kv, km): return min(ST_THERMAL[kv], ST_SIL[kv] * 53.736 * max(km, 1.0) ** -0.65)   # one circuit's rating as build_corridors.py rates it
 GAS_INTEG = int(os.environ.get('GAS_INTEG', '0'))        # (738 d) 1: new open cycle pays the integration charge too, as the run's LP charges it
 WIND_CAPE_MW = float(os.environ.get('WIND_CAPE_MW', '0'))   # (738 d) the run's Cape wind allowance: this much new wind pays no integration charge
 PV_CREDIT_MW = float(os.environ.get('PV_CREDIT_MW', '0'))   # (732) the freed-coal connection credit in the free mix: new solar up to this MW nationally pays no integration charge (the pathway rule: solar may, wind may not)
@@ -333,6 +337,10 @@ if SITE_FREE or MIX or TX_ON:
             expr = sum(lnk.loc[f'c{i}_ab'] * (km * TX_EXT * CRF) for i, (a, b, cap_ab, km, lim, add) in enumerate(corr))
             m.add_constraints(expr <= TX_BUDGET + sum(cap_ab * km * TX_EXT * CRF for a, b, cap_ab, km, lim, add in corr), name='corridor budget')
             notes.append(f'corridor additions capped at R{TX_BUDGET / 1e9:.3f}bn a year')
+        if TX_KM_BUDGET > 0:
+            expr = sum(lnk.loc[f'c{i}_ab'] * (km / circuit_rating(TX_KM_KV, km)) for i, (a, b, cap_ab, km, lim, add) in enumerate(corr))
+            m.add_constraints(expr <= TX_KM_BUDGET + sum(cap_ab * km / circuit_rating(TX_KM_KV, km) for a, b, cap_ab, km, lim, add in corr), name='corridor km budget')
+            notes.append(f'corridor additions capped at {TX_KM_BUDGET:,.0f} km of {TX_KM_KV} kV line (each corridor MW as circuits at the St Clair rating for its length)')
     if SITE_FREE:
         for t, N in (('wind new', N_w), ('pv new', N_p)):
             names = [g for g in n.generators.index if g.endswith(t) and n.generators.p_nom_extendable[g]]
@@ -429,8 +437,8 @@ expansion = []
 if TX_EXT > 0:
     for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
         addMW = float(n.links.p_nom_opt[f'c{i}_ab'] - n.links.p_nom[f'c{i}_ab'])   # the pair is tied, so one direction's addition is the corridor's
-        if addMW > 1: expansion.append({'a': a, 'b': b, 'addMW': addMW, 'km': km, 'MWkm': addMW * km, 'capexRbn': addMW * km * TX_EXT / 1e9, 'annualRbn': addMW * km * TX_EXT * CRF / 1e9})
-res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'corrFile': os.path.basename(CORR_FILE) if CORR_FILE else None, 'gasInteg': GAS_INTEG, 'windCapeMW': WIND_CAPE_MW, 'pvCreditMW': PV_CREDIT_MW, 'battAdded': battAdded, 'txBudgetRbn': TX_BUDGET / 1e9 if TX_BUDGET > 0 else None, 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
+        if addMW > 1: expansion.append({'a': a, 'b': b, 'addMW': addMW, 'km': km, 'MWkm': addMW * km, 'capexRbn': addMW * km * TX_EXT / 1e9, 'annualRbn': addMW * km * TX_EXT * CRF / 1e9, 'km400': addMW / circuit_rating(400, km) * km, 'km765': addMW / circuit_rating(765, km) * km})
+res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'txKmBudget': TX_KM_BUDGET or None, 'txKmKv': TX_KM_KV, 'corrFile': os.path.basename(CORR_FILE) if CORR_FILE else None, 'gasInteg': GAS_INTEG, 'windCapeMW': WIND_CAPE_MW, 'pvCreditMW': PV_CREDIT_MW, 'battAdded': battAdded, 'txBudgetRbn': TX_BUDGET / 1e9 if TX_BUDGET > 0 else None, 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
        'objectiveRbn': float(n.objective) / 1e9, 'fuelAndCarbonRbn': fuel / 1e9,
        'E_TWh': {c: v / 1e6 for c, v in E.items()}, 'storageDischargeTWh': {c: v / 1e6 for c, v in dis.items()}, 'storageChargeTWh': {c: v / 1e6 for c, v in chg.items()},
        'availTWh': {c: v / 1e6 for c, v in avail.items()}, 'curtailedTWh': {c: v / 1e6 for c, v in curt.items()}, 'curtailedTotalTWh': sum(curt.values()) / 1e6, 'curtailedByRegionTWh': {r: v / 1e6 for r, v in curt_r.items()},
