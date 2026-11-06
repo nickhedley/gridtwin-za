@@ -1523,6 +1523,14 @@ not the solar one). Every other field identical; hybridUplift is pure and nothin
 machine at load 8 or more and the page's own panel computations possibly overlapping the check. Cause not established; not counted as a
 pass. To do: reproduce under load (the page's in-flight panel work at the moment the check stubs the schedulers), and find how the page
 side could pair the solar hybrid with the wind price.
+Message 752 (f), 6 Nov 2026 (Nick: find the cause before #161 is put forward for merge; a green run does not clear it). Found so far:
+the page's solarHybridR and solarHybridPct at the Start-up curve's first point (R702.9363933138538, 2.751072245812658) are the wind
+hybrid's own values at that point to every digit (the worker's windHybridR and windHybridPct, rerun 6 Nov), so the page's solar fields
+held the wind call's result, plant size included. That point is computed in one synchronous block (captureCurve yields only before
+points 1 onwards), hybridUplift is pure, simulate's stack arrays are fresh per call, and index.html was unchanged from 07:18 UTC, before
+the check (07:44-08:45 UTC). Not reproduced: 150 repeats of the curve on one page at load 10-11 and 20 fresh pages running the check's
+Start-up sequence at load 8-11 (scratchpad wk14ne/once.js, fresh.js; rep150.log, fresh20.log), all identical. No path in the page's
+code produces it; the remaining candidate is the browser's JavaScript engine, not established. Held: #161 not put forward for merge.
 
 14nf. nodal/nersa_registrations.json: add Q2 2026/27 from NERSA's media statement of 5 Nov 2026 (SOURCES 'NERSA media statement, 5 Nov
 2026'; the statement is the primary source, the SAPVIA dashboard a collation), in the first data update after PR #161 (user, 6 Nov 2026,
