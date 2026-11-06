@@ -2,7 +2,7 @@
 the full TDP's lines) and addition (none; lithium at the four exits; corridor additions at a price capped at the lithium step's annual cost):
 curtailment, coal, gas, unserved and annual cost (fuel and carbon, unserved energy at the value of lost load, the addition's annuity).
 A budget case whose budget is above the unconstrained expansion's cost was not run; the unconstrained case stands for it and is marked."""
-import json, glob, os, re
+import json, os, glob, os, re
 S = '/tmp/claude-0/-home-user-gridtwin-za/ff25664d-5d95-5cb3-a5ba-9894dfa04a8f/scratchpad/'
 VOLL = json.load(open(S + 'engine_final_2035_wy2025.json'))['p']['voll']
 tw = lambda x: sum(x.values()) if isinstance(x, dict) else x
@@ -35,8 +35,12 @@ for y in (2035, 2040):
                     ex = sorted(e['expansion'], key=lambda r: -r['addMW'])
                     rows.append(row(e, f"corridors at R{px:,} per MW-km for the same R{b['annualRbn']:.2f}bn: {e['expansionTotal']['MW'] / 1e3:.1f} GW" + mark, e['expansionTotal']['annualRbn'], ' ' + '; '.join(f"{r['a']} to {r['b']} {r['addMW'] / 1e3:.1f}" for r in ex if r['addMW'] > 300), base=B))
             for fn in sorted(glob.glob(S + f'net_final_{y}_wy{wy}_{net}_reea_l0_c0{sfx}_battfree*.json')):
-                d = load(fn); b = d['battFree']; ex = d.get('expansionTotal', {}); lab = f"the LP's own lithium: {b['MW'] / 1e3:.1f} GW / {b['MWh'] / 1e3:.0f} GWh (" + ', '.join(f"{k} {v / 1e3:.1f}" for k, v in sorted(b['byAreaMW'].items(), key=lambda x: -x[1]) if v > 50) + ')' + (f"; with corridors at R21,700 too: {ex['MW'] / 1e3:.1f} GW of corridor for R{ex['annualRbn']:.2f}bn" if ex.get('MW') else '')
-                rows.append(row(d, lab, b['annualRbn'] + ex.get('annualRbn', 0), ' ' + '; '.join(f"{r['a']} to {r['b']} {r['addMW'] / 1e3:.1f}" for r in sorted(d['expansion'], key=lambda r: -r['addMW']) if r['addMW'] > 300) if ex.get('MW') else '', base=B))
+                d = load(fn); b = d['battFree']; ex = d.get('expansionTotal', {}); blk = '_h3' in fn
+                B = load(S + f'net_final_{y}_wy{wy}_{net}_reea_l0_c0{sfx}_h3.json') if blk else base
+                if B is None: rows.append(f"| the LP's own lithium in 3-hour blocks ({os.path.basename(fn)}): pending its 3-hour base (queue20c) |"); continue
+                if blk and B is not base and not any('none, in 3-hour blocks' in r for r in rows): rows.append(row(B, 'none, in 3-hour blocks (the base for the block rows)', 0.0))
+                lab = "the LP's own lithium" + (", with corridors at R21,700 too" if '_ext21k' in fn else '') + (" (3-hour blocks)" if blk else '') + (f": {b['MW'] / 1e3:.1f} GW / {b['MWh'] / 1e3:.0f} GWh (" + ', '.join(f"{k} {v / 1e3:.1f}" for k, v in sorted(b['byAreaMW'].items(), key=lambda x: -x[1]) if v > 50) + ')' if b['MW'] > 50 else ': the LP builds no lithium') + (f"; with corridors at R21,700 too: {ex['MW'] / 1e3:.1f} GW of corridor for R{ex['annualRbn']:.2f}bn" if ex.get('MW') else '')
+                rows.append(row(d, lab, b['annualRbn'] + ex.get('annualRbn', 0), ' ' + '; '.join(f"{r['a']} to {r['b']} {r['addMW'] / 1e3:.1f}" for r in sorted(d['expansion'], key=lambda r: -r['addMW']) if r['addMW'] > 300) if ex.get('MW') else '', base=B)); B = base
             if len(rows) == 1: continue
             print(f'\n{y}, weather {wy}, {lab}\n\n| addition | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | addition, gross R bn a year | saves in fuel and carbon | saves in unserved energy at the value of lost load | net cost R bn a year | annual cost R bn | corridors built |\n|---|---|---|---|---|---|---|---|---|---|---|---|')
             print('\n'.join(rows))
