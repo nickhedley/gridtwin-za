@@ -2292,7 +2292,7 @@ Treatment: a cross-check. No limit in the rebuilt table is changed; the candidat
 765 kV line, Mercury's side) are for the user's decision, each with its cause stated here, and would be made in build_corridors.py and reported
 with the old and new figures by corridor.
 
-## Message 756: the corridor table under one rule, and the reruns on it (7 Nov 2026; nothing here is to be quoted; scratch and branch only)
+## Message 756: the corridor table under one rule on a labelled copy, and the reruns on it (7 Nov 2026, revised 22:15; nothing here is to be quoted; scratch and branch only; the table of record, corridors_v2.json, is not changed; the user decides on the copy in the morning)
 
 ### (a) The record on the engine dumps
 
@@ -2300,7 +2300,7 @@ The user's decision is to leave the branch history as it is. The record: the dum
 profiles.json, itself derived from ESK19679, and add nothing profiles.json does not already publish, which the 3 Nov decision covers; .gitignore
 now excludes engine dumps (engine_*_wy*.json and the four prefixes), so none can be committed again.
 
-### (b) One rule for every substation, generator and line end
+### (b) One rule for every substation, generator and line end, on a labelled copy (corridors_v3.json)
 
 The rule: the area is the supply region of the boundary set the fleet file already uses, which is PyPSA-RSA's rsa_supply_regions.gpkg (the
 10-region layer, named by the GCCA supply areas: Eastern Cape, Free State, Gauteng, Hydra Central, KwaZulu Natal, Limpopo, Mpumalanga, North
@@ -2321,12 +2321,13 @@ own terms and not committed). Applied by point in polygon to all 189 substations
 | Mookodi | North West | Northern Cape |
 | Van der Kloof | Northern Cape | Hydra Central |
 
-Of the fifteen province flags of 753, the rule changes Lethabo, Eros and Mookodi and leaves Makalu, Scafell, Dinaledi, Mercury, Pluto,
+Of the fifteen province flags of 753 (and Lethabo, Dinaledi and Mercury), the rule changes Lethabo, Eros and Mookodi and leaves Makalu, Scafell, Dinaledi, Mercury, Pluto,
 Midas, Pelly, Boundary, Manogeng, Silimela, Acornhoek, Carmel, Komsberg and Sorata where the file has them: a supply area need not follow the
 province, and the rule, not the province or the report, decides. Dinaledi stays in Gauteng and Mercury in the North West.
 
-The corridor table rebuilt under the rule (build_corridors.py with AREA_MAP; corridors_v3.json; corridor_table_v3_raw.md): 19 corridors, 52,888
-MW N-1 once against 56,675 before, 73,900 MW with limits only. Five corridors change:
+The labelled copy of the corridor table under the rule (build_corridors.py with AREA_MAP; corridors_v3.json; corridor_table_v3_raw.md; the table
+of record is corridors_v2.json, unchanged): 19 corridors, 52,888 MW N-1 once against 56,675 in the table of record, 73,900 MW with limits
+only. Five corridors change:
 
 | corridor | circuits before (v2) | N-1 once MW before | circuits after (the rule) | N-1 once MW after | limits only MW after | circuits moved |
 |---|---|---|---|---|---|---|
@@ -2358,17 +2359,17 @@ session's network, so these are the search summaries): a contractor's project pa
 gives the construction as completed in 2011 to 2012; SAnews on 29 November 2016, reporting the Kappa to Sterrekus commissioning, says the
 Western Cape 'is now connected to the 765 kV network over and above the 400 kV network', which needs Gamma to Kappa in service at 765 kV by
 that date; Heritage Western Cape's assessment is for the 'Gamma-Kappa 2nd 765 kV line'. No public source gives the energisation date of the
-first line itself, so by the user's condition it is not added to the corrected table; it is run as a labelled sensitivity (corridors_v3gk.json,
+first line itself, so by the user's condition it is not added to the copy; it is run as a labelled sensitivity (corridors_v3gk.json,
 extra_lines_gk.json: 356.5 km by the substations' coordinates, St Clair 2,688 MW, which makes Hydra Central to Western Cape 5,396 MW with
 limits only and 2,709 N-1 once against 1,803), and goes in if the user takes 'in service by November 2016' as the date.
 
-### (c) The reruns on the corrected table
+### (c) The reruns on the labelled copy
 
 Cases (queue23a, 23b, 23c; CORR_FILE corridors_v3.json, AREA_MAP area_map_v3.json, the TDP file tdp_lines_v3.json): 738 (b)'s main cases
 for 2035 and 2040 (N-1 once, limits only, the TDP's lines and the with-range, corridors priced at R10,000 and R21,700, free siting, the
 commitment floor); 743 (a)'s 2040 free lithium in 3-hour blocks with and without corridors at R21,700, with its block base; the Gamma to
 Kappa sensitivity as fixed builds. 753 (c)'s report-limit cases do not change (the report's limits and the two Mercury corridors are as they
-were); its comparison is re-read against the corrected table. Results, before and after, at both values of unserved energy: pending (the queues are running).
+were); its comparison is re-read against the copy. Results, before and after, at both values of unserved energy: pending (the queues are running).
 
 ### (d) 732: why the pathway's same-area cap moves the 2040 mix and the ten-area test does not
 
