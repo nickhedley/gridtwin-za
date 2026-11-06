@@ -32,4 +32,11 @@
 | 2040, 2015 | one bus on the national series, no caps | pending | | | | | | | |
 | 2040, 2015 | wind forced to the run's MW | 40.7 (40.7) | 25.6 (24.8) | 10.6, 59 (11.0, 61) | 1.67 (4.34) | 47.9 | 20.4 | 196.5 | 8.7 |
     wind by area GW: Hydra Central 11.7, Northern Cape 10.3, Western Cape 8.6, Eastern Cape 6.2, Mpumalanga 2.7, Kwazulu Natal 0.6, North West 0.3, Free State 0.2, Gauteng 0.1; solar: Western Cape 15.6, Limpopo 9.6, Free State 0.4
-| 2040, 2015 | the run's fixed build in 6-hour blocks | pending (queue10d) | | | | | | | |
+| 2040, 2015 | control (per-area series, approved caps) (6-hour blocks) | 31.0 (40.7) | 34.1 (24.8) | 9.0, 69 (11.0, 61) | 1.74 (4.34) | 50.0 | 13.1 | 189.7 | 13.0 |
+    wind by area GW: Hydra Central 11.7, Northern Cape 10.3, Eastern Cape 5.3, Mpumalanga 2.7, Kwazulu Natal 0.6, North West 0.3; solar: Western Cape 15.6, Limpopo 10.4, Northern Cape 4.8, Free State 3.4
+| 2040, 2015 | area caps lifted (6-hour blocks) | 36.7 (40.7) | 26.4 (24.8) | 8.6, 52 (11.0, 61) | 1.17 (4.34) | 48.8 | 13.7 | 183.5 | 19.2 |
+    wind by area GW: Northern Cape 26.8, Kwazulu Natal 8.5, Eastern Cape 1.5; solar: Western Cape 19.9, Limpopo 6.5
+| 2040, 2015 | one bus on the national series, no caps (6-hour blocks) | 37.3 (40.7) | 27.3 (24.8) | 7.6, 49 (11.0, 61) | 3.25 (4.34) | 50.2 | 15.3 | 201.1 | 1.6 |
+    wind by area GW: Gauteng 13.7, Kwazulu Natal 9.5, North West 5.7, Mpumalanga 2.8, Limpopo 2.1, Western Cape 1.8, Free State 1.3, Eastern Cape 0.4; solar: Kwazulu Natal 7.8, Gauteng 7.4, Limpopo 3.4, North West 3.2, Western Cape 2.0, Eastern Cape 1.9, Mpumalanga 1.5, Free State 0.2
+| 2040, 2015 | wind forced to the run's MW (6-hour blocks) | 40.7 (40.7) | 24.5 (24.8) | 7.2, 45 (11.0, 61) | 2.01 (4.34) | 48.6 | 19.7 | 193.8 | 8.9 |
+    wind by area GW: Hydra Central 11.7, Northern Cape 10.3, Western Cape 8.6, Eastern Cape 6.2, Mpumalanga 2.7, Kwazulu Natal 0.6, North West 0.3, Free State 0.2, Gauteng 0.1; solar: Western Cape 15.6, Limpopo 6.0, Free State 1.6, Hydra Central 0.8, Northern Cape 0.5
