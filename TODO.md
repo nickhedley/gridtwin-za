@@ -1076,6 +1076,11 @@ and import duty on the gap, heat tolerance. Inputs and links: the project docume
 SOURCES.md: docs/sodium-ion-inputs-2026-11-02.md (copied from the Drive reference folder, message 658 (b)); its sources go to
 SOURCES.md when the option is built. Its own figures: the gap about CNY 0.5/Wh, about R1,200/kWh at R2.3 per yuan, one 40 MWh
 sodium bid from one supplier; no system round-trip published (Hithium's system at least 88% over 24 hours).
+Amended (user, 6 Nov 2026, message 747; a to-do only, after the note): label 'namaker' as a maker claim (CATL's stated parity),
+not an independent estimate; add a third case, 'nawoodmac', capex = lithium's + about R480/kWh, closing to parity between about 2031
+and 2035 (Wood Mackenzie via pv magazine, 6 Nov 2026, study not read: system parity with LFP not expected until after 2030, USD 229/kWh
+against about 200; in the project document claude/sodium-ion-inputs-2026-11-02.md). The R480/kWh is Nick's conversion of the USD 29
+gap; record its FX and date with the source when the option is built. No work on it now.
 
 14mk. Presets reset the c7 settings keys, after the note (user, 2 Nov 2026, message 648). applyState does not reset ssMode,
 bldCocCase, btmStockGWh, btmBackupPath, btmReservePct, vppBuildOn, vppEnrolCapPct, vppCostCase, vppCostUsdKwYr, gyBuildOn, gyMode and
