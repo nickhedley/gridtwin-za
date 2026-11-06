@@ -47,7 +47,7 @@ steps(){ grep -c 'rc=[0-9]* done$' $P; }
 rss(){ local v; v=$(ps -o rss= -p $1 2>/dev/null | tr -d ' '); echo ${v:-0}; }
 if [ "$(ndone)" -ge 15 ]; then echo "$(ts) retime $R: all 15 steps have output" >> $P; exit 0; fi
 export RESUME=1 JOB_DEADLINE=$(( $(date +%s) + ${PIECE_S:-6600} ))
-echo "$(ts) retime $R piece, PID $$, on $(git log --oneline -1 | cut -c1-40) + $(git diff --stat | tail -1 | sed 's/^ *//'), $(grep -o "BUILD_STAMP = .[0-9a-z-]*" ../index.html), deadline $(date -u -d @$JOB_DEADLINE +%H:%MZ), MIN_LEFT ${MIN_LEFT:-1500}s, MAXP $MAXP, VERDICT_TOPUP $VERDICT_TOPUP, HIGHS_OPTS $HIGHS_OPTS, disk free $(df -BG / | awk 'NR==2{print $4}'), memory free $(free -g | awk '/Mem/{print $7}')G" >> $P
+echo "$(ts) retime $R piece, PID $$, on $(git log --oneline -1 | cut -c1-40) + $(git diff --stat | tail -1 | sed 's/^ *//'), $(grep -o "BUILD_STAMP = .[0-9a-z-]*" ../index.html), deadline $(date -u -d @$JOB_DEADLINE +%H:%MZ), MIN_LEFT ${MIN_LEFT:-1500}s, MAXP $MAXP, WARM ${WARM:-0}, VERDICT_TOPUP $VERDICT_TOPUP, HIGHS_OPTS $HIGHS_OPTS, disk free $(df -BG / | awk 'NR==2{print $4}'), memory free $(free -g | awk '/Mem/{print $7}')G" >> $P
 bash pathway/two_stage.sh & T=$!
 echo "$(ts) two_stage.sh PID $T" >> $P
 nd=$(steps); stop=0; node=""; peak=0; py=""; pyt=0
