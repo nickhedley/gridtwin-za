@@ -262,14 +262,17 @@ engine_loop_base_05h_k100.json; on 05j, unserved identical with 05h for the fin 
 
 | Year | Two stages, GWh (se; worst run) | Fin pass | Baseline (c7-runs, 05h) |
 |---|---|---|---|
-| 2030 | 6.46 (0.44; 178.8) | 1.34 (0.18; 101.8) | running |
+| 2030 | 6.46 (0.44; 178.8) | 1.34 (0.18; 101.8) | 1.32 (0.18; 100.5), 05j |
 | 2034 | 14.50 (1.12; 629.3) | 13.56 (0.85; 251.7) | 13.88 (0.85; 246.9) |
 | 2035 | 18.90 (1.02; 359.0) | 17.86 (1.05; 297.0) | 17.81 (1.05; 300.2) |
-| 2036 | after step 2036 | 14.03 (0.90; 307.6) | 15.46 (0.94; 322.3) |
+| 2036 | 17.34 (0.98; 349.0) | 14.03 (0.90; 307.6) | 15.46 (0.94; 322.3) |
 | 2040 | after step 2040 | 9.26 (0.60; 153.4) | running |
 
-Margins to 20 GWh so far (100 draws): two stages 13.54 / 5.50 / 1.10 in 2030 / 2034 / 2035; fin 18.66 / 6.44 / 2.14; baseline 6.12 /
-2.19 in 2034 / 2035. The rule is applied when every gated year is in.
+Margins to 20 GWh (100 draws): two stages 13.54 / 5.50 / 1.10 / 2.66 in 2030 / 2034 / 2035 / 2036; fin 18.66 / 6.44 / 2.14 / 5.97,
+10.74 in 2040; baseline 18.68 / 6.12 / 2.19 / 4.54. Smallest: two stages 1.10, fin 2.14, baseline 2.19 (2035 for each). Mean of 2034-2036:
+two stages 16.91, fin 15.15, baseline 15.72. Every build meets the standard in every year so far. Two stages reads more unserved than the
+fin pass in each year: by 5.12 GWh in 2030 (about 11 standard errors of the gap), 3.31 in 2036 (2.5), 0.94 in 2034 and 1.04 in 2035 (under
+1); its worst runs are 629 GWh in 2034 against 252. The rule is applied when 2040 and the full-path re-cost are in.
 
 When the central has all 15 steps: step 2040's output carries every year's build exactly as each
 step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's

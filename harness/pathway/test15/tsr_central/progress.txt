@@ -169,3 +169,5 @@
 2026-11-06T15:24:13Z retime central piece, PID 28128, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 17:04Z, MIN_LEFT 1500s, MAXP 6, WARM 1, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 24G, memory free 14G
 2026-11-06T15:24:13Z two_stage.sh PID 28156
 2026-11-06T15:24Z two_stage K=4 N=25 FIRST=2026, shell PID 28156
+2026-11-06T15:24:28Z step node PID 28195
+2026-11-06T15:24:43Z solve started (highs_native.py 28464)
