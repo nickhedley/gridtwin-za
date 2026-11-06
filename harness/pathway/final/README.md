@@ -13,4 +13,7 @@ here is an hourly Eskom-derived series.
 | pathway_fin_05h.json | the fin pass: the every-change pass plus coal's part-load factor in the LP (FIXED.bldCoalPartLoad) and the verdict rule (VERDICT_TOPUP {start 2, steps [10, 20], frac [0.25, 0.5]}); adequate at pass 1 (messages 713, 720) | claude/twin-retime 10a98e2, build 2026-11-05h | as the every-change pass (the same extremes), env_c6.sh's VERDICT_TOPUP |
 | engine_fin_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 |
 
-The 7 Nov loops follow here when they finish.
+| pathway_loop_base_05h.json | the 7 Nov baseline loop: the fin basis (10a98e2), metered 2025 reference with extreme days recomputed on this build (20, 159, 161-163, 187, 194-196, 218, 358-360), new wind at 42.0%; adequate after pass 1 (messages 720, 721) | claude/twin-retime 10a98e2, build 2026-11-05h | scratchpad loops/solve_loop.sh base: run (6)'s settings, MAXP=6, VERDICT_TOPUP |
+| engine_loop_base_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 |
+
+The other 7 Nov loops (37.24% wind, mixed reference, metered 2024) follow here when they finish.

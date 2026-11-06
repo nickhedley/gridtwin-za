@@ -22858,3 +22858,29 @@ claude/c7-runs harness/pathway/final (pathway_fin_05h.json, engine_fin_05h.json)
   10; 2034 (16.96 at 20), 2035 (13.95), 2038 (9.23), 2040 (11.93) to 20. Adequate at pass 1; no year at or above the limit.
 - 2035 moves from just above the standard (20.08) to just inside (19.58), within one standard error of it either way.
 
+### The extreme-day list alone (message 721 (b)): the 7 Nov baseline loop against the fin pass: 2040 wind +2.25 GW, solar -0.5 GW in each year; 2040 unserved 11.21 -> 8.61 GWh; LP objective -R8.9bn
+
+Settings: the fin pass (c710/fin.json; the every-change pass's extreme days 20, 161-163, 187, 188, 194-196, 214, 218, 358) against the
+baseline loop (scratchpad loops/solve_loop.sh base; the same code, 10a98e2, and settings, with the metered 2025 reference's extreme days
+recomputed on this build: 20, 159, 161-163, 187, 194-196, 218, 358-360; RESULTS 'The metered reference's extreme days on the current
+build'). The loop met the standard after pass 1 (MAXP=6 allowed), so its build is its pass 1; two pieces after a container restart
+(22:27 UTC 5 Nov to 01:01 UTC 6 Nov, beside the 37.24% loop), then the engine check (K=20, 2030/2035/2040, 01:01-01:08 UTC). Committed
+to claude/c7-runs harness/pathway/final (pathway_loop_base_05h.json, engine_loop_base_05h.json).
+
+| fin pass -> baseline loop (days alone) | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| wind, GW | 9.75 -> 9.75 | 27.25 -> 27.25 | 41.53 -> 43.78 |
+| utility solar, GW | 7.18 -> 6.68 | 18.23 -> 17.75 | 24.75 -> 24.28 |
+| lithium, GW; GWh | 1.59 -> 1.58; 3.72 -> 3.72 | 8.96 -> 9.29; 39.97 -> 39.21 | 11.07 -> 11.17; 63.17 -> 61.93 |
+| open-cycle gas + diesel open cycle, GW | 0 | 0 | 4.42 + 1.18 -> 4.28 + 1.31 |
+| engine unserved, GWh (se), limit 20 | 2.04 -> 2.00 (0.63) | 19.58 -> 19.48 (2.20) | 11.21 -> 8.61 (1.33) |
+| engine cost, R bn | 242.98 -> 243.17 | 270.97 -> 270.67 | 320.81 -> 320.11 |
+| CO2, Mt | 130.9 -> 131.8 | 78.8 -> 79.7 | 51.0 -> 47.8 |
+| coal, TWh | 116.6 -> 117.4 | 69.4 -> 70.2 | 43.8 -> 41.0 |
+| curtailment, TWh | 1.93 -> 1.64 | 10.36 -> 10.05 | 25.18 -> 29.41 |
+
+- LP objective R1,549.8bn -> R1,540.9bn (-R8.9bn). Both meet the standard; 2035 is within one standard error of the limit in both.
+- Wind in 2040 moves by more than 1 GW on the days alone (+2.25 GW): flagged at the top of the 7 Nov table (message 721 (b)).
+- The verdict's draws (final draws: mean GWh): 2031 and 2033-2035 and 2038 at 20 draws (9.99, 10.72, 17.26, 13.87, 9.82); 2032, 2037,
+  2039, 2040 at 10; the rest at 2.
+
