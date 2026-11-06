@@ -2507,7 +2507,10 @@ the company, not a measurement we have checked.
 - Eskom's residential load management pays about R1m per MW a year (Plentify: a conservative benchmark), at least half of it to the
   owner.
 - The service is the evening peak: 3 hours, every weekday. Usable power is the stored energy divided by 3, keeping 20% in the battery.
-- Batteries typically hold a minimum charge of about 65% against load shedding; a whole fleet moved to 20% is probably optimistic.
+- A large share of the existing home batteries hold a minimum charge of about 65% against load shedding. This is not necessarily the
+  fleet average, and it excludes business batteries. Consumer education can lower it, though a 20% floor by 2030 is probably unlikely
+  (wording corrected 6 Nov 2026, message 740; the first entry read 'batteries typically hold' and 'a whole fleet moved to 20% is
+  probably optimistic').
 - About 20% delivered above what the batteries would have done anyway (Plentify: a guess; its meaning is being confirmed).
 - About 9 GWh of batteries in homes and businesses.
 - Enrolment of existing batteries: 18-24% (Australia); point-of-sale programmes: 70-80%.
@@ -2515,8 +2518,8 @@ the company, not a measurement we have checked.
 
 Against the model's inputs (FIXED; SOURCES 'Behind-the-meter batteries: stock and growth', 'Virtual power plants: costs to source',
 'Geyser control: inputs'): the 2026 stock is 8 GWh (btmStockGWh; Plentify about 9); enrolled power is E / 2.5 h with the owner reserve
-of 25% on cycling and enrolled batteries alike (btmHours, btmReservePct; Plentify E / 3 keeping 20%, and about 65% held on batteries
-kept for load shedding); enrolment is capped at 20% of the cycling stock (vppEnrolCapPct, Brattle; Plentify 18-24% for existing
+of 25% on cycling and enrolled batteries alike (btmHours, btmReservePct; Plentify E / 3 keeping 20%, and about 65% held by a large
+share of existing home batteries, not business ones); enrolment is capped at 20% of the cycling stock (vppEnrolCapPct, Brattle; Plentify 18-24% for existing
 batteries in Australia); geyser control is 0.4 kW of gross peak reduction per enrolled geyser with the deferred heating returned over
 4 hours (gyKwPerGeyser, gyDeferH; Plentify 1 kW of maximum demand and no comeback spikes). Nothing in the model is changed by this entry;
 the engine checks of message 734 (a) and the proposals of 734 (b) are in RESULTS.

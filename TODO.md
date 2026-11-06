@@ -1510,3 +1510,11 @@ bldRpExclude becomes ['wind'], the pathways' rule (no preset's cost moves; the c
 changes for a visitor's own run, not the central's); (c) a regional cap on freed connections (finding 4), after the note; (d) finding 7,
 pathcheck's WX_FIX and LULL wrappers drop the year's offshore series (test modes only), harness fix; (e) finding 6 (lithium vintages
 on the fleet's average duration), note only; (f) the 40% new-wind loop and the cost table at 37.24, 40 and 42% (726 (e)).
+
+14ne. validate_worker on build 2026-11-06b (6 Nov 2026): 37/38 once, then 38/38 on a rerun of the same build. The one failure: '[Start-up]
+captureCurve: worker and page identical', the solar-plus-battery hybrid at one ladder point, worker R697.06/MWh (+3.94% on the solar
+capture price R670.67, consistent) against the page's R702.94 (+2.75%, which is against the wind capture price R684.12 of the same point,
+not the solar one). Every other field identical; hybridUplift is pure and nothing runs between the capture prices and it. Seen with the
+machine at load 8 or more and the page's own panel computations possibly overlapping the check. Cause not established; not counted as a
+pass. To do: reproduce under load (the page's in-flight panel work at the moment the check stubs the schedulers), and find how the page
+side could pair the solar hybrid with the wind price.
