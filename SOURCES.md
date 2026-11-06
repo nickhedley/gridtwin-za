@@ -2500,6 +2500,27 @@ The model's cases (user, message 584 (a); replacing 582 (a)'s central and 583 (a
   above the same reserve. Design: HANDOVER 'Behind-the-meter batteries and virtual power plants, minimum version' (claude/btm-vpp-min).
 TODO 14lu (full version, after the note) replaces the estimate with a sourced stock and growth path.
 
+## Plentify estimates: home and business batteries, VPP programmes and geyser control (user, 6 Nov 2026, message 734)
+
+Estimates Plentify gave Nick on a call on 6 Nov 2026. Unpublished; cite as 'Plentify estimates' wherever used. Each is an estimate from
+the company, not a measurement we have checked.
+- Eskom's residential load management pays about R1m per MW a year (Plentify: a conservative benchmark), at least half of it to the
+  owner.
+- The service is the evening peak: 3 hours, every weekday. Usable power is the stored energy divided by 3, keeping 20% in the battery.
+- Batteries typically hold a minimum charge of about 65% against load shedding; a whole fleet moved to 20% is probably optimistic.
+- About 20% delivered above what the batteries would have done anyway (Plentify: a guess; its meaning is being confirmed).
+- About 9 GWh of batteries in homes and businesses.
+- Enrolment of existing batteries: 18-24% (Australia); point-of-sale programmes: 70-80%.
+- Geysers: control cuts up to 60%, and 1.75 kWh a day at peak and 1 kW of maximum demand per geyser, with no comeback spikes.
+
+Against the model's inputs (FIXED; SOURCES 'Behind-the-meter batteries: stock and growth', 'Virtual power plants: costs to source',
+'Geyser control: inputs'): the 2026 stock is 8 GWh (btmStockGWh; Plentify about 9); enrolled power is E / 2.5 h with the owner reserve
+of 25% on cycling and enrolled batteries alike (btmHours, btmReservePct; Plentify E / 3 keeping 20%, and about 65% held on batteries
+kept for load shedding); enrolment is capped at 20% of the cycling stock (vppEnrolCapPct, Brattle; Plentify 18-24% for existing
+batteries in Australia); geyser control is 0.4 kW of gross peak reduction per enrolled geyser with the deferred heating returned over
+4 hours (gyKwPerGeyser, gyDeferH; Plentify 1 kW of maximum demand and no comeback spikes). Nothing in the model is changed by this entry;
+the engine checks of message 734 (a) and the proposals of 734 (b) are in RESULTS.
+
 ## Coal cost paths and coal unit commissioning years (user, 2 Nov 2026, messages 651 and 653; build 2026-11-02x)
 
 - Coal fuel, c7's central +3.0% a year real from 2026 (FIXED.coalFuelEscPct, set by the run, COAL_FUEL_ESC=3): Eskom's coal cost per
