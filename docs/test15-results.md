@@ -283,6 +283,13 @@ Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season
   each; day 0 is 1 January) hold no day in October (day 247 is 5 September, day 307 is 4 November), so October's 302 GWh of extra spill
   on the 365 days has no place in them; they put more in February and June, and 2.5 times the winter diesel (+295 against +120 GWh, from
   the weights on 8 May, 25 days, and 31 May, 40 days).
+- 25 days against 365 days alone (the same build on the same reference year; rep_gap.py, rep_gap_2035_*.json): the 25 days get the
+  year's coal within 2-3% (two stages 55.2 against 54.3 TWh; fin 64.1 against 62.3) and the shed exactly (it falls on extreme days both
+  hold), but undercount curtailment (two stages 1.6 against 4.0 TWh, fin 0.4 against 2.3; the missing spill is October to January),
+  overstate lithium discharge by 13-15%, and miss the winter days the 365-day year runs diesel on: 8-14 August (days 219-225, the most),
+  28-29 August, 24-25 April, 13-15 May and 3 September, none of them among the 25. On the 25 days the extra build therefore saves less
+  (R10.5 bn a year in 2035 against R15.4 bn on the 365 days, 750 (c)): the 25 days miss both its summer spill and the winter days it
+  covers, and the 15 May shed that puts the fin build over the stress target.
 - Reference year against twelve weather years (the engine, 100 draws, 2035): coal -7.9 TWh, curtailment +2.06 TWh, lithium throughput
   +2.78 TWh, diesel +0.27 TWh, CO2 -8.8 Mt: the same energy picture as the 365-day LP. But unserved +1.04 GWh, spread over the weather
   years (2016 +6.4, 2019 +6.8, 2015 and 2022 -3.5 to -3.9), and engine cost +R4.66 bn, against the LP's 365-day slice at -R0.66 bn
