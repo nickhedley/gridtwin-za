@@ -11,15 +11,15 @@ for f in sorted(glob.glob(S+'net_*.json')):
 def g(d,c): return d['E_TWh'].get(c,0.0)
 def row(d): return dict(coal=g(d,'coal'), gas=g(d,'ccgt')+g(d,'ocgt'), diesel=g(d,'diesel'), wind=g(d,'wind'), pv=g(d,'pv'), curt=d['curtailedTotalTWh'], curtW=d['curtailedTWh'].get('wind',0), curtP=d['curtailedTWh'].get('pv',0), uns=d['unservedGWh'], sto=sum(d['storageDischargeTWh'].values()), cost=d['fuelAndCarbonRbn'])
 out=[]
-out.append('| year, weather year | coal, engine | LP free | LP, engine commitment floor | LP, engine coal fixed | curtailed, engine | free | floor | fixed | storage discharge, engine | free | floor | fixed |')
-out.append('|---|---|---|---|---|---|---|---|---|---|---|---|---|')
+out.append('| year, weather year | coal, engine | LP free | LP, engine commitment floor | LP, engine coal fixed | curtailed, engine | free | floor | fixed | storage discharge, engine | free | floor | fixed | gas, engine | free | floor | fixed | diesel, engine | free | floor | fixed |')
+out.append('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
 for y in (2035,2040):
     for wy in ('2025','2015'):
         e=R.get((y,wy,'nolimit','reea',0,0)); 
         if not e: continue
         E=e['engine']['E_TWh']; r0=row(e); r1=R.get((y,wy,'nolimit','reea',0,1)); r2=R.get((y,wy,'nolimit','reea',0,2))
         f=lambda d,k: ('%.1f'%row(d)[k]) if d else '-'
-        out.append(f"| {y}, {wy} | {E.get('coal',0):.1f} | {r0['coal']:.1f} | {f(r1,'coal')} | {f(r2,'coal')} | {E.get('curtailed',0):.1f} | {r0['curt']:.1f} | {f(r1,'curt')} | {f(r2,'curt')} | {E.get('ps',0)+E.get('batt',0):.1f} | {r0['sto']:.1f} | {f(r1,'sto')} | {f(r2,'sto')} |")
+        out.append(f"| {y}, {wy} | {E.get('coal',0):.1f} | {r0['coal']:.1f} | {f(r1,'coal')} | {f(r2,'coal')} | {E.get('curtailed',0):.1f} | {r0['curt']:.1f} | {f(r1,'curt')} | {f(r2,'curt')} | {E.get('ps',0)+E.get('batt',0):.1f} | {r0['sto']:.1f} | {f(r1,'sto')} | {f(r2,'sto')} | {E.get('ccgt',0)+E.get('ocgt',0):.2f} | {r0['gas']:.2f} | {f(r1,'gas')} | {f(r2,'gas')} | {E.get('diesel',0):.2f} | {r0['diesel']:.2f} | {f(r1,'diesel')} | {f(r2,'diesel')} |")
 out.append('')
 out.append('| year, weather year | case | curtailed, TWh | of it wind | solar | unserved, GWh | coal, TWh | gas | diesel | storage discharge | fuel and carbon, R bn | corridors with a shadow price over 4,000 hours (value of one more MW, R m a year) |')
 out.append('|---|---|---|---|---|---|---|---|---|---|---|---|')

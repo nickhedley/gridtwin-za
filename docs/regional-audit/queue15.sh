@@ -8,6 +8,7 @@ echo "queue15 pid $$ start $(date -u +%FT%H:%MZ)" >> $S/run_net_progress.txt
 for y in 2035 2040; do
   POOL=14306; [ $y = 2040 ] && POOL=22333; RW=27246; [ $y = 2040 ] && RW=40722
   SUFFIX=_mix_control_runacct_h3 PV_CREDIT_MW=$POOL bash $R $W $P "$y 2025 nolimit reea 0 1"
+  SUFFIX=_mix_control_runacct_nopool_h3 bash $R $W $P "$y 2025 nolimit reea 0 1"   # (732 on the repriced costs) the same accounting without the reuse pool
   SUFFIX=_mix_control_nocap_runacct_h3 PV_CREDIT_MW=$POOL MIX_NOCAP=1 bash $R $W $P "$y 2025 nolimit reea 0 1"
   SUFFIX=_mix_control_onebus_runacct_h3 PV_CREDIT_MW=$POOL MIX_NAT=1 MIX_NOCAP=1 bash $R $W $P "$y 2025 nolimit reea 0 1"
   SUFFIX=_mix_control_runwind_runacct_h3 PV_CREDIT_MW=$POOL MIX_MIN=wind:$RW bash $R $W $P "$y 2025 nolimit reea 0 1"
