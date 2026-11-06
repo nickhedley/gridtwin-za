@@ -28,6 +28,9 @@ KOEBERG_OUT = os.environ.get('KOEBERG_OUT', '')       # (a) 'd1:d2,d3:d4' day-of
 TDP_FILE = os.environ.get('TDP_FILE', '')              # (c) a JSON list of extra inter-area lines [{a,b,mw,year,name}] (the full TDP mapping)
 MIX = int(os.environ.get('MIX', '0'))                  # (f) new wind, solar, lithium (power and energy) and open-cycle gas extendable by area at the build's own costs
 MIX_CAP = os.environ.get('MIX_CAP', '')                # (f) national caps 'wind:MW,pv:MW,batt:MW' (cumulative build-rate limits), optional
+MIX_NAT = int(os.environ.get('MIX_NAT', '0'))          # (727 a) 1: every area's new wind and solar on the engine's national series (with no limits, one bus)
+MIX_NOCAP = int(os.environ.get('MIX_NOCAP', '0'))      # (727 a) 1: the per-area approved-capacity caps on new wind and solar lifted
+MIX_MIN = os.environ.get('MIX_MIN', '')                 # (6 Nov 2026) national floors on the free mix, e.g. batt:56017,battE:480000: the build's own storage held, its siting free
 MIX_INTEG = int(os.environ.get('MIX_INTEG', '1'))      # (f) 1 keeps the integration charge on new wind and solar; 0 removes it (corridors priced explicitly)
 SOLVER = os.environ.get('SOLVER', 'simplex')             # 'simplex' (HiGHS dual simplex, the default for every case) or 'ipm' (interior point, crossover off: a timing test only)
 HSTEP = int(os.environ.get('HSTEP', '1'))             # (f) solve on blocks of HSTEP hours (block means of every series, each weighted HSTEP): the whole year's chronology kept at coarser steps; energies scaled back to the year
@@ -114,6 +117,11 @@ ser_wex = scaled('existing wind', cap_wex, wpu, nat_avail['wind_ex'].sum())
 ser_wnew = scaled('new wind', cap_wnew, wmod_r, nat_avail['wind_new'].sum()) if N_w > 0 else {r: wpu[r] for r in REG}
 ser_pex = scaled('existing solar', cap_pex, spu, nat_avail['pv_ex'].sum())
 ser_pnew = scaled('new solar', cap_pnew, trk_r, nat_avail['pv_new'].sum()) if N_p > 0 else {r: spu[r] for r in REG}
+if MIX_NAT:
+    if N_w > 0: ser_wnew = {r: nat_avail['wind_new'] / N_w for r in REG}
+    if N_p > 0: ser_pnew = {r: nat_avail['pv_new'] / N_p for r in REG}
+    notes.append("one bus: every area's new wind and solar on the engine's national series (the regional series unused)")
+if MIX_NOCAP: notes.append('area caps lifted: new wind and solar per area unbounded')
 roofT = sum(roof_r.values()); roof_cap_r = {r: roofCap * roof_r[r] / roofT for r in REG}
 # offshore wind (Fossil-free and Deep builds): the seven ESMAP sites in equal shares, as the engine's national series is their mean scaled to ESMAP's 0.516
 OFF_SITE = {'Boegoebaai West Coast': 'Northern Cape', 'Saldanha Bay West Coast': 'Western Cape', 'Cape Point West': 'Western Cape', 'Cape Point South': 'Western Cape', 'Coega West': 'Eastern Cape', 'Coega East': 'Eastern Cape', 'Durban Richards Bay': 'Kwazulu Natal'}
@@ -205,11 +213,11 @@ for r in REG:
     n.add('Load', f'{r} load', bus=r, p_set=grossLoad * share[r])
     n.add('Generator', f'{r} rooftop', bus=r, p_nom=max(1e-6, roof_cap_r[r]), p_max_pu=roofpu * p['rooftopDerate'], p_min_pu=roofpu * p['rooftopDerate'], marginal_cost=0, carrier='rooftop')
     if cap_wex[r] > 0: n.add('Generator', f'{r} wind ex', bus=r, p_nom=cap_wex[r], p_max_pu=ser_wex[r], marginal_cost=0, carrier='wind')
-    if MIX and N_w > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['wind'].get(r, 0.0)) if REEA_MW else 1e5, p_max_pu=ser_wnew[r], marginal_cost=0, capital_cost=CC['wind'], carrier='wind')
+    if MIX and N_w > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=1e5 if MIX_NOCAP else (max(0.0, REEA_MW['wind'].get(r, 0.0)) if REEA_MW else 1e5), p_max_pu=ser_wnew[r], marginal_cost=0, capital_cost=CC['wind'], carrier='wind')
     elif SITE_FREE and N_w > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['wind'].get(r, 0.0)) if REEA_MW else N_w, p_max_pu=ser_wnew[r], marginal_cost=0, capital_cost=0, carrier='wind')
     elif cap_wnew[r] > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=cap_wnew[r], p_max_pu=ser_wnew[r], marginal_cost=0, carrier='wind')
     if cap_pex[r] > 0: n.add('Generator', f'{r} pv ex', bus=r, p_nom=cap_pex[r], p_max_pu=ser_pex[r], marginal_cost=0, carrier='pv')
-    if MIX and N_p > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else 1e5, p_max_pu=ser_pnew[r], marginal_cost=0, capital_cost=CC['pv'], carrier='pv')
+    if MIX and N_p > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=1e5 if MIX_NOCAP else (max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else 1e5), p_max_pu=ser_pnew[r], marginal_cost=0, capital_cost=CC['pv'], carrier='pv')
     elif SITE_FREE and N_p > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['solar'].get(r, 0.0)) if REEA_MW else N_p, p_max_pu=ser_pnew[r], marginal_cost=0, capital_cost=0, carrier='pv')
     if MIX:   # lithium as a store with its own charge and discharge links, so power and energy are priced apart as the build LP prices them
         n.add('Bus', f'{r} li bus', carrier='li')
@@ -305,6 +313,15 @@ if SITE_FREE or MIX or TX_ON:
                     if names: m.add_constraints(pn.loc[names].sum() <= float(caps[t]), name=f'cap {t}')
             if 'batt' in caps: m.add_constraints(ln.loc[[f'{r} li charge' for r in REG]].sum() <= float(caps['batt']), name='cap batt')
             notes.append('national caps: ' + MIX_CAP)
+        if MIX_MIN:
+            mins = dict(kv.split(':') for kv in MIX_MIN.split(','))
+            for t, suffix in (('wind', 'wind new'), ('pv', 'pv new'), ('ocgt', 'ocgt new')):
+                if t in mins:
+                    names = [g for g in n.generators.index if g.endswith(suffix)]
+                    if names: m.add_constraints(pn.loc[names].sum() >= float(mins[t]), name=f'min {t}')
+            if 'batt' in mins: m.add_constraints(ln.loc[[f'{r} li charge' for r in REG]].sum() >= float(mins['batt']), name='min batt')
+            if 'battE' in mins: m.add_constraints(m.variables['Store-e_nom'].loc[[f'{r} li store' for r in REG]].sum() >= float(mins['battE']), name='min battE')
+            notes.append('national floors: ' + MIX_MIN)
     status, cond = n.optimize.solve_model(solver_name='highs', solver_options=SOLVER_OPTS, assign_all_duals=True)
 else:
     status, cond = n.optimize(solver_name='highs', solver_options=SOLVER_OPTS, assign_all_duals=True)
