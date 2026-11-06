@@ -18,3 +18,4 @@
 | 2040 | one bus on the national series | the run's | pending | | | | | | | |
 | 2040 | wind forced to the run's MW | the test's | 40.7 (40.7) | 21.5 (24.8) | 0.0 | 11.2, 56 | 1.98 | 186.6 | 197.8 | 11.3 |
 | 2040 | wind forced to the run's MW | the run's | pending | | | | | | | |
+| 2040 | control without the reuse pool (the Cape allowance and the gas charge kept; 732's pair on the repriced costs) | the run's less the pool | 30.0 (40.7) | 32.9 (24.8) | 0.0 | 13.5, 90 | 0.64 | 181.2 | 200.4 | 19.2 |
