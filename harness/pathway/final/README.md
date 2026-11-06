@@ -16,4 +16,7 @@ here is an hourly Eskom-derived series.
 | pathway_loop_base_05h.json | the 7 Nov baseline loop: the fin basis (10a98e2), metered 2025 reference with extreme days recomputed on this build (20, 159, 161-163, 187, 194-196, 218, 358-360), new wind at 42.0%; adequate after pass 1 (messages 720, 721) | claude/twin-retime 10a98e2, build 2026-11-05h | scratchpad loops/solve_loop.sh base: run (6)'s settings, MAXP=6, VERDICT_TOPUP |
 | engine_loop_base_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 |
 
-The other 7 Nov loops (37.24% wind, mixed reference, metered 2024) follow here when they finish.
+| pathway_loop_mix_05h.json | the 7 Nov mixed-reference loop: wind metered, solar modelled 2025 (REP_REF=wind:metered,solar:2025), its extreme days recomputed on this build (20, 159, 161-163, 187, 194-196, 214, 218, 358, 359); adequate after pass 1 by the loop's verdict (the pass-1 run, the loop's own job stopped at the job limit during the same verdict) | claude/twin-retime 10a98e2, build 2026-11-05h | scratchpad loops/solve_loop.sh mix (P1=1 for this file) |
+| engine_loop_mix_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, as above |
+
+The other 7 Nov loops (37.24% wind, metered 2024) follow here when they finish.

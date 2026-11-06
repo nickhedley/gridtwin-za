@@ -22907,3 +22907,29 @@ baseline loop: RESULTS 'The extreme-day list alone'.
   loop adds stress windows and solves a second pass (running). The engine check above reads 2035 at 19.35 on its own 20 draws and does
   not check 2034. Not yet comparable for the 7 Nov table (message 720 (c)): only the loop's final build is.
 
+### The 7 Nov loops: the mixed reference (wind metered, solar modelled 2025) against the baseline loop: adequate after pass 1 by the loop's verdict; solar +5.6 GW and wind -2.7 GW in 2040; on the common 20-draw engine check 2035 reads 20.90 GWh, above the limit (message 720 (b), (c))
+
+Settings: scratchpad loops/solve_loop.sh mix (the baseline loop's settings with REP_REF=wind:metered,solar:2025 and its extreme days
+recomputed on this build: 20, 159, 161-163, 187, 194-196, 214, 218, 358, 359). Pass 1 in two pieces (01:02-04:09 UTC 6 Nov, three solves
+sharing the machine); the loop's own job was stopped at the 2-hour job limit during its verdict (04:37 UTC); the same verdict on the same
+cached solution ran to the end in the pass-1 run (P1=1, loops/mix_p1.json): adequate, so the loop's final build is pass 1. Engine check
+K=20, 2030/2035/2040 (04:47-04:55 UTC). Committed to claude/c7-runs harness/pathway/final (pathway_loop_mix_05h.json, engine_loop_mix_05h.json).
+
+| baseline loop -> mixed reference | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| wind, GW | 9.75 -> 9.75 | 27.25 -> 27.25 | 43.78 -> 41.10 |
+| utility solar, GW | 6.68 -> 7.42 | 17.75 -> 18.74 | 24.28 -> 29.83 |
+| lithium, GW; GWh | 1.58 -> 1.51; 3.72 -> 3.72 | 9.29 -> 8.82; 39.21 -> 36.91 | 11.17 -> 10.78; 61.93 -> 57.37 |
+| open-cycle gas + diesel open cycle, GW | 0 | 0 + 0 -> 0 + 0.06 | 4.28 + 1.31 -> 2.66 + 2.73 |
+| engine unserved, GWh (se), limit 20 | 2.00 -> 1.67 (0.45) | 19.48 -> 20.90 (2.22) | 8.61 -> 17.82 (1.97) |
+| engine cost, R bn | 243.17 -> 242.82 | 270.67 -> 271.01 | 320.11 -> 322.44 |
+| CO2, Mt | 131.8 -> 130.4 | 79.7 -> 78.4 | 47.8 -> 48.4 |
+| curtailment, TWh | 1.64 -> 2.06 | 10.05 -> 11.34 | 29.41 -> 33.57 |
+
+- LP objective R1,540.9bn -> R1,536.2bn (-R4.7bn).
+- The two 20-draw measures disagree in 2035: the loop's verdict (its own seeds, 20260816 + k x 104729 + y x 7919) reads 15.16 GWh; the
+  engine check (pathcheck's SEED_BASE 71830529, independent by design, common to every case) reads 20.90 (se 2.22). Each case's 2035
+  sits within about one standard error of the limit on the engine check (fin pass 19.58, baseline loop 19.48, 37.24% pass 1 19.35,
+  mixed 20.90). On the common measure, the mixed reference does not yet meet the standard (message 720 (c)); put to the user.
+- 2040 reads 17.82 on the engine check (the loop's verdict 18.41 at 20 draws): adequate, with less margin than the baseline loop's 8.61.
+
