@@ -1725,7 +1725,24 @@ The 732 credit pair and 737's first cut (731) run on the rebuilt table and the r
 
 ### (a) Today's fleets on the rebuilt table
 
-Pending: queue16 (today's 2025 and 2026 fleets, N-1 once and limits only, Koeberg on its calendar) runs when a solver slot frees.
+The 718 (a) cases rerun on the rebuilt table (queue16b): the 2025 and 2026 states of the today's-fleet dumps (build 2026-11-04b, weather 2025), fixed build, hourly, Koeberg on its calendar (a unit out on days 1 to 302 and 60 to 68, as 718 (a)), N-1 once and limits only, beside the old table's rows and no limits.
+
+| fleet (build 2026-11-04b) | case | curtailed TWh | unserved GWh | coal TWh | diesel TWh | corridors binding over 1,000 hours | hours at the limit, any corridor |
+|---|---|---|---|---|---|---|---|
+| 2025 | no limits | 0.00 | 14 | 171.0 | 1.77 | none | 0 (Eastern Cape to Hydra Central) |
+| 2025 | old table, PyPSA-RSA's N-1 (labelled 'as drawn' before 738) | 0.00 | 14 | 171.0 | 1.77 | none | 8760 (Gauteng to Limpopo) |
+| 2025 | old table, one circuit dropped | 0.00 | 14 | 171.0 | 1.78 | none | 8760 (Gauteng to Limpopo) |
+| 2025 | rebuilt table, limits only | 0.00 | 14 | 171.0 | 1.77 | none | 1455 (Eastern Cape to Free State) |
+| 2025 | rebuilt table, N-1 once | 0.00 | 14 | 171.0 | 1.77 | none | 4062 (Mpumalanga to North West) |
+| 2025 | the engine itself | 0.01 | 0 | 170.1 | 2.43 | | |
+| 2026 | no limits | 0.00 | 0 | 148.4 | 0.00 | none | 0 (Eastern Cape to Hydra Central) |
+| 2026 | old table, PyPSA-RSA's N-1 (labelled 'as drawn' before 738) | 0.00 | 0 | 148.4 | 0.00 | none | 8760 (Gauteng to Limpopo) |
+| 2026 | old table, one circuit dropped | 0.00 | 0 | 148.4 | 0.00 | none | 8760 (Gauteng to Limpopo) |
+| 2026 | rebuilt table, limits only | 0.00 | 0 | 150.5 | 0.00 | none | 1381 (North West to Northern Cape) |
+| 2026 | rebuilt table, N-1 once | 0.00 | 0 | 150.5 | 0.00 | none | 3116 (Mpumalanga to North West) |
+| 2026 | the engine itself | 0.47 | 0 | 150.9 | 0.17 | | |
+
+Reading. Today's fleets curtail nothing on the rebuilt table, under N-1 once or limits only, in either year, and nothing is unserved beyond the 14 GWh of 2025 that the no-limits case carries too (the Koeberg calendar against the engine's flat Koeberg, not the network). No corridor binds in 1,000 hours; the most any corridor sits at its limit is a few hundred hours. Curtailment by area is nil everywhere, the Northern Cape included, with its 2025 fleet of about 4 GW of solar and 1 GW of wind behind the five exit circuits. The public record (search summaries): the 2025 GCCA, as reported, finds the connection capacity of the Eastern and Western Cape, the Northern Cape and Hydra Central fully absorbed, which is a statement about connecting new plants, not about curtailing the ones there; Eskom's curtailment framework of 2023 to 2024 offered new wind in the Cape provinces up to 10% curtailment to connect 3,470 MW, and modelled that curtailment at R650m a year against R2.6bn a year for the grid; no public figure of curtailed GWh by province in 2024 or 2025 was found, and the IPP Office's or NERSA's operational reports would hold it. On that record the real system did not curtail the existing Cape fleets at scale and did not cut customers for want of a corridor in 2025, and neither does the rebuilt table, so the table is not too tight for today's fleet by this test. What the test cannot say is whether the exits are right for 2035, when the siting puts 34 GW of approved solar and 10 GW of approved wind in the Northern Cape behind the same five circuits plus the plan's three lines; the binding there is the siting's weight on the line file's exits, and the public record's own statement that the Kronos to Hydra line overloads at today's allocation points the same way.
 
 ### (b) The Northern Cape's exits against public sources, and the coordinate-placed features
 
