@@ -40,11 +40,11 @@
 | 2032 | 293 km a year, by priority | 12 (17,100) | 9.4 | 103.0 | 0.22 | 9.1 | 73.38 | 74.17 | North West to Northern Cape 8,355 h, R2.6m per MW-year; Free State to Northern Cape 7,241 h, R2.6m per MW-year; Free State to Kwazulu Natal 6,661 h, R0.0m per MW-year |
 | 2035 | the plan by its dates | 20 (30,600) | 30.8 | 90.0 | 0.19 | 0.0 | 64.11 | 64.11 | North West to Northern Cape 8,735 h, R3.8m per MW-year; Free State to Northern Cape 8,502 h, R3.8m per MW-year; Eastern Cape to Kwazulu Natal 7,960 h, R3.0m per MW-year |
 | 2035 | 800 km a year, by dates | 20 (30,600) | 30.8 | 90.0 | 0.19 | 0.0 | 64.11 | 64.11 | North West to Northern Cape 8,735 h, R3.8m per MW-year; Free State to Northern Cape 8,502 h, R3.8m per MW-year; Eastern Cape to Kwazulu Natal 7,960 h, R3.0m per MW-year |
-| 2035 | 800 km a year, by priority | pending | | | | | | | |
-| 2035 | 293 km a year, by dates | pending | | | | | | | |
-| 2035 | 293 km a year, by priority | pending | | | | | | | |
+| 2035 | 800 km a year, by priority | 20 (30,600) | 30.8 | 90.0 | 0.19 | 0.0 | 64.11 | 64.11 | North West to Northern Cape 8,735 h, R3.8m per MW-year; Free State to Northern Cape 8,502 h, R3.8m per MW-year; Eastern Cape to Kwazulu Natal 7,960 h, R3.0m per MW-year |
+| 2035 | 293 km a year, by dates | 18 (24,600) | 31.2 | 90.4 | 0.19 | 0.0 | 64.38 | 64.38 | North West to Northern Cape 8,734 h, R3.9m per MW-year; Free State to Northern Cape 8,510 h, R3.9m per MW-year; Free State to Kwazulu Natal 7,900 h, R0.0m per MW-year |
+| 2035 | 293 km a year, by priority | 17 (25,800) | 30.8 | 90.0 | 0.19 | 0.0 | 64.11 | 64.11 | North West to Northern Cape 8,735 h, R3.8m per MW-year; Free State to Northern Cape 8,501 h, R3.8m per MW-year; Eastern Cape to Kwazulu Natal 7,956 h, R3.0m per MW-year |
 | 2040 | the plan by its dates | 20 (30,600) | 73.5 | 88.2 | 9.32 | 22.1 | 83.09 | 85.01 | North West to Northern Cape 8,760 h, R13.7m per MW-year; Free State to Northern Cape 8,752 h, R13.7m per MW-year; Eastern Cape to Kwazulu Natal 8,438 h, R9.8m per MW-year |
-| 2040 | 800 km a year, by dates | pending | | | | | | | |
-| 2040 | 800 km a year, by priority | pending | | | | | | | |
-| 2040 | 293 km a year, by dates | pending | | | | | | | |
-| 2040 | 293 km a year, by priority | pending | | | | | | | |
+| 2040 | 800 km a year, by dates | 20 (30,600) | 73.5 | 88.2 | 9.32 | 22.1 | 83.09 | 85.01 | North West to Northern Cape 8,760 h, R13.7m per MW-year; Free State to Northern Cape 8,752 h, R13.7m per MW-year; Eastern Cape to Kwazulu Natal 8,438 h, R9.8m per MW-year |
+| 2040 | 800 km a year, by priority | 20 (30,600) | 73.5 | 88.2 | 9.32 | 22.1 | 83.09 | 85.01 | North West to Northern Cape 8,760 h, R13.7m per MW-year; Free State to Northern Cape 8,752 h, R13.7m per MW-year; Eastern Cape to Kwazulu Natal 8,438 h, R9.8m per MW-year |
+| 2040 | 293 km a year, by dates | 20 (30,600) | 73.5 | 88.2 | 9.32 | 22.1 | 83.09 | 85.01 | North West to Northern Cape 8,760 h, R13.7m per MW-year; Free State to Northern Cape 8,752 h, R13.7m per MW-year; Eastern Cape to Kwazulu Natal 8,438 h, R9.8m per MW-year |
+| 2040 | 293 km a year, by priority | 20 (30,600) | 73.5 | 88.2 | 9.32 | 22.1 | 83.09 | 85.01 | North West to Northern Cape 8,760 h, R13.7m per MW-year; Free State to Northern Cape 8,752 h, R13.7m per MW-year; Eastern Cape to Kwazulu Natal 8,438 h, R9.8m per MW-year |
