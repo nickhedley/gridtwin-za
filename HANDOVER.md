@@ -1,4 +1,21 @@
-# GridTwin ZA - handover, current state (kept current; updated 6 Nov 2026, 09:40 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 6 Nov 2026, 17:00 SAST)
+
+## 6 Nov afternoon (messages 733-747): where things stand
+
+- The 7 Nov table is done and recorded (RESULTS 'The 7 Nov table'): baseline, mixed reference, 37.24% (with its pass 1 for 746),
+  40% and the same-area cap, each final and through the 100-draw gate; metered 2024 unfinished (pass 2 solving since 07:03 UTC, at the
+  lowest priority since message 745). Files in harness/pathway/final/.
+- Priorities (message 745 (b)): 100-draw rechecks, the credit pass and the battery checks first, then the 40% loop, then metered 2024.
+  All but metered 2024 are done. Running now (scratchpad loops/progress.txt, c710/progress.txt): metered 2024 (solve_loop_low.sh m24,
+  nice 15), 714 (d) (c710/solve_irp12.sh irp 'OCGT_COST=irp', nice 12, on gtza-all), finding 3's sizing pass (solve_f3.sh f3, P1=1,
+  nice 13, on gtza-f3: the metered twin rescaled by month to the twelve-year means). Relaunch each piece on its completion notice.
+- Guards (one Monitor, re-armed every 30 minutes): memory below 1.5 GB stops, by PID, metered 2024, then finding 3, then 714 (d), then
+  the 40% run, never a recheck; disk below 6 GB deletes only finished runs' verdict caches (message 745 (c): keep 5 GB free).
+- Worktrees: gtza-rt (PR #161, build 06b, pushed a77c7b2, CI green), gtza-fin (the loops' code), gtza-w40, gtza-rpcap, gtza-btm,
+  gtza-f3 (comparison copies, on no branch), gtza-all (every-change basis).
+- Awaiting Nick: the battery proposals (TODO 14ng), the page default barring wind (726 (f)), Plentify's home/business split.
+- Open: TODO 14ne (validate_worker's one-off captureCurve mismatch on 06b, cause not established).
+
 
 ## 6 Nov morning (messages 726, 730, 733): where things stand
 
