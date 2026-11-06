@@ -1519,3 +1519,67 @@ The corridor table (St Clair sums over PyPSA-RSA's shapefile, two corridors esti
 6. PyPSA-RSA's own documentation (the repository and the 2023 paper): states which line parameters the shapefile carries and how its authors rated them, so the St Clair assumption here can be compared with theirs.
 
 The rule that this session reads nothing from eskom.co.za and no long PDFs stands, so items 1 and 2 are for the user or a later session to fetch; item 4 and 6 are open web pages.
+
+## Message 729: a regional cap on the freed-coal connection credit (6 Nov 2026; build 2026-11-05f, the every-change pass; report only, nothing changes in the national model)
+
+The rule as the pathway runs it (RESULTS, 'c5b build', message 74; index.html, rppool): new solar, storage and gas may take a connection freed by retired coal, in total no more than the coal retired so far, nationally; each MW on one avoids its grid cost from then on; wind is barred (FIXED.bldRpExclude = wind in the chains). The page's own default bars nothing, so wind may take them too. Here the credit is valued at the integration charge the mix cases use, R364 per kW-year, on the MW that could sit on a freed connection in the same area as the retired coal, and in the same or a neighbouring area (neighbours by the corridor table; the matching a transportation LP). Retired coal by area: the page's unit list (UC_FLEET) with its decommissioning years, scaled to the engine's cumulative retirement in the year. New plants by area: the approved-record shares that 718 (e)'s siting uses (wind and solar by the REEA records, lithium by the BESIPPPP shares in the North West, Free State and Northern Cape, gas at Richards Bay, new pumped storage at Tubatse), and the LP's own choice in the 718 (f) control (no limits, the run's costs; its gas in the Western Cape, its lithium by its own choice). Script: docs/regional-audit/rpcap.py; output rpcap_out.md.
+
+### 2035
+
+New-solar capacity factor by area (the regional tracking series as scaled; national 0.286): Northern Cape 0.304, Western Cape 0.294, Hydra Central 0.287, North West 0.284, Free State 0.277, Eastern Cape 0.272, Mpumalanga 0.271, Gauteng 0.270, Limpopo 0.261, KwaZulu-Natal 0.242; new wind: Hydra Central 0.458, Northern Cape 0.444, Eastern Cape 0.431, Western Cape 0.389, KwaZulu-Natal 0.378, Free State 0.359, North West 0.344, Mpumalanga 0.292, Gauteng 0.258, Limpopo 0.256
+Build 2026-11-05f, 2035: coal retired 14,307 MW of 39,692 (the fleet list's retired units 16,273 MW, scaled); the run's pool 14,306 MW (pv 14,306) = R5.21bn a year at R364 per kW-year; new wind 27,246, solar 17,711, lithium 8,811, gas 0, pumped storage 0 MW.
+
+| area | coal retired MW | new MW, approved-record shares (wind; solar, lithium, gas, pumped) | new MW, LP siting (wind; solar, lithium, gas, pumped) | neighbours |
+|---|---|---|---|---|
+| Mpumalanga | 14,166 | 1,461; 517, 0, 0, 0 | 0; 0, 0, 0, 0 | Free State, Gauteng, KwaZulu-Natal, Limpopo, North West |
+| Gauteng | 141 | 41; 403, 0, 0, 0 | 0; 0, 2,484, 0, 0 | Free State, Limpopo, Mpumalanga, North West |
+| Eastern Cape | 0 | 3,376; 176, 0, 0, 0 | 3,153; 0, 500, 0, 0 | Free State, Hydra Central, KwaZulu-Natal |
+| Limpopo | 0 | 0; 2,007, 0, 0, 0 | 0; 0, 3,774, 0, 0 | Gauteng, Mpumalanga, North West |
+| Western Cape | 0 | 9,708; 1,994, 0, 0, 0 | 0; 0, 0, 0, 0 | Hydra Central, North West, Northern Cape |
+| Northern Cape | 0 | 5,640; 4,374, 2,203, 0, 0 | 10,344; 13,732, 0, 0, 0 | Free State, Hydra Central, North West, Western Cape |
+| Hydra Central | 0 | 6,371; 2,311, 0, 0, 0 | 8,028; 0, 0, 0, 0 | Eastern Cape, Free State, Northern Cape, Western Cape |
+| KwaZulu-Natal | 0 | 354; 122, 0, 0, 0 | 649; 0, 0, 0, 0 | Eastern Cape, Free State, Mpumalanga |
+| North West | 0 | 191; 3,161, 3,496, 0, 0 | 0; 0, 0, 0, 0 | Free State, Gauteng, Limpopo, Mpumalanga, Northern Cape, Western Cape |
+| Free State | 0 | 104; 2,646, 3,112, 0, 0 | 0; 0, 284, 0, 0 | Eastern Cape, Gauteng, Hydra Central, KwaZulu-Natal, Mpumalanga, North West, Northern Cape |
+
+| siting | rule | eligible new MW | usable in the same area, MW (R bn a year) | usable in the same or a neighbouring area, MW (R bn a year) | the run takes, MW (R bn a year) |
+|---|---|---|---|---|---|
+| approved-record shares | pathway (wind barred) | 26,522 | 658 (R0.24bn) | 14,307 (R5.21bn) | 14,306 (R5.21bn) |
+| approved-record shares | the page's (wind allowed) | 53,768 | 2,119 (R0.77bn) | 14,307 (R5.21bn) | 14,306 (R5.21bn) |
+| the LP's choice (control) | pathway (wind barred) | 20,773 | 141 (R0.05bn) | 6,541 (R2.38bn) | 14,306 (R5.21bn) |
+| the LP's choice (control) | the page's (wind allowed) | 42,947 | 141 (R0.05bn) | 7,190 (R2.62bn) | 14,306 (R5.21bn) |
+
+### 2040
+
+New-solar capacity factor by area (the regional tracking series as scaled; national 0.286): Northern Cape 0.304, Western Cape 0.294, Hydra Central 0.287, North West 0.284, Free State 0.277, Eastern Cape 0.272, Mpumalanga 0.271, Gauteng 0.270, Limpopo 0.261, KwaZulu-Natal 0.242; new wind: Hydra Central 0.458, Northern Cape 0.444, Eastern Cape 0.431, Western Cape 0.389, KwaZulu-Natal 0.378, Free State 0.359, North West 0.344, Mpumalanga 0.292, Gauteng 0.258, Limpopo 0.256
+Build 2026-11-05f, 2040: coal retired 22,333 MW of 39,692 (the fleet list's retired units 19,777 MW, scaled); the run's pool 22,333 MW (pv 20,833, phes 1,500) = R8.13bn a year at R364 per kW-year; new wind 40,722, solar 24,831, lithium 11,004, gas 5,611, pumped storage 1,500 MW.
+
+| area | coal retired MW | new MW, approved-record shares (wind; solar, lithium, gas, pumped) | new MW, LP siting (wind; solar, lithium, gas, pumped) | neighbours |
+|---|---|---|---|---|
+| Mpumalanga | 20,143 | 2,184; 725, 0, 0, 0 | 184; 0, 0, 0, 0 | Free State, Gauteng, KwaZulu-Natal, Limpopo, North West |
+| Gauteng | 2,190 | 61; 565, 0, 0, 0 | 75; 0, 10,066, 0, 0 | Free State, Limpopo, Mpumalanga, North West |
+| Eastern Cape | 0 | 5,045; 247, 0, 0, 0 | 6,190; 0, 226, 0, 0 | Free State, Hydra Central, KwaZulu-Natal |
+| Limpopo | 0 | 0; 2,814, 0, 0, 1,500 | 0; 0, 1,512, 0, 1,500 | Gauteng, Mpumalanga, North West |
+| Western Cape | 0 | 14,510; 2,795, 0, 0, 0 | 0; 0, 0, 1,082, 0 | Hydra Central, North West, Northern Cape |
+| Northern Cape | 0 | 8,430; 6,133, 2,751, 0, 0 | 10,344; 31,890, 0, 0, 0 | Free State, Hydra Central, North West, Western Cape |
+| Hydra Central | 0 | 9,522; 3,240, 0, 0, 0 | 11,151; 0, 0, 0, 0 | Eastern Cape, Free State, Northern Cape, Western Cape |
+| KwaZulu-Natal | 0 | 529; 170, 0, 5,611, 0 | 649; 0, 0, 0, 0 | Eastern Cape, Free State, Mpumalanga |
+| North West | 0 | 285; 4,432, 4,366, 0, 0 | 350; 0, 0, 0, 0 | Free State, Gauteng, Limpopo, Mpumalanga, Northern Cape, Western Cape |
+| Free State | 0 | 155; 3,710, 3,887, 0, 0 | 190; 0, 1,446, 0, 0 | Eastern Cape, Gauteng, Hydra Central, KwaZulu-Natal, Mpumalanga, North West, Northern Cape |
+
+| siting | rule | eligible new MW | usable in the same area, MW (R bn a year) | usable in the same or a neighbouring area, MW (R bn a year) | the run takes, MW (R bn a year) |
+|---|---|---|---|---|---|
+| approved-record shares | pathway (wind barred) | 42,946 | 1,290 (R0.47bn) | 22,333 (R8.13bn) | 22,333 (R8.13bn) |
+| approved-record shares | the page's (wind allowed) | 83,668 | 3,536 (R1.29bn) | 22,333 (R8.13bn) | 22,333 (R8.13bn) |
+| the LP's choice (control) | pathway (wind barred) | 47,722 | 2,190 (R0.80bn) | 14,523 (R5.29bn) | 22,333 (R8.13bn) |
+| the LP's choice (control) | the page's (wind allowed) | 76,855 | 2,373 (R0.86bn) | 15,971 (R5.81bn) | 22,333 (R8.13bn) |
+
+### Reading
+
+1. The retired coal is Mpumalanga's: 14.2 of the 14.3 GW retired by 2035 and 20.1 of 22.3 GW by 2040 (the rest Gauteng), on the unit list's dates. Nothing in Limpopo or the Free State is retired by 2040.
+2. On the approved-record shares, the plants that could use those connections in the same area are Mpumalanga's own approved solar, 0.5 to 0.7 GW, and Gauteng's: 0.7 GW usable in 2035 (R0.24bn a year) and 1.3 GW in 2040 (R0.47bn), against the 14.3 and 22.3 GW the run puts on the pool (R5.2bn and R8.1bn a year). Allow a neighbouring area and the whole pool is usable in both years: Mpumalanga's neighbours are the North West and Free State, where the BESIPPPP shares put 6.6 to 8.3 GW of lithium and the records 5.8 to 8.1 GW of solar, and Limpopo and Gauteng with 2.4 to 3.4 GW of solar.
+3. On the LP's own siting the same-area figure is 0.1 GW in 2035 (the control puts every megawatt of solar in the Northern Cape) and 2.2 GW in 2040 (Gauteng's lithium, 10 GW, against Gauteng's 2.2 GW of retired coal); the neighbour rule reaches 6.5 GW (R2.4bn) in 2035 and 14.5 GW (R5.3bn) in 2040, the lithium the LP sites in Gauteng, Limpopo and the Free State, which neighbour Mpumalanga.
+4. Wind allowed (the page's rule) adds little: 1.5 GW in 2035 and 2.2 GW in 2040 on the shares (Mpumalanga's approved wind), nothing on the LP's siting, since the LP builds no wind in the coal provinces; the neighbour rule is already full on the shares. At a flat R364 per kW-year the rule's choice of technology does not change the rand the run takes, only who takes it.
+5. So a same-area cap would cut the credit the run takes by about 95%: from R5.2bn to R0.2bn a year in 2035 and from R8.1bn to R0.5bn in 2040. A same-or-neighbouring cap leaves it whole on the records' siting and cuts it by about half on the LP's.
+
+Whether it is large enough to change the mix (first cut; the LP's own margin from the wind-forced case of 727 (a) follows when it lands). On the LP's costs the credit is R364,000 per MW-year. On solar it is R153 per MWh in Mpumalanga (capacity factor 0.271) and R138 in the Northern Cape (0.304); the LP's solar costs R601 per MWh in the Northern Cape and R674 in Mpumalanga without it, R521 in Mpumalanga with it, so a credit that only coal-province solar could take would pull solar into Mpumalanga from the Northern Cape (the LP is indifferent at about R80 per MWh in Mpumalanga's favour with the credit, R73 against it without), up to the capped MW. Against wind it does not change the order: the LP's wind costs R628 per MWh in Hydra Central and R739 in the Western Cape, so solar with or without the credit sits below the wind the LP declines and above none of the wind it takes; what decides the wind against solar and lithium is the evening and the winter, which the capacity-factor figures do not carry. The rand is small against the gap: the same-area cap moves R0.2 to 0.5bn a year, the LP's gap to the run is R11.6 to 16.1bn, and even the whole national credit, R5.2 to 8.1bn, is below it. The regional cap matters to the pathway's cost, not to the LP's choice between wind and solar.
