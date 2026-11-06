@@ -1,4 +1,21 @@
-# GridTwin ZA - handover, current state (kept current; updated 6 Nov 2026, 17:00 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 6 Nov 2026, 17:40 SAST)
+
+## 6 Nov late afternoon (messages 749, 751, 752): where things stand
+
+- Running (scratchpad loops/progress.txt; relaunch each piece on its completion notice, PIECE_S=5200):
+  - f3d: finding 3 with factors on the central's representative days (loops/solve_f3d.sh f3d, P1=1, nice 10, gtza-f3d). Since 15:14 UTC.
+  - f3h: finding 3 with month-by-hour factors on the whole twin (loops/solve_f3h.sh f3h, P1=1, nice 10, gtza-f3h). Since 15:00 UTC.
+  - 714 (d): c710/solve_irp12.sh irp 'OCGT_COST=irp' (nice 12, gtza-all), piece 2 since 14:34 UTC.
+  - metered 2024: its current piece ends at its deadline (about 15:46 UTC); do not relaunch (held, message 751).
+  - 749 (b), (c): the baseline's engine check 2026-2040, K=20, with the deemed-energy record (gtza-btm, nice 13) -> deemed/base_2026_2040.json.
+  - 752 (d): the mixed reference's engine check 2026-2040, K=20, same seeds (gtza-btm, nice 15) -> pv752/mix_2026_2040.json.
+  - TODO 14ne: wk14ne/once.js, 150 repeats of the Start-up capture curve on one page under load (wk14ne/rep150.log); next, fresh.js on
+    fresh pages (validate_worker's Start-up sequence), N about 20.
+- f3 (monthly factors on the whole twin) stopped by PID at 15:09 UTC (message 752 (a)): it re-picks the days and overshoots.
+- After f3d and f3h: each engine check at 20 draws (in the solve script), then 100 draws on the same seeds if the mix moves more than 1%;
+  report 2030/2035/2040 wind, solar, lithium, objective, curtailment before the 8 Nov key.
+- Guard Monitor order: metered 2024, 714 (d), f3h, f3d (exact worktree match). Disk: 10 GB free.
+- Worktrees added: gtza-f3d (factors on the representative days), gtza-f3h; gtza-f3 kept as the record of the stopped variant.
 
 ## 6 Nov afternoon (messages 733-747): where things stand
 
