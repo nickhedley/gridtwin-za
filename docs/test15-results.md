@@ -45,6 +45,9 @@ Times UTC. In progress; updated as it runs.
 - Step 2030: adequate at pass 2 (pass 1: 2034 at 20.20 GWh against 20; pass 2: 3.25). Solves: pass 1 about 48 min over two pieces (cut
   with its basis kept, 074bb0e202, resumed for 3 min), pass 2 64.1 min cold. Wind 2,500 MW, solar 3,277, lithium 2,013 MW / 384 MWh,
   grid-forming 1,142; coal 29,256 MW standing, 3,177 retired early.
+- Step 2035: adequate at pass 1 (2035 at 19.28 GWh against 20). Its solve started with 18 min left in piece 11, was cut with its basis kept
+  (15716dd566) and finished 36 min into piece 12 (55 min in all). Wind 3,500 MW, solar 551, lithium 364 MW / 2,822 MWh, grid-forming 86;
+  coal 22,739 MW standing, 3,177 retired early.
 - Step 2034: adequate at pass 2 (pass 1: 2034 at 22.92 GWh against 20; pass 2: 7.41). Pass 1 77.4 min cold; pass 2 warm, cut at piece
   10's deadline after 10 min with its basis kept (1747961ad4) and resumed in piece 11 for 8.6 min. Piece 11 first replayed pass 1 from the
   cache and re-ran its adequacy test (30 min): each piece that resumes a later pass re-runs the earlier passes' tests, now 25 to 30 min
@@ -177,6 +180,25 @@ on step_2030.json with YEARS=2030 (the same row's settings):
 In 2030 two stages builds more solar, lithium and grid-forming and retires more coal early; every gap but wind's is outside 5% and 250
 MW, and the engine is worse (7.75 against 2.04 GWh, both inside the standard), so by 699 (b) one stage stays the headline for 2030. The
 loop's own check put 2030 at 1.68 GWh on 2 draws (under the verdict rule's 5 GWh top-up threshold); the 20-draw check reads 7.75.
+
+2035, final for the mix (steps to 2035 fix every build to 2035), engine on step_2035.json with YEARS=2035:
+
+| 2035 | One stage (fin pass) | Two stages | Gap | Outside 5% and 250 MW |
+|---|---:|---:|---:|---|
+| Wind, MW new from 2026 | 27,246 | 27,246 | 0 | no |
+| Solar, MW | 18,226 | 22,352 | +4,126 (+22.6%) | yes |
+| Lithium, MW / MWh | 8,955 / 39,972 | 10,522 / 51,105 | +1,567 / +11,133 | yes / yes |
+| OCGT diesel, MW | 0 | 1,000 | +1,000 | yes |
+| Grid-forming, MW | 2,947 | 3,351 | +404 | yes |
+| Coal standing, MW (retired early) | 25,213 (703) | 22,739 (3,177) | -2,474 | yes |
+| Engine unserved, GWh (se), limit 20 | 19.58 (2.19) | 20.16 (2.49) | +0.58 | |
+| Engine worst draw, GWh | 182 | 359 | | |
+| Engine cost, R bn; CO2, Mt; curtailment, TWh | 270.97; 78.8; 10.36 | 275.56; 70.1; 12.42 | | |
+
+In 2035 two stages again builds more solar, lithium and grid-forming, adds 1,000 MW of diesel open-cycle and retires more coal early;
+every gap but wind's is outside the margin. The engine is not better: 20.16 GWh against 19.58 (the gap is inside one standard error, but
+two stages sits just over the standard and its worst draw is twice one stage's), at R4.6 bn more engine cost and 8.8 Mt less CO2. By 699
+(b) one stage stays the headline for 2035. The loop's own check read 2035 at 19.28 GWh (step 2035, pass 1).
 
 When the central has all 15 steps: step 2040's output carries every year's build exactly as each
 step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's
@@ -363,7 +385,7 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   2026): left stopped; no relaunch on this basis.
 
 <!-- test15_summary start -->
-#### tsr_central (9 of 15 steps)
+#### tsr_central (10 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -380,13 +402,13 @@ tsr_central: new build by year, MW (lithium also MWh)
 | 2032 | 3,500 | 3,752 | 1,380 | 11,234 | 0 | 1,117 |
 | 2033 | 3,500 | 1,151 | 1,157 | 9,748 | 0 | 164 |
 | 2034 | 3,500 | 3,647 | 1,827 | 11,794 | 1,000 | 0 |
-| 2035 |  |  |  |  |  |  |
+| 2035 | 3,500 | 551 | 364 | 2,822 | 0 | 86 |
 | 2036 |  |  |  |  |  |  |
 | 2037 |  |  |  |  |  |  |
 | 2038 |  |  |  |  |  |  |
 | 2039 |  |  |  |  |  |  |
 | 2040 |  |  |  |  |  |  |
-| Total | 23,746 | 21,801 | 10,158 | 48,283 | 1,000 | 3,265 |
+| Total | 27,246 | 22,352 | 10,522 | 51,105 | 1,000 | 3,351 |
 
 tsr_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -401,6 +423,7 @@ tsr_central: coal standing (MW), coal retired ahead of its dates (MW) and kept u
 | 2032 | 26,046 | 3,177 | 3,177 |
 | 2033 | 24,944 | 3,177 | 3,177 |
 | 2034 | 23,290 | 3,177 | 3,177 |
+| 2035 | 22,739 | 3,177 | 3,177 |
 
 tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -415,6 +438,7 @@ tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2032 | 2036 | 2 | adequate | parallel, 2 threads, presolve off | 75.2, 7.2 | 47.3 | 3 | 1.5 | pass 1: 2034: 20.4 / 20<br>pass 2: none | 663.494 |
 | 2033 | 2037 | 2 | adequate | parallel, 2 threads, presolve off | 37.4, 32.5, 9.4 | 97.0 | 2 | 3.9 | pass 1: 2034: 21.2 / 20<br>pass 2: none | 707.044 |
 | 2034 | 2038 | 2 | adequate | parallel, 2 threads, presolve off | 77.4, 10.4, 8.6 | 66.0 | 3 | 4.6 | pass 1: 2034: 22.9 / 20<br>pass 2: none | 756.556 |
+| 2035 | 2039 | 1 | adequate | parallel, 2 threads, presolve off | 18.6, 35.8 | 68.6 | 2 | 3.3 | pass 1: none | 813.405 |
 
 tsr_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -429,6 +453,7 @@ tsr_central: the adequacy test on each step's own year y at its final pass (mean
 | 2032 | 15.17 / 20 | 15.33 / 20 | 2024 (193.7) |
 | 2033 | 16.66 / 20 | 17.72 / 20 | 2015 (217.5) |
 | 2034 | 22.92 / 20 | 7.41 / 20 | 2020 (96.6) |
+| 2035 | 19.28 / 20 | 19.28 / 20 | 2017 (344.5) |
 
 #### ts2_central (15 of 15 steps)
 
@@ -638,34 +663,34 @@ Cumulative new build, MW (lithium also MWh), built 2026 to the year
 | Technology | Year | tsr_central | ts2_central | ts2_ff | ts2_central_ann |
 |---|---|---:|---:|---:|---:|
 | wind | 2030 | 9,746 | 9,746 | 12,451 |  |
-| wind | 2035 |  | 27,246 |  |  |
+| wind | 2035 | 27,246 | 27,246 |  |  |
 | wind | 2040 |  | 41,483 |  |  |
 | solar | 2030 | 9,745 | 9,745 | 10,429 |  |
-| solar | 2035 |  | 20,644 |  |  |
+| solar | 2035 | 22,352 | 20,644 |  |  |
 | solar | 2040 |  | 26,618 |  |  |
 | lithium MW | 2030 | 3,212 | 3,375 | 3,735 |  |
-| lithium MW | 2035 |  | 8,890 |  |  |
+| lithium MW | 2035 | 10,522 | 8,890 |  |  |
 | lithium MW | 2040 |  | 11,464 |  |  |
 | lithium MWh | 2030 | 4,103 | 4,611 | 6,039 |  |
-| lithium MWh | 2035 |  | 39,635 |  |  |
+| lithium MWh | 2035 | 51,105 | 39,635 |  |  |
 | lithium MWh | 2040 |  | 64,950 |  |  |
 | iron-air | 2030 | 0 | 0 | 0 |  |
-| iron-air | 2035 |  | 0 |  |  |
+| iron-air | 2035 | 0 | 0 |  |  |
 | iron-air | 2040 |  | 300 |  |  |
 | pumped new | 2030 | 0 | 0 | 0 |  |
-| pumped new | 2035 |  | 0 |  |  |
+| pumped new | 2035 | 0 | 0 |  |  |
 | pumped new | 2040 |  | 1,500 |  |  |
 | CCGT | 2030 | 0 | 0 | 0 |  |
-| CCGT | 2035 |  | 0 |  |  |
+| CCGT | 2035 | 0 | 0 |  |  |
 | CCGT | 2040 |  | 553 |  |  |
 | OCGT gas | 2030 | 0 | 0 | 0 |  |
-| OCGT gas | 2035 |  | 611 |  |  |
+| OCGT gas | 2035 | 0 | 611 |  |  |
 | OCGT gas | 2040 |  | 5,272 |  |  |
 | OCGT diesel | 2030 | 0 | 0 | 0 |  |
-| OCGT diesel | 2035 |  | 1,397 |  |  |
+| OCGT diesel | 2035 | 1,000 | 1,397 |  |  |
 | OCGT diesel | 2040 |  | 1,658 |  |  |
 | grid-forming | 2030 | 1,487 | 1,763 | 2,246 |  |
-| grid-forming | 2035 |  | 3,319 |  |  |
+| grid-forming | 2035 | 3,351 | 3,319 |  |  |
 | grid-forming | 2040 |  | 3,477 |  |  |
 <!-- test15_summary end -->
 
