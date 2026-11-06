@@ -1433,3 +1433,89 @@ session's hook lands on day two, with the second pass optional.
 
 What it does not do. It does not move storage or gas by area, does not price within-area limits, and does not change the
 adequacy check; a build that passes the national check can still fail a regional one, which is the hard link (722 (b)).
+
+## Message 727: the control's gap split, new wind's supply curve, the pending cases, sources for the corridor ratings (6 Nov 2026; nothing here is to be quoted)
+
+### 727 (a): the control's gap from the run, split (build 2026-11-05f; 3-hour blocks, the run's own costs, the integration charge kept, no limits)
+
+Cases, each from the control: area caps lifted (every area's new wind and solar unbounded, the regional series kept); one bus (every area's new wind and solar on the engine's national series, no caps, which with no limits is a copper plate on the national series); wind forced to the run's MW (a floor at the run's new wind, the rest free). Cost is new build plus fuel and carbon plus unserved energy at the value of lost load; the gap is the run's own mix on the same blocks less the case.
+
+| year, weather year | case | wind GW (run) | solar GW (run) | lithium GW, GWh (run) | open cycle GW (run) | coal TWh | curtailed TWh | cost R bn | gap to the run R bn |
+|---|---|---|---|---|---|---|---|---|---|
+| 2035, 2025 | control (per-area series, approved caps) | 22.2 (27.2) | 13.7 (17.7) | 7.0, 25 (8.8, 38) | 0.00 (0.00) | 86.1 | 5.3 | 150.6 | 11.6 |
+    wind by area GW: Northern Cape 10.3, Hydra Central 8.0, Eastern Cape 3.2, Kwazulu Natal 0.6; solar: Northern Cape 13.7
+| 2035, 2025 | area caps lifted | pending | | | | | | | |
+| 2035, 2025 | one bus on the national series, no caps | pending | | | | | | | |
+| 2035, 2025 | wind forced to the run's MW | pending | | | | | | | |
+| 2035, 2015 | control (per-area series, approved caps) | 22.7 (27.2) | 12.8 (17.7) | 6.6, 27 (8.8, 38) | 0.00 (0.00) | 90.6 | 3.7 | 154.2 | 11.1 |
+    wind by area GW: Northern Cape 10.3, Hydra Central 8.9, Eastern Cape 1.9, Kwazulu Natal 0.6, Mpumalanga 0.4, North West 0.3, Free State 0.2; solar: Western Cape 8.5, Northern Cape 3.5, Limpopo 0.8
+| 2035, 2015 | area caps lifted | pending | | | | | | | |
+| 2035, 2015 | one bus on the national series, no caps | pending | | | | | | | |
+| 2035, 2015 | wind forced to the run's MW | pending | | | | | | | |
+| 2040, 2025 | control (per-area series, approved caps) | 29.1 (40.7) | 31.9 (24.8) | 13.2, 87 (11.0, 61) | 1.08 (4.34) | 49.1 | 10.5 | 181.7 | 16.1 |
+    wind by area GW: Hydra Central 11.2, Northern Cape 10.3, Eastern Cape 6.2, Kwazulu Natal 0.6, North West 0.3, Free State 0.2, Mpumalanga 0.2, Gauteng 0.1; solar: Northern Cape 31.9
+| 2040, 2025 | area caps lifted | pending | | | | | | | |
+| 2040, 2025 | one bus on the national series, no caps | pending | | | | | | | |
+| 2040, 2025 | wind forced to the run's MW | pending | | | | | | | |
+| 2040, 2015 | control (per-area series, approved caps) | 31.5 (40.7) | 33.5 (24.8) | 11.1, 68 (11.0, 61) | 1.75 (4.34) | 52.1 | 14.4 | 193.1 | 12.2 |
+    wind by area GW: Hydra Central 11.3, Northern Cape 10.3, Eastern Cape 6.1, Mpumalanga 2.7, Kwazulu Natal 0.6, North West 0.3; solar: Western Cape 15.6, Limpopo 14.6, Free State 2.4, Northern Cape 1.0
+| 2040, 2015 | area caps lifted | pending | | | | | | | |
+| 2040, 2015 | one bus on the national series, no caps | pending | | | | | | | |
+| 2040, 2015 | wind forced to the run's MW | pending | | | | | | | |
+
+Reading: pending, the cases are in the queues (queue10a weather 2025, queue10b weather 2015).
+
+### 727 (b): new wind's supply curve by area (build 2026-11-05f)
+
+The approved capacity by area (REEA records, status Approved, as the siting of 718 (e) uses) in the order of the capacity factor the LP sees: the regional modern-turbine series, scaled so that the approved-share fleet's energy equals the engine's national new-wind series (the scaling is the same factor for every area, so the order and the spread are the regional data's, the level the engine's). Beside it the unscaled series, and the LP's choice in each control. Caveat (user, message 727): approved records are not a resource limit; the curve is the approved pipeline in capacity-factor order, not the country's wind resource, and the Western Cape's 17.8 GW sits where it does because of its records' series, not because the Cape's wind is used up.
+
+Weather year 2025. national new-wind series (the engine's, engine_final_2035_wy2025.json): capacity factor 0.4154; existing-fleet series 0.3539; the regional series are scaled so that the approved-share fleet's energy equals the national series' (factor in the case notes) The engine's national new-wind series is the 42% figure of the model's cost basis (41.5% on this weather year, 39.3% on 2015); the Bid Window 6 wind bids' own capacity factor is 37.24% (RESULTS, 'New wind's capacity factor').
+
+| area | capacity factor, regional series as scaled | unscaled modern-turbine series | approved MW | cumulative MW | LP wind MW, 2035 | LP wind MW, 2040 |
+|---|---|---|---|---|---|---|
+| Hydra Central | 0.458 | 0.478 | 11,684 | 11,684 | 8,028 | 11,151 |
+| Northern Cape | 0.444 | 0.464 | 10,344 | 22,028 | 10,344 | 10,344 |
+| Eastern Cape | 0.431 | 0.450 | 6,190 | 28,218 | 3,153 | 6,190 |
+| Western Cape | 0.389 | 0.407 | 17,805 | 46,023 | 0 | 0 |
+| KwaZulu-Natal | 0.378 | 0.396 | 649 | 46,672 | 649 | 649 |
+| Free State | 0.359 | 0.375 | 190 | 46,862 | 0 | 190 |
+| North West | 0.344 | 0.360 | 350 | 47,212 | 0 | 350 |
+| Mpumalanga | 0.292 | 0.305 | 2,680 | 49,892 | 0 | 184 |
+| Gauteng | 0.258 | 0.269 | 75 | 49,967 | 0 | 75 |
+| Limpopo | 0.256 | 0.268 | 0 | 49,967 | 0 | 0 |
+| total | | | 49,967 | | 22,174 | 29,133 |
+
+Weather year 2015. national new-wind series (the engine's, engine_final_2035_wy2015.json): capacity factor 0.3926; existing-fleet series 0.3328; the regional series are scaled so that the approved-share fleet's energy equals the national series' (factor in the case notes)
+
+| area | capacity factor, regional series as scaled | unscaled modern-turbine series | approved MW | cumulative MW | LP wind MW, 2035 | LP wind MW, 2040 |
+|---|---|---|---|---|---|---|
+| Hydra Central | 0.442 | 0.470 | 11,684 | 11,684 | 8,928 | 11,320 |
+| Northern Cape | 0.427 | 0.454 | 10,344 | 22,028 | 10,344 | 10,344 |
+| Eastern Cape | 0.384 | 0.409 | 6,190 | 28,218 | 1,893 | 6,117 |
+| KwaZulu-Natal | 0.376 | 0.400 | 649 | 28,868 | 649 | 649 |
+| Free State | 0.375 | 0.400 | 190 | 29,058 | 190 | 0 |
+| North West | 0.370 | 0.394 | 350 | 29,408 | 350 | 350 |
+| Western Cape | 0.357 | 0.380 | 17,805 | 47,212 | 0 | 0 |
+| Mpumalanga | 0.315 | 0.335 | 2,680 | 49,892 | 372 | 2,680 |
+| Gauteng | 0.281 | 0.299 | 75 | 49,967 | 0 | 0 |
+| Limpopo | 0.276 | 0.294 | 0 | 49,967 | 0 | 0 |
+| total | | | 49,967 | | 22,727 | 31,461 |
+
+Reading. The LP's wind sits on the top of the curve: the three areas above 0.43 (Hydra Central, Northern Cape, Eastern Cape; 28.2 GW approved) and the small Free State, North West and KwaZulu-Natal records. In 2035 it stops at 22 GW inside the top three, a cost choice at those capacity factors; in 2040 it fills them and the small records (29.1 GW on weather 2025, 31.5 on 2015, the last with Mpumalanga's 2.7 GW at 0.315) and declines the next step, the Western Cape's 17.8 GW at 0.389 (0.357 on weather 2015), six to ten points below the national series the pathway's marginal wind runs on. That is the regional-resource part of the 2040 gap: the pathway builds its 41st gigawatt at the national 41.5%, the ten-area LP would have to build it at 38.9% or less, and at the run's costs it takes solar and lithium instead. How much of the gap that is, against the caps and the rest, is the split of (a).
+
+### 727 (c): the pending cases
+
+Done above (718 (f) and 722 (a)): 2040 priced corridors (R3.4bn a year, 20.1 GW), the full TDP priced (2035 R1.0bn and 5.9 GW, 2040 R1.2bn and 9.2 GW) and fixed (2035, R2.8bn above the control), the capped control (the same mix and cost as the control), weather 2015 (the controls and the 2035 priced case; the 2040 priced case on weather 2015 is in the queue), and Fossil-free's free mix (6-hour blocks; badly posed for that build as written, the no-gas, lithium-held variant in the queue). Corridors beyond the full TDP at R21,700 per MW-km (the free mix, 2035 and 2040): in the queue behind the Fossil-free variant; the fixed-build form at R21,700 from today's network is in 722 (a)'s table.
+
+### 727 (d): public sources that could check the Free State hub and Karoo corridor ratings
+
+The corridor table (St Clair sums over PyPSA-RSA's shapefile, two corridors estimated) is the weak point of every 2040 result above. Sources that carry the figures to check it against, none read for this note:
+
+1. Eskom's Transmission Development Plan (the TDP 2025 to 2034 document, published on the Eskom website under Transmission; a long PDF): its network diagrams give each main transmission line's voltage and the number of circuits by corridor, and its supply-area sections state the transfer limits the planners use (the Cape corridor and the Central corridor, which are the Karoo exits here; the Free State and Gauteng supply areas, which are the hub), with the lines by in-service year. It is the primary source for both the ratings and the TDP dates the model uses.
+2. The Generation Connection Capacity Assessment (GCCA 2025, Eskom, same site): capacity available to connect by main transmission substation and supply area. It is a connection figure, not a corridor rating, so it checks the within-area limits the model lacks rather than the corridor table.
+3. The NTCSA's grid capacity publications (the Transmission Network Capacity statements from 2024, under the National Transmission Company South Africa): corridor and supply-area limits, the figures the user has ruled out of anything for publication; they can check the table in private.
+4. The SAPP Pool Plan (Southern African Power Pool, 2017 revision, public): line ratings for the 765 and 400 kV backbone by circuit, which cover the Hydra to Cape and Free State lines.
+5. The IRP 2019 and its 2023 draft (DMRE): the transmission annexure states the corridor expansions the plan assumes and their capacities, a cross-check on the TDP's additions rather than on today's ratings.
+6. PyPSA-RSA's own documentation (the repository and the 2023 paper): states which line parameters the shapefile carries and how its authors rated them, so the St Clair assumption here can be compared with theirs.
+
+The rule that this session reads nothing from eskom.co.za and no long PDFs stands, so items 1 and 2 are for the user or a later session to fetch; item 4 and 6 are open web pages.
