@@ -227,6 +227,47 @@ metered reference year's calendar days (every vintage carries the same coefficie
 - So finding 3's gap is the reference year against the twelve weather years, not the 25 days against 365: the 365-day year plans on the
   same winter-light solar as the 25 days. Two stages' extra solar is not credited to the 25 days' solar shape (750 (b)).
 
+### Message 750 (c): each build re-costed on the same 365-day year and the same 25 days, 2035 (2040 when the central has it)
+
+Year 2035's single-year LP (OPER_FROM=HORIZON=2035, (a)'s settings, MAXP=1, pass 1's stress windows), every build to 2035 fixed from the
+build (two stages: tsr_central/fixed.json; fin pass: pathway_fin_05h.json, built on 05h and re-costed here on 05j), year 2035 on all 365
+days (STAGE2_YEAR=2035) or on the 25 clustered days; written out (harness/pathway/test15/retime/y365/dump.sh, on a copy of
+pathway_perfail.js whose OPER_FROM guard also takes FIX_TO=2035: recost_guard.patch), solved by highs_native.py, and year 2035's own cost
+sliced from the objective (slice.py: year 2035's dispatch and per-year terms, plus each build's annuity at year 2035's share of its
+discounted sum; R bn in 2035 rands). Results in recost_year.txt.
+
+| 2035, R bn | On 365 days | On 25 days |
+|---|---:|---:|
+| Two stages' build | 202.94 | 204.64 |
+| Fin pass's build | 203.60 | 200.45 |
+| Regret | fin +0.66 against two stages | two stages +4.19 against fin |
+| Capital share (two stages; fin) | 153.30; 138.57 | 153.30; 138.57 |
+| Dispatch and per-year (two stages; fin) | 49.64; 65.03 | 51.35; 61.88 |
+| of which shed above the stress target (tsl, at VOLL) | 0; 3.89 | 0; 0 |
+
+- On the 25 days the fin build is R4.19 bn cheaper in 2035; on the 365 days it is R0.66 bn dearer, and only because of R3.89 bn of shed
+  above the LP's stress target: without that term it is R3.24 bn cheaper there too. Two stages' extra build (R14.7 bn a year of capital)
+  saves R15.4 bn of dispatch and shed on the 365 days and R10.5 bn on the 25 days.
+- The shed above the target is small in energy and on one day the 25 days do not hold: on the 365 days the fin build sheds 123 MWh on day
+  134 (15 May), which carries the target over; both builds shed on day 195 (15 July; two stages 8,640 MWh, fin 11,282) and on the stress
+  window days (141 and 192 GWh), on the 25 days as on the 365.
+- Caveat: one year; the slice charges one year's annuity of every build standing, so it judges the year, not the path (the full-path
+  re-cost, 748, below, judges the path).
+
+### Message 748: the common 100-draw check (pathcheck K=100, 1,200 runs a year, SEED_BASE 71830529; settings read from the README row of
+engine_loop_base_05h_k100.json; on 05j, unserved identical with 05h for the fin pass at 20 draws)
+
+| Year | Two stages, GWh (se; worst run) | Fin pass | Baseline (c7-runs, 05h) |
+|---|---|---|---|
+| 2030 | 6.46 (0.44; 178.8) | 1.34 (0.18; 101.8) | running |
+| 2034 | 14.50 (1.12; 629.3) | 13.56 (0.85; 251.7) | 13.88 (0.85; 246.9) |
+| 2035 | 18.90 (1.02; 359.0) | 17.86 (1.05; 297.0) | 17.81 (1.05; 300.2) |
+| 2036 | after step 2036 | 14.03 (0.90; 307.6) | 15.46 (0.94; 322.3) |
+| 2040 | after step 2040 | running | running |
+
+Margins to 20 GWh so far (100 draws): two stages 13.54 / 5.50 / 1.10 in 2030 / 2034 / 2035; fin 18.66 / 6.44 / 2.14; baseline 6.12 /
+2.19 in 2034 / 2035. The rule is applied when every gated year is in.
+
 When the central has all 15 steps: step 2040's output carries every year's build exactly as each
 step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's
 20-draw settings, 2030, 2035, 2040). Objective: both builds fixed in the same one-stage LP on 05j (FIX_FROM, all years), so the gap is

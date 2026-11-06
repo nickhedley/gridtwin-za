@@ -1,0 +1,3 @@
+2026-11-06T14:18:14Z engine100 fin from /tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2030,2034,2035,2036,2040
+2026-11-06T14:18:14Z engine100 ts_a from /home/user/gtza-retime/harness/out/tsr_central/step_2035.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2030,2034,2035
+2026-11-06T14:54:55Z engine100 ts_a rc=0 2030 6.46 (se 0.44; worst 178.8; runs 1200); 2034 14.50 (se 1.12; worst 629.3; runs 1200); 2035 18.90 (se 1.02; worst 359.0; runs 1200)
