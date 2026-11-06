@@ -23111,3 +23111,25 @@ H2 2026 2,202 MW (1,414 private, 789 public), 2026 financial closes 1,713 MW, ad
 from January 2025 to September 2026, private capacity operating or expected in 2026 is about 2.4 GW (958 MW wheeled in H1, 1,414 in
 H2), about a fifth, and 2026's financial closes about an eighth; the sets are not matched project by project, so these are orders of
 magnitude only.
+
+### The common 100-draw gate on the 7 Nov loops, and the rule for the final key (messages 726 (a), (b)): the baseline, mixed-reference and 37.24% loops each meet 20 GWh in every gated year; about 40 minutes of checking per pathway on a loaded machine
+
+Settings: pathcheck.js at 10a98e2 (the fin basis), K=100 per weather year (1,200 runs a year), SEED_BASE 71830529 for every case, on each
+loop's final build; LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1; 2034-2036, and 2040 where the loop's 20-draw engine check
+reads over 15 GWh. Files: harness/pathway/final/engine_loop_*_05h_k100.json. 6 Nov 2026, 07:02-09:28 UTC.
+
+| Loop (final pass) | 2034, GWh (se; worst run) | 2035 | 2036 | 2040 | Loop's own verdict |
+|---|---|---|---|---|---|
+| Baseline, metered 2025, new wind 42.0% (pass 1) | 13.88 (0.85; 246.9) | 17.81 (1.05; 300.2) | 15.46 (0.94; 322.3) | not gated (8.61 at 20 draws) | adequate at pass 1 |
+| Mixed reference, wind metered, solar 2025 (pass 1) | 15.44 (0.86; 242.0) | 19.09 (1.06; 298.7) | 17.59 (0.97; 315.6) | 15.09 (0.76; 202.8) | adequate at pass 1 |
+| New wind at BW6 bids' 37.24% (pass 2) | 5.32 (0.51; 192.6) | 5.58 (0.50; 184.3) | 9.20 (0.71; 215.7) | not gated (8.75 at 20 draws) | adequate after pass 2 |
+
+The metered 2024 loop is in its second pass. Each 100-draw year took about 12.5 minutes with four other jobs on the four cores (the
+baseline's three years in 37 minutes).
+
+The rule for the final key (726 (b)): extreme days recomputed once on the final build and its reference, then frozen for every pathway
+(721 (c)); each pathway looped to its own verdict (VERDICT_TOPUP), then gated by the common 100-draw check on its final build for
+2034-2036, and 2040 where its 20-draw check reads over 15 GWh; the standard is a mean of 20 GWh a year or less in each gated year,
+reported with its standard error and worst run; a pathway over it takes another loop pass. Cost on 38 pathways: about 40 minutes each
+(three years) on today's loaded machine, a quarter more where 2040 is gated; about 25 machine-hours, about 6.5 hours of wall time four
+at a time on a free machine or about 13 hours two at a time beside the solves; each failing pathway adds a pass of 3-5 hours.
