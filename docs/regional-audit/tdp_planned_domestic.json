@@ -1,0 +1,1127 @@
+[
+{
+"label": "Medupi Integration Phase 2A:Mogwase",
+"kv": 400,
+"km": 195.6,
+"a": "Limpopo",
+"b": "North West",
+"inter": true,
+"ends": "Medupi to Ngwedi"
+},
+{
+"label": "Medupi Integration Phase 2A:Mogwase",
+"kv": 400,
+"km": 23.5,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Medupi to Medupi"
+},
+{
+"label": "Kimberley Strengthening Phase 3",
+"kv": 400,
+"km": 234.1,
+"a": "North West",
+"b": "North West",
+"inter": false,
+"ends": "Mookodi to Hermes"
+},
+{
+"label": "Medupi Integration Phase 2A:Mogwase",
+"kv": 400,
+"km": 195.6,
+"a": "Limpopo",
+"b": "North West",
+"inter": true,
+"ends": "Medupi to Ngwedi"
+},
+{
+"label": "Medupi Integration Phase 2A:Mogwase",
+"kv": 400,
+"km": 22.3,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Medupi to Medupi"
+},
+{
+"label": "Watershed (Backbone) Strengthening Phase 3",
+"kv": 400,
+"km": 187.6,
+"a": "North West",
+"b": "North West",
+"inter": false,
+"ends": "Watershed to Pluto"
+},
+{
+"label": "Watershed (Backbone) Strengthening Phase 3",
+"kv": 400,
+"km": 195.1,
+"a": "North West",
+"b": "North West",
+"inter": false,
+"ends": "Mookodi to Watershed"
+},
+{
+"label": "Kimberley Strengthening Phase 3",
+"kv": 400,
+"km": 234.1,
+"a": "North West",
+"b": "North West",
+"inter": false,
+"ends": "Mookodi to Hermes"
+},
+{
+"label": "N Cape reinforcement: ferrum-Niewehoop-Aries 400 kV",
+"kv": 220,
+"km": 93.9,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Aggeneis to Paulputs"
+},
+{
+"label": "Northern Cape reinforcement",
+"kv": 400,
+"km": 283.3,
+"a": "Western Cape",
+"b": "Northern Cape",
+"inter": true,
+"ends": "Juno to Gromis"
+},
+{
+"label": "Upington Strengthening Phase 1c",
+"kv": 400,
+"km": 260.4,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Upington to Ferrum"
+},
+{
+"label": "N Cape reinforcement: Ferrum-Niewehoop-Aries 400 kV",
+"kv": 400,
+"km": 259.2,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Ferrum to Nieuwehoop"
+},
+{
+"label": "",
+"kv": 400,
+"km": 350.8,
+"a": "Northern Cape",
+"b": "Hydra Central",
+"inter": true,
+"ends": "Aries to Hydra"
+},
+{
+"label": "Upington Strengthening Phase 1b",
+"kv": 400,
+"km": 136.5,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Aries to Upington"
+},
+{
+"label": "Upington Strengthening Phase 1b",
+"kv": 400,
+"km": 136.9,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Aries to Upington"
+},
+{
+"label": "Kimberley Strengthening Phase 4A",
+"kv": 400,
+"km": 81.9,
+"a": "Free State",
+"b": "Northern Cape",
+"inter": true,
+"ends": "Beta to Boundary"
+},
+{
+"label": "Kimberley Strengthening Phase 4A",
+"kv": 400,
+"km": 82.0,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Boundary to Olien"
+},
+{
+"label": "Helios IPP transformation",
+"kv": 400,
+"km": 74.1,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Gromis to Nama"
+},
+{
+"label": "Ruigtevallei MTS Transformation",
+"kv": 400,
+"km": 138.0,
+"a": "Hydra Central",
+"b": "Hydra Central",
+"inter": false,
+"ends": "Hydra to Ruigtevallei"
+},
+{
+"label": "Helios IPP transformation",
+"kv": 400,
+"km": 98.8,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Nama to Aggeneis"
+},
+{
+"label": "Namaqualand Strengthening",
+"kv": 220,
+"km": 130.7,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Oranjemond to Gromis"
+},
+{
+"label": "Kimberley Strengthening Phase 3",
+"kv": 400,
+"km": 81.2,
+"a": "Northern Cape",
+"b": "Northern Cape",
+"inter": false,
+"ends": "Ferrum to Ferrum"
+},
+{
+"label": "Kimberley Strengthening Phase 3",
+"kv": 400,
+"km": 194.1,
+"a": "Northern Cape",
+"b": "North West",
+"inter": true,
+"ends": "Ferrum to Mookodi"
+},
+{
+"label": "Highveld North-West and Lowveld North Reinforcement - Phase 1",
+"kv": 400,
+"km": 3.2,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Emkhiweni to Emkhiweni"
+},
+{
+"label": "Highveld North-West and Lowveld North Reinforcement - Phase 1",
+"kv": 400,
+"km": 3.3,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Emkhiweni to Emkhiweni"
+},
+{
+"label": "Highveld South Reinforcement 2",
+"kv": 400,
+"km": 0.5,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Sol to Sol"
+},
+{
+"label": "Highveld South Reinforcement 2",
+"kv": 400,
+"km": 0.4,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Sol to Sol"
+},
+{
+"label": "Highveld South Reinforcement 2",
+"kv": 400,
+"km": 7.5,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Sol to Sol"
+},
+{
+"label": "Highveld South Reinforcement 2",
+"kv": 400,
+"km": 0.1,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Sol to Sol"
+},
+{
+"label": "Highveld South Reinforcement 2",
+"kv": 400,
+"km": 0.0,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Sol to Sol"
+},
+{
+"label": "Highveld South Reinforcement 2",
+"kv": 400,
+"km": 0.0,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Sol to Sol"
+},
+{
+"label": "Kusile PS Integration",
+"kv": 400,
+"km": 105.4,
+"a": "Mpumalanga",
+"b": "Gauteng",
+"inter": true,
+"ends": "Kusile to Lulamisa"
+},
+{
+"label": "Kusile PS Integration",
+"kv": 400,
+"km": 69.1,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Kendal to Zeus"
+},
+{
+"label": "Lowveld Strengthening Phase 2 B",
+"kv": 400,
+"km": 92.5,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Gumeni to Marathon"
+},
+{
+"label": "Khanyisa Power Station Integration",
+"kv": 400,
+"km": 3.5,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Duvha to Duvha"
+},
+{
+"label": "Khanyisa Power Station Integration",
+"kv": 400,
+"km": 3.6,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Duvha to Duvha"
+},
+{
+"label": "Kusile PS Integration",
+"kv": 400,
+"km": 69.2,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Kendal to Zeus"
+},
+{
+"label": "Tubatse Strengthening Scheme Phase 1",
+"kv": 400,
+"km": 47.3,
+"a": "Limpopo",
+"b": "Mpumalanga",
+"inter": true,
+"ends": "Senakangwedi to Manogeng"
+},
+{
+"label": "Nzhelele 400 kV Integration",
+"kv": 400,
+"km": 95.2,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Tabor to Tabor"
+},
+{
+"label": "Nzhelele 400 kV Integration",
+"kv": 400,
+"km": 199.7,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Tabor to Borutho"
+},
+{
+"label": "Tubatse Strengthening Scheme Phase 1",
+"kv": 400,
+"km": 2.4,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Senakangwedi to Senakangwedi"
+},
+{
+"label": "Tubatse Strengthening Scheme Phase 1",
+"kv": 400,
+"km": 2.8,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Senakangwedi to Senakangwedi"
+},
+{
+"label": "Tubatse Strengthening Scheme Phase 1",
+"kv": 400,
+"km": 146.8,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Witkop to Senakangwedi"
+},
+{
+"label": "Waterberg Generation 400 kV Stability Enhancement",
+"kv": 400,
+"km": 148.2,
+"a": "Limpopo",
+"b": "Mpumalanga",
+"inter": true,
+"ends": "Borutho to Silimela"
+},
+{
+"label": "Waterberg Generation 400 kV Satbility Enhancement",
+"kv": 400,
+"km": 217.1,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Medupi to Witkop"
+},
+{
+"label": "Tubatse Strengthening Scheme Phase 1",
+"kv": 275,
+"km": 15.3,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Senakangwedi to Senakangwedi"
+},
+{
+"label": "Limpopo East Corridor Strengthening",
+"kv": 400,
+"km": 138.9,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Foskor to Spencer"
+},
+{
+"label": "Medupi Transmission Integration",
+"kv": 400,
+"km": 170.5,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Medupi to Borutho"
+},
+{
+"label": "Highveld North-West and Lowveld North Reinforcement-Phase 1",
+"kv": 400,
+"km": 107.3,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Silimela to Emkhiweni"
+},
+{
+"label": "Foskor & Acornhoek 275/132 kV Transformation Upgrades",
+"kv": 275,
+"km": 131.5,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Merensky to Foskor"
+},
+{
+"label": "Limpopo East Corridor Strengthening",
+"kv": 400,
+"km": 129.2,
+"a": "Limpopo",
+"b": "Limpopo",
+"inter": false,
+"ends": "Merensky to Foskor"
+},
+{
+"label": "Lowveld North Reinforcement-Phase 2",
+"kv": 400,
+"km": 68.4,
+"a": "Mpumalanga",
+"b": "Mpumalanga",
+"inter": false,
+"ends": "Silimela to Manogeng"
+},
+{
+"label": "KZN 765 kV Strengthening - Empangeni Integration",
+"kv": 400,
+"km": 28.9,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Athene to Invubu"
+},
+{
+"label": "KZN 765 kV Strengthening - Empangeni Integration",
+"kv": 400,
+"km": 1.2,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Athene to Athene"
+},
+{
+"label": "KZN 765 kV Strengthening - Empangeni Integration",
+"kv": 400,
+"km": 1.2,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Athene to Athene"
+},
+{
+"label": "KZN 765 kV Strengthening - Empangeni Integration",
+"kv": 400,
+"km": 1.0,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Athene to Athene"
+},
+{
+"label": "KZN 765 kV Strengthening - Isundu-Mbewu 1st & 2nd 400 kV Lines",
+"kv": 400,
+"km": 76.9,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Ariadne to Avon"
+},
+{
+"label": "KZN 765 kV Strengthening - Isundu-Mbewu 1st & 2nd 400 kV Lines",
+"kv": 400,
+"km": 338.5,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Avon to Ariadne"
+},
+{
+"label": "KZN 765 kV Strengthening - Empangeni Integration",
+"kv": 400,
+"km": 97.9,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Umfolozi to Athene"
+},
+{
+"label": "KZN 765 kV Strengthening - Pinetown Integration",
+"kv": 400,
+"km": 5.3,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Ariadne to Georgedale"
+},
+{
+"label": "eThekwini Electricity Network Strengthening",
+"kv": 400,
+"km": 25.3,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Avon to Avon"
+},
+{
+"label": "eThekwini Electricity Network Strengthening",
+"kv": 400,
+"km": 9.3,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Hector to Hector"
+},
+{
+"label": "NKZN Strengthening Phase 1",
+"kv": 400,
+"km": 125.7,
+"a": "Mpumalanga",
+"b": "Kwazulu Natal",
+"inter": true,
+"ends": "Normandie to Umfolozi"
+},
+{
+"label": "NKZN Strengthening Phase 2",
+"kv": 400,
+"km": 117.8,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Umfolozi to Athene"
+},
+{
+"label": "KZN 765 kV Strengthening - Pinetown Integration",
+"kv": 400,
+"km": 115.5,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Venus to Ariadne"
+},
+{
+"label": "Ariadne-Venus 2nd 400 kV Line",
+"kv": 400,
+"km": 56.7,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Mersey to Ariadne"
+},
+{
+"label": "Ariadne-Venus 2nd 400 kV Line",
+"kv": 400,
+"km": 0.4,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Mersey to Mersey"
+},
+{
+"label": "Ariadne-Venus 2nd 400 kV Line",
+"kv": 400,
+"km": 63.2,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Venus to Mersey"
+},
+{
+"label": "South Coast Strengthening",
+"kv": 400,
+"km": 169.5,
+"a": "Kwazulu Natal",
+"b": "Eastern Cape",
+"inter": true,
+"ends": "Ariadne to Eros"
+},
+{
+"label": "South Coast Strengthening",
+"kv": 400,
+"km": 16.4,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Eros to Eros"
+},
+{
+"label": "South Coast Strengthening",
+"kv": 400,
+"km": 16.3,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Eros to Eros"
+},
+{
+"label": "eThekwini Electricity Network Strengthening",
+"kv": 400,
+"km": 9.3,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Hector to Hector"
+},
+{
+"label": "KZN 765 kV Strengthening - Pinetown Integration",
+"kv": 400,
+"km": 5.3,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Ariadne to Georgedale"
+},
+{
+"label": "Tshwane Reinforcement: Phoebus Phase 2",
+"kv": 275,
+"km": 26.2,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Diphororo to Kwagga"
+},
+{
+"label": "JHB North Strenthening: Demeter 400 kV Integration",
+"kv": 400,
+"km": 12.9,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Lulamisa to Lulamisa"
+},
+{
+"label": "JHB North Strenthening: Demeter 400 kV Integration",
+"kv": 400,
+"km": 12.9,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Lulamisa to Lulamisa"
+},
+{
+"label": "JHB East Strengthening: Jupiter B",
+"kv": 275,
+"km": 1.3,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Jupiter to Prospect"
+},
+{
+"label": "JHB East Strengthening: Jupiter B",
+"kv": 275,
+"km": 0.0,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Jupiter to Jupiter"
+},
+{
+"label": "JHB East Strengthening: Jupiter B",
+"kv": 275,
+"km": 0.0,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Jupiter to Jupiter"
+},
+{
+"label": "JHB East Strengthening: Jupiter B",
+"kv": 275,
+"km": 0.1,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Jupiter to Jupiter"
+},
+{
+"label": "JHB East Strengthening: Jupiter B",
+"kv": 275,
+"km": 0.0,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Jupiter to Jupiter"
+},
+{
+"label": "JHB East Strengthening: Jupiter B",
+"kv": 275,
+"km": 0.0,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Jupiter to Jupiter"
+},
+{
+"label": "JHB East Strengthening: Jupiter B",
+"kv": 275,
+"km": 1.3,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Jupiter to Prospect"
+},
+{
+"label": "JHB East Strengthening: North Rand Integration",
+"kv": 275,
+"km": 11.3,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Apollo to Esselen"
+},
+{
+"label": "JHB East Strengthening: Jupiter B Integration",
+"kv": 275,
+"km": 118.7,
+"a": "Mpumalanga",
+"b": "Gauteng",
+"inter": true,
+"ends": "Matla to Jupiter"
+},
+{
+"label": "JHB North Strengthening Phase 2",
+"kv": 275,
+"km": 20.6,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Apollo to Lepini"
+},
+{
+"label": "Simmerpan 275 KV Integration Phase 1",
+"kv": 275,
+"km": 4.6,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Jupiter to Jupiter"
+},
+{
+"label": "Johannesburg Central Strengthening",
+"kv": 275,
+"km": 15.2,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Etna to Fordsburg"
+},
+{
+"label": "Vaal Strenthening Phase 2",
+"kv": 275,
+"km": 31.7,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Etna to Glockner"
+},
+{
+"label": "West Rand Strengthening Phase 1",
+"kv": 400,
+"km": 37.1,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Bernina to Westgate"
+},
+{
+"label": "Tshwane Reinforcement: Phoebus Phase 2",
+"kv": 275,
+"km": 30.0,
+"a": "Gauteng",
+"b": "Limpopo",
+"inter": true,
+"ends": "Diphororo to Pelly"
+},
+{
+"label": "Tshwane Reinforcement: Diphororo Phase 1",
+"kv": 400,
+"km": 0.2,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Diphororo to Diphororo"
+},
+{
+"label": "Tshwane Reinforcement: Diphororo Phase 1",
+"kv": 400,
+"km": 0.2,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Diphororo to Diphororo"
+},
+{
+"label": "Tshwane Reinforcement: Wildebees Phase 1",
+"kv": 400,
+"km": 0.0,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Wildebees to Wildebees"
+},
+{
+"label": "Tshwane Reinforcement: Wildebees Phase 1",
+"kv": 400,
+"km": 0.0,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Wildebees to Wildebees"
+},
+{
+"label": "Tshwane Reinforcement: Wildebees Phase 1",
+"kv": 400,
+"km": 0.8,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Wildebees to Wildebees"
+},
+{
+"label": "JHB East Strengthening: North Rand Integration",
+"kv": 275,
+"km": 5.0,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Sebenza to Sebenza"
+},
+{
+"label": "JHB East Strengthening: North Rand Integration",
+"kv": 275,
+"km": 5.1,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Sebenza to Sebenza"
+},
+{
+"label": "Makalu Strengthening",
+"kv": 275,
+"km": 11.6,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Makalu to Makalu"
+},
+{
+"label": "Makalu Strengthening",
+"kv": 275,
+"km": 11.7,
+"a": "Gauteng",
+"b": "Gauteng",
+"inter": false,
+"ends": "Makalu to Makalu"
+},
+{
+"label": "Bloemfontein Strengthening Phase 2",
+"kv": 400,
+"km": 68.4,
+"a": "Free State",
+"b": "Free State",
+"inter": false,
+"ends": "Beta to Harvard"
+},
+{
+"label": "Bloemfontein Strengthening Phase 2",
+"kv": 400,
+"km": 68.5,
+"a": "Free State",
+"b": "Free State",
+"inter": false,
+"ends": "Beta to Harvard"
+},
+{
+"label": "Sorata Substation Strengthening",
+"kv": 275,
+"km": 52.4,
+"a": "Kwazulu Natal",
+"b": "Kwazulu Natal",
+"inter": false,
+"ends": "Sorata to Tugela"
+},
+{
+"label": "Nuclear 1 Integration: Thyspunt",
+"kv": 400,
+"km": 146.8,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Chatty to Dedisa"
+},
+{
+"label": "Nuclear 1 Integration: Thyspunt",
+"kv": 400,
+"km": 140.0,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Grassridge to Chatty"
+},
+{
+"label": "Port Elizabeth SS Integration",
+"kv": 400,
+"km": 46.1,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Grassridge to Chatty"
+},
+{
+"label": "Nuclear 1 Integration: Thyspunt",
+"kv": 400,
+"km": 68.2,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Chatty to Chatty"
+},
+{
+"label": "Port Elizabeth SS Integration",
+"kv": 400,
+"km": 46.2,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Grassridge to Chatty"
+},
+{
+"label": "Southern Grid Phase 3",
+"kv": 765,
+"km": 360.7,
+"a": "Hydra Central",
+"b": "Eastern Cape",
+"inter": true,
+"ends": "Gamma to Grassridge"
+},
+{
+"label": "Southern Grid Phase 4",
+"kv": 765,
+"km": 360.8,
+"a": "Hydra Central",
+"b": "Eastern Cape",
+"inter": true,
+"ends": "Gamma to Grassridge"
+},
+{
+"label": "Greater EL Phase 3",
+"kv": 400,
+"km": 34.0,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Pembroke to Neptune"
+},
+{
+"label": "Greater EL Phase 4",
+"kv": 400,
+"km": 166.0,
+"a": "Eastern Cape",
+"b": "Eastern Cape",
+"inter": false,
+"ends": "Poseidon to Pembroke"
+},
+{
+"label": "Cape Corridor phase 4: 2nd Zeus-Sterrekus 765 kV line",
+"kv": 765,
+"km": 430.1,
+"a": "Free State",
+"b": "Hydra Central",
+"inter": true,
+"ends": "Perseus to Gamma"
+},
+{
+"label": "Cape Corridor phase 4: 2nd Zeus-Sterrekus 765 kV line",
+"kv": 765,
+"km": 432.5,
+"a": "Mpumalanga",
+"b": "Free State",
+"inter": true,
+"ends": "Zeus to Perseus"
+},
+{
+"label": "Cape Corridor phase 4: 2nd Zeus-Sterrekus 765 kV line",
+"kv": 765,
+"km": 373.3,
+"a": "Hydra Central",
+"b": "Western Cape",
+"inter": true,
+"ends": "Gamma to Kappa"
+},
+{
+"label": "Agulhas Substation (Vryheid Transmission Substation)",
+"kv": 400,
+"km": 2.8,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Agulhas to Agulhas"
+},
+{
+"label": "Agulhas Substation (Vryheid Transmission Substation)",
+"kv": 400,
+"km": 0.2,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Agulhas to Agulhas"
+},
+{
+"label": "Agulhas Substation (Vryheid Transmission Substation)",
+"kv": 400,
+"km": 0.2,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Agulhas to Agulhas"
+},
+{
+"label": "Cape Corridor phase 4: 2nd Zeus-Sterrekus 765 kV line",
+"kv": 765,
+"km": 193.3,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Kappa to Sterrekus"
+},
+{
+"label": "Asteria Substation (Houhoek Transmission Substation)",
+"kv": 400,
+"km": 1.9,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Palmiet to Palmiet"
+},
+{
+"label": "Asteria Substation (Houhoek Transmission Substation)",
+"kv": 400,
+"km": 1.8,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Palmiet to Palmiet"
+},
+{
+"label": "Erica Substation (Mitchells Plain Transmission Substation)",
+"kv": 400,
+"km": 9.8,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Philippi to Philippi"
+},
+{
+"label": "Erica Substation (Mitchells Plain Transmission Substation)",
+"kv": 400,
+"km": 7.2,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Philippi to Stikland"
+},
+{
+"label": "Erica Substation (Mitchells Plain Transmission Substation)",
+"kv": 400,
+"km": 7.3,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Philippi to Stikland"
+},
+{
+"label": "2nd Koeberg-Acacia 400 kV line",
+"kv": 400,
+"km": 31.2,
+"a": "Western Cape",
+"b": "Western Cape",
+"inter": false,
+"ends": "Acacia to Koeberg"
+}
+]
