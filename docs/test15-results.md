@@ -144,6 +144,23 @@ Script for the table: harness/pathway/test15_compare.py (the rule read as both: 
 figure). Test 13's 1% ranges: only wind 2040's minimum is measured (24,605 MW, provisional: the old twin); no other range exists yet, so the
 rule's third test applies to wind 2040 only and only from below.
 
+2030, final for the mix (steps 2026-2030 fix every build to 2030; step y's year equals step 2040's, checked on test 15's central), engine
+on step_2030.json with YEARS=2030 (the same row's settings):
+
+| 2030 | One stage (fin pass) | Two stages | Gap | Outside 5% and 250 MW |
+|---|---:|---:|---:|---|
+| Wind, MW new from 2026 | 9,746 | 9,746 | 0 | no |
+| Solar, MW | 7,179 | 9,745 | +2,566 (+35.7%) | yes |
+| Lithium, MW / MWh | 1,588 / 3,719 | 3,212 / 4,103 | +1,624 / +384 | yes / yes |
+| Grid-forming, MW | 934 | 1,487 | +553 | yes |
+| Coal standing, MW (retired early) | 31,730 (703) | 29,256 (3,177) | -2,474 | yes |
+| Engine unserved, GWh (se), limit 20 | 2.04 (0.63) | 7.75 (1.07) | +5.71 | |
+| Engine cost, R bn; CO2, Mt; curtailment, TWh | 242.62; 130.9; 1.93 | 241.18; 125.2; 3.31 | | |
+
+In 2030 two stages builds more solar, lithium and grid-forming and retires more coal early; every gap but wind's is outside 5% and 250
+MW, and the engine is worse (7.75 against 2.04 GWh, both inside the standard), so by 699 (b) one stage stays the headline for 2030. The
+loop's own check put 2030 at 1.68 GWh on 2 draws (under the verdict rule's 5 GWh top-up threshold); the 20-draw check reads 7.75.
+
 When the central has all 15 steps: step 2040's output carries every year's build exactly as each
 step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's
 20-draw settings, 2030, 2035, 2040). Objective: both builds fixed in the same one-stage LP on 05j (FIX_FROM, all years), so the gap is

@@ -6,3 +6,5 @@ SS_FC=reservecoal
 CONG_OFF=1
 WX_WINDCORR=1
 2026-11-06T03:29:38Z engine fin rc=0 2030 2.04 (se 0.63); 2035 19.58 (se 2.19); 2040 11.21 (se 1.58)
+2026-11-06T03:30:24Z engine ts2030 from /home/user/gtza-retime/harness/out/tsr_central/step_2030.json, settings from the row: K=20 YEARS=2030,2035,2040 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 YEARS=2030
+2026-11-06T03:33:02Z engine ts2030 rc=0 2030 7.75 (se 1.07)
