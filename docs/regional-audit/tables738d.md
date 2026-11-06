@@ -13,7 +13,7 @@
 | 2040 | control | the test's | 29.1 (40.7) | 31.9 (24.8) | 0.0 | 13.2, 87 | 1.08 | 181.7 | 197.8 | 16.1 |
 | 2040 | control | the run's | 30.0 (40.7) | 32.9 (24.8) | 22.3 | 13.5, 90 | 0.64 | 173.0 | 192.3 | 19.2 |
 | 2040 | area caps lifted | the test's | 39.8 (40.7) | 19.2 (24.8) | 0.0 | 10.3, 45 | 0.00 | 171.6 | 197.8 | 26.2 |
-| 2040 | area caps lifted | the run's | pending | | | | | | | |
+| 2040 | area caps lifted | the run's | 38.0 (40.7) | 22.3 (24.8) | 22.3 | 10.5, 48 | 0.00 | 163.7 | 192.3 | 28.6 |
 | 2040 | one bus on the national series | the test's | 35.0 (40.7) | 28.1 (24.8) | 0.0 | 11.6, 60 | 3.98 | 194.3 | 197.8 | 3.6 |
 | 2040 | one bus on the national series | the run's | pending | | | | | | | |
 | 2040 | wind forced to the run's MW | the test's | 40.7 (40.7) | 21.5 (24.8) | 0.0 | 11.2, 56 | 1.98 | 186.6 | 197.8 | 11.3 |
