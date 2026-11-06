@@ -1518,3 +1518,8 @@ not the solar one). Every other field identical; hybridUplift is pure and nothin
 machine at load 8 or more and the page's own panel computations possibly overlapping the check. Cause not established; not counted as a
 pass. To do: reproduce under load (the page's in-flight panel work at the moment the check stubs the schedulers), and find how the page
 side could pair the solar hybrid with the wind price.
+
+14nf. nodal/nersa_registrations.json: add Q2 2026/27 from NERSA's media statement of 5 Nov 2026 (SOURCES 'NERSA media statement, 5 Nov
+2026'; the statement is the primary source, the SAPVIA dashboard a collation), in the first data update after PR #161 (user, 6 Nov 2026,
+message 742 (a)): the quarter by technology, province and network; the cumulative 2,763 facilities, 23,260 MW, R487bn; calendar 2025
+7,464 MW and 2026 to September 5,260 MW. Name the statement as the source of each quarter it gives. Not in PR #161.

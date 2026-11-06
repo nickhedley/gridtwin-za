@@ -1647,6 +1647,22 @@ commercial and industrial (C&I) sites, 277 MWp.
   - The sample is C&I, not residential. A performance ratio is not the same measure as a derate applied to a utility
     per-unit profile; reconcile the two before comparing.
 
+## NERSA media statement, 5 Nov 2026: generation facilities registered in Q2 2026/27 (user, 6 Nov 2026, message 742 (a))
+
+NERSA's media statement of 5 Nov 2026 (the primary source; Nick's copy in Drive). nodal/nersa_registrations.json carries the series to
+Q1 2026/27 from the SAPVIA dashboard, which collates these statements; the statement itself is the primary source for every quarter.
+- Q2 2026/27 (July-September 2026): 144 facilities, 3,129 MW, R78.16bn.
+- By technology: solar 139 facilities, 2,045 MW; wind 3, 1,063 MW (2 in the Western Cape, 1 in Mpumalanga); batteries 1, 3 MW;
+  co-generation 1, 18 MW.
+- By province, MW: Western Cape 1,189; Gauteng 25; Limpopo 484; North West 416; KwaZulu-Natal 39; Free State 543; Eastern Cape 2;
+  Northern Cape 240; Mpumalanga 191.
+- By network: Eskom 76 facilities, 3,079 MW; municipal 68, 50 MW.
+- Cumulative since registration began: 2,763 facilities, 23,260 MW, R487bn. Calendar 2025: 7,464 MW; 2026 to September: 5,260 MW.
+Checked: the technologies, the provinces and the two networks each add to 144 facilities and 3,129 MW; the cumulative figures are the
+file's Q1 2026/27 totals (2,619 facilities, 20,131 MW, about R409bn) plus this quarter's. Registrations are not builds, and the
+statement's investment figures are not capex for the model (message 742 (b)). Into nodal/nersa_registrations.json at the first data
+update after PR #161 (TODO 14nf).
+
 ## Eskom Distribution and NERSA: time-of-use, feed-in tariffs and smart metering webinar, 14 Oct 2026 (user, 17 Oct 2026, message 170)
 
 O. Rantwane (Eskom Distribution), 'Time-of-Use Tariffs, Feed-in Tariffs and Smart Metering: residential and commercial
