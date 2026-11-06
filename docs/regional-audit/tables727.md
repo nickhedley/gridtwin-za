@@ -26,6 +26,7 @@
     wind by area GW: Hydra Central 11.7, Northern Cape 10.3, Western Cape 8.6, Eastern Cape 6.2, Mpumalanga 2.7, Kwazulu Natal 0.6, North West 0.3, Free State 0.2, Gauteng 0.1; solar: Northern Cape 21.5
 | 2040, 2015 | control (per-area series, approved caps) | 31.5 (40.7) | 33.5 (24.8) | 11.1, 68 (11.0, 61) | 1.75 (4.34) | 52.1 | 14.4 | 193.1 | 12.2 |
     wind by area GW: Hydra Central 11.3, Northern Cape 10.3, Eastern Cape 6.1, Mpumalanga 2.7, Kwazulu Natal 0.6, North West 0.3; solar: Western Cape 15.6, Limpopo 14.6, Free State 2.4, Northern Cape 1.0
-| 2040, 2015 | area caps lifted | pending | | | | | | | |
+| 2040, 2015 | area caps lifted | 37.5 (40.7) | 26.5 (24.8) | 10.4, 52 (11.0, 61) | 1.19 (4.34) | 48.9 | 16.3 | 186.1 | 19.1 |
+    wind by area GW: Northern Cape 27.5, Kwazulu Natal 7.5, Eastern Cape 2.5; solar: Western Cape 16.4, Limpopo 8.7, Free State 1.4
 | 2040, 2015 | one bus on the national series, no caps | pending | | | | | | | |
 | 2040, 2015 | wind forced to the run's MW | pending | | | | | | | |
