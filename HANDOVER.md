@@ -1,4 +1,18 @@
-# GridTwin ZA - handover, current state (kept current; updated 5 Nov 2026, 22:15 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 6 Nov 2026, 09:40 SAST)
+
+## 6 Nov morning (messages 726, 730, 733): where things stand
+
+- Worktrees: gtza-rt (claude/twin-retime, PR #161, build 06b uncommitted until the stored panels finish); gtza-fin (10a98e2 + the
+  verdict cache, the 7 Nov loops' code: do not edit while a loop runs); gtza-w40 and gtza-rpcap (comparison copies of gtza-fin, on no
+  branch: 'cf0.40' in windNewCorr for the 40% wind case; rpcap_ rows, the same-area cap of message 733). Each has the loops' script
+  byte for byte; their index.html differs only by the comparison change.
+- Running (scratchpad loops/progress.txt): w3724 and m24 pass 2 (solve_loop.sh, PIECE_S=5200, nice 5); base's 100-draw recheck
+  (2034-2036); the stored panels on 06b. Next, in order: mix's 100-draw recheck (2034-2036 and 2040); the rpcap pass (solve_rpcap.sh,
+  P1=1, nice 10); the 40% loop (solve_w40.sh, nice 12); 100-draw rechecks of w3724 and m24 when final; finding 3's sizing pass; 714 (d).
+- The 7 Nov table: scratchpad loops/table7.py from each case's final files; the gate is the common 100-draw check (726 (a)).
+- The verdict cache writes about 600 MB per loop per pass into each lpc_ folder; 14 GB free at 07:30 UTC.
+- PR #161: CI red on 8d0ac66 and f6fe419 (stress suite, offshoreSeriesFor after the start-up code; this PR's), fixed in 06b, green
+  expected once pushed. Subscribed to its activity. Do not merge.
 
 ## 5 Nov evening (messages 714-720): where things stand
 
