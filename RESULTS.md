@@ -23416,3 +23416,28 @@ base_k100_2030_2040.json; f3/compare.py, f3/table759.py. 6 Nov 2026, 15:00-21:20
 - Reading: on the central's own days the LP plans more summer-season solar than the engine sees and so builds a little less solar and
   storage than it would with the twelve years' seasons; correcting it moves 2040 by +1.3 GW solar and +1.8 GW lithium, the build
   otherwise as the baseline's. The hour shape (July 07:00 and 17:00) is not corrected in f3d.
+
+### The 8 Nov key candidate with the battery proposals 1-3 (message 759 (a)): the LP stops enrolling home batteries at R500/kW-yr and builds 0.52 GW more lithium in 2030 instead; everything else within 0.1 GW; objective +R0.7bn; adequate
+
+Settings: the 7 Nov baseline loop's (fin basis 10a98e2, c7's central settings, 25 clustered days, the central's 13 extremes, linking,
+CONG_OFF=1, WX_WINDCORR=1, wind barred from the freed-coal pool as in every pathway, rpExclude ['wind']), one pass (P1=1), on a
+comparison worktree gtza-k8 (on no branch): gtza-btm's engine changes (vppHours, vppReservePct, btmReservePath, the 2026 stock at its
+2026 reserve) carried into the build LP (the enrolled store's hours and reserve, the vppp_ cost and bound, the constant part of the
+balance rows at use0) and into the two conversions of vppp_ to enrolled energy, plus vppCostRkWyr. With the four keys null the LP is the
+baseline's byte for byte (pass-1 key 48ffc38a70, a cache hit). Set: vppHours 3, vppReservePct 20 (proposal 1); vppCostRkWyr 500, R500 a
+year per kW of enrolled power, the wear term kept (proposal 2); btmReservePath 43.2% in 2026 to 31.8% by 2030, held after (proposal 3,
+central x 0.455). Pass-1 LP key e50c8e3ea8, solved Optimal at 22:13 UTC on 6 Nov (two pieces); the container restarted during its
+verdict and the relaunch replayed from the cache: adequate. Engine check at 20 draws on the same worktree. Scratchpad loops/k8_p1*.json.
+
+| | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| Enrolled home batteries, GWh (baseline) | 0 (2.32) | 0.04 (1.06) | 0 (0) |
+| Lithium, GW (change) | 2.10 (+0.52) | 9.54 (+0.25) | 11.27 (+0.09) |
+| Wind / solar change, GW | 0 / 0 | 0 / +0.03 | -0.03 / +0.03 |
+| Unserved, GWh, 20 draws (baseline) | 2.07 (2.00) | 19.28 (19.48) | 8.43 (8.61) |
+| Curtailment, TWh (baseline) | 1.67 (1.64) | 10.03 (10.05) | 29.36 (29.41) |
+
+- LP objective R1,541.5bn, +R0.7bn on the baseline. At R500/kW-yr of power at E / 3 (R166,700 per MWh enrolled a year, against the
+  baseline's R136,800 at E / 2.5) the LP prefers grid lithium to enrolling home batteries in 2030 and 2035; open-cycle plants and
+  wind are unchanged to within 0.03 GW. The 100-draw gate (2034-2036) runs beside the worker check's reproductions.
+- 726 (f): the pathways already bar wind from the reuse pool; the page default and the presets change with the next page pull request.
