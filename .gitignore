@@ -47,3 +47,10 @@ fleet_by_region_v2*.csv
 harness/pathcheck_ret.gen.js
 ninja_leapday_cache.json
 pvgis_leap_cache.json
+
+# Regional-audit engine dumps (hourly series derived from profiles.json; user, 7 Nov 2026, message 756): never committed
+engine_*_wy*.json
+engine_final_*.json
+engine_today_*.json
+engine_ff_*.json
+engine_deep_*.json
