@@ -1,0 +1,1155 @@
+{
+ "meta": {
+  "rule": "756 (b): area by point in polygon of rsa_supply_regions.gpkg (PyPSA-RSA; the fleet file's boundary set)",
+  "gpkg": "/tmp/claude-0/-home-user-gridtwin-za/ff25664d-5d95-5cb3-a5ba-9894dfa04a8f/scratchpad/pypsa_rsa_bundle/rsa_supply_regions.gpkg",
+  "layer": "10",
+  "names": [
+   "Eastern Cape",
+   "Free State",
+   "Gauteng",
+   "Hydra Central",
+   "KwaZulu Natal",
+   "Limpopo",
+   "Mpumalanga",
+   "North West",
+   "Northern Cape",
+   "Western Cape"
+  ]
+ },
+ "subs": {
+  "Acacia": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Acornhoek": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Aggeneis": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Agulhas": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Alpha": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Anderson": {
+   "file": "North West",
+   "rule": "Gauteng",
+   "changed": true,
+   "note": ""
+  },
+  "Ankerlig": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Apollo": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Aquila": {
+   "file": "Hydra Central",
+   "rule": "Hydra Central",
+   "changed": false,
+   "note": ""
+  },
+  "Ararat": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Ariadne": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Aries": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Arnot": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Artemis": {
+   "file": "Free State",
+   "rule": "Free State",
+   "changed": false,
+   "note": ""
+  },
+  "Athene": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Atlas": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Aurora": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Avon": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Bacchus": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Benburg": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Bernina": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Beta": {
+   "file": "Free State",
+   "rule": "Free State",
+   "changed": false,
+   "note": ""
+  },
+  "Bighorn": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Bloedrivier": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Bloukrans": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Borutho": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Boundary": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Brenner": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Buffalo": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Camden": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Carmel": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Chatty": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Chivelston": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Craighall": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Croydon": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Danskraal": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Dedisa": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Delphi": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Dinaledi": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Diphororo": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Drakensberg": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Droerivier": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Duvha": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Dwaalboom": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Dwarsberg": {
+   "file": "North West",
+   "rule": "Limpopo",
+   "changed": true,
+   "note": ""
+  },
+  "Eiger": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Emkhiweni": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Eros": {
+   "file": "Eastern Cape",
+   "rule": "Kwazulu Natal",
+   "changed": true,
+   "note": ""
+  },
+  "Esselen": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Etna": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Everest": {
+   "file": "Free State",
+   "rule": "Free State",
+   "changed": false,
+   "note": ""
+  },
+  "Ferrum": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Fordsburg": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Foskor": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Galenia": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Gamma": {
+   "file": "Hydra Central",
+   "rule": "Hydra Central",
+   "changed": false,
+   "note": ""
+  },
+  "Gariep": {
+   "file": "Free State",
+   "rule": "Hydra Central",
+   "changed": true,
+   "note": ""
+  },
+  "Garona": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Georgedale": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Glockner": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Gourikwa": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Grassridge": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Groeipunt": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Gromis": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Grootvlei": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Gumeni": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Harvard": {
+   "file": "Free State",
+   "rule": "Free State",
+   "changed": false,
+   "note": ""
+  },
+  "Hector": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Helios": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Hendrina": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Hera": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Hermes": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Highveld": {
+   "file": "Free State",
+   "rule": "Gauteng",
+   "changed": true,
+   "note": ""
+  },
+  "Hillside": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Hydra": {
+   "file": "Hydra Central",
+   "rule": "Hydra Central",
+   "changed": false,
+   "note": ""
+  },
+  "Illovo": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Impala": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Incandu": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Ingagane": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Ingula": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Invubu": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Juno": {
+   "file": "Western Cape",
+   "rule": "Northern Cape",
+   "changed": true,
+   "note": ""
+  },
+  "Jupiter": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Kappa": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Kendal": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Kestrel": {
+   "file": "Hydra Central",
+   "rule": "Hydra Central",
+   "changed": false,
+   "note": ""
+  },
+  "Khanyazwe": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Klaarwater": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Koeberg": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Komati": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Komatipoort": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Komsberg": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Kookfontein": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Koring": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Koruson": {
+   "file": "Hydra Central",
+   "rule": "Hydra Central",
+   "changed": false,
+   "note": ""
+  },
+  "Kriel": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Kronos": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Kruispunt": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Kusile": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Kwagga": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Leander": {
+   "file": "Free State",
+   "rule": "Free State",
+   "changed": false,
+   "note": ""
+  },
+  "Lepini": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Leseding": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Lethabo": {
+   "file": "Free State",
+   "rule": "Gauteng",
+   "changed": true,
+   "note": ""
+  },
+  "Lewensaar": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Lomond": {
+   "file": "North West",
+   "rule": "Gauteng",
+   "changed": true,
+   "note": ""
+  },
+  "Lulamisa": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Majuba": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Makalu": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Manogeng": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Marang": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Marathon": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Matimba": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Matla": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Medupi": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Merapi": {
+   "file": "Free State",
+   "rule": "Free State",
+   "changed": false,
+   "note": ""
+  },
+  "Mercury": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Merensky": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Mersey": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Midas": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Minerva": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Mookodi": {
+   "file": "North West",
+   "rule": "Northern Cape",
+   "changed": true,
+   "note": ""
+  },
+  "Muldersvlei": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Nama": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Neptune": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Nevis": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Ngwedi": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Nieuwehoop": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Njala": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Normandie": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Olien": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Olympus": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Oranjemond": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Palmiet": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Paulputs": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Pegasus": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Pelly": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Pembroke": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Perseus": {
+   "file": "Free State",
+   "rule": "Free State",
+   "changed": false,
+   "note": ""
+  },
+  "Philippi": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Pieterboth": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Pinotage": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Pluto": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Port Rex": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Poseidon": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Prairie": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Princess": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Prospect": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Proteus": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Rabbit": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Rigi": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Rockdale": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Roodekuil": {
+   "file": "Hydra Central",
+   "rule": "Hydra Central",
+   "changed": false,
+   "note": ""
+  },
+  "Ruigtevallei": {
+   "file": "Hydra Central",
+   "rule": "Hydra Central",
+   "changed": false,
+   "note": ""
+  },
+  "Scafell": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Sebenza": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Senakangwedi": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Silimela": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Simplon": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Snowdon": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Sol": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Sorata": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Spencer": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Spitskop": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Sterrekus": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Stikland": {
+   "file": "Western Cape",
+   "rule": "Western Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Tabor": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Taunus": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Theseus": {
+   "file": "Free State",
+   "rule": "Free State",
+   "changed": false,
+   "note": ""
+  },
+  "Thuso": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Trident": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Tugela": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Tutuka": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Umfolozi": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Upington": {
+   "file": "Northern Cape",
+   "rule": "Northern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Van der Kloof": {
+   "file": "Northern Cape",
+   "rule": "Hydra Central",
+   "changed": true,
+   "note": ""
+  },
+  "Venus": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Verdun": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Vulcan": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Vuyani": {
+   "file": "Eastern Cape",
+   "rule": "Eastern Cape",
+   "changed": false,
+   "note": ""
+  },
+  "Warmbad": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Watershed": {
+   "file": "North West",
+   "rule": "North West",
+   "changed": false,
+   "note": ""
+  },
+  "Westgate": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Wildebees": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  },
+  "Witkop": {
+   "file": "Limpopo",
+   "rule": "Limpopo",
+   "changed": false,
+   "note": ""
+  },
+  "Zeus": {
+   "file": "Mpumalanga",
+   "rule": "Mpumalanga",
+   "changed": false,
+   "note": ""
+  },
+  "Durban South": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Ottawa": {
+   "file": "Kwazulu Natal",
+   "rule": "Kwazulu Natal",
+   "changed": false,
+   "note": ""
+  },
+  "Zwavelpoort": {
+   "file": "Gauteng",
+   "rule": "Gauteng",
+   "changed": false,
+   "note": ""
+  }
+ }
+}

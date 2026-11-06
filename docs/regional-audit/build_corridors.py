@@ -6,7 +6,7 @@ class is the line file's own (nodal/corridor_electrical.json's MVA per class: 76
 assumed). Corridor: thermal-and-loadability sum (the 'thermal' sensitivity); N-1 once = the sum less the largest circuit when there are two or
 more, 0.7 x the circuit when there is one (PyPSA-RSA's rule). Existing circuits only; planned ones are the TDP's. Cross-border lines excluded.
 Substation placement overrides from public sources (738 (c)). usage: python3 build_corridors.py <root> [--eros-ec]"""
-import json, math, re, sys, collections
+import json, os, math, re, sys, collections
 ROOT = sys.argv[1]; EROS_EC = '--eros-ec' in sys.argv
 S = '/tmp/claude-0/-home-user-gridtwin-za/ff25664d-5d95-5cb3-a5ba-9894dfa04a8f/scratchpad/'
 THERMAL = {765: 3000.0, 400: 1400.0, 275: 400.0, 220: 250.0, 132: 100.0}
@@ -16,6 +16,11 @@ subs = json.load(open(ROOT + '/nodal/substations_compact.json'))['subs']
 area = {s['n'].upper(): s['area'] for s in subs}
 override = {} if EROS_EC else {'EROS': 'Kwazulu Natal'}   # Eros is at Harding, KwaZulu-Natal (Engineering News, 27 Jun 2014); the file places it in the Eastern Cape by hand
 area.update(override)
+AREA_MAP = os.environ.get('AREA_MAP', '')     # (756 b) one rule: every substation's area by point in polygon of the fleet file's boundary set (area_map_v3.json from area_assign.py); replaces the file's areas and the Eros override
+if AREA_MAP:
+    am = json.load(open(AREA_MAP))['subs']; area = {k.upper(): v['rule'] for k, v in am.items()}
+EXTRA_LINES = os.environ.get('EXTRA_LINES', '')   # (756 b) a JSON list of existing circuits the line file lacks, [{label, kv, km, start, end, source}], added with a public source stated
+OUT_NAME = os.environ.get('OUT_NAME', '')
 g = json.load(open(ROOT + '/nodal/transmission_lines.geojson'))
 def hav(a, b):
     R = 6371.0; la1, lo1 = math.radians(a[1]), math.radians(a[0]); la2, lo2 = math.radians(b[1]), math.radians(b[0])
@@ -32,6 +37,11 @@ for f in g['features']:
     kv = int(p['voltage'])
     if kv not in THERMAL: excluded.append(p['label'] + f' ({kv} kV, HVDC)'); continue
     km = round(length_km(f['geometry']), 1); corr['|'.join(sorted((a, b)))].append({'label': p['label'], 'kv': kv, 'km': km, 'start': p['start'], 'end': p['end'], 'ratingMW': round(rating(kv, km), 1)})
+if EXTRA_LINES:
+    for q in json.load(open(EXTRA_LINES)):
+        a = area.get(q['start'].upper()); b = area.get(q['end'].upper())
+        if not a or not b or a == b: excluded.append(q['label'] + ' (extra line, not inter-area)'); continue
+        corr['|'.join(sorted((a, b)))].append({'label': q['label'], 'kv': int(q['kv']), 'km': float(q['km']), 'start': q['start'], 'end': q['end'], 'ratingMW': round(rating(int(q['kv']), float(q['km'])), 1), 'source': q.get('source', '')})
 old = {('|'.join(sorted((a, b)))): (float(mw), float(km)) for a, b, mw, km in re.findall(r"\['([^']+)','([^']+)',\s*(\d+),\s*(\d+)\]", re.search(r"const CORRIDORS = \[(.*?)\];", open(ROOT + '/nodal/nodal_engine.js').read(), re.S).group(1))}
 out = {}
 for k, cs in corr.items():
@@ -39,7 +49,9 @@ for k, cs in corr.items():
     a, b = k.split('|'); out[k] = {'a': a, 'b': b, 'circuits': cs, 'thermalMW': round(tot, 1), 'n1MW': round(n1, 1), 'kmMean': round(sum(c['km'] for c in cs) / len(cs), 1), 'kmMax': max(c['km'] for c in cs)}
 meta = {'method': __doc__, 'thermalByKv': THERMAL, 'silByKv': {k: round(v, 1) for k, v in SIL.items()}, 'erosPlacement': 'Eastern Cape (the file)' if EROS_EC else 'KwaZulu-Natal (Harding; public record)', 'excludedCrossBorderOrUnplaced': excluded,
         'droppedFromOldTable': [k for k in old if k not in out], 'source': 'nodal/transmission_lines.geojson (NTCSA-derived, existing status) and nodal/substations_compact.json at build 2026-11-05f'}
-json.dump({'meta': meta, 'corridors': out}, open(S + ('corridors_v2_eros_ec.json' if EROS_EC else 'corridors_v2.json'), 'w'), indent=1)
+if AREA_MAP: meta['areaRule'] = '756 (b): every substation, generator and line end takes its area from the fleet file\'s boundary set (rsa_supply_regions.gpkg, PyPSA-RSA, point in polygon; area_map_v3.json)'; meta['erosPlacement'] = 'by the polygon rule'
+if EXTRA_LINES: meta['extraLines'] = json.load(open(EXTRA_LINES))
+json.dump({'meta': meta, 'corridors': out}, open(S + (OUT_NAME or ('corridors_v2_eros_ec.json' if EROS_EC else 'corridors_v2.json')), 'w'), indent=1)
 print('| corridor | old MW (N-1 at 400 kV ratings; the table) | old km | circuits now (existing, by voltage) | km (mean of circuits) | thermal and loadability sum MW | N-1 once MW | ratio new N-1 to old |')
 print('|---|---|---|---|---|---|---|---|')
 for k in sorted(set(old) | set(out), key=lambda k: -(out[k]['n1MW'] if k in out else 0)):

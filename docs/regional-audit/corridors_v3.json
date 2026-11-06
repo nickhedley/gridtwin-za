@@ -1,0 +1,764 @@
+{
+ "meta": {
+  "method": "738 (a): rebuild the inter-area corridor table from the model's own line file (nodal/transmission_lines.geojson, NTCSA-derived, with\nnodal/substations_compact.json for the areas) at voltage-specific ratings, N-1 applied once.\nPer circuit: rating = min(thermal by voltage class, SIL by voltage x 53.736 x km^-0.65) (the St Clair loadability curve as PyPSA-RSA applies it,\nSIL 602 MW at 400 kV and 2,280 MW at 765 kV; 275, 220 and 132 kV scaled by voltage squared from the 400 kV value, an assumption). Thermal by\nclass is the line file's own (nodal/corridor_electrical.json's MVA per class: 765 kV 3,000; 400 kV 1,400; 275 kV 400; 220 kV 250; 132 kV 100\nassumed). Corridor: thermal-and-loadability sum (the 'thermal' sensitivity); N-1 once = the sum less the largest circuit when there are two or\nmore, 0.7 x the circuit when there is one (PyPSA-RSA's rule). Existing circuits only; planned ones are the TDP's. Cross-border lines excluded.\nSubstation placement overrides from public sources (738 (c)). usage: python3 build_corridors.py <root> [--eros-ec]",
+  "thermalByKv": {
+   "765": 3000.0,
+   "400": 1400.0,
+   "275": 400.0,
+   "220": 250.0,
+   "132": 100.0
+  },
+  "silByKv": {
+   "765": 2280.0,
+   "400": 602.0,
+   "275": 284.5,
+   "220": 182.1,
+   "132": 65.6
+  },
+  "erosPlacement": "by the polygon rule",
+  "excludedCrossBorderOrUnplaced": [
+   "APOLLO CAHORA BASSA 2",
+   "PHOKOJE INSUKAMINI 1",
+   "ARIES KOKERBOOM 1",
+   "ARNOT MAPUTO 1",
+   "CAMDEN EDWALENI 1",
+   "EDWALENI MAPUTO 1",
+   "MATIMBA PHOKOJE 1",
+   "KOMATIPOORT RASSONA GARCIA 1",
+   "APOLLO CAHORA BASSA 1",
+   "AGGENEIS HARIB 1",
+   "AGGENEIS HARIB 2",
+   "APOLLO ZWAVELPOORT EE1 1",
+   "BACCHUS KAPPA (A) 1",
+   "IMPOFU - CHATTY (Red Cap / Enel)",
+   "PHEZUKOMOYA - KORUSON (indicative)",
+   "SAN KRAAL - KORUSON (indicative)"
+  ],
+  "droppedFromOldTable": [
+   "Free State|Kwazulu Natal",
+   "North West|Western Cape"
+  ],
+  "source": "nodal/transmission_lines.geojson (NTCSA-derived, existing status) and nodal/substations_compact.json at build 2026-11-05f",
+  "areaRule": "756 (b): every substation, generator and line end takes its area from the fleet file's boundary set (rsa_supply_regions.gpkg, PyPSA-RSA, point in polygon; area_map_v3.json)"
+ },
+ "corridors": {
+  "Limpopo|Mpumalanga": {
+   "a": "Limpopo",
+   "b": "Mpumalanga",
+   "circuits": [
+    {
+     "label": "ARNOT MERENSKY 1",
+     "kv": 400,
+     "km": 152.4,
+     "start": "ARNOT",
+     "end": "MERENSKY",
+     "ratingMW": 1232.9
+    },
+    {
+     "label": "DUVHA LESEDING 1",
+     "kv": 400,
+     "km": 205.8,
+     "start": "DUVHA",
+     "end": "LESEDING",
+     "ratingMW": 1014.2
+    },
+    {
+     "label": "ACORNHOEK MARATHON 1",
+     "kv": 275,
+     "km": 97.1,
+     "start": "ACORNHOEK",
+     "end": "MARATHON",
+     "ratingMW": 400.0
+    },
+    {
+     "label": "SENAKANGWEDI SIMPLON 1",
+     "kv": 275,
+     "km": 50.5,
+     "start": "SENAKANGWEDI",
+     "end": "SIMPLON",
+     "ratingMW": 400.0
+    },
+    {
+     "label": "ACORNHOEK MARATHON 2",
+     "kv": 275,
+     "km": 97.1,
+     "start": "ACORNHOEK",
+     "end": "MARATHON",
+     "ratingMW": 400.0
+    }
+   ],
+   "thermalMW": 3447.1,
+   "n1MW": 2214.2,
+   "kmMean": 120.6,
+   "kmMax": 205.8
+  },
+  "Free State|Northern Cape": {
+   "a": "Free State",
+   "b": "Northern Cape",
+   "circuits": [
+    {
+     "label": "BOUNDARY PERSEUS 1",
+     "kv": 275,
+     "km": 87.8,
+     "start": "BOUNDARY",
+     "end": "PERSEUS",
+     "ratingMW": 400.0
+    },
+    {
+     "label": "BOUNDARY PERSEUS 2",
+     "kv": 275,
+     "km": 91.3,
+     "start": "BOUNDARY",
+     "end": "PERSEUS",
+     "ratingMW": 400.0
+    }
+   ],
+   "thermalMW": 800.0,
+   "n1MW": 400.0,
+   "kmMean": 89.5,
+   "kmMax": 91.3
+  },
+  "Free State|Mpumalanga": {
+   "a": "Free State",
+   "b": "Mpumalanga",
+   "circuits": [
+    {
+     "label": "ALPHA BETA 2",
+     "kv": 765,
+     "km": 434.2,
+     "start": "ALPHA",
+     "end": "BETA",
+     "ratingMW": 2364.3
+    },
+    {
+     "label": "ALPHA BETA 1",
+     "kv": 765,
+     "km": 436.2,
+     "start": "ALPHA",
+     "end": "BETA",
+     "ratingMW": 2357.2
+    },
+    {
+     "label": "GROOTVLEI LEANDER 1",
+     "kv": 400,
+     "km": 251.8,
+     "start": "GROOTVLEI",
+     "end": "LEANDER",
+     "ratingMW": 889.6
+    },
+    {
+     "label": "GROOTVLEI THESEUS 1",
+     "kv": 400,
+     "km": 252.2,
+     "start": "GROOTVLEI",
+     "end": "THESEUS",
+     "ratingMW": 888.6
+    },
+    {
+     "label": "GROOTVLEI PERSEUS 1",
+     "kv": 400,
+     "km": 361.9,
+     "start": "GROOTVLEI",
+     "end": "PERSEUS",
+     "ratingMW": 702.7
+    }
+   ],
+   "thermalMW": 7202.4,
+   "n1MW": 4838.1,
+   "kmMean": 347.3,
+   "kmMax": 436.2
+  },
+  "Gauteng|Mpumalanga": {
+   "a": "Gauteng",
+   "b": "Mpumalanga",
+   "circuits": [
+    {
+     "label": "GROOTVLEI HERA 1",
+     "kv": 400,
+     "km": 102.1,
+     "start": "GROOTVLEI",
+     "end": "HERA",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "KENDAL APOLLO 2",
+     "kv": 400,
+     "km": 74.5,
+     "start": "KENDAL",
+     "end": "APOLLO",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "KENDAL MINERVA 1",
+     "kv": 400,
+     "km": 96.1,
+     "start": "KENDAL",
+     "end": "MINERVA",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "DUVHA APOLLO 1",
+     "kv": 400,
+     "km": 118.2,
+     "start": "DUVHA",
+     "end": "APOLLO",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "MINERVA VULCAN 1",
+     "kv": 400,
+     "km": 111.1,
+     "start": "MINERVA",
+     "end": "VULCAN",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "KUSILE MINERVA 1",
+     "kv": 400,
+     "km": 91.7,
+     "start": "KUSILE",
+     "end": "MINERVA",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "MATLA GLOCKNER 1",
+     "kv": 400,
+     "km": 143.1,
+     "start": "MATLA",
+     "end": "GLOCKNER",
+     "ratingMW": 1284.4
+    },
+    {
+     "label": "MATLA GLOCKNER 2",
+     "kv": 400,
+     "km": 143.2,
+     "start": "MATLA",
+     "end": "GLOCKNER",
+     "ratingMW": 1283.8
+    },
+    {
+     "label": "MATLA BENBURG 1",
+     "kv": 275,
+     "km": 101.0,
+     "start": "MATLA",
+     "end": "BENBURG",
+     "ratingMW": 400.0
+    },
+    {
+     "label": "MATLA ESSELEN 1",
+     "kv": 275,
+     "km": 108.8,
+     "start": "MATLA",
+     "end": "ESSELEN",
+     "ratingMW": 400.0
+    },
+    {
+     "label": "MATLA NEVIS 1",
+     "kv": 275,
+     "km": 66.5,
+     "start": "MATLA",
+     "end": "NEVIS",
+     "ratingMW": 400.0
+    },
+    {
+     "label": "MATLA NEVIS 2",
+     "kv": 275,
+     "km": 66.5,
+     "start": "MATLA",
+     "end": "NEVIS",
+     "ratingMW": 400.0
+    }
+   ],
+   "thermalMW": 12568.2,
+   "n1MW": 11168.2,
+   "kmMean": 101.9,
+   "kmMax": 143.2
+  },
+  "Gauteng|North West": {
+   "a": "Gauteng",
+   "b": "North West",
+   "circuits": [
+    {
+     "label": "HERA MIDAS 1",
+     "kv": 400,
+     "km": 16.4,
+     "start": "HERA",
+     "end": "MIDAS",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "BIGHORN DINALEDI 1",
+     "kv": 400,
+     "km": 53.6,
+     "start": "BIGHORN",
+     "end": "DINALEDI",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "LULAMISA PLUTO 1",
+     "kv": 400,
+     "km": 74.9,
+     "start": "LULAMISA",
+     "end": "PLUTO",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "PLUTO THUSO 1",
+     "kv": 400,
+     "km": 99.0,
+     "start": "PLUTO",
+     "end": "THUSO",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "HERA WATERSHED 1",
+     "kv": 275,
+     "km": 177.2,
+     "start": "HERA",
+     "end": "WATERSHED",
+     "ratingMW": 400.0
+    }
+   ],
+   "thermalMW": 6000.0,
+   "n1MW": 4600.0,
+   "kmMean": 84.2,
+   "kmMax": 177.2
+  },
+  "Hydra Central|Northern Cape": {
+   "a": "Hydra Central",
+   "b": "Northern Cape",
+   "circuits": [
+    {
+     "label": "HYDRA KRONOS 1",
+     "kv": 400,
+     "km": 187.5,
+     "start": "HYDRA",
+     "end": "KRONOS",
+     "ratingMW": 1077.5
+    }
+   ],
+   "thermalMW": 1077.5,
+   "n1MW": 754.2,
+   "kmMean": 187.5,
+   "kmMax": 187.5
+  },
+  "Eastern Cape|Hydra Central": {
+   "a": "Eastern Cape",
+   "b": "Hydra Central",
+   "circuits": [
+    {
+     "label": "HYDRA POSEIDON 1",
+     "kv": 400,
+     "km": 293.5,
+     "start": "HYDRA",
+     "end": "POSEIDON",
+     "ratingMW": 805.2
+    },
+    {
+     "label": "HYDRA POSEIDON 2",
+     "kv": 400,
+     "km": 296.1,
+     "start": "HYDRA",
+     "end": "POSEIDON",
+     "ratingMW": 800.6
+    }
+   ],
+   "thermalMW": 1605.8,
+   "n1MW": 800.6,
+   "kmMean": 294.8,
+   "kmMax": 296.1
+  },
+  "Kwazulu Natal|Mpumalanga": {
+   "a": "Kwazulu Natal",
+   "b": "Mpumalanga",
+   "circuits": [
+    {
+     "label": "MAJUBA UMFOLOZI 1",
+     "kv": 765,
+     "km": 215.0,
+     "start": "MAJUBA",
+     "end": "UMFOLOZI",
+     "ratingMW": 3000.0
+    },
+    {
+     "label": "CAMDEN INCANDU 1",
+     "kv": 400,
+     "km": 127.6,
+     "start": "CAMDEN",
+     "end": "INCANDU",
+     "ratingMW": 1383.8
+    },
+    {
+     "label": "NORMANDIE UMFOLOZI 1",
+     "kv": 400,
+     "km": 129.5,
+     "start": "NORMANDIE",
+     "end": "UMFOLOZI",
+     "ratingMW": 1370.5
+    },
+    {
+     "label": "CAMDEN CHIVELSTON 2",
+     "kv": 400,
+     "km": 141.7,
+     "start": "CAMDEN",
+     "end": "CHIVELSTON",
+     "ratingMW": 1292.6
+    },
+    {
+     "label": "MAJUBA PEGASUS 1",
+     "kv": 400,
+     "km": 155.0,
+     "start": "MAJUBA",
+     "end": "PEGASUS",
+     "ratingMW": 1219.4
+    },
+    {
+     "label": "INGULA MAJUBA 1",
+     "kv": 400,
+     "km": 166.5,
+     "start": "INGULA",
+     "end": "MAJUBA",
+     "ratingMW": 1164.0
+    },
+    {
+     "label": "MAJUBA VENUS 1",
+     "kv": 400,
+     "km": 219.2,
+     "start": "MAJUBA",
+     "end": "VENUS",
+     "ratingMW": 973.5
+    },
+    {
+     "label": "TUTUKA PEGASUS 1",
+     "kv": 400,
+     "km": 220.1,
+     "start": "TUTUKA",
+     "end": "PEGASUS",
+     "ratingMW": 970.9
+    }
+   ],
+   "thermalMW": 11374.7,
+   "n1MW": 8374.7,
+   "kmMean": 171.8,
+   "kmMax": 220.1
+  },
+  "Limpopo|North West": {
+   "a": "Limpopo",
+   "b": "North West",
+   "circuits": [
+    {
+     "label": "BIGHORN SPITSKOP 1",
+     "kv": 400,
+     "km": 87.6,
+     "start": "BIGHORN",
+     "end": "SPITSKOP",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "MATIMBA MARANG 1",
+     "kv": 400,
+     "km": 268.6,
+     "start": "MATIMBA",
+     "end": "MARANG",
+     "ratingMW": 853.0
+    },
+    {
+     "label": "MEDUPI MARANG 1",
+     "kv": 400,
+     "km": 276.2,
+     "start": "MEDUPI",
+     "end": "MARANG",
+     "ratingMW": 837.7
+    },
+    {
+     "label": "MATIMBA PLUTO 1",
+     "kv": 400,
+     "km": 342.5,
+     "start": "MATIMBA",
+     "end": "PLUTO",
+     "ratingMW": 728.3
+    },
+    {
+     "label": "MATIMBA MIDAS 1",
+     "kv": 400,
+     "km": 366.2,
+     "start": "MATIMBA",
+     "end": "MIDAS",
+     "ratingMW": 697.3
+    },
+    {
+     "label": "ARARAT SPITSKOP 1",
+     "kv": 275,
+     "km": 71.6,
+     "start": "ARARAT",
+     "end": "SPITSKOP",
+     "ratingMW": 400.0
+    },
+    {
+     "label": "ARARAT SPITSKOP 2",
+     "kv": 275,
+     "km": 71.9,
+     "start": "ARARAT",
+     "end": "SPITSKOP",
+     "ratingMW": 400.0
+    }
+   ],
+   "thermalMW": 5316.3,
+   "n1MW": 3916.3,
+   "kmMean": 212.1,
+   "kmMax": 366.2
+  },
+  "Northern Cape|Western Cape": {
+   "a": "Northern Cape",
+   "b": "Western Cape",
+   "circuits": [
+    {
+     "label": "AURORA JUNO 1",
+     "kv": 400,
+     "km": 163.9,
+     "start": "AURORA",
+     "end": "JUNO",
+     "ratingMW": 1175.9
+    }
+   ],
+   "thermalMW": 1175.9,
+   "n1MW": 823.1,
+   "kmMean": 163.9,
+   "kmMax": 163.9
+  },
+  "Free State|Hydra Central": {
+   "a": "Free State",
+   "b": "Hydra Central",
+   "circuits": [
+    {
+     "label": "BETA HYDRA 2",
+     "kv": 765,
+     "km": 280.0,
+     "start": "BETA",
+     "end": "HYDRA",
+     "ratingMW": 3000.0
+    },
+    {
+     "label": "GAMMA PERSEUS 1",
+     "kv": 765,
+     "km": 430.5,
+     "start": "GAMMA",
+     "end": "PERSEUS",
+     "ratingMW": 2377.5
+    },
+    {
+     "label": "BETA HYDRA 1",
+     "kv": 400,
+     "km": 273.4,
+     "start": "BETA",
+     "end": "HYDRA",
+     "ratingMW": 843.2
+    },
+    {
+     "label": "HYDRA PERSEUS 3",
+     "kv": 400,
+     "km": 283.2,
+     "start": "HYDRA",
+     "end": "PERSEUS",
+     "ratingMW": 824.1
+    },
+    {
+     "label": "HYDRA PERSEUS 2",
+     "kv": 400,
+     "km": 285.4,
+     "start": "HYDRA",
+     "end": "PERSEUS",
+     "ratingMW": 820.0
+    }
+   ],
+   "thermalMW": 7864.8,
+   "n1MW": 4864.8,
+   "kmMean": 310.5,
+   "kmMax": 430.5
+  },
+  "Free State|Gauteng": {
+   "a": "Free State",
+   "b": "Gauteng",
+   "circuits": [
+    {
+     "label": "EVEREST MAKALU 1",
+     "kv": 275,
+     "km": 183.6,
+     "start": "EVEREST",
+     "end": "MAKALU",
+     "ratingMW": 400.0
+    },
+    {
+     "label": "EVEREST SNOWDON 1",
+     "kv": 275,
+     "km": 219.5,
+     "start": "EVEREST",
+     "end": "SNOWDON",
+     "ratingMW": 400.0
+    }
+   ],
+   "thermalMW": 800.0,
+   "n1MW": 400.0,
+   "kmMean": 201.6,
+   "kmMax": 219.5
+  },
+  "Eastern Cape|Free State": {
+   "a": "Eastern Cape",
+   "b": "Free State",
+   "circuits": [
+    {
+     "label": "BETA DELPHI 1",
+     "kv": 400,
+     "km": 408.1,
+     "start": "BETA",
+     "end": "DELPHI",
+     "ratingMW": 649.9
+    }
+   ],
+   "thermalMW": 649.9,
+   "n1MW": 454.9,
+   "kmMean": 408.1,
+   "kmMax": 408.1
+  },
+  "Gauteng|Limpopo": {
+   "a": "Gauteng",
+   "b": "Limpopo",
+   "circuits": [
+    {
+     "label": "DINALEDI SPITSKOP 1",
+     "kv": 400,
+     "km": 110.4,
+     "start": "DINALEDI",
+     "end": "SPITSKOP",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "DINALEDI SPITSKOP 2",
+     "kv": 400,
+     "km": 110.4,
+     "start": "DINALEDI",
+     "end": "SPITSKOP",
+     "ratingMW": 1400.0
+    },
+    {
+     "label": "ESSELEN PELLY 1",
+     "kv": 275,
+     "km": 100.4,
+     "start": "ESSELEN",
+     "end": "PELLY",
+     "ratingMW": 400.0
+    }
+   ],
+   "thermalMW": 3200.0,
+   "n1MW": 1800.0,
+   "kmMean": 107.1,
+   "kmMax": 110.4
+  },
+  "Hydra Central|Western Cape": {
+   "a": "Hydra Central",
+   "b": "Western Cape",
+   "circuits": [
+    {
+     "label": "DROERIVIER HYDRA 2",
+     "kv": 400,
+     "km": 245.0,
+     "start": "DROERIVIER",
+     "end": "HYDRA",
+     "ratingMW": 905.5
+    },
+    {
+     "label": "DROERIVIER HYDRA 1",
+     "kv": 400,
+     "km": 246.6,
+     "start": "DROERIVIER",
+     "end": "HYDRA",
+     "ratingMW": 901.7
+    },
+    {
+     "label": "DROERIVIER HYDRA 3",
+     "kv": 400,
+     "km": 246.7,
+     "start": "DROERIVIER",
+     "end": "HYDRA",
+     "ratingMW": 901.5
+    }
+   ],
+   "thermalMW": 2708.7,
+   "n1MW": 1803.2,
+   "kmMean": 246.1,
+   "kmMax": 246.7
+  },
+  "Eastern Cape|Kwazulu Natal": {
+   "a": "Eastern Cape",
+   "b": "Kwazulu Natal",
+   "circuits": [
+    {
+     "label": "EROS VUYANI 1",
+     "kv": 400,
+     "km": 167.1,
+     "start": "EROS",
+     "end": "VUYANI",
+     "ratingMW": 1161.3
+    }
+   ],
+   "thermalMW": 1161.3,
+   "n1MW": 812.9,
+   "kmMean": 167.1,
+   "kmMax": 167.1
+  },
+  "North West|Northern Cape": {
+   "a": "North West",
+   "b": "Northern Cape",
+   "circuits": [
+    {
+     "label": "MERCURY MOOKODI 1",
+     "kv": 400,
+     "km": 228.7,
+     "start": "MERCURY",
+     "end": "MOOKODI",
+     "ratingMW": 947.0
+    }
+   ],
+   "thermalMW": 947.0,
+   "n1MW": 662.9,
+   "kmMean": 228.7,
+   "kmMax": 228.7
+  },
+  "Free State|North West": {
+   "a": "Free State",
+   "b": "North West",
+   "circuits": [
+    {
+     "label": "MERCURY PERSEUS 1",
+     "kv": 765,
+     "km": 235.2,
+     "start": "MERCURY",
+     "end": "PERSEUS",
+     "ratingMW": 3000.0
+    }
+   ],
+   "thermalMW": 3000.0,
+   "n1MW": 2100.0,
+   "kmMean": 235.2,
+   "kmMax": 235.2
+  },
+  "Mpumalanga|North West": {
+   "a": "Mpumalanga",
+   "b": "North West",
+   "circuits": [
+    {
+     "label": "MERCURY ZEUS 1",
+     "kv": 765,
+     "km": 267.6,
+     "start": "MERCURY",
+     "end": "ZEUS",
+     "ratingMW": 3000.0
+    }
+   ],
+   "thermalMW": 3000.0,
+   "n1MW": 2100.0,
+   "kmMean": 267.6,
+   "kmMax": 267.6
+  }
+ }
+}

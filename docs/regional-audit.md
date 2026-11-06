@@ -2291,3 +2291,88 @@ Reading. (1) As today's corridors the two tables give nearly the same system: on
 Treatment: a cross-check. No limit in the rebuilt table is changed; the candidates above (Lethabo's ties, Dinaledi's side, the first Gamma to Kappa
 765 kV line, Mercury's side) are for the user's decision, each with its cause stated here, and would be made in build_corridors.py and reported
 with the old and new figures by corridor.
+
+## Message 756: the corridor table under one rule, and the reruns on it (7 Nov 2026; nothing here is to be quoted; scratch and branch only)
+
+### (a) The record on the engine dumps
+
+The user's decision is to leave the branch history as it is. The record: the dumps' hourly demand, wind and solar for weather 2025 derive from
+profiles.json, itself derived from ESK19679, and add nothing profiles.json does not already publish, which the 3 Nov decision covers; .gitignore
+now excludes engine dumps (engine_*_wy*.json and the four prefixes), so none can be committed again.
+
+### (b) One rule for every substation, generator and line end
+
+The rule: the area is the supply region of the boundary set the fleet file already uses, which is PyPSA-RSA's rsa_supply_regions.gpkg (the
+10-region layer, named by the GCCA supply areas: Eastern Cape, Free State, Gauteng, Hydra Central, KwaZulu Natal, Limpopo, Mpumalanga, North
+West, Northern Cape, Western Cape; nodal_engine.py's own note names it as the source of the fleet's regions and the original corridor
+mapping; the file is PyPSA-RSA's public data bundle, Google Drive folder 17f54zTMEfeFZhNByXxLkf9qcZRdhng03, read here under the project's
+own terms and not committed). Applied by point in polygon to all 189 substations (area_assign.py; area_map_v3.json), it changes ten:
+
+| substation | the file's area | under the rule |
+|---|---|---|
+| Anderson | North West | Gauteng |
+| Dwarsberg | North West | Limpopo |
+| Eros | Eastern Cape | KwaZulu-Natal (as the public record had it) |
+| Gariep | Free State | Hydra Central |
+| Highveld | Free State | Gauteng |
+| Juno | Western Cape | Northern Cape (the file's hand correction to the Western Cape is reversed by the rule) |
+| Lethabo | Free State | Gauteng (as the fleet file has its units) |
+| Lomond | North West | Gauteng |
+| Mookodi | North West | Northern Cape |
+| Van der Kloof | Northern Cape | Hydra Central |
+
+Of the fifteen province flags of 753, the rule changes Lethabo, Eros and Mookodi and leaves Makalu, Scafell, Dinaledi, Mercury, Pluto,
+Midas, Pelly, Boundary, Manogeng, Silimela, Acornhoek, Carmel, Komsberg and Sorata where the file has them: a supply area need not follow the
+province, and the rule, not the province or the report, decides. Dinaledi stays in Gauteng and Mercury in the North West.
+
+The corridor table rebuilt under the rule (build_corridors.py with AREA_MAP; corridors_v3.json; corridor_table_v3_raw.md): 19 corridors, 52,888
+MW N-1 once against 56,675 before, 73,900 MW with limits only. Five corridors change:
+
+| corridor | circuits before (v2) | N-1 once MW before | circuits after (the rule) | N-1 once MW after | limits only MW after | circuits moved |
+|---|---|---|---|---|---|---|
+| Gauteng to North West | 4 x 400 kV, 3 x 275 kV | 5,400 | 4 x 400 kV, 1 x 275 kV | 4,600 | 6,000 | out: LOMOND MINERVA 1; LOMOND MINERVA 2 |
+| Free State to Gauteng | 1 x 400 kV, 9 x 275 kV | 3,600 | 2 x 275 kV | 400 | 800 | out: LETHABO EIGER 1; LETHABO GLOCKNER 1; LETHABO GLOCKNER 2; LETHABO MAKALU 1; LETHABO MAKALU 2; LETHABO RIGI 1; LETHABO RIGI 2; LETHABO SNOWDON 1 |
+| Northern Cape to Western Cape | 1 x 400 kV | 801 | 1 x 400 kV | 823 | 1,176 | out: HELIOS JUNO 1 in: AURORA JUNO 1 |
+| North West to Northern Cape | 1 x 400 kV | 726 | 1 x 400 kV | 663 | 947 | out: FERRUM MOOKODI 1 in: MERCURY MOOKODI 1 |
+| Hydra Central to Northern Cape | 1 x 400 kV, 2 x 220 kV | 500 | 1 x 400 kV | 754 | 1,078 | out: VAN DER KLOOF ROODEKUIL 1; VAN DER KLOOF ROODEKUIL 2 |
+| total (all corridors) | | 56,675 | | 52,888 | 73,900 | 5 corridors changed of 19 |
+
+Free State to Gauteng loses Lethabo's eight ties into the Vaal (3,200 MW) and is the Everest 275 kV pair, 400 MW N-1 once; Gauteng to North
+West loses the two Lomond to Minerva 275 kV circuits; Northern Cape to Western Cape swaps Helios to Juno (now Northern Cape internal) for
+Aurora to Juno; North West to Northern Cape swaps Ferrum to Mookodi (now Northern Cape internal) for Mercury to Mookodi; Hydra Central to
+Northern Cape loses the two Van der Kloof 220 kV ties, so its N-1 once is 0.7 of the single Hydra to Kronos circuit, 754 MW. The other
+fourteen corridors are unchanged, the two Mercury 765 kV corridors among them.
+
+The TDP file under the same rule (tdp_lines_v3.json, from tdp_lines_v2.json by the lines' named ends): five of the 20 inter-area lines
+become internal and drop out (Lethabo to Makalu, now Gauteng internal; Paulputs to Juno, Aries to Juno and Juno to Gromis, Northern Cape
+internal; Ferrum to Mookodi, Northern Cape internal), and Highveld to Emkhiweni moves from Free State to Mpumalanga to Gauteng to Mpumalanga;
+15 lines remain (17 in the with-range). The approved-record siting, which places each record by its nearest substation, moves under the rule
+too (reea_shares_v3.md): Juno's records go to the Northern Cape (wind 10,344 to 11,099 MW), Gariep's and Van der Kloof's to Hydra Central
+(solar 18,062 to 22,659 MW, from the North West's 24,711 to 21,931 and the Free State's 20,685 to 19,537), and the Free State's 190 MW of wind
+to Gauteng; the totals are unchanged. The existing renewable fleet by area (regional_renewable_capacity.json, from the IPP Office's figures by
+province) and the rooftop and demand splits carry no coordinates, so the rule cannot be applied to them here; they stay as they are and are
+noted. The fleet file itself already uses the set.
+
+Gamma to Kappa 765 kV, the first line. Public sources found (none on eskom.co.za or ntcsa.co.za; the pages themselves are outside the
+session's network, so these are the search summaries): a contractor's project page (Mkhulu EDP, 'Gamma Kappa A 765 kV transmission line')
+gives the construction as completed in 2011 to 2012; SAnews on 29 November 2016, reporting the Kappa to Sterrekus commissioning, says the
+Western Cape 'is now connected to the 765 kV network over and above the 400 kV network', which needs Gamma to Kappa in service at 765 kV by
+that date; Heritage Western Cape's assessment is for the 'Gamma-Kappa 2nd 765 kV line'. No public source gives the energisation date of the
+first line itself, so by the user's condition it is not added to the corrected table; it is run as a labelled sensitivity (corridors_v3gk.json,
+extra_lines_gk.json: 356.5 km by the substations' coordinates, St Clair 2,688 MW, which makes Hydra Central to Western Cape 5,396 MW with
+limits only and 2,709 N-1 once against 1,803), and goes in if the user takes 'in service by November 2016' as the date.
+
+### (c) The reruns on the corrected table
+
+Cases (queue23a, 23b, 23c; CORR_FILE corridors_v3.json, AREA_MAP area_map_v3.json, the TDP file tdp_lines_v3.json): 738 (b)'s main cases
+for 2035 and 2040 (N-1 once, limits only, the TDP's lines and the with-range, corridors priced at R10,000 and R21,700, free siting, the
+commitment floor); 743 (a)'s 2040 free lithium in 3-hour blocks with and without corridors at R21,700, with its block base; the Gamma to
+Kappa sensitivity as fixed builds. 753 (c)'s report-limit cases do not change (the report's limits and the two Mercury corridors are as they
+were); its comparison is re-read against the corrected table. Results, before and after, at both values of unserved energy: pending (the queues are running).
+
+### (d) 732: why the pathway's same-area cap moves the 2040 mix and the ten-area test does not
+
+Amended in the 729 judgement: the credit moves the mix only where it reaches the margin. The ten-area 2040 LP builds 31.9 GW of solar, 9.6
+GW beyond the 22.3 GW pool with or without the credit, so the credit is inframarginal and the mix is the same to the decimal; the pathway's
+2040 solar sits within 2 GW of the pool, so the cap reaches its margin and moves 3.7 GW of solar and 1.5 of wind, for R21.7bn on its LP, which
+also carries the adequacy standard and the coupling across years. 'About a gigawatt of wind at most' is withdrawn.

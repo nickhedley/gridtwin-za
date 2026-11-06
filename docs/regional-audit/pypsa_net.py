@@ -71,6 +71,9 @@ if DEMAND_SPLIT == 'bld':
     BLS = json.loads(re.sub(r"'", '"', re.search(r"const BLD_LOAD_SHARE = (\{.*?\});", open(os.path.join(ROOT, 'index.html')).read(), re.S).group(1)))
     share = {r: np.full(H, BLS[r]) for r in REG}; notes.append('demand split by BLD_LOAD_SHARE (static shares), not the regional demand file')
 subs = {x['n']: x.get('area') for x in jload('nodal/substations_compact.json')['subs']}
+AREA_MAP = os.environ.get('AREA_MAP', '')   # (756 b) one rule: every substation (and so every approved record sited by its nearest substation) takes its area from the fleet file's boundary set (area_map_v3.json)
+if AREA_MAP:
+    subs = {k: v['rule'] for k, v in json.load(open(AREA_MAP))['subs'].items()}; notes.append(f'area rule: substations and approved-record siting by {os.path.basename(AREA_MAP)} (756 b)')
 uc = json.loads(re.search(r"const UC_FLEET = (\[.*?\]);", open(os.path.join(ROOT, 'index.html')).read()).group(1))
 # month and hour of day for the tracking map
 hod = np.arange(H) % 24; mdays = [31,28,31,30,31,30,31,31,30,31,30,31]; mon = np.concatenate([np.full(d * 24, i) for i, d in enumerate(mdays)])
@@ -450,7 +453,7 @@ if TX_EXT > 0:
 if BATT_FREE and not MIX:
     battFree = {'byAreaMW': {r: float(n.links.p_nom_opt.get(f'{r} li charge', 0.0)) for r in REG}, 'byAreaMWh': {r: float(n.stores.e_nom_opt.get(f'{r} li store', 0.0)) for r in REG}}
     battFree['MW'] = sum(battFree['byAreaMW'].values()); battFree['MWh'] = sum(battFree['byAreaMWh'].values()); battFree['annualRbn'] = (battFree['MW'] * CC['batt'] + battFree['MWh'] * CC['battE']) / 1e9
-res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'battFree': battFree, 'txKmBudget': TX_KM_BUDGET or None, 'txKmKv': TX_KM_KV, 'corrFile': os.path.basename(CORR_FILE) if CORR_FILE else None, 'gasInteg': GAS_INTEG, 'windCapeMW': WIND_CAPE_MW, 'pvCreditMW': PV_CREDIT_MW, 'battAdded': battAdded, 'txBudgetRbn': TX_BUDGET / 1e9 if TX_BUDGET > 0 else None, 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
+res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'areaMap': os.path.basename(AREA_MAP) if AREA_MAP else None, 'battFree': battFree, 'txKmBudget': TX_KM_BUDGET or None, 'txKmKv': TX_KM_KV, 'corrFile': os.path.basename(CORR_FILE) if CORR_FILE else None, 'gasInteg': GAS_INTEG, 'windCapeMW': WIND_CAPE_MW, 'pvCreditMW': PV_CREDIT_MW, 'battAdded': battAdded, 'txBudgetRbn': TX_BUDGET / 1e9 if TX_BUDGET > 0 else None, 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
        'objectiveRbn': float(n.objective) / 1e9, 'fuelAndCarbonRbn': fuel / 1e9,
        'E_TWh': {c: v / 1e6 for c, v in E.items()}, 'storageDischargeTWh': {c: v / 1e6 for c, v in dis.items()}, 'storageChargeTWh': {c: v / 1e6 for c, v in chg.items()},
        'availTWh': {c: v / 1e6 for c, v in avail.items()}, 'curtailedTWh': {c: v / 1e6 for c, v in curt.items()}, 'curtailedTotalTWh': sum(curt.values()) / 1e6, 'curtailedByRegionTWh': {r: v / 1e6 for r, v in curt_r.items()},

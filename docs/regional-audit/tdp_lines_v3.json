@@ -1,0 +1,137 @@
+[
+ {
+  "a": "Free State",
+  "b": "Kwazulu Natal",
+  "mw": 900,
+  "year": 2030,
+  "name": "Merapi\u2013Sorata 400 kV line",
+  "kv": 400,
+  "phase": "Concept"
+ },
+ {
+  "a": "Gauteng",
+  "b": "North West",
+  "mw": 900,
+  "year": 2029,
+  "name": "Pluto\u2013Westgate 400 kV line",
+  "kv": 400,
+  "phase": "Definition"
+ },
+ {
+  "a": "Limpopo",
+  "b": "North West",
+  "mw": 3000,
+  "year": 2025,
+  "name": "Medupi\u2013Ngwedi 765 kV line",
+  "kv": 765,
+  "phase": "Execution"
+ },
+ {
+  "a": "Limpopo",
+  "b": "Mpumalanga",
+  "mw": 900,
+  "year": 2028,
+  "name": "Borutho\u2013Silimela 400 kV line",
+  "kv": 400,
+  "phase": "Definition"
+ },
+ {
+  "a": "Gauteng",
+  "b": "Mpumalanga",
+  "mw": 900,
+  "year": 2028,
+  "name": "Highveld\u2013Emkhiweni 400 kV line",
+  "kv": 400,
+  "phase": "Definition"
+ },
+ {
+  "a": "Gauteng",
+  "b": "Mpumalanga",
+  "mw": 900,
+  "year": 2025,
+  "name": "Kusile\u2013Lulamisa 400 kV line",
+  "kv": 400,
+  "phase": "Execution"
+ },
+ {
+  "a": "Hydra Central",
+  "b": "Northern Cape",
+  "mw": 900,
+  "year": 2028,
+  "name": "Hydra\u2013Kronos 400 kV line",
+  "kv": 400,
+  "phase": "Execution"
+ },
+ {
+  "a": "Free State",
+  "b": "Northern Cape",
+  "mw": 900,
+  "year": 2029,
+  "name": "Beta\u2013Boundary 400 kV line",
+  "kv": 400,
+  "phase": "Execution"
+ },
+ {
+  "a": "Hydra Central",
+  "b": "Western Cape",
+  "mw": 900,
+  "year": 2033,
+  "name": "Droerivier\u2013Gamma 400 kV line",
+  "kv": 400,
+  "phase": "Concept"
+ },
+ {
+  "a": "Free State",
+  "b": "Hydra Central",
+  "mw": 3000,
+  "year": 2029,
+  "name": "Perseus\u2013Gamma 765 kV line",
+  "kv": 765,
+  "phase": "Definition"
+ },
+ {
+  "a": "Hydra Central",
+  "b": "Western Cape",
+  "mw": 3000,
+  "year": 2029,
+  "name": "Gamma\u2013Kappa 765 kV line",
+  "kv": 765,
+  "phase": "Definition"
+ },
+ {
+  "a": "Free State",
+  "b": "Mpumalanga",
+  "mw": 3000,
+  "year": 2028,
+  "name": "Zeus\u2013Perseus 765 kV line",
+  "kv": 765,
+  "phase": "Definition"
+ },
+ {
+  "a": "Eastern Cape",
+  "b": "Hydra Central",
+  "mw": 3000,
+  "year": 2032,
+  "name": "Gamma\u2013Grassridge 765 kV line, circuit 1 (two lines of 360 km: SAHRIS project record, NTCSA)",
+  "kv": 765,
+  "phase": "Planned"
+ },
+ {
+  "a": "Eastern Cape",
+  "b": "Hydra Central",
+  "mw": 3000,
+  "year": 2032,
+  "name": "Gamma\u2013Grassridge 765 kV line, circuit 2 (two lines of 360 km: SAHRIS project record, NTCSA)",
+  "kv": 765,
+  "phase": "Planned"
+ },
+ {
+  "a": "Gauteng",
+  "b": "Mpumalanga",
+  "mw": 900,
+  "year": 2032,
+  "name": "Matla\u2013Jupiter line",
+  "kv": null,
+  "phase": "Planned"
+ }
+]
