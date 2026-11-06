@@ -11,7 +11,7 @@ def sto(d, c): return d['storageDischargeTWh'].get(c, 0.0)
 def binding(d, nmin=4000, k=5):
     return '; '.join(f"{f['a']} to {f['b']} ({f.get('bindingHours', 0)} h, R{f.get('shadowRperMWyr', 0) / 1e6:.1f}m)" for f in sorted(d['corridors'], key=lambda x: -x.get('shadowRperMWyr', 0))[:k] if f.get('bindingHours', 0) >= nmin) or 'none over 4,000 h'
 BUILD = {'final': 'Least-cost (every-change pass, build 2026-11-05f)', 'ff': 'Fossil-free stand-in (s_ff2040_c7, build 2026-11-03a)', 'deep': 'Deep decarbonisation stand-in (s_deep40nogas_c7, build 2026-11-03a)'}
-LAB = {'nolimit': 'no limits', 'n0': 'as drawn', 'n1': '0.7', 'n1c': 'one circuit dropped', 'n1ctdp': 'one circuit dropped, full TDP'}
+LAB = {'nolimit': 'no limits', 'n0': "N-1 (PyPSA-RSA's table, labelled 'as drawn' before 738)", 'n1': '0.7', 'n1c': 'one circuit dropped', 'n1ctdp': 'one circuit dropped, full TDP', 'nm1': "today's corridors, N-1 once (rebuilt table)", 'thermal': "thermal and loadability limits only (rebuilt table)", 'nm1tdp': "the TDP's lines, N-1 once (rebuilt table)", 'thermaltdp': "the TDP's lines, limits only (rebuilt table)"}
 out = ['### 722 (a): the three builds through the same network test (weather years 2025 and 2015, seed k = 0; energies TWh, unserved GWh)', '']
 for pfx in ('final', 'ff', 'deep'):
     files = {fn: d for fn, d in R.items() if fn.startswith(f'net_{pfx}_')}

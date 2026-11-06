@@ -23,7 +23,7 @@ for y in (2035,2040):
 out.append('')
 out.append('| year, weather year | case | curtailed, TWh | of it wind | solar | unserved, GWh | coal, TWh | gas | diesel | storage discharge | fuel and carbon, R bn | corridors with a shadow price over 4,000 hours (value of one more MW, R m a year) |')
 out.append('|---|---|---|---|---|---|---|---|---|---|---|---|')
-label={'n0':"today's limits as drawn (N-0)",'f085':'0.85 x today','n1':'N-1 (0.7 x today)','n1c':'N-1, one circuit dropped','n1tdp':'N-1 with TDP lines by year','n1ctdp':'one circuit dropped, with TDP lines by year'}
+label={'n0':"N-1 (PyPSA-RSA's table, labelled 'as drawn (N-0)' before 738)",'f085':'0.85 x today','n1':'N-1 (0.7 x today)','n1c':'N-1, one circuit dropped','n1tdp':'N-1 with TDP lines by year','n1ctdp':'one circuit dropped, with TDP lines by year', 'nm1': "today's corridors, N-1 once (rebuilt table)", 'thermal': "thermal and loadability limits only (rebuilt table)", 'nm1tdp': "the TDP's lines, N-1 once (rebuilt table)", 'thermaltdp': "the TDP's lines, limits only (rebuilt table)"}
 for y in (2035,2040):
     for wy in ('2025','2015'):
         b=R.get((y,wy,'nolimit','reea',0,0))

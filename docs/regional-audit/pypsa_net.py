@@ -15,9 +15,11 @@ T_START = time.time()
 DUMP, ROOT, CASE, SITING, OUT = sys.argv[1:6]
 LOSSES = int(sys.argv[6]) if len(sys.argv) > 6 else 0
 COALMIN = int(sys.argv[7]) if len(sys.argv) > 7 else 0
-FACTOR = {'nolimit': None, 'n0': 1.0, 'f085': 0.85, 'n1': 0.7, 'n1tdp': 0.7, 'f085tdp': 0.85, 'n0tdp': 1.0, 'n1c': 1.0, 'n1ctdp': 1.0}[CASE]   # the N-1 factor on today's limits (and on TDP lines)
+FACTOR = {'nolimit': None, 'n0': 1.0, 'f085': 0.85, 'n1': 0.7, 'n1tdp': 0.7, 'f085tdp': 0.85, 'n0tdp': 1.0, 'n1c': 1.0, 'n1ctdp': 1.0, 'nm1': 1.0, 'nm1tdp': 1.0, 'thermal': 1.0, 'thermaltdp': 1.0}[CASE]   # the N-1 factor on today's limits (and on TDP lines); nm1/thermal (738): the rebuilt table, N-1 once / limits only
+CORR_FILE = os.environ.get('CORR_FILE', '')            # (738 a) the rebuilt corridor table (corridors_v2.json from build_corridors.py); required for the nm1 and thermal cases
+if CASE.startswith(('nm1', 'thermal')) and not CORR_FILE: sys.exit('CORR_FILE must name the rebuilt corridor table for the nm1 and thermal cases')
 N1C = CASE.startswith('n1c')   # N-1 by dropping one circuit per corridor, (n-1)/n from the circuit counts (single circuit: 0.7, as PyPSA-RSA)
-S_COUNTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'corridor_circuit_counts.json')   # counts only, from nodal/corridor_electrical.json (no rating)
+_here = os.path.dirname(os.path.abspath(__file__)); S_COUNTS = next((c for c in (os.path.join(_here, 'corridor_circuit_counts.json'), os.path.join(_here, '..', 'corridor_circuit_counts.json')) if os.path.exists(c)), os.path.join(_here, 'corridor_circuit_counts.json'))   # beside the script (the committed layout) or one level up (the scratch layout); counts only, from nodal/corridor_electrical.json (no rating)
 COUNTS = json.load(open(os.environ.get('CIRCUITS', S_COUNTS))) if N1C else {}
 TDP_ON = CASE.endswith('tdp')
 TX_EXT = float(os.environ.get('TX_EXT', '0'))        # (d) corridors extendable at this R per MW-km (0: fixed)
@@ -33,6 +35,8 @@ MIX_NOCAP = int(os.environ.get('MIX_NOCAP', '0'))      # (727 a) 1: the per-area
 BATT_ADD = os.environ.get('BATT_ADD', '')               # (731) lithium added to the fixed build, 'area:MW,area:MW', at BATT_ADD_H hours, costed at the build's own lithium costs
 BATT_ADD_H = float(os.environ.get('BATT_ADD_H', '4'))
 TX_BUDGET = float(os.environ.get('TX_BUDGET', '0'))     # (731) with TX_EXT: a cap on the corridor additions' annual cost, R a year (the same value as a lithium step)
+GAS_INTEG = int(os.environ.get('GAS_INTEG', '0'))        # (738 d) 1: new open cycle pays the integration charge too, as the run's LP charges it
+WIND_CAPE_MW = float(os.environ.get('WIND_CAPE_MW', '0'))   # (738 d) the run's Cape wind allowance: this much new wind pays no integration charge
 PV_CREDIT_MW = float(os.environ.get('PV_CREDIT_MW', '0'))   # (732) the freed-coal connection credit in the free mix: new solar up to this MW nationally pays no integration charge (the pathway rule: solar may, wind may not)
 MIX_MIN = os.environ.get('MIX_MIN', '')                 # (6 Nov 2026) national floors on the free mix, e.g. batt:56017,battE:480000: the build's own storage held, its siting free
 MIX_INTEG = int(os.environ.get('MIX_INTEG', '1'))      # (f) 1 keeps the integration charge on new wind and solar; 0 removes it (corridors priced explicitly)
@@ -141,7 +145,12 @@ if offCap > 0 and pu.get('off'):
 # ---------------------------------------------------------------- coal by region, as the engine's standing fleet
 coalRem = p['coalInstalledMW'] - s['coalDecomMW']
 standing = [u for u in uc if (9999 if u['decom'] == 'beyond 2050' else int(u['decom'])) > Y]
+MSL_DESIGN = {0.65: 0.57, 0.5: 0.52}   # the page's coalMslDesign from 2030 (index.html COAL_PRE_C: [share for the groups at 0.65, share for the groups at 0.50]); the LP's floor uses each area's capacity-weighted value (738 e)
+MSL_R = {}
 rawT = sum(u['cap'] for u in standing); coal_r = {r: (coalRem * sum(u['cap'] for u in standing if u['region'] == r) / rawT if rawT > 0 else 0.0) for r in REG}
+for r in REG:
+    cr = [u for u in standing if u['region'] == r]; MSL_R[r] = (sum(u['cap'] * MSL_DESIGN.get(round(u['msl'], 2), u['msl']) for u in cr) / sum(u['cap'] for u in cr)) if cr else 0.57
+if COALMIN == 1: notes.append('commitment floor by area at the design minimum (0.57 for the 0.65 groups, 0.52 for the 0.50 groups): ' + ', '.join(f'{r} {MSL_R[r]:.3f}' for r in REG if MSL_R[r] and coal_r.get(r, 0) > 0))
 coalAvail = A(hh['coalAvailable']); coal_pu = np.minimum(1.0, coalAvail / coalRem) if coalRem > 0 else np.zeros(H)
 coalCommitted = A(hh['coalCommitted']) if hh.get('coalCommitted') else None
 notes.append(f'coal: {coalRem:.0f} MW standing in {Y} from {len(standing)} UC_FLEET groups ({rawT:.0f} MW by date, scaled {(coalRem / rawT if rawT > 0 else 0):.3f}); hourly availability from the engine (mean {coalAvail.mean():.0f} MW)')
@@ -171,7 +180,7 @@ if MIX or BATT_ADD:
     CC['pv'] = 1000 * (T[pvkey]['netAnnuity'] + (T[pvkey]['gridConn'] or 0) + (integ if MIX_INTEG else 0))
     CC['batt'] = 1000 * (T['batt']['netAnnuity'] + (T['batt']['gridConn'] or 0))
     CC['battE'] = 1000 * c['battEnergyRkWhyr']
-    CC['ocgt'] = 1000 * (T['ocgt']['netAnnuity'] + (T['ocgt']['gridConn'] or 0))
+    CC['ocgt'] = 1000 * (T['ocgt']['netAnnuity'] + (T['ocgt']['gridConn'] or 0) + (integ if GAS_INTEG else 0))
     notes.append(f"mix costs, R per MW-year: wind {CC['wind']:,.0f} ({pvkey} {CC['pv']:,.0f}), lithium power {CC['batt']:,.0f} and energy {CC['battE']:,.0f} per MWh, open cycle {CC['ocgt']:,.0f}; integration charge {'kept' if MIX_INTEG else 'removed'} ({integ:.0f} R/kW-yr)")
 # ---------------------------------------------------------------- the network
 n = pypsa.Network(); n.set_snapshots(range(H))
@@ -188,8 +197,18 @@ elif TDP_ON:
         areas = sorted(set(a for a in (subs.get(z['n']) for z in q.get('pts', [])) if a))
         if len(areas) == 2: tdp.append((areas[0], areas[1], KVMW.get(q.get('kv'), 900), q['name'], q.get('year')))
 corr = []
+if CORR_FILE:
+    V2 = json.load(open(CORR_FILE)); notes.append(f"corridor table: {os.path.basename(CORR_FILE)} ({V2['meta'].get('erosPlacement')}; {len(V2['corridors'])} corridors; N-1 applied once over existing circuits and TDP lines together)")
+    CORR = [(v['a'], v['b'], v['n1MW'], v['kmMean']) for v in V2['corridors'].values()]
+    V2R = {(v['a'], v['b']): [c['ratingMW'] for c in v['circuits']] for v in V2['corridors'].values()}
 for a, b, lim, km in CORR:
     add = sum(mw for x, y2, mw, nm, yr in tdp if {x, y2} == {a, b})
+    if CORR_FILE:
+        allc = V2R[(a, b)] + [mw for x, y2, mw, nm, yr in tdp if {x, y2} == {a, b}]; tot = sum(allc)
+        if FACTOR is None: cap_ab = 1e6
+        elif CASE.startswith('thermal'): cap_ab = tot
+        else: cap_ab = (tot - max(allc)) if len(allc) > 1 else 0.7 * tot
+        corr.append((a, b, cap_ab, km, lim, add)); continue
     if FACTOR is None: cap_ab = 1e6
     elif N1C:
         nc = COUNTS.get(a + '|' + b, COUNTS.get(b + '|' + a, 1)); fac = (nc - 1) / nc if nc > 1 else 0.7
@@ -199,7 +218,7 @@ for a, b, lim, km in CORR:
 extra = {}
 for x, y2, mw, nm, yr in tdp:
     if not any({x, y2} == {a, b} for a, b, *_ in CORR): extra[(x, y2)] = extra.get((x, y2), 0) + mw
-for (x, y2), mw in extra.items(): corr.append((x, y2, (0.7 if N1C else (FACTOR or 1.0)) * mw, 300.0, 0.0, mw)); notes.append(f'TDP lines join {x} and {y2}, a pair with no corridor today: added at {FACTOR or 1.0} x {mw} MW, 300 km')
+for (x, y2), mw in extra.items(): corr.append((x, y2, (0.7 if (N1C or CASE.startswith('nm1')) else (FACTOR or 1.0)) * mw, 300.0, 0.0, mw)); notes.append(f'TDP lines join {x} and {y2}, a pair with no corridor today: added at {FACTOR or 1.0} x {mw} MW, 300 km')
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
     # v2 (6 Nov 2026): every corridor is a pair of one-way links, so the R0.01 per MWh tie-breaking cost is paid in both directions and
     # can never be earned (a bidirectional link with p_min_pu = -1 pays marginal_cost x p0, negative for reverse flow, which with
@@ -218,6 +237,7 @@ for r in REG:
     n.add('Generator', f'{r} rooftop', bus=r, p_nom=max(1e-6, roof_cap_r[r]), p_max_pu=roofpu * p['rooftopDerate'], p_min_pu=roofpu * p['rooftopDerate'], marginal_cost=0, carrier='rooftop')
     if cap_wex[r] > 0: n.add('Generator', f'{r} wind ex', bus=r, p_nom=cap_wex[r], p_max_pu=ser_wex[r], marginal_cost=0, carrier='wind')
     if MIX and N_w > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=1e5 if MIX_NOCAP else (max(0.0, REEA_MW['wind'].get(r, 0.0)) if REEA_MW else 1e5), p_max_pu=ser_wnew[r], marginal_cost=0, capital_cost=CC['wind'], carrier='wind')
+    if MIX and N_w > 0 and WIND_CAPE_MW > 0 and r == 'Western Cape': n.add('Generator', f'{r} wind new cape', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=WIND_CAPE_MW, p_max_pu=ser_wnew[r], marginal_cost=0, capital_cost=CC['wind'] - integ * 1000, carrier='wind')
     elif SITE_FREE and N_w > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=0.0, p_nom_extendable=True, p_nom_max=max(0.0, REEA_MW['wind'].get(r, 0.0)) if REEA_MW else N_w, p_max_pu=ser_wnew[r], marginal_cost=0, capital_cost=0, carrier='wind')
     elif cap_wnew[r] > 0: n.add('Generator', f'{r} wind new', bus=r, p_nom=cap_wnew[r], p_max_pu=ser_wnew[r], marginal_cost=0, carrier='wind')
     if cap_pex[r] > 0: n.add('Generator', f'{r} pv ex', bus=r, p_nom=cap_pex[r], p_max_pu=ser_pex[r], marginal_cost=0, carrier='pv')
@@ -233,7 +253,7 @@ for r in REG:
     elif cap_pnew[r] > 0: n.add('Generator', f'{r} pv new', bus=r, p_nom=cap_pnew[r], p_max_pu=ser_pnew[r], marginal_cost=0, carrier='pv')
     if coal_r[r] > 0:
         kw = dict(p_max_pu=coal_pu)
-        if COALMIN == 1 and coalCommitted is not None: kw['p_min_pu'] = np.minimum(coal_pu, 0.57 * coalCommitted / coalRem)
+        if COALMIN == 1 and coalCommitted is not None: kw['p_min_pu'] = np.minimum(coal_pu, MSL_R[r] * coalCommitted / coalRem)
         if COALMIN == 2:   # the engine's own hourly coal output, fixed (the tie-out's decomposition)
             cs = np.minimum(coal_pu, A(st['coal']) / coalRem); kw['p_max_pu'] = cs; kw['p_min_pu'] = cs
         n.add('Generator', f'{r} coal', bus=r, p_nom=coal_r[r], marginal_cost=mc_coal, carrier='coal', **kw)
@@ -328,6 +348,7 @@ if SITE_FREE or MIX or TX_ON:
                     if names: m.add_constraints(pn.loc[names].sum() <= float(caps[t]), name=f'cap {t}')
             if 'batt' in caps: m.add_constraints(ln.loc[[f'{r} li charge' for r in REG]].sum() <= float(caps['batt']), name='cap batt')
             notes.append('national caps: ' + MIX_CAP)
+        if WIND_CAPE_MW > 0 and not MIX_NOCAP and 'Western Cape wind new cape' in n.generators.index: m.add_constraints(pn.loc['Western Cape wind new'] + pn.loc['Western Cape wind new cape'] <= float(max(0.0, REEA_MW['wind'].get('Western Cape', 0.0)) if REEA_MW else 1e5), name='wind cap with allowance'); notes.append(f'Cape wind allowance: {WIND_CAPE_MW:,.0f} MW of new Western Cape wind without the integration charge')
         if PV_CREDIT_MW > 0:
             cr = [g for g in n.generators.index if g.endswith('pv new credit')]
             m.add_constraints(pn.loc[cr].sum() <= PV_CREDIT_MW, name='credit pool')
@@ -386,6 +407,8 @@ mix = {}
 if MIX:
     mix['windMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} wind new', 0.0)) for r in REG}
     mix['pvMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} pv new', 0.0)) for r in REG}
+    if WIND_CAPE_MW > 0:
+        mix['windCapeMW'] = float(n.generators.p_nom_opt.get('Western Cape wind new cape', 0.0)); mix['windMW']['Western Cape'] = mix['windMW'].get('Western Cape', 0.0) + mix['windCapeMW']; mix['capeCreditRbn'] = mix['windCapeMW'] * integ * 1000 / 1e9
     if PV_CREDIT_MW > 0:
         mix['pvCreditMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} pv new credit', 0.0)) for r in REG}
         mix['pvMW'] = {r: mix['pvMW'][r] + mix['pvCreditMW'][r] for r in REG}
@@ -407,7 +430,7 @@ if TX_EXT > 0:
     for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
         addMW = float(n.links.p_nom_opt[f'c{i}_ab'] - n.links.p_nom[f'c{i}_ab'])   # the pair is tied, so one direction's addition is the corridor's
         if addMW > 1: expansion.append({'a': a, 'b': b, 'addMW': addMW, 'km': km, 'MWkm': addMW * km, 'capexRbn': addMW * km * TX_EXT / 1e9, 'annualRbn': addMW * km * TX_EXT * CRF / 1e9})
-res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'battAdded': battAdded, 'txBudgetRbn': TX_BUDGET / 1e9 if TX_BUDGET > 0 else None, 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
+res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'corrFile': os.path.basename(CORR_FILE) if CORR_FILE else None, 'gasInteg': GAS_INTEG, 'windCapeMW': WIND_CAPE_MW, 'pvCreditMW': PV_CREDIT_MW, 'battAdded': battAdded, 'txBudgetRbn': TX_BUDGET / 1e9 if TX_BUDGET > 0 else None, 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
        'objectiveRbn': float(n.objective) / 1e9, 'fuelAndCarbonRbn': fuel / 1e9,
        'E_TWh': {c: v / 1e6 for c, v in E.items()}, 'storageDischargeTWh': {c: v / 1e6 for c, v in dis.items()}, 'storageChargeTWh': {c: v / 1e6 for c, v in chg.items()},
        'availTWh': {c: v / 1e6 for c, v in avail.items()}, 'curtailedTWh': {c: v / 1e6 for c, v in curt.items()}, 'curtailedTotalTWh': sum(curt.values()) / 1e6, 'curtailedByRegionTWh': {r: v / 1e6 for r, v in curt_r.items()},

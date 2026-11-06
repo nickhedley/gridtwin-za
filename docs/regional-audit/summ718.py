@@ -12,7 +12,7 @@ def row(d):
     return dict(coal=g(d, 'coal'), gas=gas, diesel=g(d, 'diesel'), wind=g(d, 'wind'), pv=g(d, 'pv'), curt=d['curtailedTotalTWh'], curtW=d['curtailedTWh'].get('wind', 0), curtP=d['curtailedTWh'].get('pv', 0), uns=d['unservedGWh'], sto=sto, cost=d['fuelAndCarbonRbn'], obj=d['objectiveRbn'])
 def binding(d, nmin=4000, k=6):
     return '; '.join(f"{f['a']} to {f['b']} ({f.get('bindingHours', 0)} h, R{f.get('shadowRperMWyr', 0) / 1e6:.1f}m)" for f in sorted(d['corridors'], key=lambda x: -x.get('shadowRperMWyr', 0)) if f.get('bindingHours', 0) >= nmin)[:400]
-LAB = {'nolimit': 'no limits', 'n0': 'as drawn (1.0)', 'f085': '0.85', 'n1': '0.7', 'n1c': 'drop one circuit', 'n1tdp': '0.7 with TDP', 'f085tdp': '0.85 with TDP', 'n0tdp': '1.0 with TDP', 'n1ctdp': 'drop one circuit with TDP'}
+LAB = {'nolimit': 'no limits', 'n0': "N-1 (PyPSA-RSA's table, labelled 'as drawn' before 738)", 'f085': '0.85', 'n1': '0.7', 'n1c': 'drop one circuit', 'n1tdp': '0.7 with TDP', 'f085tdp': '0.85 with TDP', 'n0tdp': '1.0 with TDP', 'n1ctdp': 'drop one circuit with TDP', 'nm1': "today's corridors, N-1 once (rebuilt table)", 'thermal': "thermal and loadability limits only (rebuilt table)", 'nm1tdp': "the TDP's lines, N-1 once (rebuilt table)", 'thermaltdp': "the TDP's lines, limits only (rebuilt table)"}
 out = []
 # (a) today's fleet
 out.append("### 718 (a): today's fleet (the page's Today 2026 and '2025, as modelled' presets, build 2026-11-04b, weather year 2025, seed k = 0)")

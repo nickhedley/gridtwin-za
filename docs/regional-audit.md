@@ -1646,3 +1646,84 @@ Method. The fixed build of 722 (a) (the run's own plants, hourly, no commitment 
 Reading: pending, the cases are in the queue (queue12a.sh, after 727 and 732).
 
 What the result cannot show. (1) Within-area limits: the model carries the 21 inter-area corridors only, so lithium placed in an area relieves the exit and nothing inside the area, and a corridor bought relieves the exit and nothing behind it; both are lower bounds on what either would have to do. (2) Perfect foresight: the LP dispatches the year knowing it, so the lithium's cycles and the corridor's hours are the best case for each; a real operator's storage does less, and the comparison between them is fairer than either figure alone. (3) Blocks: these cases are hourly, but the free-mix lithium in the second table is on 3-hour (and 6-hour) blocks, which flatten the evening peak and understate the lithium's value and the curtailment the block hides. (4) One weather year (2025) in this cut, and one lithium duration.
+
+## Message 738: the corridor table rebuilt, the cases rerun on it, the control repriced, the tie-out widened (6 Nov 2026; after the review of 728 in docs/reviews/2026-11-06-pypsa-net-review.md; build 2026-11-05f; scratch and this branch only; nothing to be quoted)
+
+The review's findings stand: the old table was PyPSA-RSA's N-1 table at 400 kV ratings, so every factor case here derated it twice and the 'as drawn' rows were N-1 rows; two of its corridors were placeholders with no line behind them; and the free-mix control was priced on the test's accounting, not the run's. The earlier network results are superseded for corridor sizes by what follows.
+
+### (a) The corridor table rebuilt from the model's own line file
+
+Method (docs/regional-audit/build_corridors.py; output corridors_v2.json and corridor_table_v2.md with every circuit). Lines: nodal/transmission_lines.geojson (450 features, NTCSA-derived; 317 existing, 133 planned), each end placed in its area by nodal/substations_compact.json (the 125 unnamed features placed by their end points; all of them planned, so none is in today's table), cross-border lines and the Cahora Bassa HVDC excluded, existing status only; the planned ones are the TDP's and enter through the TDP file. Per circuit: the lower of the voltage class's thermal rating and the St Clair loadability at the circuit's own length (SIL x 53.736 x km to the power -0.65, as PyPSA-RSA applies it), SIL 2,280 MW at 765 kV and 602 MW at 400 kV (PyPSA-RSA's values, from the review), 285 MW at 275 kV, 182 at 220 kV and 66 at 132 kV by voltage squared from the 400 kV value (an assumption, stated); thermal by class from the model's own line file (nodal/corridor_electrical.json's MVA per class: 3,000 at 765 kV, 1,400 at 400 kV, 400 at 275 kV, 250 at 220 kV). Corridor: the sum of its circuits (the thermal-and-loadability sensitivity), and N-1 applied once: the sum less the largest circuit where there are two or more, 0.7 times the circuit where there is one (PyPSA-RSA's rule). In the TDP cases N-1 is applied once over the existing circuits and the TDP's lines together. Corridor length for pricing: the mean of its circuits. Source for every circuit: the line file's own label (the full list in corridor_table_v2.md). No NTCSA capacity figure is used: the ratings are computed from voltage and length.
+
+| corridor | old MW, old km (the table: PyPSA-RSA N-1 at 400 kV ratings) | circuits in the line file (existing) | km, mean | thermal and loadability sum MW | N-1 once MW | new N-1 against old |
+|---|---|---|---|---|---|---|
+| Gauteng to Mpumalanga | 13,318, 102 | 8 x 400 kV, 4 x 275 kV | 102 | 12,568 | 11,168 | 0.84 |
+| KwaZulu-Natal to Mpumalanga | 6,552, 172 | 1 x 765 kV, 7 x 400 kV | 172 | 11,375 | 8,375 | 1.28 |
+| Gauteng to North West | 5,680, 84 | 4 x 400 kV, 3 x 275 kV | 66 | 6,800 | 5,400 | 0.95 |
+| Free State to Hydra Central | 2,763, 310 | 2 x 765 kV, 3 x 400 kV | 310 | 7,865 | 4,865 | 1.76 |
+| Free State to Mpumalanga | 2,609, 347 | 2 x 765 kV, 3 x 400 kV | 347 | 7,202 | 4,838 | 1.85 |
+| Limpopo to North West | 5,922, 212 | 5 x 400 kV, 2 x 275 kV | 212 | 5,316 | 3,916 | 0.66 |
+| Free State to Gauteng | 1,446, 202 | 1 x 400 kV, 9 x 275 kV | 60 | 5,000 | 3,600 | 2.49 |
+| Limpopo to Mpumalanga | 5,138, 121 | 2 x 400 kV, 3 x 275 kV | 121 | 3,447 | 2,214 | 0.43 |
+| Mpumalanga to North West | 599, 268 | 1 x 765 kV | 268 | 3,000 | 2,100 | 3.51 |
+| Free State to North West | 651, 235 | 1 x 765 kV | 235 | 3,000 | 2,100 | 3.23 |
+| Hydra Central to Western Cape | 2,377, 278 | 3 x 400 kV | 246 | 2,709 | 1,803 | 0.76 |
+| Gauteng to Limpopo | 4,041, 271 | 2 x 400 kV, 1 x 275 kV | 107 | 3,200 | 1,800 | 0.45 |
+| Eastern Cape to KwaZulu-Natal | 813, 167 | 1 x 400 kV | 167 | 1,161 | 813 | 1.00 |
+| Northern Cape to Western Cape | 823, 164 | 1 x 400 kV | 171 | 1,144 | 801 | 0.97 |
+| Eastern Cape to Hydra Central | 1,124, 295 | 2 x 400 kV | 295 | 1,606 | 801 | 0.71 |
+| North West to Northern Cape | 663, 229 | 1 x 400 kV | 199 | 1,038 | 726 | 1.10 |
+| Hydra Central to Northern Cape | 754, 187 | 1 x 400 kV, 2 x 220 kV | 64 | 1,578 | 500 | 0.66 |
+| Eastern Cape to Free State | 455, 408 | 1 x 400 kV | 408 | 650 | 455 | 1.00 |
+| Free State to Northern Cape | 2,439, 90 | 2 x 275 kV | 90 | 800 | 400 | 0.16 |
+| Free State to KwaZulu-Natal | 427, 450 | none (a placeholder; dropped) | - | 0 | 0 | 0 |
+| North West to Western Cape | 233, 1,139 | none (a placeholder; dropped) | - | 0 | 0 | 0 |
+| total | 58,827 | 77 circuits | | 79,459 | 56,676 | 0.96 |
+
+What changed. The 765 kV lines (Alpha to Beta, Beta to Hydra, Gamma to Perseus, Majuba to Umfolozi, Mercury to Perseus, Mercury to Zeus) rated at their own voltage lift the Free State hub's corridors 1.8 to 3.5 times (Free State to Hydra Central 4,865 MW, Free State to Mpumalanga 4,838, the two Mercury lines 2,100 each). The two placeholders are gone. Seven corridors fall, because the line file has fewer circuits on them than the old table's PyPSA-RSA sum implied: Free State to Northern Cape (two 275 kV circuits, 400 MW against 2,439), Limpopo to Mpumalanga, Gauteng to Limpopo, Hydra Central to Northern Cape, Limpopo to North West, Eastern Cape to Hydra Central and Hydra Central to Western Cape (0.43 to 0.76 of the old). Those seven are where the line file's coverage, not the rating method, sets the figure, and the Karoo exits are among them: the rebuilt table is the model's own data at voltage-specific ratings, not a better survey of the lines. The total is 56.7 GW N-1 against the old 58.8, and 79.5 GW with limits only.
+
+### (b) The main cases on the rebuilt table
+
+Pending: queue14 (the rebuilt table's cases) runs after the gap-split sets.
+
+### (c) Eros, Umtu and Gamma to Grassridge
+
+Eros. The public record places the Eros 400 kV substation near Harding, KwaZulu-Natal (Engineering News, 27 June 2014, on the Eastern Cape strengthening projects: the line from Eros to the new Vuyani substation at Mthatha, with about 25 km still to be built), and Eskom's own project page describes the Eros to Neptune 400 kV network as running from KwaZulu-Natal into the Eastern Cape (search summary, not read from eskom.co.za). The model's substation file places Eros in the Eastern Cape by hand (src manual, 132 kV, at 30.61 S 29.91 E, which is Harding). No public source links Eros to the Isundu 765 kV line; Isundu's own record (Engineering News, 29 May 2015) ties it to the Venus to Sigma to Hector to Ariadne 765 kV corridor near Pietermaritzburg and to Mbewu. So the central mapping here puts Eros in KwaZulu-Natal: the existing Eros to Vuyani 400 kV circuit becomes the Eastern Cape to KwaZulu-Natal corridor (813 MW N-1 once, the same figure the old table carried), and the TDP's Ariadne to Eros 400 kV and Eros to Isundu 765 kV lines are inside KwaZulu-Natal and add nothing between the areas. The range: with Eros in the Eastern Cape (the file's placement) those two lines add 3,900 MW to the corridor by 2032 and the existing corridor has no circuit in the line file; both cases are run (queue14, tdp_lines_v2.json against tdp_lines_v2_with.json).
+
+Umtu. No public source places Umtu or confirms a Mercury to Umtu 765 kV line; a commercial project listing gives an Umtu 765/400 kV substation upgrade expected in 2027 at 'Umtu, Cape' (power-technology.com, a paid profile), and Eskom's Mercury to Ferrum line runs 428 km through a new Mookodi substation to Ferrum near Kathu (search summary). The model's TDP file maps Mercury to Umtu as North West to Northern Cape, 3,000 MW in 2033. Central: left out; the range runs it in the with-case.
+
+Gamma to Grassridge. Two 765 kV lines of about 360 km each, from Gamma (Northern Cape side of the Karoo) to Grassridge (Eastern Cape), with two 765 kV feeder bays at Gamma and two 2,000 MVA 765/400 kV transformers at Grassridge (SAHRIS project record for the NTCSA application, sahris.org.za/node/373779; Eskom's EIA notice 12/12/20/801 for two 765 kV lines, as quoted in search results). The model's line file has both circuits as planned features (Southern Grid Phase 3 and Phase 4). Mapped here as two circuits of 3,000 MW in 2032 (tdp_lines_v2.json), against one before.
+
+### (d) The control and the 727 (a) split on the run's accounting
+
+Pending: queue15 (the run's-accounting cases) runs after queue14.
+
+### (e) The tie-out: diesel and gas, the hourly correlation, the counts-file path, the floor
+
+The hourly correlation of the LP's availability series (the regional series at the siting shares, scaled to the engine's annual energy) against the engine's national series (docs/regional-audit/hourly_corr.py):
+
+2035, weather 2025.
+
+| series | engine TWh | LP TWh | hourly correlation | mean absolute gap MW | TWh moved between hours |
+|---|---|---|---|---|---|
+| existing wind | 14.51 | 14.51 | 0.961 | 237 | 1.0 |
+| new wind | 99.14 | 99.14 | 0.943 | 1,561 | 6.8 |
+| existing solar | 8.01 | 8.01 | 0.968 | 177 | 0.8 |
+| new solar | 44.35 | 44.32 | 0.999 | 135 | 0.6 |
+| all | 166.01 | 165.98 | 0.968 | 1,809 | 7.9 |
+
+2040, weather 2025.
+
+| series | engine TWh | LP TWh | hourly correlation | mean absolute gap MW | TWh moved between hours |
+|---|---|---|---|---|---|
+| existing wind | 14.51 | 14.51 | 0.961 | 237 | 1.0 |
+| new wind | 148.18 | 148.18 | 0.943 | 2,334 | 10.2 |
+| existing solar | 8.01 | 8.01 | 0.968 | 177 | 0.8 |
+| new solar | 62.18 | 62.13 | 0.999 | 189 | 0.8 |
+| all | 232.88 | 232.83 | 0.966 | 2,580 | 11.3 |
+
+The tie-out holds in annual energy to 0.03 TWh and not hour by hour: the new wind's shape differs most (correlation 0.943, a mean absolute gap of 1.6 GW in 2035 and 2.3 GW in 2040, 7 to 10 TWh moved between hours), the solar's least. The tie-out tables (717 (c)) now carry diesel and gas columns, which show the coal-fixed variant burning 4.0 TWh of diesel in 2035 (the engine 0.5) and 4.7 TWh of gas in 2040 (the engine 2.9) to absorb that shape difference; the free and floor variants hide it in coal and storage. The counts-file path now resolves beside the script (the committed layout) and one level up (the scratch layout). The commitment floor now uses each area's capacity-weighted design minimum from the fleet's groups (0.57 for the groups whose own minimum is 0.65, 0.52 for the groups at 0.50, the page's coalMslDesign from 2030) instead of 0.57 for every unit; the floor variants are rerun on the rebuilt table (queue14, coalmin 1).
+
+### (f) What follows on the rebuilt table and the repriced costs
+
+The 732 credit pair and 737's first cut (731) run on the rebuilt table and the run's accounting after (b) and (d); the queued cases on the old table (the R21,700 beyond-TDP mixes, the Fossil-free variant, the 731 first cut on the old table) were not launched.
