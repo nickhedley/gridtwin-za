@@ -4,7 +4,8 @@ curtailment, coal, gas, unserved and annual cost (fuel and carbon, unserved ener
 A budget case whose budget is above the unconstrained expansion's cost was not run; the unconstrained case stands for it and is marked."""
 import json, os, glob, os, re
 S = '/tmp/claude-0/-home-user-gridtwin-za/ff25664d-5d95-5cb3-a5ba-9894dfa04a8f/scratchpad/'
-VOLL = json.load(open(S + 'engine_final_2035_wy2025.json'))['p']['voll']
+VOLL = json.load(open(S + 'engine_final_2035_wy2025.json'))['p']['voll']   # R87,000 per MWh, FIXED.voll, the LP's penalty
+LS = 12300.0   # R per MWh, costUnservedR in index.html, the engine's cost of load shedding, the national system cost's basis (message 754)
 tw = lambda x: sum(x.values()) if isinstance(x, dict) else x
 def load(fn):
     try: return json.load(open(fn))
@@ -12,11 +13,12 @@ def load(fn):
 BASE = {}
 def row(d, addition, annuity, extra='', base=None):
     E = d['E_TWh']; gas = tw(E.get('ccgt', 0)) + tw(E.get('ocgt', 0)) + tw(E.get('diesel', 0))
-    cost = d['fuelAndCarbonRbn'] + d['unservedGWh'] * 1e3 * VOLL / 1e9 + annuity
-    if base is None: return f"| {addition} | {tw(d['curtailedTotalTWh']):.1f} | {tw(E.get('coal', 0)):.1f} | {gas:.2f} | {d['unservedGWh']:.1f} | {d['fuelAndCarbonRbn']:.2f} | {annuity:.2f} | - | - | - | {cost:.2f} |{extra}"
-    sf = base['fuelAndCarbonRbn'] - d['fuelAndCarbonRbn']; su = (base['unservedGWh'] - d['unservedGWh']) * 1e3 * VOLL / 1e9
-    return f"| {addition} | {tw(d['curtailedTotalTWh']):.1f} | {tw(E.get('coal', 0)):.1f} | {gas:.2f} | {d['unservedGWh']:.1f} | {d['fuelAndCarbonRbn']:.2f} | {annuity:.2f} | {sf:.2f} | {su:.2f} | {annuity - sf - su:.2f} |  {cost:.2f} |{extra}"
-print('### 731: battery against corridor (build 2026-11-05f, the every-change pass; the rebuilt corridor table, N-1 once, corridors at the run\'s 0.071; fixed build, hourly, no commitment floor, losses off; lithium at the four exits in equal shares at the build\'s own lithium costs; corridor additions capped at the same annual cost)')
+    costL = d['fuelAndCarbonRbn'] + d['unservedGWh'] * 1e3 * LS / 1e9 + annuity; costV = d['fuelAndCarbonRbn'] + d['unservedGWh'] * 1e3 * VOLL / 1e9 + annuity
+    if base is None: return f"| {addition} | {tw(d['curtailedTotalTWh']):.1f} | {tw(E.get('coal', 0)):.1f} | {gas:.2f} | {d['unservedGWh']:.1f} | {d['fuelAndCarbonRbn']:.2f} | {annuity:.2f} | - | - | - | - | - | - | {costL:.2f} | {costV:.2f} |{extra}"
+    sf = base['fuelAndCarbonRbn'] - d['fuelAndCarbonRbn']; dg = base['unservedGWh'] - d['unservedGWh']; suL = dg * 1e3 * LS / 1e9; suV = dg * 1e3 * VOLL / 1e9
+    nL = annuity - sf - suL; nV = annuity - sf - suV; sign = 'changes' if (nL > 0) != (nV > 0) else 'same'
+    return f"| {addition} | {tw(d['curtailedTotalTWh']):.1f} | {tw(E.get('coal', 0)):.1f} | {gas:.2f} | {d['unservedGWh']:.1f} | {d['fuelAndCarbonRbn']:.2f} | {annuity:.2f} | {sf:.2f} | {suL:.2f} | {nL:.2f} | {suV:.2f} | {nV:.2f} | {sign} | {costL:.2f} | {costV:.2f} |{extra}"
+print('### 731: battery against corridor (net figures at both values of unserved energy, R12,300 per MWh, the engine\'s cost of load shedding, first, and R87,000, the LP\'s penalty; message 754) (build 2026-11-05f, the every-change pass; the rebuilt corridor table, N-1 once, corridors at the run\'s 0.071; fixed build, hourly, no commitment floor, losses off; lithium at the four exits in equal shares at the build\'s own lithium costs; corridor additions capped at the same annual cost)')
 for y in (2035, 2040):
     for wy in (2025, 2015):
         for net, lab, sfx in (('nm1', "today's corridors (the rebuilt table, N-1 once)", '_v2'), ('nm1tdp', "the TDP's lines (the rebuilt table, N-1 once; tdp_lines_v2.json)", '_v2tdp'), ('n1c', "today's corridors (the old table, one circuit dropped; superseded)", ''), ('n1ctdp', "the TDP's lines (the old table, one circuit dropped, full TDP; superseded)", '_tdpfull')):
@@ -42,7 +44,7 @@ for y in (2035, 2040):
                 lab = "the LP's own lithium" + (", with corridors at R21,700 too" if '_ext21k' in fn else '') + (" (3-hour blocks)" if blk else '') + (f": {b['MW'] / 1e3:.1f} GW / {b['MWh'] / 1e3:.0f} GWh (" + ', '.join(f"{k} {v / 1e3:.1f}" for k, v in sorted(b['byAreaMW'].items(), key=lambda x: -x[1]) if v > 50) + ')' if b['MW'] > 50 else ': the LP builds no lithium') + (f"; with corridors at R21,700 too: {ex['MW'] / 1e3:.1f} GW of corridor for R{ex['annualRbn']:.2f}bn" if ex.get('MW') else '')
                 rows.append(row(d, lab, b['annualRbn'] + ex.get('annualRbn', 0), ' ' + '; '.join(f"{r['a']} to {r['b']} {r['addMW'] / 1e3:.1f}" for r in sorted(d['expansion'], key=lambda r: -r['addMW']) if r['addMW'] > 300) if ex.get('MW') else '', base=B)); B = base
             if len(rows) == 1: continue
-            print(f'\n{y}, weather {wy}, {lab}\n\n| addition | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | addition, gross R bn a year | saves in fuel and carbon | saves in unserved energy at the value of lost load | net cost R bn a year | annual cost R bn | corridors built |\n|---|---|---|---|---|---|---|---|---|---|---|---|')
+            print(f'\n{y}, weather {wy}, {lab}\n\n| addition | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | addition, gross R bn a year | saves in fuel and carbon | saves in unserved energy at R12,300 per MWh | net cost at R12,300, R bn a year | saves in unserved energy at R87,000 | net cost at R87,000 | sign of the net between the two | annual cost at R12,300 R bn | annual cost at R87,000 | corridors built |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
             print('\n'.join(rows))
 print("\n### The LP's chosen lithium by area where the free mix gives it (718 (f) cases; block length stated)\n")
 print('| year, weather year | case | blocks | lithium GW, GWh | by area GW |\n|---|---|---|---|---|')
