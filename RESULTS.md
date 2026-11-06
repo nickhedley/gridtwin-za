@@ -23025,3 +23025,89 @@ f726/rp.js, 6 Nov 2026, 07:30 UTC.
 so the whole pool is credited either way (Least-cost 2035: 13,776 MW, R5.0bn a year, the review's figure). The preset blocks carry no
 bldRpExclude, so the page credits wind first; the pathway runs, and pathcheck (which passes each run's own gridRpMW), credit solar,
 storage and gas. Neither rule has geography (the review's finding 4).
+
+### Home and business batteries on Plentify's estimates (messages 734, 735, 740): engine checks on the baseline loop's build. Enrolled at E / 3 with 20% kept changes nothing at the build's enrolment; a 65% reserve held is an upper bound (2035 +4.6 GWh, over the standard); a blended reserve gliding with consumer education adds 0.24 GWh in 2035. Every case gives more evening output per home than AEMO's 0.7 kW
+
+Settings: engine only, no LP; the 7 Nov baseline loop's build (loops/base.json, final/pathway_loop_base_05h.json) on a comparison
+worktree (gtza-btm: the fin basis 10a98e2 with vppHours, vppReservePct and btmReservePath added, and the 2026 stock counted at the 2026
+reserve, use0; pathcheck BTM_OVER and BTM_CLIP), which reproduces the baseline's engine check to every digit at 2030, 2035 and 2040.
+2030 and 2040 at 20 draws, 2035 at 100 (near the limit), the common seeds (SEED_BASE 71830529). Cost changes in R bn a year, the year's
+engine cost. Evening output: the battery stock's mean output over 16:00-21:00 per kWh of the whole stock (backup-only batteries at
+zero), and per home at the Deye fleet's 16.9 kWh a system (2.7 GWh over 160,000; SOURCES 'Behind-the-meter batteries'). Inputs:
+SOURCES 'Plentify estimates' (credited as Plentify estimates). Scratchpad btm/ (run_cases.sh, table_btm.py, md_btm.py). 6 Nov 2026,
+08:37-10:40 UTC.
+
+| Case | 2030 unserved, GWh (change) | 2035 unserved (change; se) | 2040 unserved (change) | Cost change 2030 / 2035 / 2040, R bn a year | CO2 change 2035, Mt | Evening output 16:00-21:00, kW per kWh of stock (2035) | kW per home at 16.9 kWh |
+|---|---|---|---|---|---|---|---|
+| baseline | 2.00 | 17.81 (se 1.05) | 8.61 | 243.2 / 270.5 / 320.1 (levels) | 79.8 (level) | 0.100 | 1.68 |
+| (1) enrolled E/3, 20% reserve | 2.00 (+0.00) | 17.81 (+0.00; 1.05) | 8.61 (+0.00) | +0.02 / +0.00 / +0.00 | +0.01 | 0.100 | 1.69 |
+| (2a) reserve 65% to 25% by 2030 | 1.68 (-0.32) | 16.67 (-1.14; 1.02) | 8.21 (-0.40) | -0.14 / -0.26 / -0.17 | -0.15 | 0.100 | 1.68 |
+| (2b) reserve 65% to 40% by 2030 | 1.95 (-0.05) | 18.15 (+0.34; 1.06) | 8.78 (+0.16) | -0.02 / +0.11 / +0.22 | +0.08 | 0.081 | 1.36 |
+| (3) reserve 65% held, an upper bound | 2.51 (+0.51) | 22.40 (+4.59; 1.14) | 10.65 (+2.04) | +0.21 / +0.85 / +1.09 | +0.58 | 0.048 | 0.82 |
+| (4) backup-only 50% held | 3.40 (+1.40) | 24.55 (+6.74; 1.18) | 11.14 (+2.53) | +0.40 / +1.19 / +1.30 | +0.79 | 0.048 | 0.82 |
+| blend 39% held (x 0.35) | 2.16 (+0.16) | 18.99 (+1.18; 1.08) | 9.07 (+0.46) | +0.07 / +0.27 / +0.35 | +0.19 | 0.082 | 1.39 |
+| blend 43.2% held (x 0.455) | 2.22 (+0.22) | 19.46 (+1.65; 1.09) | 9.25 (+0.64) | +0.09 / +0.36 / +0.46 | +0.25 | 0.077 | 1.29 |
+| blend 47.4% held (x 0.56) | 2.27 (+0.27) | 19.99 (+2.18; 1.10) | 9.43 (+0.81) | +0.11 / +0.45 / +0.58 | +0.31 | 0.071 | 1.20 |
+| blend 43.2% to 31.8% by 2030 | 1.98 (-0.02) | 18.04 (+0.24; 1.05) | 8.67 (+0.06) | -0.01 / +0.05 / +0.10 | +0.03 | 0.091 | 1.54 |
+
+- Enrolled batteries (1): at the build's enrolment (2.3 GWh in 2030, 1.1 in 2035, none in 2040) E / 3 with 20% kept moves nothing
+  beyond R0.02bn. Their output over 16:00-21:00 is 0.067-0.071 kW per kWh enrolled in 2030; the share above what they would have
+  discharged anyway is 9.0-9.6% of their discharge (Plentify: about 20%, a guess whose meaning is being confirmed).
+- Case (2a) reads below the baseline: the 2026 stock is in the metered demand at the 2026 reserve, so a reserve falling from 65% to
+  25% frees more evening output than the baseline's 25% throughout. (2b) and the education glide sit close to the baseline.
+- Case (3), 65% held on the whole non-enrolled stock, is an upper bound, not a likely central (message 740: 65% holds for a large share
+  of existing home batteries, not the fleet average, not business batteries). Case (4) gives the same evening output by a different
+  mechanism; its 2030 enrolment was cut from the build's 2.32 GWh to the new cap of 1.16 GWh (half the stock backup-only halves the
+  cycling stock the enrolled batteries come from).
+- The blend: 25 + 40 x %, x the stock's share at 65% (home share x the share of homes Plentify calls a large share), the rest (other
+  homes, business batteries) at the model's 25%. Held at the 2026 blend, 2035 rises 1.2-2.2 GWh for x 0.35-0.56 (about 0.47 GWh per
+  0.1 of x); with consumer education taking the large share's 65% to 40% by 2030, x 0.455 gives +0.24 GWh in 2035, near (2b).
+- AEMO's 0.7 kW per home is the gap in evening (16:00-21:00) net grid imports between battery and solar-only homes, two groups of
+  10,000, Quarterly Energy Dynamics Q2 2026 (secondary reports: SolarQuotes, RenewEconomy); not a battery output, an Australian autumn
+  and winter quarter, and their battery size not in hand. At 16.9 kWh a home it is 0.041 kW per kWh; the baseline's 0.100 is 2.4
+  times that, the central blend's 0.077-0.091 about twice, and even (3) and (4), 0.048, above it. The passive profile discharges each
+  cycling battery's usable energy evenly over 17:00-22:00 every day rooftop charging allows: the reserve alone does not close the gap.
+
+Proposals for the final key (734 (b); each moves the central's LP key, so none is made without Nick's word):
+1. Enrolled batteries: power E / 3, 20% kept (new keys vppHours 3, vppReservePct 20, in the LP's vppp_ rows and the engine). Engine
+   effect at the build's enrolment: nil; the LP may enrol differently.
+2. Programme cost R500/kW-yr of enrolled power (E / 3), the most left after the owner's half of Eskom's R1m/MW-yr (Plentify estimates);
+   R1,000 a participant sensitivity. Today R342/kW-yr of E / 2.5 (Brattle's non-incentive cost): per MWh enrolled R136,900 to R166,700
+   a year (+22%). The wear term on incremental cycling (R165/MWh) stays, a resource cost; the owner's half is a payment. LP key moves.
+3. The non-enrolled reserve blended by a stated split, central x = 0.455 (homes 65% of the stock, 70% of homes at 65%: our assumptions
+   until Plentify gives the split), 43.2% in 2026 gliding to 31.8% by 2030 with consumer education, held after; with the 2026 stock at
+   the 2026 reserve (use0) in the LP and the engine. 2035 +0.24 GWh, +R0.05bn on this build; held at 43.2%, +1.65 GWh. Sensitivity:
+   the split (x 0.35-0.56) and no education. LP key moves (the cycling stock's profile in the balance rows).
+4. Not proposed from these checks: a change to the passive profile's full daily cycle, which is the larger part of the gap to AEMO;
+   it needs evidence on how much of a home battery's energy is used in the evening (Plentify's data, AEMO's sample sizes).
+
+### The central's new wind and utility solar to 2030 against NERSA's registrations and PFL's committed tiers (message 742 (b); report only)
+
+Settings: the 7 Nov baseline loop (harness/pathway/final/pathway_loop_base_05h.json; c7's central on the fin basis), its sched by year;
+NERSA's media statement of 5 Nov 2026 and nodal/nersa_registrations.json (Q1 2026/27); PFL's H1 2026 monitor (Alao and Kruger, Aug
+2026; TODO 14j (3)'s tiers). Registrations are not builds, and their investment figures are not capex.
+
+| Year | Central new wind, MW | Central new utility solar, MW | Of which committed floors (MIN_BUILD, cumulative wind / solar) |
+|---|---|---|---|
+| 2026 | 287 | 156 | 287 / 156 (the MW-equivalent in service in 2026 of 1,131 / 1,018 committed) |
+| 2027 | 1,959 | 2,120 | 2,246 / 2,276 |
+| 2028 | 2,500 | 1,129 | - / 3,405 |
+| 2029 | 2,500 | 0 | |
+| 2030 | 2,500 | 3,277 | |
+| 2026-2030 | 9,746 | 6,682 | |
+
+Wind from 2028 is at the LP's yearly limit (2,500 MW to 2030); solar's 2030 build all on freed coal connections.
+
+NERSA registrations (all technologies, every registered facility, utility and embedded): 2018-2024 10,536 MW (the cumulative 23,260 less
+2025 and 2026); calendar 2025 7,464 MW; January-September 2026 5,260 MW, of which April-June 804 MW (wind 568, solar 236) and July-
+September 3,129 MW (wind 1,063, solar 2,045, batteries 3, co-generation 18), January-March 1,327 MW (split not in our files).
+
+Utility scale: not stated by NERSA. By connection, July-September: 76 facilities on Eskom's network, 3,079 MW (98%, about 40 MW each),
+68 municipal, 50 MW (about 0.7 MW each); the three wind facilities (1,063 MW) are utility scale; solar averaged 14.7 MW a facility
+(2,045 MW over 139) against 1.9 MW in April-June (236 over 122).
+
+Financial close: registrations do not record it. PFL's monitor: operating in H1 2026 1,920 MW (17 projects), expected to reach COD in
+H2 2026 2,202 MW (1,414 private, 789 public), 2026 financial closes 1,713 MW, advanced pipeline 3,243 MW. Against 12,724 MW registered
+from January 2025 to September 2026, private capacity operating or expected in 2026 is about 2.4 GW (958 MW wheeled in H1, 1,414 in
+H2), about a fifth, and 2026's financial closes about an eighth; the sets are not matched project by project, so these are orders of
+magnitude only.

@@ -1523,3 +1523,10 @@ side could pair the solar hybrid with the wind price.
 2026'; the statement is the primary source, the SAPVIA dashboard a collation), in the first data update after PR #161 (user, 6 Nov 2026,
 message 742 (a)): the quarter by technology, province and network; the cumulative 2,763 facilities, 23,260 MW, R487bn; calendar 2025
 7,464 MW and 2026 to September 5,260 MW. Name the statement as the source of each quarter it gives. Not in PR #161.
+
+14ng. From messages 734, 735 and 740 (6 Nov 2026; RESULTS 'Home and business batteries on Plentify's estimates'). Awaiting Nick's word,
+each moving the central's LP key: (1) enrolled batteries E / 3, 20% kept; (2) programme cost R500/kW-yr of enrolled power, R1,000 a
+participant sensitivity, wear kept; (3) the non-enrolled reserve blended by a stated split (central x 0.455, 43.2% in 2026 to 31.8%
+by 2030), the 2026 stock at the 2026 reserve in LP and engine. Waiting on Plentify: the split of home and business batteries, the share
+of homes at 65%, the meaning of the 20% delivered above baseline. Open: evidence on how much of a home battery's energy is used in the
+evening (the passive profile's full daily cycle is the larger part of the gap to AEMO's 0.7 kW per home).
