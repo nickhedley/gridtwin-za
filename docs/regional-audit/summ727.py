@@ -8,15 +8,20 @@ print('| year, weather year | case | wind GW (run) | solar GW (run) | lithium GW
 print('|---|---|---|---|---|---|---|---|---|---|')
 for y in (2035, 2040):
     for wy in (2025, 2015):
+      for blk in ('h3', 'h6'):   # the 6-hour-block set only where it was run (2040, weather 2015: the 3-hour one-bus case did not fit a window)
+        if blk == 'h6' and not os.path.exists(S + f'net_final_{y}_wy{wy}_nolimit_reea_l0_c1_mix_control_h6.json'): continue
         run = None
-        for key, lab in CASES:
-            fn = S + f'net_final_{y}_wy{wy}_nolimit_reea_l0_c1_mix_{key}_h3.json'
+        for key, lab0 in CASES:
+            lab = lab0 + (' (6-hour blocks)' if blk == 'h6' else '')
+            fn = S + f'net_final_{y}_wy{wy}_nolimit_reea_l0_c1_mix_{key}_{blk}.json'
             if not os.path.exists(fn): print(f'| {y}, {wy} | {lab} | pending | | | | | | | |'); continue
             d = json.load(open(fn)); m = d['mix']; t = m['totals']; c = m['costs']; ru = m['run']
             cap = (t['windMW'] * c['wind'] + t['pvMW'] * c['pv'] + t['battMW'] * c['batt'] + t['battMWh'] * c['battE'] + t['ocgtMW'] * c['ocgt']) / 1e9
             cost = cap + d['fuelAndCarbonRbn'] + d['unservedGWh'] * 1e3 * VOLL / 1e9
             if run is None:
-                r = json.load(open(S + f'net_final_{y}_wy{wy}_nolimit_reea_l0_c1_h3.json'))
+                rf = S + f'net_final_{y}_wy{wy}_nolimit_reea_l0_c1_{blk}.json'
+                if not os.path.exists(rf): print(f"| {y}, {wy} | the run's fixed build in 6-hour blocks | pending (queue10d) | | | | | | | |"); break
+                r = json.load(open(rf))
                 run = (ru['windMW'] * c['wind'] + ru['pvMW'] * c['pv'] + ru['battMW'] * c['batt'] + ru['battMWh'] * c['battE'] + ru['ocgtMW'] * c['ocgt']) / 1e9 + r['fuelAndCarbonRbn'] + r['unservedGWh'] * 1e3 * VOLL / 1e9
             coal = d['E_TWh'].get('coal', 0); coal = sum(coal.values()) if isinstance(coal, dict) else coal
             curt = d['curtailedTotalTWh']; curt = sum(curt.values()) if isinstance(curt, dict) else curt
