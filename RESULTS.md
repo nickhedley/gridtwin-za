@@ -22884,3 +22884,26 @@ to claude/c7-runs harness/pathway/final (pathway_loop_base_05h.json, engine_loop
 - The verdict's draws (final draws: mean GWh): 2031 and 2033-2035 and 2038 at 20 draws (9.99, 10.72, 17.26, 13.87, 9.82); 2032, 2037,
   2039, 2040 at 10; the rest at 2.
 
+### The 7 Nov loops, pass 1 as it lands (message 720 (b)): new wind at the bids' 37.24%, pass 1 against the baseline loop: wind -2.4 to -2.5 GW, solar +7.1 GW in 2040, lithium +28 GWh; the loop's verdict fails 2034 and 2035, so a second pass
+
+Settings: scratchpad loops/solve_loop.sh w3724 (the baseline loop's settings and extreme days with WIND_CORR=bw6); pass 1 replayed from its
+LP cache as a one-pass run (P1=1, loops/w3724_p1.json) and checked by the engine (K=20, 2030/2035/2040, 6 Nov 01:08-01:14 UTC). The
+baseline loop: RESULTS 'The extreme-day list alone'.
+
+| baseline loop (42.0%) -> 37.24%, pass 1 | 2030 | 2035 | 2040 |
+|---|---|---|---|
+| wind, GW | 9.75 -> 7.25 | 27.25 -> 24.75 | 43.78 -> 41.40 |
+| utility solar, GW | 6.68 -> 7.64 | 17.75 -> 19.76 | 24.28 -> 31.39 |
+| lithium, GW; GWh | 1.58 -> 1.78; 3.72 -> 3.72 | 9.29 -> 9.95; 39.21 -> 43.98 | 11.17 -> 14.26; 61.93 -> 89.77 |
+| open-cycle gas + diesel open cycle, GW | 0 | 0 + 0 -> 0 + 0.02 | 4.28 + 1.31 -> 3.27 + 1.12 |
+| engine unserved, GWh (se), limit 20 | 2.00 -> 1.79 (0.42) | 19.48 -> 19.35 (2.36) | 8.61 -> 9.80 (1.44) |
+| engine cost, R bn | 243.17 -> 242.90 | 270.67 -> 278.74 | 320.11 -> 330.55 |
+| CO2, Mt | 131.8 -> 141.5 | 79.7 -> 92.9 | 47.8 -> 50.8 |
+| curtailment, TWh | 1.64 -> 1.19 | 10.05 -> 7.37 | 29.41 -> 22.15 |
+
+- LP objective R1,540.9bn -> R1,592.1bn (+R51.2bn), close to the +R49.1bn on the every-change basis (RESULTS 'New wind's capacity factor on
+  the final basis').
+- The loop's verdict on pass 1 (final draws: mean GWh): 2034 at 20 draws 23.98 and 2035 at 20 draws 22.00, both above the limit, so the
+  loop adds stress windows and solves a second pass (running). The engine check above reads 2035 at 19.35 on its own 20 draws and does
+  not check 2034. Not yet comparable for the 7 Nov table (message 720 (c)): only the loop's final build is.
+
