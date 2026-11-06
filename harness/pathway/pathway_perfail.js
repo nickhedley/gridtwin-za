@@ -292,6 +292,15 @@ const fix=lp=>{ const oc=/^ 0 <= b_ocgt_\d{4} <= /m.test(lp); return lp.replace(
                  .replace(/^ 0 <= b_phes_(\d{4}) <= ([0-9.]+)$/gm,(m,y,v)=> LDES_NOCAP && +v>0 ? ` 0 <= b_phes_${y} <= 200000` : m)
                  .replace(/^ (phescap_\d{4}): (.*) <= [0-9.]+$/gm,(m,nm,lhs)=> LDES_NOCAP ? ` ${nm}: ${lhs} <= 1000000` : m)
                  .replace(/^ 0 <= rc_(\d{4}) <= ([0-9.]+)$/gm,(m,y,ub)=> RC_FROM && +y<RC_FROM ? ` 0 <= rc_${y} <= 0` : RC_MIN!==null && +y===+(process.env.HORIZON||2040) ? ` ${Math.min(RC_MIN,+ub).toFixed(1)} <= rc_${y} <= ${ub}` : m); };
+ // VERDICT_CACHE (message 726 (c); on with VERDICT_TOPUP and LPCACHE, VERDICT_CACHE=0 turns it off): each verdict's adequacy test kept in the
+ // run's LP cache folder (verdict_<sha1>.json), keyed by its inputs (the year's state and draws, as the page serialises them) and this
+ // index.html, so a resumed piece replays a verdict it already has instead of recomputing it. The LP text and keys are untouched.
+ if (process.env.VERDICT_TOPUP && process.env.LPCACHE && process.env.VERDICT_CACHE !== '0'){ const C = require('crypto'), vdir = path.resolve(process.env.LPCACHE),
+   salt = C.createHash('sha1').update(fs.readFileSync(path.join(ROOT, 'index.html'))).digest('hex'), vf = k => path.join(vdir, 'verdict_' + k + '.json');
+   w.__vcKey = s => C.createHash('sha1').update(salt).update(s).digest('hex');
+   w.__vcGet = k => fs.existsSync(vf(k)) ? fs.readFileSync(vf(k), 'utf8') : null;
+   w.__vcPut = (k, s) => { fs.mkdirSync(vdir, { recursive: true }); fs.writeFileSync(vf(k) + '.tmp', s); fs.renameSync(vf(k) + '.tmp', vf(k)); };
+   console.log('VERDICT_CACHE: on, folder', vdir); }
  let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid); require(path.join(__dirname,'..','tmp_cleanup.js'))(tmp);
    // SOLVE CACHE (7 Oct 2026): the container restarts every few hours and a pass-2 solve takes one to three, so
    // each optimal solution is kept under lpcache/ (or LPCACHE, a run's own folder, so it can be deleted after the run's check;
@@ -545,8 +554,12 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
      if (process.env.STD !== 'ntcsa') throw new Error('VERDICT_TOPUP reads the NTCSA limit (NTCSA_ADEQUACY_GWH): it needs STD=ntcsa');
      set.push(`{ const _at = bldAdequacyTest, V = ${JSON.stringify(v)}; window.__verdictLog = [];
        bldAdequacyTest = (st, draws) => { const lim = NTCSA_ADEQUACY_GWH, mean = t => t.rows.length ? t.rows.reduce((a, b) => a + b.gwh, 0) / t.rows.length : 0;
-         let K = V.start, t = _at(st, K); const log = [[K, +mean(t).toFixed(3)]];
-         for (let i = 0; i < V.steps.length; i++){ const f = Array.isArray(V.frac) ? V.frac[i] : V.frac; if (mean(t) < f * lim) break; K = V.steps[i]; t = _at(st, K); log.push([K, +mean(t).toFixed(3)]); }
+         const ser = o => JSON.stringify(o, (k, v) => v instanceof Float32Array ? { __f32: Array.from(v) } : v instanceof Float64Array ? { __f64: Array.from(v) } : v);
+         const rev = s => JSON.parse(s, (k, v) => v && v.__f32 ? Float32Array.from(v.__f32) : v && v.__f64 ? Float64Array.from(v.__f64) : v);
+         const at = (s0, k0) => { if (!window.__vcKey) return _at(s0, k0); const key = window.__vcKey(ser([s0, k0])), hit = window.__vcGet(key);
+           if (hit !== null){ window.__vcHits = (window.__vcHits || 0) + 1; return rev(hit); } const r = _at(s0, k0); window.__vcPut(key, ser(r)); return r; };
+         let K = V.start, t = at(st, K); const log = [[K, +mean(t).toFixed(3)]];
+         for (let i = 0; i < V.steps.length; i++){ const f = Array.isArray(V.frac) ? V.frac[i] : V.frac; if (mean(t) < f * lim) break; K = V.steps[i]; t = at(st, K); log.push([K, +mean(t).toFixed(3)]); }
          window.__verdictLog.push({ y: st.scenarioYear, log }); return t; }; }`); }
    // DRAWS=<n> (J2; design note version 2, 6; message 673 (j) 2): the adequacy loop's outage draws a weather year (2 as every run so far).
    if (e.DRAWS !== undefined && !(Number.isInteger(+e.DRAWS) && +e.DRAWS >= 1)) throw new Error('DRAWS must be a whole number of draws');
