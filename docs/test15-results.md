@@ -287,7 +287,7 @@ Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season
   year's coal within 2-3% (two stages 55.2 against 54.3 TWh; fin 64.1 against 62.3) and the shed exactly (it falls on extreme days both
   hold), but undercount curtailment (two stages 1.6 against 4.0 TWh, fin 0.4 against 2.3; the missing spill is October to January),
   overstate lithium discharge by 13-15%, and miss the winter days the 365-day year runs diesel on: 8-14 August (days 219-225, the most),
-  28-29 August, 24-25 April, 13-15 May and 3 September, none of them among the 25. On the 25 days the extra build therefore saves less
+  28-29 August, 24-25 April, 13-15 May and 4 September, none of them among the 25. On the 25 days the extra build therefore saves less
   (R10.5 bn a year in 2035 against R15.4 bn on the 365 days, 750 (c)): the 25 days miss both its summer spill and the winter days it
   covers, and the 15 May shed that puts the fin build over the stress target.
 - Reference year against twelve weather years (the engine, 100 draws, 2035): coal -7.9 TWh, curtailment +2.06 TWh, lithium throughput
