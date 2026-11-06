@@ -16,7 +16,7 @@ Builds as labelled in each part. Every case's JSON is in docs/regional-audit/res
 net_final_, net_ff_, net_deep_); scripts in docs/regional-audit/.
 """
 txt = head + a + b + c
-pend = {'FF2040_EXT': 'is in the queue', 'FF_MIX': 'pending, in the queue', 'IPM': 'An interior-point timing test on one extendable case is in the queue.', 'MIX_FULL_TIME': 'pending (in the queue)', 'MYOPIC_PASS': 'pending the full-year mix time'}
+pend = {'FF2040_EXT': 'is in the queue', 'FF_MIX': 'pending, in the queue', 'IPM': 'An interior-point timing test on one extendable case is in the queue.', 'H3_TIME': 'pending (running)', 'MYOPIC_PASS': 'pending the 3-hour-block mix time'}
 for k in ('READ_FF_EXT',):
     pass
 for k, v in pend.items():

@@ -800,7 +800,9 @@ money mostly goes.
 | year, weather year | corridors | wind shares chosen | solar shares chosen | curtailed TWh (fixed REEA siting) | unserved GWh (fixed REEA siting) | coal TWh (fixed) |
 |---|---|---|---|---|---|---|
 | 2035, 2025 | 0.7 | Northern Cape 32%, Eastern Cape 23%, Hydra Central 16%, Western Cape 15%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 54%, Mpumalanga 23%, Gauteng 18%, Kwazulu Natal 5% | 41.6 (71.0) | 137.1 (704.8) | 101.9 (128.9) |
+| 2035, 2025 | 0.7, extendable at R10,000 per MW-km | Northern Cape 38%, Hydra Central 37%, Eastern Cape 23%, Kwazulu Natal 2% | Northern Cape 68%, North West 32% | 5.0 (3.8) | 0.0 (0.0) | 56.5 (63.5) |
 | 2035, 2025 | drop one circuit | Northern Cape 24%, Eastern Cape 23%, Hydra Central 21%, Western Cape 18%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 95%, Kwazulu Natal 5% | 40.5 (67.9) | 14.9 (474.2) | 100.5 (126.5) |
+| 2035, 2025 | drop one circuit, extendable at R10,000 per MW-km | Northern Cape 38%, Hydra Central 37%, Eastern Cape 23%, Kwazulu Natal 2% | Northern Cape 68%, North West 32% | 5.0 (3.8) | 0.0 (0.0) | 56.5 (63.5) |
 | 2035, 2025 | drop one circuit with TDP (full TDP, 22 lines) | Northern Cape 38%, Hydra Central 27%, Eastern Cape 21%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 100% | 7.9 (19.3) | 0.0 (0.0) | 65.3 (78.5) |
 | 2035, 2025 | 0.7 with TDP | Northern Cape 38%, Hydra Central 25%, Eastern Cape 23%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 100% | 20.7 (39.1) | 0.0 (0.0) | 78.0 (98.4) |
 
@@ -829,10 +831,32 @@ connection capacity would bind far more.
 
 ### 718 (f): the mix chosen by the LP
 
-| year, weather year | case | wind GW (run) | solar GW (run) | lithium GW, GWh (run) | open cycle GW (run) | corridors built MW | curtailed TWh | unserved GWh | new-build cost R bn a year | fuel and carbon R bn | objective R bn |
-|---|---|---|---|---|---|---|---|---|---|---|---|
+| year, weather year | case | blocks | wind GW (run) | solar GW (run) | lithium GW, GWh (run) | open cycle GW (run) | corridors built MW | coal TWh (engine) | curtailed TWh (engine) | unserved GWh | new-build cost R bn a year | fuel and carbon R bn | objective R bn |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2035, 2025 | drop one circuit, corridors at R10,000, integration charge removed | 3 h | 22.5 (27.2) | 15.6 (17.7) | 6.6, 23.2 (8.8, 38.2) | 0.00 (0.00) | 14,361 | 83.9 (71.5) | 7.4 (9.8) | 0.7 | 78.5 | 61.8 | 140.4 |
+    mix by area, wind GW: Northern Cape 10.3, Eastern Cape 6.2, Hydra Central 5.0, Kwazulu Natal 0.6, North West 0.3; solar GW: Northern Cape 10.0, North West 5.0, Western Cape 0.5; lithium GW: Northern Cape 4.7, Limpopo 0.9, Free State 0.6, Hydra Central 0.3, Western Cape 0.1; open cycle GW: 
+| 2035, 2025 | drop one circuit, integration charge kept | 3 h | 12.4 (27.2) | 23.1 (17.7) | 7.8, 43.8 (8.8, 38.2) | 0.67 (0.00) | 0 | 104.9 (71.5) | 4.1 (9.8) | 3.1 | 84.5 | 79.1 | 163.8 |
+    mix by area, wind GW: Northern Cape 4.3, Hydra Central 3.6, Eastern Cape 1.7, Mpumalanga 1.6, Kwazulu Natal 0.6, North West 0.3, Free State 0.2; solar GW: North West 20.7, Mpumalanga 1.4, Kwazulu Natal 0.9; lithium GW: North West 4.9, Hydra Central 1.4, Northern Cape 1.3, Free State 0.1, Eastern Cape 0.1; open cycle GW: Kwazulu Natal 0.67
+| 2035, 2025 | no limits, integration charge kept | 3 h | 22.2 (27.2) | 13.7 (17.7) | 7.0, 24.6 (8.8, 38.2) | 0.00 (0.00) | 0 | 86.1 (71.5) | 5.3 (9.8) | 0.2 | 86.7 | 63.9 | 150.0 |
+    mix by area, wind GW: Northern Cape 10.3, Hydra Central 8.0, Eastern Cape 3.2, Kwazulu Natal 0.6; solar GW: Northern Cape 13.7; lithium GW: Limpopo 3.8, Gauteng 2.5, Eastern Cape 0.5, Free State 0.3; open cycle GW: 
+| 2035, 2025 | no limits, integration charge kept | 6 h | 21.8 (27.2) | 14.2 (17.7) | 3.7, 22.4 (8.8, 38.2) | 0.00 (0.00) | 0 | 85.5 (71.5) | 4.8 (9.8) | 2.3 | 84.6 | 63.2 | 147.4 |
+    mix by area, wind GW: Northern Cape 10.3, Hydra Central 7.9, Eastern Cape 2.9, Kwazulu Natal 0.6; solar GW: Northern Cape 14.2; lithium GW: Gauteng 3.7; open cycle GW: 
+| 2040, 2025 | no limits, integration charge kept | 3 h | 29.1 (40.7) | 31.9 (24.8) | 13.2, 87.1 (11.0, 60.9) | 1.08 (4.34) | 0 | 49.1 (45.5) | 10.5 (22.1) | 2.8 | 139.0 | 42.5 | 181.1 |
+    mix by area, wind GW: Hydra Central 11.2, Northern Cape 10.3, Eastern Cape 6.2, Kwazulu Natal 0.6, North West 0.3, Free State 0.2, Mpumalanga 0.2, Gauteng 0.1; solar GW: Northern Cape 31.9; lithium GW: Gauteng 10.1, Limpopo 1.5, Free State 1.4, Eastern Cape 0.2; open cycle GW: Western Cape 1.08
 
-Reading: pending, the free-mix cases are in the queue (report by 7 Nov 18:00 SAST).
+Reading (the run on build 2026-11-05f; the LP in 3-hour blocks, weather year 2025; the 2040 priced-corridor, capped, weather-2015, full-TDP and fixed-corridor 2040 cases were still in the queue when this was written and are filled in as they land).
+
+Control (no limits, the integration charge kept, the run's own costs and commitment floor). In 2035 the LP builds 22.2 GW of wind against the run's 27.2, 13.7 GW of solar against 17.7 and 7.0 GW / 25 GWh of lithium against 8.8 / 38, no open cycle (the run none), and runs coal at 86 TWh against the engine's 71.5, curtailing 5.3 TWh against 9.8; objective R150.0bn a year (new build R86.7bn, fuel and carbon R63.9bn). The run's own mix on the same blocks and costs (the fixed-build 3-hour case) costs R52.2bn of fuel and carbon plus R110.0bn of annuities, R162.2bn, so the single-year LP is R12bn a year (7.5%) cheaper in the 2035 year by building 5 GW less wind, 4 GW less solar and 2 GW less lithium. In 2040 the gap widens: 29.1 GW of wind against 40.7, 31.9 GW of solar against 24.8, 13.2 GW / 87 GWh of lithium against 11.0 / 61 and 1.1 GW of open cycle against 4.3; coal 49 TWh against 45.5, curtailment 10.5 against 22.1; objective R181.1bn against R197.8bn for the run's mix on the same blocks (R37.5bn of fuel and carbon plus R160.3bn of annuities at the 2040 costs), R17bn a year (8.5%).
+
+The gap, and what the checks say. (1) Not the build-rate cap or foresight on costs: the pathway builds wind at its annual cap every year from 2028 to 2038 on the way to 40.7 GW in 2040, but the LP at 2040 costs (wind R2.28m per MW-year, 9% below 2035; solar R1.43m, 11% below) still chooses 29 GW, and takes more solar and lithium and less open cycle instead; a binding pace cap would show as the LP wanting more wind than the run, not less. (2) Not the national caps (31.9 GW of wind, 21.3 of solar and 10.2 of lithium in 2035): the LP's choice sits below each of them (the capped case is the explicit check). (3) Not the block length: the 6-hour control chose 21.8 GW of wind and 14.2 of solar, the 3-hour 22.2 and 13.7; blocks move lithium (3.7 GW at 6 h, 7.0 at 3 h), not wind. (4) Left, and not testable with this LP: the pathway's adequacy standard, 20 GWh of unserved energy on 20 weather years at the K = 20 check, where the LP sees one weather year at the value of lost load (its controls leave 0.2 and 2.8 GWh unserved); the pathway's 25 clustered plus 12 extreme days against the LP's whole year in blocks, which weight the winter evenings differently; and the coupling of the one pathway LP across years, in which capacity built for 2040's demand (15% above 2035's) and for the standard is counted in 2035's mix. The weather-2015 control says how far one weather year moves the choice. On the LP's accounting the R12 to 17bn a year is an upper bound on what the standard, the day weighting and the coupling together cost in those two years, and it is the figure to carry to the discussion of the standard after the note; it is not a network cost.
+
+Corridors priced (the integration charge removed, corridors extendable at R10,000 per MW-km from one circuit dropped). 2035: the LP builds 22.5 GW of wind, 15.6 of solar, 6.6 GW / 23 GWh of lithium and 14.4 GW of corridor (North West to Northern Cape 8.0 GW, Eastern Cape to KwaZulu-Natal 5.2, Free State to Northern Cape 1.2) for R2.35bn a year; coal 84 TWh, curtailment 7.4, unserved 1 GWh; objective R140.4bn. Against the control the mix barely moves (2 GW more solar, 0.4 GW less lithium, 3 GW of wind shifted from Hydra Central to the Eastern Cape). On the same accounting the control's mix without the charge costs R137.6bn, so the network costs R2.8bn a year in this framing: the corridors R2.35bn and the rest dispatch. The explicit inter-area cost replaces an integration charge of R15.6bn (R364 per kW-year on 42.9 GW), which is the charge's job: it stands for the within-area grid as well, which this LP does not carry, so the two are not the same thing and the difference is not a saving. The 14.4 GW is half the 26.5 GW the fixed-build case of (d) built, because the LP that can also choose the mix puts 5 GW of solar in the North West beside the load instead of carrying it. 2040: pending.
+
+Today's corridors as a hard limit (the integration charge kept, corridors fixed at one circuit dropped). The LP moves the build from Cape wind to North West solar and storage: 12.4 GW of wind (Northern Cape 4.3, Hydra Central 3.6, Eastern Cape 1.7, Mpumalanga 1.6), 23.1 GW of solar (North West 20.7), 7.8 GW / 44 GWh of lithium (North West 4.9) and 0.7 GW of open cycle in KwaZulu-Natal; coal 105 TWh, 19 above the control; objective R163.8bn, R13.8bn a year above the control. So in the mix framing the network cost of today's corridors is R14bn a year and a different build; with corridors buildable at R10,000 per MW-km it is R2.8bn and the control's build. 2040: pending.
+
+The full-TDP cases (the plan's 22 inter-area lines as the starting network, corridors priced and fixed), the capped control and the weather-2015 pair: pending.
+
+Caveats. No within-area limits, so the North West solar the LP sites beside the load is unconstrained inside the area; 3-hour blocks understate curtailment and the lithium value where a peak is shorter than a block; one weather year; the LP's objective carries no within-area grid cost where corridors are priced; the engine's commitment floor on coal applies to the standing fleet in every case; the run's costs are the dump's for the year (2035 and 2040 differ by the engine's learning).
 
 ### 718 (g): the demand split
 
@@ -941,9 +965,12 @@ Least-cost (every-change pass, build 2026-11-05f)
 | 2035, 2025 | as drawn | 114.2 | 0.0 | 0.38 | 66.3 (0.0) | 45.0 | 7.9 | 0.0, 0.0 | 1.9 | 54.7 (47.3, 7.4, 0.0) | 2 | - | North West to Northern Cape (7464 h, R6.8m); North West to Western Cape (7460 h, R6.8m); Eastern Cape to Kwazulu Natal (6848 h, R5.9m); Free State to Mpumalanga (6862 h, R5.9m); Free State to North West (6862 h, R5.9m) |
 | 2035, 2025 | 0.7 | 128.9 | 0.0 | 1.49 | 56.1 (0.0) | 38.9 | 8.5 | 0.0, 0.0 | 2.4 | 71.0 (57.6, 13.4, 0.0) | 705 | - | Free State to Kwazulu Natal (8209 h, R69.6m); Eastern Cape to Kwazulu Natal (7474 h, R68.4m); North West to Northern Cape (8330 h, R63.6m); North West to Western Cape (8327 h, R63.5m); Free State to Mpumalanga (7732 h, R52.1m) |
 | 2035, 2025 | 0.7 (extendable at R10,000/MW-km) | 63.5 | 0.0 | 0.19 | 110.3 (0.0) | 51.9 | 7.8 | 0.0, 0.0 | 2.1 | 3.8 (3.3, 0.4, 0.0) | 0 | 28,072, 4.67 | none over 4,000 h |
+| 2035, 2025 | 0.7 (extendable at R21,700/MW-km) | 64.7 | 0.0 | 0.19 | 108.9 (0.0) | 52.1 | 7.7 | 0.0, 0.0 | 1.9 | 5.1 (4.8, 0.3, 0.0) | 0 | 24,164, 8.96 | none over 4,000 h |
 | 2035, 2025 | one circuit dropped | 126.5 | 0.0 | 0.85 | 58.2 (0.0) | 39.9 | 8.3 | 0.0, 0.0 | 2.0 | 67.9 (55.4, 12.4, 0.0) | 474 | - | North West to Western Cape (8036 h, R55.0m); North West to Northern Cape (8130 h, R55.0m); Eastern Cape to Kwazulu Natal (6809 h, R38.2m); Free State to Northern Cape (4680 h, R32.1m); Free State to Hydra Central (4505 h, R30.1m) |
 | 2035, 2025 | one circuit dropped (extendable at R10,000/MW-km) | 63.5 | 0.0 | 0.19 | 110.3 (0.0) | 51.9 | 7.8 | 0.0, 0.0 | 2.1 | 3.8 (3.4, 0.4, 0.0) | 0 | 26,485, 4.43 | none over 4,000 h |
+| 2035, 2025 | one circuit dropped (extendable at R21,700/MW-km) | 64.6 | 0.0 | 0.19 | 109.0 (0.0) | 52.0 | 7.7 | 0.0, 0.0 | 1.9 | 5.0 (4.6, 0.4, 0.0) | 0 | 23,723, 8.53 | none over 4,000 h |
 | 2035, 2025 | one circuit dropped, full TDP | 78.5 | 0.0 | 0.19 | 95.0 (0.0) | 51.7 | 5.0 | 0.0, 0.0 | 1.7 | 19.3 (18.7, 0.6, 0.0) | 0 | - | none over 4,000 h |
+| 2035, 2025 | one circuit dropped, full TDP (extendable at R10,000/MW-km) | 63.4 | 0.0 | 0.19 | 110.4 (0.0) | 51.9 | 7.9 | 0.0, 0.0 | 2.1 | 3.7 (3.3, 0.4, 0.0) | 0 | 11,699, 1.73 | none over 4,000 h |
 | 2035, 2015 | no limits | 68.5 | 0.0 | 0.16 | 105.5 (0.0) | 51.6 | 8.4 | 0.0, 0.0 | 2.2 | 2.8 (1.9, 1.0, 0.0) | 0 | - | none over 4,000 h |
 | 2035, 2015 | as drawn | 114.3 | 0.0 | 0.24 | 65.3 (0.0) | 46.0 | 8.4 | 0.0, 0.0 | 2.1 | 48.6 (42.1, 6.5, 0.0) | 0 | - | North West to Western Cape (7062 h, R5.6m); North West to Northern Cape (7033 h, R5.6m); Eastern Cape to Kwazulu Natal (6436 h, R5.0m); Free State to Kwazulu Natal (6259 h, R4.6m); Free State to Mpumalanga (6255 h, R4.6m) |
 | 2035, 2015 | 0.7 | 127.6 | 0.0 | 2.49 | 55.2 (0.0) | 40.3 | 9.0 | 0.0, 0.0 | 2.8 | 64.5 (52.2, 12.3, 0.0) | 561 | - | Free State to Kwazulu Natal (8157 h, R135.4m); Eastern Cape to Kwazulu Natal (7392 h, R133.8m); North West to Northern Cape (8239 h, R112.4m); North West to Western Cape (8230 h, R112.2m); Free State to Mpumalanga (7478 h, R100.9m) |
@@ -955,9 +982,12 @@ Least-cost (every-change pass, build 2026-11-05f)
 | 2040, 2025 | as drawn | 99.8 | 23.7 | 3.02 | 75.2 (0.0) | 52.6 | 14.0 | 0.0, 0.1 | 2.8 | 105.0 (87.5, 17.6, 0.0) | 2634 | - | North West to Northern Cape (8541 h, R198.0m); North West to Western Cape (8544 h, R197.9m); Free State to Mpumalanga (8460 h, R196.8m); Free State to North West (8460 h, R196.8m); Free State to Gauteng (8460 h, R196.8m) |
 | 2040, 2025 | 0.7 | 99.9 | 33.7 | 4.75 | 64.9 (0.0) | 44.8 | 11.8 | 0.0, 0.1 | 2.5 | 123.1 (97.8, 25.3, 0.0) | 8391 | - | North West to Northern Cape (8759 h, R308.6m); North West to Western Cape (8759 h, R308.5m); Free State to Kwazulu Natal (8759 h, R308.0m); Free State to Mpumalanga (8759 h, R308.0m); Free State to North West (8759 h, R308.0m) |
 | 2040, 2025 | 0.7 (extendable at R10,000/MW-km) | 37.6 | 1.8 | 0.33 | 150.4 (0.0) | 68.3 | 16.3 | 0.0, 0.2 | 6.1 | 14.1 (12.3, 1.8, 0.0) | 2 | 38,431, 6.25 | none over 4,000 h |
+| 2040, 2025 | 0.7 (extendable at R21,700/MW-km) | 38.8 | 1.8 | 0.33 | 148.6 (0.0) | 68.9 | 16.3 | 0.0, 0.2 | 5.8 | 15.4 (14.1, 1.3, 0.0) | 2 | 34,596, 12.38 | none over 4,000 h |
 | 2040, 2025 | one circuit dropped | 99.9 | 31.7 | 4.16 | 67.8 (0.0) | 46.1 | 12.3 | 0.0, 0.1 | 2.4 | 119.0 (94.9, 24.1, 0.0) | 6908 | - | North West to Northern Cape (8701 h, R291.3m); North West to Western Cape (8659 h, R290.0m); Eastern Cape to Kwazulu Natal (7932 h, R265.6m) |
 | 2040, 2025 | one circuit dropped (extendable at R10,000/MW-km) | 37.6 | 1.8 | 0.33 | 150.4 (0.0) | 68.3 | 16.3 | 0.0, 0.2 | 6.2 | 14.1 (12.3, 1.8, 0.0) | 2 | 35,678, 5.99 | none over 4,000 h |
+| 2040, 2025 | one circuit dropped (extendable at R21,700/MW-km) | 38.7 | 1.8 | 0.33 | 148.6 (0.0) | 68.9 | 16.3 | 0.0, 0.2 | 5.8 | 15.4 (14.1, 1.2, 0.0) | 2 | 32,064, 11.82 | none over 4,000 h |
 | 2040, 2025 | one circuit dropped, full TDP | 76.3 | 3.4 | 0.33 | 111.8 (0.0) | 65.1 | 12.8 | 0.0, 0.2 | 3.3 | 55.9 (50.9, 5.0, 0.0) | 2 | - | North West to Western Cape (6252 h, R6.2m); North West to Northern Cape (6240 h, R6.2m); Free State to Hydra Central (6221 h, R6.1m); Free State to Northern Cape (6224 h, R6.1m); Eastern Cape to Kwazulu Natal (4766 h, R4.8m) |
+| 2040, 2025 | one circuit dropped, full TDP (extendable at R10,000/MW-km) | 37.5 | 1.8 | 0.33 | 150.6 (0.0) | 68.2 | 16.5 | 0.0, 0.2 | 5.9 | 14.0 (12.1, 1.9, 0.0) | 2 | 20,095, 3.07 | none over 4,000 h |
 | 2040, 2015 | no limits | 41.7 | 3.6 | 0.44 | 145.7 (0.0) | 67.0 | 17.1 | 0.0, 0.2 | 6.5 | 11.5 (8.1, 3.4, 0.0) | 0 | - | none over 4,000 h |
 | 2040, 2015 | as drawn | 95.1 | 29.1 | 3.13 | 74.4 (0.0) | 54.2 | 14.6 | 0.0, 0.2 | 4.0 | 95.5 (79.3, 16.2, 0.0) | 1279 | - | North West to Western Cape (8564 h, R171.8m); North West to Northern Cape (8559 h, R171.3m); Free State to North West (8387 h, R161.9m); Free State to Mpumalanga (8387 h, R161.9m); Free State to Gauteng (8387 h, R161.9m) |
 | 2040, 2015 | 0.7 | 95.4 | 35.5 | 7.25 | 64.3 (0.0) | 46.3 | 12.7 | 0.0, 0.1 | 3.6 | 113.6 (89.4, 24.1, 0.0) | 7968 | - | North West to Northern Cape (8751 h, R502.0m); North West to Western Cape (8750 h, R501.8m); Free State to Kwazulu Natal (8645 h, R491.0m); Free State to Mpumalanga (8645 h, R490.9m); Free State to North West (8645 h, R490.9m) |
@@ -968,6 +998,11 @@ Least-cost (every-change pass, build 2026-11-05f)
     engine 2035, 2015: coal 76.0, gas 0.0, diesel 0.84, wind incl. offshore 102.0, solar 48.7, storage 18.0, curtailed 9.0, unserved 6 GWh; LP no limits: curtailed 2.8, unserved 0
     engine 2040, 2025: coal 45.5, gas 2.8, diesel 0.63, wind incl. offshore 149.1, solar 61.4, storage 24.9, curtailed 22.1, unserved 16 GWh; LP no limits: curtailed 13.1, unserved 2
     engine 2040, 2015: coal 49.0, gas 5.0, diesel 1.31, wind incl. offshore 141.6, solar 62.1, storage 24.5, curtailed 20.2, unserved 0 GWh; LP no limits: curtailed 11.5, unserved 0
+    free mix, 2035, 2025, no limits, corridors at R0: wind 22.2 GW (run 27.2), solar 13.7 (17.7), lithium 7.0 GW / 25 GWh (8.8 / 38), open cycle 0.0 (0.0); corridors 0 MW, R0.00bn a year; curtailed 5.3 TWh, unserved 0 GWh; new-build R86.7bn a year, fuel and carbon R63.9bn
+    free mix, 2035, 2025, no limits, corridors at R0: wind 21.8 GW (run 27.2), solar 14.2 (17.7), lithium 3.7 GW / 22 GWh (8.8 / 38), open cycle 0.0 (0.0); corridors 0 MW, R0.00bn a year; curtailed 4.8 TWh, unserved 2 GWh; new-build R84.6bn a year, fuel and carbon R63.2bn
+    free mix, 2035, 2025, one circuit dropped, corridors at R10,000: wind 22.5 GW (run 27.2), solar 15.6 (17.7), lithium 6.6 GW / 23 GWh (8.8 / 38), open cycle 0.0 (0.0); corridors 14,361 MW, R2.35bn a year; curtailed 7.4 TWh, unserved 1 GWh; new-build R78.5bn a year, fuel and carbon R61.8bn
+    free mix, 2035, 2025, one circuit dropped, corridors at R0: wind 12.4 GW (run 27.2), solar 23.1 (17.7), lithium 7.8 GW / 44 GWh (8.8 / 38), open cycle 0.7 (0.0); corridors 0 MW, R0.00bn a year; curtailed 4.1 TWh, unserved 3 GWh; new-build R84.5bn a year, fuel and carbon R79.1bn
+    free mix, 2040, 2025, no limits, corridors at R0: wind 29.1 GW (run 40.7), solar 31.9 (24.8), lithium 13.2 GW / 87 GWh (11.0 / 61), open cycle 1.1 (4.3); corridors 0 MW, R0.00bn a year; curtailed 10.5 TWh, unserved 3 GWh; new-build R139.0bn a year, fuel and carbon R42.5bn
 
 Fossil-free stand-in (s_ff2040_c7, build 2026-11-03a)
 | year, weather year | corridors | coal | gas | diesel | wind (offshore) | solar | lithium | flow, iron-air | pumped | curtailed (wind, solar, offshore) | unserved | corridors built MW, R bn a year | corridors with a shadow price over 4,000 h |
@@ -985,10 +1020,12 @@ Fossil-free stand-in (s_ff2040_c7, build 2026-11-03a)
 | 2040, 2025 | as drawn | 0.0 | 0.0 | 0.00 | 70.0 (10.1) | 121.7 | 30.9 | 1.3, 0.0 | 0.7 | 306.3 (152.5, 141.4, 12.4) | 57578 | - | Free State to Mpumalanga (8760 h, R729.9m); Free State to Kwazulu Natal (8760 h, R729.9m); Free State to Gauteng (8760 h, R729.9m); North West to Northern Cape (8760 h, R729.8m); North West to Western Cape (8760 h, R729.8m) |
 | 2040, 2025 | 0.7 | 0.0 | 0.0 | 0.00 | 61.0 (9.1) | 113.3 | 24.5 | 1.1, 0.0 | 0.5 | 324.7 (161.5, 149.8, 13.3) | 74943 | - | Free State to Kwazulu Natal (8760 h, R739.6m); Free State to Mpumalanga (8760 h, R734.5m); Free State to Gauteng (8760 h, R734.5m); North West to Northern Cape (8760 h, R732.1m); North West to Western Cape (8760 h, R732.1m) |
 | 2040, 2025 | one circuit dropped | 0.0 | 0.0 | 0.00 | 62.0 (9.0) | 117.1 | 26.9 | 1.2, 0.0 | 0.5 | 320.0 (160.5, 146.1, 13.4) | 70633 | - | Free State to Kwazulu Natal (8760 h, R732.3m); Free State to Mpumalanga (8760 h, R732.3m); Free State to Gauteng (8760 h, R732.3m); North West to Northern Cape (8760 h, R732.1m); North West to Western Cape (8760 h, R732.1m) |
+| 2040, 2025 | one circuit dropped (extendable at R10,000/MW-km) | 0.0 | 0.0 | 0.00 | 76.9 (21.1) | 171.9 | 65.4 | 3.5, 1.5 | 0.8 | 238.3 (145.6, 91.3, 1.4) | 0 | 19,739, 2.53 | none over 4,000 h |
 | 2040, 2025 | one circuit dropped, full TDP | 0.0 | 0.0 | 0.00 | 95.7 (15.8) | 150.2 | 51.4 | 2.8, 1.2 | 3.2 | 246.5 (126.8, 112.9, 6.7) | 4170 | - | none over 4,000 h |
 | 2040, 2015 | no limits | 0.0 | 0.0 | 0.00 | 144.4 (15.0) | 139.6 | 42.5 | 2.2, 1.7 | 4.2 | 191.2 (63.9, 120.0, 7.3) | 0 | - | none over 4,000 h |
 | 2040, 2015 | as drawn | 0.0 | 0.0 | 0.00 | 69.1 (10.9) | 121.1 | 30.4 | 1.3, 0.0 | 0.9 | 289.2 (139.3, 138.5, 11.4) | 58110 | - | Free State to Mpumalanga (8760 h, R729.6m); Free State to Gauteng (8760 h, R729.6m); Free State to Kwazulu Natal (8760 h, R729.6m); North West to Northern Cape (8760 h, R729.5m); North West to Western Cape (8760 h, R729.5m) |
 | 2040, 2015 | one circuit dropped | 0.0 | 0.0 | 0.00 | 61.4 (9.7) | 116.2 | 26.3 | 1.3, 0.0 | 0.6 | 302.9 (147.0, 143.4, 12.5) | 71194 | - | Free State to Kwazulu Natal (8760 h, R733.1m); Free State to Mpumalanga (8760 h, R733.0m); Free State to Gauteng (8760 h, R733.0m); North West to Northern Cape (8760 h, R732.3m); North West to Western Cape (8760 h, R732.3m) |
+| 2040, 2015 | one circuit dropped (extendable at R10,000/MW-km) | 0.0 | 0.0 | 0.00 | 77.4 (20.7) | 175.5 | 68.0 | 3.6, 2.1 | 0.9 | 216.5 (130.9, 84.0, 1.5) | 0 | 19,971, 2.63 | none over 4,000 h |
 | 2040, 2015 | one circuit dropped, full TDP | 0.0 | 0.0 | 0.00 | 93.1 (16.2) | 152.3 | 52.6 | 2.9, 1.0 | 3.7 | 228.5 (115.3, 107.3, 6.0) | 4790 | - | Free State to Mpumalanga (4141 h, R317.9m); Free State to Gauteng (4141 h, R317.9m); Free State to Kwazulu Natal (4141 h, R317.9m); North West to Northern Cape (4141 h, R317.7m); North West to Western Cape (4141 h, R317.7m) |
     engine 2035, 2025: coal 15.1, gas 0.0, diesel 0.00, wind incl. offshore 120.2, solar 96.1, storage 36.4, curtailed 87.6, unserved 0 GWh; LP no limits: curtailed 66.3, unserved 0
     engine 2035, 2015: coal 18.7, gas 0.0, diesel 0.00, wind incl. offshore 114.9, solar 98.1, storage 40.3, curtailed 77.2, unserved 0 GWh; LP no limits: curtailed 58.0, unserved 0
@@ -1046,7 +1083,7 @@ model's table are 0.2 to 2.6 GW (Free State to Mpumalanga 2,609 MW, Free State t
 Cape 663 MW, North West to Western Cape 233 MW), and every one of them carries a shadow price in all 8,760 hours at about
 R730m per MW-year, the value of unserved energy. The full TDP brings unserved energy to 4.2 TWh (Mpumalanga 3.0, North
 West 1.2) and curtailment to 247 TWh, with the same corridors binding in 3,100 hours at R254m per MW-year, which says the
-plan's inter-area lines are not enough for this build on the table's capacities. The extendable case for 2040 is in the queue.
+plan's inter-area lines are not enough for this build on the table's capacities. The extendable case for 2040 builds 19.7 GW of corridor (weather year 2015: 20.0 GW) for R2.5 to 2.6bn a year, Free State to Gauteng 9.9 GW and Free State to Northern Cape 7.4 to 7.7 GW first, then Eastern Cape to KwaZulu-Natal 1.6 to 1.8 GW, and serves everything. It does so by moving the supply rather than carrying the wind: against the no-limits case wind falls from 152 TWh to 77 (146 TWh of it curtailed), solar rises from 134 to 172, offshore from 15 to 21 and lithium discharge from 37 to 65 TWh, and curtailment is 238 TWh (2015: 217), 30 TWh above no limits. At R10,000 per MW-km the LP finds 20 GW of Free State hub capacity cheaper than unserved energy, and the rest of the Cape's wind cheaper to curtail than to carry to the North West's solar and lithium. The first figure rests on the table's ratings for the hub and Karoo corridors, the second on the storage siting by the BESIPPPP shares.
 
 Deep decarbonisation 2035 (39 GW of new wind, 39.8 GW of solar, 14.3 GW of lithium at 3.5 h, 1 GW offshore; coal 33 TWh in
 the engine): no limits 59 TWh curtailed (the engine 73); as drawn 134 TWh and one circuit dropped 148 TWh, with coal at 90
@@ -1109,9 +1146,20 @@ Measured (every case's JSON carries a timing block: build seconds, solve seconds
 constraint counts from linopy; HiGHS 1.15.1 dual simplex with presolve and parallel on, PyPSA 1.4.0; the machine shared
 with one other solve of the same kind throughout, so the times are conservative by perhaps a third):
 
-| file | build, year, weather year | case | hours | variables | constraints | build s | solve s | total s | peak GB |
+| file | build, year, weather year | case | hours (block) | variables | constraints | build s | solve s | total s | peak GB |
 |---|---|---|---|---|---|---|---|---|---|
 | timing_final_2035_wy2025_n1c_mix_ext10k_d25.json | 2026-11-05f, 2035, 2025 | one circuit dropped, mix, corridors extendable at R10,000 | 600 | 86482 | 181311 | 4 | 64 | 67 | 0.8 |
+| net_final_2035_wy2025_nolimit_reea_l0_c1_mix_control_h6.json | 2026-11-05f, 2035, 2025 | no limits, mix | 1,460 (6 h blocks) | 210300 | 441010 | 3 | 297 | 300 | 1.2 |
+| net_final_2035_wy2015_nolimit_reea_l0_c1_h3.json | 2026-11-05f, 2035, 2015 | no limits, fixed build | 2,920 (3 h blocks) | 297840 | 645320 | 2 | 10 | 13 | 1.4 |
+| net_final_2035_wy2025_n1c_reea_l0_c1_h3.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build | 2,920 (3 h blocks) | 297840 | 645320 | 2 | 10 | 12 | 1.4 |
+| net_final_2035_wy2025_n1c_reea_l0_c1_mix_ext10k_h3.json | 2026-11-05f, 2035, 2025 | one circuit dropped, mix, corridors extendable at R10,000 | 2,920 (3 h blocks) | 420562 | 881951 | 3 | 2732 | 2735 | 2.2 |
+| net_final_2035_wy2025_n1c_reea_l0_c1_mix_n1c_fixedcorr_h3.json | 2026-11-05f, 2035, 2025 | one circuit dropped, mix | 2,920 (3 h blocks) | 420540 | 881930 | 2 | 3741 | 3744 | 2.1 |
+| net_final_2035_wy2025_nolimit_reea_l0_c1_h3.json | 2026-11-05f, 2035, 2025 | no limits, fixed build | 2,920 (3 h blocks) | 297840 | 645320 | 2 | 12 | 15 | 1.4 |
+| net_final_2035_wy2025_nolimit_reea_l0_c1_mix_control_h3.json | 2026-11-05f, 2035, 2025 | no limits, mix | 2,920 (3 h blocks) | 420540 | 881930 | 2 | 1213 | 1215 | 2.0 |
+| net_final_2040_wy2015_nolimit_reea_l0_c1_h3.json | 2026-11-05f, 2040, 2015 | no limits, fixed build | 2,920 (3 h blocks) | 335800 | 732920 | 2 | 14 | 16 | 1.8 |
+| net_final_2040_wy2025_n1c_reea_l0_c1_h3.json | 2026-11-05f, 2040, 2025 | one circuit dropped, fixed build | 2,920 (3 h blocks) | 335800 | 732920 | 2 | 13 | 15 | 1.8 |
+| net_final_2040_wy2025_nolimit_reea_l0_c1_h3.json | 2026-11-05f, 2040, 2025 | no limits, fixed build | 2,920 (3 h blocks) | 335800 | 732920 | 2 | 15 | 17 | 1.8 |
+| net_final_2040_wy2025_nolimit_reea_l0_c1_mix_control_h3.json | 2026-11-05f, 2040, 2025 | no limits, mix | 2,920 (3 h blocks) | 455580 | 963690 | 3 | 1487 | 1490 | 2.3 |
 | net_deep_2035_wy2015_n0_reea_l0_c0.json | 2026-11-03a, 2035, 2015 | as drawn, fixed build | 8,760 | 954840 | 2058600 | 2 | 37 | 40 | 3.6 |
 | net_deep_2035_wy2015_n1c_reea_l0_c0.json | 2026-11-03a, 2035, 2015 | one circuit dropped, fixed build | 8,760 | 954840 | 2058600 | 2 | 38 | 40 | 3.6 |
 | net_deep_2035_wy2015_n1ctdp_reea_l0_c0_tdpfull.json | 2026-11-03a, 2035, 2015 | one circuit dropped, full TDP, fixed build | 8,760 | 954840 | 2058600 | 3 | 40 | 43 | 4.2 |
@@ -1140,11 +1188,13 @@ with one other solve of the same kind throughout, so the times are conservative 
 | net_ff_2035_wy2025_nolimit_reea_l0_c0.json | 2026-11-03a, 2035, 2025 | no limits, fixed build | 8,760 | 972360 | 2119920 | 2 | 73 | 75 | 4.2 |
 | net_ff_2040_wy2015_n0_reea_l0_c0.json | 2026-11-03a, 2040, 2015 | as drawn, fixed build | 8,760 | 1112520 | 2435280 | 2 | 57 | 59 | 4.1 |
 | net_ff_2040_wy2015_n1c_reea_l0_c0.json | 2026-11-03a, 2040, 2015 | one circuit dropped, fixed build | 8,760 | 1112520 | 2435280 | 2 | 60 | 62 | 4.1 |
+| net_ff_2040_wy2015_n1c_reea_l0_c0_ext10k.json | 2026-11-03a, 2040, 2015 | one circuit dropped, fixed build, corridors extendable at R10,000 | 8,760 | 1112542 | 2435301 | 3 | 808 | 811 | 5.0 |
 | net_ff_2040_wy2015_n1ctdp_reea_l0_c0_tdpfull.json | 2026-11-03a, 2040, 2015 | one circuit dropped, full TDP, fixed build | 8,760 | 1112520 | 2435280 | 3 | 62 | 64 | 4.3 |
 | net_ff_2040_wy2015_nolimit_reea_l0_c0.json | 2026-11-03a, 2040, 2015 | no limits, fixed build | 8,760 | 1112520 | 2435280 | 2 | 58 | 60 | 4.2 |
 | net_ff_2040_wy2025_n0_reea_l0_c0.json | 2026-11-03a, 2040, 2025 | as drawn, fixed build | 8,760 | 1112520 | 2435280 | 3 | 73 | 76 | 4.1 |
 | net_ff_2040_wy2025_n1_reea_l0_c0.json | 2026-11-03a, 2040, 2025 | 0.7, fixed build | 8,760 | 1112520 | 2435280 | 3 | 84 | 87 | 4.8 |
 | net_ff_2040_wy2025_n1c_reea_l0_c0.json | 2026-11-03a, 2040, 2025 | one circuit dropped, fixed build | 8,760 | 1112520 | 2435280 | 2 | 83 | 86 | 4.9 |
+| net_ff_2040_wy2025_n1c_reea_l0_c0_ext10k.json | 2026-11-03a, 2040, 2025 | one circuit dropped, fixed build, corridors extendable at R10,000 | 8,760 | 1112542 | 2435301 | 4 | 755 | 759 | 4.9 |
 | net_ff_2040_wy2025_n1ctdp_reea_l0_c0_tdpfull.json | 2026-11-03a, 2040, 2025 | one circuit dropped, full TDP, fixed build | 8,760 | 1112520 | 2435280 | 3 | 80 | 83 | 4.8 |
 | net_ff_2040_wy2025_nolimit_reea_l0_c0.json | 2026-11-03a, 2040, 2025 | no limits, fixed build | 8,760 | 1112520 | 2435280 | 3 | 83 | 86 | 4.9 |
 | net_final_2035_wy2015_n1_reea_l0_c0_ext10k.json | 2026-11-05f, 2035, 2015 | 0.7, fixed build, corridors extendable at R10,000 | 8,760 | 893542 | 1935981 | 2 | 758 | 760 | 3.4 |
@@ -1158,15 +1208,28 @@ with one other solve of the same kind throughout, so the times are conservative 
 | net_final_2035_wy2015_nolimit_reea_l0_c2.json | 2026-11-05f, 2035, 2015 | no limits, fixed build | 8,760 | 893520 | 1935960 | 2 | 51 | 53 | 4.0 |
 | net_final_2035_wy2025_f085tdp_reea_l0_c0_tdpfull.json | 2026-11-05f, 2035, 2025 | f085tdp, fixed build | 8,760 | 893520 | 1935960 | 3 | 43 | 46 | 3.9 |
 | net_final_2035_wy2025_n0tdp_reea_l0_c0_tdpfull.json | 2026-11-05f, 2035, 2025 | n0tdp, fixed build | 8,760 | 893520 | 1935960 | 2 | 43 | 45 | 3.9 |
+| net_final_2035_wy2025_n1_reea_l0_c0_bld.json | 2026-11-05f, 2035, 2025 | 0.7, fixed build | 8,760 | 893520 | 1935960 | 2 | 38 | 39 | 4.0 |
+| net_final_2035_wy2025_n1_reea_l0_c0_ext21k.json | 2026-11-05f, 2035, 2025 | 0.7, fixed build, corridors extendable at R21,700 | 8,760 | 893542 | 1935981 | 2 | 491 | 493 | 3.4 |
+| net_final_2035_wy2025_n1_reea_l0_c0_sitefree.json | 2026-11-05f, 2035, 2025 | 0.7, fixed build, free siting | 8,760 | 902300 | 1953522 | 2 | 236 | 238 | 3.6 |
+| net_final_2035_wy2025_n1_reea_l0_c0_sitefree_ext10k.json | 2026-11-05f, 2035, 2025 | 0.7, fixed build, corridors extendable at R10,000, free siting | 8,760 | 902322 | 1953543 | 2 | 2016 | 2018 | 3.8 |
 | net_final_2035_wy2025_n1_reea_l0_c1.json | 2026-11-05f, 2035, 2025 | 0.7, fixed build | 8,760 | 893520 | 1935960 | 3 | 57 | 61 | 3.9 |
 | net_final_2035_wy2025_n1c_fleet_l0_c0.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build | 8,760 | 823440 | 1795800 | 3 | 37 | 40 | 3.7 |
 | net_final_2035_wy2025_n1c_reea_l0_c0.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build | 8,760 | 893520 | 1935960 | 3 | 40 | 42 | 3.9 |
+| net_final_2035_wy2025_n1c_reea_l0_c0_bld.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build | 8,760 | 893520 | 1935960 | 2 | 38 | 40 | 3.9 |
 | net_final_2035_wy2025_n1c_reea_l0_c0_ext10k.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build, corridors extendable at R10,000 | 8,760 | 893542 | 1935981 | 3 | 704 | 707 | 3.4 |
+| net_final_2035_wy2025_n1c_reea_l0_c0_ext10k_ipmtest.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build, corridors extendable at R10,000 | 8,760 | 893542 | 1935981 | 2 | 1834 | 1836 | 3.1 |
+| net_final_2035_wy2025_n1c_reea_l0_c0_ext21k.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build, corridors extendable at R21,700 | 8,760 | 893542 | 1935981 | 2 | 506 | 508 | 3.4 |
+| net_final_2035_wy2025_n1c_reea_l0_c0_sitefree.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build, free siting | 8,760 | 902300 | 1953522 | 2 | 209 | 211 | 4.0 |
+| net_final_2035_wy2025_n1c_reea_l0_c0_sitefree_ext10k.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build, corridors extendable at R10,000, free siting | 8,760 | 902322 | 1953543 | 2 | 1811 | 1813 | 3.8 |
 | net_final_2035_wy2025_n1c_reea_l0_c1.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build | 8,760 | 893520 | 1935960 | 3 | 43 | 46 | 3.9 |
 | net_final_2035_wy2025_n1c_reea_l1_c0.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build | 8,760 | 1077480 | 2303880 | 3 | 47 | 50 | 4.7 |
 | net_final_2035_wy2025_n1ctdp_reea_l0_c0.json | 2026-11-05f, 2035, 2025 | one circuit dropped, full TDP, fixed build | 8,760 | 893520 | 1935960 | 2 | 41 | 43 | 4.0 |
 | net_final_2035_wy2025_n1ctdp_reea_l0_c0_tdpfull.json | 2026-11-05f, 2035, 2025 | one circuit dropped, full TDP, fixed build | 8,760 | 893520 | 1935960 | 3 | 41 | 43 | 3.9 |
+| net_final_2035_wy2025_n1ctdp_reea_l0_c0_tdpfull_ext10k.json | 2026-11-05f, 2035, 2025 | one circuit dropped, full TDP, fixed build, corridors extendable at R10,000 | 8,760 | 893542 | 1935981 | 2 | 209 | 211 | 3.4 |
+| net_final_2035_wy2025_n1ctdp_reea_l0_c0_tdpfull_sitefree.json | 2026-11-05f, 2035, 2025 | one circuit dropped, full TDP, fixed build, free siting | 8,760 | 902300 | 1953522 | 2 | 216 | 218 | 4.0 |
+| net_final_2035_wy2025_n1tdp_reea_l0_c0_sitefree.json | 2026-11-05f, 2035, 2025 | n1tdp, fixed build, free siting | 8,760 | 902300 | 1953522 | 2 | 261 | 263 | 4.0 |
 | net_final_2035_wy2025_n1tdp_reea_l0_c0_tdpfull.json | 2026-11-05f, 2035, 2025 | n1tdp, fixed build | 8,760 | 893520 | 1935960 | 3 | 41 | 43 | 4.0 |
+| net_final_2035_wy2025_nolimit_reea_l0_c0_bld.json | 2026-11-05f, 2035, 2025 | no limits, fixed build | 8,760 | 893520 | 1935960 | 2 | 38 | 40 | 3.9 |
 | net_final_2040_wy2015_n0_reea_l0_c0.json | 2026-11-05f, 2040, 2015 | as drawn, fixed build | 8,760 | 1007400 | 2198760 | 3 | 48 | 51 | 3.7 |
 | net_final_2040_wy2015_n1_reea_l0_c0.json | 2026-11-05f, 2040, 2015 | 0.7, fixed build | 8,760 | 1007400 | 2198760 | 3 | 52 | 55 | 4.4 |
 | net_final_2040_wy2015_n1c_reea_l0_c0.json | 2026-11-05f, 2040, 2015 | one circuit dropped, fixed build | 8,760 | 1007400 | 2198760 | 2 | 50 | 53 | 3.8 |
@@ -1187,13 +1250,16 @@ with one other solve of the same kind throughout, so the times are conservative 
 | net_final_2040_wy2025_n0tdp_reea_l0_c0_tdpfull.json | 2026-11-05f, 2040, 2025 | n0tdp, fixed build | 8,760 | 1007400 | 2198760 | 3 | 54 | 57 | 4.4 |
 | net_final_2040_wy2025_n1_reea_l0_c0.json | 2026-11-05f, 2040, 2025 | 0.7, fixed build | 8,760 | 1007400 | 2198760 | 2 | 49 | 51 | 3.7 |
 | net_final_2040_wy2025_n1_reea_l0_c0_ext10k.json | 2026-11-05f, 2040, 2025 | 0.7, fixed build, corridors extendable at R10,000 | 8,760 | 1007422 | 2198781 | 3 | 1922 | 1924 | 3.7 |
+| net_final_2040_wy2025_n1_reea_l0_c0_ext21k.json | 2026-11-05f, 2040, 2025 | 0.7, fixed build, corridors extendable at R21,700 | 8,760 | 1007422 | 2198781 | 2 | 1030 | 1032 | 3.8 |
 | net_final_2040_wy2025_n1_reea_l0_c1.json | 2026-11-05f, 2040, 2025 | 0.7, fixed build | 8,760 | 1007400 | 2198760 | 2 | 55 | 57 | 3.7 |
 | net_final_2040_wy2025_n1c_reea_l0_c0.json | 2026-11-05f, 2040, 2025 | one circuit dropped, fixed build | 8,760 | 1007400 | 2198760 | 3 | 49 | 52 | 3.7 |
 | net_final_2040_wy2025_n1c_reea_l0_c0_ext10k.json | 2026-11-05f, 2040, 2025 | one circuit dropped, fixed build, corridors extendable at R10,000 | 8,760 | 1007422 | 2198781 | 3 | 1434 | 1437 | 3.8 |
+| net_final_2040_wy2025_n1c_reea_l0_c0_ext21k.json | 2026-11-05f, 2040, 2025 | one circuit dropped, fixed build, corridors extendable at R21,700 | 8,760 | 1007422 | 2198781 | 2 | 793 | 795 | 4.5 |
 | net_final_2040_wy2025_n1c_reea_l0_c1.json | 2026-11-05f, 2040, 2025 | one circuit dropped, fixed build | 8,760 | 1007400 | 2198760 | 2 | 50 | 52 | 3.7 |
 | net_final_2040_wy2025_n1c_reea_l1_c0.json | 2026-11-05f, 2040, 2025 | one circuit dropped, fixed build | 8,760 | 1191360 | 2566680 | 3 | 60 | 63 | 5.1 |
 | net_final_2040_wy2025_n1ctdp_reea_l0_c0.json | 2026-11-05f, 2040, 2025 | one circuit dropped, full TDP, fixed build | 8,760 | 1007400 | 2198760 | 2 | 55 | 57 | 4.3 |
 | net_final_2040_wy2025_n1ctdp_reea_l0_c0_tdpfull.json | 2026-11-05f, 2040, 2025 | one circuit dropped, full TDP, fixed build | 8,760 | 1007400 | 2198760 | 5 | 89 | 94 | 4.2 |
+| net_final_2040_wy2025_n1ctdp_reea_l0_c0_tdpfull_ext10k.json | 2026-11-05f, 2040, 2025 | one circuit dropped, full TDP, fixed build, corridors extendable at R10,000 | 8,760 | 1007422 | 2198781 | 2 | 384 | 386 | 4.5 |
 | net_final_2040_wy2025_n1tdp_reea_l0_c0.json | 2026-11-05f, 2040, 2025 | n1tdp, fixed build | 8,760 | 1007400 | 2198760 | 3 | 53 | 56 | 4.3 |
 | net_final_2040_wy2025_n1tdp_reea_l0_c0_tdpfull.json | 2026-11-05f, 2040, 2025 | n1tdp, fixed build | 8,760 | 1007400 | 2198760 | 10 | 134 | 144 | 3.5 |
 | net_final_2040_wy2025_nolimit_reea_l0_c0.json | 2026-11-05f, 2040, 2025 | no limits, fixed build | 8,760 | 1007400 | 2198760 | 3 | 47 | 49 | 4.4 |
@@ -1225,21 +1291,34 @@ In short, on this machine (16 GB, the shared cloud container):
   to 5 GB at peak. The whole case set of 718 on three builds (about 150 fixed-build solves) is two to three machine-hours.
 - The same with the 21 corridor capacities as variables (extendable corridors): 630 to 1,920 s (10 to 32 minutes), the
   same memory; the dual simplex pays for the investment coupling. The free-siting case (20 generator capacities as
-  variables): 289 s. An interior-point timing test on one extendable case is in the queue.
+  variables): 289 s. An interior-point run of the same extendable case (HiGHS IPM, crossover off) took 1,834 s against the dual simplex's 704
+s, to the same objective (R49.97bn) and the same 26,485 MW of corridor, at 3.1 GB against 3.4: on this problem the
+interior point is 2.6 times slower, so the simplex stays.
 - The free mix (wind, solar, lithium power and energy, open-cycle gas and corridors extendable by area, about 60
   investment variables) on 25 evenly spaced days (600 hours): 86,482 variables, 181,311 constraints, 4 s to build, 64 s to
-  solve, 0.8 GB. On 8,760 hours: pending (in the queue).
+  solve, 0.8 GB. On 8,760 hours the dual simplex did not finish: 7,154 s and 1.87 million iterations when the queue's
+  two-hour limit stopped it, still primal infeasible (the extendable-corridor cases, 21 investment variables, take 10 to
+  32 minutes; the free mix adds about 60, among them the lithium energy variables, which couple every hour of the year
+  through the stores). On the whole year in 6-hour blocks (1,460 steps; every series the block mean, each step weighted
+  6 h in the objective and the stores): 210,300 variables, 441,010 constraints, 297 s to solve, 1.2 GB. In 3-hour blocks
+  (2,920 steps): 420,540 variables, 881,930 constraints, 1,213 s to solve (20 minutes), 2.0 GB, four times the 6-hour time for twice the
+steps. The two block sizes agree on wind and solar (22.2 against 21.8 GW, 13.7 against 14.2) and differ on lithium power
+(7.0 against 3.7 GW at 24.6 against 22.4 GWh), which is the evening peak the 6-hour block flattens. The 718 (f) cases are run in 3-hour blocks, which keep the year's chronology and the daily
+  storage cycle; a block understates curtailment and the lithium value wherever a peak is shorter than the block.
 
 Extrapolation to a 15-year chronological pathway on ten areas (2026 to 2040, every year at 8,760 hours, the free mix with
 corridors). Two shapes. (i) One LP with perfect foresight across the years, as the national chain's LP has: 15 years of the
 8,760-hour free mix is about 17 million variables and 36 million constraints, five to six times this machine's memory at
 the 4 to 5 GB a year the fixed cases take, so it does not fit here at all and would need a 128 GB machine and an interior
 point solver; the time cannot be measured on this machine and is not extrapolated. (ii) Myopic, one year at a time with
-capacities carried forward, which is how the ten-area runs were done here: 15 sequential full-year free-mix solves, each
-pending (in the queue), plus a fixed-build check solve per year (about a minute), plus the engine's own pathcheck (about 20
-minutes a pass at the recorded 300 to 700 s of LP time), so one pass is pending the full-year mix time; at 25 days a year the same pass
-is 15 × 64 s, about 16 minutes of solver time plus the pathcheck, which is the shape that could run inside the chain's
-two-hour window. Three to six passes of a chain (the calibration loops the c7 chains ran) multiply accordingly.
+capacities carried forward, which is how the ten-area runs were done here. At full hourly resolution one year alone is
+over two hours of dual simplex, so a 15-year pass is a day or more of solver time and does not fit the chain's two-hour
+window. In 3-hour blocks: 15 sequential free-mix solves, each 420,540 variables, 881,930 constraints, 1,213 s to solve (20 minutes), 2.0 GB, four times the 6-hour time for twice the
+steps. The two block sizes agree on wind and solar (22.2 against 21.8 GW, 13.7 against 14.2) and differ on lithium power
+(7.0 against 3.7 GW at 24.6 against 22.4 GWh), which is the evening peak the 6-hour block flattens, plus a fixed-build check solve per year at
+hourly resolution (about a minute), plus the engine's own pathcheck (about 20 minutes a pass at the recorded 300 to 700 s
+of LP time), so one pass is 5 to 16 hours of solver time (the 3-hour-block control took 1,213 s for 2035 and 1,487 s for 2040, the mix with extendable corridors 2,732 s for 2035, the mix on today's corridors fixed 3,741 s; the 2040 forms were still running when this was written), which does not fit the chain's two-hour window in one piece and would have to run year by year in pieces that resume. At 25 days a year the same pass is 15 × 64 s, about 16 minutes of solver time
+plus the pathcheck, and fits the window whole. Three to six passes of a chain (the calibration loops the c7 chains ran) multiply accordingly.
 
 What it would need to build (after the soft link of (c), which it supersedes): (1) a year-stepping wrapper that carries
 built capacities forward by vintage with retirements, the engine's build-rate caps and pace rules, the TDP lines at their

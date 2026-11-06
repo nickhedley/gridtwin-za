@@ -21,7 +21,7 @@ for pfx in ('final', 'ff', 'deep'):
     out.append('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
     def key(x): d = x[1]; return (d['year'], -int(d['weatherYear']), ['nolimit', 'n0', 'f085', 'n1', 'n1c', 'n1tdp', 'n1ctdp'].index(d['case']) if d['case'] in ['nolimit', 'n0', 'f085', 'n1', 'n1c', 'n1tdp', 'n1ctdp'] else 9, x[0])
     for fn, d in sorted(files.items(), key=key):
-        if d.get('mix') or d.get('siteFree') or d.get('demandSplit', 'file') != 'file' or d['losses'] or d['coalmin'] or d['siting'] != 'reea': continue
+        if d.get('mix') or d.get('siteFree') or d.get('demandSplit', 'file') != 'file' or d['losses'] or d['coalmin'] or d['siting'] != 'reea' or 'ipmtest' in fn: continue
         if d['case'] not in ('nolimit', 'n0', 'n1', 'n1c', 'n1ctdp'): continue
         if d['case'] == 'n1ctdp' and 'tdpfull' not in fn: continue
         ex = d.get('expansionTotal', {}); tx = f"{ex['MW']:,.0f}, {ex['annualRbn']:.2f}" if d.get('txExt') else '-'
@@ -37,14 +37,14 @@ for pfx in ('final', 'ff', 'deep'):
     for fn, d in sorted(files.items(), key=key):
         if not d.get('mix'): continue
         m = d['mix']; t = m['totals']; ru = m['run']; ex = d.get('expansionTotal', {})
-        out.append(f"    free mix, {d['year']}, {d['weatherYear']}, {LAB.get(d['case'], d['case'])}{', full TDP' if 'tdpfull' in fn else ''}, corridors at R{d.get('txExt', 0):,.0f}: wind {t['windMW'] / 1e3:.1f} GW (run {ru['windMW'] / 1e3:.1f}), solar {t['pvMW'] / 1e3:.1f} ({ru['pvMW'] / 1e3:.1f}), lithium {t['battMW'] / 1e3:.1f} GW / {t['battMWh'] / 1e3:.0f} GWh ({ru['battMW'] / 1e3:.1f} / {ru['battMWh'] / 1e3:.0f}), open cycle {t['ocgtMW'] / 1e3:.1f} ({ru['ocgtMW'] / 1e3:.1f}); corridors {ex.get('MW', 0):,.0f} MW, R{ex.get('annualRbn', 0):.2f}bn a year; curtailed {d['curtailedTotalTWh']:.1f} TWh, unserved {d['unservedGWh']:.0f} GWh; new-build R{m['capexRbn']:.1f}bn a year, fuel and carbon R{d['fuelAndCarbonRbn']:.1f}bn")
+        out.append(f"    free mix, {d['year']}, {d['weatherYear']}, {LAB.get(d['case'], d['case'])}{', full TDP' if 'tdpfull' in fn else ''}, corridors at R{d.get('txExt', 0):,.0f}: wind {t['windMW'] / 1e3:.1f} GW (run {ru['windMW'] / 1e3:.1f}), solar {t['pvMW'] / 1e3:.1f} ({ru['pvMW'] / 1e3:.1f}), lithium {t['battMW'] / 1e3:.1f} GW / {t['battMWh'] / 1e3:.0f} GWh ({ru['battMW'] / 1e3:.1f} / {ru['battMWh'] / 1e3:.0f}), open cycle {t['ocgtMW'] / 1e3:.1f} ({ru['ocgtMW'] / 1e3:.1f}); corridors {ex.get('MW', 0):,.0f} MW, R{ex.get('annualRbn', 0):.2f}bn a year; curtailed {d['curtailedTotalTWh']:.1f} TWh, unserved {d['unservedGWh']:.0f} GWh; new-build R{(t['windMW'] * m['costs']['wind'] + t['pvMW'] * m['costs']['pv'] + t['battMW'] * m['costs']['batt'] + t['battMWh'] * m['costs']['battE'] + t['ocgtMW'] * m['costs']['ocgt']) / 1e9 + ex.get('annualRbn', 0):.1f}bn a year, fuel and carbon R{d['fuelAndCarbonRbn']:.1f}bn")
     out.append('')
 out.append('### 722 (b): measured LP times (one process, HiGHS, parallel on; the machine shared with other solves unless stated)')
-out.append('| file | build, year, weather year | case | hours | variables | constraints | build s | solve s | total s | peak GB |')
+out.append('| file | build, year, weather year | case | hours (block) | variables | constraints | build s | solve s | total s | peak GB |')
 out.append('|---|---|---|---|---|---|---|---|---|---|')
 for fn, d in sorted(R.items(), key=lambda x: (x[1].get('timing', {}).get('hours', 0), x[0])):
     t = d.get('timing')
     if not t: continue
     lab = ('mix' if d.get('mix') else 'fixed build') + (f", corridors extendable at R{d['txExt']:,.0f}" if d.get('txExt') else '') + (', free siting' if d.get('siteFree') else '') + (', Koeberg calendar' if d.get('koebergOut') else '')
-    out.append(f"| {fn} | {d['build']}, {d['year']}, {d['weatherYear']} | {LAB.get(d['case'], d['case'])}, {lab} | {t['hours']:,} | {t['nvars'] or '-'} | {t['ncons'] or '-'} | {t['buildSec']:.0f} | {t['solveSec']:.0f} | {t['totalSec']:.0f} | {t['peakRssGB']:.1f} |")
+    out.append(f"| {fn} | {d['build']}, {d['year']}, {d['weatherYear']} | {LAB.get(d['case'], d['case'])}, {lab} | {t['hours']:,}{' (' + str(t['hstep']) + ' h blocks)' if t.get('hstep', 1) > 1 else ''} | {t['nvars'] or '-'} | {t['ncons'] or '-'} | {t['buildSec']:.0f} | {t['solveSec']:.0f} | {t['totalSec']:.0f} | {t['peakRssGB']:.1f} |")
 print('\n'.join(out)); open(S + 'tables722.md', 'w').write('\n'.join(out))

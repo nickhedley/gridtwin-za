@@ -65,12 +65,14 @@ for fn, d in sorted(R.items()):
 # (f) the mix
 out.append('')
 out.append("### 718 (f): the mix chosen by the LP (new wind, solar, lithium, open-cycle gas and corridors extendable by area; the run's own costs; the engine's commitment floor)")
-out.append('| year, weather year | case | wind GW (run) | solar GW (run) | lithium GW, GWh (run) | open cycle GW (run) | corridors built MW | curtailed TWh | unserved GWh | new-build cost R bn a year | fuel and carbon R bn | objective R bn |')
-out.append('|---|---|---|---|---|---|---|---|---|---|---|---|')
+out.append('| year, weather year | case | blocks | wind GW (run) | solar GW (run) | lithium GW, GWh (run) | open cycle GW (run) | corridors built MW | coal TWh (engine) | curtailed TWh (engine) | unserved GWh | new-build cost R bn a year | fuel and carbon R bn | objective R bn |')
+out.append('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
 for fn, d in sorted(R.items(), key=lambda x: (x[1]['year'], x[1]['weatherYear'], x[0])):
     if not fn.startswith('net_' + PFX + '_') or not d.get('mix'): continue
     m = d['mix']; t = m['totals']; ru = m['run']; r = row(d); ex = d.get('expansionTotal', {})
-    out.append(f"| {d['year']}, {d['weatherYear']} | {LAB.get(d['case'], d['case'])}{', corridors at R' + format(d['txExt'], ',.0f') if d.get('txExt') else ''}{', integration charge kept' if d.get('mixInteg') else ', integration charge removed'}{', caps' if any('national caps' in x for x in d['notes']) else ''} | {t['windMW'] / 1e3:.1f} ({ru['windMW'] / 1e3:.1f}) | {t['pvMW'] / 1e3:.1f} ({ru['pvMW'] / 1e3:.1f}) | {t['battMW'] / 1e3:.1f}, {t['battMWh'] / 1e3:.1f} ({ru['battMW'] / 1e3:.1f}, {ru['battMWh'] / 1e3:.1f}) | {t['ocgtMW'] / 1e3:.2f} ({ru['ocgtMW'] / 1e3:.2f}) | {ex.get('MW', 0):,.0f} | {r['curt']:.1f} | {r['uns']:.1f} | {m['capexRbn']:.1f} | {r['cost']:.1f} | {r['obj']:.1f} |")
+    cap = (t['windMW'] * m['costs']['wind'] + t['pvMW'] * m['costs']['pv'] + t['battMW'] * m['costs']['batt'] + t['battMWh'] * m['costs']['battE'] + t['ocgtMW'] * m['costs']['ocgt']) / 1e9 + ex.get('annualRbn', 0)
+    if not d.get('txExt'): assert abs(cap - m['capexRbn']) < 0.01, (fn, cap, m['capexRbn'])
+    out.append(f"| {d['year']}, {d['weatherYear']} | {LAB.get(d['case'], d['case'])}{', corridors at R' + format(d['txExt'], ',.0f') if d.get('txExt') else ''}{', integration charge kept' if d.get('mixInteg') else ', integration charge removed'}{', caps' if any('national caps' in x for x in d['notes']) else ''} | {d.get('timing', {}).get('hstep', 1)} h | {t['windMW'] / 1e3:.1f} ({ru['windMW'] / 1e3:.1f}) | {t['pvMW'] / 1e3:.1f} ({ru['pvMW'] / 1e3:.1f}) | {t['battMW'] / 1e3:.1f}, {t['battMWh'] / 1e3:.1f} ({ru['battMW'] / 1e3:.1f}, {ru['battMWh'] / 1e3:.1f}) | {t['ocgtMW'] / 1e3:.2f} ({ru['ocgtMW'] / 1e3:.2f}) | {ex.get('MW', 0):,.0f} | {r['coal']:.1f} ({d['engine']['E_TWh'].get('coal', 0):.1f}) | {r['curt']:.1f} ({d['engine']['E_TWh'].get('curtailed', 0):.1f}) | {r['uns']:.1f} | {cap:.1f} | {r['cost']:.1f} | {r['obj']:.1f} |")
     out.append('    mix by area, wind GW: ' + ', '.join(f"{k} {v / 1e3:.1f}" for k, v in sorted(m['windMW'].items(), key=lambda x: -x[1]) if v > 50) + '; solar GW: ' + ', '.join(f"{k} {v / 1e3:.1f}" for k, v in sorted(m['pvMW'].items(), key=lambda x: -x[1]) if v > 50) + '; lithium GW: ' + ', '.join(f"{k} {v / 1e3:.1f}" for k, v in sorted(m['battMW'].items(), key=lambda x: -x[1]) if v > 50) + '; open cycle GW: ' + ', '.join(f"{k} {v / 1e3:.2f}" for k, v in sorted(m['ocgtMW'].items(), key=lambda x: -x[1]) if v > 10))
 # (g) demand split
 out.append('')
