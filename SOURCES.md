@@ -1663,6 +1663,16 @@ file's Q1 2026/27 totals (2,619 facilities, 20,131 MW, about R409bn) plus this q
 statement's investment figures are not capex for the model (message 742 (b)). Into nodal/nersa_registrations.json at the first data
 update after PR #161 (TODO 14nf).
 
+## Deemed energy and curtailment in 2026: two press reports (user, 6 Nov 2026, message 749 (a))
+
+As given by Nick; neither article was read here.
+- Moneyweb, 6 Nov 2026: Keith Bowen (NTCSA), speaking on a Cresco and Fasken panel, is reported as saying Eskom expects to pay
+  R4bn in deemed energy this financial year (2026/27). A reported remark, not a published figure.
+- Daily Maverick, C. Yelland, 15 Jun 2026: developers say curtailment in the first half of 2026 was about ten times all of 2025, and
+  some IPPs are about 9% below budget. No GWh given.
+Used only as benchmarks for the model's curtailment and deemed energy (RESULTS 'Deemed energy against the reported R4bn', message
+749 (b) to (e)); nothing is tuned to them. NERSA's monitoring report (issue 27; table above) stays the published basis for 2025.
+
 ## Eskom Distribution and NERSA: time-of-use, feed-in tariffs and smart metering webinar, 14 Oct 2026 (user, 17 Oct 2026, message 170)
 
 O. Rantwane (Eskom Distribution), 'Time-of-Use Tariffs, Feed-in Tariffs and Smart Metering: residential and commercial

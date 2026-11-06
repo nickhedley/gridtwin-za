@@ -1535,3 +1535,8 @@ participant sensitivity, wear kept; (3) the non-enrolled reserve blended by a st
 by 2030), the 2026 stock at the 2026 reserve in LP and engine. Waiting on Plentify: the split of home and business batteries, the share
 of homes at 65%, the meaning of the 20% delivered above baseline. Open: evidence on how much of a home battery's energy is used in the
 evening (the passive profile's full daily cycle is the larger part of the gap to AEMO's 0.7 kW per home).
+
+14nh. After the note (user, 6 Nov 2026, message 749 (f)): a near-term sensitivity with coal given priority over wind and solar,
+2026-30: curtailment, CO2 and cost against the central, beside NERSA's 2025 figure and the reported R4bn for 2026/27 (SOURCES 'Deemed
+energy and curtailment in 2026'; RESULTS 'Deemed energy against the reported R4bn'). Ties to 14a1 (the cause of night curtailment) and
+14fl (coal priority and the wholesale market; the 0.75 daylight coal minimum that reaches NTCSA's 3 GW).

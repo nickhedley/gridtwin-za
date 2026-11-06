@@ -23134,7 +23134,7 @@ reported with its standard error and worst run; a pathway over it takes another 
 (three years) on today's loaded machine, a quarter more where 2040 is gated; about 25 machine-hours, about 6.5 hours of wall time four
 at a time on a free machine or about 13 hours two at a time beside the solves; each failing pathway adds a pass of 3-5 hours.
 
-### The 7 Nov table (messages 720 (c), 726, 733, 745, 746): every case final except metered 2024; on equal adequacy, new wind at 37.24% costs about R54bn more (PV 2026-40) than at 42.0% and 40% about R23bn more; the same-area cap moves about 3-4 GW from solar to wind for R21.7bn; metered 2024 unfinished
+### The 7 Nov table (messages 720 (c), 726, 733, 745, 746, 752 (b), (c), (e)): every case final except metered 2024; on equal adequacy, new wind at 37.24% costs about R54bn more (PV 2026-40) than at 42.0% and 40% about R23bn more, the mixed reference about R3.7bn less; the same-area cap cuts new solar 3.0 / 2.1 / 3.7 GW in 2030 / 2035 / 2040 and adds 0.5 / 0.6 / 1.5 GW of wind, for R21.7bn; the mixed reference and 40% are at the standard (margins within one standard error); metered 2024 unfinished
 
 Flag first (721 (b)): on the extreme-day list alone (the fin pass against the baseline loop, same build otherwise) 2040 wind moves +2.25 GW,
 more than 1 GW; every case here uses the recomputed list.
@@ -23146,15 +23146,15 @@ build; loops to their own verdict (VERDICT_TOPUP); engine checks at 20 draws (20
 (gtza-w40: windNewCorr 'cf0.40'; gtza-rpcap: rpcap_ rows), each otherwise byte for byte the fin basis. Files: harness/pathway/final/.
 6 Nov 2026, to 14:45 UTC.
 
-| Case | Verdict (passes) | LP objective, R bn (vs baseline) | 100-draw gate, GWh: 2034 / 2035 / 2036 (2040) | Smallest margin to 20 GWh |
-|---|---|---|---|---|
-| Baseline: metered 2025, new wind 42.0% | adequate | 1540.9 (+0.0) | 13.9 / 17.8 / 15.5 | +2.2 (2035) |
-| Mixed reference: wind metered, solar modelled 2025 | adequate | 1536.2 (-4.7) | 15.4 / 19.1 / 17.6 (15.1) | +0.9 (2035) |
-| New wind at BW6 bids' 37.24% (final, pass 2) | adequate | 1599.6 (+58.8) | 5.3 / 5.6 / 9.2 | +10.8 (2036) |
-| 37.24%, pass 1 (not final; for 746) | pass limit reached | 1592.1 (+51.3) | 20.9 / 18.0 / 21.3 | -1.3 (2036) |
-| New wind at 40% (comparison, 726 (e)) | adequate | 1562.9 (+22.0) | 15.4 / 19.6 / 16.9 | +0.4 (2035) |
-| Same-area cap on freed connections (733) | adequate | 1562.6 (+21.7) | 16.7 / 14.8 / 15.3 | +3.3 (2034) |
-| Metered 2024, pass 1 (unfinished) | pass limit reached | 1532.5 (-8.3) | not run | - |
+| Case | Verdict (passes) | LP objective, R bn (vs baseline) | On equal adequacy, R bn vs baseline | 100-draw gate, GWh: 2034 / 2035 / 2036 (2040) | Smallest margin to 20 GWh (se) |
+|---|---|---|---|---|---|
+| Baseline: metered 2025, new wind 42.0% | adequate | 1540.9 (+0.0) | 0.0 | 13.9 / 17.8 / 15.5 | +2.2 (2035; se 1.0) |
+| Mixed reference: wind metered, solar modelled 2025 | adequate | 1536.2 (-4.7) | -3.7 | 15.4 / 19.1 / 17.6 (15.1) | at the standard: +0.9 (2035; se 1.1) |
+| New wind at BW6 bids' 37.24% (final, pass 2) | adequate | 1599.6 (+58.8) | +53.7 (between passes) | 5.3 / 5.6 / 9.2 | +10.8 (2036; se 0.7) |
+| 37.24%, pass 1 (not final; for 746) | pass limit reached | 1592.1 (+51.3) | - | 20.9 / 18.0 / 21.3 | -1.3 (2036; se 1.3) |
+| New wind at 40% (comparison, 726 (e)) | adequate | 1562.9 (+22.0) | +22.9 | 15.4 / 19.6 / 16.9 | at the standard: +0.4 (2035; se 1.1) |
+| Same-area cap on freed connections (733) | adequate | 1562.6 (+21.7) | +21.6 | 16.7 / 14.8 / 15.3 | +3.3 (2034; se 1.0) |
+| Metered 2024, pass 1 (unfinished) | pass limit reached | 1532.5 (-8.3) | - | not run | - |
 
 | Case | Year | New build, GW | Engine cost, R bn (vs baseline) | Unserved, GWh (20 draws; se) | CO2, Mt |
 |---|---|---|---|---|---|
@@ -23180,8 +23180,14 @@ build; loops to their own verdict (VERDICT_TOPUP); engine checks at 20 draws (20
 | Metered 2024, pass 1 (unfinished) | 2035 | wind 26.4, solar 19.4, rooftop 11.8, lithium 9.1 | 271.0 (+0.3) | 50.98 (4.29) | 78.4 |
 | Metered 2024, pass 1 (unfinished) | 2040 | wind 39.3, solar 34.3, rooftop 17.8, lithium 14.1, iron-air 0.3, pumped 1.5, OCGT 3.5 | 319.0 (-1.1) | 44.04 (3.34) | 43.4 |
 
-- Margins to the standard (20 GWh a year, the 100-draw mean, smallest over the gated years): baseline +2.2 (2035); mixed reference +0.9
-  (2035); 37.24% +10.8 (2036; its pass 2 overshot); 40% +0.4 (2035, narrow); same-area cap +3.3 (2034). Metered 2024: no gate yet.
+- Margins to the standard (20 GWh a year, the 100-draw mean, smallest over the gated years, with its standard error). A margin within
+  one standard error is stated as at the standard, not as a pass by that margin (message 752 (e)): the mixed reference (+0.9, se 1.06,
+  2035) and 40% (+0.4, se 1.13, 2035) are at the standard. Baseline +2.2 (2035, se 1.05); 37.24% +10.8 (2036, se 0.71; its pass 2
+  overshot); same-area cap +3.3 (2034, se 0.99). Metered 2024: no gate yet.
+- On equal adequacy (the column; messages 746 and 752 (c)): each case's LP objective moved to the baseline's 2034-2036 mean (15.7 GWh) at
+  37.24%'s slope between its two passes, R0.561bn per GWh (R7.50bn over 13.37 GWh). Mixed reference: 2034-2036 mean 17.4 GWh, so its
+  -R4.7bn is about -R3.7bn on equal adequacy (-R3.8bn from the rounded figures; -R4.653bn + 1.661 GWh x R0.561bn). Same-area cap: 15.6 GWh, +R21.6bn. A slope from one case applied to the others: an
+  estimate, not a run.
 - 37.24% on equal adequacy (746): its pass 1 reads 20.9 / 18.0 / 21.3 GWh in 2034-2036 (2035 at the baseline's 17.8), its pass 2 5.3 /
   5.6 / 9.2. Interpolated linearly between the two passes to the baseline's 2034-2036 mean (15.7 GWh): LP objective about +R53.7bn
   against the baseline (pass 1 +R51.3bn, pass 2 +R58.8bn); engine cost about +R9.1bn a year in 2035 and +R10.7bn in 2040. An
@@ -23191,7 +23197,8 @@ build; loops to their own verdict (VERDICT_TOPUP); engine checks at 20 draws (20
   cases (the page holds capex when the profile is corrected); the LP's cost per kWh at 2035: 42.0% R0.684, 40% R0.719, 37.24% R0.772
   (RESULTS 'The 40% wind case: capex and cost per kWh').
 - Same-area cap (733): adequacy equal to the baseline's (2034-2036 mean 15.6 against 15.7), so its +R21.7bn is like for like. The cap
-  moves the build: solar -3.0 GW in 2030 and -3.7 GW in 2040, wind +0.5 and +1.5 GW, a little iron-air; CO2 +4.2 / +2.7 / +2.2 Mt in
+  moves the build: solar -3.0 / -2.1 / -3.7 GW in 2030 / 2035 / 2040, wind +0.5 / +0.6 / +1.5 GW, lithium -0.4 / -0.7 / -1.0 GW, a
+  little iron-air (corrected 6 Nov 2026, message 752 (b): a summary gave 3.0 to 3.7 GW, leaving out 2035); CO2 +4.2 / +2.7 / +2.2 Mt in
   2030 / 2035 / 2040. The pool used matches the cap (657 MW in 2035, 1,288 in 2040). This differs from the regional audit's first cut
   (message 729: the cap matters to the pathway's cost, not to the LP's choice between wind and solar).
 - Metered 2024 (745 (a)): unfinished. Pass 1 fails its verdict and reads 51.0 / 44.0 GWh in 2035 / 2040 at 20 draws; pass 2 has solved
@@ -23209,3 +23216,40 @@ corrected, so only output changes. Annual fixed charge at the central's blended 
 | BW6 bids | 37.24% | 25,343 / 21,921 | 0.856 (0.745) | 0.772 (0.660) |
 | 40% | 40.00% | 25,343 / 21,921 | 0.797 (0.693) | 0.719 (0.615) |
 | Modern turbine, central | 42.01% | 25,343 / 21,921 | 0.759 (0.660) | 0.684 (0.585) |
+
+### Finding 3 on the LP's own days (messages 751 and 752 (a)): rescaling the whole twin before clustering re-picks the days and the monthly variant overshoots (Dec-Feb -2.4%, Jun-Aug +4.3%); factors set on the central's representative days bring Dec-Feb and Jun-Aug to +0.9% and -0.2% of the twelve years; pass 1 on them running
+
+Measured on each worktree's own representative days, as the LP calls bldRepDaysClustered (25 days: 12 typical and 13 extremes,
+hierarchical, metered reference, each calendar day read from its medoid), against simulate's own new tracking solar on the twelve
+weather years (wxEngineProfile), per unit. Fin basis 10a98e2 with each worktree's hook (gtza-f3, gtza-f3h, gtza-f3d; on no branch);
+scratchpad f3/seasonal_mh.js and seasonal_d.js, 6 Nov 2026, 15:06-15:14 UTC. Engine row in per unit, the others against it.
+
+| Series | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec | Dec-Feb | Jun-Aug | July 07:00 / 08:00 / 16:00 / 17:00 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Engine, twelve years | 0.342 | 0.317 | 0.291 | 0.244 | 0.222 | 0.204 | 0.221 | 0.251 | 0.293 | 0.325 | 0.351 | 0.354 | | | 0.156 / 0.530 / 0.525 / 0.146 |
+| LP, central days (before) | +10.0% | +3.7% | -10.4% | -6.8% | +1.3% | +0.9% | -5.9% | -7.4% | -7.9% | +6.7% | -1.7% | +9.8% | +8.1% | -4.4% | 0.057 / 0.369 / 0.429 / 0.078 |
+| f3: month factors on the whole twin, before clustering (751) | -4.4% | +0.3% | +2.2% | +2.5% | +5.5% | +3.0% | +3.1% | +6.5% | +0.6% | -2.9% | -6.6% | -2.7% | -2.4% | +4.3% | 0.115 / 0.441 / 0.485 / 0.153 |
+| f3h: month-by-hour factors on the whole twin, before clustering (751 (b)) | -3.2% | +1.1% | -1.4% | +0.4% | +2.0% | -0.5% | -1.7% | +1.4% | -3.6% | +4.6% | -2.0% | +2.8% | +0.2% | -0.2% | 0.198 / 0.479 / 0.489 / 0.184 |
+| f3d: factors on the central's representative days (752 (a)) | -0.7% | +1.8% | -1.2% | +1.2% | +0.7% | +0.8% | +0.2% | -1.3% | -1.9% | +1.5% | -2.5% | +1.7% | +0.9% | -0.2% | 0.062 / 0.396 / 0.454 / 0.081 |
+
+- f3 (751): factors from the engine over the metered twin's whole-year month means (0.89 in January and December, 0.97-1.01 in
+  May-June), applied to the twin before the days are chosen. Solar is one of the clustering's three features, so the factors re-pick the
+  days, and on its own days the gap reverses. It tested the wrong thing (message 752 (a)): stopped by PID (22118, 22135, 22185) at 15:09
+  UTC after 34 minutes of pass 1. Nick's factors from the central's days (engine over LP: Jan 0.91, Mar 1.12, May-Jun 0.99, Jul-Sep
+  1.06-1.09, Dec 0.91) are the ones the days need; the whole twin's differ because the central's days already depart from the twin.
+- f3h (751 (b)): also re-picks the days; on its own days both seasons within 0.2% and every month within 4.6%, with July's 07:00 and
+  17:00 now above the engine's. Its pass 1 continues (since 15:00 UTC); it tests the rescaling together with a different day set.
+- f3d (752 (a)): the central's own days, weights and day list; factors set on the representative days after they are chosen. Each
+  calendar day reads its medoid, so a factor by a medoid's own month misses the months it serves (March and October have no medoid of
+  their own). The rule: an extreme day serves only itself and takes its own month's factor (0.91-1.08); a typical day's factor is the
+  mean of the month factors still needed over the calendar days it serves, repeated, each held within 0.80-1.25 (five of the twelve
+  end at a bound); then the annual mean is held at the twelve years' 0.28445 on the LP's own weights (0.28445 after). Alternatives
+  measured (scratchpad f3/options.py, options_clip2.py): factors by each medoid's own month, Dec-Feb +4.7% and Jun-Aug -1.2%; served
+  months in one step, +3.9% / -0.7%; months matched exactly, which needs factors of 0.54-6.3 on typical days or 0.2-6.9 on the extreme
+  days (rejected: it rewrites the stress days); band 0.85-1.20, +1.3% / -0.1%. 0.80-1.25 is the narrowest band in steps of 0.05 that
+  brings both seasons within 1%. A scalar per day leaves the hour shape as it was: July's 07:00 and 17:00 stay at 0.062 and 0.081.
+- Day list (751 (d)): unchanged in f3d by construction. With the whole twin rescaled, by month or by month and hour, extremes.py (REF
+  metered; sources c7, Deep, Fossil-free) adds days 214 and 266 (15 days); f3 and f3h ran on the central's 13.
+- Pass 1 on f3d since 15:14 UTC and on f3h since 15:00 UTC (one pass each, nice 10, cold starts: the loops keep no final basis), each
+  then its engine check at 20 draws (2030, 2035, 2040) and 100 draws on the same seeds if the mix moves more than test 13's 1%.
+  Reported before the 8 Nov key is proposed.
