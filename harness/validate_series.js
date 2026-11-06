@@ -21,6 +21,13 @@
 // Then three faults are put back, one at a time, on the LP side only, and the check must fail on each: two the review found, rooftop on the
 // utility fleet's shape (PROFILES.roof removed) and offshore on one year's series (OFFSHORE_BY_YEAR removed), and one this check found,
 // existing solar blended with its tracking twin on the metered reference, which already carries its trackers (fixed on 5 Nov 2026).
+// The rows themselves (review of 6 Nov 2026, finding 2): the probe records the series beside the row, so a fault in the row alone (a
+// literal, a dropped term) left the comparison above passing; with the LP's CSP put back to a flat 0.38 in the row it passed 23 of 23.
+// So every balance row of the probe year is also read from the LP text, and its right-hand side (demand less the fixed supply) and its
+// coefficients on new wind, new solar, rooftop and offshore are rebuilt here from the probe's series and the row's other parts (nuclear,
+// hydro and imports as available, existing capacities, availability by hour, the demand index and block, the behind-the-meter term),
+// to the precision the LP writes (0.05 MW, 0.00005 per unit). Two faults put back in the row only must fail it: CSP at a flat 0.38, and
+// new solar's coefficient on fixed tilt where the probe records the tracking twin.
 // Last, a static scan: every `KEY || 0` and `KEY ?? 0` read off a settings object (p, S, u, q, st, state, FIXED) must name a key that
 // exists somewhere (FIXED, a slider, a preset, or set in the code); a key that exists nowhere reads as zero forever, as dieselMW did.
 //
@@ -72,6 +79,12 @@ const CENTRAL = { bldRepWeights: 'clustered', bldRepRefYear: 'metered', bldRepEx
   bldPvTracking: 1, bldWindModern: 1, wxWindCorr: 1, bldOffshoreOn: 1, bldStressTarget: 1 };
 const PROBE_YEAR = 2035, STRESS = { year: 2019, seed: 1, start: 180, n: 3, fromYear: 2026 };
 
+// Faults in the balance row's own code (finding 2), each one expression in bldBuildLP's source: [as written, as faulted].
+const ROW_FAULTS = {
+  cspFlat: ['+ exCsp*CSP_PU(i);', '+ exCsp*0.38;'],                                                 // the review's: CSP flat in the row only
+  pvRow:   ["cum('pv',y).map(v => (spN*AVP(h)).toFixed(4)", "cum('pv',y).map(v => (sp*AVP(h)).toFixed(4)"],  // new solar on fixed tilt in the row
+};
+
 // In the page: build the LP with the probe, then run the engine's probe on the profile each day's weather runs on, and set them side by side.
 // fault: 'roof' or 'off' puts one of the review's faults back on the LP side only (restored before the engine runs).
 const PAGE_SIDE = (over, fault) => `
@@ -83,14 +96,20 @@ const PAGE_SIDE = (over, fault) => `
   const S = { ...state };
   const _rd = bldRepDays; bldRepDays = (n, ...a) => _rd(n === 12 ? 25 : n, ...a);
   const _sp = bldStressPeriods.slice(); bldStressPeriods.length = 0; bldStressPeriods.push(${JSON.stringify(STRESS)});
-  const _roof = PROFILES.roof, _oby = OFFSHORE_BY_YEAR;
+  const _roof = PROFILES.roof, _oby = OFFSHORE_BY_YEAR, _bld = bldBuildLP;
   const pr = { years: [${PROBE_YEAR}], rows: [] };
+  let lpText = null;
   try {
     if (${JSON.stringify(fault)} === 'roof') PROFILES.roof = null;
     if (${JSON.stringify(fault)} === 'off') OFFSHORE_BY_YEAR = null;
     const SL = ${JSON.stringify(fault)} === 'solarEx' ? { ...S, bldExistPvTrackShare: existPvTrackShareAt(S) } : S;   // the blend on every day, as before 707 (c)
-    bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: SL, __seriesProbe: pr });
-  } finally { PROFILES.roof = _roof; OFFSHORE_BY_YEAR = _oby; bldRepDays = _rd; bldStressPeriods.length = 0; _sp.forEach(v => bldStressPeriods.push(v)); }
+    // A fault in the row's own code (finding 2): bldBuildLP re-made from its source with one expression changed, restored below.
+    const ROW_FAULT = ${JSON.stringify(ROW_FAULTS)}[${JSON.stringify(fault)}];
+    if (ROW_FAULT){ const src = _bld.toString();
+      if (src.split(ROW_FAULT[0]).length !== 2) throw new Error('row fault: ' + ROW_FAULT[0] + ' is not in bldBuildLP exactly once');
+      bldBuildLP = (0, eval)('(' + src.replace(ROW_FAULT[0], ROW_FAULT[1]) + ')'); }
+    lpText = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: SL, __seriesProbe: pr }).lp;
+  } finally { bldBuildLP = _bld; PROFILES.roof = _roof; OFFSHORE_BY_YEAR = _oby; bldRepDays = _rd; bldStressPeriods.length = 0; _sp.forEach(v => bldStressPeriods.push(v)); }
   if (!pr.rows.length) throw new Error('the LP probe recorded no rows (horizon ' + BLD_YEARS[0] + '-' + BLD_YEARS[BLD_YEARS.length - 1] + ')');
   // The engine's series on a profile: existing fleet alone, then new builds alone (a blend of one is that one).
   const eng = prof => {
@@ -112,8 +131,21 @@ const PAGE_SIDE = (over, fault) => `
     const lpv = { dem0: r.dem0, exp: r.exp, roof: r.spR, wp: r.wp, wpN: r.wpN, spE: r.spE, spN: r.spN, csp: r.csp, off: r.off };
     for (const k of Object.keys(lpv)){ (D.lp[k] = D.lp[k] || []).push(lpv[k]); (D.en[k] = D.en[k] || []).push(E[k] ? E[k][r.i % E[k].length] : null); }
   }
+  // The probe year's balance rows as the LP text writes them: the right-hand side and each named column's coefficient.
+  const balTxt = {};
+  for (const line of lpText.split('\\n')){ const m = line.match(/^ bal_(${PROBE_YEAR}_\\d+_\\d+): (.*) = (\\S+)$/); if (m) balTxt[m[1]] = [m[2], +m[3]]; }
+  const bal = pr.rows.map(r => {
+    const t = balTxt[r.k], o = { kind: r.kind, d: r.d, h: r.h, year: r.year, dem0: r.dem0, exp: r.exp, wp: r.wp, wpN: r.wpN, spE: r.spE, spN: r.spN,
+      spR: r.spR, csp: r.csp, off: r.off, part: r.part, found: !!t };
+    if (!t) return o;
+    const cf = {}, re = /([+-])\\s*([0-9.eE]+)\\s+([A-Za-z_][A-Za-z0-9_]*)/g; let m;
+    while ((m = re.exec(' + ' + t[0]))) cf[m[3]] = (cf[m[3]] || 0) + (m[1] === '-' ? -1 : 1) * +m[2];
+    o.rhs = t[1]; o.coef = {};
+    for (const [g, names] of Object.entries(pr.cols[r.y])) o.coef[g] = names.map(n => n in cf ? cf[n] : null);
+    return o;
+  });
   return { days: Object.values(days), kinds: [...new Set(pr.rows.map(r => r.kind))], offOn: pr.rows.some(r => r.off !== null),
-           xShare: Math.max(...pr.rows.map(r => r.x)) };
+           xShare: Math.max(...pr.rows.map(r => r.x)), bal };
   } finally { for (const k of Object.keys(_st)){ if (_st[k]) state[k] = _st[k].v; else delete state[k]; } }
 `;
 
@@ -139,6 +171,29 @@ function compare(res) {
         for (let h = 0; h < 24; h++) if (E[h] === 0) m = Math.max(m, Math.abs(L[h]));
         note(k, hrs.length, m, m > 1e-6 ? 'clustered ' + D.d + ' ' + m.toExponential(2) + ' (c ' + (c === null ? '-' : c.toFixed(4)) + ')' : null);
       }
+    }
+  }
+  return out;
+}
+
+// The balance rows against their rebuild from the probe's series and the row's other parts. Returns, for the right-hand side and each
+// column group, the rows compared, the largest difference and the failing rows.
+const ROW_TOL = { rhs: 0.05 + 1e-7, coef: 0.00005 + 1e-9 };   // the LP writes the right-hand side to 0.1 MW and coefficients to 4 decimals
+function compareRows(res) {
+  const out = {}, note = (k, diff, bad) => { const o = out[k] || (out[k] = { n: 0, max: 0, bad: [] }); o.n++; o.max = Math.max(o.max, diff); if (bad) o.bad.push(bad); };
+  const at = r => r.kind + ' ' + r.d + (r.year ? ' (' + r.year + ')' : '') + ' h' + r.h;
+  for (const r of res.bal){
+    if (!r.found){ note('rhs', Infinity, at(r) + ': no balance row in the LP text'); continue; }
+    const P = r.part;
+    const fixed = P.nuc + P.hyd + P.imp + P.exWind * r.wp * P.avw + P.exPv * r.spE * P.avp + P.exRoof * r.spR * P.avRoof + P.exCsp * r.csp;
+    const rhs = r.dem0 * P.dg + P.dBlk + r.exp - fixed + P.btm, dr = Math.abs(r.rhs - rhs);
+    note('rhs', dr, dr > ROW_TOL.rhs ? at(r) + ' LP ' + r.rhs + ' rebuilt ' + rhs.toFixed(2) : null);
+    const want = { wind: r.wpN * P.avw, pv: r.spN * P.avp, roof: r.spR * P.avRoof, off: (r.off ?? 0) * P.avw };
+    for (const g of Object.keys(want)){
+      const c = r.coef[g]; if (!c.length) continue;
+      if (c.some(v => v === null)){ note(g, Infinity, at(r) + ': ' + c.filter(v => v === null).length + ' of ' + c.length + ' columns missing from the row'); continue; }
+      const dc = Math.max(...c.map(v => Math.abs(v - want[g])));
+      note(g, dc, dc > ROW_TOL.coef ? at(r) + ' LP ' + c[0] + ' rebuilt ' + want[g].toFixed(6) : null);
     }
   }
   return out;
@@ -185,6 +240,15 @@ function scanZeroFallbacks(src, known, setSrc) {
       check(`${name}: ${LABEL[k]}, LP = engine at the same day and hour`, o.bad.length === 0 && o.n > 0,
         `${o.n} hours, largest difference ${o.max === 0 ? '0' : o.max.toExponential(2)}${o.bad.length ? '; ' + o.bad.length + ' days differ, e.g. ' + o.bad.slice(0, 3).join('; ') : ''}`);
     }
+    // The LP's own balance rows (finding 2).
+    const rc = compareRows(res);
+    const RLABEL = { rhs: 'right-hand side (demand less fixed supply)', wind: 'new wind coefficient', pv: 'new solar coefficient', roof: 'rooftop coefficient', off: 'offshore coefficient' };
+    for (const k of Object.keys(RLABEL)){
+      const o = rc[k];
+      if (!o){ check(`${name}: balance rows, ${RLABEL[k]} compared`, k === 'off' && !res.offOn, k === 'off' ? 'offshore off in this build' : 'no rows'); continue; }
+      check(`${name}: balance rows read from the LP text, ${RLABEL[k]} = rebuilt from the series`, o.bad.length === 0 && o.n > 0,
+        `${o.n} rows, largest difference ${o.max === 0 ? '0' : o.max.toExponential(2)}${o.bad.length ? '; ' + o.bad.length + ' rows differ, e.g. ' + o.bad.slice(0, 2).join('; ') : ''}`);
+    }
   }
 
   // Injected faults: each must fail the comparison on its own series.
@@ -194,6 +258,16 @@ function scanZeroFallbacks(src, known, setSrc) {
     if (res.error){ check(`injected fault (${label}) runs`, false, res.error.split('\n')[0]); continue; }
     const o = compare(res)[key];
     check(`injected fault caught: ${label}`, !!o && o.bad.length > 0, o ? `${o.bad.length} days differ, largest ${o.max.toExponential(2)}` : 'not compared');
+  }
+
+  // Faults in the row alone (finding 2): the series comparison passes on each (the probe is unchanged); the rows must fail.
+  for (const [fault, key, label] of [['cspFlat', 'rhs', 'CSP at a flat 0.38 in the balance row only (review of 6 Nov, finding 2)'],
+                                     ['pvRow', 'pv', 'new solar\'s row coefficient on fixed tilt, the probe on tracking']]){
+    const res = await run(CENTRAL, fault);
+    if (res.error){ check(`injected fault (${label}) runs`, false, res.error.split('\n')[0]); continue; }
+    const series = compare(res), seriesBad = Object.values(series).reduce((a, o) => a + o.bad.length, 0), o = compareRows(res)[key];
+    check(`injected fault caught: ${label}`, !!o && o.bad.length > 0,
+      (o ? `${o.bad.length} of ${o.n} rows differ, largest ${o.max.toExponential(2)}` : 'not compared') + `; the series comparison alone: ${seriesBad} days differ`);
   }
 
   // The '|| 0' scan.

@@ -11458,7 +11458,9 @@ function bldFom(tech, year, S){
 // April 2021 to January 2022 is 100.2 over 96.7 (Stats SA P0141, headline CPI, December 2021 = 100: January 2022 and April 2022 releases,
 // Table A), 1.036. Until 5 Nov 2026 the link was 1.059, which is April 2021 to April 2022 (user, message 710 (f); the cost review on 57f70df,
 // finding 6; confirmed from the releases' extracts by a research helper, statssa.gov.za not reachable from the session). It moves the
-// tariff-derived wind capex and the condenser capex (ssCondCapexRkVA), each down 2.2%.
+// condenser capex (ssCondCapexRkVA) down 2.2%, as the link, and the tariff-derived wind capex down 2.66% (R17,773 to R17,301/kW at
+// 37.24%): bldTariffCapex takes fixed O&M off the tariff's revenue before the annuity, which amplifies the link's move (the review of
+// 6 Nov 2026, finding 5; recorded as 2.2% until then).
 const CPI_APR21_TO_JAN26 = (100.2 / 96.7) * 1.069 * 1.053 * CPI_JAN24_TO_JAN26;
 // BW7 solar awards, [project, MW, R/MWh]. DEE, 'REIPPPP Bid Window 7 - List of Successful Bidders' (Dec 2024, eight) and the
 // July 2025 additional bidders list (six), and 'List of Additional Successful Bidders Following Value for Money Proposal
@@ -11555,6 +11557,17 @@ const FIXED_PV_CF_12Y = 0.22361, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
 // K = FIXED_PV_CF_12Y over S's mean. Single-year runs on 2025's profiles keep the measured series. When roof12.js has already scaled
 // PROFILES.demand in place (PROFILES.roof12Applied), it is used as it stands; FIXED.bldRoof12 0 restores the unscaled series.
 function roofTwelveYearK(){ const S = PROFILES.roof || PROFILES.solar; let m = 0; for (let h = 0; h < S.length; h++) m += S[h]; return FIXED_PV_CF_12Y / (m / S.length); }
+// The offshore series for a profile: the year's own where the wind carries it (weatherYearNational attaches it as wind.off), the
+// metered profile's year where the profile is the page's own (PROFILES.offshoreYear, 2025 unless a test sets another), else the
+// twelve-year average, as before.
+// Defined here, with the engine, not beside OFFSHORE_BY_YEAR's loader: harnesses that load the engine from the page's text up to
+// its start-up code (stress_suite.js) need it (CI failure on 8d0ac66, 6 Nov 2026). It reads its globals through typeof guards.
+function offshoreSeriesFor(prof){
+  if (prof && prof.wind && prof.wind.off && prof.wind.off.length === 8760) return prof.wind.off;
+  if (typeof OFFSHORE_BY_YEAR !== 'undefined' && OFFSHORE_BY_YEAR && typeof PROFILES !== 'undefined' && PROFILES && prof && prof.wind === PROFILES.wind){
+    const y = String(PROFILES.offshoreYear || 2025); if (OFFSHORE_BY_YEAR[y]) return OFFSHORE_BY_YEAR[y]; }
+  return (typeof OFFSHORE_PU !== 'undefined' && OFFSHORE_PU && OFFSHORE_PU.length === 8760) ? OFFSHORE_PU : null;
+}
 // The engine's profile for a modelled weather year, one copy (message 707 (c)): the adequacy test, the weather panel and the risk panels'
 // factory each built it inline; harness/validate_series.js reads the same.
 function wxEngineProfile(nat){ return { demand: twelveYearDemand(), solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true }; }
@@ -13233,8 +13246,16 @@ function bldBuildLP(opts){
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
                   + exWind*wp*AVW(h) + exPv*spE*AVP(h) + EX.rooftop*spR*AV_ROOF + exCsp*CSP_PU(i);
-      if (SPROBE && SPROBE.years.includes(y)) SPROBE.rows.push({ y, d: r.d, h, i, kind: r.stress ? 'stress' : r.tail ? 'tail' : r.solar ? 'clustered' : 'calendar',
-        year: r.year ?? null, dem0: PROFILES.demand[i], exp: expAtLP(i), sp, spE, spR, spN, spX, x: _xtrk(r), wp, wpN, csp: CSP_PU(i), off: OFF_ON ? offPu : null });
+      // With each hour's series, the parts of the balance row that are not series (review of 6 Nov, finding 2): the check rebuilds the row's
+      // right-hand side and its wind, solar, rooftop and offshore coefficients from these and the series, and reads both from the LP text.
+      if (SPROBE && SPROBE.years.includes(y)){
+        if (!SPROBE.cols) SPROBE.cols = {};
+        if (!SPROBE.cols[y]) SPROBE.cols[y] = { wind: cum('wind', y), pv: cum('pv', y), roof: cum('rooftop', y), off: OFF_ON ? cumOff(y) : [] };
+        SPROBE.rows.push({ y, d: r.d, h, i, k, kind: r.stress ? 'stress' : r.tail ? 'tail' : r.solar ? 'clustered' : 'calendar',
+          year: r.year ?? null, dem0: PROFILES.demand[i], exp: expAtLP(i), sp, spE, spR, spN, spX, x: _xtrk(r), wp, wpN, csp: CSP_PU(i), off: OFF_ON ? offPu : null,
+          part: { dg, dBlk, nuc: NUC(y) * AV_NUC * NUC_SH(i), hyd: EX.hydro * AV_HYD, imp: IMP(y) * AV_IMP, exWind, exPv, exRoof: EX.rooftop, exCsp,
+                  avw: AVW(h), avp: AVP(h), avRoof: AV_ROOF, btm: BTM_ON ? btmDay(y, r)[h] * BTM_Y[y].use * (BTM_Y[y].C - BTM_Y[y].C0) * 1000 : 0 } });
+      }
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
@@ -22435,7 +22456,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-06a';
+const BUILD_STAMP = '2026-11-06b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -23279,15 +23300,6 @@ var OFFSHORE_PU = null;
 // at ESMAP's capacity weights, every year on the one scale below, clipped at 1. OFFSHORE_PU stays the twelve-year average (the shape
 // every run read before), for nothing that runs a weather year.
 var OFFSHORE_BY_YEAR = null;
-// The offshore series for a profile: the year's own where the wind carries it (weatherYearNational attaches it as wind.off), the
-// metered profile's year where the profile is the page's own (PROFILES.offshoreYear, 2025 unless a test sets another), else the
-// twelve-year average, as before.
-function offshoreSeriesFor(prof){
-  if (prof && prof.wind && prof.wind.off && prof.wind.off.length === 8760) return prof.wind.off;
-  if (typeof OFFSHORE_BY_YEAR !== 'undefined' && OFFSHORE_BY_YEAR && typeof PROFILES !== 'undefined' && PROFILES && prof && prof.wind === PROFILES.wind){
-    const y = String(PROFILES.offshoreYear || 2025); if (OFFSHORE_BY_YEAR[y]) return OFFSHORE_BY_YEAR[y]; }
-  return (typeof OFFSHORE_PU !== 'undefined' && OFFSHORE_PU && OFFSHORE_PU.length === 8760) ? OFFSHORE_PU : null;
-}
 var OFFSHORE_ESMAP = {
   'Boegoebaai West Coast':   { mw: 39674, cf: 0.524 },
   'Saldanha Bay West Coast': { mw: 25831, cf: 0.494 },

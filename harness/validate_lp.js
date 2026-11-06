@@ -442,6 +442,35 @@ function check(label, ok, detail) {
       JSON.stringify({ unit, wired }));
   }
 
+  // The CO2 cap row counts coal with the part-load factor (message 726 (d); the review of 6 Nov 2026, finding 1): the objective prices coal's
+  // carbon on output x bldCoalPartLoadAt and the engine counts CO2 on fuel-equivalent MWh, so the cap must count the same. In every hour of
+  // the cap row, coal's coefficient over combined cycle's (same weight) is emisCoal x the factor over emisCcgt, to the row's 6 decimals.
+  // The row as it was (no factor) is put back by re-making bldBuildLP from its source with that one expression changed; it must fail.
+  {
+    const capRun = (fault) => JSON.parse(w.eval(`(() => {
+      const _b = bldBuildLP, from = 'EMIS_COAL   * bldCoalPartLoadAt(S, y) * r.weight', S = { ...FIXED, ...state, carbonCapEnabled: 1 };
+      try {
+        if (${JSON.stringify(fault)}){ const src = _b.toString(); if (src.split(from).length !== 2) return JSON.stringify({ error: 'expression not found once' });
+          bldBuildLP = (0, eval)('(' + src.replace(from, 'EMIS_COAL * r.weight') + ')'); }
+        const L = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: S }).lp.split(String.fromCharCode(10)).filter(l => /^ co2cap(_\\d+)?:/.test(l));
+        const out = { rows: L.length, hours: 0, worst: 0, factor: null };
+        for (const l of L){
+          const y = +(l.match(/ gc_(\\d{4})_/) || [])[1], want = S.emisCoal * bldCoalPartLoadAt(S, y) / S.emisCcgt; out.factor = bldCoalPartLoadAt(S, y);
+          const c = {}; for (const m of l.matchAll(/([0-9.]+) (g[cg])_(\\d+_\\d+_\\d+)/g)) (c[m[3]] = c[m[3]] || {})[m[2]] = +m[1];
+          for (const t of Object.values(c)) if (t.gc > 0 && t.gg > 0){ out.hours++;
+            const tol = 5e-7 / t.gg + 5e-7 * t.gc / (t.gg * t.gg);   // both written to 6 decimals
+            out.worst = Math.max(out.worst, Math.abs(t.gc / t.gg - want) / Math.max(tol, 1e-12)); }
+        }
+        return JSON.stringify(out);
+      } catch (e) { return JSON.stringify({ error: String(e.message || e) }); } finally { bldBuildLP = _b; } })()`));
+    const ok = capRun(false), bad = capRun(true);
+    check('the CO2 cap row counts coal with the part-load factor, as the objective and the engine (review of 6 Nov, finding 1)',
+      !ok.error && ok.rows > 0 && ok.hours > 0 && ok.factor > 1 && ok.worst <= 1,
+      ok.error || `${ok.rows} cap row(s), ${ok.hours} hours, factor ${ok.factor}, largest gap ${ok.worst.toFixed(3)} of the rounding allowance`);
+    check('injected fault caught: the cap row without the part-load factor', !bad.error && bad.hours > 0 && bad.worst > 1,
+      bad.error || `largest gap ${bad.worst.toFixed(1)} times the rounding allowance`);
+  }
+
   console.log(`\n${pass}/${pass + fail} checks passed`);
   process.exit(fail ? 1 : 0);
 })();
