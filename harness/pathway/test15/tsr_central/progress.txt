@@ -159,3 +159,13 @@
 2026-11-06T14:00:02Z step node PID 18414
 2026-11-06T14:00:17Z solve started (highs_native.py 18491)
 2026-11-06T14:46:13Z solve (highs_native.py 18491) ended after about 2752s
+2026-11-06T15:23Z step 2036 (horizon 2040) rc=0 done
+2026-11-06T15:23:48Z node 18414 ended, peak memory 3.3 GB
+2026-11-06T15:23:48Z step node PID 28013
+2026-11-06T15:23:48Z under 1500s left: stopped at the step boundary (node 28013, just started)
+2026-11-06T15:23Z step 2037 (horizon 2040) rc=0 NO OUTPUT
+2026-11-06T15:24:03Z node 28013 ended, peak memory 0.0 GB
+2026-11-06T15:24:03Z retime central piece ends: two_stage.sh rc=1, 11 of 15 steps done
+2026-11-06T15:24:13Z retime central piece, PID 28128, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 17:04Z, MIN_LEFT 1500s, MAXP 6, WARM 1, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 24G, memory free 14G
+2026-11-06T15:24:13Z two_stage.sh PID 28156
+2026-11-06T15:24Z two_stage K=4 N=25 FIRST=2026, shell PID 28156
