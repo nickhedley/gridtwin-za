@@ -30,6 +30,7 @@ MIX = int(os.environ.get('MIX', '0'))                  # (f) new wind, solar, li
 MIX_CAP = os.environ.get('MIX_CAP', '')                # (f) national caps 'wind:MW,pv:MW,batt:MW' (cumulative build-rate limits), optional
 MIX_INTEG = int(os.environ.get('MIX_INTEG', '1'))      # (f) 1 keeps the integration charge on new wind and solar; 0 removes it (corridors priced explicitly)
 SOLVER = os.environ.get('SOLVER', 'simplex')             # 'simplex' (HiGHS dual simplex, the default for every case) or 'ipm' (interior point, crossover off: a timing test only)
+HSTEP = int(os.environ.get('HSTEP', '1'))             # (f) solve on blocks of HSTEP hours (block means of every series, each weighted HSTEP): the whole year's chronology kept at coarser steps; energies scaled back to the year
 DAYS = int(os.environ.get('DAYS', '0'))               # (722 b) timing only: solve on this many evenly spaced calendar days, each hour weighted 8760/(24 x DAYS); energies then are the sample's
 H = 8760
 REG = ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape','Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State']
@@ -255,6 +256,21 @@ newPs = float(s.get('newPsMW') or 0)
 if newPs > 0:
     n.add('StorageUnit', 'Limpopo pumped storage new', bus='Limpopo', p_nom=newPs, max_hours=float(s.get('newPsHours') or 14), efficiency_store=0.78, efficiency_dispatch=1.0, cyclic_state_of_charge=True, carrier='ps')
     notes.append(f'new pumped storage {newPs:,.0f} MW at {s.get("newPsHours") or 14} h, round trip 0.78, placed in Limpopo (the Tubatse site; an assumption)')
+W = 1.0   # hours per snapshot in the energy sums
+if HSTEP > 1:
+    nb = H // HSTEP; blk = np.repeat(np.arange(nb), HSTEP)
+    agg = {}
+    for comp in ('generators', 'loads', 'storage_units', 'links', 'stores', 'buses'):
+        pnl = getattr(n, comp + '_t')
+        for attr in list(pnl.keys()):
+            df = pnl[attr]
+            if df.shape[1] == 0: continue
+            agg[(comp, attr)] = df.iloc[:nb * HSTEP].groupby(blk).mean()
+    n.set_snapshots(range(nb))
+    for (comp, attr), df in agg.items():
+        df.index = n.snapshots; getattr(n, comp + '_t')[attr] = df
+    n.snapshot_weightings = pd.Series(float(HSTEP), index=n.snapshots); W = float(HSTEP)
+    notes.append(f'time blocks of {HSTEP} h ({nb} steps): every series is the block mean, each step weighted {HSTEP} h in the objective and the stores; energies are the year\'s; curtailment is understated where a peak is shorter than a block')
 if DAYS > 0:
     dsel = np.linspace(0, 364, DAYS).round().astype(int); snaps = np.concatenate([np.arange(d * 24, d * 24 + 24) for d in dsel])
     n.set_snapshots(snaps); n.snapshot_weightings = pd.Series(8760.0 / len(snaps), index=n.snapshots)
@@ -290,18 +306,18 @@ secs = time.time() - t0
 g = n.generators_t.p; gc = n.generators.carrier
 PN = {name: float(n.generators.p_nom_opt[name] if n.generators.p_nom_extendable[name] else n.generators.p_nom[name]) for name in n.generators.index}   # the LP's chosen capacity where extendable (free siting, free mix); before 5 Nov 2026 22:50 UTC p_nom (zero) was used, so those cases' curtailment was wrong
 E = {}
-for name, c in gc.items(): E[c] = E.get(c, 0.0) + float(g[name].sum())
+for name, c in gc.items(): E[c] = E.get(c, 0.0) + float(g[name].sum()) * W
 avail = {}; curt = {}
 for name, c in gc.items():
     if c in ('wind', 'pv', 'offshore'):
-        av = float((n.generators_t.p_max_pu[name] * PN[name]).sum()); avail[c] = avail.get(c, 0.0) + av; curt[c] = curt.get(c, 0.0) + av - float(g[name].sum())
+        av = float((n.generators_t.p_max_pu[name] * PN[name]).sum()) * W; avail[c] = avail.get(c, 0.0) + av; curt[c] = curt.get(c, 0.0) + av - float(g[name].sum()) * W
 curt_r = {}
 for name, c in gc.items():
     if c in ('wind', 'pv', 'offshore'):
-        r = n.generators.bus[name]; curt_r[r] = curt_r.get(r, 0.0) + float((n.generators_t.p_max_pu[name] * PN[name]).sum()) - float(g[name].sum())
+        r = n.generators.bus[name]; curt_r[r] = curt_r.get(r, 0.0) + (float((n.generators_t.p_max_pu[name] * PN[name]).sum()) - float(g[name].sum())) * W
 sto = n.storage_units_t.p; dis = {}; chg = {}
 for name, c in n.storage_units.carrier.items():
-    dis[c] = dis.get(c, 0.0) + float(sto[name].clip(lower=0).sum()); chg[c] = chg.get(c, 0.0) + float((-sto[name].clip(upper=0)).sum())
+    dis[c] = dis.get(c, 0.0) + float(sto[name].clip(lower=0).sum()) * W; chg[c] = chg.get(c, 0.0) + float((-sto[name].clip(upper=0)).sum()) * W
 flows = []
 lk = n.links_t.p0
 muU = n.links_t.mu_upper if hasattr(n.links_t, 'mu_upper') else None; muL = n.links_t.mu_lower if hasattr(n.links_t, 'mu_lower') else None
@@ -312,16 +328,16 @@ for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
     if LOSSES: f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values; mu = mu_of(f'c{i}_ab', False) + mu_of(f'c{i}_ba', False)
     else: f = lk[f'c{i}'].values; mu = mu_of(f'c{i}')
     # the shadow price of the corridor's capacity: R per MWh in the hours it binds; its sum over the year is the value of one more MW for a year
-    flows.append({'a': a, 'b': b, 'capMW': cap_ab, 'todayMW': lim, 'tdpMW': add, 'km': km, 'GWh': float(np.abs(f).sum()) / 1e3, 'hoursAtLimit': int((np.abs(f) >= 0.98 * cap_ab).sum()) if cap_ab < 1e5 else 0, 'maxMW': float(np.abs(f).max()),
-                  'bindingHours': int((mu > 1.0).sum()), 'shadowRperMWyr': float(mu.sum()), 'shadowMeanRperMWh': float(mu[mu > 1.0].mean()) if (mu > 1.0).any() else 0.0})
-fuel = float(sum((g[name] * n.generators.marginal_cost[name]).sum() for name in n.generators.index if gc[name] in ('coal', 'ccgt', 'ocgt', 'diesel')))
+    flows.append({'a': a, 'b': b, 'capMW': cap_ab, 'todayMW': lim, 'tdpMW': add, 'km': km, 'GWh': float(np.abs(f).sum()) * W / 1e3, 'hoursAtLimit': int((np.abs(f) >= 0.98 * cap_ab).sum() * W) if cap_ab < 1e5 else 0, 'maxMW': float(np.abs(f).max()),
+                  'bindingHours': int((mu > 1.0).sum() * W), 'shadowRperMWyr': float(mu.sum()), 'shadowMeanRperMWh': float(mu[mu > 1.0].mean()) / W if (mu > 1.0).any() else 0.0})
+fuel = float(sum((g[name] * n.generators.marginal_cost[name]).sum() for name in n.generators.index if gc[name] in ('coal', 'ccgt', 'ocgt', 'diesel'))) * W
 byArea = {r: {} for r in REG}
 for name, c in gc.items():
-    r = n.generators.bus[name]; byArea[r][c] = byArea[r].get(c, 0.0) + float(g[name].sum()) / 1e6
+    r = n.generators.bus[name]; byArea[r][c] = byArea[r].get(c, 0.0) + float(g[name].sum()) * W / 1e6
 netIn = {r: 0.0 for r in REG}; inflow_max = {r: 0.0 for r in REG}
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
     f = (lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values) if LOSSES else lk[f'c{i}'].values
-    netIn[b] += float(f.sum()) / 1e6; netIn[a] -= float(f.sum()) / 1e6
+    netIn[b] += float(f.sum()) * W / 1e6; netIn[a] -= float(f.sum()) * W / 1e6
 mix = {}
 if MIX:
     mix['windMW'] = {r: float(n.generators.p_nom_opt.get(f'{r} wind new', 0.0)) for r in REG}
@@ -330,7 +346,7 @@ if MIX:
     mix['battMW'] = {r: float(n.links.p_nom_opt.get(f'{r} li charge', 0.0)) for r in REG}
     mix['battMWh'] = {r: float(n.stores.e_nom_opt.get(f'{r} li store', 0.0)) for r in REG}
     mix['totals'] = {k: sum(v.values()) for k, v in mix.items() if isinstance(v, dict)}
-    mix['liDischargeTWh'] = float(sum(n.links_t.p0[f'{r} li discharge'].clip(lower=0).sum() for r in REG)) / 1e6
+    mix['liDischargeTWh'] = float(sum(n.links_t.p0[f'{r} li discharge'].clip(lower=0).sum() for r in REG)) * W / 1e6
     mix['capexRbn'] = float(sum(n.generators.p_nom_opt[g] * n.generators.capital_cost[g] for g in n.generators.index if n.generators.p_nom_extendable[g]) + sum(n.links.p_nom_opt[l] * n.links.capital_cost[l] for l in n.links.index if n.links.p_nom_extendable[l]) + sum(n.stores.e_nom_opt[s2] * n.stores.capital_cost[s2] for s2 in n.stores.index)) / 1e9
     mix['run'] = {'windMW': N_w, 'pvMW': N_p, 'battMW': newBatt, 'battMWh': newBatt * newBattH, 'ocgtMW': ocgtMW}
     mix['costs'] = {k: v for k, v in CC.items()}
@@ -353,7 +369,7 @@ res = {'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherY
        'engine': {'E_TWh': {c: v / 1e6 for c, v in D['E'].items()}, 'shedGWh': D['shedMWh'] / 1e3, 'gridLoadTWh': float(gridLoad.sum()) / 1e6, 'grossLoadTWh': float(grossLoad.sum()) / 1e6, 'psDischargeTWh': D['E'].get('ps', 0) / 1e6, 'battDischargeTWh': D['E'].get('batt', 0) / 1e6}}
 try: nv, nc = int(n.model.nvars), int(n.model.ncons)
 except Exception: nv, nc = None, None
-res['timing'] = {'buildSec': t0 - T_START, 'solveSec': secs, 'totalSec': time.time() - T_START, 'peakRssGB': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6, 'hours': int(len(n.snapshots)), 'days': DAYS or 365, 'nvars': nv, 'ncons': nc}
+res['timing'] = {'buildSec': t0 - T_START, 'solveSec': secs, 'totalSec': time.time() - T_START, 'peakRssGB': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6, 'hours': int(len(n.snapshots)), 'days': DAYS or 365, 'hstep': HSTEP, 'nvars': nv, 'ncons': nc}
 json.dump(res, open(OUT, 'w'), indent=1)
 eng = res['engine']['E_TWh']
 print(f"{CASE} {SITING} losses={LOSSES} coalmin={COALMIN} {Y} wy{WY}: {status}/{cond} in {secs:.0f}s, objective R{res['objectiveRbn']:.2f}bn, fuel+carbon R{res['fuelAndCarbonRbn']:.2f}bn")

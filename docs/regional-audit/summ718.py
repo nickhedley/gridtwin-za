@@ -47,21 +47,21 @@ out.append('| year, weather year | base | cost R per MW-km | built MW | MW-km (t
 out.append('|---|---|---|---|---|---|---|---|---|---|')
 def rc(d, k): return ('%.1f' % row(d)[k]) if d else '-'
 for fn, d in sorted(R.items(), key=lambda x: (x[1]['year'], x[1]['weatherYear'], x[1].get('txExt', 0))):
-    if not fn.startswith('net_' + PFX + '_') or not d.get('txExt') or d.get('siteFree') or d.get('mix'): continue
+    if not fn.startswith('net_' + PFX + '_') or not d.get('txExt') or d.get('siteFree') or d.get('mix') or 'ipmtest' in fn: continue
     b = base.get((d['year'], d['weatherYear'])); nb = R.get(f"net_{PFX}_{d['year']}_wy{d['weatherYear']}_{d['case']}_reea_l0_c0.json")
     ex = d['expansionTotal']; r = row(d)
     out.append(f"| {d['year']}, {d['weatherYear']} | {LAB.get(d['case'], d['case'])} | {d['txExt']:,.0f} | {ex['MW']:,.0f} | {ex['MWkm'] / 1e3:,.0f} | {ex['capexRbn']:.1f} | {ex['annualRbn']:.2f} | {r['curt']:.1f} ({rc(b, 'curt')}, {rc(nb, 'curt')}) | {r['uns']:.1f} | " + '; '.join(f"{x['a']} to {x['b']} {x['addMW']:,.0f}" for x in sorted(d['expansion'], key=lambda x: -x['addMW'])[:8]) + ' |')
 # (e) siting free
 out.append('')
 out.append(f'### 718 (e): siting chosen by the LP ({BUILD_OF}; same national MW, each area capped at its approved REEA MW)')
-out.append('| year, weather year | corridors | wind shares chosen | solar shares chosen | curtailed TWh (fixed REEA siting) | unserved GWh |')
-out.append('|---|---|---|---|---|---|')
+out.append('| year, weather year | corridors | wind shares chosen | solar shares chosen | curtailed TWh (fixed REEA siting) | unserved GWh (fixed REEA siting) | coal TWh (fixed) |')
+out.append('|---|---|---|---|---|---|---|')
 for fn, d in sorted(R.items()):
     if not fn.startswith('net_' + PFX + '_') or not d.get('siteFree') or d.get('mix'): continue
-    fixed = R.get(f"net_{PFX}_{d['year']}_wy{d['weatherYear']}_{d['case']}_reea_l0_c0.json" + ('' if not d.get('txExt') else ''))
+    fixed = R.get(f"net_{PFX}_{d['year']}_wy{d['weatherYear']}_{d['case']}_reea_l0_c0" + ('_tdpfull' if d.get('tdpFile') else '') + ('_ext10k' if d.get('txExt') else '') + '.json')
     sc = d['sitingChosen']; r = row(d)
     fmt = lambda m: ', '.join(f"{k} {v:.0%}" for k, v in sorted(m.items(), key=lambda x: -x[1]) if v > 0.005)
-    out.append(f"| {d['year']}, {d['weatherYear']} | {LAB.get(d['case'], d['case'])}{' extendable at R' + format(d['txExt'], ',.0f') if d.get('txExt') else ''} | {fmt(sc.get('wind new', {}))} | {fmt(sc.get('pv new', {}))} | {r['curt']:.1f} ({rc(fixed, 'curt')}) | {r['uns']:.1f} |")
+    out.append(f"| {d['year']}, {d['weatherYear']} | {LAB.get(d['case'], d['case'])}{' (full TDP, 22 lines)' if d.get('tdpFile') else ''}{', extendable at R' + format(d['txExt'], ',.0f') + ' per MW-km' if d.get('txExt') else ''} | {fmt(sc.get('wind new', {}))} | {fmt(sc.get('pv new', {}))} | {r['curt']:.1f} ({rc(fixed, 'curt')}) | {r['uns']:.1f} ({rc(fixed, 'uns')}) | {r['coal']:.1f} ({rc(fixed, 'coal')}) |")
 # (f) the mix
 out.append('')
 out.append("### 718 (f): the mix chosen by the LP (new wind, solar, lithium, open-cycle gas and corridors extendable by area; the run's own costs; the engine's commitment floor)")

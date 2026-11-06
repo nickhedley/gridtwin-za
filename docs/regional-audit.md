@@ -759,9 +759,15 @@ lines at 900 and 3,000 MW a circuit, and North West to Western Cape (233 MW) is 
 | 2035, 2015 | drop one circuit | 10,000 | 25,874 | 5,158 | 51.6 | 4.33 | 3.6 (2.8, 61.4) | 0.0 | North West to Northern Cape 11,169; Northern Cape to Western Cape 6,306; Eastern Cape to Kwazulu Natal 4,790; Eastern Cape to Hydra Central 1,864; Free State to Northern Cape 1,131; Hydra Central to Northern Cape 613 |
 | 2035, 2025 | 0.7 | 10,000 | 28,072 | 5,564 | 55.6 | 4.67 | 3.8 (3.1, 71.0) | 0.0 | North West to Northern Cape 9,191; Eastern Cape to Kwazulu Natal 6,432; Northern Cape to Western Cape 6,004; Eastern Cape to Hydra Central 3,365; Free State to Northern Cape 1,914; Free State to Gauteng 1,165 |
 | 2035, 2025 | drop one circuit | 10,000 | 26,485 | 5,286 | 52.9 | 4.43 | 3.8 (3.1, 67.9) | 0.0 | North West to Northern Cape 11,122; Northern Cape to Western Cape 6,498; Eastern Cape to Kwazulu Natal 5,194; Eastern Cape to Hydra Central 2,086; Free State to Northern Cape 1,088; Hydra Central to Northern Cape 497 |
+| 2035, 2025 | drop one circuit with TDP | 10,000 | 11,699 | 2,063 | 20.6 | 1.73 | 3.7 (3.1, 38.1) | 0.0 | North West to Northern Cape 4,656; Northern Cape to Western Cape 2,502; Eastern Cape to Kwazulu Natal 2,305; Free State to Northern Cape 2,236 |
+| 2035, 2025 | 0.7 | 21,700 | 24,164 | 4,922 | 106.8 | 8.96 | 5.1 (3.1, 71.0) | 0.0 | North West to Northern Cape 9,300; Eastern Cape to Kwazulu Natal 5,947; Northern Cape to Western Cape 5,117; Eastern Cape to Hydra Central 2,956; Free State to Northern Cape 735; Free State to Gauteng 109 |
+| 2035, 2025 | drop one circuit | 21,700 | 23,723 | 4,686 | 101.7 | 8.53 | 5.0 (3.1, 67.9) | 0.0 | North West to Northern Cape 11,190; Northern Cape to Western Cape 5,768; Eastern Cape to Kwazulu Natal 3,754; Hydra Central to Northern Cape 1,312; Free State to Northern Cape 955; Eastern Cape to Hydra Central 743 |
 | 2040, 2015 | drop one circuit | 10,000 | 34,661 | 6,969 | 69.7 | 5.84 | 12.6 (11.5, 109.5) | 0.0 | North West to Northern Cape 11,584; Eastern Cape to Kwazulu Natal 8,176; Northern Cape to Western Cape 7,238; Eastern Cape to Hydra Central 4,902; Free State to Northern Cape 2,143; Free State to Gauteng 618 |
 | 2040, 2025 | 0.7 | 10,000 | 38,431 | 7,454 | 74.5 | 6.25 | 14.1 (13.1, 123.1) | 2.1 | North West to Northern Cape 9,587; Eastern Cape to Kwazulu Natal 8,621; Northern Cape to Western Cape 7,580; Eastern Cape to Hydra Central 5,389; Free State to Northern Cape 4,281; Free State to Gauteng 2,973 |
 | 2040, 2025 | drop one circuit | 10,000 | 35,678 | 7,143 | 71.4 | 5.99 | 14.1 (13.1, 119.0) | 2.1 | North West to Northern Cape 11,726; Eastern Cape to Kwazulu Natal 8,264; Northern Cape to Western Cape 7,691; Eastern Cape to Hydra Central 4,976; Free State to Northern Cape 2,339; Free State to Gauteng 682 |
+| 2040, 2025 | drop one circuit with TDP | 10,000 | 20,095 | 3,656 | 36.6 | 3.07 | 14.0 (13.1, 83.3) | 2.1 | North West to Northern Cape 8,738; Northern Cape to Western Cape 5,998; Free State to Northern Cape 2,910; Eastern Cape to Kwazulu Natal 2,450 |
+| 2040, 2025 | 0.7 | 21,700 | 34,596 | 6,802 | 147.6 | 12.38 | 15.4 (13.1, 123.1) | 2.1 | North West to Northern Cape 9,905; Eastern Cape to Kwazulu Natal 8,277; Northern Cape to Western Cape 6,767; Eastern Cape to Hydra Central 4,591; Free State to Northern Cape 2,977; Free State to Gauteng 2,077 |
+| 2040, 2025 | drop one circuit | 21,700 | 32,064 | 6,497 | 141.0 | 11.82 | 15.4 (13.1, 119.0) | 2.1 | North West to Northern Cape 11,991; Eastern Cape to Kwazulu Natal 7,758; Northern Cape to Western Cape 7,036; Eastern Cape to Hydra Central 4,032; Free State to Northern Cape 1,247 |
 
 Reading. Given the 2035 build and today's corridors at 0.7 or one circuit dropped, the LP adds 26 to 28 GW of corridor (5.2
 to 5.6 million MW-km) at R10,000 per MW-km, R52 to 56bn of capex and R4.3 to 4.7bn a year, and curtailment falls from 61 to
@@ -770,7 +776,12 @@ curtailment at 12.6 to 14.1 against 11.5 to 13.1 with no limits. The corridors c
 GW, Eastern Cape to KwaZulu-Natal 5 to 9, Northern Cape to Western Cape 6 to 8, Eastern Cape to Hydra Central 2 to 5, Free
 State to Northern Cape 1 to 4, Free State to Gauteng 0.6 to 3. The LP builds nearly to the no-limits optimum because the
 corridor annuity (R839 per MW-km a year; R0.3 to 0.6m per MW-year on these corridors) is far below the shadow values of the
-fixed cases (R20 to 300m per MW-year). At the TDP-derived R21,700 per MW-km: pending (the cases are in the queue).
+fixed cases (R20 to 300m per MW-year). At the TDP-derived R21,700 per MW-km: the LP builds 23.7 to 24.2 GW in 2035 (4.7 to 4.9 million MW-km, R102 to 107bn of capex, R8.5 to 9.0bn a year) and 32.1
+to 34.6 GW in 2040 (6.5 to 6.8 million MW-km, R141 to 148bn, R11.8 to 12.4bn a year), 10% less corridor than at R10,000
+with 1.3 TWh more curtailment left (5.0 to 5.1 TWh in 2035, 15.4 in 2040), the same six corridors in the same order. The
+choice is insensitive to the unit cost over this range because the fixed cases' shadow values sit so far above either
+annuity; the annuity doubles, the corridor built hardly moves. At R21,700 the 2035 corridor annuity is half the
+integration charge and a quarter of the TDP's R36.9bn a year.
 
 Against the integration charge and the TDP. The build LP's integration charge (txRPerKWyr R364 per kW-year on new wind and
 solar, the whole VRE share) collects R16.4bn a year on the 2035 build's 44,957 MW and R23.9bn on 2040's 65,553 MW, three to
@@ -786,14 +797,35 @@ money mostly goes.
 
 ### 718 (e): siting chosen by the LP
 
-| year, weather year | corridors | wind shares chosen | solar shares chosen | curtailed TWh (fixed REEA siting) | unserved GWh |
-|---|---|---|---|---|---|
-| 2035, 2025 | as drawn (1.0) | Northern Cape 36%, Hydra Central 23%, Eastern Cape 21%, Mpumalanga 10%, Western Cape 5%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 100% | -115.5 (54.7) | 0.9 |
-| 2035, 2025 | 0.7 | Northern Cape 32%, Eastern Cape 23%, Hydra Central 16%, Western Cape 15%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 54%, Mpumalanga 23%, Gauteng 18%, Kwazulu Natal 5% | -100.5 (71.0) | 137.1 |
-| 2035, 2025 | 0.7 with TDP | Northern Cape 38%, Hydra Central 25%, Eastern Cape 23%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 100% | -124.8 (39.1) | 0.0 |
-| 2040, 2025 | drop one circuit | Hydra Central 29%, Western Cape 28%, Northern Cape 19%, Eastern Cape 15%, Mpumalanga 7%, Kwazulu Natal 2%, North West 1% | North West 83%, Limpopo 17% | -125.7 (119.0) | 1217.1 |
+| year, weather year | corridors | wind shares chosen | solar shares chosen | curtailed TWh (fixed REEA siting) | unserved GWh (fixed REEA siting) | coal TWh (fixed) |
+|---|---|---|---|---|---|---|
+| 2035, 2025 | 0.7 | Northern Cape 32%, Eastern Cape 23%, Hydra Central 16%, Western Cape 15%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 54%, Mpumalanga 23%, Gauteng 18%, Kwazulu Natal 5% | 41.6 (71.0) | 137.1 (704.8) | 101.9 (128.9) |
+| 2035, 2025 | drop one circuit | Northern Cape 24%, Eastern Cape 23%, Hydra Central 21%, Western Cape 18%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 95%, Kwazulu Natal 5% | 40.5 (67.9) | 14.9 (474.2) | 100.5 (126.5) |
+| 2035, 2025 | drop one circuit with TDP (full TDP, 22 lines) | Northern Cape 38%, Hydra Central 27%, Eastern Cape 21%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 100% | 7.9 (19.3) | 0.0 (0.0) | 65.3 (78.5) |
+| 2035, 2025 | 0.7 with TDP | Northern Cape 38%, Hydra Central 25%, Eastern Cape 23%, Mpumalanga 10%, Kwazulu Natal 2%, North West 1%, Free State 1% | North West 100% | 20.7 (39.1) | 0.0 (0.0) | 78.0 (98.4) |
 
-Reading: pending, the free-siting cases are being rerun after the accounting fix.
+Reading. The 2035 build has 27,246 MW of new wind and 17,711 MW of new utility solar to place. The caps are the approved
+REEA records by area: wind Western Cape 17,805 MW, Hydra Central 11,684, Northern Cape 10,344, Eastern Cape 6,190,
+Mpumalanga 2,680, KwaZulu-Natal 649, North West 350, Free State 190, Gauteng 75 (49,967 in all); solar Northern Cape
+34,195, North West 24,711, Free State 20,685, Hydra Central 18,062, Limpopo 15,690, Western Cape 15,584, Mpumalanga 4,045,
+Gauteng 3,150, Eastern Cape 1,376, KwaZulu-Natal 950 (138,448). Given the choice, the LP moves the new solar out of the
+Northern Cape, Free State, Limpopo, Western Cape and Hydra Central (the REEA shares: 25%, 15%, 11%, 11%, 13%) and puts
+all of it next to the load: with one circuit dropped 95% in the North West (16.8 GW of its 24.7 GW cap) and 5% in
+KwaZulu-Natal (its cap); at 0.7, where the North West's own exits are tighter, 54% North West, 23% Mpumalanga and 18%
+Gauteng, the last two at their caps; with the TDP lines 100% North West. Wind it spreads: the Western Cape's share falls from
+36% to 15 to 18%, the Eastern Cape's rises from 12% to 21 to 23%, Hydra Central's and the Northern Cape's stay at 16 to 27%
+and 24 to 38%, and Mpumalanga, KwaZulu-Natal, the North West and the Free State are each filled to their cap (10%, 2%, 1%,
+1%), which says the LP wants more wind near the load than the records allow. The result: curtailment on today's corridors
+falls from 68 to 71 TWh to 40 to 42 (no limits 3.1), unserved energy from 474 to 705 GWh to 15 to 137, and coal from 126
+to 129 TWh to 100 to 102; with the full TDP from 19.3 TWh to 7.9 and coal from 78.5 to 65.3. Free siting removes two
+fifths of the corridor penalty on today's corridors and three fifths with the TDP; what is left is wind in the Eastern
+Cape (17.2 TWh curtailed), Hydra Central (13.5) and the Northern Cape (9.1), where the records put it. The shadow price of
+the North West to Northern Cape corridor falls from R55m to R8m per MW-year. Two caveats. The within-area limits are
+absent, so 17 GW of solar in one area is a lower-bound result: the records cap the MW, they do not say the North West's
+own 400 kV network can take it, and the LP values that area for its position beside Gauteng's load and inside the
+coal provinces' corridor cluster, not for its resource. And the record totals (50 GW of wind, 138 GW of solar) are large
+against the build, so the caps bind only on wind in the four small areas; a cap by substation or by the TDP's generation
+connection capacity would bind far more.
 
 ### 718 (f): the mix chosen by the LP
 
@@ -804,9 +836,21 @@ Reading: pending, the free-mix cases are in the queue (report by 7 Nov 18:00 SAS
 
 ### 718 (g): the demand split
 
-(no rows yet)
+- 2035, 2025, 0.7: curtailed 68.1 TWh with BLD_LOAD_SHARE against 71.0 with the file's shares; unserved 511.5 against 704.8 GWh; coal 126.6 against 128.9; binding: North West to Northern Cape (8141 h, R54.8m); North West to Western Cape (7995 h, R54.3m); Free State to Northern Cape (7844 h, R53.7m); Free State to Hydra Central (7671 h, R52.2m); Eastern Cape to Kwazulu Natal (6723 h, R39.8m); Eastern Cape to Free State (6215 h, R39.2m)
+- 2035, 2025, drop one circuit: curtailed 66.9 TWh with BLD_LOAD_SHARE against 67.9 with the file's shares; unserved 426.3 against 474.2 GWh; coal 125.4 against 126.5; binding: North West to Northern Cape (8220 h, R50.6m); Free State to Northern Cape (8220 h, R50.2m); North West to Western Cape (7844 h, R49.2m); Free State to Hydra Central (7810 h, R47.8m); Eastern Cape to Kwazulu Natal (6576 h, R37.0m); Eastern Cape to Free State (6458 h, R36.7m)
+- 2035, 2025, no limits: curtailed 3.1 TWh with BLD_LOAD_SHARE against 3.1 with the file's shares; unserved 0.0 against 0.0 GWh; coal 62.9 against 62.9; binding:
 
-Reading: pending, the demand-split cases are in the queue.
+Reading. BLD_LOAD_SHARE is one static share per area; the regional demand file's shares are hourly. The annual means
+differ: Gauteng 31.5% static against 28.0% in the file, Mpumalanga 17.5 against 11.9, Free State 5.5 against 2.9, Western
+Cape 11.5 against 10.0, and the other way KwaZulu-Natal 15.5 against 19.2, North West 7.5 against 11.0, Limpopo 4.8
+against 9.2, Eastern Cape 4.2 against 5.0, Northern Cape 1.4 against 2.1; the file's shares also move through the year
+(Gauteng 22.5 to 32.7%, KwaZulu-Natal 14.8 to 21.4%). The static split puts more of the load inside the coal provinces,
+where the coal sits, and less at the end of the KwaZulu-Natal and Limpopo corridors, so it eases the result: curtailment
+71.0 to 68.1 TWh at 0.7 and 67.9 to 66.9 with one circuit dropped, unserved energy 705 to 512 and 474 to 426 GWh, coal 2 TWh
+lower, the same six corridors binding in the same order; with no limits the two splits give the same 3.1 TWh. One to three
+TWh of curtailment, a twentieth of the corridor effect: the demand split is not what decides these results, the corridor
+table is. The file's split stays the base case, since it carries the hourly shape; the test says the choice does not
+matter to the finding.
 
 ### 717 (c) rerun on the every-change pass (build 2026-11-05f)
 
