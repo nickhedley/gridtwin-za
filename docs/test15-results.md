@@ -202,6 +202,31 @@ against 182), at R4.6 bn more engine cost and 8.8 Mt less CO2. 699
 (b) is not applied on this: a 0.58 GWh gap at 20 draws cannot decide it (user, 6 Nov 2026, message 748); the rule is applied on the
 100-draw check below. The loop's own check read 2035 at 19.28 GWh (step 2035, pass 1).
 
+### Message 750 (a): new solar's capacity factor on the 365-day year, beside RESULTS finding 3
+
+Read from step 2035's single-year LP written out without solving (harness/pathway/test15/retime/y365/: dump.sh, pvcf.py, pvcf_2035.json):
+the coefficient of b_pv_2035 in each of the 8,760 balance rows of year 2035 at 365 days, i.e. MW of output per MW of new solar on the
+metered reference year's calendar days (every vintage carries the same coefficient). The other two rows are RESULTS finding 3 (claude/c7-runs,
+'The review of claude/twin-retime of 6 Nov'; on 06b).
+
+| Month | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 365-day year (two stages' year y) | 0.383 | 0.320 | 0.269 | 0.222 | 0.228 | 0.203 | 0.202 | 0.241 | 0.266 | 0.340 | 0.342 | 0.397 |
+| LP, central days (finding 3) | 0.376 | 0.329 | 0.260 | 0.227 | 0.225 | 0.206 | 0.208 | 0.232 | 0.270 | 0.347 | 0.345 | 0.388 |
+| Engine, twelve years (finding 3) | 0.342 | 0.317 | 0.291 | 0.244 | 0.222 | 0.204 | 0.221 | 0.251 | 0.293 | 0.325 | 0.351 | 0.354 |
+
+| July's mean day | 07:00 | 08:00 | 16:00 | 17:00 |
+|---|---|---|---|---|
+| 365-day year | 0.039 | 0.351 | 0.407 | 0.067 |
+| LP, central days | 0.057 | 0.369 | 0.429 | 0.078 |
+| Engine, twelve years | 0.156 | 0.530 | 0.525 | 0.146 |
+
+- Annual mean 0.2844, as both rows. December-February 0.367 against June-August 0.215 (1.70); the LP days 1.69, the twelve years 1.50.
+- The 365-day year sits with the LP days, not the twelve years: mean absolute gap by month 0.006 against the LP days and 0.018 against
+  the twelve years; at July's four hours 0.017 against 0.123. At July's ends it is further from the twelve years than the LP days are.
+- So finding 3's gap is the reference year against the twelve weather years, not the 25 days against 365: the 365-day year plans on the
+  same winter-light solar as the 25 days. Two stages' extra solar is not credited to the 25 days' solar shape (750 (b)).
+
 When the central has all 15 steps: step 2040's output carries every year's build exactly as each
 step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's
 20-draw settings, 2030, 2035, 2040). Objective: both builds fixed in the same one-stage LP on 05j (FIX_FROM, all years), so the gap is

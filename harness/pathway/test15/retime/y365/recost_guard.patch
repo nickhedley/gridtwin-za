@@ -1,0 +1,11 @@
+--- harness/pathway/pathway_perfail.js	2026-11-05 19:59:40.949596711 +0000
++++ harness/pathway/pathway_perfail_recost.js	2026-11-06 15:01:07.609547886 +0000
+@@ -524,7 +524,7 @@
+    if (e.OPER_FROM !== undefined){ const y = +e.OPER_FROM; if (!(Number.isInteger(y) && y >= 2026)) throw new Error('OPER_FROM must be a year');
+      // The free-fleet benchmark (test 16; message 679 (d)) leaves the earlier years' builds free with LIFT=all: with no operation before y to
+      // value them and more years of annuity, the LP builds the fleet in y itself. Labelled a method test, not a plan.
+-     if (y > 2026 && e.LIFT !== 'all' && (!e.FIX_FROM || +e.FIX_TO !== y - 1)) throw new Error('OPER_FROM=' + y + ' needs FIX_FROM and FIX_TO=' + (y - 1) + ' (or LIFT=all, the free-fleet benchmark)');
++     if (y > 2026 && e.LIFT !== 'all' && (!e.FIX_FROM || +e.FIX_TO < y - 1)) throw new Error('OPER_FROM=' + y + ' needs FIX_FROM and FIX_TO=' + (y - 1) + ' (or LIFT=all, the free-fleet benchmark)');
+      set.push('state.bldOperFrom=' + y + ';'); }
+    if (e.WINDOW_LINK !== undefined){ if (!['0', '1'].includes(e.WINDOW_LINK)) throw new Error('WINDOW_LINK must be 0 or 1'); set.push('state.bldWindowLink=' + (+e.WINDOW_LINK) + ';'); }
+    if (e.REP_REF !== undefined){ if (!/^((metered|20[0-9]{2})|wind:(metered|20[0-9]{2}),solar:(metered|20[0-9]{2}))$/.test(e.REP_REF)) throw new Error('REP_REF must be metered, a weather year, or wind:<source>,solar:<source>'); set.push('state.bldRepRefYear=' + JSON.stringify(e.REP_REF) + ';'); }
