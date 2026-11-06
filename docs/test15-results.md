@@ -278,8 +278,9 @@ Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season
   April to September) on 2,474 MW less coal.
 - The 25 days give the same year totals within about a tenth (coal -8.8 TWh, lithium +3.9 TWh) but put them on the wrong months: the
   25-day LP's day weights (read from its objective: 14 days carry 14 to 40 calendar days each, the 12 extremes and the 7 stress days one
-  each) show no extra curtailment in October (day 307 stands for 36 days and spills nothing extra, against 302 GWh on the 365 days),
-  more in February and June, and 2.5 times the winter diesel (+295 against +120 GWh, from 7 May's 25-day and 31 May's 40-day weights).
+  each; day 0 is 1 January) hold no day in October (day 247 is 5 September, day 307 is 4 November), so October's 302 GWh of extra spill
+  on the 365 days has no place in them; they put more in February and June, and 2.5 times the winter diesel (+295 against +120 GWh, from
+  the weights on 8 May, 25 days, and 31 May, 40 days).
 - Reference year against twelve weather years (the engine, 100 draws, 2035): coal -7.9 TWh, curtailment +2.06 TWh, lithium throughput
   +2.78 TWh, diesel +0.27 TWh, CO2 -8.8 Mt: the same energy picture as the 365-day LP. But unserved +1.04 GWh, spread over the weather
   years (2016 +6.4, 2019 +6.8, 2015 and 2022 -3.5 to -3.9), and engine cost +R4.66 bn, against the LP's 365-day slice at -R0.66 bn
