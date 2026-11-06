@@ -42,6 +42,12 @@ Times UTC. In progress; updated as it runs.
   test 15 ran (message 693 (4), (5)). The fin pass ran on build 05h; this runs on 05j as asked, so a comparison includes 05i and 05j's Avon
   and Dedisa changes.
 - Started 5 Nov 20:01. PIDs per piece in progress.txt. Its tables are the first between the markers below (tsr_central).
+- Step 2030: adequate at pass 2 (pass 1: 2034 at 20.20 GWh against 20; pass 2: 3.25). Solves: pass 1 about 48 min over two pieces (cut
+  with its basis kept, 074bb0e202, resumed for 3 min), pass 2 64.1 min cold. Wind 2,500 MW, solar 3,277, lithium 2,013 MW / 384 MWh,
+  grid-forming 1,142; coal 29,256 MW standing, 3,177 retired early.
+- From piece 6 (02:19 on 6 Nov, PID 12605): WARM=1, so a step's later passes start from the previous pass's basis (recorded in each piece
+  line). It changes no LP and no LP key; the optimum's cost is the same, and the builds differ only where the LP has more than one optimal
+  build. Chosen for time: Fossil-free's fix test solved a warm pass in 14 min against 99 min cold (above).
 - Container restart at about 00:48 on 6 Nov, 1 min after step 2030's pass 1 solved (cached, 074bb0e202): piece 5 (00:49, PID 240) replayed
   it from the cache; pass 1 found 2034 at 20.20 GWh against 20 (three windows added), pass 2 started cold.
 - Step 2029: adequate at pass 1 (test 15's central needed two passes here); its solve cut at piece 2's deadline at 23:08 after 28 min with
@@ -303,7 +309,7 @@ Rule (user, 4 Nov 2026): a step past about 90 minutes is let finish if it can; i
   2026): left stopped; no relaunch on this basis.
 
 <!-- test15_summary start -->
-#### tsr_central (4 of 15 steps)
+#### tsr_central (5 of 15 steps)
 
 Fixed builds carried unchanged into later steps: yes, every one
 
@@ -315,7 +321,7 @@ tsr_central: new build by year, MW (lithium also MWh)
 | 2027 | 1,959 | 2,120 | 401 | 1,619 | 0 |
 | 2028 | 2,500 | 1,129 | 0 | 660 | 15 |
 | 2029 | 2,500 | 3,063 | 438 | 0 | 330 |
-| 2030 |  |  |  |  |  |
+| 2030 | 2,500 | 3,277 | 2,013 | 384 | 1,142 |
 | 2031 |  |  |  |  |  |
 | 2032 |  |  |  |  |  |
 | 2033 |  |  |  |  |  |
@@ -326,7 +332,7 @@ tsr_central: new build by year, MW (lithium also MWh)
 | 2038 |  |  |  |  |  |
 | 2039 |  |  |  |  |  |
 | 2040 |  |  |  |  |  |
-| Total | 7,246 | 6,468 | 1,199 | 3,719 | 345 |
+| Total | 9,746 | 9,745 | 3,212 | 4,103 | 1,487 |
 
 tsr_central: coal standing (MW), coal retired ahead of its dates (MW) and kept under the compliance case (MW), year y of each step
 
@@ -336,6 +342,7 @@ tsr_central: coal standing (MW), coal retired ahead of its dates (MW) and kept u
 | 2027 | 39,692 | 0 |  |
 | 2028 | 39,692 | 0 |  |
 | 2029 | 33,850 | 3,177 |  |
+| 2030 | 29,256 | 3,177 |  |
 
 tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 
@@ -345,7 +352,8 @@ tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2027 | 2031 | 1 | adequate | parallel, 2 threads, presolve off | 40.2 | 50.1 | 1 | 2.5 | pass 1: none | 567.520 |
 | 2028 | 2032 | 1 | adequate | parallel, 2 threads, presolve off | 52.4 | 66.2 | 2 | 2.5 | pass 1: none | 569.646 |
 | 2029 | 2033 | 1 | adequate | parallel, 2 threads, presolve off | 28.4, 32.8 | 49.3 | 2 | 2.8 | pass 1: none | 580.417 |
-| 2030 | | | not finished | parallel, 2 threads, presolve off | 45.3 | | 1 | | | |
+| 2030 | 2034 | 2 | adequate | parallel, 2 threads, presolve off | 45.3, 3.0, 64.0 | 89.2 | 3 | 3.1 | pass 1: 2034: 20.2 / 20<br>pass 2: none | 604.101 |
+| 2031 | | | not finished |  |  | | 1 | | | |
 
 tsr_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
@@ -355,6 +363,7 @@ tsr_central: the adequacy test on each step's own year y at its final pass (mean
 | 2027 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2028 | 0.00 / 20 | 0.00 / 20 | 2014 (0.0) |
 | 2029 | 0.07 / 20 | 0.07 / 20 | 2019 (0.6) |
+| 2030 | 1.68 / 20 | 1.68 / 20 | 2022 (21.0) |
 
 #### ts2_central (15 of 15 steps)
 
@@ -563,34 +572,34 @@ Cumulative new build, MW (lithium also MWh), built 2026 to the year
 
 | Technology | Year | tsr_central | ts2_central | ts2_ff | ts2_central_ann |
 |---|---|---:|---:|---:|---:|
-| wind | 2030 |  | 9,746 | 12,451 |  |
+| wind | 2030 | 9,746 | 9,746 | 12,451 |  |
 | wind | 2035 |  | 27,246 |  |  |
 | wind | 2040 |  | 41,483 |  |  |
-| solar | 2030 |  | 9,745 | 10,429 |  |
+| solar | 2030 | 9,745 | 9,745 | 10,429 |  |
 | solar | 2035 |  | 20,644 |  |  |
 | solar | 2040 |  | 26,618 |  |  |
-| lithium MW | 2030 |  | 3,375 | 3,735 |  |
+| lithium MW | 2030 | 3,212 | 3,375 | 3,735 |  |
 | lithium MW | 2035 |  | 8,890 |  |  |
 | lithium MW | 2040 |  | 11,464 |  |  |
-| lithium MWh | 2030 |  | 4,611 | 6,039 |  |
+| lithium MWh | 2030 | 4,103 | 4,611 | 6,039 |  |
 | lithium MWh | 2035 |  | 39,635 |  |  |
 | lithium MWh | 2040 |  | 64,950 |  |  |
-| iron-air | 2030 |  | 0 | 0 |  |
+| iron-air | 2030 | 0 | 0 | 0 |  |
 | iron-air | 2035 |  | 0 |  |  |
 | iron-air | 2040 |  | 300 |  |  |
-| pumped new | 2030 |  | 0 | 0 |  |
+| pumped new | 2030 | 0 | 0 | 0 |  |
 | pumped new | 2035 |  | 0 |  |  |
 | pumped new | 2040 |  | 1,500 |  |  |
-| CCGT | 2030 |  | 0 | 0 |  |
+| CCGT | 2030 | 0 | 0 | 0 |  |
 | CCGT | 2035 |  | 0 |  |  |
 | CCGT | 2040 |  | 553 |  |  |
-| OCGT gas | 2030 |  | 0 | 0 |  |
+| OCGT gas | 2030 | 0 | 0 | 0 |  |
 | OCGT gas | 2035 |  | 611 |  |  |
 | OCGT gas | 2040 |  | 5,272 |  |  |
-| OCGT diesel | 2030 |  | 0 | 0 |  |
+| OCGT diesel | 2030 | 0 | 0 | 0 |  |
 | OCGT diesel | 2035 |  | 1,397 |  |  |
 | OCGT diesel | 2040 |  | 1,658 |  |  |
-| grid-forming | 2030 |  | 1,763 | 2,246 |  |
+| grid-forming | 2030 | 1,487 | 1,763 | 2,246 |  |
 | grid-forming | 2035 |  | 3,319 |  |  |
 | grid-forming | 2040 |  | 3,477 |  |  |
 <!-- test15_summary end -->
