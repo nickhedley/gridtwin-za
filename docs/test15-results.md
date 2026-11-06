@@ -268,7 +268,7 @@ discounted sum; R bn in 2035 rands). Results in recost_year.txt.
 - Caveat: one year; the slice charges one year's annuity of every build standing, so it judges the year, not the path (the full-path
   re-cost, 748, below, judges the path).
 
-### Messages 748 and 750 (b): where two stages' extra solar and lithium sit in the year, 2035 (2040 when the central has it)
+### Messages 748 and 750 (b): where two stages' extra solar and lithium sit in the year, 2035 and 2040
 
 Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season.py, season_2035.json): new solar +4,126 MW, lithium
 +1,567 MW / +11,133 MWh, diesel open-cycle +1,000 MW, coal standing -2,474 MW (retired early 3,177 against 703).
@@ -292,6 +292,11 @@ Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season
   each; day 0 is 1 January) hold no day in October (day 247 is 5 September, day 307 is 4 November), so October's 302 GWh of extra spill
   on the 365 days has no place in them; they put more in February and June, and 2.5 times the winter diesel (+295 against +120 GWh, from
   the weights on 8 May, 25 days, and 31 May, 40 days).
+- 2040 (season_2040.json, rep_gap_2040_*.json), two stages minus fin on the 365 days: coal -7.66 TWh, lithium discharge +3.38 TWh (March to
+  September; little in November and December), curtailment +5.27 TWh (October to January 3.7 of it), OCGT gas +0.26 TWh (April to August),
+  diesel -0.06. On July's mean day lithium charges up to 2.8 GW more at midday and discharges up to 1.0 GW more from 17:00 to 07:00. The 25
+  days: coal -6.41, curtailment +6.79, lithium +2.67 TWh. The 365-day year's diesel days off the 25 are again 8-14 August (day 219 the
+  largest), 28 August, 13-15 May, 24-25 April and 23 July.
 - 25 days against 365 days alone (the same build on the same reference year; rep_gap.py, rep_gap_2035_*.json): the 25 days get the
   year's coal within 2-3% (two stages 55.2 against 54.3 TWh; fin 64.1 against 62.3) and the shed exactly (it falls on extreme days both
   hold), but undercount curtailment (two stages 1.6 against 4.0 TWh, fin 0.4 against 2.3; the missing spill is October to January),
@@ -302,8 +307,65 @@ Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season
 - Reference year against twelve weather years (the engine, 100 draws, 2035): coal -7.9 TWh, curtailment +2.06 TWh, lithium throughput
   +2.78 TWh, diesel +0.27 TWh, CO2 -8.8 Mt: the same energy picture as the 365-day LP. But unserved +1.04 GWh, spread over the weather
   years (2016 +6.4, 2019 +6.8, 2015 and 2022 -3.5 to -3.9), and engine cost +R4.66 bn, against the LP's 365-day slice at -R0.66 bn
-  (that slice prices 123 MWh of shed on 15 May at VOLL in the stress target; the engine does not). In 2030 two stages sheds more in every
+  (that slice prices 123 MWh of shed on 15 May at VoLL in the stress target; the engine does not). In 2030 two stages sheds more in every
   weather year (+1.6 to +9.3 GWh): coal retired early in 2029 (3,177 against 703 MW) is not covered on any of the twelve years.
+
+### The rule (699 (b), read as message 748 sets it): one stage stays the headline; the two-stage gap is reported
+
+The two-stage central (all 15 steps, 05j) against the fin pass (built on 05h, every check and re-cost here on 05j):
+
+1. Mix gap outside 5% and 250 MW (read as both): yes for solar (+2,566 / +4,126 / +4,189 MW in 2030 / 2035 / 2040), lithium (+1,624 /
+   +1,567 / +2,744 MW; +384 / +11,133 / +18,246 MWh), OCGT gas 2040 (+600), OCGT diesel 2035 (+1,000), grid-forming 2030 and 2035, and coal
+   (-2,474 MW standing from 2029: 3,177 retired early against 703). Not for wind (0 / 0 / +783 MW, 1.9%), iron-air or pumped storage.
+2. Engine no worse, at 100 draws (1,200 runs a year): no. Two stages reads more unserved in 2030 (6.46 against 1.34 GWh, about 11
+   standard errors of the gap), 2036 (17.34 against 14.03, 2.5), 2034 and 2035 (14.50 against 13.56 and 18.90 against 17.86, under 1
+   each), and less in 2040 (8.08 against 9.26, 1.4). Largest draw: 629 GWh in 2034 against 252; 359 in 2035 against 297; 349 in 2036
+   against 308; 186 in 2040 against 153.
+3. Test 13's 1% range: only wind 2040's minimum exists (24,605 MW, provisional); wind's gap is inside the margin anyway.
+
+Margins to the 20 GWh standard at 100 draws (750 (d)):
+
+| Build | 2030 | 2034 | 2035 | 2036 | 2040 | Smallest | 2034-2036 mean unserved |
+|---|---|---|---|---|---|---|---|
+| Two stages (05j) | 13.54 | 5.50 | 1.10 | 2.66 | 11.92 | 1.10 (2035) | 16.91 |
+| Fin pass (built 05h, checked 05j) | 18.66 | 6.44 | 2.14 | 5.97 | 10.74 | 2.14 (2035) | 15.15 |
+| Baseline loop (2034-2036 05h on c7-runs; 2030, 2040 05j) | 18.68 | 6.12 | 2.19 | 4.54 | 12.88 | 2.19 (2035) | 15.72 |
+
+Cost, the whole path (748): each build fixed in the same one-stage LP (05j, 25 days, run (6)'s settings, pass 1): two stages
+R1,557.258 bn against the fin pass's R1,549.810 bn (the fin pass's own objective on 05h to 8e-15): two stages R7.45 bn dearer (+0.48%).
+The margins differ, two stages' smaller: at equal margin, as in message 746 (the 37.24% case's slope between its two passes, about R0.56
+bn of LP objective per GWh of the 2034-2036 mean; a borrowed slope, not a run), closing two stages' 1.76 GWh would add about R1.0 bn, so
+about R8.4 bn dearer at equal adequacy.
+
+Each year both ways (750 (c)), R bn of that year: 2035 on 365 days two stages 202.94, fin 203.60; on 25 days 204.64 and 200.45. 2040 on
+365 days 269.08 and 264.26; on 25 days 271.61 and 265.06. Regret: in 2035 the fin build's is +0.66 on the 365 days (all of it the 15 May
+shed priced at VoLL; R3.24 bn cheaper without it) and two stages' +4.19 on the 25 days; in 2040 two stages' is +4.82 on the 365 days and
++6.55 on the 25, the fin build's none. The engine (twelve years, 100 draws) puts two stages R4.66 bn a year dearer in 2035 and R4.78 bn in
+2040, with 8.8 and 8.7 Mt less CO2.
+
+So two stages builds 17-25% more solar and lithium against 2,474 MW less coal from 2029, costs R7.45 bn more over the path (about R8.4 bn
+at equal margin) and meets the standard with less margin; by the rule one stage stays the headline and the gap is reported.
+
+### Message 757 (a): the R4.9 bn by which the 25 days understate the extra build's saving in 2035, split
+
+The extra build saves R15.39 bn of dispatch and per-year cost on the 365 days and R10.54 bn on the 25 (750 (c)): R4.86 bn apart.
+- Summer spill and winter diesel days, about R1.0 bn (R0.96 bn): diesel R1.09 bn (the 25 days weight two stages' winter diesel at 2.5 times
+  the 365 days': 8 May and 31 May stand for 25 and 40 days), start-ups R0.62 bn, coal -R0.75 bn (the 25 days count less summer spill, so
+  credit more coal displaced), unserved and the rest R0.01 bn.
+- The 15 May shed: 123 MWh above the stress target priced at VoLL x 365, R3.89 bn (the 365-day year only; no 25-day day stands for 15 May).
+Terms from slice_all.py on the four 2035 single-year LPs (y365/).
+
+### Message 757 (b): the fin pass build's 2035 curtailment, coal output and lithium throughput four ways (TWh)
+
+| 2035, fin pass build | Curtailment | Coal output | Lithium discharge |
+|---|---:|---:|---:|
+| 25-day LP (each day at its weight) | 0.41 | 64.07 | 13.91 |
+| 365-day LP | 2.32 | 62.30 | 12.11 |
+| Engine, weather 2025 alone | not in any file held | not in any file held | not in any file held |
+| Engine, twelve-year mean (100 draws, 05j) | 10.36 | 69.46 | 11.04 |
+
+The engine on weather 2025 alone is in no file I have (the engine records shed by weather year, not curtailment, coal or storage); one
+pathcheck run with WEATHER=2025 (minutes) would fill the row; not run (757 (b): no new runs).
 
 ### Message 748: the common 100-draw check (pathcheck K=100, 1,200 runs a year, SEED_BASE 71830529; settings read from the README row of
 engine_loop_base_05h_k100.json; on 05j, unserved identical with 05h for the fin pass at 20 draws)
@@ -314,7 +376,7 @@ engine_loop_base_05h_k100.json; on 05j, unserved identical with 05h for the fin 
 | 2034 | 14.50 (1.12; 629.3) | 13.56 (0.85; 251.7) | 13.88 (0.85; 246.9) |
 | 2035 | 18.90 (1.02; 359.0) | 17.86 (1.05; 297.0) | 17.81 (1.05; 300.2) |
 | 2036 | 17.34 (0.98; 349.0) | 14.03 (0.90; 307.6) | 15.46 (0.94; 322.3) |
-| 2040 | after step 2040 | 9.26 (0.60; 153.4) | 7.12 (0.51; 126.8), 05j |
+| 2040 | 8.08 (0.64; 186.1) | 9.26 (0.60; 153.4) | 7.12 (0.51; 126.8), 05j |
 
 Margins to 20 GWh (100 draws): two stages 13.54 / 5.50 / 1.10 / 2.66 in 2030 / 2034 / 2035 / 2036; fin 18.66 / 6.44 / 2.14 / 5.97,
 10.74 in 2040; baseline 18.68 / 6.12 / 2.19 / 4.54. Smallest: two stages 1.10, fin 2.14, baseline 2.19 (2035 for each). Mean of 2034-2036:

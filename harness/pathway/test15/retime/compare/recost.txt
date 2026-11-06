@@ -1,2 +1,4 @@
 2026-11-06T02:51:06Z recost fin (written as 25, renamed) from /tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}
 2026-11-06T03:21:21Z recost fin (written as 25, renamed) rc=0 objective 1549810283038.683105, verdict adequate, key ab2158119a
+2026-11-06T20:37:12Z recost ts from /home/user/gtza-retime/harness/out/tsr_central/fixed.json, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2}
+2026-11-06T21:12:59Z recost ts rc=0 objective 1557258306137.201660, verdict adequate, key bb800404b1

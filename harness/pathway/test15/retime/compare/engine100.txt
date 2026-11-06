@@ -6,3 +6,5 @@
 2026-11-06T15:23:52Z engine100 ts_2036 from /home/user/gtza-retime/harness/out/tsr_central/step_2036.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2036
 2026-11-06T15:35:24Z engine100 ts_2036 rc=0 2036 17.34 (se 0.98; worst 349.0; runs 1200)
 2026-11-06T15:43:01Z engine100 base rc=0 2030 1.32 (se 0.18; worst 100.5; runs 1200); 2040 7.12 (se 0.51; worst 126.8; runs 1200)
+2026-11-06T20:37:12Z engine100 ts_2040 from /home/user/gtza-retime/harness/out/tsr_central/step_2040.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2040
+2026-11-06T20:50:01Z engine100 ts_2040 rc=0 2040 8.08 (se 0.64; worst 186.1; runs 1200)
