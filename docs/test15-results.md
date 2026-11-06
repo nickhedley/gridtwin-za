@@ -100,6 +100,9 @@ Times UTC. In progress; updated as it runs.
      STALL=0.1 from pass 4: 31.77 to 31.31 closes under a tenth of the gap); 2037 at 36.39, 33.43, 31.77, 31.31 GWh against 20; its own
      year 2033 at 13.85 throughout; the three windows added after pass 3 held 27.7, 1.5 and 1.5 GWh of shed. Year 2033's builds: wind
      3,500 MW, solar 2,029, lithium 528 MW / 6,768 MWh, grid-forming 2; coal 23,513 MW standing, 4,608 retired early.
+   - What presolve off costs, build 05j (harness/pathway/test15/retime/presolve05j.sh, .txt): step 2026's LP dumped with (a)'s settings
+     (289bc9a228, the key (a)'s step 2026 solved), parallel dual simplex on 2 threads, beside (a)'s own solve: presolve on 807 s, presolve
+     off 1,576 s (1.95 times); same answer (objective within 4.7e-15, all 125 build columns within 2e-12 MW).
    - Result: with presolve off both stopped steps finish, across pieces and a restart; the loop on the look-ahead year ends over the
      standard either way (pass limit, stall). A warm start from the previous pass's basis solved Fossil-free's pass 4 in 14 min against
      pass 3's 99 min cold (different LPs: pass 4 has three more windows).

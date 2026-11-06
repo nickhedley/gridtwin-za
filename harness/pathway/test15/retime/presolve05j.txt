@@ -1,0 +1,6 @@
+dump rc=0 dumped LP pass 1 289bc9a228; the run's step 2026 key: 289bc9a228
+2026-11-06T01:50:35Z presolve on start, load 2.30 2.04 2.09
+presolve on: Optimal, objective 569529488626.124634, wall 807.4 s
+2026-11-06T02:04:04Z presolve off start, load 3.75 3.71 3.13
+presolve off: Optimal, objective 569529488626.127319, wall 1576.2 s
+objective relative difference 4.72e-15; largest build difference 1.82e-12 MW over 125 build columns
