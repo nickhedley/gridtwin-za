@@ -1,6 +1,6 @@
 # Test 15, two stages: results (message 691 (f); basis from message 693)
 
-Final for this basis (5 Nov 2026). Times UTC.
+The first basis is final (5 Nov 2026); the run on claude/twin-retime (message 724) was added on 5-6 Nov. Times UTC.
 
 ## Summary
 
@@ -393,7 +393,8 @@ Margins to 20 GWh (100 draws): two stages 13.54 / 5.50 / 1.10 / 2.66 in 2030 / 2
 10.74 in 2040; baseline 18.68 / 6.12 / 2.19 / 4.54. Smallest: two stages 1.10, fin 2.14, baseline 2.19 (2035 for each). Mean of 2034-2036:
 two stages 16.91, fin 15.15, baseline 15.72. Every build meets the standard in every year so far. Two stages reads more unserved than the
 fin pass in each year: by 5.12 GWh in 2030 (about 11 standard errors of the gap), 3.31 in 2036 (2.5), 0.94 in 2034 and 1.04 in 2035 (under
-1); its worst runs are 629 GWh in 2034 against 252. The rule is applied when 2040 and the full-path re-cost are in.
+1); its worst runs are 629 GWh in 2034 against 252. 2040: 8.08 against 9.26. The rule: 'The rule (699 (b), read as message 748 sets
+it)' above.
 
 Done (6 Nov): the engine on step_2040.json at 100 draws, both builds re-costed in the same one-stage LP, and the rule: 'The rule
 (699 (b), read as message 748 sets it)' above.
