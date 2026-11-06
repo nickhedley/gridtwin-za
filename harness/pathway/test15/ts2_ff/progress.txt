@@ -103,3 +103,28 @@
 2026-11-05T22:43Z two_stage K=4 N=25 FIRST=2026, shell PID 569
 2026-11-05T22:44:00Z step node PID 589
 2026-11-05T22:53:16Z solve started (highs_native.py 2481)
+2026-11-06T00:19Z step 2033 (horizon 2037) rc=0 NO OUTPUT
+2026-11-06T00:19:25Z solve (highs_native.py 2481) ended after about 5158s
+2026-11-06T00:19:25Z node 589 ended, peak memory 3.6 GB
+2026-11-06T00:19:25Z test15 ff piece ends: two_stage.sh rc=1, 7 of 15 steps done
+2026-11-06T00:19:34Z test15 ff piece, PID 20467, on 51984ec Test 15 results: message 724 (a): step 202, BUILD_STAMP = '2026-11-04b, deadline 02:09Z, MIN_LEFT 1500s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 26G, memory free 12G
+2026-11-06T00:19:34Z two_stage.sh PID 20490
+2026-11-06T00:19Z two_stage K=4 N=25 FIRST=2026, shell PID 20490
+2026-11-06T00:19:49Z step node PID 20528
+2026-11-06T00:28:20Z solve started (highs_native.py 22068)
+2026-11-06T00:41:54Z solve (highs_native.py 22068) ended after about 808s
+2026-11-06T00:46:10Z solve started (highs_native.py 25856)
+2026-11-06T00:48:58Z test15 ff piece, PID 243, on 51984ec Test 15 results: message 724 (a): step 202, BUILD_STAMP = '2026-11-04b, deadline 02:38Z, MIN_LEFT 1500s, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 26G, memory free 15G
+2026-11-06T00:48:59Z two_stage.sh PID 288
+2026-11-06T00:48Z two_stage K=4 N=25 FIRST=2026, shell PID 288
+2026-11-06T00:49:14Z step node PID 328
+2026-11-06T01:00:46Z solve started (highs_native.py 2152)
+2026-11-06T01:15:05Z solve (highs_native.py 2152) ended after about 844s
+2026-11-06T01:19Z step 2033 (horizon 2037) rc=0 done
+2026-11-06T01:19:05Z node 328 ended, peak memory 4.1 GB
+2026-11-06T01:19:05Z step node PID 5880
+2026-11-06T01:19:05Z step 2033 done, the last this run takes: stopped at the step boundary (node 5880, just started)
+2026-11-06T01:19Z step 2034 (horizon 2038) rc=0 NO OUTPUT
+2026-11-06T01:19:20Z node 5880 ended, peak memory 0.0 GB
+2026-11-06T01:19:20Z test15 ff piece ends: two_stage.sh rc=1, 8 of 15 steps done
+2026-11-06T01:19:20Z test15 ff: step 2033 has output, the last this run takes

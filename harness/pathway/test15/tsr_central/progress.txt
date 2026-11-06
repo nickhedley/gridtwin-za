@@ -40,3 +40,19 @@
 2026-11-05T23:58Z step 2029 (horizon 2033) rc=0 done
 2026-11-05T23:58:36Z node 5871 ended, peak memory 2.8 GB
 2026-11-05T23:58:36Z step node PID 15756
+2026-11-05T23:58:51Z solve started (highs_native.py 16015)
+2026-11-06T00:44Z step 2030 (horizon 2034) rc=0 NO OUTPUT
+2026-11-06T00:44:18Z solve (highs_native.py 16015) ended after about 2719s
+2026-11-06T00:44:18Z node 15756 ended, peak memory 2.7 GB
+2026-11-06T00:44:18Z retime central piece ends: two_stage.sh rc=1, 4 of 15 steps done
+2026-11-06T00:44:28Z retime central piece, PID 25484, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 02:34Z, MIN_LEFT 1500s, MAXP 6, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 26G, memory free 14G
+2026-11-06T00:44:28Z two_stage.sh PID 25512
+2026-11-06T00:44Z two_stage K=4 N=25 FIRST=2026, shell PID 25512
+2026-11-06T00:44:43Z step node PID 25547
+2026-11-06T00:44:59Z solve started (highs_native.py 25633)
+2026-11-06T00:47:59Z solve (highs_native.py 25633) ended after about 177s
+2026-11-06T00:48:58Z retime central piece, PID 240, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 02:38Z, MIN_LEFT 1500s, MAXP 6, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 26G, memory free 15G
+2026-11-06T00:49:00Z two_stage.sh PID 304
+2026-11-06T00:49Z two_stage K=4 N=25 FIRST=2026, shell PID 304
+2026-11-06T00:49:15Z step node PID 318
+2026-11-06T01:03:46Z solve started (highs_native.py 2721)
