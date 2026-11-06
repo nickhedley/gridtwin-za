@@ -31,5 +31,13 @@ check reads over 15 GWh), on each loop's final build:
 | engine_loop_mix_05h_k100.json | mixed reference (final at pass 1) | K=100, YEARS=2034,2035,2036,2040, as above |
 | engine_loop_w3724_05h_k100.json | 37.24% wind (final after pass 2) | K=100, YEARS=2034,2035,2036, as above |
 
+Comparison runs (on worktrees that differ from the fin basis by one stated change each, on no branch):
+
+| File | Run | Settings |
+|---|---|---|
+| pathway_loop_w40_05h_cmp.json, engine_loop_w40_05h_cmp.json, engine_loop_w40_05h_cmp_k100.json | new wind at 40% (726 (e)); adequate at pass 1 | gtza-w40: windNewCorr 'cf0.40' (WIND_CORR=cf0.40); the baseline's days |
+| pathway_rpcap_05h_cmp.json, engine_rpcap_05h_cmp.json, engine_rpcap_05h_cmp_k100.json | the freed-connection pool capped at the same-area MW (733); one pass, adequate | gtza-rpcap: rpcap_ rows, 0 MW in 2026 to 658 MW in 2035 and 1,290 MW in 2040, linear |
+| engine_loop_w3724_05h_pass1_k100.json | the 37.24% loop's pass 1 on the 100-draw gate (746) | as engine_loop_w3724_05h_k100.json |
+
 The metered 2024 loop follows here when it finishes; its reference profile is Eskom-derived and stays local (only the build and the
 engine checks are committed).

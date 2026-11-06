@@ -23133,3 +23133,79 @@ The rule for the final key (726 (b)): extreme days recomputed once on the final 
 reported with its standard error and worst run; a pathway over it takes another loop pass. Cost on 38 pathways: about 40 minutes each
 (three years) on today's loaded machine, a quarter more where 2040 is gated; about 25 machine-hours, about 6.5 hours of wall time four
 at a time on a free machine or about 13 hours two at a time beside the solves; each failing pathway adds a pass of 3-5 hours.
+
+### The 7 Nov table (messages 720 (c), 726, 733, 745, 746): every case final except metered 2024; on equal adequacy, new wind at 37.24% costs about R54bn more (PV 2026-40) than at 42.0% and 40% about R23bn more; the same-area cap moves about 3-4 GW from solar to wind for R21.7bn; metered 2024 unfinished
+
+Flag first (721 (b)): on the extreme-day list alone (the fin pass against the baseline loop, same build otherwise) 2040 wind moves +2.25 GW,
+more than 1 GW; every case here uses the recomputed list.
+
+Settings: the fin basis (claude/twin-retime 10a98e2, build 2026-11-05h, with the verdict cache), c7's central settings (env_c6a.sh,
+GAS_FIRST=2035, 25 clustered days, linking, CONG_OFF=1, WX_WINDCORR=1), each case on its own reference's extreme days recomputed on this
+build; loops to their own verdict (VERDICT_TOPUP); engine checks at 20 draws (2030, 2035, 2040) and the common 100-draw gate (SEED_BASE
+71830529; 2034-2036, and 2040 where the 20-draw check reads over 15 GWh). The 40% case and the capped case on comparison worktrees
+(gtza-w40: windNewCorr 'cf0.40'; gtza-rpcap: rpcap_ rows), each otherwise byte for byte the fin basis. Files: harness/pathway/final/.
+6 Nov 2026, to 14:45 UTC.
+
+| Case | Verdict (passes) | LP objective, R bn (vs baseline) | 100-draw gate, GWh: 2034 / 2035 / 2036 (2040) | Smallest margin to 20 GWh |
+|---|---|---|---|---|
+| Baseline: metered 2025, new wind 42.0% | adequate | 1540.9 (+0.0) | 13.9 / 17.8 / 15.5 | +2.2 (2035) |
+| Mixed reference: wind metered, solar modelled 2025 | adequate | 1536.2 (-4.7) | 15.4 / 19.1 / 17.6 (15.1) | +0.9 (2035) |
+| New wind at BW6 bids' 37.24% (final, pass 2) | adequate | 1599.6 (+58.8) | 5.3 / 5.6 / 9.2 | +10.8 (2036) |
+| 37.24%, pass 1 (not final; for 746) | pass limit reached | 1592.1 (+51.3) | 20.9 / 18.0 / 21.3 | -1.3 (2036) |
+| New wind at 40% (comparison, 726 (e)) | adequate | 1562.9 (+22.0) | 15.4 / 19.6 / 16.9 | +0.4 (2035) |
+| Same-area cap on freed connections (733) | adequate | 1562.6 (+21.7) | 16.7 / 14.8 / 15.3 | +3.3 (2034) |
+| Metered 2024, pass 1 (unfinished) | pass limit reached | 1532.5 (-8.3) | not run | - |
+
+| Case | Year | New build, GW | Engine cost, R bn (vs baseline) | Unserved, GWh (20 draws; se) | CO2, Mt |
+|---|---|---|---|---|---|
+| Baseline: metered 2025, new wind 42.0% | 2030 | wind 9.8, solar 6.7, rooftop 5.8, lithium 1.6 | 243.2 (+0.0) | 2.00 (0.63) | 131.8 |
+| Baseline: metered 2025, new wind 42.0% | 2035 | wind 27.2, solar 17.8, rooftop 11.8, lithium 9.3 | 270.7 (+0.0) | 19.48 (2.20) | 79.7 |
+| Baseline: metered 2025, new wind 42.0% | 2040 | wind 43.8, solar 24.3, rooftop 17.8, lithium 11.2, pumped 1.5, OCGT 4.3, OC diesel 1.3 | 320.1 (+0.0) | 8.61 (1.33) | 47.8 |
+| Mixed reference: wind metered, solar modelled 2025 | 2030 | wind 9.8, solar 7.4, rooftop 5.8, lithium 1.5 | 242.8 (-0.3) | 1.67 (0.45) | 130.4 |
+| Mixed reference: wind metered, solar modelled 2025 | 2035 | wind 27.2, solar 18.7, rooftop 11.8, lithium 8.8, OC diesel 0.1 | 271.0 (+0.3) | 20.90 (2.22) | 78.4 |
+| Mixed reference: wind metered, solar modelled 2025 | 2040 | wind 41.1, solar 29.8, rooftop 17.8, lithium 10.8, pumped 1.5, OCGT 2.7, OC diesel 2.7 | 322.4 (+2.3) | 17.82 (1.97) | 48.4 |
+| New wind at BW6 bids' 37.24% (final, pass 2) | 2030 | wind 9.5, solar 6.7, rooftop 5.8, lithium 1.5 | 244.3 (+1.1) | 1.13 (0.27) | 136.5 |
+| New wind at BW6 bids' 37.24% (final, pass 2) | 2035 | wind 27.0, solar 19.8, rooftop 11.8, lithium 8.6, OC diesel 1.1 | 281.9 (+11.2) | 5.70 (1.02) | 87.9 |
+| New wind at BW6 bids' 37.24% (final, pass 2) | 2040 | wind 43.5, solar 28.5, rooftop 17.8, lithium 13.0, iron-air 0.1, pumped 1.5, OCGT 3.5, OC diesel 1.1 | 331.4 (+11.2) | 8.75 (1.32) | 51.3 |
+| 37.24%, pass 1 (not final; for 746) | 2030 | wind 7.2, solar 7.6, rooftop 5.8, lithium 1.8 | 242.9 (-0.3) | 1.79 (0.42) | 141.5 |
+| 37.24%, pass 1 (not final; for 746) | 2035 | wind 24.8, solar 19.8, rooftop 11.8, lithium 9.9, OC diesel 0.0 | 278.7 (+8.1) | 19.35 (2.36) | 92.9 |
+| 37.24%, pass 1 (not final; for 746) | 2040 | wind 41.4, solar 31.4, rooftop 17.8, lithium 14.3, pumped 1.5, OCGT 3.3, OC diesel 1.1 | 330.5 (+10.4) | 9.80 (1.44) | 50.8 |
+| New wind at 40% (comparison, 726 (e)) | 2030 | wind 9.8, solar 6.7, rooftop 5.8, lithium 1.5 | 243.5 (+0.4) | 2.16 (0.68) | 133.4 |
+| New wind at 40% (comparison, 726 (e)) | 2035 | wind 27.2, solar 18.1, rooftop 11.8, lithium 9.7 | 274.1 (+3.4) | 21.44 (2.39) | 83.0 |
+| New wind at 40% (comparison, 726 (e)) | 2040 | wind 43.7, solar 25.9, rooftop 17.8, lithium 12.2, iron-air 0.1, pumped 1.5, OCGT 4.1, OC diesel 1.1 | 324.7 (+4.6) | 10.91 (1.60) | 49.1 |
+| Same-area cap on freed connections (733) | 2030 | wind 10.3, solar 3.7, rooftop 5.8, lithium 1.2 | 244.4 (+1.2) | 1.09 (0.28) | 135.9 |
+| Same-area cap on freed connections (733) | 2035 | wind 27.8, solar 15.7, rooftop 11.8, lithium 8.6 | 274.1 (+3.5) | 15.42 (1.81) | 82.4 |
+| Same-area cap on freed connections (733) | 2040 | wind 45.3, solar 20.6, rooftop 17.8, lithium 10.2, iron-air 0.1, pumped 1.5, OCGT 4.1, OC diesel 1.6 | 326.8 (+6.7) | 7.41 (0.92) | 50.0 |
+| Metered 2024, pass 1 (unfinished) | 2030 | wind 9.0, solar 9.0, rooftop 5.8, lithium 2.1 | 241.4 (-1.8) | 3.70 (0.70) | 129.6 |
+| Metered 2024, pass 1 (unfinished) | 2035 | wind 26.4, solar 19.4, rooftop 11.8, lithium 9.1 | 271.0 (+0.3) | 50.98 (4.29) | 78.4 |
+| Metered 2024, pass 1 (unfinished) | 2040 | wind 39.3, solar 34.3, rooftop 17.8, lithium 14.1, iron-air 0.3, pumped 1.5, OCGT 3.5 | 319.0 (-1.1) | 44.04 (3.34) | 43.4 |
+
+- Margins to the standard (20 GWh a year, the 100-draw mean, smallest over the gated years): baseline +2.2 (2035); mixed reference +0.9
+  (2035); 37.24% +10.8 (2036; its pass 2 overshot); 40% +0.4 (2035, narrow); same-area cap +3.3 (2034). Metered 2024: no gate yet.
+- 37.24% on equal adequacy (746): its pass 1 reads 20.9 / 18.0 / 21.3 GWh in 2034-2036 (2035 at the baseline's 17.8), its pass 2 5.3 /
+  5.6 / 9.2. Interpolated linearly between the two passes to the baseline's 2034-2036 mean (15.7 GWh): LP objective about +R53.7bn
+  against the baseline (pass 1 +R51.3bn, pass 2 +R58.8bn); engine cost about +R9.1bn a year in 2035 and +R10.7bn in 2040. An
+  interpolation between two built passes, not a run; a pass with a smaller adequacy addition would take 3-5 hours and was not run.
+- 40% (726 (e)): its 2034-2036 mean is 17.3 GWh against the baseline's 15.7, so its +R22.0bn slightly understates the cost on equal
+  adequacy; at 37.24%'s slope between its passes (about R0.56bn per GWh) about +R22.9bn. Capex is BW6's bid capex in all three wind
+  cases (the page holds capex when the profile is corrected); the LP's cost per kWh at 2035: 42.0% R0.684, 40% R0.719, 37.24% R0.772
+  (RESULTS 'The 40% wind case: capex and cost per kWh').
+- Same-area cap (733): adequacy equal to the baseline's (2034-2036 mean 15.6 against 15.7), so its +R21.7bn is like for like. The cap
+  moves the build: solar -3.0 GW in 2030 and -3.7 GW in 2040, wind +0.5 and +1.5 GW, a little iron-air; CO2 +4.2 / +2.7 / +2.2 Mt in
+  2030 / 2035 / 2040. The pool used matches the cap (657 MW in 2035, 1,288 in 2040). This differs from the regional audit's first cut
+  (message 729: the cap matters to the pathway's cost, not to the LP's choice between wind and solar).
+- Metered 2024 (745 (a)): unfinished. Pass 1 fails its verdict and reads 51.0 / 44.0 GWh in 2035 / 2040 at 20 draws; pass 2 has solved
+  for about 7 hours since 07:03 UTC without finishing, at the lowest priority since 12:31 UTC (message 745 (b)); it will not finish by
+  7 Nov 09:00 SAST. It continues unless it blocks other work.
+
+### The 40% wind case: capex and cost per kWh (message 726 (e))
+
+New wind's capex is BW6's bid capex (bldWindCase 'bw6', R28,462/kW in 2026) in every case; the page holds it when the profile is
+corrected, so only output changes. Annual fixed charge at the central's blended cost of capital (bldNetAnnuityAt) plus the grid charge
+(R364/kW-yr), over the twelve-year capacity factor; comparison worktree gtza-w40, 6 Nov 2026.
+
+| New wind | Capacity factor | Capex 2030 / 2035, R/kW | LP cost 2030, R/kWh (ex grid) | LP cost 2035, R/kWh (ex grid) |
+|---|---|---|---|---|
+| BW6 bids | 37.24% | 25,343 / 21,921 | 0.856 (0.745) | 0.772 (0.660) |
+| 40% | 40.00% | 25,343 / 21,921 | 0.797 (0.693) | 0.719 (0.615) |
+| Modern turbine, central | 42.01% | 25,343 / 21,921 | 0.759 (0.660) | 0.684 (0.585) |
