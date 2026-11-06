@@ -22063,7 +22063,7 @@ check only (repurposed MW added every year to y, before the YEARS filter). Scrip
   2,306.4, the +25.6 gap unchanged. No other RESULTS figure uses costGrid; no page figure or pack table reads it (entry 'rpCumMW
   counts only the years a check run covers').
 
-### The PVGIS years from the stamped minute to hour means (message 704 (a)): the lag against the metered fleet goes from 25-30 minutes late to within 5 minutes; the 2024-2025 tracking twins from 25-50 minutes early to 5-15 (spring 20 late); their energy -4.8%
+### The PVGIS years from the stamped minute to hour means (message 704 (a)): the lag against the metered fleet goes from 25-30 minutes late to within 5 minutes; the 2024-2025 tracking twins from 25-50 minutes early to 5-15 (spring 20 late); their energy -4.8% by this linear method, -3.1% by the method used (csi_day; corrected 6 Nov 2026, finding 5 of the review)
 
 Settings: claude/twin-retime 379d08a (from main 57f70df, with claude/twin-fix's commits), retime_pvgis.py --method linear, BUILD_STAMP
 2026-11-05a. The stamped minute, from raw PVGIS v5_3 seriescalc responses (PVGIS-SARAH3, the ten regional points, 2014-2023, fetched
@@ -22089,6 +22089,10 @@ Best-fit shift, minutes (negative: the model runs late), DJF / MAM / JJA / SON; 
 - Energy: 2014-2023 unchanged (fixed and tracking); the 2024-2025 tracking twins -4.8% (national 0.2955 to 0.2815 and 0.2949 to
   0.2809): the PVGIS tracking/fixed ratio, out of step with the on-time MERRA-2 fixed tilt, had lifted them. Twelve-year tracking mean
   0.28595 to 0.28362 (NEW_PVTRK_CF_12Y re-measured); the metered twin's scales 1.0285 to 1.0310 (fleet) and 0.7969 to 0.8096 (fixed).
+  Corrected 6 Nov 2026 (the review of claude/twin-retime, finding 5 (a)): the figures above are the linear method's (379d08a). With the
+  method used, csi_day (f3af8b0, entry 'The re-timing's method changed to the sun's height'), the twins are -3.1%: national, on the
+  page's solar weights, 0.29552 to 0.28643 (2024) and 0.29486 to 0.28586 (2025); by region -1.0% to -4.4%. The -4.8% was carried into
+  the pull request's record without re-measuring.
 - Checks: validate_shapes 8/8 (6/8 on claude/twin-fix: the two failures were this lag); validate_weather 71/71 with ESK19679 present.
 - Tested and not used: a clear-sky-index conversion (each reading over the sun's height, interpolated, multiplied back): the same lags,
   slightly lower correlation, +0.5-0.9% on the tracking series' energy.
@@ -22477,7 +22481,7 @@ c7's blended case beyond the code; the pathcheck reuse-pool fix.
 
 What was done on each (message 710; claude/twin-retime 559175c, build 2026-11-05d): 2 and 4 in the engine (gridChargeR on the LP's
 basis, offshore included; vintage pricing from pathcheck's schedule): on c6e (one draw, the new rooftop basis) grid +R12.5bn and
-vintage -R8.5bn of PV, +R4.0bn together. 5: the unserved price escalated (x1.291). 6: confirmed against P0141 (1.036) and corrected.
+vintage -R8.5bn of PV, +R4.0bn together. 5: the unserved price escalated (x1.291). 6: confirmed against P0141 (1.036) and corrected: the tariff -2.2%, the condenser capex -2.2%, the tariff-derived wind capex -2.66% (R17,773 to R17,301/kW at 37.24%; fixed O&M is taken off the tariff's revenue before the annuity, which amplifies the move; 559175c's message says -2.2% for both, corrected 6 Nov 2026, finding 5 (b) of the review).
 8: SOURCES corrected to 364; ATB editions identified (rooftop ATB 2023, CCGT ATB 2022; offshore unmatched). 9: the evidence points to
 a double count (SOURCES 'Avon and Dedisa'), not changed. 10: the run's own rate. 1 and 3: tested on run (6) (710 (a), (b)), running.
 
@@ -22953,3 +22957,71 @@ one-pass run (P1=1) and checked by the engine (K=20, 05:20-05:27 UTC). Eskom dat
   pass (running from 05:56 UTC). As on 4 Nov (RESULTS 'Metered 2024 as the reference against metered 2025'), a build on 2024's days
   falls far short on the twelve weather years.
 
+
+### The review of claude/twin-retime of 6 Nov (message 726 (d)): findings 1 and 2 fixed and each tested with an injected fault; finding 5's two figures corrected; finding 3 sized on the central's own days (new solar in the LP 8% higher in summer and 4% lower in winter than the engine's twelve years); the central's LP unchanged
+
+Settings: claude/twin-retime, builds 2026-11-06a (f6fe419, finding 1) and 2026-11-06b (this entry's commit), from 2026-11-05k. The review:
+claude/serene-lamport-m7v7vx, docs/reviews/2026-11-06-twin-retime-review.md (on dea3623). Measured 6 Nov 2026, 07:00-07:40 UTC.
+
+- Finding 1, the CO2 cap row (06a): coal's coefficient carries bldCoalPartLoadAt, as the objective's carbon and the engine's CO2 on
+  fuel-equivalent MWh. validate_lp's new check: on the page's capped LP, 1 cap row, 456 hours, coal over combined cycle equal to
+  emisCoal x 1.0431 / emisCcgt within 0.19 of the 6-decimal rounding allowance; the old row injected (no factor) fails at 689,133 times
+  it. Reaches capped runs only (Deep decarbonisation's calibration; the review's size 1.0-2.0 Mt a year at a 40 Mt cap; not re-run).
+  The central is uncapped: its pass-1 LP text is byte-identical on 06a and 06b, and to the fin pass's (key 2b57de0759).
+- Finding 2, validate_series reads the LP's rows (06b): the probe now records, with each hour's series, the rest of the balance row
+  (nuclear, hydro and imports as available, existing capacities, availability by hour, the demand index and block, the behind-the-meter
+  term) and the year's column names. The check reads every 2035 balance row from the LP text and rebuilds its right-hand side and its
+  new wind, new solar, rooftop and offshore coefficients. 23 to 35 checks, 35/35. Clustered (central) and calendar days, 840 rows each:
+  right-hand side within 0.05 MW (the LP writes 0.1 MW), coefficients within 5.0e-5 (4 decimals). Faults in the row only: CSP at a
+  flat 0.38 (the review's) fails 840 of 840 rows, largest 334 MW, while the series comparison alone shows 0 days differing (the review's
+  23 of 23, reproduced); new solar's row coefficient on fixed tilt, the probe on tracking, fails 436 of 840. The probe runs only when
+  asked: the LP text is unchanged.
+- Finding 5: (a) the 2024-2025 tracking twins -3.1%, not -4.8% (national 0.29552 to 0.28643 and 0.29486 to 0.28586; -4.8% was the
+  linear method's, 379d08a, carried forward after csi_day replaced it); (b) the tariff-derived wind capex -2.66% (R17,773 to R17,301/kW
+  at 37.24%), the tariff and the condenser capex -2.2%. Both corrected in place in the entries above and in index.html's comment.
+- Finding 3, sized on the central's own representative days (25 clustered days on the metered reference, its 13 extremes, hierarchical;
+  each calendar day read from its medoid) against simulate's own new-solar series on the twelve weather years (wxEngineProfile), the
+  annual mean equal by design (0.2844 both). Scratchpad f3/seasonal.js on 06b.
+
+| Month | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| LP, central days | 0.376 | 0.329 | 0.260 | 0.227 | 0.225 | 0.206 | 0.208 | 0.232 | 0.270 | 0.347 | 0.345 | 0.388 |
+| Engine, twelve years | 0.342 | 0.317 | 0.291 | 0.244 | 0.222 | 0.204 | 0.221 | 0.251 | 0.293 | 0.325 | 0.351 | 0.354 |
+| LP against engine | +10.0% | +3.7% | -10.4% | -6.8% | +1.3% | +0.9% | -5.9% | -7.4% | -7.9% | +6.7% | -1.7% | +9.8% |
+
+  December-February +8.0%, June-August -4.4%; summer over winter 1.69 in the LP, 1.50 in the engine. July's mean day differs most at
+  its ends: 07:00 0.057 against 0.156, 08:00 0.369 against 0.530, 16:00 0.429 against 0.525, 17:00 0.078 against 0.146. On the fin
+  pass's 18.2 GW of new solar in 2035: the LP counts about 1.06 TWh more in December-February and 0.39 TWh less in June-August than the
+  engine's years, and 1.2 GW less at 17:00 on July's mean day. The LP plans against less winter solar than the engine dispatches. Its
+  effect on the build mix is not measured: one pass-1 LP with the twin rescaled by month to the twelve years' means (a harness hook) would
+  size it, about 2 hours, queued after the 7 Nov loops and their rechecks. A limitation line is in the pack.
+- The stress suite's CI failure on 8d0ac66 and f6fe419 (ReferenceError: offshoreSeriesFor is not defined): stress_suite.js runs the
+  page's text up to its start-up code, and offshoreSeriesFor, added with the offshore change (707 (a) 3), sat after it. Moved beside
+  the engine's other helpers; it reads its globals through typeof guards. 290/290 locally; the LP text unchanged.
+- The verdict cache (726 (c); 8d0ac66, harness only): bldAdequacyTest's result kept per input (index.html's SHA-1 and the serialised
+  state and draws), typed arrays exact, in the run's LPCACHE folder. Test: first run 149 s, second 4 s, 3 hits, results identical.
+  In use from the w3724 and m24 pieces relaunched at 07:02 UTC; patched into the loops' copy of the script
+  between pieces, not under a running one; no LP or key changed.
+- Checks rerun on 06b, by name: stress_suite 290/290; validate_series 35/35; validate_lp 62/62; validate_structure 27/27; validate_lint
+  3/3; audit 88/88.
+
+### Connections freed by retired coal on the presets (message 726 (f)): no preset carries the pathways' rule barring wind, and on every preset barring it changes the cost by nothing; the credit moves from wind to solar, not in size
+
+Settings: claude/twin-retime, build 2026-11-06b; each of the eight presets applied in the page, gridChargeR(state, FIXED + state) with
+the page's rule (FIXED.bldRpExclude [], wind and solar tied at R364/kW-yr, wind first in GRID_RP_T's order) and again with
+bldRpExclude ['wind'], the rule every pathway run uses (RP_EXCL=wind in env_c6.sh; the fin pass records rpExclude ['wind']). Scratchpad
+f726/rp.js, 6 Nov 2026, 07:30 UTC.
+
+| Preset | Freed coal MW | New wind MW | New solar MW | Gross R bn/yr | Page rule | Wind barred | Difference |
+|---|---|---|---|---|---|---|---|
+| IRP's 2030 targets, grid delayed | 7,259 | 4,405 | 6,188 | 6.15 | 3.40 | 3.40 | 0 |
+| IRP's 2030 targets | 7,259 | 7,341 | 10,313 | 8.72 | 5.97 | 5.97 | 0 |
+| IRP path 2035 | 13,776 | 21,041 | 17,513 | 18.15 | 12.96 | 12.96 | 0 |
+| Least-cost path 2035 | 13,776 | 22,562 | 22,746 | 16.95 | 11.93 | 11.93 | 0 |
+| Deep decarbonisation 2035 | 13,776 | 40,830 | 38,225 | 29.14 | 24.13 | 24.13 | 0 |
+| Fossil-free 2040 | 39,692 | 64,500 | 100,516 | 63.23 | 48.51 | 48.51 | 0 |
+
+(Today 2026 and 2025, as modelled build nothing new.) In every preset new solar alone exceeds the freed MW and is charged the same rate,
+so the whole pool is credited either way (Least-cost 2035: 13,776 MW, R5.0bn a year, the review's figure). The preset blocks carry no
+bldRpExclude, so the page credits wind first; the pathway runs, and pathcheck (which passes each run's own gridRpMW), credit solar,
+storage and gas. Neither rule has geography (the review's finding 4).

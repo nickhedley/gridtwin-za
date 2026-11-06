@@ -156,6 +156,10 @@ The tables below show new capacity added each year, in MW. Rooftop solar is an i
   it from 2031 is ours. The 2,500 MW a year to 2030 is our split of a combined wind and solar pace (2,500 MW wind, 2,000 MW solar), not
   a published figure (decision of 13 Oct 2026). Solar's yearly limit binds in 2030-2031 only (message 701 (f)).
 - Restarts after forced outages are not yet costed.
+- New tracking solar in the build optimiser follows metered 2025's seasons, which swing more than the twelve weather years the hourly
+  engine runs: on the central's representative days about 8% more in summer and 4% less in winter, the year equal; at 17:00 on July's
+  average day 1.2 GW less on 2035's 18 GW. The optimiser plans against less winter solar than the engine dispatches; its effect on the
+  build is not yet measured (RESULTS, the review of 6 Nov, finding 3).
 - Open-cycle gas and diesel run far less in the engine than at Eskom: 2.2 against 3.4 TWh in the 2025 replay (34% below) and 0.2 against
   0.8 TWh in January-August 2026 (80% below). Eskom also runs its turbines for reserve, unit trips and network constraints, which a
   single-node merit-order engine does not represent (RESULTS 'Backcast').

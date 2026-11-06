@@ -380,6 +380,9 @@ which lets a stability- or contingency-limited line run harder whatever its leng
 (US DOE on dynamic line rating; GridLab and UC Berkeley on reconductoring; the WATT Coalition on topology optimisation), not
 secondary articles; background, The Progress Playbook, 15 Oct 2024 (message 346 (d)). Check first whether a corridor's 'km' in
 corridor_electrical.json is one route or the sum over its circuits (Hydra Central-Northern Cape reads 542.7 km over 4 lines).
+For the next note (user, 6 Nov 2026, message 730; a to-do only, no work now): MIT CEEPR RC 2026-08 (Knittel, Senga and Vuppanapalli,
+September 2026; Nick's copy in Drive). Use its ranking comparison (cost value against hours congested) and its 5-30% uplift cases, each
+corridor's uplift limited to what its limiting factor allows on the St Clair curve (above). Report coal and CO2 by case.
 
 14jb. Every surplus sink as a priced build option, each with a realistic cap and a source (user, 26 Oct 2026, message 385 (b); after
 the note, with 14ip). c6's build LP minimises total system cost with no penalty on curtailment, and its only sinks are storage, so its
@@ -1497,3 +1500,13 @@ reachable).
 14nc. After the note (user, 5 Nov 2026, message 723; a to-do only, no work now): for the industrial electrification note's first chapter,
 map South Africa's gas network and the industrial sites along it or fed by it. Details in the project doc
 claude/gas-network-map-idea-2026-11-05.md (not in this repository on 5 Nov; a project document).
+
+14nd. From message 726 (6 Nov 2026; RESULTS 'The review of claude/twin-retime of 6 Nov' and 'Connections freed by retired coal on the
+presets'). Done on claude/twin-retime (PR #161, build 2026-11-06b): finding 1 (cap row) with a validate_lp check and fault; finding 2
+(validate_series reads the LP's rows, 35 checks, the flat CSP fault fails); finding 5's figures corrected; the stress suite's CI failure
+(offshoreSeriesFor above the start-up code); the verdict cache. Open: (a) finding 3's effect on the build, one pass-1 LP with the twin
+rescaled by month to the twelve years' means, after the 7 Nov loops and rechecks (about 2 hours); (b) You: whether the page's default
+bldRpExclude becomes ['wind'], the pathways' rule (no preset's cost moves; the credit moves from wind to solar; the page optimiser's LP
+changes for a visitor's own run, not the central's); (c) a regional cap on freed connections (finding 4), after the note; (d) finding 7,
+pathcheck's WX_FIX and LULL wrappers drop the year's offshore series (test modes only), harness fix; (e) finding 6 (lithium vintages
+on the fleet's average duration), note only; (f) the 40% new-wind loop and the cost table at 37.24, 40 and 42% (726 (e)).
