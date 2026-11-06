@@ -1,4 +1,13 @@
-# GridTwin ZA - handover, current state (kept current; updated 6 Nov 2026, 17:40 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 6 Nov 2026, 19:45 SAST)
+
+## 6 Nov evening: where things stand
+
+- Done since 17:40 SAST: 749 (RESULTS 'Deemed energy against the reported R4bn'); 752 (d) (RESULTS 'The engine over the whole path');
+  metered 2024 final and failing the 100-draw gate (the 7 Nov table); 714 (d) (RESULTS 'Open-cycle capex on the IRP's basis'); TODO
+  14ne: 170 reproduction attempts, no recurrence (TODO 14ne; Nick to choose (a) worker reruns, (b) a self-check, (c) both).
+- Running: f3d and f3h pass 1 only (solve_f3d.sh f3d and solve_f3h.sh f3h, P1=1, PIECE_S=5200; relaunch each piece on its notice);
+  each then its 20-draw engine check in the script; 100 draws on the same seeds if the mix moves more than 1%; report before the 8 Nov key.
+- Awaiting Nick: 14ne choice; whether metered 2024 goes further; 14ng; 726 (f); Plentify's split; the f3d band (0.80-1.25).
 
 ## 6 Nov late afternoon (messages 749, 751, 752): where things stand
 
