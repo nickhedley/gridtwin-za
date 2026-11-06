@@ -2063,3 +2063,161 @@ Could the table be too loose anywhere. Yes, in four places. (1) Within the areas
 ### (e) 'Ample' withdrawn
 
 Done in 741: 'look ample' is now 'not binding in this test', with the purposes of those lines the test cannot see (within-area N-1 security and voltage support, connection capacity for plants inside the area, the retirement of the lines they parallel, load growth at the receiving end, reactive power and short-circuit strength, export and wheeling flows).
+
+## Message 753: the DBSA report's corridor limits as a cross-check on the rebuilt table (6 Nov 2026; nothing here is to be quoted; a cross-check, not a replacement; no limit in the table changed)
+
+Source: DBSA, National Treasury, NPC and PCC, 2025, South Africa's Energy Sector Investment Requirements to Achieve Energy Security and Net
+Zero Goals by 2050 (PwC Strategy& and Osmotic Engineering Group), Annexure B, Table 45 (N-1 SIL, loadability and PV transfer by corridor for
+2025, 2030 and 2035), Table 47 (line transfer limits) and Figure 58 (the corridor map); Table 14 for the corridor lengths. All rights reserved; the
+extract the user supplied is not committed and the report's table is not reproduced; the comparison uses the lower of loadability and PV transfer
+(table45_lowerof.json). The report's model is PSSE, steady state only, built from the TDP2032, the GCCA and public data with no Eskom case file,
+benchmarked against the GCCA 2025; its areas are the GCCA transmission supply areas, which are the ten areas here (substations_compact.json's
+area field holds the supply area, not the province; Hydra Central is one of them).
+
+### 753 (a): the comparison
+
+Your first pass checks: ours 52,476 MW on the 17 corridors against the report's 38,301 for 2025, 1.37 times (56,676 and 1.48 with the two
+Mercury 765 kV corridors the report does not list). Two corrections to the ranges: Eastern Cape to KwaZulu-Natal is 1.53, outside the export
+range of 0.67 to 1.12; and two inland corridors sit below one (Limpopo to North West 0.78, Free State to Mpumalanga 0.87), so the inland range
+is 0.78 to 6.82, with the six above 1.39 all on Gauteng, Mpumalanga and Limpopo's borders. Free State to Gauteng 3,600 against 528 and Gauteng
+to Limpopo 1,800 against 496 are as you had them.
+
+| corridor | our circuits | km, ours (crossing) | km, report (Table 14) | report 2025 | ours N-1 once | ours / report | ours, limits only | ours at the report's ratings | report 2030 | report 2035 | ours with the TDP's lines, N-1 once (TDP MW added) | ours with TDP / report 2035 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Free State to Gauteng | 1 x 400 kV, 9 x 275 kV | 60 | 382 | 528 (PV) | 3,600 | 6.82 | 5,000 | 4,254 | 570 | 589 (L) | 4,500 (900) | 7.64 |
+| Gauteng to Limpopo | 2 x 400 kV, 1 x 275 kV | 107 | 392 | 496 (PV) | 1,800 | 3.63 | 3,200 | 1,473 | 496 | 256 (PV) | 1,800 (0) | 7.03 |
+| Gauteng to North West | 4 x 400 kV, 3 x 275 kV | 66 | 247 | 2,574 (PV) | 5,400 | 2.10 | 6,800 | 4,418 | 2,574 | 1,972 (PV) | 6,300 (900) | 3.19 |
+| Limpopo to Mpumalanga | 2 x 400 kV, 3 x 275 kV | 121 | 334 | 1,156 (PV) | 2,214 | 1.92 | 3,447 | 2,418 | 1,118 | 1,182 (PV) | 3,114 (900) | 2.63 |
+| Gauteng to Mpumalanga | 8 x 400 kV, 4 x 275 kV | 102 | 234 | 6,008 (PV) | 11,168 | 1.86 | 12,568 | 8,891 | 6,008 | 4,811 (PV) | 12,968 (1,800) | 2.70 |
+| Eastern Cape to KwaZulu-Natal | 1 x 400 kV | 167 | 723 | 533 (PV) | 813 | 1.53 | 1,161 | 700 | 818 | 1,786 (L) | 813 (0) | 0.46 |
+| KwaZulu-Natal to Mpumalanga | 1 x 765 kV, 7 x 400 kV | 172 | 297 | 6,032 (PV) | 8,375 | 1.39 | 11,375 | 7,000 | 6,032 | 5,272 (PV) | 8,375 (0) | 1.59 |
+| Northern Cape to Western Cape | 1 x 400 kV | 171 | 1039 | 714 (PV) | 801 | 1.12 | 1,144 | 700 | 655 | 809 (PV) | 2,700 (2,700) | 3.34 |
+| Free State to Hydra Central | 2 x 765 kV, 3 x 400 kV | 310 | 528 | 4,409 (PV) | 4,865 | 1.10 | 7,865 | 5,500 | 4,836 | 5,460 (PV) | 7,865 (3,000) | 1.44 |
+| North West to Northern Cape | 1 x 400 kV | 199 | 647 | 694 (PV) | 726 | 1.05 | 1,038 | 700 | 1,405 | 1,648 (L) | 900 (900) | 0.55 |
+| Hydra Central to Western Cape | 3 x 400 kV | 246 | 553 | 1,919 (PV) | 1,803 | 0.94 | 2,709 | 2,000 | 3,655 | 3,655 (L) | 3,609 (3,900) | 0.99 |
+| Eastern Cape to Hydra Central | 2 x 400 kV | 295 | 411 | 894 (L) | 801 | 0.90 | 1,606 | 1,000 | 293 | 1,050 (PV) | 4,606 (6,000) | 4.39 |
+| Free State to Mpumalanga | 2 x 765 kV, 3 x 400 kV | 347 | 471 | 5,531 (PV) | 4,838 | 0.87 | 7,202 | 5,500 | 6,144 | 8,456 (L) | 8,102 (3,900) | 0.96 |
+| Free State to Northern Cape | 2 x 275 kV | 90 | 682 | 486 (PV) | 400 | 0.82 | 800 | 473 | 992 | 1,891 (PV) | 800 (900) | 0.42 |
+| Eastern Cape to Free State | 1 x 400 kV | 408 | 564 | 555 (PV) | 455 | 0.82 | 650 | 700 | 645 | 645 (L) | 455 (0) | 0.71 |
+| Limpopo to North West | 5 x 400 kV, 2 x 275 kV | 212 | 629 | 5,027 (PV) | 3,916 | 0.78 | 5,316 | 4,945 | 5,027 | 5,027 (PV) | 5,316 (3,000) | 1.06 |
+| Hydra Central to Northern Cape | 1 x 400 kV, 2 x 220 kV | 64 | 531 | 745 (L) | 500 | 0.67 | 1,578 | 605 | 745 | 745 (L) | 1,400 (900) | 1.88 |
+| total, the 17 | | | | 38,301 | 52,476 | 1.37 | 73,459 | 51,277 | 42,013 | 45,254 | 73,623 | 1.63 |
+| with our two Mercury 765 kV corridors (not in the report) | | | | | 56,676 | 1.48 | | | | | | |
+
+Reading. (1) The per-circuit rating assumption is not the cause of the 1.37: our line set at the report's own ratings (400 kV 1,000 MW, 765 kV
+2,500, N-1 once) totals 51,277, within 2% of our 52,476, because the report's flat compensated limit is above our St Clair figure on the long
+export corridors and below our thermal figure on the short inland ones, and the two nearly cancel. (2) The corridors above 1.5 are the inland
+ones, and on every one of them the report's binding figure is the PV transfer, a steady-state voltage limit below its own loadability (Gauteng
+to Mpumalanga 6,008 against 9,461; Gauteng to North West 2,574 against 5,133; Limpopo to Mpumalanga 1,156 against 1,788); our table has no
+voltage limit, so on these the gap is partly real. (3) On two of them the larger cause is which lines each side counts, below. (4) On the export
+corridors the two tables agree within 10 to 33%, but on the Cape corridor by coincidence: the report's 2025 case carries the Gamma to Kappa 765
+kV line (its named contingency), which the model's line file does not carry at all. (5) By 2035 the report's limits grow to 45,254 MW and ours
+with the TDP's 20 inter-area lines to 73,623 (1.63): the report's 2035 network is the TDP2032's, and on four corridors its 2035 figure is below
+its 2025 one (Gauteng to Mpumalanga, Gauteng to North West, Gauteng to Limpopo, KwaZulu-Natal to Mpumalanga), which a voltage limit can do as
+the dispatch changes and a thermal table cannot.
+
+### 753 (b): the cause on each corridor beyond 1.5 times either way
+
+The report names its corridors by supply area and, for each figure, the contingency that sets it; those names say which lines it counts. Ours are
+the line file's circuits whose two ends the substation file places in different areas (build_corridors.py), so a substation on the wrong side of a
+supply-area boundary moves whole circuits between corridors. Checked by reverse geocoding every substation's coordinates to its province
+(Nominatim; a province is not a supply area, so a mismatch is a flag, not a verdict): 189 substations checked, 0 unresolved; 7 the file places in Hydra Central, which spans the Northern Cape, Eastern Cape and Free State provinces by design (Eastern Cape, Northern Cape); 15 others whose province differs from the file's supply area: Acornhoek (file Limpopo, province Mpumalanga); Boundary (file Northern Cape, province Free State); Carmel (file North West, province Gauteng); Dinaledi (file Gauteng, province North West); Eros (file Eastern Cape, province Kwazulu Natal); Komsberg (file Western Cape, province Northern Cape); Makalu (file Gauteng, province Free State); Manogeng (file Mpumalanga, province Limpopo); Mercury (file North West, province Free State); Midas (file North West, province Gauteng); Pelly (file Limpopo, province Gauteng); Pluto (file North West, province Gauteng); Scafell (file Gauteng, province Free State); Silimela (file Mpumalanga, province Limpopo); Sorata (file Kwazulu Natal, province Free State). The file's area is its GCCA supply-area assignment, and a supply area need not follow the province, so each is a flag to settle against the GCCA's supply-area polygons, not a correction made here; the ones that sit on a corridor in the table are Lethabo's neighbours on the Vaal, Makalu and Scafell (file Gauteng, province Free State); Dinaledi at Brits (file Gauteng, province North West); Mercury (file North West, province Free State); Pluto and Midas on the West Rand (file North West, province Gauteng; with Hera to Midas, Lulamisa to Pluto, Pluto to Thuso, Mercury to Midas, Hermes to Pluto and Matimba to Pluto and Midas on them, they decide the Gauteng to North West and Limpopo to North West corridors); Pelly in Tshwane (file Limpopo, province Gauteng; Esselen to Pelly is the 275 kV circuit in Gauteng to Limpopo); Boundary (file Northern Cape, province Free State; its two 275 kV lines to Perseus are the whole Free State to Northern Cape corridor); Manogeng and Silimela (file Mpumalanga, province Limpopo) and Acornhoek (file Limpopo, province Mpumalanga) on Limpopo to Mpumalanga; and Eros (file Eastern Cape, province KwaZulu-Natal; already overridden to KwaZulu-Natal in the rebuilt table). Where the report's own corridor naming settles a side it is said under the corridor; the rest wait for the polygons. Full list: geocheck.tsv.
+
+1. Free State to Gauteng, 3,600 against 528 (6.82). Ours counts ten circuits with a mean length of 60 km: Lethabo to Glockner at 400 kV (21 km)
+   and 275 kV, Lethabo to Makalu (two), Rigi (two), Eiger and Snowdon, all 13 to 62 km, and Everest to Makalu (184 km) and Everest to Snowdon
+   (220 km) at 275 kV. The report's corridor is 382 km long and its contingencies are Makalu to Everest and Snowdon to Everest: the two long 275 kV
+   lines from the Free State hub to the Vaal, and nothing else, which is why its SIL (248 MW) is one 275 kV line's and its loadability 589. So the
+   report puts Lethabo power station and its evacuation lines on the Gauteng side. So does the model's own fleet file (nodal/fleet_units.csv:
+   Lethabo's units are Gauteng generation, retiring in 2038 and 2041), so the LP already dispatches Lethabo on the Gauteng bus; but the
+   substation file places the Lethabo substation in the Free State (from the DBSA register; the province is the Free State, as is Makalu's, which
+   the file has in Gauteng), so the corridor builder counts Lethabo's own 13 to 62 km ties into the Vaal load, eight of our ten circuits and
+   3,200 of the 3,600 MW, as Free State to Gauteng capacity. In the LP that capacity is pure transit from the Free State bus, which physically
+   those lines are not: they connect Lethabo's bus, and reach the Free State hub only through Makalu and the Everest lines. On our two Everest lines alone the
+   corridor is 800 MW, N-1 once 400, against the report's 528 to 589. Cause: the boundary and the lines counted; a real difference of 0.7 to 0.8
+   on the long lines. For the LP this matters in 2040, when 3,200 MW of Free State to Gauteng capacity that is physically Lethabo's stub lines is
+   open to transit (and 3,600 before), and it is the corridor the priced cases build on (Free State to Gauteng 1.0 to 4.2 GW in 727 (c)). Candidate change, not made:
+   Lethabo's ties counted as Gauteng-internal (the Lethabo substation on the Gauteng side, as the report and the fleet file have it), leaving
+   the Everest pair.
+2. Gauteng to Limpopo, 1,800 against 496 (3.63). Ours: Dinaledi to Spitskop, two 400 kV circuits of 110 km at the thermal 1,400 MW, and Esselen to
+   Pelly at 275 kV. The report's corridor is 392 km, Gauteng to the Polokwane load (its contingencies Borutho to Silimela 400 kV and Tabor to
+   Witkop 275 kV), with a SIL of 316 MW: one 400 kV path and a 275 kV one at that length. Dinaledi is at Brits, in the North West by province (the
+   file has it in Gauteng, from OpenStreetMap), so the two Dinaledi to Spitskop circuits are North West to Limpopo on the report's boundary and on
+   the province's, leaving Esselen to Pelly (N-1 once 280 MW) against the report's 496; and Apollo to Dinaledi moves to Gauteng to North West.
+   Cause: the boundary. The rest, the within-Limpopo path from Spitskop to Polokwane that the report's figure measures, is a within-area limit
+   this model does not carry. Candidate change, not made: Dinaledi on the North West side.
+3. Gauteng to North West, 5,400 against 2,574 (2.10). Ours: four 400 kV circuits (Hera to Midas, Bighorn to Dinaledi, Lulamisa to Pluto, Pluto to
+   Thuso) and three 275 kV, 6,800 MW in all; the report's loadability 5,133 is the same set at its ratings (ours at its ratings 4,418 N-1 once),
+   and its figure is the PV transfer, 2,574, with the loss of Lulamisa to Pluto: a voltage limit at half the loadability, in the direction Gauteng
+   to North West. Cause: a real difference (the voltage limit), with the boundary a part (Bighorn to Dinaledi is North West-internal on the
+   province). Caveat for the LP: a PV limit is for one direction and one dispatch; the LP's heavy flow on this corridor in 2035 and 2040 is North
+   West to Gauteng (Karoo wind through Mookodi, Mercury and Pluto), the direction the report did not test.
+4. Limpopo to Mpumalanga, 2,214 against 1,156 (1.92). Ours: Arnot to Merensky (152 km) and Duvha to Leseding (206 km) at 400 kV, Acornhoek to
+   Marathon (two) and Senakangwedi to Simplon at 275 kV. The report's loadability 1,788 is one 400 kV circuit and two 275 kV at its ratings, and its
+   contingencies (Duvha to Manogeng in 2025 and 2030, Foskor to Spencer in 2035) run through the Lowveld; its figure is again the PV transfer.
+   Cause: one 400 kV circuit counted on a different side (Merensky and Senakangwedi serve the Steelpoort valley, which the report's Mpumalanga
+   supply area may take in; the province puts Merensky in Limpopo) and the voltage limit. Open.
+5. Gauteng to Mpumalanga, 11,168 against 6,008 (1.86). Ours: eight 400 kV circuits and four 275 kV, 12,568 MW; the report's loadability 9,461 is
+   the same twelve at its ratings (ours at its ratings 8,891 N-1 once); its figure is the PV transfer with the Hera 400/275 kV transformer out,
+   6,008 in 2025 and 4,811 in 2035, in the direction Gauteng to Mpumalanga. Cause: the rating assumption for a fifth of the gap and the voltage
+   limit for the rest, a real difference. The same caveat: the corridor's heavy flow is Mpumalanga to Gauteng, coal to the load, which is not the
+   direction tested, and the report does not say whether its PV transfer is the whole transfer at the nose point or the increment above its base
+   case; if the latter, the absolute limit is higher than 6,008 and the gap narrower.
+6. Eastern Cape to KwaZulu-Natal, 813 against 533 (1.53). Ours: one circuit, Eros to Vuyani 400 kV, 167 km, St Clair 1,161 MW, N-1 once at 0.7.
+   The report's corridor is 723 km (Table 14), the whole coastal path from the Eastern Cape hub to Ariadne, and its 2025 figure is the PV
+   transfer with a Northern Cape contingency (Mookodi to Ferrum) out, 533, against a loadability of 677 for the path at that length. Cause: the
+   length definition (hub to hub against the crossing segment) and the single-circuit N-1 rule; a difference of 1.2 to 1.5 that the within-area
+   path explains.
+7. Hydra Central to Northern Cape, 500 against 745 (0.67, at the edge). Ours: Hydra to Kronos 400 kV (187 km, 1,078 MW) and the two 2 km Van der
+   Kloof to Roodekuil 220 kV station ties; N-1 once removes Hydra to Kronos and leaves the two ties, 500. The report's loadability is 745 for the
+   same Hydra to Kronos line, its N-1 the Hydra transformer. Cause: our N-1 rule on a corridor whose second and third circuits are a hydro
+   station's 220 kV ties; without them the rule gives 0.7 of 1,078, 754, the report's figure. Not a real difference.
+
+The Cape corridor (Hydra Central to Western Cape, 0.94): the agreement is a coincidence. Ours is three 400 kV circuits, Droerivier to Hydra, N-1
+once 1,803. The report's 2025 figure, 1,919, is the PV transfer with the Gamma to Kappa 765 kV line out, and its loadability 2,305 is the three
+400 kV circuits at its ratings after that outage; so the report's 2025 network carries Gamma to Kappa at 765 kV and the line file does not carry
+it at all (its eight existing 765 kV features are Alpha to Beta twice, Beta to Hydra, Gamma to Hydra, Gamma to Perseus, Mercury to Perseus,
+Mercury to Zeus and Majuba to Umfolozi; Kappa to Sterrekus 765 kV, commissioned in November 2016, is missing too, within the Western Cape). The
+TDP file carries a Gamma to Kappa 765 kV line for 2029, which is the plan's second line (the heritage assessment for the "Gamma-Kappa 2nd 765 kV"
+line, Heritage Western Cape; Eskom's 2012 series-capacitor paper names Gamma as a capacitor site on the 765 kV Cape lines; SAnews on the 2016
+commissioning: "the Western Cape is now connected to the 765 kV network over and above the 400 kV network"). With the first line in the table at
+370 km (St Clair 2,628 MW) the corridor is 5,337 MW with limits only and 2,709 N-1 once (the 765 kV line out), 1.4 times the report. The
+in-service date of the first line and whether it ran at 400 kV for a period are not settled from what could be read here (Engineering News
+refused the fetch; eskom.co.za is not read). Candidate change, not made: add the first Gamma to Kappa 765 kV line to the existing set.
+
+The two Mercury 765 kV corridors. Our table carries Mercury to Perseus (235 km) as Free State to North West and Mercury to Zeus (268 km) as
+Mpumalanga to North West, each a single 765 kV circuit at 3,000 MW, N-1 once 2,100, because the substation file places Mercury in the North
+West (a manual placement; the coordinates are in the Free State by province, Fezile Dabi, just south of the Vaal near Orkney). The report lists
+neither corridor: its contingencies put Mercury to Zeus in Free State to Mpumalanga and Perseus to Mercury in Northern Cape to Free State, so it
+treats the Perseus, Mercury, Zeus path as the Free State's 765 kV link to Mpumalanga, with Mercury on the Free State side; Table 14 has a Free
+State to North West corridor of 369 km with no capacity in any scenario. On the report's placing, our Free State to Mpumalanga would gain Mercury
+to Zeus (10,202 MW, N-1 once 7,202, against the report's 5,531 to 6,144), Free State to North West would be the three 400 kV lines from Mercury to
+Hermes, Midas and Mookodi (4,200 MW, N-1 once 2,800), and Mpumalanga to North West would disappear. Either placing is defensible; what the LP
+sees is the same 765 kV path either way, and the choice moves which area's bus the Karoo and Free State flows enter Gauteng's neighbours from.
+In the comparison table the two corridors are shown apart and not counted in the 17.
+
+### 753 (c): the sensitivity
+
+The causes in (b) leave the gap open on the Gauteng corridors (the voltage limits) and settle the Free State to Gauteng and Gauteng to Limpopo
+gaps as boundary differences that the table should take up after review; so the sensitivity is warranted and is prepared, to run after the 7 Nov
+reports' solvers (four fixed-build hourly cases of a few minutes each): the report's 2025 limits as today's corridors and its 2035 limits as a
+stand-in for the TDP's lines, 2035 and 2040 on weather 2025, beside the rebuilt table's N-1 once and with-TDP cases of 738 (b); corridor files
+corridors_dbsa_2025.json and corridors_dbsa_2035.json (build_dbsa_corridors.py; one pseudo-circuit per corridor; the two Mercury corridors at our
+N-1 once values, labelled), taken as they stand by a CAP_AS_IS switch in pypsa_net.py; queue22.sh. The priority ranking is read from the same
+runs (hours at limit and shadow value by corridor, as 741). Results: pending (queue22 runs after the 7 Nov reports).
+
+### 753 (d): the report's odd rows, recorded and not corrected
+
+- Eastern Cape to KwaZulu-Natal, 2035: SIL 2,455 MW above loadability 1,786 (a SIL cannot exceed a loadability on the same path; one of the two is
+  mislabelled or from a different line set, the 2035 contingency being Ariadne to Eros).
+- Hydra Central to Eastern Cape, 2030: PV transfer 293 MW with Perseus to Gamma 765 kV out, below the 2025 figure of 1,104 and the 2035 figure of
+  1,050, while the loadability doubles from 2025 to 2030; a 2030 network weaker than 2025's at a Free State contingency.
+- Four corridors whose 2035 figure is below their 2025 one: Gauteng to Mpumalanga (6,008 to 4,811), Gauteng to North West (2,574 to 1,972), Gauteng
+  to Limpopo (496 to 256) and KwaZulu-Natal to Mpumalanga (6,032 to 5,272), each a PV transfer; and Limpopo to Mpumalanga 2030 (1,118) below 2025
+  (1,156). Possible for a voltage limit as the dispatch changes; odd for a plan year with more lines.
+- Hydra Central to Northern Cape: PV transfer above loadability in all three years, so the loadability binds; the corridor does not grow with the
+  Hydra to Kronos second line the TDP has for 2028.
+- The report's contingency for Eastern Cape to KwaZulu-Natal in 2025 is Mookodi to Ferrum, a Northern Cape line.
+
+Treatment: a cross-check. No limit in the rebuilt table is changed; the candidates above (Lethabo's ties, Dinaledi's side, the first Gamma to Kappa
+765 kV line, Mercury's side) are for the user's decision, each with its cause stated here, and would be made in build_corridors.py and reported
+with the old and new figures by corridor.

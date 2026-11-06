@@ -1,0 +1,275 @@
+{
+ "meta": {
+  "method": "753 (c): the report's N-1 corridor limits for 2035 (lower of loadability and PV transfer, Annexure B Table 45) as one pseudo-circuit per corridor; run with CAP_AS_IS=1. Free State to North West and Mpumalanga to North West (the Mercury 765 kV lines) are not in the report and keep our N-1 once values.",
+  "erosPlacement": "KwaZulu-Natal (Harding; public record)",
+  "source": "DBSA, National Treasury, NPC and PCC, 2025, South Africa's Energy Sector Investment Requirements (PwC Strategy& and Osmotic), Annexure B, Table 45: the lower of N-1 loadability and N-1 PV transfer by corridor and year, MW. Cross-check only; all rights reserved; the report's full table is not reproduced here."
+ },
+ "corridors": {
+  "Limpopo|Mpumalanga": {
+   "a": "Limpopo",
+   "b": "Mpumalanga",
+   "n1MW": 1182,
+   "kmMean": 120.6,
+   "circuits": [
+    {
+     "label": "report MP-LP 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 120.6,
+     "ratingMW": 1182
+    }
+   ]
+  },
+  "Free State|Northern Cape": {
+   "a": "Free State",
+   "b": "Northern Cape",
+   "n1MW": 1891,
+   "kmMean": 89.5,
+   "circuits": [
+    {
+     "label": "report NC-FS 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 89.5,
+     "ratingMW": 1891
+    }
+   ]
+  },
+  "Free State|Mpumalanga": {
+   "a": "Free State",
+   "b": "Mpumalanga",
+   "n1MW": 8456,
+   "kmMean": 347.3,
+   "circuits": [
+    {
+     "label": "report FS-MP 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 347.3,
+     "ratingMW": 8456
+    }
+   ]
+  },
+  "Gauteng|Mpumalanga": {
+   "a": "Gauteng",
+   "b": "Mpumalanga",
+   "n1MW": 4811,
+   "kmMean": 101.9,
+   "circuits": [
+    {
+     "label": "report GP-MP 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 101.9,
+     "ratingMW": 4811
+    }
+   ]
+  },
+  "Northern Cape|Western Cape": {
+   "a": "Northern Cape",
+   "b": "Western Cape",
+   "n1MW": 809,
+   "kmMean": 170.9,
+   "circuits": [
+    {
+     "label": "report WC-NC 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 170.9,
+     "ratingMW": 809
+    }
+   ]
+  },
+  "Gauteng|North West": {
+   "a": "Gauteng",
+   "b": "North West",
+   "n1MW": 1972,
+   "kmMean": 66.5,
+   "circuits": [
+    {
+     "label": "report GP-NW 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 66.5,
+     "ratingMW": 1972
+    }
+   ]
+  },
+  "Hydra Central|Northern Cape": {
+   "a": "Hydra Central",
+   "b": "Northern Cape",
+   "n1MW": 745,
+   "kmMean": 64.0,
+   "circuits": [
+    {
+     "label": "report HC-NC 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 64.0,
+     "ratingMW": 745
+    }
+   ]
+  },
+  "Eastern Cape|Hydra Central": {
+   "a": "Eastern Cape",
+   "b": "Hydra Central",
+   "n1MW": 1050,
+   "kmMean": 294.8,
+   "circuits": [
+    {
+     "label": "report HC-EC 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 294.8,
+     "ratingMW": 1050
+    }
+   ]
+  },
+  "Kwazulu Natal|Mpumalanga": {
+   "a": "Kwazulu Natal",
+   "b": "Mpumalanga",
+   "n1MW": 5272,
+   "kmMean": 171.8,
+   "circuits": [
+    {
+     "label": "report KZ-MP 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 171.8,
+     "ratingMW": 5272
+    }
+   ]
+  },
+  "Limpopo|North West": {
+   "a": "Limpopo",
+   "b": "North West",
+   "n1MW": 5027,
+   "kmMean": 212.1,
+   "circuits": [
+    {
+     "label": "report NW-LP 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 212.1,
+     "ratingMW": 5027
+    }
+   ]
+  },
+  "Free State|Hydra Central": {
+   "a": "Free State",
+   "b": "Hydra Central",
+   "n1MW": 5460,
+   "kmMean": 310.5,
+   "circuits": [
+    {
+     "label": "report HC-FS 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 310.5,
+     "ratingMW": 5460
+    }
+   ]
+  },
+  "Free State|Gauteng": {
+   "a": "Free State",
+   "b": "Gauteng",
+   "n1MW": 589,
+   "kmMean": 60.5,
+   "circuits": [
+    {
+     "label": "report FS-GP 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 60.5,
+     "ratingMW": 589
+    }
+   ]
+  },
+  "Eastern Cape|Free State": {
+   "a": "Eastern Cape",
+   "b": "Free State",
+   "n1MW": 645,
+   "kmMean": 408.1,
+   "circuits": [
+    {
+     "label": "report EC-FS 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 408.1,
+     "ratingMW": 645
+    }
+   ]
+  },
+  "Gauteng|Limpopo": {
+   "a": "Gauteng",
+   "b": "Limpopo",
+   "n1MW": 256,
+   "kmMean": 107.1,
+   "circuits": [
+    {
+     "label": "report GP-LP 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 107.1,
+     "ratingMW": 256
+    }
+   ]
+  },
+  "Hydra Central|Western Cape": {
+   "a": "Hydra Central",
+   "b": "Western Cape",
+   "n1MW": 3655,
+   "kmMean": 246.1,
+   "circuits": [
+    {
+     "label": "report WC-HC 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 246.1,
+     "ratingMW": 3655
+    }
+   ]
+  },
+  "Eastern Cape|Kwazulu Natal": {
+   "a": "Eastern Cape",
+   "b": "Kwazulu Natal",
+   "n1MW": 1786,
+   "kmMean": 167.1,
+   "circuits": [
+    {
+     "label": "report EC-KZ 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 167.1,
+     "ratingMW": 1786
+    }
+   ]
+  },
+  "North West|Northern Cape": {
+   "a": "North West",
+   "b": "Northern Cape",
+   "n1MW": 1648,
+   "kmMean": 198.6,
+   "circuits": [
+    {
+     "label": "report NC-NW 2035 (lower of loadability and PV transfer)",
+     "kv": 0,
+     "km": 198.6,
+     "ratingMW": 1648
+    }
+   ]
+  },
+  "Free State|North West": {
+   "a": "Free State",
+   "b": "North West",
+   "n1MW": 2100.0,
+   "kmMean": 235.2,
+   "circuits": [
+    {
+     "label": "our N-1 once (not in the report)",
+     "kv": 0,
+     "km": 235.2,
+     "ratingMW": 2100.0
+    }
+   ]
+  },
+  "Mpumalanga|North West": {
+   "a": "Mpumalanga",
+   "b": "North West",
+   "n1MW": 2100.0,
+   "kmMean": 267.6,
+   "circuits": [
+    {
+     "label": "our N-1 once (not in the report)",
+     "kv": 0,
+     "km": 267.6,
+     "ratingMW": 2100.0
+    }
+   ]
+  }
+ }
+}

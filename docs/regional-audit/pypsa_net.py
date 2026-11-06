@@ -27,6 +27,7 @@ DISC = float(os.environ.get('DISC', '0.055')); TX_LIFE = 40; CRF = DISC / (1 - (
 SITE_FREE = int(os.environ.get('SITE_FREE', '0'))     # (e) new wind and solar shares chosen by the LP, capped by each area's approved MW
 DEMAND_SPLIT = os.environ.get('DEMAND_SPLIT', 'file') # (g) 'file': the regional demand file's hourly shares; 'bld': BLD_LOAD_SHARE
 KOEBERG_OUT = os.environ.get('KOEBERG_OUT', '')       # (a) 'd1:d2,d3:d4' day-of-year windows with one 930 MW unit out; the engine's annual energy kept
+CAP_AS_IS = os.environ.get('CAP_AS_IS', '') == '1'      # (753 c) with CORR_FILE: take each corridor's circuit-rating sum as its limit as it stands (the file already carries N-1 limits)
 TDP_FILE = os.environ.get('TDP_FILE', '')              # (c) a JSON list of extra inter-area lines [{a,b,mw,year,name}] (the full TDP mapping)
 MIX = int(os.environ.get('MIX', '0'))                  # (f) new wind, solar, lithium (power and energy) and open-cycle gas extendable by area at the build's own costs
 MIX_CAP = os.environ.get('MIX_CAP', '')                # (f) national caps 'wind:MW,pv:MW,batt:MW' (cumulative build-rate limits), optional
@@ -203,7 +204,7 @@ elif TDP_ON:
         if len(areas) == 2: tdp.append((areas[0], areas[1], KVMW.get(q.get('kv'), 900), q['name'], q.get('year')))
 corr = []
 if CORR_FILE:
-    V2 = json.load(open(CORR_FILE)); notes.append(f"corridor table: {os.path.basename(CORR_FILE)} ({V2['meta'].get('erosPlacement')}; {len(V2['corridors'])} corridors; N-1 applied once over existing circuits and TDP lines together)")
+    V2 = json.load(open(CORR_FILE)); CAP_AS_IS and notes.append('corridor limits taken as the file states them (CAP_AS_IS), no N-1 applied here'); notes.append(f"corridor table: {os.path.basename(CORR_FILE)} ({V2['meta'].get('erosPlacement')}; {len(V2['corridors'])} corridors; N-1 applied once over existing circuits and TDP lines together)")
     CORR = [(v['a'], v['b'], v['n1MW'], v['kmMean']) for v in V2['corridors'].values()]
     V2R = {(v['a'], v['b']): [c['ratingMW'] for c in v['circuits']] for v in V2['corridors'].values()}
 for a, b, lim, km in CORR:
@@ -211,7 +212,7 @@ for a, b, lim, km in CORR:
     if CORR_FILE:
         allc = V2R[(a, b)] + [mw for x, y2, mw, nm, yr in tdp if {x, y2} == {a, b}]; tot = sum(allc)
         if FACTOR is None: cap_ab = 1e6
-        elif CASE.startswith('thermal'): cap_ab = tot
+        elif CASE.startswith('thermal') or CAP_AS_IS: cap_ab = tot   # (753 c) CAP_AS_IS: the file's circuit ratings are the corridor limits as they stand (a published N-1 table), no further N-1
         else: cap_ab = (tot - max(allc)) if len(allc) > 1 else 0.7 * tot
         corr.append((a, b, cap_ab, km, lim, add)); continue
     if FACTOR is None: cap_ab = 1e6
