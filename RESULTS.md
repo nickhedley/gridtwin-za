@@ -23438,6 +23438,6 @@ verdict and the relaunch replayed from the cache: adequate. Engine check at 20 d
 | Curtailment, TWh (baseline) | 1.67 (1.64) | 10.03 (10.05) | 29.36 (29.41) |
 
 - LP objective R1,541.5bn, +R0.7bn on the baseline. At R500/kW-yr of power at E / 3 (R166,700 per MWh enrolled a year, against the
-  baseline's R136,800 at E / 2.5) the LP prefers grid lithium to enrolling home batteries in 2030 and 2035; open-cycle plants and
+  baseline's R136,900 at E / 2.5) the LP prefers grid lithium to enrolling home batteries in 2030 and 2035; open-cycle plants and
   wind are unchanged to within 0.03 GW. The 100-draw gate (2034-2036) runs beside the worker check's reproductions.
 - 726 (f): the pathways already bar wind from the reuse pool; the page default and the presets change with the next page pull request.
