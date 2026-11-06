@@ -20,7 +20,7 @@ for y in (2035, 2040):
             base = load(S + f'net_final_{y}_wy{wy}_{net}_reea_l0_c0{sfx}.json')
             if base is None: continue
             rows = [row(base, 'none', 0.0)]
-            for fn in sorted(glob.glob(S + f'net_final_{y}_wy{wy}_{net}_reea_l0_c0{sfx}_li*g*h.json')):
+            for fn in sorted(glob.glob(S + f'net_final_{y}_wy{wy}_{net}_reea_l0_c0{sfx}_li*g*h.json'), key=lambda f: (int(re.search(r'_li(\d+)g', f).group(1)), int(re.search(r'g(\d+)h', f).group(1)))):
                 d = load(fn); b = d['battAdded']; rows.append(row(d, f"lithium {b['MW'] / 1e3:.0f} GW at {b['hours']:g} h", b['annualRbn']))
                 for px, psfx in ((10000, '_ext10k'), (21700, '_ext21k')):
                     m = re.search(r'_li(\d+)g(\d+)h', fn); bfn = S + f'net_final_{y}_wy{wy}_{net}_reea_l0_c0{sfx}{psfx}_b{m.group(1)}g{m.group(2)}h.json'

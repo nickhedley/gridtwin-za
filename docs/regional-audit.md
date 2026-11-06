@@ -1499,7 +1499,60 @@ Whether it is large enough to change the mix. On the basis of message 732 the ef
 
 Method. The fixed build of 722 (a) (the run's own plants, hourly, no commitment floor, losses off) on today's corridors with one circuit dropped, and on the full TDP's lines by their dates. Lithium is added at the four binding exits (North West, Northern Cape, Hydra Central, Eastern Cape) in equal shares, cyclic, at the build's own lithium costs (power and energy annuities from the dump's cost block), and compared with corridor additions at R21,700 per MW-km (and R10,000 where run) whose annual cost is capped at the lithium step's; the LP chooses which corridors. A budget above the unconstrained expansion's cost repeats the unconstrained case, which stands for it. Annual cost is fuel and carbon plus unserved energy at the value of lost load plus the addition's annuity; the build's own annuities are the same in every row and left out.
 
-### 731: battery against corridor (build 2026-11-05f, the every-change pass; fixed build, hourly, no commitment floor, losses off; lithium at the four exits in equal shares at the build's own lithium costs; corridor additions capped at the same annual cost)
+### 731: battery against corridor (build 2026-11-05f, the every-change pass; the rebuilt corridor table, N-1 once, corridors at the run's 0.071; fixed build, hourly, no commitment floor, losses off; lithium at the four exits in equal shares at the build's own lithium costs; corridor additions capped at the same annual cost)
+
+2035, weather 2025, today's corridors (the rebuilt table, N-1 once)
+
+| addition | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | addition R bn a year | annual cost R bn | corridors built |
+|---|---|---|---|---|---|---|---|---|
+| none | 55.4 | 114.1 | 0.61 | 96.4 | 83.53 | 0.00 | 91.92 |
+| lithium 2 GW at 4 h | 54.2 | 113.1 | 0.53 | 65.9 | 82.31 | 2.79 | 90.84 |
+| corridors at R10,000 per MW-km for the same R2.79bn: 31.7 GW (the unconstrained expansion, whose cost is below the budget) | 3.4 | 63.2 | 0.19 | 0.0 | 45.34 | 2.31 | 47.65 | Free State to Northern Cape 13.8; Free State to Gauteng 8.3; Northern Cape to Western Cape 4.7; Hydra Central to Northern Cape 3.0; Eastern Cape to Kwazulu Natal 1.9
+| corridors at R21,700 per MW-km for the same R2.79bn: 18.0 GW | 10.0 | 69.4 | 0.19 | 0.0 | 49.68 | 2.79 | 52.47 | Free State to Northern Cape 9.1; Free State to Gauteng 4.0; Northern Cape to Western Cape 1.8; Hydra Central to Northern Cape 1.7; Eastern Cape to Kwazulu Natal 1.3
+| lithium 5 GW at 4 h | 53.0 | 112.0 | 0.42 | 48.7 | 80.93 | 6.98 | 92.14 |
+| corridors at R10,000 per MW-km for the same R6.98bn: 31.7 GW (the unconstrained expansion, whose cost is below the budget) | 3.4 | 63.2 | 0.19 | 0.0 | 45.34 | 2.31 | 47.65 | Free State to Northern Cape 13.8; Free State to Gauteng 8.3; Northern Cape to Western Cape 4.7; Hydra Central to Northern Cape 3.0; Eastern Cape to Kwazulu Natal 1.9
+| corridors at R21,700 per MW-km for the same R6.98bn: 28.3 GW (the unconstrained expansion, whose cost is below the budget) | 4.1 | 63.8 | 0.19 | 0.0 | 45.73 | 4.47 | 50.21 | Free State to Northern Cape 12.7; Free State to Gauteng 7.2; Northern Cape to Western Cape 4.0; Hydra Central to Northern Cape 2.7; Eastern Cape to Kwazulu Natal 1.7
+| lithium 10 GW at 4 h | 51.6 | 110.9 | 0.31 | 23.7 | 79.46 | 13.95 | 95.48 |
+| corridors at R10,000 per MW-km for the same R13.95bn: 31.7 GW (the unconstrained expansion, whose cost is below the budget) | 3.4 | 63.2 | 0.19 | 0.0 | 45.34 | 2.31 | 47.65 | Free State to Northern Cape 13.8; Free State to Gauteng 8.3; Northern Cape to Western Cape 4.7; Hydra Central to Northern Cape 3.0; Eastern Cape to Kwazulu Natal 1.9
+| corridors at R21,700 per MW-km for the same R13.95bn: 28.3 GW (the unconstrained expansion, whose cost is below the budget) | 4.1 | 63.8 | 0.19 | 0.0 | 45.73 | 4.47 | 50.21 | Free State to Northern Cape 12.7; Free State to Gauteng 7.2; Northern Cape to Western Cape 4.0; Hydra Central to Northern Cape 2.7; Eastern Cape to Kwazulu Natal 1.7
+
+2035, weather 2025, the TDP's lines (the rebuilt table, N-1 once; tdp_lines_v2.json)
+
+| addition | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | addition R bn a year | annual cost R bn | corridors built |
+|---|---|---|---|---|---|---|---|---|
+| none | 30.8 | 90.0 | 0.19 | 0.0 | 64.11 | 0.00 | 64.11 |
+| lithium 2 GW at 4 h | 29.4 | 88.8 | 0.13 | 0.0 | 62.83 | 2.79 | 65.62 |
+| corridors at R21,700 per MW-km for the same R2.79bn: 11.9 GW (the unconstrained expansion, whose cost is below the budget) | 4.0 | 63.7 | 0.19 | 0.0 | 45.68 | 2.11 | 47.80 | Free State to Northern Cape 7.8; Eastern Cape to Kwazulu Natal 3.0; Free State to Gauteng 1.0
+| lithium 5 GW at 4 h | 27.7 | 87.2 | 0.08 | 0.0 | 61.46 | 6.98 | 68.43 |
+| corridors at R21,700 per MW-km for the same R6.98bn: 11.9 GW (the unconstrained expansion, whose cost is below the budget) | 4.0 | 63.7 | 0.19 | 0.0 | 45.68 | 2.11 | 47.80 | Free State to Northern Cape 7.8; Eastern Cape to Kwazulu Natal 3.0; Free State to Gauteng 1.0
+| lithium 10 GW at 4 h | 25.6 | 85.4 | 0.02 | 0.0 | 59.80 | 13.95 | 73.75 |
+| corridors at R21,700 per MW-km for the same R13.95bn: 11.9 GW (the unconstrained expansion, whose cost is below the budget) | 4.0 | 63.7 | 0.19 | 0.0 | 45.68 | 2.11 | 47.80 | Free State to Northern Cape 7.8; Eastern Cape to Kwazulu Natal 3.0; Free State to Gauteng 1.0
+
+2040, weather 2025, today's corridors (the rebuilt table, N-1 once)
+
+| addition | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | addition R bn a year | annual cost R bn | corridors built |
+|---|---|---|---|---|---|---|---|---|
+| none | 103.2 | 99.5 | 25.15 | 2459.1 | 136.23 | 0.00 | 350.17 |
+| lithium 2 GW at 4 h | 102.3 | 99.4 | 24.49 | 2316.3 | 134.42 | 2.40 | 338.33 |
+| corridors at R21,700 per MW-km for the same R2.40bn: 16.5 GW | 40.9 | 63.0 | 2.41 | 2.1 | 50.47 | 2.40 | 53.05 | Free State to Northern Cape 8.9; Free State to Gauteng 3.9; Hydra Central to Northern Cape 1.9; Eastern Cape to Kwazulu Natal 1.2; Northern Cape to Western Cape 0.6
+| lithium 5 GW at 4 h | 101.2 | 99.4 | 23.75 | 2169.1 | 132.31 | 5.99 | 327.01 |
+| corridors at R10,000 per MW-km for the same R5.99bn: 44.1 GW (the unconstrained expansion, whose cost is below the budget) | 13.8 | 37.3 | 2.08 | 2.1 | 31.77 | 3.21 | 35.16 | Free State to Northern Cape 18.6; Free State to Gauteng 12.0; Northern Cape to Western Cape 6.8; Hydra Central to Northern Cape 4.4; Eastern Cape to Kwazulu Natal 2.4
+| corridors at R21,700 per MW-km for the same R5.99bn: 38.8 GW | 15.2 | 38.5 | 2.08 | 2.1 | 32.63 | 5.99 | 38.80 | Free State to Northern Cape 16.4; Free State to Gauteng 10.9; Northern Cape to Western Cape 5.1; Hydra Central to Northern Cape 4.1; Eastern Cape to Kwazulu Natal 2.2
+| lithium 10 GW at 4 h | 100.0 | 99.2 | 23.01 | 2028.2 | 129.99 | 11.98 | 318.42 |
+| corridors at R10,000 per MW-km for the same R11.98bn: 44.1 GW (the unconstrained expansion, whose cost is below the budget) | 13.8 | 37.3 | 2.08 | 2.1 | 31.77 | 3.21 | 35.16 | Free State to Northern Cape 18.6; Free State to Gauteng 12.0; Northern Cape to Western Cape 6.8; Hydra Central to Northern Cape 4.4; Eastern Cape to Kwazulu Natal 2.4
+| corridors at R21,700 per MW-km for the same R11.98bn: 40.5 GW (the unconstrained expansion, whose cost is below the budget) | 14.5 | 37.9 | 2.08 | 2.1 | 32.22 | 6.31 | 38.71 | Free State to Northern Cape 17.1; Free State to Gauteng 11.2; Northern Cape to Western Cape 5.8; Hydra Central to Northern Cape 4.2; Eastern Cape to Kwazulu Natal 2.2
+
+2040, weather 2025, the TDP's lines (the rebuilt table, N-1 once; tdp_lines_v2.json)
+
+| addition | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | addition R bn a year | annual cost R bn | corridors built |
+|---|---|---|---|---|---|---|---|---|
+| none | 73.5 | 88.2 | 9.32 | 22.1 | 83.09 | 0.00 | 85.01 |
+| lithium 2 GW at 4 h | 72.2 | 87.4 | 8.87 | 14.9 | 81.37 | 2.40 | 85.05 |
+| corridors at R21,700 per MW-km for the same R2.40bn: 13.8 GW | 19.6 | 42.5 | 2.09 | 2.1 | 35.48 | 2.40 | 38.05 | Free State to Northern Cape 8.4; Eastern Cape to Kwazulu Natal 3.5; Free State to Gauteng 1.9
+| lithium 5 GW at 4 h | 70.8 | 86.5 | 8.39 | 5.9 | 79.46 | 5.99 | 85.96 |
+| corridors at R21,700 per MW-km for the same R5.99bn: 21.1 GW (the unconstrained expansion, whose cost is below the budget) | 14.4 | 37.9 | 2.08 | 2.1 | 32.18 | 3.77 | 36.13 | Free State to Northern Cape 10.9; Eastern Cape to Kwazulu Natal 4.5; Free State to Gauteng 3.8; Northern Cape to Western Cape 2.0
+| lithium 10 GW at 4 h | 69.2 | 85.5 | 7.87 | 0.0 | 77.27 | 11.98 | 89.25 |
+| corridors at R21,700 per MW-km for the same R11.98bn: 21.1 GW (the unconstrained expansion, whose cost is below the budget) | 14.4 | 37.9 | 2.08 | 2.1 | 32.18 | 3.77 | 36.13 | Free State to Northern Cape 10.9; Eastern Cape to Kwazulu Natal 4.5; Free State to Gauteng 3.8; Northern Cape to Western Cape 2.0
 
 ### The LP's chosen lithium by area where the free mix gives it (718 (f) cases; block length stated)
 
@@ -1508,6 +1561,7 @@ Method. The fixed build of 722 (a) (the run's own plants, hourly, no commitment 
 | 2035, 2015 | 2035_wy2015_n1c_reea_l0_c1_mix_ext10k_h3 | 3 h | 6.2, 27 | Limpopo 2.2, Northern Cape 1.9, Western Cape 1.3, Free State 0.5, Hydra Central 0.3 |
 | 2035, 2015 | 2035_wy2015_nolimit_reea_l0_c1_mix_control_h3 | 3 h | 6.6, 27 | Gauteng 4.3, Eastern Cape 1.1, Limpopo 1.0, Free State 0.2 |
 | 2035, 2015 | 2035_wy2015_nolimit_reea_l0_c1_mix_control_nocap_h3 | 3 h | 4.5, 20 | Western Cape 2.1, Northern Cape 1.4, Hydra Central 1.0 |
+| 2035, 2015 | 2035_wy2015_nolimit_reea_l0_c1_mix_control_onebus_h3 | 3 h | 6.5, 27 | Gauteng 2.2, Northern Cape 1.0, Eastern Cape 1.0, Kwazulu Natal 1.0, North West 0.5, Western Cape 0.4, Hydra Central 0.3, Free State 0.2 |
 | 2035, 2025 | 2035_wy2025_n1c_reea_l0_c1_mix_ext10k_h3 | 3 h | 6.6, 23 | Northern Cape 4.7, Limpopo 0.9, Free State 0.6, Hydra Central 0.3, Western Cape 0.1 |
 | 2035, 2025 | 2035_wy2025_n1c_reea_l0_c1_mix_n1c_fixedcorr_h3 | 3 h | 7.8, 44 | North West 4.9, Hydra Central 1.4, Northern Cape 1.3, Free State 0.1, Eastern Cape 0.1 |
 | 2035, 2025 | 2035_wy2025_n1ctdp_reea_l0_c1_tdpfull_mix_ext10k_h3 | 3 h | 6.9, 24 | Northern Cape 5.4, Hydra Central 0.4, Kwazulu Natal 0.4, Eastern Cape 0.4, Free State 0.3 |
@@ -1516,17 +1570,25 @@ Method. The fixed build of 722 (a) (the run's own plants, hourly, no commitment 
 | 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_credit_h3 | 3 h | 7.1, 25 | Northern Cape 6.1, Hydra Central 0.9 |
 | 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_h3 | 3 h | 7.0, 25 | Limpopo 3.8, Gauteng 2.5, Eastern Cape 0.5, Free State 0.3 |
 | 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_nocap_h3 | 3 h | 5.0, 16 | Northern Cape 3.8, Hydra Central 1.1, Eastern Cape 0.2 |
+| 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_nocap_runacct_h3 | 3 h | 5.6, 20 | Northern Cape 4.4, Hydra Central 0.9, Western Cape 0.3 |
 | 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_onebus_h3 | 3 h | 6.7, 26 | Gauteng 2.3, Eastern Cape 1.2, Northern Cape 1.0, Kwazulu Natal 0.8, Western Cape 0.5, North West 0.4, Hydra Central 0.4, Free State 0.2 |
+| 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_runacct_h3 | 3 h | 7.0, 24 | Northern Cape 5.8, Hydra Central 0.8, Western Cape 0.4 |
+| 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_runacct_nopool_h3 | 3 h | 6.7, 23 | Northern Cape 5.3, Hydra Central 1.0, Western Cape 0.4 |
 | 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_runwind_h3 | 3 h | 5.9, 20 | Northern Cape 4.8, Hydra Central 0.8, Western Cape 0.4 |
 | 2040, 2015 | 2040_wy2015_n1c_reea_l0_c1_mix_ext10k_h3 | 3 h | 14.1, 86 | Limpopo 4.8, Western Cape 4.5, North West 2.4, Hydra Central 0.7, Northern Cape 0.5, Gauteng 0.5, Eastern Cape 0.3, Free State 0.3 |
 | 2040, 2015 | 2040_wy2015_nolimit_reea_l0_c1_mix_control_h3 | 3 h | 11.1, 68 | Western Cape 5.2, Limpopo 3.4, Northern Cape 1.8, Hydra Central 0.8 |
 | 2040, 2025 | 2040_wy2025_n1c_reea_l0_c1_mix_ext10k_h3 | 3 h | 14.4, 98 | Northern Cape 10.6, North West 2.4, Hydra Central 0.6, Limpopo 0.3, Free State 0.3, Gauteng 0.1 |
 | 2040, 2025 | 2040_wy2025_n1c_reea_l0_c1_mix_n1c_fixedcorr_h3 | 3 h | 18.5, 115 | North West 7.2, Limpopo 5.8, Gauteng 2.0, Free State 1.8, Northern Cape 0.8, Hydra Central 0.5, Eastern Cape 0.3 |
 | 2040, 2025 | 2040_wy2025_n1ctdp_reea_l0_c1_tdpfull_mix_ext10k_h3 | 3 h | 14.4, 96 | Northern Cape 10.6, North West 3.2, Free State 0.5, Limpopo 0.1, Eastern Cape 0.1 |
+| 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_credit_h3 | 3 h | 13.2, 87 | Northern Cape 12.6, Hydra Central 0.7 |
 | 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_h3 | 3 h | 13.2, 87 | Gauteng 10.1, Limpopo 1.5, Free State 1.4, Eastern Cape 0.2 |
+| 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_nocap_h3 | 3 h | 10.3, 45 | Northern Cape 8.8, Hydra Central 0.9, Eastern Cape 0.5 |
+| 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_onebus_h3 | 3 h | 11.6, 60 | Gauteng 4.2, Kwazulu Natal 1.7, North West 1.7, Eastern Cape 1.5, Northern Cape 0.9, Western Cape 0.7, Free State 0.5, Hydra Central 0.4 |
 | 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_h6 | 6 h | 3.7, 22 | Gauteng 3.7 |
 
-Reading: pending, the cases are in the queue (queue12a.sh, after 727 and 732).
+Reading (the first cut of 737: weather 2025, lithium at 4 h in steps of 2, 5 and 10 GW, corridors at R21,700, on the rebuilt table; the full table above, docs/regional-audit/tables731.md). (1) Lithium at the four exits barely moves the network result. On today's corridors in 2035, 10 GW at 4 h (R13.95bn a year) takes curtailment from 55.4 to 51.6 TWh and unserved energy from 96 to 24 GWh; 2 GW (R2.79bn) takes them to 54.2 TWh and 66 GWh. In 2040, 10 GW takes curtailment from 103.2 to 100.0 TWh and unserved energy from 2,459 to 2,028 GWh. A battery behind a binding exit can only shift the hour it exports in; it cannot export more, and these exits bind in 8,200 to 8,700 hours of the year. (2) Corridors for the same money remove the effect. The 2 GW step's R2.79bn buys 18.0 GW of corridor at R21,700 in 2035 (Free State to Northern Cape 9.1 GW, Free State to Gauteng 4.0, Northern Cape to Western Cape 1.8, Hydra Central to Northern Cape 1.7, Eastern Cape to KwaZulu-Natal 1.3) and takes curtailment to 10.0 TWh with nothing unserved; the 5 GW step's money buys the whole unconstrained expansion (28.3 GW, R4.47bn) and takes it to 4.1 TWh. In 2040 the 2 GW step's R2.40bn buys 16.5 GW and takes curtailment from 103 to 41 TWh and unserved energy from 2,459 to 2 GWh; the 5 GW step's R5.99bn buys 38.8 GW and 15.2 TWh. Annual cost (fuel and carbon, unserved at the value of lost load, the addition): the 2 GW lithium step lowers 2035's R91.9bn to R90.8bn, the same money in corridors to R52.5bn; in 2040 R350bn to R338bn against R53bn. (3) With the TDP's lines in place first the gap narrows and the order does not change: 2035's 10 GW of lithium takes 30.8 TWh to 25.6, the 2 GW step's money in corridors (11.9 GW, the whole expansion the LP wants beyond the plan, R2.11bn: Free State to Northern Cape 7.8, Eastern Cape to KwaZulu-Natal 3.0, Free State to Gauteng 1.0) takes it to 4.0 TWh; in 2040, 10 GW of lithium takes 73.5 TWh to 69.2 and 22 GWh unserved to nil, the 2 GW step's money in corridors (13.8 GW) to 19.6 TWh. (4) Where the LP itself sites lithium when it may (the second table, 3-hour and 6-hour blocks): in the Northern Cape beside the solar, the North West, Limpopo and Gauteng, and never at the exits as a substitute for a corridor; the free mix with corridors priced builds 6 to 14 GW of lithium and 13 to 20 GW of corridor together.
+
+Would the rest of the 208 change the reading? Not the order. The 1 GW step sits between none and 2 GW on every column; 8 hours doubles each step's energy and cost (R2.40bn becomes R4.80bn for 2 GW in 2035), which buys more corridor for the same money, so the comparison moves further the corridors' way; R10,000 per MW-km buys 1.5 to 2 times the corridor at R21,700 for the same rand (the R10,000 rows above are the unconstrained expansions, which every lithium step's money already covers at that price); weather 2015 moved curtailment by 6 to 9 TWh and the corridor set not at all in the old-table cases. What the rest would add is the size of the lithium's own effect at 8 hours (a few TWh more) and the two weather years' spread; it cannot make a store at an exit that binds in 8,500 hours worth more than the exit.
 
 What the result cannot show. (1) Within-area limits: the model carries the 21 inter-area corridors only, so lithium placed in an area relieves the exit and nothing inside the area, and a corridor bought relieves the exit and nothing behind it; both are lower bounds on what either would have to do. (2) Perfect foresight: the LP dispatches the year knowing it, so the lithium's cycles and the corridor's hours are the best case for each; a real operator's storage does less, and the comparison between them is fairer than either figure alone. (3) Blocks: these cases are hourly, but the free-mix lithium in the second table is on 3-hour (and 6-hour) blocks, which flatten the evening peak and understate the lithium's value and the curtailment the block hides. (4) One weather year (2025) in this cut, and one lithium duration.
 
