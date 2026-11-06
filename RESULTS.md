@@ -23253,3 +23253,57 @@ scratchpad f3/seasonal_mh.js and seasonal_d.js, 6 Nov 2026, 15:06-15:14 UTC. Eng
 - Pass 1 on f3d since 15:14 UTC and on f3h since 15:00 UTC (one pass each, nice 10, cold starts: the loops keep no final basis), each
   then its engine check at 20 draws (2030, 2035, 2040) and 100 draws on the same seeds if the mix moves more than test 13's 1%.
   Reported before the 8 Nov key is proposed.
+
+### Deemed energy against the reported R4bn (message 749 (b) to (e)): the final central curtails 0.45 TWh in 2026 against the 1.8-2.8 TWh that R4bn implies; deemed energy to REIPPPP plants R29.5bn over 2026-40, R19.3bn in present value at 8%, replacing c5e's R11.3bn (R6.5bn) upper bound; the retail panel's 2026 figure R0.45bn; report only, nothing tuned
+
+Settings: the final central (the baseline loop, harness/pathway/final/pathway_loop_base_05h.json, fin basis 10a98e2), its engine check on
+gtza-btm (10a98e2 plus record-only accumulators for curtailed wind and solar at both curtailment sites), K=20 x twelve weather years,
+SEED_BASE 71830529, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1, every year 2026-2040. It returns the recorded engine
+check's cost and unserved to every digit in 2030, 2035 and 2040. Scratchpad deemed/base_2026_2040.json and deemed_table.py; 6 Nov 2026,
+15:02-16:03 UTC. Sources: SOURCES 'Deemed energy and curtailment in 2026'.
+
+- (b) Benchmark. NERSA's R402m on 1.0-1.6% of 17,808 GWh (178.1-284.9 GWh) is R2,257-1,411/MWh, so R4bn is 1.77-2.84 TWh (the
+  advisor's 1.8-2.8 TWh, checked). The final central's 2026: wind 0.348 TWh, solar 0.097, all 0.445 (a sixth to a quarter of it),
+  REIPPPP's share 0.369. Ten times 2025 in the first half alone (Yelland) would also be 1.8-2.8 TWh. The engine is single node, the
+  congestion stand-in is off (691 (d)) and coal is not given priority over wind and solar (TODO 14fl, 14nh).
+- (c) Year by year, at each window's rate (reipppRate: the live windows' cost over every window's energy, 2026 rands), on the retail
+  panel's rule: curtailment x REIPPPP's share of delivered wind, solar and CSP x the rate, no allowable period (an upper bound on the
+  rule). Other wind and solar (new build and the fleet outside REIPPPP) get none under the rule; its curtailed energy is shown.
+
+| Year | Curtailed wind, TWh | Curtailed solar, TWh | All, TWh | REIPPPP share of delivered | REIPPPP curtailed, TWh | Rate, R/MWh | Deemed energy, R bn | Other wind and solar curtailed, TWh |
+|---|---|---|---|---|---|---|---|---|
+| 2026 | 0.348 | 0.097 | 0.445 | 83.1% | 0.369 | 1,908 | 0.70 | 0.075 |
+| 2027 | 1.232 | 1.013 | 2.246 | 56.3% | 1.265 | 1,908 | 2.41 | 0.981 |
+| 2028 | 3.000 | 2.222 | 5.222 | 43.9% | 2.291 | 1,908 | 4.37 | 2.931 |
+| 2029 | 3.429 | 1.948 | 5.378 | 37.4% | 2.010 | 1,908 | 3.84 | 3.367 |
+| 2030 | 0.917 | 0.723 | 1.640 | 29.2% | 0.479 | 1,908 | 0.91 | 1.161 |
+| 2031 | 2.262 | 2.019 | 4.282 | 23.0% | 0.986 | 1,908 | 1.88 | 3.296 |
+| 2032 | 3.356 | 2.918 | 6.274 | 19.5% | 1.221 | 1,908 | 2.33 | 5.052 |
+| 2033 | 4.210 | 3.528 | 7.738 | 16.9% | 1.310 | 1,908 | 2.50 | 6.428 |
+| 2034 | 4.817 | 3.947 | 8.765 | 14.8% | 1.302 | 1,360 | 1.77 | 7.463 |
+| 2035 | 5.833 | 4.222 | 10.055 | 13.6% | 1.369 | 1,060 | 1.45 | 8.686 |
+| 2036 | 7.858 | 5.186 | 13.044 | 12.6% | 1.640 | 1,060 | 1.74 | 11.404 |
+| 2037 | 10.751 | 6.867 | 17.619 | 11.5% | 2.031 | 692 | 1.40 | 15.588 |
+| 2038 | 12.250 | 7.025 | 19.275 | 10.8% | 2.081 | 692 | 1.44 | 17.195 |
+| 2039 | 15.748 | 8.952 | 24.701 | 10.0% | 2.462 | 531 | 1.31 | 22.239 |
+| 2040 | 18.707 | 10.702 | 29.409 | 9.4% | 2.772 | 531 | 1.47 | 26.637 |
+
+  Total R29.5bn over 2026-40; present value at the pathway's 8% real to 2026 R19.3bn, against c5e's R11.3bn (R6.5bn), which carried the
+  1.3% stopgap and less curtailment from 2027. REIPPPP's share of curtailment falls from 83% in 2026 to 9% in 2040 as new build grows
+  and windows expire; the rate falls from R1,908/MWh to R531.
+- (d) Read in the code (build 06b): reipppRate (index.html:5536) is used by the engine's REIPPPP payment (10608, ppaCostR on the
+  delivered REIPPPP energy), by the retail panel (18752, 18782) and in the worker's function list (22551); bldBuildLP (12692-13783) does
+  not use it. The engine scales wind and solar by the hour's curtailment fraction before counting delivered energy, so its REIPPPP
+  payment falls when REIPPPP output is curtailed. lpCurtailCostR is 0 (FIXED, 6201).
+- (e) The retail panel's 2026 (build 06b; start-up and Today 2026 identical): 0.281 TWh curtailed x 84.5% REIPPPP share x R1,908/MWh =
+  R0.45bn (R0.0023/kWh on 195.3 TWh of sales), about 11% of R4bn. Minor: the panel's share counts CSP top and bottom, though CSP is
+  never curtailed; without it 83.4%. Recorded only. Proposed sentences, for the final pass (no visible text changed now):
+  - Pack, single node (lines 124-125): "Reported figures put 2026 curtailment well above the model's: the R4bn of deemed energy NTCSA
+    expects this financial year (Moneyweb, 6 Nov 2026) is about 1.8-2.8 TWh at 2025's rates, against 0.45 TWh in the central's 2026."
+  - Pack, 2026 fleet against metered (line 126): "Press reports for 2026 point the same way: developers put first-half curtailment at
+    about ten times all of 2025 (Daily Maverick, 15 Jun 2026)."
+  - Pack, curtailment looks free (line 150): "Sized outside the engine on the central, deemed energy to REIPPPP plants is R0.7bn in
+    2026 and R29.5bn over 2026-40 (R19.3bn in present value at 8%), at each window's rate with no allowable period, an upper bound; new
+    build gets none."
+  - Slider note, Curtailment (index.html:20635 on 06b), added after its first sentence (36 words in all): "2026 is reported to be several
+    times higher."
