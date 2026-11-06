@@ -19,4 +19,17 @@ here is an hourly Eskom-derived series.
 | pathway_loop_mix_05h.json | the 7 Nov mixed-reference loop: wind metered, solar modelled 2025 (REP_REF=wind:metered,solar:2025), its extreme days recomputed on this build (20, 159, 161-163, 187, 194-196, 214, 218, 358, 359); adequate after pass 1 by the loop's verdict (the pass-1 run, the loop's own job stopped at the job limit during the same verdict) | claude/twin-retime 10a98e2, build 2026-11-05h | scratchpad loops/solve_loop.sh mix (P1=1 for this file) |
 | engine_loop_mix_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, as above |
 
-The other 7 Nov loops (37.24% wind, metered 2024) follow here when they finish.
+| pathway_loop_w3724_05h.json | the 7 Nov loop with new wind at BW6 bids' 37.24% (WIND_CORR=bw6), the baseline's days; adequate after pass 2 by the loop's verdict | 10a98e2 + the verdict cache (harness) | as the baseline loop, WIND_CORR=bw6 |
+| engine_loop_w3724_05h.json | its engine check | pathcheck.js at 10a98e2 | K=20, YEARS=2030,2035,2040, as above |
+
+The common 100-draw check (message 726 (a): the same seeds for every case, SEED_BASE 71830529; 2034-2036, and 2040 where the 20-draw
+check reads over 15 GWh), on each loop's final build:
+
+| File | Loop | Settings |
+|---|---|---|
+| engine_loop_base_05h_k100.json | baseline (final at pass 1) | K=100, YEARS=2034,2035,2036, LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 |
+| engine_loop_mix_05h_k100.json | mixed reference (final at pass 1) | K=100, YEARS=2034,2035,2036,2040, as above |
+| engine_loop_w3724_05h_k100.json | 37.24% wind (final after pass 2) | K=100, YEARS=2034,2035,2036, as above |
+
+The metered 2024 loop follows here when it finishes; its reference profile is Eskom-derived and stays local (only the build and the
+engine checks are committed).
