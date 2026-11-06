@@ -209,3 +209,10 @@
 2026-11-06T19:57:35Z retime central piece, PID 24834, on dea3623 Gas start costs sized by script, + 1 file changed, 8 insertions(+), 4 deletions(-), BUILD_STAMP = '2026-11-05j, deadline 21:37Z, MIN_LEFT 1500s, MAXP 6, WARM 1, VERDICT_TOPUP {"start":2,"steps":[10,20],"frac":[0.25,0.5]}, HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}, disk free 24G, memory free 14G
 2026-11-06T19:57:35Z two_stage.sh PID 24862
 2026-11-06T19:57Z two_stage K=4 N=25 FIRST=2026, shell PID 24862
+2026-11-06T19:57:50Z step node PID 24904
+2026-11-06T19:58:05Z solve started (highs_native.py 25176)
+2026-11-06T20:07:06Z solve (highs_native.py 25176) ended after about 539s
+2026-11-06T20:36Z step 2040 (horizon 2040) rc=0 done
+2026-11-06T20:36:54Z node 24904 ended, peak memory 2.7 GB
+2026-11-06T20:36:54Z retime central piece ends: two_stage.sh rc=0, 15 of 15 steps done
+2026-11-06T20:36:54Z retime central: all 15 steps have output
