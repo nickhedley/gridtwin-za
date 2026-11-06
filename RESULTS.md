@@ -23307,3 +23307,34 @@ check's cost and unserved to every digit in 2030, 2035 and 2040. Scratchpad deem
     build gets none."
   - Slider note, Curtailment (index.html:20635 on 06b), added after its first sentence (36 words in all): "2026 is reported to be several
     times higher."
+
+### The engine over the whole path, baseline against the mixed reference (message 752 (d)): engine present value 2026-40 at 8% R2,371.3bn and R2,373.7bn, so the mixed reference costs R2.4bn more in the engine where the LP has it R4.7bn cheaper; mixed carries more unserved energy from 2033 and 9.0 Mt less CO2
+
+Settings: final/pathway_loop_base_05h.json and final/pathway_loop_mix_05h.json, each engine-checked every year 2026-2040 on gtza-btm
+(10a98e2 plus record-only fields), K=20 x twelve weather years on the same seeds (SEED_BASE 71830529), LNG=1 GRID=1 SS_FC=reservecoal
+CONG_OFF=1 WX_WINDCORR=1. Both return their recorded engine checks in 2030, 2035 and 2040 (the mixed 2030 unserved and curtailment
+differ in the last digit, 1e-16 relative). Present value as harness/pathway/tables/summ.js: engine cost discounted at the pathway's 8%
+real to 2026. Scratchpad deemed/base_2026_2040.json, pv752/mix_2026_2040.json; 6 Nov 2026, 15:02-16:22 UTC.
+
+| Year | Engine cost, baseline, R bn | Mixed, R bn | Mixed less baseline | Unserved, baseline, GWh (se) | Mixed (se) | CO2, baseline / mixed, Mt |
+|---|---|---|---|---|---|---|
+| 2026 | 213.3 | 213.3 | +0.00 | 0.0 (0.0) | 0.0 (0.0) | 165.0 / 165.0 |
+| 2027 | 232.1 | 232.1 | +0.00 | 0.0 (0.0) | 0.0 (0.0) | 162.8 / 162.8 |
+| 2028 | 242.5 | 242.5 | +0.00 | 0.0 (0.0) | 0.0 (0.0) | 155.6 / 155.6 |
+| 2029 | 237.8 | 237.5 | -0.25 | 0.0 (0.0) | 0.0 (0.0) | 148.6 / 147.9 |
+| 2030 | 243.2 | 242.8 | -0.34 | 2.0 (0.6) | 1.7 (0.4) | 131.8 / 130.4 |
+| 2031 | 253.3 | 253.2 | -0.08 | 8.8 (1.2) | 9.2 (1.2) | 127.5 / 126.3 |
+| 2032 | 261.5 | 261.3 | -0.17 | 12.4 (1.8) | 12.6 (1.7) | 114.4 / 111.4 |
+| 2033 | 270.3 | 270.1 | -0.18 | 12.7 (2.2) | 15.3 (2.3) | 102.2 / 100.8 |
+| 2034 | 268.5 | 268.8 | +0.37 | 14.8 (1.9) | 16.7 (1.9) | 88.8 / 87.7 |
+| 2035 | 270.7 | 271.0 | +0.34 | 19.5 (2.2) | 20.9 (2.2) | 79.7 / 78.4 |
+| 2036 | 280.3 | 280.4 | +0.08 | 16.4 (2.1) | 18.6 (2.1) | 72.7 / 71.5 |
+| 2037 | 284.9 | 286.0 | +1.11 | 10.8 (1.5) | 17.7 (1.8) | 65.2 / 64.1 |
+| 2038 | 297.4 | 298.8 | +1.42 | 10.8 (1.8) | 18.3 (2.4) | 59.3 / 59.1 |
+| 2039 | 307.8 | 310.2 | +2.40 | 9.0 (1.5) | 15.9 (1.9) | 51.9 / 55.1 |
+| 2040 | 320.1 | 322.4 | +2.33 | 8.6 (1.3) | 17.8 (2.0) | 47.8 / 48.4 |
+
+- Engine present value 2026-40: baseline R2,371.3bn, mixed R2,373.7bn, mixed +R2.4bn (2026-30 -R0.45bn, 2031-35 +R0.10bn, 2036-40
+  +R2.75bn). The LP objective has mixed -R4.7bn (-R3.7bn on equal adequacy, 'The 7 Nov table').
+- Adequacy differs as well: mixed's 20-draw unserved is higher in every year from 2033, by 7-9 GWh a year in 2037-2040, all under the
+  20 GWh standard; its present value is not adjusted for it. CO2 2026-40: 1,573.6 Mt baseline, 1,564.5 mixed (-9.0).
