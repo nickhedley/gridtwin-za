@@ -1495,7 +1495,8 @@ on the 2025-2026 pattern (the flat 0.66 is optimistic for winter against it).
 14nb. From messages 714 and 715 (5 Nov 2026; RESULTS entries of 5 Nov). Done: the gas record by technology in pathcheck (5abefa2,
 ee57fc0) on the every-change and 37.24% passes; the crossover script (pathway/gas_xover.js, 6734281), 15.5% on the final inputs; the gas
 split by step; the 0.74 ratio's sources; the siting check restated (715 (a)); Avon and Dedisa's fomDiesel (715 (b)). Open: (a) 714 (d):
-one LP pass at bldOcgtCostCase irp on the every-change basis when the machine is free, before 9 Nov (after the fin pass); (b) the fin
+one LP pass at bldOcgtCostCase irp on the every-change basis when the machine is free, before 9 Nov (after the fin pass) (done 6 Nov,
+RESULTS 'Open-cycle capex on the IRP's basis': objective -R7.6bn, open-cycle gas +0.58 GW in 2040); (b) the fin
 pass's gas record; (c) a sourced cost per gas start (NREL/SR-5500-55433 or another; www.nrel.gov and webarchive.library.unt.edu not
 reachable); the gap is about R0.64bn a year per R1,000 per MW started in 2040; (d) Nick: the siting panel's line (the current sentence
 is wrong since 710 (c); a proposed line in the 5 Nov report), before the PR; (e) Nick: Avon's 2031 contract months (proposed share
