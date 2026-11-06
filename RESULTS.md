@@ -23376,3 +23376,43 @@ final/pathway_every_change_ocgtirp_05f.json, final/engine_every_change_ocgtirp_0
 - Wind is unchanged to 2035 (27.25 GW) and +0.07 GW in 2040. Cheaper open-cycle capex buys more peaking plants earlier; combined cycle
   stays at zero in both. The 0.397 ratio is the IRP's; the central's 0.74 is EIA AEO2023's (RESULTS 'The 0.74 open-cycle capex ratio's
   sources'), and current turbine prices point above 0.74, the other way.
+
+### Finding 3's passes (messages 751 (c), 752 (a)): with the solar factors on the central's own days (f3d) the LP adds solar (+1.3 GW) and lithium (+1.8 GW) in 2040, wind unchanged, objective -R2.6bn, adequate at 100 draws; with month-by-hour factors that re-pick the days (f3h) it adds 7.1 GW of solar and drops 2.3 GW of wind, objective +R5.5bn, and fails its verdict and the 100-draw gate
+
+Settings: the 7 Nov baseline loop's (the fin basis 10a98e2, c7's central settings, 25 clustered days, the central's 13 extremes, linking,
+CONG_OFF=1, WX_WINDCORR=1), one pass each (P1=1, MAXP=1, the loop's verdict rule), on gtza-f3d (factors on the representative days,
+RESULTS 'Finding 3 on the LP's own days') and gtza-f3h (month-by-hour factors on the whole twin before clustering). Engine checks at 20
+draws (2030, 2035, 2040) and, the mix moving more than 1%, at 100 draws on the common seeds (SEED_BASE 71830529; 2030, 2034-2036,
+2040); the baseline's 2030 and 2040 at 100 draws added for the comparison. Scratchpad loops/f3d_p1*.json, f3h_p1*.json,
+base_k100_2030_2040.json; f3/compare.py, f3/table759.py. 6 Nov 2026, 15:00-21:20 UTC.
+
+| Case | Verdict (pass 1) | LP objective, R bn (vs baseline) | Year | Wind, GW | Solar, GW | Lithium, GW | Curtailment, TWh | Unserved, GWh: 20 draws (se) | 100 draws (se) |
+|---|---|---|---|---|---|---|---|---|---|
+| Baseline (metered 2025, central days) | adequate | 1540.9 (+0.0) | 2030 | 9.75 | 6.68 | 1.58 | 1.64 | 2.00 (0.63) | 1.32 (0.18) |
+|  |  |  | 2035 | 27.25 | 17.75 | 9.29 | 10.05 | 19.48 (2.20) | 17.81 (1.05) |
+|  |  |  | 2040 | 43.78 | 24.28 | 11.17 | 29.41 | 8.61 (1.33) | 7.12 (0.51) |
+| Mixed reference (wind metered, solar 2025) | adequate | 1536.2 (-4.7) | 2030 | 9.75 | 7.42 | 1.51 | 2.06 | 1.67 (0.45) | - |
+|  |  |  | 2035 | 27.25 | 18.74 | 8.82 | 11.34 | 20.90 (2.22) | 19.09 (1.06) |
+|  |  |  | 2040 | 41.10 | 29.83 | 10.78 | 33.57 | 17.82 (1.97) | 15.09 (0.76) |
+| f3d: solar factors on the central days | adequate | 1538.2 (-2.6) | 2030 | 9.75 | 6.68 | 1.61 | 1.61 | 1.80 (0.47) | 1.50 (0.22) |
+|  |  |  | 2035 | 27.25 | 18.27 | 9.84 | 10.29 | 19.64 (2.19) | 17.95 (1.05) |
+|  |  |  | 2040 | 43.70 | 25.56 | 12.99 | 30.34 | 10.47 (1.53) | 8.67 (0.59) |
+| f3h: month-by-hour factors, days re-picked | pass limit reached | 1546.4 (+5.5) | 2030 | 9.75 | 7.42 | 1.99 | 2.02 | 2.10 (0.53) | 1.75 (0.23) |
+|  |  |  | 2035 | 27.25 | 18.89 | 9.13 | 11.05 | 23.86 (2.56) | 22.58 (1.16) |
+|  |  |  | 2040 | 41.48 | 31.41 | 12.22 | 34.55 | 12.78 (1.67) | 13.44 (0.76) |
+
+100-draw gate, GWh (se), 2034 / 2035 / 2036; 2040:
+  Baseline (metered 2025, central days): 13.9 (0.9) / 17.8 (1.0) / 15.5 (0.9) / 7.1 (0.5)
+  Mixed reference (wind metered, solar 2025): 15.4 (0.9) / 19.1 (1.1) / 17.6 (1.0) / 15.1 (0.8)
+  f3d: solar factors on the central days: 14.4 (0.9) / 17.9 (1.0) / 17.5 (1.0) / 8.7 (0.6)
+  f3h: month-by-hour factors, days re-picked: 21.5 (1.2) / 22.6 (1.2) / 21.7 (1.2) / 13.4 (0.8)
+
+- f3d: adequate by its verdict and at 100 draws (smallest margin +2.5 GWh in 2036, se 1.0). 2034-2036 mean 16.6 against the
+  baseline's 15.7; on equal adequacy at the 37.24% slope (R0.561bn per GWh) about -R2.1bn. Lithium +5.9% in 2035 and +16.3% in 2040,
+  solar +2.9% and +5.3%, wind unchanged to 2035 and -0.2% in 2040; 2040 open-cycle gas and diesel 4.15 / 1.08 GW against 4.28 / 1.31.
+- f3h: fails its verdict at pass 1 (a full loop would add capacity) and the gate (2034-2036 at 21.5-22.6 GWh, 1.3-2.2 standard errors
+  over); its +R5.5bn is not on equal adequacy. It changes the day set as well as the solar (days 214 and 266 would join the extremes
+  under the rule; it ran on the central's 13), so it does not isolate the rescaling.
+- Reading: on the central's own days the LP plans more summer-season solar than the engine sees and so builds a little less solar and
+  storage than it would with the twelve years' seasons; correcting it moves 2040 by +1.3 GW solar and +1.8 GW lithium, the build
+  otherwise as the baseline's. The hour shape (July 07:00 and 17:00) is not corrected in f3d.
