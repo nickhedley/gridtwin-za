@@ -1,4 +1,17 @@
-# GridTwin ZA - handover, current state (kept current; updated 6 Nov 2026, 19:45 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 7 Nov 2026, 01:45 SAST)
+
+## 7 Nov early morning (messages 752-759): where things stand
+
+- The 759 (c) table is in RESULTS ('The 7 Nov morning table'): baseline, mixed reference, f3d, f3h and k8 (the baseline with the battery
+  proposals 1-3), each with its gate. Reported to Nick before 08:30 SAST.
+- Done overnight: f3d and f3h with their 100-draw checks (RESULTS 'Finding 3's passes'); k8 on gtza-k8 (LP proposals 1-3, verified
+  byte-identical to the baseline with the keys null; RESULTS 'The 8 Nov key candidate'); 714 (d) (6 Nov); metered 2024 final, failing
+  the gate (held). Container restarted at about 22:28 UTC during k8's verdict; replayed from the cache.
+- Running: TODO 14ne, the 10 full validate_worker runs on 06b under the failure's conditions (scratchpad wk14ne/rep10/piece.sh, one
+  piece per job under 2 hours; relaunch on its notice until 10 are done; the --write loop and two solver-load processes beside it, all
+  stopped by PID at each piece's end). 4 of 10 done, all 38/38. Decision point 9 Nov 12:00 SAST (message 755 (b)).
+- Guard Monitor: memory below 1.5 GB stops the solver-load processes in gtza-rt only; disk below 6 GB deletes finished verdict caches.
+- Awaiting Nick: whether f3d's correction enters the 8 Nov key (751 (d)); the f3d band; a surplus day (758); metered 2024; 14ne.
 
 ## 6 Nov evening: where things stand
 
