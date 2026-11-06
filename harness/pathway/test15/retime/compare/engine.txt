@@ -1,0 +1,8 @@
+2026-11-06T03:21:57Z engine fin from /tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, settings from the row: K=20
+YEARS=2030,2035,2040
+LNG=1
+GRID=1
+SS_FC=reservecoal
+CONG_OFF=1
+WX_WINDCORR=1
+2026-11-06T03:29:38Z engine fin rc=0 2030 2.04 (se 0.63); 2035 19.58 (se 2.19); 2040 11.21 (se 1.58)

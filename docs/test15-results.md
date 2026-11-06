@@ -127,7 +127,24 @@ without solving (harness/pathway/test15/retime/deep_steps.sh; reports deep_lp_be
 
 ### (c) Comparison with the fin pass
 
-When the central has all 15 steps and the fin pass is on claude/c7-runs: step 2040's output carries every year's build exactly as each
+The fin pass reached claude/c7-runs (f051c9e; harness/pathway/final/pathway_fin_05h.json, engine_fin_05h.json): adequate at pass 1,
+objective R1,549.810 bn; engine (K=20) 2030 2.04 GWh (se 0.63), 2035 19.58 (2.19), 2040 11.21 (1.58). Its recorded settings and the
+two-stage central's agree in 100 fields; the four that differ are lists over each LP's years (demand, gas, the compliance case's results)
+and stage2Year.
+
+The fin pass's side, done on the 05j worktree (scripts and outputs in harness/pathway/test15/retime/compare/):
+- Re-cost: the one-stage LP at 25 days with (a)'s settings, pass 1, every build fixed from the fin pass (FIX_FROM, FIX_TO=2040), parallel
+  dual simplex on 2 threads with presolve on, 30 min: objective R1,549,810,283,038.68 against the fin pass's own R1,549,810,283,038.70
+  (8e-15). The method reproduces the fin pass, and 05i and 05j do not move this LP.
+- Engine: pathcheck.js on 05j with the row's settings (K=20 YEARS=2030,2035,2040 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1
+  WX_WINDCORR=1), clean environment, 8 min: unserved and CO2 identical to the digit with the fin pass's own check; engine cost 2030
+  R242.62 bn against 242.98 (05i and 05j's Avon and Dedisa changes), 2035 and 2040 identical.
+
+Script for the table: harness/pathway/test15_compare.py (the rule read as both: a gap counts when over 250 MW and over 5% of the one-stage
+figure). Test 13's 1% ranges: only wind 2040's minimum is measured (24,605 MW, provisional: the old twin); no other range exists yet, so the
+rule's third test applies to wind 2040 only and only from below.
+
+When the central has all 15 steps: step 2040's output carries every year's build exactly as each
 step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's
 20-draw settings, 2030, 2035, 2040). Objective: both builds fixed in the same one-stage LP on 05j (FIX_FROM, all years), so the gap is
 the builds' alone. Then the rule of message 699 (b).
