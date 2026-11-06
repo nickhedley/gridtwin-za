@@ -1532,6 +1532,13 @@ points 1 onwards), hybridUplift is pure, simulate's stack arrays are fresh per c
 the check (07:44-08:45 UTC). Not reproduced: 150 repeats of the curve on one page at load 10-11 and 20 fresh pages running the check's
 Start-up sequence at load 8-11 (scratchpad wk14ne/once.js, fresh.js; rep150.log, fresh20.log), all identical. No path in the page's
 code produces it; the remaining candidate is the browser's JavaScript engine, not established. Held: #161 not put forward for merge.
+Message 755 (a), (b): the stored panels ruled out (validate_worker calls captureCurve directly; stored_panels.json on 06b has 33 capture
+points, none with solarHybridR equal to windHybridR or to the failing value, checked). Next: 10 full validate_worker runs on 06b under the
+failure's conditions (the stored panels' --write, fresh, looping beside them; two solver loops running), Chromium 153.0.8010.12
+(/opt/pw-browsers/chromium); scratchpad wk14ne/rep10. The run log shows the 06b --write ended at 07:43 UTC and the full panels check
+then the worker ran in sequence from 07:44, beside two solver loops, a 100-draw recheck and, from 08:41, two battery checks. If still
+unexplained by 9 Nov 12:00 SAST: stop and put the decision to Nick with options (for example a page-side guard that fails loudly if a
+solar hybrid figure equals the wind one). No merge on a green run.
 
 14nf. nodal/nersa_registrations.json: add Q2 2026/27 from NERSA's media statement of 5 Nov 2026 (SOURCES 'NERSA media statement, 5 Nov
 2026'; the statement is the primary source, the SAPVIA dashboard a collation), in the first data update after PR #161 (user, 6 Nov 2026,

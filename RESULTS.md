@@ -23294,6 +23294,10 @@ check's cost and unserved to every digit in 2030, 2035 and 2040. Scratchpad deem
 | 2039 | 15.748 | 8.952 | 24.701 | 10.0% | 2.462 | 531 | 1.31 | 22.239 |
 | 2040 | 18.707 | 10.702 | 29.409 | 9.4% | 2.772 | 531 | 1.47 | 26.637 |
 
+  The 2028-29 peak and the 2030 dip (message 755 (c), from the run's own records): 39.7 and 36.5 GW of coal stand in 2028-29 with a
+  committed minimum of 13.3 and 11.5 GW while new wind reaches 4.7 and 7.2 GW and new batteries stay at 0.8 GW; in 2030 4.6 GW of coal
+  retires (IRP Figure 3), the minimum falls to 9.4 GW, batteries double to 1.6 GW and demand rises 3.7 points, so curtailment falls to
+  1.6 TWh before wind and solar outgrow the floor again from 2031.
   Total R29.5bn over 2026-40; present value at the pathway's 8% real to 2026 R19.3bn, against c5e's R11.3bn (R6.5bn), which carried the
   1.3% stopgap and less curtailment from 2027. REIPPPP's share of curtailment falls from 83% in 2026 to 9% in 2040 as new build grows
   and windows expire; the rate falls from R1,908/MWh to R531.
