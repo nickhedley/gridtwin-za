@@ -189,13 +189,16 @@ for x, y2, mw, nm, yr in tdp:
     if not any({x, y2} == {a, b} for a, b, *_ in CORR): extra[(x, y2)] = extra.get((x, y2), 0) + mw
 for (x, y2), mw in extra.items(): corr.append((x, y2, (0.7 if N1C else (FACTOR or 1.0)) * mw, 300.0, 0.0, mw)); notes.append(f'TDP lines join {x} and {y2}, a pair with no corridor today: added at {FACTOR or 1.0} x {mw} MW, 300 km')
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
-    ext = dict(p_nom_extendable=True, p_nom_min=cap_ab, capital_cost=TX_EXT * km * CRF) if (TX_EXT > 0 and FACTOR is not None) else {}
-    if LOSSES:
-        eff = 1 - 0.06 * km / 1000
-        n.add('Link', f'c{i}_ab', bus0=a, bus1=b, p_nom=cap_ab, efficiency=eff, marginal_cost=0.01, carrier='corridor', **ext)
-        n.add('Link', f'c{i}_ba', bus0=b, bus1=a, p_nom=cap_ab, efficiency=eff, marginal_cost=0.01, carrier='corridor', **ext)
-    else:
-        n.add('Link', f'c{i}', bus0=a, bus1=b, p_nom=cap_ab, p_min_pu=-1, efficiency=1.0, marginal_cost=0.01, carrier='corridor', **ext)
+    # v2 (6 Nov 2026): every corridor is a pair of one-way links, so the R0.01 per MWh tie-breaking cost is paid in both directions and
+    # can never be earned (a bidirectional link with p_min_pu = -1 pays marginal_cost x p0, negative for reverse flow, which with
+    # unlimited capacity rewarded circulating flow round every loop and lowered the no-limits objective by about R0.6bn). When
+    # extendable, the forward link carries the capital cost and the reverse link is tied to it by a constraint below.
+    TX_ON = TX_EXT > 0 and FACTOR is not None
+    ext_ab = dict(p_nom_extendable=True, p_nom_min=cap_ab, capital_cost=TX_EXT * km * CRF) if TX_ON else {}
+    ext_ba = dict(p_nom_extendable=True, p_nom_min=cap_ab, capital_cost=0.0) if TX_ON else {}
+    eff = 1 - 0.06 * km / 1000 if LOSSES else 1.0
+    n.add('Link', f'c{i}_ab', bus0=a, bus1=b, p_nom=cap_ab, efficiency=eff, marginal_cost=0.01, carrier='corridor', **ext_ab)
+    n.add('Link', f'c{i}_ba', bus0=b, bus1=a, p_nom=cap_ab, efficiency=eff, marginal_cost=0.01, carrier='corridor', **ext_ba)
 if TX_EXT > 0: notes.append(f'corridors extendable at R{TX_EXT:,.0f} per MW-km, {TX_LIFE} years at {DISC:.3f} (CRF {CRF:.4f})')
 # loads: gross national load split by the regional demand file's hourly shares; rooftop as a must-run generator per area
 for r in REG:
@@ -279,10 +282,14 @@ if DAYS > 0:
 SOLVER_OPTS = {'presolve': 'on', 'parallel': 'on'} if SOLVER == 'simplex' else {'presolve': 'on', 'parallel': 'on', 'solver': 'ipm', 'run_crossover': 'off'}
 if SOLVER != 'simplex': notes.append(f'solver {SOLVER} (crossover off): a timing test; duals approximate')
 t0 = time.time()
-if SITE_FREE or MIX:
-    if REEA_MW is None: reea_shares()
+TX_ON = TX_EXT > 0 and FACTOR is not None
+if SITE_FREE or MIX or TX_ON:
+    if REEA_MW is None and (SITE_FREE or MIX): reea_shares()
     m = n.optimize.create_model()
-    pn = m.variables['Generator-p_nom']
+    pn = m.variables['Generator-p_nom'] if 'Generator-p_nom' in m.variables else None
+    if TX_ON:
+        lnk = m.variables['Link-p_nom']
+        for i in range(len(corr)): m.add_constraints(lnk.loc[f'c{i}_ab'] - lnk.loc[f'c{i}_ba'] == 0, name=f'corridor pair {i}')
     if SITE_FREE:
         for t, N in (('wind new', N_w), ('pv new', N_p)):
             names = [g for g in n.generators.index if g.endswith(t) and n.generators.p_nom_extendable[g]]
@@ -325,8 +332,7 @@ def mu_of(name, lower=True):
     u = np.abs(muU[name].values) if (muU is not None and name in muU) else np.zeros(len(n.snapshots)); l = np.abs(muL[name].values) if (muL is not None and name in muL and lower) else np.zeros(len(n.snapshots)); return u + l
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
     # a one-way link's lower bound (zero flow) carries a dual whenever the other direction flows; only its upper bound is the corridor's capacity
-    if LOSSES: f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values; mu = mu_of(f'c{i}_ab', False) + mu_of(f'c{i}_ba', False)
-    else: f = lk[f'c{i}'].values; mu = mu_of(f'c{i}')
+    f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values; mu = mu_of(f'c{i}_ab', False) + mu_of(f'c{i}_ba', False)
     # the shadow price of the corridor's capacity: R per MWh in the hours it binds; its sum over the year is the value of one more MW for a year
     flows.append({'a': a, 'b': b, 'capMW': cap_ab, 'todayMW': lim, 'tdpMW': add, 'km': km, 'GWh': float(np.abs(f).sum()) * W / 1e3, 'hoursAtLimit': int((np.abs(f) >= 0.98 * cap_ab).sum() * W) if cap_ab < 1e5 else 0, 'maxMW': float(np.abs(f).max()),
                   'bindingHours': int((mu > 1.0).sum() * W), 'shadowRperMWyr': float(mu.sum()), 'shadowMeanRperMWh': float(mu[mu > 1.0].mean()) / W if (mu > 1.0).any() else 0.0})
@@ -336,7 +342,7 @@ for name, c in gc.items():
     r = n.generators.bus[name]; byArea[r][c] = byArea[r].get(c, 0.0) + float(g[name].sum()) * W / 1e6
 netIn = {r: 0.0 for r in REG}; inflow_max = {r: 0.0 for r in REG}
 for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
-    f = (lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values) if LOSSES else lk[f'c{i}'].values
+    f = lk[f'c{i}_ab'].values - lk[f'c{i}_ba'].values
     netIn[b] += float(f.sum()) * W / 1e6; netIn[a] -= float(f.sum()) * W / 1e6
 mix = {}
 if MIX:
@@ -347,7 +353,7 @@ if MIX:
     mix['battMWh'] = {r: float(n.stores.e_nom_opt.get(f'{r} li store', 0.0)) for r in REG}
     mix['totals'] = {k: sum(v.values()) for k, v in mix.items() if isinstance(v, dict)}
     mix['liDischargeTWh'] = float(sum(n.links_t.p0[f'{r} li discharge'].clip(lower=0).sum() for r in REG)) * W / 1e6
-    mix['capexRbn'] = float(sum(n.generators.p_nom_opt[g] * n.generators.capital_cost[g] for g in n.generators.index if n.generators.p_nom_extendable[g]) + sum(n.links.p_nom_opt[l] * n.links.capital_cost[l] for l in n.links.index if n.links.p_nom_extendable[l]) + sum(n.stores.e_nom_opt[s2] * n.stores.capital_cost[s2] for s2 in n.stores.index)) / 1e9
+    mix['capexRbn'] = float(sum(n.generators.p_nom_opt[g] * n.generators.capital_cost[g] for g in n.generators.index if n.generators.p_nom_extendable[g]) + sum((n.links.p_nom_opt[l] - (n.links.p_nom[l] if n.links.carrier[l] == 'corridor' else 0.0)) * n.links.capital_cost[l] for l in n.links.index if n.links.p_nom_extendable[l]) + sum(n.stores.e_nom_opt[s2] * n.stores.capital_cost[s2] for s2 in n.stores.index)) / 1e9
     mix['run'] = {'windMW': N_w, 'pvMW': N_p, 'battMW': newBatt, 'battMWh': newBatt * newBattH, 'ocgtMW': ocgtMW}
     mix['costs'] = {k: v for k, v in CC.items()}
 siteOut = {}
@@ -357,10 +363,9 @@ if SITE_FREE:
 expansion = []
 if TX_EXT > 0:
     for i, (a, b, cap_ab, km, lim, add) in enumerate(corr):
-        names = [f'c{i}_ab', f'c{i}_ba'] if LOSSES else [f'c{i}']
-        addMW = float(sum(n.links.p_nom_opt[nm] - n.links.p_nom[nm] for nm in names)) / (2 if LOSSES else 1)
+        addMW = float(n.links.p_nom_opt[f'c{i}_ab'] - n.links.p_nom[f'c{i}_ab'])   # the pair is tied, so one direction's addition is the corridor's
         if addMW > 1: expansion.append({'a': a, 'b': b, 'addMW': addMW, 'km': km, 'MWkm': addMW * km, 'capexRbn': addMW * km * TX_EXT / 1e9, 'annualRbn': addMW * km * TX_EXT * CRF / 1e9})
-res = {'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
+res = {'script': 'pypsa_net v2 (one-way corridor pairs, 6 Nov 2026)', 'dump': os.path.basename(DUMP), 'build': D['build'], 'year': Y, 'weatherYear': WY, 'seed': D['seed'], 'case': CASE, 'siting': SITING, 'losses': LOSSES, 'coalmin': COALMIN, 'status': f'{status}/{cond}', 'secs': secs,
        'objectiveRbn': float(n.objective) / 1e9, 'fuelAndCarbonRbn': fuel / 1e9,
        'E_TWh': {c: v / 1e6 for c, v in E.items()}, 'storageDischargeTWh': {c: v / 1e6 for c, v in dis.items()}, 'storageChargeTWh': {c: v / 1e6 for c, v in chg.items()},
        'availTWh': {c: v / 1e6 for c, v in avail.items()}, 'curtailedTWh': {c: v / 1e6 for c, v in curt.items()}, 'curtailedTotalTWh': sum(curt.values()) / 1e6, 'curtailedByRegionTWh': {r: v / 1e6 for r, v in curt_r.items()},

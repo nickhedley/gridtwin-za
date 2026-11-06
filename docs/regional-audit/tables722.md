@@ -108,7 +108,7 @@ Deep decarbonisation stand-in (s_deep40nogas_c7, build 2026-11-03a)
     engine 2040, 2025: coal 20.3, gas 0.0, diesel 0.14, wind incl. offshore 139.4, solar 101.5, storage 39.4, curtailed 88.8, unserved 0 GWh; LP no limits: curtailed 74.9, unserved 0
     engine 2040, 2015: coal 25.9, gas 0.0, diesel 0.33, wind incl. offshore 132.7, solar 102.6, storage 42.8, curtailed 79.5, unserved 0 GWh; LP no limits: curtailed 67.1, unserved 0
 
-### 722 (b): measured LP times (one process, HiGHS, parallel on; the machine shared with other solves unless stated)
+### 722 (b): measured LP times (one process, HiGHS, parallel on; the machine shared with other solves unless stated; rows marked script v2 ran the one-way-corridor-pair script of 6 Nov 2026, the rest the bidirectional-link script, which carried the circulating flow and solved more slowly in the no-limits cases)
 | file | build, year, weather year | case | hours (block) | variables | constraints | build s | solve s | total s | peak GB |
 |---|---|---|---|---|---|---|---|---|---|
 | timing_final_2035_wy2025_n1c_mix_ext10k_d25.json | 2026-11-05f, 2035, 2025 | one circuit dropped, mix, corridors extendable at R10,000 | 600 | 86482 | 181311 | 4 | 64 | 67 | 0.8 |
