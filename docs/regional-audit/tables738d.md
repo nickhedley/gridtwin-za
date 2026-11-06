@@ -6,7 +6,7 @@
 | 2035 | area caps lifted | the test's | 24.7 (27.2) | 9.7 (17.7) | 0.0 | 5.0, 16 | 0.00 | 148.9 | 162.2 | 13.3 |
 | 2035 | area caps lifted | the run's | 22.3 (27.2) | 14.3 (17.7) | 14.3 | 5.6, 20 | 0.00 | 143.5 | 156.4 | 13.0 |
 | 2035 | one bus on the national series | the test's | 25.1 (27.2) | 12.6 (17.7) | 0.0 | 6.7, 26 | 0.00 | 155.9 | 162.2 | 6.3 |
-| 2035 | one bus on the national series | the run's | pending | | | | | | | |
+| 2035 | one bus on the national series | the run's | 24.3 (27.2) | 14.3 (17.7) | 14.3 | 6.8, 27 | 0.00 | 149.7 | 156.4 | 6.8 |
 | 2035 | wind forced to the run's MW | the test's | 27.2 (27.2) | 9.6 (17.7) | 0.0 | 5.9, 20 | 0.00 | 152.4 | 162.2 | 9.8 |
 | 2035 | wind forced to the run's MW | the run's | pending | | | | | | | |
 | 2035 | control without the reuse pool (the Cape allowance and the gas charge kept; 732's pair on the repriced costs) | the run's less the pool | 22.8 (27.2) | 13.2 (17.7) | 0.0 | 6.7, 23 | 0.00 | 149.7 | 161.7 | 12.0 |
