@@ -1,6 +1,6 @@
 ### 731: battery against corridor (build 2026-11-05f, the every-change pass; the rebuilt corridor table, N-1 once, corridors at the run's 0.071; fixed build, hourly, no commitment floor, losses off; lithium at the four exits in equal shares at the build's own lithium costs; corridor additions capped at the same annual cost)
 
-2035, weather 2025, today's corridors (the rebuilt table, N-1 once)
+2035, weather 2025, the LP's own lithium: 2.2 GW / 20 GWh (Hydra Central 1.5, Eastern Cape 0.7)
 
 | addition | curtailed TWh | coal TWh | gas and diesel TWh | unserved GWh | fuel and carbon R bn | addition, gross R bn a year | saves in fuel and carbon | saves in unserved energy at the value of lost load | net cost R bn a year | annual cost R bn | corridors built |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -14,6 +14,7 @@
 | lithium 10 GW at 4 h | 51.6 | 110.9 | 0.31 | 23.7 | 79.46 | 13.95 | 4.07 | 6.32 | 3.56 |  95.48 |
 | corridors at R10,000 per MW-km for the same R13.95bn: 31.7 GW (the unconstrained expansion, whose cost is below the budget) | 3.4 | 63.2 | 0.19 | 0.0 | 45.34 | 2.31 | 38.19 | 8.38 | -44.27 |  47.65 | Free State to Northern Cape 13.8; Free State to Gauteng 8.3; Northern Cape to Western Cape 4.7; Hydra Central to Northern Cape 3.0; Eastern Cape to Kwazulu Natal 1.9
 | corridors at R21,700 per MW-km for the same R13.95bn: 28.3 GW (the unconstrained expansion, whose cost is below the budget) | 4.1 | 63.8 | 0.19 | 0.0 | 45.73 | 4.47 | 37.80 | 8.38 | -41.71 |  50.21 | Free State to Northern Cape 12.7; Free State to Gauteng 7.2; Northern Cape to Western Cape 4.0; Hydra Central to Northern Cape 2.7; Eastern Cape to Kwazulu Natal 1.7
+| the LP's own lithium: 2.2 GW / 20 GWh (Hydra Central 1.5, Eastern Cape 0.7) | 52.1 | 111.3 | 0.40 | 33.2 | 80.30 | 5.94 | 3.24 | 5.49 | -2.79 |  89.13 |
 
 2035, weather 2025, the TDP's lines (the rebuilt table, N-1 once; tdp_lines_v2.json)
 
@@ -81,13 +82,18 @@
 | 2040, 2015 | 2040_wy2015_n1c_reea_l0_c1_mix_ext10k_h3 | 3 h | 14.1, 86 | Limpopo 4.8, Western Cape 4.5, North West 2.4, Hydra Central 0.7, Northern Cape 0.5, Gauteng 0.5, Eastern Cape 0.3, Free State 0.3 |
 | 2040, 2015 | 2040_wy2015_nolimit_reea_l0_c1_mix_control_h3 | 3 h | 11.1, 68 | Western Cape 5.2, Limpopo 3.4, Northern Cape 1.8, Hydra Central 0.8 |
 | 2040, 2015 | 2040_wy2015_nolimit_reea_l0_c1_mix_control_nocap_h3 | 3 h | 10.4, 52 | Western Cape 4.5, Northern Cape 2.4, Limpopo 2.2, Hydra Central 0.8, Eastern Cape 0.5 |
+| 2040, 2015 | 2040_wy2015_nolimit_reea_l0_c1_mix_control_runwind_h3 | 3 h | 10.6, 59 | Western Cape 5.8, Limpopo 2.4, Hydra Central 1.5, Northern Cape 1.0 |
 | 2040, 2025 | 2040_wy2025_n1c_reea_l0_c1_mix_ext10k_h3 | 3 h | 14.4, 98 | Northern Cape 10.6, North West 2.4, Hydra Central 0.6, Limpopo 0.3, Free State 0.3, Gauteng 0.1 |
 | 2040, 2025 | 2040_wy2025_n1c_reea_l0_c1_mix_n1c_fixedcorr_h3 | 3 h | 18.5, 115 | North West 7.2, Limpopo 5.8, Gauteng 2.0, Free State 1.8, Northern Cape 0.8, Hydra Central 0.5, Eastern Cape 0.3 |
 | 2040, 2025 | 2040_wy2025_n1ctdp_reea_l0_c1_tdpfull_mix_ext10k_h3 | 3 h | 14.4, 96 | Northern Cape 10.6, North West 3.2, Free State 0.5, Limpopo 0.1, Eastern Cape 0.1 |
+| 2040, 2025 | 2040_wy2025_nm1tdp_reea_l0_c1_v2tdp_mix_ext21k_h3 | 3 h | 14.4, 97 | Northern Cape 9.7, North West 3.8, Free State 0.5, Eastern Cape 0.4 |
 | 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_credit_h3 | 3 h | 13.2, 87 | Northern Cape 12.6, Hydra Central 0.7 |
 | 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_h3 | 3 h | 13.2, 87 | Gauteng 10.1, Limpopo 1.5, Free State 1.4, Eastern Cape 0.2 |
 | 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_nocap_h3 | 3 h | 10.3, 45 | Northern Cape 8.8, Hydra Central 0.9, Eastern Cape 0.5 |
+| 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_nocap_runacct_h3 | 3 h | 10.5, 48 | Northern Cape 9.2, Hydra Central 0.8, Eastern Cape 0.6 |
 | 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_onebus_h3 | 3 h | 11.6, 60 | Gauteng 4.2, Kwazulu Natal 1.7, North West 1.7, Eastern Cape 1.5, Northern Cape 0.9, Western Cape 0.7, Free State 0.5, Hydra Central 0.4 |
 | 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_runacct_h3 | 3 h | 13.5, 90 | Northern Cape 12.7, Hydra Central 0.7, Western Cape 0.1 |
+| 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_runacct_nopool_h3 | 3 h | 13.5, 90 | Northern Cape 12.7, Hydra Central 0.7, Western Cape 0.1 |
 | 2040, 2025 | 2040_wy2025_nolimit_reea_l0_c1_mix_control_runwind_h3 | 3 h | 11.2, 56 | Northern Cape 8.6, Hydra Central 1.5, Western Cape 1.0 |
 | 2035, 2025 | 2035_wy2025_nolimit_reea_l0_c1_mix_control_h6 | 6 h | 3.7, 22 | Gauteng 3.7 |
+| 2040, 2015 | 2040_wy2015_nolimit_reea_l0_c1_mix_control_h6 | 6 h | 9.0, 69 | Northern Cape 3.8, Western Cape 3.2, Limpopo 1.3, Hydra Central 0.7 |
