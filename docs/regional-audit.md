@@ -1855,7 +1855,7 @@ Assumption, stated: 800 km a year from 2026, of which the inter-area corridors g
 
 ## Message 741: the model's priority corridors against the TDP's planned lines (6 Nov 2026; from results in hand, no new solves; the rebuilt table, weather 2025, build 2026-11-05f; priority corridors to test, not lines to build; nothing to be quoted)
 
-Method. For each inter-area corridor of the rebuilt table (738 (a)): the hours at its limit and the value of one more MW for a year (the shadow price summed over the year) in the fixed build on today's corridors (N-1 once) and with the TDP's lines by their dates (tdp_lines_v2.json: Eros in KwaZulu-Natal, no Umtu line, Gamma to Grassridge as two circuits); the corridor MW the LP builds when corridors are extendable from today's network at R10,000 and R21,700 per MW-km, and from the plan's network at R21,700 (737's first cut, the unconstrained expansion); the TDP's planned lines on the corridor by name, year, voltage and phase with the MW they add, the Eros and Umtu lines of the with-range marked; and the shortfall, what the LP still builds with the plan in place. The ranking table sets the fixed build's values (approved-record siting) beside the free-siting case's (the LP's own siting under the approved caps). Script docs/regional-audit/summ741.py; output tables741.md.
+Method. For each inter-area corridor of the rebuilt table (738 (a)): the hours at its limit and the value of one more MW for a year (the shadow price summed over the year) in the fixed build on today's corridors (N-1 once) and with the TDP's lines by their dates (tdp_lines_v2.json: Eros in KwaZulu-Natal, no Umtu line, Gamma to Grassridge as two circuits); the corridor MW the LP builds when corridors are extendable from today's network at R10,000 and R21,700 per MW-km, and from the plan's network at R21,700 (737's first cut, the unconstrained expansion); the TDP's planned lines on the corridor by name, year, voltage and phase with the MW they add, the Eros and Umtu lines of the with-range marked; and the shortfall, what the LP still builds with the plan in place ('not binding in this test' where it builds nothing and the corridor binds under 1,000 hours with the plan). The ranking table sets the fixed build's values (approved-record siting) beside the free-siting case's (the LP's own siting under the approved caps). Script docs/regional-audit/summ741.py; output tables741.md.
 
 ### 741, 2035, weather 2025 (build 2026-11-05f; the rebuilt table, N-1 once; the TDP file tdp_lines_v2.json, Eros in KwaZulu-Natal, no Umtu line, Gamma to Grassridge twice)
 
@@ -1868,21 +1868,21 @@ Method. For each inter-area corridor of the rebuilt table (738 (a)): the hours a
 | Free State to Hydra Central | 5,486 h, R7.8m | 4,361 h, R3.0m | 0.0; 0.0 | 0.0 | Perseus–Gamma 765 kV line (2029, 765 kV, Definition, 3,000 MW) | 3,000 | 0.0 GW short |
 | Eastern Cape to Kwazulu Natal | 4,286 h, R5.9m | 4,361 h, R3.0m | 1.9; 1.7 | 3.0 | Eros–Isundu 765 kV line (2032, 765 kV, Planned, 3,000 MW) [with-range only]; Ariadne–Eros line (2027, 400 assumed kV, Planned, 900 MW) [with-range only] | 0 | 3.0 GW short |
 | Eastern Cape to Free State | 4,286 h, R5.9m | 4,361 h, R3.0m | 0.0; 0.0 | 0.0 | none | 0 | 0.0 GW short |
-| Eastern Cape to Hydra Central | 1,247 h, R1.9m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Gamma–Grassridge 765 kV line, circuit 1 (2032, 765 kV, Planned, 3,000 MW); Gamma–Grassridge 765 kV line, circuit 2 (2032, 765 kV, Planned, 3,000 MW) | 6,000 | ample |
-| Northern Cape to Western Cape | 753 h, R1.4m | 52 h, R0.0m | 4.7; 4.0 | 0.1 | Paulputs–Juno 400 kV line (2027, 400 kV, Execution, 900 MW); Aries–Juno line (2033, 400 assumed kV, Concept, 900 MW); Juno–Gromis 400 kV line (2027, 400 kV, Planned, 900 MW) | 2,700 | ample |
+| Eastern Cape to Hydra Central | 1,247 h, R1.9m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Gamma–Grassridge 765 kV line, circuit 1 (2032, 765 kV, Planned, 3,000 MW); Gamma–Grassridge 765 kV line, circuit 2 (2032, 765 kV, Planned, 3,000 MW) | 6,000 | not binding in this test |
+| Northern Cape to Western Cape | 753 h, R1.4m | 52 h, R0.0m | 4.7; 4.0 | 0.1 | Paulputs–Juno 400 kV line (2027, 400 kV, Execution, 900 MW); Aries–Juno line (2033, 400 assumed kV, Concept, 900 MW); Juno–Gromis 400 kV line (2027, 400 kV, Planned, 900 MW) | 2,700 | not binding in this test |
 | Free State to Kwazulu Natal (no corridor today) | none | 0 h, R0.0m | - | 0.0 | Merapi–Sorata 400 kV line (2030, 400 kV, Concept, 900 MW) | 900 | - |
 | Free State to Gauteng | 0 h, R0.0m | 0 h, R0.0m | 8.3; 7.2 | 1.0 | Lethabo–Makalu 400 kV line (2032, 400 kV, Definition, 900 MW) | 900 | 1.0 GW short |
-| Gauteng to Limpopo | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | ample |
-| Free State to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | ample |
-| Limpopo to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Borutho–Silimela 400 kV line (2028, 400 kV, Definition, 900 MW) | 900 | ample |
-| Free State to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Highveld–Emkhiweni 400 kV line (2028, 400 kV, Definition, 900 MW); Zeus–Perseus 765 kV line (2028, 765 kV, Definition, 3,000 MW) | 3,900 | ample |
-| Gauteng to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Kusile–Lulamisa 400 kV line (2025, 400 kV, Execution, 900 MW); Matla–Jupiter line (2032, 400 assumed kV, Planned, 900 MW) | 1,800 | ample |
-| Gauteng to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Pluto–Westgate 400 kV line (2029, 400 kV, Definition, 900 MW) | 900 | ample |
-| Kwazulu Natal to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | ample |
-| Limpopo to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Medupi–Ngwedi 765 kV line (2025, 765 kV, Execution, 3,000 MW) | 3,000 | ample |
-| Mpumalanga to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | ample |
+| Gauteng to Limpopo | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | not binding in this test |
+| Free State to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | not binding in this test |
+| Limpopo to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Borutho–Silimela 400 kV line (2028, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Free State to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Highveld–Emkhiweni 400 kV line (2028, 400 kV, Definition, 900 MW); Zeus–Perseus 765 kV line (2028, 765 kV, Definition, 3,000 MW) | 3,900 | not binding in this test |
+| Gauteng to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Kusile–Lulamisa 400 kV line (2025, 400 kV, Execution, 900 MW); Matla–Jupiter line (2032, 400 assumed kV, Planned, 900 MW) | 1,800 | not binding in this test |
+| Gauteng to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Pluto–Westgate 400 kV line (2029, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Kwazulu Natal to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | not binding in this test |
+| Limpopo to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Medupi–Ngwedi 765 kV line (2025, 765 kV, Execution, 3,000 MW) | 3,000 | not binding in this test |
+| Mpumalanga to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | not binding in this test |
 
-Ranking by the value of one more MW, 2035: approved-record siting against the LP's own siting (free siting; wind Hydra Central 36%, Eastern Cape 22%, Northern Cape 14%, Western Cape 13%, Mpumalanga 10%, Kwazulu Natal 2%)
+Ranking by the value of one more MW, 2035, weather 2025: approved-record siting against the LP's own siting (free siting; wind Hydra Central 36%, Eastern Cape 22%, Northern Cape 14%, Western Cape 13%, Mpumalanga 10%, Kwazulu Natal 2%)
 
 | rank | approved-record siting (fixed build) | R m a year | the LP's siting (free siting) | R m a year |
 |---|---|---|---|---|
@@ -1906,21 +1906,21 @@ Ranking by the value of one more MW, 2035: approved-record siting against the LP
 | Eastern Cape to Free State | 5,632 h, R138.7m | 6,125 h, R9.8m | 0.0; 0.0 | 0.0 | none | 0 | 0.0 GW short |
 | Hydra Central to Northern Cape | 1,724 h, R36.6m | 1,320 h, R3.8m | 4.4; 4.2 | 0.0 | Hydra–Kronos 400 kV line (2028, 400 kV, Execution, 900 MW) | 900 | 0.0 GW short |
 | Hydra Central to Western Cape | 1,278 h, R33.8m | 1,221 h, R3.5m | 0.0; 0.0 | 0.0 | Droerivier–Gamma 400 kV line (2033, 400 kV, Concept, 900 MW); Gamma–Kappa 765 kV line (2029, 765 kV, Definition, 3,000 MW) | 3,900 | 0.0 GW short |
-| Eastern Cape to Hydra Central | 1,636 h, R17.5m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Gamma–Grassridge 765 kV line, circuit 1 (2032, 765 kV, Planned, 3,000 MW); Gamma–Grassridge 765 kV line, circuit 2 (2032, 765 kV, Planned, 3,000 MW) | 6,000 | ample |
+| Eastern Cape to Hydra Central | 1,636 h, R17.5m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Gamma–Grassridge 765 kV line, circuit 1 (2032, 765 kV, Planned, 3,000 MW); Gamma–Grassridge 765 kV line, circuit 2 (2032, 765 kV, Planned, 3,000 MW) | 6,000 | not binding in this test |
 | Northern Cape to Western Cape | 685 h, R2.8m | 110 h, R0.3m | 6.8; 5.8 | 2.0 | Paulputs–Juno 400 kV line (2027, 400 kV, Execution, 900 MW); Aries–Juno line (2033, 400 assumed kV, Concept, 900 MW); Juno–Gromis 400 kV line (2027, 400 kV, Planned, 900 MW) | 2,700 | 2.0 GW short |
 | Free State to Kwazulu Natal (no corridor today) | none | 0 h, R0.0m | - | 0.0 | Merapi–Sorata 400 kV line (2030, 400 kV, Concept, 900 MW) | 900 | - |
 | Free State to Gauteng | 0 h, R0.0m | 0 h, R0.0m | 12.0; 11.2 | 3.8 | Lethabo–Makalu 400 kV line (2032, 400 kV, Definition, 900 MW) | 900 | 3.8 GW short |
-| Gauteng to Limpopo | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | ample |
-| Free State to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | ample |
-| Mpumalanga to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | ample |
-| Limpopo to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Borutho–Silimela 400 kV line (2028, 400 kV, Definition, 900 MW) | 900 | ample |
-| Free State to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Highveld–Emkhiweni 400 kV line (2028, 400 kV, Definition, 900 MW); Zeus–Perseus 765 kV line (2028, 765 kV, Definition, 3,000 MW) | 3,900 | ample |
-| Gauteng to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Kusile–Lulamisa 400 kV line (2025, 400 kV, Execution, 900 MW); Matla–Jupiter line (2032, 400 assumed kV, Planned, 900 MW) | 1,800 | ample |
-| Gauteng to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Pluto–Westgate 400 kV line (2029, 400 kV, Definition, 900 MW) | 900 | ample |
-| Kwazulu Natal to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | ample |
-| Limpopo to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Medupi–Ngwedi 765 kV line (2025, 765 kV, Execution, 3,000 MW) | 3,000 | ample |
+| Gauteng to Limpopo | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | not binding in this test |
+| Free State to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | not binding in this test |
+| Mpumalanga to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | not binding in this test |
+| Limpopo to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Borutho–Silimela 400 kV line (2028, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Free State to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Highveld–Emkhiweni 400 kV line (2028, 400 kV, Definition, 900 MW); Zeus–Perseus 765 kV line (2028, 765 kV, Definition, 3,000 MW) | 3,900 | not binding in this test |
+| Gauteng to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Kusile–Lulamisa 400 kV line (2025, 400 kV, Execution, 900 MW); Matla–Jupiter line (2032, 400 assumed kV, Planned, 900 MW) | 1,800 | not binding in this test |
+| Gauteng to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Pluto–Westgate 400 kV line (2029, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Kwazulu Natal to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | none | 0 | not binding in this test |
+| Limpopo to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | 0.0 | Medupi–Ngwedi 765 kV line (2025, 765 kV, Execution, 3,000 MW) | 3,000 | not binding in this test |
 
-Ranking by the value of one more MW, 2040: approved-record siting against the LP's own siting (free siting; wind Western Cape 33%, Hydra Central 29%, Eastern Cape 15%, Northern Cape 13%, Mpumalanga 7%)
+Ranking by the value of one more MW, 2040, weather 2025: approved-record siting against the LP's own siting (free siting; wind Western Cape 33%, Hydra Central 29%, Eastern Cape 15%, Northern Cape 13%, Mpumalanga 7%)
 
 | rank | approved-record siting (fixed build) | R m a year | the LP's siting (free siting) | R m a year |
 |---|---|---|---|---|
@@ -1933,13 +1933,89 @@ Ranking by the value of one more MW, 2040: approved-record siting against the LP
 | 7 | Hydra Central to Western Cape | 33.8 | Hydra Central to Western Cape | 7.2 |
 | 8 | Eastern Cape to Hydra Central | 17.5 | Eastern Cape to Hydra Central | 3.4 |
 
-Weather year 2015 is not yet run on the rebuilt table; on the old table (722 (a)) it moved curtailment by 6 to 9 TWh and left the binding set unchanged.
+### 741, 2035, weather 2015 (build 2026-11-05f; the rebuilt table, N-1 once; the TDP file tdp_lines_v2.json, Eros in KwaZulu-Natal, no Umtu line, Gamma to Grassridge twice)
+
+| corridor | today: hours at the limit, value of one more MW (R m a year) | with the TDP's lines: hours, value | LP builds without the plan, GW (R10,000; R21,700) | LP builds with the plan, GW (R21,700) | the TDP's lines on the corridor (name, year, kV, phase, MW) | MW the plan adds | shortfall (what the LP still builds with the plan) |
+|---|---|---|---|---|---|---|---|
+| North West to Northern Cape | 8,112 h, R8.0m | 5,037 h, R3.4m | 0.0; 0.0 | - | Mercury–Umtu 765 kV line (2033, 765 kV, Concept, 3,000 MW) [with-range only]; Ferrum–Mookodi 400 kV line (2027, 400 kV, Planned, 900 MW) | 900 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Free State to Northern Cape | 8,112 h, R8.0m | 5,037 h, R3.4m | 13.8; 12.5 | - | Beta–Boundary 400 kV line (2029, 400 kV, Execution, 900 MW) | 900 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Free State to Hydra Central | 5,205 h, R4.3m | 4,041 h, R2.7m | 0.0; 0.0 | - | Perseus–Gamma 765 kV line (2029, 765 kV, Definition, 3,000 MW) | 3,000 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Hydra Central to Northern Cape | 2,924 h, R3.7m | 1,000 h, R0.6m | 3.0; 2.6 | - | Hydra–Kronos 400 kV line (2028, 400 kV, Execution, 900 MW) | 900 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Eastern Cape to Kwazulu Natal | 3,799 h, R3.1m | 4,041 h, R2.7m | 1.6; 1.5 | - | Eros–Isundu 765 kV line (2032, 765 kV, Planned, 3,000 MW) [with-range only]; Ariadne–Eros line (2027, 400 assumed kV, Planned, 900 MW) [with-range only] | 0 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Eastern Cape to Free State | 3,799 h, R3.1m | 4,041 h, R2.7m | 0.0; 0.0 | - | none | 0 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Hydra Central to Western Cape | 1,917 h, R2.2m | 961 h, R0.6m | 0.0; 0.0 | - | Droerivier–Gamma 400 kV line (2033, 400 kV, Concept, 900 MW); Gamma–Kappa 765 kV line (2029, 765 kV, Definition, 3,000 MW) | 3,900 | not binding in this test |
+| Northern Cape to Western Cape | 1,072 h, R1.5m | 59 h, R0.0m | 4.5; 3.7 | - | Paulputs–Juno 400 kV line (2027, 400 kV, Execution, 900 MW); Aries–Juno line (2033, 400 assumed kV, Concept, 900 MW); Juno–Gromis 400 kV line (2027, 400 kV, Planned, 900 MW) | 2,700 | not binding in this test |
+| Eastern Cape to Hydra Central | 1,426 h, R1.2m | 0 h, R0.0m | 0.0; 0.0 | - | Gamma–Grassridge 765 kV line, circuit 1 (2032, 765 kV, Planned, 3,000 MW); Gamma–Grassridge 765 kV line, circuit 2 (2032, 765 kV, Planned, 3,000 MW) | 6,000 | not binding in this test |
+| Free State to Kwazulu Natal (no corridor today) | none | 0 h, R0.0m | - | - | Merapi–Sorata 400 kV line (2030, 400 kV, Concept, 900 MW) | 900 | - |
+| Free State to Gauteng | 0 h, R0.0m | 0 h, R0.0m | 8.2; 7.0 | - | Lethabo–Makalu 400 kV line (2032, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Gauteng to Limpopo | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | none | 0 | not binding in this test |
+| Free State to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | none | 0 | not binding in this test |
+| Limpopo to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Borutho–Silimela 400 kV line (2028, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Free State to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Highveld–Emkhiweni 400 kV line (2028, 400 kV, Definition, 900 MW); Zeus–Perseus 765 kV line (2028, 765 kV, Definition, 3,000 MW) | 3,900 | not binding in this test |
+| Gauteng to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Kusile–Lulamisa 400 kV line (2025, 400 kV, Execution, 900 MW); Matla–Jupiter line (2032, 400 assumed kV, Planned, 900 MW) | 1,800 | not binding in this test |
+| Gauteng to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Pluto–Westgate 400 kV line (2029, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Kwazulu Natal to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | none | 0 | not binding in this test |
+| Limpopo to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Medupi–Ngwedi 765 kV line (2025, 765 kV, Execution, 3,000 MW) | 3,000 | not binding in this test |
+| Mpumalanga to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | none | 0 | not binding in this test |
+
+Ranking by the value of one more MW, 2035, weather 2015: approved-record siting against the LP's own siting (free siting; wind Hydra Central 41%, Eastern Cape 22%, Northern Cape 16%, Mpumalanga 10%, Western Cape 6%, Kwazulu Natal 2%)
+
+| rank | approved-record siting (fixed build) | R m a year | the LP's siting (free siting) | R m a year |
+|---|---|---|---|---|
+| 1 | North West to Northern Cape | 8.0 | North West to Northern Cape | 4.2 |
+| 2 | Free State to Northern Cape | 8.0 | Free State to Northern Cape | 4.2 |
+| 3 | Free State to Hydra Central | 4.3 | Eastern Cape to Kwazulu Natal | 3.4 |
+| 4 | Hydra Central to Northern Cape | 3.7 | Eastern Cape to Free State | 3.4 |
+| 5 | Eastern Cape to Kwazulu Natal | 3.1 | Free State to Hydra Central | 3.3 |
+| 6 | Eastern Cape to Free State | 3.1 | Hydra Central to Northern Cape | 0.9 |
+| 7 | Hydra Central to Western Cape | 2.2 | Northern Cape to Western Cape | 0.9 |
+| 8 | Northern Cape to Western Cape | 1.5 | Eastern Cape to Hydra Central | 0.8 |
+
+### 741, 2040, weather 2015 (build 2026-11-05f; the rebuilt table, N-1 once; the TDP file tdp_lines_v2.json, Eros in KwaZulu-Natal, no Umtu line, Gamma to Grassridge twice)
+
+| corridor | today: hours at the limit, value of one more MW (R m a year) | with the TDP's lines: hours, value | LP builds without the plan, GW (R10,000; R21,700) | LP builds with the plan, GW (R21,700) | the TDP's lines on the corridor (name, year, kV, phase, MW) | MW the plan adds | shortfall (what the LP still builds with the plan) |
+|---|---|---|---|---|---|---|---|
+| North West to Northern Cape | 8,751 h, R143.5m | 7,046 h, R10.5m | 0.0; 0.0 | - | Mercury–Umtu 765 kV line (2033, 765 kV, Concept, 3,000 MW) [with-range only]; Ferrum–Mookodi 400 kV line (2027, 400 kV, Planned, 900 MW) | 900 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Free State to Northern Cape | 8,751 h, R143.5m | 7,046 h, R10.5m | 18.3; 16.8 | - | Beta–Boundary 400 kV line (2029, 400 kV, Execution, 900 MW) | 900 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Free State to Hydra Central | 6,826 h, R94.9m | 5,798 h, R8.4m | 0.0; 0.0 | - | Perseus–Gamma 765 kV line (2029, 765 kV, Definition, 3,000 MW) | 3,000 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Eastern Cape to Kwazulu Natal | 5,175 h, R75.1m | 5,798 h, R8.4m | 2.3; 2.1 | - | Eros–Isundu 765 kV line (2032, 765 kV, Planned, 3,000 MW) [with-range only]; Ariadne–Eros line (2027, 400 assumed kV, Planned, 900 MW) [with-range only] | 0 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Eastern Cape to Free State | 5,175 h, R75.1m | 5,798 h, R8.4m | 0.0; 0.0 | - | none | 0 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Hydra Central to Northern Cape | 1,985 h, R48.6m | 1,248 h, R2.1m | 4.5; 4.3 | - | Hydra–Kronos 400 kV line (2028, 400 kV, Execution, 900 MW) | 900 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Hydra Central to Western Cape | 1,431 h, R45.2m | 1,133 h, R1.9m | 0.0; 0.0 | - | Droerivier–Gamma 400 kV line (2033, 400 kV, Concept, 900 MW); Gamma–Kappa 765 kV line (2029, 765 kV, Definition, 3,000 MW) | 3,900 | binding with the plan; the plan-plus-corridors case is weather 2025 only |
+| Eastern Cape to Hydra Central | 1,825 h, R20.4m | 0 h, R0.0m | 0.0; 0.0 | - | Gamma–Grassridge 765 kV line, circuit 1 (2032, 765 kV, Planned, 3,000 MW); Gamma–Grassridge 765 kV line, circuit 2 (2032, 765 kV, Planned, 3,000 MW) | 6,000 | not binding in this test |
+| Northern Cape to Western Cape | 793 h, R3.3m | 129 h, R0.3m | 6.2; 5.2 | - | Paulputs–Juno 400 kV line (2027, 400 kV, Execution, 900 MW); Aries–Juno line (2033, 400 assumed kV, Concept, 900 MW); Juno–Gromis 400 kV line (2027, 400 kV, Planned, 900 MW) | 2,700 | not binding in this test |
+| Free State to Kwazulu Natal (no corridor today) | none | 0 h, R0.0m | - | - | Merapi–Sorata 400 kV line (2030, 400 kV, Concept, 900 MW) | 900 | - |
+| Free State to Gauteng | 0 h, R0.0m | 0 h, R0.0m | 12.4; 11.1 | - | Lethabo–Makalu 400 kV line (2032, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Gauteng to Limpopo | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | none | 0 | not binding in this test |
+| Free State to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | none | 0 | not binding in this test |
+| Limpopo to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Borutho–Silimela 400 kV line (2028, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Mpumalanga to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | none | 0 | not binding in this test |
+| Free State to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Highveld–Emkhiweni 400 kV line (2028, 400 kV, Definition, 900 MW); Zeus–Perseus 765 kV line (2028, 765 kV, Definition, 3,000 MW) | 3,900 | not binding in this test |
+| Gauteng to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Kusile–Lulamisa 400 kV line (2025, 400 kV, Execution, 900 MW); Matla–Jupiter line (2032, 400 assumed kV, Planned, 900 MW) | 1,800 | not binding in this test |
+| Gauteng to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Pluto–Westgate 400 kV line (2029, 400 kV, Definition, 900 MW) | 900 | not binding in this test |
+| Kwazulu Natal to Mpumalanga | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | none | 0 | not binding in this test |
+| Limpopo to North West | 0 h, R0.0m | 0 h, R0.0m | 0.0; 0.0 | - | Medupi–Ngwedi 765 kV line (2025, 765 kV, Execution, 3,000 MW) | 3,000 | not binding in this test |
+
+Ranking by the value of one more MW, 2040, weather 2015: approved-record siting against the LP's own siting (free siting; wind Western Cape 34%, Hydra Central 29%, Eastern Cape 15%, Northern Cape 13%, Mpumalanga 7%)
+
+| rank | approved-record siting (fixed build) | R m a year | the LP's siting (free siting) | R m a year |
+|---|---|---|---|---|
+| 1 | North West to Northern Cape | 143.5 | North West to Northern Cape | 29.6 |
+| 2 | Free State to Northern Cape | 143.5 | Free State to Northern Cape | 29.6 |
+| 3 | Free State to Hydra Central | 94.9 | Free State to Hydra Central | 15.1 |
+| 4 | Eastern Cape to Kwazulu Natal | 75.1 | Hydra Central to Northern Cape | 14.5 |
+| 5 | Eastern Cape to Free State | 75.1 | Eastern Cape to Free State | 12.3 |
+| 6 | Hydra Central to Northern Cape | 48.6 | Eastern Cape to Kwazulu Natal | 12.3 |
+| 7 | Hydra Central to Western Cape | 45.2 | Hydra Central to Western Cape | 12.2 |
+| 8 | Eastern Cape to Hydra Central | 20.4 | Eastern Cape to Hydra Central | 3.5 |
+
+The weather-2015 tables follow the 2025 ones where run; the plan-plus-corridors column (737's first cut) is weather 2025 only.
 
 ### Reading
 
 Short in the plan, on this model: (1) Free State to Northern Cape. Two 275 kV circuits today (400 MW N-1), the plan's Beta to Boundary 400 kV line (2029, in execution) adds 900 MW, and the LP still builds 7.8 GW on it in 2035 and 10.9 GW in 2040 with the plan in place, the largest shortfall on any corridor, because it is the Northern Cape's shortest exit (90 km) and the LP prefers it to the North West and Hydra Central exits whenever it may choose. It binds in 8,200 hours today at R22m (2035) to R191m (2040) per MW-year and still in 5,700 to 6,400 hours with the plan. (2) Eastern Cape to KwaZulu-Natal. One 400 kV circuit (813 MW N-1); the plan adds nothing between the areas on the central mapping (Ariadne to Eros and Eros to Isundu are inside KwaZulu-Natal with Eros at Harding), and the LP builds 3.0 GW in 2035 and 4.5 GW in 2040 beyond the plan; with Eros in the Eastern Cape the plan adds 3,900 MW by 2032 and the shortfall falls away, which is the Eros range of 738 (c) in one corridor. (3) Free State to Gauteng. The hub's link to the load: it does not bind today (the Northern Cape's power cannot reach it), but once the Free State exit is opened the LP builds 8 to 12 GW on it from today's network, and 1.0 GW (2035) and 3.8 GW (2040) beyond the plan's Lethabo to Makalu 400 kV line (2032, 900 MW); it is short in the plan only together with (1). (4) North West to Northern Cape and Hydra Central to Northern Cape bind as hard as the Free State exit today (the same hours and value, since any exit relieves the Northern Cape), and the plan's Ferrum to Mookodi (2027) and second Hydra to Kronos (2028) lines, 900 MW each, leave them binding in 5,700 and 1,300 hours; the LP builds nothing on them with the plan because it builds the Free State exit instead, so they are short or ample only together with (1).
 
-Ample in the plan, on this model: Eastern Cape to Hydra Central (the two Gamma to Grassridge circuits, 6,000 MW by 2032, against a corridor that binds in 1,200 hours today and none with the plan, and on which the LP builds nothing); Northern Cape to Western Cape (Paulputs to Juno, Juno to Gromis and Aries to Juno, 2,700 MW by 2033, against 4 to 7 GW the LP builds from today's network and 0.1 to 2.0 GW with the plan); Hydra Central to Western Cape (Gamma to Kappa 765 kV and Droerivier to Gamma, 3,900 MW, binding 2,100 hours today and 1,300 with the plan, nothing built); Free State to Hydra Central (Perseus to Gamma 765 kV, 3,000 MW; the LP builds nothing with or without the plan, since the hub's 765 kV lines already carry 4,865 MW N-1); and the coal-belt corridors, which never bind.
+Not binding in this test, on this model (message 743 (e): 'ample' withdrawn): Eastern Cape to Hydra Central (the two Gamma to Grassridge circuits, 6,000 MW by 2032, against a corridor that binds in 1,200 hours today and none with the plan, and on which the LP builds nothing); Northern Cape to Western Cape (Paulputs to Juno, Juno to Gromis and Aries to Juno, 2,700 MW by 2033, against 4 to 7 GW the LP builds from today's network and 0.1 to 2.0 GW with the plan); Hydra Central to Western Cape (Gamma to Kappa 765 kV and Droerivier to Gamma, 3,900 MW, binding 2,100 hours today and 1,300 with the plan, nothing built); Free State to Hydra Central (Perseus to Gamma 765 kV, 3,000 MW; the LP builds nothing with or without the plan, since the hub's 765 kV lines already carry 4,865 MW N-1); and the coal-belt corridors, which never bind. What this test cannot see of those lines' purposes: the N-1 security and voltage support inside the areas they serve (the Cape corridor's stability limit, the Eastern Cape's and Namaqualand's supply security), the connection capacity they create for plants inside the area (the GCCA's business, which the ten-area model does not carry), the retirement or de-rating of the 400 kV lines they parallel, load growth and new industrial demand at the receiving end (Coega, the Northern Cape's mines and the Namaqualand coast), reactive power and short-circuit strength for inverter-based plants, and the export and wheeling flows outside the national balance; a line that does not bind here can be the line the planners need most for any of these.
 
 How the ranking moves. Under approved-record siting the top of the list is the Northern Cape's exits together (North West to Northern Cape and Free State to Northern Cape at the same value, since either relieves the province), then Free State to Hydra Central, Hydra Central to Northern Cape and Hydra Central to Western Cape in 2035, and the two Eastern Cape corridors in 2040. Under the LP's own siting (wind to Hydra Central, the Eastern and Western Cape and less to the Northern Cape; solar to the North West) the same two Northern Cape exits stay at the top but at a fifth of the value (R4.9m against R21.6m per MW-year in 2035, R36m against R191m in 2040), and the Eastern Cape's two corridors rise above the Hydra Central ones: the priority set is the same, its weight is not, and the weight the records' siting puts on the Northern Cape (34 GW of approved solar and 10 GW of wind behind five circuits) is what makes those exits the first priority by a wide margin. Between weather years the order holds: the same top three in 2035 and 2040 on weather 2015, at lower values (R8m against R22m in 2035, R144m against R191m in 2040), with Hydra Central to Northern Cape moving between fourth and sixth.
 

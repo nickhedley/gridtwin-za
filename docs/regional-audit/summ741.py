@@ -32,7 +32,7 @@ for y, wy in ((2035, 2025), (2040, 2025), (2035, 2015), (2040, 2015)):
     rows = []
     for k, c in T.items():
         a, b = c['a'], c['b']; p = P.get(k, {}); ls = lines_on(a, b, y); add = sum(q['mw'] for q in tdp if {q['a'], q['b']} == {a, b} and (q.get('year') or 9999) <= y)
-        rows.append((c['shadowRperMWyr'], f"| {a} to {b} | {c['bindingHours']:,} h, R{c['shadowRperMWyr'] / 1e6:.1f}m | {p.get('bindingHours', 0):,} h, R{p.get('shadowRperMWyr', 0) / 1e6:.1f}m | {X10.get(k, 0) / 1e3:.1f}; {X21.get(k, 0) / 1e3:.1f} | {(f'{X21P.get(k, 0) / 1e3:.1f}') if e21p else '-'} | {'; '.join(ls) if ls else 'none'} | {add:,} | {('ample' if X21P.get(k, 0) < 300 and p.get('bindingHours', 0) < 1000 else f'{X21P.get(k, 0) / 1e3:.1f} GW short') if e21p else ('ample' if p.get('bindingHours', 0) < 1000 else 'binding with the plan; the plan-plus-corridors case is weather 2025 only')} |"))
+        rows.append((c['shadowRperMWyr'], f"| {a} to {b} | {c['bindingHours']:,} h, R{c['shadowRperMWyr'] / 1e6:.1f}m | {p.get('bindingHours', 0):,} h, R{p.get('shadowRperMWyr', 0) / 1e6:.1f}m | {X10.get(k, 0) / 1e3:.1f}; {X21.get(k, 0) / 1e3:.1f} | {(f'{X21P.get(k, 0) / 1e3:.1f}') if e21p else '-'} | {'; '.join(ls) if ls else 'none'} | {add:,} | {('not binding in this test' if X21P.get(k, 0) < 300 and p.get('bindingHours', 0) < 1000 else f'{X21P.get(k, 0) / 1e3:.1f} GW short') if e21p else ('not binding in this test' if p.get('bindingHours', 0) < 1000 else 'binding with the plan; the plan-plus-corridors case is weather 2025 only')} |"))
     for q in tdp:
         k = key(q['a'], q['b'])
         if k not in T and (q.get('year') or 9999) <= y and k not in [r[1].split('|')[1].strip() for r in rows]:
