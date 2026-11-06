@@ -4,6 +4,17 @@ Final for this basis (5 Nov 2026). Times UTC.
 
 ## Summary
 
+Message 724 (5-6 Nov 2026, claude/twin-retime build 05j, the fin pass's settings): the two-stage central finished all 15 steps (24.6 h,
+presolve off so every cut solve resumed, warm starts from 6 Nov 02:19 UTC). Against the fin pass it builds 17-25% more solar and lithium
+from 2030 and retires 2,474 MW more coal in 2029; wind is the same to 2035 and 1.9% more in 2040. At 100 draws it meets the 20 GWh
+standard in every gated year but with less margin (smallest 1.10 GWh against 2.14), and reads more unserved in four of five years; over
+the whole path it costs R7.45 bn more in the same LP (about R8.4 bn at equal margin). By the rule one stage stays the headline and the gap
+is reported. Fossil-free and the annuity variant stopped because a solve cut with presolve on keeps no basis (fixed: presolve off; both
+stopped steps finish) and because the loop chases a look-ahead year it cannot bring under the standard; Deep needs two harness fixes
+(patch tested, not applied). Details in 'Message 724' below.
+
+Earlier, on the first basis (4-5 Nov):
+
 - Where the runs stopped: the central finished all 15 steps; Fossil-free stopped at step 2033 (7 of 15) and the annuity variant at step
   2029 (3 of 15), each cut twice by the piece deadline. Decision (user, 5 Nov 2026): both left stopped; no relaunch on this basis.
 - Why they stopped: a step that needs several passes of 30 to 50 min outlasts one 110-min piece, and a solve cut at the deadline with
@@ -296,7 +307,7 @@ Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season
   September; little in November and December), curtailment +5.27 TWh (October to January 3.7 of it), OCGT gas +0.26 TWh (April to August),
   diesel -0.06. On July's mean day lithium charges up to 2.8 GW more at midday and discharges up to 1.0 GW more from 17:00 to 07:00. The 25
   days: coal -6.41, curtailment +6.79, lithium +2.67 TWh. The 365-day year's diesel days off the 25 are again 8-14 August (day 219 the
-  largest), 28 August, 13-15 May, 24-25 April and 23 July.
+  largest), 29 August, 13-15 May, 25 April and 23 July.
 - 25 days against 365 days alone (the same build on the same reference year; rep_gap.py, rep_gap_2035_*.json): the 25 days get the
   year's coal within 2-3% (two stages 55.2 against 54.3 TWh; fin 64.1 against 62.3) and the shed exactly (it falls on extreme days both
   hold), but undercount curtailment (two stages 1.6 against 4.0 TWh, fin 0.4 against 2.3; the missing spill is October to January),
@@ -384,10 +395,8 @@ two stages 16.91, fin 15.15, baseline 15.72. Every build meets the standard in e
 fin pass in each year: by 5.12 GWh in 2030 (about 11 standard errors of the gap), 3.31 in 2036 (2.5), 0.94 in 2034 and 1.04 in 2035 (under
 1); its worst runs are 629 GWh in 2034 against 252. The rule is applied when 2040 and the full-path re-cost are in.
 
-When the central has all 15 steps: step 2040's output carries every year's build exactly as each
-step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's
-20-draw settings, 2030, 2035, 2040). Objective: both builds fixed in the same one-stage LP on 05j (FIX_FROM, all years), so the gap is
-the builds' alone. Then the rule of message 699 (b).
+Done (6 Nov): the engine on step_2040.json at 100 draws, both builds re-costed in the same one-stage LP, and the rule: 'The rule
+(699 (b), read as message 748 sets it)' above.
 
 Status (user, 4 Nov 2026): the metered tracking twin on this basis has been found misshapen and is being fixed. These runs stand as a method
 and timing comparison with one stage, not as a mix for use.
