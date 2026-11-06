@@ -103,6 +103,8 @@
     mix by area, wind GW: Northern Cape 10.3, Hydra Central 8.0, Eastern Cape 3.2, Kwazulu Natal 0.6; solar GW: Northern Cape 13.7; lithium GW: Limpopo 3.8, Gauteng 2.5, Eastern Cape 0.5, Free State 0.3; open cycle GW: 
 | 2035, 2025 | no limits, integration charge kept | 6 h | 21.8 (27.2) | 14.2 (17.7) | 3.7, 22.4 (8.8, 38.2) | 0.00 (0.00) | 0 | 85.5 (71.5) | 4.8 (9.8) | 2.3 | 84.6 | 63.2 | 147.4 |
     mix by area, wind GW: Northern Cape 10.3, Hydra Central 7.9, Eastern Cape 2.9, Kwazulu Natal 0.6; solar GW: Northern Cape 14.2; lithium GW: Gauteng 3.7; open cycle GW: 
+| 2040, 2025 | drop one circuit, integration charge kept | 3 h | 16.4 (40.7) | 52.1 (24.8) | 18.5, 115.4 (11.0, 60.9) | 1.87 (4.34) | 0 | 67.7 (45.5) | 16.1 (22.1) | 0.0 | 149.4 | 59.7 | 209.1 |
+    mix by area, wind GW: Northern Cape 4.7, Hydra Central 4.7, Eastern Cape 3.0, Mpumalanga 2.7, Kwazulu Natal 0.6, North West 0.3, Free State 0.2, Gauteng 0.1; solar GW: North West 24.7, Limpopo 15.7, Mpumalanga 4.0, Free State 3.4, Gauteng 3.1, Kwazulu Natal 0.9, Western Cape 0.1; lithium GW: North West 7.2, Limpopo 5.8, Gauteng 2.0, Free State 1.8, Northern Cape 0.8, Hydra Central 0.5, Eastern Cape 0.3; open cycle GW: Kwazulu Natal 1.83, Mpumalanga 0.02, North West 0.02
 | 2040, 2025 | no limits, integration charge kept | 3 h | 29.1 (40.7) | 31.9 (24.8) | 13.2, 87.1 (11.0, 60.9) | 1.08 (4.34) | 0 | 49.1 (45.5) | 10.5 (22.1) | 2.8 | 139.0 | 42.5 | 181.1 |
     mix by area, wind GW: Hydra Central 11.2, Northern Cape 10.3, Eastern Cape 6.2, Kwazulu Natal 0.6, North West 0.3, Free State 0.2, Mpumalanga 0.2, Gauteng 0.1; solar GW: Northern Cape 31.9; lithium GW: Gauteng 10.1, Limpopo 1.5, Free State 1.4, Eastern Cape 0.2; open cycle GW: Western Cape 1.08
 
