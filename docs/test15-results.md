@@ -257,6 +257,35 @@ discounted sum; R bn in 2035 rands). Results in recost_year.txt.
 - Caveat: one year; the slice charges one year's annuity of every build standing, so it judges the year, not the path (the full-path
   re-cost, 748, below, judges the path).
 
+### Messages 748 and 750 (b): where two stages' extra solar and lithium sit in the year, 2035 (2040 when the central has it)
+
+Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season.py, season_2035.json): new solar +4,126 MW, lithium
++1,567 MW / +11,133 MWh, diesel open-cycle +1,000 MW, coal standing -2,474 MW (retired early 3,177 against 703).
+
+| 2035, GWh, two stages minus fin | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec | Year |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Coal output, 365 days | -812 | -737 | -761 | -625 | -611 | -516 | -552 | -636 | -672 | -684 | -767 | -628 | -8,000 |
+| Lithium discharge, 365 days | +358 | +319 | +354 | +304 | +309 | +265 | +310 | +338 | +266 | +353 | +346 | +215 | +3,738 |
+| Curtailment, 365 days | +273 | +86 | +23 | +5 | +29 | +32 | +55 | +75 | +77 | +302 | +168 | +576 | +1,700 |
+| Diesel, 365 days | 0 | 0 | 0 | +12 | +7 | +5 | +42 | +50 | +4 | 0 | 0 | 0 | +120 |
+| Coal output, 25 days (weighted) | -319 | -1,560 | -1,328 | -212 | -1,575 | -497 | -818 | -39 | -480 | 0 | -1,997 | -7 | -8,832 |
+| Curtailment, 25 days | +253 | +371 | 0 | 0 | 0 | +211 | 0 | +31 | +51 | 0 | +200 | +29 | +1,146 |
+| Diesel, 25 days | 0 | 0 | 0 | 0 | +190 | +8 | +47 | +51 | 0 | 0 | 0 | 0 | +295 |
+
+- On the 365-day year the extra solar and lithium work every month as a daily shift: on July's mean day lithium charges up to 1.6 GW more
+  from 09:00 to 16:00 and discharges up to 1.1 GW more from 17:00 to 08:00, and coal runs 0.3-1.1 GW less in every hour. They replace coal
+  energy evenly through the year (-8.0 TWh), spill 1.7 TWh more, mostly October to January, and leave the winter to diesel (+120 GWh,
+  April to September) on 2,474 MW less coal.
+- The 25 days give the same year totals within about a tenth (coal -8.8 TWh, lithium +3.9 TWh) but put them on the wrong months: the
+  25-day LP's day weights (read from its objective: 14 days carry 14 to 40 calendar days each, the 12 extremes and the 7 stress days one
+  each) show no extra curtailment in October (day 307 stands for 36 days and spills nothing extra, against 302 GWh on the 365 days),
+  more in February and June, and 2.5 times the winter diesel (+295 against +120 GWh, from 7 May's 25-day and 31 May's 40-day weights).
+- Reference year against twelve weather years (the engine, 100 draws, 2035): coal -7.9 TWh, curtailment +2.06 TWh, lithium throughput
+  +2.78 TWh, diesel +0.27 TWh, CO2 -8.8 Mt: the same energy picture as the 365-day LP. But unserved +1.04 GWh, spread over the weather
+  years (2016 +6.4, 2019 +6.8, 2015 and 2022 -3.5 to -3.9), and engine cost +R4.66 bn, against the LP's 365-day slice at -R0.66 bn
+  (that slice prices 123 MWh of shed on 15 May at VOLL in the stress target; the engine does not). In 2030 two stages sheds more in every
+  weather year (+1.6 to +9.3 GWh): coal retired early in 2029 (3,177 against 703 MW) is not covered on any of the twelve years.
+
 ### Message 748: the common 100-draw check (pathcheck K=100, 1,200 runs a year, SEED_BASE 71830529; settings read from the README row of
 engine_loop_base_05h_k100.json; on 05j, unserved identical with 05h for the fin pass at 20 draws)
 
