@@ -46,9 +46,12 @@ Least-cost (every-change pass, build 2026-11-05f)
     free mix, 2035, 2025, one circuit dropped, corridors at R10,000: wind 22.5 GW (run 27.2), solar 15.6 (17.7), lithium 6.6 GW / 23 GWh (8.8 / 38), open cycle 0.0 (0.0); corridors 14,361 MW, R2.35bn a year; curtailed 7.4 TWh, unserved 1 GWh; new-build R78.5bn a year, fuel and carbon R61.8bn
     free mix, 2035, 2025, one circuit dropped, corridors at R0: wind 12.4 GW (run 27.2), solar 23.1 (17.7), lithium 7.8 GW / 44 GWh (8.8 / 38), open cycle 0.7 (0.0); corridors 0 MW, R0.00bn a year; curtailed 4.1 TWh, unserved 3 GWh; new-build R84.5bn a year, fuel and carbon R79.1bn
     free mix, 2035, 2025, one circuit dropped, full TDP, full TDP, corridors at R10,000: wind 22.7 GW (run 27.2), solar 15.7 (17.7), lithium 6.9 GW / 24 GWh (8.8 / 38), open cycle 0.0 (0.0); corridors 5,915 MW, R0.85bn a year; curtailed 8.3 TWh, unserved 0 GWh; new-build R77.6bn a year, fuel and carbon R60.8bn
+    free mix, 2035, 2025, one circuit dropped, full TDP, full TDP, corridors at R0: wind 19.9 GW (run 27.2), solar 15.7 (17.7), lithium 6.9 GW / 28 GWh (8.8 / 38), open cycle 0.0 (0.0); corridors 0 MW, R0.00bn a year; curtailed 5.1 TWh, unserved 1 GWh; new-build R85.0bn a year, fuel and carbon R68.3bn
+    free mix, 2035, 2015, no limits, corridors at R0: wind 22.7 GW (run 27.2), solar 12.8 (17.7), lithium 6.6 GW / 27 GWh (8.8 / 38), open cycle 0.0 (0.0); corridors 0 MW, R0.00bn a year; curtailed 3.7 TWh, unserved 3 GWh; new-build R87.1bn a year, fuel and carbon R66.9bn
     free mix, 2040, 2025, no limits, corridors at R0: wind 29.1 GW (run 40.7), solar 31.9 (24.8), lithium 13.2 GW / 87 GWh (11.0 / 61), open cycle 1.1 (4.3); corridors 0 MW, R0.00bn a year; curtailed 10.5 TWh, unserved 3 GWh; new-build R139.0bn a year, fuel and carbon R42.5bn
     free mix, 2040, 2025, one circuit dropped, corridors at R10,000: wind 26.9 GW (run 40.7), solar 40.3 (24.8), lithium 14.4 GW / 98 GWh (11.0 / 61), open cycle 0.0 (4.3); corridors 20,088 MW, R3.35bn a year; curtailed 13.6 TWh, unserved 3 GWh; new-build R123.9bn a year, fuel and carbon R38.7bn
     free mix, 2040, 2025, one circuit dropped, corridors at R0: wind 16.4 GW (run 40.7), solar 52.1 (24.8), lithium 18.5 GW / 115 GWh (11.0 / 61), open cycle 1.9 (4.3); corridors 0 MW, R0.00bn a year; curtailed 16.1 TWh, unserved 0 GWh; new-build R149.4bn a year, fuel and carbon R59.7bn
+    free mix, 2040, 2015, no limits, corridors at R0: wind 31.5 GW (run 40.7), solar 33.5 (24.8), lithium 11.1 GW / 68 GWh (11.0 / 61), open cycle 1.8 (4.3); corridors 0 MW, R0.00bn a year; curtailed 14.4 TWh, unserved 0 GWh; new-build R144.1bn a year, fuel and carbon R49.0bn
 
 Fossil-free stand-in (s_ff2040_c7, build 2026-11-03a)
 | year, weather year | corridors | coal | gas | diesel | wind (offshore) | solar | lithium | flow, iron-air | pumped | curtailed (wind, solar, offshore) | unserved | corridors built MW, R bn a year | corridors with a shadow price over 4,000 h |
@@ -114,14 +117,17 @@ Deep decarbonisation stand-in (s_deep40nogas_c7, build 2026-11-03a)
 | timing_final_2035_wy2025_n1c_mix_ext10k_d25.json | 2026-11-05f, 2035, 2025 | one circuit dropped, mix, corridors extendable at R10,000 | 600 | 86482 | 181311 | 4 | 64 | 67 | 0.8 |
 | net_final_2035_wy2025_nolimit_reea_l0_c1_mix_control_h6.json | 2026-11-05f, 2035, 2025 | no limits, mix | 1,460 (6 h blocks) | 210300 | 441010 | 3 | 297 | 300 | 1.2 |
 | net_final_2035_wy2015_nolimit_reea_l0_c1_h3.json | 2026-11-05f, 2035, 2015 | no limits, fixed build | 2,920 (3 h blocks) | 297840 | 645320 | 2 | 10 | 13 | 1.4 |
+| net_final_2035_wy2015_nolimit_reea_l0_c1_mix_control_h3.json | 2026-11-05f, 2035, 2015 | no limits, mix | 2,920 (3 h blocks) | 420540 | 881930 | 2 | 1596 | 1599 | 2.0 |
 | net_final_2035_wy2025_n1c_reea_l0_c1_h3.json | 2026-11-05f, 2035, 2025 | one circuit dropped, fixed build | 2,920 (3 h blocks) | 297840 | 645320 | 2 | 10 | 12 | 1.4 |
 | net_final_2035_wy2025_n1c_reea_l0_c1_mix_ext10k_h3.json | 2026-11-05f, 2035, 2025 | one circuit dropped, mix, corridors extendable at R10,000 | 2,920 (3 h blocks) | 420562 | 881951 | 3 | 2732 | 2735 | 2.2 |
 | net_final_2035_wy2025_n1c_reea_l0_c1_mix_n1c_fixedcorr_h3.json | 2026-11-05f, 2035, 2025 | one circuit dropped, mix | 2,920 (3 h blocks) | 420540 | 881930 | 2 | 3741 | 3744 | 2.1 |
 | net_final_2035_wy2025_n1ctdp_reea_l0_c1_tdpfull_mix_ext10k_h3.json | 2026-11-05f, 2035, 2025 | one circuit dropped, full TDP, mix, corridors extendable at R10,000 | 2,920 (3 h blocks) | 420562 | 881951 | 3 | 2342 | 2344 | 2.2 |
+| net_final_2035_wy2025_n1ctdp_reea_l0_c1_tdpfull_mix_fixed_h3.json | 2026-11-05f, 2035, 2025 | one circuit dropped, full TDP, mix | 2,920 (3 h blocks) | 420540 | 881930 | 3 | 3195 | 3198 | 2.1 |
 | net_final_2035_wy2025_nolimit_reea_l0_c1_h3.json | 2026-11-05f, 2035, 2025 | no limits, fixed build | 2,920 (3 h blocks) | 297840 | 645320 | 2 | 12 | 15 | 1.4 |
 | net_final_2035_wy2025_nolimit_reea_l0_c1_mix_control_caps_h3.json | 2026-11-05f, 2035, 2025 | no limits, mix | 2,920 (3 h blocks) | 420540 | 881933 | 2 | 1165 | 1168 | 2.4 |
 | net_final_2035_wy2025_nolimit_reea_l0_c1_mix_control_h3.json | 2026-11-05f, 2035, 2025 | no limits, mix | 2,920 (3 h blocks) | 420540 | 881930 | 2 | 1213 | 1215 | 2.0 |
 | net_final_2040_wy2015_nolimit_reea_l0_c1_h3.json | 2026-11-05f, 2040, 2015 | no limits, fixed build | 2,920 (3 h blocks) | 335800 | 732920 | 2 | 14 | 16 | 1.8 |
+| net_final_2040_wy2015_nolimit_reea_l0_c1_mix_control_h3.json | 2026-11-05f, 2040, 2015 | no limits, mix (script v2) | 2,920 (3 h blocks) | 516900 | 1086330 | 3 | 2274 | 2277 | 2.5 |
 | net_final_2040_wy2025_n1c_reea_l0_c1_h3.json | 2026-11-05f, 2040, 2025 | one circuit dropped, fixed build | 2,920 (3 h blocks) | 335800 | 732920 | 2 | 13 | 15 | 1.8 |
 | net_final_2040_wy2025_n1c_reea_l0_c1_mix_ext10k_h3.json | 2026-11-05f, 2040, 2025 | one circuit dropped, mix, corridors extendable at R10,000 | 2,920 (3 h blocks) | 455602 | 963711 | 2 | 4580 | 4582 | 2.3 |
 | net_final_2040_wy2025_n1c_reea_l0_c1_mix_n1c_fixedcorr_h3.json | 2026-11-05f, 2040, 2025 | one circuit dropped, mix | 2,920 (3 h blocks) | 455580 | 963690 | 3 | 2715 | 2718 | 2.2 |
