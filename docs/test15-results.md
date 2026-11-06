@@ -178,8 +178,9 @@ on step_2030.json with YEARS=2030 (the same row's settings):
 | Engine cost, R bn; CO2, Mt; curtailment, TWh | 242.62; 130.9; 1.93 | 241.18; 125.2; 3.31 | | |
 
 In 2030 two stages builds more solar, lithium and grid-forming and retires more coal early; every gap but wind's is outside 5% and 250
-MW, and the engine is worse (7.75 against 2.04 GWh, both inside the standard), so by 699 (b) one stage stays the headline for 2030. The
-loop's own check put 2030 at 1.68 GWh on 2 draws (under the verdict rule's 5 GWh top-up threshold); the 20-draw check reads 7.75.
+MW. The 20-draw engine reads 7.75 against 2.04 GWh (both inside the standard). No headline is called on 20 draws (message 748): the rule
+is applied on the 100-draw check below. The loop's own check put 2030 at 1.68 GWh on 2 draws (under the verdict rule's 5 GWh top-up
+threshold); the 20-draw check reads 7.75.
 
 2035, final for the mix (steps to 2035 fix every build to 2035), engine on step_2035.json with YEARS=2035:
 
@@ -196,9 +197,10 @@ loop's own check put 2030 at 1.68 GWh on 2 draws (under the verdict rule's 5 GWh
 | Engine cost, R bn; CO2, Mt; curtailment, TWh | 270.97; 78.8; 10.36 | 275.56; 70.1; 12.42 | | |
 
 In 2035 two stages again builds more solar, lithium and grid-forming, adds 1,000 MW of diesel open-cycle and retires more coal early;
-every gap but wind's is outside the margin. The engine is not better: 20.16 GWh against 19.58 (the gap is inside one standard error, but
-two stages sits just over the standard and its worst draw is twice one stage's), at R4.6 bn more engine cost and 8.8 Mt less CO2. By 699
-(b) one stage stays the headline for 2035. The loop's own check read 2035 at 19.28 GWh (step 2035, pass 1).
+every gap but wind's is outside the margin. At 20 draws the engine reads 20.16 GWh against 19.58 (inside one standard error; worst draw 359
+against 182), at R4.6 bn more engine cost and 8.8 Mt less CO2. 699
+(b) is not applied on this: a 0.58 GWh gap at 20 draws cannot decide it (user, 6 Nov 2026, message 748); the rule is applied on the
+100-draw check below. The loop's own check read 2035 at 19.28 GWh (step 2035, pass 1).
 
 When the central has all 15 steps: step 2040's output carries every year's build exactly as each
 step fixed it (checked on test 15's central: no difference in any year), so it is the engine check's input (pathcheck.js, the fin pass's
@@ -439,6 +441,7 @@ tsr_central: each step (year y on 365 days, the look-ahead years at 25 days)
 | 2033 | 2037 | 2 | adequate | parallel, 2 threads, presolve off | 37.4, 32.5, 9.4 | 97.0 | 2 | 3.9 | pass 1: 2034: 21.2 / 20<br>pass 2: none | 707.044 |
 | 2034 | 2038 | 2 | adequate | parallel, 2 threads, presolve off | 77.4, 10.4, 8.6 | 66.0 | 3 | 4.6 | pass 1: 2034: 22.9 / 20<br>pass 2: none | 756.556 |
 | 2035 | 2039 | 1 | adequate | parallel, 2 threads, presolve off | 18.6, 35.8 | 68.6 | 2 | 3.3 | pass 1: none | 813.405 |
+| 2036 | | | not finished | parallel, 2 threads, presolve off | 16.1 | | 1 | | | |
 
 tsr_central: the adequacy test on each step's own year y at its final pass (mean unserved GWh a year against the limit)
 
