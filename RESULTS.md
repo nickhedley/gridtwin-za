@@ -23627,3 +23627,50 @@ cost, undiscounted: 2027 R500, 2030 R500 and 2035 R500, each with nothing enroll
 R709.5 and 2032 R565.0 at the enrolment cap; 2033 R500.0 (between bounds); 2034 R530.5. Against Eskom's R1,500/kW-yr: at most a third
 in 2027, 2030 and 2035, 0.38-0.47 in 2031-2032. Caveats (772 (c)): the national system's value only; the basis of Eskom's rate (per MW
 of demand reduction or per MW enrolled) still to be confirmed with Plentify.
+
+### The 8 Nov key against each single change (message 761 (c)): +R46.4bn on the baseline, R4.6bn above the sum of the singles; the 100-draw gate 5.4 / 6.3 / 10.6 GWh
+
+The key (RESULTS 'The 8 Nov key's final build'; engine harness/pathway/final/key/engine_key_8nov.json, 20 draws, and
+engine_key_8nov_k100.json, the 100-draw gate on the common seeds, SEED_BASE 71830529) beside each single change on the baseline
+(fin basis, metered 2025): f3d and k8 are pass-1 LPs (P1=1), wind 40% and the same-area cap full loops, the key a full loop (two
+passes). Changes from the baseline; table from harness/pathway/final/key/compare761.py:
+
+| Change on the baseline | Verdict | Objective, R bn | Year | Wind, GW | Solar, GW | Lithium, GW | Open-cycle, GW | Curtailment, TWh | Unserved, GWh (20 draws) | CO2, Mt |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Baseline (level) | adequate | 1540.9 | 2030 | 9.75 | 6.68 | 1.58 | 0.00 | 1.64 | 2.00 | 131.78 |
+| Baseline (level) |  |  | 2035 | 27.25 | 17.75 | 9.29 | 0.00 | 10.05 | 19.48 | 79.75 |
+| Baseline (level) |  |  | 2040 | 43.78 | 24.28 | 11.17 | 5.59 | 29.41 | 8.61 | 47.83 |
+| f3d | adequate | -2.6 | 2030 | +0.00 | +0.00 | +0.03 | +0.00 | -0.03 | -0.20 | -0.11 |
+|  |  |  | 2035 | +0.00 | +0.52 | +0.55 | +0.01 | +0.24 | +0.16 | -1.11 |
+|  |  |  | 2040 | -0.09 | +1.28 | +1.82 | -0.35 | +0.93 | +1.86 | -1.83 |
+| Batteries 1-3 (k8) | adequate | +0.7 | 2030 | +0.00 | +0.00 | +0.52 | +0.00 | +0.03 | +0.07 | -0.05 |
+|  |  |  | 2035 | +0.00 | +0.03 | +0.25 | +0.01 | -0.02 | -0.21 | -0.07 |
+|  |  |  | 2040 | -0.03 | +0.03 | +0.09 | +0.02 | -0.05 | -0.18 | -0.02 |
+| Wind 40% | adequate | +22.0 | 2030 | +0.00 | +0.00 | -0.05 | +0.00 | -0.14 | +0.16 | +1.60 |
+|  |  |  | 2035 | +0.00 | +0.31 | +0.43 | +0.00 | -1.05 | +1.95 | +3.28 |
+|  |  |  | 2040 | -0.04 | +1.57 | +1.02 | -0.38 | -3.16 | +2.30 | +1.31 |
+| Same-area cap | adequate | +21.7 | 2030 | +0.54 | -2.99 | -0.34 | +0.00 | -1.07 | -0.92 | +4.16 |
+|  |  |  | 2035 | +0.54 | -2.03 | -0.73 | +0.00 | -0.39 | -4.07 | +2.67 |
+|  |  |  | 2040 | +1.51 | -3.66 | -0.97 | +0.07 | -1.33 | -1.20 | +2.20 |
+| 8 Nov key (combined) | adequate | +46.4 | 2030 | +0.00 | -2.99 | +0.26 | +0.00 | -1.22 | -0.38 | +7.70 |
+|  |  |  | 2035 | +0.00 | +0.19 | -0.80 | +0.99 | +0.70 | -13.01 | +5.39 |
+|  |  |  | 2040 | +0.97 | +1.14 | +1.61 | -0.93 | -1.84 | -0.22 | +0.33 |
+| Interaction (combined - sum of singles) | | +4.6 | 2030 | -0.54 | +0.00 | +0.10 | +0.00 | -0.01 | +0.51 | +2.11 |
+| Interaction (combined - sum of singles) | |  | 2035 | -0.54 | +1.36 | -1.31 | +0.98 | +1.93 | -10.85 | +0.61 |
+| Interaction (combined - sum of singles) | |  | 2040 | -0.39 | +1.92 | -0.35 | -0.28 | +1.77 | -2.99 | -1.32 |
+
+100-draw gate, GWh (se): 2034 / 2035 / 2036 (2040)
+  Baseline: 13.9 (0.9) / 17.8 (1.0) / 15.5 (0.9) / 7.1 (0.5)
+  f3d: 14.4 (0.9) / 17.9 (1.0) / 17.5 (1.0) / 8.7 (0.6)
+  Batteries 1-3 (k8): 13.4 (0.8) / 17.6 (1.0) / 15.2 (0.9) / -
+  Wind 40%: 15.4 (0.9) / 19.6 (1.1) / 16.9 (1.0) / -
+  Same-area cap: 16.7 (1.0) / 14.8 (0.8) / 15.3 (0.9) / -
+  8 Nov key (combined): 5.4 (0.5) / 6.3 (0.5) / 10.6 (0.7) / -
+
+Read with the se rule (752 (e)): every gate figure for the key is inside the standard by 9 to 15 GWh, far beyond one standard error
+(0.5-0.7), so the key is adequate on the gate; the 20-draw check gives 1.63 (0.41), 6.47 (1.06) and 8.40 (1.22) GWh in 2030, 2035 and
+2040. Caveat on the interaction: f3d and k8 are pass-1 LPs, the key took a second pass (2034 at 20.82 GWh on pass 1), and that pass
+added 995 MW of open-cycle diesel by 2035 for the three 2034 stress windows; most of the 2035 interaction (-10.85 GWh unserved,
++0.98 GW open-cycle, +1.36 GW solar) is that pass, not the changes acting on one another. The 2030 change is the same-area cap's
+(-2.99 GW solar, +7.7 Mt CO2 with 40% wind). Coal retired early: none on the key; Test 15's two-stage central retired 3,177 MW from 2029
+and the one-stage fin pass 703 MW (775; different basis: national pool, 42% wind, no f3d or k8).
