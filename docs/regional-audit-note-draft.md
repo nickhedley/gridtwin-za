@@ -7,24 +7,23 @@ docs/regional-audit.md. No NTCSA capacity figures appear here.
 ## Draft text
 
 The network's binding limit is the Karoo's exits. On today's corridors the Northern Cape's two circuits toward the North West and the Free State
-sit at their limit 8,700 hours a year in 2035 and 2040; the least-cost build curtails 57 TWh in 2035 and 106 TWh in 2040 for want of them [EC].
-An independent cross-check broadly agrees on the binding corridors.
+sit at their limit 8,700 hours a year; the least-cost build curtails 57 TWh in 2035 and 106 TWh in 2040 for want of them [EC]. An
+independent cross-check broadly agrees on the binding corridors.
 
 Today's fleet is unconstrained: the 2025 and 2026 fleets curtail nothing on the same table [EC].
 
-At today's build rate the order of the lines matters more than their number. At 293 km a year, the plan's inter-area lines by their own dates
-leave 2032 curtailing 20 TWh; the same kilometres in the order of the binding corridors leave 9 TWh, R7.6bn a year apart [EC, earlier table].
+At today's build rate the order of the lines matters more than their number: at 293 km a year the plan's lines by their own dates leave 2032
+curtailing 20 TWh; the same kilometres in the order of the binding corridors leave 9 TWh, R7.6bn a year apart [EC].
 
-For the network, lines beat batteries. Two gigawatts of lithium at the exits cuts 2035's curtailment by one terawatt-hour for R2.8bn a year;
-the same money in corridors cuts it by 45 TWh. The corridors are a net saving at either value of unserved energy; the lithium is a net cost at
-the engine's [EC, earlier table].
+For the network, lines beat batteries: 2 GW of lithium at the exits cuts 2035's curtailment by 1 TWh for R2.8bn a year; the same money in
+corridors cuts it by 45 TWh, a net saving at either value of unserved energy where the lithium is a net cost at the engine's [EC].
 
-Gauteng's 2040 shortfall is a Karoo-exit problem. With the plan's lines, 58 GWh is unserved in Gauteng; the cheapest store the model chooses
-sits at the Eastern Cape and Hydra Central exits and clears half of it; 20 GW of corridor for R5.8bn a year clears all of it and nets R55bn at
-R12,300 per MWh [EC].
+Gauteng's 2040 shortfall is a Karoo-exit problem: with the plan's lines 58 GWh is unserved in Gauteng; the cheapest store the model chooses
+sits at the Eastern Cape and Hydra Central exits and clears half; 20 GW of corridor for R5.8bn a year clears all and nets R55bn at R12,300
+per MWh [EC].
 
-Caveat: a zonal, fixed-build test. Ten areas with no limits inside them, the pathway's build held fixed, one weather year, perfect foresight,
-thermal and loadability ratings with no voltage or stability limit. It finds where the corridors bind and what they are worth, not what to build.
+Caveat: a zonal, fixed-build test, ten areas with no limits inside them, the pathway's build held fixed, one weather year, perfect foresight,
+thermal and loadability ratings with no voltage or stability limit. It finds where corridors bind and what they are worth, not what to build.
 
 ## The table
 
