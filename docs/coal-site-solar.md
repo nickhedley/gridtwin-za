@@ -344,6 +344,44 @@ and the class's run on twin-retime's own settings, labelled as not the key's bas
 - D8. With the spare pool on, the freed-coal pool and the same-area cap are off (section 2b), so the two variants are
   alternatives in separate runs. Recommendation: yes; a combined run only if the first table asks for it.
 
+## 10. What was built (7 Nov 2026, build 2026-11-07a; message 777)
+
+Built as designed, with these readings taken while Nick was offline (each with its reason):
+
+- The class's tracking twin is PVGIS's own single-axis tracking series for Mpumalanga, year by year (nodal/profiles_solar_tracking.json,
+  the file the national twin's modelled years already read), not the national month-by-hour map applied to the fixed-tilt series:
+  the real series exists for every year, so an estimate was not needed. Its twelve-year mean is 0.2552 per unit (fixed tilt 0.2089),
+  computed at run time (bldPvCoalTwelveYearMeans), never typed.
+- The class's own seasonal factors (D5): bldRepF3dApply, finding 3's rule as the key's inline code, applied to the class's days against
+  its own twelve-year month means (bldPvCoalF3d 1, on when the reference is metered), recorded as days.f3dC and in the pathway's
+  output (pvCoalDays) beside the national record. The rule caps each scaled hour at 1 per unit, as the key's does; on the key's
+  settings seven of the class's 600 representative hours sit above the class series' own maximum (0.849 against 0.826), reported by
+  validate_lp, not failed: changing the cap would change the rule. For Nick.
+- D1 (ii): one row per year, pvccap_<y>, holds the class and every freed connection of storage and gas (rp_, wind barred) within the
+  Mpumalanga MW; the national rppool_ row stays as it was for rp_ alone, so storage and gas are bounded by the tighter of the two.
+  Freed MW outside Mpumalanga (Kelvin 2027, Lethabo 2038-40, about 2.0 GW by 2040) are offered to nobody while the class is on: a
+  simplification, TODO 14mn.
+- D4: early retirement enters the cap at Mpumalanga's share of the coal standing that year (bldCoalRegionShare, 0.717 in 2026 falling
+  to 0.55 by 2040), computed from UC_FLEET; with the compliance option (COMPLY=compromise in the key) rc_ is in the LP.
+- The class draws on utility solar's yearly pace (pvcpace_<y>: b_pv + b_pvc at or below the solar rate with its growth), so it adds
+  no delivery capacity; its own bound is the same rate.
+- The same-area cap (the key's rpcap_ rows) is off in the (c) worktree by FIXED.bldRpSameAreaCap 0, not by code: the cap is the key
+  patch's, not this branch's. With the class on it would otherwise bind storage and gas's freed MW at 658 MW.
+- Spare pool (2b): built as designed; hp_ columns, hpb_ rows (wind's shared with cw_), hppool at H; the freed-coal pool off with it.
+  The engine credits the run's recorded hp_ MW (gridHpMW) at the integration charge, or the page rule without a run.
+- Page (D2 (i)): FIXED.bldPvCoalSite 0, newPvCoalMW 0 and bldSparePoolMW 0; no slider, no visible text; newPvCoalMW in
+  PRESET_NON_SLIDER_KEYS so a build applied from the optimiser does not leak into the next preset. BUILD_STAMP 2026-11-07a.
+- Identity: with every switch off, the (c) worktree (this branch plus harness/pathway/final/key/key_on_twin-retime_2d86faa.patch)
+  builds the key's pass-1 LP with SHA-1 c10bea45a9085fc64401496b11dbdd309be35c78, the key's own (RESULTS on claude/c7-runs,
+  message 768 (b)), to every digit; and on the page default the LP text with the switch off is byte for byte the base's.
+- validate_lp.js: 19 checks for the class and the pool, each family proved on an injected fault (the class on the national twin in the
+  rows; the class charged solar's grid cost; the cap row dropped; the engine running the class on the national twin; the pool credited
+  at the whole grid cost; the pool row dropped; the freed pool left on beside the spare pool; the class's typical days rescaled to the
+  national target table). The last was the fault the first (c) run found: the clustered days' typical-day rescale read the national
+  target table, which has no entry for the class, so the days could not be built; fixed in 942b559.
+- Harness: pathway_perfail.js PVC=1 and SPARE=H, sched[y].pvc and sched[y].hp, the output's pvCoal, sparePoolMW and pvCoalDays;
+  pathcheck.js carries the run's switches, cum.pvc to newPvCoalMW, the class's vintages and gridHpMW to the engine.
+
 ## 9. Sources used in this note
 
 - index.html on a77c7b2: FIXED.bldRpExclude and its comment (Eskom's repowering pipeline, Engineering News, 17 Jun 2025);

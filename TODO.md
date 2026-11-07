@@ -346,6 +346,15 @@ FOCUS (user, 12 Oct 2026). Until the IRP comparison is drafted, the only goal is
 16a. Run the converged loop build through the presets' twelve-year test before treating it as a result
 16b. You: backcast capacities – move solar and wind to 2025 annual means (2,302 and 3,642) alongside rooftop 6,830?
 
+14mn. Coal-site solar and the spare-capacity pool, after the (c) runs (user, 7 Nov 2026, messages 763, 773, 774, 777; docs/coal-site-solar.md
+section 10). (a) The class's seasonal factors cap each hour at 1 per unit, as finding 3's rule does; on the key's settings seven of its 600
+representative hours sit above the class series' own maximum (0.849 against 0.826): decide whether the cap should be the series' maximum.
+(b) Freed MW outside Mpumalanga (Kelvin 2027, Lethabo 2038-40, about 2.0 GW by 2040) are offered to nobody while the class is on; a second
+regional row if wanted. (c) Komati (109 MW, retired 2022) outside the cap (D3); Eskom's pipeline puts 122 MW of solar there. (d) The
+pipeline-as-floor sensitivity (section 2a), one LP, if (c)'s order left no time. (e) A page control for the class or the pool (D2 (ii)) only
+if either enters the central. (f) validate_series.js does not yet compare the class's series between the LP and the engine (validate_lp does,
+on the metered profile); extend it when the class is on by default.
+
 ## Next note: all-options pathway
 
 Grouped by the user, 23 Oct 2026 (message 351): the all-options least-cost pathway (14ip: VPPs, electrolysers, interruptible load,
