@@ -23694,5 +23694,4 @@ harness/pathway/final/key/pathway_kw42.json, engine_kw42.json (20 draws), engine
 | Unserved, 20 draws, GWh (se) | 1.63 (0.41) / 6.47 (1.06) / 8.40 (1.22) | 1.24 (0.29) / 7.75 (1.13) / 7.85 (1.01) | |
 | Gate, 100 draws, 2034 / 2035 / 2036 | 5.44 (0.51) / 6.25 (0.51) / 10.60 (0.74) | 5.62 (0.52) / 7.52 (0.54) / 12.62 (0.78) | |
 
-Both well inside the standard on the gate (margins 7 to 15 GWh, many standard errors). No coal retired early in either. Wind's
-build path is set by the annual limits and the 2026-2028 floors, so the extra 0.54 GW is the same in every year from 2030.
+Both well inside the standard on the gate (margins 7 to 15 GWh, many standard errors). No coal retired early in either.
