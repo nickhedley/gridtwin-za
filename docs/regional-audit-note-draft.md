@@ -1,29 +1,29 @@
 # The network section of the note: draft for review (7 Nov 2026; not for publication)
 
-Draft for Nick and the advisor (review by 9 Nov 12:00 SAST). Every figure is the every-change pass (build 2026-11-05f) on the ten-area
-table of record (corridors_v3.json), weather 2025, and is a placeholder marked [EC] until the final builds replace it. Method and cases:
-docs/regional-audit.md. No NTCSA capacity figures appear here.
+Draft for Nick and the advisor (review by 9 Nov 12:00 SAST). Every figure in the text and the table is the every-change pass (build
+2026-11-05f) on the ten-area table of record (corridors_v3.json), weather 2025, and is a placeholder until the final builds replace it; the line
+order and the lithium-against-corridor figures are from the earlier table and are rerun on the table of record with the final builds. Method
+and cases: docs/regional-audit.md. No NTCSA capacity figures appear here.
 
 ## Draft text
 
-The network's binding limit is the Karoo's exits. On today's corridors the Northern Cape's two circuits toward the North West and the Free State
-sit at their limit 8,700 hours a year; the least-cost build curtails 57 TWh in 2035 and 106 TWh in 2040 for want of them [EC]. An
-independent cross-check broadly agrees on the binding corridors.
+The binding limit is the Karoo's exits. On today's corridors the Northern Cape's exits to the North West and the Free State are at their limit
+8,700 hours a year; the least-cost build curtails 57 TWh in 2035 and 106 TWh in 2040 for want of them. An independent cross-check broadly
+agrees on the binding corridors.
 
-Today's fleet is unconstrained: the 2025 and 2026 fleets curtail nothing on the same table [EC].
+Today's fleet is unconstrained: the 2025 and 2026 fleets curtail nothing.
 
-At today's build rate the order of the lines matters more than their number: at 293 km a year the plan's lines by their own dates leave 2032
-curtailing 20 TWh; the same kilometres in the order of the binding corridors leave 9 TWh, R7.6bn a year apart [EC].
+At today's build rate the order of the lines matters more than their number: at 293 km a year the plan's own order leaves 2032 curtailing 20
+TWh, the binding corridors' order 9 TWh, R7.6bn a year apart.
 
-For the network, lines beat batteries: 2 GW of lithium at the exits cuts 2035's curtailment by 1 TWh for R2.8bn a year; the same money in
-corridors cuts it by 45 TWh, a net saving at either value of unserved energy where the lithium is a net cost at the engine's [EC].
+Lines beat batteries for the network: 2 GW of lithium at the exits cuts 2035's curtailment by 1 TWh for R2.8bn a year; the same money in
+corridors cuts it by 45 TWh, a net saving at either value of unserved energy where the lithium is a net cost at the engine's.
 
-Gauteng's 2040 shortfall is a Karoo-exit problem: with the plan's lines 58 GWh is unserved in Gauteng; the cheapest store the model chooses
-sits at the Eastern Cape and Hydra Central exits and clears half; 20 GW of corridor for R5.8bn a year clears all and nets R55bn at R12,300
-per MWh [EC].
+Gauteng's 2040 shortfall is a Karoo-exit problem: with the plan's lines 58 GWh is unserved there; the model's cheapest store sits at the
+Eastern Cape and Hydra Central exits and clears half; 20 GW of corridor for R5.8bn a year clears all, a net R55bn at R12,300 per MWh.
 
-Caveat: a zonal, fixed-build test, ten areas with no limits inside them, the pathway's build held fixed, one weather year, perfect foresight,
-thermal and loadability ratings with no voltage or stability limit. It finds where corridors bind and what they are worth, not what to build.
+Caveat: a zonal, fixed-build test (ten areas with no limits inside them, the pathway's build fixed, one weather year, perfect foresight, thermal
+and loadability ratings, no voltage or stability limit) finds where corridors bind and what they are worth, not what to build.
 
 ## The table
 
