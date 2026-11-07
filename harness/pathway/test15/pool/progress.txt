@@ -19,3 +19,7 @@ CONG_OFF=1
 WX_WINDCORR=1 K=100)
 2026-11-07T12:55:59Z gate 2040 rc 0
 2026-11-07T12:56:14Z note: the job's exit 2 came after both gates finished (rc 0): pool_run.sh was edited while it ran (9494818), so bash read a broken line after the loop; the results are complete
+2026-11-07T14:48:22Z gate key_p1 2034,2035,2036 PID 21078 (LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1  K=100, IN=/home/user/gtza-mdrun/harness/out/md/p1_off.json)
+2026-11-07T15:30:26Z gate key_p1 2034,2035,2036 rc 0
+2026-11-07T15:30:26Z gate key_p1 2040 PID 25236 (LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1  K=100, IN=/home/user/gtza-mdrun/harness/out/md/p1_off.json)
+2026-11-07T15:45:43Z gate key_p1 2040 rc 0

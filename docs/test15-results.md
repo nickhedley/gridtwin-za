@@ -404,6 +404,62 @@ patch). Choices, each the one closest to accuracy:
   0.35889, new wind 0.40000, fixed tilt 0.22363, tracking 0.28445), map365 reads only representative days. The pass-1 LP writes (key
   388b8499d9, 116 MB, the same size as the key's).
 
+#### Message 778 (c), results: option B's pass 1 against the key's own pass 1 (7 Nov 2026)
+
+Option B's build fails the 20 GWh standard in every gated year, 45.7 to 137.2 GWh at 100 draws; the key's own pass 1 meets it in each
+(10.2 to 17.9). Cause: option B's 15 extreme days weigh a twelfth of a day each, so its LP's stress days stand for 1.25 days a year
+against the key's 13, and the twelve years' other stress days average away in the typical clusters. Option B does not replace the
+key's days as built.
+
+Runs. Option B: pool_run.sh p1 (LP 8f39e0b455, 27 days, solved 7 Nov). The key's own pass 1: mindown/run_md.sh p1 off off
+(claude/coal-mindown-lp with every switch off, the key's LP c10bea45a9 byte for byte; two pieces, solved Optimal 13:56 UTC). Both on
+2d86faa + the key patch, MAXP=1, the key's settings from solve_key.sh. Engines: solve_key.sh's line at 20 draws; the gate, the README row
+engine_loop_base_05h_k100's settings at K=100 (1,200 runs a year, the same seeds), both builds through the same pool_run.sh gate in
+/home/user/gtza-pool (`gate key_p1 <p1_off.json>`). Results: pool/pool_p1.json, pool/key_p1_k100_*.json, pool/pool_p1_k100_*.json,
+mindown/p1_off.json, mindown/p1_off_eng.json.
+
+| Build, new since 2026 | Year | Key pass 1 (25 days) | Option B (27 pooled days) | Difference |
+|---|---|---:|---:|---:|
+| Wind, MW | 2030 / 2035 / 2040 | 9,746 / 27,246 / 44,746 | 9,746 / 27,246 / 44,746 | 0 / 0 / 0 |
+| Solar, MW | 2030 / 2035 / 2040 | 3,697 / 17,636 / 25,224 | 3,697 / 16,351 / 31,416 | 0 / -1,285 / +6,192 |
+| Lithium, MW | 2030 / 2035 / 2040 | 1,841 / 9,450 / 12,731 | 1,389 / 6,299 / 11,861 | -452 / -3,151 / -870 |
+| Lithium, MWh | 2030 / 2035 / 2040 | 3,719 / 36,599 / 67,575 | 3,719 / 23,084 / 57,409 | 0 / -13,515 / -10,166 |
+| Coal standing, MW | 2030 / 2035 / 2040 | 32,433 / 25,916 / 17,890 | 31,909 / 25,392 / 17,366 | -524 each |
+| Coal retired early, MW | from 2030 | 0 | 524 | +524 |
+| Objective, R bn | | 1,583.193 | 1,586.422 | +3.228 |
+
+| Engine | Year | Key pass 1: unserved GWh (se); curtailment, coal TWh | Option B |
+|---|---|---|---|
+| 20 draws | 2030 | 1.63 (0.41); 0.42, 125.07 | 3.48 (1.06); 0.41, 124.97 |
+| 20 draws | 2035 | 14.70 (1.85); 9.55, 74.72 | 63.91 (4.01); 11.50, 78.74 |
+| 20 draws | 2040 | 8.18 (1.20); 27.36, 41.76 | 144.45 (6.72); 39.45, 38.30 |
+| Gate, 100 draws | 2034 | 17.93 (1.07); 7.26, 84.54 | 45.69 (1.42); 8.91, 86.64 |
+| Gate, 100 draws | 2035 | 13.82 (0.85); 9.55, 74.73 | 59.48 (1.76); 11.50, 78.78 |
+| Gate, 100 draws | 2036 | 17.15 (1.02); 11.64, 66.16 | 62.86 (1.80); 14.53, 70.45 |
+| Gate, 100 draws | 2040 | 10.16 (0.67); 27.36, 41.76 | 137.17 (2.65); 39.45, 38.32 |
+
+The loop's own check (recorded in pass 1, acted on from pass 2) agrees: option B reads 23.8 to 147.8 GWh at 20 draws from 2031 to 2040,
+the key 9.5 to 20.8 (2038 at 10 draws).
+
+Where each LP plans its shedding (pool/shed_by_class.py; the key's weights from its LP's tgt_2035 and tgt_2040 rows,
+pool/key_tgt_weights.json; option B's from its log; the tail windows, days 1000-1006, weigh 1/24 each in both):
+
+| Weighted planned shed, GWh a year | Key 2035 | Key 2040 | Option B 2035 | Option B 2040 |
+|---|---:|---:|---:|---:|
+| Extreme days | 11.24 | 19.90 | 8.28 | 12.44 |
+| Tail windows | 8.76 | 0.10 | 11.72 | 7.56 |
+| Total (the target, binding) | 20.00 | 20.00 | 20.00 | 20.00 |
+| Largest calendar day, unweighted | day 195, 10.5 | day 195, 13.4 | 2022:141, 31.3 | 2022:141, 57.0 |
+
+Both LPs plan exactly the 20 GWh target. At a twelfth of a day an extreme day costs option B's LP a twelfth as much shed, so it plans up to
+57 GWh on one (2022:141 in 2040) where the key's largest is 13.4. That is the right frequency for the pool's own 15 days, but the
+same criteria applied year by year would pick about 12 times the key's 13; only the 15 most extreme are kept, and the rest sit in
+typical clusters whose medoids carry no stress. The key's single-year extremes at a day each stand in for all of them.
+
+Caveat: pass 1 only. The verdict loop's top-ups from pass 2 would add stress windows to both, more to option B; not run. Options for a
+redesign, not taken without Nick's word (it changes the method he approved): the pool's extremes at a day each, as the key's, with the
+typical weights reduced to keep 365; more extremes (the worst day in each of the twelve years by each criterion); or keep the key's days.
+
 ### Message 785 (b): why the engine commits 2.4 GW more coal than the LP (fin build, 2035, metered 2025; reported with 778)
 
 The engine commits each four-hour block to its peak net load plus the whole operating reserve, 2,200 MW (buildUCSchedule: target = block

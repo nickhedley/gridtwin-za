@@ -26,3 +26,13 @@
 2026-11-07T11:55:00Z y365 fin365_rescap solve 358 s Optimal; calendar days: curtailment 2.27 TWh, coal 66.79 TWh, lithium discharge 12.17 TWh, unserved 14.078 GWh, coal taken off 540147 MW, started 530567 MW (su_)
 2026-11-07T11:55:24Z y365 fin365_res (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldResCommitLP":1}) dump rc=0 dumped LP pass 1 fb6357d2e9 
 2026-11-07T12:00:14Z y365 fin365_res solve 290 s Optimal; calendar days: curtailment 1.44 TWh, coal 65.87 TWh, lithium discharge 12.22 TWh, unserved 14.078 GWh, coal taken off 0 MW, started 765282 MW (su_)
+2026-11-07T13:17:29Z p1_off pass 1 rc 75 start from basis none (cold) time limit 5681s stopped at the job deadline; basis kept for resume c10bea45a9 
+2026-11-07T13:17:43Z p1_off piece, shell PID 11584, 2d86faa  + 3 files changed, 208 insertions(+), 32 deletions(-), COAL_STATE={"bldCoalMinDownLP":0}, deadline 15:07Z, load 3.13 3.48 3.84, memory free 12G
+2026-11-07T13:17:43Z p1_off node PID 11635
+2026-11-07T14:38:55Z p1_off pass 1 rc 0 stopped at the job deadline; basis kept for resume c10bea45a9 start from basis /home/user/gtza-mdrun/harness/out/md/lpc_p1_off/c10bea45a9085fc64401496b11dbdd309be35c78.partial.basis.json time limit 5680s done pass limit reached 4859s 
+2026-11-07T14:38:55Z p1_off engine PID 19831 (LNG=1 GRID=1 SS_FC=reservecoal K=20 YEARS=2030,2035,2040 CONG_OFF=1 WX_WINDCORR=1)
+2026-11-07T14:47:34Z p1_off engine rc 0
+2026-11-07T14:47:59Z caps p1off engine PID 20937 (K=1, 2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040, START_COUNT=1)
+2026-11-07T14:50:09Z caps p1off rc 0: {"2026": 144818.5, "2027": 161266.0, "2028": 219092.4, "2029": 242088.6, "2030": 153565.5, "2031": 101832.0, "2032": 137968.7, "2033": 225837.6, "2034": 397039.3, "2035": 536705.7, "2036": 644418.1, "2037": 662172.6, "2038": 655283.2, "2039": 590784.0, "2040": 544962.6}
+2026-11-07T14:50:33Z p1_cap piece, shell PID 21642, 2d86faa  + 3 files changed, 208 insertions(+), 32 deletions(-), COAL_STATE={"bldCoalMinDownLP":1,"bldCoalStartCap":{"2026":144818.5,"2027":161266.0,"2028":219092.4,"2029":242088.6,"2030":153565.5,"2031":101832.0,"2032":137968.7,"2033":225837.6,"2034":397039.3,"2035":536705.7,"2036":644418.1,"2037":662172.6,"2038":655283.2,"2039":590784.0,"2040":544962.6}}, deadline 16:40Z, load 4.10 3.61 3.28, memory free 12G
+2026-11-07T14:50:33Z p1_cap node PID 21690
