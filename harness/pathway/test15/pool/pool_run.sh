@@ -40,7 +40,7 @@ p1)
 gate)
   s=pool_p1; [ -s $O/$s.json ] || { echo "$(ts) gate: no $s.json yet" >> $P; exit 0; }
   ROW=$(cd /home/user/gridtwin-za && git show origin/claude/c7-runs:harness/pathway/final/README.md | grep '^| engine_loop_base_05h_k100.json ')
-  KV=$(echo "$ROW" | grep -oE '\b[A-Z][A-Z0-9_]*=[^ )|]+' | sed 's/,$//' | grep -v '^K=\|^YEARS=')
+  KV=$(echo "$ROW" | grep -oE '\b[A-Z][A-Z0-9_]*=[^ )|]+' | sed 's/,$//' | grep -v '^K=\|^YEARS=' | tr '\n' ' ')
   for G in 2034,2035,2036 2040; do f=$O/${s}_k100_$(echo $G | tr ',' '_').json; [ -s $f ] && continue
     env -i PATH="$PATH" HOME="$HOME" $KV K=100 YEARS=$G IN=$O/$s.json OUTC=$f nice -n 10 node --max-old-space-size=4096 pathcheck.js > ${f%.json}.log 2>&1 &
     N=$!; echo "$(ts) gate $G PID $N ($KV K=100)" >> $P; wait $N; echo "$(ts) gate $G rc $?" >> $P; done ;;
