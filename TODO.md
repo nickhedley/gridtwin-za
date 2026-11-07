@@ -1539,6 +1539,11 @@ failure's conditions (the stored panels' --write, fresh, looping beside them; tw
 then the worker ran in sequence from 07:44, beside two solver loops, a 100-draw recheck and, from 08:41, two battery checks. If still
 unexplained by 9 Nov 12:00 SAST: stop and put the decision to Nick with options (for example a page-side guard that fails loudly if a
 solar hybrid figure equals the wind one). No merge on a green run.
+Done 7 Nov 2026, 03:56 UTC (message 759 (b)): 10 full validate_worker runs on 06b, each 38/38, at load 5-7.6, with the stored panels'
+--write (fresh, PANELS_NO_RESUME=1) looping beside them (11 passes, each stored_panels.json identical to the committed file apart from
+meta.written) and two solver processes standing in for the loops (runs 4-10; the finding-3 loops beside runs 1-3); Chromium
+153.0.8010.12. Not reproduced in 10 full runs, 150 repeats and 20 fresh pages. Cause not established; the decision is Nick's (755 (b)):
+options in the report of 7 Nov.
 
 14nf. nodal/nersa_registrations.json: add Q2 2026/27 from NERSA's media statement of 5 Nov 2026 (SOURCES 'NERSA media statement, 5 Nov
 2026'; the statement is the primary source, the SAPVIA dashboard a collation), in the first data update after PR #161 (user, 6 Nov 2026,
