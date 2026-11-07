@@ -18,8 +18,11 @@
 - 776: every key solve runs with presolve off (HIGHS_OPTS); piece 2 (from 08:35 UTC) started from piece 1's valid basis, filed under
   its own LP key (lpc_key/c10bea45a9...partial.basis.json; 184,514 basic structural columns).
 - 780 (c): highs_native.py logs each solve's start basis, iterations and objective to HIGHS_LOG (installed 09:08 UTC in gtza-key,
-  gtza-keynp, gtza-key342; patch in harness/pathway/final/key/). Relaunch the key's pieces as HIGHS_LOG=$S/loops/key.log PIECE_S=5200
-  bash $S/loops/solve_key.sh key, and kw42's as HIGHS_LOG=$S/loops/kw42.log ... solve_keysens.sh kw42 (solve_keysens2.sh sets it).
+  gtza-keynp, gtza-key342; patch in harness/pathway/final/key/). Relaunch the key's pieces as HIGHS_LOG=$S/loops/key.log PIECE_S=4200
+  bash $S/loops/solve_key.sh key, and kw42's as HIGHS_LOG=$S/loops/kw42.log PIECE_S=4200 ... solve_keysens.sh kw42 (solve_keysens2.sh
+  sets HIGHS_LOG), each with a 7,150 s job limit: from 10:25 UTC PIECE_S 4200, not 5200, because the adequacy test after a late solve
+  ran about 50 min and the 110-min job limit stopped the key's piece 2 (no loss: pass 1 and its verdict were cached). State at 10:58
+  UTC: the key's pass 1 failed narrowly (2034 at 20.82 GWh against 20), pass 2 solving; kw42's pass 1 likewise (20.05), pass 2 resuming.
 - 781 (Nick offline most of 7 Nov; carry on, record each choice and its reason; stop only before a merge, a push to main, deleting
   results or changing the running key; record the key's final build in RESULTS as soon as it lands, for the 10-region session):
   coal sustaining capital by EIA's equation on worktree gtza-keysc (RESULTS 'Coal sustaining capital by EIA's equation'; TODO 14ni):
