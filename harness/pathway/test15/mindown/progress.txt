@@ -9,3 +9,12 @@
 2026-11-07T08:29:49Z p1_on node PID 8583
 2026-11-07T08:30:38Z y365 fin365_on (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldCoalMinDownLP":1}) dump rc=0 dumped LP pass 1 58335c62ba 
 2026-11-07T08:35:41Z y365 fin365_on solve 303 s Optimal; calendar days: curtailment 1.74 TWh, coal 66.25 TWh, lithium discharge 11.98 TWh, unserved 14.079 GWh, coal taken off 0.7 TWh-h
+2026-11-07T09:04:10Z p1_on stopped by PID (8683 solver, 8586 node, 8583, 8535) after 34 min: message 778 (b) replaces the 30-hour rule alone with the minimum up time and the start cap; the key's pass 1 runs with whichever closes most of the gap
+2026-11-07T09:24:39Z engm fin engine PID 16993 (WEATHER=metered, 2035, K=20)
+2026-11-07T09:25:07Z engm fin rc 0 curt 10.87 TWh, coal 67.50 TWh, unserved 28.20 GWh (se 7.22), li 11.90 TWh, coal starts MW gross 531103 net 530567
+2026-11-07T09:26:04Z y365 fin365_mu (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldCoalMinDownLP":1,"bldCoalMinUpLP":1}) dump rc=0 dumped LP pass 1 12bb0ca427 
+2026-11-07T09:30:41Z y365 fin365_mu solve 277 s Optimal; calendar days: curtailment 1.74 TWh, coal 66.25 TWh, lithium discharge 11.98 TWh, unserved 14.079 GWh, coal taken off 654703 MW, started 645286 MW (su_)
+2026-11-07T09:31:04Z y365 fin365_cap (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldCoalMinDownLP":1,"bldCoalStartCap":{"2035":530567}}) dump rc=0 dumped LP pass 1 d861326076 
+2026-11-07T09:35:40Z y365 fin365_cap solve 276 s Optimal; calendar days: curtailment 2.18 TWh, coal 66.75 TWh, lithium discharge 12.08 TWh, unserved 14.079 GWh, coal taken off 539965 MW, started 530567 MW (su_)
+2026-11-07T09:36:02Z y365 fin365_mucap (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldCoalMinDownLP":1,"bldCoalMinUpLP":1,"bldCoalStartCap":{"2035":530567}}) dump rc=0 dumped LP pass 1 050ff6d3ac 
+2026-11-07T09:40:39Z y365 fin365_mucap solve 277 s Optimal; calendar days: curtailment 2.18 TWh, coal 66.75 TWh, lithium discharge 12.08 TWh, unserved 14.079 GWh, coal taken off 539965 MW, started 530567 MW (su_)

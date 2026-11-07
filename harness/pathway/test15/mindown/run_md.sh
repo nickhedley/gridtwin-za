@@ -9,9 +9,10 @@
 # GAS_FIRST=2035; its engine check line (pathcheck K=20, 2030/2035/2040).
 #   bash run_md.sh p1 <on|off>               the key's pass 1 (MAXP=1), one piece under 2 hours (RESUME, presolve off, basis kept; rerun
 #                                            to resume), then the engine at 20 draws: <O>/p1_<on|off>.json, p1_<on|off>_eng.json
-#   bash run_md.sh y365 <name> <build> <on|off>  year 2035 alone on its 365 days, every build fixed from <build> (STAGE2_YEAR=2035), the
+#   bash run_md.sh y365 <name> <build> <on|off|json>  year 2035 alone on its 365 days, every build fixed from <build> (STAGE2_YEAR=2035), the
 #                                            switch as given; solved (2 threads, presolve on); curtailment, coal, lithium discharge, unserved
-#   bash run_md.sh engm <name> <build>       the engine on the LP's own year alone (WEATHER=metered), 2035, 20 draws on the gate's seeds
+#   bash run_md.sh engm <name> <build>       the engine on the LP's own year alone (WEATHER=metered), 2035, 20 draws on the gate's seeds, with
+#                                            the coal starts counted (START_COUNT=1, message 778 (b) (ii))
 # Progress, PIDs and results: <O>/progress.txt (O = <WT>/harness/out/md).
 M=${1:?mode p1, y365 or engm}; WT=${WT:-/home/user/gtza-mdrun}; O=$WT/harness/out/md; P=$O/progress.txt; mkdir -p $O
 ts(){ date -u +%FT%H:%M:%SZ; }
@@ -22,7 +23,8 @@ HO=$(echo "$SK" | grep -o "HIGHS_OPTS='{[^']*}'" | head -1 | sed 's/\\//g')
 ENG=$(echo "$SK" | grep -o 'LNG=1 GRID=1 SS_FC=[a-z]* K=20 YEARS=[0-9,]*'); ENGX=$(echo "$SK" | grep -o 'CONG_OFF=1 WX_WINDCORR=1 nice' | sed 's/ nice//')
 for v in EXM C7 BASE X HO ENG ENGX; do [ -n "${!v}" ] || { echo "$(ts) settings: $v not found in solve_key.sh" >> $P; exit 2; }; done
 cd $WT/harness || exit 2; source pathway/env_c6a.sh >/dev/null 2>&1; export GAS_FIRST=2035
-cs(){ [ "$1" = on ] && echo 'COAL_STATE={"bldCoalMinDownLP":1}' || echo 'COAL_STATE={"bldCoalMinDownLP":0}'; }
+# The switch: on (the 30-hour rule), off, or a COAL_STATE JSON object (message 778 (b): the minimum up time, the start cap).
+cs(){ case "$1" in on) echo 'COAL_STATE={"bldCoalMinDownLP":1}';; off) echo 'COAL_STATE={"bldCoalMinDownLP":0}';; \{*) echo "COAL_STATE=$1";; *) echo "switch: on, off or a JSON object" >&2; exit 2;; esac; }
 case $M in
 p1)
   SW=${2:?on or off}; s=p1_$SW; T0=$(date +%s); DL=$(( T0 + ${PIECE_S:-6600} ))
@@ -42,18 +44,18 @@ y365)
   t0=$(date +%s); HIGHS_OPTS='{"simplex_strategy": 2, "threads": 2}' nice -n 5 python3 highs_native.py $O/${NM}_pass1.lp $O/${NM}_sol.json 6000 > $O/${NM}_solve.log 2>&1
   echo "$(ts) y365 $NM solve $(( $(date +%s) - t0 )) s $(python3 -I - $O/${NM}_sol.json $Y <<'EOF'
 import json, sys
-S = json.load(open(sys.argv[1])); Y = sys.argv[2]; t = {'crt': 0.0, 'gc': 0.0, 'bdis': 0.0, 'u': 0.0, 'sd': 0.0}
+S = json.load(open(sys.argv[1])); Y = sys.argv[2]; t = {'crt': 0.0, 'gc': 0.0, 'bdis': 0.0, 'u': 0.0, 'sd': 0.0, 'su': 0.0}
 for k, v in S['Columns'].items():
     p = k.split('_')
     if len(p) == 4 and p[1] == Y and p[0] in t and int(p[2]) < 1000: t[p[0]] += v['Primal']
-print('%s; calendar days: curtailment %.2f TWh, coal %.2f TWh, lithium discharge %.2f TWh, unserved %.3f GWh, coal taken off %.1f TWh-h' % (S['Status'], t['crt'] / 1e6, t['gc'] / 1e6, t['bdis'] / 1e6, t['u'] / 1e3, t['sd'] / 1e6))
+print('%s; calendar days: curtailment %.2f TWh, coal %.2f TWh, lithium discharge %.2f TWh, unserved %.3f GWh, coal taken off %.0f MW, started %.0f MW (su_)' % (S['Status'], t['crt'] / 1e6, t['gc'] / 1e6, t['bdis'] / 1e6, t['u'] / 1e3, t['sd'], t['su']))
 EOF
 )" >> $P ;;
 engm)
   NM=${2:?}; IN=${3:?}
-  env -i PATH="$PATH" HOME="$HOME" $(echo $ENG | sed 's/YEARS=[0-9,]*/YEARS=2035/') WEATHER=metered IN=$IN OUTC=$O/${NM}_engm.json $ENGX nice -n 10 node --max-old-space-size=4096 pathcheck.js > $O/${NM}_engm.log 2>&1 &
+  env -i PATH="$PATH" HOME="$HOME" $(echo $ENG | sed 's/YEARS=[0-9,]*/YEARS=2035/') WEATHER=metered START_COUNT=1 IN=$IN OUTC=$O/${NM}_engm.json $ENGX nice -n 10 node --max-old-space-size=4096 pathcheck.js > $O/${NM}_engm.log 2>&1 &
   N=$!; echo "$(ts) engm $NM engine PID $N (WEATHER=metered, 2035, K=20)" >> $P; wait $N
-  echo "$(ts) engm $NM rc $? $(python3 -I -c "import json,sys; r=json.load(open(sys.argv[1]))[0]; print('curt %.2f TWh, coal %.2f TWh, unserved %.2f GWh (se %.2f), li %.2f TWh' % (r['curt'], r['coal'], r['mean'], r['seMean'], r['storeTWh']['li']))" $O/${NM}_engm.json 2>&1)" >> $P ;;
+  echo "$(ts) engm $NM rc $? $(python3 -I -c "import json,sys; r=json.load(open(sys.argv[1]))[0]; print('curt %.2f TWh, coal %.2f TWh, unserved %.2f GWh (se %.2f), li %.2f TWh, coal starts MW gross %.0f net %.0f' % (r['curt'], r['coal'], r['mean'], r['seMean'], r['storeTWh']['li'], r['coalStartGrossMW'], r['coalStartNetMW']))" $O/${NM}_engm.json 2>&1)" >> $P ;;
 *) echo "mode: p1, y365 or engm" >&2; exit 2 ;;
 esac
 exit 0

@@ -370,6 +370,14 @@ reported.
 
 ### Message 767 (c): twelve-year representative days, option B: it runs (decided 7 Nov, 10:50 SAST)
 
+Message 778 (c): 27 days (15 extremes and 12 typical, the key's typical count), not 25. The extreme days' fleets: today's and the fin
+pass's (2026-2040), not c7's, Deep's and Fossil-free's as the key's 13. Pass 1 started 7 Nov 09:05 UTC on 27 days (LP 8f39e0b455, 123 MB;
+two clusters' medoids shared a calendar day with an earlier choice and took their next member, extra summed distance 2.75). Its days:
+extremes 2014:318, 2015:160-162, 2015:175-177, 2016:132-134, 2017:358, 2018:0, 2021:159, 2022:141, 2023:359 (each 1/12 of a day; fleets
+today's and the fin pass's); typical 2022:57 (48.7 days a year), 2015:76 (26.0), 2018:90 (32.3), 2024:91 (18.9), 2015:94 (34.5), 2018:131
+(20.7), 2016:143 (28.4), 2025:180 (20.0), 2023:183 (34.3), 2016:197 (33.7), 2015:332 (24.7), 2024:336 (41.7). The 25-day text below is the
+first version, kept for the record.
+
 Room: Fossil-free and then Deep take one solve at a time (767 (a)); (b)'s two key solves (switch on, then off) take the second slot until
 about 7 Nov evening; option B's pass then runs in the second slot overnight 7-8 Nov (pass 1, its engine check at 20 draws, the 100-draw
 gate). Report by 9 Nov 18:00 SAST. If a check fails or the solve outruns that, it moves to after the note and I say so by 8 Nov 18:00 SAST.
@@ -381,7 +389,7 @@ patch). Choices, each the one closest to accuracy:
   as the engine) with that year's wind and solar as the LP reads them (new wind at 40%, tracking). The pool's means equal the page's
   twelve-year means (checked to 1e-9), so finding 3's factors (f3d) fall away; the twelve-year means are re-imposed on the weighted
   typical days as today (step 4).
-- Extremes (pool_extremes.py, extremes.py's criteria across the pool; fleets: today's and the fin pass's, 2026-2040; the key's 13 came
+- Extremes (pool_extremes.py, extremes.py's criteria across the pool; fleets: today's and the fin pass's, 2026-2040, labelled so; the key's 13 came
   from c7, Deep and Fossil-free fleets, not on hand here): 15 days, 2014:318, 2015:160-162, 2015:175-177, 2016:132-134, 2017:358, 2018:0,
   2021:159, 2022:141, 2023:359. Peak demand is the same calendar day in every year (one demand profile): the copy with the highest peak
   net load. Three-day windows run within a year. Two more than the key's 13: today's rule kept (the union frozen, the typical days
@@ -397,6 +405,39 @@ patch). Choices, each the one closest to accuracy:
   388b8499d9, 116 MB, the same size as the key's).
 
 ### Message 767 (b): the coal minimum down time and start-up lead time in the build LP (claude/coal-mindown-lp)
+
+Message 778 (b) (7 Nov): the 30-hour rule alone does not bind (the LP rotates spare units). Two more options on the branch, each behind its own
+switch and checked (claude/coal-mindown-lp a4a5d4b; validate_coal_mindown.js 18/18; five injected faults, each failing):
+- (i) bldCoalMinUpLP: the engine's minimum up time, 8 h (UC_FLEET's min_up, the capacity-weighted median; 8 h on 97% of the capacity):
+  MW started in the last 8 hours stays committed (cmu_ an hour, back along the commitment chain). Fault: rows removed, 17/18.
+- (ii) bldCoalStartCap: { year: MW }, the year's coal starts (MW of commitment added, on the representative days' weights, stress days
+  left out as the gas floor) at most the engine's on the same build. The engine's starts: harness/pathcheck.js START_COUNT=1 (measurement
+  only; all 87 output fields unchanged with it on). Two measures: gross (each unit start's MW) and net (the hourly rise of committed coal);
+  the cap uses net, the like-for-like measure of the LP's su_ (fleet MW added). They differ by 0.1% on the fin build. The engine's
+  commitment is fixed before the outage draws, so its starts do not vary by draw. Fault: cap row removed, 16/18.
+- Reading taken: each option is tested with the 30-hour rule on (the engine applies all three), and starts priced warm as before.
+- The engine on the fin build, 2035, metered 2025 alone, 20 draws, on the key's code (2d86faa + key patch + the branch): curtailment 10.87
+  TWh, coal 67.50, unserved 28.20 GWh (se 7.22) (765 on 05j: 10.86, 67.49, 28.45); coal starts 531,103 MW gross, 530,567 net.
+
+2035 on 365 days, the fin build (every build fixed), the key's settings; the cap at the engine's 530,567 MW:
+
+| 2035, fin build, 365-day LP | Curtailment, TWh | Coal, TWh | Lithium discharge, TWh | LP starts, MW (su_) |
+|---|---:|---:|---:|---:|
+| Switch off (the key's LP) | 1.44 | 65.90 | 12.18 | |
+| 30-hour rule (767 (b)) | 1.74 | 66.25 | 11.98 | |
+| 30-hour rule + (i) minimum up time 8 h | 1.74 | 66.25 | 11.98 | 645,286 |
+| 30-hour rule + (ii) start cap | 2.18 | 66.75 | 12.08 | 530,567 (the cap) |
+| 30-hour rule + (i) + (ii) | 2.18 | 66.75 | 12.08 | 530,567 |
+| Engine, metered 2025 alone, 20 draws | 10.87 | 67.50 | 11.90 | 530,567 (net rise) |
+
+Unserved 14.08 GWh in every LP row. (i) does not bind, as the 30-hour rule. (ii) binds and closes 0.44 TWh more: 0.74 of the 9.43 TWh from
+the switch off. Matching the engine's starts, the LP still curtails a fifth as much: the engine keeps 11.6 GW of coal committed on average
+(minimum 2.4), the LP 9.2 GW (8.1-8.6 GW from 08:00 to 16:00 at about 0.55 of it running), for nearly the same output (7.7 and 7.5 GW).
+The gap is in how much coal stands committed, not in its minimum times or its count of starts.
+
+The key's pass 1 runs with (ii), the option that closes most, with the 30-hour rule (as tested); (i) adds nothing here and is left off.
+Its cap by year: the engine's starts (net) on the key's own pass-1 build, every year 2026-2040 (START_COUNT; the key's pass 1 with the
+switches off is solved first, after option B's pass 1, as the comparison in any case).
 
 The code: claude/coal-mindown-lp from claude/twin-retime 2d86faa, a7ac4c0 (9e523ab, then the start pricing). FIXED.bldCoalMinDownLP
 (COAL_STATE='{"bldCoalMinDownLP":1}'): 0, off, writes the LP byte for byte (the key's pass-1 LP stays c10bea45a9 on the key's code;

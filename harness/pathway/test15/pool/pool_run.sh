@@ -4,7 +4,8 @@
 # folder's pool_days.js copied to harness/pathway/ and pool_hook.diff's three lines in pathway_perfail.js (REP_POOL). Settings: the key's,
 # read from claude/c7-runs' solve_key.sh (EXM, C7, BASE, case 'key', HIGHS_OPTS; env_c6a.sh; GAS_FIRST=2035), with REP_POOL=1, the pool's
 # extremes (pool_ext.json from pool_extremes.py: today's fleet and the fin pass's) and the linking chronology 2025 (the modelled year of
-# the key's reference year). REP_REF and REP_EXTREMES stay set and are not read (the pooled days replace the clustered rule).
+# the key's reference year), 27 days (15 extremes, 12 typical: message 778 (c)). REP_REF and REP_EXTREMES stay set and are not read (the
+# pooled days replace the clustered rule).
 #   bash pool_run.sh p1      pass 1 (MAXP=1), one piece under 2 hours (RESUME, presolve off, basis kept; rerun to resume); then the
 #                            engine at 20 draws, 2030/2035/2040 (solve_key.sh's engine line)
 #   bash pool_run.sh gate    the 100-draw gate on pass 1's build: 2034-2036 and 2040 (the README row's settings, K=100)
@@ -23,7 +24,8 @@ cd $WT/harness || exit 2
 cmp -s $D/pool_days.js pathway/pool_days.js || { echo "$(ts) pathway/pool_days.js differs from $D/pool_days.js" >> $P; exit 2; }
 grep -q "process.env.REP_POOL" pathway/pathway_perfail.js || { echo "$(ts) pathway_perfail.js has no REP_POOL hook" >> $P; exit 2; }
 source pathway/env_c6a.sh >/dev/null 2>&1; export GAS_FIRST=2035
-POOL="REP_POOL=1 REP_POOL_EXTREMES=$EXT REP_POOL_CHRON=2025"
+# 27 days (message 778 (c)): the 15 extremes and 12 typical days, the key's typical count (REP_DAYS after BASE's 25, so it holds).
+POOL="REP_DAYS=27 REP_POOL=1 REP_POOL_EXTREMES=$EXT REP_POOL_CHRON=2025"
 case $M in
 p1)
   s=pool_p1; T0=$(date +%s); DL=$(( T0 + ${PIECE_S:-6600} ))
