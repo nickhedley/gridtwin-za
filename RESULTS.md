@@ -23474,3 +23474,21 @@ where run, 100 draws on the common seeds (SEED_BASE 71830529). Scratchpad f3/tab
   f3d: solar factors on the central days: 14.4 (0.9) / 17.9 (1.0) / 17.5 (1.0) / 8.7 (0.6)
   f3h: month-by-hour factors, days re-picked: 21.5 (1.2) / 22.6 (1.2) / 21.7 (1.2) / 13.4 (0.8)
   (a) k8: baseline + battery proposals 1-3: 13.4 (0.8) / 17.6 (1.0) / 15.2 (0.9) / -
+
+### The 8 Nov key's worktree and its checks before the loop (message 761 (a), (b)): with every switch off it builds the fin basis's pass-1 LP byte for byte; f3d's scaled solar peaks at 0.951 per unit against the days' own 0.962 and the series' 1.000, none over, and the annual mean holds at 0.28445
+
+Settings (761 (a)): reference metered 2025; f3d (finding 3's factors on the representative days, band 0.80-1.25); battery proposals
+1-3 as k8 (vppHours 3, vppReservePct 20, R500/kW-yr of enrolled power, btmReservePath 43.2% to 31.8% by 2030, the 2026 stock at use0);
+new wind at 40% (WIND_CORR=cf0.40); the freed-coal pool capped at the same-area MW (rpcap_ rows, 0 / 658 / 1,290 MW in 2026 / 2035 /
+2040); one stage; the central's 13 extremes as frozen; open-cycle capex at 0.74; c7's central settings as the 7 Nov loops (env_c6a.sh,
+GAS_FIRST=2035, 25 clustered days, linking, CONG_OFF=1, WX_WINDCORR=1, the verdict rule). Worktree gtza-key: the fin basis 10a98e2 with
+the patches of gtza-k8 (index.html, pathcheck.js, pathway_perfail.js), gtza-f3d, gtza-w40 and gtza-rpcap applied cleanly, f3d and the
+cap behind switches (bldRepF3d, bldRpSameAreaCap) and the battery keys null for the check. Sensitivities named in 761 (a): the mixed
+reference, 37.24% and 42% wind, the national pool, IRP's open-cycle capex at 0.397. No surplus day (758): the curtailment undercount
+is a limitation.
+- Identity: every switch off and no WIND_CORR, the pass-1 LP is the baseline's (key 48ffc38a70, a cache hit), 7 Nov 07:22 UTC.
+- 761 (b), with f3d on (scratchpad f3/seasonal_key.js on gtza-key): the series the days are drawn from (the metered tracking twin at
+  its twelve-year level) peaks at 1.000 per unit (it reaches the cap); the central's representative days peak at 0.962 before the
+  factors and 0.951 after; no hour above either. The annual mean on the LP's own weights 0.2844466, equal to the twelve years'. The
+  factors equal the f3d pass's to every digit.
+- The loop (scratchpad loops/solve_key.sh key, nice 5): started 7 Nov 07:24 UTC; then its engine check at 20 draws and the 100-draw gate.
