@@ -368,6 +368,22 @@ So by the engine and the 365-day year, two stages' 17-25% more solar and lithium
 leaves less margin; on the one-stage LP it also costs R7.45 bn more over the path. By the rule one stage stays the headline and the gap is
 reported.
 
+### Messages 767 (a) and 769: Fossil-free on the 8 Nov key
+
+- The key's code: claude/twin-retime 2d86faa (PR #162 with this test's two-stage Deep and Fossil-free fix, merged) with claude/c7-runs
+  f0d0c2a's harness/pathway/final/key/key_on_twin-retime_2d86faa.patch, worktree /home/user/gtza-ff. validate_two_stage_steps.js there:
+  10/10.
+- 769's check before starting: the key central's pass-1 LP written (no solve; harness/pathway/test15/key/dump_key.sh, the settings of
+  solve_key.sh's case key read from the file) on 2d86faa + the key patch and on 10a98e2 + its own patch: both c10bea45a9 (sha1
+  c10bea45a9085fc64401496b11dbdd309be35c78), byte for byte the same, and the main session's key (HANDOVER 19d10e5, 768). PR #161's
+  changes between the bases leave the central's LP unchanged (its CO2 cap row acts only under a cap). Matched, so Fossil-free started.
+- Settings (harness/pathway/test15_key.sh ff, snapshot test15/key/ff_settings.env): the key (env_c6a.sh, GAS_FIRST=2035, c7's settings,
+  25 clustered days, linking, CONG_OFF=1, WX_WINDCORR=1, REP_REF=metered, the 13 frozen extremes 20, 159, 161-163, 187, 194-196, 218,
+  358-360, WIND_CORR=cf0.40, the battery, f3d and same-area-cap switches on in the patch) with chain_c7.sh's s_ff2040_c7 (PACE=grid
+  LI_CAP=4000 LI_EH=8 IA_TOTAL=5000 FOSSIL_END=2039, MAXP 6); two stages K=4 N=25 FIRST=2026; parallel dual simplex, presolve off, WARM=1,
+  VERDICT_CACHE on; pieces of 6,000 s. One solve at a time (767 (a)); to find problems early, rerun on 10-13 Nov if 10 Nov adopts changes.
+- Started 7 Nov 07:54 UTC (piece 1, PID 1659).
+
 ### Message 765: which coal rule carries the 8.5 TWh dispatch gap (fin build, 2035, the metered 2025 reference alone)
 
 (c) The engine's commitment that keeps coal units on through the midday solar hours, weighing their start costs against the 24-hour
