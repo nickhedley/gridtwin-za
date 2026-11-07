@@ -23492,3 +23492,7 @@ is a limitation.
   factors and 0.951 after; no hour above either. The annual mean on the LP's own weights 0.2844466, equal to the twelve years'. The
   factors equal the f3d pass's to every digit.
 - The loop (scratchpad loops/solve_key.sh key, nice 5): started 7 Nov 07:24 UTC; then its engine check at 20 draws and the 100-draw gate.
+- The key central's pass-1 LP key (message 768 (b)), for checking a rebuild: c10bea45a9085fc64401496b11dbdd309be35c78 (SHA-1 of the
+  LP text, as pathway_perfail.js keys its cache; the loop's pass-1 LP, /tmp/gtza_701.lp, 116.6 MB). Rebuilt independently on
+  claude/twin-retime 2d86faa with harness/pathway/final/key/key_on_twin-retime_2d86faa.patch (DUMP_LP, DUMP_STOP=1, the same settings
+  as solve_key.sh's case 'key' with MAXP=1): the same key to every digit, so the two bases give the central the same LP.
