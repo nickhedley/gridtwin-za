@@ -23577,3 +23577,25 @@ Also changed on gtza-keysc (default off, so not on the key): the age curve (coal
 (BLD_COAL_UNIT_DATES, the IRP 2025 dates) instead of UC_FLEET's dates, and the run records the factor for its engine check. The two
 differ: 1.037 against 1.009 in 2028, 0.968 against 0.956 in 2030, 0.981 against 1.041 in 2040 (relative to 2026). The age-curve
 sensitivity (kage, 780 (b)) runs on gtza-keysc; its pass-1 LP key c7c260ccd8, the factors in the run's log equal the Python figures.
+
+### The 8 Nov key's final build (message 761; recorded at once for the 10-region session, standing note of 7 Nov): adequate at pass 2, LP key f60aa29e49, objective R1,587,275.6m, no coal retired early
+
+- Code: claude/twin-retime 10a98e2 (build 2026-11-05h, the fin basis) + harness/pathway/final/key/key_on_10a98e2.patch, worktree
+  gtza-key (switches on in FIXED: vppHours 3, vppReservePct 20, btmReservePath [[2026,43.2],[2030,31.8]], vppCostRkWyr 500, bldRepF3d 1,
+  bldRpSameAreaCap 1); harness/pathway/final/key/highs_native_log.patch from piece 3 (a log line only; no effect on any LP or solution).
+  The same key onto claude/twin-retime 2d86faa: key_on_twin-retime_2d86faa.patch (its pass-1 LP rebuilt identical, c10bea45a9).
+- Settings: harness/pathway/final/key/solve_key.sh, case key: env_c6a.sh, GAS_FIRST=2035; c7's (SS=inertia SS_FC=reservecoal
+  COC=blended BTM_STOCK=8 VPP=1 GY=1 COAL_FUEL_ESC=3 COAL_FOM_ESC=1.1 COMPLY=compromise COAL_CARBON_FLOOR=1); REP_WEIGHTS=clustered
+  REP_DAYS=25 STORAGE_LINK=1 WX_WINDCORR=1 CONG_OFF=1; REP_REF=metered, REP_EXTREMES=20,159,161,162,163,187,194,195,196,218,358,359,360;
+  WIND_CORR=cf0.40; HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}; RESUME with pieces; the verdict rule
+  (VERDICT_TOPUP, env_c6.sh).
+- Passes: pass 1 c10bea45a9, R1,583,193.5m, 2034 at 20.82 GWh against 20 (fails); three stress windows added for 2034 (weather years
+  2022 from day 164, 2016 from day 123, 2020 from day 93, 14 days each). Pass 2 f60aa29e49, R1,587,275.6m (+R4.1bn), adequate. Run
+  07:24-13:50 UTC over five pieces (pass 1 cold over two pieces, pass 2 cold over three; piece 2 stopped by its job limit after pass
+  1's verdict, nothing lost).
+- Output: harness/pathway/final/key/pathway_key_8nov.json (scratchpad loops/key.json).
+- Cumulative new build, MW (2030 / 2035 / 2040): wind 9,746 / 27,246 / 44,746; solar 3,697 / 17,939 / 25,415; lithium 1,841 /
+  8,491 / 12,787 MW and 3,719 / 32,674 / 68,276 MWh; open-cycle gas 0 / 0 / 3,428; open-cycle diesel 0 / 995 / 1,238.
+- Coal retired early: none in any year (sched earlyRetMW 0, 2026-2040). Home batteries enrolled, GWh: 2031 2.50, 2032 2.68, 2033 2.33,
+  2034 3.04, every other year 0.
+- Next: the 20-draw engine check (running), the 100-draw gate on the common seeds, the combined-against-single table (761 (c)).
