@@ -1561,3 +1561,16 @@ evening (the passive profile's full daily cycle is the larger part of the gap to
 2026-30: curtailment, CO2 and cost against the central, beside NERSA's 2025 figure and the reported R4bn for 2026/27 (SOURCES 'Deemed
 energy and curtailment in 2026'; RESULTS 'Deemed energy against the reported R4bn'). Ties to 14a1 (the cause of night curtailment) and
 14fl (coal priority and the wholesale market; the 0.75 daylight coal minimum that reaches NTCSA's 3 GW).
+
+14ni. Coal sustaining capital by EIA's equation (user, 7 Nov 2026, message 781 (a); SOURCES 'Coal sustaining capital: EIA's
+equation'), a candidate central basis for 10 Nov, on worktree gtza-keysc (patch harness/pathway/final/key/keysc_on_10a98e2.patch):
+one pass-1 LP on the key's settings after the key's gate (P1=1 bash loops/solve_keysens2.sh ksus), its engine PV and coal retired
+early by year. Open points for Nick: (1) the fleet mean, R469-514/kW-yr over 2026-2040, is about the flat R500 of s_coalsustain, so
+R500 is no high check (above EIA only to 2034, below it from 2036); (2) the AEO extract says S&L recommended recovering this CAPEX as a
+variable cost, not checked against the PDF (eia.gov unreachable from the container); (3) FGD at Medupi from 2031 under compliance, ours.
+The age-curve sensitivity (kage) moved to gtza-keysc, where the age factor follows the run's own unit dates (the key's IRP 2025: 0.981
+in 2040 against 1.041 on UC_FLEET's dates).
+
+14nj. Once the key is final (user, 7 Nov 2026, message 781 (b)): the 27 Oct break-even table on it, with the from-2026 values (script
+harness/pathway/final/key/breakeven.py on the final pass's cached solution); no change to RC_FROM. On k8's pass 1 the values before 2029
+are negative: RC_FROM binds (the LP would retire coal from 2026 if allowed).

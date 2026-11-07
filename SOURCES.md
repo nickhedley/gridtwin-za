@@ -2593,3 +2593,26 @@ the engine checks of message 734 (a) and the proposals of 734 (b) are in RESULTS
   assumption: no rate or allowance after 2030 is in law); Treasury's stated path (allowances to none by 2031, then to US$120/t by
   2050) a sensitivity (CARBON_PATH=treasury, from 2026, as the senior contact ran it). The environmental levy on non-renewable
   generation stays excluded as a tax (Eskom performance report FY2026 entry above).
+
+## Coal sustaining capital: EIA's equation (user, 7 Nov 2026, message 781 (a); a candidate central basis for the final runs)
+
+- Sargent & Lundy for the US Energy Information Administration, 'Generating Unit Annual Capital and Life Extension Costs Analysis'
+  (2019; full report https://www.eia.gov/analysis/studies/powerplants/generationcost/pdf/full_report.pdf, addendum
+  .../pdf/addendum.pdf): 'Annual CAPEX spending in 2017 $/kW-year = 16.53 + (0.126 x age) + (5.68 x FGD). Where FGD = 1 if a plant
+  has FGD; zero otherwise.' EIA's NEMS uses it (Assumptions to the Annual Energy Outlook 2026: Electricity Market Module,
+  https://www.eia.gov/outlooks/aeo/assumptions/pdf/EMM_Assumptions.pdf, 'Endogenous plant retirement modeling'): 'CAPEX (2017 dollars
+  per kilowattyear) = 16.53 + (0.126 x age in years) + (5.68 x FGD) ... FGD = 1 if a plant has an FGD; zero otherwise.' Both read on
+  7 Nov 2026 as search extracts (Firecrawl search highlights): eia.gov could not be reached from the container, and the PDFs were not
+  opened (long PDFs; research rule). The addendum's own text was not seen.
+- The same AEO extract says 'S&L recommended that CAPEX for these plants be recovered as a variable cost'; the extract does not show
+  which plants, nor whether NEMS does so for coal. The model charges it per kW standing a year (as s_coalsustain), so coal retired
+  early saves it in full; as a cost per MWh it would fall with coal's output instead. Flagged for Nick; not checked against the PDF.
+- Conversion (ours, the model's own): 2017 dollars to January 2026 by US CPI-U, 325.252 (January 2026) over 245.120 (2017 annual
+  average; BLS, FRED CPIAUCNS), at R16.50/$ (USD_RATE_R): R21.894 per 2017 dollar. So R361.9/kW-yr at age 0 without FGD, plus R2.76
+  a year of age, plus R124.4 with FGD.
+- Age: the model year less each unit's commissioning year (COAL_UNIT_COD; this file's 'Coal cost paths and coal unit commissioning
+  years'). FGD (ours): Kusile in every year ('currently fully compliant', Eskom to the NCOP, 10 Jun 2025, above); Medupi from 2031
+  when the compliance case is compromise or full (Eskom's recommended plan fits FGD at Medupi, about FY2029 and 'not fully funded';
+  the model charges the retrofit from COMPLY_MES.fromYear, 2031); the other five stations in scope from 2031 under full only.
+- The fleet's MW-weighted mean over the units standing in each year, on the run's own unit dates (the key's: IRP 2025), so coal
+  retired early saves the fleet mean, not the retiring units' own (ours; those units are older, so the saving is understated).

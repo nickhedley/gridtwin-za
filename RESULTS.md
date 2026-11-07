@@ -23551,3 +23551,29 @@ wrapper's output JSON and saved basis byte-identical; objective 431,205,200,130.
 and, restarted from its own basis, 0 iterations to the same objective. Installed at 09:08 UTC in gtza-key, gtza-keynp and gtza-key342
 (kw42's piece boundary; the key's solve then running, PID 4979, unaffected); kw42 from its piece 2 (09:08 UTC), the key from its piece 3.
 HiGHS counts from zero in each process: a resumed solve's iterations are its own piece's.
+
+### Coal sustaining capital by EIA's equation, the fleet mean by year (message 781 (a)): R469/kW-yr in 2026 to R514 in 2040, about the flat R500 of s_coalsustain
+
+Settings: worktree gtza-keysc (the key, 10a98e2 + key_now.diff, plus harness/pathway/final/key/keysc_on_10a98e2.patch), the key's run
+settings (env_c6a.sh, GAS_FIRST=2035, c7's settings, COMPLY=compromise, COAL_DATES=coal_dates_irp2025.json, REP_REF=metered with the
+13 extremes, WIND_CORR=cf0.40) with COAL_SUSTAIN=eia. Equation and conversion: SOURCES 'Coal sustaining capital: EIA's equation'
+(R21.894 per 2017 dollar; FGD at Kusile throughout and Medupi from 2031). The fleet's MW-weighted mean over the units standing on the
+IRP 2025 dates, R/kW-yr (January 2026 rands); mean unit age in brackets:
+
+| Year | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| R/kW-yr | 469.3 | 472.0 | 474.8 | 474.0 | 471.4 | 489.3 | 491.3 | 493.6 | 496.0 | 498.6 | 501.4 | 504.1 | 507.1 | 510.5 | 514.1 |
+| Mean age, years | 34.2 | 35.2 | 36.2 | 35.6 | 33.9 | 34.1 | 34.1 | 34.5 | 34.5 | 35.2 | 35.8 | 35.8 | 35.7 | 34.9 | 34.3 |
+
+The 2029-2030 dip is the oldest stations closing; the 2031 step (+R17.9) is Medupi's FGD. Against s_coalsustain's flat R500: R500 is
+above EIA's figure to 2034 and below it from 2036, so it is no high check (TODO 14ni). Checks (scratchpad sustain781/): the page's
+values (the run's log) equal an independent Python calculation (sustain_fleet_mean.py) to the digit in every year; with COAL_SUSTAIN
+and COAL_AGE off, gtza-keysc builds the key's pass-1 LP byte for byte (c10bea45a9); with COAL_SUSTAIN=eia the pass-1 LP is 1ce892fe26
+and differs from the key's in the objective only, each rc_<y> term by that year's fleet mean x 1,000 x the discount factor (R469,250 in
+2026 to R175,035 in 2040), every constraint identical. The pass-1 LP on these settings, its engine PV and coal retired early by year,
+runs after the key's gate (loops/solve_keysens2.sh ksus, P1=1).
+
+Also changed on gtza-keysc (default off, so not on the key): the age curve (coalFomAgeOn) now ages the units the run keeps
+(BLD_COAL_UNIT_DATES, the IRP 2025 dates) instead of UC_FLEET's dates, and the run records the factor for its engine check. The two
+differ: 1.037 against 1.009 in 2028, 0.968 against 0.956 in 2030, 0.981 against 1.041 in 2040 (relative to 2026). The age-curve
+sensitivity (kage, 780 (b)) runs on gtza-keysc; its pass-1 LP key c7c260ccd8, the factors in the run's log equal the Python figures.

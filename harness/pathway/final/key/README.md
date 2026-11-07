@@ -24,3 +24,11 @@ The engine check must run on the same worktree (pathcheck reads the battery keys
   HIGHS_LOG=<the loop's log>). Installed in gtza-key, gtza-keynp and gtza-key342 at 09:08 UTC, kw42's piece boundary. Short test on a
   5.6 MB single-year LP: LP sha1 unchanged, output and saved basis byte-identical to the old wrapper's, objective equal. To go into the
   final commit with the key's patches (768 (c)).
+- keysc_on_10a98e2.patch (user, 7 Nov 2026, message 781): the key plus two default-off additions, on worktree gtza-keysc. (1) Coal
+  sustaining capital by EIA's equation (FIXED.coalSustainRByYear, coalSustainEiaByYear; the run's COAL_SUSTAIN=eia computes the fleet
+  mean by year on its own unit dates, records it in coalCost, and pathcheck applies the record). (2) The age curve on the run's own
+  unit dates (coalFleetAgeFactor reads BLD_COAL_UNIT_DATES; the run records coalFomAgeByYear for the engine check). Checked: with both
+  off it builds the key's pass-1 LP byte for byte (c10bea45a9); COAL_SUSTAIN=eia gives 1ce892fe26 (only the rc_ objective terms move,
+  by each year's fleet mean x 1,000 x the discount factor); COAL_AGE=1 gives c7c260ccd8.
+- breakeven.py (781 (b)): the 27 Oct break-even table from a solved LP's cached solution (rc_ reduced costs, rcmono_ duals).
+  sustain_fleet_mean.py: the EIA fleet mean by year, independent of index.html (matches the page's function to the digit).

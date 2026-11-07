@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 7 Nov 2026, 11:15 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 7 Nov 2026, 12:05 SAST)
 
 ## 7 Nov morning (messages 761-768): where things stand
 
@@ -20,6 +20,12 @@
 - 780 (c): highs_native.py logs each solve's start basis, iterations and objective to HIGHS_LOG (installed 09:08 UTC in gtza-key,
   gtza-keynp, gtza-key342; patch in harness/pathway/final/key/). Relaunch the key's pieces as HIGHS_LOG=$S/loops/key.log PIECE_S=5200
   bash $S/loops/solve_key.sh key, and kw42's as HIGHS_LOG=$S/loops/kw42.log ... solve_keysens.sh kw42 (solve_keysens2.sh sets it).
+- 781 (Nick offline most of 7 Nov; carry on, record each choice and its reason; stop only before a merge, a push to main, deleting
+  results or changing the running key; record the key's final build in RESULTS as soon as it lands, for the 10-region session):
+  coal sustaining capital by EIA's equation on worktree gtza-keysc (RESULTS 'Coal sustaining capital by EIA's equation'; TODO 14ni):
+  after the key's gate, P1=1 bash loops/solve_keysens2.sh ksus (pass-1 LP, engine check), then report engine PV and coal retired early
+  by year. kage also runs on gtza-keysc. Once the key is final: python3 harness/pathway/final/key/breakeven.py <final pass's cached
+  solution in lpc_key> (TODO 14nj).
 - 775 (key final): report the key's coal retired early by year (sched[y].earlyRetMW) beside Test 15's two-stage central (3,177 MW
   from 2029) and the fin pass (703 MW); AGE_LINK withdrawn (780 (a)).
 - PR #161: guard and panels committed locally on claude/twin-retime (c215013, build 2026-11-07a), not pushed; the full suite after the

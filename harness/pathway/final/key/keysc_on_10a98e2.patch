@@ -1,0 +1,474 @@
+diff --git a/harness/highs_native.py b/harness/highs_native.py
+index ef2f55a..7845cd4 100644
+--- a/harness/highs_native.py
++++ b/harness/highs_native.py
+@@ -48,3 +48,13 @@ if _bs is not None and _bs.valid:
+     with open(_bout, 'w') as f:
+         json.dump({'cols': {n: int(x) for n, x in zip(lp.col_names_, _bs.col_status)},
+                    'rows': {n: int(x) for n, x in zip(lp.row_names_, _bs.row_status)}}, f)
++# Log line (user, 7 Nov 2026, message 780 (c)): each solve's starting basis, iterations and objective, printed to stderr and appended to
++# HIGHS_LOG when set (the loop's own log, passed when a piece is launched; the loop discards the wrapper's stderr). The solve, its output
++# and its saved basis are unchanged. HiGHS counts iterations from zero in each process, so a resumed solve's count is this piece's only.
++_i = h.getInfo()
++_it = ('ipm %d, crossover %d' % (_i.ipm_iteration_count, _i.crossover_iteration_count)) if os.environ.get('HIGHS_SOLVER', 'simplex') == 'ipm' else str(_i.simplex_iteration_count)
++_line = 'highs_native: start basis %s; iterations %s; objective %r' % (_bin if (_bin and os.path.exists(_bin)) else 'none (cold)', _it, _i.objective_function_value)
++print(_line, file=sys.stderr)
++if os.environ.get('HIGHS_LOG'):
++    with open(os.environ['HIGHS_LOG'], 'a') as f:
++        f.write(_line + '\n')
+diff --git a/harness/pathcheck.js b/harness/pathcheck.js
+index dd55c48..688e603 100644
+--- a/harness/pathcheck.js
++++ b/harness/pathcheck.js
+@@ -238,6 +238,8 @@ console.log('recorded settings:', JSON.stringify(RECSET));
+    // checked as it ran, under 'participant' (that cost, no wear beyond the LP's own).
+    if ('vppCostUsdKwYr' in BT && !('vppCostCase' in BT)){ BT.vppCostCase = 'participant';
+      if (Math.abs(+BT.vppCostUsdKwYr - +w.eval('VPP_COST_USD_KW_YR.participant')) < 1e-9) BT.vppCostUsdKwYr = null; }
++   // Comparison worktree only (message 734): BTM_OVER, a JSON object of battery settings applied over the run's, recorded in each row.
++   if (process.env.BTM_OVER){ const ov = JSON.parse(process.env.BTM_OVER); Object.assign(BT, ov); console.log('BTM_OVER (message 734):', JSON.stringify(ov)); }
+    w.eval(`for (const k of ${JSON.stringify(Object.keys(BT))}) if (!(k in FIXED)) throw new Error('FIXED.'+k+' missing: build 2026-11-02i or later'); Object.assign(state, ${JSON.stringify(BT)});`);
+    console.log('behind-the-meter batteries and virtual power plant from the pathway:', JSON.stringify(P.btm)); }
+  // Geyser control (messages 633-635): the run's own settings (P.geyser), recorded by pathway_perfail.js; a run recorded before build
+@@ -344,7 +346,10 @@ console.log('recorded settings:', JSON.stringify(RECSET));
+      over.bldVintageMW=V; }
+    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
+    if (GY_RUN){ if (!(P.sched[y].gyMW>=0)) throw new Error('the run has geyser control on but no sched['+y+'].gyMW'); over.gyEnrolMW=P.sched[y].gyMW; }
+-   if (BTM_VPP){ if (!(P.sched[y].vppGWh>=0)) throw new Error('the run has the virtual power plant on but no sched['+y+'].vppGWh'); over.vppEnrolGWh=P.sched[y].vppGWh; }
++   if (BTM_VPP){ if (!(P.sched[y].vppGWh>=0)) throw new Error('the run has the virtual power plant on but no sched['+y+'].vppGWh'); over.vppEnrolGWh=P.sched[y].vppGWh;
++    // Comparison worktree only (message 734 (a) (4)): BTM_CLIP=1 enrols no more than the year's cap under the overridden settings (a backup-
++    // only share held at 50% halves the cycling stock the enrolled batteries are drawn from); the shortfall is recorded in the row.
++    if (process.env.BTM_CLIP==='1'){ const cap=+w.eval(`btmStock({...FIXED,...state,scenarioYear:${y}},${y}).vppCapGWh`); if (over.vppEnrolGWh>cap){ (globalThis.__clip=globalThis.__clip||{})[y]={builtGWh:over.vppEnrolGWh,capGWh:cap}; over.vppEnrolGWh=cap; } } }
+    // STORAGE LOOK-AHEAD (user, 3 Nov 2026, message 666 (e)): LA_H sets the short stores' window (FIXED.storageLookaheadH, 48 h) and
+    // LDES_LA_H the long stores' (ldesLookaheadH, 168 h when unset); both are perfect forecasts within the window. Measurement only.
+    if (process.env.LA_H!==undefined){ if (!(+process.env.LA_H>=0)) throw new Error('LA_H must be 0 or more hours'); over.storageLookaheadH=+process.env.LA_H; }
+@@ -381,7 +386,7 @@ console.log('recorded settings:', JSON.stringify(RECSET));
+       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+__wxSeed(yy)*7919};
+        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,...(nat.solarTrk?{solarTrk:nat.solarTrk}:{}),csp:PROFILES.csp,real:true});
+        let dem=0, chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
+-       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{cfm:(x.coalFuelMWh===undefined?null:x.coalFuelMWh),cg:x.E.coal||0,fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW(applyYearFleetOptions({...FIXED,...st}))+Math.max(0,st.newOcgtMW||0),...(()=>{ const c=x.coalCommittedMW; if (!c) return {}; let s=0,m=Infinity; for(let i=0;i<c.length;i++){ s+=c[i]; if(c[i]<m) m=c[i]; } return {cmMean:s/c.length, cmMin:m}; })(),...(x.ss?{ssReq:x.ss.reqGWs,ssMin:x.ss.minGWs,ssSyncMin:x.ss.syncMinGWs,ssP5:x.ss.p5GWs,ssShortH:x.ss.shortH,ssShortGWsH:x.ss.shortGWsH,ssLiftH:x.ss.liftH,ssLiftMWh:x.ss.liftMWh,ssLiftFloorMWh:x.ss.liftFloorMWh,ssResH:x.ss.resH||0,ssResMWh:x.ss.resMWh||0, ssCoalFirstH:x.ss.coalFirstH||0,ssLiftCappedH:x.ss.liftCappedH}:{}),...(x.btm?{btmStock:x.btm.stockGWh,btmDemChg:x.btm.demandChangeGWh,vppMW:x.btm.vppMW||0,vppDis:x.btm.vppDischargeMWh||0,vppInc:x.btm.vppIncrementalDischargeMWh||0,vppCost:x.btm.vppCostR||0,vppWear:x.btm.vppWearR||0}:{}),...(x.geyser?{gyMW:x.geyser.enrolledMW,gyRed:x.geyser.reducedGWh,gyCost:x.geyser.costR}:{}),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; const rt=reipppRetiredMW(st.scenarioYear,{...FIXED,...st}); return ((st.windMW||FIXED.windMW)-(rt?rt.wind:0))*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)-avonDedisaOffMW({...FIXED,...st},st.scenarioYear)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6,{wy:String(yy),ps:(x.E.ps||0)/1e6,li:x.battTierTWh?x.battTierTWh.li:null,vrfb:x.battTierTWh?x.battTierTWh.vrfb:null,fe:x.battTierTWh?x.battTierTWh.fe:null}]); } }
++       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{cfm:(x.coalFuelMWh===undefined?null:x.coalFuelMWh),cg:x.E.coal||0,fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW(applyYearFleetOptions({...FIXED,...st}))+Math.max(0,st.newOcgtMW||0),...(()=>{ const c=x.coalCommittedMW; if (!c) return {}; let s=0,m=Infinity; for(let i=0;i<c.length;i++){ s+=c[i]; if(c[i]<m) m=c[i]; } return {cmMean:s/c.length, cmMin:m}; })(),...(x.ss?{ssReq:x.ss.reqGWs,ssMin:x.ss.minGWs,ssSyncMin:x.ss.syncMinGWs,ssP5:x.ss.p5GWs,ssShortH:x.ss.shortH,ssShortGWsH:x.ss.shortGWsH,ssLiftH:x.ss.liftH,ssLiftMWh:x.ss.liftMWh,ssLiftFloorMWh:x.ss.liftFloorMWh,ssResH:x.ss.resH||0,ssResMWh:x.ss.resMWh||0, ssCoalFirstH:x.ss.coalFirstH||0,ssLiftCappedH:x.ss.liftCappedH}:{}),...(x.btm?{btmStock:x.btm.stockGWh,btmDemChg:x.btm.demandChangeGWh,vppMW:x.btm.vppMW||0,vppDis:x.btm.vppDischargeMWh||0,vppInc:x.btm.vppIncrementalDischargeMWh||0,vppCost:x.btm.vppCostR||0,vppWear:x.btm.vppWearR||0,evP:x.btm.eveningPassiveMWperMWh,dmW:x.E.curtWind||0,dmP:x.E.curtPv||0,dmRO:x.reipppOutputMWh||0,dmVD:(x.E.wind||0)+(x.E.pv||0)+(x.E.csp||0),dmC:x.E.curtailed||0,evV:x.btm.eveningVppMW||0,evVk:x.btm.eveningVppMWperMWh,resPct:x.btm.reservePct,res0Pct:x.btm.reserve2026Pct,cycNE:x.btm.cyclingNotEnrolledGWh,enr:x.btm.enrolledGWh,bkp:x.btm.backupGWh}:{}),...(x.geyser?{gyMW:x.geyser.enrolledMW,gyRed:x.geyser.reducedGWh,gyCost:x.geyser.costR}:{}),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; const rt=reipppRetiredMW(st.scenarioYear,{...FIXED,...st}); return ((st.windMW||FIXED.windMW)-(rt?rt.wind:0))*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)-avonDedisaOffMW({...FIXED,...st},st.scenarioYear)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6,{wy:String(yy),ps:(x.E.ps||0)/1e6,li:x.battTierTWh?x.battTierTWh.li:null,vrfb:x.battTierTWh?x.battTierTWh.vrfb:null,fe:x.battTierTWh?x.battTierTWh.fe:null}]); } }
+       return JSON.stringify(o); })()`));
+    // LEVELS_OUT=<file> (design note version 2, test 4; message 673 (h); measurement only): each long store's level at the end of every day
+    // (iron-air fe, vanadium vrfb, pumped storage ps, MWh), by weather year, from the first draw's seed, one JSON line per checked year.
+@@ -458,7 +463,9 @@ console.log('recorded settings:', JSON.stringify(RECSET));
+      // Behind-the-meter batteries, the VPP and geyser control (messages 621-647; 649 (b)): the year's stock and demand change, GWh; enrolled
+      // VPP MW, its discharge and incremental discharge (wear basis, 647), MWh; its cost and wear, R bn; geyser MW enrolled, GWh deferred,
+      // cost, R bn; means over the runs. Reported only; the costs are already in r.cost (newCapexR).
+-     if (o[0][L].btmStock!==undefined) r.btm={stockGWh:o[0][L].btmStock, demandChangeGWh:o[0][L].btmDemChg, vppMW:o[0][L].vppMW, vppDischargeMWh:m('vppDis'), vppIncrementalMWh:m('vppInc'), vppCostBn:m('vppCost')/1e9, vppWearBn:m('vppWear')/1e9};
++     if (o[0][L].btmStock!==undefined) r.btm={stockGWh:o[0][L].btmStock, demandChangeGWh:o[0][L].btmDemChg, vppMW:o[0][L].vppMW, vppDischargeMWh:m('vppDis'), vppIncrementalMWh:m('vppInc'), vppCostBn:m('vppCost')/1e9, vppWearBn:m('vppWear')/1e9, eveningPassiveMWperMWh:m('evP'), eveningVppMW:m('evV'), eveningVppMWperMWh:o[0][L].evVk===null?null:m('evVk'), reservePct:o[0][L].resPct, reserve2026Pct:o[0][L].res0Pct, cyclingNotEnrolledGWh:o[0][L].cycNE, enrolledGWh:o[0][L].enr, backupGWh:o[0][L].bkp, btmOver:process.env.BTM_OVER?JSON.parse(process.env.BTM_OVER):null, enrolClipped:(globalThis.__clip||{})[y]||null};
++     // message 749: curtailment by technology and REIPPPP's delivered output, means over the runs (record only), and the year's REIPPPP rate.
++     if (o[0][L].dmW!==undefined) r.deemed={curtWindTWh:m('dmW')/1e6, curtPvTWh:m('dmP')/1e6, curtAllTWh:m('dmC')/1e6, reipppOutputTWh:m('dmRO')/1e6, vreDeliveredTWh:m('dmVD')/1e6, reipppRateRMWh:+w.eval(`reipppRate(${y})`)};
+      if (o[0][L].gyMW!==undefined) r.geyser={enrolledMW:o[0][L].gyMW, reducedGWh:m('gyRed'), costBn:m('gyCost')/1e9};
+      if (SS_ON){ if (o[0][L].ssReq===undefined) throw new Error('the run is inertia but the engine returned no ss');
+        r.ss={reqGWs:o[0][L].ssReq, inertiaMinGWs:Math.min(...o.map(b=>b[L].ssMin)), syncMinGWs:o[0][L].ssSyncMin===undefined?null:Math.min(...o.map(b=>b[L].ssSyncMin)), inertiaP5GWs:m('ssP5'), shortH:m('ssShortH'), shortGWsH:m('ssShortGWsH'),
+diff --git a/harness/pathway/pathway_perfail.js b/harness/pathway/pathway_perfail.js
+index 117e072..62fa7e7 100644
+--- a/harness/pathway/pathway_perfail.js
++++ b/harness/pathway/pathway_perfail.js
+@@ -229,7 +229,7 @@ const BTM_ENV=(()=>{ const o={}, e=process.env;
+   if (o.vppEnrolCapPct!==undefined && o.vppBuildOn!==1) throw new Error('VPP_CAP_PCT needs VPP=1');
+   if (o.btmBackupPath!==undefined && !(o.btmStockGWh>0)) throw new Error('BTM_BACKUP needs BTM_STOCK above 0');
+   return o; })();
+-const BTM_KEYS=['btmStockGWh','btmBackupPath','btmReservePct','btmHours','btmEff','btmCapexRkWh','vppBuildOn','vppEnrolCapPct','vppCostCase','vppCostUsdKwYr'];
++const BTM_KEYS=['btmStockGWh','btmBackupPath','btmReservePct','btmHours','btmEff','btmCapexRkWh','vppBuildOn','vppEnrolCapPct','vppCostCase','vppCostUsdKwYr','vppHours','vppReservePct','btmReservePath','vppCostRkWyr'];
+ // Geyser control as a build option (HANDOVER 'Geyser control (and pool pumps) as a VPP build option: design'; messages 633-635). All
+ // unset: off, the page defaults (FIXED), and the LP as before. GY=1: enrolled MW of gross peak reduction as a build variable (gyBuildOn).
+ // GY_CAP_PCT: enrolment cap, % of electric geysers (30; 10-55 the range). GY_KW: gross reduction per enrolled geyser, kW (0.4; 0.3-0.9).
+@@ -292,6 +292,15 @@ const fix=lp=>{ const oc=/^ 0 <= b_ocgt_\d{4} <= /m.test(lp); return lp.replace(
+                  .replace(/^ 0 <= b_phes_(\d{4}) <= ([0-9.]+)$/gm,(m,y,v)=> LDES_NOCAP && +v>0 ? ` 0 <= b_phes_${y} <= 200000` : m)
+                  .replace(/^ (phescap_\d{4}): (.*) <= [0-9.]+$/gm,(m,nm,lhs)=> LDES_NOCAP ? ` ${nm}: ${lhs} <= 1000000` : m)
+                  .replace(/^ 0 <= rc_(\d{4}) <= ([0-9.]+)$/gm,(m,y,ub)=> RC_FROM && +y<RC_FROM ? ` 0 <= rc_${y} <= 0` : RC_MIN!==null && +y===+(process.env.HORIZON||2040) ? ` ${Math.min(RC_MIN,+ub).toFixed(1)} <= rc_${y} <= ${ub}` : m); };
++ // VERDICT_CACHE (message 726 (c); on with VERDICT_TOPUP and LPCACHE, VERDICT_CACHE=0 turns it off): each verdict's adequacy test kept in the
++ // run's LP cache folder (verdict_<sha1>.json), keyed by its inputs (the year's state and draws, as the page serialises them) and this
++ // index.html, so a resumed piece replays a verdict it already has instead of recomputing it. The LP text and keys are untouched.
++ if (process.env.VERDICT_TOPUP && process.env.LPCACHE && process.env.VERDICT_CACHE !== '0'){ const C = require('crypto'), vdir = path.resolve(process.env.LPCACHE),
++   salt = C.createHash('sha1').update(fs.readFileSync(path.join(ROOT, 'index.html'))).digest('hex'), vf = k => path.join(vdir, 'verdict_' + k + '.json');
++   w.__vcKey = s => C.createHash('sha1').update(salt).update(s).digest('hex');
++   w.__vcGet = k => fs.existsSync(vf(k)) ? fs.readFileSync(vf(k), 'utf8') : null;
++   w.__vcPut = (k, s) => { fs.mkdirSync(vdir, { recursive: true }); fs.writeFileSync(vf(k) + '.tmp', s); fs.renameSync(vf(k) + '.tmp', vf(k)); };
++   console.log('VERDICT_CACHE: on, folder', vdir); }
+  let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid); require(path.join(__dirname,'..','tmp_cleanup.js'))(tmp);
+    // SOLVE CACHE (7 Oct 2026): the container restarts every few hours and a pass-2 solve takes one to three, so
+    // each optimal solution is kept under lpcache/ (or LPCACHE, a run's own folder, so it can be deleted after the run's check;
+@@ -545,8 +554,12 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
+      if (process.env.STD !== 'ntcsa') throw new Error('VERDICT_TOPUP reads the NTCSA limit (NTCSA_ADEQUACY_GWH): it needs STD=ntcsa');
+      set.push(`{ const _at = bldAdequacyTest, V = ${JSON.stringify(v)}; window.__verdictLog = [];
+        bldAdequacyTest = (st, draws) => { const lim = NTCSA_ADEQUACY_GWH, mean = t => t.rows.length ? t.rows.reduce((a, b) => a + b.gwh, 0) / t.rows.length : 0;
+-         let K = V.start, t = _at(st, K); const log = [[K, +mean(t).toFixed(3)]];
+-         for (let i = 0; i < V.steps.length; i++){ const f = Array.isArray(V.frac) ? V.frac[i] : V.frac; if (mean(t) < f * lim) break; K = V.steps[i]; t = _at(st, K); log.push([K, +mean(t).toFixed(3)]); }
++         const ser = o => JSON.stringify(o, (k, v) => v instanceof Float32Array ? { __f32: Array.from(v) } : v instanceof Float64Array ? { __f64: Array.from(v) } : v);
++         const rev = s => JSON.parse(s, (k, v) => v && v.__f32 ? Float32Array.from(v.__f32) : v && v.__f64 ? Float64Array.from(v.__f64) : v);
++         const at = (s0, k0) => { if (!window.__vcKey) return _at(s0, k0); const key = window.__vcKey(ser([s0, k0])), hit = window.__vcGet(key);
++           if (hit !== null){ window.__vcHits = (window.__vcHits || 0) + 1; return rev(hit); } const r = _at(s0, k0); window.__vcPut(key, ser(r)); return r; };
++         let K = V.start, t = at(st, K); const log = [[K, +mean(t).toFixed(3)]];
++         for (let i = 0; i < V.steps.length; i++){ const f = Array.isArray(V.frac) ? V.frac[i] : V.frac; if (mean(t) < f * lim) break; K = V.steps[i]; t = at(st, K); log.push([K, +mean(t).toFixed(3)]); }
+          window.__verdictLog.push({ y: st.scenarioYear, log }); return t; }; }`); }
+    // DRAWS=<n> (J2; design note version 2, 6; message 673 (j) 2): the adequacy loop's outage draws a weather year (2 as every run so far).
+    if (e.DRAWS !== undefined && !(Number.isInteger(+e.DRAWS) && +e.DRAWS >= 1)) throw new Error('DRAWS must be a whole number of draws');
+@@ -668,7 +681,7 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
+    // The virtual power plant's and geyser control's yearly enrolment (vppp_<y>, gy_<y>) are build decisions too (test 7 on the fixed
+    // data, message 691 (g): left free, a single-year LP set the earlier years' to 0 and dropped their cost). A run that recorded them in
+    // its build gives them; otherwise they come from its schedule (vppGWh x 1000 / btmHours, gyMW).
+-   const bh = +w.eval('state.btmHours ?? FIXED.btmHours');
++   const bh = +w.eval('state.vppHours ?? FIXED.vppHours ?? state.btmHours ?? FIXED.btmHours');
+    for (const [y, q] of Object.entries(F.sched || {})){ if (q.vppGWh != null && !('vppp_' + y in B)) B['vppp_' + y] = q.vppGWh * 1000 / bh; if (q.gyMW != null && !('gy_' + y in B)) B['gy_' + y] = q.gyMW; }
+    return B; })() : null, FIX_TO = +(process.env.FIX_TO||0);
+  function fixBuild(lp){ if (!FIXB) return lp;
+@@ -705,6 +718,20 @@ w.eval(`if(!('bldPlanMarginPct' in FIXED)) throw new Error('bldPlanMarginPct mis
+      D[g.name] = cur.map(y => Math.min(y, E)); }
+    BLD_COAL_UNIT_DATES = D; if (bldCoalMW(E) > 0) throw new Error('FOSSIL_END: coal still standing in ' + E); }`);
+    console.log('coal dates from', process.env.COAL_DATES, JSON.stringify(Object.fromEntries([2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040].map(y=>[y, Math.round(+w.eval('bldCoalMW('+y+')'))])))); }
++ // COAL_SUSTAIN=eia (user, 7 Nov 2026, message 781 (a)): coal sustaining capital by EIA's equation (coalSustainEiaByYear), the fleet's
++ // MW-weighted mean by year on this run's unit dates (after COAL_DATES and COMPLY), added to coal's fixed cost (coalFomAt: the LP's
++ // saving on coal retired early, and the engine's cost). Recorded in coalCost as coalSustainRByYear; pathcheck.js applies the recorded
++ // values, so the engine check uses the run's own dates. Not with COAL_FOM_ADD (s_coalsustain, R500 flat, the high check).
++ // COAL_AGE=1 (message 781): the age factor by year on this run's unit dates, recorded in coalCost as coalFomAgeByYear and applied
++ // from the record by pathcheck.js (which has no unit dates).
++ if (COAL_COST.coalFomAgeOn){
++   COAL_COST.coalFomAgeByYear = JSON.parse(w.eval(`if(!('coalFomAgeByYear' in FIXED)) throw new Error('FIXED.coalFomAgeByYear missing'); { const o = {}; for (let y = 2026; y <= 2050; y++) o[y] = +(coalFleetAgeFactor(y) / coalFleetAgeFactor(2026)).toFixed(6); state.coalFomAgeByYear = o; JSON.stringify(o); }`));
++   console.log('coal fixed O&M age factor on this run\'s dates:', JSON.stringify(Object.fromEntries(Object.entries(COAL_COST.coalFomAgeByYear).filter(([y]) => +y <= 2040)))); }
++ if (process.env.COAL_SUSTAIN !== undefined){
++   if (process.env.COAL_SUSTAIN !== 'eia') throw new Error('COAL_SUSTAIN must be eia');
++   if (COAL_FOM_ADD) throw new Error('COAL_SUSTAIN and COAL_FOM_ADD are two sustaining-capital cases: set one');
++   COAL_COST.coalSustainRByYear = JSON.parse(w.eval(`if(!('coalSustainRByYear' in FIXED)) throw new Error('FIXED.coalSustainRByYear missing'); state.coalSustainRByYear = coalSustainEiaByYear(state); JSON.stringify(state.coalSustainRByYear)`));
++   console.log('coal sustaining capital (EIA), R/kW-yr by year:', JSON.stringify(Object.fromEntries(Object.entries(COAL_COST.coalSustainRByYear).filter(([y]) => +y <= 2040)))); }
+  await w.eval('loadWeatherYears()');
+ // LOOP_YEAR_ONLY=1 with STAGE2_YEAR=<y> (message 694 (b); a test of the two-stage loop): the adequacy loop tests only year y, the year
+ // the step fixes, and passes the look-ahead years untested (they are solved again in later steps). Unset: every year in the step's window
+@@ -816,7 +843,7 @@ if (process.env.PV_TRK_CF){ const T = +process.env.PV_TRK_CF; if (!(T > 0.1 && T
+  const out=w.__out, cols=out.res.Columns;
+  const Y=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)')), T=JSON.parse(w.eval('JSON.stringify(BLD_TECHS)'));
+  const sched={}; for(const y of Y){ sched[y]={}; for(const t of T) sched[y][t]=Math.round((cols['b_'+t+'_'+y]||{Primal:0}).Primal);
+-   sched[y].battMWh=Math.round((cols['eb_batt_'+y]||{Primal:0}).Primal); if (VPP_ON) sched[y].vppGWh=w.bldEnrolPrimal(cols,'vppp_'+y)*(+w.eval('state.btmHours ?? FIXED.btmHours'))/1000; if (GY_ON) sched[y].gyMW=w.bldEnrolPrimal(cols,'gy_'+y);   /* round-off below 0 read as 0, a larger negative stops (index.html bldEnrolPrimal; message 698 (a)) */ if (CAPE) sched[y].cw=Math.round((cols['cw_'+y]||{Primal:0}).Primal); sched[y].off=Math.round((cols['b_off_'+y]||{Primal:0}).Primal);
++   sched[y].battMWh=Math.round((cols['eb_batt_'+y]||{Primal:0}).Primal); if (VPP_ON) sched[y].vppGWh=w.bldEnrolPrimal(cols,'vppp_'+y)*(+w.eval('state.vppHours ?? FIXED.vppHours ?? state.btmHours ?? FIXED.btmHours'))/1000; if (GY_ON) sched[y].gyMW=w.bldEnrolPrimal(cols,'gy_'+y);   /* round-off below 0 read as 0, a larger negative stops (index.html bldEnrolPrimal; message 698 (a)) */ if (CAPE) sched[y].cw=Math.round((cols['cw_'+y]||{Primal:0}).Primal); sched[y].off=Math.round((cols['b_off_'+y]||{Primal:0}).Primal);
+    sched[y].phes=Math.round((cols['b_phes_'+y]||{Primal:0}).Primal); sched[y].phel=Math.round((cols['b_phel_'+y]||{Primal:0}).Primal); sched[y].ocgt=Math.round((cols['b_ocgt_'+y]||{Primal:0}).Primal); sched[y].ocgd=Math.round((cols['b_ocgd_'+y]||{Primal:0}).Primal); sched[y].dslDecomMW=Math.round(w.eval(`bldPeakerDecomMW(${y},{...FIXED,...state},${JSON.stringify(Object.fromEntries(Object.entries(cols).filter(([c])=>c.startsWith('le_'))))})`)); sched[y].rp={}; for(const t of T.concat(['phes','phel'])){ const v=Math.round((cols['rp_'+t+'_'+y]||{Primal:0}).Primal); if(v) sched[y].rp[t]=v; } sched[y].earlyRetMW=Math.round((cols['rc_'+y]||{Primal:0}).Primal); sched[y].coalMW=Math.round(w.eval(`bldCoalMW(${y})`) - sched[y].earlyRetMW);
+    if (SS_REC.mode==='inertia'){ for (const t of ['gfm','scc','scn']) sched[y][t]=Math.round((cols['b_'+t+'_'+y]||{Primal:0}).Primal);
+      let sl=0, n=0; const re=new RegExp('^ssl_'+y+'_'); for (const [c,v] of Object.entries(cols)) if (re.test(c) && v.Primal>1e-6){ sl+=v.Primal; n++; } sched[y].ssSlack={mwsH:+sl.toFixed(1), hours:n}; } }
+diff --git a/index.html b/index.html
+index cda7696..af121ad 100644
+--- a/index.html
++++ b/index.html
+@@ -5290,6 +5290,9 @@ const USD_RATE_R = 16.50;
+ const US_CPI_JAN26 = 325.252, US_CPI_2011_TO_JAN26 = US_CPI_JAN26 / 224.939;
+ // 2022 US dollars to January 2026: US CPI-U January 2026 over the 2022 annual average, 292.655 (BLS, FRED CPIAUCNS).
+ const US_CPI_2022_TO_JAN26 = US_CPI_JAN26 / 292.655;
++// 2017 US dollars to January 2026 (coal sustaining capital, message 781 (a)): US CPI-U January 2026 over the 2017 annual average,
++// 245.120 (BLS, FRED CPIAUCNS).
++const US_CPI_2017_TO_JAN26 = US_CPI_JAN26 / 245.120;
+ // The virtual power plant's battery participant (user, 2 Nov 2026, message 631 (c)): Brattle, Real Reliability: The Value of Virtual
+ // Power, Technical Appendix (3 May 2023), 2022 dollars per participant a year, Table 3 (home batteries: $500 incentive, $140 other
+ // costs, nothing one-off) over 7.5 kW of participant battery (Tables 1 and 4), so per kW of enrolled nameplate a year.
+@@ -5833,6 +5836,13 @@ const FIXED = {
+   // liability after the renewable-premium deduction (CARBON_COAL_FLOOR_R_KWH, per MWh of coal output), from 2031 the carbon path as
+   // before; coal only. 0 on the page (the rates in law less allowances, carbonTaxAt); c7's central sets 1 through the run settings.
+   coalCarbonFloorOn:0,
++  // coalSustainRByYear (user, 7 Nov 2026, message 781 (a)): coal sustaining capital, R/kW-yr (January 2026 rands) by year, added to coal's
++  // fixed cost (coalFomAt: the build LP's saving on coal retired early and the engine's cost). null: none, the page and its LP unchanged.
++  // A run sets it from EIA's equation on its own unit dates (coalSustainEiaByYear; the pathway's COAL_SUSTAIN=eia) and records it.
++  coalSustainRByYear:null,
++  // coalFomAgeByYear (message 781): the age factor by year relative to 2026 as a run computed it on its own unit dates, recorded with
++  // the run; null: computed here (coalFleetAgeFactor). Only read with coalFomAgeOn.
++  coalFomAgeByYear:null,
+   fomNuclear:4260,    // was 3300. Koeberg is 40 years old and in long-term operation.
+   fomCcgt:720,        // was 560
+   fomDiesel:360,      // was 280. Peakers are cheap to hold relative to their rating.
+@@ -6569,6 +6579,14 @@ const FIXED = {
+   // installed, charged in btmCapexR on the stock added after 2026 (P4). The 50% start, the glide path and the 25% reserve are
+   // our assumptions (SOURCES 'Behind-the-meter batteries: stock and growth').
+   btmStockGWh:0, btmBackupPath:'glide', btmReservePct:25, btmHours:2.5, btmEff:0.9, btmCapexRkWh:5000,
++  // Comparison worktree only (message 734; on no branch): enrolled power E / vppHours and reserve vppReservePct (null: btmHours and
++  // btmReservePct, as before); btmReservePath, [[year, pct], ...], the cycling stock's reserve by year, linear between, held after (null:
++  // btmReservePct every year).
++  vppHours:3, vppReservePct:20, btmReservePath:[[2026,43.2],[2030,31.8]], vppCostRkWyr:500,   // 8 Nov key (message 761 (a)): battery proposals 1-3, as k8
++  // bldRepF3d (message 761 (a)): finding 3's factors on the representative days (f3d, band 0.80-1.25); bldRpSameAreaCap (761 (a)):
++  // the freed-coal pool capped at the same-area MW (message 733). Both 0: the LP as on the fin basis.
++  bldRepF3d:1, bldRpSameAreaCap:1,   // 8 Nov key (message 761 (a))
++  // vppCostRkWyr: R a year per kW of enrolled power (E / vppHours); null: the case's cost as before. All four null: the LP and engine as before.
+   // vppBuildOn (message 637): enrolled home batteries as coordinated storage, power E / 2.5 h a build-LP variable (vppp_<y>, MW) and
+   // dispatched by the engine with the lithium fleet (V1-V5); they leave the passive profile; with it on the slider VPP's battery
+   // component (vppBattPerGeyserKW) is off and its geysers stay (V5). vppEnrolCapPct: enrolment at most this share of the cycling stock
+@@ -7326,18 +7344,26 @@ function coalFomAgeCurve(age){
+ }
+ // The fleet's MW-weighted age factor in year y: every UC_FLEET unit standing in y (its decom year after y) at its commissioning year
+ // (COAL_UNIT_COD, by row in unit order). Needs COAL_UNIT_COD.
++// Each unit's own closure year (message 781, 7 Nov 2026): BLD_COAL_UNIT_DATES when a run sets them (the pathway's COAL_DATES, e.g. the
++// IRP 2025 timing), else UC_FLEET's; before, UC_FLEET's always, so a run on other dates aged a fleet it did not keep (2040: 1.041
++// against 0.981 on the IRP 2025 dates). With no dates set, unchanged.
+ function coalFleetAgeFactor(y){
+   if (!COAL_UNIT_COD) throw new Error('coalFomAgeOn needs COAL_UNIT_COD (unit commissioning years)');
+   let mw = 0, f = 0;
+   for (const u of UC_FLEET){ const cod = COAL_UNIT_COD[u.name]; if (!cod || cod.length !== u.n) throw new Error('COAL_UNIT_COD: ' + u.n + ' years needed for ' + u.name);
+-    const end = /beyond/.test(u.decom) ? 9999 : +u.decom; if (!(end > y)) continue;
+-    for (const c of cod){ mw += u.unit_cap; f += u.unit_cap * coalFomAgeCurve(y - c); } }
++    const ud = BLD_COAL_UNIT_DATES && BLD_COAL_UNIT_DATES[u.name];
++    if (ud && ud.length !== u.n) throw new Error('BLD_COAL_UNIT_DATES: ' + u.n + ' years needed for ' + u.name);
++    const end0 = /beyond/.test(u.decom) ? 9999 : +u.decom;
++    cod.forEach((c, i) => { const end = ud ? ud[i] : end0; if (!(end > y)) return; mw += u.unit_cap; f += u.unit_cap * coalFomAgeCurve(y - c); }); }
+   return mw > 0 ? f / mw : 1;
+ }
+ function coalFomMult(S, y){
+   const g = +(S.coalFomEscPct ?? 0); if (!(g > -20 && g < 20)) throw new Error('coalFomEscPct out of range: ' + S.coalFomEscPct);
+   let m = g === 0 ? 1 : Math.pow(1 + g / 100, Math.max(0, y - 2026));
+-  if ((S.coalFomAgeOn | 0) > 0) m *= coalFleetAgeFactor(y) / coalFleetAgeFactor(2026);
++  // A run records the factor by year on its own unit dates (coalFomAgeByYear, message 781), so its engine check applies the same.
++  if ((S.coalFomAgeOn | 0) > 0){ const r = S.coalFomAgeByYear; const v = r ? (r[y] ?? r[String(y)]) : null;
++    if (r && !(v > 0.5 && v < 3)) throw new Error('coalFomAgeByYear: no factor for ' + y + ': ' + v);
++    m *= r ? +v : coalFleetAgeFactor(y) / coalFleetAgeFactor(2026); }
+   return m;
+ }
+ // The year's coal fuel cost and fixed cost, R/MWh and R/kW-yr: the base escalated, the add-on (state fomCoal above FIXED.fomCoal) flat.
+@@ -7345,7 +7371,47 @@ function coalFuelAt(S, y){ return S.costCoal * coalFuelMult(S, y); }
+ // The LP's coal part-load factor in model year y (FIXED.bldCoalPartLoad, message 710 (b)): 1 when unset.
+ function bldCoalPartLoadAt(S, y){ const m = S && S.bldCoalPartLoad; if (!m) return 1; const v = m[y] ?? m[String(y)];
+   if (!(v >= 1 && v < 1.5)) throw new Error('bldCoalPartLoad: a factor from 1 to 1.5 for every model year; ' + y + ': ' + v); return +v; }
+-function coalFomAt(S, y){ const m = coalFomMult(S, y); return m === 1 ? S.fomCoal : S.fomCoal + FIXED.fomCoal * (m - 1); }
++function coalFomAt(S, y){ const m = coalFomMult(S, y); return (m === 1 ? S.fomCoal : S.fomCoal + FIXED.fomCoal * (m - 1)) + coalSustainAt(S, y); }
++// Coal sustaining capital in year y, R/kW-yr: S.coalSustainRByYear's value, 0 when it is null (message 781 (a)).
++function coalSustainAt(S, y){
++  const t = S && S.coalSustainRByYear; if (t == null) return 0;
++  const v = t[y] ?? t[String(y)]; if (!(v >= 0 && v < 5000)) throw new Error('coalSustainRByYear: no value from 0 to 5,000 for ' + y + ': ' + v);
++  return +v;
++}
++// Coal sustaining capital by EIA's equation (user, 7 Nov 2026, message 781 (a); SOURCES 'Coal sustaining capital: EIA's equation'):
++// Sargent & Lundy for EIA, Generating Unit Annual Capital and Life Extension Costs Analysis (2019), as EIA's NEMS uses it (Assumptions to
++// the Annual Energy Outlook 2026, Electricity Market Module): annual capital expenditure, 2017 $/kW-yr = 16.53 + 0.126 x age in years +
++// 5.68 x FGD (1 if a plant has flue-gas desulphurisation, else 0). Age: the model year less the unit's commissioning year
++// (COAL_UNIT_COD). FGD (ours): Kusile in every year; Medupi from COMPLY_MES.fromYear when the compliance case is compromise or full
++// (Eskom's recommended plan fits FGD at Medupi; the model charges the retrofits from that year), and the other five stations in
++// scope from then under full only. To January 2026 rands: US_CPI_2017_TO_JAN26 x USD_RATE_R. The fleet's MW-weighted mean over the
++// units standing in each year (BLD_COAL_UNIT_DATES when a run sets them, else UC_FLEET's dates): coal retired early saves the
++// fleet mean, not the retiring units' own (ours; they are older than the mean, so the saving is understated).
++const COAL_SUSTAIN_EIA = { c0: 16.53, perAgeY: 0.126, fgd: 5.68 };
++function coalUnitFgd(group, S, y){
++  const st = group.replace(/\*+$/, '');
++  if (st === 'Kusile') return 1;
++  const c = complyCase(S); if (c === 'none' || y < COMPLY_MES.fromYear) return 0;
++  return st === 'Medupi' || (c === 'full' && COMPLY_MES.stations.includes(st)) ? 1 : 0;
++}
++function coalSustainEiaByYear(S, y0 = 2026, y1 = 2050){
++  const k = US_CPI_2017_TO_JAN26 * USD_RATE_R, out = {};
++  for (let y = y0; y <= y1; y++){
++    let mw = 0, r = 0;
++    for (const g of UC_FLEET){
++      const n = Math.max(1, g.n || 1), cod = COAL_UNIT_COD[g.name];
++      if (!cod || cod.length !== n) throw new Error('COAL_UNIT_COD: ' + n + ' years needed for ' + g.name);
++      const d = (BLD_COAL_UNIT_DATES && BLD_COAL_UNIT_DATES[g.name]) || Array(n).fill(g.decom === 'beyond 2050' ? 9999 : parseInt(g.decom, 10));
++      if (d.length !== n) throw new Error('BLD_COAL_UNIT_DATES: ' + n + ' years needed for ' + g.name);
++      const per = g.cap / n;
++      for (let i = 0; i < n; i++) if (d[i] > y){
++        mw += per; r += per * k * (COAL_SUSTAIN_EIA.c0 + COAL_SUSTAIN_EIA.perAgeY * Math.max(0, y - cod[i]) + COAL_SUSTAIN_EIA.fgd * coalUnitFgd(g.name, S, y));
++      }
++    }
++    out[y] = mw > 0 ? +(r / mw).toFixed(3) : 0;
++  }
++  return out;
++}
+ // Unit commissioning years by UC_FLEET row, in unit order (coalFomAgeOn; user, 2 Nov 2026, message 653 (b); SOURCES 'Coal unit
+ // commissioning years'): Global Energy Monitor's station pages and news reports, read as search extracts (to verify against the
+ // pages; Kelvin's 1962 and 1964 and the stations in SOURCES' Global Energy Monitor row read from the pages, 12 Oct 2026); the
+@@ -7854,7 +7920,11 @@ function btmStock(S, y){
+   const stockAt = yy => s0 + g * Math.max(0, yy - K.y0);
+   const backupAt = yy => S.btmBackupPath === 'hold' ? K.backup0
+     : K.backup0 * Math.max(0, Math.min(1, (K.backupEndYear - yy) / (K.backupEndYear - K.y0)));
+-  const St = stockAt(y), B = backupAt(y), C = (1 - B) * St, C0 = (1 - backupAt(K.y0)) * s0, use = 1 - res / 100;
++  const RP = S.btmReservePath, resAt = yy => { if (!RP) return res; if (yy <= RP[0][0]) return RP[0][1];
++    for (let i = 1; i < RP.length; i++){ const [y0, r0] = RP[i - 1], [y1, r1] = RP[i]; if (yy <= y1) return r0 + (r1 - r0) * (yy - y0) / (y1 - y0); }
++    return RP[RP.length - 1][1]; };
++  // The 2026 stock is in the metered demand at the 2026 reserve (use0); the year's at the year's (use). Equal when the reserve is flat.
++  const St = stockAt(y), B = backupAt(y), C = (1 - B) * St, C0 = (1 - backupAt(K.y0)) * s0, use = 1 - resAt(y) / 100, use0 = 1 - resAt(K.y0) / 100;
+   let vppCapGWh = 0;
+   if (vppOn){
+     const capPct = +S.vppEnrolCapPct;
+@@ -7862,12 +7932,12 @@ function btmStock(S, y){
+     vppCapGWh = C * capPct / 100;                                         // V1: a share of the cycling stock
+     if (y <= K.y0) vppCapGWh = Math.min(vppCapGWh, K.vppMax2026GWh);      // V1: and in 2026 no more than 2.7 GWh
+   }
+-  return { s0, S: St, B, C, C0, use, eff, hours: hrs,
++  return { s0, S: St, B, C, C0, use, use0, eff, hours: hrs,
+     powerPerUsable: 1 / hrs / use,                                        // MW per MWh of usable energy (P1: 2.5 hours on capacity)
+     vppOn, vppCapGWh,
+     // V4 (messages 631 (c) and 645): rands a year per MWh enrolled, the case's cost per kW of power (E / 2.5 h) at the pinned rate;
+     // and the wear per MWh the enrolled batteries discharge, battCycleCostR under 'resource', none beyond the LP's own under 'participant'.
+-    vppCostRperMWh: vppOn ? vppCostUsd(S) * USD_RATE_R * 1000 / hrs : 0,
++    vppCostRperMWh: vppOn ? (S.vppCostRkWyr != null ? +S.vppCostRkWyr * 1000 / (S.vppHours ?? hrs) : vppCostUsd(S) * USD_RATE_R * 1000 / hrs) : 0,
+     vppWearRperMWh: vppOn && S.vppCostCase === 'resource' ? +S.battCycleCostR : 0 };
+ }
+ // The cycling stock's fixed daily profile (P3), per MWh of usable energy: 24 values, MW, charging positive and discharging
+@@ -8062,8 +8132,9 @@ function simulate(u, prof, outPath, _soc0){
+   // E x (1 - btmReservePct), so the tier dispatch, its shadow state of charge and every battery output carry them unchanged (a tier
+   // of their own would need new keys in tierDis, battByTier and the outputs that read them); the tier's round trip is weighted by
+   // energy between lithium's and theirs (btmEff). 0 when vppBuildOn is off, so the fleet is as before.
+-  const _vppS = (p.vppBuildOn | 0) > 0 ? Math.max(0, +p.vppEnrolGWh) * 1000 / p.btmHours : 0;
+-  const _vppSE = _vppS * p.btmHours * (1 - p.btmReservePct / 100);
++  const _vppE = (p.vppBuildOn | 0) > 0 ? Math.max(0, +p.vppEnrolGWh) * 1000 : 0, _vppH = p.vppHours ?? p.btmHours, _vppR = p.vppReservePct ?? p.btmReservePct;
++  const _vppS = _vppE / _vppH;
++  const _vppSE = _vppE * (1 - _vppR / 100);
+   // Storage aggregates. Pumped storage additions join the PS fleet, being the
+   // same technology. Vanadium and iron-air join the battery-class aggregate,
+   // which then carries an energy-weighted duration and round-trip efficiency -
+@@ -8672,16 +8743,17 @@ function simulate(u, prof, outPath, _soc0){
+     if (Math.abs(tB + tC + tE - _btm.S) > 1e-9 * Math.max(1, _btm.S)) throw new Error('btm identity B S + (C - E) + E = S fails: ' + [tB, tC, tE, _btm.S].join(', '));
+     if (tC < -1e-9) throw new Error('btm identity: enrolled ' + tE + ' GWh above the cycling stock ' + _btm.C + ' GWh');
+     if (Math.abs(_btm.C - (1 - _btm.B) * _btm.S) > 1e-9 * Math.max(1, _btm.S)) throw new Error('btm identity C = (1 - B) S fails');
+-    if (Math.abs(_vppS * _btm.hours - Eg * 1000) > 1e-6 * Math.max(1, Eg * 1000)) throw new Error('btm identity: the lithium fleet carries ' + _vppS + ' MW of enrolled power, not E / ' + _btm.hours + ' h');
+-    const dU = _btm.use * (_btm.C - Eg - _btm.C0) * 1000;               // MWh of usable energy whose profile enters demand
++    if (Math.abs(_vppS * (p.vppHours ?? _btm.hours) - Eg * 1000) > 1e-6 * Math.max(1, Eg * 1000)) throw new Error('btm identity: the lithium fleet carries ' + _vppS + ' MW of enrolled power, not E / ' + _btm.hours + ' h');
++    const dU = (_btm.use * (_btm.C - Eg) - _btm.use0 * _btm.C0) * 1000;               // MWh of usable energy whose profile enters demand
+     const usableAll = _btm.use * _btm.C * 1000;                          // the whole cycling stock's usable energy, MWh (P3's cap)
+     _btmD = new Float64Array(HOURS); _btmPassDis = new Float64Array(Math.floor(HOURS / 24));
+-    let pChg = 0, pDis = 0;
++    let pChg = 0, pDis = 0, _evP = 0;
+     for (let d0 = 0; d0 + 24 <= HOURS; d0 += 24){
+       const day = btmPassiveDay(roofS.slice(d0, d0 + 24), p.rooftopMW, p.rooftopDerate, usableAll, _btm.powerPerUsable, _btm.eff);   // rooftop's own shape (707 (a) 1)
+       if (day.dis > day.chg * _btm.eff + 1e-9) throw new Error('btm profile discharges more than it stored on day ' + d0 / 24);
+       for (let k = 0; k < 24; k++) _btmD[d0 + k] = day.d[k] * dU;
+       _btmPassDis[d0 / 24] = day.dis;
++      for (let k = 16; k < 21; k++) _evP += Math.max(0, -day.d[k]);   // message 734: the passive discharge over 16:00-21:00, per MWh usable
+       pChg += day.chg * dU; pDis += day.dis * dU;
+     }
+     let net = 0; for (let h = 0; h < HOURS; h++) net += _btmD[h];
+@@ -8690,7 +8762,10 @@ function simulate(u, prof, outPath, _soc0){
+       cycling2026GWh: _btm.C0, demandChangeGWh: _btm.C - Eg - _btm.C0, usableChangeGWh: dU / 1000,
+       passiveChargeGWh: pChg / 1000, passiveDischargeGWh: pDis / 1000, passiveNetGWh: net / 1000,
+       addedSince2026GWh: _btm.S - _btm.s0, vppCapGWh: _btm.vppCapGWh, vppMW: _vppS, vppUsableMWh: _vppSE,
+-      vppCostR: Eg * 1000 * _btm.vppCostRperMWh, deltaMW: _btmD };
++      vppCostR: Eg * 1000 * _btm.vppCostRperMWh, deltaMW: _btmD,
++      // message 734: the cycling stock's passive output over 16:00-21:00, mean MW per MWh of nameplate; its reserve
++      eveningPassiveMWperMWh: _evP / (HOURS / 24) / 5 * _btm.use, reservePct: 100 * (1 - _btm.use), reserve2026Pct: 100 * (1 - _btm.use0),
++      vppHours: p.vppHours ?? p.btmHours, vppReservePct: p.vppReservePct ?? p.btmReservePct };
+   }
+   const netLoadPre=new Float64Array(HOURS);
+   for(let h=0;h<HOURS;h++){
+@@ -9487,6 +9562,7 @@ function simulate(u, prof, outPath, _soc0){
+       curtailMW[h]+=spill; E.curtailed+=spill;
+       const vre=windGen+pvGen;
+       if(vre>0&&surplus>0){const f=Math.max(0,vre-surplus)/vre;
++        E.curtWind=(E.curtWind||0)+windGen*(1-f); E.curtPv=(E.curtPv||0)+pvGen*(1-f);   // message 749: curtailment by technology (record only)
+         vreCurtMW[h]+=(windGen+pvGen)*(1-f); windGen*=f; pvGen*=f;}
+       // Track coal fuel cost attributable to curtailed generation (coal floor forced but not served)
+       // Coal curtailment = surplus that remains after storage and after VRE is cut to zero
+@@ -9549,7 +9625,7 @@ function simulate(u, prof, outPath, _soc0){
+         if(forcedSurplus>0){
+           const vreD=windGen+pvGen;
+           const cut=Math.min(vreD,forcedSurplus);
+-          if(vreD>0&&cut>0){const f=(vreD-cut)/vreD; vreCurtMW[h]+=cut; windGen*=f; pvGen*=f;}
++          if(vreD>0&&cut>0){const f=(vreD-cut)/vreD; E.curtWind=(E.curtWind||0)+windGen*(1-f); E.curtPv=(E.curtPv||0)+pvGen*(1-f); vreCurtMW[h]+=cut; windGen*=f; pvGen*=f;}
+           curtailMW[h]+=cut; E.curtailed+=cut; forcedSurplus-=cut;
+           if(forcedSurplus>0&&coalGen>0){
+             const tripped=Math.min(coalGen,forcedSurplus);
+@@ -10289,13 +10365,15 @@ function simulate(u, prof, outPath, _soc0){
+   // (_btmPassDis x their usable energy); passive cycling carries no wear, so enrolment is not charged for it. As the build LP (vpx_).
+   if (_btmOut){
+     const _liT = battTiers.find(t => t.k === 'li'), _vShare = _vppSE > 0 && _liT && _liT.mwh > 0 ? _vppSE / _liT.mwh : 0;
+-    let _vDis = 0, _vPass = 0, _vInc = 0, _liSer = 0;
++    let _vDis = 0, _vPass = 0, _vInc = 0, _liSer = 0, _vEv = 0;
+     for (let d = 0; d < _btmPassDis.length; d++){
+       let dd = 0; for (let k = 0; k < 24; k++) dd += tierSeries.li[d * 24 + k];
+       _liSer += dd; dd *= _vShare;
+       const pp = _btmPassDis[d] * _vppSE;
+       _vDis += dd; _vPass += pp; _vInc += Math.max(0, dd - pp);
++      for (let k = 16; k < 21; k++) _vEv += tierSeries.li[d * 24 + k] * _vShare;   // message 734: enrolled output over 16:00-21:00
+     }
++    _btmOut.eveningVppMW = _vEv / _btmPassDis.length / 5; _btmOut.eveningVppMWperMWh = _vppE > 0 ? _btmOut.eveningVppMW / _vppE : null;
+     if (Math.abs(_liSer - tierDis.li) > 1e-6 * Math.max(1, tierDis.li)) throw new Error('btm wear: the lithium tier\'s hourly discharge (' + _liSer + ') does not add to its total (' + tierDis.li + ')');
+     _btmOut.vppDischargeMWh = _vDis; _btmOut.vppPassiveDischargeMWh = _vPass; _btmOut.vppIncrementalDischargeMWh = _vInc;
+     _btmOut.vppWearR = _vInc * _btm.vppWearRperMWh;
+@@ -12303,6 +12381,32 @@ function bldRepDaysClustered(n, method, S0){
+     if (XS > 0) r.solarEx = out.solarEx(d);   // the existing fleet's own series (707 (c))
+     return r;
+   });
++  // Comparison worktree only (message 752 (a); on no branch): finding 3's factors set on the central's representative days, against the
++  // engine's twelve-year month means of new tracking solar (scratchpad f3/seasonal.json, measured on 06b), each calendar day read from
++  // its medoid; the clustering, the day list and the weights stay the central's. An extreme day serves only itself and takes its own
++  // month's factor; a typical day's factor is the mean of the month factors still needed over the calendar days it serves, repeated,
++  // each held within 0.80-1.25 (exact month means would need 0.54-6.3); then the annual mean is held at the twelve years' on the LP's
++  // own weights. Scratchpad f3/options.py and options_clip2.py compare the alternatives.
++  if (trk && src('solar') === 'metered' && (S.bldRepF3d | 0) > 0){
++    const EM = [0.3417514243570408, 0.3169922253053061, 0.2905545621177286, 0.24365481004701636, 0.22184206043848428, 0.2042116691381377, 0.2212355689694224, 0.2508574863161987, 0.293284418052896, 0.32540504475453025, 0.3514281106771442, 0.3538331159418107], EA = 0.2844466019061812;
++    const mOf = d => hourMonth(d * 24), nM = Array(12).fill(0); for (let d = 0; d < 365; d++) nM[mOf(d)]++;
++    const p0 = {}, f = {}, srv = {}; for (const r of days){ p0[r.d] = r.solarTrk.slice(); f[r.d] = 1; srv[r.d] = []; }
++    for (let d = 0; d < 365; d++) srv[map[d]].push(mOf(d));
++    const apply = () => { for (const r of days) r.solarTrk = p0[r.d].map(v => Math.min(1, f[r.d] * v)); };
++    const months = () => { const sum = {}, M = Array(12).fill(0); for (const r of days) sum[r.d] = r.solarTrk.reduce((a, b) => a + b, 0);
++      for (let d = 0; d < 365; d++) M[mOf(d)] += sum[map[d]]; return M.map((v, m) => v / (24 * nM[m])); };
++    apply(); const need = months().map((v, m) => EM[m] / v);
++    for (const r of days) if (r.extreme) f[r.d] = need[mOf(r.d)];
++    for (let it = 0; it < 4000; it++){ apply(); const rr = months().map((v, m) => EM[m] / v);
++      for (const r of days) if (!r.extreme) f[r.d] = Math.min(1.25, Math.max(0.8, f[r.d] * srv[r.d].reduce((s, m) => s + rr[m], 0) / srv[r.d].length)); }
++    for (let k = 0; k < 50; k++){ apply(); const a = days.reduce((s, r) => s + r.weight * r.solarTrk.reduce((x, y) => x + y, 0), 0) / 8760;
++      const g = EA / a; for (const r of days) f[r.d] *= g; if (Math.abs(g - 1) < 1e-13) break; }
++    apply();
++    // Message 761 (b): no scaled hour above the series' own maximum per unit, and the annual mean held on the LP's weights.
++    let sMax = 0; for (const v of yr.solarT) if (v > sMax) sMax = v;
++    let pre = 0, post = 0, over = 0, wsum = 0; for (const r of days){ for (const v of p0[r.d]) pre = Math.max(pre, v); for (const v of r.solarTrk){ post = Math.max(post, v); if (v > sMax + 1e-12) over++; } wsum += r.weight * r.solarTrk.reduce((x, y) => x + y, 0); }
++    days.f3d = { factors: f, need, month: months(), seriesMax: sMax, preMax: pre, postMax: post, hoursOver: over, annualOnWeights: wsum / 8760, annualTarget: EA };
++  }
+   days.map365 = map;
+   let md = 0; for (let i = 0; i < 365; i++) md += dist[i * 365 + map[i]];
+   days.clusterInfo = { method, ref, extremes: E.length, typical: k, meanDistance: md / 365, weights: reps.filter(d => !E.includes(d)).map(d => wt[d]) };
+@@ -12744,8 +12848,8 @@ function bldBuildLP(opts){
+   if (!BTM_ON && (S.vppBuildOn | 0) > 0) btmStock(S, Y[0]);   // refuses: the enrolled batteries come from the stock
+   const VPP_ON = BTM_ON && (S.vppBuildOn | 0) > 0;
+   // The enrolled batteries as a store (message 637): power vppp_<y>, usable hours 0.75 x 2.5 h, round trip btmEff.
+-  const VPP_HN = +S.btmHours;   // nameplate hours, E / power
+-  if (VPP_ON) STORE.push({ t:'vpp', dis:'vpdis', chg:'vpchg', eff:+S.btmEff, hours:btmStock(S, Y[0]).use * VPP_HN, ex:() => 0, costMult:1 });
++  const VPP_HN = +(S.vppHours ?? S.btmHours);   // nameplate hours, E / power (comparison copy, message 759 (a): vppHours when set)
++  if (VPP_ON) STORE.push({ t:'vpp', dis:'vpdis', chg:'vpchg', eff:+S.btmEff, hours:(S.vppReservePct != null ? 1 - S.vppReservePct / 100 : btmStock(S, Y[0]).use) * VPP_HN, ex:() => 0, costMult:1 });
+   // Geyser control as a build option (HANDOVER 'Geyser control (and pool pumps) as a VPP build option: design', G3 and G6; messages
+   // 633-635). Off (gyBuildOn 0): nothing is written. On: gy_<y>, MW of gross peak reduction enrolled (linear build, at most
+   // geyserCount(y) x gyEnrolCapPct x gyKwPerGeyser), at gyCostRkWyr per kW-yr; per hour gs_ (reduction) at most gy x the hour's
+@@ -13072,6 +13176,16 @@ function bldBuildLP(opts){
+     const terms = []; for (const t of RP_T) for (const yy of Y) if (yy <= y) terms.push('rp_' + t + '_' + yy);
+     L.push(' rppool_' + y + ': ' + terms.join(' + ') + (RC_ON ? ' - rc_' + y : '') + ' <= ' + Math.max(0, bldCoalMW(Y[0]) - bldCoalMW(y)).toFixed(1));
+   }
++  // Comparison worktree only (message 733, 6 Nov 2026; on no branch): the pool capped at the MW that could sit on a freed connection in
++  // the same area as the retired coal (claude/regional-audit, docs/regional-audit.md, message 729: 658 MW in 2035 and 1,290 MW in 2040
++  // on the approved-record shares under the pathway's rule), linear from 0 in 2026 to 2035 and from 2035 to 2040.
++  const RP_CAP_ANCH = [[2026, 0], [2035, 658], [2040, 1290]];
++  const RP_CAP = y => { for (let i = 1; i < RP_CAP_ANCH.length; i++){ const [y0, c0] = RP_CAP_ANCH[i - 1], [y1, c1] = RP_CAP_ANCH[i];
++    if (y <= y1) return c0 + (c1 - c0) * (Math.max(y, y0) - y0) / (y1 - y0); } return RP_CAP_ANCH[RP_CAP_ANCH.length - 1][1]; };
++  if (RP_T.length && (S.bldRpSameAreaCap | 0) > 0) for (const y of Y){
++    const terms = []; for (const t of RP_T) for (const yy of Y) if (yy <= y) terms.push('rp_' + t + '_' + yy);
++    L.push(' rpcap_' + y + ': ' + terms.join(' + ') + ' <= ' + RP_CAP(y).toFixed(1));
++  }
+ 
+   // Cumulative capacity as one variable (bldCumVars, 8 Oct 2026). Every hourly row names the capacity built so far, and
+   // written out it repeats each year's build: two thirds of the LP's nonzeros on the central first pass. With the switch
+@@ -13233,7 +13347,7 @@ function bldBuildLP(opts){
+         // Geyser control (G3): load taken off and returned.
+         + (GY_RED(h) ? ' + gs_' + k : '') + (GY_ON ? GY_BACK(y, h).map(q => ' - ' + q.c.toFixed(6) + ' gs_' + y + '_' + r.d + '_' + q.j).join('') : '')
+         // The cycling stock's profile on the change from 2026, [C(y) - C0], in demand (P3, messages 622-624 and 630).
+-        + ' = ' + (BTM_ON ? dem - fixed + btmDay(y, r)[h] * BTM_Y[y].use * (BTM_Y[y].C - BTM_Y[y].C0) * 1000 : dem - fixed).toFixed(1));
++        + ' = ' + (BTM_ON ? dem - fixed + btmDay(y, r)[h] * (BTM_Y[y].use * BTM_Y[y].C - BTM_Y[y].use0 * BTM_Y[y].C0) * 1000 : dem - fixed).toFixed(1));
+       if (PS_DAY_CAP != null && PS_ON && h >= 9 && h <= 16) L.push(' pdc_' + k + ': pchg_' + k + ' <= ' + Math.max(0, +PS_DAY_CAP).toFixed(1));
+       if (GY_RED(h)) L.push(' gysmax_' + k + ': gs_' + k + ' - ' + (geyserShare(h) * GY_Y[y].rot).toFixed(4) + ' gy_' + y + ' <= 0');   // G3: the shape's share (x a quarter in 'rotation')
+       const _rcf = r.coalFrac ? r.coalFrac[h] : (r.tail ? eafY * TAIL_COAL_FACTOR : eafY);
+@@ -13809,7 +13923,7 @@ function bldBuildToState(res){
+   if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
+   // The enrolled battery energy in the final year (vppp_<y> x btmHours, V1), only when the option is on (messages 621-625).
+   if ((_ps.gyBuildOn | 0) > 0) o.gyEnrolMW = bldEnrolPrimal(res && res.Columns, 'gy_' + endY);   // messages 633-635; round-off, 698 (a)
+-  if ((_ps.vppBuildOn | 0) > 0) o.vppEnrolGWh = bldEnrolPrimal(res && res.Columns, 'vppp_' + endY) * _ps.btmHours / 1000;
++  if ((_ps.vppBuildOn | 0) > 0) o.vppEnrolGWh = bldEnrolPrimal(res && res.Columns, 'vppp_' + endY) * (_ps.vppHours ?? _ps.btmHours) / 1000;
+   if ('gfm' in tot || 'scc' in tot || 'scn' in tot){ o.ssGfmMW = Math.round(tot.gfm || 0); o.ssCondMVA = Math.round((tot.scc || 0) + (tot.scn || 0)); }   // 'inertia' builds
+   Object.assign(o, bldAstrVreRef(res && res.Columns, endY, _ps));
+   return o;
+@@ -13892,7 +14006,7 @@ function bldStateForYear(res, y, opts){
+     ...bldAstrVreRef(res.Columns, y, opts.state),
+     windCapeMW: Math.round(Object.entries(res.Columns || {}).reduce((a, [c, v]) => { const m = c.match(/^cw_([0-9]+)$/); return a + (m && +m[1] <= y ? (v.Primal || 0) : 0); }, 0)),
+     // The enrolled battery energy the build chose for this year (vppp_<y> x btmHours; V1), only when the option is on (messages 621-625).
+-    ...(((opts.state.vppBuildOn ?? FIXED.vppBuildOn) | 0) > 0 ? { vppEnrolGWh: bldEnrolPrimal(res.Columns, 'vppp_' + y) * (opts.state.btmHours ?? FIXED.btmHours) / 1000 } : {}),
++    ...(((opts.state.vppBuildOn ?? FIXED.vppBuildOn) | 0) > 0 ? { vppEnrolGWh: bldEnrolPrimal(res.Columns, 'vppp_' + y) * (opts.state.vppHours ?? FIXED.vppHours ?? opts.state.btmHours ?? FIXED.btmHours) / 1000 } : {}),
+     // The geyser control MW the build chose for this year (gy_<y>), only when the option is on (messages 633-635); round-off, 698 (a).
+     ...(((opts.state.gyBuildOn ?? FIXED.gyBuildOn) | 0) > 0 ? { gyEnrolMW: bldEnrolPrimal(res.Columns, 'gy_' + y) } : {}),
+     // System strength builds to y ('inertia' mode only; a 'sync6' LP has none): grid-forming MW and condenser MVA, for the engine's floor.
+@@ -16305,6 +16419,10 @@ function windNewCorr(c){
+     if (!m) throw new Error("bldWindCorr 'bw6' needs the twelve weather years, which are not loaded");
+     return BW6_WIND_BID_CF / m.wind;
+   }
++  // Comparison worktree only (message 726 (e), 6 Nov 2026; not on any branch): 'cf<target>' scales new wind's twelve-year mean to the
++  // target, as 'bw6' does to BW6's 37.24%.
++  const _cf = /^cf(0\.[0-9]+)$/.exec(String(c)); if (_cf){ const m = bldTwelveYearMeans(1, false);
++    if (!m) throw new Error("bldWindCorr 'cf' needs the twelve weather years, which are not loaded"); return +_cf[1] / m.wind; }
+   if (!(c in WIND_NEW_CORR)) throw new Error('bldWindCorr must be farms, none or bw6: ' + c);
+   return WIND_NEW_CORR[c];
+ }
