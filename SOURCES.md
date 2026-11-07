@@ -2603,7 +2603,10 @@ the engine checks of message 734 (a) and the proposals of 734 (b) are in RESULTS
   https://www.eia.gov/outlooks/aeo/assumptions/pdf/EMM_Assumptions.pdf, 'Endogenous plant retirement modeling'): 'CAPEX (2017 dollars
   per kilowattyear) = 16.53 + (0.126 x age in years) + (5.68 x FGD) ... FGD = 1 if a plant has an FGD; zero otherwise.' Both read on
   7 Nov 2026 as search extracts (Firecrawl search highlights): eia.gov could not be reached from the container, and the PDFs were not
-  opened (long PDFs; research rule). The addendum's own text was not seen.
+  opened (long PDFs; research rule).
+- Confirmed in the addendum (the advisor, read 7 Nov 2026; user, message 783): EIA, 'Generating Unit Annual Capital and Life Extension
+  Costs Analysis: updated cost assumptions in the EMM', https://www.eia.gov/analysis/studies/powerplants/generationcost/pdf/addendum.pdf:
+  CAPEX = 16.53 + (0.126 x age) + (5.68 x FGD), FGD 1 if fitted, in 2017 $/kW a year. The cited source for the model.
 - The same AEO extract says 'S&L recommended that CAPEX for these plants be recovered as a variable cost'; the extract does not show
   which plants, nor whether NEMS does so for coal. The model charges it per kW standing a year (as s_coalsustain), so coal retired
   early saves it in full; as a cost per MWh it would fall with coal's output instead. Flagged for Nick; not checked against the PDF.
