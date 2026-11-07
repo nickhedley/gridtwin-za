@@ -544,6 +544,11 @@ cause in the check's comment.
 coalMinDownH, so builds are unchanged by it except through the adequacy loop's engine verdicts (s_mindn24_c6a: same build, same
 objective). Give the build LP a commitment rule that matches: a unit (or block) that comes off stays off for the minimum down time,
 in the representative days and the stress windows, and measure the build's move against c6c.
+Started 7 Nov 2026 (message 767 (b)) on claude/coal-mindown-lp from claude/twin-retime 2d86faa: FIXED.bldCoalMinDownLP (0 off, the LP byte
+for byte; 1 on), a linear minimum down time plus start-up lead time on the LP's fleet commitment, window 30 h central (coalMinDownH 24 +
+the warm start-up time, 6 h); harness/validate_coal_mindown.js (9 checks, about 1 minute; two injected faults FAIL). Open: the key's
+pass-1 LP with it on, and its 2035 curtailment and coal against the engine (results on claude/test15-two-stage-x2xqfl,
+docs/test15-results.md); then whether it goes into the key (Nick's decision).
 
 14kb. Practice floor and down time together (user, 27 Oct 2026, messages 447 and 448): done in #122, floor 0.75 -> 0.715 so the
 2026 replay's sunny low-demand midday statistic matches Eskom's 0.623 again (0.624) with the 24-hour down time. Open: the replay's

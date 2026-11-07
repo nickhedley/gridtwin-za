@@ -243,7 +243,8 @@ const GY_ENV=(()=>{ const o={}, e=process.env, num=(k,ok)=>{ if (e[k]===undefine
   for (const [env,key,ok] of set){ const v=num(env,ok); if (v!==undefined){ if (o.gyBuildOn!==1) throw new Error(env+' needs GY=1'); o[key]=v; } }
   return o; })();
 const GY_KEYS=['gyBuildOn','gyEnrolCapPct','gyKwPerGeyser','gyMode','gyDeferH','gyLossPct','gyCostRkWyr'];
-let ROOF_STEP27=0; const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.env.GAS_FIRST||2030), ROOF_PER_YR=process.env.ROOF_MW!==undefined?+process.env.ROOF_MW:1200, DEM=+(process.env.DEM||5);
+// PAGE_ROOT (message 767 (b)): the page folder, testroot unless set (validate_coal_mindown.js reads a test copy for its fault injection).
+let ROOF_STEP27=0; const ROOT=process.env.PAGE_ROOT||'testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.env.GAS_FIRST||2030), ROOF_PER_YR=process.env.ROOF_MW!==undefined?+process.env.ROOF_MW:1200, DEM=+(process.env.DEM||5);
 (async()=>{
  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
  const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,url:'file://'+path.resolve(ROOT)+'/index.html',
