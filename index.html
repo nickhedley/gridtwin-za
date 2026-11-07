@@ -12391,7 +12391,7 @@ function bldRepDaysClustered(n, method, S0){
     const v = [], w = [];
     for (const d of reps) if (!E.includes(d)) for (let h = 0; h < 24; h++){ v.push(yr[key][d * 24 + h]); w.push(wt[d]); }
     let ext = 0; for (const e of E) for (let h = 0; h < 24; h++) ext += yr[key][e * 24 + h];
-    const tgt = (TT[key] * 365 * 24 - ext) / (365 * 24 - E.length * 24);   // the typical days' weighted mean that makes the year's mean the target
+    const tgt = (TTc[key] * 365 * 24 - ext) / (365 * 24 - E.length * 24);   // the typical days' weighted mean that makes the year's mean the target (TTc: the class's means too)
     const g = bldScaleTo(v, tgt, w, key + ' on the typical days');
     out[key] = d => Array.from({ length: 24 }, (_, h) => E.includes(d) ? yr[key][d * 24 + h] : Math.min(1, g * yr[key][d * 24 + h]));
   }

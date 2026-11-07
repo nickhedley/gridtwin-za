@@ -540,6 +540,32 @@ function check(label, ok, detail) {
       ['noCap', 'the cap row dropped', r => !r.error && !Object.values(r.cap).every(c => c)],
     ]){ const r = pvcRun(f); check('injected fault caught: ' + label, test(r), r.error || ''); }
 
+
+    // The clustered representative days (the pathway's basis): every day carries the class's own series and tracking twin, the class's
+    // seasonal factors are set by finding 3's rule against its own twelve-year month means with the annual mean held on the LP's weights,
+    // and no hour is scaled above the series' own maximum. The fault found on the first run (7 Nov 2026): the typical-day rescale read the
+    // national target table, which has no entry for the class, so the target was undefined and the days could not be built.
+    const CL_FAULTS = { none: null, nationalTargets: ["const tgt = (TTc[key] * 365 * 24 - ext)", "const tgt = (TT[key] * 365 * 24 - ext)"] };
+    const clRun = (fault) => JSON.parse(w.eval(`(() => {
+      const _c = bldRepDaysClustered, F = ${JSON.stringify(CL_FAULTS)}[${JSON.stringify(fault)}], _trk = state.bldPvTracking;
+      try {
+        if (F){ const src = _c.toString(); if (src.split(F[0]).length !== 2) return JSON.stringify({ error: 'expression not found once' });
+          bldRepDaysClustered = (0, eval)('(' + src.replace(F[0], F[1]) + ')'); }
+        state.bldPvTracking = 1;
+        const S = { ...FIXED, ...state, bldGridCost: 1, bldPvCoalSite: 1, bldRepWeights: 'clustered', bldRepRefYear: 'metered', bldRepExtremeDays: [20, 159, 161, 162, 163, 187, 194, 195, 196, 218, 358, 359, 360] };
+        const days = bldRepDays(25, { clustered: true, method: 'kmedoids', link: false, S });
+        const m12 = bldPvCoalTwelveYearMeans(true), o = { n: days.filter(r => !r.tail).length, allC: days.every(r => r.solarC && r.solarC.length === 24 && r.solarCT && r.solarCT.length === 24), f3dC: !!days.f3dC };
+        if (days.f3dC){ o.annual = days.f3dC.annualOnWeights; o.target = days.f3dC.annualTarget; o.over = days.f3dC.hoursOver; o.twelve = m12.annual;
+          o.month = days.f3dC.month.map(v => +v.toFixed(4)); o.want = days.f3dC.target.map(v => +v.toFixed(4)); o.postMax = days.f3dC.postMax; o.seriesMax = days.f3dC.seriesMax; }
+        let diff = 0; for (const r of days) for (let h = 0; h < 24; h++) diff += Math.abs(r.solarCT[h] - r.solarTrk[h]); o.differsFromNational = diff > 1;
+        return JSON.stringify(o);
+      } catch (e) { return JSON.stringify({ error: String(e.message || e) }); } finally { bldRepDaysClustered = _c; state.bldPvTracking = _trk; } })()`));
+    const c0 = clRun('none');
+    check('coal-site solar: the clustered days carry the class\'s own series and twin on every day, its own seasonal factors (f3dC) with the annual mean held at its twelve-year mean on the LP\'s weights, no hour above 1 per unit',
+      !c0.error && c0.n === 25 && c0.allC && c0.f3dC && Math.abs(c0.annual - c0.target) < 1e-9 && Math.abs(c0.target - c0.twelve) < 1e-12 && c0.postMax <= 1 && c0.differsFromNational,
+      c0.error || `${c0.n} days, annual ${c0.annual && c0.annual.toFixed(6)} target ${c0.target && c0.target.toFixed(6)}, hours above the series' own maximum ${c0.over} (reported, not failed: the rule caps at 1 per unit; ${c0.postMax && c0.postMax.toFixed(3)} after against ${c0.seriesMax && c0.seriesMax.toFixed(3)}); months ${JSON.stringify(c0.month)} against ${JSON.stringify(c0.want)}`);
+    const c1 = clRun('nationalTargets');
+    check('injected fault caught: the class\'s typical days rescaled to the national target table (undefined target)', !!c1.error || !(c1.allC && Math.abs(c1.annual - c1.target) < 1e-9), c1.error || JSON.stringify(c1));
     // The engine: the class's series on the profile is Mpumalanga's own tracking twin, hour for hour, and it pays no grid cost.
     const engRun = (fault) => JSON.parse(w.eval(`(() => {
       const _s = simulate, F = ${JSON.stringify(ENG_FAULTS)}[${JSON.stringify(fault)}];
