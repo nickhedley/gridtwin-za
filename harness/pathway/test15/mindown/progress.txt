@@ -20,3 +20,9 @@
 2026-11-07T09:40:39Z y365 fin365_mucap solve 277 s Optimal; calendar days: curtailment 2.18 TWh, coal 66.75 TWh, lithium discharge 12.08 TWh, unserved 14.079 GWh, coal taken off 539965 MW, started 530567 MW (su_)
 2026-11-07T09:42:23Z caps fin engine PID 19485 (K=1, 2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040, START_COUNT=1)
 2026-11-07T09:44:40Z caps fin rc 0: {"2026": 144641.4, "2027": 163347.1, "2028": 224153.4, "2029": 237145.0, "2030": 137327.8, "2031": 117382.2, "2032": 210096.7, "2033": 347089.7, "2034": 473299.5, "2035": 579412.5, "2036": 654351.1, "2037": 663818.4, "2038": 635935.4, "2039": 561781.8, "2040": 502143.4}
+2026-11-07T11:42:13Z p1_off piece, shell PID 32364, 2d86faa  + 3 files changed, 196 insertions(+), 29 deletions(-), COAL_STATE={"bldCoalMinDownLP":0}, deadline 13:32Z, load 3.87 3.40 3.10, memory free 13G
+2026-11-07T11:42:13Z p1_off node PID 32412
+2026-11-07T11:49:02Z y365 fin365_rescap (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldCoalMinDownLP":1,"bldCoalStartCap":{"2035":530567},"bldResCommitLP":1}) dump rc=0 dumped LP pass 1 4ea73b5ab9 
+2026-11-07T11:55:00Z y365 fin365_rescap solve 358 s Optimal; calendar days: curtailment 2.27 TWh, coal 66.79 TWh, lithium discharge 12.17 TWh, unserved 14.078 GWh, coal taken off 540147 MW, started 530567 MW (su_)
+2026-11-07T11:55:24Z y365 fin365_res (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldResCommitLP":1}) dump rc=0 dumped LP pass 1 fb6357d2e9 
+2026-11-07T12:00:14Z y365 fin365_res solve 290 s Optimal; calendar days: curtailment 1.44 TWh, coal 65.87 TWh, lithium discharge 12.22 TWh, unserved 14.078 GWh, coal taken off 0 MW, started 765282 MW (su_)

@@ -1,0 +1,6 @@
+60a61,65
+>  // UC_RES_MW=<MW> (test copy pathcheck_785.js only; message 785 (b), diagnostic): the commitment schedule's reserve term (buildUCSchedule's
+>  // RES_CONT, reserveOperatingMW, 2,200 MW: each block commits its peak net load plus this) set to <MW>; dispatch's reserve unchanged.
+>  if (process.env.UC_RES_MW !== undefined) w.eval(`{ const src = buildUCSchedule.toString(), a = 'const RES_CONT = (resOpts && resOpts.contingencyMW) || 0;';
+>    if (src.split(a).length !== 2) throw new Error('UC_RES_MW: buildUCSchedule is not as expected');
+>    buildUCSchedule = (0, eval)('(' + src.replace(a, 'const RES_CONT = ' + (+${JSON.stringify(process.env.UC_RES_MW || '0')}) + ';') + ')'); }`);

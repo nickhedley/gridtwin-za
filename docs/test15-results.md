@@ -404,6 +404,52 @@ patch). Choices, each the one closest to accuracy:
   0.35889, new wind 0.40000, fixed tilt 0.22363, tracking 0.28445), map365 reads only representative days. The pass-1 LP writes (key
   388b8499d9, 116 MB, the same size as the key's).
 
+### Message 785 (b): why the engine commits 2.4 GW more coal than the LP (fin build, 2035, metered 2025; reported with 778)
+
+The engine commits each four-hour block to its peak net load plus the whole operating reserve, 2,200 MW (buildUCSchedule: target = block
+peak + reserveReqAt, which is reserveOperatingMW, before any storage cover), and weighs starts. In dispatch storage, quick-start hydro and
+running gas then hold nearly all the reserve, so coal holds 76 MW of it. Setting the commitment's reserve term to 0 takes 1.4 GW off the
+committed coal and 3.05 TWh off curtailment, with unserved unchanged within its error. The LP already has a reserve row; held on committed
+coal instead of available coal, it moves curtailment 0.09 TWh at most.
+
+The engine's reserve (harness/pathcheck.js RES_REC=1 on claude/coal-mindown-lp, measurement only: every other output field unchanged), fin
+build, 2035, metered 2025 alone, 20 draws, the key's code; MW, mean of all hours and of 10:00-15:00 (hours 10-14):
+
+| Engine, 2035 | All hours | 10:00-15:00 |
+|---|---:|---:|
+| Requirement (reserveMWAt: ASTR products and the growth term) | 2,711 | 2,914 |
+| Of it on coal, after storage, quick-start hydro and running gas (_astrCoalNeed after dispatch) | 76 | 2 |
+| Committed coal (the commitment schedule, ucAvail) | 11,862 | 11,111 |
+| Coal output | 7,706 | 6,325 |
+
+The commitment's reserve term, a diagnostic (test copy pathcheck_785.js, UC_RES_MW sets buildUCSchedule's RES_CONT; dispatch's reserve
+unchanged; diff in harness/pathway/test15/mindown/pathcheck_785.diff), same runs:
+
+| Engine, 2035, commitment's reserve term | Curtailment, TWh | Coal, TWh | Unserved, GWh (se) | Committed, MW (10:00-15:00) | Coal starts, MW (net) |
+|---|---:|---:|---:|---:|---:|
+| 2,200 MW (as now) | 10.87 | 67.50 | 28.20 (7.22) | 11,862 (11,111) | 530,567 |
+| 1,100 MW | 9.48 | 66.07 | 28.10 (7.22) | 11,172 (10,358) | 589,484 |
+| 0 | 7.82 | 64.28 | 29.43 (7.28) | 10,447 (9,586) | 645,320 |
+
+The build LP's reserve row: it has one (resv_, the ASTR products less quick-start hydro, met by batteries, pumped storage, running gas and
+diesel headroom, and coal), but coal's share is available coal less output, so coal not committed holds reserve. On the branch,
+bldResCommitLP (5847569, off: byte for byte) puts coal's share on committed headroom (cm_ - gc_), the other cover unchanged.
+validate_coal_mindown.js 21/21 (with it off, 96 of 456 hours of the check's LP lean on uncommitted coal; on, none); the fault (the row
+ignoring the switch) fails 2 checks. 2035 on 365 days, fin build, key settings:
+
+| 2035, fin build, 365-day LP | Curtailment, TWh | Coal, TWh | Committed, MW (10:00-15:00) | Coal output, MW (10:00-15:00) |
+|---|---:|---:|---:|---:|
+| Switch off | 1.44 | 65.90 | 9,185 (8,149) | 7,522 (4,521) |
+| Reserve on committed coal alone | 1.44 | 65.87 | 9,194 (8,096) | 7,520 (4,496) |
+| 30-hour rule + start cap (778) | 2.18 | 66.75 | 9,375 (8,638) | 7,619 (4,845) |
+| 30-hour rule + start cap + reserve on committed coal | 2.27 | 66.79 | 9,418 (8,669) | 7,624 (4,849) |
+| Engine, metered 2025, 20 draws | 10.87 | 67.50 | 11,862 (11,111) | 7,706 (6,325) |
+
+Of the 2.4 GW: about 1.4 GW is the engine committing the full reserve on coal ahead of storage cover; the rest is its four-hour block peaks
+and start weighing (765 (a): each hour's forecast instead of the block's peak, 0.6 TWh; no start weighing, 5.4 TWh with unserved up to
+741 GWh). Whether the engine's commitment should net off the storage and hydro cover it later uses is an engine question, not changed
+here. Timing (785 (c)): done before the key's runs finish, so it is reported with 778 by 9 Nov 12:00 SAST.
+
 ### Message 767 (b): the coal minimum down time and start-up lead time in the build LP (claude/coal-mindown-lp)
 
 Message 778 (b) (7 Nov): the 30-hour rule alone does not bind (the LP rotates spare units). Two more options on the branch, each behind its own
