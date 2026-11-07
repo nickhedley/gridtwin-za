@@ -6,9 +6,11 @@
  *   1. the switch off writes the LP of the switch absent, byte for byte;
  *   2. the switch on writes a shut-down row (csd_) and a down-window row (cmd_) for every hour, each window the W hours back along the
  *      same chain as the commitment rows (W on a chained day; a free-standing day wraps once, 24), W read from the page's engine settings;
+ *   starts: with the switch on, each start is priced as a start after the minimum down time (warm), above the hot start;
  *   3. solved (one year, 2035, on the 25 days, 20 GW of new solar fixed so that daily cycling pays), no hour commits coal that was taken
  *      off within W hours: committed + MW taken off in the window <= available, from the solution's commitment alone.
- * With a page copy whose down-window rows are not written (--root <dir>, the fault injected), checks 2 and 3 FAIL (3 of 9 on 7 Nov 2026).
+ * With a page copy whose down-window rows are not written (--root <dir>, the fault injected), checks 2 and 3 FAIL (3 of 10 on 7 Nov 2026);
+ * with the start-up time left out of the window, 2 of 10; with starts priced hot, 1 of 10.
  * About 1 minute (three LPs written, one solved with highs_native.py).
  *
  *   node validate_coal_mindown.js [root] [--root <page folder>]
@@ -61,6 +63,15 @@ const expect = k => { const out = [], seen = new Set(); let q = k; while (out.le
 const bad = hours.filter(k => win[k] && JSON.stringify(win[k]) !== JSON.stringify(expect(k)));
 check('each window holds the ' + W_CENTRAL + ' hours back along the chain (a free-standing day wraps once)', hours.length > 0 && bad.length === 0, bad.length + ' windows differ, first ' + bad[0]);
 check('chained days reach ' + W_CENTRAL + ' hours', Object.values(win).some(v => v.length === W_CENTRAL), 'no window of ' + W_CENTRAL);
+
+// Starts priced after the minimum down time: each su_ cost with the switch on above the switch off's (a warm start against a hot one).
+const suCost = t => { const o = {}; if (!t) return o; const i = t.indexOf(' obj:'), j = t.indexOf('\nSubject To');
+  for (const m of t.slice(i, j).replace(/\n/g, ' ').matchAll(/([-+]?\s*[0-9.eE+-]+)\s+su_(\S+)/g)) o[m[2]] = +m[1].replace(/\s/g, ''); return o; };
+const s0 = suCost(b.text), s1 = suCost(c.text), sk = Object.keys(s1);
+const ratio = sk.length ? sk.reduce((a, k) => a + s1[k] / s0[k], 0) / sk.length : NaN;
+console.log('  info: start cost with the switch on over off, mean ' + ratio.toFixed(3) + ' over ' + sk.length + ' starts');
+check('with the switch on each start is priced above the hot start (after the minimum down time)', sk.length > 0 && sk.every(k => s0[k] > 0 && s1[k] > s0[k]),
+  sk.filter(k => !(s1[k] > s0[k])).length + ' of ' + sk.length + ' not above');
 
 // 3. Solved: from the commitment alone, nothing taken off within W hours is committed again.
 let viol = [];

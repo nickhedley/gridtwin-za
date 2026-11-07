@@ -5978,7 +5978,8 @@ const FIXED = {
   // bldCoalMinDownLP (user, 7 Nov 2026, message 767 (b); TODO 14ka): the engine's minimum down time and start-up time in the LP's coal
   // commitment. 0, off: the LP as before, byte for byte. 1: capacity taken off in the last W hours cannot be committed again, W the
   // engine's coalMinDownH (24 h central) plus the start-up time (coalStartupH) of a unit offline that long (COAL_START_OFFLINE_H: warm,
-  // 6 h, at 24 h): 30 h central. Shut-down MW sd_ and one row cmd_ an hour (committed + shut down in the window <= available).
+  // 6 h, at 24 h): 30 h central. Shut-down MW sd_ and one row cmd_ an hour (committed + shut down in the window <= available). Each start
+  // is priced as a start after the minimum down time (warm at 24 h), not hot.
   bldCoalMinDownLP:0,
   // Optimiser grid cost (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCost 0 off (default until
   // the effect on the pathway is reviewed), 1 central (ITP basis), 2 high (MISO basis). bldGridSpurBeyond 1 charges
@@ -7510,18 +7511,20 @@ function coalFleetMinShare(p, y, coalMW){
   const o = coalUcOpts({ ...p, scenarioYear: y }), us = ucUnitsStanding(coalMW).units, cap = us.reduce((a, u) => a + u.cap, 0);
   return cap > 0 ? us.reduce((a, u) => a + u.cap * coalUnitMsl(u, o), 0) / cap : 0;
 }
-// The LP's coal down window, hours (bldCoalMinDownLP; message 767 (b)): the minimum down time (coalMinDownH; null, UC_FLEET's 4 h on most
-// units) plus the start-up time (coalStartupH [hot, warm, cold]; null, none) of a unit offline that long, its class by COAL_START_OFFLINE_H's
-// subcritical thresholds (the supercritical ones give the same class at 24 h).
-function coalMinDownWindowH(p){
+// The LP's coal down time and window, hours (bldCoalMinDownLP; message 767 (b)): downH, the minimum down time (coalMinDownH; null,
+// UC_FLEET's 4 h on most units); windowH, that plus the start-up time (coalStartupH [hot, warm, cold]; null, none) of a unit offline that
+// long, its class by COAL_START_OFFLINE_H's subcritical thresholds (the supercritical ones give the same class at 24 h).
+function coalMinDownLP(p){
   const md = p.coalMinDownH != null ? +p.coalMinDownH : 4, su = p.coalStartupH, th = COAL_START_OFFLINE_H.sub;
   const st = Array.isArray(su) ? +su[md < th[0] ? 0 : md < th[1] ? 1 : 2] : 0;
-  if (!(md >= 1 && st >= 0)) throw new Error('coalMinDownWindowH: a minimum down time of at least 1 h and a start-up time of 0 h or more');
-  return Math.round(md + st);
+  if (!(md >= 1 && st >= 0)) throw new Error('coalMinDownLP: a minimum down time of at least 1 h and a start-up time of 0 h or more');
+  return { downH: md, windowH: Math.round(md + st) };
 }
-function coalFleetHotStartRMW(p, y, coalMW){
-  const o = coalUcOpts({ ...p, scenarioYear: y }), us = ucUnitsStanding(coalMW).units, cap = us.reduce((a, u) => a + u.cap, 0);
-  return cap > 0 ? us.reduce((a, u) => a + (o.startOf ? o.startOf(u.cap, 0, u.cls) : u.startup_cost), 0) / cap : 0;
+// hoursOff (message 767 (b)): the start after that many hours offline; absent, 0, the hot start. With the LP's minimum down time on, no
+// start comes sooner than the minimum down time, so the LP prices each start at that (a warm start at 24 h).
+function coalFleetHotStartRMW(p, y, coalMW, hoursOff){
+  const o = coalUcOpts({ ...p, scenarioYear: y }), us = ucUnitsStanding(coalMW).units, cap = us.reduce((a, u) => a + u.cap, 0), h = hoursOff || 0;
+  return cap > 0 ? us.reduce((a, u) => a + (o.startOf ? o.startOf(u.cap, h, u.cls) : u.startup_cost), 0) / cap : 0;
 }
 function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts, ucOpts) {
   // ucOpts (PR C groundwork, message 357 (e)): absent or empty reproduces the pre-pass exactly. year, mslFloor, mslDesign,
@@ -12932,12 +12935,13 @@ function bldBuildLP(opts){
   // units standing (coalFleetMinShare), or a number as before; bldCoalStartCost 1 charges each MW of commitment added at the standing
   // fleet's hot-start cost per MW (coalFleetHotStartRMW); bldCoalCommitHours null drops the rate rule (48, the old rule, a sensitivity).
   const COMMIT_ON = !!S.bldCoalCommit, COMMIT_H = S.bldCoalCommitHours == null ? null : Math.max(1, S.bldCoalCommitHours);
-  // Minimum down time and start-up lead time (bldCoalMinDownLP; message 767 (b)): MD_W hours (coalMinDownWindowH). Off: none of it.
-  const MD_ON = COMMIT_ON && (S.bldCoalMinDownLP | 0) === 1, MD_W = MD_ON ? coalMinDownWindowH(S) : 0;
+  // Minimum down time and start-up lead time (bldCoalMinDownLP; message 767 (b)): MD_W hours (coalMinDownLP), each start priced after
+  // the minimum down time, MD_H hours offline. Off: none of it.
+  const MD_ON = COMMIT_ON && (S.bldCoalMinDownLP | 0) === 1, MD = MD_ON ? coalMinDownLP(S) : null, MD_W = MD ? MD.windowH : 0, MD_H = MD ? MD.downH : 0;
   const COMMIT_MIN_Y = {}, COMMIT_SU_Y = {};
   for (const y of Y){
     COMMIT_MIN_Y[y] = S.bldCoalMinFrac === 'engine' ? coalFleetMinShare(S, y, bldCoalMW(y)) : Math.max(0, Math.min(1, S.bldCoalMinFrac));
-    COMMIT_SU_Y[y] = COMMIT_ON && S.bldCoalStartCost ? coalFleetHotStartRMW(S, y, bldCoalMW(y)) : 0;
+    COMMIT_SU_Y[y] = COMMIT_ON && S.bldCoalStartCost ? coalFleetHotStartRMW(S, y, bldCoalMW(y), MD_H) : 0;
   }
   for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);

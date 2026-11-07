@@ -546,7 +546,8 @@ objective). Give the build LP a commitment rule that matches: a unit (or block) 
 in the representative days and the stress windows, and measure the build's move against c6c.
 Started 7 Nov 2026 (message 767 (b)) on claude/coal-mindown-lp from claude/twin-retime 2d86faa: FIXED.bldCoalMinDownLP (0 off, the LP byte
 for byte; 1 on), a linear minimum down time plus start-up lead time on the LP's fleet commitment, window 30 h central (coalMinDownH 24 +
-the warm start-up time, 6 h); harness/validate_coal_mindown.js (9 checks, about 1 minute; two injected faults FAIL). Open: the key's
+the warm start-up time, 6 h), each start priced after the minimum down time (warm, not hot); harness/validate_coal_mindown.js (10
+checks, about 1 minute; three injected faults FAIL). Open: the key's
 pass-1 LP with it on, and its 2035 curtailment and coal against the engine (results on claude/test15-two-stage-x2xqfl,
 docs/test15-results.md); then whether it goes into the key (Nick's decision).
 
