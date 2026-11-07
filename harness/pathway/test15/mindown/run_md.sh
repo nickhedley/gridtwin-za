@@ -7,14 +7,15 @@
 # plus pathway/pathway_perfail_recost.js, a copy whose OPER_FROM guard accepts FIX_TO=Y (every build fixed, for the single-year LP).
 # Settings read from claude/c7-runs' harness/pathway/final/key/solve_key.sh, not retyped: EXM, C7, BASE, case 'key', HIGHS_OPTS, env_c6a.sh,
 # GAS_FIRST=2035; its engine check line (pathcheck K=20, 2030/2035/2040).
-#   bash run_md.sh p1 <on|off>               the key's pass 1 (MAXP=1), one piece under 2 hours (RESUME, presolve off, basis kept; rerun
-#                                            to resume), then the engine at 20 draws: <O>/p1_<on|off>.json, p1_<on|off>_eng.json
+#   bash run_md.sh p1 <name> <on|off|json>   the key's pass 1 (MAXP=1), one piece under 2 hours (RESUME, presolve off, basis kept; rerun
+#                                            to resume), then the engine at 20 draws: <O>/p1_<name>.json, p1_<name>_eng.json
+#   bash run_md.sh caps <name> <build>       the engine's coal starts by year on <build>, as the start cap's JSON (message 778 (b) (ii))
 #   bash run_md.sh y365 <name> <build> <on|off|json>  year 2035 alone on its 365 days, every build fixed from <build> (STAGE2_YEAR=2035), the
 #                                            switch as given; solved (2 threads, presolve on); curtailment, coal, lithium discharge, unserved
 #   bash run_md.sh engm <name> <build>       the engine on the LP's own year alone (WEATHER=metered), 2035, 20 draws on the gate's seeds, with
 #                                            the coal starts counted (START_COUNT=1, message 778 (b) (ii))
 # Progress, PIDs and results: <O>/progress.txt (O = <WT>/harness/out/md).
-M=${1:?mode p1, y365 or engm}; WT=${WT:-/home/user/gtza-mdrun}; O=$WT/harness/out/md; P=$O/progress.txt; mkdir -p $O
+M=${1:?mode p1, y365, caps or engm}; WT=${WT:-/home/user/gtza-mdrun}; O=$WT/harness/out/md; P=$O/progress.txt; mkdir -p $O
 ts(){ date -u +%FT%H:%M:%SZ; }
 SK=$(cd /home/user/gridtwin-za && git show origin/claude/c7-runs:harness/pathway/final/key/solve_key.sh) || exit 2
 eval "$(echo "$SK" | grep -E '^(EXM|C7|BASE)=')"
@@ -27,7 +28,8 @@ cd $WT/harness || exit 2; source pathway/env_c6a.sh >/dev/null 2>&1; export GAS_
 cs(){ case "$1" in on) echo 'COAL_STATE={"bldCoalMinDownLP":1}';; off) echo 'COAL_STATE={"bldCoalMinDownLP":0}';; \{*) echo "COAL_STATE=$1";; *) echo "switch: on, off or a JSON object" >&2; exit 2;; esac; }
 case $M in
 p1)
-  SW=${2:?on or off}; s=p1_$SW; T0=$(date +%s); DL=$(( T0 + ${PIECE_S:-6600} ))
+  # p1 <name> <on|off|json>: s = p1_<name> (message 778 (b): p1 off, the key's own pass 1; p1 cap '<json>', the start cap by year).
+  NMP=${2:?name}; SW=${3:?on, off or a JSON object}; s=p1_$NMP; T0=$(date +%s); DL=$(( T0 + ${PIECE_S:-6600} ))
   echo "$(ts) $s piece, shell PID $$, $(git log --oneline -1 | cut -c1-8) + $(git diff --stat | tail -1 | sed 's/^ *//'), $(cs $SW), deadline $(date -u -d @$DL +%H:%MZ), load $(cut -d' ' -f1-3 /proc/loadavg), memory free $(free -g | awk '/Mem/{print $7}')G" >> $P
   if [ ! -s $O/$s.json ]; then
     eval "env $C7 $BASE $X MAXP=1 '$(cs $SW)' SOLVER=native HIGHS_SOLVER=simplex $HO DUMP=0 LPCACHE=$O/lpc_$s OUT=$O/$s.json TL=7000 RESUME=1 JOB_DEADLINE=$DL nice -n 5 node --max-old-space-size=9000 pathway/pathway_perfail.js" >> $O/$s.log 2>&1 &
@@ -51,11 +53,20 @@ for k, v in S['Columns'].items():
 print('%s; calendar days: curtailment %.2f TWh, coal %.2f TWh, lithium discharge %.2f TWh, unserved %.3f GWh, coal taken off %.0f MW, started %.0f MW (su_)' % (S['Status'], t['crt'] / 1e6, t['gc'] / 1e6, t['bdis'] / 1e6, t['u'] / 1e3, t['sd'], t['su']))
 EOF
 )" >> $P ;;
+caps)
+  # caps <name> <build>: the engine's coal starts on <build>, every year 2026-2040 (START_COUNT=1; the key's engine-check settings, the
+  # twelve modelled years, K=1: the commitment is fixed before the outage draws, so starts do not vary by draw), written as the start
+  # cap's JSON, { "<year>": net MW } (message 778 (b) (ii)), to <O>/caps_<name>.json.
+  NM=${2:?}; IN=${3:?}; YS=$(seq -s, 2026 2040)
+  env -i PATH="$PATH" HOME="$HOME" $(echo $ENG | sed "s/K=20/K=1/; s/YEARS=[0-9,]*/YEARS=$YS/") START_COUNT=1 IN=$IN OUTC=$O/${NM}_starts.json $ENGX nice -n 10 node --max-old-space-size=4096 pathcheck.js > $O/${NM}_starts.log 2>&1 &
+  N=$!; echo "$(ts) caps $NM engine PID $N (K=1, $YS, START_COUNT=1)" >> $P; wait $N; rc=$?
+  python3 -I -c "import json,sys; R=json.load(open(sys.argv[1])); json.dump({str(r['scenarioYear']): round(r['coalStartNetMW'], 1) for r in R}, open(sys.argv[2], 'w'))" $O/${NM}_starts.json $O/caps_$NM.json
+  echo "$(ts) caps $NM rc $rc: $(cat $O/caps_$NM.json)" >> $P ;;
 engm)
   NM=${2:?}; IN=${3:?}
   env -i PATH="$PATH" HOME="$HOME" $(echo $ENG | sed 's/YEARS=[0-9,]*/YEARS=2035/') WEATHER=metered START_COUNT=1 IN=$IN OUTC=$O/${NM}_engm.json $ENGX nice -n 10 node --max-old-space-size=4096 pathcheck.js > $O/${NM}_engm.log 2>&1 &
   N=$!; echo "$(ts) engm $NM engine PID $N (WEATHER=metered, 2035, K=20)" >> $P; wait $N
   echo "$(ts) engm $NM rc $? $(python3 -I -c "import json,sys; r=json.load(open(sys.argv[1]))[0]; print('curt %.2f TWh, coal %.2f TWh, unserved %.2f GWh (se %.2f), li %.2f TWh, coal starts MW gross %.0f net %.0f' % (r['curt'], r['coal'], r['mean'], r['seMean'], r['storeTWh']['li'], r['coalStartGrossMW'], r['coalStartNetMW']))" $O/${NM}_engm.json 2>&1)" >> $P ;;
-*) echo "mode: p1, y365 or engm" >&2; exit 2 ;;
+*) echo "mode: p1, y365, caps or engm" >&2; exit 2 ;;
 esac
 exit 0
