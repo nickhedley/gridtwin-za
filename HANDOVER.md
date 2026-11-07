@@ -1,5 +1,25 @@
 # GridTwin ZA - handover, current state (kept current; updated 7 Nov 2026, 12:05 SAST)
 
+## 768 (c): proposed commit for the final runs, 10-13 Nov (draft for Nick, 7 Nov 17:45 SAST; decision due 9 Nov)
+
+One branch, claude/final-key, cut from claude/twin-retime once PR #161 is merged (its head is c215013 locally: 2d86faa, PR #162
+merged, plus the captureCurve guard and build 2026-11-07a; not yet pushed, the suite runs first). On it, as commits:
+1. The key's code: harness/pathway/final/key/key_on_twin-retime_2d86faa.patch (battery proposals 1-3, f3d, the same-area cap; new
+   wind at 40% stays a run setting, WIND_CORR=cf0.40). Its pass-1 LP is already shown identical to the key's (c10bea45a9).
+2. highs_native_log.patch (harness only).
+3. keysc_on_10a98e2.patch's two default-off additions (EIA sustaining capital; the age curve on the run's own unit dates).
+4. BUILD_STAMP bump, stored panels regenerated, the full suite with counts, the visible-text diff; then a pull request into main.
+The final runs (central, sensitivities, Test 15's Deep and Fossil-free) all run on that pull request's merge commit, and its first
+check is that it rebuilds the key's pass-1 LP byte for byte (c10bea45a9; or ksus's 1ce892fe26 if the EIA basis becomes central).
+Decisions for Nick:
+(a) Where the key's switches live. The patches set them in FIXED, which changes the page's own defaults (its LP, panels and checks).
+    Proposed: keep FIXED's defaults as they are and set the switches from the run settings (new environment variables in
+    pathway_perfail.js, recorded with each run and re-applied by pathcheck.js), so main's page is unchanged and the runs reproduce
+    c10bea45a9. The alternative puts them on the page and moves visible figures before the note.
+(b) The central coal sustaining-capital basis: EIA's equation (781 (a), on today's ksus pass) or none, decided on ksus's result.
+(c) Whether every sensitivity re-runs on the final commit (12 cases at 2-6 hours each with two at a time: about 2 days), or only the
+    central and Test 15's, with today's sensitivities kept as run on 10a98e2 + patches (same LP by construction, recorded per run).
+
 ## 7 Nov morning (messages 761-768): where things stand
 
 - Merges (message 768 (a)): open pull requests and leave every merge to Nick, including into claude/twin-retime. PR #162 (Test 15's
