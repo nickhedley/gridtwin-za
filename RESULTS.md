@@ -23521,3 +23521,7 @@ undiscounted at the pathway's 8%, per kW of enrolled power a year. The cost is R
 - 2031 and 2032, at the enrolment cap: R665 and R556.
 - Against Eskom's R1,500/kW-yr (Plentify, 771 (a)): the system values the first kW at no more than a third of Eskom's rate in 2027,
   2030 and 2035, and at 0.37-0.44 of it in 2031-2032.
+- Caveats (user, 7 Nov 2026, message 772 (c)): the value is the national system's only (the LP has no distribution network, so no
+  local network value is counted); and the basis of Eskom's rate, per MW of demand reduction or per MW enrolled, is still to be
+  confirmed with Plentify, so the two figures may not be on the same basis. No one-step tests for now (772 (c)): the dual bounds
+  stand.

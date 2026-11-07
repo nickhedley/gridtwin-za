@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 7 Nov 2026, 10:10 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 7 Nov 2026, 11:05 SAST)
 
 ## 7 Nov morning (messages 761-768): where things stand
 
@@ -9,8 +9,13 @@
   check, the 100-draw gate and loops/../key/compare761.py (combined beside f3d, k8, 40%, the cap, and the interaction).
 - The key's code as patches: harness/pathway/final/key/ (onto 10a98e2 and onto claude/twin-retime 2d86faa), for Test 15's Deep and
   Fossil-free runs. Final runs 10-13 Nov must be on one commit, the one to merge to main (768 (c)): proposal due 9 Nov.
-- Sensitivities on the key, mine (766, 768 (d)), two at a time after the central's gate: mixed reference; wind 37.24% and 42%; the
-  national pool; IRP open-cycle capex 0.397; flexible coal (design minimums 0.40 in LP and engine; exact setting to confirm).
+- Sensitivities on the key, mine (766, 768 (d)). Order (772 (b)): 42% (kw42, running beside the central since 07:55 UTC on
+  loops/solve_keysens.sh), then on loops/solve_keysens2.sh: 37.24% (kw3724), the national pool (knp, worktree gtza-keynp,
+  bldRpSameAreaCap 0), flexible coal (kcoal, coalMslDesign 0.40 for both groups, confirmed 772 (a); the LP's minimum follows it, the
+  engine check reads it from the run's record), the R342 pass (P1=1 bash solve_keysens2.sh k342, worktree gtza-key342, vppCostRkWyr
+  342; 771 (b)), then the mixed reference (kmix) and IRP open-cycle capex (kirp). One beside the central; two at a time after it.
+- 776: every key solve runs with presolve off (HIGHS_OPTS); piece 2 (from 08:35 UTC) started from piece 1's valid basis, filed under
+  its own LP key (lpc_key/c10bea45a9...partial.basis.json; 184,514 basic structural columns). highs_native.py logs no iteration counts.
 - PR #161: guard and panels committed locally on claude/twin-retime (c215013, build 2026-11-07a), not pushed; the full suite after the
   key loop, then push with counts. TODO 14ne open as unexplained.
 
