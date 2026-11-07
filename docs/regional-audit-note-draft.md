@@ -64,3 +64,9 @@ Which figures change once the final builds are in: every number in the text and 
 not the final builds) and the reported R4bn (external). The line-order and lithium-against-corridor figures also move from the earlier table
 to the table of record when rerun. The signs (lithium a net cost at the engine's value, corridors a saving at either) and the order of the
 binding corridors are the findings expected to hold.
+
+On the 8 Nov key's central (782, 7 Nov 2026; not a final build; the draft's figures stay placeholders): with the TDP's lines 32.7 and 86.0 TWh,
+with no limits 2.8 and 16.0; today's corridors 53.0 TWh and 21 GWh in 2035, 112.5 TWh and 1,926 GWh in 2040; the plan's lines 0 and 15 GWh;
+corridors at R21,700 4.3 TWh (18.8 GW, R5.7bn a year) and 18.0 TWh (28.8 GW, R8.9bn); the Karoo exits still at their limit about 8,700 hours;
+Gauteng short 15 GWh hourly (11 in blocks), the store (1.7 GW / 11 GWh, Eastern Cape and Hydra Central) clears all of it and nets a saving at
+either value; 19.5 GW of corridor for R5.7bn clears it and 69 TWh. The 2032 and R2.8bn figures were not rerun on the key.
