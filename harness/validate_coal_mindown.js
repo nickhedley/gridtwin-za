@@ -13,7 +13,9 @@
  * with the start-up time left out of the window, 2 of 10; with starts priced hot, 1 of 10.
  * 4. the minimum up time (bldCoalMinUpLP, message 778 (b) (i)): U from UC_FLEET, a cmu_ row an hour, and solved, nothing started within U hours
  *    is decommitted; 5. the start cap (bldCoalStartCap, (ii)): capped at half the uncapped starts, the starts within the cap and binding.
- * About 3 minutes (seven LPs written, four solved with highs_native.py).
+ * 6. reserve on committed coal (bldResCommitLP, message 785 (b)): the row's form against the switch-off row, and solved, every hour's
+ *    requirement met by committed headroom plus the other cover.
+ * About 4 minutes (eight LPs written, five solved with highs_native.py).
  *
  *   node validate_coal_mindown.js [root] [--root <page folder>]
  */
@@ -49,8 +51,8 @@ function lp(name, coalState){
 const a = lp('absent', null), b = lp('off', '{"bldCoalMinDownLP":0}');
 check('the switch off writes the LP of the switch absent, byte for byte', !!a.text && a.text === b.text, 'rc ' + a.rc + '/' + b.rc + ((a.log.match(/Error: [^\n]*/) || [''])[0]));
 check('without the switch, no csd_ or cmd_ row', !!a.text && !/^ (csd|cmd)_/m.test(a.text), 'rows present');
-const z = lp('alloff', '{"bldCoalMinDownLP":0,"bldCoalMinUpLP":0,"bldCoalStartCap":null}');
-check('the three switches off (down time, up time, start cap) write the LP of the switches absent, byte for byte', !!a.text && a.text === z.text, 'differs');
+const z = lp('alloff', '{"bldCoalMinDownLP":0,"bldCoalMinUpLP":0,"bldCoalStartCap":null,"bldResCommitLP":0}');
+check('the four switches off (down time, up time, start cap, reserve on committed coal) write the LP of the switches absent, byte for byte', !!a.text && a.text === z.text, 'differs');
 
 // 2. On: one csd_ and one cmd_ row an hour, each window W back along the commitment chain.
 const c = lp('on', '{"bldCoalMinDownLP":1}');
@@ -148,6 +150,25 @@ const S1 = f1.text ? solve(f1.file, 'cap1') : null, st1 = S1 ? startsOf(S1, T1) 
 console.log('  info: starts over the year uncapped ' + st0.toFixed(0) + ' MW; capped at ' + capMW + ': ' + st1.toFixed(0) + ' MW');
 check('capped, the year\'s starts are within the cap (1 MW)', S1 && S1.Status === 'Optimal' && st1 <= capMW + 1, 'starts ' + st1.toFixed(1) + ' against ' + capMW);
 check('the cap binds (starts within 1% of it)', st1 >= 0.99 * capMW, 'starts ' + st1.toFixed(1) + ' against ' + capMW);
+
+// 6. Reserve on committed coal (bldResCommitLP, message 785 (b)). The requirement each hour is read from the switch-off LP's own row (its
+// right-hand side is available coal less the requirement plus the hydro cover, its b_ terms the growth term): with the switch on, the row
+// carries - cm_ and no rc_, its right-hand side is the off row's less available coal, and solved, committed headroom (cm_ - gc_) plus the
+// battery, pumped-storage, gas, diesel and slack cover meets the requirement in every hour (1 MW).
+const rowsOf = t => { const o = {}; for (const m of (t || '').matchAll(/^ resv_(\S+): (.*) <= (-?[0-9.]+)$/gm)) o[m[1]] = { lhs: m[2], rhs: +m[3] }; return o; };
+const capOf = t => { const o = {}; for (const m of (t || '').matchAll(/^ cmax_(\S+): cm_\1(?: \+ [0-9.]+ rc_\d{4})? <= ([0-9.]+)$/gm)) o[m[1]] = +m[2]; return o; };
+const R0 = rowsOf(f0.text), ro = lp('rescom', '{"bldResCommitLP":1}'), R1 = rowsOf(ro.text), CAP = capOf(f0.text), rk = Object.keys(R0);
+const shapeBad = rk.filter(k => !R1[k] || !R1[k].lhs.startsWith('gc_' + k + ' - cm_' + k + ' - ') || / rc_\d{4}/.test(R1[k].lhs) || !(Math.abs(R1[k].rhs - (R0[k].rhs - CAP[k])) <= 0.2));
+check('reserve on committed coal: each resv_ row carries - cm_, no rc_, and the off row\'s right-hand side less available coal (0.2 MW)', rk.length > 0 && shapeBad.length === 0,
+  shapeBad.length + ' of ' + rk.length + ' rows differ, first ' + shapeBad[0] + ': ' + (R1[shapeBad[0]] ? R1[shapeBad[0]].lhs.slice(0, 60) + ' <= ' + R1[shapeBad[0]].rhs : 'missing'));
+const covered = (S, k) => { const v = n => (S.Columns[n] || { Primal: 0 }).Primal, row = R0[k];
+  const grow = [...row.lhs.matchAll(/([0-9.]+) (b_\S+)/g)].reduce((a, m) => a + (+m[1]) * v(m[2]), 0);
+  const need = CAP[k] - row.rhs + grow, have = v('cm_' + k) - v('gc_' + k) + ['rgo_', 'rd_', 'rb_', 'rp_', 'rsl_'].reduce((a, q) => a + v(q + k), 0);
+  return have - need; };
+if (ro.text){ const S6 = solve(ro.file, 'rescom'); check('the reserve-on-committed LP solves to optimality', !!S6 && S6.Status === 'Optimal', S6 ? S6.Status : 'no solution');
+  if (S6){ const short = rk.filter(k => covered(S6, k) < -1), offShort = S0 ? rk.filter(k => covered(S0, k) < -1).length : NaN;
+    console.log('  info: hours whose reserve is not covered by committed headroom and storage: switch off ' + offShort + ', on ' + short.length + ' of ' + rk.length);
+    check('every hour\'s reserve is met by committed coal headroom plus the storage, hydro and gas cover', short.length === 0, short.length + ' hours short, first ' + short[0]); } }
 
 fs.rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + pass + '/' + (pass + fail) + ' passed' + (PAGE ? ' (page ' + PAGE + ')' : ''));

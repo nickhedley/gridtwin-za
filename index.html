@@ -5337,7 +5337,7 @@ const COAL_PRE_C = { coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampH
   coalMslDesignFromYear:2030, coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median', coalStartEfor:0, coalMinDownH:null,
   syncImportsCount:1, syncNucHydroBasis:'installed', coalFlexDeepMsl:0.40, coalFlexDeepAfterYear:2035,
   bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, reserveCoalRampCap:0, coalStartupH:null, bldCoalMinDownLP:0, bldCoalMinUpLP:0,
-  bldCoalStartCap:null };
+  bldCoalStartCap:null, bldResCommitLP:0 };
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
 // System strength, minimum version (user, 1 Nov 2026, messages 603 (a), 604 (b), 606; TODO 14lo; HANDOVER 'System strength, minimum
 // version'; SOURCES 'System strength: inertia constants and the largest credible loss' and '... the remaining inputs'). Mode
@@ -5990,6 +5990,11 @@ const FIXED = {
   // the representative days' weights, stress days left out) at most that many MW (row cscap_<year>): the engine's on the same build
   // (harness/pathcheck.js START_COUNT=1, the net rise of committed coal MW, the like-for-like measure of the LP's su_).
   bldCoalStartCap:null,
+  // bldResCommitLP (user, 7 Nov 2026, message 785 (b)): operating reserve held on committed coal. 0, off: the LP as before, byte for byte
+  // (the ASTR reserve row resv_ counts coal's share against available coal: available minus output, so coal not committed holds reserve).
+  // 1: coal's share is committed headroom, committed minus output (cm_ - gc_), as the engine holds it; the storage, quick-start hydro and
+  // running gas cover stay as they are (rb_, rp_, rgo_, rd_ and the hydro term). Needs the commitment (bldCoalCommit) and reserveRule 'astr'.
+  bldResCommitLP:0,
   // Optimiser grid cost (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCost 0 off (default until
   // the effect on the pathway is reviewed), 1 central (ITP basis), 2 high (MISO basis). bldGridSpurBeyond 1 charges
   // the spur only beyond the 18 km median, for capex that already includes connection. bldGridBattHalf 1 charges
@@ -12961,6 +12966,9 @@ function bldBuildLP(opts){
   if (SCAP !== null && !(typeof SCAP === 'object' && Object.entries(SCAP).every(([y, v]) => /^\d{4}$/.test(y) && Number.isFinite(+v) && +v >= 0)))
     throw new Error('bldCoalStartCap: { "<year>": MW } with MW 0 or more');
   const SU_ON = y => COMMIT_SU_Y[y] > 0 || MU_ON || (SCAP !== null && SCAP[y] != null);
+  // Reserve on committed coal (bldResCommitLP; message 785 (b)).
+  const RCOM = (S.bldResCommitLP | 0) === 1;
+  if (RCOM && !(COMMIT_ON && (S.reserveEnabled ?? 1) && (S.reserveRule ?? FIXED.reserveRule) === 'astr')) throw new Error("bldResCommitLP needs the coal commitment (bldCoalCommit) and reserveRule 'astr'");
   const COMMIT_MIN_Y = {}, COMMIT_SU_Y = {};
   for (const y of Y){
     COMMIT_MIN_Y[y] = S.bldCoalMinFrac === 'engine' ? coalFleetMinShare(S, y, bldCoalMW(y)) : Math.max(0, Math.min(1, S.bldCoalMinFrac));
@@ -13386,7 +13394,7 @@ function bldBuildLP(opts){
         const _qA = ASTR_ON ? astrReserveAt(y, astrPeakHour(i), RES_MW) : null;
         const _reqA = _qA ? _qA.inst + _qA.reg + _qA.ten : 0;
         const _hydQ = _qA ? Math.min(_reqA, Math.max(0, (S.hydroMW || 0) * (1 - AV_HYD))) : 0;   // any product (message 90), as the engine
-        const rhs = ASTR_ON ? coalCap - _reqA + _hydQ - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0)
+        const rhs = ASTR_ON ? (RCOM ? 0 : coalCap) - _reqA + _hydQ - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0)
                     : coalCap + DSL(y) - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
                     - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0);
         const _holdA = _qA ? (_qA.inst / 6 + _qA.reg * ASTR_REG_H + _qA.ten * ASTR_TEN_H) / Math.max(1, _reqA) : RES_HOLD_H;
@@ -13455,8 +13463,9 @@ function bldBuildLP(opts){
             if (_ePsPrev) L.push(' rpq_' + k + ': ' + _hold.toFixed(3) + ' rp_' + k + ' - ' + _ePsPrev + ' <= 0');
           }
         }
-        if (ASTR_ON) L.push(' resv_' + k + ': gc_' + k + ' - rgo_' + k + ' - rd_' + k + ' - rb_' + k + ' - rsl_' + k + (_rpOn ? ' - rp_' + k : '')
-          + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
+        // With bldResCommitLP coal's share is committed headroom (cm_ - gc_); retirement is then in cm_'s own bound (cmax_), not here.
+        if (ASTR_ON) L.push(' resv_' + k + ': gc_' + k + (RCOM ? ' - cm_' + k : '') + ' - rgo_' + k + ' - rd_' + k + ' - rb_' + k + ' - rsl_' + k + (_rpOn ? ' - rp_' + k : '')
+          + (RC_ON && !RCOM ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + (y > ASTR_RESERVE.y1 && RES_VRE > 0 ? astrGrowTerms(y, RES_VRE * wpN, RES_VRE * spN) : '')
           + ' <= ' + rhs.toFixed(1));
         else L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '') + ' - rb_' + k + ' - rsl_' + k

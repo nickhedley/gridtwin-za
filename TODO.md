@@ -553,6 +553,9 @@ docs/test15-results.md); then whether it goes into the key (Nick's decision).
 7 Nov 2026 (message 778 (b)): the 30-hour rule alone does not bind (the LP rotates spare units); two more switches: bldCoalMinUpLP (the
 engine's minimum up time, UC_FLEET's capacity-weighted median, 8 h) and bldCoalStartCap ({year: MW}, the year's starts at most the engine's
 on the same build; harness/pathcheck.js START_COUNT=1 measures them). validate_coal_mindown.js 18 checks.
+7 Nov 2026 (message 785 (b)): the LP's ASTR reserve row (resv_) counts coal's share against available coal, so uncommitted coal holds
+reserve; bldResCommitLP (0 off) puts coal's share on committed headroom (cm_ - gc_). pathcheck.js RES_REC=1 records the engine's reserve by
+hour (requirement, coal's share after storage, hydro and gas, committed, output). validate_coal_mindown.js 21 checks.
 
 14kb. Practice floor and down time together (user, 27 Oct 2026, messages 447 and 448): done in #122, floor 0.75 -> 0.715 so the
 2026 replay's sunny low-demand midday statistic matches Eskom's 0.623 again (0.624) with the 24-hour down time. Open: the replay's
