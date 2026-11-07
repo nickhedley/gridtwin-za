@@ -19,3 +19,8 @@ vppCostRkWyr 500, bldRepF3d 1, bldRpSameAreaCap 1); new wind at 40% is the run's
 Rebuild: git worktree add --detach <dir> <base>; git apply <patch>; link harness/node_modules and harness/testroot; run as
 solve_key.sh (its case 'key': REP_REF=metered, the 13 extremes, WIND_CORR=cf0.40; the loop to its verdict; then pathcheck K=20).
 The engine check must run on the same worktree (pathcheck reads the battery keys from the run's record and FIXED).
+- highs_native_log.patch (user, 7 Nov 2026, message 780 (c)): one log line per solve, its starting basis, iterations and objective,
+  printed to stderr and appended to HIGHS_LOG when set (the loop discards the wrapper's stderr, so pieces are launched with
+  HIGHS_LOG=<the loop's log>). Installed in gtza-key, gtza-keynp and gtza-key342 at 09:08 UTC, kw42's piece boundary. Short test on a
+  5.6 MB single-year LP: LP sha1 unchanged, output and saved basis byte-identical to the old wrapper's, objective equal. To go into the
+  final commit with the key's patches (768 (c)).

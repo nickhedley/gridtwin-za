@@ -23540,3 +23540,14 @@ Checked 7 Nov 2026, 08:45-09:05 UTC, on the key's loop (gtza-key, loops/solve_ke
   stands at R1,454.5bn with 3,086 dual and 175,875 primal infeasibilities, against k8's optimum on the same basis of R1,541.5bn. So
   piece 2 resumes from piece 1's point; each resume costs the factorisation, a few minutes of a piece.
 - Test 15's fault (a cut with presolve on keeps no valid basis) does not arise here: no change made.
+
+### The solver log line (message 780 (c)): each solve's starting basis, iterations and objective, with the LP key and objective unchanged
+
+harness/highs_native.py (patch: harness/pathway/final/key/highs_native_log.patch) prints one line per solve, 'highs_native: start
+basis <file or none (cold)>; iterations <n>; objective <value>', and appends it to HIGHS_LOG when set (the loop discards the wrapper's
+stderr). Short test, 7 Nov 2026 09:05 UTC (scratchpad log780/), on /home/user/gtza-fix/harness/out/lullwin/base_2035_pass1.lp (5.6 MB,
+one year), HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve": "off"}: the LP's sha1 54e38529ec before and after; old and new
+wrapper's output JSON and saved basis byte-identical; objective 431,205,200,130.246 both; the new wrapper logged 15,697 iterations cold
+and, restarted from its own basis, 0 iterations to the same objective. Installed at 09:08 UTC in gtza-key, gtza-keynp and gtza-key342
+(kw42's piece boundary; the key's solve then running, PID 4979, unaffected); kw42 from its piece 2 (09:08 UTC), the key from its piece 3.
+HiGHS counts from zero in each process: a resumed solve's iterations are its own piece's.

@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 7 Nov 2026, 11:05 SAST)
+# GridTwin ZA - handover, current state (kept current; updated 7 Nov 2026, 11:15 SAST)
 
 ## 7 Nov morning (messages 761-768): where things stand
 
@@ -12,10 +12,16 @@
 - Sensitivities on the key, mine (766, 768 (d)). Order (772 (b)): 42% (kw42, running beside the central since 07:55 UTC on
   loops/solve_keysens.sh), then on loops/solve_keysens2.sh: 37.24% (kw3724), the national pool (knp, worktree gtza-keynp,
   bldRpSameAreaCap 0), flexible coal (kcoal, coalMslDesign 0.40 for both groups, confirmed 772 (a); the LP's minimum follows it, the
-  engine check reads it from the run's record), the R342 pass (P1=1 bash solve_keysens2.sh k342, worktree gtza-key342, vppCostRkWyr
-  342; 771 (b)), then the mixed reference (kmix) and IRP open-cycle capex (kirp). One beside the central; two at a time after it.
+  engine check reads it from the run's record), the age curve (kage, COAL_AGE=1, coalFomAgeOn 1; 780 (b): report coal retired early
+  by year beside the key's), the R342 pass (P1=1 bash solve_keysens2.sh k342, worktree gtza-key342, vppCostRkWyr 342; 771 (b)), then
+  the mixed reference (kmix) and IRP open-cycle capex (kirp). One beside the central; two at a time after it.
 - 776: every key solve runs with presolve off (HIGHS_OPTS); piece 2 (from 08:35 UTC) started from piece 1's valid basis, filed under
-  its own LP key (lpc_key/c10bea45a9...partial.basis.json; 184,514 basic structural columns). highs_native.py logs no iteration counts.
+  its own LP key (lpc_key/c10bea45a9...partial.basis.json; 184,514 basic structural columns).
+- 780 (c): highs_native.py logs each solve's start basis, iterations and objective to HIGHS_LOG (installed 09:08 UTC in gtza-key,
+  gtza-keynp, gtza-key342; patch in harness/pathway/final/key/). Relaunch the key's pieces as HIGHS_LOG=$S/loops/key.log PIECE_S=5200
+  bash $S/loops/solve_key.sh key, and kw42's as HIGHS_LOG=$S/loops/kw42.log ... solve_keysens.sh kw42 (solve_keysens2.sh sets it).
+- 775 (key final): report the key's coal retired early by year (sched[y].earlyRetMW) beside Test 15's two-stage central (3,177 MW
+  from 2029) and the fin pass (703 MW); AGE_LINK withdrawn (780 (a)).
 - PR #161: guard and panels committed locally on claude/twin-retime (c215013, build 2026-11-07a), not pushed; the full suite after the
   key loop, then push with counts. TODO 14ne open as unexplained.
 

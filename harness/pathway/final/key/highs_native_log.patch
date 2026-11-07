@@ -1,0 +1,18 @@
+diff --git a/harness/highs_native.py b/harness/highs_native.py
+index ef2f55a..7845cd4 100644
+--- a/harness/highs_native.py
++++ b/harness/highs_native.py
+@@ -48,3 +48,13 @@ if _bs is not None and _bs.valid:
+     with open(_bout, 'w') as f:
+         json.dump({'cols': {n: int(x) for n, x in zip(lp.col_names_, _bs.col_status)},
+                    'rows': {n: int(x) for n, x in zip(lp.row_names_, _bs.row_status)}}, f)
++# Log line (user, 7 Nov 2026, message 780 (c)): each solve's starting basis, iterations and objective, printed to stderr and appended to
++# HIGHS_LOG when set (the loop's own log, passed when a piece is launched; the loop discards the wrapper's stderr). The solve, its output
++# and its saved basis are unchanged. HiGHS counts iterations from zero in each process, so a resumed solve's count is this piece's only.
++_i = h.getInfo()
++_it = ('ipm %d, crossover %d' % (_i.ipm_iteration_count, _i.crossover_iteration_count)) if os.environ.get('HIGHS_SOLVER', 'simplex') == 'ipm' else str(_i.simplex_iteration_count)
++_line = 'highs_native: start basis %s; iterations %s; objective %r' % (_bin if (_bin and os.path.exists(_bin)) else 'none (cold)', _it, _i.objective_function_value)
++print(_line, file=sys.stderr)
++if os.environ.get('HIGHS_LOG'):
++    with open(os.environ['HIGHS_LOG'], 'a') as f:
++        f.write(_line + '\n')
