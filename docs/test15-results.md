@@ -6,10 +6,11 @@ The first basis is final (5 Nov 2026); the run on claude/twin-retime (message 72
 
 Message 724 (5-6 Nov 2026, claude/twin-retime build 05j, the fin pass's settings): the two-stage central finished all 15 steps (24.6 h,
 presolve off so every cut solve resumed, warm starts from 6 Nov 02:19 UTC). Against the fin pass it builds 17-25% more solar and lithium
-from 2030 and retires 2,474 MW more coal in 2029; wind is the same to 2035 and 1.9% more in 2040. At 100 draws it meets the 20 GWh
-standard in every gated year but with less margin (smallest 1.10 GWh against 2.14), and reads more unserved in four of five years; over
-the whole path it costs R7.45 bn more in the same LP (about R8.4 bn at equal margin). By the rule one stage stays the headline and the gap
-is reported. Fossil-free and the annuity variant stopped because a solve cut with presolve on keeps no basis (fixed: presolve off; both
+from 2030 and retires 2,474 MW more coal in 2029; wind is the same to 2035 and 1.9% more in 2040. The engine puts it about R4.7 bn a year
+dearer in 2035 and 2040 and less adequate in 2030 and 2036 (at 100 draws it meets the 20 GWh standard in every gated year, smallest margin
+1.10 GWh against 2.14); on the 365-day year the fin build is cheaper in 2040, and in 2035 once a VoLL-priced item is set aside. Priced on
+the one-stage LP, which favours the fin build by construction, two stages costs R7.45 bn more over the path. By the rule one stage stays
+the headline and the gap is reported. Fossil-free and the annuity variant stopped because a solve cut with presolve on keeps no basis (fixed: presolve off; both
 stopped steps finish) and because the loop chases a look-ahead year it cannot bring under the standard; Deep needs two harness fixes
 (patch tested, not applied). Details in 'Message 724' below.
 
@@ -323,6 +324,15 @@ Two stages minus the fin pass, 2035, the same single-year LPs as 750 (c) (season
 
 ### The rule (699 (b), read as message 748 sets it): one stage stays the headline; the two-stage gap is reported
 
+Verdict, led by the two judges independent of the one-stage LP (message 760 (b)):
+- The engine (twelve weather years, 100 draws): two stages costs about R4.7 bn a year more (R4.66 bn in 2035, R4.78 bn in 2040, with 8.8 and
+  8.7 Mt less CO2) and is less adequate in 2030 (6.46 against 1.34 GWh) and 2036 (17.34 against 14.03); its smallest margin to the
+  standard is 1.10 GWh against 2.14.
+- The 365-day year: the fin build is cheaper in 2040 (R264.26 bn against 269.08) and in 2035 once the VoLL item is set aside (R3.24 bn
+  cheaper; R0.66 bn dearer with the R3.89 bn priced on 123 MWh of shed on 15 May).
+- Second, priced on the one-stage LP, which favours the fin build by construction (the fin build is that LP's own optimum): over the whole
+  path two stages costs R7.45 bn more (about R8.4 bn at equal margin).
+
 The two-stage central (all 15 steps, 05j) against the fin pass (built on 05h, every check and re-cost here on 05j):
 
 1. Mix gap outside 5% and 250 MW (read as both): yes for solar (+2,566 / +4,126 / +4,189 MW in 2030 / 2035 / 2040), lithium (+1,624 /
@@ -342,7 +352,7 @@ Margins to the 20 GWh standard at 100 draws (750 (d)):
 | Fin pass (built 05h, checked 05j) | 18.66 | 6.44 | 2.14 | 5.97 | 10.74 | 2.14 (2035) | 15.15 |
 | Baseline loop (2034-2036 05h on c7-runs; 2030, 2040 05j) | 18.68 | 6.12 | 2.19 | 4.54 | 12.88 | 2.19 (2035) | 15.72 |
 
-Cost, the whole path (748): each build fixed in the same one-stage LP (05j, 25 days, run (6)'s settings, pass 1): two stages
+Cost, the whole path (748), priced on the one-stage LP (which favours the fin build by construction): each build fixed in the same one-stage LP (05j, 25 days, run (6)'s settings, pass 1): two stages
 R1,557.258 bn against the fin pass's R1,549.810 bn (the fin pass's own objective on 05h to 8e-15): two stages R7.45 bn dearer (+0.48%).
 The margins differ, two stages' smaller: at equal margin, as in message 746 (the 37.24% case's slope between its two passes, about R0.56
 bn of LP objective per GWh of the 2034-2036 mean; a borrowed slope, not a run), closing two stages' 1.76 GWh would add about R1.0 bn, so
@@ -354,8 +364,26 @@ shed priced at VoLL; R3.24 bn cheaper without it) and two stages' +4.19 on the 2
 +6.55 on the 25, the fin build's none. The engine (twelve years, 100 draws) puts two stages R4.66 bn a year dearer in 2035 and R4.78 bn in
 2040, with 8.8 and 8.7 Mt less CO2.
 
-So two stages builds 17-25% more solar and lithium against 2,474 MW less coal from 2029, costs R7.45 bn more over the path (about R8.4 bn
-at equal margin) and meets the standard with less margin; by the rule one stage stays the headline and the gap is reported.
+So by the engine and the 365-day year, two stages' 17-25% more solar and lithium against 2,474 MW less coal from 2029 costs more and
+leaves less margin; on the one-stage LP it also costs R7.45 bn more over the path. By the rule one stage stays the headline and the gap is
+reported.
+
+### Message 760 (c), (d), (e): the Deep and Fossil-free fix on its own branch; caching; the working copy
+
+- Branch claude/two-stage-deep-fixes (3afca73, from claude/twin-retime a77c7b2, build 2026-11-06b; harness only): the iron-air total
+  counts fixed years, and a window with no year under the CO2 cap prices nothing (deep_fixes.patch, unchanged), with
+  harness/validate_two_stage_steps.js: two step LPs written, nothing solved, about 2 minutes; 10/10 with the fix, 5/10 with the fault
+  injected (the script before the fix via --script: step 2026 stops on 'no co2cap_<y> rows', the iron-air total leaves out the fixed
+  b_ironair_2030). For the main session to take into the final-key harness through a pull request.
+- Earlier results: a one-stage Deep LP (to 2036, no fixed years) is byte for byte the same with and without the fix (key afafec250c), so
+  no one-stage Deep result moves; no two-stage Deep run exists; test 15's two-stage Fossil-free steps built no iron-air by 2033, so only
+  their LP keys would change, not their answers.
+- Caching (760 (d)): no second cache. The main session's VERDICT_CACHE (8d0ac66, message 726 (c)) keeps each verdict's adequacy test by its
+  inputs and the page, so a resumed piece replays it: the 25-30 minutes a resumed step spent here re-running earlier passes' tests. Mine
+  was never built and does nothing it does not. One other harness difference: twin-retime still lacks this branch's basis-file fix
+  (5b98fd3, each solve's basis under its own LP key); with presolve off a cut solve always keeps a valid basis, so the stale-basis fault it
+  fixes cannot arise on the final-key settings.
+- The working copy /home/user/gtza-retime is kept until 19 Nov 2026 and then removed (760 (e)); a reminder is set for that day.
 
 ### Message 757 (a): the R4.9 bn by which the 25 days understate the extra build's saving in 2035, split
 
@@ -372,11 +400,26 @@ Terms from slice_all.py on the four 2035 single-year LPs (y365/).
 |---|---:|---:|---:|
 | 25-day LP (each day at its weight) | 0.41 | 64.07 | 13.91 |
 | 365-day LP | 2.32 | 62.30 | 12.11 |
-| Engine, weather 2025 alone | not in any file held | not in any file held | not in any file held |
+| Engine, the metered 2025 reference alone (the LP's own year; WEATHER=metered) | 10.86 | 67.53 | 11.86 |
+| Engine, modelled weather 2025 alone (WEATHER=2025) | 9.91 | 70.34 | 11.20 |
 | Engine, twelve-year mean (100 draws, 05j) | 10.36 | 69.46 | 11.04 |
 
-The engine on weather 2025 alone is in no file I have (the engine records shed by weather year, not curtailment, coal or storage); one
-pathcheck run with WEATHER=2025 (minutes) would fill the row; not run (757 (b): no new runs).
+The two single-year rows were run on 7 Nov (message 760 (a)): pathcheck at 100 draws on the same seeds and the 100-draw gate's settings,
+05j (compare/wx2025.sh; engine100_*_wx*.json). WEATHER=metered_trk12 (new tracking solar rescaled to its twelve-year mean) gives the
+metered row to the digit on 05j's fixed tracking twin.
+
+Weather against dispatch (fin build, 2035; weather = the engine's twelve-year mean minus the engine on the LP's own metered year; dispatch
+= that minus the 365-day LP): of the 8.0 TWh curtailment gap, dispatch 8.5 TWh and weather -0.5; of the 7.2 TWh coal gap, dispatch 5.2 TWh
+and weather 1.9.
+
+The same single-year runs, both builds (unserved GWh at 100 draws on one weather year; se in brackets):
+
+| Weather year alone | Build | 2035 unserved | 2040 unserved | 2035 curtailment, coal, lithium TWh | 2040 curtailment, coal, lithium TWh |
+|---|---|---|---|---|---|
+| Metered 2025 | fin | 21.34 (3.89) | 35.72 (2.81) | 10.86, 67.53, 11.86 | 27.51, 43.31, 12.70 |
+| Metered 2025 | two stages | 19.13 (3.74) | 30.87 (1.83) | 13.57, 60.34, 14.64 | 32.93, 35.82, 15.37 |
+| Modelled 2025 | fin | 18.07 (3.74) | 8.32 (1.91) | 9.91, 70.34, 11.20 | 23.72, 44.66, 12.66 |
+| Modelled 2025 | two stages | 18.56 (2.88) | 1.63 (0.66) | 11.79, 62.36, 14.23 | 28.75, 36.70, 15.36 |
 
 ### Message 748: the common 100-draw check (pathcheck K=100, 1,200 runs a year, SEED_BASE 71830529; settings read from the README row of
 engine_loop_base_05h_k100.json; on 05j, unserved identical with 05h for the fin pass at 20 draws)

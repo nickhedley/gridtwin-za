@@ -8,3 +8,15 @@
 2026-11-06T15:43:01Z engine100 base rc=0 2030 1.32 (se 0.18; worst 100.5; runs 1200); 2040 7.12 (se 0.51; worst 126.8; runs 1200)
 2026-11-06T20:37:12Z engine100 ts_2040 from /home/user/gtza-retime/harness/out/tsr_central/step_2040.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2040
 2026-11-06T20:50:01Z engine100 ts_2040 rc=0 2040 8.08 (se 0.64; worst 186.1; runs 1200)
+2026-11-07T07:09:16Z engine100 fin_wx2025 from /tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2035,2040 WEATHER=2025
+2026-11-07T07:09:16Z engine100 ts_wx2025 from /home/user/gtza-retime/harness/out/tsr_central/step_2040.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2035,2040 WEATHER=2025
+2026-11-07T07:11:41Z engine100 ts_wx2025 rc=0 2035 18.56 (se 2.88; worst 109.8; runs 100); 2040 1.63 (se 0.66; worst 43.2; runs 100)
+2026-11-07T07:11:45Z engine100 fin_wx2025 rc=0 2035 18.07 (se 3.74; worst 186.5; runs 100); 2040 8.32 (se 1.91; worst 91.9; runs 100)
+2026-11-07T07:11:45Z engine100 ts_wxmetered from /home/user/gtza-retime/harness/out/tsr_central/step_2040.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2035,2040 WEATHER=metered
+2026-11-07T07:11:45Z engine100 fin_wxmetered from /tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2035,2040 WEATHER=metered
+2026-11-07T07:14:09Z engine100 ts_wxmetered rc=0 2035 19.13 (se 3.74; worst 210.9; runs 100); 2040 30.87 (se 1.83; worst 122.2; runs 100)
+2026-11-07T07:14:11Z engine100 fin_wxmetered rc=0 2035 21.34 (se 3.89; worst 215.7; runs 100); 2040 35.72 (se 2.81; worst 148.0; runs 100)
+2026-11-07T07:14:11Z engine100 fin_wxmetered_trk12 from /tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2035,2040 WEATHER=metered_trk12
+2026-11-07T07:14:11Z engine100 ts_wxmetered_trk12 from /home/user/gtza-retime/harness/out/tsr_central/step_2040.json, settings from the row: K=100 YEARS=2034,2035,2036 LNG=1 GRID=1 SS_FC=reservecoal CONG_OFF=1 WX_WINDCORR=1 then YEARS=2035,2040 WEATHER=metered_trk12
+2026-11-07T07:16:33Z engine100 ts_wxmetered_trk12 rc=0 2035 19.13 (se 3.74; worst 210.9; runs 100); 2040 30.87 (se 1.83; worst 122.2; runs 100)
+2026-11-07T07:16:34Z engine100 fin_wxmetered_trk12 rc=0 2035 21.34 (se 3.89; worst 215.7; runs 100); 2040 35.72 (se 2.81; worst 148.0; runs 100)
