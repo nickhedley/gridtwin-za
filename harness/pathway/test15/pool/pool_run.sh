@@ -9,6 +9,7 @@
 #   bash pool_run.sh p1      pass 1 (MAXP=1), one piece under 2 hours (RESUME, presolve off, basis kept; rerun to resume); then the
 #                            engine at 20 draws, 2030/2035/2040 (solve_key.sh's engine line)
 #   bash pool_run.sh gate    the 100-draw gate on pass 1's build: 2034-2036 and 2040 (the README row's settings, K=100)
+#   bash pool_run.sh gate <name> <build json>   the same gate on another build (the key's own pass 1, for the comparison)
 # Progress, PIDs and results: <O>/progress.txt (O = <WT>/harness/out/pool).
 M=${1:?mode p1 or gate}; WT=${WT:-/home/user/gtza-pool}; O=$WT/harness/out/pool; P=$O/progress.txt; mkdir -p $O
 D=$(cd "$(dirname "$0")" && pwd)
@@ -38,12 +39,14 @@ p1)
     env -i PATH="$PATH" HOME="$HOME" $ENG IN=$O/$s.json OUTC=$O/${s}_eng.json $ENGX nice -n 10 node --max-old-space-size=4096 pathcheck.js > $O/${s}_eng.log 2>&1 &
     N=$!; echo "$(ts) $s engine PID $N ($ENG $ENGX)" >> $P; wait $N; echo "$(ts) $s engine rc $?" >> $P; fi ;;
 gate)
-  s=pool_p1; [ -s $O/$s.json ] || { echo "$(ts) gate: no $s.json yet" >> $P; exit 0; }
+  # gate [<name> <build json>]: default option B's pass 1; with both, any build through the same gate in this worktree (message 778 (c):
+  # the key's own pass 1, p1_off from ../mindown/run_md.sh, for the comparison). Results <O>/<name>_k100_<years>.json.
+  s=${2:-pool_p1}; B=${3:-$O/$s.json}; [ -s $B ] || { echo "$(ts) gate: no $B yet" >> $P; exit 0; }
   ROW=$(cd /home/user/gridtwin-za && git show origin/claude/c7-runs:harness/pathway/final/README.md | grep '^| engine_loop_base_05h_k100.json ')
   KV=$(echo "$ROW" | grep -oE '\b[A-Z][A-Z0-9_]*=[^ )|]+' | sed 's/,$//' | grep -v '^K=\|^YEARS=' | tr '\n' ' ')
   for G in 2034,2035,2036 2040; do f=$O/${s}_k100_$(echo $G | tr ',' '_').json; [ -s $f ] && continue
-    env -i PATH="$PATH" HOME="$HOME" $KV K=100 YEARS=$G IN=$O/$s.json OUTC=$f nice -n 10 node --max-old-space-size=4096 pathcheck.js > ${f%.json}.log 2>&1 &
-    N=$!; echo "$(ts) gate $G PID $N ($KV K=100)" >> $P; wait $N; echo "$(ts) gate $G rc $?" >> $P; done ;;
+    env -i PATH="$PATH" HOME="$HOME" $KV K=100 YEARS=$G IN=$B OUTC=$f nice -n 10 node --max-old-space-size=4096 pathcheck.js > ${f%.json}.log 2>&1 &
+    N=$!; echo "$(ts) gate $s $G PID $N ($KV K=100, IN=$B)" >> $P; wait $N; echo "$(ts) gate $s $G rc $?" >> $P; done ;;
 *) echo "mode: p1 or gate" >&2; exit 2 ;;
 esac
 exit 0
