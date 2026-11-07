@@ -2468,7 +2468,14 @@ harness/pathway/final/ together; dump_key.sh patches the engine-state dump into 
 (make_pathcheck_dump.py), dumps 2035 and 2040 on weather 2025 with the key loop's own engine flags (LNG, GRID, SS_FC reservecoal, CONG_OFF,
 WX_WINDCORR; one seed) and hands the prefix to queue_final_template.sh. The worktree is chosen by the JSON's build stamp when it lands (the
 branch head's index.html is 2026-11-02y; the key's loop runs in the main session's own harness copy). At 7 Nov 09:40 UTC the branch carries
-the key's loop in pieces (RESULTS: 'the 8 Nov key's row follows when its loop is final') and no final build yet.
+the key's loop in pieces (RESULTS: 'the 8 Nov key's row follows when its loop is final') and no final build yet. The key's build, from its
+README (harness/pathway/final/key/README.md on claude/c7-runs, commit 6089cc6): the fin basis 10a98e2 (build 2026-11-05h) with
+key_on_10a98e2.patch, the engine check on the same worktree with LNG, GRID, SS_FC reservecoal, CONG_OFF and WX_WINDCORR; rebuilt here as
+wt-key10 with the patch applied and the dump lines fitted (pathcheck_dump_wt-key10.js). Two of the key's settings have no ten-area form and
+are carried as the dump gives them, with the label: the battery proposals (enrolled behind-the-meter power, a demand-side resource the LP
+does not represent) and the freed-coal pool capped at the same-area MW (a cost rule in the pathway's LP; the fixed-build cases take the
+build as given). The watcher now triggers only on a pathway JSON under harness/pathway/final/ committed with RESULTS.md (its first trigger,
+09:27 UTC, was the coal sustaining-capital record, not the build).
 
 The final builds (Least-cost, Fossil-free, Deep) run on the table of record from the night of 8 Nov when given; the chain is the patched
 pathcheck's dump (pathcheck_dump.js in the worktree's harness, DUMP_WY, DUMP_K, DUMP_PAGE, DUMP_OUT), then the 718 and 738 (b) case lists with

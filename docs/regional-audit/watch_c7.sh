@@ -8,7 +8,7 @@ for i in $(seq 1 7); do
   git fetch -q origin claude/c7-runs 2>/dev/null; head=$(git rev-parse origin/claude/c7-runs)
   if [ "$head" != "$base" ]; then
     files=$(git diff --name-only $base $head); echo "watch_c7: new commits $(git log --oneline $base..$head | wc -l); files: $(echo "$files" | tr '\n' ' ' | cut -c1-300)" >> $S/run_net_progress.txt
-    if echo "$files" | grep -q "^harness/pathway/final/" && echo "$files" | grep -q "^RESULTS.md"; then echo "watch_c7: final/ and RESULTS changed at $head $(date -u +%H:%MZ)" >> $S/run_net_progress.txt; echo "$head" > $S/watch_c7_hit.txt; exit 0; fi
+    if echo "$files" | grep -qE "^harness/pathway/final/[^/]*\.json$|^harness/pathway/final/key/.*\.json$" && echo "$files" | grep -q "^RESULTS.md"; then echo "watch_c7: final/ and RESULTS changed at $head $(date -u +%H:%MZ)" >> $S/run_net_progress.txt; echo "$head" > $S/watch_c7_hit.txt; exit 0; fi
     base=$head; echo "$base" > $S/watch_c7_base.txt
   fi
   sleep 900
