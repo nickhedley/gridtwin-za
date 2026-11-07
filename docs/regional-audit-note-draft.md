@@ -8,7 +8,7 @@ and cases: docs/regional-audit.md. No NTCSA capacity figures appear here.
 ## Draft text
 
 
-The binding limits are the Karoo's exits. With the TDP's inter-area lines, the least-cost build curtails 35 TWh in 2035 and 79 TWh in 2040,
+The binding limits are the Karoo's exits. With the TDP's lines, the least-cost build curtails 35 TWh in 2035 and 79 TWh in 2040,
 against 3 and 13 with no network limits; the Northern Cape's exits to the North West and the Free State are at their limit 8,700 hours a
 year. An independent cross-check broadly agrees on the binding corridors.
 
