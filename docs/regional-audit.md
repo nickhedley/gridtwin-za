@@ -2475,7 +2475,9 @@ wt-key10 with the patch applied and the dump lines fitted (pathcheck_dump_wt-key
 are carried as the dump gives them, with the label: the battery proposals (enrolled behind-the-meter power, a demand-side resource the LP
 does not represent) and the freed-coal pool capped at the same-area MW (a cost rule in the pathway's LP; the fixed-build cases take the
 build as given). The watcher now triggers only on a pathway JSON under harness/pathway/final/ committed with RESULTS.md (its first trigger,
-09:27 UTC, was the coal sustaining-capital record, not the build).
+09:27 UTC, was the coal sustaining-capital record, not the build). The chain was dry-run on the key's worktree with the fin basis's own
+pathway JSON (pathway_fin_05h.json, 2035, weather 2025): the dump writes with the same fields as the every-change dumps, so the key's
+JSON runs the moment it lands.
 
 The final builds (Least-cost, Fossil-free, Deep) run on the table of record from the night of 8 Nov when given; the chain is the patched
 pathcheck's dump (pathcheck_dump.js in the worktree's harness, DUMP_WY, DUMP_K, DUMP_PAGE, DUMP_OUT), then the 718 and 738 (b) case lists with
