@@ -11,7 +11,9 @@
  *      off within W hours: committed + MW taken off in the window <= available, from the solution's commitment alone.
  * With a page copy whose down-window rows are not written (--root <dir>, the fault injected), checks 2 and 3 FAIL (3 of 10 on 7 Nov 2026);
  * with the start-up time left out of the window, 2 of 10; with starts priced hot, 1 of 10.
- * About 1 minute (three LPs written, one solved with highs_native.py).
+ * 4. the minimum up time (bldCoalMinUpLP, message 778 (b) (i)): U from UC_FLEET, a cmu_ row an hour, and solved, nothing started within U hours
+ *    is decommitted; 5. the start cap (bldCoalStartCap, (ii)): capped at half the uncapped starts, the starts within the cap and binding.
+ * About 3 minutes (seven LPs written, four solved with highs_native.py).
  *
  *   node validate_coal_mindown.js [root] [--root <page folder>]
  */
@@ -47,6 +49,8 @@ function lp(name, coalState){
 const a = lp('absent', null), b = lp('off', '{"bldCoalMinDownLP":0}');
 check('the switch off writes the LP of the switch absent, byte for byte', !!a.text && a.text === b.text, 'rc ' + a.rc + '/' + b.rc + ((a.log.match(/Error: [^\n]*/) || [''])[0]));
 check('without the switch, no csd_ or cmd_ row', !!a.text && !/^ (csd|cmd)_/m.test(a.text), 'rows present');
+const z = lp('alloff', '{"bldCoalMinDownLP":0,"bldCoalMinUpLP":0,"bldCoalStartCap":null}');
+check('the three switches off (down time, up time, start cap) write the LP of the switches absent, byte for byte', !!a.text && a.text === z.text, 'differs');
 
 // 2. On: one csd_ and one cmd_ row an hour, each window W back along the commitment chain.
 const c = lp('on', '{"bldCoalMinDownLP":1}');
@@ -100,6 +104,51 @@ if (c.text){
       viol.length + ' hours over, the largest by ' + Math.max(...viol.map(x => x[1])) + ' MW at ' + (viol.sort((x, y) => y[1] - x[1])[0] || [])[0]);
   }
 }
+
+// Shared: solve an LP file; the commitment chain from the csu_ rows; the year's starts (MW of commitment added, representative days' weights).
+const solve = (lpf, name) => { const solf = path.join(TMP, name + '_sol.json');
+  cp.spawnSync('python3', ['highs_native.py', lpf, solf, '900'], { cwd: HARNESS, encoding: 'utf8', env: { ...process.env, HIGHS_OPTS: '{"simplex_strategy": 2, "threads": 2}' } });
+  return fs.existsSync(solf) ? JSON.parse(fs.readFileSync(solf, 'utf8')) : null; };
+const chainOf = t => { const ch = {}; for (const m of t.matchAll(/^ csu_(\S+): su_\1 - cm_\1 \+ cm_(\S+) >= 0$/gm)) ch[m[1]] = m[2]; return ch; };
+// The representative days' weights: each day's gc_ coefficient in the objective is the year's coal cost x its weight, so the weights are the
+// coefficients scaled to sum to 365 over the days that are not stress days (d >= 1000, left out of the cap as of the gas floor).
+const dayW = t => { const i = t.indexOf(' obj:'), j = t.indexOf('\nSubject To'), g = {};
+  for (const m of t.slice(i, j).replace(/\n/g, ' ').matchAll(/([-+]?\s*[0-9.eE+-]+)\s+gc_2035_(\d+)_0\b/g)) if (+m[2] < 1000) g[m[2]] = +m[1].replace(/\s/g, '');
+  const tot = Object.values(g).reduce((a, x) => a + x, 0); return Object.fromEntries(Object.entries(g).map(([d, x]) => [d, 365 * x / tot])); };
+const startsOf = (S, t) => { const v = n => (S.Columns[n] || { Primal: 0 }).Primal, ch = chainOf(t), w = dayW(t);
+  let s = 0; for (const [k, p] of Object.entries(ch)){ const d = k.split('_')[1]; if (+d >= 1000) continue; s += w[d] * Math.max(0, v('cm_' + k) - v('cm_' + p)); }
+  return s; };
+
+// 4. Minimum up time (bldCoalMinUpLP, message 778 (b) (i)): U from UC_FLEET in the page (the capacity-weighted median of min_up), one
+// cmu_ row an hour over the U hours back along the chain, and solved, nothing started within U hours is decommitted.
+const UCF = JSON.parse((HTML.match(/const UC_FLEET = (\[[\s\S]*?\]);/) || [])[1] || '[]').map(g => [+g.min_up, +g.cap]).sort((a, b) => a[0] - b[0]);
+let UQ = 0; { const tot = UCF.reduce((a, g) => a + g[1], 0); let c0 = 0; for (const [mu, cap] of UCF){ c0 += cap; if (c0 >= tot / 2){ UQ = mu; break; } } }
+const uShare = UCF.filter(g => g[0] === UQ).reduce((a, g) => a + g[1], 0) / UCF.reduce((a, g) => a + g[1], 0);
+check('the engine\'s minimum up time read from UC_FLEET (median by capacity ' + UQ + ' h, ' + (100 * uShare).toFixed(0) + '% of the capacity)', UQ >= 1, 'UC_FLEET not read');
+const u = lp('up', '{"bldCoalMinUpLP":1}'), TU = u.text || '';
+const upWin = {}; for (const m of TU.matchAll(/^ cmu_(\S+): cm_\1((?: - su_\S+)+) >= 0$/gm)) upWin[m[1]] = m[2].trim().split(' - ').filter(Boolean).map(x => x.replace(/^- /, '').replace(/^su_/, ''));
+const uh = [...TU.matchAll(/^ cmax_(\S+): cm_\1/gm)].map(m => m[1]), uch = chainOf(TU);
+const uexp = k => { const out = [], seen = new Set(); let q = k; while (out.length < UQ && !seen.has(q)){ seen.add(q); out.push(q); q = uch[q]; if (!q) break; } return out; };
+check('minimum up time on: a cmu_ row for every committed hour, each over the ' + UQ + ' hours back along the chain', uh.length > 0 && uh.every(k => upWin[k] && JSON.stringify(upWin[k]) === JSON.stringify(uexp(k))),
+  uh.length + ' hours, ' + Object.keys(upWin).length + ' cmu_ rows, ' + uh.filter(k => upWin[k] && JSON.stringify(upWin[k]) !== JSON.stringify(uexp(k))).length + ' windows differ');
+if (u.text){ const S = solve(u.file, 'up'); check('the minimum-up LP solves to optimality', !!S && S.Status === 'Optimal', S ? S.Status : 'no solution');
+  if (S){ const v = n => (S.Columns[n] || { Primal: 0 }).Primal; const vu = [];
+    for (const k of uh){ let st = 0, q = k; const seen = new Set();
+      for (let j = 0; j < UQ && q && !seen.has(q); j++){ seen.add(q); const p = uch[q]; if (!p) break; st += Math.max(0, v('cm_' + q) - v('cm_' + p)); q = p; }
+      if (st > v('cm_' + k) + 1) vu.push([k, +(st - v('cm_' + k)).toFixed(1)]); }
+    console.log('  info: minimum up time on, starts over the year ' + startsOf(S, TU).toFixed(0) + ' MW; hours under the rule ' + vu.length);
+    check('no hour has less committed than was started within ' + UQ + ' h', vu.length === 0, vu.length + ' hours under, the largest by ' + Math.max(...vu.map(x => x[1])) + ' MW'); } }
+
+// 5. The start cap (bldCoalStartCap, message 778 (b) (ii)): the year's starts uncapped, then capped at half of them; the capped LP's starts,
+// from its commitment alone on the days' weights, within the cap (1 MW), and the cap binding.
+const f0 = lp('cap0', '{"bldCoalMinUpLP":0}'), S0 = f0.text ? solve(f0.file, 'cap0') : null, st0 = S0 ? startsOf(S0, f0.text) : NaN;
+const capMW = Math.round(st0 / 2), f1 = lp('cap1', JSON.stringify({ bldCoalStartCap: { 2035: capMW } })), T1 = f1.text || '';
+check('the start cap writes one cscap_2035 row over every typical hour\'s su_', (T1.match(/^ cscap_2035: /gm) || []).length === 1 && !/^ cscap_2035: .*su_2035_1\d\d\d_/m.test(T1), 'row count ' + (T1.match(/^ cscap_2035: /gm) || []).length);
+const S1 = f1.text ? solve(f1.file, 'cap1') : null, st1 = S1 ? startsOf(S1, T1) : NaN;
+console.log('  info: starts over the year uncapped ' + st0.toFixed(0) + ' MW; capped at ' + capMW + ': ' + st1.toFixed(0) + ' MW');
+check('capped, the year\'s starts are within the cap (1 MW)', S1 && S1.Status === 'Optimal' && st1 <= capMW + 1, 'starts ' + st1.toFixed(1) + ' against ' + capMW);
+check('the cap binds (starts within 1% of it)', st1 >= 0.99 * capMW, 'starts ' + st1.toFixed(1) + ' against ' + capMW);
+
 fs.rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + pass + '/' + (pass + fail) + ' passed' + (PAGE ? ' (page ' + PAGE + ')' : ''));
 process.exit(fail ? 1 : 0);

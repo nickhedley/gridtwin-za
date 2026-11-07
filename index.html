@@ -5336,7 +5336,8 @@ const COAL_EFOR_REPL_RMWH = 529.10;
 const COAL_PRE_C = { coalCommitWeighStarts:0, coalCommitLookaheadH:24, coalRampHonour:0, coalMslPracticeFloor:null, coalMslDesign:null,
   coalMslDesignFromYear:2030, coalStartCostBasis:'ucfleet', coalStartFuel:'central', coalStartWear:'median', coalStartEfor:0, coalMinDownH:null,
   syncImportsCount:1, syncNucHydroBasis:'installed', coalFlexDeepMsl:0.40, coalFlexDeepAfterYear:2035,
-  bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, reserveCoalRampCap:0, coalStartupH:null, bldCoalMinDownLP:0 };
+  bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldCoalStartCost:0, reserveCoalRampCap:0, coalStartupH:null, bldCoalMinDownLP:0, bldCoalMinUpLP:0,
+  bldCoalStartCap:null };
 const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
 // System strength, minimum version (user, 1 Nov 2026, messages 603 (a), 604 (b), 606; TODO 14lo; HANDOVER 'System strength, minimum
 // version'; SOURCES 'System strength: inertia constants and the largest credible loss' and '... the remaining inputs'). Mode
@@ -5981,6 +5982,14 @@ const FIXED = {
   // 6 h, at 24 h): 30 h central. Shut-down MW sd_ and one row cmd_ an hour (committed + shut down in the window <= available). Each start
   // is priced as a start after the minimum down time (warm at 24 h), not hot.
   bldCoalMinDownLP:0,
+  // bldCoalMinUpLP (user, 7 Nov 2026, message 778 (b) (i)): the engine's minimum up time in the LP's coal commitment. 0, off: the LP as before,
+  // byte for byte. 1: MW started in the last U hours stays committed (committed >= started in the window; row cmu_ an hour), U the standing
+  // units' minimum up time, the capacity-weighted median of UC_FLEET's min_up (8 h on 97% of the capacity).
+  bldCoalMinUpLP:0,
+  // bldCoalStartCap (message 778 (b) (ii)): null, off. { "<year>": MW, ... }: the LP's coal starts in that year (MW of commitment added, on
+  // the representative days' weights, stress days left out) at most that many MW (row cscap_<year>): the engine's on the same build
+  // (harness/pathcheck.js START_COUNT=1, the net rise of committed coal MW, the like-for-like measure of the LP's su_).
+  bldCoalStartCap:null,
   // Optimiser grid cost (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCost 0 off (default until
   // the effect on the pathway is reviewed), 1 central (ITP basis), 2 high (MISO basis). bldGridSpurBeyond 1 charges
   // the spur only beyond the 18 km median, for capex that already includes connection. bldGridBattHalf 1 charges
@@ -7519,6 +7528,14 @@ function coalMinDownLP(p){
   const st = Array.isArray(su) ? +su[md < th[0] ? 0 : md < th[1] ? 1 : 2] : 0;
   if (!(md >= 1 && st >= 0)) throw new Error('coalMinDownLP: a minimum down time of at least 1 h and a start-up time of 0 h or more');
   return { downH: md, windowH: Math.round(md + st) };
+}
+// The LP's coal minimum up time, hours (bldCoalMinUpLP; message 778 (b) (i)): the capacity-weighted median of the standing units' min_up
+// (UC_FLEET; 8 h on 97% of the capacity). 1 with no unit standing.
+function coalMinUpLP(coalMW){
+  const us = ucUnitsStanding(coalMW).units.filter(u => u.cap > 0).map(u => [+u.min_up, u.cap]).sort((a, b) => a[0] - b[0]);
+  const tot = us.reduce((a, u) => a + u[1], 0); let c = 0;
+  for (const [mu, cap] of us){ c += cap; if (c >= tot / 2 - 1e-9){ if (!(mu >= 1)) throw new Error('coalMinUpLP: min_up ' + mu); return Math.round(mu); } }
+  return 1;
 }
 // hoursOff (message 767 (b)): the start after that many hours offline; absent, 0, the hot start. With the LP's minimum down time on, no
 // start comes sooner than the minimum down time, so the LP prices each start at that (a warm start at 24 h).
@@ -12938,6 +12955,12 @@ function bldBuildLP(opts){
   // Minimum down time and start-up lead time (bldCoalMinDownLP; message 767 (b)): MD_W hours (coalMinDownLP), each start priced after
   // the minimum down time, MD_H hours offline. Off: none of it.
   const MD_ON = COMMIT_ON && (S.bldCoalMinDownLP | 0) === 1, MD = MD_ON ? coalMinDownLP(S) : null, MD_W = MD ? MD.windowH : 0, MD_H = MD ? MD.downH : 0;
+  // Minimum up time (bldCoalMinUpLP; message 778 (b) (i)) and a cap on the year's starts (bldCoalStartCap; (ii)); each needs the start
+  // columns su_, written then even where starts carry no cost. Off: none of it.
+  const MU_ON = COMMIT_ON && (S.bldCoalMinUpLP | 0) === 1, SCAP = COMMIT_ON && S.bldCoalStartCap != null ? S.bldCoalStartCap : null;
+  if (SCAP !== null && !(typeof SCAP === 'object' && Object.entries(SCAP).every(([y, v]) => /^\d{4}$/.test(y) && Number.isFinite(+v) && +v >= 0)))
+    throw new Error('bldCoalStartCap: { "<year>": MW } with MW 0 or more');
+  const SU_ON = y => COMMIT_SU_Y[y] > 0 || MU_ON || (SCAP !== null && SCAP[y] != null);
   const COMMIT_MIN_Y = {}, COMMIT_SU_Y = {};
   for (const y of Y){
     COMMIT_MIN_Y[y] = S.bldCoalMinFrac === 'engine' ? coalFleetMinShare(S, y, bldCoalMW(y)) : Math.max(0, Math.min(1, S.bldCoalMinFrac));
@@ -13215,7 +13238,14 @@ function bldBuildLP(opts){
     const exWind = RET ? EX.wind - RET.wind : EX.wind, exPv = RET ? EX.pv - RET.pv : EX.pv, exCsp = RET ? EX.csp - RET.csp : EX.csp;
     if (Math.min(exWind, exPv, exCsp) < -1e-6) throw new Error('bldBuildLP: reipppRetireByYear retires more than the fleet in ' + y);
     const coalCapMean = bldCoalMW(y) * eafY, COMMIT_MIN = COMMIT_ON ? COMMIT_MIN_Y[y] : 0;
-    const RDY = MD_ON ? new Map(rdY(y).map(q => [q.d, q])) : null;   // the year's days by number, for the down window's chain
+    const RDY = (MD_ON || MU_ON) ? new Map(rdY(y).map(q => [q.d, q])) : null;   // the year's days by number, for the down and up windows' chain
+    // The n hours back from hour h of day r along the commitment chain (the previous hour, the prevD day's hour 23, or a free-standing day's
+    // own hour 23, once round), hour h first.
+    const chainBack = (r, h, n) => { const win = [], seen = new Set(); let rr = r, hh = h;
+      while (win.length < n){ const q = y + '_' + rr.d + '_' + hh; if (seen.has(q)) break; seen.add(q); win.push(q);
+        if (hh > 0) hh--; else if (rr.prevD !== undefined && RDY.get(rr.prevD)){ rr = RDY.get(rr.prevD); hh = 23; } else hh = 23; }
+      return win; };
+    const MU_U = MU_ON ? coalMinUpLP(bldCoalMW(y)) : 0;
     // System strength: the year's requirement, MW.s (one per year: the largest loss from the coal units standing on the schedule, and
     // the inertia of the units lost), coal's coefficient (H / 0.9 x lambda, decision D1: committed = output x the engine's
     // committed-to-output ratio), and TDP 2024's committed condensers.
@@ -13313,17 +13343,17 @@ function bldBuildLP(opts){
           L.push(' crd_' + k + ': cm_' + kp + ' - cm_' + k + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
         }
         // Start-ups: su_ is at least the commitment added this hour, and is priced in the objective.
-        if (COMMIT_SU_Y[y] > 0) L.push(' csu_' + k + ': su_' + k + ' - cm_' + k + ' + cm_' + kp + ' >= 0');
+        if (SU_ON(y)) L.push(' csu_' + k + ': su_' + k + ' - cm_' + k + ' + cm_' + kp + ' >= 0');
         // Minimum down time and start-up lead time (bldCoalMinDownLP): sd_ is at least the commitment removed this hour; what is committed
         // plus what was taken off in the last MD_W hours, back along the same chain as kp (a free-standing day wraps once), is no more than
         // what is available (the minimum down-time inequality of Rajan and Takriti, IBM RC23628, 2005, on the fleet's MW).
         if (MD_ON){
           L.push(' csd_' + k + ': sd_' + k + ' - cm_' + kp + ' + cm_' + k + ' >= 0');
-          const win = [], seen = new Set(); let rr = r, hh = h;
-          while (win.length < MD_W){ const q = y + '_' + rr.d + '_' + hh; if (seen.has(q)) break; seen.add(q); win.push(q);
-            if (hh > 0) hh--; else if (rr.prevD !== undefined && RDY.get(rr.prevD)){ rr = RDY.get(rr.prevD); hh = 23; } else hh = 23; }
-          L.push(' cmd_' + k + ': cm_' + k + (RC_ON ? ' + ' + _rcfW.toFixed(4) + ' rc_' + y : '') + ' + ' + win.map(q => 'sd_' + q).join(' + ') + ' <= ' + _cmaxRhs);
+          L.push(' cmd_' + k + ': cm_' + k + (RC_ON ? ' + ' + _rcfW.toFixed(4) + ' rc_' + y : '') + ' + ' + chainBack(r, h, MD_W).map(q => 'sd_' + q).join(' + ') + ' <= ' + _cmaxRhs);
         }
+        // Minimum up time (bldCoalMinUpLP): what was started in the last MU_U hours, back along the same chain, is still committed (the
+        // minimum up-time inequality of Rajan and Takriti, 2005, on the fleet's MW).
+        if (MU_ON) L.push(' cmu_' + k + ': cm_' + k + ' - ' + chainBack(r, h, MU_U).map(q => 'su_' + q).join(' - ') + ' >= 0');
       }
       L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
       if (OCGT_ON) L.push(' gomax_' + k + ': go_' + k + ' - ' + cum('ocgt',y).join(' - ') + ' <= 0');
@@ -13502,6 +13532,11 @@ function bldBuildLP(opts){
       const capY = (S.carbonCapByYear && S.carbonCapByYear[y] != null) ? +S.carbonCapByYear[y] : CAP_MT;
       L.push(' co2cap' + (CAP_FROM ? '_' + y : '') + ': ' + capTerms.join(' + ') + ' <= ' + (capY * 1e6).toFixed(0));
     }
+    // The year's coal starts capped (bldCoalStartCap; message 778 (b) (ii)): MW of commitment added on the representative days' weights,
+    // stress days left out (as the gas floor below), at most the engine's on the same build.
+    if (SCAP !== null && SCAP[y] != null){ const sT = [];
+      for (const r of rdY(y)) if (!r.tail) for (let h = 0; h < 24; h++) sT.push(r.weight.toFixed(6) + ' su_' + y + '_' + r.d + '_' + h);
+      L.push(' cscap_' + y + ': ' + sT.join(' + ') + ' <= ' + (+SCAP[y]).toFixed(1)); }
     // Gas minimum running (TODO 14be step 4, 11 Oct 2026). IRP 2025's minimum annual capacity factor on its gas,
     // ccgtForceLoadPct, in years ccgtForceFromYear-ccgtForceToYear, counted on the weighted representative days (stress
     // days are left out: they exist for adequacy, not annual energy). The engine floors only the first ccgtForceLoadMW

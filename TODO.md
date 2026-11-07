@@ -550,6 +550,9 @@ the warm start-up time, 6 h), each start priced after the minimum down time (war
 checks, about 1 minute; three injected faults FAIL). Open: the key's
 pass-1 LP with it on, and its 2035 curtailment and coal against the engine (results on claude/test15-two-stage-x2xqfl,
 docs/test15-results.md); then whether it goes into the key (Nick's decision).
+7 Nov 2026 (message 778 (b)): the 30-hour rule alone does not bind (the LP rotates spare units); two more switches: bldCoalMinUpLP (the
+engine's minimum up time, UC_FLEET's capacity-weighted median, 8 h) and bldCoalStartCap ({year: MW}, the year's starts at most the engine's
+on the same build; harness/pathcheck.js START_COUNT=1 measures them). validate_coal_mindown.js 18 checks.
 
 14kb. Practice floor and down time together (user, 27 Oct 2026, messages 447 and 448): done in #122, floor 0.75 -> 0.715 so the
 2026 replay's sunny low-demand midday statistic matches Eskom's 0.623 again (0.624) with the 24-hour down time. Open: the replay's
