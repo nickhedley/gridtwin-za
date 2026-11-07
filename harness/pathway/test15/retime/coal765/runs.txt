@@ -1,0 +1,21 @@
+2026-11-07T07:43:52Z v1_mindown_null: ENGINE_STATE={"coalMinDownH":null}
+2026-11-07T07:43:52Z v0_key: 
+2026-11-07T07:44:19Z v1_mindown_null rc=0 curt 10.22 coal 66.84 unserved 28.22 (se 7.22) li 11.96 diesel 0.55
+2026-11-07T07:44:20Z v0_key rc=0 curt 10.86 coal 67.49 unserved 28.45 (se 7.26) li 11.87 diesel 0.55
+2026-11-07T07:44:20Z v3_coallift_0: ENGINE_STATE={"ssCoalLift":0}
+2026-11-07T07:44:20Z v2_lift_reserve: SS_FC=reserve
+2026-11-07T07:44:46Z v2_lift_reserve rc=0 curt 10.86 coal 67.49 unserved 28.45 (se 7.26) li 11.87 diesel 0.55
+2026-11-07T07:44:47Z v3_coallift_0 rc=0 curt 10.75 coal 67.39 unserved 28.53 (se 7.27) li 11.92 diesel 0.55
+2026-11-07T07:44:47Z v4_block_1h: TESTROOT=testroot765
+2026-11-07T07:44:47Z v5_weighstarts_0: ENGINE_STATE={"coalCommitWeighStarts":0}
+2026-11-07T07:45:15Z v5_weighstarts_0 rc=0 curt 5.44 coal 53.37 unserved 740.68 (se 7.96) li 10.47 diesel 6.90
+2026-11-07T07:45:19Z v4_block_1h rc=0 curt 10.24 coal 66.87 unserved 27.85 (se 7.18) li 11.97 diesel 0.55
+2026-11-07T07:45:19Z v7_msl_ucfleet: ENGINE_STATE={"coalMslDesign":null}
+2026-11-07T07:45:19Z v6_ramphonour_0: ENGINE_STATE={"coalRampHonour":0}
+2026-11-07T07:45:45Z v6_ramphonour_0 rc=0 curt 10.84 coal 67.47 unserved 28.34 (se 7.28) li 11.87 diesel 0.55
+2026-11-07T07:45:46Z v7_msl_ucfleet rc=0 curt 10.70 coal 67.32 unserved 28.34 (se 7.27) li 11.89 diesel 0.55
+2026-11-07T07:45:46Z v8_msl_040: ENGINE_STATE={"coalMslDesign":[0.40,0.40]}
+2026-11-07T07:45:46Z v9_all: TESTROOT=testroot765 ENGINE_STATE={"coalMinDownH":null,"ssCoalLift":0,"coalCommitWeighStarts":0,"coalRampHonour":0,"coalMslDesign":[0.40,0.40]}
+2026-11-07T07:46:14Z v8_msl_040 rc=0 curt 7.56 coal 63.92 unserved 27.52 (se 6.80) li 11.61 diesel 0.63
+2026-11-07T07:46:19Z v9_all rc=0 curt 3.90 coal 58.54 unserved 192.91 (se 14.43) li 8.35 diesel 1.42
+2026-11-07T07:46:19Z done

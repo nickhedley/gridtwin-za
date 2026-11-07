@@ -368,6 +368,39 @@ So by the engine and the 365-day year, two stages' 17-25% more solar and lithium
 leaves less margin; on the one-stage LP it also costs R7.45 bn more over the path. By the rule one stage stays the headline and the gap is
 reported.
 
+### Message 765: which coal rule carries the 8.5 TWh dispatch gap (fin build, 2035, the metered 2025 reference alone)
+
+(c) The engine's commitment that keeps coal units on through the midday solar hours, weighing their start costs against the 24-hour
+minimum down time and start-up times, at the design minimums 0.57/0.52, carries most of it: without the weighing curtailment falls 5.4
+TWh (but unserved rises to 741 GWh, units taken off at midday cannot return for the evening), with the minimums at 0.40 it falls 3.3 TWh;
+the minimum down time alone, the block length, the lift and the ramp move it 0.6 TWh or less each. Yes, the LP lacks what the engine
+applies: no minimum down time and no start-up lead time (TODO 14ka), so it takes coal off at midday and back for the evening at the
+hot-start cost; its only stand-in, the 48-hour commitment rate rule (off in the key), closes 1.5 of the 8.5 TWh of curtailment and 1.7 of
+the 5.2 TWh of coal.
+
+(a) The engine, 20 draws on the gate's seeds, settings from the 100-draw gate's row with K=20, YEARS=2035, WEATHER=metered, one setting
+changed from the key's (the fin pass's recorded coal: coalMinDownH 24, coalMslDesign [0.57, 0.52], coalCommitWeighStarts 1, coalRampHonour
+1, ssLiftForecast reservecoal) through a test copy (harness/pathway/test15/retime/coal765/: pathcheck_coal765.patch, ENGINE_STATE; the
+block-length test reads a page copy whose one change is BLOCK_HOURS 1, testroot765_index.patch). Nothing in the key changed.
+
+| 2035, fin build, metered 2025 alone, 20 draws | Curtailment, TWh | Coal, TWh | Unserved, GWh (se) |
+|---|---:|---:|---:|
+| Key (100 draws: 10.86 / 67.53) | 10.86 | 67.49 | 28.45 (7.26) |
+| Minimum down time 24 h -> UC_FLEET's (4 h on most units) | 10.22 | 66.84 | 28.22 (7.22) |
+| Lift forecast reservecoal -> reserve | 10.86 | 67.49 | 28.45 (7.26) |
+| Coal lift for the synchronous floor off (ssCoalLift 0) | 10.75 | 67.39 | 28.53 (7.27) |
+| Commitment to each hour's forecast, not each 4-hour block's peak | 10.24 | 66.87 | 27.85 (7.18) |
+| Commitment without weighing start costs (coalCommitWeighStarts 0) | 5.44 | 53.37 | 740.68 (7.96) |
+| Ramp not honoured in commitment (coalRampHonour 0) | 10.84 | 67.47 | 28.34 (7.28) |
+| Design minimums 0.57/0.52 -> UC_FLEET's own (0.65/0.50) | 10.70 | 67.32 | 28.34 (7.27) |
+| Design minimums 0.57/0.52 -> 0.40 (a test value) | 7.56 | 63.92 | 27.52 (6.80) |
+| All of the above relaxed together | 3.90 | 58.54 | 192.91 (14.43) |
+
+(b) The LP, the fin build on year 2035's 365 days (750 (c)'s single-year LP), with bldCoalCommitHours 48 (COAL_STATE; the old rate rule,
+adding the crd_ and cru_ rows): curtailment 3.86 TWh against 2.32, coal 64.02 against 62.30, unserved 0.012 both; year cost R204.68 bn
+against R203.60 bn. The LP has no other minimum down-time approximation: its coal minimum already follows the engine's (bldCoalMinFrac
+'engine': the standing units' design minimums), with start costs charged per MW committed (bldCoalStartCost 1).
+
 ### Message 764: design note, representative days drawn from all twelve weather years (scope only; nothing run)
 
 Today (the 8 Nov key, RESULTS 'The 8 Nov key's worktree'): 25 clustered days on the metered 2025 reference, its 13 extremes frozen (the

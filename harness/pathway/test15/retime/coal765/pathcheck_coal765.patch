@@ -1,0 +1,33 @@
+--- harness/pathcheck.js	2026-11-05 19:59:30.630718315 +0000
++++ harness/pathcheck_coal765.js	2026-11-07 07:43:15.597045979 +0000
+@@ -18,7 +18,7 @@
+ // 5 Jun 2026). 53.37 GJ/t: IRP 2025 additional assumptions (gas fuel energy content). 0.45 t/m3 and no heel: unsourced.
+ const LNG_M3=+(process.env.LNG_M3||170000), LNG_GJ_M3=+(process.env.LNG_GJ_M3||0.45*53.37), LNG_HEEL=+(process.env.LNG_HEEL||0), CCGT_EFF=+(process.env.CCGT_EFF||0.52);
+ // DEM: demand growth to 2040, %, as the pathway; default 5 is the legacy, unsourced setting (RESULTS 9 Oct 2026).
+-const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.json')), K=+(process.env.K||2), DEM=+(process.env.DEM||5);
++const ROOT=process.env.TESTROOT||'testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.json')), K=+(process.env.K||2), DEM=+(process.env.DEM||5);
+ (async()=>{
+  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+  const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,url:'file://'+path.resolve(ROOT)+'/index.html',
+@@ -321,6 +321,12 @@
+  // the new fleet's uncurtailed potential on its profile (the modern twin with the run's correction, capped at 1 per unit) and the
+  // existing fleet's on the national profile, over new wind MW x 8,760. Written to the row as r.lcoe; nothing else changes.
+  const LCOE_ON=process.env.LCOE?'true':'false';
++ // Message 765 (a), a test copy only (not the key): ENGINE_STATE='{"<engine setting>": <value>}' sets one engine setting after every
++ // recorded and env setting, before the year loop; each is checked to exist in FIXED and recorded on the row (engineState).
++ const ENGINE_STATE = process.env.ENGINE_STATE ? JSON.parse(process.env.ENGINE_STATE) : null;
++ if (ENGINE_STATE) for (const [k, v] of Object.entries(ENGINE_STATE)){
++   if (!w.eval(`(${JSON.stringify(k)} in FIXED)`)) throw new Error('ENGINE_STATE: no FIXED.' + k);
++   w.eval(`state[${JSON.stringify(k)}] = ${JSON.stringify(v)};`); console.log('ENGINE_STATE', k, '=', JSON.stringify(v), '(FIXED', w.eval(`JSON.stringify(FIXED[${JSON.stringify(k)}])`) + ')'); }
+  const rows=[];
+  for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0; cwCum+=P.sched[y].cw||0; for (const [t,v] of Object.entries(P.sched[y].rp||{})) rpCum[t]=(rpCum[t]||0)+v;   // every year to y, before the YEARS filter, as cum (message 693 (h); was in the GRID block, after it)
+    // YEARS=2036,2037 (8 Oct 2026, TODO 14bk): check only these years; builds of the skipped years still accumulate.
+@@ -526,7 +532,7 @@
+    // COMPLY (15 Oct 2026): the coal emissions compliance charge the pathway run recorded for this year (on the in-scope coal it kept),
+    // reported beside the engine's cost; cost itself is unchanged. Only when the run carries one.
+    if (P.comply && P.comply.years && P.comply.years[y]){ r.complyBn=P.comply.years[y].keptChargeR/1e9; r.costComply=r.cost+r.complyBn; }
+-   rows.push({y,...over,...r, capexWind2026:CAPEX26.wind, capexPv2026:CAPEX26.pv}); console.log(y, JSON.stringify(r));
++   rows.push({y,...over,...r, capexWind2026:CAPEX26.wind, capexPv2026:CAPEX26.pv, ...(ENGINE_STATE?{engineState:ENGINE_STATE}:{}), ...(process.env.TESTROOT?{testRoot:process.env.TESTROOT}:{})}); console.log(y, JSON.stringify(r));
+  }
+  fs.writeFileSync(process.env.OUTC||'pathcheck.json', JSON.stringify(rows)); process.exit(0);
+ })();

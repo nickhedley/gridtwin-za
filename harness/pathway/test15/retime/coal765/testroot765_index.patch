@@ -1,0 +1,11 @@
+--- index.html	2026-11-05 19:59:31.458718296 +0000
++++ harness/testroot765/index.html	2026-11-07 07:43:15.833837655 +0000
+@@ -7630,7 +7630,7 @@
+   //   cost gap   8h +7.9% / +6.5%   vs   4h +5.7% / +4.8%   (at +25/+40 GW solar)
+   //   start-ups  8h 5,618           vs   4h 7,902           (MIP: 9,281)
+   // so 4h is closer on cost and closer on cycling. Mean gap falls 4.0% -> 2.9%.
+-  const BLOCK_HOURS = 4;
++  const BLOCK_HOURS = 1;   // message 765 (a): a test copy, commitment to each hour's forecast instead of each 4-hour block's peak
+   const BLOCKS_PER_DAY = 24 / BLOCK_HOURS;
+   // Start weighing: each block's target, computed once.
+   const _tgt = _WEIGH ? Array.from({length: DAYS * BLOCKS_PER_DAY}, (_, b) => _blockTarget(b * BLOCK_HOURS, BLOCK_HOURS)) : [];
