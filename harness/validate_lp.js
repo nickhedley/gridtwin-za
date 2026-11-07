@@ -471,6 +471,136 @@ function check(label, ok, detail) {
       bad.error || `largest gap ${bad.worst.toFixed(1)} times the rounding allowance`);
   }
 
+  // ── COAL-SITE SOLAR AND THE SPARE-CAPACITY POOL (user, 7 Nov 2026, messages 763, 774, 777; docs/coal-site-solar.md) ──
+  // A second utility-solar class, b_pvc_<y>, on Mpumalanga's own PVGIS series, free of the grid cost, capped at the coal MW retired in
+  // Mpumalanga by each year (shared with storage and gas on freed connections, early retirement at Mpumalanga's share); and a national
+  // spare-capacity pool, hp_<t>_<y>, the first H MW of new wind and solar free of the integration charge, on the Cape allowance's mechanism.
+  // Each check is proved on an injected fault: bldBuildLP or simulate re-made from its source with one expression changed, restored after.
+  {
+    const PVC_FAULTS = {
+      none: null,
+      nationalProfile: ["(spC*AVP(h)).toFixed(4)", "(spN*AVP(h)).toFixed(4)"],                                   // the class on the national twin in the row
+      gridCost:        ["cost += capCharge('pv', y, yy) / Math.pow", "cost += (capCharge('pv', y, yy) + GA['pv']) / Math.pow"],   // the class charged solar's grid cost
+      noCap:           ["L.push(' pvccap_' + y + ': '", "if (false) L.push(' pvccap_' + y + ': '"],               // the cap row dropped
+    };
+    const ENG_FAULTS = { none: null, nationalSeries: ["(C > 0 ? C * _pvcS[h] : 0)", "(C > 0 ? C * (T ? T[h] : solar[h]) : 0)"] };   // the engine runs the class on the national twin
+    const pvcRun = (fault) => JSON.parse(w.eval(`(() => {
+      const _b = bldBuildLP, F = ${JSON.stringify(PVC_FAULTS)}[${JSON.stringify(fault)}], _trk = state.bldPvTracking;
+      try {
+        if (F){ const src = _b.toString(); if (src.split(F[0]).length !== 2) return JSON.stringify({ error: 'expression not found once: ' + F[0] });
+          bldBuildLP = (0, eval)('(' + src.replace(F[0], F[1]) + ')'); }
+        state.bldPvTracking = 1;   // the class runs on its tracking twin, as the pathway does; bldBuildLP wants the page state to agree
+        const S = { ...FIXED, ...state, bldGridCost: 1, bldCapeWindMW: 1000, bldPvCoalSite: 1 }, S0 = { ...S, bldPvCoalSite: 0 };
+        const off = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: S0 }).lp;
+        const L = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: S }).lp, lines = L.split(String.fromCharCode(10));
+        const o = { offHasClass: /b_pvc_|pvccap_|hp_(wind|pv)_/.test(off), cols: [], rpPv: (L.match(/\\brp_pv_\\d+/g) || []).length, cap: {}, pace: {}, obj: {} };
+        for (const y of BLD_YEARS) o.cols.push(new RegExp('\\\\bb_pvc_' + y + '\\\\b').test(L));
+        // The cap rows: right-hand side the coal MW retired in Mpumalanga, early retirement's coefficient its share of the coal standing.
+        const sh = y => bldCoalRegionShare(y, PVC_REGION), ret = y => bldCoalRetiredMW(y, PVC_REGION);
+        for (const y of BLD_YEARS){ const l = lines.find(x => x.startsWith(' pvccap_' + y + ':'));
+          o.cap[y] = l ? { rhs: +l.split('<=')[1], want: ret(y), rc: +((l.match(/- ([0-9.]+) rc_/) || [])[1] || 0), wantRc: sh(y), rp: (l.match(/rp_[a-z]+_/g) || []).length } : null;
+          const pl = lines.find(x => x.startsWith(' pvcpace_' + y + ':')); o.pace[y] = pl ? +pl.split('<=')[1] : null; }
+        o.rate = bldRates().pv; o.pvG = S.bldPvRateGrowthPct;
+        // The objective: the class's coefficient is solar's less the discounted grid cost; the discount sum D is read from the Cape credit
+        // (cw_<y> earns the integration charge x D), so no year list is typed here.
+        const obj = lines[2], num = re => { const m = obj.match(re); return m ? +m[1] : null; };
+        const y0 = BLD_YEARS[0], tx = (k => k === 1 ? S.txRPerKWyr : k * S.txRPerKWyr)(+(S.bldGridIntVreShare ?? FIXED.bldGridIntVreShare));
+        const cw = num(new RegExp('- ([0-9.]+) cw_' + y0 + '\\\\b')), D = cw / (tx * 1000);
+        o.obj = { pv: num(new RegExp('([0-9.]+) b_pv_' + y0 + '\\\\b')), pvc: num(new RegExp('([0-9.]+) b_pvc_' + y0 + '\\\\b')), ga: bldGridAnn('pv', S), D };
+        // The profile reaches the rows: on calendar days the class's coefficient against solar's by month and hour (Mpumalanga is above the
+        // national twin at 07:00 in winter and below it at 15:00 in summer; docs/coal-site-solar.md section 3).
+        const byM = {}; for (const l of lines){ const m = l.match(/^ bal_(\\d+)_(\\d+)_(\\d+):/); if (!m || +m[1] !== y0 || +m[2] >= 365) continue;
+          const d = +m[2], h = +m[3], mo = hourMonth(d * 24), cp = +((l.match(/([0-9.]+) b_pv_\\d+\\b/) || [])[1] || 0), cc = +((l.match(/([0-9.]+) b_pvc_\\d+\\b/) || [])[1] || 0);
+          const k = (mo >= 4 && mo <= 7 && h === 7) ? 'winter07' : (mo >= 10 || mo <= 1) && h === 15 ? 'summer15' : null;
+          if (k){ byM[k] = byM[k] || { n: 0, up: 0, pv: 0, pvc: 0 }; byM[k].n++; if (cc > cp) byM[k].up++; byM[k].pv += cp; byM[k].pvc += cc; } }
+        o.shape = byM; o.days = bldRepDays(12).length;
+        return JSON.stringify(o);
+      } catch (e) { return JSON.stringify({ error: String(e.message || e) }); } finally { bldBuildLP = _b; state.bldPvTracking = _trk; } })()`));
+    const ok = pvcRun('none');
+    check('coal-site solar: with the switch off the LP has no class, cap or pool column (the text as before)', !ok.error && ok.offHasClass === false, ok.error || '');
+    check('coal-site solar: b_pvc_<y> in every year, no rp_pv_ column, a cap row and a pace row for every year',
+      !ok.error && ok.cols.every(Boolean) && ok.rpPv === 0 && Object.values(ok.cap).every(c => c) && Object.values(ok.pace).every(p => p !== null),
+      ok.error || `cols ${JSON.stringify(ok.cols)}, rp_pv ${ok.rpPv}, cap rows ${Object.values(ok.cap).filter(Boolean).length}, pace rows ${Object.values(ok.pace).filter(p => p !== null).length}`);
+    const capOk = !ok.error && Object.values(ok.cap).every(c => c && Math.abs(c.rhs - c.want) <= 0.06 && Math.abs(c.rc - c.wantRc) <= 6e-5 && c.rp > 0);
+    check('coal-site solar: each cap row holds the coal MW retired in Mpumalanga by that year (bldCoalRetiredMW), with early retirement at Mpumalanga\'s share and storage and gas sharing the row (D1 (ii), D4)',
+      capOk, ok.error || JSON.stringify(Object.fromEntries(Object.entries(ok.cap || {}).map(([y, c]) => [y, c && [c.rhs, +c.want.toFixed(1), c.rc, +c.wantRc.toFixed(4), c.rp]]))));
+    const paceOk = !ok.error && Object.entries(ok.pace).every(([y, p]) => Math.abs(p - ok.rate * Math.pow(1 + Math.max(0, ok.pvG) / 100, +y - 2026)) <= 0.06);
+    check('coal-site solar: the class draws on utility solar\'s build pace (pvcpace_<y>: b_pv + b_pvc at or below the year\'s solar rate)', paceOk, ok.error || JSON.stringify(ok.pace));
+    const objOk = !ok.error && ok.obj.pv !== null && ok.obj.pvc !== null && ok.obj.D > 0 && Math.abs((ok.obj.pv - ok.obj.pvc) - ok.obj.ga * ok.obj.D * 1000) <= 1;
+    check('coal-site solar: the class\'s objective coefficient is solar\'s less the discounted grid cost (GA[pv] x D x 1,000, D read from the Cape credit)',
+      objOk, ok.error || `pv ${ok.obj.pv}, pvc ${ok.obj.pvc}, GA ${ok.obj.ga && ok.obj.ga.toFixed(2)}, D ${ok.obj.D && ok.obj.D.toFixed(4)}, gap ${ok.obj.pv !== null ? ((ok.obj.pv - ok.obj.pvc) - ok.obj.ga * ok.obj.D * 1000).toFixed(3) : '-'}`);
+    // Summed over the representative days (a single day's weather can go either way): Mpumalanga's twin is above the national twin at
+    // 07:00 over the winter days and below it at 15:00 over the summer days (docs/coal-site-solar.md section 3).
+    const shapeOf = r => r.shape && r.shape.winter07 && r.shape.summer15 && r.shape.winter07.n > 0 && r.shape.summer15.n > 0 && r.shape.winter07.pvc > r.shape.winter07.pv && r.shape.summer15.pvc < r.shape.summer15.pv;
+    check('coal-site solar: the class\'s balance coefficients are Mpumalanga\'s (summed over the winter days, above the national twin at 07:00; over the summer days, below it at 15:00)',
+      !ok.error && shapeOf(ok), ok.error || JSON.stringify(ok.shape));
+    for (const [f, label, test] of [
+      ['nationalProfile', 'the class on the national twin in the balance rows', r => !r.error && !shapeOf(r)],
+      ['gridCost', 'the class charged solar\'s grid cost', r => !r.error && !(Math.abs((r.obj.pv - r.obj.pvc) - r.obj.ga * r.obj.D * 1000) <= 1)],
+      ['noCap', 'the cap row dropped', r => !r.error && !Object.values(r.cap).every(c => c)],
+    ]){ const r = pvcRun(f); check('injected fault caught: ' + label, test(r), r.error || ''); }
+
+    // The engine: the class's series on the profile is Mpumalanga's own tracking twin, hour for hour, and it pays no grid cost.
+    const engRun = (fault) => JSON.parse(w.eval(`(() => {
+      const _s = simulate, F = ${JSON.stringify(ENG_FAULTS)}[${JSON.stringify(fault)}];
+      try {
+        if (F){ const src = _s.toString(); if (src.split(F[0]).length !== 2) return JSON.stringify({ error: 'expression not found once: ' + F[0] });
+          simulate = (0, eval)('(' + src.replace(F[0], F[1]) + ')'); }
+        const base = { ...FIXED, ...state, bldPvTracking: 1, bldGridCost: 1, bldPvCoalSite: 1, scenarioYear: 2030, demandGrowthPct: 0 };
+        const pr = {}; simulate({ ...base, pvUtilityMW: 0, newPvMW: 0, newPvCoalMW: 1000, __seriesProbe: pr }, PROFILES);
+        const want = pvCoalSeriesOf(PROFILES.solar, true); let worst = 0; for (let h = 0; h < want.length; h++) worst = Math.max(worst, Math.abs(pr.solarU[h] - want[h]));
+        let sw = 0, sn = 0; const nat = solarTrkOf(PROFILES.solar); for (let h = 0; h < want.length; h++){ sw += want[h]; sn += nat[h]; }
+        const u1 = { ...base, newPvMW: 1000, newPvCoalMW: 0 }, u2 = { ...base, newPvMW: 0, newPvCoalMW: 1000 };
+        return JSON.stringify({ worst, meanRatio: sw / sn, chargePv: gridChargeR(u1, u1), chargePvc: gridChargeR(u2, u2), ga: bldGridAnn('pv', u1), probeHasC: !!pr.solarC });
+      } catch (e) { return JSON.stringify({ error: String(e.message || e) }); } finally { simulate = _s; } })()`));
+    const e0 = engRun('none');
+    check('coal-site solar: the engine runs the class on Mpumalanga\'s own tracking twin, hour for hour (series probe against pvCoalSeriesOf), and charges it no grid cost',
+      !e0.error && e0.worst < 1e-12 && e0.probeHasC && e0.chargePvc === 0 && Math.abs(e0.chargePv - e0.ga * 1000 * 1000) < 1,
+      e0.error || `largest gap ${e0.worst}, class over national twin ${e0.meanRatio && e0.meanRatio.toFixed(3)}, charge pv R${e0.chargePv && e0.chargePv.toExponential(3)} pvc R${e0.chargePvc}`);
+    const e1 = engRun('nationalSeries');
+    check('injected fault caught: the engine running the class on the national twin', !e1.error && !(e1.worst < 1e-12), e1.error || `largest gap ${e1.worst}`);
+
+    // The spare-capacity pool (message 774): hp_ columns for new wind and solar in every year, the pool row at H, wind's row shared with the
+    // Cape allowance, the credit the integration charge (the same as cw_'s), no freed-coal column while it is on.
+    const HP_FAULTS = {
+      none: null,
+      gridCost: ["credit += VRE_TX / Math.pow(1+BLD_DISC, yy-2026);\n    obj.push('-' + (credit * 1000).toFixed(3) + ' hp_'", "credit += GA[t] / Math.pow(1+BLD_DISC, yy-2026);\n    obj.push('-' + (credit * 1000).toFixed(3) + ' hp_'"],
+      noPool:   ["if (HP_T.length) L.push(' hppool: '", "if (false) L.push(' hppool: '"],
+      poolLeftOn: ["const RP_T = (GRID_ON && !SPARE_ON) ?", "const RP_T = GRID_ON ?"],
+    };
+    const hpRun = (fault) => JSON.parse(w.eval(`(() => {
+      const _b = bldBuildLP, F = ${JSON.stringify(HP_FAULTS)}[${JSON.stringify(fault)}];
+      try {
+        if (F){ const src = _b.toString(); if (src.split(F[0]).length !== 2) return JSON.stringify({ error: 'expression not found once: ' + F[0].slice(0, 40) });
+          bldBuildLP = (0, eval)('(' + src.replace(F[0], F[1]) + ')'); }
+        const S = { ...FIXED, ...state, bldGridCost: 1, bldCapeWindMW: 1000, bldSparePoolMW: 5000 };
+        const L = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: S }).lp, lines = L.split(String.fromCharCode(10)), y0 = BLD_YEARS[0];
+        const pool = lines.find(x => x.startsWith(' hppool:')), obj = lines[2], num = re => { const m = obj.match(re); return m ? +m[1] : null; };
+        const o = { cols: BLD_YEARS.every(y => new RegExp('\\\\bhp_wind_' + y + '\\\\b').test(L) && new RegExp('\\\\bhp_pv_' + y + '\\\\b').test(L)),
+          poolRhs: pool ? +pool.split('<=')[1] : null, poolTerms: pool ? (pool.match(/hp_(wind|pv)_\\d+/g) || []).length : 0,
+          hpbWind: lines.find(x => x.startsWith(' hpb_wind_' + y0 + ':')) || null,
+          credPv: num(new RegExp('- ([0-9.]+) hp_pv_' + y0 + '\\\\b')), credCw: num(new RegExp('- ([0-9.]+) cw_' + y0 + '\\\\b')),
+          rp: (L.match(/\\brp_(wind|pv|batt|vrfb|ironair|ccgt|phes|phel)_\\d+/g) || []).length, nY: BLD_YEARS.length };
+        return JSON.stringify(o);
+      } catch (e) { return JSON.stringify({ error: String(e.message || e) }); } finally { bldBuildLP = _b; } })()`));
+    const h0 = hpRun('none');
+    check('spare-capacity pool: hp_wind_<y> and hp_pv_<y> in every year, one pool row at H over both and all years, wind\'s row shared with the Cape allowance',
+      !h0.error && h0.cols && h0.poolRhs === 5000 && h0.poolTerms === 2 * h0.nY && /hp_wind_\d+ \+ cw_\d+ - b_wind_/.test(h0.hpbWind || ''),
+      h0.error || `pool ${h0.poolRhs} over ${h0.poolTerms} terms; ${h0.hpbWind}`);
+    check('spare-capacity pool: the credit is the integration charge (equal to the Cape allowance\'s cw_ credit) and no freed-coal column exists while it is on',
+      !h0.error && h0.credPv !== null && h0.credCw !== null && Math.abs(h0.credPv - h0.credCw) <= 0.001 && h0.rp === 0,
+      h0.error || `hp_pv ${h0.credPv}, cw ${h0.credCw}, rp_ columns ${h0.rp}`);
+    for (const [f, label, test] of [
+      ['gridCost', 'the pool credited at solar\'s whole grid cost', r => !r.error && !(Math.abs(r.credPv - r.credCw) <= 0.001)],
+      ['noPool', 'the pool row dropped', r => !r.error && r.poolRhs === null],
+      ['poolLeftOn', 'the freed-coal pool left on beside the spare pool', r => !r.error && r.rp > 0],
+    ]){ const r = hpRun(f); check('injected fault caught: ' + label, test(r), r.error || ''); }
+    const sp = JSON.parse(w.eval(`(() => { const u = { ...FIXED, ...state, bldGridCost: 1, newWindMW: 3000, newPvMW: 4000, bldSparePoolMW: 5000 }, u0 = { ...u, bldSparePoolMW: 0 };
+      return JSON.stringify({ diff: (gridChargeR(u0, u0) - gridChargeR(u, u)) / 1000, want: 5000 * bldGridIntegRkW('pv', u), hp: gridChargeR.last.hpMW }); })()`));
+    check('spare-capacity pool: the engine credits the first H MW of new wind and solar at the integration charge (page rule) and the run\'s own use when given',
+      Math.abs(sp.diff - sp.want) < 1e-6 && sp.hp === 5000, JSON.stringify(sp));
+  }
+
   console.log(`\n${pass}/${pass + fail} checks passed`);
   process.exit(fail ? 1 : 0);
 })();

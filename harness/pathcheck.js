@@ -183,7 +183,7 @@ console.log('recorded settings:', JSON.stringify(RECSET));
  // The LNG terminal charge is the page constant bldGasTerminalRkW from build 2026-10-19b (was an addition to BLD_FOM): set to
  // the run's own, 0 included, so a run without one is not charged the new default.
  w.eval(`if(!('bldGasTerminalRkW' in FIXED)) throw new Error('FIXED.bldGasTerminalRkW missing'); state.bldGasTerminalRkW=${+GFA};`);
- const Y=Object.keys(P.sched).map(Number); const cum={wind:0,pv:0,rooftop:0,batt:0,battMWh:0,vrfb:0,ironair:0,ccgt:0,off:0,phes:0,phel:0,ocgt:0,ocgd:0,gfm:0,scc:0,scn:0};
+ const Y=Object.keys(P.sched).map(Number); const cum={wind:0,pv:0,pvc:0,rooftop:0,batt:0,battMWh:0,vrfb:0,ironair:0,ccgt:0,off:0,phes:0,phel:0,ocgt:0,ocgd:0,gfm:0,scc:0,scn:0};
  // Open-cycle gas (build 2026-10-11f): the pathway's capex case, so the engine charges what the optimiser charged.
  if (P.ocgt && P.ocgt.costCase) w.eval(`state.bldOcgtCostCase=${JSON.stringify(P.ocgt.costCase)};`);
  // GAS_CAPEX (7 Oct 2026): CCGT capex at 2026, R/kW, for the IRP-capex sensitivity; read by engine and optimiser alike.
@@ -288,6 +288,11 @@ console.log('recorded settings:', JSON.stringify(RECSET));
  // Cape wind allowance (14 Oct 2026): the pathway's curtailment share; each year's MW from sched[y].cw, cumulated below.
  if (P.capeWind) { w.eval(`state.bldCapeCurtPct=${+P.capeWind.curtPct};`); console.log('Cape wind allowance from the pathway:', JSON.stringify(P.capeWind)); }
  let cwCum=0;
+ // Coal-site solar and the spare-capacity pool (docs/coal-site-solar.md; message 774): the run's own switches, so the engine's grid credit
+ // and the page's rules read the run's; each year's class MW from sched[y].pvc and pool MW from sched[y].hp, cumulated below.
+ if (P.pvCoal) { w.eval(`if(!('bldPvCoalSite' in FIXED)) throw new Error('bldPvCoalSite missing: build 2026-11-07a or later'); state.bldPvCoalSite=1;`); console.log('coal-site solar from the pathway: on'); }
+ if (P.sparePoolMW>0) { w.eval(`if(!('bldSparePoolMW' in FIXED)) throw new Error('bldSparePoolMW missing: build 2026-11-07a or later'); state.bldSparePoolMW=${+P.sparePoolMW};`); console.log('spare-capacity pool from the pathway:', P.sparePoolMW, 'MW'); }
+ const hpCum={};
  // Carbon path (user, 14 Oct 2026): the pathway's own (carbonPath; carbonFull for s_carbonfull). CFLAT cannot be given with
  // carbonFull.
  { const cPath = P.carbonPath ?? 'cut2027';
@@ -322,12 +327,12 @@ console.log('recorded settings:', JSON.stringify(RECSET));
  // existing fleet's on the national profile, over new wind MW x 8,760. Written to the row as r.lcoe; nothing else changes.
  const LCOE_ON=process.env.LCOE?'true':'false';
  const rows=[];
- for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0; cwCum+=P.sched[y].cw||0; for (const [t,v] of Object.entries(P.sched[y].rp||{})) rpCum[t]=(rpCum[t]||0)+v;   // every year to y, before the YEARS filter, as cum (message 693 (h); was in the GRID block, after it)
+ for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0; cwCum+=P.sched[y].cw||0; for (const [t,v] of Object.entries(P.sched[y].rp||{})) rpCum[t]=(rpCum[t]||0)+v; for (const [t,v] of Object.entries(P.sched[y].hp||{})) hpCum[t]=(hpCum[t]||0)+v;   // every year to y, before the YEARS filter, as cum (message 693 (h); was in the GRID block, after it)
    // YEARS=2036,2037 (8 Oct 2026, TODO 14bk): check only these years; builds of the skipped years still accumulate.
    if (process.env.YEARS && !process.env.YEARS.split(',').map(Number).includes(y)) continue;
    // The pathway's own demand path when it recorded one (DEMAND, 9 Oct 2026); else the legacy DEM to 2040.
    const frac=(y-2026)/(2040-2026), dg=(P.demand && P.demand.index) ? (P.demand.index[y]-1)*100 : (Math.pow(1+DEM/100,frac)-1)*100;
-   const over={...(PG && PG.fuelR ? {costCcgt:PG.fuelR[y]} : {}),newWindMW:cum.wind,newPvMW:cum.pv,newRooftopMW:cum.rooftop,newBattMW:cum.batt,newBattHours:cum.batt>0?Math.max(1,Math.min(20,cum.battMWh/cum.batt)):4,
+   const over={...(PG && PG.fuelR ? {costCcgt:PG.fuelR[y]} : {}),newWindMW:cum.wind,newPvMW:cum.pv,newPvCoalMW:cum.pvc,newRooftopMW:cum.rooftop,newBattMW:cum.batt,newBattHours:cum.batt>0?Math.max(1,Math.min(20,cum.battMWh/cum.batt)):4,
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (SS_ON){ over.ssGfmMW=cum.gfm; over.ssCondMVA=cum.scc+cum.scn; }
@@ -338,8 +343,8 @@ console.log('recorded settings:', JSON.stringify(RECSET));
    // connections by the page's rule (gridChargeR without the run's pool use). The preset engine checks run so, so that the page and its
    // check are on one basis (harness/validate_pathway_presets.js); a pathway's own engine check prices by vintage on its own pool use.
    if (!PAGE_BASIS){
-     if (GRID_ON){ over.gridRpMW={...rpCum}; over.gridCapeMW=cwCum; }
-     const V={}; for (const yy of Y) if (yy<=y) for (const [k,t] of [['wind','wind'],['pv','pv'],['rooftop','rooftop'],['batt','batt'],['vrfb','vrfb'],['ironair','ironair'],['ccgt','ccgt'],['ocgt','ocgt'],['ocgd','ocgd'],['off','offshore']]){
+     if (GRID_ON){ over.gridRpMW={...rpCum}; over.gridCapeMW=cwCum; if (Object.keys(hpCum).length) over.gridHpMW={...hpCum}; }
+     const V={}; for (const yy of Y) if (yy<=y) for (const [k,t] of [['wind','wind'],['pv','pv'],['pvc','pvc'],['rooftop','rooftop'],['batt','batt'],['vrfb','vrfb'],['ironair','ironair'],['ccgt','ccgt'],['ocgt','ocgt'],['ocgd','ocgd'],['off','offshore']]){
        const m=+P.sched[yy][k]||0; if (m>0) (V[t]=V[t]||{})[yy]=m; }
      over.bldVintageMW=V; }
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
@@ -374,7 +379,7 @@ console.log('recorded settings:', JSON.stringify(RECSET));
      over.newPsMW=P1+P2; over.newPsHours=(H*P1+H2*P2)/(P1+P2); over.newPsMaxMW=1e7; over.acapPs=(ann(H)*P1+(P2>0?ann(H2)*P2:0))/(P1+P2); }
    // The vintage map against what stands this year (after FOSSIL_END and the rest): a technology the run stands down to 0 MW (gas and
    // diesel after its last fossil year) leaves the map, as the LP charges no capital on it then; any other mismatch stops the check.
-   if (over.bldVintageMW){ const KEY={wind:'newWindMW',pv:'newPvMW',rooftop:'newRooftopMW',batt:'newBattMW',vrfb:'newVrfbMW',ironair:'newIronAirMW',ccgt:'newCcgtMW',ocgt:'newOcgtMW',ocgd:'newOcgdMW',offshore:'newOffshoreMW'};
+   if (over.bldVintageMW){ const KEY={wind:'newWindMW',pv:'newPvMW',pvc:'newPvCoalMW',rooftop:'newRooftopMW',batt:'newBattMW',vrfb:'newVrfbMW',ironair:'newIronAirMW',ccgt:'newCcgtMW',ocgt:'newOcgtMW',ocgd:'newOcgdMW',offshore:'newOffshoreMW'};
      for (const t of Object.keys(over.bldVintageMW)){ const sum=Object.values(over.bldVintageMW[t]).reduce((a,b)=>a+b,0), mw=+over[KEY[t]]||0;
        if (mw===0) delete over.bldVintageMW[t]; else if (Math.abs(sum-mw)>0.5) throw new Error('vintage map: '+t+' '+sum+' MW built against '+mw+' MW standing in '+y); } }
    const batch=(k0,k1)=>JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of __wxYears()){ const nat=__wxNat(yy);
