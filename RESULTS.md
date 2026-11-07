@@ -23616,7 +23616,8 @@ seventh to a half of c6a's on 27 Oct (R1,600 from 2029, R1,959 from 2030; coal's
 since). EIA's sustaining capital (R474/kW-yr in 2029, R471 in 2030; RESULTS 'Coal sustaining capital by EIA's equation') exceeds the
 2029 and 2030 margins, so its pass is expected to retire coal from 2029 or 2030; the flat R500 likewise. Caveat as on 27 Oct: reduced
 costs are first-order and the LP is degenerate; the pass-1 LP with the charge (ksus) is the direct test. On the key's pass 1
-(c10bea45a9) the table differs by at most R11 to 2031 and by R200 in 2034 (pass 2's added 2034 windows).
+(c10bea45a9) the table differs by at most R7 to 2031 and by up to R187 from 2032 (2035: R818 on pass 1 against R631; pass 2's added
+2034 windows).
 
 ### Home batteries on the 8 Nov key: enrolled GWh by year and the value of the first kW (message 771 (c), with 772 (c)'s caveats)
 
