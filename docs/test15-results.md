@@ -368,6 +368,55 @@ So by the engine and the 365-day year, two stages' 17-25% more solar and lithium
 leaves less margin; on the one-stage LP it also costs R7.45 bn more over the path. By the rule one stage stays the headline and the gap is
 reported.
 
+### Message 764: design note, representative days drawn from all twelve weather years (scope only; nothing run)
+
+Today (the 8 Nov key, RESULTS 'The 8 Nov key's worktree'): 25 clustered days on the metered 2025 reference, its 13 extremes frozen (the
+central's; 12 on the old list this test ran), 12 typical days as Ward medoids weighted by cluster size, the twelve-year means re-imposed
+(bldRepDaysClustered, index.html); f3d's month factors correct the days' solar towards the twelve years (finding 3). The engine and the gate
+run all twelve modelled years with 2025's demand.
+
+1. Choosing and weighting the 25 days across the twelve years. Pool the 4,380 days (12 years x 365), each day its calendar day's demand
+   (2025's, as the engine) with that year's wind and solar, every series already on the twelve-year level, so the pool's mean is the
+   twelve years' by construction and the re-scaling step and f3d's factors fall away. Extremes: extremes.py's criteria (peak demand, the
+   tightest net-load hour, the worst 3-day net load and 3-day wind lull, each as three days, the lowest net load) applied across the pool
+   for each fleet year 2026-2040, the union frozen as today; the union is likely larger than 13 (a worst lull now comes from the worst of
+   twelve years), so cap it at today's count by severity or let the typical count fall. Typical days: Ward clusters on the same 72
+   features over the 4,368 non-extreme days, medoids as now. Weights: a medoid stands for its cluster size / 12 days a year, an extreme for
+   1/12 (each pooled day is a twelfth of an average year; adequacy stays with the stress target and the loop's windows, as now). Choice
+   for the scope: the twelve modelled years only; the metered 2025 reference (the key's choice) is not among them, and adding it as a
+   thirteenth year is a decision for Nick. The clustering as coded compares every pair at each merge (cubic: 5e7 steps at 365 days,
+   8e10 at 4,368): replace by the nearest-neighbour chain (the same Ward tree, quadratic) or cache the result per settings; the distance
+   matrix is 153 MB.
+2. Chronological linking. Today each of the year's 365 real days reads its medoid (map365) and the stored level runs through them in calendar
+   order (lv_, lnk_, lhi_, llo_ per store, year and real day). With pooled days a calendar day has twelve weather days, each in its own
+   cluster. Three ways: (B) one chronology: link one year's 365 days (the reference year's, or a chosen adverse year's), each reading the
+   medoid of its own cluster; the same size as today; inter-day storage then sees one year's sequence of lulls, the energy balance twelve.
+   (D) a few chronologies: the reference plus the two years with the worst multi-day lulls, each its own cyclic chain; storage must stay
+   feasible in each. (A) all twelve chronologies, each cyclic: exact for storage across the twelve years, twelve times the linking.
+   Recommended: B for a first pass (like for like with today's size), D if long-duration storage moves in it.
+3. The LP's size and solve time. Today's one-stage pass-1 LP: 422,595 columns and 703,481 rows, of which the linking is 33,600 columns
+   (8%) and 109,500 rows (16%: 15 years x 6 stores x 365 days). B: unchanged (25 days). D: about 489,800 columns (1.16 times) and 922,500
+   rows (1.31). A: about 792,000 columns (1.87) and 1,908,000 rows (2.71). Today's pass solves in 75-80 min beside a second solve with
+   presolve on (4,527-4,818 s, run (6), test 8) and about 2 h 10 min with presolve off in pieces; B about the same, D an estimated 1.5-2
+   times, A an estimated 3-6 times (8-16 h with presolve off): estimates, not runs. A two-stage step's year y on 365 days has no pooled
+   counterpart (4,380 chronological days); two stages would keep its 365-day year on one weather year.
+4. Checks to redo if the twelve-year days became the key: the extreme-day rule (726 (b): recomputed on the pool and frozen; validate_lp
+   checks FIXED.bldRepExtremeDays against extremes.json and would check the pool's list); test 13's 1% ranges (they are the LP's own, so they
+   move with its days); the 100-draw gate on every pathway's final build (same method and seeds, new builds); the day-count test (test 6's
+   18-105 days, now on the pool: 25 days for 4,380 is a twelfth of today's density); finding 3's seasonal table on the pooled days (f3d
+   dropped); an identity check (the switch off gives the 8 Nov key's pass-1 LP byte for byte); and, if the page changes, the suite, the
+   stored panels and the visible-text review. As a harness-only test (pathway_perfail.js replacing bldRepDaysClustered behind a switch,
+   as the REP_DAYS hook does) index.html need not change for a pass.
+5. Hours to one pass-1 LP on the 8 Nov key's settings (harness only, option B): the pooled clustering with the nearest-neighbour chain
+   and the 1/12 weights, about 3 h; B's linking map, about 1 h; extremes.py over the pool, about 1 h; the identity check and small-LP
+   checks, about 1-2 h; then the pass: the LP built and solved (about 2-2.5 h, presolve off, resumable), its verdict (about 0.5 h), the
+   20-draw engine check (0.3 h) and the 100-draw gate (0.7 h). About 10-12 h from Nick's word; D adds about 3 h of code and 1-2 h of solve;
+   A is not a 9 Nov job.
+6. By 9 Nov 18:00 SAST without delaying Deep and Fossil-free: yes for B, if the word comes by 7 Nov evening: the code today, the pass on the
+   idle machine tonight or, if it must wait for the 8 Nov key to be fixed, in the second slot beside Fossil-free on 8 Nov, before Deep's
+   two-stage run can start (it waits for the one-stage Deep's final cap, message 708). D is possible on the same terms but tighter. A word
+   on 8 Nov or later, or A, would take the slot Deep needs.
+
 ### Message 760 (c), (d), (e): the Deep and Fossil-free fix on its own branch; caching; the working copy
 
 - Branch claude/two-stage-deep-fixes (3afca73, from claude/twin-retime a77c7b2, build 2026-11-06b; harness only): the iron-air total
