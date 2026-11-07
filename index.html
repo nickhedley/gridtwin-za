@@ -471,7 +471,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Results are for one weather year. <strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure in constant 2020 rands, not escalated, and shown beneath system cost when it occurs. Replacement cost instead prices the mix at full lifecycle cost, as if it were built new today: generation per MWh, and storage and gas on the capacity the scenario holds. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
+    <p class="kpinote">Results are for one weather year. <strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Load shedding is costed separately at R12.30/kWh, Eskom&rsquo;s cost-of-loadshedding figure of R9.53 in 2020 rands escalated to 2026, and shown beneath system cost when it occurs. Replacement cost instead prices the mix at full lifecycle cost, as if it were built new today: generation per MWh, and storage and gas on the capacity the scenario holds. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -5234,7 +5234,10 @@ function buildProfiles(real){
       for(let h=0;h<HOURS;h++){const hour=h%24; const eve=(hour>=10&&hour<=22)?Math.exp(-Math.pow(hour-17,2)/18):0; csp[h]=Math.min(1,0.6*eve);}
     }
     const demand_2025 = (real.demand_2025 && real.demand_2025.length===HOURS) ? Float64Array.from(real.demand_2025) : null;
-    return {demand,solar,wind,csp,real:true,demand_2025};
+    // Rooftop's own shape (message 707 (a) 1): the demand year's fixed-tilt national series (build_demand_2026.py roof_pu), the series
+    // the demand file adds rooftop back on; the engine removes rooftop on it, so the two cancel on the measured base.
+    const roof = (real.roof_pu && real.roof_pu.length===HOURS) ? Float64Array.from(real.roof_pu) : null;
+    return {demand,solar,wind,csp,real:true,demand_2025,...(roof?{roof}:{})};
   }
   const rand = mulberry32(20260714);
   const demand=new Float64Array(HOURS), solar=new Float64Array(HOURS), wind=new Float64Array(HOURS), csp=new Float64Array(HOURS);
@@ -5554,9 +5557,18 @@ function reipppRate(year){
 // line in the retail stack.
 //
 // Storage (BESIPPPP) is left out: new batteries are costed as new build.
+// Avon and Dedisa's contract in otherIppR: the share of the pair's MW whose contract is charged in year y (user, 5 Nov 2026, messages
+// 715 (b) and 716 (c)). One rule for the capital charge here and for the pair's exemption from fomDiesel in simulate. 1 to dedisaEndYear;
+// in avonEndYear, Avon alone, contracted to 20 July (avonEndDoy days of the year): its MW share times avonEndDoy / 365, 0.365, the rule
+// avonDedisaMustRunMW uses; 0 after. Splitting the charge by MW is a judgement (the MYPD 6 line gives the total only).
+function avonDedisaContractShare(year){
+  const y = year ?? 2026, F = FIXED;
+  if (y <= F.dedisaEndYear) return 1;
+  return y === F.avonEndYear ? F.avonMW / (F.avonMW + F.dedisaMW) * F.avonEndDoy / 365 : 0;
+}
 function otherIppR(year){
   const y = year ?? 2026;
-  const peakers = y < 2031 ? 2174 : 0;
+  const peakers = 2174 * avonDedisaContractShare(y);
   const rmi = y <= 2026 ? 1294 : y === 2027 ? 3325 : (y < 2045 ? 3791 : 0);
   const shortTerm = y <= 2026 ? 7981 : y === 2027 ? 9296 : y === 2028 ? 9787 : 0;
   return (peakers + rmi + shortTerm) * 1e6;
@@ -5582,6 +5594,10 @@ function bldPhesCumCapMW(cap, y){
 // SA CPI, January 2024 to January 2026: 3.2% (January 2025) and 3.5% (January 2026), Stats SA headline as reported
 // (SOURCES 'SA CPI, January 2024 to January 2026'). One constant for every January 2024 rand figure restated in 2026 rands.
 const CPI_JAN25_TO_JAN26 = 1.035;
+// 2020 (annual average) to January 2026 (message 710 (e)): Stats SA P0141, December 2024 = 100: January 2026 103.8 (January 2026 release,
+// Table A); the 2021 average 84.0 (Table B1) over 2021's average inflation of 4.5% gives 2020's average, 80.4. 1.291, derived (the 2020
+// average index itself was not found published), within about 0.002.
+const CPI_2020_TO_JAN26 = 103.8 / (84.0 / 1.045);
 const CPI_JAN24_TO_JAN26 = 1.032 * CPI_JAN25_TO_JAN26;
 // Eskom FY2026 (user, 22 Oct 2026, messages 306 (a), 321, 322, 323 and 325; c6 PR A). Eskom's performance report for the year to
 // 31 March 2026, cited by printed page, Eskom credited, the arithmetic ours (SOURCES 'Eskom performance report FY2026'). Each FIXED
@@ -5965,8 +5981,8 @@ const FIXED = {
   // storage half the integration charge (sensitivity; central charges storage none).
   bldGridCost:0, bldGridSpurBeyond:0, bldGridBattHalf:0,
   // Share of the integration charge (txRPerKWyr) that new wind and utility solar pay in the build LP (user, 16 Oct 2026):
-  // 1 central; 0 is sensitivity s_grid0 and 0.5 s_grid50. Other technologies keep the full charge. The engine's own
-  // transmission charge (txChargeFor) is not changed; the engine check's costGrid carries the optimiser's charge.
+  // 1 central; 0 is sensitivity s_grid0 and 0.5 s_grid50. Other technologies keep the full charge. The engine charges the same
+  // (gridChargeR, message 710 (c), from 5 Nov 2026; until then a tiered regional charge, txChargeFor).
   bldGridIntVreShare:1,
   // Existing diesel peakers: Retirement and life extension (TODO 14as, 7 Oct 2026, user decisions; see BLD_PEAKERS).
   // bldPeakerRet 0 off (default until reviewed: all 3.4 GW to 2040, as before), 1 end-of-life dates, 2 the IRP 2025's
@@ -6073,6 +6089,10 @@ const FIXED = {
   // back through the curve; RESULTS, 684 (d), 686 (b), 691 (b)), new wind on the national modern-turbine map of the corrected series.
   // The metered profile is not touched. Set it before the weather years are first used.
   wxWindCorr:1,
+  // New tracking solar on the metered profile's days (user decision, 4 Nov 2026, message 701 (a)): 'fleet', the metered fleet times the
+  // modelled years' tracking over their fleet mix, scaled to the twelve-year tracking mean; 'fixed' the earlier fixed-tilt-to-tracker
+  // conversion, kept to reproduce runs before build 2026-11-05a. Set it before the profiles are first used (solarTrkBasis).
+  solarTrkMeteredBasis:'fleet',
   // Stress windows planned to the standard (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
   // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
   // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
@@ -6174,7 +6194,11 @@ const FIXED = {
   // LP's capex annuity already pays for the cells at the ~1 cycle/day its
   // daily energy constraint permits - full wear here would double-count.
   // Resolved with solver evidence; see the note where it is used.
-  lpCurtailCostR:150, lpBattDischargeCostR:20,
+  // 0 from 5 Nov 2026 (user, message 710 (a), after the test on run (6)): R150 was unsourced and in the LP only (the engine prices no
+  // curtailment), so the two halves did not agree; R150 is a sensitivity (harness CURT_COST=150). On run (6) at 0: wind +2.4 GW and
+  // solar +0.45 GW in 2040, lithium energy -9%, curtailment 26.1 to 32.8 TWh, engine cost +R0.6bn, CO2 -3.7 Mt, the standard held
+  // (RESULTS 'The curtailment price at 0 on run (6)'). Nothing else in the LP was found tuned around it.
+  lpCurtailCostR:0, lpBattDischargeCostR:20,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
@@ -6183,8 +6207,11 @@ const FIXED = {
   // study, R9.53/kWh (Eskom COUE methodology review and 2020 update, NERSA 2022). The
   // COUE of R87.85/kWh (IRP) values short unplanned outages; load shedding is scheduled
   // and partly mitigated, so the lower figure applies. 22 Sep 2026. In constant 2020 prices (Nova Economics for Eskom;
-  // Polity, 20 Jan 2022), used unescalated; the page says so (user, 20 Oct 2026, message 264; audit G1-M11).
-  costUnservedR:9530,
+  // Polity, 20 Jan 2022), used unescalated until 5 Nov 2026 (message 264; audit G1-M11); escalated from then to January 2026 rands
+  // as every other cost (user, message 710 (e); the cost review, finding 5): R9,530 x 1.291, about R12,300/MWh. The build LP prices
+  // shed energy at voll, R87,000/MWh (x 365 on stress days), about 7 times this: there it is a penalty that holds the adequacy
+  // standard, here the economic cost of scheduled load shedding in system cost. Not a price in either.
+  costUnservedR:9530 * CPI_2020_TO_JAN26,
   // Scarcity circuit breaker. ERCOT drops its offer cap from high to low for the rest of the
   // year once cumulative peaker net margin exceeds 3x the cost of new entry; their low cap is
   // 40% of the high one, USD 2,000 against 5,000.
@@ -6466,6 +6493,13 @@ const FIXED = {
   // 5-12% range typically quoted for subcritical coal between MSL and full load.
   // The floor on x stops the curve blowing up as output approaches zero.
   coalPartLoadK:0.10,
+  // Coal's part-load penalty in the build LP (user, 5 Nov 2026, message 713 (a), after the test of 710 (b)): a factor by model year on
+  // coal's fuel and carbon price per MWh (not the 2030 carbon floor, as the engine), standing in for the engine's hourly part-load heat
+  // rate above at that year's mean: the engine's own fuel-weighted mean on run (6)'s build (harness/pathcheck.js coalPartLoad, K=2, all
+  // fifteen years, 5 Nov 2026; RESULTS 'Coal's part-load penalty in the LP on run (6)'). The engine's factor on the build it produces
+  // equals the table to within 0.001. One table for every pathway: a pathway with more part-load running (1.066 on Deep decarbonisation
+  // 2035, the cost review) is understated by 1-2%. Its basis is the curve above, whose constant has no citation (TODO 14na). Null: 1.
+  bldCoalPartLoad:{ 2026: 1.0337, 2027: 1.0357, 2028: 1.0373, 2029: 1.0363, 2030: 1.0431, 2031: 1.0411, 2032: 1.0444, 2033: 1.0465, 2034: 1.0475, 2035: 1.0494, 2036: 1.0507, 2037: 1.0508, 2038: 1.0503, 2039: 1.046, 2040: 1.0435 },
   // ── demand response ──────────────────────────────────────────────────────
   // Two mechanisms, because they are genuinely different products:
   //
@@ -7317,6 +7351,9 @@ function coalFomMult(S, y){
 }
 // The year's coal fuel cost and fixed cost, R/MWh and R/kW-yr: the base escalated, the add-on (state fomCoal above FIXED.fomCoal) flat.
 function coalFuelAt(S, y){ return S.costCoal * coalFuelMult(S, y); }
+// The LP's coal part-load factor in model year y (FIXED.bldCoalPartLoad, message 710 (b)): 1 when unset.
+function bldCoalPartLoadAt(S, y){ const m = S && S.bldCoalPartLoad; if (!m) return 1; const v = m[y] ?? m[String(y)];
+  if (!(v >= 1 && v < 1.5)) throw new Error('bldCoalPartLoad: a factor from 1 to 1.5 for every model year; ' + y + ': ' + v); return +v; }
 function coalFomAt(S, y){ const m = coalFomMult(S, y); return m === 1 ? S.fomCoal : S.fomCoal + FIXED.fomCoal * (m - 1); }
 // Unit commissioning years by UC_FLEET row, in unit order (coalFomAgeOn; user, 2 Nov 2026, message 653 (b); SOURCES 'Coal unit
 // commissioning years'): Global Energy Monitor's station pages and news reports, read as search extracts (to verify against the
@@ -7953,6 +7990,12 @@ function simulate(u, prof, outPath, _soc0){
   const SS_ON = p.ssMode === 'inertia';
   if (SS_ON) p.syncFloorMW = 0;
   const {solar,wind,csp}=prof;
+  // ROOFTOP'S SHAPE (message 707 (a) 1; the data-path review, finding 2). Rooftop PV is fixed on roofs, so its output is a fixed-tilt
+  // shape, and the series it is added back on (the demand file) and removed on (here) must be the same for the same weather. A profile
+  // that carries its own rooftop series (the metered profile: the demand year's fixed tilt, profiles.json roof_pu) removes on it; a
+  // modelled weather year removes on its own fixed-tilt solar, which is the same construction. Before, the metered profile removed on
+  // the metered utility fleet (about half trackers), and the twelve modelled years on fixed tilt against an add-back on that shape.
+  const roofS = (prof.roof && prof.roof.length >= HOURS) ? prof.roof : solar;
   // New wind on the modern-TURBINE profile (bldWindModern): onshore wind's per-unit output blends existing MW on the
   // current profile with new MW on the modern twin. Off, or with no new wind: windU is wind itself.
   const _wModOn = ((p.bldWindModern ?? FIXED.bldWindModern) | 0) > 0 && (p.newWindMW || 0) > 0;
@@ -8010,8 +8053,7 @@ function simulate(u, prof, outPath, _soc0){
   // flatters offshore - it understates energy about 40% and, worse, hands offshore onshore's
   // variability, which is the thing the profile exists to measure. Loud rather than silent:
   // anything reading this fallback should not be quoted.
-  const _offPu = (typeof OFFSHORE_PU !== 'undefined' && OFFSHORE_PU
-                  && OFFSHORE_PU.length === 8760) ? OFFSHORE_PU : null;
+  const _offPu = offshoreSeriesFor(prof);   // each weather year's own (message 707 (a) 3)
   if (offshoreCap > 0 && !_offPu && !simulate._offWarned) {
     simulate._offWarned = true;
     console.warn('[GridTwin] offshore built but nodal/profiles_offshore_regional.json did not '
@@ -8256,8 +8298,10 @@ function simulate(u, prof, outPath, _soc0){
   let _fcDef = null, _fcSur = null;
   const _buildForecast = () => {
     _fcDef = new Float64Array(HOURS); _fcSur = new Float64Array(HOURS);
-    const firm = (typeof coalAvail === 'number' ? coalAvail : 0) + (p.ccgtMW || 0) + (p.newCcgtMW || 0) + (p.newOcgtMW || 0) + (p.newOcgdMW || 0)
-               + Math.max(0, (p.dieselMW || 0) - (p.dieselDecomMW || 0));
+    // Diesel through dieselAvailMW (message 707 (a) 4; the data-path review, finding 5): this read the absent key p.dieselMW, so the
+    // forecast's firm capacity left out the 3,400 MW diesel fleet; dieselAvailMW includes new diesel peakers, counted here before.
+    const firm = (typeof coalAvail === 'number' ? coalAvail : 0) + (p.ccgtMW || 0) + (p.newCcgtMW || 0) + (p.newOcgtMW || 0)
+               + dieselAvailMW(p);
     for (let k = 0; k < HOURS; k++){
       _fcDef[k] = Math.max(0, netLoadPre[k] - firm);
       _fcSur[k] = Math.max(0, -netLoadPre[k]);
@@ -8582,6 +8626,10 @@ function simulate(u, prof, outPath, _soc0){
     const f = (_dMax > _dMin) ? (demandDR[h] - _dMin) / (_dMax - _dMin) : 0.5;
     return _expBase * (1 + (_expPk - 1) * (2 * f - 1));
   };
+  // The series probe (message 707 (c); harness/validate_series.js): with u.__seriesProbe an object, the run records the hourly series it
+  // reads (demand before and after demand response, exports, rooftop, onshore and offshore wind, utility solar, CSP) and stops here.
+  if (u.__seriesProbe){ Object.assign(u.__seriesProbe, { demand, demandDR, exp: Float64Array.from({ length: HOURS }, (_, h) => expAt(h)), roof: roofS,
+    windU, solarU, off: _offPu, csp, growth, demBlock }); return null; }
 
   // Geyser control as a build option (HANDOVER 'Geyser control (and pool pumps) as a VPP build option: design', G3-G4 and G7;
   // messages 633-635 and 641). Off (gyBuildOn 0) none of this runs and load is as before. Each day: the enrolled MW (gyEnrolMW, from
@@ -8639,7 +8687,7 @@ function simulate(u, prof, outPath, _soc0){
     _btmD = new Float64Array(HOURS); _btmPassDis = new Float64Array(Math.floor(HOURS / 24));
     let pChg = 0, pDis = 0;
     for (let d0 = 0; d0 + 24 <= HOURS; d0 += 24){
-      const day = btmPassiveDay(solar.slice(d0, d0 + 24), p.rooftopMW, p.rooftopDerate, usableAll, _btm.powerPerUsable, _btm.eff);
+      const day = btmPassiveDay(roofS.slice(d0, d0 + 24), p.rooftopMW, p.rooftopDerate, usableAll, _btm.powerPerUsable, _btm.eff);   // rooftop's own shape (707 (a) 1)
       if (day.dis > day.chg * _btm.eff + 1e-9) throw new Error('btm profile discharges more than it stored on day ' + d0 / 24);
       for (let k = 0; k < 24; k++) _btmD[d0 + k] = day.d[k] * dU;
       _btmPassDis[d0 / 24] = day.dis;
@@ -8656,7 +8704,7 @@ function simulate(u, prof, outPath, _soc0){
   const netLoadPre=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
     const rawDemand=demandDR[h]*growth + demBlock;
-    const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
+    const rooftopGen=Math.min(rooftopCap*roofS[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h)+(_btmD ? _btmD[h] : 0)+(_gyD ? _gyD[h] : 0);   // firm exports are a load on the SA system; the stock's profile (P3); geyser control (G4)
     // Offshore on its own shape where the profile loaded, onshore's where it did not.
     let windGen=windCap*windU[h] - capeCurtMW*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
@@ -9228,7 +9276,7 @@ function simulate(u, prof, outPath, _soc0){
     // never asked to sit below its own minimum stable level.
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
     const rawDemand=demandDR[h]*growth + demBlock;   // same shaped series the UC saw
-    const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
+    const rooftopGen=Math.min(rooftopCap*roofS[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h)+(_btmD ? _btmD[h] : 0)+(_gyD ? _gyD[h] : 0);   // firm exports are a load on the SA system; the stock's profile (P3); geyser control (G4)
     // Firm export volume, booked 15 Sep 2026. expAt(h) had been added to the load line
     // since 8 Sep and recorded nowhere: 6.62 TWh a year served by the fleet, carrying fuel
@@ -10206,16 +10254,9 @@ function simulate(u, prof, outPath, _soc0){
       }
     }
   }
-  // Transmission adder on new wind + utility PV. Wind always pays it.
-  // Co-located repurposing: if on, new solar+battery can inherit retired-coal connection
-  // points, exempting them from the adder up to a cap = MW of coal decommissioned.
-  // (Solar suits the Highveld coalfields; wind does not, so wind is never exempt.)
-  let pvAdderMW=u.newPvMW;
-  if(u.repurpose){
-    const inheritable=Math.min(p.coalDecomMW, u.newPvMW+u.newBattMW); // connection headroom freed
-    const pvExempt=Math.min(u.newPvMW, inheritable);
-    pvAdderMW=u.newPvMW-pvExempt;
-  }
+  // The grid charge on new build (message 710 (c)): gridChargeR, on the build LP's basis, connections freed by retired coal included.
+  // Until 5 Nov 2026 a tiered regional charge on wind and solar here, with new solar exempt up to the decommissioned coal MW.
+  const _gridR = gridChargeR(u, p);
   // New-BUILD capex, derived not duplicated. Until 19 Sep 2026 this read the flat acap*
   // constants, which hold the same quantity as BLD_COST + BLD_FOM and never learn - so a
   // 2040 build and a 2050 build cost the same in the headline while BLD_COST declined 2.6
@@ -10231,6 +10272,15 @@ function simulate(u, prof, outPath, _soc0){
   // Assumes A linear build-OUT. A real transition is usually back-loaded, which would push
   // the average vintage later and the cost slightly lower, so this is mildly conservative.
   const _vint = 2026 + Math.max(0, (p.scenarioYear ?? 2026) - 2026) / 2;
+  // By vintage where the build schedule is given (message 710 (e); the cost review, finding 4): u.bldVintageMW = { tech: { year: MW } }
+  // (pathcheck, from the run's own schedule) prices each year's build at that year's capex and fixed O&M, as the build LP does (gross
+  // here, net of capacity payments there, as above). Without it, every MW at the midpoint vintage, as before.
+  const _VM = u.bldVintageMW || null;
+  const _vintR = (tech, mw, m) => { const v = _VM[tech]; let s = 0, n = 0;
+    for (const [y, x] of Object.entries(v)) if (x > 0){ s += x * (bldAnnuity(bldCapex(tech, +y), BLD_LIFE[tech], tech) + bldFom(tech, +y, p)) * m; n += x; }
+    if (Math.abs(n - mw) > 0.5) throw new Error('bldVintageMW: ' + tech + "'s vintages sum to " + n + ' MW against ' + mw);
+    return s; };
+  const _useV = tech => !!(_VM && _VM[tech] && typeof BLD_COST !== 'undefined' && BLD_COST[tech]);
   // Open-cycle gas has no acap* fallback: its capex comes through bldCostEntry (which refuses an unset central).
   const acapOc = tech => bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint, p);
   const acapAt = (tech, flat) => (typeof BLD_COST === 'undefined' || !BLD_COST[tech])
@@ -10259,7 +10309,10 @@ function simulate(u, prof, outPath, _soc0){
     _btmOut.vppDischargeMWh = _vDis; _btmOut.vppPassiveDischargeMWh = _vPass; _btmOut.vppIncrementalDischargeMWh = _vInc;
     _btmOut.vppWearR = _vInc * _btm.vppWearRperMWh;
   }
-  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(coalFlexTier(u)>=2?Math.max(0,p.coalInstalledMW-u.coalDecomMW)*coalDeepShare(Math.max(0,p.coalInstalledMW-u.coalDecomMW)):0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000   // tiered regional charge, R/yr
+  // _cap: a technology's new-build capital and fixed O&M, R/kW-yr x MW (x1000 below): by vintage where given, else at the midpoint as before.
+  const _cap = (tech, mw, flat, m) => _useV(tech) ? _vintR(tech, mw, m ?? 1) : (m == null ? mw*acapAt(tech, flat) : mw*(acapAt(tech, flat)*m));
+  const _capOc = (tech, mw) => _useV(tech) ? _vintR(tech, mw, 1) : ((mw||0)>0 ? mw*acapOc(tech) : 0);
+  const newCapexR=(_cap('vrfb',u.newVrfbMW,p.acapVrfb)+_cap('ironair',u.newIronAirMW,p.acapIronAir)+u.newPsMW*p.acapPs+_cap('wind',u.newWindMW,p.acapWind)+_cap('offshore',(u.newOffshoreMW||0),p.acapOffshore)+_cap('pv',u.newPvMW,p.acapPv)+_cap('rooftop',u.newRooftopMW,p.acapRooftop)+_cap('batt',u.newBattMW,p.acapBatt4h,battDurationMult(p.newBattHours))+_cap('ccgt',u.newCcgtMW,p.acapCcgt)+_capOc('ocgt',u.newOcgtMW)+_capOc('ocgd',u.newOcgdMW)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(coalFlexTier(u)>=2?Math.max(0,p.coalInstalledMW-u.coalDecomMW)*coalDeepShare(Math.max(0,p.coalInstalledMW-u.coalDecomMW)):0)*p.acapCoalFlex+_gridR/1000)*1000   // grid charge on the LP's basis (710 (c)), R/yr
     + (_btmOut ? _btmCapR + _btmOut.vppCostR + _btmOut.vppWearR : 0)   // behind-the-meter batteries (P4), the enrolled batteries' cost (V4) and wear (645), when on
     + (_gyOut ? _gyOut.costR : 0);   // geyser control (G6, message 635: R/kW-yr of gross reduction), a grid cost, when on
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
@@ -10272,15 +10325,14 @@ function simulate(u, prof, outPath, _soc0){
   // and installation of transmission assets are line items in it. So the subsea cable is
   // inside BLD_COST.offshore, which is back-solved from that LCOE, and charging it again here
   // would double count. What is not in the LCOE is onshore reinforcement beyond the landing
-  // point, which is why offshore still pays txRateFor at the same rate as onshore wind.
+  // point, which is why offshore pays the integration charge as onshore wind does (gridChargeR, from 5 Nov 2026; until then nothing here).
   //
   // For scale if it is ever wanted: ESMAP Tables 16 and 17 give distance to transmission per
   // sub-area, capacity-weighting to 63.5 km. The full 95 GW is about 6,000 GW-km of
   // connection; 20 GW is about 1,270 GW-km. Our screened points sit further offshore than
   // those sub-area centroids, so treat both as floors.
   const _offMW = (u.newOffshoreMW || 0);
-  const _txCapexR = txChargeFor(u.newWindMW, pvAdderMW, _offMW, p)
-                  + _offMW * (p.offshoreGridRPerKWyr || 0) * 1000;
+  const _txCapexR = _gridR + _offMW * (p.offshoreGridRPerKWyr || 0) * 1000;   // the grid charge (710 (c)), offshore in it as in newCapexR
   // 'hybrid' added 15 Aug 2026: it serves the grid, so excluding it from the
     // denominator while its costs sat in the numerator overstated avgCost ~0.9%.
     const genKeys=['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
@@ -10295,7 +10347,7 @@ function simulate(u, prof, outPath, _soc0){
   // the flat acapRooftop, R1,150/kW-yr, while newCapexR priced it at acapAt('rooftop'), R2,088 in 2026 falling to R1,701 by
   // 2040, so the difference stayed in gridCapexR, avgCost and pathcheck's gridCost: R32.0bn of present value on c5e and
   // R42.7bn on c5f (RESULTS 'Retail panel audit, part 1'). systemCostR (engine PV) and the build LP were right throughout.
-  const btmCapexR = u.newRooftopMW * acapAt('rooftop', p.acapRooftop) * 1000 + _btmCapR;   // with the behind-the-meter batteries' capital when on (P4; 0 off)
+  const btmCapexR = _cap('rooftop', u.newRooftopMW, p.acapRooftop) * 1000 + _btmCapR;   // the same rands as newCapexR's rooftop, vintage included (710 (e))   // with the behind-the-meter batteries' capital when on (P4; 0 off)
   const gridCapexR = newCapexR - btmCapexR;
   // Export revenue. The energy was going to be spilled, so this is incremental
   // revenue rather than avoided cost, and it offsets the system bill directly -
@@ -10512,10 +10564,16 @@ function simulate(u, prof, outPath, _soc0){
   // the expired windows first: what stays out of contract, and pays fixed O&M, is the expired MW not retired.
   const _rRet = reipppRetiredMW(p.scenarioYear ?? 2026, p);
   const _ippLive = (p.reipppFomInPpa ?? FIXED.reipppFomInPpa) ? reipppLiveMW(p.scenarioYear ?? 2026, p, _rRet) : { wind:0, pv:0, csp:0 };
+  // No fixed O&M on Avon and Dedisa in the years otherIppR charges their contract (user, 5 Nov 2026, message 715 (b); a judgement on
+  // indirect evidence, see the RESULTS entry on Avon and Dedisa fixed O&M): the contract charge is taken to cover it, as for REIPPPP below.
+  // From the following year they pay fomDiesel as the rest of the fleet. Out of the fleet (avonDedisaRemoveAfter), nothing to exempt.
+  const _adY = p.scenarioYear ?? 2026;
+  const _adPpaMW = avonDedisaOffMW(p, _adY) > 0 ? 0
+    : ((p.avonMW ?? FIXED.avonMW) + (p.dedisaMW ?? FIXED.dedisaMW)) * avonDedisaContractShare(_adY);
   const fixedOMR =
       _coalOnMW               * (p.fomCoal    ?? FIXED.fomCoal)    * 1000
     + (p.nuclearMW||0)        * (p.fomNuclear ?? FIXED.fomNuclear) * 1000
-    + _dieselOnMW             * (p.fomDiesel  ?? FIXED.fomDiesel)  * 1000
+    + Math.max(0, _dieselOnMW - _adPpaMW) * (p.fomDiesel ?? FIXED.fomDiesel) * 1000
     + (p.ccgtMW||0)           * (p.fomCcgt    ?? FIXED.fomCcgt)    * 1000
     + (p.hydroMW||0)          * (p.fomHydro   ?? FIXED.fomHydro)   * 1000
     + (p.psPowerMW||0)        * (p.fomPs      ?? FIXED.fomPs)      * 1000
@@ -10552,8 +10610,8 @@ function simulate(u, prof, outPath, _soc0){
   // Regional grid reinforcement used to be charged here, on the MW beyond each region's
   // headroom, while every MW also paid the flat TDP-average transmission rate. Both priced the
   // same deep network, so capacity beyond headroom paid twice: R2.1bn a year on Deep
-  // decarbonisation 2035 and R4.7bn on Fossil-free 2040. The tiered charge in txChargeFor now
-  // does the whole job, region by region. 22 Sep 2026.
+  // decarbonisation 2035 and R4.7bn on Fossil-free 2040. The tiered charge in txChargeFor then
+  // did the whole job, region by region (22 Sep 2026); from 5 Nov 2026 gridChargeR, the build LP's flat basis (message 710 (c)).
   const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+otherIppCostR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
   // Supply cost above; system cost adds the economic cost of energy not served, so a run
   // that sheds more cannot look cheaper. 22 Sep 2026.
@@ -10745,7 +10803,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,socPs:_psSocH,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
+  return {E,coalFuelMWh,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,restoreDrMWh:_restoreDrMWh,restoreDieselMWh:_restoreDslMWh,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,socPs:_psSocH,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF, coalCommittedMW, ss:ssOut,
           ...(_btmOut ? { btm: _btmOut } : {}),
           ...(_gyOut ? { geyser: _gyOut } : {}),   // geyser control, when on (messages 633-635)   // behind-the-meter batteries and the enrolled store, when on (messages 621-625)
@@ -11178,7 +11236,7 @@ const BLD_COST = {
   //
   // Cost boundary, agreed by ESMAP Figure 36 and the ATB: array cables, export cable,
   // offshore substation and the spur to the nearest grid feature are inside; onshore
-  // reinforcement is not and is charged via txRateFor.
+  // reinforcement is not and is charged through the integration charge (gridChargeR).
   offshore:{ c2026: 79200, decl:  0.0260 },
   // CCGT. R34,965/kW is USD 2,119 at R16.50, and the decline rate is negative because gas
   // turbine capital is rising: GridLab's September 2025 study of actual project data finds
@@ -11355,6 +11413,10 @@ const BLD_FOM = {
   // Wind and utility solar (user, 14 Oct 2026, message 74): BW6 bids' fixed O&M, R367 (wind) and R269 (solar) per kW-yr in
   // January 2024 rands (IPP Office REIPPPP historical data note, 7 Nov 2025), the same bid set as their capex, in 2026 rands.
   // Was 693 and 396 ('from NREL ATB', edition not recorded). Caveat: what the bid figure includes is not defined.
+  // rooftop, offshore, ccgt: NREL ATB dollars at R16.50, no US CPI (message 710 (f); editions identified 5 Nov 2026 from NREL's ATBe.csv files):
+  // rooftop $30.33/kW-yr, ATB 2023 residential PV, 2021$ ($30 on the ATB page); ccgt $27.94, ATB 2022 NG F-frame CC, 2020$; offshore $85
+  // matches no edition's base year (nearest ATB 2024 fixed-bottom class 3, moderate, 2024: $85.3, 2022$). Unescalated to 2026: about
+  // 20-26% low against US CPI to January 2026 (TODO 14na).
   wind: 367 * CPI_JAN24_TO_JAN26, pv: 269 * CPI_JAN24_TO_JAN26, rooftop: 495, offshore: 1403, ccgt: 462,
   ocgt: FIXED.fomOcgtRkW, ocgd: FIXED.fomOcgtRkW,   // IRP 2025 workbook, 9F.05 (FIXED); the LNG terminal charge (bldFom) adds to ccgt and ocgt, not ocgd
   batt: null,          // computed from capex, see bldFom()
@@ -11393,7 +11455,13 @@ function bldFom(tech, year, S){
 //   of the three lists, taken as January 2024; indexation not stated, taken as fully indexed. At BW6 tracker bids' 30.13%.
 // No BW7 wind tariff has been published (the bids were not awarded; the minister called the prices 'a bit exorbitant').
 // Bid-derived, so connection is included (connIncl). RESULTS 'New wind's capacity factor (45.2%)' sets out the derivation.
-const CPI_APR21_TO_JAN26 = 1.059 * 1.069 * 1.053 * CPI_JAN24_TO_JAN26;
+// April 2021 to January 2022 is 100.2 over 96.7 (Stats SA P0141, headline CPI, December 2021 = 100: January 2022 and April 2022 releases,
+// Table A), 1.036. Until 5 Nov 2026 the link was 1.059, which is April 2021 to April 2022 (user, message 710 (f); the cost review on 57f70df,
+// finding 6; confirmed from the releases' extracts by a research helper, statssa.gov.za not reachable from the session). It moves the
+// condenser capex (ssCondCapexRkVA) down 2.2%, as the link, and the tariff-derived wind capex down 2.66% (R17,773 to R17,301/kW at
+// 37.24%): bldTariffCapex takes fixed O&M off the tariff's revenue before the annuity, which amplifies the link's move (the review of
+// 6 Nov 2026, finding 5; recorded as 2.2% until then).
+const CPI_APR21_TO_JAN26 = (100.2 / 96.7) * 1.069 * 1.053 * CPI_JAN24_TO_JAN26;
 // BW7 solar awards, [project, MW, R/MWh]. DEE, 'REIPPPP Bid Window 7 - List of Successful Bidders' (Dec 2024, eight) and the
 // July 2025 additional bidders list (six), and 'List of Additional Successful Bidders Following Value for Money Proposal
 // Evaluations' (15 Dec 2025, four; VfM price), dbsa.org. Middlepunt reported R458/MWh at financial close (Engineering News,
@@ -11435,7 +11503,10 @@ BLD_COST.pvtrk.c2026 = bldTariffCapex('pvtrk');
 // are kept.
 // Wind re-measured 4 Nov 2026 (build 2026-11-04b): 0.42499 to 0.42006 (0.4200610), the six-constant wind correction on by default
 // (messages 693 (a), 696 (a)). It follows the default: a run with the correction off (WX_WINDCORR=0) keeps this value.
-const NEW_WIND_CF_12Y = 0.42006, NEW_PVTRK_CF_12Y = 0.28595;
+// Tracking solar re-measured 5 Nov 2026 (build 2026-11-05a): 0.28595 to 0.28445 (0.2844466), the PVGIS years converted from the
+// stamped minute to hour means by the sun's height (retime_pvgis.py csi_day, message 704 (a)): 2014-2023 keep each day's energy;
+// the 2024-2025 twins, built from the PVGIS tracking/fixed ratio, change with the ratio now in step with their fixed tilt.
+const NEW_WIND_CF_12Y = 0.42006, NEW_PVTRK_CF_12Y = 0.28445;
 // The same tariffs backed out at these capacity factors, for bldTariffCfBasis 'run' (s_tariffcf, message 158 (4)).
 BLD_COST.wind_runcf = { ...BLD_COST.wind, c2026: bldTariffCapex('wind', NEW_WIND_CF_12Y) };
 BLD_COST.pvtrk_runcf = { ...BLD_COST.pvtrk, c2026: bldTariffCapex('pvtrk', NEW_PVTRK_CF_12Y) };
@@ -11485,12 +11556,26 @@ const FIXED_PV_CF_12Y = 0.22361, LI_REF_CYCLES = 365, DSL_REF_CF = 0.10;
 // panel), so its preset figures match the run checks: demand less rooftopMW x derate x S x (1 - K), hour by hour on 2025's shape,
 // K = FIXED_PV_CF_12Y over S's mean. Single-year runs on 2025's profiles keep the measured series. When roof12.js has already scaled
 // PROFILES.demand in place (PROFILES.roof12Applied), it is used as it stands; FIXED.bldRoof12 0 restores the unscaled series.
-function roofTwelveYearK(){ const S = PROFILES.solar; let m = 0; for (let h = 0; h < S.length; h++) m += S[h]; return FIXED_PV_CF_12Y / (m / S.length); }
+function roofTwelveYearK(){ const S = PROFILES.roof || PROFILES.solar; let m = 0; for (let h = 0; h < S.length; h++) m += S[h]; return FIXED_PV_CF_12Y / (m / S.length); }
+// The offshore series for a profile: the year's own where the wind carries it (weatherYearNational attaches it as wind.off), the
+// metered profile's year where the profile is the page's own (PROFILES.offshoreYear, 2025 unless a test sets another), else the
+// twelve-year average, as before.
+// Defined here, with the engine, not beside OFFSHORE_BY_YEAR's loader: harnesses that load the engine from the page's text up to
+// its start-up code (stress_suite.js) need it (CI failure on 8d0ac66, 6 Nov 2026). It reads its globals through typeof guards.
+function offshoreSeriesFor(prof){
+  if (prof && prof.wind && prof.wind.off && prof.wind.off.length === 8760) return prof.wind.off;
+  if (typeof OFFSHORE_BY_YEAR !== 'undefined' && OFFSHORE_BY_YEAR && typeof PROFILES !== 'undefined' && PROFILES && prof && prof.wind === PROFILES.wind){
+    const y = String(PROFILES.offshoreYear || 2025); if (OFFSHORE_BY_YEAR[y]) return OFFSHORE_BY_YEAR[y]; }
+  return (typeof OFFSHORE_PU !== 'undefined' && OFFSHORE_PU && OFFSHORE_PU.length === 8760) ? OFFSHORE_PU : null;
+}
+// The engine's profile for a modelled weather year, one copy (message 707 (c)): the adequacy test, the weather panel and the risk panels'
+// factory each built it inline; harness/validate_series.js reads the same.
+function wxEngineProfile(nat){ return { demand: twelveYearDemand(), solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true }; }
 var _roof12Cache = null;
 function twelveYearDemand(){
   if (!FIXED.bldRoof12 || PROFILES.roof12Applied) return PROFILES.demand;
   if (_roof12Cache && _roof12Cache.src === PROFILES.demand) return _roof12Cache.out;
-  const S = PROFILES.solar, n = S.length, R = FIXED.rooftopMW * FIXED.rooftopDerate * (1 - roofTwelveYearK()), D = PROFILES.demand, out = new Array(D.length);
+  const S = PROFILES.roof || PROFILES.solar, n = S.length, R = FIXED.rooftopMW * FIXED.rooftopDerate * (1 - roofTwelveYearK()), D = PROFILES.demand, out = new Array(D.length);   // rooftop's own shape (message 707 (a) 1)
   for (let h = 0; h < D.length; h++) out[h] = D[h] - R * S[h % n];
   _roof12Cache = { src: D, out }; return out;
 }
@@ -11541,7 +11626,7 @@ function ironAirOwnCyclingNote(r){
 // Optimiser grid cost, TODO 14ar (7 Oct 2026, user decisions). Until now the build LP charged no grid cost to
 // any technology, while the engine added txRPerKWyr to new wind, solar and offshore afterwards, so the optimiser
 // chose them without it. Each new resource now pays, in the LP:
-//  - the integration charge txRPerKWyr (R402/kW-yr, TDP 2024 generation integration) - every new resource
+//  - the integration charge txRPerKWyr (R364/kW-yr, TDP 2024 generation integration at 7.1%; R402 at 8% until 31 Oct 2026) - every new resource
 //    except storage (bldGridBattHalf: half) and rooftop, which connects to the distribution network;
 //  - a spur from zero distance to its own nearest substation (bldGridSpurBeyond 1: only beyond the median),
 //    sized by connection voltage: wind and solar one 132 kV circuit; pumped hydro and gas two 400 kV circuits
@@ -11674,11 +11759,49 @@ function bldGridCapexKW(tech, S){
 // Annual grid cost in the build LP, R/kW-yr: the connection annuitised plus the integration charge.
 function bldGridAnn(tech, S){
   if (!(S.bldGridCost | 0)) return 0;
+  return bldAnnuity(bldGridCapexKW(tech, S), BLD_GRID.lifeY, 'grid') + bldGridIntegRkW(tech, S);
+}
+// The integration charge in a technology's grid cost, R/kW-yr (txRPerKWyr, the TDP's generation-integration average): wind and utility
+// solar pay bldGridIntVreShare of it, batteries, vanadium and iron-air none (half with bldGridBattHalf), rooftop none (distribution),
+// every other technology all of it. One function for the build LP (bldGridAnn) and the engine (gridChargeR), message 710 (c).
+function bldGridIntegRkW(tech, S){
   const store = (tech === 'batt' || tech === 'vrfb' || tech === 'ironair');
   const vreK = (tech === 'wind' || tech === 'pv') ? +(S.bldGridIntVreShare ?? FIXED.bldGridIntVreShare) : 1;
   if (!(vreK >= 0 && vreK <= 1)) throw new Error('bldGridIntVreShare must be 0-1: ' + vreK);
-  const integ = tech === 'rooftop' ? 0 : store ? (S.bldGridBattHalf ? 0.5 : 0) * S.txRPerKWyr : (vreK === 1 ? S.txRPerKWyr : vreK * S.txRPerKWyr);
-  return bldAnnuity(bldGridCapexKW(tech, S), BLD_GRID.lifeY, 'grid') + integ;
+  return tech === 'rooftop' ? 0 : store ? (S.bldGridBattHalf ? 0.5 : 0) * S.txRPerKWyr : (vreK === 1 ? S.txRPerKWyr : vreK * S.txRPerKWyr);
+}
+// THE ENGINE'S GRID CHARGE ON NEW BUILD, R a year: one basis with the build LP (user, 5 Nov 2026, message 710 (c); the cost review on
+// 57f70df, finding 2). Each technology's new MW pay the LP's grid cost per MW a year: bldGridAnn (connection annuity and integration
+// charge) when the optimiser's grid cost is on, as in every pathway run; otherwise the integration charge alone (bldGridIntegRkW: the
+// flat txRPerKWyr on wind, solar, offshore, gas and pumped storage, none on batteries and rooftop). Less the MW on connections freed by
+// retired coal, each at its own charge: the run's own use where given (u.gridRpMW, by technology, from pathcheck), else, with
+// repurposing on (u.repurpose), the freed coal MW (coalDecomMW) to the technologies the LP lets use them (not rooftop or offshore, not
+// bldRpExclude, a charge above 0), highest charge first, as the LP's optimum does. Less the integration charge on wind under the Cape
+// curtailment allowance (u.gridCapeMW, from pathcheck), as the LP's cw_ credit. Until 5 Nov 2026 the engine charged a regional tiered
+// rate on wind and solar only (txChargeFor), with solar on freed coal sites exempt: R66.7bn of present value on c6e against R87.0bn
+// flat (the review's measurement), and nothing on offshore, gas or pumped storage.
+const GRID_RP_T = ['wind', 'pv', 'batt', 'vrfb', 'ironair', 'ccgt', 'phes'];   // bldBuildLP's RP_T: BLD_TECHS less rooftop, and pumped storage
+function gridChargeR(u, p){
+  const on = (p.bldGridCost | 0) > 0, rate = t => on ? bldGridAnn(t, p) : bldGridIntegRkW(t, p);
+  const mw = { wind: u.newWindMW || 0, pv: u.newPvMW || 0, offshore: u.newOffshoreMW || 0, ccgt: u.newCcgtMW || 0, ocgt: u.newOcgtMW || 0,
+               ocgd: u.newOcgdMW || 0, phes: u.newPsMW || 0, batt: u.newBattMW || 0, vrfb: u.newVrfbMW || 0, ironair: u.newIronAirMW || 0 };
+  const per = {}; let gross = 0;
+  for (const t of Object.keys(mw)){ per[t] = rate(t); gross += mw[t] * per[t]; }
+  let credit = 0, poolMW = 0;
+  if (u.gridRpMW){
+    for (const [t0, m] of Object.entries(u.gridRpMW)){ const t = t0 === 'phel' ? 'phes' : t0;
+      if (!(t in per)) throw new Error('gridRpMW: no engine build for ' + t0);
+      const used = Math.min(m, mw[t]); credit += used * per[t]; poolMW += used; }
+  } else if (u.repurpose){
+    const ex = new Set(p.bldRpExclude || []);
+    let left = Math.max(0, p.coalDecomMW || 0);
+    for (const t of GRID_RP_T.filter(t => !ex.has(t) && per[t] > 0).sort((a, b) => per[b] - per[a])){
+      const used = Math.min(left, mw[t]); credit += used * per[t]; poolMW += used; left -= used; if (!(left > 0)) break; }
+  }
+  const capeMW = Math.min(Math.max(0, u.gridCapeMW || 0), Math.max(0, mw.wind - ((u.gridRpMW && u.gridRpMW.wind) || 0)));
+  const cape = capeMW * bldGridIntegRkW('wind', p);
+  gridChargeR.last = { per, poolMW, capeMW };
+  return (gross - credit - cape) * 1000;
 }
 
 // Build-rate presets, each grounded in something real rather than assumed.
@@ -12078,7 +12201,21 @@ function bldTwelveYearMeansAll(k, trk){
     for (let h = 0; h < nat.wind.length; h++){ w += nat.wind[h]; wn += Math.min(1, k * WM[h]); s += nat.solar[h]; sn += PT[h]; }
     n += nat.wind.length;
   }
-  return (_twelveAllCache[key] = { wind: w / n, windN: wn / n, solar: s / n, solarT: sn / n });
+  return (_twelveAllCache[key] = { wind: w / n, windN: wn / n, solar: s / n, solarT: sn / n, roof: s / n });   // roof: the twelve-year fixed tilt, as solar
+}
+// The existing utility fleet's twelve-year mean as the engine runs it on the modelled years: (1 - x) x each year's fixed tilt + x x its own
+// twin (simulate, message 684 (f)), x the existing fleet's tracker share (message 707 (c)).
+function bldExistPvTwelveYearMean(x){
+  const key = 'exPv|' + x;
+  if (_twelveAllCache[key] !== undefined) return _twelveAllCache[key];
+  let s = 0, n = 0;
+  for (const y of bldWeatherYears.meta.years){
+    const nat = weatherYearNational(String(y)), T = nat.solar.trk;
+    if (!T) throw new Error('bldRepDays clustered: weather year ' + y + " has no tracking twin for the existing fleet's level");
+    for (let h = 0; h < nat.solar.length; h++) s += (1 - x) * nat.solar[h] + x * T[h];
+    n += nat.solar.length;
+  }
+  return (_twelveAllCache[key] = s / n);
 }
 // The factor f with the weighted mean of min(1, f x v) equal to target (wt per element, or 1).
 function bldScaleTo(v, target, wt, what){
@@ -12141,13 +12278,22 @@ function bldRepDaysClustered(n, method, S0){
   const seriesOf = (s, key) => { if (s === 'metered') return PROFILES[key];
     if (!/^[0-9]{4}$/.test(s)) throw new Error("bldRepRefYear must be 'metered', a weather year, or 'wind:<source>,solar:<source>': " + ref);
     const nat = weatherYearNational(s); if (!nat || !nat[key]) throw new Error('bldRepRefYear: weather year ' + s + ' is not loaded'); return nat[key]; };
-  const W0 = seriesOf(src('wind'), 'wind'), P0 = seriesOf(src('solar'), 'solar');
+  const W0 = seriesOf(src('wind'), 'wind'), P0 = seriesOf(src('solar'), 'solar'), OFF0 = offshoreSeriesFor({ wind: W0 });
   const Wm = mod ? windModOf(W0) : W0, Pt = trk ? solarTrkOf(P0) : P0;
   // Per-unit series as the LP uses them, each scaled over the whole year to its twelve-year mean (step 1).
+  // Rooftop's series for the reference (message 707 (a) 1): the metered reference's own (PROFILES.roof), a weather year's fixed tilt.
+  const R0 = (src('solar') === 'metered' && PROFILES.roof) ? PROFILES.roof : P0;
   const base = { wind: Float64Array.from(W0.slice(0, N)), windN: Float64Array.from({ length: N }, (_, i) => Math.min(1, kw * Wm[i])),
-                 solar: Float64Array.from(P0.slice(0, N)), solarT: Float64Array.from(Pt.slice(0, N)) };
+                 solar: Float64Array.from(P0.slice(0, N)), solarT: Float64Array.from(Pt.slice(0, N)), roof: Float64Array.from(R0.slice(0, N)) };
+  // Existing utility solar on a metered reference (message 707 (c); found by harness/validate_series.js): the metered fleet carries its own
+  // trackers (about 55%), so the existing fleet reads the metered series itself, rescaled to that fleet's twelve-year level (the engine's
+  // blend on the modelled years). The blend of fixed tilt and twin (684 (f)) is for a modelled year's fixed tilt; on the metered series it
+  // applied the trackers a second time, as the engine's own rule (x 0 on the metered profile) does not. A set share (a test) keeps the blend.
+  const XS = (src('solar') === 'metered' && (S.bldExistPvTrackShare ?? null) === null) ? (existPvTrackShareAt(S) ?? 0) : 0;
+  const TT = XS > 0 ? { ...T, solarEx: bldExistPvTwelveYearMean(XS) } : T;
+  if (XS > 0) base.solarEx = Float64Array.from(P0.slice(0, N));
   const yr = {};
-  for (const key of Object.keys(base)){ const f = bldScaleTo(base[key], T[key], null, key); yr[key] = base[key].map(v => Math.min(1, f * v)); }
+  for (const key of Object.keys(base)){ const f = bldScaleTo(base[key], TT[key], null, key); yr[key] = base[key].map(v => Math.min(1, f * v)); }
   // Features: 72 values a day, each series normalised 0-1 over the year.
   const nz = a => { let lo = Infinity, hi = -Infinity; for (const v of a){ lo = Math.min(lo, v); hi = Math.max(hi, v); } return a.map(v => hi > lo ? (v - lo) / (hi - lo) : 0); };
   const fd = nz(Float64Array.from(PROFILES.demand.slice(0, N))), fw = nz(yr.windN), fs = nz(yr.solarT);
@@ -12172,14 +12318,17 @@ function bldRepDaysClustered(n, method, S0){
     const v = [], w = [];
     for (const d of reps) if (!E.includes(d)) for (let h = 0; h < 24; h++){ v.push(yr[key][d * 24 + h]); w.push(wt[d]); }
     let ext = 0; for (const e of E) for (let h = 0; h < 24; h++) ext += yr[key][e * 24 + h];
-    const tgt = (T[key] * 365 * 24 - ext) / (365 * 24 - E.length * 24);   // the typical days' weighted mean that makes the year's mean the target
+    const tgt = (TT[key] * 365 * 24 - ext) / (365 * 24 - E.length * 24);   // the typical days' weighted mean that makes the year's mean the target
     const g = bldScaleTo(v, tgt, w, key + ' on the typical days');
     out[key] = d => Array.from({ length: 24 }, (_, h) => E.includes(d) ? yr[key][d * 24 + h] : Math.min(1, g * yr[key][d * 24 + h]));
   }
   const days = reps.map((d, i) => {
     const r = { d, weight: wt[d], prevD: i === 0 ? undefined : reps[i - 1], extreme: E.includes(d), wind: out.wind(d), solar: out.solar(d) };
+    if (OFF0) r.off = Array.from({ length: 24 }, (_, h) => OFF0[d * 24 + h]);
+    r.roof = out.roof(d);   // rooftop's own series (message 707 (a) 1)   // offshore of the reference wind's year, unscaled (message 707 (a) 3)
     if (mod) r.windMod = out.windN(d).map(v => v / kw);   // the LP takes min(1, kw x windMod)
     if (trk) r.solarTrk = out.solarT(d);
+    if (XS > 0) r.solarEx = out.solarEx(d);   // the existing fleet's own series (707 (c))
     return r;
   });
   days.map365 = map;
@@ -12195,7 +12344,7 @@ function bldRepDays(n, opt){
       const i = d*24 + h;
       load += PROFILES.demand[i];
       wind += PROFILES.wind[i];
-      const net = PROFILES.demand[i] - 4000*PROFILES.solar[i] - 3600*PROFILES.wind[i];
+      const net = PROFILES.demand[i] - FIXED.pvUtilityMW*PROFILES.solar[i] - FIXED.windMW*PROFILES.wind[i];   // today's fleet, not a typed 4,000 and 3,600 MW (message 707 (e))
       netLoad += net;                                   // daily total, for rolling windows
       netPeak = Math.max(netPeak, net);                 // worst single hour
     }
@@ -12284,7 +12433,7 @@ function bldRepDays(n, opt){
         let v = 0;
         for (let h = 0; h < 24; h++){
           const i = d*24 + h;
-          v += PROFILES.demand[i] - 4000*nat.solar[i] - 3600*nat.wind[i];
+          v += PROFILES.demand[i] - FIXED.pvUtilityMW*nat.solar[i] - FIXED.windMW*nat.wind[i];   // today's fleet (message 707 (e))
         }
         net.push(v);
       }
@@ -12313,6 +12462,7 @@ function bldRepDays(n, opt){
           solar: Array.from({length:24}, (_, h) => nat.solar[cal*24 + h]),
           ...(nat.solar.trk ? { solarTrk: Array.from({length:24}, (_, h) => nat.solar.trk[cal*24 + h]) } : {}),
           ...(nat.wind.mod ? { windMod: Array.from({length:24}, (_, h) => nat.wind.mod[cal*24 + h]) } : {}),
+          ...(offshoreSeriesFor(nat) ? { off: Array.from({length:24}, (_, h) => offshoreSeriesFor(nat)[cal*24 + h]) } : {}),
           wind:  Array.from({length:24}, (_, h) => nat.wind[cal*24 + h]),
         });
       }
@@ -12326,6 +12476,7 @@ function bldRepDays(n, opt){
           solar: Array.from({length:24}, (_, h) => best.nat.solar[cal*24 + h]),
           ...(best.nat.solar.trk ? { solarTrk: Array.from({length:24}, (_, h) => best.nat.solar.trk[cal*24 + h]) } : {}),
           ...(best.nat.wind.mod ? { windMod: Array.from({length:24}, (_, h) => best.nat.wind.mod[cal*24 + h]) } : {}),
+          ...(offshoreSeriesFor(best.nat) ? { off: Array.from({length:24}, (_, h) => offshoreSeriesFor(best.nat)[cal*24 + h]) } : {}),
           wind:  Array.from({length:24}, (_, h) => best.nat.wind[cal*24 + h]),
         });
       }
@@ -12644,7 +12795,7 @@ function bldBuildLP(opts){
   const _btmDays = new Map(), _btmDis = new Map();
   const btmDay = (y, r) => { const key = y + '_' + r.d; if (_btmDays.has(key)) return _btmDays.get(key);
     const b = BTM_Y[y], sol = [];
-    for (let h = 0; h < 24; h++) sol.push(r.solar ? r.solar[h] : PROFILES.solar[(r.dem !== undefined ? r.dem : r.d)*24 + h]);
+    for (let h = 0; h < 24; h++) sol.push(r.roof ? r.roof[h] : r.solar ? r.solar[h] : (PROFILES.roof || PROFILES.solar)[(r.dem !== undefined ? r.dem : r.d)*24 + h]);   // rooftop's own shape (707 (a) 1)
     const pd = btmPassiveDay(sol, EX.rooftop, S.rooftopDerate, b.use * b.C * 1000, b.powerPerUsable, b.eff);
     _btmDays.set(key, pd.d); _btmDis.set(key, pd.dis); return pd.d; };
   const btmDayDis = (y, r) => { btmDay(y, r); return _btmDis.get(y + '_' + r.d); };
@@ -12782,7 +12933,7 @@ function bldBuildLP(opts){
       if (e > 0){ obj.push((S.costImports * df).toFixed(3) + ' imp_' + y); IMP_MWH[y] = e; } }
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       const k = y + '_' + r.d + '_' + h;
-      obj.push(((coalFuelAt(S, y) + S.vomCoal + (coalCarbonFloorR(S, y) ?? CARBON_AT(y)*EMIS_COAL))*wObj(r)*df).toFixed(3) + ' gc_' + k);   // coal fuel by year (653); carbon at the floor to 2030 when set (657)
+      obj.push(((coalFuelAt(S, y)*bldCoalPartLoadAt(S, y) + S.vomCoal + (coalCarbonFloorR(S, y) ?? CARBON_AT(y)*EMIS_COAL*bldCoalPartLoadAt(S, y)))*wObj(r)*df).toFixed(3) + ' gc_' + k);   // part-load factor 1 unless set (710 (b)), as the engine: the floor not scaled   // coal fuel by year (653); carbon at the floor to 2030 when set (657)
       if (COMMIT_SU_Y[y] > 0) obj.push((COMMIT_SU_Y[y]*wObj(r)*df).toFixed(3) + ' su_' + k);
       obj.push(((bldGasFuelR(opts, y, S) + S.vomCcgt + CARBON_AT(y)*EMIS_CCGT)*wObj(r)*df).toFixed(3) + ' gg_' + k);
       obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*wObj(r)*df).toFixed(3) + ' gd_' + k);
@@ -13033,6 +13184,9 @@ function bldBuildLP(opts){
     if (CUMV) return up.map(v => ' + ' + c.toFixed(5) + ' ' + v).join('') + base.map(v => ' - ' + c.toFixed(5) + ' ' + v).join('');
     const bs = new Set(base); return up.filter(v => !bs.has(v)).map(v => ' + ' + c.toFixed(5) + ' ' + v).join('');
   }).join('');
+  // The series probe (message 707 (c); harness/validate_series.js): with opts.__seriesProbe = { years: [...], rows: [] }, every hour of the
+  // named years records the per-unit series this LP reads, so the check can set them beside the engine's for the same day and hour.
+  const SPROBE = opts.__seriesProbe || null;
   for (const y of Y){
     const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
     // The year's coal availability (coalEafByYear, message 618/619), else opts.eaf; the year's existing wind, utility solar and CSP,
@@ -13050,6 +13204,14 @@ function bldBuildLP(opts){
     if (SSI && !['ratio', 'commit'].includes(SS_BASIS)) throw new Error("ssCoalBasis must be 'ratio' or 'commit': " + SS_BASIS);
     if (SSI && SS_BASIS === 'commit' && !COMMIT_ON) throw new Error("ssCoalBasis 'commit' needs bldCoalCommit (the LP's committed coal cm_)");
     const SS_COMMIT = SSI && SS_BASIS === 'commit';
+    // Existing CSP on the engine's own series (message 707 (a) 2; the data-path review, finding 4): the profile's CSP (Eskom's shape, as
+    // simulate reads it, cspMW x csp), at the representative day's calendar hour, in place of a flat 0.38 that counted 0.48 TWh a year
+    // and 228 MW at 04:00 the engine does not have.
+    if (!(PROFILES.csp && PROFILES.csp.length >= 8760)) throw new Error('bldBuildLP: the CSP profile (csp_pu in profiles.json) is missing; the LP reads the engine\'s CSP series');
+    const CSP_PU = i => PROFILES.csp[i % PROFILES.csp.length];
+    // Offshore on the day's own weather year (message 707 (a) 3): a day carrying its series (r.off: tail, stress and clustered days) reads
+    // it; a calendar day reads the metered profile's year.
+    const OFF_REF = OFF_ON ? offshoreSeriesFor({ wind: PROFILES.wind }) : null;
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
@@ -13060,31 +13222,48 @@ function bldBuildLP(opts){
       // A tail day from another weather year carries its own shapes; a calendar day reads the
       // default profile. Same index arithmetic for demand either way.
       const sp = r.solar ? r.solar[h] : PROFILES.solar[i];
+      // Rooftop's shape (message 707 (a) 1): the day's own rooftop series where it carries one (clustered days), the day's fixed tilt on
+      // a tail or stress day, the demand year's rooftop series (PROFILES.roof) on a calendar day; as the engine removes it.
+      const spR = r.roof ? r.roof[h] : r.solar ? r.solar[h] : (PROFILES.roof ? PROFILES.roof[i] : PROFILES.solar[i]);
       // New utility solar's per-unit output: the tracking twin when bldPvTracking is on (TODO 14aw), else sp.
       const spN = !TRK_ON ? sp : r.solar ? (r.solarTrk ? r.solarTrk[h] : (() => { throw new Error('tracking on: a representative day has no tracking solar'); })())
                                        : solarTrkOf(PROFILES.solar)[i];
       // The existing fleet's tracking series on the day (message 684 (f)): the day's own twin where it carries its series, else the metered
       // profile's twin (only where a test share is set); unused at a share of 0.
       const spX = _xtrk(r) > 0 ? (r.solar ? (r.solarTrk ? r.solarTrk[h] : sp) : solarTrkOf(PROFILES.solar)[i]) : sp;
+      // Existing utility solar (message 707 (c)): a clustered day on the metered reference carries the metered fleet's own series (r.solarEx),
+      // which already holds its trackers; every other day, the blend of fixed tilt and the day's twin (684 (f)).
+      const spE = r.solarEx ? r.solarEx[h] : (1 - _xtrk(r))*sp + _xtrk(r)*spX;
       const wp = r.wind  ? r.wind[h]  : PROFILES.wind[i];
       // New wind's per-unit output: the modern-turbine twin when bldWindModern is on, else wp.
       const wpN = !WMOD_ON ? wp : Math.min(1, WMOD_K * (r.wind ? (r.windMod ? r.windMod[h] : (() => { throw new Error('modern wind on: a representative day has no modern-turbine wind'); })())
                                       : windModOf(PROFILES.wind)[i]));
+      const offPu = OFF_ON ? (r.off ? r.off[h] : OFF_REF[i % 8760]) : 0;   // offshore's per-unit output on the day (707 (a) 3)
       // Availability from the engine'S own keys, 2 Oct 2026. This line hardcoded nuclear 0.9,
       // hydro 0.5 and imports 0.9 while the engine reads nuclearCF (0.66, Koeberg's record),
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = NUC(y)*AV_NUC*NUC_SH(i) + EX.hydro*AV_HYD + IMP(y)*AV_IMP
-                  + exWind*wp*AVW(h) + exPv*((1 - _xtrk(r))*sp + _xtrk(r)*spX)*AVP(h) + EX.rooftop*sp*AV_ROOF + exCsp*0.38;
+                  + exWind*wp*AVW(h) + exPv*spE*AVP(h) + EX.rooftop*spR*AV_ROOF + exCsp*CSP_PU(i);
+      // With each hour's series, the parts of the balance row that are not series (review of 6 Nov, finding 2): the check rebuilds the row's
+      // right-hand side and its wind, solar, rooftop and offshore coefficients from these and the series, and reads both from the LP text.
+      if (SPROBE && SPROBE.years.includes(y)){
+        if (!SPROBE.cols) SPROBE.cols = {};
+        if (!SPROBE.cols[y]) SPROBE.cols[y] = { wind: cum('wind', y), pv: cum('pv', y), roof: cum('rooftop', y), off: OFF_ON ? cumOff(y) : [] };
+        SPROBE.rows.push({ y, d: r.d, h, i, k, kind: r.stress ? 'stress' : r.tail ? 'tail' : r.solar ? 'clustered' : 'calendar',
+          year: r.year ?? null, dem0: PROFILES.demand[i], exp: expAtLP(i), sp, spE, spR, spN, spX, x: _xtrk(r), wp, wpN, csp: CSP_PU(i), off: OFF_ON ? offPu : null,
+          part: { dg, dBlk, nuc: NUC(y) * AV_NUC * NUC_SH(i), hyd: EX.hydro * AV_HYD, imp: IMP(y) * AV_IMP, exWind, exPv, exRoof: EX.rooftop, exCsp,
+                  avw: AVW(h), avp: AVP(h), avRoof: AV_ROOF, btm: BTM_ON ? btmDay(y, r)[h] * BTM_Y[y].use * (BTM_Y[y].C - BTM_Y[y].C0) * 1000 : 0 } });
+      }
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
         + ' + ' + cum('wind',y).map(v => (wpN*AVW(h)).toFixed(4)+' '+v).join(' + ')
         + (CAPE_MW > 0 ? Y.filter(yy => yy <= y).map(yy => ' - ' + (CAPE_CURT*wpN*AVW(h)).toFixed(4) + ' cw_' + yy).join('') : '')
         + ' + ' + cum('pv',y).map(v => (spN*AVP(h)).toFixed(4)+' '+v).join(' + ')
-        + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
-        + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AVW(h)).toFixed(4)+' '+v).join(' + ') : '')
+        + ' + ' + cum('rooftop',y).map(v => (spR*AV_ROOF).toFixed(4)+' '+v).join(' + ')
+        + (OFF_ON ? ' + ' + cumOff(y).map(v => (offPu*AVW(h)).toFixed(4)+' '+v).join(' + ') : '')
         // Enrolled batteries out of the passive profile (message 637): + profile x 0.75 x E on the left, E = vppp x 2.5 h.
         + (VPP_ON ? lpTerm(btmDay(y, r)[h] * BTM_Y[y].use * VPP_HN, 'vppp_' + y, 6) : '')
         // Geyser control (G3): load taken off and returned.
@@ -13274,14 +13453,16 @@ function bldBuildLP(opts){
     // weight scaling them to a full year, so the same weights used in the
     // objective give annual tonnes here. Applied to the final year only: the NDC
     // is a 2030 target, and constraining every intermediate year would impose a
-    // trajectory the target itself does not specify. carbonCapFromYear (user, 31 Oct 2026, message 531 (b)): set, the cap binds
+    // trajectory the target itself does not specify. Coal's emissions carry the part-load factor, as its carbon price in the objective and
+    // the engine's CO2 on fuel-equivalent MWh (message 726 (d); the review of 6 Nov 2026, finding 1); a factor of 1 leaves the row as before.
+    // carbonCapFromYear (user, 31 Oct 2026, message 531 (b)): set, the cap binds
     // in that year and every later one, one row per year (co2cap_<y>); unset, the final year only, as before.
     const CAP_FROM = S.carbonCapFromYear || 0;
     if (CAP_ON && (CAP_FROM ? y >= CAP_FROM : y === Y[Y.length - 1])){
       const capTerms = [];
       for (const r of rdY(y)) for (let h = 0; h < 24; h++){
         const kk = y + '_' + r.d + '_' + h;
-        capTerms.push((EMIS_COAL   * r.weight).toFixed(6) + ' gc_' + kk);
+        capTerms.push((EMIS_COAL   * bldCoalPartLoadAt(S, y) * r.weight).toFixed(6) + ' gc_' + kk);   // part-load factor as the objective's carbon (review of 6 Nov, finding 1)
         capTerms.push((EMIS_CCGT   * r.weight).toFixed(6) + ' gg_' + kk);
         capTerms.push((EMIS_DIESEL * r.weight).toFixed(6) + ' gd_' + kk);
         if (OCGT_ON) capTerms.push((EMIS_OCGT * r.weight).toFixed(6) + ' go_' + kk);
@@ -13695,7 +13876,7 @@ function bldAdequacyTest(st, draws){
     const nat = weatherYearNational(String(y));
     if (!nat) continue;
     const stk = K > 1 ? { ...st, outageSeed: 20260816 + k * 104729 + y * 7919 } : st;
-    const r = simulate(stk, { demand: twelveYearDemand(), solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+    const r = simulate(stk, wxEngineProfile(nat));
     const gwh = (r.E.unserved || 0) / 1000;
     // The standard's demand: customer demand without storage charging by default (bldAdequacyBasis, 12 Oct 2026).
     const _cust = (st.bldAdequacyBasis ?? FIXED.bldAdequacyBasis) !== 'withCharging';
@@ -15798,12 +15979,12 @@ async function buildTxCurve(){
 //   within today's GCCA headroom      TX_SHALLOW x base: a bay, a transformer, a short line.
 //                                     The deep network already exists.
 //   within headroom the TDP builds    base x the region's distance multiplier. This is what
-//                                     the TDP's R402/kW-yr average buys, and tdpConfidencePct
+//                                     the TDP's R364/kW-yr average buys, and tdpConfidencePct
 //                                     decides how much of it arrives.
 //   beyond both                       TX_BEYOND x that. New corridors past the published plan.
 //                                     A judgement, not a published figure.
 //
-// Solar on retired-coal sites is exempt upstream (pvAdderMW), so it never reaches this.
+// From 5 Nov 2026 (message 710 (c)) the engine charges gridChargeR, the build LP's flat basis; these tiers price the siting panel only.
 const TX_SHALLOW = 0.25, TX_BEYOND = 1.5;
 // One region's allocation, split across the three tiers. The engine calls it for every region
 // and the siting panel calls it for the one the user picked, so both price a megawatt the same
@@ -15937,24 +16118,10 @@ function txChargeFor(windMW, pvMW, offMW, p){
   charge('solar', pvMW || 0);
   return cost;
 }
-// Superseded by txChargeFor above and kept only for the regional multipliers it reads from
-// bldTxCurve; nothing calls it. Delete with the curve if that goes.
-function txRateFor(newMW, baseRate){
-  // Flat from 22 Sep 2026. The curve filled cheapest headroom first whatever the technology,
-  // so new wind was priced as if it could connect in Gauteng at a quarter of the average. The
-  // TDP average already reflects where the TDP expects generation to be sited. The national
-  // sliders have no location; the curve below is kept for a located build and is not used here.
-  return baseRate;
-  if (!bldTxCurve || !(newMW > 0)) return baseRate;
-  let left = newMW, cost = 0;
-  for (const r of bldTxCurve.rows){
-    if (left <= 0) break;
-    const take = Math.min(left, r.headroomMW);
-    cost += take * baseRate * r.mult; left -= take;
-  }
-  if (left > 0) cost += left * baseRate * bldTxCurve.rows[bldTxCurve.rows.length - 1].mult;
-  return cost / newMW;
-}
+// txRateFor removed 5 Nov 2026 (message 710 (c); the cost review on 57f70df): nothing called it, and its comment said the curve was
+// retired on 22 Sep and the national model flat; it was not. txChargeFor above charged a tiered regional rate in the engine (a quarter
+// of txRPerKWyr into existing headroom, the distance multiplier into TDP headroom, 1.5 times it beyond) until 5 Nov 2026, when the
+// engine moved to gridChargeR, the build LP's flat basis. txChargeFor and txTierCharge remain for the siting panel.
 
 // ── two-pass price-taker dispatch ───────────────────────────────────────────
 // Runs simulate() twice. Pass one produces the hourly marginal price with the gate
@@ -16042,44 +16209,69 @@ let bldSolarTrk = null, SOLAR_TRK_G = null, SOLAR_TRK_ERR = null;
 // From the map file at start-up (metered_scale, written by harness/solar_trk_k.js); solarTrkMeteredK recomputes it when the weather
 // years load and the page stops if the two disagree.
 let SOLAR_TRK_K = null;
-function setSolarTrkK(k, source){
-  if (!(Number.isFinite(k) && k > 0)) throw new Error('solar tracking metered scale from ' + source + ' is not a positive number');
-  if (SOLAR_TRK_K !== null){
-    const d = Math.abs(k - SOLAR_TRK_K) / SOLAR_TRK_K;
-    if (d > 1e-9){ SOLAR_TRK_ERR = 'solar tracking metered scale disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun harness/solar_trk_k.js --write';
-      SOLAR_TRK_K = null; throw new Error(SOLAR_TRK_ERR); }
+// The metered twin's basis (user decision, 4 Nov 2026, message 701 (a): the fixed-to-tracking conversion is a fault, fixed here).
+// 'fleet', the default: the metered fleet x (modelled tracking / the modelled fleet mix, (1 - X) fixed tilt + X tracking, X existing
+// solar's tracker share on the modelled years, existPvTrackShareAt at the defaults), by month and hour, scaled to the twelve-year
+// tracking mean. 'fixed': the earlier conversion (modelled tracking / fixed tilt), which applied a fixed-to-tracker gain to a fleet
+// already about half on trackers and gave a twin peaking at 08:00 with a midday dip and 4.7% of hours clipped (RESULTS 'The metered
+// tracking twin is misshapen'); kept to reproduce runs before build 2026-11-05a. SOLAR_TRK_MAPS holds both bases' map and scale;
+// SOLAR_TRK_G and SOLAR_TRK_K are the active pair (applySolarTrkBasis), which solarTrkOf and the worker read.
+let SOLAR_TRK_MAPS = { fixed: { G: null, K: null }, fleet: { G: null, K: null } };
+function solarTrkBasis(){
+  const b = (typeof state !== 'undefined' && state && state.solarTrkMeteredBasis != null) ? state.solarTrkMeteredBasis : FIXED.solarTrkMeteredBasis;
+  if (b !== 'fleet' && b !== 'fixed') throw new Error('solarTrkMeteredBasis must be fleet or fixed: ' + b);
+  return b;
+}
+// Points SOLAR_TRK_G and SOLAR_TRK_K at the chosen basis and drops a metered twin already derived on the other one.
+function applySolarTrkBasis(){
+  const M = SOLAR_TRK_MAPS[solarTrkBasis()];
+  if (SOLAR_TRK_G !== M.G || SOLAR_TRK_K !== M.K){
+    SOLAR_TRK_G = M.G; SOLAR_TRK_K = M.K;
+    if (typeof PROFILES !== 'undefined' && PROFILES && PROFILES.solar && PROFILES.solar.trk && !PROFILES.solar.trkOwn) delete PROFILES.solar.trk;
+  }
+}
+function setSolarTrkK(k, source, basis = 'fixed'){
+  if (!(Number.isFinite(k) && k > 0)) throw new Error('solar tracking metered scale (' + basis + ') from ' + source + ' is not a positive number');
+  const M = SOLAR_TRK_MAPS[basis];
+  if (M.K !== null){
+    const d = Math.abs(k - M.K) / M.K;
+    if (d > 1e-9){ SOLAR_TRK_ERR = 'solar tracking metered scale (' + basis + ') disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun harness/solar_trk_k.js --write';
+      M.K = null; applySolarTrkBasis(); throw new Error(SOLAR_TRK_ERR); }
     return;
   }
-  SOLAR_TRK_K = k;
+  M.K = k; applySolarTrkBasis();
 }
-// The scale k that puts the metered profile's twin, min(1, k x solar x SOLAR_TRK_G), at the twelve modelled years' mean tracking output
-// (each year's own PVGIS twin, as weatherYearNational builds it). Bisection on the clipped mean, to 1e-13.
-function solarTrkMeteredK(){
-  if (!SOLAR_TRK_G || !bldWeatherYears || !bldSolarTrk) return null;
+// The scale k that puts the metered profile's twin, min(1, k x solar x the basis's map), at the twelve modelled years' mean tracking
+// output (each year's own twin, as weatherYearNational builds it). Bisection on the clipped mean, to 1e-13.
+function solarTrkMeteredK(basis = solarTrkBasis()){
+  const G = SOLAR_TRK_MAPS[basis].G;
+  if (!G || !bldWeatherYears || !bldSolarTrk) return null;
   let s = 0, n = 0;
   for (const y of bldWeatherYears.meta.years){ const nat = weatherYearNational(String(y)); if (!nat || !nat.solar.trk) return null;
     for (let h = 0; h < HOURS; h++) s += nat.solar.trk[h]; n += HOURS; }
   const target = s / n, P = PROFILES.solar, raw = new Float64Array(HOURS);
-  for (let h = 0; h < HOURS; h++) raw[h] = P[h] * SOLAR_TRK_G[hourMonth(h)][h % 24];
+  for (let h = 0; h < HOURS; h++) raw[h] = P[h] * G[hourMonth(h)][h % 24];
   const meanAt = k => { let m = 0; for (let h = 0; h < HOURS; h++) m += Math.min(1, k * raw[h]); return m / HOURS; };
   let lo = 0, hi = 4; if (meanAt(hi) < target) throw new Error('solar tracking metered scale: no k reaches the twelve-year mean');
   while (hi - lo > 1e-13){ const mid = (lo + hi) / 2; if (meanAt(mid) < target) lo = mid; else hi = mid; }
   return (lo + hi) / 2;
 }
-// The national map arrives at start-up from nodal/profiles_solar_tracking_map.json (build_solar_tracking.py, as for the
-// modern-wind map), so a preset with tracking solar runs before the weather years load (18 Oct 2026, build 2026-10-17i);
-// when the full files load, bldBuildSolarTrkRatio recomputes it and the page stops if the two disagree.
-function setSolarTrkMap(G, source){
-  if (!Array.isArray(G) || G.length !== 12 || G.some(r => !r || r.length !== 24)) throw new Error('solar tracking map from ' + source + ' is not 12 months x 24 hours');
-  if (SOLAR_TRK_G){
+// The national maps arrive at start-up from nodal/profiles_solar_tracking_map.json ('map', the fixed basis, by build_solar_tracking.py;
+// 'map_fleet' with its scale, by harness/solar_trk_k.js), so a preset with tracking solar runs before the weather years load (18 Oct
+// 2026, build 2026-10-17i); when the full files load, bldBuildSolarTrkRatio recomputes both and the page stops if either disagrees.
+function setSolarTrkMap(G, source, basis = 'fixed'){
+  if (!Array.isArray(G) || G.length !== 12 || G.some(r => !r || r.length !== 24)) throw new Error('solar tracking map (' + basis + ') from ' + source + ' is not 12 months x 24 hours');
+  const M = SOLAR_TRK_MAPS[basis];
+  if (M.G){
     let d = 0;
-    for (let m = 0; m < 12; m++) for (let hh = 0; hh < 24; hh++) d = Math.max(d, Math.abs(G[m][hh] - SOLAR_TRK_G[m][hh]) / Math.max(1e-9, Math.abs(SOLAR_TRK_G[m][hh])));
-    if (d > 1e-9){ SOLAR_TRK_G = null;
-      SOLAR_TRK_ERR = 'solar tracking map disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun build_solar_tracking.py with MAP_ONLY=1';
+    for (let m = 0; m < 12; m++) for (let hh = 0; hh < 24; hh++) d = Math.max(d, Math.abs(G[m][hh] - M.G[m][hh]) / Math.max(1e-9, Math.abs(M.G[m][hh])));
+    if (d > 1e-9){ M.G = null; applySolarTrkBasis();
+      SOLAR_TRK_ERR = 'solar tracking map (' + basis + ') disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun '
+        + (basis === 'fixed' ? 'build_solar_tracking.py with MAP_ONLY=1' : 'harness/solar_trk_k.js --write');
       throw new Error(SOLAR_TRK_ERR); }
     return;
   }
-  SOLAR_TRK_G = G.map(r => Array.from(r));
+  M.G = G.map(r => Array.from(r)); applySolarTrkBasis();
 }
 const _MSTART_H = [0,31,59,90,120,151,181,212,243,273,304,334].map(d => d * 24);
 function hourMonth(h){ let m = 11; while (m > 0 && h < _MSTART_H[m]) m--; return m; }
@@ -16097,9 +16289,12 @@ function bldBuildSolarTrkRatio(){
       const m = hourMonth(h); num[m][h % 24] += w * T[y][h] / st; den[m][h % 24] += w * F[y][h] / sc;
     }
   }
-  setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1)), 'the series');
-  // The metered scale, checked against the map file's, where the measured profile is loaded (the worker skips it: the page checks).
-  if (typeof _profilesReal !== 'undefined' && _profilesReal){ const k = solarTrkMeteredK(); if (k !== null) setSolarTrkK(k, 'the series'); }
+  setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1)), 'the series', 'fixed');
+  // The fleet basis (message 701 (a)): tracking over the fleet's own mix, X at the defaults.
+  const X = existPvTrackShareAt(FIXED);
+  if (X !== null) setSolarTrkMap(num.map((r, m) => Array.from(r, (v, hh) => { const f = (1 - X) * den[m][hh] + X * v; return f > 1e-9 ? v / f : 1; })), 'the series', 'fleet');
+  // The metered scales, checked against the map file's, where the measured profile is loaded (the worker skips it: the page checks).
+  if (typeof _profilesReal !== 'undefined' && _profilesReal) for (const b of ['fixed', 'fleet']){ const k = solarTrkMeteredK(b); if (k !== null) setSolarTrkK(k, 'the series', b); }
 }
 // Modern-TURBINE wind (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
 // current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
@@ -16283,7 +16478,8 @@ function weatherYearNational(year){
     if (s){ const f = (bldWxWeights.solar[R] || 0) / ts / sc;
       for (let h = 0; h < HOURS; h++) solar[h] += s[h]*f; }
   }
-  for (let h = 0; h < HOURS; h++){ wind[h] /= tw; solar[h] /= tw; }
+  // (Removed 5 Nov 2026, message 707 (e): a second division here, the wind by its weight total again and the solar by the wind's; a no-op
+  // while every region carries every year (the totals are 1), wrong the day one is missing.)
   // Tracking twin on the same weights (TODO 14aw), carried on the array so every caller passing nat.solar has it.
   if (bldSolarTrk && bldSolarTrk.solar_trk_pu){
     const trk = new Float64Array(HOURS), st = bldSolarTrk.scale || 1;
@@ -16312,8 +16508,11 @@ function weatherYearNational(year){
     // Its modern-turbine twin from the map now, as the engine's windModOf would later: the LP's tail and extreme days read wind.mod
     // directly (build 2026-11-03d; before it, a corrected run with modern wind on stopped at 'a representative day has no modern-turbine wind').
     if (wind.mod) windModOf(c);
+    if (typeof OFFSHORE_BY_YEAR !== 'undefined' && OFFSHORE_BY_YEAR && OFFSHORE_BY_YEAR[String(year)]) c.off = OFFSHORE_BY_YEAR[String(year)];
     return { wind: c, solar };
   }
+  // The year's own offshore series, carried on the array like wind.mod (message 707 (a) 3).
+  if (typeof OFFSHORE_BY_YEAR !== 'undefined' && OFFSHORE_BY_YEAR && OFFSHORE_BY_YEAR[String(year)]) wind.off = OFFSHORE_BY_YEAR[String(year)];
   return { wind, solar };
 }
 
@@ -16349,8 +16548,7 @@ async function runWeatherSpread(){
   for (const y of d.meta.years){
     const nat = weatherYearNational(String(y));
     if (!nat) continue;
-    const prof = { demand: twelveYearDemand(), solar: nat.solar, wind: nat.wind,
-                   csp: PROFILES.csp, real: true };
+    const prof = wxEngineProfile(nat);
     const res = simulate(state, prof);
     const gen = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel']
       .reduce((a,k) => a + (res.E[k]||0), 0);
@@ -19419,8 +19617,8 @@ function renderRetail(){
     + `lines and the tariffs are 2026/27, fuel and new build 2026. The comparison holds today's tariff flat in real terms and that is `
     + `<strong>generous to the status quo</strong>: NERSA has already approved 8.76% and 8.83% `
     + `against a 3% inflation target, and the CSIR measures 4.6% a year real over 2014&ndash;25. `
-    + `The new-grid line is the engine's tiered connection charge on new wind and solar, at the `
-    + `Transmission Development Plan's generation-integration average. Homeflex is shown at its own seasonal `
+    + `The new-grid line is the build optimiser's grid charge on new wind, solar, offshore, gas and pumped storage, at the `
+    + `Transmission Development Plan's generation-integration average, less connections freed by retired coal. Homeflex is shown at its own seasonal `
     + `rates. Level carries about 10%.</span>`;
 
   const cv = document.getElementById('retChart');
@@ -20396,7 +20594,7 @@ const SLIDERS=[
    // called it in 252 hours of 2025, peaking at 1,021 MW (Eskom data, analysis ours).
    note:'Contracted industrial load Eskom can drop in a shortage, for a fee. Defaults to '+FIXED.drInterruptMW.toLocaleString('en-US')+' MW, rounding Eskom\u2019s certified 1,014 MW (NREL). Used before any shedding and reported apart from unserved energy.'},
   {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString('en-US')+'/MWh',ctrlStyle:SUB_CTRL,
-   note:`What a customer is paid to cut use. The default sits below diesel (R${(FIXED.costDiesel+FIXED.vomDiesel).toLocaleString('en-US')}/MWh) and the R${FIXED.costUnservedR.toLocaleString('en-US')}/MWh at which system cost charges unserved energy, so it is called after OCGT plants and before shedding.`},
+   note:`What a customer is paid to cut use. The default sits below diesel (R${(FIXED.costDiesel+FIXED.vomDiesel).toLocaleString('en-US')}/MWh) and the R${Math.round(FIXED.costUnservedR).toLocaleString('en-US')}/MWh at which system cost charges unserved energy, so it is called after OCGT plants and before shedding.`},
   // Label corrected 17 Sep 2026. It read "% of daily load", which is not what the control
   // does: the dispatch takes this share of each of the six highest net-load hours, so the
   // share of annual energy actually moved is about a quarter of the slider value. Measured
@@ -20420,10 +20618,10 @@ const SLIDERS=[
   {id:'gridBeyondGccaPct',label:'Grid built beyond current plan',min:0,max:150,step:10,def:FIXED.gridBeyondGccaPct,fmt:v=>v===0?'GCCA plan only':'+'+v+'% headroom',
    note:'Build optimiser only. Defaults to zero: each region\u2019s connection headroom is the network NTCSA plans to build (GCCA). Above zero, headroom scales up as if more were built, priced by the grid expansion cost slider.'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',// Moved from the note (messages 377, 378): TDP 2025-2034 (published 2024): generation integration is 51% of the plan,
-   // R225bn of R440bn for 46.9 GW, R4,800/kW, annualised to R402/kW-yr.
-   note:'Network charge on new wind, utility solar and offshore, and in the build optimiser on new gas and pumped hydro; batteries and rooftop pay none. Defaults to R'+FIXED.txRPerKWyr+'/kW&middot;yr: the TDP 2025\u20132034\u2019s generation share, R225bn for 46.9 GW.'},
+   // R225bn of R440bn for 46.9 GW, R4,800/kW, annualised to R364/kW-yr at the network cost of capital (7.1%).
+   note:'Network charge on new wind, utility solar, offshore, gas and pumped hydro; batteries and rooftop pay none. Defaults to R'+FIXED.txRPerKWyr+'/kW&middot;yr: the TDP 2025\u20132034\u2019s generation share, R225bn for 46.9 GW.'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Raises the remaining connection headroom in Where to build by 20&#37;. Its cost is not yet charged, and it does not reach the full model or the build optimiser.'},
-  {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar and batteries inherit the grid connection points of decommissioned coal, avoiding the transmission adder \u2013 up to the MW of coal retired.'},
+  {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new build use the grid connections of retired coal, avoiding their network charge, up to the MW of coal retired, as the build optimiser does.'},
   {id:'congestionCurtailOn',toggle:true,def:true,label:'Congestion curtailment',
    note:'On by default; the rate and its basis are under Curtailment. Off: the fleet runs unconstrained.'},
   {id:'tdpConfidencePct',label:'Transmission plan delivery',min:0,max:100,step:5,
@@ -21107,10 +21305,10 @@ const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'roofto
 // description alike, so the text lives only here. Hover tooltips alone appeared late and never on touch
 // screens; the caption shows the hovered or focused preset, and the active one otherwise. 7 Oct 2026.
 // BEGIN GENERATED 'IRP path 2035' demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_c6e_irpdem.json; do not edit by hand)
-const IRP2035_DEMAND_GAP_PCT = -4.792573521804233;   // the IRP's demand path against the pathway's in 2035, signed (negative: below), customer demand plus firm exports
+const IRP2035_DEMAND_GAP_PCT = -4.790527920536148;   // the IRP's demand path against the pathway's in 2035, signed (negative: below), customer demand plus firm exports
 // END GENERATED 'IRP path 2035' demand gap
 // BEGIN GENERATED IRP's 2030 targets demand gap (harness/pathway/gen_pathway_presets.py from harness/pathway/c6e/pathway_c6e_irpdem.json; do not edit by hand)
-const IRP2030_DEMAND_GAP_PCT = -6.5312483974715345;   // the IRP's demand path against the pathway's in 2030, signed (negative: below), customer demand plus firm exports
+const IRP2030_DEMAND_GAP_PCT = -6.52806644579329;   // the IRP's demand path against the pathway's in 2030, signed (negative: below), customer demand plus firm exports
 // END GENERATED IRP's 2030 targets demand gap
 // BEGIN GENERATED PRESET_SCORES (harness/ext/gen_preset_scores.py from harness/ext/rescore_page_01d_deep.json and harness/ext/rescore_page_31k_fossil.json; do not edit by hand)
 const PRESET_SCORES = {"Deep decarbonisation 2035": {"shed": 0.7824, "target": 2.3935, "runs": 240, "build": "2026-11-01d", "seed": 120000017}, "Fossil-free 2040": {"shed": 0, "target": 2.6871, "runs": 240, "build": "2026-10-31k", "seed": 120000017}};
@@ -22258,7 +22456,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-11-04b';
+const BUILD_STAMP = '2026-11-06b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -22280,7 +22478,7 @@ const PANEL_CACHE = new Map();      // key -> { deps, mc, adequacy, capCurve }, 
 const PANEL_CACHE_MAX = 200;
 // The engine's loaded inputs, by identity. Each is replaced, never altered in place, when it loads, so an entry computed
 // with these same objects is still current; one computed before any of them changed is not used.
-const engineInputs = () => [PROFILES, OFFSHORE_PU, COAL_TRACE, TDP_PROJECTS, HEADROOM_LOOKUP, bldTxCurve, WIND_MOD_MAP, SOLAR_TRK_G, SOLAR_TRK_K];
+const engineInputs = () => [PROFILES, OFFSHORE_PU, OFFSHORE_BY_YEAR, COAL_TRACE, TDP_PROJECTS, HEADROOM_LOOKUP, bldTxCurve, WIND_MOD_MAP, SOLAR_TRK_G, SOLAR_TRK_K];
 const sameInputs = deps => { const b = engineInputs(); return !!deps && deps.length === b.length && deps.every((x, i) => x === b[i]); };
 function canonJSON(o){ return JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v) && !ArrayBuffer.isView(v))
   ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v); }
@@ -22349,23 +22547,23 @@ const panelYield = () => new Promise(res => setTimeout(res, 0));
 // computes on the main thread as before. Heat stress and the external comparison still compute on the page when shown.
 // The names are simulate()'s closure, with the panel draws', found by static analysis (eslint-scope) on 19 Oct 2026; a name
 // missing here fails in the worker, the page falls back, and validate_worker.js fails.
-const ENGINE_FNS = () => ({ simulate, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
+const ENGINE_FNS = () => ({ simulate, offshoreSeriesFor, coalUcOpts, coalUnitMsl, coalFlexTier, coalDeepShare, coalFleetMinShare, coalFleetHotStartRMW, ccgtFloorActive, simulateGasAnnualFloor, ccsShareFrac, dieselAvailMW, bldNetAnnuity,
   astrPeakHour, astrReserveAt, buildUCSchedule, genUnitOutagePath, ucUnitsStanding, battDurationMult, txChargeFor, reipppRate, reipppLiveMW,
   reipppExpiredMW, reipppRetiredMW, coalEafAt, avonDedisaOffMW, applyYearFleetOptions,
-  otherIppR, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth, nucShapeAt,
+  otherIppR, avonDedisaContractShare, priceStatsOf, windModOf, windNewCorr, solarTrkOf, avonDedisaMustRunMW, astrOnlineHeadroom, hourMonth, nucShapeAt,
   coalMinStableFrac, coalMarginalCost, bldAnnuity, bldCapex, bldFom, capPayRate, dieselSrmcR, ccgtSrmcR, weatherProfileFactory,
   mulberry32, genOutagePath, hybridUplift, buildProfiles, bldCoalScale, txTierCharge, bldTwelveYearMeans, bldAnnuityRate,
   bldCostEntry, bldGasTerminalRkW, loadWeatherYears, weatherYearNational, bldCoalRawMW, bldWindModernOn, bldPvTrackingOn,
   bldCoc, bldCocCase, bldCocBase, bldIdcFactor, bldOcgtCentralCost, bldTariffCfBasis, bldBattCase, _loadWeatherYears, buildTxCurve, bldBuildSolarTrkRatio,
-  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, existPvTrackShareAt, wxWindCorrOn, congShapeFactors, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand,
+  bldBuildWindModMap, setSolarTrkMap, setSolarTrkK, solarTrkMeteredK, solarTrkBasis, applySolarTrkBasis, existPvTrackShareAt, wxWindCorrOn, congShapeFactors, setWindModMap, mcDraws, adequacyDraws, captureCurve, panelYield, roofTwelveYearK, twelveYearDemand, wxEngineProfile, gridChargeR, bldGridIntegRkW, bldGridAnn, bldGridCapexKW, bldGrid132Ratio,
   btmStock, btmPassiveDay, engineForecastShort, geyserCount, geyserShare, geyserCtl, geyserReturnShare,
   ssThermalH, ssGfmH, ssLoss, ssRequirementGWs, ssTdpCondMVA,
   coalFuelMult, coalFomAgeCurve, coalFleetAgeFactor, coalFomMult, coalFuelAt, coalFomAt, coalCarbonFloorR });
 // The data they read. The weather years load in the worker itself, when a panel first needs them.
-const ENGINE_DATA = () => ({ FIXED, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
+const ENGINE_DATA = () => ({ FIXED, BLD_GRID, GRID_RP_T, BTM_STOCK, GEYSER_CTL, DR_SHIFT_TOP_H, SYNC_MIN_MW, PROFILES, OFFSHORE_PU, OFFSHORE_BY_YEAR, HOURS, SYNC_GFM_SHARE, BLD_FOM, ASTR_RESERVE, COAL_TRACE,
   SYNC_CONDENSER_MW, BLD_LIFE, BLD_COST, LI_REF_CYCLES, DSL_REF_CF, GAS_LCOE_REF_CF, VRFB_REF_CYCLES, FE_REF_CYCLES, MC_N, ADEQ_N, BLD_PHES_CAPS, CPI_JAN24_TO_JAN26, BLD_DERATE,
   ASTR_HOLIDAYS_2026, ASTR_TOTAL, UC_FLEET, COAL_UNIT_COD, CARBON_COAL_FLOOR_R_KWH, CARBON_COAL_FLOOR_TO, CARBON_CPI_PA, BATT_POWER_SHARE, HEADROOM_LOOKUP, bldTxCurve, TDP_PROJECTS, REIPPPP_WINDOWS,
-  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, _existPvX, WIND_CORR_TABLE, CONG_SHAPE_PV, CONG_SHAPE_WIND, _MSTART_H, COAL_MINSTABLE_CURVE,
+  WIND_MOD_MAP, WIND_MOD_ERR, WIND_NEW_CORR, BW6_WIND_BID_CF, SOLAR_TRK_G, SOLAR_TRK_ERR, SOLAR_TRK_K, SOLAR_TRK_MAPS, _existPvX, WIND_CORR_TABLE, CONG_SHAPE_PV, CONG_SHAPE_WIND, _MSTART_H, COAL_MINSTABLE_CURVE,
   _coalMeritCurve, BLD_DISC, BLD_FOM_BATT_SHARE, BATT_COST_HOURS, BATT_EQUIP_BID, BATT_BW3_BID, LI_DECL, CAP_PAY_LDS,
   FIXED_PV_CF_12Y, CPI_JAN25_TO_JAN26, TX_SHALLOW, TX_BEYOND, WIND_MOD_REG, BW6_PV_TRK_BID_CF, BLD_DISC_CENTRAL, BLD_REGIONS,
   BLD_COC_LEVEL, BLD_COC_GAP, BLD_COC_NETWORK, BLD_COC_PRIVATE_PREM, BLD_COC_GROUP, BLD_COC_NAB_GAP, BLD_COC_PRIVATE_SHARE, BLD_COC_PVWIND_CLOSED, BLD_COC_PVWIND_TECH, BLD_BUILD_Y,
@@ -22513,8 +22711,7 @@ async function weatherProfileFactory(){
       if (y == null) return PROFILES;
       if (!cache.has(y)){
         const nat = weatherYearNational(String(y));
-        cache.set(y, nat ? { demand: twelveYearDemand(), solar: nat.solar,
-                             wind: nat.wind, csp: PROFILES.csp, real: true } : PROFILES);
+        cache.set(y, nat ? wxEngineProfile(nat) : PROFILES);
       }
       return cache.get(y);
     },
@@ -23099,6 +23296,10 @@ const P_HEAD = fetch('nodal/region_headroom_lookup.json',{cache:'no-cache'}).the
   .catch(()=>{});
 
 var OFFSHORE_PU = null;
+// Each weather year's own offshore series (message 707 (a) 3; the data-path review, finding 3): OFFSHORE_BY_YEAR[y], the seven regions
+// at ESMAP's capacity weights, every year on the one scale below, clipped at 1. OFFSHORE_PU stays the twelve-year average (the shape
+// every run read before), for nothing that runs a weather year.
+var OFFSHORE_BY_YEAR = null;
 var OFFSHORE_ESMAP = {
   'Boegoebaai West Coast':   { mw: 39674, cf: 0.524 },
   'Saldanha Bay West Coast': { mw: 25831, cf: 0.494 },
@@ -23113,23 +23314,30 @@ const P_OFF = fetch('nodal/profiles_offshore_regional.json',{cache:'no-cache'}).
     if (!d || !d.wind_pu) return;
     const sc = d.scale || 1;
     let totMW = 0, cfTarget = 0;
-    const acc = new Float64Array(8760);
+    const acc = new Float64Array(8760), byY = {};
     for (const reg of Object.keys(d.wind_pu)) {
       const meta = OFFSHORE_ESMAP[reg];
       if (!meta) continue;
       const yrs = d.wind_pu[reg], keys = Object.keys(yrs);
       if (!keys.length) continue;
-      for (const y of keys) { const v = yrs[y];
-        for (let h = 0; h < 8760; h++) acc[h] += (v[h] || 0) / sc / keys.length * meta.mw; }
+      for (const y of keys) { const v = yrs[y], b = byY[y] || (byY[y] = new Float64Array(8760));
+        for (let h = 0; h < 8760; h++) { const x = (v[h] || 0) / sc * meta.mw; acc[h] += x / keys.length; b[h] += x; } }
       totMW += meta.mw; cfTarget += meta.cf * meta.mw;
     }
     if (totMW <= 0) return;
     for (let h = 0; h < 8760; h++) acc[h] /= totMW;
+    for (const y of Object.keys(byY)) for (let h = 0; h < 8760; h++) byY[y][h] /= totMW;
     cfTarget /= totMW;
     let cfRaw = 0; for (let h = 0; h < 8760; h++) cfRaw += acc[h] / 8760;
+    // The level (message 707 (a) 3, its basis): ESMAP's site capacity factors by region (World Bank Group 2026, A Strategic Framework
+    // for Offshore Wind Development in South Africa; OFFSHORE_ESMAP above), capacity-weighted, 0.516, against this file's twelve-year
+    // mean at the same weights, 0.462 (Renewables.ninja MERRA-2, Vestas V164 8.0 MW at 150 m): one factor, 1.117, on every year, so each
+    // year keeps its own hours and calms and the twelve years' level is ESMAP's. A level adjustment, not a measured one; why ESMAP is
+    // higher is not established here (the file's own note: a 15 MW-class machine would give a higher capacity factor).
     const k = cfRaw > 0 ? cfTarget / cfRaw : 1;
     for (let h = 0; h < 8760; h++) acc[h] = Math.min(1, acc[h] * k);
-    OFFSHORE_PU = acc;
+    for (const y of Object.keys(byY)) for (let h = 0; h < 8760; h++) byY[y][h] = Math.min(1, byY[y][h] * k);
+    OFFSHORE_PU = acc; OFFSHORE_BY_YEAR = byY;
     console.log('[GridTwin] Offshore profile: ' + Object.keys(d.wind_pu).length
       + ' regions, CF ' + cfRaw.toFixed(3) + ' scaled x' + k.toFixed(3)
       + ' to ESMAP ' + cfTarget.toFixed(3));
@@ -23194,7 +23402,8 @@ const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V |
   .then(d => { if (d){ setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; } }).catch(e => console.error('[GridTwin]', e.message));
 // Tracking-solar map (bldPvTracking, a preset key): needed by any dispatch with new tracking solar on the default profile.
 const P_STRK = fetch('nodal/profiles_solar_tracking_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
-  .then(d => { if (d){ setSolarTrkMap(d.map, 'nodal/profiles_solar_tracking_map.json'); setSolarTrkK(d.metered_scale, 'nodal/profiles_solar_tracking_map.json'); } }).catch(e => console.error('[GridTwin]', e.message));
+  .then(d => { if (d){ const f = 'nodal/profiles_solar_tracking_map.json'; setSolarTrkMap(d.map, f, 'fixed'); setSolarTrkK(d.metered_scale, f, 'fixed');
+    if (d.map_fleet) setSolarTrkMap(d.map_fleet, f, 'fleet'); if (d.metered_scale_fleet != null) setSolarTrkK(d.metered_scale_fleet, f, 'fleet'); } }).catch(e => console.error('[GridTwin]', e.message));
 // Numbers in the prose, from the code (site text fixes, user 16 Oct 2026, message 138). Each <span data-num="key"> (or an
 // <option>) shows ABOUT_NUM[key](), so a constant is never typed a second time into the About text; an unknown key throws.
 const _numInt = v => Math.round(v).toLocaleString('en-US');
@@ -23727,7 +23936,7 @@ async function evaluateAgainstRemaining(region,tech,mw){
     annualChargeR: Math.round(tier.annualR),
     gridBuildChargeRPerMWh: Math.round(chargePerMwh * 10) / 10,
     getChargeRPerMWh: 0,
-    note: tierNote + ' - R' + (chargePerMwh).toFixed(1) + '/MWh across the whole build, R'
+    note: tierNote + ' &ndash; R' + (chargePerMwh).toFixed(1) + '/MWh across the whole build, R'
         + (tier.annualR / 1e6).toFixed(0) + 'm a year.' };
 }
 
@@ -23745,11 +23954,11 @@ function renderResult(r){
         +' MW goes beyond the transmission plan</span> on '+r.bindingCorridor+'.<br>';
   }
   html+=r.note+'<br>';
-  // Not 'charged as the engine charges it' (audit G6-M8, message 264): the engine spreads the national build over the DFFE
-  // register's province shares (REEA_SHARE) whatever is sited here; charging the sited region waits for after the note.
-  html+='Tiers: shallow connection within existing headroom, the plan&rsquo;s own rate within what it builds, and half as '
-      + 'much again beyond it. The scenario&rsquo;s system cost charges new wind and solar by where developers have '
-      + 'applied, not by this choice.';
+  // The engine charges the build optimiser national rate per technology, less connections freed by retired coal (gridChargeR, from
+  // message 710 (c)), whatever is sited here; the panel keeps the regional tiers (user, 5 Nov 2026, messages 715 (a) and 716 (a)).
+  html+='Tiers: a reduced charge within existing headroom, the region&rsquo;s rate within the transmission plan, half as much '
+      + 'again beyond. System cost uses one national rate per technology, less connections freed by retired coal, as the '
+      + 'optimiser does, regardless of siting.';
   out.innerHTML=html;
 }
 

@@ -5,7 +5,7 @@
 # validate_stored_panels, validate_worker. Each log is <out dir>/<name>.log; <out dir>/summary.txt has one line each: the last
 # 'N/M' line of its output. Without ESK19679.csv, validate_weather adds one failure and validate_benchmarks skips three (CLAUDE.md).
 O=$1; P=${2:-all}; mkdir -p $O
-QUICK="lint structure geo capacity inputs findings invariants response weather lp consistency benchmarks external solve outputs public_text bids"
+QUICK="lint structure geo capacity inputs findings invariants response weather shapes series lp consistency benchmarks external solve outputs public_text bids"
 LONG="pathway_presets links stored_panels worker"
 run(){ local n=$1 cmd=$2
   if [ -s $O/$n.log ] && grep -q "^=== done" $O/$n.log; then return; fi

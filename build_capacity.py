@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
 GridTwin ZA - rebuild regional_renewable_capacity.json and ipp_pipeline.json
-from the IPP Office IPPPP Quarterly Report, Q4 2025/26 (as at 31 March 2026).
+from the IPP Office IPPPP Quarterly Report, Q1 2026/27 (as at 30 June 2026).
 
 Every figure below is traceable to a page of that report. Derived fields are
 computed here, never hand-written, so they cannot drift.
 """
 import json, hashlib, copy
 
-SRC = "IPP Office, IPPPP Quarterly Report Q4 2025/26 (as at 31 March 2026)"
-COMPILED = "2026-08-14"
+SRC = "IPP Office, IPPPP Quarterly Report Q1 2026/27 (as at 30 June 2026)"   # message 705; was Q4 2025/26 (as at 31 March 2026)
+COMPILED = "2026-11-05"
 
 REGIONS = ["Eastern Cape", "Limpopo", "Mpumalanga", "Gauteng", "Western Cape",
            "Northern Cape", "Hydra Central", "Kwazulu Natal", "North West", "Free State"]
@@ -38,7 +38,7 @@ def total(d):
 # ---------------------------------------------------------------------------
 reipppp_online = {
     "solar_mw":        dict(blank(), **{"Northern Cape": 1570.0, "Western Cape": 359.0,
-                                        "North West": 275.0, "Free State": 271.0,
+                                        "North West": 395.0, "Free State": 271.0,   # 395 includes Doornhoek (BW6, 120), online from 22 May 2026
                                         "Limpopo": 118.0, "Eastern Cape": 70.0}),
     "wind_mw":         dict(blank(), **{"Northern Cape": 1738.0, "Eastern Cape": 1566.0,
                                         "Western Cape": 738.0}),
@@ -156,11 +156,21 @@ def to_supply_areas(by_province, tech):
     return {r: round(v, 1) for r, v in out.items()}
 
 
+# p.18 projects outside the split file (message 705): the split file covers BW1-BW4 and the CSP window, so a later-window project inside a
+# province's p.18 figure is taken out before the split and put back in its own supply area after it, rather than spread by BW1-BW4 shares.
+# Doornhoek (BW6, 120 MW, North West) is in Q1 2026/27's p.18 (North West 395); at Q4 2025/26 it was a post-cutoff addition (2c below).
+P18_OUTSIDE_SPLIT = [dict(name="Doornhoek Solar PV", mw=120.0, tech="solar", region="North West", province="North West", bw="BW6",
+                          cod="22 May 2026")]
+p18_online_sum = round(sum(total(v) for v in reipppp_online.values()), 1)   # the published table as it stands, before any move
+for _p in P18_OUTSIDE_SPLIT:
+    reipppp_online[_p["tech"] + "_mw"][_p["province"]] = round(reipppp_online[_p["tech"] + "_mw"][_p["province"]] - _p["mw"], 1)
 for _tech, _key in (("solar", "solar_mw"), ("wind", "wind_mw")):
     _before = total(reipppp_online[_key])
     reipppp_online[_key] = to_supply_areas(reipppp_online[_key], _tech)
     assert abs(total(reipppp_online[_key]) - _before) <= 0.2, (
         f"supply-area split changed the {_key} total: {_before} -> {total(reipppp_online[_key])}")
+for _p in P18_OUTSIDE_SPLIT:
+    reipppp_online[_p["tech"] + "_mw"][_p["region"]] = round(reipppp_online[_p["tech"] + "_mw"][_p["region"]] + _p["mw"], 1)
 
 # ---------------------------------------------------------------------------
 # 2b. ESKOM-OWNED renewable capacity - a THIRD source alongside reipppp and
@@ -216,9 +226,8 @@ rmipppp_online["hybrid_mw"]["Northern Cape"] = 75.0
 #     p18_online_sum is captured BEFORE these are added: the rounding note is a
 #     statement about the published table, which does not contain them.
 # ---------------------------------------------------------------------------
-p18_online_sum = round(sum(total(v) for v in reipppp_online.values()), 1)
+DOORNHOEK_RECORD = [   # the post-cutoff record of Q4 2025/26 (the bar it met), kept for its sources and notes
 
-POST_CUTOFF = [
     dict(name="Doornhoek Solar PV", mw=120.0, tech="solar", region="North West",
          bw="BW6", cod="22 May 2026",
          sources=[
@@ -245,6 +254,7 @@ POST_CUTOFF = [
              "should drift upward as tracking becomes standard."
          )),
 ]
+POST_CUTOFF = []   # empty from Q1 2026/27 (message 705): Doornhoek is in p.18 (P18_OUTSIDE_SPLIT)
 
 for _p in POST_CUTOFF:
     reipppp_online[_p["tech"] + "_mw"][_p["region"]] = round(
@@ -270,32 +280,36 @@ regional = {
         "rmipppp": rmipppp_online,
     },
     "reconciliation": {
-        "universe": "REIPPPP BW1-BW6, projects that reached financial close",
+        "universe": "REIPPPP BW1-BW7, projects that reached financial close",
         "identity": "procured = online_actual + under_delivery + in_construction",
-        "procured_mw": 7825.0,
+        "procured_mw": 8064.0,
         # Post-cutoff additions move capacity from in_construction to online, so
         # both sides shift and the identity still holds. Derived, never typed.
-        "online_actual_mw": round(7355.0 + _post_cutoff_mw, 1),
-        "under_delivery_mw": 26.0,
-        "in_construction_mw": round(444.0 - _post_cutoff_mw, 1),
-        "identity_holds": round(7355.0 + _post_cutoff_mw, 1) + 26.0
-                          + round(444.0 - _post_cutoff_mw, 1) == 7825.0,
+        "online_actual_mw": round(7475.0 + _post_cutoff_mw, 1),
+        "under_delivery_mw": 25.0,
+        "in_construction_mw": round(564.0 - _post_cutoff_mw, 1),
+        "identity_holds": round(7475.0 + _post_cutoff_mw, 1) + 25.0
+                          + round(564.0 - _post_cutoff_mw, 1) == 8064.0,
         "provincial_online_sum_mw": prov_online_sum,
         "rounding_note": (
             "Summing the per-province, per-technology figures on p.18 gives "
-            f"{p18_online_sum} MW against the headline 7355 MW. The 1 MW gap is rounding "
-            "in the published table and has NOT been adjusted away."
+            f"{p18_online_sum} MW against the headline 7475 MW. The 1 MW gap is rounding "
+            "in the published table and has NOT been adjusted away (7356 against 7355 at Q4 2025/26)."
         ),
         "totals_by_technology_mw": {k: total(v) for k, v in reipppp_online.items()},
         "construction_decomposition": (
-            "in_construction_mw was 444 at 31 Mar 2026, decomposing exactly to Doornhoek "
-            "Solar PV 120 (BW6), Virginia Solar Park 240 (BW6) and BW5 wind Eastern Cape 84. "
-            "Doornhoek was moved to online on 18 Aug 2026 on confirmation it reached COD "
-            "22 May 2026, leaving 324 in construction. That decomposition is also how the "
-            "same-day attempt to add Graspan was caught: Graspan was not in it, and being "
-            "inside procured it was therefore already online."
+            "in_construction_mw is 564 at 30 Jun 2026 (p.18: Free State 480, Eastern Cape 84), decomposing exactly "
+            "to Virginia Solar Park 240 (BW6, Free State), one BW7 solar PV project 240 (Free State; reached "
+            "commercial close in the quarter, not named in the report) and BW5 wind Eastern Cape 84. At 31 Mar 2026 "
+            "it was 444: Doornhoek Solar PV 120 (BW6), Virginia 240 and the BW5 wind 84; Doornhoek reached COD on "
+            "22 May 2026 and is in p.18's North West online figure from Q1 2026/27. That decomposition is also how "
+            "the attempt on 18 Aug 2026 to add Graspan was caught: Graspan was not in it, and being inside procured it "
+            "was therefore already online. Procured rose 239 MW (7825 to 8064) for the 240 MW BW7 project: the "
+            "operating fleet's procured capacity was revised down 1 MW (under-delivery 26 to 25)."
         ),
         "post_cutoff_additions": POST_CUTOFF,
+        "p18_outside_split": P18_OUTSIDE_SPLIT,
+        "doornhoek_post_cutoff_record_q4_2025_26": DOORNHOEK_RECORD,
     },
     "meta": {
         "description": (
@@ -303,14 +317,12 @@ regional = {
             "commissioned-plant figures, not bid-window awards."
         ),
         "source_reipppp": SRC + ", p.18 (Capacity Online by province and technology)."
-        " PLUS Doornhoek Solar PV (120 MW, North West, BW6, AMEA Power), which reached"
-        " commercial operation 22 May 2026 - after the 31 March cutoff - confirmed by"
-        " Engineering News and the PFL H1 2026 monitor, and listed as in-construction at"
-        " the cutoff in ipp_pipeline.json.",
+        " North West's 395 MW includes Doornhoek Solar PV (120 MW, BW6, AMEA Power, COD 22 May 2026),"
+        " carried to the North West supply area outside the BW1-BW4 split.",
         "source_private": "Alao, O. & Kruger, W. (2026), South African IPPs: financial close and commercial operations monitor, H1 2026 update, Power Futures Lab, UCT GSB (see nodal/pfl_private_h1_2026.json); plus pre-2026 private wheeled wind confirmed from releases (private_pre2026)",
         "private_coverage": "h1-2026, plus pre-2026 private wind and solar listed in private_pre2026",
         "private_pre2026": PRE2026_PRIVATE,
-        "as_at": "2026-03-31",
+        "as_at": "2026-06-30",
         "compiled": COMPILED,
         "REBUILD_NOTE": (
             "Replaces a file assembled from REIPPPP bid-window AWARDS. The award-based file "
@@ -384,6 +396,10 @@ prov_projects = [
                      "table. Counted in by_source.rmipppp.hybrid_mw, NOT in solar."),
     dict(name="Virginia Solar Park", region="Free State", tech="solar", mw=240.0,
          status="construction", bw="BW6", province_confidence="published"),
+    dict(name="BW7 solar PV, Free State (1 project)", region="Free State", tech="solar", mw=240.0,
+         status="construction", bw="BW7", province_confidence="published",
+         note="Reached commercial close in Q1 2026/27 (pp.3, 28); Free State from p.18 (in construction 480 less "
+              "Virginia's 240). Not named in the report."),
     dict(name="BW5 wind, Eastern Cape (1 project)", region="Eastern Cape", tech="wind", mw=84.0,
          status="construction", bw="BW5", province_confidence="published",
          note="Named project not identified in the quarterly report."),
@@ -399,9 +415,9 @@ prov_projects = [
 
     # BW6 pre-commercial-close - report p.27: 4 projects / 640 MW. Three are named
     # from the Dec 2022 preferred-bidder announcement; provinces are consistent with
-    # p.18 (North West procured 395 = 275 online + 120 construction, so Boitumelo and
-    # Kutlwano are NOT yet at financial close; Free State 523 = 279 + 240 likewise
-    # excludes Good Hope).
+    # p.18 of Q1 2026/27 (North West procured 395 = 395 online, so Boitumelo and
+    # Kutlwano are NOT yet at financial close; Free State 763 = 279 online + 480 in
+    # construction + 4 under-delivery likewise excludes Good Hope).
     dict(name="Boitumelo Solar PV", region="North West", tech="solar", mw=150.0,
          status="preferred_bidder", bw="BW6", province_confidence="published"),
     dict(name="Kutlwano Solar PV", region="North West", tech="solar", mw=150.0,
@@ -419,15 +435,18 @@ unallocated = [
               " March 2023, NERSA licence July 2023, no financial close reported by August 2025 (Green Building Africa,"
               " 6 Apr 2023 and 29 Jul 2023). A probable identification (user, 17 Oct 2026, message 189 (2)); MW and"
               " status unchanged."),
-    dict(name="BW7 solar PV", tech="solar", mw=3940.0, status="preferred_bidder", bw="BW7",
-         n_projects=18,
+    dict(name="BW7 solar PV", tech="solar", mw=3700.0, status="preferred_bidder", bw="BW7",
+         n_projects=17,
          note="8 preferred bidders (1760 MW) appointed 23 Dec 2024, 6 (1290 MW) on 21 Jul 2025 after wind-to-solar technology reallocation, 4 (890 MW) on 15 Dec 2025 after value-for-money negotiations. Provincial figures circulated for the first tranche come from a ministerial press release, not the quarterly report, and are DELIBERATELY not apportioned to regions here: those same figures (Mpumalanga 480, Limpopo 400, Free State 480, North West 400) previously leaked into the operational capacity file and caused the geography bug this rebuild exists to fix."),
     dict(name="RMIPPPP in construction", tech="hybrid", mw=203.0, status="construction", bw="RMIPPPP",
          n_projects=2,
          note="Report p.29 gives Northern Cape, Eastern Cape and Western Cape as the RMIPPPP provinces but no split. A further 19.94 MW site of a partially-operational project also remains under construction."),
-    dict(name="BESIPPPP BW2", tech="batt", mw=615.0, status="preferred_bidder", bw="BESIPPPP BW2",
-         n_projects=8,
-         note="Announced 23 Dec 2024; four projects at risk of the 30 Jun 2026 commercial close deadline."),
+    dict(name="BESIPPPP BW2, in construction", tech="batt", mw=153.0, status="construction", bw="BESIPPPP BW2",
+         n_projects=2,
+         note="Two of BW2's eight preferred bidders reached commercial close in Q1 2026/27 (pp.3, 34); provinces not given."),
+    dict(name="BESIPPPP BW2", tech="batt", mw=462.0, status="preferred_bidder", bw="BESIPPPP BW2",
+         n_projects=6,
+         note="Announced 23 Dec 2024 (615 MW, 8 projects); the remaining six work toward the 31 Dec 2026 commercial close deadline (p.34)."),
     dict(name="BESIPPPP BW3", tech="batt", mw=616.0, status="preferred_bidder", bw="BESIPPPP BW3",
          n_projects=5,
          note="Five preferred bidders announced 30 May 2025; commercial close long stop 30 Oct 2026."),
@@ -484,17 +503,19 @@ pipeline = {
     },
     "reconciliation": {
         "identity": "preferred_bidder_total = financial_close + pre_financial_close",
-        "preferred_bidders_net_of_cancellations_mw": 12405.0,
-        "reached_financial_close_mw": 7825.0,
-        "pre_financial_close_mw": 4580.0,
+        # 12405 at Q4 2025/26, less the 1 MW revision of the operating fleet's procured capacity in Q1 2026/27 (procured 7825 + the
+        # 240 MW BW7 project = 8065 against the published 8064; under-delivery 26 to 25).
+        "preferred_bidders_net_of_cancellations_mw": 12405.0 - 1.0,
+        "reached_financial_close_mw": 8064.0,
+        "pre_financial_close_mw": 4340.0,
         "pre_financial_close_detail": {"BW6 awaiting commercial close": 640.0,
-                                       "BW7 preferred bidder": 3940.0},
-        "identity_holds": 7825.0 + 4580.0 == 12405.0,
+                                       "BW7 preferred bidder": 3700.0},
+        "identity_holds": 8064.0 + 4340.0 == 12405.0 - 1.0,
         "pipeline_total_mw": round(alloc_mw + unalloc_mw, 1),
         "pipeline_composition": {
-            "REIPPPP in construction": 444.0,
-            "REIPPPP pre-commercial-close (BW6 + BW7)": 4580.0,
-            "BESIPPPP (BW1 construction + BW2/BW3 preferred bidder)": 1744.0,
+            "REIPPPP in construction": 564.0,
+            "REIPPPP pre-commercial-close (BW6 + BW7)": 4340.0,
+            "BESIPPPP (BW1 and two BW2 in construction + BW2/BW3 preferred bidder)": 1744.0,
             "RMIPPPP in construction": 203.0,
         },
         "provincially_allocated_mw": alloc_mw,
@@ -506,7 +527,7 @@ pipeline = {
                         "construction) by GridTwin ZA nodal region. Operational projects live in "
                         "regional_renewable_capacity.json and are excluded here."),
         "source": SRC,
-        "as_at": "2026-03-31",
+        "as_at": "2026-06-30",
         "compiled": COMPILED,
         "as_at_note": ("Previous file carried as_at 2026-08-17, a future date. Replaced with the "
                        "report's own reporting date."),
@@ -545,7 +566,7 @@ for name, doc in [("regional_renewable_capacity.json", regional), ("ipp_pipeline
 
 print("\nregional solar total:", total(solar_total), "MW")
 print("regional wind  total:", total(wind_total), "MW")
-print("provincial online sum:", prov_online_sum, "MW (headline 7355)")
+print("provincial online sum:", prov_online_sum, "MW (headline", regional["reconciliation"]["online_actual_mw"], ")")
 print("pipeline allocated:", alloc_mw, "unallocated:", unalloc_mw,
       "total:", round(alloc_mw + unalloc_mw, 1), "MW")
 print("terminated:", pipeline["terminated"]["total_mw"], "MW")

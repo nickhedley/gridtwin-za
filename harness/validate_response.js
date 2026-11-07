@@ -109,7 +109,9 @@ const EXPLAINED = {
 const CONTEXT = {
   // On the measured 2025 outage trace from 4 Oct 2026, not the seeded draw: on one draw EAF 55
   // gave no shortage and the cost control read as dead.
-  drInterruptMW:    { coalEAFPct: 55, outageTraceYear: 2025 },   // interruptible load only fires in a shortage
+  // Interruptible load only fires in a shortage. At 55% the context had none from 5 Nov 2026 (the rooftop change, fff0993: unserved 0,
+  // interruptible 3.0 GWh moving no output by 1e-4); at 52%, 2.2 GWh unserved and 8 hours short at 0 MW, none at 1,000 MW.
+  drInterruptMW:    { coalEAFPct: 52, outageTraceYear: 2025 },
   drInterruptCostR: { coalEAFPct: 55, drInterruptMW: 2000, outageTraceYear: 2025 },
   newBattHours:     { newBattMW: 20000 }, // duration is meaningless at zero new lithium
   // newBattMW and newVrfbMW (user, 18 Oct 2026, message 199 (2)): at the 2026 defaults storage has almost no surplus to shift,
@@ -220,6 +222,9 @@ const BUILD_ONLY = {
   carbonCapEnabled:  'constrains the build LP only',
   carbonCapMt:       'constrains the build LP only',
   getsEnabled:       'grid-enhancing tech acts on corridors in the build LP',
+  // From 5 Nov 2026 (message 710 (c)) the engine's grid charge is the build LP's flat basis (gridChargeR); how much of the TDP arrives
+  // moves only the siting panel's regional tiers (txTierCharge), pending Nick's decision on that panel (TODO 14na (h)).
+  tdpConfidencePct:  'moves the siting panel\'s regional tiers only; the engine\'s grid charge is flat (message 710 (c))',
 };
 
 (async () => {

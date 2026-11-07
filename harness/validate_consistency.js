@@ -961,13 +961,16 @@ const num = t => {
       // average. It is no longer a floor against the TDP, so the old pin ('understated' or
       // 'floor' anywhere in the note) held a sentence that had become false, and would have
       // passed on any other use of either word. It now pins the method the code uses.
-      check('the panel says the new-grid line is the engine\'s tiered transmission charge',
-            t.includes("new-grid line is the engine's tiered connection charge")
+      // CHANGED 5 Nov 2026 (user, message 710 (c)): the engine's grid charge is the build optimiser's (gridChargeR): the flat
+      // generation-integration average on wind, solar, offshore, gas and pumped storage, less connections freed by retired coal.
+      check('the panel says the new-grid line is the build optimiser\'s grid charge',
+            t.includes("new-grid line is the build optimiser's grid charge")
               && t.includes('generation-integration average')
-              && !/new-grid[^.]*floor/.test(t),
-            `the new-grid line must be described as what the code computes, the engine's `
-            + `tiered transmission charge at the TDP's generation-integration average, and `
-            + `not as a floor.`);
+              && t.includes('freed by retired coal')
+              && !/new-grid[^.]*(floor|tiered)/.test(t),
+            `the new-grid line must be described as what the code computes, the build optimiser's `
+            + `grid charge at the TDP's generation-integration average less freed coal connections, `
+            + `and not as a floor or a tiered charge.`);
       // ── THE PANEL AND THE SYSTEM COST AGREE ON THE LINES THEY SHARE ────────
       // REPLACED 18 Oct 2026 (user, message 203 (3); retail audit sections 5 and 7). Restored 10 Sep 2026 as two checks: the
       // panel moves more than 20% on a decarbonisation preset, and in the same direction as system cost. Neither is an
@@ -991,14 +994,14 @@ const num = t => {
           const P = { ...FIXED, ...state };
           const v = 2026 + Math.max(0, (P.scenarioYear ?? 2026) - 2026) / 2;
           const at = t => bldAnnuity(bldCapex(t, v), BLD_LIFE[t], t) + bldFom(t, v);
-          let pvAdder = P.newPvMW;
-          if (P.repurpose) pvAdder = P.newPvMW - Math.min(P.newPvMW, Math.min(P.coalDecomMW, P.newPvMW + P.newBattMW));
           const roof = (P.newRooftopMW || 0) * at('rooftop') * 1000;
           const omitted = ((P.newPsMW || 0) * P.acapPs + (P.newCoalMW || 0) * P.acapCoal + (P.newNuclearMW || 0) * P.acapNuclear
             + Math.max(0, P.coalInstalledMW - P.coalDecomMW) * (P.coalFlexPct ? 1 : 0) * P.acapCoalFlex
             + ((P.newOcgtMW || 0) > 0 ? P.newOcgtMW * at('ocgt') : 0)
             + ((P.newOcgdMW || 0) > 0 ? P.newOcgdMW * at('ocgd') : 0)) * 1000;
-          const txOn = txChargeFor(P.newWindMW, pvAdder, 0, P);
+          // The engine's own grid slice (gridChargeR from 5 Nov 2026, message 710 (c); r.txCapexR also carries offshore's subsea
+          // charge, offshoreGridRPerKWyr, which is 0 and is added back here so the subtraction is exactly newCapexR's grid term).
+          const txOn = r.txCapexR - (P.newOffshoreMW || 0) * (P.offshoreGridRPerKWyr || 0) * 1000;
           out[nm] = { retYear: c.year, scenYear: P.scenarioYear ?? FIXED.scenarioYear, omitted, lines: {
             'fuel': [c.fuel * kWh, r.fuelCost], 'carbon': [c.carbon * kWh, r.carbonCost],
             'new transmission': [c.newGrid * kWh, r.txCapexR],

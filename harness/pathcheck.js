@@ -50,6 +50,60 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  const WXT=process.env.WX_WINDCORR_TABLE||null; if (WXT && process.env.WX_WINDCORR!=='1') throw new Error('WX_WINDCORR_TABLE needs WX_WINDCORR=1');
  if (WXT){ const TT=JSON.parse(fs.readFileSync(WXT,'utf8')); if (!(TT.table&&TT.table.length===12&&TT.table.every(r=>r.length===TT.grid.n))) throw new Error('WX_WINDCORR_TABLE: 12 rows of grid.n values');
    w.eval(`WIND_CORR_TABLE = ${JSON.stringify({t:TT.table,n:TT.grid.n})};`); console.log('WX_WINDCORR_TABLE:', WXT, JSON.stringify(TT.constants||{})); }
+// THE RUN'S RECORDED SETTINGS (message 707 (a) 5; the data-path review, finding 6): every setting the run recorded that changes the
+// engine's result is applied here, before anything reads the weather means, so the check runs on the run's own basis. An environment
+// value that disagrees with the recorded one stops the check, unless CHECK_ON names the setting (a deliberate cross-check, e.g. a build
+// checked on the stored weather: CHECK_ON=wxWindCorr), which is logged and recorded in every row (recordedSettings). A run that did not
+// record a setting is checked on the environment or the page default, as before, and says so.
+if (process.env.PAGE_BASIS!==undefined && !['0','1'].includes(process.env.PAGE_BASIS)) throw new Error('PAGE_BASIS must be 0 or 1');
+const PAGE_BASIS=process.env.PAGE_BASIS==='1';
+const CHECK_ON=(process.env.CHECK_ON||'').split(',').map(x=>x.trim()).filter(Boolean), RECSET={};
+const _congRec=(()=>{ try { return P.congestion!=null ? (typeof P.congestion==='string' ? JSON.parse(P.congestion) : P.congestion) : null; } catch(e){ throw new Error('congestion: unreadable recorded value '+P.congestion); } })();
+const _trkShRec=(()=>{ try { return P.existPvTrackShare!=null ? (typeof P.existPvTrackShare==='string' ? JSON.parse(P.existPvTrackShare) : P.existPvTrackShare) : null; } catch(e){ throw new Error('existPvTrackShare: unreadable recorded value'); } })();
+const recSet=(key, rec, envVal, apply)=>{
+  if (rec===undefined||rec===null){ RECSET[key]='not recorded'; return; }
+  if (envVal!==undefined && String(envVal)!==String(rec)){
+    if (!CHECK_ON.includes(key)) throw new Error(key+': the environment gives '+envVal+', the run recorded '+rec+'; set CHECK_ON='+key+' to check on the environment\'s value');
+    RECSET[key]={recorded:rec, checkedOn:envVal}; console.log('CHECK_ON '+key+': checked on '+envVal+', the run recorded '+rec); return; }
+  w.eval(apply(rec)); RECSET[key]=rec; };
+recSet('wxWindCorr', P.wxWindCorr, process.env.WX_WINDCORR!==undefined?+process.env.WX_WINDCORR:undefined, v=>`state.wxWindCorr=${+v};`);
+recSet('solarTrkBasis', P.solarTrkBasis, process.env.SOLAR_TRK_BASIS, v=>`state.solarTrkMeteredBasis=${JSON.stringify(v)}; if (typeof applySolarTrkBasis==='function') applySolarTrkBasis();`);
+recSet('existPvMeteredCF', P.existPvMeteredCF, undefined, v=>`state.existPvMeteredCF=${+v};`);
+if (_trkShRec && _trkShRec[0]!=null) recSet('existPvTrackShare', _trkShRec[0], undefined, v=>`state.bldExistPvTrackShare=${+v};`); else RECSET.existPvTrackShare='not recorded (page default)';
+recSet('coalMslDesignFromYear', P.coalMslDesignFromYear, process.env.COAL_MSL_DESIGN_FROM!==undefined?+process.env.COAL_MSL_DESIGN_FROM:undefined, v=>`state.coalMslDesignFromYear=${+v};`);
+recSet('adequacyBasis', P.adequacyBasis, process.env.ADEQ_BASIS, v=>`state.bldAdequacyBasis=${JSON.stringify(v)};`);
+if (_congRec){
+  recSet('congestionOn', _congRec[0], process.env.CONG_OFF==='1'?false:undefined, v=>`state.congestionCurtailOn=${!!v};`);
+  recSet('congestionPct', _congRec[1], undefined, v=>`state.congestionCurtailPct=${+v};`);
+  recSet('congestionShape', _congRec[2], process.env.CONG_SHAPE, v=>`state.congestionShape=${JSON.stringify(v)};`);
+  recSet('psDayPumpMaxMW', _congRec[3], undefined, v=>`state.psDayPumpMaxMW=${v==null?'null':+v};`);
+} else RECSET.congestion='not recorded';
+console.log('recorded settings:', JSON.stringify(RECSET));
+// PV_TRK_CF=<target> (message 700 (b); a test, not a page setting): new tracking solar scaled hour by hour, clipped at 1, so its
+// twelve-year mean equals the target (0.3013: BW6 tracker bids' typical capacity factor, BW6_PV_TRK_BID_CF), the modelled years' twins
+// (weatherYearNational) and the metered twin (SOLAR_TRK_K) alike; existing utility solar's tracker share is re-derived, so its level stays
+// at existPvMeteredCF. Here: the run's recorded pvTrkCf.target, or PV_TRK_CF; recorded in weather.
+ const PVT=process.env.PV_TRK_CF?+process.env.PV_TRK_CF:(P.pvTrkCf?P.pvTrkCf.target:null);
+ if (PVT){ w.eval(`{ const T = ${PVT};
+  const years = bldWeatherYears.meta.years.map(String), arrs = years.map(y => Float64Array.from(weatherYearNational(y).solar.trk));
+  const meanAt = f => { let s = 0, n = 0; for (const a of arrs){ for (let h = 0; h < a.length; h++) s += Math.min(1, f * a[h]); n += a.length; } return s / n; };
+  const m0 = meanAt(1); let lo = 0.2, hi = 5; for (let i = 0; i < 60; i++){ const mid = (lo + hi) / 2; if (meanAt(mid) < T) lo = mid; else hi = mid; }
+  const f = (lo + hi) / 2, _wyn = weatherYearNational;
+  weatherYearNational = function(y){ const r = _wyn(y); if (r && r.solar && r.solar.trk){ const t = r.solar.trk; for (let h = 0; h < t.length; h++) t[h] = Math.min(1, f * t[h]); } return r; };
+  SOLAR_TRK_K = SOLAR_TRK_K * f; if (typeof SOLAR_TRK_MAPS !== 'undefined') SOLAR_TRK_MAPS[solarTrkBasis()].K = SOLAR_TRK_K; if (typeof PROFILES !== 'undefined' && PROFILES.solar && PROFILES.solar.trk) delete PROFILES.solar.trk;
+  for (const k in _twelveYearCache) delete _twelveYearCache[k]; for (const k in _twelveAllCache) delete _twelveAllCache[k]; _existPvX = null;
+  window.__pvTrk = { target: T, f: +f.toFixed(6), m0: +m0.toFixed(6), m1: +bldTwelveYearMeans(1, true).solar.toFixed(6), x: existPvTrackShareAt({ ...FIXED, ...state }) }; }`); console.log('PV_TRK_CF:', w.eval('JSON.stringify(window.__pvTrk)')); }
+ // SOLAR_SHIFT_MIN=<minutes> (message 701 (b); a measurement, not a change): the PVGIS years' solar (2014-2023, or SOLAR_SHIFT_YEARS=a-b),
+ // fixed tilt and its tracking twin, moved earlier by that many minutes (each hourly value at its interval's centre, linear
+ // interpolation), for the lag found against the metered fleet. Recorded in weather.
+ const SSHIFT=process.env.SOLAR_SHIFT_MIN?+process.env.SOLAR_SHIFT_MIN:0, SSY=(process.env.SOLAR_SHIFT_YEARS||'2014-2023').split('-').map(Number);
+ if (SSHIFT){ w.eval(`{ const S = ${SSHIFT} / 60, Y0 = ${SSY[0]}, Y1 = ${SSY[1]}, _wy = weatherYearNational;
+   const mv = a => { const n = a.length, o = new Float64Array(n); for (let h = 0; h < n; h++){ const t = h + S, i = Math.floor(t), f = t - i;
+     o[h] = i + 1 < n ? a[i] * (1 - f) + a[i + 1] * f : a[n - 1]; } return o; };
+   weatherYearNational = function(y){ const r = _wy(y); if (r && +y >= Y0 && +y <= Y1){ const trk = r.solar.trk, own = r.solar.trkOwn, s2 = mv(r.solar);
+       if (trk){ s2.trk = mv(trk); s2.trkOwn = own; } r.solar = s2; } return r; };
+   for (const k in _twelveYearCache) delete _twelveYearCache[k]; for (const k in _twelveAllCache) delete _twelveAllCache[k]; _existPvX = null; }`);
+   console.log('SOLAR_SHIFT_MIN:', SSHIFT, 'earlier, years', SSY.join('-')); }
  // LULL=<local json> LULL_EVENT=<n> (message 687 (b), 688 (b); a stress test, not probability-weighted, reported apart): one of
  // ESK19679's long metered calms (per unit of the existing fleet, kept out of the repository) written over every modelled year's wind
  // at its own calendar hours; new wind in those hours from the national modern-turbine map of the metered values. Solar, demand and
@@ -277,6 +331,17 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (SS_ON){ over.ssGfmMW=cum.gfm; over.ssCondMVA=cum.scc+cum.scn; }
+   // The engine's grid charge on the LP's basis (message 710 (c)): with the optimiser's grid cost on, the run's own use of connections
+   // freed by retired coal (rp, by technology) and its wind on the Cape allowance; and its new build by vintage (710 (e)), each year's MW
+   // as the schedule built them, so the engine prices each at its own year's capex.
+   // PAGE_BASIS=1 (message 710 (e)): price as the page prices a preset, a single state: new build at the midpoint vintage and the freed
+   // connections by the page's rule (gridChargeR without the run's pool use). The preset engine checks run so, so that the page and its
+   // check are on one basis (harness/validate_pathway_presets.js); a pathway's own engine check prices by vintage on its own pool use.
+   if (!PAGE_BASIS){
+     if (GRID_ON){ over.gridRpMW={...rpCum}; over.gridCapeMW=cwCum; }
+     const V={}; for (const yy of Y) if (yy<=y) for (const [k,t] of [['wind','wind'],['pv','pv'],['rooftop','rooftop'],['batt','batt'],['vrfb','vrfb'],['ironair','ironair'],['ccgt','ccgt'],['ocgt','ocgt'],['ocgd','ocgd'],['off','offshore']]){
+       const m=+P.sched[yy][k]||0; if (m>0) (V[t]=V[t]||{})[yy]=m; }
+     over.bldVintageMW=V; }
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
    if (GY_RUN){ if (!(P.sched[y].gyMW>=0)) throw new Error('the run has geyser control on but no sched['+y+'].gyMW'); over.gyEnrolMW=P.sched[y].gyMW; }
    if (BTM_VPP){ if (!(P.sched[y].vppGWh>=0)) throw new Error('the run has the virtual power plant on but no sched['+y+'].vppGWh'); over.vppEnrolGWh=P.sched[y].vppGWh; }
@@ -307,11 +372,16 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    if (cum.phes + cum.phel > 0){ const PS=P.phes||{}, H=+(PS.hours??(process.env.PH||w.eval('FIXED.bldPhesHours'))), H2=+(PS.hours2??(process.env.PH2||0)), B=PS.basis??(process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis'));
      const ann=h=>+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${h}),60,'phes')+FIXED.bldPhesFomRkW`), P1=cum.phes, P2=cum.phel;
      over.newPsMW=P1+P2; over.newPsHours=(H*P1+H2*P2)/(P1+P2); over.newPsMaxMW=1e7; over.acapPs=(ann(H)*P1+(P2>0?ann(H2)*P2:0))/(P1+P2); }
+   // The vintage map against what stands this year (after FOSSIL_END and the rest): a technology the run stands down to 0 MW (gas and
+   // diesel after its last fossil year) leaves the map, as the LP charges no capital on it then; any other mismatch stops the check.
+   if (over.bldVintageMW){ const KEY={wind:'newWindMW',pv:'newPvMW',rooftop:'newRooftopMW',batt:'newBattMW',vrfb:'newVrfbMW',ironair:'newIronAirMW',ccgt:'newCcgtMW',ocgt:'newOcgtMW',ocgd:'newOcgdMW',offshore:'newOffshoreMW'};
+     for (const t of Object.keys(over.bldVintageMW)){ const sum=Object.values(over.bldVintageMW[t]).reduce((a,b)=>a+b,0), mw=+over[KEY[t]]||0;
+       if (mw===0) delete over.bldVintageMW[t]; else if (Math.abs(sum-mw)>0.5) throw new Error('vintage map: '+t+' '+sum+' MW built against '+mw+' MW standing in '+y); } }
    const batch=(k0,k1)=>JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of __wxYears()){ const nat=__wxNat(yy);
       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+__wxSeed(yy)*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,...(nat.solarTrk?{solarTrk:nat.solarTrk}:{}),csp:PROFILES.csp,real:true});
        let dem=0, chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
-       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW(applyYearFleetOptions({...FIXED,...st}))+Math.max(0,st.newOcgtMW||0),...(()=>{ const c=x.coalCommittedMW; if (!c) return {}; let s=0,m=Infinity; for(let i=0;i<c.length;i++){ s+=c[i]; if(c[i]<m) m=c[i]; } return {cmMean:s/c.length, cmMin:m}; })(),...(x.ss?{ssReq:x.ss.reqGWs,ssMin:x.ss.minGWs,ssSyncMin:x.ss.syncMinGWs,ssP5:x.ss.p5GWs,ssShortH:x.ss.shortH,ssShortGWsH:x.ss.shortGWsH,ssLiftH:x.ss.liftH,ssLiftMWh:x.ss.liftMWh,ssLiftFloorMWh:x.ss.liftFloorMWh,ssResH:x.ss.resH||0,ssResMWh:x.ss.resMWh||0, ssCoalFirstH:x.ss.coalFirstH||0,ssLiftCappedH:x.ss.liftCappedH}:{}),...(x.btm?{btmStock:x.btm.stockGWh,btmDemChg:x.btm.demandChangeGWh,vppMW:x.btm.vppMW||0,vppDis:x.btm.vppDischargeMWh||0,vppInc:x.btm.vppIncrementalDischargeMWh||0,vppCost:x.btm.vppCostR||0,vppWear:x.btm.vppWearR||0}:{}),...(x.geyser?{gyMW:x.geyser.enrolledMW,gyRed:x.geyser.reducedGWh,gyCost:x.geyser.costR}:{}),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; const rt=reipppRetiredMW(st.scenarioYear,{...FIXED,...st}); return ((st.windMW||FIXED.windMW)-(rt?rt.wind:0))*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)-avonDedisaOffMW({...FIXED,...st},st.scenarioYear)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6,{wy:String(yy),ps:(x.E.ps||0)/1e6,li:x.battTierTWh?x.battTierTWh.li:null,vrfb:x.battTierTWh?x.battTierTWh.vrfb:null,fe:x.battTierTWh?x.battTierTWh.fe:null}]); } }
+       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{cfm:(x.coalFuelMWh===undefined?null:x.coalFuelMWh),cg:x.E.coal||0,gx:(()=>{ const P0={...FIXED,...st}, ccC=Math.max(0,(P0.ccgtMW||0)+(P0.newCcgtMW||0)), g=x.stack.ccgt, d=x.stack.diesel||new Float64Array(g.length); const S=()=>({mwh:0,hours:0,starts:0,on:false,prev:0,up:0,last:[],band:[0,0,0,0]}), cc=S(), oc=S(), dl=S(), Q=10, BH=[12,40,72]; const add=(o,v,h)=>{ const on=v>1; o.mwh+=v; if(on){o.hours++; if(!o.on) o.starts++;} o.on=on; o.up+=Math.max(0,v-o.prev); const a=Math.round(o.prev/Q), b=Math.round(v/Q); for(let k=a;k<b;k++){ const off=o.last[k]===undefined?Infinity:h-o.last[k]; o.band[off<BH[0]?0:off<BH[1]?1:off<BH[2]?2:3]+=Q; } for(let k=0;k<b;k++) o.last[k]=h; o.prev=v; }; for(let i=0;i<g.length;i++){ const gi=g[i]||0; add(cc,Math.min(gi,ccC),i); add(oc,Math.max(0,gi-ccC),i); add(dl,d[i]||0,i); } return {ccMW:ccC, ocMW:Math.max(0,P0.newOcgtMW||0), dlMW:dieselAvailMW(applyYearFleetOptions({...P0})), cc:[cc.mwh,cc.hours,cc.starts,cc.up,...cc.band], oc:[oc.mwh,oc.hours,oc.starts,oc.up,...oc.band], dl:[dl.mwh,dl.hours,dl.starts,dl.up,...dl.band]}; })(),fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0,ocE:(x.E.diesel||0)+(x.ocgtMWh||0),ocCap:dieselAvailMW(applyYearFleetOptions({...FIXED,...st}))+Math.max(0,st.newOcgtMW||0),...(()=>{ const c=x.coalCommittedMW; if (!c) return {}; let s=0,m=Infinity; for(let i=0;i<c.length;i++){ s+=c[i]; if(c[i]<m) m=c[i]; } return {cmMean:s/c.length, cmMin:m}; })(),...(x.ss?{ssReq:x.ss.reqGWs,ssMin:x.ss.minGWs,ssSyncMin:x.ss.syncMinGWs,ssP5:x.ss.p5GWs,ssShortH:x.ss.shortH,ssShortGWsH:x.ss.shortGWsH,ssLiftH:x.ss.liftH,ssLiftMWh:x.ss.liftMWh,ssLiftFloorMWh:x.ss.liftFloorMWh,ssResH:x.ss.resH||0,ssResMWh:x.ss.resMWh||0, ssCoalFirstH:x.ss.coalFirstH||0,ssLiftCappedH:x.ss.liftCappedH}:{}),...(x.btm?{btmStock:x.btm.stockGWh,btmDemChg:x.btm.demandChangeGWh,vppMW:x.btm.vppMW||0,vppDis:x.btm.vppDischargeMWh||0,vppInc:x.btm.vppIncrementalDischargeMWh||0,vppCost:x.btm.vppCostR||0,vppWear:x.btm.vppWearR||0}:{}),...(x.geyser?{gyMW:x.geyser.enrolledMW,gyRed:x.geyser.reducedGWh,gyCost:x.geyser.costR}:{}),...(${LCOE_ON}?{bd:x.E.batt||0,bE:(st.newBattMW||0)*(st.newBattHours||4)+FIXED.battPowerMW*FIXED.battHours,wd:x.E.wind||0,wn:(()=>{const N=st.newWindMW||0; if(!N) return 0; const on=((st.bldWindModern??FIXED.bldWindModern)|0)>0, T=on?windModOf(nat.wind):nat.wind, kc=on?windNewCorr(st.bldWindCorr??FIXED.bldWindCorr):1; let q=0; for(let h=0;h<T.length;h++) q+=Math.min(1,kc*T[h]); return N*q;})(),we:(()=>{let q=0; for(let h=0;h<nat.wind.length;h++) q+=nat.wind[h]; const rt=reipppRetiredMW(st.scenarioYear,{...FIXED,...st}); return ((st.windMW||FIXED.windMW)-(rt?rt.wind:0))*q;})(),ds:x.E.diesel||0,dc:(FIXED.ocgtDieselMW||0)-avonDedisaOffMW({...FIXED,...st},st.scenarioYear)+(st.newOcgdMW||0)}:{})},((x.E.wind||0)+(x.E.pv||0))/1e6,{wy:String(yy),ps:(x.E.ps||0)/1e6,li:x.battTierTWh?x.battTierTWh.li:null,vrfb:x.battTierTWh?x.battTierTWh.vrfb:null,fe:x.battTierTWh?x.battTierTWh.fe:null}]); } }
       return JSON.stringify(o); })()`));
    // LEVELS_OUT=<file> (design note version 2, test 4; message 673 (h); measurement only): each long store's level at the end of every day
    // (iron-air fe, vanadium vrfb, pumped storage ps, MWh), by weather year, from the first draw's seed, one JSON line per checked year.
@@ -322,6 +392,16 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
        o[yy]={fe:day(x.socByTier&&x.socByTier.fe),vrfb:day(x.socByTier&&x.socByTier.vrfb),ps:day(x.socPs)}; }
      return JSON.stringify(o); })()`));
      fs.appendFileSync(process.env.LEVELS_OUT, JSON.stringify({year:y, levels:lev})+'\n'); }
+   // HOD_OUT=<file> (message 704 (i); measurement only): unserved energy by hour of day (SAST) and by month, summed over the runs, from
+   // the check's own draws (K draws a weather year, 10 if K is unset; the same seeds), one JSON line per checked year. Unset: no change.
+   if (process.env.HOD_OUT){ const KH=+(process.env.K||10); const hod=JSON.parse(w.eval(`(function(){ const H=new Array(24).fill(0), M=new Array(12).fill(0);
+       const ms=[0,744,1416,2160,2880,3624,4344,5088,5832,6552,7296,8016,8760]; let n=0, tot=0;
+       for (const yy of __wxYears()){ const nat=__wxNat(yy);
+         for(let k=0;k<${KH};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+__wxSeed(yy)*7919};
+           const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,...(nat.solarTrk?{solarTrk:nat.solarTrk}:{}),csp:PROFILES.csp,real:true});
+           const u=x.stack.unserved; let m=0; for(let i=0;i<u.length;i++){ while(i>=ms[m+1]) m++; const v=u[i]||0; if(v>0){ H[i%24]+=v; M[m]+=v; tot+=v; } } n++; } }
+       return JSON.stringify({runs:n, totalGWh:tot/1e3, byHourGWh:H.map(v=>+(v/1e3).toFixed(4)), byMonthGWh:M.map(v=>+(v/1e3).toFixed(4))}); })()`));
+     fs.appendFileSync(process.env.HOD_OUT, JSON.stringify({year:y, ...hod})+'\n'); }
    // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
    // AVERAGE COST PER MWH SERVED (user, 11 Oct 2026): the engine's avgCost (grid cost, rooftop capex and the shed
@@ -351,7 +431,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    { const S=o[0].length-1, sh=o.map(b=>b[0]).sort((a,b)=>a-b), q=f=>sh[Math.min(sh.length-1,Math.floor(f*sh.length))];
      const byW={}; for (const b of o){ const k=b[S].wy; (byW[k]=byW[k]||[]).push(b[0]); }
      const ms=k=>{ const v=o.map(b=>b[S][k]).filter(v=>v!=null); return v.length?v.reduce((a,c)=>a+c,0)/v.length:null; };
-     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.cocCase=COC_USED; if (COC_USED!==P.cocCase) r.cocCaseRecorded=P.cocCase; r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
+     r.recordedSettings=RECSET; r.pricingBasis=PAGE_BASIS?"page (midpoint vintage, the page's pool rule)":"run (vintage, the run's pool use)";
+     r.weather=(WX||'modelled, twelve years')+(WXF?', '+WXF:'')+(WXC?', wind corrected'+(WXT?' ('+path.basename(WXT)+')':''):'')+(LUL?', lull '+LNAME:'')+(PVT?', new tracking solar at '+PVT:'')+(SSHIFT?', PVGIS solar '+SSHIFT+' min earlier':'')+(CMD?', coal practice floor to '+(CMD-1):'')+(C690.length?', '+C690.join(', '):''); r.cocCase=COC_USED; if (COC_USED!==P.cocCase) r.cocCaseRecorded=P.cocCase; r.shedPct={p50:q(0.5),p90:q(0.9),p95:q(0.95),p99:q(0.99),max:sh[sh.length-1]};
      r.shedByWeatherYear=Object.fromEntries(Object.entries(byW).map(([k,v])=>[k,v.reduce((a,c)=>a+c,0)/v.length]));
      r.storeTWh={ps:ms('ps'),li:ms('li'),vrfb:ms('vrfb'),fe:ms('fe')}; }
    // GAS FLOOR OUTPUT (user, 13 Oct 2026, s_irpgas): gas output counted toward the engine's annual floor (the first
@@ -388,7 +469,20 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
        for (const yy of Object.keys(P.sched)) if (+yy<=y) for (const [k,t] of [['wind','wind'],['pv','pv'],['off','offshore'],['batt','batt'],['vrfb','vrfb'],['ironair','ironair']]) f+=(+P.sched[yy][k]||0)*A(t)*1000;
        r.faultBn=f/1e9; r.costWithFault=r.cost+r.faultBn+(r.ss?r.ss.costBn:0); } }
    { const L=o[0].findIndex(v=>v!==null&&typeof v==='object'), e=o.reduce((a,b)=>a+(+b[L].ocE||0),0)/o.length, cap=o.reduce((a,b)=>a+(+b[L].ocCap||0),0)/o.length;
-     r.ocgtCF=cap>0?e/(cap*8760):null; r.ocgtTWh=e/1e6; r.ocgtCapMW=cap; r.ocgtCFUnder6=r.ocgtCF!=null?r.ocgtCF<0.06:null; }
+     r.ocgtCF=cap>0?e/(cap*8760):null; r.ocgtTWh=e/1e6; r.ocgtCapMW=cap; r.ocgtCFUnder6=r.ocgtCF!=null?r.ocgtCF<0.06:null;
+     // coalPartLoad (message 710 (b)): the engine's part-load factor on this year's coal, fuel-equivalent MWh over MWh, across the runs; null
+     // if the engine does not report coalFuelMWh.
+     const cg=o.reduce((a,b)=>a+(+b[L].cg||0),0), cf=o.every(b=>b[L].cfm!=null)?o.reduce((a,b)=>a+b[L].cfm,0):null; r.coalPartLoad=(cf!=null&&cg>0)?cf/cg:null; }
+   // gasDetail (message 714 (a)): by technology, combined-cycle gas, open-cycle gas on LNG (the slice above the combined-cycle MW, as the
+   // engine books it) and diesel open cycle: MW, TWh, capacity factor, hours running and starts a year (fleet level: hours the
+   // technology goes from idle to running; each unit starts at least that often), and MW started a year (the sum of each hour's rise in
+   // output: the MW of units started if units run at full output; a proxy for sizing start costs), and that MW by time offline
+   // (message 716 (d)): output in 10 MW layers, a layer started when output rises through it, offline since the last hour output
+   // covered it (a layer not yet run this year counts as 72 h or more); bands below 12 h, 12-40 h, 40-72 h, 72 h or more. The mean
+   // over the runs.
+   { const L=o[0].findIndex(v=>v!==null&&typeof v==='object'), n=o.length, G=o[0][L].gx;
+     const one=(k,mw)=>{ const m=i=>o.reduce((a,b)=>a+b[L].gx[k][i],0)/n; const twh=m(0)/1e6; return {MW:mw, TWh:+twh.toFixed(4), CF:mw>0?+(twh*1e6/(mw*8760)).toFixed(4):null, hours:+m(1).toFixed(1), starts:+m(2).toFixed(1), mwStarted:+m(3).toFixed(0), mwStartedByOff:{lt12h:+m(4).toFixed(0), h12to40:+m(5).toFixed(0), h40to72:+m(6).toFixed(0), ge72h:+m(7).toFixed(0)}}; };
+     r.gasDetail={ccgt:one('cc',G.ccMW), ocgtGas:one('oc',G.ocMW), dieselOC:one('dl',G.dlMW)}; }
    // LNG STORAGE ADEQUACY (user, 6 Oct 2026; LNG=1). Gas burned in each of the loop's own stress windows
    // that bind this model year (fromYear <= y), re-dispatched on that window's weather year and outage seed,
    // and in the worst 14 days of the runs above, against the energy one floating storage unit holds.
@@ -406,8 +500,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      r.lngCargoPJ=cargoPJ; r.lng14dMaxCargoes=r.gas14dMaxGWh*fuelPerGWh/cargoPJ;
      r.lngWindowsOver=r.lng.filter(z=>z.cargoes>1).length; r.lngWorstCargoes=Math.max(0,...r.lng.map(z=>z.cargoes));
    }
-   // OPTIMISER GRID COST (TODO 14ar): when GRID is set, the engine's own transmission charge on new wind, solar and
-   // offshore (txChargeFor) is replaced by what the optimiser charged every technology, less repurposed MW.
+   // OPTIMISER GRID COST (TODO 14ar): when GRID is set, what the optimiser charged every technology, less repurposed MW. Until 5 Nov
+   // 2026 the engine's own charge was a tiered regional one on wind and solar (txChargeFor), replaced here by this figure.
    // costGrid is the system cost on that basis; cost stays the engine's own figure.
    if (GRID_ON){
      const ga=JSON.parse(w.eval(`JSON.stringify(Object.fromEntries(['wind','pv','batt','vrfb','ironair','ccgt','offshore','phes','phel','ocgt','ocgd'].map(t=>[t,bldGridAnn(t,{...FIXED,...state})])))`));
@@ -415,7 +509,10 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      let g=0; for (const t of Object.keys(built)) g+=Math.max(0,built[t]-(rpCum[t]||0))*ga[t]*1000;
      // Wind on the Cape curtailment allowance pays no integration charge (14 Oct 2026).
      g-=Math.min(cwCum, Math.max(0,cum.wind-(rpCum.wind||0)))*(+w.eval('state.txRPerKWyr ?? FIXED.txRPerKWyr'))*(+w.eval('state.bldGridIntVreShare ?? FIXED.bldGridIntVreShare'))*1000;
-     const engTx=+w.eval(`txChargeFor(${cum.wind},${cum.pv},${cum.off},{...FIXED,...state,...${JSON.stringify(over)}})`);
+     // From message 710 (c) the engine charges this itself (gridChargeR, on the run's own pool use): engTx is the engine's own grid charge,
+     // and it must equal the optimiser's basis here; a difference above R1m a year stops the check. costGrid then equals cost.
+     const engTx=+w.eval(`gridChargeR({...state,...${JSON.stringify(over)}},{...FIXED,...state,...${JSON.stringify(over)}})`);
+     if (!PAGE_BASIS && Math.abs(engTx-g)>1e6) throw new Error('grid charge: the engine '+(engTx/1e9).toFixed(4)+' bn against the optimiser basis '+(g/1e9).toFixed(4)+' bn in '+y);
      r.gridOptBn=g/1e9; r.engTxBn=engTx/1e9; r.costGrid=r.cost-r.engTxBn+r.gridOptBn; r.rpCumMW=Object.values(rpCum).reduce((a,b)=>a+b,0);
    }
    // Life-extension capex (TODO 14as): the engine charges fixed O&M on what is online; each extended plant's

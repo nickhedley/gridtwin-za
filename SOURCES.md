@@ -13,7 +13,7 @@ superseded queue entries. Never add the delta. See rules.md.
 
 | source | cadence | edition loaded | feeds |
 |---|---|---|---|
-| IPP Office, *An Overview - ipppp* | quarterly | Q4 2025/26, as at 31 Mar 2026, p.18 | `by_source.reipppp`, both identities |
+| IPP Office, *An Overview - ipppp* | quarterly | Q1 2026/27, as at 30 Jun 2026, p.18 (replaces Q4 2025/26; the same figures plus Doornhoek, already in the file) | `by_source.reipppp`, both identities |
 | Power Futures Lab, UCT GSB, IPP monitor | half-yearly | H1 2026 | `by_source.private`, `pfl_cod_h1_2026.json` |
 | Ember, South Africa electricity | monthly-ish | 2025 full year + 12m to May 2026 | `validate_benchmarks.js` |
 | PyPSA-RSA fleet (Meridian Economics), `fleet_by_region_v2.csv`, public subset `nodal/fleet_units.csv` from build 2026-10-16c (section 'Fleet table: public slim file, private full original'; licence and our use: section 'PyPSA-RSA: licence and what we take', to confirm with Meridian) | static | 51 BASE plants | per-unit UC parameters, GPS, heat rates. Capacity-weighted coal CO2 1.008 t/MWh against our 1.04. THERMAL ONLY - not the wind/solar plant list. DECOMMISSIONING DATES UNSOURCED (checked 12 Oct 2026): one year per half-station, no commissioning dates, no source column; in the repository unchanged since 1 Oct 2026 apart from Camden, Grootvlei and Hendrina moved to 2030 in UC_FLEET on 4 Oct. PyPSA-RSA's public repository (github.com/MeridianEconomics/pypsa-rsa, commit 89872c1, 8 Apr 2026) has a documentation plant table with other dates (Tutuka 2040/2042, Kriel 2024/2028, Arnot 2027/2030) and a Coal_Flexibilisation workbook (scenarios/.../phased_decommissioning.xlsx) with the same station capacities as our file, whose ESKOM_2035 scenario matches our Tutuka (2030 to 2031) and Arnot's first date (2027) but not Kriel (2026 to 2031); neither states a source. Our dates are therefore a PyPSA-RSA schedule of unknown basis (identified 13 Oct 2026: the decommissioning dates of the 'conventional' sheet of Meridian's ME IRP 2024 workbook, scenarios/ME IRP 2024/sub_scenarios/fixed_technologies.xlsx, BASE rows, commit 89872c1: Meridian's scenario assumption, not an Eskom plan; c4's standing coal is bldCoalMW, every UC_FLEET unit with a date after the year, scaled to 39,692 MW in 2026, so c4 retires Tutuka* in 2030 and Tutuka** in 2031 as that workbook does), not IRP 2025's 50-year life (IRP plan p.24: Tutuka's 50-year life falls in 2031-2042, user) |
@@ -55,7 +55,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | NTCSA MYPD 6 revenue application, Table 10 | three-yearly | FY2026-FY2028, Aug 2024 | what the System Operator pays for ancillary services: reserves R1,445m, demand response R521m, reactive power R468m, system restoration R376m in FY2026. Behind asReserveRMWh and asVoltagePotRm |
 | GB ancillary contract outcomes (NESO pathfinders, ORPS, stability market) | rolling | as at 2026 | the only prices a battery has actually been paid for voltage and stability: Capenhurst GBP 2,600/MW-yr, ORPS about GBP 1,500, stability GBP 5,000-25,000. Behind asVoltageRMWyr and a cross-check on asInertiaRkWyr |
 | Eskom cost-to-serve study | occasional | 2024/25, Table 41 | the residential allocation factors in the retail panel: generation 1.258, new transmission 1.361, network and retail 4.021 (C12 urban residential against the system average) |
-| Eskom TDP 2024, Table 4 | annual | 2024 edition | generation integration is 51% of the first five years' R112.5bn, R225bn for 46.9 GW = R4,800/kW = `txRPerKWyr` 402 |
+| Eskom TDP 2024, Table 4 | annual | 2024 edition | generation integration is 51% of the first five years' R112.5bn, R225bn for 46.9 GW = R4,800/kW = `txRPerKWyr` 364 at the network cost of capital, 7.1% over 40 years (402 at 8% until build 2026-10-31b; corrected here 5 Nov 2026, message 710 (f)) |
 | PNNL Grid Energy Storage Technology Cost and Performance Assessment | occasional | 2019 | iron-air and vanadium fixed O&M at USD 10/kW-yr, R165. NOT chemistry-specific: PNNL gives one figure for all battery chemistries |
 | NTCSA Medium Term System Adequacy Outlook | annual | 2026-2030 | the external adequacy comparison in `validate_external.js`: the risk-adjusted 2030 case, more than 4 TWh unserved and OCGT near 45% |
 | Deakin et al., *Comparing Generator Unavailability Models with Empirical Distributions* | one-off | 2022 | the published repair-time figures rejected for this fleet (40 h for coal, after Edwards 2017) and the persistence evidence behind `outageMttrH` 480 |
@@ -311,8 +311,8 @@ comparing against any study built on an ERA5 composite.
 ## Original source notes, carried across verbatim
 
 **IPP Office** — https://www.ipp-projects.co.za/Publications/
-Quarterly *"An Overview – ipppp"* reports. The current data is from **Q4 2025/26, as at
-31 March 2026**; page 18 carries capacity online and in construction by province and
+Quarterly *"An Overview – ipppp"* reports. The current data is from **Q1 2026/27, as at
+30 June 2026** (checked 5 Nov 2026, message 705: equal to the file by technology; replaces Q4 2025/26, as at 31 March 2026); page 18 carries capacity online and in construction by province and
 technology, which is the table the rebuild is built on. Covers REIPPPP and RMIPPPP
 **only** — no private or wheeled capacity. The quarterly gives no project names; the
 annual overview does.
@@ -427,9 +427,10 @@ Lazard LCOE+ 2025      Levelized Cost of Energy+ (June 2025), Appendix A, LCOE v
                          LCOE anchor (FIXED.lcoeDiesel). An international gas-peaker reference,
                          not a South African diesel figure. Cite; do not reproduce the table.
 Eskom TDP 2024           2025-2034: 14,494 km, 210 transformers, 133,000 MVA, 56 GW, about
-                         R440bn (DBSA; NTCSA CEO, Aug 2026). txRPerKWyr 402 = generation
+                         R440bn (DBSA; NTCSA CEO, Aug 2026). txRPerKWyr 364 = generation
                          integration only: R225bn for 46.9 GW of grid-connected generation
-                         (56 GW less 9 GW rooftop), R4,800/kW, over 40 years at 8%. The whole
+                         (56 GW less 9 GW rooftop), R4,800/kW, over 40 years at 7.1% (402
+                         at 8% until build 2026-10-31b). The whole
                          plan over 56 GW would give about R660/kW-yr; the earlier 600 came from
                          that method on R390bn. 14,200 km, 53 GW and probably R390bn are
                          TDP 2022. Corrected 6 Oct 2026: this note said R390bn and 600.
@@ -982,7 +983,7 @@ harness/ext/grid_distances.py.
 - Circuit ratings: 132 kV 205 MW (the reV class); 400 kV 1,000 MW (MISO 345 kV 750 MW scaled by voltage squared).
 - Storage bay: the high-case 132 kV bay (R76m x 0.607) per 90 MW scheme, the BESIPPPP BW1 preferred bidders'
   mean (IPP Office REIPPPP historical data note, 7 Nov 2025).
-- Integration: txRPerKWyr, R402/kW-yr (TDP 2024 Table 4, generation integration share).
+- Integration: txRPerKWyr, R364/kW-yr (TDP 2024 Table 4, generation integration share, at 7.1%; R402 at 8% until build 2026-10-31b).
 - Distances, straight line to the nearest substation: wind 37.7 km and solar 21.9 km, MW-weighted over 254
   and 1,161 approved DFFE REEA projects (nodal/reea_projects.json); beyond 18 km, 22.0 and 9.7. Pumped hydro
   73.4 km to 275 kV or more, GWh-weighted over the ANU AAA and AA class medians (beyond 18 km, 55.4). Gas
@@ -1205,6 +1206,20 @@ Decisions are the user's (7 Oct 2026).
   January 2024 rands. Read as nominal at 5.7% it would be about 5.3% real.
   BW7's disclosed R31.4bn for the first 1,760 MW (department statement, as reported by Green Building Africa and Engineering News,
   6 Jan 2025), about R18,470/kW in 2026 rands, is an upper reference only; it may include connection, development and financing.
+- SA CPI, checked 5 Nov 2026 (message 710 (e), (f); a research helper read the releases through search extracts, statssa.gov.za not
+  reachable): P0141 headline, December 2021 = 100: April 2021 96.7 (April 2022 release, Table A), January 2022 100.2 (January 2022
+  release, Table A), so April 2021 to January 2022 is 1.036 (the model's 1.059 was April 2021 to April 2022; corrected). December
+  2024 = 100: January 2024 97.2, January 2025 100.3, January 2026 103.8 (January 2025 and January 2026 releases, Table A), confirming
+  3.2% and 3.5%. 2020 to January 2026: 1.291, derived from the 2021 average (84.0, Table B1) and 2021's average inflation (4.5%);
+  the 2020 average index itself not found published. Page numbers not verified.
+- NREL ATB fixed O&M (5 Nov 2026, from NREL's ATBe.csv files on its open-data bucket): BLD_FOM rooftop R495 = ATB 2023 residential
+  PV $30.33/kW_DC-yr (2021$); ccgt R462 = ATB 2022 NG F-frame CC $27.94 (2020$); offshore R1,403 = $85, no edition's base year
+  (nearest ATB 2024 fixed-bottom class 3, moderate, 2024, $85.3 in 2022$). All at R16.50, no US CPI.
+- Avon and Dedisa (DoE peakers, 1,005 MW; 5 Nov 2026, message 710 (f)): NTCSA's MYPD 6 application (August 2024, NERSA's copy)
+  splits their cost into 'DoE Peaking - Capital costs' (R2,174m in the year the model uses, the 'fixed' component) and 'Other
+  costs' (the energy component); Eskom's NERSA hearing decks: compensated for available capacity and energy produced. Their O&M is
+  done by the owners' contractor (Peakers Operations, ENGIE). So their fixed O&M sits inside the fixed payment, and the model's
+  fomDiesel on the same MW (R360/kW-yr, R0.36bn a year to 2030) probably counts it twice. Indirect evidence; no clause seen.
 - SA CPI, January 2024 to January 2026: 1.032 x 1.035 = 1.068 (Stats SA headline, 3.2% y/y January 2025 and
   3.5% y/y January 2026, as reported; the Stats SA site is not reachable from the cloud environment).
 - IRP 2025 assumptions workbook (uploaded by the user), Learning Rates sheet, base case: onshore wind (BW6)
@@ -2122,6 +2137,11 @@ a unit's capability or a fleet's practice; they are not interchangeable.
   The coal in start fuel is priced at the model's R47.94/GJ (below). These replace the earlier estimate of about R1,500 per MW
   (wear alone, at June 2026 CPI). With start fuel, R2,103-3,872 (large subcritical) and R2,120-4,191 (supercritical) per MW per start, against UC_FLEET's R99-160 per MW: about 13-39 times higher. Whether PyPSA-RSA's start costs
   include wear or only fuel is not documented (question for Meridian, TODO 14hu).
+  - Gas rows (message 716 (d)), as read by the user's advisor from the same report, pending a read of it here: lower-bound start costs
+    per MW of capacity, 2011 US dollars, medians, excluding fuel [hot, warm, cold]: large frame combustion turbine $32, $126, $103;
+    aero-derivative $19, $24, $32; combined cycle $35, $55, $79. Their hot, warm and cold by time offline are not in that reading. Used
+    only to size what the model leaves out (harness/pathway/gas_starts.js; RESULTS 'Gas start costs the model leaves out'): neither the
+    build LP nor the engine charges gas starts. The report's current home is docs.nlr.gov (NREL renamed), not tried from the session.
 - The model's coal cost per GJ, R47.94 (message 361 (b)): costCoal R553/MWh sent out (Eskom FY2026 integrated report: coal and
   other generation primary energy cost R91.5 bn, p.56, over coal sent out 165,431 GWh, p.7) over 11.53 GJ/MWh, the heat rate implied
   by the model's coal CO2 of 1.108 t/MWh sent out (Eskom's CO2, p.35, less its open-cycle output at the diesel factor) at 96.1 kg

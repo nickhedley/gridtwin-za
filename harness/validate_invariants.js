@@ -581,10 +581,16 @@ const SCENARIOS = {
                + `${G.unmetTWh.toFixed(1)} TWh`);
   }
 
-  // ── THE SITING PANEL PRICES A MEGAWATT AS THE ENGINE DOES ──────────────────
-  // Added 22 Sep 2026. The panel used to run its own corridor arithmetic while the engine used
-  // the tiered regional charge, so the same megawatt had two prices. Both now call txTierCharge:
-  // a region with headroom pays the shallow rate, one without pays the beyond-the-plan rate.
+  // ── THE SITING PANEL ON THE REGIONAL TIERS, THE ENGINE ON THE FLAT RATE, AT THE RECORDED GAP ──
+  // Added 22 Sep 2026, when the panel and the engine both priced on the regional tiers (txTierCharge). Restated 5 Nov 2026 with its
+  // cause (user, message 715 (a)): from message 710 (c) the engine charges the build optimiser's flat rate per MW (gridChargeR), and the
+  // panel keeps the regional tiers by the user's decision. Two things must hold. The panel prices a megawatt on the tiers: a region with
+  // headroom pays the shallow rate, one without the beyond-the-plan rate. And the panel's capacity-weighted mean tier on Fossil-free
+  // 2040's new wind, solar and offshore (txChargeFor: the national build on the developers' register shares, REEA_SHARE, each region
+  // filled through its tiers) sits against the engine's flat rate on the same MW at the gap recorded in RESULTS ('The siting panel's
+  // tiers against the engine's flat rate', SITING_GAP_PCT). It fails if the panel leaves the tiers, if its data do not load (txChargeFor
+  // then falls back to the flat rate and the gap closes), or if either side moves without the gap being re-recorded.
+  const SITING_GAP_PCT = -14.7896;   // build 2026-11-05h, Fossil-free 2040: R351.35 against R412.33/kW-yr
   {
     const p1 = w.document.createElement('script');
     p1.textContent = `window.__site = null;
@@ -593,49 +599,74 @@ const SCENARIOS = {
         .then(([a, b]) => { try {
             window.__site = { room: a, none: b,
               base: ({ ...FIXED, ...state }).txRPerKWyr,
-              multNC: (typeof txRegionMult === 'function') ? txRegionMult('Northern Cape') : null };
+              multNC: (typeof txRegionMult === 'function') ? txRegionMult('Northern Cape') : null,
+              gap: (() => { const u = { ...state, ...PRESETS['Fossil-free 2040'] }, P = { ...FIXED, ...u };
+                const wi = +(u.newWindMW || 0), pv = +(u.newPvMW || 0), of = +(u.newOffshoreMW || 0), mw = wi + pv + of;
+                gridChargeR(u, P); const per = gridChargeR.last.per;
+                const tier = txChargeFor(wi, pv, of, P), flat = (wi * per.wind + pv * per.pv + of * per.offshore) * 1000;
+                return { tierRkW: tier / mw / 1000, flatRkW: flat / mw / 1000, pct: 100 * (tier / flat - 1),
+                         data: typeof REEA_SHARE !== 'undefined' && !!HEADROOM_LOOKUP && !!bldTxCurve }; })() };
           } catch (e) { window.__site = { err: String(e) }; } },
               e => { window.__site = { err: String(e) }; });`;
     w.document.body.appendChild(p1);
     for (let waited = 0; !w.__site && waited < 5000; waited += 100)
       await new Promise(r => setTimeout(r, 100));
     const S = w.__site;
-    if (!S || S.err) check('the siting panel prices a megawatt as the engine does', false,
+    if (!S || S.err) check('the siting panel prices on the regional tiers and the engine on the flat rate, at the recorded gap', false,
                            S ? S.err : 'no result within 5 s');
     else if (S.multNC == null || S.room.annualChargeR === undefined)
-      check('the siting panel prices a megawatt as the engine does', false,
-            'the panel does not return an annual charge - it is still on its own arithmetic');
+      check('the siting panel prices on the regional tiers and the engine on the flat rate, at the recorded gap', false,
+            'the panel does not return an annual charge - it is on its own arithmetic');
     else {
       const shallow = 0.25 * S.base * 1000 * 1000;                 // 1,000 MW at the shallow rate
       const beyond = 1.5 * S.multNC * S.base * 1000 * 1000;        // 1,000 MW beyond the plan
-      check('the siting panel prices a megawatt as the engine does',
+      const G = S.gap;
+      check('the siting panel prices on the regional tiers and the engine on the flat rate, at the recorded gap',
             Math.abs(S.room.annualChargeR - shallow) < 0.02 * shallow
-            && Math.abs(S.none.annualChargeR - beyond) < 0.02 * beyond,
+            && Math.abs(S.none.annualChargeR - beyond) < 0.02 * beyond
+            && G.data && Math.abs(G.pct - SITING_GAP_PCT) < 0.01,
             `KwaZulu-Natal R${(S.room.annualChargeR / 1e6).toFixed(0)}m against R${(shallow / 1e6).toFixed(0)}m `
-            + `expected; Northern Cape R${(S.none.annualChargeR / 1e6).toFixed(0)}m against R${(beyond / 1e6).toFixed(0)}m`);
+            + `expected; Northern Cape R${(S.none.annualChargeR / 1e6).toFixed(0)}m against R${(beyond / 1e6).toFixed(0)}m; `
+            + `Fossil-free 2040: the panel's mean tier R${G.tierRkW.toFixed(2)} against the engine's flat R${G.flatRkW.toFixed(2)}/kW-yr, `
+            + `${G.pct.toFixed(2)}% against ${SITING_GAP_PCT.toFixed(2)}% recorded; siting data ${G.data ? 'loaded' : 'MISSING'}`);
     }
   }
 
-  // ── TRANSMISSION IS CHARGED ONCE, AND THE PLAN'S DELIVERY MATTERS ──────────
-  // Added 22 Sep 2026 with the tiered regional charge. Two things must hold: capacity beyond
-  // headroom is no longer charged twice (the reinforcement line is gone, so the engine returns
-  // no gridReinforceR), and how much of the TDP arrives changes the bill, because it moves MW
-  // between the TDP tier and the beyond-the-plan tier.
+  // ── TRANSMISSION IS CHARGED ONCE, ON THE BUILD OPTIMISER'S BASIS ──────────
+  // Added 22 Sep 2026 with the tiered regional charge (charged once; the TDP's delivery moved the bill). Restated 5 Nov 2026 for the
+  // user's decision (message 710 (c)): the engine charges the build LP's basis. Three things must hold on Fossil-free 2040: no separate
+  // reinforcement charge; the engine's grid charge equals the LP's basis recomputed here (each technology's charge per MW, bldGridAnn
+  // with the optimiser's grid cost on, as on this preset, else the integration charge; less the freed coal MW on the LP's rule); and
+  // the TDP's delivery no longer changes it.
   {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__tx = (function(){ try {
-      const at = c => simulate({ ...state, ...PRESETS['Fossil-free 2040'], tdpConfidencePct: c }, PROFILES);
-      const full = at(100), none = at(0);
-      return { full: full.txCapexR / 1e9, none: none.txCapexR / 1e9,
+      const u0 = { ...state, ...PRESETS['Fossil-free 2040'] };
+      const at = c => simulate({ ...u0, tdpConfidencePct: c }, PROFILES);
+      const full = at(100), none = at(0), P = { ...FIXED, ...u0 };
+      // The build LP's charge per MW a year, written out here: bldGridAnn when its grid cost is on, else the integration charge alone.
+      const on = (P.bldGridCost | 0) > 0, tx = P.txRPerKWyr, vk = +(P.bldGridIntVreShare ?? 1);
+      const integ = t => ['batt', 'vrfb', 'ironair'].includes(t) ? (P.bldGridBattHalf ? 0.5 : 0) * tx : (t === 'wind' || t === 'pv') ? vk * tx : tx;
+      const rate = t => on ? bldGridAnn(t, P) : integ(t);
+      const g = k => +(u0[k] || 0);
+      const mw = { wind: g('newWindMW'), pv: g('newPvMW'), offshore: g('newOffshoreMW'), ccgt: g('newCcgtMW'), ocgt: g('newOcgtMW'), ocgd: g('newOcgdMW'),
+                   phes: g('newPsMW'), batt: g('newBattMW'), vrfb: g('newVrfbMW'), ironair: g('newIronAirMW') };
+      let gross = 0; for (const t of Object.keys(mw)) gross += mw[t] * rate(t);
+      // The LP's freed-connection rule: BLD_TECHS less rooftop, and pumped storage; not bldRpExclude; a charge above 0; highest charge first.
+      const ex = new Set(P.bldRpExclude || []); let left = u0.repurpose ? Math.max(0, P.coalDecomMW || 0) : 0, credit = 0;
+      for (const t of ['wind', 'pv', 'batt', 'vrfb', 'ironair', 'ccgt', 'phes'].filter(t => !ex.has(t) && rate(t) > 0).sort((a, b) => rate(b) - rate(a))){
+        const used = Math.min(left, mw[t]); credit += used * rate(t); left -= used; }
+      return { full: full.txCapexR / 1e9, none: none.txCapexR / 1e9, expect: (gross - credit) * 1000 / 1e9, on, off: mw.offshore,
                reinforce: full.gridReinforceR === undefined };
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const T = w.__tx;
-    if (!T || T.err) check('transmission is charged once and responds to the TDP', false, T ? T.err : 'no result');
-    else check('transmission is charged once and responds to the TDP',
-               T.reinforce && T.none > T.full * 1.2,
-               `R${T.full.toFixed(1)}bn a year with the TDP delivered against R${T.none.toFixed(1)}bn `
-               + `without it; separate reinforcement charge ${T.reinforce ? 'removed' : 'STILL PRESENT'}`);
+    if (!T || T.err) check('transmission is charged once, on the build optimiser\'s basis', false, T ? T.err : 'no result');
+    else check('transmission is charged once, on the build optimiser\'s basis',
+               T.reinforce && Math.abs(T.full - T.expect) < 1e-6 && T.full === T.none,
+               `R${T.full.toFixed(3)}bn a year against R${T.expect.toFixed(3)}bn recomputed (optimiser grid cost ${T.on ? 'on' : 'off'}; offshore `
+               + `${T.off} MW in it); with the TDP delivered and not: R${T.full.toFixed(3)}bn and R${T.none.toFixed(3)}bn; separate reinforcement `
+               + `charge ${T.reinforce ? 'removed' : 'STILL PRESENT'}`);
   }
 
   // ── THE RESERVE REQUIREMENT GROWS WITH VARIABLE GENERATION ─────────────────
