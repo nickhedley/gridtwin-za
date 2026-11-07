@@ -1,0 +1,4 @@
+524a525,527
+>  // REP_POOL (test 15, message 767 (c), option B; a test copy, on no branch of the page): the representative days drawn from the twelve
+>  // modelled weather years. pathway/pool_days.js is harness/pathway/test15/pool/pool_days.js (claude/test15-two-stage-x2xqfl).
+>  if (process.env.REP_POOL) require(path.resolve('pathway/pool_days.js'))(w, process.env);

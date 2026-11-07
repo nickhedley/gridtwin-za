@@ -368,6 +368,34 @@ So by the engine and the 365-day year, two stages' 17-25% more solar and lithium
 leaves less margin; on the one-stage LP it also costs R7.45 bn more over the path. By the rule one stage stays the headline and the gap is
 reported.
 
+### Message 767 (c): twelve-year representative days, option B: it runs (decided 7 Nov, 10:50 SAST)
+
+Room: Fossil-free and then Deep take one solve at a time (767 (a)); (b)'s two key solves (switch on, then off) take the second slot until
+about 7 Nov evening; option B's pass then runs in the second slot overnight 7-8 Nov (pass 1, its engine check at 20 draws, the 100-draw
+gate). Report by 9 Nov 18:00 SAST. If a check fails or the solve outruns that, it moves to after the note and I say so by 8 Nov 18:00 SAST.
+
+The code (harness only, a test copy; nothing in index.html): harness/pathway/test15/pool/. pool_days.js replaces the page's
+bldRepDaysClustered when REP_POOL=1 (pool_hook.diff: three lines in pathway_perfail.js), worktree /home/user/gtza-pool (2d86faa + the key
+patch). Choices, each the one closest to accuracy:
+- The pool: the twelve modelled years 2014-2025 (metered 2025 out), 4,380 days, each its calendar day's demand (the reference profile,
+  as the engine) with that year's wind and solar as the LP reads them (new wind at 40%, tracking). The pool's means equal the page's
+  twelve-year means (checked to 1e-9), so finding 3's factors (f3d) fall away; the twelve-year means are re-imposed on the weighted
+  typical days as today (step 4).
+- Extremes (pool_extremes.py, extremes.py's criteria across the pool; fleets: today's and the fin pass's, 2026-2040; the key's 13 came
+  from c7, Deep and Fossil-free fleets, not on hand here): 15 days, 2014:318, 2015:160-162, 2015:175-177, 2016:132-134, 2017:358, 2018:0,
+  2021:159, 2022:141, 2023:359. Peak demand is the same calendar day in every year (one demand profile): the copy with the highest peak
+  net load. Three-day windows run within a year. Two more than the key's 13: today's rule kept (the union frozen, the typical days
+  n minus the extremes), so 25 days = 15 extremes (each a twelfth of a day) + 10 typical; 27 days (12 typical) would be a sensitivity.
+- Typical days: Ward on today's 72 features over the other 4,365 days, by the nearest-neighbour chain (test_nnward.js: the same
+  partition as the page's bldWardClusters on 2025's 365 days with 12 clusters, 2014's with 10 and 2015-2017's 1,095 with 10; 3/3).
+  Medoids as today; weights cluster size / 12. The LP names days by calendar day, so no two representatives may share one: none did.
+  Typical days 2022:57 (48.7 days a year), 2015:76 (26.0), 2018:90 (53.0), 2015:94 (34.5), 2016:143 (28.4), 2023:183 (34.3), 2022:197
+  (20.0), 2016:230 (52.6), 2015:332 (24.7), 2024:336 (41.7).
+- Linking: one chronology, 2025's modelled year (the key's reference year), each day reading its own cluster's representative.
+- Checks in the hook on every build: 25 distinct days in order, weights 365, each series' weighted annual mean the twelve-year mean (wind
+  0.35889, new wind 0.40000, fixed tilt 0.22363, tracking 0.28445), map365 reads only representative days. The pass-1 LP writes (key
+  388b8499d9, 116 MB, the same size as the key's).
+
 ### Message 767 (b): the coal minimum down time and start-up lead time in the build LP (claude/coal-mindown-lp)
 
 The code: claude/coal-mindown-lp from claude/twin-retime 2d86faa, a7ac4c0 (9e523ab, then the start pricing). FIXED.bldCoalMinDownLP
