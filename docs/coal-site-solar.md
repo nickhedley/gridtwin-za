@@ -1,7 +1,7 @@
 # Coal-site solar: a solar class the build LP chooses
 
 Design note for message 763 (a). No code. Branch claude/coal-site-solar from claude/twin-retime a77c7b2 (build 2026-11-06b).
-Written 7 Nov 2026, 09:40-11:30 SAST. Build only on Nick's word (763 (b)); claude/c7-runs is not touched.
+Written 7 Nov 2026, 09:40-09:50 SAST; section 2a added 10:20 SAST (message 773). Build only on Nick's word (763 (b)); claude/c7-runs is not touched.
 
 ## 1. What the model does today, and what the 8 Nov key does
 
@@ -68,6 +68,65 @@ bldGridIntVreShare plus the 132 kV spur annuity; GA['pv'] on the current page, f
 6.6% of annual energy, more in summer and none in winter (section 3). The class should therefore fill early and fast, up to the
 cap, unless summer curtailment makes the marginal MW worthless; the run will say. Expect the answer to sit between the national
 pool (solar on freed connections at the national profile) and the same-area cap (almost none), and closer to the pool.
+
+## 2a. Eskom's repowering pipeline beside the cap and the key's pool (message 773)
+
+Eskom's pipeline at six stations (Engineering News, 17 Jun 2025, cited at FIXED.bldRpExclude): solar PV 3,184 MW, batteries
+700 MW, gas 1,000 MW at Kriel, wind 168 MW at Arnot, about 5 GW in all. Station by station (the same article), beside each
+station's coal MW on the model's dates (UC_FLEET, scaled as bldCoalMW scales the fleet) and its closure year:
+
+| station | pipeline solar, MW | other pipeline MW | coal MW retired (scaled) | closure (UC_FLEET) | solar as a share of the freed MW |
+|---|---|---|---|---|---|
+| Komati | 122 | battery 150 | 109 (retired 2022, outside bldCoalMW(2026)) | 2022 | 112% |
+| Grootvlei | 195 | battery 150 | 546 | 2030 | 36% |
+| Arnot | 800 | battery 200, wind 168 | 2,013 | 2027 and 2029 | 40% |
+| Camden | 680 | – | 1,419 | 2030 | 48% |
+| Hendrina | 587 | – | 1,052 | 2030 | 56% |
+| Kriel | 800 | battery 200, gas 1,000 (being assessed) | 2,530 | 2028 and 2030 | 32% |
+| six stations | 3,184 | 1,718 | 7,669 | | 42% |
+
+Set beside the two limits:
+
+| year | class cap: coal MW retired in Mpumalanga (section 2) | the key's same-area pool (rpcap_, message 733) | pipeline solar at stations retired by then |
+|---|---|---|---|
+| 2029 | 3,177 | 0 (2026 row; between rows the cap steps with the siting share) | 1,600 (Arnot, Kriel's first three units) |
+| 2030 | 9,243 | about 300-400 (interpolated between the 2026 and 2035 rows) | 3,062 (all but Komati) |
+| 2035 | 15,333 | 658 | 3,062 |
+| 2040 | 16,986 | 1,290 | 3,062 |
+
+Three readings. The key's same-area pool is below Eskom's own plan at six stations by a factor of about five in 2035 and 2.5 in
+2040, so the 8 Nov key's central understates coal-site solar on the evidence we hold. The class's cap is three times the
+pipeline in 2030 and five times it in 2035: the pipeline uses about 42% of the freed MW at its six stations for solar, and
+none of the Tutuka, Duvha, Matla, Kriel-later or Majuba MW, where no project is public. Komati's 122 MW sits above that
+station's 109 MW of freed capacity (its pipeline includes a battery and wind on the same connection), which bears on D3.
+
+Status (searched 7 Nov 2026; web, Eskom's site not read): the 17 Jun 2025 article reports National Treasury approval for
+Eskom to continue large-scale renewables and development begun at Hendrina, Camden and Grootvlei; the gas at Kriel is being
+assessed; a World Bank programme document (P514521, 2025) frames a repowering programme of up to 1,572 MW of solar and wind and
+850 MW of batteries; Engineering News (6 Mar 2026) reports Eskom's shut, repower or run-on decision promised for September
+2026, with the answer turning on new capacity being contractually secured. No financial close or construction start was found
+for any of the six beyond Komati's first phase, and the outcome of the September decision was not found. To verify before the
+run (one search; TODO when built).
+
+Floor, cap or check. Recommendation: a check, not a floor and not a cap.
+
+- Not a cap. The pipeline is one owner's programme at six stations. The physical limit on the class is the freed connection
+  MW, which is what the cap already is; private developers on Eskom's leased station land and the stations without a public
+  project would add to the pipeline, not be bounded by it. Capping the class at 3,184 MW would write Eskom's 2025 plan into
+  every year to 2040.
+- Not a floor in the central. Planning practice (the IRP's own treatment, the model's MIN_BUILD floors for the 2026-27 fleet in
+  service) fixes only committed capacity: at financial close or under construction. None of the six is shown to be there. A
+  floor would force 3,062 MW of coal-site solar by 2030 whatever its cost, and would hide the one thing the class is built to
+  find: whether solar on a freed connection at Mpumalanga's resource is worth building at the model's costs.
+- A check, two parts. (1) The run reports the class's build in 2029, 2030 and 2035 against the pipeline's 1,600 / 3,062 /
+  3,062 MW; if the LP builds less than the pipeline at the stations retired by then, that is a finding (Eskom's programme is
+  dearer than the alternatives on these costs), reported, not corrected. (2) A sensitivity, one LP, with the pipeline as a
+  floor on the class (b_pvc cumulative >= the station-by-station MW from each closure year), labelled 'Eskom's pipeline
+  committed', so the cost of treating the plan as firm is on the record beside the central. If a station reaches financial
+  close before the key is final, that station's MW moves from the sensitivity to the central's floor, as the 2026-27 fleet did.
+- D1 is affected: 700 MW of batteries and 1,000 MW of gas at the same six sites are evidence that storage and gas do take
+  freed connections in practice (RULES.md, decisions without Nick follow practice), which favours D1 (ii): the pool stays for
+  storage and gas, sharing the Mpumalanga MW with the class in one row. Section 8 is updated.
 
 ## 3. The profile: where it comes from and its provenance
 
@@ -212,8 +271,9 @@ and the class's run on twin-retime's own settings, labelled as not the key's bas
 - D1. The pool for storage and gas. 'No pool' in 763 can mean (i) the rp_ mechanism goes entirely when the class is on, the
   freed MW being the class's alone; or (ii) rp_ stays for lithium, vanadium, iron-air, gas and pumped storage, sharing the
   Mpumalanga MW with the class in one row. Batteries pay no integration charge in the LP as it stands (bldGridBattHalf off),
-  so (ii) matters only for gas and pumped storage. Recommendation: (i), the literal reading and the simplest LP; (ii) is a
-  one-row change later.
+  so (ii) matters only for gas and pumped storage. Recommendation (revised, message 773): (ii), since Eskom's own pipeline puts
+  700 MW of batteries and 1,000 MW of gas on the same six sites (section 2a); (i) is the simpler LP if Nick prefers the literal
+  reading.
 - D2. The page. (i) bldPvCoalSite 0 on the page, 1 in the pathway's environment: no visible text, no preset moves, the page's
   stored panels regenerate for the fingerprint only; or (ii) a page control with a caption, which changes visible text and
   needs the advisor's review before merge. Recommendation: (i) for this pull request; (ii) after the key, if the class enters
@@ -233,5 +293,9 @@ and the class's run on twin-retime's own settings, labelled as not the key's bas
   nodal/regional_renewable_capacity.json solar_mw (the national weights); nodal/profiles_solar_tracking_map.json meta.
 - claude/c7-runs RESULTS 'The 7 Nov table', 'The 8 Nov key's worktree and its checks before the loop'; HANDOVER (h), the
   pass timings; claude/regional-audit docs/regional-audit.md (siting shares, the regional data inventory).
+- Section 2a: Engineering News, 'Eskom reports progress on 5 GW repowering pipeline as $2.6bn CIF approval is secured',
+  17 Jun 2025 (the station-by-station MW); Engineering News, 'Repowering coal power stations', 6 Mar 2026 (the September
+  2026 decision); World Bank Program Information Document P514521 (the 1,572 MW and 850 MW programme frame); web search,
+  7 Nov 2026, Eskom's site not read.
 - The figures in section 3 were computed on 7 Nov 2026 from the file as it stands on a77c7b2 (scratchpad, not committed);
   the build recomputes them in the check and in RESULTS.
