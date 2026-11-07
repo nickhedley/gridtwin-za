@@ -23674,3 +23674,25 @@ added 995 MW of open-cycle diesel by 2035 for the three 2034 stress windows; mos
 +0.98 GW open-cycle, +1.36 GW solar) is that pass, not the changes acting on one another. The 2030 change is the same-area cap's
 (-2.99 GW solar, +7.7 Mt CO2 with 40% wind). Coal retired early: none on the key; Test 15's two-stage central retired 3,177 MW from 2029
 and the one-stage fin pass 703 MW (775; different basis: national pool, 42% wind, no f3d or k8).
+
+### The 8 Nov key's sensitivity: new wind at 42.0% (message 761 (a), 772 (b)): R23.0bn cheaper, less solar and lithium, adequate
+
+The key with new wind at the central 42.0% (no WIND_CORR; else the key's settings and code, gtza-key; loops/solve_keysens.sh kw42).
+Adequate at pass 2 (pass 1 e8148605ea, 2034 at 20.05 GWh against 20, three 2034 windows added; pass 2 ae0abd8d4d). Outputs
+harness/pathway/final/key/pathway_kw42.json, engine_kw42.json (20 draws), engine_kw42_k100.json (gate, common seeds).
+
+| | Key (40%) | 42% | Change |
+|---|---|---|---|
+| LP objective, R bn | 1,587.28 | 1,564.24 | -23.04 |
+| Wind, GW new (2030 / 2035 / 2040) | 9.75 / 27.25 / 44.75 | 10.29 / 27.79 / 45.28 | +0.54 each year |
+| Solar, GW | 3.70 / 17.94 / 25.42 | 3.70 / 16.42 / 22.27 | 0 / -1.52 / -3.14 |
+| Lithium, GW (GWh) | 1.84 / 8.49 / 12.79 (3.7 / 32.7 / 68.3) | 1.57 / 8.12 / 11.72 (3.7 / 29.1 / 57.3) | -0.27 / -0.37 / -1.07 |
+| Open-cycle gas + diesel, GW | 0 / 1.00 / 4.67 | 0 / 0.83 / 5.19 | 0 / -0.17 / +0.53 |
+| Engine cost, R bn a year (2030 / 2035 / 2040) | 244.5 / 280.9 / 331.0 | 244.3 / 276.6 / 326.4 | -0.2 / -4.3 / -4.6 |
+| Curtailment, TWh | 0.42 / 10.76 / 27.57 | 0.58 / 11.45 / 29.79 | +0.16 / +0.69 / +2.22 |
+| CO2, Mt | 139.5 / 85.1 / 48.2 | 135.9 / 82.4 / 47.8 | -3.6 / -2.7 / -0.4 |
+| Unserved, 20 draws, GWh (se) | 1.63 (0.41) / 6.47 (1.06) / 8.40 (1.22) | 1.24 (0.29) / 7.75 (1.13) / 7.85 (1.01) | |
+| Gate, 100 draws, 2034 / 2035 / 2036 | 5.44 (0.51) / 6.25 (0.51) / 10.60 (0.74) | 5.62 (0.52) / 7.52 (0.54) / 12.62 (0.78) | |
+
+Both well inside the standard on the gate (margins 7 to 15 GWh, many standard errors). No coal retired early in either. Wind's
+build path is set by the annual limits and the 2026-2028 floors, so the extra 0.54 GW is the same in every year from 2030.
