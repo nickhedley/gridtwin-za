@@ -368,6 +368,47 @@ So by the engine and the 365-day year, two stages' 17-25% more solar and lithium
 leaves less margin; on the one-stage LP it also costs R7.45 bn more over the path. By the rule one stage stays the headline and the gap is
 reported.
 
+### Message 767 (b): the coal minimum down time and start-up lead time in the build LP (claude/coal-mindown-lp)
+
+The code: claude/coal-mindown-lp from claude/twin-retime 2d86faa, a7ac4c0 (9e523ab, then the start pricing). FIXED.bldCoalMinDownLP
+(COAL_STATE='{"bldCoalMinDownLP":1}'): 0, off, writes the LP byte for byte (the key's pass-1 LP stays c10bea45a9 on the key's code;
+on: 9d97de7be4). 1: for every hour of the commitment chain, sd_ (MW taken off, at least the commitment removed) and one row, committed +
+taken off in the last W hours <= available, W = coalMinDownH + the start-up time of a unit offline that long = 24 + 6 (warm) = 30 h,
+back along the same chain as the commitment rows (a free-standing day wraps once); the minimum down-time inequality of Rajan and
+Takriti (2005) on the fleet's MW. Each start is priced as a start after the minimum down time (warm, 1.26 times the hot start on the
+check's LP): with the down time on, no hot start can happen. harness/validate_coal_mindown.js: 10/10; with the down-window rows removed
+7/10 (the solved LP recommits coal within 30 h on 64 hours, up to 10.5 GW over), with the start-up time left out of the window 8/10, with
+starts priced hot 9/10. Suite parts on the branch: lint 3/3, structure 26/27 (the stale stamp), lp 62/62, invariants 176/176.
+BUILD_STAMP and the stored panels are left for the merge.
+
+First result, before the key's pass 1 (scripts harness/pathway/test15/mindown/run_md.sh): the fin pass build on 2035's 365 days, every
+build fixed, the key's settings otherwise (new wind at 40%, so not 750 (c)'s 2.32 TWh on 05j's settings), switch off against on:
+
+| 2035, fin build, 365-day LP, key settings | Curtailment, TWh | Coal, TWh | Lithium discharge, TWh | Unserved, GWh |
+|---|---:|---:|---:|---:|
+| Switch off (the key's LP) | 1.44 | 65.90 | 12.18 | 14.08 |
+| Switch on, starts priced hot (first version, 9e523ab) | 1.67 | 66.15 | 12.13 | 14.08 |
+| Switch on (a7ac4c0) | 1.74 | 66.25 | 11.98 | 14.08 |
+
+The rule holds in every hour and binds in none: the LP keeps enough available coal uncommitted to rotate units, taking some off at
+midday and starting others that have been off 30 hours (commitment taken off over the year 735 GW off, 687 GW on; mean daily swing 3.1
+and 3.0 GW). Physically allowed for a fleet with spare units; the engine's commitment, which weighs each unit's starts, does not rotate
+that way. So the rule moves the LP's 2035 curtailment by 0.3 TWh against an engine gap of about 9 TWh (765). The key's pass 1 with the
+switch on is solving (from 7 Nov 08:30 UTC); then the key's own pass 1 (off) for the same comparison, the engine at 20 draws, and 2035
+on 365 days against the engine on metered 2025.
+
+### Message 767 (d): flexible coal, for the main session's final-run list (design minimums at 0.40 in the LP and the engine)
+
+First evidence: 765 (a)'s table below (fin build, 2035, metered 2025 alone, 20 draws). With the design minimums 0.57/0.52 -> 0.40 alone,
+the engine's curtailment falls 10.86 -> 7.56 TWh and coal 67.49 -> 63.92 TWh, unserved 28.45 -> 27.52 GWh (se 6.80): the largest single
+move after the start-cost weighing, and the only one of the two that does not raise unserved. Engine only: the LP's side is not yet run.
+- How to set it, one switch for both: COAL_STATE='{"coalMslDesign":[0.40,0.40]}' on the pathway run. The LP's coal minimum follows the
+  engine (bldCoalMinFrac 'engine': coalFleetMinShare, each year's capacity-weighted unit minimums from coalUcOpts), and pathcheck.js
+  applies the run's recorded coal settings (state from the record's coal, line 252), so the build and its engine check move together.
+- A second candidate already in the page: the flexible-coal checkbox's second step (coalFlexPct 2; FIXED.coalFlexDeepMsl 0.40 on units
+  retiring after coalFlexDeepAfterYear, 2035, with the flexible ramp; AEMO's 2025 thermal audit and CEA as sources). It reaches the LP the
+  same way (coalUcOpts). Which one is the main session's (the final-run list says 'exact setting to confirm').
+
 ### Messages 767 (a) and 769: Fossil-free on the 8 Nov key
 
 - The key's code: claude/twin-retime 2d86faa (PR #162 with this test's two-stage Deep and Fossil-free fix, merged) with claude/c7-runs

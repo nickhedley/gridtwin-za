@@ -1,0 +1,11 @@
+2026-11-07T08:14:02Z p1_on piece, shell PID 5688, 2d86faa  + 3 files changed, 119 insertions(+), 24 deletions(-), COAL_STATE={"bldCoalMinDownLP":1}, deadline 10:04Z, load 2.17 2.54 2.08, memory free 13G
+2026-11-07T08:14:02Z p1_on node PID 5736
+2026-11-07T08:14:57Z y365 fin365_off (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldCoalMinDownLP":0}) dump rc=0 dumped LP pass 1 b95ba9594f 
+2026-11-07T08:19:04Z y365 fin365_off solve 247 s Optimal; calendar days: curtailment 1.44 TWh, coal 65.90 TWh, lithium discharge 12.18 TWh, unserved 14.079 GWh, coal taken off 0.0 TWh-h
+2026-11-07T08:19:25Z y365 fin365_on (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldCoalMinDownLP":1}) dump rc=0 dumped LP pass 1 d8a2d116df 
+2026-11-07T08:23:18Z y365 fin365_on solve 233 s Optimal; calendar days: curtailment 1.67 TWh, coal 66.15 TWh, lithium discharge 12.13 TWh, unserved 14.079 GWh, coal taken off 0.7 TWh-h
+2026-11-07T08:28:54Z p1_on piece 1 stopped by PID after 15 min (starts were priced hot; the branch now prices them after the minimum down time); restarts on the new code
+2026-11-07T08:29:49Z p1_on piece, shell PID 8535, 2d86faa  + 3 files changed, 127 insertions(+), 28 deletions(-), COAL_STATE={"bldCoalMinDownLP":1}, deadline 10:19Z, load 4.12 4.92 4.11, memory free 12G
+2026-11-07T08:29:49Z p1_on node PID 8583
+2026-11-07T08:30:38Z y365 fin365_on (/tmp/claude-0/-home-user-gridtwin-za/89044349-14ce-5480-b08a-321dc7b30183/scratchpad/fin/pathway_fin_05h.json, COAL_STATE={"bldCoalMinDownLP":1}) dump rc=0 dumped LP pass 1 58335c62ba 
+2026-11-07T08:35:41Z y365 fin365_on solve 303 s Optimal; calendar days: curtailment 1.74 TWh, coal 66.25 TWh, lithium discharge 11.98 TWh, unserved 14.079 GWh, coal taken off 0.7 TWh-h
