@@ -23525,3 +23525,18 @@ undiscounted at the pathway's 8%, per kW of enrolled power a year. The cost is R
   local network value is counted); and the basis of Eskom's rate, per MW of demand reduction or per MW enrolled, is still to be
   confirmed with Plentify, so the two figures may not be on the same basis. No one-step tests for now (772 (c)): the dual bounds
   stand.
+
+### The 8 Nov key's piece 2 starts from piece 1's basis (message 776): presolve off in every solve; the basis valid, filed under its own LP key and taken up by HiGHS
+
+Checked 7 Nov 2026, 08:45-09:05 UTC, on the key's loop (gtza-key, loops/solve_key.sh key; pass-1 LP key c10bea45a9).
+- Presolve: every solve of the key and its 42% sensitivity runs with HIGHS_OPTS {"simplex_strategy": 2, "threads": 2, "presolve":
+  "off"} (read from both solvers' environments, PIDs 3003 and 4979).
+- Piece 1 (cold, 07:24-08:34 UTC) stopped at its job deadline; highs_native.py saves a basis only when HiGHS marks it valid (message
+  678 (e)), and it saved lpc_key/c10bea45a9085fc64401496b11dbdd309be35c78.partial.basis.json: 703,480 basic of 703,480 rows, 184,514 of
+  them structural columns (a cold slack start has none). Piece 2's solver (08:35 UTC) was started with HIGHS_BASIS_IN set to that file.
+- The log cannot show an iteration count carrying on: highs_native.py runs HiGHS with its output off, and HiGHS counts from zero in each
+  new process. Probe instead (scratchpad basis776/probe.py, the same LP and options, one thread, nice 19, 20 s limit): HiGHS 1.15.1
+  reports 'Solving LP with useful basis', basis validity 1; after factorising it (234.6 s at nice 19 beside two solves) the objective
+  stands at R1,454.5bn with 3,086 dual and 175,875 primal infeasibilities, against k8's optimum on the same basis of R1,541.5bn. So
+  piece 2 resumes from piece 1's point; each resume costs the factorisation, a few minutes of a piece.
+- Test 15's fault (a cut with presolve on keeps no valid basis) does not arise here: no change made.
