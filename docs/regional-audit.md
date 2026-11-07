@@ -2292,7 +2292,7 @@ Treatment: a cross-check. No limit in the rebuilt table is changed; the candidat
 765 kV line, Mercury's side) are for the user's decision, each with its cause stated here, and would be made in build_corridors.py and reported
 with the old and new figures by corridor.
 
-## Message 756: the corridor table under one rule on a labelled copy, and the reruns on it (7 Nov 2026, revised 22:15; nothing here is to be quoted; scratch and branch only; the table of record, corridors_v2.json, is not changed; the user decides on the copy in the morning)
+## Message 756: the corridor table under one rule on a labelled copy, and the reruns on it (7 Nov 2026, revised 22:15; nothing here is to be quoted; scratch and branch only; written while corridors_v2.json was the table of record; by message 762 the copy, corridors_v3.json, is the table of record from 7 Nov 2026)
 
 ### (a) The record on the engine dumps
 
@@ -2431,3 +2431,28 @@ Amended in the 729 judgement: the credit moves the mix only where it reaches the
 GW beyond the 22.3 GW pool with or without the credit, so the credit is inframarginal and the mix is the same to the decimal; the pathway's
 2040 solar sits within 2 GW of the pool, so the cap reaches its margin and moves 3.7 GW of solar and 1.5 of wind, for R21.7bn on its LP, which
 also carries the adequacy standard and the coupling across years. 'About a gigawatt of wind at most' is withdrawn.
+
+## Message 762: the table of record from 7 Nov 2026, and the cheapest fix for Gauteng's 2040 shortfall (nothing here is to be quoted)
+
+### (a) The table of record
+
+The user's decision (762): the rule's table, corridors_v3.json (every substation, generator and line end by the fleet file's boundary set,
+rsa_supply_regions.gpkg; area_map_v3.json for the siting; tdp_lines_v3.json for the plan's lines), is the table of record from 7 Nov 2026.
+corridors_v2.json is superseded and kept for the before-and-after of 756; the 738 (b), 739, 741, 743 and 753 rows on it stand as recorded, each
+labelled with its table. The first Gamma to Kappa 765 kV line stays a sensitivity (corridors_v3gk.json) until a public source gives its
+in-service date. Every run from here carries CORR_FILE corridors_v3.json, AREA_MAP area_map_v3.json and, where the plan's lines are in,
+TDP_FILE tdp_lines_v3.json; the queue scripts from queue24 do.
+
+### (b) The cheapest fix for Gauteng's 58 GWh of unserved energy in 2040 with the TDP's lines
+
+Cases (queue24; 2040, weather 2025, fixed build, the TDP's lines on the table of record; 3-hour blocks against a block base at the same length,
+the corridor case hourly as well): the LP's own lithium sited freely (BATT_FREE), and corridors at R21,700 per MW-km at the run's 0.071. Net is
+the addition's annuity less the fuel and carbon saved less the unserved energy saved at R12,300 per MWh, then at R87,000.
+
+Results: pending (queue24 is running).
+
+### (c) Standing by
+
+The final builds (Least-cost, Fossil-free, Deep) run on the table of record from the night of 8 Nov when given; the chain is the patched
+pathcheck's dump (pathcheck_dump.js in the worktree's harness, DUMP_WY, DUMP_K, DUMP_PAGE, DUMP_OUT), then the 718 and 738 (b) case lists with
+the new prefix, with CORR_FILE, AREA_MAP and TDP_FILE as above.
