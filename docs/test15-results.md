@@ -395,8 +395,8 @@ run all twelve modelled years with 2025's demand.
    feasible in each. (A) all twelve chronologies, each cyclic: exact for storage across the twelve years, twelve times the linking.
    Recommended: B for a first pass (like for like with today's size), D if long-duration storage moves in it.
 3. The LP's size and solve time. Today's one-stage pass-1 LP: 422,595 columns and 703,481 rows, of which the linking is 33,600 columns
-   (8%) and 109,500 rows (16%: 15 years x 6 stores x 365 days). B: unchanged (25 days). D: about 489,800 columns (1.16 times) and 922,500
-   rows (1.31). A: about 792,000 columns (1.87) and 1,908,000 rows (2.71). Today's pass solves in 75-80 min beside a second solve with
+   (8%) and 109,500 rows (16%: 15 years x 6 stores x 365 days). B: unchanged (25 days). D: about 488,300 columns (1.16 times) and 922,500
+   rows (1.31). A: about 784,000 columns (1.86) and 1,908,000 rows (2.71). Today's pass solves in 75-80 min beside a second solve with
    presolve on (4,527-4,818 s, run (6), test 8) and about 2 h 10 min with presolve off in pieces; B about the same, D an estimated 1.5-2
    times, A an estimated 3-6 times (8-16 h with presolve off): estimates, not runs. A two-stage step's year y on 365 days has no pooled
    counterpart (4,380 chronological days); two stages would keep its 365-day year on one weather year.
