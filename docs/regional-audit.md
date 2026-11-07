@@ -2449,7 +2449,15 @@ Cases (queue24; 2040, weather 2025, fixed build, the TDP's lines on the table of
 the corridor case hourly as well): the LP's own lithium sited freely (BATT_FREE), and corridors at R21,700 per MW-km at the run's 0.071. Net is
 the addition's annuity less the fuel and carbon saved less the unserved energy saved at R12,300 per MWh, then at R87,000.
 
-Results: pending (queue24 is running).
+| case (2040, the TDP's lines, table of record) | curtailed TWh | coal TWh | unserved GWh (Gauteng) | addition | gross R bn a year | fuel and carbon saved | unserved energy saved | net at R12,300 | net at R87,000 |
+|---|---|---|---|---|---|---|---|---|---|
+| base, hourly | 79.4 | 91.3 | 58 | none | - | - | - | - | - |
+| base, 3-hour blocks | 79.0 | 91.2 | 42 | none | - | - | - | - | - |
+| the LP's own lithium, sited freely (3-hour blocks) | 75.9 | 89.4 | 21 | 2.2 GW / 18 GWh, 8.3 hours: Eastern Cape 1.1 GW, Hydra Central 1.0; none in Gauteng | 4.65 | 4.38 | 20 GWh | a cost of 0.02 | a saving of 1.51 |
+| corridors at R21,700 per MW-km (3-hour blocks) | 13.8 | 37.2 | 0 | 19.6 GW: North West to Northern Cape 7.7, Eastern Cape to KwaZulu-Natal 5.9, Northern Cape to Western Cape 3.3, Free State to Northern Cape 2.7 | 5.81 | 60.16 | 42 GWh | a saving of 54.86 | a saving of 57.99 |
+| corridors at R21,700 per MW-km (hourly) | 14.4 | 37.9 | 2 | 19.7 GW, the same four | 5.83 | 60.43 | 56 GWh | a saving of 55.29 | a saving of 59.48 |
+
+One line each. Lithium: the LP's own store is 2.2 GW / 18 GWh at the Eastern Cape and Hydra Central exits (none in Gauteng), R4.7bn a year, which clears 20 of the 42 GWh and nets a cost of R0.02bn at R12,300 and a saving of R1.5bn at R87,000; the LP does not buy the store that clears the rest, since the last 21 GWh are worth less than it costs even at R87,000. Corridors: 19.6 GW on the four Karoo and coastal exits for R5.8bn a year clears all 42 GWh and 65 TWh of curtailment, and nets a saving of R55bn at R12,300 and R58bn at R87,000 (R55bn and R59bn hourly, 56 of the 58 GWh cleared). The Gauteng shortfall is a Karoo-exit problem on this table as on the last: neither fix is sited in Gauteng, and the corridor fix is the cheaper by two orders of magnitude net.
 
 ### (c) Standing by
 
