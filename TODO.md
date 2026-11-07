@@ -43,6 +43,13 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14jz. Regional audit (branch claude/regional-audit, docs/regional-audit.md; user, 7 Nov 2026, message 770): (a) the soft link between the
+national chain and the ten-area LP (722 (c)) moves to after the note, with L1 and R2 to R7 (718); (b) the site guard build waits for PR #161's
+merge, Nick gives the word then; (c) the final builds (Least-cost, Fossil-free, Deep) run on the table of record corridors_v3.json from the
+night of 8 Nov, with the 738 (b) case list and 762 (b)'s two fixes (the LP's own lithium sited freely; corridors at R21,700) for 2035 and 2040,
+nets at R12,300 then R87,000 (queue_final_template.sh); (d) the note's network section drafted in docs/regional-audit-note-draft.md for Nick
+and the advisor by 9 Nov 12:00 SAST, not for publication. Gamma to Kappa 765 kV stays a sensitivity until a public in-service date (762).
+
 14jf. Done for c6a (user, 26 Oct 2026, messages 391 and 392): (1) as FLEET_2026 and the 2026 floors at their in-service share; (2) as ROOF12 in the pathway runs only, the page keeping its 2025-matched add-back. Was: two fixes for Nick's decision before the next central (user, 26 Oct 2026, message 384 (g); RESULTS 'c6's 2026 fleet, plant by
 plant'): (1) 2026 plant counted from each plant's commercial operation, not 1 January (adds 4.7 TWh of coal and 5.1 Mt in 2026
 only); (2) the rooftop add-back in build_demand_2026.py on the same solar the engine check removes (each weather year's, or the
