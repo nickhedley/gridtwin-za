@@ -48,9 +48,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (process.env.START_COUNT === '1') w.eval(`{ const src = buildUCSchedule.toString();
    const a = 'startCostH = _startCost(i, pl ? pl.g : st.hoursOff);', b = 'return {ucAvail, ucMinStable, ucStartCost};';
    if (src.split(a).length !== 2 || src.split(b).length !== 2) throw new Error('START_COUNT: buildUCSchedule is not as expected');
-   const s2 = src.replace(a, a + ' __ucGross += st.cap;').replace(b, '{ let __n = 0; for (let __h = 1; __h < ucAvail.length; __h++) __n += Math.max(0, ucAvail[__h] - ucAvail[__h - 1]); window.__ucCalls.push({ gross: __ucGross, net: __n }); } ' + b)
-     .replace(/^function buildUCSchedule\(([^)]*)\)\s*\{/, 'function buildUCSchedule($1) { let __ucGross = 0;');
-   if (!/let __ucGross = 0;/.test(s2)) throw new Error('START_COUNT: buildUCSchedule signature not found');
+   const i0 = src.indexOf('{'); if (!src.startsWith('function buildUCSchedule(') || i0 < 0) throw new Error('START_COUNT: buildUCSchedule signature not found');
+   const s2 = (src.slice(0, i0 + 1) + ' let __ucGross = 0;' + src.slice(i0 + 1)).replace(a, a + ' __ucGross += st.cap;')
+     .replace(b, '{ let __n = 0; for (let __h = 1; __h < ucAvail.length; __h++) __n += Math.max(0, ucAvail[__h] - ucAvail[__h - 1]); window.__ucCalls.push({ gross: __ucGross, net: __n }); } ' + b);
    window.__ucCalls = []; window.__ucRun = []; buildUCSchedule = (0, eval)('(' + s2 + ')'); }`);
  // WX_WINDCORR=1 (message 684 (d)): the modelled years' wind through nodal/wind_corr_table.json (FIXED.wxWindCorr); recorded in weather.
  // On by default from message 696 (a) (FIXED.wxWindCorr 1); WX_WINDCORR=0 runs the stored, uncorrected series (the sensitivity).
