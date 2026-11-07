@@ -43,21 +43,21 @@ All rows the every-change pass on weather 2025 [EC]; the unserved energy is one 
 
 ## Proposed trim to 250 words (not adopted; for the user's choice)
 
-The binding limits are the Karoo's exits. With the TDP's inter-area lines by their dates, the least-cost build curtails 35 TWh in 2035 and 79
-TWh in 2040, against 3 and 13 TWh with no network limits; the Northern Cape's exits to the North West and the Free State are at their limit
-about 8,700 hours a year. An independent cross-check broadly agrees on the binding corridors.
+The binding limits are the Karoo's exits. With the TDP's inter-area lines, the least-cost build curtails 35 TWh in 2035 and 79 TWh in 2040,
+against 3 and 13 with no network limits; the Northern Cape's exits to the North West and the Free State are at their limit 8,700 hours a
+year. An independent cross-check broadly agrees on the binding corridors.
 
-Today's fleet does not fill the corridors between areas. The curtailment paid for today (R4bn expected this financial year, as reported)
-comes from limits inside areas and from how coal is run, which this test does not represent.
+Today's fleet does not fill the inter-area corridors. The curtailment paid for today (R4bn expected this financial year, as reported) comes
+from limits inside areas and from how coal is run, outside this test.
 
-At 293 km of line a year, building the TDP's inter-area lines in the order of the binding corridors rather than by the TDP's dates cuts 2032
-curtailment from 20 to 9 TWh, R7.6bn a year.
+At 293 km of line a year, building the TDP's lines in the order of the binding corridors rather than by its dates cuts 2032 curtailment from
+20 to 9 TWh, R7.6bn a year.
 
-R2.8bn a year buys 1 TWh less curtailment in 2035 as 2 GW of lithium at the exits, or 45 TWh as corridors; the lithium is a net cost at the
-engine's value of unserved energy, the corridors a net saving at either value.
+R2.8bn a year buys 1 TWh less curtailment in 2035 as 2 GW of lithium at the exits, or 45 TWh as corridors: lithium a net cost at the engine's
+value of unserved energy, corridors a net saving at either.
 
-With the TDP's lines, Gauteng is short 58 GWh in 2040 because of the Karoo exits: the model's store sits at the Eastern Cape and Hydra
-Central exits and clears half; 20 GW of corridor beyond the TDP, R5.8bn a year, clears all of it and 65 TWh of curtailment.
+With the TDP's lines, Gauteng is short 58 GWh in 2040 because of the Karoo exits: the model's store, at the Eastern Cape and Hydra Central
+exits, clears half; 20 GW of corridor beyond the TDP, R5.8bn a year, clears all and 65 TWh of curtailment.
 
 Caveat: ten areas with no limits inside them; the pathway's build fixed and planned without the network; one weather year; perfect foresight;
 line costs without substations; no lead times; no voltage or stability limits.
