@@ -2459,7 +2459,16 @@ the addition's annuity less the fuel and carbon saved less the unserved energy s
 
 One line each. Lithium: the LP's own store is 2.2 GW / 18 GWh at the Eastern Cape and Hydra Central exits (none in Gauteng), R4.7bn a year, which clears 20 of the 42 GWh and nets a cost of R0.02bn at R12,300 and a saving of R1.5bn at R87,000; the LP does not buy the store that clears the rest, since the last 21 GWh are worth less than it costs even at R87,000. Corridors: 19.6 GW on the four Karoo and coastal exits for R5.8bn a year clears all 42 GWh and 65 TWh of curtailment, and nets a saving of R55bn at R12,300 and R58bn at R87,000 (R55bn and R59bn hourly, 56 of the 58 GWh cleared). The Gauteng shortfall is a Karoo-exit problem on this table as on the last: neither fix is sited in Gauteng, and the corridor fix is the cheaper by two orders of magnitude net.
 
-### (c) Standing by
+### (c) Standing by, and the 8 Nov key's central first (message 782)
+
+Message 782 (7 Nov 2026): once the main session records the 8 Nov key's final build in RESULTS on claude/c7-runs, its pathway JSON is dumped
+and run through the 738 (b) case list and 762 (b)'s two fixes on the table of record without waiting for the night of 8 Nov, labelled as the
+key's central, not a final build. Prepared: watch_c7.sh fetches the branch every 15 minutes and stops when a commit touches RESULTS.md and
+harness/pathway/final/ together; dump_key.sh patches the engine-state dump into the pathcheck of a worktree at the key's build
+(make_pathcheck_dump.py), dumps 2035 and 2040 on weather 2025 with the key loop's own engine flags (LNG, GRID, SS_FC reservecoal, CONG_OFF,
+WX_WINDCORR; one seed) and hands the prefix to queue_final_template.sh. The worktree is chosen by the JSON's build stamp when it lands (the
+branch head's index.html is 2026-11-02y; the key's loop runs in the main session's own harness copy). At 7 Nov 09:40 UTC the branch carries
+the key's loop in pieces (RESULTS: 'the 8 Nov key's row follows when its loop is final') and no final build yet.
 
 The final builds (Least-cost, Fossil-free, Deep) run on the table of record from the night of 8 Nov when given; the chain is the patched
 pathcheck's dump (pathcheck_dump.js in the worktree's harness, DUMP_WY, DUMP_K, DUMP_PAGE, DUMP_OUT), then the 718 and 738 (b) case lists with
