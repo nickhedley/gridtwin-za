@@ -23599,3 +23599,30 @@ sensitivity (kage, 780 (b)) runs on gtza-keysc; its pass-1 LP key c7c260ccd8, th
 - Coal retired early: none in any year (sched earlyRetMW 0, 2026-2040). Home batteries enrolled, GWh: 2031 2.50, 2032 2.68, 2033 2.33,
   2034 3.04, every other year 0.
 - Next: the 20-draw engine check (running), the 100-draw gate on the common seeds, the combined-against-single table (761 (c)).
+
+### The 27 Oct break-even table on the 8 Nov key (message 781 (b)): coal retirement is near the margin; before 2029 it would already pay, so RC_FROM binds
+
+On the key's final pass (f60aa29e49, harness/pathway/final/key/breakeven.py on the cached solution; the 27 Oct method: the sum of rc_t's
+reduced costs for t >= y plus rcmono_y's dual, over 1,000 x the summed discount factors at 8%). The extra coal fixed cost, R/kW-yr
+(January 2026 rands), at which retiring 1 MW from year y onward starts to pay; RC_FROM 2029 unchanged (rc_ fixed at 0 before 2029,
+their reduced costs give the from-2026 values):
+
+| Retire from | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038 | 2039 | 2040 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Break-even extra, R/kW-yr | -468 | -388 | -224 | 229 | 420 | 563 | 677 | 764 | 970 | 631 | 781 | 1,056 | 1,096 | 1,208 | 1,307 |
+
+Negative before 2029: at no extra cost the LP would retire coal from 2026-2028 if RC_FROM allowed it. From 2029 the margins are a
+seventh to a half of c6a's on 27 Oct (R1,600 from 2029, R1,959 from 2030; coal's fuel escalation, the carbon floor and compliance
+since). EIA's sustaining capital (R474/kW-yr in 2029, R471 in 2030; RESULTS 'Coal sustaining capital by EIA's equation') exceeds the
+2029 and 2030 margins, so its pass is expected to retire coal from 2029 or 2030; the flat R500 likewise. Caveat as on 27 Oct: reduced
+costs are first-order and the LP is degenerate; the pass-1 LP with the charge (ksus) is the direct test. On the key's pass 1
+(c10bea45a9) the table differs by at most R11 to 2031 and by R200 in 2034 (pass 2's added 2034 windows).
+
+### Home batteries on the 8 Nov key: enrolled GWh by year and the value of the first kW (message 771 (c), with 772 (c)'s caveats)
+
+The key's final pass (f60aa29e49): enrolled 2.50 GWh in 2031, 2.68 in 2032, 2.33 in 2033, 3.04 in 2034, none in any other year (k8's
+row: 0 to 2030, 2.50, 2.68, 1.00, 2.05, 0.04 in 2031-2035). Value of the first kW enrolled = its cost (R500/kW-yr) less its reduced
+cost, undiscounted: 2027 R500, 2030 R500 and 2035 R500, each with nothing enrolled (dual degenerate: no more than its cost); 2031
+R709.5 and 2032 R565.0 at the enrolment cap; 2033 R500.0 (between bounds); 2034 R530.5. Against Eskom's R1,500/kW-yr: at most a third
+in 2027, 2030 and 2035, 0.38-0.47 in 2031-2032. Caveats (772 (c)): the national system's value only; the basis of Eskom's rate (per MW
+of demand reduction or per MW enrolled) still to be confirmed with Plentify.
