@@ -2530,8 +2530,8 @@ TODO 14lu (full version, after the note) replaces the estimate with a sourced st
 
 Estimates Plentify gave Nick on a call on 6 Nov 2026. Unpublished; cite as 'Plentify estimates' wherever used. Each is an estimate from
 the company, not a measurement we have checked.
-- Eskom's residential load management pays about R1m per MW a year (Plentify: a conservative benchmark), at least half of it to the
-  owner.
+- Eskom's residential load management pays about R1.5m per MW a year (Plentify, corrected 7 Nov 2026, message 771 (a); first given
+  as R1m on 6 Nov), at least half of it to the owner. A price paid, not a cost: the owner's share is a transfer.
 - The service is the evening peak: 3 hours, every weekday. Usable power is the stored energy divided by 3, keeping 20% in the battery.
 - A large share of the existing home batteries hold a minimum charge of about 65% against load shedding. This is not necessarily the
   fleet average, and it excludes business batteries. Consumer education can lower it, though a 20% floor by 2030 is probably unlikely

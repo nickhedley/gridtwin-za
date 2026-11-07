@@ -23071,7 +23071,10 @@ SOURCES 'Plentify estimates' (credited as Plentify estimates). Scratchpad btm/ (
 Proposals for the final key (734 (b); each moves the central's LP key, so none is made without Nick's word):
 1. Enrolled batteries: power E / 3, 20% kept (new keys vppHours 3, vppReservePct 20, in the LP's vppp_ rows and the engine). Engine
    effect at the build's enrolment: nil; the LP may enrol differently.
-2. Programme cost R500/kW-yr of enrolled power (E / 3), the most left after the owner's half of Eskom's R1m/MW-yr (Plentify estimates);
+2. Programme cost R500/kW-yr of enrolled power (E / 3), the most left after the owner's half of Eskom's R1m/MW-yr (Plentify estimates;
+   corrected 7 Nov, message 771 (a): Eskom's rate is R1.5m/MW-yr, so the most left after the owner's half is R750, and either figure
+   prices a payment, not a cost; 771 (b) proposes the aggregator's running cost, Brattle's non-incentive R342/kW-yr until Plentify gives
+   one, plus the wear term, with R500 and R750 the high cases);
    R1,000 a participant sensitivity. Today R342/kW-yr of E / 2.5 (Brattle's non-incentive cost): per MWh enrolled R136,900 to R166,700
    a year (+22%). The wear term on incremental cycling (R165/MWh) stays, a resource cost; the owner's half is a payment. LP key moves.
 3. The non-enrolled reserve blended by a stated split, central x = 0.455 (homes 65% of the stock, 70% of homes at 65%: our assumptions
@@ -23417,7 +23420,7 @@ base_k100_2030_2040.json; f3/compare.py, f3/table759.py. 6 Nov 2026, 15:00-21:20
   storage than it would with the twelve years' seasons; correcting it moves 2040 by +1.3 GW solar and +1.8 GW lithium, the build
   otherwise as the baseline's. The hour shape (July 07:00 and 17:00) is not corrected in f3d.
 
-### The 8 Nov key candidate with the battery proposals 1-3 (message 759 (a)): the LP stops enrolling home batteries at R500/kW-yr and builds 0.52 GW more lithium in 2030 instead; everything else within 0.1 GW; objective +R0.7bn; adequate
+### The 8 Nov key candidate with the battery proposals 1-3 (message 759 (a)): at R500/kW-yr the LP enrols no home batteries in 2030 (2.32 GWh in the baseline) and less in 2033-2035, and builds 0.52 GW more lithium in 2030; everything else within 0.1 GW; objective +R0.7bn; adequate (heading corrected 7 Nov, message 771 (c): it read 'stops enrolling')
 
 Settings: the 7 Nov baseline loop's (fin basis 10a98e2, c7's central settings, 25 clustered days, the central's 13 extremes, linking,
 CONG_OFF=1, WX_WINDCORR=1, wind barred from the freed-coal pool as in every pathway, rpExclude ['wind']), one pass (P1=1), on a
@@ -23496,3 +23499,25 @@ is a limitation.
   LP text, as pathway_perfail.js keys its cache; the loop's pass-1 LP, /tmp/gtza_701.lp, 116.6 MB). Rebuilt independently on
   claude/twin-retime 2d86faa with harness/pathway/final/key/key_on_twin-retime_2d86faa.patch (DUMP_LP, DUMP_STOP=1, the same settings
   as solve_key.sh's case 'key' with MAXP=1): the same key to every digit, so the two bases give the central the same LP.
+
+### Home batteries enrolled by year, and the value of the first kW enrolled (message 771 (c)): k8 enrols none to 2030 and 1.0-2.7 GWh in 2031-2034; by the LP's duals the first kW is worth no more than its R500/kW-yr cost where nothing is enrolled, R500 where enrolment is between its bounds, and R556-665 at the cap in 2031-2032, against Eskom's R1,500/kW-yr
+
+Enrolled energy, GWh (sched[y].vppGWh: vppp_<y> x the enrolled hours, E / 3 in k8, E / 2.5 in the baseline):
+
+| Year | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037 | 2038-2040 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| k8 (proposals 1-3, R500/kW-yr) | 0 | 0 | 0 | 0 | 0 | 2.50 | 2.68 | 1.00 | 2.05 | 0.04 | 0 | 0 | 0 |
+| Baseline (E / 2.5, R342/kW-yr of E / 2.5) | 0 | 0 | 0 | 0 | 2.32 | 2.50 | 2.68 | 2.86 | 3.04 | 1.06 | 0 | 0.14 | 0 |
+
+The 8 Nov key's row follows when its loop is final.
+
+Value to the system of the first kW enrolled, from k8's pass-1 solution (duals from HiGHS; the LP text rebuilt, key e50c8e3ea8,
+scratchpad vppval/value.py): V = sum over the rows vppp_<y> enters of coefficient x row dual (= its cost less its reduced cost),
+undiscounted at the pathway's 8%, per kW of enrolled power a year. The cost is R500/kW-yr in every year.
+- 2027: R500 by the duals, nothing enrolled. 2030: R500, nothing enrolled. The column sits in the basis at zero (dual degenerate), so
+  the duals show only that the first kW is worth no more than its cost there; an exact value needs a one-step test (one LP solve per
+  year with vppp_<y> forced up, about 2 hours each cold).
+- 2035: R500, 12.5 MW enrolled, between its bounds: the first kW is worth its cost.
+- 2031 and 2032, at the enrolment cap: R665 and R556.
+- Against Eskom's R1,500/kW-yr (Plentify, 771 (a)): the system values the first kW at no more than a third of Eskom's rate in 2027,
+  2030 and 2035, and at 0.37-0.44 of it in 2031-2032.
