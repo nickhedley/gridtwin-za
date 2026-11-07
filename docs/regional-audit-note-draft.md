@@ -1,4 +1,4 @@
-# The network section of the note: draft for review (7 Nov 2026; not for publication)
+# The network section of the note: draft for review (7 Nov 2026, text adopted from message 779; not for publication)
 
 Draft for Nick and the advisor (review by 9 Nov 12:00 SAST). Every figure in the text and the table is the every-change pass (build
 2026-11-05f) on the ten-area table of record (corridors_v3.json), weather 2025, and is a placeholder until the final builds replace it; the line
@@ -7,23 +7,24 @@ and cases: docs/regional-audit.md. No NTCSA capacity figures appear here.
 
 ## Draft text
 
-The binding limit is the Karoo's exits. On today's corridors the Northern Cape's exits to the North West and the Free State are at their limit
-8,700 hours a year; the least-cost build curtails 57 TWh in 2035 and 106 TWh in 2040 for want of them. An independent cross-check broadly
-agrees on the binding corridors.
+The binding limits are the Karoo's exits. With the TDP's inter-area lines by their dates, the least-cost build curtails 35 TWh in 2035 and 79
+TWh in 2040, against 3 and 13 TWh with no network limits; the Northern Cape's exits to the North West and the Free State are at their limit
+about 8,700 hours a year. An independent cross-check broadly agrees on the binding corridors.
 
-Today's fleet is unconstrained: the 2025 and 2026 fleets curtail nothing.
+Today's fleet does not fill the corridors between areas. The curtailment paid for today (R4bn expected this financial year, as reported)
+comes from limits inside areas and from how coal is run, which this test does not represent.
 
-At today's build rate the order of the lines matters more than their number: at 293 km a year the plan's own order leaves 2032 curtailing 20
-TWh, the binding corridors' order 9 TWh, R7.6bn a year apart.
+At 293 km of line a year, building the TDP's inter-area lines in the order of the binding corridors rather than by the TDP's dates cuts 2032
+curtailment from 20 to 9 TWh, R7.6bn a year.
 
-Lines beat batteries for the network: 2 GW of lithium at the exits cuts 2035's curtailment by 1 TWh for R2.8bn a year; the same money in
-corridors cuts it by 45 TWh, a net saving at either value of unserved energy where the lithium is a net cost at the engine's.
+For the network, R2.8bn a year buys 1 TWh less curtailment in 2035 as 2 GW of lithium at the exits, or 45 TWh as corridors. The lithium is a
+net cost at the engine's value of unserved energy; the corridors are a net saving at either value.
 
-Gauteng's 2040 shortfall is a Karoo-exit problem: with the plan's lines 58 GWh is unserved there; the model's cheapest store sits at the
-Eastern Cape and Hydra Central exits and clears half; 20 GW of corridor for R5.8bn a year clears all, a net R55bn at R12,300 per MWh.
+With the TDP's lines, Gauteng is short 58 GWh in 2040 because of the Karoo exits: the store the model chooses sits at the Eastern Cape and
+Hydra Central exits and clears half; 20 GW of corridor beyond the TDP, R5.8bn a year, clears all of it and 65 TWh of curtailment.
 
-Caveat: a zonal, fixed-build test (ten areas with no limits inside them, the pathway's build fixed, one weather year, perfect foresight, thermal
-and loadability ratings, no voltage or stability limit) finds where corridors bind and what they are worth, not what to build.
+Caveat: ten areas with no limits inside them; the pathway's build fixed and planned without the network; one weather year; perfect foresight;
+line costs without substations; no lead times; no voltage or stability limits.
 
 ## The table
 
