@@ -1,7 +1,7 @@
-# Coal-site solar: a solar class the build LP chooses
+# Coal-site solar: a solar class the build LP chooses, and a national spare-capacity pool
 
 Design note for message 763 (a). No code. Branch claude/coal-site-solar from claude/twin-retime a77c7b2 (build 2026-11-06b).
-Written 7 Nov 2026, 09:40-09:50 SAST; section 2a added 10:20 SAST (message 773). Build only on Nick's word (763 (b)); claude/c7-runs is not touched.
+Written 7 Nov 2026, 09:40-09:50 SAST; section 2a added 10:20 SAST (message 773); sections 2b and 2c added 10:45 SAST (message 774). Build only on Nick's word (763 (b)); claude/c7-runs is not touched.
 
 ## 1. What the model does today, and what the 8 Nov key does
 
@@ -128,6 +128,60 @@ Floor, cap or check. Recommendation: a check, not a floor and not a cap.
   freed connections in practice (RULES.md, decisions without Nick follow practice), which favours D1 (ii): the pool stays for
   storage and gas, sharing the Mpumalanga MW with the class in one row. Section 8 is updated.
 
+## 2b. Variant 2: a national spare-capacity pool (message 774)
+
+A simpler alternative to the class, run beside it in (c), never with it in one LP. The first H MW of new wind and utility
+solar, counted together and cumulatively over 2026-40, pay no integration charge; every MW beyond H pays the flat charge
+(txRPerKWyr x bldGridIntVreShare), as today. H is illustrative: 5,000 and 10,000 MW. It is not an NTCSA figure, and the
+repository holds no NTCSA capacity figure to replace it with; the caption and RESULTS say so.
+
+The mechanism is the Cape allowance's (cw_ and cwpool in bldBuildLP), with two differences: it covers solar as well as
+wind, and it loses no output (the Cape allowance cuts bldCapeCurtPct of its wind's output; the spare pool is spare, so nothing
+is curtailed for it).
+
+- Variables: hp_wind_<y> and hp_pv_<y>, MW of that year's build on the pool.
+- Objective: each earns back the integration charge from its year on, discounted, exactly as cw_<y> does (the same _cwTx
+  sum; the spur annuity is still paid, since the plant is connected wherever it is built).
+- Rows: hpb_<t>_<y>: hp_<t>_<y> <= b_<t>_<y>, and for wind hp_wind_<y> + cw_<y> <= b_wind_<y> when the Cape allowance is on, so
+  no MW is credited twice; hppool: the sum of every hp_ over both technologies and all years <= H.
+- Profile: none. The pool has no location, so wind and solar run on their national profiles as today. That is the point of
+  the variant and its limit: it says nothing about where the spare capacity is.
+- The freed-coal pool (rp_) and the same-area cap are off when the spare pool is on: the spare pool replaces them, so new
+  solar and storage and gas pay their full grid cost and early retirement earns no connection credit. That is the second
+  thing the variant tests (section 2c).
+- Switch: FIXED.bldSparePoolMW, 0 off (LP text byte for byte today's), else H in MW.
+- Engine: gridChargeR credits u.gridHpMW (by technology, from pathcheck's record of the run's hp_ columns) at
+  bldGridIntegRkW(t), as it credits the Cape wind; on the page basis, without a run record, min(H, new wind + new solar) at
+  that rate (wind and solar pay the same integration charge, so the order between them does not matter).
+- Harness: pathway_perfail.js SPARE=H sets the switch and records sched[y].hp by technology; pathcheck.js carries it to the
+  engine as cum; validate_lp.js check 'spare-capacity pool': hp_ columns exist only with the switch on; hppool's right-hand
+  side equals H; the objective coefficient of hp_pv_<y> equals the discounted sum of the integration charge from y (to R1)
+  and not GA['pv']; hpb_ holds hp plus cw at or below the year's wind build; no rp_ column exists while the switch is on.
+  Injected faults: (i) hp_ credited at GA['pv'] instead of the integration charge; (ii) hppool dropped; (iii) rp_ left on
+  beside the pool. Each seen to FAIL and reverted.
+
+Hours added: about 2.5 (LP 1, engine 0.5, harness and check 1). Runs added in (c): two pass-1 LPs (H 5,000 and 10,000) with
+their 20-draw checks, about 2 hours each including the check, two at a time with the class's run.
+
+## 2c. What (c) reports for each variant, beside the key (message 774)
+
+For the key, the national pool, the class and the spare pool at each H, one table: by year 2030, 2035 and 2040, new wind,
+solar at coal sites, solar elsewhere, lithium, curtailment and unserved (20 draws, with the standard error); and for every year
+2026-40 the coal retired early (rc_<y>, sched[y].earlyRetMW) beside the coal standing, the LP objective (2026-40 by
+construction) and CO2.
+
+Why early retirement is in the table. Today's pool and the class both add early-retired MW to the freed-connection budget
+(rppool_ subtracts rc_; the class's cap adds rc_ at Mpumalanga's share, D4), so retiring a unit early earns a connection
+credit as well as saving its running and compliance costs. The spare pool breaks that link. The difference in rc_ by year
+between the class and the spare pool is therefore the connection credit's share of the LP's early retirement, which no run
+has isolated.
+
+CO2 2026-40: the LP's own CO2 row by year, which from build 2026-11-06a is coal's emissions with the part-load factor on the
+engine's basis (RESULTS 'The review of claude/twin-retime of 6 Nov', finding 1), summed over the horizon for every case on one
+basis at no extra solving; the engine check's CO2 at 2030, 2035 and 2040 at 20 draws beside it as the check. A full-horizon
+engine CO2 at 20 draws is about 65 minutes a case (4.3 minutes a year) and is offered only if Nick wants it after the first
+table.
+
 ## 3. The profile: where it comes from and its provenance
 
 Two sources were named. Recommendation: A.
@@ -247,12 +301,14 @@ fails). Each fault reverted and the check seen to pass again.
 | (c): the national-pool comparison on the same settings, if the main session has not run it | 1.5-2.2 + 0.3 |
 | write-up in RESULTS, beside the key and the national pool | 0.5 |
 
-Build and test about 11 hours of session time from the go; the run about 2.5 hours, or 5 with the national-pool comparison.
+Build and test about 11 hours of session time from the go, 13.5 with the spare pool (section 2b); the runs about 2.5 hours
+for the class alone, about 5 with the two spare-pool cases solved two at a time, 7 with the national-pool comparison as well.
 
 The deadline can be met if two things hold:
 
-1. The go arrives by Saturday 7 Nov about 20:00 SAST, so the pull request is open by Sunday morning and the run is done by
-   Sunday afternoon. A go on Sunday morning leaves the run finishing at about Sunday 20:00 SAST: a miss of about two hours.
+1. The go arrives by Saturday 7 Nov about 18:00 SAST (20:00 for the class alone), so the pull request is open by Sunday
+   morning and the three runs are done by Sunday afternoon. A go on Sunday morning leaves the runs finishing at about Sunday
+   22:00 SAST: a miss of about four hours; the class alone would miss by about two.
 2. The 8 Nov key's code is reachable. Its settings depend on patches that exist only in the main session's worktrees, on no
    branch (RESULTS 'The 8 Nov key's worktree': gtza-k8's battery proposals, gtza-f3d's factors behind bldRepF3d, gtza-w40's
    'cf0.40' in windNewCorr, gtza-rpcap's rpcap_ rows behind bldRpSameAreaCap). On claude/twin-retime's head none of these
@@ -283,6 +339,10 @@ and the class's run on twin-retime's own settings, labelled as not the key's bas
   (the cap on scheduled closures only, conservative). Recommendation: the share, computed.
 - D5. Profile A (PVGIS Mpumalanga, twelve years) or B (national shape by month). Recommendation: A.
 - D6. Whether the main session pushes the key's patches to a branch (section 7, item 2).
+- D7. The spare pool's H counted cumulatively over 2026-40 (as cwpool counts the Cape allowance), not per year.
+  Recommendation: cumulative, the literal 'first H MW'.
+- D8. With the spare pool on, the freed-coal pool and the same-area cap are off (section 2b), so the two variants are
+  alternatives in separate runs. Recommendation: yes; a combined run only if the first table asks for it.
 
 ## 9. Sources used in this note
 
